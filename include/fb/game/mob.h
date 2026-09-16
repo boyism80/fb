@@ -78,8 +78,8 @@ private:
     fb::model::datetime             _action_time;
     std::weak_ptr<life>             _target;
     std::weak_ptr<life>             _oblivion;
-    rezen*                          _rezen         = nullptr;
-    lua::context*                   _action_thread = nullptr;
+    rezen*                          _rezen       = nullptr;
+    bool                            _action_busy = false;
     item_vector_t                   _items;
     bool                            _hidden = false;
     std::unique_ptr<ai>             _ai_strategy;

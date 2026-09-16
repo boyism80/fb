@@ -22,7 +22,7 @@ local function build_cases(ctx)
                 return target:name()
             end,
             pre = function(caster, target, state)
-                caster:map_move("가상계", 1, 1)
+                caster:map_move("가상계", 1, 1, ctx:suite_slot())
                 ctx:sleep(500)
                 state.expected_mp = caster:mp() - 30
             end,
@@ -48,7 +48,7 @@ local function build_cases(ctx)
                 return target:name()
             end,
             pre = function(caster, target, state)
-                target:map_move("가상계", 1, 1)
+                target:map_move("가상계", 1, 1, ctx:suite_slot())
                 ctx:sleep(500)
                 state.expected_mp = caster:mp() - 30
             end,

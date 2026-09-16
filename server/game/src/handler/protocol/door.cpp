@@ -14,7 +14,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> door<V>::handle(fb::socket<character>& session, game_reqs::door<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     auto lua = this->server.lua.open("scripts/interaction.lua", "on_door");

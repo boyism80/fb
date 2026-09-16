@@ -38,6 +38,7 @@ local TIME_FORWARD_7D = "7.00:00:00"
 local g_npc          = nil
 local g_parallel_ok  = false
 local g_parallel_msg = nil
+local g_suite_slot   = 0
 local g_partner_msg  = nil
 
 local function progress(bot, message)
@@ -58,7 +59,7 @@ local function home_x(bot_index)
 end
 
 local function restore_home(bot, index)
-    bot:map_move(HOME_MAP, home_x(index), HOME_Y)
+    bot:map_move(HOME_MAP, home_x(index), HOME_Y, g_suite_slot)
     bot:direction("BOTTOM")
 end
 
@@ -84,11 +85,12 @@ local function click_expect(bot, expect_type)
     end
     local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
     local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
-    return fn(bot,
+    local packet = fn(bot,
         protocol.click(npc.oid),
         function(p)
             return p.type == expect_type
         end)
+    return packet
 end
 
 local function select_pursuit(bot, option, expect_type)
@@ -353,6 +355,7 @@ test_suite {
 
     on_initialize = function(ctx)
         log("debug", "Marriage: test initialized")
+        g_suite_slot = ctx:suite_slot()
         lib.formation.arrange_in_line(ctx)
         prepare_bots(ctx)
         g_npc = nil
@@ -406,7 +409,7 @@ test_suite {
             local a = ctx:bot(0)
             local b = ctx:bot(1)
             progress(a, "M2: NOT NEAR")
-            b:map_move(OFF_MAP, 1, 1)
+            b:map_move(OFF_MAP, 1, 1, g_suite_slot)
             ctx:sleep(500)
             local msg, err = marry_input_expect_normal(a, b:name())
             restore_home(b, 1)
@@ -610,7 +613,7 @@ test_suite {
             local a = ctx:bot(0)
             local b = ctx:bot(1)
             progress(a, "L2: CALLER TELEPORT")
-            b:map_move(OFF_MAP, 5, 5)
+            b:map_move(OFF_MAP, 5, 5, g_suite_slot)
             ctx:sleep(500)
             local ok, err = use_caller_teleport(ctx, a, b)
             restore_home(a, 0)

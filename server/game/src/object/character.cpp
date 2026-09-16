@@ -63,8 +63,33 @@ void character::match(std::shared_ptr<fb::game::match> value)
 
 character::~character()
 {
-    if (this->dialog != nullptr)
-        this->dialog->release();
+    this->cancel_dialog("character destroyed");
+}
+
+void character::cancel_dialog(std::string_view message)
+{
+    if (this->dialog == nullptr)
+        return;
+
+    this->dialog->reject(message);
+}
+
+fb::lua::context* character::take_dialog()
+{
+    auto* ctx = this->dialog;
+    if (ctx == nullptr)
+        return nullptr;
+
+    ctx->clear_dialog_slot();
+    return ctx;
+}
+
+void character::set_dialog(fb::lua::context* ctx)
+{
+    if (ctx == nullptr)
+        throw std::runtime_error("set_dialog requires a context");
+
+    ctx->bind_dialog_slot(this->dialog);
 }
 
 void character::on_init()
@@ -648,6 +673,8 @@ void character::armor_color(std::optional<uint8_t> value)
     this->assert_thread();
 
     this->_armor_color = value;
+    if (this->_mimicry.has_value() && this->_mimicry->disguise.has_value())
+        this->_mimicry->armor_color = value;
     this->show();
 }
 

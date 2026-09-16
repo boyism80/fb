@@ -153,7 +153,7 @@ async::task<void> match::invoke(std::string_view func, character& ch, std::share
     if (wait)
         std::ignore = co_await lua->call(argc);
     else
-        std::ignore = lua->call(argc);
+        fb::lua::run_async(std::move(lua), argc);
     co_return;
 }
 
@@ -428,7 +428,7 @@ void match::on_death(character& ch, std::shared_ptr<object> killer)
         lua->pushobject(*killer);
     else
         lua->pushnil();
-    std::ignore = lua->call(3);
+    fb::lua::run_async(std::move(lua), 3);
 }
 
 void match::enqueue_play()

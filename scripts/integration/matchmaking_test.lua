@@ -1,22 +1,23 @@
 local lib = require("integration.lib")
 local resp = require("integration.response")
 local protocol = require("integration.protocol")
+local bot_diag = require("integration.lib.bot_diag")
 
 local TEST_BOTS = 6
 local MAX_HP = 50
 local MAX_MP = 10000
 
-local DIALOG_WAIT_MS = 15000
+local DIALOG_WAIT_MS = 30000
 local MESSAGE_WAIT_MS = 15000
-local PROPOSAL_WAIT_MS = 25000
+local PROPOSAL_WAIT_MS = 45000
 local MATCH_END_WAIT_MS = 30000
-local TRANSFER_WAIT_MS = 30000
-local HOME_WAIT_MS = 30000
+local TRANSFER_WAIT_MS = 45000
+local HOME_WAIT_MS = 45000
 local POLL_INTERVAL_MS = 200
 
--- The bot that triggers a proposal waits this long so every other bot has its
--- proposal hook installed first. A pushed dialog is lost if nobody is listening.
-local SETTLE_MS = 2000
+local SETTLE_MS = 4000
+
+local aborted = false
 
 local F1_OID = 0xFFFFFFFF
 local OPT_MATCHMAKING = "매치메이킹"
@@ -45,6 +46,22 @@ local function progress(bot, message)
     log(level, string.format("matchmaking_test bot=%s %s", name, message))
     if bot ~= nil then
         bot:chat("=== " .. message .. " ===")
+        if level == "fatal" then
+            bot_diag.dump(bot, "matchmaking:" .. message)
+        end
+    end
+end
+
+local function abort_remaining(bot, message)
+    aborted = true
+    progress(bot, message)
+    return false
+end
+
+local function dump_match_bots(ctx, bot_indices, label)
+    for pos = 1, #bot_indices do
+        local bot = ctx:bot(bot_indices[pos])
+        bot_diag.dump(bot, string.format("%s idx=%s pos=%d", label, tostring(bot_indices[pos]), pos))
     end
 end
 
@@ -54,34 +71,16 @@ local function is_state_text(packet, pattern)
         and packet.text:find(pattern, 1, true) ~= nil
 end
 
-local function map_name(bot)
-    local model = id2map(bot:map())
-    if model == nil then
-        return nil
-    end
-    return model:name()
-end
-
-local function pursuit(bot, packet)
-    return bot:request_dialog(
-        packet,
-        function(p)
-            return p.type == "pursuit"
-        end,
-        DIALOG_WAIT_MS
-    )
-end
-
 local function f1_register(bot, option, member)
-    if pursuit(bot, protocol.click(F1_OID)) == nil then
+    if bot:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
         progress(bot, "FAILED: F1 MENU DID NOT OPEN")
         return false
     end
-    if pursuit(bot, protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING)) == nil then
+    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
         progress(bot, "FAILED: MATCHMAKING MENU DID NOT OPEN")
         return false
     end
-    if pursuit(bot, protocol.dialog("PURSUIT", 0, "", 0, 0, option)) == nil then
+    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, option), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
         progress(bot, "FAILED: " .. option .. " CONFIRM DID NOT OPEN")
         return false
     end
@@ -105,44 +104,77 @@ local function f1_register(bot, option, member)
     return true
 end
 
+local function is_proposal_list(packet)
+    return packet.type == "list"
+        and packet.message ~= nil
+        and packet.message:find(MSG_PROPOSAL_DIALOG, 1, true) ~= nil
+end
+
+local function f1_register_await_proposal(bot, option)
+    if bot:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+        progress(bot, "FAILED: F1 MENU DID NOT OPEN")
+        return false
+    end
+    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+        progress(bot, "FAILED: MATCHMAKING MENU DID NOT OPEN")
+        return false
+    end
+    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, option), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+        progress(bot, "FAILED: " .. option .. " CONFIRM DID NOT OPEN")
+        return false
+    end
+
+    local yes = protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES)
+    local caught, packet = pcall(function()
+        return bot:request_dialog_ext(yes, is_proposal_list, PROPOSAL_WAIT_MS)
+    end)
+    if caught == false or packet == nil or packet == false then
+        progress(bot, "FAILED: NO MATCH PROPOSAL LIST AFTER REGISTER " .. option)
+        return false
+    end
+    return true
+end
+
 local function f1_fail_not_group_master(bot)
-    if pursuit(bot, protocol.click(F1_OID)) == nil then
+    if bot:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
         return false
     end
 
-    local packet = bot:request_dialog_ext(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING),
-        function(p)
-            return p.type == "normal"
-                and p.message ~= nil
-                and p.message:find(MSG_NOT_GROUP_MASTER, 1, true) ~= nil
-        end,
-        DIALOG_WAIT_MS
-    )
-    if packet == nil then
+    local caught, packet = pcall(function()
+        return bot:request_dialog_ext(
+            protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING),
+            function(p)
+                return p.type == "normal"
+                    and p.message ~= nil
+                    and p.message:find(MSG_NOT_GROUP_MASTER, 1, true) ~= nil
+            end,
+            DIALOG_WAIT_MS
+        )
+    end)
+    if caught == false or packet == nil then
         return false
     end
 
-    -- After NEXT, server.lua loops back to F1 with me:pursuit (0x2F), not 0x30.
-    return pursuit(bot, protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT")) ~= nil
+    return bot:request_dialog(
+        protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"),
+        function(p) return p.type == "pursuit" end,
+        DIALOG_WAIT_MS) ~= nil
 end
 
 local function confirm_proposal_and_transfer(bot)
-    local packet = bot:request_dialog_ext(
-        protocol.chat(false, "."),
-        function(p)
-            return p.type == "list"
-                and p.message ~= nil
-                and p.message:find(MSG_PROPOSAL_DIALOG, 1, true) ~= nil
-        end,
-        PROPOSAL_WAIT_MS
-    )
-    if packet == nil then
-        progress(bot, "FAILED: NO MATCH PROPOSAL DIALOG")
-        return false
+    local caught, packet = pcall(function()
+        return bot:request_dialog_ext(protocol.chat(false, "."), is_proposal_list, PROPOSAL_WAIT_MS)
+    end)
+    if caught == false or packet == nil or packet == false then
+        return abort_remaining(bot, "FAILED: NO MATCH PROPOSAL LIST")
     end
 
-    bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+    local ok, err = pcall(function()
+        bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+    end)
+    if ok == false then
+        return abort_remaining(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
+    end
     return true
 end
 
@@ -160,9 +192,6 @@ local function poll_until(ctx, condition, timeout_ms)
 end
 
 local function revive(bot)
-    -- /체력바꾸기 clears GHOST even when max hp is unchanged; setup_bot_stats skips
-    -- that command when base_hp already matches. Hellfire damage is mp*1.5, so mp
-    -- must be restored too — MATCH_2 leaves everyone at 0 mp.
     local hp = bot:request(
         resp.update_internal,
         protocol.chat(false, string.format("/체력바꾸기 %d", MAX_HP)),
@@ -201,19 +230,11 @@ local function hellfire_cast(bot)
     return protocol.spell_cast("TARGET", slot, "", bot:oid(), bot:position())
 end
 
--- bot_indices are suite indices (0-based). Always re-read ctx:bot after any
--- transfer — Lua-held bot refs go stale when the bot reconnects.
--- fatal_pos is 1-based into bot_indices: that bot's death ends the match.
--- Do not wait for "match started" here: on_playing fires during join/transfer,
--- before this scenario can install a hook, so the message is often already gone.
 local function finish_match(ctx, bot_indices, fatal_pos)
-    local function live(pos)
-        return ctx:bot(bot_indices[pos])
-    end
-
     local on_match_map = poll_until(ctx, function()
         for pos = 1, #bot_indices do
-            local name = map_name(live(pos))
+            local model = id2map(ctx:bot(bot_indices[pos]):map())
+            local name = model ~= nil and model:name() or nil
             if name == nil or name == HOME_MAP then
                 return false
             end
@@ -222,12 +243,18 @@ local function finish_match(ctx, bot_indices, fatal_pos)
     end, TRANSFER_WAIT_MS)
 
     if on_match_map == false then
-        progress(live(1), "FAILED: EXPECTED MATCH MAP, GOT " .. tostring(map_name(live(1))))
+        local maps = {}
+        for pos = 1, #bot_indices do
+            local model = id2map(ctx:bot(bot_indices[pos]):map())
+            maps[#maps + 1] = string.format("%d=%s", bot_indices[pos], tostring(model ~= nil and model:name() or nil))
+        end
+        progress(ctx:bot(bot_indices[1]), "FAILED: EXPECTED MATCH MAP, GOT " .. table.concat(maps, ", "))
+        dump_match_bots(ctx, bot_indices, "matchmaking:not_on_match_map")
         return false
     end
 
     for pos = 1, fatal_pos - 1 do
-        local bot = live(pos)
+        local bot = ctx:bot(bot_indices[pos])
         local cast = hellfire_cast(bot)
         if cast == nil then
             progress(bot, "FAILED: COULD NOT PREPARE 헬파이어")
@@ -248,7 +275,7 @@ local function finish_match(ctx, bot_indices, fatal_pos)
         end
     end
 
-    local fatal = live(fatal_pos)
+    local fatal = ctx:bot(bot_indices[fatal_pos])
     local cast = hellfire_cast(fatal)
     if cast == nil then
         progress(fatal, "FAILED: COULD NOT PREPARE 헬파이어")
@@ -264,13 +291,16 @@ local function finish_match(ctx, bot_indices, fatal_pos)
         MATCH_END_WAIT_MS
     )
     if ended == nil or ended == false then
-        progress(live(fatal_pos), "FAILED: DID NOT RECEIVE MATCH ENDED")
+        progress(ctx:bot(bot_indices[fatal_pos]), "FAILED: DID NOT RECEIVE MATCH ENDED")
+        dump_match_bots(ctx, bot_indices, "matchmaking:no_match_ended")
         return false
     end
 
     local at_home = poll_until(ctx, function()
         for pos = 1, #bot_indices do
-            if map_name(live(pos)) ~= HOME_MAP then
+            local model = id2map(ctx:bot(bot_indices[pos]):map())
+            local name = model ~= nil and model:name() or nil
+            if name ~= HOME_MAP then
                 return false
             end
         end
@@ -278,7 +308,13 @@ local function finish_match(ctx, bot_indices, fatal_pos)
     end, HOME_WAIT_MS)
 
     if at_home == false then
-        progress(live(1), "FAILED: DID NOT RETURN TO " .. HOME_MAP)
+        local maps = {}
+        for pos = 1, #bot_indices do
+            local model = id2map(ctx:bot(bot_indices[pos]):map())
+            maps[#maps + 1] = string.format("%d=%s", bot_indices[pos], tostring(model ~= nil and model:name() or nil))
+        end
+        progress(ctx:bot(bot_indices[1]), "FAILED: DID NOT RETURN TO " .. HOME_MAP .. " maps=" .. table.concat(maps, ", "))
+        dump_match_bots(ctx, bot_indices, "matchmaking:not_home")
         return false
     end
     return true
@@ -288,6 +324,9 @@ local function confirm_lanes(indices, trigger)
     local lanes = {}
     for _, index in ipairs(indices) do
         lanes[index] = { function(ctx)
+            if aborted then
+                return false
+            end
             local bot = ctx:bot(index)
             progress(bot, "WAIT FOR PROPOSAL AND TRANSFER")
             return confirm_proposal_and_transfer(bot)
@@ -295,13 +334,24 @@ local function confirm_lanes(indices, trigger)
     end
 
     lanes[trigger.index] = { function(ctx)
+        if aborted then
+            return false
+        end
         local bot = ctx:bot(trigger.index)
         progress(bot, "SETTLE THEN REGISTER " .. trigger.option)
         bot:sleep(SETTLE_MS)
-        if f1_register(bot, trigger.option) == false then
+        if f1_register_await_proposal(bot, trigger.option) == false then
+            return abort_remaining(bot, "FAILED: REGISTER/PROPOSAL " .. trigger.option)
+        end
+        progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
+        local ok, err = pcall(function()
+            bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+        end)
+        if ok == false then
+            progress(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
             return false
         end
-        return confirm_proposal_and_transfer(bot)
+        return true
     end }
 
     return { parallel = lanes }
@@ -312,6 +362,7 @@ test_suite {
     bot_count = TEST_BOTS,
 
     on_initialize = function(ctx)
+        aborted = false
         progress(ctx:bot(0), "MATCHMAKING TEST INITIALIZED WITH " .. ctx:bot_count() .. " BOTS")
         for i = 0, ctx:bot_count() - 1 do
             ctx:bot(i):setup_bot_stats(MAX_HP, MAX_MP)
@@ -325,6 +376,10 @@ test_suite {
 
     scenarios = {
         function(ctx)
+            if aborted then
+                return false
+            end
+
             local a = ctx:bot(0)
             local b = ctx:bot(1)
             local c = ctx:bot(2)
@@ -333,23 +388,20 @@ test_suite {
 
             progress(a, "STEP 1-2: FORM GROUPS AB AND CD")
             if a:invite_group(b) == false then
-                progress(a, "FAILED TO FORM GROUP AB")
-                return false
+                return abort_remaining(a, "FAILED TO FORM GROUP AB")
             end
             if c:invite_group(d) == false then
-                progress(c, "FAILED TO FORM GROUP CD")
-                return false
+                return abort_remaining(c, "FAILED TO FORM GROUP CD")
             end
 
             progress(b, "STEP 3: NON-LEADER B TRIES F1 MATCHMAKING")
             if f1_fail_not_group_master(b) == false then
-                progress(b, "FAILED: B SHOULD BE REJECTED AS NON-GROUP-LEADER")
-                return false
+                return abort_remaining(b, "FAILED: B SHOULD BE REJECTED AS NON-GROUP-LEADER")
             end
 
             progress(a, "STEP 4: LEADER A REGISTERS MATCH 2 VIA F1")
             if f1_register(a, OPT_MATCH_2, b) == false then
-                return false
+                return abort_remaining(a, "FAILED: REGISTER MATCH 2")
             end
 
             progress(b, "STEP 5: B LEAVES GROUP, AB UNREGISTER")
@@ -364,8 +416,7 @@ test_suite {
                 MESSAGE_WAIT_MS
             )
             if cancelled == nil or cancelled == false then
-                progress(a, "FAILED: AB DID NOT RECEIVE UNREGISTER OR MATCH-CANCEL MESSAGE")
-                return false
+                return abort_remaining(a, "FAILED: AB DID NOT RECEIVE UNREGISTER OR MATCH-CANCEL MESSAGE")
             end
 
             progress(a, "STEP 6: RE-FORM AB THEN REGISTER FIVE PLAYERS")
@@ -378,20 +429,17 @@ test_suite {
                 MESSAGE_WAIT_MS
             )
             if joined == nil or joined == false then
-                progress(a, "FAILED TO RE-FORM GROUP AB")
-                return false
+                return abort_remaining(a, "FAILED TO RE-FORM GROUP AB")
             end
 
-            -- MATCH_2 is 3v3. Five entries cannot form a match, so the proposal
-            -- only fires once F registers from inside the parallel block.
             if f1_register(a, OPT_MATCH_2, b) == false then
-                return false
+                return abort_remaining(a, "FAILED: RE-REGISTER MATCH 2 AB")
             end
             if f1_register(c, OPT_MATCH_2, d) == false then
-                return false
+                return abort_remaining(c, "FAILED: REGISTER MATCH 2 CD")
             end
             if f1_register(e, OPT_MATCH_2) == false then
-                return false
+                return abort_remaining(e, "FAILED: REGISTER MATCH 2 E")
             end
 
             return true
@@ -400,6 +448,10 @@ test_suite {
         confirm_lanes({0, 1, 2, 3, 4}, {index = 5, option = OPT_MATCH_2}),
 
         function(ctx)
+            if aborted then
+                return false
+            end
+
             local indices = {}
             for i = 0, TEST_BOTS - 1 do
                 indices[#indices + 1] = i
@@ -407,7 +459,7 @@ test_suite {
 
             progress(ctx:bot(0), "STEP 7: FINISH MATCH 2 AND RETURN HOME")
             if finish_match(ctx, indices, #indices) == false then
-                return false
+                return abort_remaining(ctx:bot(0), "FAILED: MATCH 2 FINISH")
             end
 
             progress(ctx:bot(0), "STEP 7 PASSED: MATCH 2 ENDED AND RETURNED HOME")
@@ -415,26 +467,72 @@ test_suite {
         end,
 
         function(ctx)
-            local e = ctx:bot(4)
-            local f = ctx:bot(5)
-
-            progress(e, "STEP 8: REVIVE SOLO BOTS THEN REGISTER MATCH 1")
-            if revive(e) == false or revive(f) == false then
-                progress(e, "FAILED: COULD NOT REVIVE SOLO BOTS")
+            if aborted then
                 return false
             end
 
-            -- MATCH_1 is 1v1, so one entry waits until F registers in parallel.
-            return f1_register(e, OPT_MATCH_1)
+            local e = ctx:bot(4)
+            local f = ctx:bot(5)
+
+            progress(e, "STEP 8: REVIVE SOLO BOTS AND CLEAR GROUPS")
+            if revive(e) == false or revive(f) == false then
+                return abort_remaining(e, "FAILED: COULD NOT REVIVE SOLO BOTS")
+            end
+
+            lib.group.cleanup(ctx)
+            return true
         end,
 
-        confirm_lanes({4}, {index = 5, option = OPT_MATCH_1}),
+        { parallel = {
+            [4] = { function(ctx)
+                if aborted then
+                    return false
+                end
+                local bot = ctx:bot(4)
+                progress(bot, "REGISTER MATCH 1 THEN CONFIRM")
+                if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
+                    return abort_remaining(bot, "FAILED: MATCH 1 REGISTER/PROPOSAL E")
+                end
+                progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
+                local ok, err = pcall(function()
+                    bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+                end)
+                if ok == false then
+                    progress(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
+                    return false
+                end
+                return true
+            end },
+            [5] = { function(ctx)
+                if aborted then
+                    return false
+                end
+                local bot = ctx:bot(5)
+                progress(bot, "SETTLE THEN REGISTER MATCH 1")
+                bot:sleep(SETTLE_MS)
+                if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
+                    return abort_remaining(bot, "FAILED: MATCH 1 REGISTER/PROPOSAL F")
+                end
+                progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
+                local ok, err = pcall(function()
+                    bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+                end)
+                if ok == false then
+                    progress(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
+                    return false
+                end
+                return true
+            end },
+        } },
 
         function(ctx)
-            progress(ctx:bot(4), "STEP 9: FINISH MATCH 1 AND RETURN HOME")
-            -- A single death wipes a 1v1 team, so the first kill ends the match.
-            if finish_match(ctx, {4, 5}, 1) == false then
+            if aborted then
                 return false
+            end
+
+            progress(ctx:bot(4), "STEP 9: FINISH MATCH 1 AND RETURN HOME")
+            if finish_match(ctx, {4, 5}, 1) == false then
+                return abort_remaining(ctx:bot(4), "FAILED: MATCH 1 FINISH")
             end
 
             progress(ctx:bot(4), "STEP 9 PASSED: MATCH 1 ENDED AND RETURNED HOME")

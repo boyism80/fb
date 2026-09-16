@@ -14,7 +14,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs::give_item<V>& request)
 {
     auto me = session.data();
-    if (me->inited() == false)
+    if (me == nullptr || me->inited() == false)
         co_return true;
 
     if (me->map() == nullptr)

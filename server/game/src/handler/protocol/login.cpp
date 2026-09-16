@@ -379,7 +379,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         {
             lua->pushobject(ch);
             lua->pushboolean(ch->is_first_login());
-            std::ignore = lua->call(2);
+            fb::lua::run_async(std::move(lua), 2);
         }
 
         ch->friends_sync(1);
@@ -498,7 +498,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         if (ptr == nullptr)
             co_return;
 
-        co_await ptr->matchmaker.discard_leftover_enrollment();
+        co_await ptr->matchmaker.discard_leftover_registration();
     };
     builder.enqueue();
 

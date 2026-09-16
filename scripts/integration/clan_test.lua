@@ -74,6 +74,7 @@ local g_invite_ok   = false
 local g_invite_err  = nil
 local g_invitee_msg = nil
 local g_inviter_msg = nil
+local g_suite_slot  = 0
 
 local function progress(bot, message)
     local level = "debug"
@@ -409,7 +410,7 @@ local function change_role(bot, target_name, role)
 end
 
 local function restore_bot_home(bot, index)
-    bot:map_move(HOME_MAP, home_x(index), HOME_Y)
+    bot:map_move(HOME_MAP, home_x(index), HOME_Y, g_suite_slot)
     bot:direction("BOTTOM")
 end
 
@@ -475,6 +476,7 @@ test_suite {
 
     on_initialize = function(ctx)
         log("debug", "Clan: test initialized")
+        g_suite_slot = ctx:suite_slot()
         lib.formation.arrange_in_line(ctx)
         g_npc = nil
         setup_npc(ctx:bot(0))
@@ -547,7 +549,7 @@ test_suite {
             local spare  = ctx:bot(3)
             progress(master, "S3: INVITE NOT NEAR")
 
-            spare:map_move(OFF_MAP, 1, 1)
+            spare:map_move(OFF_MAP, 1, 1, g_suite_slot)
             ctx:sleep(500)
 
             local ok, err = invite_start(master, spare:name())

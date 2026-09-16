@@ -14,7 +14,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> miss<V>::handle(fb::socket<character>& session, game_reqs::miss<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     auto map = ch->map();

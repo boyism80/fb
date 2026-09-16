@@ -461,12 +461,6 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context  = std::make_shared<request_erased_context>(self_ptr, response_opcode);
 
-    fb::logger::debug("bot request start: bot_id={} response_opcode=0x{:02X} timeout_ms={} wait_only={}",
-                      target->id,
-                      response_opcode,
-                      timeout.total_milliseconds(),
-                      protocol == nullptr);
-
     if (timeout > 0s)
     {
         auto thread  = target->thread();

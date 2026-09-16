@@ -317,6 +317,7 @@ async::task<void> game_bot_controller::on_ping(game_bot& bot, const game_resp::p
 bool game_bot_controller::register_transfer_context(const fb::protocol::header&       protocol,
                                                     std::shared_ptr<transfer_context> context)
 {
+    auto lock          = std::lock_guard(this->_transfer_mutex);
     auto source_bot_id = context->source_bot_id;
     if (this->_transfer_contexts.contains(source_bot_id))
     {
@@ -333,6 +334,7 @@ bool game_bot_controller::register_transfer_context(const fb::protocol::header& 
 
 void game_bot_controller::remove_transfer_context(uint32_t source_bot_id)
 {
+    auto       lock   = std::lock_guard(this->_transfer_mutex);
     const auto erased = this->_transfer_contexts.erase(source_bot_id);
     if (erased > 0)
     {
@@ -348,28 +350,34 @@ void game_bot_controller::remove_transfer_context(uint32_t source_bot_id)
 
 bool game_bot_controller::has_transfer_context(uint32_t source_bot_id) const
 {
+    auto lock = std::lock_guard(this->_transfer_mutex);
     return this->_transfer_contexts.contains(source_bot_id);
 }
 
 bool game_bot_controller::invoke_transfer_context(uint32_t source_bot_id, std::shared_ptr<game_bot> bot)
 {
-    if (this->_transfer_contexts.contains(source_bot_id) == false)
+    std::shared_ptr<transfer_context> context;
     {
-        fb::logger::warn(
-            "bot transfer invoke skipped: source_bot_id={} bot_id={} (no pending context, pending_contexts={})",
-            source_bot_id,
-            bot != nullptr ? bot->id : 0,
-            this->_transfer_contexts.size());
-        return false;
+        auto lock = std::lock_guard(this->_transfer_mutex);
+        if (this->_transfer_contexts.contains(source_bot_id) == false)
+        {
+            fb::logger::warn(
+                "bot transfer invoke skipped: source_bot_id={} bot_id={} (no pending context, pending_contexts={})",
+                source_bot_id,
+                bot != nullptr ? bot->id : 0,
+                this->_transfer_contexts.size());
+            return false;
+        }
+
+        fb::logger::debug("bot transfer complete: source_bot_id={} bot_id={} pending_contexts_before={}",
+                          source_bot_id,
+                          bot != nullptr ? bot->id : 0,
+                          this->_transfer_contexts.size());
+
+        context = this->_transfer_contexts[source_bot_id];
+        this->_transfer_contexts.erase(source_bot_id);
     }
 
-    fb::logger::debug("bot transfer complete: source_bot_id={} bot_id={} pending_contexts_before={}",
-                      source_bot_id,
-                      bot != nullptr ? bot->id : 0,
-                      this->_transfer_contexts.size());
-
-    auto context = this->_transfer_contexts[source_bot_id];
-    this->_transfer_contexts.erase(source_bot_id);
     context->complete_success(bot);
     return true;
 }

@@ -357,7 +357,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     {
         lua->pushobject(this->_owner);
         lua->pushobject(buff->model());
-        std::ignore = lua->call(2);
+        fb::lua::run_async(std::move(lua), 2);
     }
 
     // Call listener for packet response

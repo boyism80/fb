@@ -179,7 +179,7 @@ async::task<bool> item::active()
     {
         lua->pushobject(*owner);
         lua->pushobject(*this);
-        std::ignore = lua->call(2);
+        fb::lua::run_async(std::move(lua), 2);
     }
 
     this->listener.on_item_active(*owner, *this);

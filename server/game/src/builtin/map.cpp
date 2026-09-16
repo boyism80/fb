@@ -10,6 +10,7 @@ using table = fb::model::table;
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"model",               builtin::map::builtin_model},
+{"id",                  builtin::map::builtin_id},
 {"width",               builtin::map::builtin_width},
 {"height",              builtin::map::builtin_height},
 {"area",                builtin::map::builtin_area},
@@ -58,6 +59,20 @@ int builtin::map::builtin_model(lua_State* L)
         co_return 1;
     };
     return builder.run();
+}
+
+int builtin::map::builtin_id(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    lua->pushinteger(map->id);
+    return 1;
 }
 
 int builtin::map::builtin_width(lua_State* L)

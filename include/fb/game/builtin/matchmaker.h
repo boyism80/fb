@@ -9,7 +9,7 @@ struct matchmaker
 {
     static int builtin_mu(lua_State* L);
     static int builtin_sigma(lua_State* L);
-    static int builtin_enrolled(lua_State* L);
+    static int builtin_registered(lua_State* L);
     static int builtin_registry_id(lua_State* L);
     static int builtin_pending_match_id(lua_State* L);
     static int builtin_register(lua_State* L);

@@ -257,45 +257,47 @@ local function make_directional_attack_case(name, mob_offsets)
             return false
         end,
         post = function(caster, target, state, _, ctx)
-            local function finish(ok)
-                caster:chat(string.format("/몬스터범위제거 %d", MOB_CLEAR_RANGE))
-                caster:chat(string.format("/아이템범위제거 %d", MOB_CLEAR_RANGE))
-                restore_target_position(target, state)
-                return ok
-            end
-            
+            local ok = false
+            local mob_oids = {}
+            local buff_result = nil
+
             if ctx == nil then
-                return finish(false)
+                goto cover_cleanup
             end
             if caster:mp() ~= state.expected_mp then
-                return finish(false)
+                goto cover_cleanup
             end
-            
-            local buff_result = caster:request(resp.spell_buff, protocol.self_info(), function(packet)
+
+            buff_result = caster:request(resp.spell_buff, protocol.self_info(), function(packet)
                 return packet.name == name
             end)
             if buff_result == false or buff_result == nil then
-                return finish(false)
+                goto cover_cleanup
             end
-            
-            local mob_oids = {}
+
             for _, offset in ipairs(mob_offsets) do
                 local mob = caster:spawn_monster_relative(MOB_NAME, offset[1], offset[2])
                 if mob == nil or mob.oid == nil then
-                    return finish(false)
+                    goto cover_cleanup
                 end
                 if lure_mob(caster, state.lure_slot, mob) == false then
-                    return finish(false)
+                    goto cover_cleanup
                 end
                 table.insert(mob_oids, mob.oid)
             end
-            
+
             if attack_until_mobs_dead(caster, ctx, mob_oids, name) == false then
-                return finish(false)
+                goto cover_cleanup
             end
-            
+
             caster:remove_buffs()
-            return finish(true)
+            ok = true
+
+            ::cover_cleanup::
+            caster:chat(string.format("/몬스터범위제거 %d", MOB_CLEAR_RANGE))
+            caster:chat(string.format("/아이템범위제거 %d", MOB_CLEAR_RANGE))
+            restore_target_position(target, state)
+            return ok
         end,
     }
 end
@@ -331,6 +333,8 @@ local CASES = {
         end,
         post = function(caster, target, state)
             if caster:mp() ~= state.expected_mp then
+                log("fatal", string.format("[중독] post failed at mp caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
@@ -338,25 +342,36 @@ local CASES = {
                 return packet.name == "중독"
             end)
             if buff_result == false or buff_result == nil then
+                log("fatal", string.format("[중독] post failed at spell_buff caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
             if state.buff_target:has_buff("중독") ~= true then
+                log("fatal", string.format("[중독] post failed at has_buff caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
             -- Tick damage: wait for next concast update_hp without sending a request.
+            -- Parallel suite load can delay concast; allow a longer window.
+            local tick_timeout = state.tick_timeout_ms
+            if tick_timeout == nil or tick_timeout < 15000 then
+                tick_timeout = 15000
+            end
             local tick = state.buff_target:request(resp.update_hp, nil, function(packet)
                 return packet.oid == state.buff_target:oid()
                     and packet.damage ~= nil
                     and packet.damage > 0
-            end, state.tick_timeout_ms)
+            end, tick_timeout)
             if tick == false or tick == nil then
+                log("fatal", string.format("[중독] post failed at poison_tick caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
             -- Delirious: received chat message body must differ from the message sent to server.
-            -- Random coincidence can keep the original text, so retry up to 10 times.
+            -- Random coincidence can keep the original text, so retry generously.
             local chat_prefix = state.buff_target:name() .. ": "
             local function chat_body(text)
                 if text == nil or text:sub(1, #chat_prefix) ~= chat_prefix then
@@ -366,7 +381,7 @@ local CASES = {
             end
 
             local distorted = false
-            for _ = 1, 10 do
+            for _ = 1, 20 do
                 local chat = state.buff_target:request(
                     resp.chat,
                     protocol.chat(false, state.poison_probe),
@@ -381,6 +396,8 @@ local CASES = {
                 end
             end
             if distorted ~= true then
+                log("fatal", string.format("[중독] post failed at delirium_chat caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
@@ -392,8 +409,10 @@ local CASES = {
                     and packet.damage ~= nil
                     and packet.damage > 0
                     and packet.damage <= (floor_hp - 100)
-            end, state.tick_timeout_ms)
+            end, tick_timeout)
             if floor_tick == false or floor_tick == nil then
+                log("fatal", string.format("[중독] post failed at floor_tick caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
@@ -401,14 +420,20 @@ local CASES = {
                 return packet.ch_hp ~= nil and packet.ch_hp >= 100 and packet.ch_hp <= floor_hp
             end)
             if hp_info == false or hp_info == nil then
+                log("fatal", string.format("[중독] post failed at floor_hp_info caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
             if state.buff_target:hp() < 100 then
+                log("fatal", string.format("[중독] post failed at floor_hp_value caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
             local dispel_slot = caster:learn_spell(state.dispel_name)
             if dispel_slot == 0xFF then
+                log("fatal", string.format("[중독] post failed at dispel_learn caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
@@ -425,6 +450,8 @@ local CASES = {
                 end)
 
             if dispel_result == false or dispel_result == nil then
+                log("fatal", string.format("[중독] post failed at dispel caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 
@@ -441,6 +468,8 @@ local CASES = {
                 end,
                 3000)
             if clean_chat == false or clean_chat == nil then
+                log("fatal", string.format("[중독] post failed at clean_chat caster_mp=%s expected_mp=%s target_hp=%s",
+                    tostring(caster:mp()), tostring(state.expected_mp), tostring(state.buff_target:hp())))
                 return false
             end
 

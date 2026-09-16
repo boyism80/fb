@@ -12,14 +12,13 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_reqs::dialog_list<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    if (ch->dialog == nullptr)
+    auto lua = ch->take_dialog();
+    if (lua == nullptr)
         co_return true;
 
-    auto lua   = ch->dialog;
-    ch->dialog = nullptr;
     switch (request.type)
     {
     case fb::game::dialog::list_type::TEXT:
@@ -53,7 +52,7 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
         break;
 
     default:
-        lua->release();
+        lua->reject("unsupported dialog list type");
         break;
     }
 

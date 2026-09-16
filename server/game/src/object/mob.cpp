@@ -195,55 +195,46 @@ async::task<bool> mob::call_action_script()
     auto  path  = std::format("scripts/mob/{}.lua", model.id);
     auto  func  = "on_mob_action";
 
-    if (this->_action_thread != nullptr)
+    if (this->_action_busy)
         co_return false;
 
-    this->_action_thread = this->server.lua.new_context();
-    if (this->_action_thread == nullptr)
+    auto lua = this->server.lua.open(path, func);
+    if (!lua)
         co_return true;
 
-    if (this->_action_thread->load(path) == false)
-    {
-        this->_action_thread->release();
-        this->_action_thread = nullptr;
-        co_return true;
-    }
-
-    if (this->_action_thread->func(func) == false)
-    {
-        fb::lua::report_func_missing(path, func);
-        this->_action_thread->release();
-        this->_action_thread = nullptr;
-        co_return true;
-    }
-
-    this->_action_thread->pushobject(this);
+    lua->pushobject(this);
 
     if (this->_target.expired() == false)
     {
         auto shared = this->_target.lock();
         if (shared != nullptr)
-            this->_action_thread->pushobject(shared);
+            lua->pushobject(shared);
+        else
+            lua->pushnil();
     }
     else
-        this->_action_thread->pushnil();
+        lua->pushnil();
 
-    auto& ctx  = this->server;
-    auto  weak = this->weak_from_this();
+    auto weak          = this->weak_from_this();
+    this->_action_busy = true;
     try
     {
-        std::ignore = co_await this->_action_thread->call(2);
+        std::ignore = co_await lua->call(2);
     }
     catch (std::exception& e)
     {
         fb::logger::warn(e.what());
+    }
+    catch (...)
+    {
+        fb::logger::warn("unknown error in on_mob_action {}", model.id);
     }
 
     auto shared = weak.lock();
     if (shared == nullptr)
         co_return false;
 
-    this->_action_thread = nullptr;
+    this->_action_busy = false;
     co_return true;
 }
 
@@ -264,13 +255,13 @@ async::task<void> mob::call_attack_script()
     else
         lua->pushnil();
 
-    std::ignore = lua->call(2);
+    fb::lua::run_async(std::move(lua), 2);
     co_return;
 }
 
 async::task<void> mob::action(fb::model::datetime now)
 {
-    if (this->_action_thread != nullptr)
+    if (this->_action_busy)
         co_return;
 
     if (ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT))
@@ -466,7 +457,7 @@ void mob::AI(const fb::model::datetime& now)
 {
     this->assert_thread();
 
-    if (this->_action_thread != nullptr)
+    if (this->_action_busy)
         return;
 
     // Speed / sight gates are applied in action(); AI only executes the strategy.

@@ -14,7 +14,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> self_info<V>::handle(fb::socket<character>& session, game_reqs::self_info<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     if constexpr (V == fb::protocol::CLIENT_VERSION::v651)

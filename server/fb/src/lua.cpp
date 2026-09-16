@@ -1,5 +1,7 @@
 #include <fb/async_executor.h>
+#include <fb/context.h>
 #include <fb/execution_context.h>
+#include <fb/logger.h>
 #include <fb/lua.h>
 #include <fb/thread_container.h>
 #include <async/awaitable_then.h>
@@ -17,11 +19,9 @@ using namespace fb::lua;
 
 void fb::lua::report_load_failed(std::string_view path, std::string_view error)
 {
-#if defined DEBUG || defined _DEBUG
     if (path.empty())
         return;
 
-    // Optional hooks may omit the file entirely — stay silent.
     if (std::filesystem::exists(std::string(path)) == false)
         return;
 
@@ -37,26 +37,19 @@ void fb::lua::report_load_failed(std::string_view path, std::string_view error)
         fb::logger::warn("cannot load script {}", path);
     else
         fb::logger::warn("cannot load script {}: {}", path, error);
-#endif
 }
 
 void fb::lua::report_load_failed_from_stack(lua_State* L, std::string_view path)
 {
-#if defined DEBUG || defined _DEBUG
     const char* raw = L != nullptr ? lua_tostring(L, -1) : nullptr;
     auto        err = raw != nullptr ? std::string(raw) : std::string{};
     if (L != nullptr)
         lua_pop(L, 1);
     report_load_failed(path, err);
-#else
-    if (L != nullptr)
-        lua_pop(L, 1);
-#endif
 }
 
 void fb::lua::report_func_missing(std::string_view path, std::string_view func)
 {
-#if defined DEBUG || defined _DEBUG
     if (path.empty() || func.empty())
         return;
 
@@ -69,7 +62,6 @@ void fb::lua::report_func_missing(std::string_view path, std::string_view func)
 
     logs.insert(key);
     fb::logger::warn("script function missing: {} in {}", func, path);
-#endif
 }
 
 context* fb::lua::get(lua_State* ctx)
@@ -397,8 +389,6 @@ int context::argc()
 
 async::task<bool> context::call(int argc, int* retc)
 {
-    this->_call_engaged = true;
-
     auto promise   = std::make_shared<async::task_completion_source<bool>>();
     this->_promise = promise;
     this->resume(argc, retc);
@@ -415,19 +405,54 @@ const call_options& fb::lua::context::options() const
     return this->_options;
 }
 
-bool fb::lua::context::call_engaged() const
-{
-    return this->_call_engaged;
-}
-
-void fb::lua::context::clear_call_engaged()
-{
-    this->_call_engaged = false;
-}
-
 void fb::lua::context::clear_script_path()
 {
     this->_script_path.clear();
+}
+
+std::string_view fb::lua::context::script_path() const
+{
+    return this->_script_path;
+}
+
+bool fb::lua::context::has_dialog_slot() const
+{
+    return this->_dialog_slot != nullptr;
+}
+
+void fb::lua::context::clear_dialog_slot()
+{
+    if (this->_dialog_slot == nullptr)
+        return;
+
+    *this->_dialog_slot = nullptr;
+    this->_dialog_slot  = nullptr;
+}
+
+void fb::lua::context::bind_dialog_slot(context*& slot)
+{
+    if (slot == this && this->_dialog_slot == &slot)
+        return;
+
+    // Callers must cancel_dialog before send so this only attaches to an empty slot.
+    if (slot != nullptr || this->_dialog_slot != nullptr)
+        throw std::runtime_error("dialog slot already bound");
+
+    slot               = this;
+    this->_dialog_slot = &slot;
+}
+
+void fb::lua::context::finish_resume()
+{
+    this->_running--;
+    if (this->_running > 0)
+        return;
+
+    if (this->_release_pending == false)
+        return;
+
+    this->_release_pending = false;
+    this->release();
 }
 
 void fb::lua::context::resume(int argc, int* n)
@@ -441,14 +466,16 @@ void fb::lua::context::resume(int argc, int* n)
         return;
     }
 
-    auto root  = static_cast<fb::lua::root*>(this->owner);
+    this->_running++;
     auto state = lua_resume(*this, nullptr, argc);
     if (state == LUA_YIELD)
+    {
+        this->finish_resume();
         return;
+    }
 
     if (state != LUA_OK)
     {
-        // Any non-LUA_OK and non-LUA_YIELD means Lua errored.
         const char* raw = lua_tostring(*this, -1);
         auto        message =
             std::format("lua error message : {}", raw != nullptr ? std::string_view{raw} : std::string_view{});
@@ -456,9 +483,11 @@ void fb::lua::context::resume(int argc, int* n)
         fb::logger::fatal(message);
 
         auto promise            = promise_type{this->_promise};
+        this->_promise          = nullptr;
         auto parent             = this->_parent;
         auto auto_resume_parent = this->_options.auto_resume_parent;
-        root->revoke(*this);
+
+        this->clear_dialog_slot();
 
         if (parent != nullptr && lua_status(*parent) == LUA_YIELD && auto_resume_parent)
         {
@@ -482,55 +511,60 @@ void fb::lua::context::resume(int argc, int* n)
                                   });
         }
         promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
+        this->finish_resume();
     }
-    else // LUA_OK: coroutine finished successfully.
+    else
     {
         auto promise            = promise_type{this->_promise};
         this->_promise          = nullptr;
         auto parent             = this->_parent;
         auto auto_resume_parent = this->_options.auto_resume_parent;
-        auto auto_release       = this->_options.auto_release;
+        auto retc               = this->argc();
+        if (n != nullptr)
+            *n = retc;
+
+        this->clear_dialog_slot();
+
         if (parent != nullptr)
         {
-            auto context = fb::execution_context::token();
-            async::awaitable_then(parent->_initial_thread.switching(),
-                                  [this, parent, n, context, auto_resume_parent](async::awaitable_result<void> result) {
-                                      try
-                                      {
-                                          result();
-                                          fb::execution_context::pending(context);
+            auto  self  = static_cast<lua_State*>(*this);
+            auto  token = fb::execution_context::token();
+            auto* ctx   = this;
+            async::awaitable_then(
+                parent->_initial_thread.switching(),
+                [self, parent, retc, token, auto_resume_parent, ctx, promise](async::awaitable_result<void> result) {
+                    try
+                    {
+                        result();
+                        fb::execution_context::pending(token);
 
-                                          auto argc = this->argc();
-                                          if (n != nullptr)
-                                              *n = argc;
+                        if (auto_resume_parent)
+                            lua_xmove(self, *parent, retc);
 
-                                          if (auto_resume_parent)
-                                          {
-                                              lua_xmove(*this, *parent, argc);
-                                              if (lua_status(*parent) == LUA_YIELD)
-                                                  parent->resume(argc);
-                                          }
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          fb::logger::fatal("lua co_builder async completion error: {}", e.what());
-                                      }
-                                      catch (...)
-                                      {
-                                          fb::logger::fatal("lua co_builder async completion error: non-std exception");
-                                      }
-                                  });
+                        if (promise != nullptr)
+                            promise->set_value(true);
+
+                        if (auto_resume_parent && lua_status(*parent) == LUA_YIELD)
+                            parent->resume(retc);
+                    }
+                    catch (std::exception& e)
+                    {
+                        fb::logger::fatal("lua co_builder async completion error: {}", e.what());
+                    }
+                    catch (...)
+                    {
+                        fb::logger::fatal("lua co_builder async completion error: non-std exception");
+                    }
+
+                    ctx->finish_resume();
+                });
+            return;
         }
-        else if (n != nullptr)
-            *n = this->argc();
 
         if (promise != nullptr)
             promise->set_value(true);
 
-        // Release after set_value so waiters can still read return values
-        // (e.g. lua_xmove) while this context is completing.
-        if (auto_release)
-            root->release(*this);
+        this->finish_resume();
     }
 }
 
@@ -541,23 +575,24 @@ int context::yield(int retc)
 
 void context::release()
 {
-    auto root = static_cast<fb::lua::root*>(this->owner);
-
-    auto status = lua_status(*this);
-    switch (status)
+    if (this->_running > 0)
     {
-    case LUA_OK:
-        root->release(*this);
-        break;
-
-    default:
-        root->revoke(*this);
-        break;
+        this->_release_pending = true;
+        return;
     }
+
+    auto root   = static_cast<fb::lua::root*>(this->owner);
+    auto status = lua_status(*this);
+    if (status == LUA_OK)
+        root->release(*this);
+    else
+        root->revoke(*this);
 }
 
 void context::reject(std::string_view message)
 {
+    this->clear_dialog_slot();
+
     if (this->_promise == nullptr)
         return;
 
@@ -567,6 +602,12 @@ void context::reject(std::string_view message)
     promise->set_exception(std::make_exception_ptr(std::runtime_error(error_text)));
 }
 
+void context::drop(std::string_view message)
+{
+    this->reject(message);
+    this->release();
+}
+
 async::task<std::optional<int>>
 fb::lua::context::co_builder::run_pipeline(fb::async_executor&                                 executor,
                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
@@ -574,6 +615,7 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
                                            std::function<async::task<void>()>                  yield_fn,
                                            std::function<async::task<int>()>                   resume_fn)
 {
+    // Reject only; the owning guard returns the pool slot.
     const auto abort_pipeline = [lua_ptr](const char* phase, const char* message) {
         if (message != nullptr)
             fb::logger::fatal("lua co_builder {} error: {}", phase, message);
@@ -582,7 +624,6 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
 
         auto error_text = message != nullptr ? std::string(message) : std::format("lua co_builder {} error", phase);
         lua_ptr->reject(error_text);
-        lua_ptr->release();
     };
 
     if (weak.has_value())
@@ -673,18 +714,20 @@ int fb::lua::context::co_builder::run()
     auto       resume_fn  = std::move(this->resume);
     const auto has_resume = static_cast<bool>(resume_fn);
 
-    int  sync_result = -1;
+    int  sync_result = 0;
     auto lua_ptr     = &this->_lua;
 
+    auto rejected  = false;
     auto immediate = async::awaitable_then_immediate(
         run_pipeline(this->_executor, this->weak, lua_ptr, std::move(yield_fn), std::move(resume_fn)),
-        [lua_ptr, &sync_result, has_resume](async::awaitable_result<std::optional<int>> result, bool immediate) {
-            if (has_resume == false)
-                return;
-
+        [lua_ptr, &sync_result, &rejected, has_resume](async::awaitable_result<std::optional<int>> result,
+                                                       bool                                        immediate) {
             try
             {
                 auto n = result();
+                if (has_resume == false)
+                    return;
+
                 if (n.has_value() == false)
                     return;
 
@@ -695,18 +738,29 @@ int fb::lua::context::co_builder::run()
             }
             catch (const std::exception& e)
             {
-                // reject() was already invoked by abort_pipeline before release();
-                // do not touch lua_ptr here — the context may already be revoked.
+                // abort_pipeline already rejected; lua_ptr must not be touched here.
+                if (immediate)
+                    rejected = true;
                 fb::logger::fatal("lua co_builder async completion error: {}", e.what());
             }
             catch (...)
             {
+                if (immediate)
+                    rejected = true;
                 fb::logger::fatal("lua co_builder async completion error: non-std exception");
             }
         });
 
     if (has_resume == false)
+    {
+        if (immediate && rejected == false && lua_ptr->has_dialog_slot() == false)
+        {
+            fb::logger::fatal("lua script yielded without a waiter: {}", lua_ptr->script_path());
+            return 0;
+        }
+
         return lua_ptr->yield(0);
+    }
 
     if (immediate)
         return sync_result;
@@ -922,13 +976,34 @@ context* root::pop(context* parent, call_options options)
         auto key = (lua_State*)*ptr.get();
 
         if (this->idle.contains(key) || this->busy.contains(key))
+        {
+            fb::logger::warn("lua context alloc failed: duplicate key idle={} busy={}",
+                             this->idle.size(),
+                             this->busy.size());
             return nullptr;
+        }
 
         this->busy.insert({key, std::move(ptr)});
         return this->busy[key].get();
     }
     else
     {
+        auto holders = std::map<std::string, int>{};
+        for (auto& [key, ctx] : this->busy)
+        {
+            auto path = std::string(ctx->script_path());
+            holders[path.empty() ? std::string("<no script>") : path]++;
+        }
+
+        auto detail = std::string{};
+        for (auto& [path, count] : holders)
+            detail += std::format(" {}={}", path, count);
+
+        fb::logger::warn("lua pool exhausted: idle={} busy={} max={} holders:{}",
+                         this->idle.size(),
+                         this->busy.size(),
+                         DEFAULT_POOL_SIZE,
+                         detail);
         return nullptr;
     }
 }
@@ -942,8 +1017,13 @@ void root::release(context& ctx)
         if (this->idle.contains(ctx))
             return;
 
+        // Status can change while a cross-thread release is queued; a non-OK thread is not
+        // reusable, so drop it instead of poisoning the idle pool.
         if (lua_status(ctx) != LUA_OK)
-            throw std::runtime_error("lua ctx's current state is not LUA_OK");
+        {
+            this->revoke(ctx);
+            return;
+        }
 
         if (ctx.ref != LUA_NOREF)
         {
@@ -954,8 +1034,8 @@ void root::release(context& ctx)
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
         ctx.options(call_options{});
-        ctx.clear_call_engaged();
         ctx.clear_script_path();
+        ctx.clear_dialog_slot();
 
         // Force garbage collection before moving to idle pool
         lua_gc(ctx, LUA_GCCOLLECT, 0);
@@ -982,18 +1062,34 @@ void root::release(context& ctx)
 
 void root::revoke(context& ctx)
 {
-    auto it = this->busy.find(ctx);
-    if (it == this->busy.end())
-        return;
+    auto internal_func = [this](context& ctx) {
+        auto it = this->busy.find(ctx);
+        if (it == this->busy.end())
+            return;
 
-    if (ctx.ref != LUA_NOREF)
+        if (ctx.ref != LUA_NOREF)
+        {
+            luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
+            ctx.ref = LUA_NOREF;
+        }
+
+        ctx.clear_dialog_slot();
+        this->busy.erase(it);
+    };
+
+    if (this->_initial_thread.id() != std::this_thread::get_id())
     {
-        luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
-        ctx.ref = LUA_NOREF;
+        auto builder = this->_initial_thread.new_builder<void>();
+        builder.func = [=, &ctx](auto&) -> async::task<void> {
+            internal_func(ctx);
+            co_return;
+        };
+        builder.enqueue();
     }
-
-    ctx.clear_call_engaged();
-    this->busy.erase(it);
+    else
+    {
+        internal_func(ctx);
+    }
 }
 
 async::task<void> fb::lua::context::switching()
@@ -1022,7 +1118,10 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
 {
     auto id = std::this_thread::get_id();
     if (this->_roots.contains(id) == false)
+    {
+        fb::logger::warn("lua context unavailable: calling thread has no lua root");
         return nullptr;
+    }
 
     return this->_roots[id]->pop(parent, options);
 }
@@ -1037,7 +1136,10 @@ fb::lua::context_pool::open(std::string_view path, std::string_view func, contex
 {
     auto* ctx = this->new_context(parent, options);
     if (ctx == nullptr)
+    {
+        fb::logger::warn("lua open failed: path={} func={}", path, func);
         return context::guard{};
+    }
 
     if (ctx->load(path) == false)
     {
@@ -1061,8 +1163,8 @@ fb::lua::context::guard::guard(context* ctx) :
 
 fb::lua::context::guard::~guard()
 {
-    if (this->_ctx != nullptr && this->_ctx->call_engaged() == false)
-        this->_ctx->release();
+    if (this->_ctx != nullptr)
+        this->_ctx->drop();
 }
 
 fb::lua::context::guard::guard(context::guard&& other) noexcept :
@@ -1075,13 +1177,43 @@ fb::lua::context::guard& fb::lua::context::guard::operator= (context::guard&& ot
 {
     if (this != &other)
     {
-        if (this->_ctx != nullptr && this->_ctx->call_engaged() == false)
-            this->_ctx->release();
+        if (this->_ctx != nullptr)
+            this->_ctx->drop();
 
         this->_ctx = other._ctx;
         other._ctx = nullptr;
     }
     return *this;
+}
+
+void fb::lua::run_async(context::guard g, int argc)
+{
+    if (!g)
+        return;
+
+    async::awaitable_then(
+        [argc](context::guard g) -> async::task<void> {
+            try
+            {
+                std::ignore = co_await g->call(argc);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("lua run_async: {}", e.what());
+            }
+            catch (...)
+            {
+                fb::logger::warn("lua run_async: unknown error");
+            }
+        }(std::move(g)),
+        [](async::awaitable_result<void> result) {
+            try
+            {
+                result();
+            }
+            catch (...)
+            { }
+        });
 }
 
 async::task<void> fb::lua::context_pool::dump(std::string_view path)

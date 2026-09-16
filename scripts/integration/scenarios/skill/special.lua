@@ -1,4 +1,5 @@
 local spell_runner = require("integration.lib.spell_runner")
+local bot_diag     = require("integration.lib.bot_diag")
 
 local M = {}
 
@@ -14,47 +15,99 @@ local WEAPON_NAME = "목도"
 local NOT_READY_MESSAGE = "비바람이 휘몰아치고 있습니다."
 local NAKRANG_ROOM = "낙랑의방"
 local NEARBY_MOB_CLEAR_RANGE = 3
+local g_suite_slot = 0
 
 local function restore_position(caster, map_name, position)
-    slog("restore_position: enter target=%s pos=(%s,%s)",
+    slog("restore_position: enter target=%s pos=(%s,%s) suite_slot=%s",
         tostring(map_name),
         tostring(position and position[1]),
-        tostring(position and position[2]))
+        tostring(position and position[2]),
+        tostring(g_suite_slot))
+    bot_diag.dump(caster, "restore_position:before")
 
     if map_name == nil or position == nil then
         slog("restore_position: missing map_name or position")
+        bot_diag.dump(caster, "restore_position:missing_target")
         return false
     end
 
     local map_id = caster:map()
     local map_model = id2map(map_id)
-    if map_model == nil then
-        slog("restore_position: id2map(%d) not found", map_id)
+    if map_model ~= nil then
+        local current = caster:position()
+        local current_name = map_model:name()
+        slog("restore_position: current map=%s (id=%d) pos=(%d,%d) target map=%s pos=(%d,%d)",
+            current_name, map_id, current[1], current[2],
+            map_name, position[1], position[2])
+    else
+        slog("restore_position: current map id=%s unknown (0xFFFF=uninitialized?); forcing move to target",
+            tostring(map_id))
+    end
+
+    local dest_model = id2map(caster:map())
+    local dest_pos = caster:position()
+    if dest_model ~= nil
+        and dest_model:name() == map_name
+        and dest_pos[1] == position[1]
+        and dest_pos[2] == position[2] then
+        slog("restore_position: already at dest")
+        return true
+    end
+
+    -- Motel maps from 귀환 are often on hosts that cannot create seat instances.
+    -- Step 1: transfer to source 낙랑의방 (no slot) so the host can serve the map.
+    -- Step 2: local map_move into suite_slot instance.
+    local cmd_src = string.format("/맵이동 %s %d %d", map_name, position[1], position[2])
+    slog("restore_position: branch=transfer_src cmd=%s", cmd_src)
+    local ok, err = pcall(function()
+        caster:transfer(protocol.chat(false, cmd_src))
+    end)
+    dest_model = id2map(caster:map())
+    if ok == false and (dest_model == nil or dest_model:name() ~= map_name) then
+        slog("restore_position: transfer_src FAILED err=%s", tostring(err))
+        bot_diag.dump(caster, "restore_position:transfer_src_failed")
+        return false
+    end
+    dest_model = id2map(caster:map())
+    if dest_model == nil or dest_model:name() ~= map_name then
+        slog("restore_position: not on target map after transfer_src")
+        bot_diag.dump(caster, "restore_position:transfer_src_map_mismatch")
         return false
     end
 
-    local current = caster:position()
-    local current_name = map_model:name()
-    slog("restore_position: current map=%s (id=%d) pos=(%d,%d) target map=%s pos=(%d,%d)",
-        current_name, map_id, current[1], current[2],
-        map_name, position[1], position[2])
+    slog("restore_position: branch=map_move_slot suite_slot=%s", tostring(g_suite_slot))
+    local move_ok, move_err = pcall(function()
+        caster:map_move(map_name, position[1], position[2], g_suite_slot)
+    end)
+    dest_model = id2map(caster:map())
+    dest_pos = caster:position()
+    if dest_model == nil
+        or dest_model:name() ~= map_name
+        or dest_pos[1] ~= position[1]
+        or dest_pos[2] ~= position[2] then
+        slog("restore_position: map_move_slot failed err=%s", tostring(move_err))
+        bot_diag.dump(caster, "restore_position:slot_failed")
+        return false
+    end
 
-    local cmd = string.format("/맵이동 %s %d %d", map_name, position[1], position[2])
-    slog("restore_position: branch=transfer cmd=%s", cmd)
-    caster:transfer(protocol.chat(false, cmd))
-    slog("restore_position: transfer returned")
+    slog("restore_position: done")
+    bot_diag.dump(caster, "restore_position:after")
     return true
 end
 
 local function restore_nakrang_room(caster)
     local map_model = id2map(caster:map())
     if map_model == nil then
-        slog("restore_nakrang_room: id2map(%d) not found", caster:map())
+        slog("restore_nakrang_room: id2map(%s) not found", tostring(caster:map()))
+        bot_diag.dump(caster, "restore_nakrang_room:unknown_map")
         return false
     end
-    
+
     if map_model:name() ~= NAKRANG_ROOM then
-        caster:transfer(protocol.chat(false, "/맵이동 " .. NAKRANG_ROOM .. " 6 6"))
+        local ok = restore_position(caster, NAKRANG_ROOM, {6, 6})
+        if ok == false then
+            return false
+        end
     end
     return true
 end
@@ -130,14 +183,30 @@ local SPECIAL_SPELLS = {
                 return true
             end
 
+            bot_diag.dump(caster, "귀환:before_cast")
             local map_model = id2map(caster:map())
             if map_model == nil then
-                slog("귀환: id2map(%d) not found", caster:map())
+                slog("귀환: id2map(%s) not found before cast", tostring(caster:map()))
+                bot_diag.dump(caster, "귀환:unknown_map_before_cast")
                 return false
             end
             state.return_map_name = map_model:name()
             state.return_pos = caster:position()
-            caster:transfer(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+            slog("귀환: casting; will restore to map=%s pos=(%d,%d) suite_slot=%s",
+                state.return_map_name,
+                state.return_pos[1],
+                state.return_pos[2],
+                tostring(g_suite_slot))
+
+            local ok, err = pcall(function()
+                caster:transfer(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+            end)
+            if ok == false then
+                slog("귀환: cast transfer FAILED err=%s", tostring(err))
+                bot_diag.dump(caster, "귀환:cast_transfer_failed")
+                return false
+            end
+            bot_diag.dump(caster, "귀환:after_cast_transfer")
             return true
         end,
         post = function(caster, _, state)
@@ -148,7 +217,12 @@ local SPECIAL_SPELLS = {
                 return true
             end
 
-            return restore_position(caster, state.return_map_name, state.return_pos)
+            bot_diag.dump(caster, "귀환:post_before_restore")
+            local ok = restore_position(caster, state.return_map_name, state.return_pos)
+            if ok == false then
+                bot_diag.dump(caster, "귀환:post_restore_failed")
+            end
+            return ok
         end,
     },
     {
@@ -169,7 +243,8 @@ local SPECIAL_SPELLS = {
             state.packet = packet
             
             if skill.is_cast_ready(packet.text, "비영사천문") == false then
-                slog("비영사천문: cast not ready: p.text=" .. packet.text)
+                slog("비영사천문: cast not ready: p.text=" .. tostring(packet and packet.text))
+                bot_diag.dump(caster, "비영사천문:cast_not_ready")
                 return false
             end
             
@@ -179,6 +254,7 @@ local SPECIAL_SPELLS = {
             
             if skill.positions_equal(caster:position(), state.before) then
                 slog("비영사천문: position unchanged after cast")
+                bot_diag.dump(caster, "비영사천문:position_unchanged")
                 return false
             end
             
@@ -334,7 +410,7 @@ local SPECIAL_SPELLS = {
             slog("성황령 cast: completed map=%d pos=(%d,%d)", caster:map(), pos[1], pos[2])
             
             slog("성황령 post: restoring map and stats")
-            caster:chat("/맵이동 낙랑의방 6 6")
+            caster:chat(string.format("/맵이동 낙랑의방 6 6 %d", g_suite_slot))
             caster:set_max_hp_mp(100000, 100000)
             slog("성황령 post: completed map=%d hp=%d mp=%d",
             caster:map(), caster:hp(), caster:mp())
@@ -345,6 +421,7 @@ local SPECIAL_SPELLS = {
 
 function M.run(ctx, bot_index)
     local caster = ctx:bot(bot_index)
+    g_suite_slot = ctx:suite_slot()
     log("debug", "SPECIAL SPELL TEST STARTED")
     local option = require("integration.lib.option")
     if option.disable_pk_protect(caster) == false then

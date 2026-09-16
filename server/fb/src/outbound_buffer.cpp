@@ -75,10 +75,8 @@ void outbound_buffer::flush()
     auto pending = std::move(this->_state->pending);
     this->_state->pending.clear();
 
-    for (auto& [key, slot] : pending)
+    for (auto& [_, slot] : pending)
     {
-        std::ignore = key;
-
         if (slot.wire.empty())
             continue;
 

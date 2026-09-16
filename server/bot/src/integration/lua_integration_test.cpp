@@ -36,10 +36,17 @@ struct suite_capture
     lua_integration_test::suite_def suite;
 };
 
+struct discovery_script
+{
+    std::filesystem::path path;
+    bool                  serial{false};
+    bool                  extra_slot{false};
+};
+
 struct discovery_context
 {
-    std::filesystem::path              base_dir;
-    std::vector<std::filesystem::path> scripts;
+    std::filesystem::path         base_dir;
+    std::vector<discovery_script> scripts;
 };
 
 std::optional<std::filesystem::path> find_integration_dir()
@@ -84,8 +91,21 @@ int lua_register_test(lua_State* L)
     if (ctx == nullptr)
         return luaL_error(L, "register_test called outside integration test discovery");
 
-    auto name = luaL_checkstring(L, 1);
-    ctx->scripts.push_back(resolve_test_path(ctx->base_dir, name));
+    auto             name = luaL_checkstring(L, 1);
+    discovery_script script{.path = resolve_test_path(ctx->base_dir, name)};
+
+    if (lua_istable(L, 2))
+    {
+        if (lua_getfield(L, 2, "serial"); lua_isboolean(L, -1))
+            script.serial = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+
+        if (lua_getfield(L, 2, "extra_slot"); lua_isboolean(L, -1))
+            script.extra_slot = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+    }
+
+    ctx->scripts.push_back(std::move(script));
     return 0;
 }
 
@@ -278,11 +298,13 @@ namespace fb::bot::integration {
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(lua_integration_test, "fb.integration.ctx")
-    {"bot",       fb::bot::builtin::integration_test::builtin_bot},
-    {"bot_count", fb::bot::builtin::integration_test::builtin_bot_count},
-    {"sleep",     fb::bot::builtin::integration_test::builtin_sleep},
-    {"hook",      fb::bot::builtin::integration_test::builtin_hook},
-    {"unhook",    fb::bot::builtin::integration_test::builtin_unhook},
+    {"bot",        fb::bot::builtin::integration_test::builtin_bot},
+    {"bot_count",  fb::bot::builtin::integration_test::builtin_bot_count},
+    {"sleep",      fb::bot::builtin::integration_test::builtin_sleep},
+    {"hook",       fb::bot::builtin::integration_test::builtin_hook},
+    {"unhook",     fb::bot::builtin::integration_test::builtin_unhook},
+    {"suite_slot", fb::bot::builtin::integration_test::builtin_suite_slot},
+    {"extra_slot", fb::bot::builtin::integration_test::builtin_extra_slot},
 END_LUA_EXTENSION;
 // clang-format on
 
@@ -312,7 +334,7 @@ uint32_t lua_integration_test::peek_bot_count(const std::filesystem::path& scrip
     return count;
 }
 
-std::vector<std::filesystem::path> lua_integration_test::discover_scripts()
+std::vector<lua_integration_test::discovered_script> lua_integration_test::discover_scripts()
 {
     auto base_dir = find_integration_dir();
     if (base_dir.has_value() == false)
@@ -346,13 +368,30 @@ std::vector<std::filesystem::path> lua_integration_test::discover_scripts()
     }
 
     lua_close(L);
-    return context.scripts;
+
+    std::vector<discovered_script> result;
+    result.reserve(context.scripts.size());
+    for (auto& script : context.scripts)
+    {
+        result.push_back(discovered_script{
+            .path       = std::move(script.path),
+            .serial     = script.serial,
+            .extra_slot = script.extra_slot,
+        });
+    }
+    return result;
 }
 
-lua_integration_test::lua_integration_test(game_bot_controller& controller, std::filesystem::path script_path) :
+lua_integration_test::lua_integration_test(game_bot_controller&  controller,
+                                           std::filesystem::path script_path,
+                                           bool                  serial,
+                                           bool                  extra_slot) :
     bot_integration_test(controller, peek_bot_count(script_path)),
     _script_path(script_path.string())
-{ }
+{
+    this->serial(serial);
+    this->needs_extra_slot(extra_slot);
+}
 
 lua_integration_test::~lua_integration_test()
 {
@@ -361,8 +400,17 @@ lua_integration_test::~lua_integration_test()
 
 void lua_integration_test::init_lua()
 {
-    auto& thread    = *this->controller.container.threads.at(0);
-    this->_lua_root = std::make_unique<fb::lua::root>(this->controller.container, thread);
+    auto* seat = this->controller.seat_thread(this->suite_slot());
+    if (seat == nullptr)
+        throw std::runtime_error(
+            std::format("{}: seat thread is null for suite_slot={}", this->name(), this->suite_slot()));
+
+#if defined(DEBUG) || defined(_DEBUG)
+    if (seat->id() != std::this_thread::get_id())
+        throw std::runtime_error(std::format("{}: init_lua must run on seat thread", this->name()));
+#endif
+
+    this->_lua_root = std::make_unique<fb::lua::root>(this->controller.container, *seat);
 
     auto& lua = *this->_lua_root;
 
@@ -513,16 +561,17 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
     // to the pool (or is reused) after the scenario returns. Invoke on a fresh
     // context so MATCH_ENDED during a later yield cannot pcall a dead/yielded
     // thread.
-    auto  opts = fb::lua::call_options{.auto_release = true, .auto_resume_parent = false};
-    auto* ctx  = this->_lua_root->pop(nullptr, opts);
-    if (ctx == nullptr)
+    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
+    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    if (raw == nullptr)
         co_return;
+
+    auto ctx = fb::lua::context::guard{raw};
 
     lua_rawgeti(*ctx, LUA_REGISTRYINDEX, lua_ref);
     if (lua_isfunction(*ctx, -1) == false)
     {
         lua_pop(*ctx, 1);
-        ctx->release();
         co_return;
     }
 
@@ -543,7 +592,6 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
     if (pushed_bot == nullptr)
     {
         lua_settop(*ctx, 0);
-        ctx->release();
         co_return;
     }
 
@@ -563,7 +611,6 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
     if (ctx->argc() < 4)
     {
         lua_settop(*ctx, 0);
-        ctx->release();
         co_return;
     }
 
@@ -588,10 +635,12 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
 
 async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 {
-    auto  opts = fb::lua::call_options{.auto_release = false, .auto_resume_parent = false};
-    auto* ctx  = this->_lua_root->pop(nullptr, opts);
-    if (ctx == nullptr)
+    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
+    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    if (raw == nullptr)
         co_return false;
+
+    auto ctx = fb::lua::context::guard{raw};
 
     lua_rawgeti(*ctx, LUA_REGISTRYINDEX, func_ref);
     this->push_ctx(*ctx);
@@ -603,8 +652,6 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 
         if (ctx->argc() >= 1)
             result = ctx->toboolean(-1);
-
-        ctx->release();
     }
     catch (const std::exception& e)
     {
@@ -613,7 +660,6 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
             fb::logger::fatal("{}: {}", this->name(), what);
         else
             fb::logger::fatal("{}: {} (empty what())", this->name(), typeid(e).name());
-        // context::resume() already logged the Lua error and revoked the thread.
     }
     catch (...)
     {
@@ -625,10 +671,12 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 
 async::task<void> lua_integration_test::run_lua_void(int func_ref, std::optional<uint32_t> extra_arg)
 {
-    auto  opts = fb::lua::call_options{.auto_release = true, .auto_resume_parent = false};
-    auto* ctx  = this->_lua_root->pop(nullptr, opts);
-    if (ctx == nullptr)
+    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
+    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    if (raw == nullptr)
         co_return;
+
+    auto ctx = fb::lua::context::guard{raw};
 
     lua_rawgeti(*ctx, LUA_REGISTRYINDEX, func_ref);
     this->push_ctx(*ctx);
@@ -910,4 +958,39 @@ int builtin::integration_test::builtin_unhook(lua_State* L)
 
     test->unhook_opcode(entry->opcode);
     return 0;
+}
+
+int builtin::integration_test::builtin_suite_slot(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto test = lua->touserdata<fb::bot::integration::lua_integration_test>(1);
+    if (test == nullptr)
+        return 0;
+
+    lua_pushinteger(L, static_cast<lua_Integer>(test->suite_slot()));
+    return 1;
+}
+
+int builtin::integration_test::builtin_extra_slot(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto test = lua->touserdata<fb::bot::integration::lua_integration_test>(1);
+    if (test == nullptr)
+        return 0;
+
+    auto slot = test->extra_slot();
+    if (slot.has_value() == false)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    lua_pushinteger(L, static_cast<lua_Integer>(slot.value()));
+    return 1;
 }

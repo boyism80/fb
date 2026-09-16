@@ -42,7 +42,18 @@ return {
             math.randomseed(seed())
             local x = math.random(left, right)
             local y = math.random(top, bottom)
-            me:map(dest:name(), x, y)
+
+            -- Preserve instance slot across cardinal warps. dest:name() alone
+            -- resolves to the source map and drops the caller's instance.
+            local target = dest
+            if map:is_instance() then
+                target = dest:instance(map:slot())
+                if target == nil then
+                    return
+                end
+            end
+
+            me:map(target, x, y)
             me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
         end
     end,

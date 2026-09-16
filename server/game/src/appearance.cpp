@@ -164,7 +164,7 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::serialize(fb::str
     if (this->disguise.has_value())
     {
         writer.write<uint16_t>(this->disguise.value());
-        writer.write<uint8_t>(this->hair_color.value_or(this->armor_color.value_or(0x00)));
+        writer.write<uint8_t>(this->armor_color.value_or(0x00));
         return;
     }
 

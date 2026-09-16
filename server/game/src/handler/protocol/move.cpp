@@ -20,7 +20,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
                                   uint8_t                     walk_queue_slot)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     auto map = ch->map();

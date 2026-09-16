@@ -71,7 +71,6 @@ bool base_bot::process_hooks(uint8_t opcode, fb::protocol::header& header)
         {
             auto callback = i->matched;
             matched_hooks.erase(i);
-
             callback(header);
             return true;
         }
@@ -103,5 +102,18 @@ bool base_bot::remove_hook_by_context(uint8_t opcode, const void* context_ptr)
 
 fb::thread* base_bot::thread() const
 {
+    if (this->_pinned_thread != nullptr)
+        return this->_pinned_thread;
+
     return this->_executor.threads.modular(this->id);
+}
+
+void base_bot::pin_thread(fb::thread* t)
+{
+    this->_pinned_thread = t;
+}
+
+fb::thread* base_bot::pinned_thread() const
+{
+    return this->_pinned_thread;
 }

@@ -63,7 +63,7 @@ void show<V>::serialize(fb::stream_writer<big_endian>& writer) const
     if (this->appearance.disguise.has_value())
     {
         writer.write<uint16_t>(this->appearance.disguise.value());
-        writer.write<uint8_t>(this->appearance.hair_color.value_or(this->appearance.armor_color.value_or(0x00)));
+        writer.write<uint8_t>(this->appearance.armor_color.value_or(0x00));
     }
     else
     {

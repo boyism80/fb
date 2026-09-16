@@ -132,9 +132,10 @@ function M.run(ctx, bot_index)
         ctx:bot(i):setup_bot_stats(100000, 100000)
     end
     local cases = build_cases(ctx)
+    local slot = ctx:suite_slot()
     for i = 0, 4 do
         local pos = TEST_POSITIONS[i]
-        ctx:bot(i):map_move(MAP, pos.x, pos.y)
+        ctx:bot(i):map_move(MAP, pos.x, pos.y, slot)
     end
     caster:direction("BOTTOM")
     ctx:bot(1):direction("BOTTOM")
@@ -145,7 +146,7 @@ function M.run(ctx, bot_index)
         return false
     end
     for i = 0, 4 do
-        ctx:bot(i):map_move(MAP, 6 + i, 6)
+        ctx:bot(i):map_move(MAP, 6 + i, 6, slot)
     end
     ctx:bot(4):direction("BOTTOM")
     ctx:bot(3):direction("BOTTOM")

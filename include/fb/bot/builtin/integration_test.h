@@ -15,6 +15,8 @@ struct integration_test
     static int builtin_log(lua_State* L);
     static int builtin_hook(lua_State* L);
     static int builtin_unhook(lua_State* L);
+    static int builtin_suite_slot(lua_State* L);
+    static int builtin_extra_slot(lua_State* L);
 };
 
 } // namespace fb::bot::builtin

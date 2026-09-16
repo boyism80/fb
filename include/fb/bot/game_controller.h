@@ -5,6 +5,7 @@
 #include <fb/game/protocol.h>
 #include <fb/bot/game_bot.h>
 #include <fb/logger.h>
+#include <mutex>
 
 namespace fb::bot {
 
@@ -51,10 +52,39 @@ public:
             if (completed.exchange(true))
                 return;
 
-            fb::logger::fatal("bot transfer timeout: source_bot_id={}", source_bot_id);
-
             if (auto controller = controller_weak.lock())
+            {
+                std::shared_ptr<game_bot> bot;
+                controller->read_bots([&](const auto& bots) {
+                    auto it = bots.find(source_bot_id);
+                    if (it != bots.end())
+                        bot = it->second;
+                });
+
+                if (bot != nullptr)
+                {
+                    fb::logger::fatal(
+                        "bot transfer timeout: source_bot_id={} name={} oid={} map={} pos=({},{}) inited={}",
+                        source_bot_id,
+                        bot->name(),
+                        bot->oid(),
+                        bot->map(),
+                        bot->position().x,
+                        bot->position().y,
+                        bot->inited());
+                }
+                else
+                {
+                    fb::logger::fatal("bot transfer timeout: source_bot_id={} (bot already removed from controller)",
+                                      source_bot_id);
+                }
+
                 controller->remove_transfer_context(source_bot_id);
+            }
+            else
+            {
+                fb::logger::fatal("bot transfer timeout: source_bot_id={} (controller gone)", source_bot_id);
+            }
 
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }
@@ -67,6 +97,7 @@ public:
 
 private:
     std::unordered_map<uint32_t, std::shared_ptr<transfer_context>> _transfer_contexts;
+    mutable std::mutex                                              _transfer_mutex;
 
 protected:
     game_bot_controller(bot_container& container);

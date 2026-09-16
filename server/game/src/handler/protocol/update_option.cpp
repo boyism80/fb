@@ -15,7 +15,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_reqs::update_option<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     auto weak   = ch->weak_from_this_as<character>();
@@ -80,7 +80,7 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
     game_reqs::update_option<fb::protocol::CLIENT_VERSION::v651>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     if (request.options.empty())

@@ -68,11 +68,21 @@ private:
     std::unordered_map<uint8_t, std::vector<hook_binding>> _hook_refs;
 
 public:
-    lua_integration_test(game_bot_controller& controller, std::filesystem::path script_path);
+    struct discovered_script
+    {
+        std::filesystem::path path;
+        bool                  serial{false};
+        bool                  extra_slot{false};
+    };
+
+    lua_integration_test(game_bot_controller&  controller,
+                         std::filesystem::path script_path,
+                         bool                  serial     = false,
+                         bool                  extra_slot = false);
     ~lua_integration_test() override;
 
-    static std::vector<std::filesystem::path> discover_scripts();
-    static uint32_t                           peek_bot_count(const std::filesystem::path& script_path);
+    static std::vector<discovered_script> discover_scripts();
+    static uint32_t                       peek_bot_count(const std::filesystem::path& script_path);
 
     void capture_suite(lua_State* L, int table_index);
 

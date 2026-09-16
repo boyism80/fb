@@ -1,6 +1,7 @@
 #include <fb/bot/integration/login_controller.h>
 #include <fb/bot/login_bot.h>
 #include <fb/bot/game_controller.h>
+#include <fb/bot/integration/game_controller.h>
 #include <fb/logger.h>
 
 using namespace std::chrono_literals;
@@ -124,6 +125,9 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
     bot.close();
 
     auto created = this->container.game->create(response.parameter);
+    if (auto* game = dynamic_cast<fb::bot::integration::game_bot_controller*>(this->container.game.get()))
+        game->move_owner(bot.id, created->id);
+
     created->connect(endpoint);
 
     // TODO: Validate seamless transition to game server

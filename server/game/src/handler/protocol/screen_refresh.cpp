@@ -14,7 +14,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> screen_refresh<V>::handle(fb::socket<character>& session, game_reqs::screen_refresh<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     ch->screen_refresh();

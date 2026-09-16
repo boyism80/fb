@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
@@ -273,7 +274,7 @@ int bot_request_dialog_impl(lua_State* L)
         }
 
         // condition: push response table on the suspended coroutine's stack, call validator
-        auto condition = [lua, validator_ref](const ResponseType& resp) -> bool {
+        auto condition = [lua, bot_ptr, validator_ref](const ResponseType& resp) -> bool {
             PushFn(lua, resp); // push onto the coroutine stack (suspended, safe to do)
 
             auto* L_state = static_cast<lua_State*>(*lua);
@@ -288,7 +289,6 @@ int bot_request_dialog_impl(lua_State* L)
             }
             auto accepted = lua_toboolean(L_state, -1) != 0;
             lua_pop(L_state, 2);
-
             return accepted;
         };
 
@@ -301,7 +301,7 @@ int bot_request_dialog_impl(lua_State* L)
             cleanup();
             auto* what = e.what();
             fb::logger::fatal("request_dialog failed: {}", (what != nullptr && what[0] != '\0') ? what : "unknown");
-            throw;
+            co_return;
         }
 
         cleanup();

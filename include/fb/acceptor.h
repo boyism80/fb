@@ -326,10 +326,7 @@ private:
                                     if (it->second.get() != socket_ptr.get())
                                     {
                                         fb::logger::warn(std::format("socket already exists. fd: {}", fd));
-                                        auto stale = it->second;
                                         v.erase(it);
-                                        if (stale->is_open())
-                                            stale->close();
                                     }
                                 }
 

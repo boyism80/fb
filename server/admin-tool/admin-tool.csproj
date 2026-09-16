@@ -21,6 +21,10 @@
     <None Include="json\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\game\Meta.dat" Condition="Exists('..\game\Meta.dat')">
+      <Link>Meta.dat</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Update="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('appsettings.Local.json')" />
     <Content Update="appsettings.Local.json.example" CopyToPublishDirectory="Never" />
   </ItemGroup>

@@ -29,7 +29,7 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
                 [ch, match_id, match_type, reason, outcome_value = outcome.outcome](auto&) -> async::task<void> {
                 ch->matchmaker.clear_pending_match_id_if(match_id);
                 if (outcome_value == 0)
-                    ch->matchmaker.clear_enrollment();
+                    ch->matchmaker.clear_registration();
 
                 auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_dissolved");
                 if (lua)

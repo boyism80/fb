@@ -965,7 +965,7 @@ function M.disguise(me, mobs, name, spell, opts)
     
     if M.buff_cast(me, me, spell, { mp = mp, sound = sound, effect = effect }) then
         me:buff(spell, buff_time)
-        me:mimic({ disguise = look })
+        me:mimic({ disguise = look, armor_color = me:armor_color() })
         return true
     end
     

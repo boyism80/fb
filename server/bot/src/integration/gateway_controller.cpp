@@ -1,6 +1,7 @@
 #include <fb/bot/integration/gateway_controller.h>
 #include <fb/bot/gateway_bot.h>
 #include <fb/bot/login_controller.h>
+#include <fb/bot/integration/game_controller.h>
 #include <fb/protocol/client_version.h>
 
 using namespace fb::bot::integration;
@@ -86,6 +87,10 @@ async::task<void> gateway_bot_controller::on_transfer(gateway_bot& bot, const fb
     auto created  = this->container.login->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
+
+    if (auto* game = dynamic_cast<fb::bot::integration::game_bot_controller*>(this->container.game.get()))
+        game->move_owner(bot.id, created->id);
+
     created->connect(endpoint);
 
     // TODO: Validate seamless transition to next server
