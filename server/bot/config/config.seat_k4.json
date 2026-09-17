@@ -9,18 +9,15 @@
 	},
 	"ip": "127.0.0.1",
 	"port": 3001,
-	"io_size": 1,
 	"interval": 1000,
 	"spawn_per_interval": 1,
 	"spawn_count": 1,
 	"thread": {
-		"logic": 1
+		"logic": 4,
+		"io": 1
 	},
 	"client": {
 		"version": 550,
 		"nation": 215
-	},
-	"integration": {
-		"max_parallel_tests": 4
 	}
 }

@@ -39,7 +39,7 @@ private:
 
     std::unordered_set<uint32_t>                        _free_seats;
     std::unordered_map<bot_integration_test*, uint32_t> _active_seats;
-    uint32_t                                            _max_parallel_tests{4};
+    uint32_t                                            _logic_seats{4};
     bool                                                _serial_phase_started{false};
     bool                                                _finished{false};
 
@@ -76,7 +76,7 @@ public:
     void     enqueue_test(std::unique_ptr<bot_integration_test> test, bool serial, bool extra_slot);
     bool     has_more_tests() const;
     void     print_final_test_results();
-    uint32_t max_parallel_tests() const;
+    uint32_t logic_seats() const;
 
 private:
     async::task<void> on_timer();

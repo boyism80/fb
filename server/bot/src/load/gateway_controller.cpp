@@ -23,7 +23,7 @@ fb::protocol::CLIENT_VERSION configured_client_version()
 
 gateway_bot_controller::gateway_bot_controller(bot_container& container) :
     fb::bot::gateway_bot_controller(container),
-    _remained_count(fb::config<uint32_t>("spawn_count") / fb::config<uint32_t>("io_size"))
+    _remained_count(fb::config<uint32_t>("spawn_count"))
 {
     this->bind(&gateway_bot_controller::on_welcome);
     this->bind(&gateway_bot_controller::on_crt);
@@ -41,8 +41,7 @@ async::task<void> gateway_bot_controller::on_bot_spawn()
 {
     auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
                                                    fb::config<uint16_t>("port"));
-    auto count =
-        std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval") / fb::config<uint32_t>("io_size"));
+    auto count    = std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval"));
 
     for (uint32_t i = 0; i < count; i++)
     {

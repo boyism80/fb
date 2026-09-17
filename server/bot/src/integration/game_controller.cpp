@@ -81,13 +81,13 @@ void game_bot_controller::initialize()
 
     this->bind_timer(&game_bot_controller::on_timer, 1000ms);
 
-    this->_max_parallel_tests = fb::config<uint32_t>("integration:max_parallel_tests", 4u);
-    if (this->_max_parallel_tests == 0)
-        this->_max_parallel_tests = 1;
+    this->_logic_seats = fb::config<uint32_t>("thread:logic", 1u);
+    if (this->_logic_seats == 0)
+        this->_logic_seats = 1;
 
     // Instance slots must be >= 1 (see scripts/lib/command.lua 맵이동). Seats are 1..K;
     // tests that need a second instance use extra_slot = K+1.
-    for (uint32_t i = 1; i <= this->_max_parallel_tests; i++)
+    for (uint32_t i = 1; i <= this->_logic_seats; i++)
         this->_free_seats.insert(i);
 
     for (auto& discovered : lua_integration_test::discover_scripts())
@@ -98,10 +98,10 @@ void game_bot_controller::initialize()
             discovered.extra_slot);
     }
 
-    fb::logger::info("Integration test controller initialized: parallel={} serial={} max_parallel={}",
+    fb::logger::info("Integration test controller initialized: parallel={} serial={} logic_seats={}",
                      this->_parallel_queue.size(),
                      this->_serial_queue.size(),
-                     this->_max_parallel_tests);
+                     this->_logic_seats);
 
     this->_suite_start = std::chrono::steady_clock::now();
     this->try_schedule_parallel();
@@ -109,16 +109,15 @@ void game_bot_controller::initialize()
         this->start_serial_phase();
 }
 
-uint32_t game_bot_controller::max_parallel_tests() const
+uint32_t game_bot_controller::logic_seats() const
 {
-    return this->_max_parallel_tests;
+    return this->_logic_seats;
 }
 
 fb::thread* game_bot_controller::seat_thread(uint32_t suite_slot) const
 {
-    if (suite_slot < 1 || suite_slot > this->_max_parallel_tests)
-        throw std::runtime_error(
-            std::format("invalid suite_slot {} (max_parallel={})", suite_slot, this->_max_parallel_tests));
+    if (suite_slot < 1 || suite_slot > this->_logic_seats)
+        throw std::runtime_error(std::format("invalid suite_slot {} (logic_seats={})", suite_slot, this->_logic_seats));
 
     return this->container.threads.at(suite_slot - 1);
 }
@@ -247,7 +246,7 @@ void game_bot_controller::try_schedule_parallel()
 
             test->suite_slot(seat);
             if (test->needs_extra_slot())
-                test->extra_slot(this->_max_parallel_tests + 1);
+                test->extra_slot(this->_logic_seats + 1);
             else
                 test->extra_slot(std::nullopt);
 

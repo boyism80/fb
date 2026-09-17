@@ -174,12 +174,12 @@
             },
             "write-back": {},
             "bot": {
-                "io_size": 5,
                 "interval": 60000,
                 "spawn_per_interval": 50,
                 "spawn_count": 5000,
                 "thread": {
-                    "logic": 12
+                    "logic": 12,
+                    "io": 5
                 },
                 "replicas": 5
             }
