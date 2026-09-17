@@ -2,6 +2,7 @@
 #include <fb/config.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
+#include <boost/stacktrace.hpp>
 #include <csignal>
 #include <cstdint>
 #include <cstdio>
@@ -154,6 +155,21 @@ void fb::crash::dump(const char* kind, size_t kind_len, EXCEPTION_POINTERS* info
 #else
 void fb::crash::write_dump()
 {
+    try
+    {
+        auto text = boost::stacktrace::to_string(boost::stacktrace::stacktrace(0, 64));
+        if (text.empty() == false)
+        {
+            write_bytes(text.data(), text.size());
+            if (text.back() != '\n')
+                write_bytes("\n", 1);
+            return;
+        }
+    }
+    catch (...)
+    {
+    }
+
     void* frames[64] = {};
     auto  count      = backtrace(frames, 64);
     if (count <= 0)

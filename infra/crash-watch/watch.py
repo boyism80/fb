@@ -45,11 +45,17 @@ def notify(title, body):
     request = urllib.request.Request(
         incoming_webhook_url(WEBHOOK),
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "fb-crash-watch/1.0",
+        },
         method="POST",
     )
     try:
         urllib.request.urlopen(request, timeout=10).read()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")[:500]
+        print("discord post failed: {} {}".format(e, body), file=sys.stderr, flush=True)
     except urllib.error.URLError as e:
         print("discord post failed: {}".format(e), file=sys.stderr, flush=True)
 
