@@ -7,15 +7,13 @@ import urllib.request
 WATCH_APPS = {"game", "login", "gateway"}
 COMPOSE_SERVICES = {"game", "login", "gateway", "game-cross"}
 NAMESPACE = os.environ.get("WATCH_NAMESPACE", "fb")
-WEBHOOK = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
+BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "").strip()
+if BOT_TOKEN.startswith("Bot "):
+    BOT_TOKEN = BOT_TOKEN[4:]
+CHANNEL_ID = os.environ.get("DISCORD_CHANNEL_ID", "").strip()
+DISCORD_ENABLED = BOT_TOKEN != "" and CHANNEL_ID != ""
 
 seen = set()
-
-
-def incoming_webhook_url(url):
-    if url.endswith("/github"):
-        return url[:-7]
-    return url
 
 
 def crash_excerpt(log_text):
@@ -37,15 +35,16 @@ def crash_excerpt(log_text):
 def notify(title, body):
     print(title, flush=True)
     print(body, flush=True)
-    if WEBHOOK == "":
+    if DISCORD_ENABLED == False:
         return
 
     content = title + "\n```\n" + body[:1800] + "\n```"
     payload = json.dumps({"content": content}).encode("utf-8")
     request = urllib.request.Request(
-        incoming_webhook_url(WEBHOOK),
+        "https://discord.com/api/v10/channels/{}/messages".format(CHANNEL_ID),
         data=payload,
         headers={
+            "Authorization": "Bot " + BOT_TOKEN,
             "Content-Type": "application/json",
             "User-Agent": "fb-crash-watch/1.0",
         },
@@ -71,10 +70,16 @@ def pod_logs(api, name, container, previous):
             timestamps=False,
         )
     except Exception as e:
+        text = "{}".format(e)
+        if "(404)" in text or "not found" in text.lower():
+            return None
         return "failed to read logs: {}".format(e)
 
 
 def check_container(api, pod, status):
+    if pod.metadata.deletion_timestamp is not None:
+        return
+
     terminated = None
     if status.state and status.state.waiting and status.state.waiting.reason == "CrashLoopBackOff":
         if status.last_state and status.last_state.terminated:
@@ -95,6 +100,9 @@ def check_container(api, pod, status):
     seen.add(key)
 
     log_text = pod_logs(api, pod.metadata.name, status.name, previous=status.restart_count > 0)
+    if log_text is None:
+        return
+
     excerpt = crash_excerpt(log_text)
     title = "crash {}/{} container={} exit={} reason={}".format(
         NAMESPACE,
@@ -117,15 +125,20 @@ def watch_kubernetes():
     api = client.CoreV1Api()
     w = watch.Watch()
     print(
-        "watching pods in namespace {} (webhook {})".format(NAMESPACE, "enabled" if WEBHOOK else "disabled"),
+        "watching pods in namespace {} (discord {})".format(NAMESPACE, "enabled" if DISCORD_ENABLED else "disabled"),
         flush=True,
     )
 
     for event in w.stream(api.list_namespaced_pod, namespace=NAMESPACE):
+        if event.get("type") == "DELETED":
+            continue
+
         pod = event["object"]
         labels = pod.metadata.labels or {}
         app = labels.get("app", "")
         if app not in WATCH_APPS:
+            continue
+        if pod.metadata.deletion_timestamp is not None:
             continue
         if pod.status is None or pod.status.container_statuses is None:
             continue
@@ -137,7 +150,7 @@ def watch_docker():
     import docker
 
     docker_client = docker.from_env()
-    print("watching docker container deaths (webhook {})".format("enabled" if WEBHOOK else "disabled"), flush=True)
+    print("watching docker container deaths (discord {})".format("enabled" if DISCORD_ENABLED else "disabled"), flush=True)
 
     for event in docker_client.events(decode=True, filters={"type": "container", "event": ["die", "oom"]}):
         attrs = event.get("Actor", {}).get("Attributes", {})

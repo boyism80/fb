@@ -58,7 +58,7 @@ docker compose -f infra/compose/docker-compose.yml --profile infra up -d
 
 ## Configuration
 
-- **`.env`** — ports, `FB_HOST`, optional `DISCORD_WEBHOOK_URL` (empty disables Discord)
+- **`.env`** — ports, `FB_HOST`, optional `DISCORD_BOT_TOKEN` / `DISCORD_CHANNEL_ID` (empty disables Discord)
 - **`config/*/appsettings.Development.json`** — .NET services (Docker DNS: `mysql`, `redis`, …)
 - **`config/*/config.json.template`** — C++ services; rendered by `tools/compose-config.sh`
 

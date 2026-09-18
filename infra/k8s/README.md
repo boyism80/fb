@@ -82,11 +82,11 @@ C++ servers always write daily files to `logs/YYYY-MM-DD-{server}.log` in the co
 
 ## Crash watch
 
-`crash-watch` watches gateway, login, and game pods (home and cross share `app: game`) and posts Discord when a container exits non-zero. Leave the webhook empty to log only.
+`crash-watch` watches gateway, login, and game pods (home and cross share `app: game`) and posts Discord when a container exits non-zero. Leave the bot token empty to log only.
 
 ```bash
-kubectl -n fb patch secret discord-webhook --type merge \
-  -p '{"stringData":{"url":"https://discord.com/api/webhooks/..."}}'
+kubectl -n fb patch secret discord-bot --type merge \
+  -p '{"stringData":{"token":"<bot-token>","channel-id":"<channel-id>"}}'
 ```
 
 ## Custom registry

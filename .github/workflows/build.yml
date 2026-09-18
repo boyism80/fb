@@ -693,7 +693,8 @@ jobs:
           SCRIPT_PUBLISH_DOWNLOAD_BASE_URL: ${{ secrets.SCRIPT_PUBLISH_DOWNLOAD_BASE_URL }}
           SCRIPT_PUBLISH_USERNAME: ${{ secrets.NAS_ID }}
           SCRIPT_PUBLISH_PASSWORD: ${{ secrets.NAS_PW }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
         with:
           work-dir: infra/pulumi
           command: up
