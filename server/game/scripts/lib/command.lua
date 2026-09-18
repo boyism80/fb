@@ -2282,7 +2282,17 @@ M.functions = {
                 return true
             end,
         },
-        
+
+        ['크래시'] = {
+            ['privilege'] = ROLE.OWNER,
+            ['usage'] = '- 프로세스 강제 크래시',
+            ['command'] = function (me, args)
+                me:message("프로세스를 강제 종료합니다.", MESSAGE_TYPE.NOTIFY)
+                crash()
+                return true
+            end,
+        },
+
         ['경험치배율'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[배율] - 경험치 배율 조회/설정',

@@ -13,6 +13,7 @@
 #include <tuple>
 #include <format>
 #include <stdexcept>
+#include <cstdlib>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -1217,6 +1218,12 @@ int builtin::server::builtin_shutdown(lua_State* L)
 
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
     std::ignore = srv.http.post("internal", "/system/shutdown", internal_reqs::Shutdown{});
+    return 0;
+}
+
+int builtin::server::builtin_crash(lua_State* L)
+{
+    std::abort();
     return 0;
 }
 

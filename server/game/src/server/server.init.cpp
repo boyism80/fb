@@ -104,6 +104,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("mknpc", builtin::server::builtin_mknpc);
         lua.build("maps", builtin::server::builtin_maps);
         lua.build("shutdown", builtin::server::builtin_shutdown);
+        lua.build("crash", builtin::server::builtin_crash);
         lua.build("ban", builtin::server::builtin_ban);
         lua.build("unban", builtin::server::builtin_unban);
         lua.build("regex", builtin::server::builtin_regex);

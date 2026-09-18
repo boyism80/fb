@@ -2,15 +2,16 @@ const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
 
 function secretOrEnv(stackConfig, configKey, envKeys) {
-    const fromConfig = stackConfig.getSecret(configKey)
-    if (fromConfig !== undefined)
-        return fromConfig
-
+    // Prefer env (CI GitHub secrets) so a leftover Pulumi stack value cannot mask a rotated token.
     for (const key of envKeys) {
         const value = process.env[key]
         if (value)
             return value
     }
+
+    const fromConfig = stackConfig.getSecret(configKey)
+    if (fromConfig !== undefined)
+        return fromConfig
 
     return ""
 }
