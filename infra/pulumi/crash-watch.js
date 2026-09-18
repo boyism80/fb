@@ -2,15 +2,16 @@ const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
 
 function secretOrEnv(stackConfig, configKey, envKeys) {
-    const fromConfig = stackConfig.getSecret(configKey)
-    if (fromConfig !== undefined)
-        return fromConfig
-
+    // Prefer env (CI GitHub secrets) so a leftover Pulumi stack value cannot mask a rotated token.
     for (const key of envKeys) {
         const value = process.env[key]
         if (value)
             return value
     }
+
+    const fromConfig = stackConfig.getSecret(configKey)
+    if (fromConfig !== undefined)
+        return fromConfig
 
     return ""
 }
@@ -18,14 +19,16 @@ function secretOrEnv(stackConfig, configKey, envKeys) {
 module.exports = {
     setup: function (namespace, dependsOn) {
         const stackConfig = new pulumi.Config()
-        const webhookUrl = secretOrEnv(stackConfig, "discordWebhookUrl", ["DISCORD_WEBHOOK_URL"])
+        const botToken = secretOrEnv(stackConfig, "discordBotToken", ["DISCORD_BOT_TOKEN"])
+        const channelId = secretOrEnv(stackConfig, "discordChannelId", ["DISCORD_CHANNEL_ID"])
         const appLabels = { app: "crash-watch" }
 
-        const secret = new k8s.core.v1.Secret("discord-webhook", {
-            metadata: { name: "discord-webhook", namespace: namespace.metadata.name },
+        const secret = new k8s.core.v1.Secret("discord-bot", {
+            metadata: { name: "discord-bot", namespace: namespace.metadata.name },
             type: "Opaque",
             stringData: {
-                url: webhookUrl,
+                token: botToken,
+                "channel-id": channelId,
             },
         }, { dependsOn: dependsOn })
 
@@ -71,11 +74,21 @@ module.exports = {
                             env: [
                                 { name: "WATCH_NAMESPACE", value: namespace.metadata.name },
                                 {
-                                    name: "DISCORD_WEBHOOK_URL",
+                                    name: "DISCORD_BOT_TOKEN",
                                     valueFrom: {
                                         secretKeyRef: {
-                                            name: "discord-webhook",
-                                            key: "url",
+                                            name: "discord-bot",
+                                            key: "token",
+                                            optional: true,
+                                        },
+                                    },
+                                },
+                                {
+                                    name: "DISCORD_CHANNEL_ID",
+                                    valueFrom: {
+                                        secretKeyRef: {
+                                            name: "discord-bot",
+                                            key: "channel-id",
                                             optional: true,
                                         },
                                     },

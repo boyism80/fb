@@ -346,7 +346,8 @@ services:
       context: ../crash-watch
       dockerfile: Dockerfile
     environment:
-      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_CHANNEL_ID: ${DISCORD_CHANNEL_ID:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:

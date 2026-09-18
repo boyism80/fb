@@ -2,7 +2,6 @@
 #define FB_BOT_BOT_TEST_RUNNER_H
 
 #include <thread>
-#include <vector>
 #include <memory>
 #include <string_view>
 #include <boost/asio.hpp>
@@ -14,22 +13,11 @@
 
 using namespace std::chrono_literals;
 
-inline void display_spawned_bots(const std::vector<std::shared_ptr<fb::bot::bot_container>>& containers)
+inline void display_spawned_bots(const fb::bot::bot_container& container)
 {
-    size_t total_gateway_count = 0;
-    size_t total_login_count   = 0;
-    size_t total_game_count    = 0;
-
-    for (const auto& container : containers)
-    {
-        total_gateway_count += container->gateway->bot_count();
-        total_login_count   += container->login->bot_count();
-        total_game_count    += container->game->bot_count();
-    }
-
-    fb::console::puts("gateway\t\t{}", total_gateway_count);
-    fb::console::puts("login\t\t{}", total_login_count);
-    fb::console::puts("game\t\t{}", total_game_count);
+    fb::console::puts("gateway\t\t{}", container.gateway->bot_count());
+    fb::console::puts("login\t\t{}", container.login->bot_count());
+    fb::console::puts("game\t\t{}", container.game->bot_count());
     fb::console::up(3);
 }
 
@@ -44,93 +32,58 @@ void run_bot_test(std::string_view config_path)
 
     using guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
 
-    auto ios            = std::vector<std::unique_ptr<boost::asio::io_context>>{};
-    auto guards         = std::vector<std::unique_ptr<guard_type>>();
-    auto bot_containers = std::vector<std::shared_ptr<fb::bot::bot_container>>();
+    auto logic_thread_count = bot_controller_factory<Mode>::get_logic_thread_count();
+    auto io_thread_count    = bot_controller_factory<Mode>::get_io_thread_count();
 
-    uint32_t io_size      = bot_controller_factory<Mode>::get_io_size();
-    uint32_t thread_count = bot_controller_factory<Mode>::get_thread_count();
+    auto io_context = boost::asio::io_context{};
+    auto work_guard = guard_type{io_context.get_executor()};
 
-    for (auto i = 0; i < io_size; i++)
-    {
-        auto io = std::make_unique<boost::asio::io_context>();
-        guards.push_back(std::make_unique<guard_type>(io->get_executor()));
-
-        auto container = std::make_shared<fb::bot::bot_container>(*io.get(), thread_count);
-        container->set_gateway_bot_controller(bot_controller_factory<Mode>::create_gateway_controller(*container));
-        container->set_login_bot_controller(bot_controller_factory<Mode>::create_login_controller(*container));
-        container->set_game_bot_controller(bot_controller_factory<Mode>::create_game_controller(*container));
-
-        container->initialize();
-        bot_containers.push_back(container);
-        ios.push_back(std::move(io));
-    }
+    auto container = std::make_shared<fb::bot::bot_container>(io_context, logic_thread_count);
+    container->set_gateway_bot_controller(bot_controller_factory<Mode>::create_gateway_controller(*container));
+    container->set_login_bot_controller(bot_controller_factory<Mode>::create_login_controller(*container));
+    container->set_game_bot_controller(bot_controller_factory<Mode>::create_game_controller(*container));
+    container->initialize();
 
     fb::console::set_mode(fb::console::mode::plain);
 
     auto exit           = false;
     auto display_thread = std::unique_ptr<std::thread>();
-
     if (bot_controller_factory<Mode>::should_create_display_thread())
     {
-        display_thread = std::make_unique<std::thread>([&exit, &bot_containers]() {
+        display_thread = std::make_unique<std::thread>([&exit, container]() {
             while (!exit)
             {
-                display_spawned_bots(bot_containers);
+                display_spawned_bots(*container);
                 std::this_thread::sleep_for(100ms);
             }
         });
     }
 
-    auto threads = boost::asio::thread_pool{io_size};
-    for (auto& io : ios)
+    auto io_workers = boost::asio::thread_pool{io_thread_count};
+    for (uint32_t i = 0; i < io_thread_count; i++)
     {
-        boost::asio::post(threads, [&io] {
-            io->run();
+        boost::asio::post(io_workers, [&io_context] {
+            io_context.run();
         });
     }
 
-    // When containers exit, release work_guards so io_context::run / join can finish.
-    auto watcher = std::thread([&bot_containers, &guards, &ios]() {
-        while (true)
-        {
-            auto any_running = false;
-            for (auto& container : bot_containers)
-            {
-                if (container->running())
-                {
-                    any_running = true;
-                    break;
-                }
-            }
-
-            if (any_running == false)
-                break;
-
+    // Release work_guard when the container exits so io_context::run / join can finish.
+    auto watcher = std::thread([container, &work_guard, &io_context]() {
+        while (container->running())
             std::this_thread::sleep_for(100ms);
-        }
 
-        for (auto& guard : guards)
-        {
-            guard->reset();
-        }
-        for (auto& io : ios)
-        {
-            io->stop();
-        }
+        work_guard.reset();
+        io_context.stop();
     });
 
-    threads.join();
+    io_workers.join();
 
     if (watcher.joinable())
         watcher.join();
 
     exit = true;
-
     if (display_thread)
-    {
         display_thread->join();
-    }
 }
 
 #endif // FB_BOT_BOT_TEST_RUNNER_H

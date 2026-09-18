@@ -14,12 +14,12 @@ module.exports = function () {
                     log: ["info", "warn", "fatal"],
                     ip: conf.host,
                     port: conf.gateway.port,
-                    io_size: botConf.io_size,
                     interval: botConf.interval,
                     spawn_per_interval: botConf.spawn_per_interval,
                     spawn_count: botConf.spawn_count,
                     thread: {
-                        logic: botConf.thread.logic
+                        logic: botConf.thread.logic,
+                        io: botConf.thread.io
                     }
                 }
 

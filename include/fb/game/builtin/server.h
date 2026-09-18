@@ -52,6 +52,7 @@ struct server
     static int builtin_mknpc(lua_State* L);
     static int builtin_maps(lua_State* L);
     static int builtin_shutdown(lua_State* L);
+    static int builtin_crash(lua_State* L);
     static int builtin_ban(lua_State* L);
     static int builtin_unban(lua_State* L);
     static int builtin_regex(lua_State* L);

@@ -18,6 +18,15 @@
 template <fb::bot::test_mode Mode>
 class bot_controller_factory;
 
+namespace bot_controller_factory_detail {
+
+inline uint32_t clamp_thread_count(uint32_t count)
+{
+    return count == 0 ? 1u : count;
+}
+
+} // namespace bot_controller_factory_detail
+
 template <>
 class bot_controller_factory<fb::bot::test_mode::LOAD_TEST>
 {
@@ -37,14 +46,14 @@ public:
         return std::make_shared<fb::bot::load::game_bot_controller>(container);
     }
 
-    static uint32_t get_thread_count()
+    static uint32_t get_logic_thread_count()
     {
-        return fb::config<uint32_t>("thread:logic");
+        return bot_controller_factory_detail::clamp_thread_count(fb::config<uint32_t>("thread:logic", 1u));
     }
 
-    static uint32_t get_io_size()
+    static uint32_t get_io_thread_count()
     {
-        return fb::config<uint32_t>("io_size");
+        return bot_controller_factory_detail::clamp_thread_count(fb::config<uint32_t>("thread:io", 1u));
     }
 
     static bool should_create_display_thread()
@@ -72,15 +81,14 @@ public:
         return std::make_shared<fb::bot::integration::game_bot_controller>(container);
     }
 
-    static uint32_t get_thread_count()
+    static uint32_t get_logic_thread_count()
     {
-        auto count = fb::config<uint32_t>("integration:max_parallel_tests", 4u);
-        return count == 0 ? 1u : count;
+        return bot_controller_factory_detail::clamp_thread_count(fb::config<uint32_t>("thread:logic", 1u));
     }
 
-    static uint32_t get_io_size()
+    static uint32_t get_io_thread_count()
     {
-        return 1;
+        return bot_controller_factory_detail::clamp_thread_count(fb::config<uint32_t>("thread:io", 1u));
     }
 
     static bool should_create_display_thread()
