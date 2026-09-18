@@ -13,6 +13,8 @@ if BOT_TOKEN.startswith("Bot "):
 CHANNEL_ID = os.environ.get("DISCORD_CHANNEL_ID", "").strip()
 DISCORD_ENABLED = BOT_TOKEN != "" and CHANNEL_ID != ""
 
+DISCORD_BODY_LIMIT = 1800
+
 seen = set()
 
 
@@ -21,15 +23,29 @@ def crash_excerpt(log_text):
     if start >= 0:
         end = log_text.find("*** END CRASH ***", start)
         if end >= 0:
-            return log_text[start : end + len("*** END CRASH ***")]
-        return log_text[start:]
+            block = log_text[start : end + len("*** END CRASH ***")]
+        else:
+            block = log_text[start:]
+        return block[:DISCORD_BODY_LIMIT]
 
     asan = log_text.rfind("ERROR: AddressSanitizer:")
     if asan < 0:
         asan = log_text.rfind("==ERROR: AddressSanitizer:")
+    if asan < 0:
+        asan = log_text.rfind("ERROR: LeakSanitizer:")
     if asan >= 0:
-        return log_text[asan : asan + 4000]
-    return log_text[-4000:]
+        return log_text[asan : asan + DISCORD_BODY_LIMIT]
+
+    summary = log_text.rfind("SUMMARY: AddressSanitizer:")
+    if summary < 0:
+        summary = log_text.rfind("SUMMARY: LeakSanitizer:")
+    if summary >= 0:
+        begin = summary - (DISCORD_BODY_LIMIT - 120)
+        if begin < 0:
+            begin = 0
+        return log_text[begin : begin + DISCORD_BODY_LIMIT]
+
+    return log_text[-DISCORD_BODY_LIMIT:]
 
 
 def notify(title, body):
@@ -38,7 +54,7 @@ def notify(title, body):
     if DISCORD_ENABLED == False:
         return
 
-    content = title + "\n```\n" + body[:1800] + "\n```"
+    content = title + "\n```\n" + body[:DISCORD_BODY_LIMIT] + "\n```"
     payload = json.dumps({"content": content}).encode("utf-8")
     request = urllib.request.Request(
         "https://discord.com/api/v10/channels/{}/messages".format(CHANNEL_ID),
@@ -66,7 +82,7 @@ def pod_logs(api, name, container, previous):
             namespace=NAMESPACE,
             container=container,
             previous=previous,
-            tail_lines=200,
+            tail_lines=1000,
             timestamps=False,
         )
     except Exception as e:
@@ -171,7 +187,7 @@ def watch_docker():
         log_text = ""
         try:
             container = docker_client.containers.get(container_id)
-            log_text = container.logs(stdout=True, stderr=True, tail=200).decode("utf-8", errors="replace")
+            log_text = container.logs(stdout=True, stderr=True, tail=1000).decode("utf-8", errors="replace")
         except Exception as e:
             log_text = "failed to read logs: {}".format(e)
 
