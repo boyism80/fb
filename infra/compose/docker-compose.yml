@@ -75,6 +75,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: "3000"
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_CHANNEL_ID: ${DISCORD_CHANNEL_ID:-}
     volumes:
       - ./config/internal/appsettings.Development.json:/app/appsettings.Development.json:ro
     ports:
@@ -205,6 +207,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: "3020"
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_CHANNEL_ID: ${DISCORD_CHANNEL_ID:-}
       TablePublish__UploadBaseUrl: ${TABLE_PUBLISH_UPLOAD_BASE_URL:-}
       TablePublish__DownloadBaseUrl: ${TABLE_PUBLISH_DOWNLOAD_BASE_URL:-}
       TablePublish__Username: ${TABLE_PUBLISH_USERNAME:-}

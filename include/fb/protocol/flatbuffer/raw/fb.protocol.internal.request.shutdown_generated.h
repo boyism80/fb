@@ -24,8 +24,16 @@ struct ShutdownBuilder;
 
 struct Shutdown FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ShutdownBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ACTOR = 4
+  };
+  const ::flatbuffers::String *actor() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ACTOR);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ACTOR) &&
+           verifier.VerifyString(actor()) &&
            verifier.EndTable();
   }
 };
@@ -34,6 +42,9 @@ struct ShutdownBuilder {
   typedef Shutdown Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_actor(::flatbuffers::Offset<::flatbuffers::String> actor) {
+    fbb_.AddOffset(Shutdown::VT_ACTOR, actor);
+  }
   explicit ShutdownBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -46,9 +57,20 @@ struct ShutdownBuilder {
 };
 
 inline ::flatbuffers::Offset<Shutdown> CreateShutdown(
-    ::flatbuffers::FlatBufferBuilder &_fbb) {
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> actor = 0) {
   ShutdownBuilder builder_(_fbb);
+  builder_.add_actor(actor);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Shutdown> CreateShutdownDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *actor = nullptr) {
+  auto actor__ = actor ? _fbb.CreateString(actor) : 0;
+  return fb::protocol::internal::request::raw::CreateShutdown(
+      _fbb,
+      actor__);
 }
 
 inline const fb::protocol::internal::request::raw::Shutdown *GetShutdown(const void *buf) {

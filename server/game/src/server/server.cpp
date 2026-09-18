@@ -188,7 +188,8 @@ async::task<void> fb::game::server::save(character& ch)
     ch.save_ack();
 }
 
-async::task<internal_resp::Ban> fb::game::server::ban(std::string_view               name,
+async::task<internal_resp::Ban> fb::game::server::ban(std::string_view               actor,
+                                                      std::string_view               name,
                                                       std::string_view               reason,
                                                       const std::optional<uint32_t>& days)
 {
@@ -209,12 +210,14 @@ async::task<internal_resp::Ban> fb::game::server::ban(std::string_view          
     }
 
     auto   reason_str = std::string(reason);
-    auto&& resp =
-        co_await this->http.post("internal", "/ban/add", internal_reqs::Ban{world, name_str, reason_str, days});
+    auto   actor_str  = std::string(actor);
+    auto&& resp       = co_await this->http.post("internal",
+                                           "/ban/add",
+                                           internal_reqs::Ban{world, name_str, reason_str, days, actor_str});
     co_return std::move(resp);
 }
 
-async::task<internal_resp::Unban> fb::game::server::unban(std::string_view name)
+async::task<internal_resp::Unban> fb::game::server::unban(std::string_view actor, std::string_view name)
 {
     auto name_str = std::string(name);
     auto target   = this->characters.find(name_str);
@@ -232,7 +235,8 @@ async::task<internal_resp::Unban> fb::game::server::unban(std::string_view name)
         throw std::runtime_error("교차 서버에서는 접속 중인 플레이어만 제재할 수 있습니다.");
     }
 
-    auto&& resp = co_await this->http.post("internal", "/ban/remove", internal_reqs::Unban{world, name_str});
+    auto   actor_str = std::string(actor);
+    auto&& resp = co_await this->http.post("internal", "/ban/remove", internal_reqs::Unban{world, name_str, actor_str});
     co_return std::move(resp);
 }
 

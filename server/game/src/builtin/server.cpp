@@ -1217,7 +1217,10 @@ int builtin::server::builtin_shutdown(lua_State* L)
         return 0;
 
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
-    std::ignore = srv.http.post("internal", "/system/shutdown", internal_reqs::Shutdown{});
+    auto  actor = std::string{};
+    if (auto ch = lua->touserdata<fb::game::character>(1))
+        actor = ch->name();
+    std::ignore = srv.http.post("internal", "/system/shutdown", internal_reqs::Shutdown{actor});
     return 0;
 }
 
@@ -1298,6 +1301,7 @@ int builtin::server::builtin_ban(lua_State* L)
 
     auto name   = lua->tostring(2);
     auto reason = lua->tostring(3);
+    auto actor  = ch->name();
     auto days   = std::optional<uint32_t>{std::nullopt};
     if (argc >= 4 && lua->is_nil(4) == false && lua->is_number(4))
         days = static_cast<uint32_t>(lua->tointeger(4));
@@ -1309,7 +1313,7 @@ int builtin::server::builtin_ban(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            auto&& resp = co_await server.ban(name, reason, days);
+            auto&& resp = co_await server.ban(actor, name, reason, days);
             if (resp.error == 0)
                 *success = true;
             else
@@ -1345,7 +1349,8 @@ int builtin::server::builtin_unban(lua_State* L)
         return 2;
     }
 
-    auto name = lua->tostring(2);
+    auto name  = lua->tostring(2);
+    auto actor = ch->name();
 
     auto success  = std::make_shared<bool>(false);
     auto error    = std::make_shared<std::string>();
@@ -1354,7 +1359,7 @@ int builtin::server::builtin_unban(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            auto&& resp = co_await server.unban(name);
+            auto&& resp = co_await server.unban(actor, name);
             if (resp.error == 0)
                 *success = true;
             else

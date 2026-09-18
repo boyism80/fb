@@ -28,7 +28,7 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
-                var result = await _banService.Ban(world, request.Name, request.Reason, request.Days);
+                var result = await _banService.Ban(world, request.Name, request.Reason, request.Days, request.Actor ?? string.Empty, "game");
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.Ban
@@ -70,7 +70,7 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
-                var result = await _banService.Unban(world, request.Name);
+                var result = await _banService.Unban(world, request.Name, request.Actor ?? string.Empty, "game");
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.Unban
@@ -104,4 +104,3 @@ namespace Internal.Controllers
         }
     }
 }
-

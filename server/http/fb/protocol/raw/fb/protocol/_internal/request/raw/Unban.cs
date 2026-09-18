@@ -28,19 +28,29 @@ public struct Unban : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
+  public string Actor { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetActorBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetActorBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetActorArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol._internal.request.raw.Unban> CreateUnban(FlatBufferBuilder builder,
       uint world = 0,
-      StringOffset nameOffset = default(StringOffset)) {
-    builder.StartTable(2);
+      StringOffset nameOffset = default(StringOffset),
+      StringOffset actorOffset = default(StringOffset)) {
+    builder.StartTable(3);
+    Unban.AddActor(builder, actorOffset);
     Unban.AddName(builder, nameOffset);
     Unban.AddWorld(builder, world);
     return Unban.EndUnban(builder);
   }
 
-  public static void StartUnban(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartUnban(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
+  public static void AddActor(FlatBufferBuilder builder, StringOffset actorOffset) { builder.AddOffset(2, actorOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Unban> EndUnban(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Unban>(o);
@@ -57,6 +67,7 @@ static public class UnbanVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Actor*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

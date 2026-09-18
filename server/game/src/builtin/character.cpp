@@ -1882,12 +1882,34 @@ int builtin::character::builtin_role(lua_State* L)
     }
     else
     {
-        auto value    = static_cast<ROLE>(lua->tointeger(2));
+        auto value = static_cast<ROLE>(lua->tointeger(2));
+        auto actor = std::string{};
+        if (argc >= 3)
+        {
+            if (auto actor_ch = lua->touserdata<fb::game::character>(3))
+                actor = actor_ch->name();
+            else
+                actor = lua->tostring(3);
+        }
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
+            auto old = ch->role();
             ch->role(value);
+            if (actor.empty() || old == value)
+                co_return;
+
+            auto& server = static_cast<fb::game::server&>(lua->executor);
+            auto  detail = std::format("{} -> {}", static_cast<int>(old), static_cast<int>(value));
+            std::ignore  = server.http.post("internal",
+                                           "/ops/notify",
+                                           fb::protocol::internal::request::OpsNotify{"role_change",
+                                                                                      "game",
+                                                                                      actor,
+                                                                                      ch->name(),
+                                                                                      ch->world(),
+                                                                                      detail});
             co_return;
         };
         builder.resume = []() -> async::task<int> {

@@ -15,6 +15,7 @@
 #include <sstream>
 #include <chrono>
 #include <format>
+#include <tuple>
 #include <macro.h>
 #include <unordered_map>
 #include <random>

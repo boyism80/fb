@@ -4,9 +4,12 @@
 @using Http.Service
 @using Fb.Model.EnumValue
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @inject Http.Service.MaintenanceService MaintenanceService
+@inject LogService LogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<Maintenance> Logger
 @attribute [AuthorizeRole(Role.Admin)]
 
@@ -202,6 +205,7 @@
     private string successMessage;
     private bool isProcessing;
     private bool isLoading;
+    private string currentUserName = string.Empty;
     private DateTime lastCheckedAt = DateTime.Now;
     private string startTimeString
     {
@@ -229,6 +233,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var nameClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name);
+        if (nameClaim != null)
+            currentUserName = nameClaim.Value;
         await LoadData();
     }
 
@@ -286,6 +294,17 @@
                 successMessage = schedule.World == 0
                     ? "전체 월드에 점검 일정을 등록했습니다."
                     : $"World {schedule.World}에 점검 일정을 등록했습니다.";
+                await LogService.WriteAsync("maintenance", new
+                {
+                    action = "maintenance",
+                    source = "admin",
+                    actor = currentUserName,
+                    world = schedule.World,
+                    title = schedule.Title,
+                    start_time = schedule.StartTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    end_time = schedule.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    repeat_type = schedule.RepeatType.ToString()
+                });
                 ResetForm();
                 await LoadData();
             }
@@ -318,6 +337,15 @@
             if (success)
             {
                 successMessage = "점검 일정을 취소했습니다.";
+                await LogService.WriteAsync("maintenance_cancel", new
+                {
+                    action = "maintenance_cancel",
+                    source = "admin",
+                    actor = currentUserName,
+                    world = schedule.World,
+                    schedule_id = schedule.Id,
+                    title = schedule.Title
+                });
                 await LoadData();
             }
             else

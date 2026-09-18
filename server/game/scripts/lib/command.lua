@@ -132,7 +132,7 @@ M.functions = {
                 return true
             end
             
-            you:role(role)
+            you:role(role, me)
             me:message(string.format("%s : 직책을 %d로 변경했습니다.", name, role))
             return true
         end,
@@ -2278,7 +2278,7 @@ M.functions = {
                     sleep(term * 1000)
                     delay = delay - term
                 end
-                shutdown()
+                shutdown(me)
                 return true
             end,
         },

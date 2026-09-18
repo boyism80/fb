@@ -247,6 +247,26 @@ module.exports = {
                                         value: '80'
                                     },
                                     {
+                                        name: 'DISCORD_BOT_TOKEN',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: 'discord-bot',
+                                                key: 'token',
+                                                optional: true,
+                                            },
+                                        },
+                                    },
+                                    {
+                                        name: 'DISCORD_CHANNEL_ID',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: 'discord-bot',
+                                                key: 'channel-id',
+                                                optional: true,
+                                            },
+                                        },
+                                    },
+                                    {
                                         name: 'TablePublish__UploadBaseUrl',
                                         valueFrom: {
                                             secretKeyRef: {

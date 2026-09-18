@@ -397,3 +397,6 @@ table StartMaintenance {
 table FriendBroadcast {
   error: uint;
 }
+
+table OpsNotify {
+}

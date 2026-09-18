@@ -8,6 +8,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DbContext DbContext
+@inject LogService LogService
 @inject AdminActivityLogService ActivityLog
 @attribute [AuthorizeRole(Role.Admin)]
 
@@ -243,6 +244,17 @@
                 mailModel.Contents,
                 expireDateValue);
             await DbContext.SaveChangesAsync();
+
+            await LogService.WriteAsync("system_mail_create", new
+            {
+                action = "system_mail_create",
+                source = "admin",
+                actor = currentUserName,
+                world = selectedWorld.Value,
+                mail_id = systemMail.Id,
+                sender_id = systemMail.Sender,
+                expire_date = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
+            });
 
             ActivityLog.Add(new AdminActivityEntry
             {

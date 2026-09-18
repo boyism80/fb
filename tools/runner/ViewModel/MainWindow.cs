@@ -261,6 +261,16 @@ namespace Runner.ViewModel
             get => Model.AdminTool.Port;
             set => Model.AdminTool.Port = value;
         }
+        public string DiscordBotToken
+        {
+            get => Model.Discord.BotToken;
+            set => Model.Discord.BotToken = value ?? string.Empty;
+        }
+        public string DiscordChannelId
+        {
+            get => Model.Discord.ChannelId;
+            set => Model.Discord.ChannelId = value ?? string.Empty;
+        }
         public GatewaySetting Gateway { get; set; }
         public ObservableCollection<LoginSetting> Login { get; set; } = new ObservableCollection<LoginSetting>();
         public ObservableCollection<GameSetting> Game { get; set; } = new ObservableCollection<GameSetting>();
@@ -1382,6 +1392,11 @@ namespace Runner.ViewModel
                 internalRabbit["Log"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
                 internalConf["RabbitMQ"] = internalRabbit;
                 internalConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "internal" });
+                internalConf["Discord"] = JObject.FromObject(new
+                {
+                    BotToken = DiscordBotToken ?? string.Empty,
+                    ChannelId = DiscordChannelId ?? string.Empty
+                });
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "internal", "appsettings.internal.json"]), internalConf.ToString(Formatting.Indented));
 
                 var wbConf = new JObject();
@@ -1488,6 +1503,11 @@ namespace Runner.ViewModel
                 };
                 adminToolConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "admin-tool" });
                 adminToolConf["Security"] = JObject.FromObject(new { ElevationSecret = "admin" });
+                adminToolConf["Discord"] = JObject.FromObject(new
+                {
+                    BotToken = DiscordBotToken ?? string.Empty,
+                    ChannelId = DiscordChannelId ?? string.Empty
+                });
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "admin-tool", "appsettings.admin-tool.json"]), adminToolConf.ToString(Formatting.Indented));
 
                 var inter = new ProcessGroup { Type = ServerType.Internal };

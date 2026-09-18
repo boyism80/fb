@@ -13,6 +13,7 @@
 @inject IConfiguration Configuration
 @inject AdminActivityLogService ActivityLog
 @inject LogService LogService
+@inject ShutdownService ShutdownService
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>서버 상태 - FB ADMIN</PageTitle>
@@ -226,6 +227,7 @@
     private string dbResetConfirmText = string.Empty;
     private string errorMessage;
     private string successMessage;
+    private string currentUserName = string.Empty;
 
     private bool IsDbResetConfirmValid =>
         string.Equals(dbResetConfirmText?.Trim(), "RESET", StringComparison.Ordinal);
@@ -264,6 +266,9 @@
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+        var nameClaim = user.FindFirst(System.Security.Claims.ClaimTypes.Name);
+        if (nameClaim != null)
+            currentUserName = nameClaim.Value;
         canSaveServers = user.IsInRole(nameof(Role.Admin)) ||
                          user.IsInRole(nameof(Role.Superadmin)) ||
                          user.IsInRole(nameof(Role.Owner));
@@ -351,6 +356,13 @@
             if (cleared)
             {
                 successMessage = "유저 세션이 초기화되었습니다.";
+                await LogService.WriteAsync("session_clear", new
+                {
+                    action = "session_clear",
+                    source = "admin",
+                    actor = currentUserName,
+                    world = selectedWorld.Value
+                });
                 await LoadServers();
             }
             else
@@ -388,6 +400,13 @@
             }
             var packet = new Response.BroadcastSave();
             await RabbitMqService.PublishAsync(packet, "amq.direct", $"fb.{selectedWorld.Value}.system");
+            await LogService.WriteAsync("save", new
+            {
+                action = "save",
+                source = "admin",
+                actor = currentUserName,
+                world = selectedWorld.Value
+            });
             successMessage = "전체 게임 서버에 저장 명령을 전송했습니다.";
         }
         catch (Exception ex)
@@ -418,8 +437,7 @@
                 errorMessage = "월드가 선택되지 않았습니다.";
                 return;
             }
-            var packet = new Response.Shutdown();
-            await RabbitMqService.PublishAsync(packet, "amq.direct", "fb.global");
+            await ShutdownService.Shutdown(currentUserName, "admin");
             successMessage = "전체 게임 서버에 종료 명령을 전송했습니다.";
         }
         catch (Exception ex)

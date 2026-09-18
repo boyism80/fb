@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.IO;
 using System.Windows;
 
@@ -68,6 +68,12 @@ namespace Runner.Model
         public ushort Port { get; set; } = 30210;
     }
 
+    public class DiscordSetting
+    {
+        public string BotToken { get; set; } = string.Empty;
+        public string ChannelId { get; set; } = string.Empty;
+    }
+
     public class MainWindow
     {
         [JsonIgnore]
@@ -95,6 +101,7 @@ namespace Runner.Model
         public MarketplaceSetting Marketplace { get; set; } = new MarketplaceSetting();
         public MatchmakingSetting Matchmaking { get; set; } = new MatchmakingSetting();
         public AdminToolSetting AdminTool { get; set; } = new AdminToolSetting();
+        public DiscordSetting Discord { get; set; } = new DiscordSetting();
         public DateTime LastBuildDate { get; set; }
         public string WorkingDirectory { get; set; }
         public string ExternalIP { get; set; }
@@ -138,6 +145,12 @@ namespace Runner.Model
                     model.Matchmaking.Port = 3340;
                 if (model.AdminTool.Port == 0)
                     model.AdminTool.Port = 30210;
+                if (model.Discord == null)
+                    model.Discord = new DiscordSetting();
+                if (model.Discord.BotToken == null)
+                    model.Discord.BotToken = string.Empty;
+                if (model.Discord.ChannelId == null)
+                    model.Discord.ChannelId = string.Empty;
                 if (model.Game != null)
                 {
                     foreach (var game in model.Game)

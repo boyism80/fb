@@ -179,6 +179,26 @@ module.exports = {
                                     {
                                         name: 'ASPNETCORE_HTTP_PORTS',
                                         value: '80'
+                                    },
+                                    {
+                                        name: 'DISCORD_BOT_TOKEN',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: 'discord-bot',
+                                                key: 'token',
+                                                optional: true,
+                                            },
+                                        },
+                                    },
+                                    {
+                                        name: 'DISCORD_CHANNEL_ID',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: 'discord-bot',
+                                                key: 'channel-id',
+                                                optional: true,
+                                            },
+                                        },
                                     }],
                                     volumeMounts: [{
                                         name: "config-volume",

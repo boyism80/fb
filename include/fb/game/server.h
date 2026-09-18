@@ -90,6 +90,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::ReloadTables, fb::protocol::i
 REGISTER_RESPONSE(fb::protocol::internal::request::ReloadScripts, fb::protocol::internal::response::ReloadScripts)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier, fb::protocol::internal::response::SetDropRateMultiplier)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDateTime, fb::protocol::internal::response::SetDateTime)
+REGISTER_RESPONSE(fb::protocol::internal::request::OpsNotify, fb::protocol::internal::response::OpsNotify)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Cancel, fb::protocol::marketplace::response::Cancel)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::marketplace::response::Purchase)
@@ -223,8 +224,8 @@ public:
     void                              sync_time();
     static uint8_t                    brightness_from_time(uint8_t hours, uint8_t minutes);
     uint8_t                           brightness() const;
-    async::task<internal_resp::Ban>   ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
-    async::task<internal_resp::Unban> unban(std::string_view name);
+    async::task<internal_resp::Ban>   ban(std::string_view actor, std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
+    async::task<internal_resp::Unban> unban(std::string_view actor, std::string_view name);
     // clang-format on
 
 public:

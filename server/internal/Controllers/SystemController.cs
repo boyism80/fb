@@ -1,5 +1,6 @@
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
+using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
@@ -8,30 +9,18 @@ namespace Internal.Controllers
     [Route("system")]
     public class SystemController : ControllerBase
     {
-        private readonly RedisService _redisService;
-        private readonly ILogger _logger;
-        private readonly RabbitMqService _rabbitMqService;
-        private readonly IConfiguration _configuration;
+        private readonly ShutdownService _shutdown;
 
-        public SystemController(RedisService redisService,
-            ILogger<SystemController> logger,
-            RabbitMqService rabbitMqService,
-            IConfiguration configuration)
+        public SystemController(ShutdownService shutdown)
         {
-            _redisService = redisService;
-            _logger = logger;
-            _rabbitMqService = rabbitMqService;
-            _configuration = configuration;
+            _shutdown = shutdown;
         }
 
         [HttpPost("shutdown")]
-        public async Task Shutdown()
+        public async Task<Response.Shutdown> Shutdown(Request.Shutdown request)
         {
-            // Shutdown uses fb.global (no world prefix - all servers receive)
-            await _rabbitMqService.PublishAsync(new Response.Shutdown
-            {
-
-            }, "amq.direct", "fb.global");
+            await _shutdown.Shutdown(request?.Actor ?? string.Empty, "game");
+            return new Response.Shutdown();
         }
     }
 }
