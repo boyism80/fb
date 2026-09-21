@@ -65,10 +65,6 @@ function M.has_dragon_weapon(me)
 end
 
 function M.on_lair_move(me)
-    if not me:is(OBJECT_TYPE.CHARACTER) then
-        return
-    end
-
     if not M.has_dragon_weapon(me) then
         return
     end

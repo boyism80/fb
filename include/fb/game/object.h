@@ -124,8 +124,8 @@ public:
     const fb::model::point16_t&             position() const;
     virtual bool                            position(uint16_t x, uint16_t y, bool refresh = false);
     virtual bool                            position(const fb::model::point16_t position, bool refresh = false);
-    bool                                    move();
-    virtual bool                            move(DIRECTION direction);
+    [[nodiscard]] async::task<bool>         move();
+    [[nodiscard]] virtual async::task<bool> move(DIRECTION direction);
     uint16_t                                x() const;
     bool                                    x(uint16_t value);
     uint16_t                                y() const;

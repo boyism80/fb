@@ -61,11 +61,11 @@ std::unique_ptr<ai> ai::create(MOB_ATTACK_TYPE attack_type)
     }
 }
 
-bool ai::execute(mob& mob_obj, const datetime& now)
+async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
 {
     auto owner = mob_obj.owner.lock();
     if (owner == nullptr || owner->map() != mob_obj.map())
-        return false;
+        co_return false;
 
     auto target = mob_obj.target();
     if (target != nullptr)
@@ -74,12 +74,12 @@ bool ai::execute(mob& mob_obj, const datetime& now)
         if (mob_obj.near_target(target, direction))
         {
             mob_obj.direction(direction);
-            mob_obj.attack();
+            co_await mob_obj.attack();
         }
         else
         {
-            if (!mob_obj.move_step(target->position()))
-                mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
+            if (co_await mob_obj.move_step(target->position()) == false)
+                co_await mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
         }
     }
     else
@@ -91,12 +91,12 @@ bool ai::execute(mob& mob_obj, const datetime& now)
         }
         else
         {
-            if (!mob_obj.move_step(owner->position()))
-                mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
+            if (co_await mob_obj.move_step(owner->position()) == false)
+                co_await mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
         }
     }
 
-    return owner != nullptr;
+    co_return owner != nullptr;
 }
 
 void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now)
@@ -281,14 +281,14 @@ void ai::record_damage(std::shared_ptr<life> attacker, const datetime& now)
     record.second  = now;
 }
 
-void ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)
+async::task<void> ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)
 {
     if (target == nullptr)
-        return;
+        co_return;
 
     auto map = mob_obj.map();
     if (map == nullptr)
-        return;
+        co_return;
 
     auto repeat = std::rand() % 2;
     auto count  = repeat ? 2 : 1;
@@ -322,7 +322,7 @@ void ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)
                 if (delta != want_delta)
                     continue;
 
-                if (mob_obj.move(dir))
+                if (co_await mob_obj.move(dir))
                 {
                     moved = true;
                     break;

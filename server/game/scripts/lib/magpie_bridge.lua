@@ -714,7 +714,7 @@ function M.on_tick()
 end
 
 function M.on_step(me)
-    if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
+    if me == nil then
         return
     end
     if not festival.is('칠석') then

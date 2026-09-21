@@ -250,55 +250,33 @@ bool object::position(const fb::model::point16_t position, bool refresh)
     return this->position(position.x, position.y, refresh);
 }
 
-bool object::move()
+async::task<bool> object::move()
 {
     this->assert_thread();
 
-    return this->move(this->_direction);
+    co_return co_await this->move(this->_direction);
 }
 
-bool object::move(DIRECTION direction)
+async::task<bool> object::move(DIRECTION direction)
 {
     this->assert_thread();
 
     if (this->_map == nullptr)
-        return false;
+        co_return false;
 
     auto after = this->side_position(direction);
     if (this->_map->movable(*this, direction) == false)
-        return false;
+        co_return false;
 
     if (this->direction(direction) == false)
-        return false;
+        co_return false;
 
     auto before = this->_position;
     this->position(after);
 
-    {
-        auto lua = this->server.lua.open("scripts/interaction.lua", "on_move");
-        if (lua)
-        {
-            lua->pushobject(*this);
-            fb::lua::run_async(std::move(lua), 1);
-        }
-    }
-
-    {
-        auto& map_model = this->_map->model();
-        auto  path      = std::format("scripts/map/{}.lua", map_model.id);
-        auto  func      = "on_map_move";
-
-        auto map_lua = this->server.lua.open(path, func);
-        if (map_lua)
-        {
-            map_lua->pushobject(*this);
-            fb::lua::run_async(std::move(map_lua), 1);
-        }
-    }
-
     this->listener.on_move(*this, before);
 
-    return true;
+    co_return true;
 }
 
 uint16_t object::x() const

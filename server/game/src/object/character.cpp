@@ -1615,30 +1615,62 @@ void character::assert_state(const std::vector<STATE>& values) const
     }
 }
 
-bool character::move(const fb::model::point16_t& before, uint8_t walk_queue_slot)
+async::task<bool> character::move(DIRECTION direction)
 {
     this->assert_thread();
 
-    return this->move(this->_direction, before, walk_queue_slot);
+    if (co_await object::move(direction) == false)
+        co_return false;
+
+    {
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_move");
+        if (lua)
+        {
+            lua->pushobject(*this);
+            std::ignore = co_await lua->call(1);
+        }
+    }
+
+    auto map = this->_map;
+    if (map != nullptr)
+    {
+        auto& map_model = map->model();
+        auto  path      = std::format("scripts/map/{}.lua", map_model.id);
+        auto  map_lua   = this->server.lua.open(path, "on_map_move");
+        if (map_lua)
+        {
+            map_lua->pushobject(*this);
+            std::ignore = co_await map_lua->call(1);
+        }
+    }
+
+    co_return true;
 }
 
-bool character::move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot)
+async::task<bool> character::move(const fb::model::point16_t& before, uint8_t walk_queue_slot)
+{
+    this->assert_thread();
+
+    co_return co_await this->move(this->_direction, before, walk_queue_slot);
+}
+
+async::task<bool> character::move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot)
 {
     this->assert_thread();
 
     auto map = this->map();
     if (map == nullptr)
-        return false;
+        co_return false;
 
     if (this->_position != before)
     {
         this->update_position();
-        return false;
+        co_return false;
     }
-    else if (object::move(direction) == false)
+    else if (co_await this->move(direction) == false)
     {
         this->update_position();
-        return false;
+        co_return false;
     }
     else
     {
@@ -1656,7 +1688,7 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before, ui
             this->listener.on_move_confirm(*this, before, viewport, walk_queue_slot);
         }
 
-        return true;
+        co_return true;
     }
 }
 

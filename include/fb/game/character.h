@@ -258,6 +258,7 @@ public:
     void                                     update_map(const fb::game::map& map) override final;
     void                                     update_bgm(uint16_t bgm, uint8_t volume) override final;
     void                                     update_position() override final;
+    [[nodiscard]] async::task<bool>          move(DIRECTION direction) override final;
     fb::model::point16_t                     viewport() const;
     fb::model::point16_t                     viewport(const fb::model::point16_t& position) const;
     bool                                     condition(const std::vector<fb::model::dsl>& conditions) const override final;
@@ -357,8 +358,8 @@ public:
     [[nodiscard]] async::task<void>                           broadcast_friends(std::string_view message, MESSAGE_TYPE type, bool mutual_only = true);
     void                                                      assert_state(STATE value) const;
     void                                                      assert_state(const std::vector<STATE>& values) const;
-    bool                                                      move(const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
-    bool                                                      move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
+    [[nodiscard]] async::task<bool>                           move(const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
+    [[nodiscard]] async::task<bool>                           move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
     [[nodiscard]] async::task<void>                           ride(uint16_t ridable_id = 1);
     [[nodiscard]] async::task<void>                           unride();
     bool                                                      alive() const;

@@ -7,9 +7,6 @@ local TILE_MAX = 10240
 
 return {
     on_map_move = function(me)
-        if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
-            return
-        end
         if not festival.is('칠석') then
             return
         end

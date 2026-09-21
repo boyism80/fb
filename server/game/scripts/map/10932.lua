@@ -17,9 +17,6 @@ return {
     on_enter_chilsungdang = chilsung.try_enter,
 
     on_map_move = function(me)
-        if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
-            return
-        end
         if not festival.is('단오') then
             return
         end

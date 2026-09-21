@@ -186,79 +186,6 @@ const fb::model::mob& mob::model() const
     return fb::model::table::mob[this->_model_id];
 }
 
-async::task<bool> mob::call_action_script()
-{
-    this->assert_thread();
-    this->update_target();
-
-    auto& model = this->model();
-    auto  path  = std::format("scripts/mob/{}.lua", model.id);
-    auto  func  = "on_mob_action";
-
-    if (this->_action_busy)
-        co_return false;
-
-    auto lua = this->server.lua.open(path, func);
-    if (!lua)
-        co_return true;
-
-    lua->pushobject(this);
-
-    if (this->_target.expired() == false)
-    {
-        auto shared = this->_target.lock();
-        if (shared != nullptr)
-            lua->pushobject(shared);
-        else
-            lua->pushnil();
-    }
-    else
-        lua->pushnil();
-
-    auto weak          = this->weak_from_this();
-    this->_action_busy = true;
-    try
-    {
-        std::ignore = co_await lua->call(2);
-    }
-    catch (std::exception& e)
-    {
-        fb::logger::warn(e.what());
-    }
-    catch (...)
-    {
-        fb::logger::warn("unknown error in on_mob_action {}", model.id);
-    }
-
-    auto shared = weak.lock();
-    if (shared == nullptr)
-        co_return false;
-
-    this->_action_busy = false;
-    co_return true;
-}
-
-async::task<void> mob::call_attack_script()
-{
-    this->assert_thread();
-
-    auto& model = this->model();
-    auto  path  = std::format("scripts/mob/{}.lua", model.id);
-    auto  lua   = this->server.lua.open(path, "on_mob_attack");
-    if (!lua)
-        co_return;
-
-    lua->pushobject(this);
-    auto target = this->target();
-    if (target != nullptr)
-        lua->pushobject(target);
-    else
-        lua->pushnil();
-
-    fb::lua::run_async(std::move(lua), 2);
-    co_return;
-}
-
 async::task<void> mob::action(fb::model::datetime now)
 {
     if (this->_action_busy)
@@ -274,16 +201,69 @@ async::task<void> mob::action(fb::model::datetime now)
     // Claim this speed interval before script/AI so on_mob_action matches model.speed.
     this->_action_time = now;
 
-    if (co_await this->call_action_script() == false)
-        co_return;
+    this->update_target();
 
-    this->AI(now);
+    auto path = std::format("scripts/mob/{}.lua", model.id);
+    auto lua  = this->server.lua.open(path, "on_mob_action");
+    if (lua)
+    {
+        lua->pushobject(this);
+
+        if (this->_target.expired() == false)
+        {
+            auto shared = this->_target.lock();
+            if (shared != nullptr)
+                lua->pushobject(shared);
+            else
+                lua->pushnil();
+        }
+        else
+            lua->pushnil();
+
+        auto weak          = this->weak_from_this();
+        this->_action_busy = true;
+        try
+        {
+            std::ignore = co_await lua->call(2);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::warn(e.what());
+        }
+        catch (...)
+        {
+            fb::logger::warn("unknown error in on_mob_action {}", model.id);
+        }
+
+        auto shared = weak.lock();
+        if (shared == nullptr)
+            co_return;
+
+        this->_action_busy = false;
+    }
+
+    co_await this->AI(now);
 }
 
 async::task<void> mob::attack(DURATION duration)
 {
     this->assert_thread();
-    co_await this->call_attack_script();
+
+    auto& model = this->model();
+    auto  path  = std::format("scripts/mob/{}.lua", model.id);
+    auto  lua   = this->server.lua.open(path, "on_mob_attack");
+    if (lua)
+    {
+        lua->pushobject(this);
+        auto target = this->target();
+        if (target != nullptr)
+            lua->pushobject(target);
+        else
+            lua->pushnil();
+
+        std::ignore = co_await lua->call(2);
+    }
+
     co_await life::attack(duration);
     co_return;
 }
@@ -423,46 +403,46 @@ bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& 
     return false;
 }
 
-bool mob::move_step(const fb::model::point16_t& position)
+async::task<bool> mob::move_step(const fb::model::point16_t& position)
 {
     this->assert_thread();
     auto x_axis = bool(std::rand() % 2);
     if (x_axis)
     {
-        if (this->_position.x > position.x && this->move(DIRECTION::LEFT))
-            return true;
-        if (this->_position.x < position.x && this->move(DIRECTION::RIGHT))
-            return true;
-        if (this->_position.y > position.y && this->move(DIRECTION::TOP))
-            return true;
-        if (this->_position.y < position.y && this->move(DIRECTION::BOTTOM))
-            return true;
+        if (this->_position.x > position.x && co_await this->move(DIRECTION::LEFT))
+            co_return true;
+        if (this->_position.x < position.x && co_await this->move(DIRECTION::RIGHT))
+            co_return true;
+        if (this->_position.y > position.y && co_await this->move(DIRECTION::TOP))
+            co_return true;
+        if (this->_position.y < position.y && co_await this->move(DIRECTION::BOTTOM))
+            co_return true;
     }
     else
     {
-        if (this->_position.y > position.y && this->move(DIRECTION::TOP))
-            return true;
-        if (this->_position.y < position.y && this->move(DIRECTION::BOTTOM))
-            return true;
-        if (this->_position.x > position.x && this->move(DIRECTION::LEFT))
-            return true;
-        if (this->_position.x < position.x && this->move(DIRECTION::RIGHT))
-            return true;
+        if (this->_position.y > position.y && co_await this->move(DIRECTION::TOP))
+            co_return true;
+        if (this->_position.y < position.y && co_await this->move(DIRECTION::BOTTOM))
+            co_return true;
+        if (this->_position.x > position.x && co_await this->move(DIRECTION::LEFT))
+            co_return true;
+        if (this->_position.x < position.x && co_await this->move(DIRECTION::RIGHT))
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-void mob::AI(const fb::model::datetime& now)
+async::task<void> mob::AI(const fb::model::datetime& now)
 {
     this->assert_thread();
 
     if (this->_action_busy)
-        return;
+        co_return;
 
     // Speed / sight gates are applied in action(); AI only executes the strategy.
     if (this->_ai_strategy)
-        this->_ai_strategy->execute(*this, now);
+        co_await this->_ai_strategy->execute(*this, now);
 }
 
 bool mob::available() const
@@ -668,20 +648,32 @@ bool mob::cover_blocks_move(const fb::game::map&        map,
     return false;
 }
 
-bool mob::move(DIRECTION direction)
+async::task<bool> mob::move(DIRECTION direction)
 {
     this->assert_thread();
     auto map = this->map();
     if (map == nullptr)
-        return false;
+        co_return false;
 
     const auto& from     = this->position();
     const auto  position = this->side_position(direction);
 
     if (this->cover_blocks_move(*map, from, position))
-        return false;
+        co_return false;
 
-    return fb::game::object::move(direction);
+    if (co_await fb::game::object::move(direction) == false)
+        co_return false;
+
+    auto& model = this->model();
+    auto  path  = std::format("scripts/mob/{}.lua", model.id);
+    auto  lua   = this->server.lua.open(path, "on_mob_move");
+    if (lua)
+    {
+        lua->pushobject(this);
+        std::ignore = co_await lua->call(1);
+    }
+
+    co_return true;
 }
 
 const std::vector<std::shared_ptr<fb::game::item>>& mob::items() const

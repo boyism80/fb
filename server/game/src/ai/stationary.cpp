@@ -3,7 +3,7 @@
 
 using namespace fb::game;
 
-bool stationary_ai::execute(mob& mob_obj, const datetime& now)
+async::task<bool> stationary_ai::execute(mob& mob_obj, const datetime& now)
 {
     super::cleanup_expired_damage(now);
 
@@ -19,16 +19,16 @@ bool stationary_ai::execute(mob& mob_obj, const datetime& now)
     }
 
     if (target == nullptr)
-        return true;
+        co_return true;
 
     DIRECTION attack_dir;
     if (mob_obj.near_target(target, attack_dir))
     {
         mob_obj.direction(attack_dir);
-        mob_obj.attack();
+        co_await mob_obj.attack();
     }
 
-    return true;
+    co_return true;
 }
 
 MOB_ATTACK_TYPE stationary_ai::get_type() const

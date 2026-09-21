@@ -6,10 +6,6 @@ return {
     -- end,
 
     on_map_move = function(me)
-        if not me:is(OBJECT_TYPE.CHARACTER) then
-            return
-        end
-
         quest.manrihyang_seed_on_move(me)
     end,
 
