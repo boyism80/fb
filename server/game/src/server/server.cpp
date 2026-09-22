@@ -310,54 +310,58 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  collection_unlocks);
 }
 
-async::task<void> fb::game::server::save()
+async::task<void> fb::game::server::save(fb::thread& thread)
 {
     static constexpr size_t SAVE_BATCH_CHUNK_SIZE = 100;
-    auto                    tasks                 = std::vector<async::task<void>>{};
+
+    auto params   = thread.template data<thread_params>();
+    auto by_world = std::map<uint32_t, std::pair<std::vector<character*>, std::vector<internal::SavePayload>>>{};
+    co_await params->characters.foreach ([&](auto& character) {
+        if (!character->inited())
+            return;
+
+        if (!fb::config<std::optional<uint32_t>>("world") && character->has_return_point() == false)
+        {
+            fb::logger::fatal("Character {} cross save without home snapshot", character->name());
+            return;
+        }
+
+        auto& chunk = by_world[character->world()];
+        chunk.first.push_back(character.get());
+        chunk.second.push_back(this->save_payload(*character));
+    });
+
+    for (auto& [world, chunk] : by_world)
+    {
+        auto&        characters = chunk.first;
+        auto&        payloads   = chunk.second;
+        const size_t total      = payloads.size();
+        for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
+        {
+            const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, total);
+            auto batch  = std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
+                                                            payloads.begin() + static_cast<std::ptrdiff_t>(chunk_end));
+            std::ignore = co_await this->http.post("internal",
+                                                   "/in-game/save-batch",
+                                                   internal_reqs::SaveBatch{world, std::move(batch)});
+
+            for (size_t i = offset; i < chunk_end; i++)
+            {
+                characters[i]->save_ack();
+            }
+        }
+    }
+}
+
+async::task<void> fb::game::server::save()
+{
+    auto tasks = std::vector<async::task<void>>{};
     tasks.reserve(this->threads.count());
     for (auto& [id, thread] : this->threads)
     {
         auto builder = thread->new_builder<void>();
         builder.func = [this](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            auto by_world =
-                std::map<uint32_t, std::pair<std::vector<character*>, std::vector<internal::SavePayload>>>{};
-            co_await params->characters.foreach ([&](auto& character) {
-                if (!character->inited())
-                    return;
-                if (!fb::config<std::optional<uint32_t>>("world") && character->has_return_point() == false)
-                {
-                    fb::logger::fatal("Character {} cross save without home snapshot", character->name());
-                    return;
-                }
-
-                auto& chunk = by_world[character->world()];
-                chunk.first.push_back(character.get());
-                chunk.second.push_back(this->save_payload(*character));
-            });
-
-            for (auto& [world, chunk] : by_world)
-            {
-                auto&        characters = chunk.first;
-                auto&        payloads   = chunk.second;
-                const size_t total      = payloads.size();
-                for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
-                {
-                    const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, total);
-                    auto         batch =
-                        std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
-                                                           payloads.begin() + static_cast<std::ptrdiff_t>(chunk_end));
-                    std::ignore = co_await this->http.post("internal",
-                                                           "/in-game/save-batch",
-                                                           internal_reqs::SaveBatch{world, std::move(batch)});
-
-                    for (size_t i = offset; i < chunk_end; i++)
-                    {
-                        characters[i]->save_ack();
-                    }
-                }
-            }
-            co_return;
+            co_await this->save(thread);
         };
         tasks.push_back(builder.dispatch());
     }
