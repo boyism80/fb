@@ -29,7 +29,7 @@ return {
                 me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
             end
         elseif sel == 2 then
-            me:dialog(npc, "잘 생각하셨어요.", { prev = false, next = true })
+            me:dialog(npc, "잘 생각하셨어요.", { prev = false, next = false })
         end
     end
 }

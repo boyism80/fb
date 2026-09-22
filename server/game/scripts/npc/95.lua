@@ -5,14 +5,14 @@ return {
     on_click = function(me, npc)
         local q = me:quest(quest.QUEST_MUTA)
         if q == nil or q:completed() then
-            me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 요사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네.', { prev = false, next = true })
+            me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 요사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네.', { prev = false, next = false })
             return
         end
 
         local step = q:step()
         if step == 0 then
             ::NPC_95_0001::
-            if me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 용사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네. 곳곳의 풍수를 살펴보면 만물이 있어야 할 자리를 지키지 못하고 있으며, 별자리마저 알 수 없는 형태로 일그러져버렸네.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 용사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네. 곳곳의 풍수를 살펴보면 만물이 있어야 할 자리를 지키지 못하고 있으며, 별자리마저 알 수 없는 형태로 일그러져버렸네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_95_0002::
@@ -43,7 +43,7 @@ return {
                 goto NPC_95_0003
             end
             if choice ~= 1 then
-                me:dialog(npc, '그렇다면 어쩔 수 없지.', { prev = false, next = true })
+                me:dialog(npc, '그렇다면 어쩔 수 없지.', { prev = false, next = false })
                 return
             end
 
@@ -82,12 +82,12 @@ return {
 
             q:step(1)
             me:push_achievement(7, '소호 암살의 임무를 받다.', 7, 16)
-            me:dialog(npc, '먼저 장안성 성곽 부근에 위치한 신전으로 가서, 소호를 물리치고 돌아오게.', { prev = false, next = true })
+            me:dialog(npc, '먼저 장안성 성곽 부근에 위치한 신전으로 가서, 소호를 물리치고 돌아오게.', { prev = false, next = false })
         end
 
         if step == 1 then
             if not me:rmitem('소호의증표', 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, '먼저 장안성 성곽 부근에 위치한 신전으로 가서, 소호를 물리치고 돌아오게.', { prev = false, next = true })
+                me:dialog(npc, '먼저 장안성 성곽 부근에 위치한 신전으로 가서, 소호를 물리치고 돌아오게.', { prev = false, next = false })
                 return
             end
 
@@ -98,7 +98,7 @@ return {
                 return
             end
             ::NPC_95_0010::
-            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = true })
+            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -109,7 +109,7 @@ return {
 
         if step == 2 then
             if not me:rmitem('전욱의증표', 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, '먼저 국내성에 있는 전욱의 신전으로 가서, 전욱을 물리치고 돌아오게.', { prev = false, next = true })
+                me:dialog(npc, '먼저 국내성에 있는 전욱의 신전으로 가서, 전욱을 물리치고 돌아오게.', { prev = false, next = false })
                 return
             end
 
@@ -120,7 +120,7 @@ return {
                 return
             end
             ::NPC_95_0012::
-            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = true })
+            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -131,7 +131,7 @@ return {
 
         if step == 3 then
             if not me:rmitem('제곡의증표', 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, '먼저 부여성에 있는 제곡의 신전으로 가서, 제곡을 물리치고 돌아오게.', { prev = false, next = true })
+                me:dialog(npc, '먼저 부여성에 있는 제곡의 신전으로 가서, 제곡을 물리치고 돌아오게.', { prev = false, next = false })
                 return
             end
 
@@ -142,7 +142,7 @@ return {
                 return
             end
             ::NPC_95_0014::
-            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = true })
+            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -153,7 +153,7 @@ return {
 
         if step == 4 then
             if not me:rmitem('요제의증표', 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, '먼저 바다 건너 일본에 있는 요제의 신전으로 가서, 요제를 물리치고 돌아오게.', { prev = false, next = true })
+                me:dialog(npc, '먼저 바다 건너 일본에 있는 요제의 신전으로 가서, 요제를 물리치고 돌아오게.', { prev = false, next = false })
                 return
             end
 
@@ -164,7 +164,7 @@ return {
                 return
             end
             ::NPC_95_0016::
-            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = true })
+            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -175,7 +175,7 @@ return {
 
         if step == 5 then
             if not me:rmitem('순제의증표', 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, '먼저 광동성에 있는 순제의 신전으로 가서, 순제를 물리치고 돌아오게.', { prev = false, next = true })
+                me:dialog(npc, '먼저 광동성에 있는 순제의 신전으로 가서, 순제를 물리치고 돌아오게.', { prev = false, next = false })
                 return
             end
 
@@ -213,7 +213,7 @@ return {
                 goto NPC_95_0019
             end
             ::NPC_95_0021::
-            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = true })
+            btn = me:dialog(npc, '주의할 점은 임무를 완수하거든 곧장 나에게 돌아와야 한다는 것일세.\n다른 곳에서 전투를 하거나 시간을 지체할 경우 자네가 구한 증표가 효력을 잃을 수 있네.\n시간이 없군. 어서 출발하게!', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -224,7 +224,7 @@ return {
 
         if step == 6 then
             if not me:has_items('반고의심장', 1) then
-                me:dialog(npc, '먼저 광동성 신전에서 반고를 물리치고 그 심장을 구해오게.', { prev = false, next = true })
+                me:dialog(npc, '먼저 광동성 신전에서 반고를 물리치고 그 심장을 구해오게.', { prev = false, next = false })
                 return
             end
 
@@ -235,7 +235,7 @@ return {
                 return
             end
             ::NPC_95_0023::
-            btn = me:dialog(npc, '반고의 심장을 들고 천상계의 천성랑을 찾아가게.\n이번 일로 최고의 경지에 오른 것을 증명한 자네인만큼, 그에 걸맞는 새로운 지위를 인정받을 수 있을 것이네.', { prev = true, next = true })
+            btn = me:dialog(npc, '반고의 심장을 들고 천상계의 천성랑을 찾아가게.\n이번 일로 최고의 경지에 오른 것을 증명한 자네인만큼, 그에 걸맞는 새로운 지위를 인정받을 수 있을 것이네.', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

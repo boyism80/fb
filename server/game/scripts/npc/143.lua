@@ -24,14 +24,14 @@ return {
             local sel = me:list(npc, '제발 부탁드려요. 반지를 찾아주세요.', { '걱정마세요. 제가 꼭 찾아드리죠.', '흠. 전 물을 싫어해서요. 죄송하네요.' }, { prev = false })
             if sel == nil or sel == 2 then
                 if sel == 2 then
-                    me:dialog(npc, '그러시다면야.. 이를 어쩐담...', { prev = false, next = true })
+                    me:dialog(npc, '그러시다면야.. 이를 어쩐담...', { prev = false, next = false })
                 end
                 return
             end
             btn = me:dialog(npc, '정말 고마워요. 그럼 믿고 기다리죠.', { prev = false, next = true })
             local q = me:start_quest(quest.QUEST_PRINCESS_RING)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             me:push_achievement(3, '중국공주의 잃어버린 반지를 되찾자.', 7, 1)
@@ -39,12 +39,12 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, '저번엔 정말로 감사했습니다.', { prev = false, next = true })
+            me:dialog(npc, '저번엔 정말로 감사했습니다.', { prev = false, next = false })
             return
         end
 
         if not me:has_items('공주의반지', 1) then
-            me:dialog(npc, '아직 제 반지가 없으신거같은데..', { prev = false, next = true })
+            me:dialog(npc, '아직 제 반지가 없으신거같은데..', { prev = false, next = false })
             return
         end
         local btn = me:dialog(npc, '정말 감사해요. 정말... 이 은혜는 잊지 못할꺼에요. 이건 약소하지만 제가 드리는 선물입니다.', { prev = false, next = true })
@@ -56,11 +56,11 @@ return {
             { ['item'] = { ['청옥반지'] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '아직 제 반지가 없으신거같은데..', { prev = false, next = true })
+            me:dialog(npc, '아직 제 반지가 없으신거같은데..', { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 청옥반지를 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 청옥반지를 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:complete()

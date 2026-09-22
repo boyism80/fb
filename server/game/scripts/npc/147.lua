@@ -58,6 +58,6 @@ return {
         for _, name in ipairs(REQUIRED_ITEMS) do
             me:rmitem(name, 1, ITEM_DELETE_TYPE.GIVE)
         end
-        me:dialog(npc, '지금 북천황이 나왔네! 빠른시간내에 처리해주게!', { prev = false, next = true })
+        me:dialog(npc, '지금 북천황이 나왔네! 빠른시간내에 처리해주게!', { prev = false, next = false })
     end
 }

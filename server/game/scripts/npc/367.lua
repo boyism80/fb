@@ -67,10 +67,11 @@ local function run_quest_accept(me, npc)
 end
 
 local function run_bead_exchange(me, npc)
+    ::NPC_367_0020::
     local sel, list_btn = me:list(npc, "오, 발굴 작업은 어떻게 되었나?", {
         "구슬조각을 찾아왔습니다.",
         "아직 많이 찾지 못했습니다."
-    }, { prev = true })
+    }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -82,13 +83,20 @@ local function run_bead_exchange(me, npc)
         return
     end
 
+    ::NPC_367_0021::
     sel, list_btn = me:list(npc, "오오 왔는가. 어떤 색깔의 구슬조각을 가져왔는가?", {
         "갈색구슬조각입니다.",
         "자색구슬조각입니다.",
         "청색구슬조각입니다.",
         "녹색구슬조각입니다."
     }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 4 then
+    if list_btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_367_0020
+    end
+    if sel == nil or sel < 1 or sel > 4 then
         return
     end
     local bead_item = BEAD_OPTIONS[sel][1]

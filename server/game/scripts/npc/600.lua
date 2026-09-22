@@ -109,7 +109,10 @@ return {
             goto MENU
         end
 
-        me:dialog(npc, "허허~ 싱겁기는. 나는 잘 지내고 있다네. 자네도 잘 지내시게나~", { prev = false, next = true })
+        local btn = me:dialog(npc, "허허~ 싱겁기는. 나는 잘 지내고 있다네. 자네도 잘 지내시게나~", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         goto MENU
     end
 }

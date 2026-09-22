@@ -65,7 +65,7 @@ local function run_dongji(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "아마 칠석집의 주연이누나가 팥을 가지고 있을텐데.. 좀 받아와주시겠어요? 팥죽 끓이는건 제가 하죠..", { prev = false, next = true })
+        btn = me:dialog(npc, "아마 칠석집의 주연이누나가 팥을 가지고 있을텐데.. 좀 받아와주시겠어요? 팥죽 끓이는건 제가 하죠..", { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -127,7 +127,7 @@ end
 
 return {
     on_click = function(me, npc)
-        local button = me:dialog(npc, "안녕하세요? 저는 백수인입니다.", { prev = false, next = true })
+        local button = me:dialog(npc, "안녕하세요? 저는 백수인입니다.", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

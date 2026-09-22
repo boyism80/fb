@@ -113,7 +113,10 @@ return {
         end
         if reward ~= nil then
             broadcast(string.format('%s님이 %s 강화에 성공하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
-            me:dialog(npc, '축하하네. 하늘이 자네를 ' .. success_item .. '의 주인으로 인정하는군.', { prev = false, next = true })
+            local btn = me:dialog(npc, '축하하네. 하늘이 자네를 ' .. success_item .. '의 주인으로 인정하는군.', { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             broadcast(string.format('%s님이 %s 강화에 실패하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
             me:dialog(npc, '미안하네. 온도 조절이 실패하여 용무기가 부숴저버렸군.. 너무 낙심하지 말게나.', { prev = false, next = false })

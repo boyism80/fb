@@ -25,7 +25,7 @@ return {
                 return
             end
             ::NPC_174_0003::
-            btn = me:dialog(npc, '나는 원래 서복이란 자를 쫓아 이곳에 당도했다. 결국 서복은 없었지만 너무나 아름다운 이 섬에서 얼마간 머물기로 마음먹었지. 그 결과 나는 엄청난 비밀을 알게 되었고, 그 대가로 이렇게 원혼이 되었다.', { prev = true, next = true })
+            btn = me:dialog(npc, '나는 원래 서복이란 자를 쫓아 이곳에 당도했다. 결국 서복은 없었지만 너무나 아름다운 이 섬에서 얼마간 머물기로 마음먹었지. 그 결과 나는 엄청난 비밀을 알게 되었고, 그 대가로 이렇게 원혼이 되었다.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -64,7 +64,7 @@ return {
                 return
             end
             ::NPC_174_0011::
-            btn = me:dialog(npc, '나는 원래 서복이란 자를 쫓아 이곳에 당도했다. 결국 서복은 없었지만 너무나 아름다운 이 섬에서 얼마간 머물기로 마음먹었지. 그 결과 나는 엄청난 비밀을 알게 되었고, 그 대가로 이렇게 원혼이 되었다.', { prev = true, next = true })
+            btn = me:dialog(npc, '나는 원래 서복이란 자를 쫓아 이곳에 당도했다. 결국 서복은 없었지만 너무나 아름다운 이 섬에서 얼마간 머물기로 마음먹었지. 그 결과 나는 엄청난 비밀을 알게 되었고, 그 대가로 이렇게 원혼이 되었다.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -90,7 +90,7 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, '......', { prev = true, next = true })
+            me:dialog(npc, '......', { prev = false, next = false })
             return
         end
 
@@ -104,7 +104,7 @@ return {
                 return
             end
             ::NPC_174_0020::
-            btn = me:dialog(npc, '일기장을 정리해오겠네 좀 기다려주게나', { prev = true, next = true })
+            btn = me:dialog(npc, '일기장을 정리해오겠네 좀 기다려주게나', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -125,11 +125,11 @@ return {
                 { ['item'] = { ['선장의일기장'] = 1, ['등대빛의검'] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '아직 일기 아홉장과 겉표지를 구하지 못했나보군..', { prev = false, next = true })
+                me:dialog(npc, '아직 일기 아홉장과 겉표지를 구하지 못했나보군..', { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', { prev = false, next = false })
                 return
             end
             q:complete()

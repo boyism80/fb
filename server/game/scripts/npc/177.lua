@@ -50,9 +50,9 @@ return {
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_result, '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_result, '을', '를') .. ' 줄 수 없네.', { prev = false, next = false })
             return
         end
-        me:dialog(npc, item_tainted .. '에 주술을 거는 데 성공했네... 부디 뜻깊은 일에 사용하게나. 과거 이 섬을 폭염왕의 마수에서 잠시나마 구해 줬던 영웅처럼 말일세...', { prev = true, next = true })
+        me:dialog(npc, item_tainted .. '에 주술을 거는 데 성공했네... 부디 뜻깊은 일에 사용하게나. 과거 이 섬을 폭염왕의 마수에서 잠시나마 구해 줬던 영웅처럼 말일세...', { prev = false, next = false })
     end
 }

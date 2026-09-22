@@ -162,11 +162,11 @@ return {
                 return
             end
             if ds > 0 and ds < 10 then
-                me:dialog(npc, "무...무슨 일이오! 난 무언가를 훔치지 않았어!", { prev = false, next = true })
+                me:dialog(npc, "무...무슨 일이오! 난 무언가를 훔치지 않았어!", { prev = false, next = false })
                 return
             end
             if ds >= 10 and ds < 16 then
-                me:dialog(npc, "(흑흑흑...)", { prev = false, next = true })
+                me:dialog(npc, "(흑흑흑...)", { prev = false, next = false })
                 return
             end
         end
@@ -190,7 +190,7 @@ return {
             end
             q = me:start_quest(quest.QUEST_JINJIN)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             local code = me:exchange(
@@ -198,20 +198,20 @@ return {
                 { ['item'] = { ['선장의일기1'] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '도시락을 가지고 있지 않으시군요.', { prev = false, next = true })
+                me:dialog(npc, '도시락을 가지고 있지 않으시군요.', { prev = false, next = false })
                 return
             elseif code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 선장의일기1을 줄 수 없네.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 선장의일기1을 줄 수 없네.', { prev = false, next = false })
                 return
             end
             q:complete()
             lighthouse:step(2)
             me:push_achievement(32, '진백랑의 부탁을 들어주자. [2/6]', 7, 1)
-            me:dialog(npc, '고맙소! 일이 급해서 도시락 만들 여유가 없었거든! 자, 이거라도 받으시오!', { prev = false, next = true })
+            me:dialog(npc, '고맙소! 일이 급해서 도시락 만들 여유가 없었거든! 자, 이거라도 받으시오!', { prev = false, next = false })
             return
         end
 
         ::NPC_118_DEFAULT::
-        me:dialog(npc, '일을 가야하는데 도시락을 깜빡 잊었네. 이를 어쩐담?! 이제와서 만들 시간도 없는데. 누가 초보 도시락이라도 팔지 않으려나.', { prev = false, next = true })
+        me:dialog(npc, '일을 가야하는데 도시락을 깜빡 잊었네. 이를 어쩐담?! 이제와서 만들 시간도 없는데. 누가 초보 도시락이라도 팔지 않으려나.', { prev = false, next = false })
     end
 }

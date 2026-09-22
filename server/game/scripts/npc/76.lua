@@ -10,7 +10,7 @@ return {
         local btn, sel
 
         if me:level() < MIN_LEVEL then
-            me:dialog(npc, '용왕님의 건강이 많이 나빠지셔서 어떡하면 좋을까..', { prev = false, next = true })
+            me:dialog(npc, '용왕님의 건강이 많이 나빠지셔서 어떡하면 좋을까..', { prev = false, next = false })
             return
         end
 
@@ -40,14 +40,14 @@ return {
             sel = me:list(npc, '제가 부탁하는 재료를 구해주실 수 있나요?', { '아.물론입니다.', '죄송하지만 바빠서...' })
             if sel == nil or sel ~= 1 then
                 if sel == 2 then
-                    me:dialog(npc, '흠..그러신가요..', { prev = false, next = true })
+                    me:dialog(npc, '흠..그러신가요..', { prev = false, next = false })
                 end
                 return
             end
             if q == nil then
                 q = me:start_quest(quest.QUEST_WATER_RING)
                 if q == nil then
-                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                     return
                 end
             end
@@ -58,7 +58,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '그럼 부탁드리겠습니다.', { prev = false, next = true })
+            btn = me:dialog(npc, '그럼 부탁드리겠습니다.', { prev = false, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_76_COS005
             end
@@ -71,7 +71,7 @@ return {
 
         local materials = {['게등껍질'] = 1, ['게집게'] = 1, ['문어다리'] = 1, ['해마꼬리'] = 1}
         if not me:has_items(materials) then
-            me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', { prev = false, next = true })
+            me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', { prev = false, next = false })
             return
         end
 
@@ -85,10 +85,10 @@ return {
             { ['item'] = { ['인어반지'] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', { prev = false, next = true })
+            me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', { prev = false, next = false })
             return
         elseif code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:complete()
@@ -100,6 +100,6 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, '공좌님 정말 감사드려요.', { prev = false, next = true })
+        me:dialog(npc, '공좌님 정말 감사드려요.', { prev = false, next = false })
     end
 }

@@ -77,7 +77,10 @@ return {
             return
         end
 
-        me:dialog(npc, "다람쥐와 토끼를 모두 잡으셨나요? 선물로 초보자용 갑옷을 드리겠습니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "다람쥐와 토끼를 모두 잡으셨나요? 선물로 초보자용 갑옷을 드리겠습니다.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
 
         local armor = (me:gender() == GENDER.FEMALE) and "초보자용여자갑주" or "초보자용남자갑주"
         if me:mkitem(armor, 1) == nil then
@@ -87,8 +90,14 @@ return {
         q:step(6)
         me:exp(me:exp() + 200)
 
-        me:dialog(npc, "갑옷은 방어력을 낮춰주는 역할을 하며, 방어력이 낮을수록 몬스터에게 입는 데미지가 줄어들게 됩니다.", { prev = false, next = true })
-        me:dialog(npc, "바람의나라에서는 다양한 갑옷이 준비되어 있으니, 모험을 통하여 더 강한 갑옷을 사용하실 수 있습니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "갑옷은 방어력을 낮춰주는 역할을 하며, 방어력이 낮을수록 몬스터에게 입는 데미지가 줄어들게 됩니다.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        local btn = me:dialog(npc, "바람의나라에서는 다양한 갑옷이 준비되어 있으니, 모험을 통하여 더 강한 갑옷을 사용하실 수 있습니다.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         me:dialog(npc, "이로서 제가 가르쳐 드릴것은 끝이 났군요. 다음 방으로 가보시길 바랍니다.", { prev = false, next = false })
     end
 }

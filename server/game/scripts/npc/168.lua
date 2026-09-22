@@ -68,15 +68,12 @@ return {
             q = me:quest(quest.QUEST_MEOKYEOM)
             q:step(1)
             ::NPC_168_0020::
-            btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', { prev = true, next = true })
-            if btn == DIALOG_RESULT.PREV then
-                goto NPC_168_0010
-            end
+            btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_168_0021::
-            btn = me:dialog(npc, '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.', { prev = true, next = true })
+            btn = me:dialog(npc, '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.', { prev = true, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_168_0020
             end
@@ -85,7 +82,7 @@ return {
 
         if q:step() == 0 then
             ::NPC_168_0030::
-            btn = me:dialog(npc, '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.', { prev = true, next = true })
+            btn = me:dialog(npc, '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -116,15 +113,12 @@ return {
             q = me:quest(quest.QUEST_MEOKYEOM)
             q:step(1)
             ::NPC_168_0040::
-            btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', { prev = true, next = true })
-            if btn == DIALOG_RESULT.PREV then
-                goto NPC_168_0030
-            end
+            btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_168_0041::
-            btn = me:dialog(npc, '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.', { prev = true, next = true })
+            btn = me:dialog(npc, '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.', { prev = true, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_168_0040
             end
@@ -177,7 +171,7 @@ return {
                 me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '정말 고맙네! 수고했네. 앞으로도 계속 부탁하네.', { prev = true, next = true })
+            me:dialog(npc, '정말 고맙네! 수고했네. 앞으로도 계속 부탁하네.', { prev = false, next = false })
             return
         end
 
@@ -197,9 +191,9 @@ return {
             me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', { prev = false, next = false })
             return
         elseif code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', { prev = false, next = false })
             return
         end
-        me:dialog(npc, '정말 고맙네! 수고했네. 앞으로도 계속 부탁하네.', { prev = true, next = true })
+        me:dialog(npc, '정말 고맙네! 수고했네. 앞으로도 계속 부탁하네.', { prev = false, next = false })
     end
 }

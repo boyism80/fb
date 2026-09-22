@@ -34,7 +34,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0004::
-        btn = me:dialog(npc, '모르셨소? 내 간단히 설명해드리지. 저 멀리 표신궁이 보이지요? 옛날 수많은 사람들을 학살한 대장군의 성이지. 그 대장군이 얼마나 포악했는가 하면, 대장군이 죽은 지금도 사람들이 이 성 근처에 가까지 오지 않으려 하는 것만 봐도 알 수 있지 않소?', { prev = true, next = true })
+        btn = me:dialog(npc, '모르셨소? 내 간단히 설명해드리지. 저 멀리 표신궁이 보이지요? 옛날 수많은 사람들을 학살한 대장군의 성이지. 그 대장군이 얼마나 포악했는가 하면, 대장군이 죽은 지금도 사람들이 이 성 근처에 가까지 오지 않으려 하는 것만 봐도 알 수 있지 않소?', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -67,7 +67,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0008::
-        btn = me:dialog(npc, '이거 반갑구려. 모험가를 만나는 게 얼마만인지... 실은 이 전에도 많은 모험가들이 표신궁에 들어갔었는데, 대부분 돌아오지 않았고 살아서 돌아온 몇몇 사람들은 입구에서 얼마 가지도 못하고 돌아왔지.', { prev = true, next = true })
+        btn = me:dialog(npc, '이거 반갑구려. 모험가를 만나는 게 얼마만인지... 실은 이 전에도 많은 모험가들이 표신궁에 들어갔었는데, 대부분 돌아오지 않았고 살아서 돌아온 몇몇 사람들은 입구에서 얼마 가지도 못하고 돌아왔지.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -92,21 +92,18 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0011::
-        btn = me:dialog(npc, '고맙소! 당신이라면 왠지 꼭 성공할 것 같은 기분이 드는군, 행운을 빌겠소.', { prev = true, next = true })
+        btn = me:dialog(npc, '고맙소! 당신이라면 왠지 꼭 성공할 것 같은 기분이 드는군, 행운을 빌겠소.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
         ::NPC_250_0012::
-        btn = me:dialog(npc, '이것은 내 작은 성의요. 착수금조로 받아주시오.', { prev = false, next = false })
-        if btn == DIALOG_RESULT.PREV then 
-            goto NPC_250_0011 
-        end
-        if btn == DIALOG_RESULT.QUIT then 
+        btn = me:dialog(npc, '이것은 내 작은 성의요. 착수금조로 받아주시오.', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         q = me:start_quest(quest.QUEST_PYOSIN)
         if q == nil then
-            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
             return
         end
         q:step(1)
@@ -123,7 +120,7 @@ local function pyosin_story(me, npc)
     local step = q:step()
     if step == 1 then
         ::NPC_250_0013::
-        btn = me:dialog(npc, '오, 살아 돌아왔구려! 반갑소. 정말 반갑소. 잘 돌아오셨소이다.', { prev = true, next = true })
+        btn = me:dialog(npc, '오, 살아 돌아왔구려! 반갑소. 정말 반갑소. 잘 돌아오셨소이다.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -144,7 +141,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0015::
-        btn = me:dialog(npc, '동장군? ...오오! 과연... 역시 내 눈은 틀리지 않았구려. 동장군이라면 대장군의 충실한 수하인 오방장군 중 하나요. 그도 귀신이 되어 표신궁에 떠돌고 있는 모양이군...', { prev = true, next = true })
+        btn = me:dialog(npc, '동장군? ...오오! 과연... 역시 내 눈은 틀리지 않았구려. 동장군이라면 대장군의 충실한 수하인 오방장군 중 하나요. 그도 귀신이 되어 표신궁에 떠돌고 있는 모양이군...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -173,12 +170,12 @@ local function pyosin_story(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 대장군의일기1을 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 대장군의일기1을 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(2)
         ::NPC_250_0018::
-        btn = me:dialog(npc, '......음, 다 됐소. 여기 번역한 문서가 있으니 한번 읽어나 보시오. 보아하니 이것은 먼 옜날 이 땅을 통일했던 유명한 대장군의 일기인 것 같구려. 아까 이야기했던 오방장군도 이 대장군의 수하들이라오.', { prev = true, next = true })
+        btn = me:dialog(npc, '......음, 다 됐소. 여기 번역한 문서가 있으니 한번 읽어나 보시오. 보아하니 이것은 먼 옜날 이 땅을 통일했던 유명한 대장군의 일기인 것 같구려. 아까 이야기했던 오방장군도 이 대장군의 수하들이라오.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -191,7 +188,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0020::
-        btn = me:dialog(npc, '다 읽고 나서 말씀해 주시오. 부탁드릴 것도 있고 하니... 아, 그리고 이건 약속한 사례요. 약소하지만 받아 두시오. 앞으로 내 연구를 더 많이 도와주면 줄수록 더 많은 사례를 하겠소이다.', { prev = true, next = true })
+        btn = me:dialog(npc, '다 읽고 나서 말씀해 주시오. 부탁드릴 것도 있고 하니... 아, 그리고 이건 약속한 사례요. 약소하지만 받아 두시오. 앞으로 내 연구를 더 많이 도와주면 줄수록 더 많은 사례를 하겠소이다.', { prev = true, next = false })
         if btn == DIALOG_RESULT.PREV then 
             goto NPC_250_0019 
         end
@@ -200,7 +197,7 @@ local function pyosin_story(me, npc)
     
     if step == 2 then
         ::NPC_250_0021::
-        btn = me:dialog(npc, '다 읽어보셨소? 흠, 어떠시오? 고통받는 백성들을 위해 천하통일을 결심한 대장군의 웅대한 포부가 느껴지는 것 같지 않소?', { prev = true, next = true })
+        btn = me:dialog(npc, '다 읽어보셨소? 흠, 어떠시오? 고통받는 백성들을 위해 천하통일을 결심한 대장군의 웅대한 포부가 느껴지는 것 같지 않소?', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -213,7 +210,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0023::
-        btn = me:dialog(npc, '동장군의 원령이 이 일기를 가지고 있었다고 하면, 다음 일기는 아마 오방장군 중 두번째 장군인 서장군의 원령이 가지고 있지 않을까 하는데...', { prev = true, next = true })
+        btn = me:dialog(npc, '동장군의 원령이 이 일기를 가지고 있었다고 하면, 다음 일기는 아마 오방장군 중 두번째 장군인 서장군의 원령이 가지고 있지 않을까 하는데...', { prev = true, next = false })
         if btn == DIALOG_RESULT.PREV then 
             goto NPC_250_0022 
         end
@@ -228,7 +225,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0024::
-        btn = me:dialog(npc, '오오, 두번째 고문서를 찾아오셨구려. 수고하셨소! 잠시만 기다리시오. 이번 일기는 어떤 내용일런지...', { prev = true, next = true })
+        btn = me:dialog(npc, '오오, 두번째 고문서를 찾아오셨구려. 수고하셨소! 잠시만 기다리시오. 이번 일기는 어떤 내용일런지...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -249,11 +246,11 @@ local function pyosin_story(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 대장군의일기2를 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 대장군의일기2를 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(4)
-        btn = me:dialog(npc, '...다 됐소. 한번 읽어 보시오. 역시 이 두번째 고문서는 대장군의 두번째 일기였소. 여기 약속한 사례도 받아가시구려.', { prev = true, next = true })
+        btn = me:dialog(npc, '...다 됐소. 한번 읽어 보시오. 역시 이 두번째 고문서는 대장군의 두번째 일기였소. 여기 약속한 사례도 받아가시구려.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -262,11 +259,11 @@ local function pyosin_story(me, npc)
     end
     
     if step == 4 then
-        btn = me:dialog(npc, '다 읽어보셨소? 흠, 어떠시오?', { prev = true, next = true })
+        btn = me:dialog(npc, '다 읽어보셨소? 흠, 어떠시오?', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
-        btn = me:dialog(npc, '일기의 다음이 궁금해지는군. 남장군을 쓰러뜨리고 표신궁고문서3을 구해와 주시오. 물론 사례는 하겠소.', { prev = true, next = true })
+        btn = me:dialog(npc, '일기의 다음이 궁금해지는군. 남장군을 쓰러뜨리고 표신궁고문서3을 구해와 주시오. 물론 사례는 하겠소.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -281,7 +278,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0028::
-        btn = me:dialog(npc, '세번째 고문서를 찾아오셨구려! 정말 수고하셨소! 당신은 여태껏 여기에 찾아온 사람들 중 가장 대단한 사람이오. 정말 놀랍소.', { prev = true, next = true })
+        btn = me:dialog(npc, '세번째 고문서를 찾아오셨구려! 정말 수고하셨소! 당신은 여태껏 여기에 찾아온 사람들 중 가장 대단한 사람이오. 정말 놀랍소.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -310,12 +307,12 @@ local function pyosin_story(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 대장군의일기3을 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 대장군의일기3을 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(6)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서4를 구하자.', 7, 1)
-        btn = me:dialog(npc, '...으음... 다 됐소. 예상한 대로 세번째 고문서는 대장군의 세번째 일기였소. 한번 읽어 보시오. 대장군이 전투에서 크게 패하고 도망치던 때에 쓴 일기인 것 같소.', { prev = true, next = true })
+        btn = me:dialog(npc, '...으음... 다 됐소. 예상한 대로 세번째 고문서는 대장군의 세번째 일기였소. 한번 읽어 보시오. 대장군이 전투에서 크게 패하고 도망치던 때에 쓴 일기인 것 같소.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -324,7 +321,7 @@ local function pyosin_story(me, npc)
     end
     
     if step == 6 then
-        btn = me:dialog(npc, '다 읽어보셨소? 북장군을 쓰러뜨리고 표신궁고문서4를 구해와 주시오.', { prev = true, next = true })
+        btn = me:dialog(npc, '다 읽어보셨소? 북장군을 쓰러뜨리고 표신궁고문서4를 구해와 주시오.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -339,7 +336,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0033::
-        btn = me:dialog(npc, '네번째 고문서를 찾아오셨구려! 수고하셨소. 얼마나 기다렸는지 모르오. 자자, 어서 고문서를 보여주시오. 금방 해석해 드리리다.', { prev = true, next = true })
+        btn = me:dialog(npc, '네번째 고문서를 찾아오셨구려! 수고하셨소. 얼마나 기다렸는지 모르오. 자자, 어서 고문서를 보여주시오. 금방 해석해 드리리다.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -360,12 +357,12 @@ local function pyosin_story(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 대장군의일기4를 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 대장군의일기4를 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(8)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서5를 구하자.', 7, 1)
-        btn = me:dialog(npc, '......다 됐소. 한번 읽어 보시오. 매번 고맙소. 여기 사례도 받아가구려.', { prev = true, next = true })
+        btn = me:dialog(npc, '......다 됐소. 한번 읽어 보시오. 매번 고맙소. 여기 사례도 받아가구려.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -374,7 +371,7 @@ local function pyosin_story(me, npc)
     end
     
     if step == 8 then
-        btn = me:dialog(npc, '다 읽어보셨소? 중앙장군을 쓰러뜨리고 표신궁고문서5를 구해와 주시오.', { prev = true, next = true })
+        btn = me:dialog(npc, '다 읽어보셨소? 중앙장군을 쓰러뜨리고 표신궁고문서5를 구해와 주시오.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -389,7 +386,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0037::
-        btn = me:dialog(npc, '오오, 다섯번째의 표신궁고문서를 찾아내셨구려! 수고하셨소. 그럼 이 고문서를 해독해 드릴 테니 잠시만 기다려 주시오.', { prev = true, next = true })
+        btn = me:dialog(npc, '오오, 다섯번째의 표신궁고문서를 찾아내셨구려! 수고하셨소. 그럼 이 고문서를 해독해 드릴 테니 잠시만 기다려 주시오.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -426,7 +423,7 @@ local function pyosin_story(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 대장군의일기5를 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 대장군의일기5를 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(10)
@@ -436,7 +433,7 @@ local function pyosin_story(me, npc)
     
     if step == 10 then
         ::NPC_250_0042::
-        btn = me:dialog(npc, '다 읽으셨소? 보셨다시피... 대장군은... 악마와 계약한 것 인지도 모르겠소. 허, 이걸 믿어야 하나? 아무튼 그게 사실이라면 대장군이 그렇게 많은 사람들을 학살한 이유도 밝혀지는 셈이지...', { prev = true, next = true })
+        btn = me:dialog(npc, '다 읽으셨소? 보셨다시피... 대장군은... 악마와 계약한 것 인지도 모르겠소. 허, 이걸 믿어야 하나? 아무튼 그게 사실이라면 대장군이 그렇게 많은 사람들을 학살한 이유도 밝혀지는 셈이지...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -457,9 +454,9 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0045::
-        btn = me:dialog(npc, '오방장군은 모두 물리쳤으니... 아마 여섯번째 장은 표신궁어딘가에 숨겨져 있을 것이오. 구석구석까지 샅샅이 살펴봐 주셨으면 하오.', { prev = false, next = false })
-        if btn == DIALOG_RESULT.PREV then 
-            goto NPC_250_0044 
+        btn = me:dialog(npc, '오방장군은 모두 물리쳤으니... 아마 여섯번째 장은 표신궁어딘가에 숨겨져 있을 것이오. 구석구석까지 샅샅이 살펴봐 주셨으면 하오.', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
         end
         q:step(11)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서6을 구하자.', 7, 1)
@@ -472,7 +469,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0046::
-        btn = me:dialog(npc, '오오, 숨겨진 여섯번째의 고문서를 찾아냈구려! 전에도 말했지만 당신 정말 대단한 사람이군. 수고하셨소. 그럼 이 고문서를 해독할테니 잠시만 기다려 주시오.', { prev = true, next = true })
+        btn = me:dialog(npc, '오오, 숨겨진 여섯번째의 고문서를 찾아냈구려! 전에도 말했지만 당신 정말 대단한 사람이군. 수고하셨소. 그럼 이 고문서를 해독할테니 잠시만 기다려 주시오.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -509,26 +506,30 @@ local function pyosin_story(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 대장군의일기6을 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 대장군의일기6을 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(12)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서를 모두 구하다.', 7, 1)
         ::NPC_250_0050::
-        btn = me:dialog(npc, '이런 무서운 일이... 으음... 이게 정말이라면 우리는 엄청난 사실을 알아낸 것일지도 모르겠소. 일단 읽어나 보시오. 여기 있소...', { prev = true, next = true })
-        if btn == DIALOG_RESULT.QUIT then 
+        btn = me:dialog(npc, '이런 무서운 일이... 으음... 이게 정말이라면 우리는 엄청난 사실을 알아낸 것일지도 모르겠소. 일단 읽어나 보시오. 여기 있소...', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, '다 읽고 나면 이야기해 주시오. 음......', { prev = false, next = false })
-        if btn == DIALOG_RESULT.PREV then 
-            goto NPC_250_0050 
+        ::NPC_250_0051::
+        btn = me:dialog(npc, '다 읽고 나면 이야기해 주시오. 음......', { prev = true, next = false })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_250_0050
         end
         return
     end
     
     if step == 12 then
         ::NPC_250_0052::
-        btn = me:dialog(npc, '여섯번째 일기... 그러니까 마지막 일기인 것 같소. 아무튼 다 읽어보셨소?', { prev = true, next = true })
+        btn = me:dialog(npc, '여섯번째 일기... 그러니까 마지막 일기인 것 같소. 아무튼 다 읽어보셨소?', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -578,7 +579,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0058::
-        btn = me:dialog(npc, '...이런 일이... 결국 이런 일이...!', { prev = true, next = true })
+        btn = me:dialog(npc, '...이런 일이... 결국 이런 일이...!', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -604,7 +605,7 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0062::
-        btn = me:dialog(npc, '대장군은 전에 말했듯이 천하통일 후 엄청난 폭군이 되었다오. 이 대장군이 영원한 생명을 얻어 다시 이 땅에 나타난다면 천하는 피바다가 될 거요... 이런 무서운 일이...', { prev = true, next = true })
+        btn = me:dialog(npc, '대장군은 전에 말했듯이 천하통일 후 엄청난 폭군이 되었다오. 이 대장군이 영원한 생명을 얻어 다시 이 땅에 나타난다면 천하는 피바다가 될 거요... 이런 무서운 일이...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
@@ -617,15 +618,15 @@ local function pyosin_story(me, npc)
             return
         end
         ::NPC_250_0064::
-        btn = me:dialog(npc, '걱정되는구려. 내 연구가 성과를 보였으니 학자로서는 기쁘지만 이 땅이 또다시 피로 물들게 될 무서운 사실을 알게 되니, 착잡하기 이를 데가 없구려......', { prev = false, next = false })
-        if btn == DIALOG_RESULT.PREV then 
-            goto NPC_250_0063 
-        end
-        if me:mkitem('금강석조각', 1) == nil then
-            me:dialog(npc, '소지품이 가득 차서 금강석조각을 받을 수 없습니다.', { prev = false, next = true })
+        btn = me:dialog(npc, '걱정되는구려. 내 연구가 성과를 보였으니 학자로서는 기쁘지만 이 땅이 또다시 피로 물들게 될 무서운 사실을 알게 되니, 착잡하기 이를 데가 없구려......', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        
+        if me:mkitem('금강석조각', 1) == nil then
+            me:dialog(npc, '소지품이 가득 차서 금강석조각을 받을 수 없습니다.', { prev = false, next = false })
+            return
+        end
+
         q:complete()
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁역사가의 부탁을 들어주다.', 6, 1)
         me:money(me:money() + 100000)
@@ -647,7 +648,7 @@ local function pyosin_sell_docs(me, npc)
     local btn, sel
     
     ::NPC_250_0065::
-    btn = me:dialog(npc, '흠. 고문서를 팔러 왔다고?', { prev = true, next = true })
+    btn = me:dialog(npc, '흠. 고문서를 팔러 왔다고?', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then 
         return
     end

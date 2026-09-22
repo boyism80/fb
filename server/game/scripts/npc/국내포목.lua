@@ -18,7 +18,7 @@ return {
                     return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', { prev = false, next = true })
                 end },
                 { '호박결정만들기', function(me, ch)
-                    return me:dialog(ch, '호박결정 만들기는 추가 구현이 필요합니다.', { prev = false, next = true })
+                    return me:dialog(ch, '호박결정 만들기는 추가 구현이 필요합니다.', { prev = false, next = false })
                 end },
             },
         })

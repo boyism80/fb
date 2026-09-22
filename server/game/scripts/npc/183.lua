@@ -30,21 +30,21 @@ return {
             end
             local sel = me:list(npc, '날 좀 도와주지 않겠는가?', { '물론입니다. 부인의 몸조리에나 신경쓰십시오.', '죄송합니다만 그런일까지 할 시간이 없군요.' }, { prev = false })
             if sel == nil or sel ~= 1 then
-                me:dialog(npc, '그렇다면 할 수 없군요..', { prev = false, next = true })
+                me:dialog(npc, '그렇다면 할 수 없군요..', { prev = false, next = false })
                 return
             end
             local q = me:start_quest(quest.QUEST_JOWANG)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             me:push_achievement(31, '조왕의동생의 부탁을 들어주자.', 7, 1)
-            me:dialog(npc, '그럼 자네만 믿고 있겠네. 장안성의 푸줏간에 그 음식에 대해 잘 알고 있는 사람이 있다는 얘길 들은적이 있는데.. 혹시 참고가 될지 모르겠군.', { prev = false, next = true })
+            me:dialog(npc, '그럼 자네만 믿고 있겠네. 장안성의 푸줏간에 그 음식에 대해 잘 알고 있는 사람이 있다는 얘길 들은적이 있는데.. 혹시 참고가 될지 모르겠군.', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, '저번엔 정말 감사했소!', { prev = false, next = true })
+            me:dialog(npc, '저번엔 정말 감사했소!', { prev = false, next = false })
             return
         end
 
@@ -55,14 +55,14 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '장안성의 푸줏간에 그 음식에 대해 잘 알고 있는 사람이 있다네. 참고가 될지 모르겠군.', { prev = true, next = true })
+            btn = me:dialog(npc, '장안성의 푸줏간에 그 음식에 대해 잘 알고 있는 사람이 있다네. 참고가 될지 모르겠군.', { prev = true, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_183_0005
             end
             return
         end
         ::NPC_183_0007::
-        btn = me:dialog(npc, '오! 드디어 구해왔군! 수고햇네. 어려운 부탁을 들어줘서 정말 고맙네. 이건 내 작은 정성이니 받아주게.', { prev = true, next = true })
+        btn = me:dialog(npc, '오! 드디어 구해왔군! 수고햇네. 어려운 부탁을 들어줘서 정말 고맙네. 이건 내 작은 정성이니 받아주게.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -75,11 +75,11 @@ return {
             { ['item'] = { ['자양강장요리'] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '아직 화기삼동충초돈유합을 구하지 못하셨나보군요.', { prev = false, next = true })
+            me:dialog(npc, '아직 화기삼동충초돈유합을 구하지 못하셨나보군요.', { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 자양강장요리를 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 자양강장요리를 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:complete()

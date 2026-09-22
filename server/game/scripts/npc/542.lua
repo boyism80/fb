@@ -95,7 +95,7 @@ return {
 
         if step == 7 then
             if not me:has_items("강시의손톱", 100) then
-                button = me:dialog(npc, "강시들을 물리쳐 강시의손톱을 모아와주게. 100개의 강시의 손톱을 모아와보도록 하게나. 만년원귀를 바로 상대했다가 개죽음을 당할 수도 있지 않는가.", { prev = false, next = true })
+                button = me:dialog(npc, "강시들을 물리쳐 강시의손톱을 모아와주게. 100개의 강시의 손톱을 모아와보도록 하게나. 만년원귀를 바로 상대했다가 개죽음을 당할 수도 있지 않는가.", { prev = false, next = false })
                 return
             end
 
@@ -126,7 +126,7 @@ return {
             end
 
             ::NPC_542_0010::
-            button = me:dialog(npc, "그럼 조심하고 꼭 성공하길 빌겠네!", { prev = true, next = true })
+            button = me:dialog(npc, "그럼 조심하고 꼭 성공하길 빌겠네!", { prev = true, next = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -147,7 +147,7 @@ return {
                 return
             end
             ::NPC_542_0019::
-            button = me:dialog(npc, "바로 만년원귀가 그들의 우두머리네. 만년원귀를 제거하고 그의 손톱을 징표로 가져다주게나.", { prev = true, next = true })
+            button = me:dialog(npc, "바로 만년원귀가 그들의 우두머리네. 만년원귀를 제거하고 그의 손톱을 징표로 가져다주게나.", { prev = true, next = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -216,7 +216,7 @@ return {
         end
 
         ::NPC_542_0016::
-        button = me:dialog(npc, "그럼 황실에 안부라도 전해주시게나. 허허허.", { prev = true, next = true })
+        button = me:dialog(npc, "그럼 황실에 안부라도 전해주시게나. 허허허.", { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

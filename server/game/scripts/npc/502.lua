@@ -78,9 +78,9 @@ local function give_chilseok_reward(me, npc)
         return
     end
     if reward == "직녀의바늘" then
-        btn = me:dialog(npc, "자.. 그럼 직녀가 사용하는 바늘을 드리도록 하겠습니다.", { prev = false, next = true })
+        btn = me:dialog(npc, "자.. 그럼 직녀가 사용하는 바늘을 드리도록 하겠습니다.", { prev = false, next = false })
     else
-        btn = me:dialog(npc, "자.. 그럼 견우가 만든 피리를 드리도록 하겠습니다.", { prev = false, next = true })
+        btn = me:dialog(npc, "자.. 그럼 견우가 만든 피리를 드리도록 하겠습니다.", { prev = false, next = false })
     end
     if btn == DIALOG_RESULT.QUIT then
         return

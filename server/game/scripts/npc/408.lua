@@ -9,7 +9,7 @@ return {
         end
 
         if not me:has_items("담배", REQUIRED_CIGARETTES) then
-            me:dialog(npc, "자네는 그런 것은 없는 것 같으니... 어쩔 수 없지...", { prev = false, next = true })
+            me:dialog(npc, "자네는 그런 것은 없는 것 같으니... 어쩔 수 없지...", { prev = false, next = false })
             return
         end
 

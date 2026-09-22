@@ -47,12 +47,12 @@ local function craft_amber_star(me, ch)
         { ['item'] = { [star] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        return me:dialog(ch, name_with(gem, '이', '가') .. ' 부족합니다.', { prev = false, next = true })
+        return me:dialog(ch, name_with(gem, '이', '가') .. ' 부족합니다.', { prev = false, next = false })
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', { prev = false, next = true })
+        return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', { prev = false, next = false })
     end
-    return me:dialog(ch, name_with(star, '을', '를') .. ' 만들어드렸습니다.', { prev = false, next = true })
+    return me:dialog(ch, name_with(star, '을', '를') .. ' 만들어드렸습니다.', { prev = false, next = false })
 end
 
 return {

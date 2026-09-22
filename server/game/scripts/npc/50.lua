@@ -9,7 +9,7 @@ return {
         end
 
         ::NPC_50_0002::
-        button = me:dialog(npc, '자호와 친자호 등의 몬스터들이 등장하며, 얻을 수 있는 아이템은 주로 자호의가죽입니다.', { prev = true, next = true })
+        button = me:dialog(npc, '자호와 친자호 등의 몬스터들이 등장하며, 얻을 수 있는 아이템은 주로 자호의가죽입니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

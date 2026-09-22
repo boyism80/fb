@@ -4,7 +4,7 @@ local enum = require('lib.enum')
 
 local function run_ox_admin(me, ch)
     if not me:has_items('아무나OX주최토큰', 1) then
-        return me:dialog(ch, '아무나OX주최토큰이 없으시군요.', { prev = false, next = true })
+        return me:dialog(ch, '아무나OX주최토큰이 없으시군요.', { prev = false, next = false })
     end
 
     local sub_sel, sub_btn = me:list(ch, '어떤 명령을 수행하시겠습니까?', {
@@ -20,12 +20,12 @@ local function run_ox_admin(me, ch)
         local m = me:map()
         m:block(7, 13, false)
         m:block(21, 13, false)
-        return me:dialog(ch, '출입구를 열었습니다.', { prev = false, next = true })
+        return me:dialog(ch, '출입구를 열었습니다.', { prev = false, next = false })
     elseif sub_sel == 2 then
         local m = me:map()
         m:block(7, 13, true)
         m:block(21, 13, true)
-        return me:dialog(ch, '출입구를 닫았습니다.', { prev = false, next = true })
+        return me:dialog(ch, '출입구를 닫았습니다.', { prev = false, next = false })
     end
 
     local raw = me:input(ch, '강제퇴장할 유저의 아이디를 적어주세요.', { top = '퇴장할 대상의 아이디는:', bottom = '입니다.', maxlen = 6, prev = false })
@@ -33,15 +33,15 @@ local function run_ox_admin(me, ch)
         return nil
     end
     if raw == nil or raw == '' then
-        return me:dialog(ch, '대상 아이디를 입력해 주세요.', { prev = false, next = true })
+        return me:dialog(ch, '대상 아이디를 입력해 주세요.', { prev = false, next = false })
     end
 
     local target = name2ch(raw)
     if target == nil then
-        return me:dialog(ch, '해당 유저가 접속중이 아닙니다.', { prev = false, next = true })
+        return me:dialog(ch, '해당 유저가 접속중이 아닙니다.', { prev = false, next = false })
     end
     if me:map() ~= target:map() then
-        return me:dialog(ch, '그럴 수 없어 뿍짝아...', { prev = false, next = true })
+        return me:dialog(ch, '그럴 수 없어 뿍짝아...', { prev = false, next = false })
     end
 
     local btn = me:dialog(ch, raw .. '님이 강제 퇴장 됩니다..', { prev = false, next = true })
@@ -73,12 +73,12 @@ return {
                         { ['item'] = { ['아무나OX주최토큰'] = 1 } }
                     )
                     if code == enum.exchange_result.LACK_COST then
-                        return me:dialog(ch, '도깨비방망이가 없으시군요.', { prev = false, next = true })
+                        return me:dialog(ch, '도깨비방망이가 없으시군요.', { prev = false, next = false })
                     end
                     if code == enum.exchange_result.LACK_CAPACITY then
-                        return me:dialog(ch, '소지품이 가득 차서 아무나OX주최토큰을 받을 수 없습니다.', { prev = false, next = true })
+                        return me:dialog(ch, '소지품이 가득 차서 아무나OX주최토큰을 받을 수 없습니다.', { prev = false, next = false })
                     end
-                    return me:dialog(ch, "도깨비방망이를 '아무나OX주최토큰'으로 바꿔드리겠습니다.", { prev = false, next = true })
+                    return me:dialog(ch, "도깨비방망이를 '아무나OX주최토큰'으로 바꿔드리겠습니다.", { prev = false, next = false })
                 end },
             },
         })

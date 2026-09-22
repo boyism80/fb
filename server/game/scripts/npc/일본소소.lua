@@ -89,7 +89,7 @@ local function do_hair_style(me, npc)
 end
 
 local function do_hair_dye(me, npc)
-    local btn = me:dialog(npc, '염색을 하시려구요?\n염색 비용은 100전 이고, 이번에 새로 가져온 염색약은 비싸서 500전 이에요.', { prev = false, next = true })
+    local btn = me:dialog(npc, '염색을 하시려구요?\n염색 비용은 100전 이고, 이번에 새로 가져온 염색약은 비싸서 500전 이에요.', { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

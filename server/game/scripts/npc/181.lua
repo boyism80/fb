@@ -26,7 +26,7 @@ return {
             sel = me:list(npc, '그래서 조금 전까지는 부적을 묻고 있는 중이였는데, 나 혼자서는 안되겠더구만. 보다시피 나 혼자 살기에는 집이 좀 넓어서 말이야.', { '제가 좀 도와 드리죠.', '열심히 붙이세요. 전 나가봐야겠네요.' })
             if sel == nil or sel ~= 1 then
                 if sel == 2 then
-                    me:dialog(npc, '아이고. 이 많은 부적을 언제 다 묻는담...', { prev = false, next = true })
+                    me:dialog(npc, '아이고. 이 많은 부적을 언제 다 묻는담...', { prev = false, next = false })
                 end
                 return
             end
@@ -44,13 +44,13 @@ return {
             end
             local q = me:start_quest(quest.QUEST_GHOST)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
             q:progress(0)
             if me:mkitem('귀신퇴치부적', 5) == nil then
-                me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             me:push_achievement(ACHIEVEMENT_GHOST, '안도의 부탁을 들어주자. [1/2]', 7, 6)
@@ -58,13 +58,13 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, '자네 덕분에 집에 귀기가 많이 사라졌어. 고맙네.', { prev = false, next = true })
+            me:dialog(npc, '자네 덕분에 집에 귀기가 많이 사라졌어. 고맙네.', { prev = false, next = false })
             return
         end
 
         if q:step() == 1 then
             if q:progress() < BURY_COUNT then
-                me:dialog(npc, '아직 부적을 다 묻지 못한 것 같군.', { prev = false, next = true })
+                me:dialog(npc, '아직 부적을 다 묻지 못한 것 같군.', { prev = false, next = false })
                 return
             end
             ::NPC_181_0006::
@@ -84,7 +84,7 @@ return {
             sel = me:list(npc, '이를 어쩐다...', { '제가 그 고승을 만나고 오겠습니다.', '아무래도 너무 힘들어서 안되겠네요. 전 이만...' })
             if sel == nil or sel ~= 1 then
                 if sel == 2 then
-                    me:dialog(npc, '이를 어쩐다...', { prev = false, next = true })
+                    me:dialog(npc, '이를 어쩐다...', { prev = false, next = false })
                 end
                 return
             end
@@ -105,13 +105,13 @@ return {
         end
 
         if q:step() == 2 then
-            me:dialog(npc, '아직 마타님을 만나지 못한 것 같군', { prev = false, next = true })
+            me:dialog(npc, '아직 마타님을 만나지 못한 것 같군', { prev = false, next = false })
             return
         end
 
         if q:step() == 3 then
             if q:progress() < BURY_COUNT then
-                me:dialog(npc, '아직 부적을 모두 묻지 못한 모양이군?', { prev = false, next = true })
+                me:dialog(npc, '아직 부적을 모두 묻지 못한 모양이군?', { prev = false, next = false })
                 return
             end
             ::NPC_181_0011::
@@ -143,7 +143,7 @@ return {
                 return
             end
             if me:mkitem('명석부', 1) == nil then
-                me:dialog(npc, '소지품이 가득 차서 명석부를 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 명석부를 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:complete()

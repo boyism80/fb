@@ -11,7 +11,7 @@ return {
         if q ~= nil and q:step() == 3 then
             if me:has_items('청심사주', 1) then
                 ::NPC_186_0001::
-                btn = me:dialog(npc, '허허, 주경원이 청심사주를 만드는것을 자네가 도와주었지? 내 신통력으로 다 보고 있었지.', { prev = true, next = true })
+                btn = me:dialog(npc, '허허, 주경원이 청심사주를 만드는것을 자네가 도와주었지? 내 신통력으로 다 보고 있었지.', { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -28,11 +28,11 @@ return {
                     { ['item'] = { ["고대금속조각'음"] = 1 } }
                 )
                 if code == enum.exchange_result.LACK_COST then
-                    me:dialog(npc, '청심사주를 가지고 있지 않으시군요.', { prev = false, next = true })
+                    me:dialog(npc, '청심사주를 가지고 있지 않으시군요.', { prev = false, next = false })
                     return
                 end
                 if code == enum.exchange_result.LACK_CAPACITY then
-                    me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
+                    me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', { prev = false, next = false })
                     return
                 end
                 q:step(4)
@@ -41,6 +41,6 @@ return {
             end
         end
 
-        me:dialog(npc, '압록강의 물은 정말 신비롭지...', { prev = true, next = true })
+        me:dialog(npc, '압록강의 물은 정말 신비롭지...', { prev = false, next = false })
     end
 }

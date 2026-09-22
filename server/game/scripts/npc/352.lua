@@ -34,7 +34,7 @@ local function run_seokka(me, npc)
         return false
     end
     if me:has_items("색비단", 1) then
-        me:dialog(npc, "색비단으로 예쁜 연등을 만들어 잘 쓰시길 바라겠습니다.", { prev = false, next = true })
+        me:dialog(npc, "색비단으로 예쁜 연등을 만들어 잘 쓰시길 바라겠습니다.", { prev = false, next = false })
         return true
     end
     local btn = me:dialog(npc, "주지스님이 색비단을 받아오라고 하셨군요. 드려야죠.", { prev = false, next = true })
@@ -66,7 +66,7 @@ local function run_dano(me, npc)
         return true
     end
     if sel == 2 then
-        me:dialog(npc, "흥.. 시름 말구..", { prev = false, next = true })
+        me:dialog(npc, "흥.. 시름 말구..", { prev = false, next = false })
         return true
     end
     if sel ~= 1 then
@@ -77,14 +77,14 @@ local function run_dano(me, npc)
         { ['item'] = { ["창포"] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        me:dialog(npc, "창포는 하나에 100원이에요.", { prev = false, next = true })
+        me:dialog(npc, "창포는 하나에 100원이에요.", { prev = false, next = false })
         return true
     end
     if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 창포를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end
-    me:dialog(npc, "창포를 드렸습니다.", { prev = false, next = true })
+    me:dialog(npc, "창포를 드렸습니다.", { prev = false, next = false })
     return true
 end
 
@@ -185,7 +185,10 @@ local function run_chuseok(me, npc)
             me:dialog(npc, "벌초를 하지 않으셨네요? 절 속이시면 안돼죠..", { prev = false, next = false })
             return true
         end
-        me:dialog(npc, "수고하셨어요. 올게심니를 드릴께요.. 매달마다 특정 아이템을 하나씩 모아서 1년동안 모으시면 좋을일이 생길꺼에요. 추석엔 올게심니에요.", { prev = false, next = false })
+        local btn = me:dialog(npc, "수고하셨어요. 올게심니를 드릴께요.. 매달마다 특정 아이템을 하나씩 모아서 1년동안 모으시면 좋을일이 생길꺼에요. 추석엔 올게심니에요.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return true
+        end
         if me:mkitem("올게심니", 1) == nil then
             me:dialog(npc, "소지품이 가득 차서 올게심니를 줄 수 없습니다.", { prev = false, next = false })
             return true
@@ -248,7 +251,7 @@ local function run_jungyang(me, npc)
         q:param(string.format("%d:%d", day_key, given))
     end
 
-    me:dialog(npc, "국화가 여기 있습니다. 그럼 잘 사용하세요..", { prev = false, next = true })
+    me:dialog(npc, "국화가 여기 있습니다. 그럼 잘 사용하세요..", { prev = false, next = false })
     return true
 end
 
@@ -310,7 +313,7 @@ local function run_seotdal(me, npc)
     end
 
     set_seotdal_flags(q, 1, d, b)
-    me:dialog(npc, "선릉이에게 제기 잘 전해 주세요.", { prev = false, next = true })
+    me:dialog(npc, "선릉이에게 제기 잘 전해 주세요.", { prev = false, next = false })
     return true
 end
 
@@ -365,13 +368,13 @@ local function run_kimjang(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return true
     end
-    me:dialog(npc, "매달 아이템을 모으시고 계신가요? 고사반도 나머지 11개의 아이템과 함께 가지고 계시면 좋은일이 생길꺼에요.", { prev = false, next = true })
+    me:dialog(npc, "매달 아이템을 모으시고 계신가요? 고사반도 나머지 11개의 아이템과 함께 가지고 계시면 좋은일이 생길꺼에요.", { prev = false, next = false })
     return true
 end
 
 return {
     on_click = function(me, npc)
-        local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

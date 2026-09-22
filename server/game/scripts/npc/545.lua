@@ -11,7 +11,7 @@ return {
         end
 
         if not me:has_items("천상복숭아", 1) then
-            me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", { prev = false, next = true })
+            me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", { prev = false, next = false })
             return
         end
 

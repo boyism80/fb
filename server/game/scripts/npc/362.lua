@@ -233,7 +233,7 @@ local function run_seotdal(me, npc)
             q:complete()
             festival.mark_completed_year(q)
             me:push_achievement(ACHIEVEMENT_SEOTDAL, "섣달에 모두에게 선물을 전달하자", 7, 1)
-            me:dialog(npc, "고마워요! 이것은 복조리예요. 세시투구를 만들 때 쓰게 될 거예요. 잘 간직해 두세요.", { prev = false, next = true })
+            me:dialog(npc, "고마워요! 이것은 복조리예요. 세시투구를 만들 때 쓰게 될 거예요. 잘 간직해 두세요.", { prev = false, next = false })
             return
         end
 
@@ -247,7 +247,7 @@ local function run_seotdal(me, npc)
             me:dialog(npc, "이미 선물을 가지고 계신 것 같아요. 김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.", { prev = false, next = false })
             return
         end
-        me:dialog(npc, "여기 있어요. 김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.", { prev = false, next = true })
+        me:dialog(npc, "여기 있어요. 김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.", { prev = false, next = false })
         return
     end
 
@@ -284,12 +284,12 @@ local function run_seotdal(me, npc)
         return
     end
 
-    me:dialog(npc, "김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.", { prev = false, next = true })
+    me:dialog(npc, "김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.", { prev = false, next = false })
 end
 
 return {
     on_click = function(me, npc)
-        local button = me:dialog(npc, "안녕하세요? 저는 오선릉입니다.", { prev = false, next = true })
+        local button = me:dialog(npc, "안녕하세요? 저는 오선릉입니다.", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

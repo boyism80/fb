@@ -66,9 +66,9 @@ return {
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            button = me:dialog(npc, "신수는 한번 선택하시면 다시는 바꿀 수 없습니다.", { prev = false, next = true })
+            button = me:dialog(npc, "신수는 한번 선택하시면 다시는 바꿀 수 없습니다.", { prev = false, next = false })
         else
-            button = me:dialog(npc, answers[sel], { prev = false, next = true })
+            button = me:dialog(npc, answers[sel], { prev = false, next = false })
         end
         if button == DIALOG_RESULT.QUIT then
             return

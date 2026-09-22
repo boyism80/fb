@@ -49,7 +49,7 @@ return {
             end
 
             if selected == 2 then
-                me:dialog(npc, '다시 한번 생각해보게. 머지않아 이 압록강이 푸른빛을 잃게 될지도 모르네. 정말 큰일이군.', { prev = false, next = true })
+                me:dialog(npc, '다시 한번 생각해보게. 머지않아 이 압록강이 푸른빛을 잃게 될지도 모르네. 정말 큰일이군.', { prev = false, next = false })
                 return
             end
 
@@ -59,13 +59,13 @@ return {
             end
 
             if me:level() < 70 then
-                me:dialog(npc, '자네는 아직 악어와 맞설 능력이 충분하지 않군.. 다음에 부탁하도록 하지.', { prev = false, next = true })
+                me:dialog(npc, '자네는 아직 악어와 맞설 능력이 충분하지 않군.. 다음에 부탁하도록 하지.', { prev = false, next = false })
                 return
             end
 
             local q = me:start_quest(quest.QUEST_CROCODILE_BLOOD)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             me:push_achievement(155, '악어의피 3병을 구하자.', 7, 8)
@@ -95,7 +95,7 @@ return {
             end
 
             ::NPC_155_0023::
-            button = me:dialog(npc, '그럼 행운을 비네. 너무 늦장을 부리면 다시 깨끗해지기 힘들수도있으니 서둘러주게.', { prev = true, next = true })
+            button = me:dialog(npc, '그럼 행운을 비네. 너무 늦장을 부리면 다시 깨끗해지기 힘들수도있으니 서둘러주게.', { prev = true, next = false })
             if button == DIALOG_RESULT.PREV then
                 goto NPC_155_0022
             end
@@ -116,7 +116,7 @@ return {
                     return
                 end
 
-                button = me:dialog(npc, '조금만 더 힘을 내주게', { prev = true, next = true })
+                button = me:dialog(npc, '조금만 더 힘을 내주게', { prev = true, next = false })
                 if button == DIALOG_RESULT.PREV then
                     goto NPC_155_0030
                 end
@@ -132,13 +132,13 @@ return {
                     goto NPC_155_0030
                 end
                 if code == enum.exchange_result.LACK_CAPACITY then
-                    me:dialog(npc, '소지품이 가득 차서 머리띠를 줄 수 없네.', { prev = false, next = true })
+                    me:dialog(npc, '소지품이 가득 차서 머리띠를 줄 수 없네.', { prev = false, next = false })
                     return
                 end
                 me:push_achievement(155, '수선도사의 부탁을 들어주었다.', 6, 8)
                 q:complete()
 
-                local button = me:dialog(npc, '오. 정말 다 구해왔군 그래. 이걸로 압록강을 정화시킬수 있겠어. 아차 이건 내가쓰던 머리띠인데 유용하게 쓰게나.', { prev = false, next = true })
+                local button = me:dialog(npc, '오. 정말 다 구해왔군 그래. 이걸로 압록강을 정화시킬수 있겠어. 아차 이건 내가쓰던 머리띠인데 유용하게 쓰게나.', { prev = false, next = false })
                 if button == DIALOG_RESULT.QUIT then
                     return
                 end

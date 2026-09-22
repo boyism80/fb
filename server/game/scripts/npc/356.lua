@@ -92,7 +92,7 @@ end
 
 return {
     on_click = function(me, npc)
-        local button = me:dialog(npc, "안녕하세요? 저는 정어언입니다.", { prev = false, next = true })
+        local button = me:dialog(npc, "안녕하세요? 저는 정어언입니다.", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

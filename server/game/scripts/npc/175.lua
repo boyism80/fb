@@ -29,12 +29,12 @@ return {
             end
             q = me:start_quest(quest.QUEST_MARTIAL)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
             me:push_achievement(26, '고구려무도가의 부탁을 들어주자.', 7, 1)
-            me:dialog(npc, '고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.', { prev = false, next = true })
+            me:dialog(npc, '고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.', { prev = false, next = false })
             return
         end
 
@@ -61,7 +61,7 @@ return {
             end
             q:step(1)
             me:push_achievement(26, '고구려무도가의 부탁을 들어주자.', 7, 1)
-            me:dialog(npc, '고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.', { prev = false, next = true })
+            me:dialog(npc, '고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.', { prev = false, next = false })
             return
         end
 
@@ -74,7 +74,7 @@ return {
                 end
             end
             if not has_baekyeoljang then
-                me:dialog(npc, '아직 소림사의 절기를 배워오지 못하신 것 같군요.', { prev = false, next = true })
+                me:dialog(npc, '아직 소림사의 절기를 배워오지 못하신 것 같군요.', { prev = false, next = false })
                 return
             end
             ::NPC_175_0005::
@@ -95,14 +95,14 @@ return {
                 return
             end
             if me:mkitem('청동손목보호대', 1) == nil then
-                me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청동손목보호대', '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청동손목보호대', '을', '를') .. ' 줄 수 없네.', { prev = false, next = false })
                 return
             end
             q:step(4)
-            me:dialog(npc, '고맙소.. 잘 돌아가시게..', { prev = false, next = true })
+            me:dialog(npc, '고맙소.. 잘 돌아가시게..', { prev = false, next = false })
             return
         end
 
-        me:dialog(npc, '정말 고맙소. 당신 덕분에 나도 소림사의 절기를 더욱더 배워지고 싶구만.', { prev = true, next = true })
+        me:dialog(npc, '정말 고맙소. 당신 덕분에 나도 소림사의 절기를 더욱더 배워지고 싶구만.', { prev = false, next = false })
     end
 }

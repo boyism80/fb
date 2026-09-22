@@ -9,7 +9,7 @@ return {
         end
 
         ::NPC_43_0002::
-        button = me:dialog(npc, '각종 해골 몬스터들이 등장하며, 얻을 수 있는 아이템은 주로 호박입니다.', { prev = true, next = true })
+        button = me:dialog(npc, '각종 해골 몬스터들이 등장하며, 얻을 수 있는 아이템은 주로 호박입니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

@@ -85,7 +85,7 @@ local function run_jungyang(me, npc)
         return
     end
 
-    btn = me:dialog(npc, "촌장집에서 국화를 구해 오시면 제가 국화주를 담아드리겠습니다.", { prev = false, next = true })
+    btn = me:dialog(npc, "촌장집에서 국화를 구해 오시면 제가 국화주를 담아드리겠습니다.", { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -117,12 +117,12 @@ local function run_jungyang(me, npc)
         return
     end
 
-    me:dialog(npc, "그럼 맛있게 드세요.", { prev = false, next = true })
+    me:dialog(npc, "그럼 맛있게 드세요.", { prev = false, next = false })
 end
 
 return {
     on_click = function(me, npc)
-        local btn = me:dialog(npc, "안녕하세요? 저는 백남신입니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "안녕하세요? 저는 백남신입니다.", { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

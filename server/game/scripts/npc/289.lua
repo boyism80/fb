@@ -3,7 +3,7 @@ local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
-        local button = me:dialog(npc, "옛날 함께 바둑을 두던 그 놈이 그립군... 홀홀...", { prev = false, next = true })
+        local button = me:dialog(npc, "옛날 함께 바둑을 두던 그 놈이 그립군... 홀홀...", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -39,7 +39,7 @@ return {
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        button = me:dialog(npc, "여기 [용의골무]를 가져가게나. 조심히 들어가게~", { prev = false, next = true })
+        button = me:dialog(npc, "여기 [용의골무]를 가져가게나. 조심히 들어가게~", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

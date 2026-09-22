@@ -21,7 +21,7 @@ return {
             end
             server.warp_to_return_map(me)
         elseif sel == 2 then
-            me:dialog(npc, "잘 생각하셨어요.", { prev = false, next = true })
+            me:dialog(npc, "잘 생각하셨어요.", { prev = false, next = false })
         end
     end
 }

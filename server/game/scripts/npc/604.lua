@@ -2,7 +2,7 @@
 
 return {
     on_click = function(me, npc)
-        local button = me:dialog(npc, "......", { prev = false, next = true })
+        local button = me:dialog(npc, "......", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

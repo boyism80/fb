@@ -57,7 +57,7 @@ return {
             end
             if sel == 1 then
                 q:step(1)
-                me:dialog(npc, '신성한 나무들은 북방대초원 21~30층을 돌아다니다 보면 구할 수 있을겁니다.\n\n그럼 부탁드리겠습니다.', { prev = false, next = true })
+                me:dialog(npc, '신성한 나무들은 북방대초원 21~30층을 돌아다니다 보면 구할 수 있을겁니다.\n\n그럼 부탁드리겠습니다.', { prev = false, next = false })
             end
             return
         end
@@ -81,7 +81,7 @@ return {
                 return
             end
             if me:group() ~= nil then
-                me:dialog(npc, '그룹을 하신 상태로는 보상을 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '그룹을 하신 상태로는 보상을 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
 

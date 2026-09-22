@@ -79,7 +79,7 @@ return {
                 "그리고 선풍각'첨의 효과를 받기 위해서 선풍각을 두번 수련할 필요가 없지. 무슨 뜻인지 알겠는가?",
             }
             for i, msg in ipairs(dialogs) do
-                local d = me:dialog(npc, msg, { prev = false, next = true })
+                local d = me:dialog(npc, msg, { prev = false, next = false })
                 if d == DIALOG_RESULT.QUIT then
                     return
                 end

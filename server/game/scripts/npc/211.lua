@@ -47,13 +47,13 @@ return {
             end
             if sel == nil or sel ~= 1 then
                 if sel == 2 then
-                    me:dialog(npc, '그러시군요.. 가시는 길 조심히 살펴서 가세요.', { prev = false, next = true })
+                    me:dialog(npc, '그러시군요.. 가시는 길 조심히 살펴서 가세요.', { prev = false, next = false })
                 end
                 return
             end
             btn = me:dialog(npc, '우선 산소들을 상대하실 수 있는지 봐야겠습니다.', { prev = false, next = true })
             if me:level() < MIN_LEVEL then
-                me:dialog(npc, '아직 산소들을 상대하시기엔 무리인 것 같습니다. 마음만은 고맙게 받겠습니다.', { prev = false, next = true })
+                me:dialog(npc, '아직 산소들을 상대하시기엔 무리인 것 같습니다. 마음만은 고맙게 받겠습니다.', { prev = false, next = false })
                 return
             end
             ::NPC_211_0020::
@@ -71,7 +71,7 @@ return {
             end
             q = me:start_quest(quest.QUEST_OXYGEN)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
@@ -80,7 +80,7 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, '외부에서 오신분이십니까? 남경 지역을 지나실때 조심하시기 바랍니다.', { prev = false, next = true })
+            me:dialog(npc, '외부에서 오신분이십니까? 남경 지역을 지나실때 조심하시기 바랍니다.', { prev = false, next = false })
             return
         end
 
@@ -93,10 +93,10 @@ return {
                 { ['money'] = t.money }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count), { prev = false, next = true })
+                me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count), { prev = false, next = false })
                 return
             elseif code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:step(step + 1)
@@ -105,7 +105,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '갈수록 보상금이 높아지니 부탁드립니다.', { prev = false, next = true })
+            btn = me:dialog(npc, '갈수록 보상금이 높아지니 부탁드립니다.', { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -114,7 +114,7 @@ return {
 
         if step == 6 then
             if not me:has_items('녹산소괴의뿔', 30) then
-                me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', { prev = false, next = true })
+                me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', { prev = false, next = false })
                 return
             end
             ::NPC_211_0030::
@@ -134,7 +134,7 @@ return {
             sel = me:list(npc, '산소괴왕을 처리해주시겠습니까?', { '알겠습니다. 제가 처리해보도록 하죠.', '죄송합니다. 그건 저에게 무리일듯하군요.' }, { prev = false })
             if sel == nil or sel ~= 1 then
                 if sel == 2 then
-                    me:dialog(npc, '그러시다면야 할 수 없죠.', { prev = false, next = true })
+                    me:dialog(npc, '그러시다면야 할 수 없죠.', { prev = false, next = false })
                 end
                 return
             end
@@ -143,21 +143,21 @@ return {
                 { ['money'] = 30000 }
             )
             if code2 == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', { prev = false, next = true })
+                me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', { prev = false, next = false })
                 return
             elseif code2 == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:step(7)
             me:push_achievement(ACHIEVEMENT_OXYGEN, '산소괴왕의 뿔을 구하자.', 7, 1)
-            me:dialog(npc, '산소괴왕은 다른 산소들과는 차원이 다릅니다. 더구나 잘 나타나지 않아 찾기가 더 힘들답니다.\n\n산소괴왕의뿔을 가져오시면 귀한 물건을 드리도록 하죠. 부디 조심하시기 바랍니다.', { prev = false, next = true })
+            me:dialog(npc, '산소괴왕은 다른 산소들과는 차원이 다릅니다. 더구나 잘 나타나지 않아 찾기가 더 힘들답니다.\n\n산소괴왕의뿔을 가져오시면 귀한 물건을 드리도록 하죠. 부디 조심하시기 바랍니다.', { prev = false, next = false })
             return
         end
 
         if step == 7 then
             if not me:has_items('산소괴왕의뿔', 1) then
-                me:dialog(npc, '아직 산소괴왕의뿔을 구하시지 못하셨군요. 부디 조심하시길 바랍니다.', { prev = false, next = true })
+                me:dialog(npc, '아직 산소괴왕의뿔을 구하시지 못하셨군요. 부디 조심하시길 바랍니다.', { prev = false, next = false })
                 return
             end
             btn = me:dialog(npc, '정말 대단하군요. 설마 정말 산소괴왕을 잡아오시리라고는. 이로써 큰 걱정을 덜게 되었군요.', { prev = false, next = true })
@@ -169,10 +169,10 @@ return {
                 { ['item'] = { ['흑영패도'] = 1 } }
             )
             if code3 == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '산소괴왕의뿔을 가지고 있지 않으시군요.', { prev = false, next = true })
+                me:dialog(npc, '산소괴왕의뿔을 가지고 있지 않으시군요.', { prev = false, next = false })
                 return
             elseif code3 == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 흑영패도를 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 흑영패도를 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:complete()
@@ -181,7 +181,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '부디 좋은 곳에 써주시기 발바니다. 그럼 안녕히.', { prev = false, next = true })
+            btn = me:dialog(npc, '부디 좋은 곳에 써주시기 발바니다. 그럼 안녕히.', { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

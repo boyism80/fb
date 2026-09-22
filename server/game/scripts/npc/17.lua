@@ -158,7 +158,7 @@ local function run_appraise_dragon_scale(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, '오오!! 내 잠시 책을 보면서 확인하고 오겠네 잠시만 기다리게나.', { prev = false, next = true })
+    btn = me:dialog(npc, '오오!! 내 잠시 책을 보면서 확인하고 오겠네 잠시만 기다리게나.', { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

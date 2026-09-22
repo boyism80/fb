@@ -5,7 +5,7 @@ return {
     on_click = function(me, npc)
         local q = me:quest(quest.QUEST_SILENCE)
         if q == nil then
-            local btn = me:dialog(npc, "무슨 문제를 낼까...", { prev = false, next = true })
+            local btn = me:dialog(npc, "무슨 문제를 낼까...", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -15,7 +15,7 @@ return {
         local param = q:param() or ""
         local a, b, solved = param:match("^(%d+),(%d+),(%d+)$")
         if not a or not b or solved ~= "0" then
-            local btn = me:dialog(npc, "무슨 문제를 낼까...", { prev = false, next = true })
+            local btn = me:dialog(npc, "무슨 문제를 낼까...", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -37,12 +37,12 @@ return {
         local answer = tonumber(raw)
         if answer == expected then
             q:param(string.format("%d,%d,1", a, b))
-            local btn = me:dialog(npc, "음... 문제가 너무 쉬웠던 것 같네요. 하지만 털보죄수에게 많은 문제를 풀어보라고 했었는데, 다른 문제들은 못풀었을 거에요.", { prev = false, next = true })
+            local btn = me:dialog(npc, "음... 문제가 너무 쉬웠던 것 같네요. 하지만 털보죄수에게 많은 문제를 풀어보라고 했었는데, 다른 문제들은 못풀었을 거에요.", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
         else
-            local btn = me:dialog(npc, "그러면 그렇지, 역시 틀린 답이네요.", { prev = false, next = true })
+            local btn = me:dialog(npc, "그러면 그렇지, 역시 틀린 답이네요.", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

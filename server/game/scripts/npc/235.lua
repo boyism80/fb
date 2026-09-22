@@ -7,7 +7,7 @@ local function bokgeon_sell_doll(me, npc)
     
     if q == nil then
         if not me:has_items('청자다람쥐인형', 1) then
-            me:dialog(npc, '아흠.. 어디 재미있는 장난감이 없나..', { prev = false, next = true })
+            me:dialog(npc, '아흠.. 어디 재미있는 장난감이 없나..', { prev = false, next = false })
             return
         end
         ::NPC_235_0008::
@@ -37,7 +37,7 @@ local function bokgeon_sell_doll(me, npc)
         end
         q = me:start_quest(quest.QUEST_SELL_DOLL)
         if q == nil then
-            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
             return
         end
         local code = me:exchange(
@@ -45,18 +45,18 @@ local function bokgeon_sell_doll(me, npc)
             { ['money'] = 100000 }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '청자다람쥐인형을 가져오세요.', { prev = false, next = true })
+            me:dialog(npc, '청자다람쥐인형을 가져오세요.', { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '금전을 받을 여유가 없군요.', { prev = false, next = true })
+            me:dialog(npc, '금전을 받을 여유가 없군요.', { prev = false, next = false })
             return
         end
         q:complete()
         return
     end
     
-    me:dialog(npc, '다른 재미있는 장난감이 있으면 제게 가져와 주세요. 제가 다 사드릴게요.', { prev = false, next = true })
+    me:dialog(npc, '다른 재미있는 장난감이 있으면 제게 가져와 주세요. 제가 다 사드릴게요.', { prev = false, next = false })
 end
 
 local function bokgeon_find_toys(me, npc)
@@ -110,7 +110,7 @@ local function bokgeon_find_toys(me, npc)
         end
         q = me:start_quest(quest.QUEST_FIND_TOYS)
         if q == nil then
-            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
             return
         end
         me:push_achievement(37, '복건성태자의 잃어버린 장난감을 찾아주자.', 7, 1)
@@ -118,7 +118,7 @@ local function bokgeon_find_toys(me, npc)
     end
     
     if q:completed() then
-        me:dialog(npc, '그 때는 정말 감사했습니다.', { prev = false, next = true })
+        me:dialog(npc, '그 때는 정말 감사했습니다.', { prev = false, next = false })
         return
     end
     
@@ -138,18 +138,18 @@ local function bokgeon_find_toys(me, npc)
             { ['item'] = { ['팔과탕'] = 10 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '아직 재료를 다 모으지 못하셨군요.', { prev = false, next = true })
+            me:dialog(npc, '아직 재료를 다 모으지 못하셨군요.', { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 팔과탕을 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 팔과탕을 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:complete()
         me:erase_achievement(37)
         return
     else
-        me:dialog(npc, '상아주사위는 복건성에서, 오색폭죽은 상해어딘가에서, 청옥팽이는 강서성에서 잃어버렸어요.', { prev = false, next = true })
+        me:dialog(npc, '상아주사위는 복건성에서, 오색폭죽은 상해어딘가에서, 청옥팽이는 강서성에서 잃어버렸어요.', { prev = false, next = false })
     end
 end
 

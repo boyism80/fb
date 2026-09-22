@@ -15,7 +15,7 @@ return {
                         me:map(map, math.random(13, 15), math.random(2, 4))
                         return DIALOG_RESULT.NEXT
                     end
-                    return me:dialog(ch, '입장할 수 있는 장소가 없습니다.', { prev = false, next = true })
+                    return me:dialog(ch, '입장할 수 있는 장소가 없습니다.', { prev = false, next = false })
                 end },
                 { '이벤트오엑스입장', function(me, ch)
                     if property('oxquiz_open') == 1 then
@@ -24,9 +24,9 @@ return {
                             me:map(map, math.random(13, 15), math.random(2, 4))
                             return DIALOG_RESULT.NEXT
                         end
-                        return me:dialog(ch, '입장할 수 있는 장소가 없습니다.', { prev = false, next = true })
+                        return me:dialog(ch, '입장할 수 있는 장소가 없습니다.', { prev = false, next = false })
                     end
-                    return me:dialog(ch, 'OX퀴즈 입장 시간이 지나 입장하실 수 없습니다.', { prev = false, next = true })
+                    return me:dialog(ch, 'OX퀴즈 입장 시간이 지나 입장하실 수 없습니다.', { prev = false, next = false })
                 end },
             },
         })

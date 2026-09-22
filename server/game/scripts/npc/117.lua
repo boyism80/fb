@@ -23,33 +23,45 @@ return {
                     goto NPC_117_BOOK
                 end
                 if sel == 2 then
+                    ::NPC_117_0010::
                     local btn = me:dialog(npc, "아, 이거? 이 섬의 부자들이 우리 중국과의 교역을 시작한 기념으로 내게 선물해줬다네.", { prev = false, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
-                    btn = me:dialog(npc, "굉장히 귀한 물건이라고 하던데... 참 마음에 든다네.", { prev = true, next = false })
-                    if btn == DIALOG_RESULT.PREV then
+                    btn = me:dialog(npc, "굉장히 귀한 물건이라고 하던데... 참 마음에 든다네.", { prev = true, next = true })
+                    if btn == DIALOG_RESULT.QUIT then
                         return
+                    end
+                    if btn == DIALOG_RESULT.PREV then
+                        goto NPC_117_0010
                     end
                     dq:step(4)
                 elseif sel == 3 then
+                    ::NPC_117_0020::
                     local btn = me:dialog(npc, "부자들이란... 변혁을 두려워하지 않는 사람들이더군. 외국 문물을 받아들이는데 망설임이 없었어.", { prev = false, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
-                    btn = me:dialog(npc, "역시 부자는 아무나 되는게 아니지. 그야말로 거상의 풍모랄까. 그런 모습에 반해서 당장 중국의 상인들을 소개시켜 줬다네.", { prev = true, next = false })
-                    if btn == DIALOG_RESULT.PREV then
+                    btn = me:dialog(npc, "역시 부자는 아무나 되는게 아니지. 그야말로 거상의 풍모랄까. 그런 모습에 반해서 당장 중국의 상인들을 소개시켜 줬다네.", { prev = true, next = true })
+                    if btn == DIALOG_RESULT.QUIT then
                         return
+                    end
+                    if btn == DIALOG_RESULT.PREV then
+                        goto NPC_117_0020
                     end
                     dq:step(4)
                 else
+                    ::NPC_117_0030::
                     local btn = me:dialog(npc, "수상쩍은 일? 글쎄, 나는 이 섬에 대해서 연구하는 중이라, 거의 모든 일에 집중하고 있는 탓에", { prev = false, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
-                    btn = me:dialog(npc, "무엇이 수상쩍은지, 무엇이 정상인지 분간이 힘들 정도라네. 무릇 사실이란 객관적으로 기록해야하는 법이니까.", { prev = true, next = false })
-                    if btn == DIALOG_RESULT.PREV then
+                    btn = me:dialog(npc, "무엇이 수상쩍은지, 무엇이 정상인지 분간이 힘들 정도라네. 무릇 사실이란 객관적으로 기록해야하는 법이니까.", { prev = true, next = true })
+                    if btn == DIALOG_RESULT.QUIT then
                         return
+                    end
+                    if btn == DIALOG_RESULT.PREV then
+                        goto NPC_117_0030
                     end
                     dq:step(4)
                 end
@@ -112,22 +124,28 @@ return {
             if selected == 1 then
                 local q = me:start_quest(quest.QUEST_BONG_BOOK)
                 if q == nil then
-                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                     return
                 end
                 if me:mkitem(ITEM_BONG_BOOK, 1) == nil then
-                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
+                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                     return
                 end
-                me:dialog(npc, '여기있네. 그럼 재밌게 읽게나.', { prev = false, next = true })
+                local btn = me:dialog(npc, '여기있네. 그럼 재밌게 읽게나.', { prev = false, next = false })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
             else
-                me:dialog(npc, '그러면 쓰나.. 책을 읽어야 마음에 양식이 쌓이는 것이네.', { prev = false, next = true })
+                me:dialog(npc, '그러면 쓰나.. 책을 읽어야 마음에 양식이 쌓이는 것이네.', { prev = false, next = false })
             end
             return
         end
 
         if not has_book then
-            me:dialog(npc, '뭐야? 책을 잃어버려? 이런 고약한.. 내 저번엔 다시 줬지만, 이번엔 그냥은 못주겠네.', { prev = true, next = true })
+            local btn = me:dialog(npc, '뭐야? 책을 잃어버려? 이런 고약한.. 내 저번엔 다시 줬지만, 이번엔 그냥은 못주겠네.', { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             local selected = me:list(npc, '1000전을 내면 다시 한권 주지.', { '봉래산전설을 다시 읽고싶어요. 1000전에 주세요.', '돈이 없어서..' })
             if selected == nil or selected ~= 1 then
                 return
@@ -137,16 +155,19 @@ return {
                 { ['item'] = { [ITEM_BONG_BOOK] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '돈이 부족하지 않나?', { prev = false, next = true })
+                me:dialog(npc, '돈이 부족하지 않나?', { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '다시 잘 읽어봐!', { prev = false, next = true })
+            local btn = me:dialog(npc, '다시 잘 읽어봐!', { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
-            me:dialog(npc, '어때? 봉래산전설은 재미있나?', { prev = false, next = true })
+            me:dialog(npc, '어때? 봉래산전설은 재미있나?', { prev = false, next = false })
         end
     end
 }

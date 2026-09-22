@@ -75,7 +75,7 @@ return {
             goto NPC_196_0001
         end
         if board_sel == 2 then
-            me:dialog(npc, '네, 안녕히 가십시오.', { prev = false, next = true })
+            me:dialog(npc, '네, 안녕히 가십시오.', { prev = false, next = false })
             return
         end
         if board_sel ~= 1 then
@@ -83,22 +83,20 @@ return {
         end
 
         if me:level() < 21 then
-            me:dialog(npc, '레벨 21이상만 이용 가능합니다.', { prev = false, next = true })
+            me:dialog(npc, '레벨 21이상만 이용 가능합니다.', { prev = false, next = false })
             return
         end
         if not me:has_items('고구려-고균도승선권', 1) then
-            me:dialog(npc, '승선권이 없으면 선실에 탑승하실 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '승선권이 없으면 선실에 탑승하실 수 없습니다.', { prev = false, next = false })
             return
         end
         if not me:rmitem('고구려-고균도승선권', 1, ITEM_DELETE_TYPE.GIVE) then
             return
         end
 
-        btn = me:dialog(npc, '그럼, 선실에 승선시켜드리도록 하겠습니다.', { prev = false, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        me:dialog(npc, '배가 출항한뒤 일정 시간 후에 고균도에 도착하게 됩니다. 즐거운 여행 되시길..', { prev = false, next = true })
+        -- Ticket already consumed: do not allow QUIT to skip boarding.
+        me:dialog(npc, '그럼, 선실에 승선시켜드리도록 하겠습니다.', { prev = false, next = true })
+        me:dialog(npc, '배가 출항한뒤 일정 시간 후에 고균도에 도착하게 됩니다. 즐거운 여행 되시길..', { prev = false, next = false })
 
         local map = name2map('고구려-고균도배선실')
         if map ~= nil then

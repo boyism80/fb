@@ -24,7 +24,7 @@ local function do_sub4_start(me, npc)
         return false
     end
     ::NPC_466_0002::
-    b = me:dialog(npc, "이 아이의 부족을 찾아 데려다 주셔야 한다. 우리 원숭이들은 모두 4성에 흩어져 계시다! 힘들어도 꼭 찾아주셔야 한다!", { prev = true, next = false })
+    b = me:dialog(npc, "이 아이의 부족을 찾아 데려다 주셔야 한다. 우리 원숭이들은 모두 4성에 흩어져 계시다! 힘들어도 꼭 찾아주셔야 한다!", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return false
     end
@@ -52,7 +52,7 @@ local function do_sub4_complete(me, npc)
         return false
     end
     ::NPC_466_0004::
-    b = me:dialog(npc, "부하들과 같이 물고기 사냥 가실때 쓰셨던 물건이시다. 요긴하게 쓰셨으면 좋으시겠다.", { prev = true, next = false })
+    b = me:dialog(npc, "부하들과 같이 물고기 사냥 가실때 쓰셨던 물건이시다. 요긴하게 쓰셨으면 좋으시겠다.", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return false
     end

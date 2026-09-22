@@ -2,14 +2,17 @@
 
 return {
     on_click = function(me, npc)
-        me:dialog(npc, "전 서버에 방송을 하시려구요?", { prev = false, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return;
+        local btn = me:dialog(npc, "전 서버에 방송을 하시려구요?", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
         end
 
         ::NPC_73_1::
         if not me:has_items("방송쿠폰", 1) then
-            me:dialog(npc, "방송쿠폰을 가지고 계셔야 방송을 하실 수 있어요.", { prev = false, next = true })
+            local btn = me:dialog(npc, "방송쿠폰을 가지고 계셔야 방송을 하실 수 있어요.", { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             return;
         end
 

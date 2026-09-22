@@ -18,7 +18,7 @@ return {
                 return
             end
             if sel == 1 then
-                local dialog_btn = me:dialog(npc, "지남침은 나침반이라고도 하는 물건으로 안에 들어있는 침이 언제 어디서든 남북을 가리키고 있다오.", { prev = false, next = true })
+                local dialog_btn = me:dialog(npc, "지남침은 나침반이라고도 하는 물건으로 안에 들어있는 침이 언제 어디서든 남북을 가리키고 있다오.", { prev = false, next = false })
                 if dialog_btn == DIALOG_RESULT.QUIT then
                     return
                 end

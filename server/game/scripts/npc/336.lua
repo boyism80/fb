@@ -89,7 +89,10 @@ return {
             end
         end
         if not has_all then
-            me:dialog(npc, "스물네가지 색의 도톨을 모아오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "스물네가지 색의 도톨을 모아오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             me:dialog(npc, "저런, 아쉽게도 도톨이 부족하시군요.", { prev = false, next = false })
             return
         end
@@ -113,7 +116,10 @@ return {
             me:dialog(npc, "소지품이 가득 차서 칠지도를 받을 수 없습니다.", { prev = false, next = false })
             return
         end
-        me:dialog(npc, "와, 정말 모든 도톨을 다 모아 오셨군요! 그럼 칠지도로 교환 해 드릴게요.", { prev = false, next = true })
+        local btn = me:dialog(npc, "와, 정말 모든 도톨을 다 모아 오셨군요! 그럼 칠지도로 교환 해 드릴게요.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         me:dialog(npc, "여기 있습니다. 잘 쓰시길 바라며, 수행이 필요 없을지라도 꾸준한 수행은 자신의 진의를 깨달을 수 있는 길입니다. 나무아미타불..", { prev = false, next = false })
     end
 }

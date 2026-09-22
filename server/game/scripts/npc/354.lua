@@ -158,7 +158,7 @@ local function run_pickup(me, npc, q)
         return
     end
 
-    btn = me:dialog(npc, string.format("%s를 맡기셨다구요?\n어디보자...", kimchi.name), { prev = false, next = true })
+    btn = me:dialog(npc, string.format("%s를 맡기셨다구요?\n어디보자...", kimchi.name), { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -170,7 +170,7 @@ local function run_pickup(me, npc, q)
     end
 
     if now() < ready then
-        me:dialog(npc, string.format("모레 저에게 다시 오시면 제가 잘 익은 %s를 드리겠습니다.", kimchi.name), { prev = false, next = true })
+        me:dialog(npc, string.format("모레 저에게 다시 오시면 제가 잘 익은 %s를 드리겠습니다.", kimchi.name), { prev = false, next = false })
         return
     end
 
@@ -180,9 +180,12 @@ local function run_pickup(me, npc, q)
 
     clear_ferment_slot(q, sel)
     me:push_achievement(ACHIEVEMENT_KIMJANG, "김장철에 김치를 담가보자", 7, 1)
-    me:dialog(npc, "김치가 맛있게 익었네요~\n맛있게드세요!", { prev = false, next = true })
+    local btn = me:dialog(npc, "김치가 맛있게 익었네요~\n맛있게드세요!", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
     -- Post-pickup tip from yeondailyy screenshot (not in Desktop/김장철 set).
-    me:dialog(npc, "김장집을 나가 개성댁을 찾아가보세요", { prev = false, next = true })
+    me:dialog(npc, "김장집을 나가 개성댁을 찾아가보세요", { prev = false, next = false })
 end
 
 -- TODO(2026-음력10월 / 김장절): lore options 1–2 full NPC pages not fully transcribed here.
@@ -205,7 +208,7 @@ local function run_deposit(me, npc, q)
 
     local slots = parse_ferment_slots(q)
     if slots[sel] ~= nil then
-        me:dialog(npc, string.format("이미 저에게 %s를 부탁하셨는데요?", kimchi.name), { prev = false, next = true })
+        me:dialog(npc, string.format("이미 저에게 %s를 부탁하셨는데요?", kimchi.name), { prev = false, next = false })
         return
     end
 
@@ -226,7 +229,7 @@ local function run_deposit(me, npc, q)
         return
     end
 
-    btn = me:dialog(npc, "그럼 재료가 다 있는지 확인해볼께요..", { prev = false, next = true })
+    btn = me:dialog(npc, "그럼 재료가 다 있는지 확인해볼께요..", { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -250,7 +253,10 @@ local function run_deposit(me, npc, q)
         return
     end
 
-    me:dialog(npc, string.format("모레 저에게 다시 오시면 제가 잘 익은 %s를 드리겠습니다.", kimchi.name), { prev = false, next = true })
+    local btn = me:dialog(npc, string.format("모레 저에게 다시 오시면 제가 잘 익은 %s를 드리겠습니다.", kimchi.name), { prev = false, next = false })
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
     set_ferment_slot(q, sel, now() + FERMENT_SEC)
 end
 
@@ -300,7 +306,7 @@ return {
             return
         end
 
-        local button = me:dialog(npc, "안녕하세요? 저는 백나연입니다.", { prev = false, next = true })
+        local button = me:dialog(npc, "안녕하세요? 저는 백나연입니다.", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

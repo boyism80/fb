@@ -115,7 +115,7 @@ local STAT_CAP = 130
 
 local function run_buy_stat(me, npc, stat_key, stat_name)
     if me:level() < STAT_MIN_LEVEL then
-        if me:dialog(npc, '99레벨 이상만 가능하네.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+        if me:dialog(npc, '99레벨 이상만 가능하네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
             return false
         end
         return true
@@ -124,21 +124,21 @@ local function run_buy_stat(me, npc, stat_key, stat_name)
     local setter = ({ str = me.base_str, dex = me.base_dex, int = me.base_int })[stat_key]
     local current = getter(me)
     if current >= STAT_CAP then
-        if me:dialog(npc, '더 이상 능력치를 올리실 수 없습니다.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+        if me:dialog(npc, '더 이상 능력치를 올리실 수 없습니다.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
             return false
         end
         return true
     end
     local my_exp = me:exp()
     if my_exp < STAT_EXP_COST then
-        if me:dialog(npc, '경험치가 부족하네.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+        if me:dialog(npc, '경험치가 부족하네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
             return false
         end
         return true
     end
     setter(me, current + 1)
     me:exp(my_exp - STAT_EXP_COST)
-    if me:dialog(npc, string.format('정상적으로 %s 1 올려주었네.', stat_name), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+    if me:dialog(npc, string.format('정상적으로 %s 1 올려주었네.', stat_name), { prev = false, next = false }) == DIALOG_RESULT.QUIT then
         return false
     end
     return true
@@ -160,7 +160,7 @@ local function run_init_dialogs(me, npc)
         goto NPC_28_0001
     end
     ::NPC_28_0003::
-    button = me:dialog(npc, '그리고 나를 찾아올 생각을 했다면 뭔가를 들고 왔어야지... 만약 뭔가를 공짜로 얻으려고 생각했다면 큰 오산이니 바로 돌아가거라.', { prev = true, next = true })
+    button = me:dialog(npc, '그리고 나를 찾아올 생각을 했다면 뭔가를 들고 왔어야지... 만약 뭔가를 공짜로 얻으려고 생각했다면 큰 오산이니 바로 돌아가거라.', { prev = true, next = false })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -173,41 +173,41 @@ end
 local function run_buy_hp(me, npc)
     local button
 
+    ::NPC_28_0010::
     button = me:dialog(npc, '체력을 사기 전에 명심하게.. 지금 착용하고 있는 모든 아이템을 벗은 후, 체력을 사기 바라네.', { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
-    while true do
-        button = me:dialog(npc, '만약, 내 말을 듣지 않고, 체력을 사서 일어나는 불이익에 대해서는 절대 책임을 질 수 없네!!', { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    ::NPC_28_0011::
+    button = me:dialog(npc, '만약, 내 말을 듣지 않고, 체력을 사서 일어나는 불이익에 대해서는 절대 책임을 질 수 없네!!', { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto NPC_28_0010
     end
 
-    while true do
-        button = me:dialog(npc, '경험치로 체력을 사고 싶다고.... 늘 이렇게 경험치를 팔고는 여기 저기 가서 잘못 팔았다고 후회를 할 것이거늘... 쯧쯧... 어디 레벨이나 되는지 한 번 보자.', { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    ::NPC_28_0012::
+    button = me:dialog(npc, '경험치로 체력을 사고 싶다고.... 늘 이렇게 경험치를 팔고는 여기 저기 가서 잘못 팔았다고 후회를 할 것이거늘... 쯧쯧... 어디 레벨이나 되는지 한 번 보자.', { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto NPC_28_0011
     end
 
     if me:level() < HP_MIN_LEVEL then
-        me:dialog(npc, '수련을 더 쌓으시게.', { prev = false, next = true })
+        me:dialog(npc, '수련을 더 쌓으시게.', { prev = false, next = false })
         return true
     end
 
+    ::NPC_28_0013::
     button = me:dialog(npc, '레벨은 충분하고...', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
     if button == DIALOG_RESULT.PREV then
-        return true
+        goto NPC_28_0012
     end
 
     local profile = HP_CLASS_PROFILE[me:class()] or 'warrior'
@@ -215,7 +215,7 @@ local function run_buy_hp(me, npc)
     local base_hp = me:base_hp()
     local caps = HP_PROMOTION_CAP[profile]
     if caps and caps[promotion] and base_hp >= caps[promotion] then
-        me:dialog(npc, '아직도 승급을 하지 않았다니. 일단 승급을 한 뒤에 다시 오도록!', { prev = false, next = true })
+        me:dialog(npc, '아직도 승급을 하지 않았다니. 일단 승급을 한 뒤에 다시 오도록!', { prev = false, next = false })
         return true
     end
 
@@ -228,7 +228,7 @@ local function run_buy_hp(me, npc)
     local my_exp = me:exp()
     local exp_cost = step_num * tier.exp
     if my_exp < exp_cost then
-        me:dialog(npc, '경험치가 부족하네', { prev = false, next = true })
+        me:dialog(npc, '경험치가 부족하네', { prev = false, next = false })
         return true
     end
 
@@ -239,16 +239,11 @@ local function run_buy_hp(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return false
     end
-    while true do
-        button = me:dialog(npc, string.format('화면에 바로 보일런지는 모르겠지만, 자네의 체력은 이제 %d이네', me:maxhp()), { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    button = me:dialog(npc, string.format('화면에 바로 보일런지는 모르겠지만, 자네의 체력은 이제 %d이네', me:maxhp()), { prev = false, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
     end
-    button = me:dialog(npc, '강인한 체력을 나쁜 곳에 쓰려고 한다면... 내가 자네를 가만두지 않겠네. 알겠나?', { prev = true, next = true })
+    button = me:dialog(npc, '강인한 체력을 나쁜 곳에 쓰려고 한다면... 내가 자네를 가만두지 않겠네. 알겠나?', { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -258,41 +253,41 @@ end
 local function run_buy_mp(me, npc)
     local button
 
+    ::NPC_28_0020::
     button = me:dialog(npc, '마력을 사기 전에 명심하게.. 지금 착용하고 있는 모든 아이템을 벗은 후, 마력을 사기 바라네.', { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
-    while true do
-        button = me:dialog(npc, '만약, 내 말을 듣지 않고, 마력을 사서 일어나는 불이익에 대해서는 절대 책임을 질 수 없네!!', { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    ::NPC_28_0021::
+    button = me:dialog(npc, '만약, 내 말을 듣지 않고, 마력을 사서 일어나는 불이익에 대해서는 절대 책임을 질 수 없네!!', { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto NPC_28_0020
     end
 
-    while true do
-        button = me:dialog(npc, '경험치로 마력을 사고 싶다고.... 늘 이렇게 경험치를 팔고는 여기 저기 가서 잘못 팔았다고 후회를 할 것이거늘... 쯧쯧... 어디 레벨이나 되는지 한 번 보자.', { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    ::NPC_28_0022::
+    button = me:dialog(npc, '경험치로 마력을 사고 싶다고.... 늘 이렇게 경험치를 팔고는 여기 저기 가서 잘못 팔았다고 후회를 할 것이거늘... 쯧쯧... 어디 레벨이나 되는지 한 번 보자.', { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto NPC_28_0021
     end
 
     if me:level() < HP_MIN_LEVEL then
-        me:dialog(npc, '수련을 더 쌓으시게.', { prev = false, next = true })
+        me:dialog(npc, '수련을 더 쌓으시게.', { prev = false, next = false })
         return true
     end
 
+    ::NPC_28_0023::
     button = me:dialog(npc, '레벨은 충분하고...', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
     if button == DIALOG_RESULT.PREV then
-        return true
+        goto NPC_28_0022
     end
 
     local profile = HP_CLASS_PROFILE[me:class()] or 'warrior'
@@ -300,7 +295,7 @@ local function run_buy_mp(me, npc)
     local base_mp = me:base_mp()
     local caps = MP_PROMOTION_CAP[profile]
     if caps and caps[promotion] and base_mp >= caps[promotion] then
-        me:dialog(npc, '더 이상 올릴 수 없습니다.', { prev = false, next = true })
+        me:dialog(npc, '더 이상 올릴 수 없습니다.', { prev = false, next = false })
         return true
     end
 
@@ -313,7 +308,7 @@ local function run_buy_mp(me, npc)
     local my_exp = me:exp()
     local exp_cost = step_num * tier.exp
     if my_exp < exp_cost then
-        me:dialog(npc, '경험치가 부족하네', { prev = false, next = true })
+        me:dialog(npc, '경험치가 부족하네', { prev = false, next = false })
         return true
     end
 
@@ -324,16 +319,11 @@ local function run_buy_mp(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return false
     end
-    while true do
-        button = me:dialog(npc, string.format('화면에 바로 보일런지는 모르겠지만, 자네의 마력은 이제 %d이네', me:maxmp()), { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    button = me:dialog(npc, string.format('화면에 바로 보일런지는 모르겠지만, 자네의 마력은 이제 %d이네', me:maxmp()), { prev = false, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
     end
-    button = me:dialog(npc, '강인한 마력을 나쁜 곳에 쓰려고 한다면... 내가 자네를 가만두지 않겠네. 알겠나?', { prev = true, next = true })
+    button = me:dialog(npc, '강인한 마력을 나쁜 곳에 쓰려고 한다면... 내가 자네를 가만두지 않겠네. 알겠나?', { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -354,18 +344,18 @@ local function run_change_face(me, npc)
         return false
     end
 
-    while true do
-        button = me:dialog(npc, '지금부터 차례로 자네가 갖을 수 있는 모습을 보여주도록 하겠다. 수술이 그리 쉽지는 않고', { prev = false, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        button = me:dialog(npc, '원하는 모습이 보이면 바로 예를 선택하도록. 현재 네가 가질 수 있는 얼굴은 101개가 있다. 이전이나 다음을 선택해도 얼굴이 바뀌지 않으면 마지막 모습이니 그리 알도록.', { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    ::NPC_28_0030::
+    button = me:dialog(npc, '지금부터 차례로 자네가 갖을 수 있는 모습을 보여주도록 하겠다. 수술이 그리 쉽지는 않고', { prev = false, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    ::NPC_28_0031::
+    button = me:dialog(npc, '원하는 모습이 보이면 바로 예를 선택하도록. 현재 네가 가질 수 있는 얼굴은 101개가 있다. 이전이나 다음을 선택해도 얼굴이 바뀌지 않으면 마지막 모습이니 그리 알도록.', { prev = true, next = false })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto NPC_28_0030
     end
 
     local hair = 0
@@ -395,22 +385,22 @@ local function run_change_face(me, npc)
         end
 
         if index == 1 then
-            if me:dialog(npc, '그럼 네 얼굴을 그 모습을 고쳐주도록 하지.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '그럼 네 얼굴을 그 모습을 고쳐주도록 하지.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return false
             end
             local money = me:money()
             if money < 1000000 then
-                if me:dialog(npc, '백만원이 없잖아 임마', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+                if me:dialog(npc, '백만원이 없잖아 임마', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                     return false
                 end
                 return true
             end
             me:hair(hair)
             me:money(money - 1000000)
-            if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return false
             end
-            if me:dialog(npc, '나에게 더 도움을 받을 일은 이제 없겠지?.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '나에게 더 도움을 받을 일은 이제 없겠지?.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return false
             end
             return true
@@ -427,18 +417,18 @@ end
 
 local function run_change_gender(me, npc)
     local button
-    while true do
-        button = me:dialog(npc, '이건 아직 해 줄 수가 없네...', { prev = false, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        button = me:dialog(npc, '나도 조금 더 공부를 해야 하고... 그리고 하여간 여러가지 복잡한 사정이 있으니... 이번ㅂ에는 그냥 돌아가도록 하게.', { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button ~= DIALOG_RESULT.PREV then
-            break
-        end
+    ::NPC_28_0040::
+    button = me:dialog(npc, '이건 아직 해 줄 수가 없네...', { prev = false, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    ::NPC_28_0041::
+    button = me:dialog(npc, '나도 조금 더 공부를 해야 하고... 그리고 하여간 여러가지 복잡한 사정이 있으니... 이번에는 그냥 돌아가도록 하게.', { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
+        return false
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto NPC_28_0040
     end
 
     local index, list_btn = me:list(npc, '아니 돌아가라고 하는데, 왜 이렇게 나를 귀찮게 하지? 이것을 꼭 해야 할 사정이 있나? 비용도 만만치 않게 들고, 그리고 실패할 확률도 많은데, 그래도 꼭 해야 되겠나?', {'예', '아니오. 그럼 나중에...'})
@@ -449,7 +439,7 @@ local function run_change_gender(me, npc)
         return false
     end
 
-    button = me:dialog(npc, '정 그렇다면... 먼저 아이템을 장비하고 있는지 보겠네. 아이템을 장비한 채로 성전환을 하면 부작용이 있을 수도 있지.', { prev = false, next = true })
+    button = me:dialog(npc, '정 그렇다면... 먼저 아이템을 장비하고 있는지 보겠네. 아이템을 장비한 채로 성전환을 하면 부작용이 있을 수도 있지.', { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -490,7 +480,7 @@ local function run_change_gender(me, npc)
         return false
     end
 
-    button = me:dialog(npc, '음... 아직 결혼한 상태가 아니니... 수술을 시작해 봐야지.', { prev = false, next = true })
+    button = me:dialog(npc, '음... 아직 결혼한 상태가 아니니... 수술을 시작해 봐야지.', { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -523,7 +513,7 @@ local function run_change_gender(me, npc)
     else
         me:gender(GENDER.MALE)
     end
-    button = me:dialog(npc, string.format('자네 지금부터는 %s 되었네. %s용 의복을 갖추고 있는지는 몰라도, 하여간 자네는 이제 %s의 몸을 갖게 되었으니 그렇게 알고 돌아고도록 하게.', gender_to, gender_from, gender_to), { prev = false, next = true })
+    button = me:dialog(npc, string.format('자네 지금부터는 %s 되었네. %s용 의복을 갖추고 있는지는 몰라도, 하여간 자네는 이제 %s의 몸을 갖게 되었으니 그렇게 알고 돌아고도록 하게.', gender_to, gender_from, gender_to), { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return false
     end

@@ -73,7 +73,10 @@ return {
                 me:dialog(npc, "자네는 금강퇴를 아직 배우지 않았구려. 일단 전수부터 받아야 수련을 할 수 있다오.", { prev = false, next = false })
                 return
             end
-            me:dialog(npc, "일단 자네가 어느정도 위력의 금강퇴를 가지고 있는지. 능력이 어느정도인지 확인해봐야겠구려. 능력에 따라 그에 걸맞는 수련을 하도록 해주겠소.", { prev = false, next = true })
+            local btn = me:dialog(npc, "일단 자네가 어느정도 위력의 금강퇴를 가지고 있는지. 능력이 어느정도인지 확인해봐야겠구려. 능력에 따라 그에 걸맞는 수련을 하도록 해주겠소.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             local d = me:dialog(npc, "금강퇴의 수련도에 따라 내 적합한 조언을 해주도록 하겠네.", { prev = false, next = false })
             if d == DIALOG_RESULT.QUIT then
                 return

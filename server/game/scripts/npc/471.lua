@@ -32,7 +32,7 @@ local function do_sub9_start(me, npc)
         goto NPC_471_0001
     end
     ::NPC_471_0003::
-    b = me:dialog(npc, "자, 이 술을 내 친구 화원왕에게 가져다 주시면 끝이시다. 잘 부탁하신다!", { prev = true, next = false })
+    b = me:dialog(npc, "자, 이 술을 내 친구 화원왕에게 가져다 주시면 끝이시다. 잘 부탁하신다!", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return false
     end
@@ -60,7 +60,7 @@ local function do_sub9_complete(me, npc)
         return false
     end
     ::NPC_471_0005::
-    b = me:dialog(npc, "나는 워낙 미남이시라 더이상 필요없으시니까. 자네가 요긴하게 쓰시면 좋으시겠다.", { prev = true, next = false })
+    b = me:dialog(npc, "나는 워낙 미남이시라 더이상 필요없으시니까. 자네가 요긴하게 쓰시면 좋으시겠다.", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return false
     end

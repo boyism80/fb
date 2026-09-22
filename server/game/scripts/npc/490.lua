@@ -31,7 +31,10 @@ local function run_wedding_dress_sale(me, npc)
             end
             me:money(me:money() - 2000000)
             me:mkitem("웨딩드레스14", 1)
-            me:dialog(npc, "여기 웨딩드레스14입니다. 감사합니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "여기 웨딩드레스14입니다. 감사합니다.", { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             me:dialog(npc, "다음에 또 방문해주세요.", { prev = false, next = false })
         end
@@ -53,7 +56,10 @@ local function run_wedding_dress_sale(me, npc)
             end
             me:money(me:money() - 50000000)
             me:mkitem("웨딩드레스12", 1)
-            me:dialog(npc, "여기 웨딩드레스12입니다. 감사합니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "여기 웨딩드레스12입니다. 감사합니다.", { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             me:dialog(npc, "다음에 또 방문해주세요.", { prev = false, next = false })
         end
@@ -75,7 +81,10 @@ local function run_wedding_dress_sale(me, npc)
             end
             me:money(me:money() - 100000000)
             me:mkitem("웨딩드레스18", 1)
-            me:dialog(npc, "여기 웨딩드레스18입니다. 감사합니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "여기 웨딩드레스18입니다. 감사합니다.", { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             me:dialog(npc, "다음에 또 방문해주세요.", { prev = false, next = false })
         end
@@ -103,7 +112,10 @@ local function run_wedding_dress_sale(me, npc)
                 me:dialog(npc, "소지품이 가득 차서 웨딩드레스22를 드리지 못합니다.", { prev = false, next = false })
                 return
             end
-            me:dialog(npc, "여기 웨딩드레스22입니다. 감사합니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "여기 웨딩드레스22입니다. 감사합니다.", { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             me:dialog(npc, "다음에 또 방문해주세요.", { prev = false, next = false })
         end
@@ -131,7 +143,10 @@ local function run_wedding_dress_sale(me, npc)
                 me:dialog(npc, "소지품이 가득 차서 웨딩드레스25를 드리지 못합니다.", { prev = false, next = false })
                 return
             end
-            me:dialog(npc, "여기 웨딩드레스25입니다. 감사합니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "여기 웨딩드레스25입니다. 감사합니다.", { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             me:dialog(npc, "다음에 또 방문해주세요.", { prev = false, next = false })
         end
@@ -169,7 +184,10 @@ local function run_garimbin_wing_exchange(me, npc)
             me:dialog(npc, "소지품이 가득 차서 가릉빈가의날개옷을 드리지 못합니다.", { prev = false, next = false })
             return
         end
-        me:dialog(npc, "여기 가릉빈가의날개옷입니다. 감사합니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "여기 가릉빈가의날개옷입니다. 감사합니다.", { prev = false, next = false })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
     else
         me:dialog(npc, "다음에 또 방문해주세요.", { prev = false, next = false })
     end

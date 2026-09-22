@@ -110,10 +110,10 @@ local function do_armor_infinite(me, npc)
     end
     me:money(money - price)
     ::NPC_157_0002::
-    if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+    if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = false }) == DIALOG_RESULT.QUIT then
         return
     end
-    local last_btn = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', { prev = true, next = true })
+    local last_btn = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', { prev = true, next = false })
     if last_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -131,7 +131,7 @@ local function do_armor_normal(me, npc)
         return
     end
     me:armor_color(nil)
-    me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', { prev = false, next = true })
+    me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', { prev = false, next = false })
 end
 
 return {

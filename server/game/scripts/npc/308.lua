@@ -8,7 +8,7 @@ return {
             return
         end
 
-        button = me:dialog(npc, "이십오만전을 가져왔군!", { prev = false, next = true })
+        button = me:dialog(npc, "이십오만전을 가져왔군!", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

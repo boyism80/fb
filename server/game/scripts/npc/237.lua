@@ -44,6 +44,6 @@ return {
             me:dialog(npc, '소지품이 가득 차서 수선한 드레스를 받을 수 없어요.', { prev = false, next = false })
             return
         end
-        me:dialog(npc, '여기 수선이 끝났으니 가지고 가시우... 잘 입으시구랴...', { prev = false, next = true })
+        me:dialog(npc, '여기 수선이 끝났으니 가지고 가시우... 잘 입으시구랴...', { prev = false, next = false })
     end
 }

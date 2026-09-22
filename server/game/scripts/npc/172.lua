@@ -123,7 +123,7 @@ local function run_turn_in(me, npc)
             q:complete()
         end
         me:push_achievement(ACHIEVEMENT_DONE, '금고주인의 부탁을 들어주었다.', 6, 1)
-        me:dialog(npc, '오! 봉투를 가져왔군. 수고했어. 설마했는데 정말 안 열어봤군. 좋았어! 내 아끼던 거지만 상으로 이 흑장단검을 주지. 중국에서 가져온 귀한 칼이야. 그럼 잘 가게!', { prev = false, next = true })
+        me:dialog(npc, '오! 봉투를 가져왔군. 수고했어. 설마했는데 정말 안 열어봤군. 좋았어! 내 아끼던 거지만 상으로 이 흑장단검을 주지. 중국에서 가져온 귀한 칼이야. 그럼 잘 가게!', { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then
@@ -165,7 +165,10 @@ local function run_cursed_forgiveness(me, npc)
     if q == nil then
         return
     end
-    me:dialog(npc, '.....', { prev = false, next = true })
+    local btn = me:dialog(npc, '.....', { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
     local sel, btn = me:list(npc, '에이! 네놈만 보면 화가 난다. 설마 했지만 그래도 믿었는데, 보란 듯이 약속을 어기다니! 저리 가! 꼴도 보기 싫다!', { '......', '죄송합니다. 호기심에 그만...' }, { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -210,7 +213,7 @@ local function run_cursed_forgiveness(me, npc)
         return
     end
     ::NPC_172_0020::
-    btn = me:dialog(npc, '그럼 잘 가게. 편지 내용은 아무에게도 말하지 않겠다고 약속한 것도 잊지 말고!', { prev = true, next = true })
+    btn = me:dialog(npc, '그럼 잘 가게. 편지 내용은 아무에게도 말하지 않겠다고 약속한 것도 잊지 말고!', { prev = true, next = false })
     if btn == DIALOG_RESULT.PREV then
         goto NPC_172_0019
     end
@@ -224,7 +227,7 @@ return {
             return
         end
         if q:completed() then
-            me:dialog(npc, '잘 지내시나? 저번엔 고마웠네.', { prev = false, next = true })
+            me:dialog(npc, '잘 지내시나? 저번엔 고마웠네.', { prev = false, next = false })
             return
         end
         if q:step() == 1 then

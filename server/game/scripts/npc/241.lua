@@ -48,7 +48,7 @@ return {
             end
             q:step(1)
             me:push_achievement(40, '청심사주의 재료를 구하자.[1/2]', 7, 20)
-            me:dialog(npc, '아아! 고맙네 고마워. 재료를 구해주면 내가 만든 술을 한병 주겠네.\n\n내가 만들려는 것은 그냥 뱀술이 아니고, \'청심사주\'라는 것이지. 보통 뱀술도 몸에 좋다고 하지만, 청심사주에 비할바는 아니야. 뱀고기 100개와 좋은뱀고기 5개를 농축하여 만든다네.', { prev = false, next = true })
+            me:dialog(npc, '아아! 고맙네 고마워. 재료를 구해주면 내가 만든 술을 한병 주겠네.\n\n내가 만들려는 것은 그냥 뱀술이 아니고, \'청심사주\'라는 것이지. 보통 뱀술도 몸에 좋다고 하지만, 청심사주에 비할바는 아니야. 뱀고기 100개와 좋은뱀고기 5개를 농축하여 만든다네.', { prev = false, next = false })
             return
         end
 
@@ -86,7 +86,7 @@ return {
             end
             q:step(1)
             me:push_achievement(40, '청심사주의 재료를 구하자.[1/2]', 7, 20)
-            me:dialog(npc, '아아! 고맙네 고마워. 재료를 구해주면 내가 만든 술을 한병 주겠네.\n\n내가 만들려는 것은 그냥 뱀술이 아니고, \'청심사주\'라는 것이지. 보통 뱀술도 몸에 좋다고 하지만, 청심사주에 비할바는 아니야. 뱀고기 100개와 좋은뱀고기 5개를 농축하여 만든다네.', { prev = false, next = true })
+            me:dialog(npc, '아아! 고맙네 고마워. 재료를 구해주면 내가 만든 술을 한병 주겠네.\n\n내가 만들려는 것은 그냥 뱀술이 아니고, \'청심사주\'라는 것이지. 보통 뱀술도 몸에 좋다고 하지만, 청심사주에 비할바는 아니야. 뱀고기 100개와 좋은뱀고기 5개를 농축하여 만든다네.', { prev = false, next = false })
             return
         end
 
@@ -122,7 +122,7 @@ return {
                 return
             end
             ::NPC_241_0031::
-            btn = me:dialog(npc, '청심초는 남경지역을 한참 돌아다니다 보면 운이 좋은 사람에게 발견된다네.\n\n기린의피와 청심초 5뿌리만 있으면 이제 정말 만들 수 있을 것이네.', { prev = true, next = true })
+            btn = me:dialog(npc, '청심초는 남경지역을 한참 돌아다니다 보면 운이 좋은 사람에게 발견된다네.\n\n기린의피와 청심초 5뿌리만 있으면 이제 정말 만들 수 있을 것이네.', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -156,7 +156,7 @@ return {
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청심사주', '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청심사주', '을', '를') .. ' 줄 수 없네.', { prev = false, next = false })
                 return
             end
             q:step(3)
@@ -164,6 +164,6 @@ return {
             return
         end
 
-        me:dialog(npc, '어떤가? 청심사주의 맛이 아주 기가 막히지 않은가?', { prev = true, next = true })
+        me:dialog(npc, '어떤가? 청심사주의 맛이 아주 기가 막히지 않은가?', { prev = false, next = false })
     end
 }
