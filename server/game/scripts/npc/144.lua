@@ -60,7 +60,7 @@ local function run_rabbit_liver_quest(me, npc)
             return
         end
         ::NPC_144_0006::
-        btn = me:dialog(npc, '장터의 장돌뱅이가 토끼가 어디에 있는지 알고 있다고 합니다.. 그럼 부탁드립니다.', { prev = true, next = true })
+        btn = me:dialog(npc, '장터의 장돌뱅이가 토끼가 어디에 있는지 알고 있다고 합니다.. 그럼 부탁드립니다.', { prev = true, next = false })
         if btn == DIALOG_RESULT.PREV then
             goto NPC_144_0005
         end
@@ -123,12 +123,20 @@ local function run_shark_weapon_quest(me, npc)
     end
 
     local q = me:quest(quest.QUEST_SHARK_WEAPON)
+    local btn
     if q == nil then
-        if me:dialog(npc, '상어장군이 사용하던 무기의 제작법이 드디어 알려졌다는 소문이 있다네...\n\n그 무기의 제작 방법을 아는 사람이 았다는 것 같더군.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        ::NPC_144_0020::
+        btn = me:dialog(npc, '상어장군이 사용하던 무기의 제작법이 드디어 알려졌다는 소문이 있다네...\n\n그 무기의 제작 방법을 아는 사람이 았다는 것 같더군.', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '다시 상어장군용 무기를 만들기 위해서 그 제작방법이 꼭 필요하다네.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        ::NPC_144_0021::
+        btn = me:dialog(npc, '다시 상어장군용 무기를 만들기 위해서 그 제작방법이 꼭 필요하다네.', { prev = true, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_144_0020
         end
         local sel = me:list(npc, '자네가 좀 알아봐 줄 수 있는가?', { '물론입니다...', '별로 흥미가 안내켜서..' }, { prev = false })
         if sel == nil or sel ~= 1 then
@@ -142,7 +150,8 @@ local function run_shark_weapon_quest(me, npc)
             q:step(1)
         end
         me:push_achievement(24, '상어장군의무기 퀘스트를 받다.', 7, 1)
-        if me:dialog(npc, '좋아. 그런데 사실은 나도 누가 알고 있는지는 자세히는 모른다네.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        btn = me:dialog(npc, '좋아. 그런데 사실은 나도 누가 알고 있는지는 자세히는 모른다네.', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         me:dialog(npc, '단지 지나가는 말로 아주 추운 지방에서 누군가 알고 있다고 들은 기억이 있어서 말이야..\n\n자세한 건 자네가 직접 찾아봐야 할거야...\n\n그럼 부탁하네.', { prev = false, next = false })
@@ -160,13 +169,21 @@ local function run_shark_weapon_quest(me, npc)
             me:dialog(npc, '아직 아무것도 얻어오지 못했나?', { prev = false, next = false })
             return
         end
-        if me:dialog(npc, '어디 그럼 한번 볼까.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        ::NPC_144_0030::
+        btn = me:dialog(npc, '어디 그럼 한번 볼까.', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '으음...으으음....으으으으음.....!!!\n\n아. 이제야 제조법을 알았네.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        ::NPC_144_0031::
+        btn = me:dialog(npc, '으음...으으음....으으으으음.....!!!\n\n아. 이제야 제조법을 알았네.', { prev = true, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '이걸 만들기 위해서 상어의핵 3개와 불의수정 3개가 필요하다네.\n\n자네가 재료를 다 모아 온다면 내가 직접 만들어 주도록 하겠네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_144_0030
+        end
+        btn = me:dialog(npc, '이걸 만들기 위해서 상어의핵 3개와 불의수정 3개가 필요하다네.\n\n자네가 재료를 다 모아 온다면 내가 직접 만들어 주도록 하겠네.', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if not me:rmitem(SHARK_WEAPON_ITEM_SCROLL, 1, ITEM_DELETE_TYPE.GIVE) then
@@ -212,11 +229,18 @@ local function run_shark_weapon_quest(me, npc)
                 q:step(13)
             end
             me:push_achievement(24, '상어장군 무기를 만들다!', 6, 1)
-            if me:dialog(npc, '오. 드디어 만들었군...', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+            ::NPC_144_0040::
+            btn = me:dialog(npc, '오. 드디어 만들었군...', { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:dialog(npc, '이것이 바로 괴력선창이라는 것일세.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+            ::NPC_144_0041::
+            btn = me:dialog(npc, '이것이 바로 괴력선창이라는 것일세.', { prev = true, next = true })
+            if btn == DIALOG_RESULT.QUIT then
                 return
+            end
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_144_0040
             end
             me:dialog(npc, '이걸 자네에게 줄 터이니 부디 유용하게 사용하게나.', { prev = false, next = false })
         else

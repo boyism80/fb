@@ -6,7 +6,7 @@ local function try_craft_weapon(me, npc, materials, price, reward_name)
     for _, m in ipairs(materials) do
         materials_table[m[1]] = m[2]
     end
-    local btn = me:dialog(npc, '좋아좋아, 여기있네. 조심해서 좋은 일에 잘 쓰시게나.', { prev = false, next = true })
+    local btn = me:dialog(npc, '좋아좋아, 여기있네. 조심해서 좋은 일에 잘 쓰시게나.', { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -16,11 +16,11 @@ local function try_craft_weapon(me, npc, materials, price, reward_name)
     end
     local code = me:exchange(cost, { ['item'] = { [reward_name] = 1 } })
     if code == enum.exchange_result.LACK_COST then
-        me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', { prev = false, next = true })
+        me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', { prev = false, next = false })
         return false
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '은', '는') .. ' 줄 수 없네.', { prev = false, next = true })
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '은', '는') .. ' 줄 수 없네.', { prev = false, next = false })
         return false
     end
     return true
@@ -70,60 +70,82 @@ return {
             return
         end
         if list == 3 then
-            me:dialog(npc, '별로 좋은게 없어보인다니? 한번 사용은 해봤나? 한번 써본다면 그런 말은 나오지 않을걸?', { prev = false, next = true })
+            me:dialog(npc, '별로 좋은게 없어보인다니? 한번 사용은 해봤나? 한번 써본다면 그런 말은 나오지 않을걸?', { prev = false, next = false })
             return
         end
 
         if list == 1 then
-            local list_2 = me:list(npc, '탁월한 선택! 지금까지 이 창에 맞고 중독되지 않은 몬스터는 없었지!', { '만들어주세요', '음, 다시 생각해볼래요' })
+            ::NPC_167_0010::
+            local list_2, list_2_btn = me:list(npc, '탁월한 선택! 지금까지 이 창에 맞고 중독되지 않은 몬스터는 없었지!', { '만들어주세요', '음, 다시 생각해볼래요' }, { prev = true })
+            if list_2_btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            if list_2_btn == DIALOG_RESULT.PREV then
+                goto NPC_167_0004
+            end
             if list_2 == nil then
                 return
             end
             if list_2 == 2 then
-                me:dialog(npc, '그래, 조금 더 생각해보고 오라구.', { prev = false, next = true })
+                me:dialog(npc, '그래, 조금 더 생각해보고 오라구.', { prev = false, next = false })
                 return
             end
+            ::NPC_167_0011::
             btn = me:dialog(npc, '거미독창을 만들려면 거미의이빨 25개와 독거미줄 50개가 필요해. 그리고 제작비와 수고비, 세금을 합해 5000전이 필요하지.', { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
+            end
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_167_0010
             end
             local list_3 = me:list(npc, '뛰어난 성능에 저렴한 가격! 한 번 믿어봐!', { '어서 만들어 주세요', '나중에 다시 올게요...' })
             if list_3 == nil then
                 return
             end
             if list_3 == 2 then
-                me:dialog(npc, '또 그세 마음이 바뀐거야? 그럼 나중에 꼭 오라구!', { prev = false, next = true })
+                me:dialog(npc, '또 그세 마음이 바뀐거야? 그럼 나중에 꼭 오라구!', { prev = false, next = false })
                 return
             end
             if try_craft_weapon(me, npc, { { SPIDER_FANG, SPIDER_FANG_COUNT }, { SPIDER_WEB, SPIDER_WEB_COUNT } }, PRICE, SPIDER_SPEAR) then
-                me:dialog(npc, '수고했네.', { prev = false, next = true })
+                me:dialog(npc, '수고했네.', { prev = false, next = false })
             end
             return
         end
 
         if list == 2 then
-            local list_2 = me:list(npc, '탁월한 안목! 어떤 적이라해도 저주를 걸어버리는 검이지!', { '만들어주세요', '음, 다시 생각해볼래요' })
+            ::NPC_167_0020::
+            local list_2, list_2_btn = me:list(npc, '탁월한 안목! 어떤 적이라해도 저주를 걸어버리는 검이지!', { '만들어주세요', '음, 다시 생각해볼래요' }, { prev = true })
+            if list_2_btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            if list_2_btn == DIALOG_RESULT.PREV then
+                goto NPC_167_0004
+            end
             if list_2 == nil then
                 return
             end
             if list_2 == 2 then
-                me:dialog(npc, '그래, 조금 더 생각해보고 오라구.', { prev = false, next = true })
+                me:dialog(npc, '그래, 조금 더 생각해보고 오라구.', { prev = false, next = false })
                 return
             end
+            ::NPC_167_0021::
             btn = me:dialog(npc, '저주의단검을 만들려면 늑대의이빨 50개와 늑대의송곳니 10개가 필요해. 그리고 제작비와 수고비, 양도세를 합해 5000전이 필요하지!', { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
+            end
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_167_0020
             end
             local list_3 = me:list(npc, '엄청난 성능에 비해 너무나 싼 가격! 이 사람 거짓말 안해!', { '좋아요! 만들어주세요!', '사냥꾼이 아니라 장사꾼 같은데요...그만 둘래요.' })
             if list_3 == nil then
                 return
             end
             if list_3 == 2 then
-                me:dialog(npc, '또 그세 마음이 바뀐거야? 그럼 나중에 꼭 오라구!', { prev = false, next = true })
+                me:dialog(npc, '또 그세 마음이 바뀐거야? 그럼 나중에 꼭 오라구!', { prev = false, next = false })
                 return
             end
             if try_craft_weapon(me, npc, { { WOLF_FANG, WOLF_FANG_COUNT }, { WOLF_FANG_CURVED, WOLF_FANG_CURVED_COUNT } }, PRICE, CURSED_DAGGER) then
-                me:dialog(npc, '수고했네.', { prev = false, next = true })
+                me:dialog(npc, '수고했네.', { prev = false, next = false })
             end
             return
         end

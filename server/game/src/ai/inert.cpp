@@ -2,9 +2,9 @@
 
 using namespace fb::game;
 
-bool inert_ai::execute(mob&, const datetime&)
+async::task<bool> inert_ai::execute(mob&, const datetime&)
 {
-    return true;
+    co_return true;
 }
 
 MOB_ATTACK_TYPE inert_ai::get_type() const

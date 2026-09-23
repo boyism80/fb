@@ -70,7 +70,7 @@ return {
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "사각 사각.....", { prev = false, next = true })
+        d = me:dialog(npc, "사각 사각.....", { prev = false, next = false })
         if d == DIALOG_RESULT.QUIT then
             return
         end

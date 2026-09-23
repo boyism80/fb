@@ -17,7 +17,7 @@
 @inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject SecurityService SecurityService
-@inject LogService LogService
+@inject OpsNotifyService OpsNotifyService
 @inject NavigationManager Navigation
 @attribute [AuthorizeRole(Role.Admin)]
 
@@ -300,6 +300,7 @@
     private RoleModel roleModel = new();
     private Role currentUserRole = Role.User;
     private uint currentUserId;
+    private string currentUserName = string.Empty;
     private uint? loginWorld;
     private string changeRoleButtonTitle = "Change user role";
     private string errorMessage;
@@ -577,10 +578,15 @@
 
         var roleClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Role);
         var idClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var nameClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name);
         var loginWorldClaim = authState.User.FindFirst(CustomAuthenticationStateProvider.LoginWorldClaimType);
         if (idClaim != null && uint.TryParse(idClaim.Value, out var uid))
         {
             currentUserId = uid;
+        }
+        if (nameClaim != null)
+        {
+            currentUserName = nameClaim.Value;
         }
         if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
         {
@@ -730,15 +736,13 @@
             DbContext.Character.Set(selectedWorld.Value, character);
             await DbContext.SaveChangesAsync();
 
-            await LogService.WriteAsync("role_change", new
-            {
-                target_account_name = character.Name,
-                target_uid = character.Id,
-                old_role = oldRole.ToString(),
-                new_role = newRole.ToString(),
-                changer_uid = currentUserId,
-                is_self = isSelf
-            });
+            await OpsNotifyService.Notify(
+                "role_change",
+                "admin",
+                currentUserName,
+                character.Name,
+                selectedWorld.Value,
+                $"{oldRole} -> {newRole}");
 
             if (isSelf)
             {
@@ -796,7 +800,7 @@
             if (!string.IsNullOrWhiteSpace(banModel.Days) && uint.TryParse(banModel.Days, out var parsedDays))
                 days = parsedDays;
 
-            var result = await BanService.Ban(selectedWorld.Value, core.Character.Name, banModel.Reason, days);
+            var result = await BanService.Ban(selectedWorld.Value, core.Character.Name, banModel.Reason, days, currentUserName, "admin");
             await DbContext.SaveChangesAsync();
 
             var response = new Response.Ban
@@ -806,7 +810,7 @@
                 ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 Error = (uint)result.Error
             };
-            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.ban");
+            await RabbitMqService.PublishFanoutAsync(response, "ban", selectedWorld.Value);
 
             successMessage = $"User {core.Character.Name} has been banned successfully.";
             CloseBanModal();
@@ -833,7 +837,7 @@
 
         try
         {
-            var result = await BanService.Unban(selectedWorld.Value, core.Character.Name);
+            var result = await BanService.Unban(selectedWorld.Value, core.Character.Name, currentUserName, "admin");
             await DbContext.SaveChangesAsync();
 
             var response = new Response.Unban
@@ -841,7 +845,7 @@
                 Name = core.Character.Name,
                 Error = (uint)result.Error
             };
-            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.unban");
+            await RabbitMqService.PublishFanoutAsync(response, "ban", selectedWorld.Value);
 
             successMessage = $"User {core.Character.Name} has been unbanned successfully.";
             CloseUnbanModal();

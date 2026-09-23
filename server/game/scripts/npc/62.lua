@@ -19,17 +19,19 @@ return {
             if sel == nil or sel ~= 1 then
                 return
             end
-            local q = me:start_quest(quest.QUEST_WATER_BOTTLE)
+            q = me:start_quest(quest.QUEST_WATER_BOTTLE)
             if q == nil then
                 me:dialog(npc, '퀘스트를 시작할 수 없습니다.', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '물병을 빚는데는 시간이 걸립니다. 여기 보관증을 드릴테니 며칠후 오세요.', { prev = false, next = true })
+            -- Grant voucher atomically with quest start; dialog is notification only.
             me:mkitem(VOUCHER_NAME, 1)
+            me:dialog(npc, '물병을 빚는데는 시간이 걸립니다. 여기 보관증을 드릴테니 며칠후 오세요.', { prev = false, next = false })
+            return
         end
 
         if q:completed() then
-            me:dialog(npc, '이미 물병을 한번 받으셨군요.', { prev = false, next = true })
+            me:dialog(npc, '이미 물병을 한번 받으셨군요.', { prev = false, next = false })
             return
         end
 
@@ -55,6 +57,6 @@ return {
             return
         end
         q:complete()
-        me:dialog(npc, '여기있습니다.', { prev = false, next = true })
+        me:dialog(npc, '여기있습니다.', { prev = false, next = false })
     end
 }

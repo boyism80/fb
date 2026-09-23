@@ -9,7 +9,7 @@ return {
         end
 
         ::NPC_40_0002::
-        button = me:dialog(npc, '인형들과 인형술사가 등장하며, 얻을 수 있는 아이템은 호박과 진호박입니다.', { prev = true, next = true })
+        button = me:dialog(npc, '인형들과 인형술사가 등장하며, 얻을 수 있는 아이템은 호박과 진호박입니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

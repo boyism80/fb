@@ -13,8 +13,8 @@ private:
 
 public:
     // clang-format off
-    bool            execute(mob& mob_obj, const datetime& now) override final;
-    MOB_ATTACK_TYPE get_type() const override final;
+    [[nodiscard]] async::task<bool> execute(mob& mob_obj, const datetime& now) override final;
+    MOB_ATTACK_TYPE                 get_type() const override final;
     // clang-format on
 };
 

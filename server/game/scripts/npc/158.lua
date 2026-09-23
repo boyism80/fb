@@ -23,13 +23,21 @@ return {
                 goto NPC_158_0001
             end
             if step == 3 then
-                if me:dialog(npc, '상어장군을 저승에서 불러내고 싶다고?\n\n매우 어려운 일을 부탁하는구만.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+                ::NPC_158_0002::
+                local btn = me:dialog(npc, '상어장군을 저승에서 불러내고 싶다고?\n\n매우 어려운 일을 부탁하는구만.', { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                if me:dialog(npc, '사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+                ::NPC_158_0003::
+                btn = me:dialog(npc, '사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.', { prev = true, next = true })
+                if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                if me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+                if btn == DIALOG_RESULT.PREV then
+                    goto NPC_158_0002
+                end
+                btn = me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if q then
@@ -44,11 +52,18 @@ return {
             end
             if step == 10 then
                 local required_jungki = { ['용궁의정기1'] = 1, ['용궁의정기2'] = 1, ['용궁의정기3'] = 1, ['용궁의정기4'] = 1, ['용궁의정기5'] = 1 }
-                if me:dialog(npc, '용궁의정기를 가져왔군.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+                ::NPC_158_0004::
+                local btn = me:dialog(npc, '용궁의정기를 가져왔군.', { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                if me:dialog(npc, '그럼 어디보자...아수라 마차라 바하라 미다라...하아아압!!!', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+                ::NPC_158_0005::
+                btn = me:dialog(npc, '그럼 어디보자...아수라 마차라 바하라 미다라...하아아압!!!', { prev = true, next = true })
+                if btn == DIALOG_RESULT.QUIT then
                     return
+                end
+                if btn == DIALOG_RESULT.PREV then
+                    goto NPC_158_0004
                 end
                 local ex_code = me:exchange(
                     { ['item'] = required_jungki },
@@ -110,7 +125,7 @@ return {
 
             me:money(money - price)
     ::NPC_158_0010::
-            if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return
             end
 

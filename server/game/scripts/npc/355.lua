@@ -57,7 +57,7 @@ local function run_seotdal(me, npc)
     end
 
     set_seotdal_flags(q, w, 1, b)
-    me:dialog(npc, "선릉이에게 귤 잘 전해 주세요!", { prev = false, next = true })
+    me:dialog(npc, "선릉이에게 귤 잘 전해 주세요!", { prev = false, next = false })
     return true
 end
 
@@ -131,12 +131,12 @@ local function run_kimjang(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    me:dialog(npc, "소금은 칠석집의 주연언니에게 달라고 하시면 줄꺼에요..", { prev = false, next = true })
+    me:dialog(npc, "소금은 칠석집의 주연언니에게 달라고 하시면 줄꺼에요..", { prev = false, next = false })
 end
 
 return {
     on_click = function(me, npc)
-        local btn = me:dialog(npc, "안녕하세요? 저는 오단미입니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "안녕하세요? 저는 오단미입니다.", { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -193,7 +193,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "저희 집 마당의 우물에서 머리를 감으세요.", { prev = false, next = true })
+            btn = me:dialog(npc, "저희 집 마당의 우물에서 머리를 감으세요.", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -205,7 +205,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "어디보자....", { prev = false, next = true })
+            btn = me:dialog(npc, "어디보자....", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -233,7 +233,7 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "창포뿌리를 다섯개 모아오시면 제가 비녀를 만들어 드리죠.", { prev = false, next = true })
+                btn = me:dialog(npc, "창포뿌리를 다섯개 모아오시면 제가 비녀를 만들어 드리죠.", { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -242,12 +242,12 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "그럼 저희집 마당의 우물가에서 머리를 감으세요. 그러면 머리카락에 윤기가 생기고 빠지지 않게 된답니다.", { prev = false, next = true })
+                btn = me:dialog(npc, "그럼 저희집 마당의 우물가에서 머리를 감으세요. 그러면 머리카락에 윤기가 생기고 빠지지 않게 된답니다.", { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
             else
-                btn = me:dialog(npc, "어머, 이건 썩은 창포잖아요.. 이걸로는 창포물을 만들수가 없어요..", { prev = false, next = true })
+                btn = me:dialog(npc, "어머, 이건 썩은 창포잖아요.. 이걸로는 창포물을 만들수가 없어요..", { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -269,7 +269,7 @@ return {
                 { ['item'] = { ["비녀"] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                btn = me:dialog(npc, "창포뿌리 다섯개를 가져오시면 비녀를 만들어 드릴게요.", { prev = false, next = true })
+                btn = me:dialog(npc, "창포뿌리 다섯개를 가져오시면 비녀를 만들어 드릴게요.", { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -293,9 +293,12 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                me:dialog(npc, "망개떡을 드릴께요.. 맛있게 드세요~~", { prev = false, next = true })
+                local btn = me:dialog(npc, "망개떡을 드릴께요.. 맛있게 드세요~~", { prev = false, next = false })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
             else
-                me:dialog(npc, "밖의 우물에서 머리를 감고 오세요.", { prev = false, next = true })
+                me:dialog(npc, "밖의 우물에서 머리를 감고 오세요.", { prev = false, next = false })
             end
         end
     end

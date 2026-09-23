@@ -57,7 +57,7 @@ local function run_puffer_general_accept(me, npc)
     end
     q:step(1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "복어장군 생포 임무를 받다.", 7, 1)
-    me:dialog(npc, "고맙네 어서 정보를 얻어오게나. 복홍이라면 복어장군이 어디있는지 알고 있을거라네.", { prev = false, next = true })
+    me:dialog(npc, "고맙네 어서 정보를 얻어오게나. 복홍이라면 복어장군이 어디있는지 알고 있을거라네.", { prev = false, next = false })
 end
 
 local function run_puffer_general_complete(me, npc)
@@ -105,7 +105,7 @@ local function run_puffer_general_complete(me, npc)
         q:progress(0)
     end
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "복어장군 생포 임무 완료.", 7, 1)
-    me:dialog(npc, "그럼 자네의 힘을 올려주도록 하겠네. 우옷!", { prev = false, next = true })
+    me:dialog(npc, "그럼 자네의 힘을 올려주도록 하겠네. 우옷!", { prev = false, next = false })
 end
 
 local function run_crab_general_accept(me, npc)
@@ -134,7 +134,7 @@ local function run_crab_general_accept(me, npc)
         return
     end
     ::NPC_75_012::
-    btn = me:dialog(npc, "하지만 게장군은 자기 수하들을 극히 아낀다 들었네.\n\n자네가 게장군의 수하들을 손봐주고 있으면 그도 참지 못하고 모습을 드러낼걸세.\n\n그럼 되도록 빨리 잡아오도록 하게", { prev = true, next = true })
+    btn = me:dialog(npc, "하지만 게장군은 자기 수하들을 극히 아낀다 들었네.\n\n자네가 게장군의 수하들을 손봐주고 있으면 그도 참지 못하고 모습을 드러낼걸세.\n\n그럼 되도록 빨리 잡아오도록 하게", { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -160,7 +160,7 @@ local function run_crab_general_complete(me, npc)
         return
     end
     ::NPC_75_014::
-    btn = me:dialog(npc, "이건 아주 몸에 좋은 음식이니 혼자 몰래 들게나....하하하", { prev = true, next = true })
+    btn = me:dialog(npc, "이건 아주 몸에 좋은 음식이니 혼자 몰래 들게나....하하하", { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -189,7 +189,7 @@ local function run_octopus_general_accept(me, npc)
     end
     q:step(5)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "문어장군 생포 임무를 받다", 7, 1)
-    me:dialog(npc, "고맙네. 문어장군은 생김새가 산적같이 생긴 자인데...\n\n매우 포악하니 조심해야 하네", { prev = false, next = true })
+    me:dialog(npc, "고맙네. 문어장군은 생김새가 산적같이 생긴 자인데...\n\n매우 포악하니 조심해야 하네", { prev = false, next = false })
 end
 
 local function run_octopus_general_complete(me, npc)
@@ -202,12 +202,20 @@ local function run_octopus_general_complete(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 2 then
         return
     end
+    ::NPC_75_0090::
     sel, list_btn = me:list(npc, "뭐라? 자결을?", { "그렇습니다.", "용왕님에게 의심을 받을 바에야 죽어서", "결백을 증명해 보이는 길을 택하겠다고 하며", "자결을 하며 이 다문창을 전해주라 하였습니다" }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 4 then
         return
     end
+    ::NPC_75_0091::
     sel, list_btn = me:list(npc, "음..그래? 안타깝네 그려.. 허나, 죽음으로 밝혀지는 건 아무것도 없네.", { "..." }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
+    if list_btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_75_0090
+    end
+    if sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "이 다문창은 문어장군이 가장 아끼던 무기인데, 자네가 보관해 두게나.", { "고맙습니다." }, { prev = false })
@@ -248,19 +256,34 @@ local function run_seahorse_accept(me, npc)
     q:progress(0)
     q:param("")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해마장군의 생포 임무를 받다", 7, 1)
-    btn = me:dialog(npc, "고맙네. 자네가 도와 준다면 안심이라네.", { prev = false, next = true })
+    ::NPC_75_0092::
+    local btn = me:dialog(npc, "고맙네. 자네가 도와 준다면 안심이라네.", { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    ::NPC_75_0093::
     btn = me:dialog(npc, "이번에 얻은 정보는 용궁 8대장군 중 해마장군이라는 자가 있는데\n이 자가 반란군의 주력 부대를 생산하는 역할을 담당하고 있다 하는군.", { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_75_0092
+    end
+    ::NPC_75_0094::
     btn = me:dialog(npc, "그래서 이자와 주력부대를 소탕하려고 하는데\n그에 앞서 자네가 내부로 침투해서 혼란을 야기시켜 주면 좋겠네.", { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    me:dialog(npc, "가능하다면 해마장군을 사로잡거나 쓰러뜨려주면 더욱 좋겠네.\n\n그럼 부탁하네.", { prev = true, next = true })
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_75_0093
+    end
+    btn = me:dialog(npc, "가능하다면 해마장군을 사로잡거나 쓰러뜨려주면 더욱 좋겠네.\n\n그럼 부탁하네.", { prev = true, next = false })
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_75_0094
+    end
 end
 
 local function run_seahorse_complete(me, npc)
@@ -291,7 +314,7 @@ local function run_seahorse_complete(me, npc)
         return
     end
     ::NPC_75_031::
-    btn = me:dialog(npc, "지금이라면 해마장군 소속 병사들을 와해시키기 쉬울 듯 하네.\n\n정말 고맙네. 이것은 내 조그마한 성의니 받아두게", { prev = true, next = true })
+    btn = me:dialog(npc, "지금이라면 해마장군 소속 병사들을 와해시키기 쉬울 듯 하네.\n\n정말 고맙네. 이것은 내 조그마한 성의니 받아두게", { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -351,7 +374,7 @@ local function run_mermaid_accept(me, npc)
     q:step(9)
     q:progress(0)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "인어장군 생포 임무를 받다.", 7, 1)
-    me:dialog(npc, "역시 자네는 시원 시원 하구만, 이번 일을 잘 해 오면 성의의 표시를 하지.\n\n잘 부탁하네", { prev = false, next = true })
+    me:dialog(npc, "역시 자네는 시원 시원 하구만, 이번 일을 잘 해 오면 성의의 표시를 하지.\n\n잘 부탁하네", { prev = false, next = false })
 end
 
 local function run_mermaid_complete(me, npc)
@@ -376,12 +399,20 @@ local function run_mermaid_complete(me, npc)
         me:dialog(npc, "내통문서가 없지 않은가?", { prev = false, next = false })
         return
     end
+    ::NPC_75_0095::
     sel, list_btn = me:list(npc, "음.. 아무래도 자네가 속은 듯 하네.", { "..." }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
+    ::NPC_75_0096::
     sel, list_btn = me:list(npc, "이 문서를 도저히 알아 볼 수 없는 언어로 되어 있네 그려, 동방언어가 아니라 아마 서방언어인 듯 싶은데..", { "..." }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
+    if list_btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_75_0095
+    end
+    if sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "아무래도 인어장군은 자네나 내가 이 문서의 내용을 알아 볼 수 없다는 것을\n짐작하고 쉽게 내어 준 것 같네.", { "..." }, { prev = false })
@@ -434,7 +465,7 @@ local function run_mermaid_turnin(me, npc)
     end
     q:step(11)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "인어장군 생포 임무 완료.", 7, 1)
-    me:dialog(npc, "고맙네. 이 지팡이를 받아 주게. 그리고 앞으로도 자주 용궁에 들러 주게.", { prev = false, next = true })
+    me:dialog(npc, "고맙네. 이 지팡이를 받아 주게. 그리고 앞으로도 자주 용궁에 들러 주게.", { prev = false, next = false })
 end
 
 local SHARK_ANGER_SEC = 10
@@ -450,6 +481,7 @@ local function run_shark_accept(me, npc)
         return
     end
     local btn
+    ::NPC_75_040::
     btn = me:dialog(npc, "자네가 구해다 준 내통문서 덕분에 누가 반역에 가담했는지 알게 되었다네.", { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -458,6 +490,9 @@ local function run_shark_accept(me, npc)
     btn = me:dialog(npc, "그런데 알고보니 문어장군은 정말로 반역에 가담하지 않았더군.\n\n내 문어장군 같이 훌륭한 충신을 의심하다니....아...문어장군.....", { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_75_040
     end
     ::NPC_75_042::
     btn = me:dialog(npc, "문어장군. 내 조그맣게 속죄하는 뜻에서 그대의 의지를 용궁 대대로 전해지게 하겠네.", { prev = true, next = true })
@@ -507,12 +542,20 @@ local function run_shark_report(me, npc)
         me:dialog(npc, "아직 상어장군을 잡아오지 못한 모양이군..", { prev = false, next = false })
         return
     end
+    ::NPC_75_0097::
     local sel, list_btn = me:list(npc, "그래 상어장군을 잡아왔는가?", { "예. 여기있습니다." }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
+    ::NPC_75_0098::
     sel, list_btn = me:list(npc, "아니, 저자는 상어장군이 아니지 않은가?", { "예? 분명히 저자가", "자신의 입으로 상어장군이라고 했는데..." }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 2 then
+    if list_btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_75_0097
+    end
+    if sel < 1 or sel > 2 then
         return
     end
     local btn = me:dialog(npc, "저자는 상어장군의 심복인 상어장수라네. 자네가 저자의 농간에 속았구만.", { prev = false, next = true })
@@ -525,7 +568,7 @@ local function run_shark_report(me, npc)
     end
     q:step(13)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "상어장군의 생포 임무를 받다. [2/2]", 7, 1)
-    me:dialog(npc, "그래주겠나? 그럼 다시한번 부탁하네.", { prev = false, next = true })
+    me:dialog(npc, "그래주겠나? 그럼 다시한번 부탁하네.", { prev = false, next = false })
 end
 
 local function run_shark_complete(me, npc)
@@ -555,7 +598,7 @@ local function run_shark_complete(me, npc)
     end
     local anger_end = tonumber(q:param() or "")
     if anger_end and t < anger_end then
-        me:dialog(npc, "아직 내 화가 다 안풀렸으니 다음에 다시 오게!!!", { prev = false, next = true })
+        me:dialog(npc, "아직 내 화가 다 안풀렸으니 다음에 다시 오게!!!", { prev = false, next = false })
         return
     end
     if progress < 1 then
@@ -630,7 +673,7 @@ local function run_jellyfish_accept(me, npc)
     q:progress(0)
     q:param("0")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해파리장군 생포 임무를 받다.", 7, 1)
-    me:dialog(npc, "이거 번번히 정말 고맙네. 그럼 부탁하겠네.", { prev = false, next = true })
+    me:dialog(npc, "이거 번번히 정말 고맙네. 그럼 부탁하겠네.", { prev = false, next = false })
 end
 
 local function run_jellyfish_report(me, npc)
@@ -657,7 +700,7 @@ local function run_jellyfish_report(me, npc)
     end
     q:step(16)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "전략문서를 얻자.", 7, 1)
-    me:dialog(npc, "그래주겠다면 정말 고맙네.", { prev = false, next = true })
+    me:dialog(npc, "그래주겠다면 정말 고맙네.", { prev = false, next = false })
 end
 
 local function run_jellyfish_complete(me, npc)
@@ -688,7 +731,7 @@ local function run_jellyfish_complete(me, npc)
         return
     end
     ::NPC_75_065::
-    btn = me:dialog(npc, "내 자네에게 보답으로 용왕의반지를 주겠네.", { prev = true, next = true })
+    btn = me:dialog(npc, "내 자네에게 보답으로 용왕의반지를 주겠네.", { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -902,7 +945,7 @@ local function run_crown_prince_complete(me, npc)
     q:complete()
     me:mkitem(ITEM_DRAGON_KING_HELM, 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "용궁 8대 반란 임무를 완수하다.", 6, 1)
-    me:dialog(npc, "언제든지 용궁의 은인으로 반갑게 맞이할 테니 종종 놀러 오게나.", { prev = false, next = true })
+    me:dialog(npc, "언제든지 용궁의 은인으로 반갑게 맞이할 테니 종종 놀러 오게나.", { prev = false, next = false })
 end
 
 local function run_cidequest_yongwang(me, npc)
@@ -913,8 +956,14 @@ local function run_cidequest_yongwang(me, npc)
             return
         end
         if sel == 1 then
-            me:dialog(npc, "고맙군. 정말 고마워. \n\n 이번에 들어온 정보에 의하면 그 보물이 용궁 밖에 나타났다는 소리를 들었네.", { prev = false, next = true })
-            me:dialog(npc, "아마 장돌뱅이한테 정보가 들어가지 않았나 생각하는데 잘 알아봐 주게나.", { prev = false, next = false })
+            local btn = me:dialog(npc, "고맙군. 정말 고마워. \n\n 이번에 들어온 정보에 의하면 그 보물이 용궁 밖에 나타났다는 소리를 들었네.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            local btn = me:dialog(npc, "아마 장돌뱅이한테 정보가 들어가지 않았나 생각하는데 잘 알아봐 주게나.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             q = me:start_quest(quest.QUEST_CIDEQUEST)
             if q == nil then
                 return
@@ -939,10 +988,22 @@ local function run_cidequest_yongwang(me, npc)
             me:dialog(npc, "어찌되어 가는가?", { prev = false, next = false })
             return
         end
-        me:dialog(npc, "오. 정말 보물을 찾아왔군.\n\n정말 다행이야. 다행이고 말고.", { prev = false, next = true })
-        me:dialog(npc, "내가 그 대가로 뭔가 주고 싶은데..\n\n얼마전에 내가 만들던 무기가 있는데 그 무기의 핵심 재료인 수정과 크리스탈이 필요하다네.", { prev = false, next = true })
-        me:dialog(npc, "자네가 수정과 크리스탈을 가지고 온다면 내 무기를 만들어 주도록 하겠네. 꼭 명심해야 할 것은 각각 3개씩 가지고 와야 한다는 거라네.", { prev = false, next = true })
-        me:dialog(npc, "아. 수정과 크리스탈은 호굴 어딘가에서 나온다고 들었네.\n\n가서 수정과 크리스탈을 구해 오시게.", { prev = false, next = false })
+        local btn = me:dialog(npc, "오. 정말 보물을 찾아왔군.\n\n정말 다행이야. 다행이고 말고.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        local btn = me:dialog(npc, "내가 그 대가로 뭔가 주고 싶은데..\n\n얼마전에 내가 만들던 무기가 있는데 그 무기의 핵심 재료인 수정과 크리스탈이 필요하다네.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        local btn = me:dialog(npc, "자네가 수정과 크리스탈을 가지고 온다면 내 무기를 만들어 주도록 하겠네. 꼭 명심해야 할 것은 각각 3개씩 가지고 와야 한다는 거라네.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        local btn = me:dialog(npc, "아. 수정과 크리스탈은 호굴 어딘가에서 나온다고 들었네.\n\n가서 수정과 크리스탈을 구해 오시게.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         me:rmitem("용궁의보물", 1, ITEM_DELETE_TYPE.GIVE)
         q:step(3)
         return
@@ -952,7 +1013,10 @@ local function run_cidequest_yongwang(me, npc)
             me:dialog(npc, "수정과 크리스탈 각 세개씩이라네...", { prev = false, next = false })
             return
         end
-        me:dialog(npc, "그럼 지금부터 무기를 만들도록 하겠네.", { prev = false, next = true })
+        local btn = me:dialog(npc, "그럼 지금부터 무기를 만들도록 하겠네.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         local reward_item = (math.random(1, 100) <= 7) and "심판의낫" or "똥"
         local code = me:exchange(
             { ['item'] = { ["수정"] = 3, ["크리스탈"] = 3 } },
@@ -965,14 +1029,28 @@ local function run_cidequest_yongwang(me, npc)
             me:dialog(npc, "소지품이 가득 차서 받을 수 없네. 재료를 새로 모아오면 다시 만들어 주겠네.", { prev = false, next = false })
             return
         end
-        me:dialog(npc, "심판의 힘이여... 이곳에 와서 머물라... 하앗!", { prev = false, next = true })
         if reward_item == "심판의낫" then
-            me:dialog(npc, "오오. 결국은 성공하고 말았군...", { prev = false, next = true })
-            me:dialog(npc, "이렇게 강대한 무기를 주는 것에 일말의 불안감이 있기는 하지만..", { prev = false, next = true })
-            me:dialog(npc, "자네라면 이것을 좋은 일에 써주리라고 믿고서 주겠네.", { prev = false, next = false })
             q:step(4)
+        end
+        local btn = me:dialog(npc, "심판의 힘이여... 이곳에 와서 머물라... 하앗!", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if reward_item == "심판의낫" then
+            local btn = me:dialog(npc, "오오. 결국은 성공하고 말았군...", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            local btn = me:dialog(npc, "이렇게 강대한 무기를 주는 것에 일말의 불안감이 있기는 하지만..", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            me:dialog(npc, "자네라면 이것을 좋은 일에 써주리라고 믿고서 주겠네.", { prev = false, next = false })
         else
-            me:dialog(npc, "이런. 너무 힘을 준 모양이야... 그만 깨지고 말았군...", { prev = false, next = true })
+            local btn = me:dialog(npc, "이런. 너무 힘을 준 모양이야... 그만 깨지고 말았군...", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             me:dialog(npc, "재료를 새로 모아오면 다시 만들어 주겠네..", { prev = false, next = false })
         end
         return

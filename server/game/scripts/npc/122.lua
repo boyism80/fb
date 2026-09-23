@@ -59,20 +59,20 @@ return {
             end
             local q = me:start_quest(quest.QUEST_TONGTONG)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '이 일기같은건 잘 보관하고 있을테니, 조심해서 다녀오시게.', { prev = false, next = true })
+            me:dialog(npc, '이 일기같은건 잘 보관하고 있을테니, 조심해서 다녀오시게.', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, '흠..이 단단하고 묵직한 망치. 정말 쓸 곳이 많구만.', { prev = false, next = true })
+            me:dialog(npc, '흠..이 단단하고 묵직한 망치. 정말 쓸 곳이 많구만.', { prev = false, next = false })
             return
         end
 
         if not me:has_items('망치', 1) then
-            me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', { prev = false, next = true })
+            me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', { prev = false, next = false })
             return
         end
 
@@ -86,16 +86,16 @@ return {
             { ['item'] = { ['선장의일기3'] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', { prev = false, next = true })
+            me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 선장의일기3을 줄 수 없네.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 선장의일기3을 줄 수 없네.', { prev = false, next = false })
             return
         end
         q:complete()
         lighthouse:step(4)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [4/6]', 7, 1)
-        me:dialog(npc, '이건 약속했던 누군가의 일기일세! 잘 가시게!', { prev = false, next = true })
+        me:dialog(npc, '이건 약속했던 누군가의 일기일세! 잘 가시게!', { prev = false, next = false })
     end
 }

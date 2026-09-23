@@ -9,7 +9,7 @@ return {
         end
 
         ::NPC_39_0002::
-        button = me:dialog(npc, '여우, 구미호 몬스터들이 등장하며, 얻을 수 있는 아이템은 주로 여우모피입니다.', { prev = true, next = true })
+        button = me:dialog(npc, '여우, 구미호 몬스터들이 등장하며, 얻을 수 있는 아이템은 주로 여우모피입니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

@@ -71,7 +71,11 @@ local function sample_clan(me, npc)
         end
     else
         local clan_name = clan:name()
-        local selected = me:list(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 탈퇴', '문파 추방', '문파 직책 변경', '문파 메시지'})
+        ::NPC_0_0001::
+        local selected, list_btn = me:list(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 탈퇴', '문파 추방', '문파 직책 변경', '문파 메시지'}, { prev = false })
+        if list_btn == DIALOG_RESULT.QUIT then
+            return
+        end
         if selected == nil then
             return
         end
@@ -84,6 +88,15 @@ local function sample_clan(me, npc)
 
         if selected == 1 then
             local title = me:input(npc, '문파 칭호 입력', { top = '문파 칭호는', bottom = '입니다.', maxlen = 12, prev = true })
+            if title == DIALOG_RESULT.QUIT then
+                return
+            end
+            if title == DIALOG_RESULT.PREV then
+                goto NPC_0_0001
+            end
+            if type(title) ~= 'string' or title == '' then
+                return
+            end
             clan = me:clan()
             if clan == nil then
                 me:dialog(npc, '클랜 없음')

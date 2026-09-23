@@ -40,7 +40,7 @@ return {
             if q == nil then
                 q = me:start_quest(quest.QUEST_GOOSE_EGG)
                 if q == nil then
-                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                     return
                 end
             end
@@ -76,6 +76,6 @@ return {
             me:dialog(npc, '금전을 더이상 받을 수 없습니다.', { prev = false, next = false })
             return
         end
-        me:dialog(npc, string.format('기러기알 %d개에 대한 대가로 %d전을 드렸습니다.', count, pay), { prev = false, next = true })
+        me:dialog(npc, string.format('기러기알 %d개에 대한 대가로 %d전을 드렸습니다.', count, pay), { prev = false, next = false })
     end
 }

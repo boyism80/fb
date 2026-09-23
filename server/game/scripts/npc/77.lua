@@ -28,7 +28,7 @@ return {
                 return
             end
             if sel == 2 then
-                me:dialog(npc, '별로..내키지가 않아서...', { prev = false, next = true })
+                me:dialog(npc, '별로..내키지가 않아서...', { prev = false, next = false })
                 return
             end
             if sel ~= 1 then
@@ -36,22 +36,22 @@ return {
             end
             q = me:start_quest(quest.QUEST_CLEAR_SHIELD)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
             me:push_achievement(ACHIEVEMENT_CLEAR, '용궁정화 퀘스트를 받다.', 7, 1)
-            me:dialog(npc, '고마워요.\n\n한시라도 빨리 정화하는 방법을 알아다 주세요.', { prev = false, next = true })
+            me:dialog(npc, '고마워요.\n\n한시라도 빨리 정화하는 방법을 알아다 주세요.', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, me:name() .. '덕분에 용궁의 물이 깨끗해졌어요.', { prev = false, next = true })
+            me:dialog(npc, me:name() .. '덕분에 용궁의 물이 깨끗해졌어요.', { prev = false, next = false })
             return
         end
 
         if q:step() == 1 or q:step() == 2 then
-            me:dialog(npc, '물을 정화시키는 방법은 랑구륜에게 가보시면 될거에요.', { prev = false, next = true })
+            me:dialog(npc, '물을 정화시키는 방법은 랑구륜에게 가보시면 될거에요.', { prev = false, next = false })
             return
         end
 
@@ -105,7 +105,7 @@ return {
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 정화의방패를 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 정화의방패를 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:step(5)

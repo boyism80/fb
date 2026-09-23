@@ -8,7 +8,7 @@ return {
             return
         end
         ::NPC_380_0002::
-        btn = me:dialog(npc, "먼곳을 바라보고 있는 소녀의 얼굴은 어쩐지 슬퍼보인다.\n\n불러보고, 손짓을 해도 소녀는 아무런 대답이 없다.", { prev = true, next = true })
+        btn = me:dialog(npc, "먼곳을 바라보고 있는 소녀의 얼굴은 어쩐지 슬퍼보인다.\n\n불러보고, 손짓을 해도 소녀는 아무런 대답이 없다.", { prev = true, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

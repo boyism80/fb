@@ -16,7 +16,7 @@ return {
                 me:map(map, math.random(20, 25), math.random(10, 20))
             end
         elseif sel == 2 then
-            me:dialog(npc, "정답입니다.", { prev = false, next = true })
+            me:dialog(npc, "정답입니다.", { prev = false, next = false })
         end
     end
 }

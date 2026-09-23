@@ -20,8 +20,23 @@ public struct Shutdown : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Shutdown __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  public string Actor { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetActorBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetActorBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetActorArray() { return __p.__vector_as_array<byte>(4); }
 
-  public static void StartShutdown(FlatBufferBuilder builder) { builder.StartTable(0); }
+  public static Offset<fb.protocol._internal.request.raw.Shutdown> CreateShutdown(FlatBufferBuilder builder,
+      StringOffset actorOffset = default(StringOffset)) {
+    builder.StartTable(1);
+    Shutdown.AddActor(builder, actorOffset);
+    return Shutdown.EndShutdown(builder);
+  }
+
+  public static void StartShutdown(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void AddActor(FlatBufferBuilder builder, StringOffset actorOffset) { builder.AddOffset(0, actorOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Shutdown> EndShutdown(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Shutdown>(o);
@@ -36,6 +51,7 @@ static public class ShutdownVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyString(tablePos, 4 /*Actor*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

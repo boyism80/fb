@@ -45,12 +45,12 @@ return {
 
             q = me:start_quest(quest.QUEST_RED_CLAY)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:progress(0)
 
-            me:dialog(npc, '고맙네. 내가 필요로 하는 흙은 이렇게 생겼다네.\n\n고구려에서는 찾아볼 수 없는 것으로, 내가 적심토라 이름 붙혔지.\n냄세도 잘 기억해 두게나.\n\n괴수들이 있는 건처에서 적심토를 찾을 수 있을 것이네. 조심하게나.', { prev = false, next = true })
+            me:dialog(npc, '고맙네. 내가 필요로 하는 흙은 이렇게 생겼다네.\n\n고구려에서는 찾아볼 수 없는 것으로, 내가 적심토라 이름 붙혔지.\n냄세도 잘 기억해 두게나.\n\n괴수들이 있는 건처에서 적심토를 찾을 수 있을 것이네. 조심하게나.', { prev = false, next = false })
             return
         end
 
@@ -62,13 +62,13 @@ return {
             q:resume()
             q:progress(0)
             me:erase_achievement(22)
-            me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나.', { prev = false, next = true })
+            me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나.', { prev = false, next = false })
             return
         end
 
         local progress = q:progress()
         if progress <= 0 then
-            me:dialog(npc, '아직 적심토를 찾지 못한 모양이군. 괴수들이 있는 건처에서 구할수 있을걸세.', { prev = false, next = true })
+            me:dialog(npc, '아직 적심토를 찾지 못한 모양이군. 괴수들이 있는 건처에서 구할수 있을걸세.', { prev = false, next = false })
             return
         end
 
@@ -88,10 +88,13 @@ return {
         me:erase_achievement(22)
 
         if selected == 1 then
-            me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나', { prev = false, next = true })
+            local btn = me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나', { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             q:complete()
-            me:dialog(npc, '알겠네.. 그럼 언제든지 채집을 하고 싶거든 다시 오게.', { prev = false, next = true })
+            me:dialog(npc, '알겠네.. 그럼 언제든지 채집을 하고 싶거든 다시 오게.', { prev = false, next = false })
         end
     end
 }

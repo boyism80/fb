@@ -6,7 +6,10 @@ return {
         local q = me:quest(quest.QUEST_BEGINNER_PATH)
 
         if q == nil then
-            me:dialog(npc, string.format("%s님 안녕하세요? 저는 말도라고 합니다. 말하기 도우미가 떠오른다면 그건 착각일 뿐입니다.", me:name()), { prev = false, next = true })
+            local btn = me:dialog(npc, string.format("%s님 안녕하세요? 저는 말도라고 합니다. 말하기 도우미가 떠오른다면 그건 착각일 뿐입니다.", me:name()), { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             local btn = me:dialog(npc, "저는 말하는 방법을 알려드리겠습니다.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -42,13 +45,19 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, "안녕하세요", { prev = false, next = true })
+            local btn = me:dialog(npc, "안녕하세요", { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             npc:chat('안녕하세요')
             return
         end
 
         if step == 2 then
-            me:dialog(npc, "잘하셨어요. 딱히 아이템을 드리지는 않겠지만, 선물로 경험치를 300 드릴게요.", { prev = false, next = true })
+            local btn = me:dialog(npc, "잘하셨어요. 딱히 아이템을 드리지는 않겠지만, 선물로 경험치를 300 드릴게요.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             me:exp(me:exp() + 300)
             q:step(3)
             return

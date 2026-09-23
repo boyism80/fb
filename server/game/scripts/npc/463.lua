@@ -6,7 +6,7 @@ local function do_sub7_cure(me, npc)
         me:dialog(npc, "퀘스트 오류입니다.\n아픈아기원숭이 아이템이 없습니다.", { prev = false, next = false })
         return true
     end
-    local b = me:dialog(npc, "연락은 진작부터 듣고 계셨다. 자, 어서 아이를 이리 주셔야 좋으시다. 나의 힘으로 열병따윈 순식간에 치료해주신다!", { prev = false, next = true })
+    local b = me:dialog(npc, "연락은 진작부터 듣고 계셨다. 자, 어서 아이를 이리 주셔야 좋으시다. 나의 힘으로 열병따윈 순식간에 치료해주신다!", { prev = false, next = false })
     if b ~= 1 then
         return false
     end
@@ -43,7 +43,7 @@ local function do_sub7_cure(me, npc)
 end
 
 local function do_sub1_start(me, npc)
-    local b = me:dialog(npc, "경계하실 것 없다. 나는 아직 미치지 않으셨으니까. 그래도 우리 아이들이 저렇게 날뛰는 이유는", { prev = false, next = true })
+    local b = me:dialog(npc, "경계하실 것 없다. 나는 아직 미치지 않으셨으니까. 그래도 우리 아이들이 저렇게 날뛰는 이유는", { prev = false, next = false })
     if b ~= 1 then
         return false
     end
@@ -118,7 +118,7 @@ local function do_sub1_turnin(me, npc)
         me:dialog(npc, "나에게 그 얼음이라는걸 보여주시면 좋으시다. 깨끗하시고 투명하신 분으로 말이시다.", { prev = false, next = false })
         return true
     end
-    local b = me:dialog(npc, "오오. 이런 신기하신 것이 다 계실 줄이야! 이 곳은 정말 놀라움으로 가득찬 곳이시다. 하하하하하.", { prev = false, next = true })
+    local b = me:dialog(npc, "오오. 이런 신기하신 것이 다 계실 줄이야! 이 곳은 정말 놀라움으로 가득찬 곳이시다. 하하하하하.", { prev = false, next = false })
     if b ~= 1 then
         return false
     end

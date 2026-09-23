@@ -47,17 +47,17 @@ return {
             end
             q = me:start_quest(quest.QUEST_HATAEHYUN)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
             me:push_achievement(ACHIEVEMENT_700, '하태현의 부탁을 들어주자!', 7, 1)
-            me:dialog(npc, '그럼 전 ' .. me:name() .. '님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.', { prev = false, next = true })
+            me:dialog(npc, '그럼 전 ' .. me:name() .. '님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, '저번엔 정말 감사했습니다. 가면이 하나같이 모두 흥미롭군요.', { prev = false, next = true })
+            me:dialog(npc, '저번엔 정말 감사했습니다. 가면이 하나같이 모두 흥미롭군요.', { prev = false, next = false })
             return
         end
 
@@ -105,7 +105,7 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, '혹시 아실지 모르겠지만 도삭산선비족,도삭산흉노족의 가면을 이용하면 더 좋은 투구를 만드실 수 있을거에요.\n\n저도 자세한 방법은 모르지만요. 하여튼 너무나 감사해요. 다음에 꼭 다시 들러주세요~', { prev = false, next = true })
+                btn = me:dialog(npc, '혹시 아실지 모르겠지만 도삭산선비족,도삭산흉노족의 가면을 이용하면 더 좋은 투구를 만드실 수 있을거에요.\n\n저도 자세한 방법은 모르지만요. 하여튼 너무나 감사해요. 다음에 꼭 다시 들러주세요~', { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -146,6 +146,6 @@ return {
             return
         end
 
-        me:dialog(npc, '저번엔 정말 감사했습니다. 가면이 하나같이 모두 흥미롭군요.', { prev = false, next = true })
+        me:dialog(npc, '저번엔 정말 감사했습니다. 가면이 하나같이 모두 흥미롭군요.', { prev = false, next = false })
     end
 }

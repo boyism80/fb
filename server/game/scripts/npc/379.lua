@@ -178,7 +178,10 @@ return {
                 if btn == DIALOG_RESULT.PREV then
                     goto NPC_379_0021
                 end
-                me:dialog(npc, "난생처음 들어보네! 세상에! 아..아이구! 혈..혈압이 머리 꼭대끼까지 솟아오르네...아이구 아이구;", { prev = false, next = false })
+                local btn = me:dialog(npc, "난생처음 들어보네! 세상에! 아..아이구! 혈..혈압이 머리 꼭대끼까지 솟아오르네...아이구 아이구;", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
                 if q then
                     q:step(5)
                 end
@@ -199,7 +202,10 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                me:dialog(npc, "부자들말고 따로 있을까? 하긴, 부자들만 외부 세상 물건에 관심 있으란 법은 없긴하지.", { prev = false, next = false })
+                local btn = me:dialog(npc, "부자들말고 따로 있을까? 하긴, 부자들만 외부 세상 물건에 관심 있으란 법은 없긴하지.", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
                 if q then
                     q:step(11)
                 end
@@ -225,7 +231,10 @@ return {
                 if btn == DIALOG_RESULT.PREV then
                     goto NPC_379_0041
                 end
-                me:dialog(npc, "감사의 뜻으로 10만전을 드리지! 정말 수고했네! 큰일을 해냈어! 하하하하하하하!", { prev = false, next = true })
+                local btn = me:dialog(npc, "감사의 뜻으로 10만전을 드리지! 정말 수고했네! 큰일을 해냈어! 하하하하하하하!", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
                 if q then
                     q:step(16)
                     q:complete()

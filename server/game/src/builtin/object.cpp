@@ -375,7 +375,7 @@ int builtin::object::builtin_move(lua_State* L)
     auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
-        *success = obj->move(direction);
+        *success = co_await obj->move(direction);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

@@ -14,15 +14,15 @@ local function dojaeyoung_nobidocument(me, npc)
 
     local q = me:quest(quest.QUEST_HWANGBIYEON)
     if q == nil then
-        me:dialog(npc, '그건 아직 제게 맡기실 일이 없으신 것 같군요. 상해 쪽에서 부탁을 받고 오시면 말씀하세요.', { prev = false, next = true })
+        me:dialog(npc, '그건 아직 제게 맡기실 일이 없으신 것 같군요. 상해 쪽에서 부탁을 받고 오시면 말씀하세요.', { prev = false, next = false })
         return
     end
     if q:step() ~= 2 then
-        me:dialog(npc, '그건 아직 제게 맡기실 일이 없으신 것 같군요. 상해 쪽에서 부탁을 받고 오시면 말씀하세요.', { prev = false, next = true })
+        me:dialog(npc, '그건 아직 제게 맡기실 일이 없으신 것 같군요. 상해 쪽에서 부탁을 받고 오시면 말씀하세요.', { prev = false, next = false })
         return
     end
     if not me:has_items('노비문서', 1) then
-        me:dialog(npc, '노비문서를 가지고 오셨을 때 말씀해 주세요.', { prev = false, next = true })
+        me:dialog(npc, '노비문서를 가지고 오셨을 때 말씀해 주세요.', { prev = false, next = false })
         return
     end
 
@@ -68,11 +68,11 @@ local function dojaeyoung_nobidocument(me, npc)
         { ['item'] = { ['보패'] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        me:dialog(npc, '노비문서를 가지고 있지 않으시군요.', { prev = false, next = true })
+        me:dialog(npc, '노비문서를 가지고 있지 않으시군요.', { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        me:dialog(npc, '소지품이 가득 차서 보패를 받을 수 없습니다.', { prev = false, next = true })
+        me:dialog(npc, '소지품이 가득 차서 보패를 받을 수 없습니다.', { prev = false, next = false })
         return
     end
     q:step(3)
@@ -94,7 +94,7 @@ local function dojaeyoung_herb_quest(me, npc)
         dojaeyoung_herb_turnin(me, npc)
         return
     end
-    me:dialog(npc, '저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.', { prev = true, next = true })
+    me:dialog(npc, '저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.', { prev = true, next = false })
 end
 
 local function dojaeyoung_herb_start(me, npc)
@@ -120,7 +120,7 @@ local function dojaeyoung_herb_start(me, npc)
         goto NPC_107_0021
     end
     if sel == 2 then
-        me:dialog(npc, '그렇죠..이 약초들을 어떻게 구하면 좋으련지..', { prev = false, next = true })
+        me:dialog(npc, '그렇죠..이 약초들을 어떻게 구하면 좋으련지..', { prev = false, next = false })
         return
     end
     if sel ~= 1 then
@@ -128,7 +128,7 @@ local function dojaeyoung_herb_start(me, npc)
     end
     local q = me:start_quest(quest.QUEST_DOJAEYOUNG_HERB)
     if q == nil then
-        me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+        me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
         return
     end
     q:step(1)
@@ -139,7 +139,7 @@ local function dojaeyoung_herb_start(me, npc)
         return
     end
     ::NPC_107_0026::
-    btn = me:dialog(npc, '도삭산의 토끼들은 151층에서 200층에서 나온다고 합니다. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 하네요.\n\n그럼 잘 부탁드리겠습니다! 감사합니다!', { prev = true, next = true })
+    btn = me:dialog(npc, '도삭산의 토끼들은 151층에서 200층에서 나온다고 합니다. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 하네요.\n\n그럼 잘 부탁드리겠습니다! 감사합니다!', { prev = true, next = false })
     if btn == DIALOG_RESULT.PREV then
         goto NPC_107_0025
     end
@@ -151,7 +151,7 @@ local function dojaeyoung_herb_turnin(me, npc)
         return
     end
     if not me:has_items({['약초잎사귀'] = 5, ['약초가지'] = 1}) then
-        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', { prev = false, next = true })
+        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', { prev = false, next = false })
         return
     end
     local btn = me:dialog(npc, '약초잎사귀와 약초가지를 구하셨군요! 감사합니다! 이것으로 저희 아버지가 건강을 되찾으시겠군요!', { prev = false, next = true })
@@ -163,16 +163,16 @@ local function dojaeyoung_herb_turnin(me, npc)
         { ['item'] = { ['강철의구두'] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', { prev = false, next = true })
+        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        me:dialog(npc, '소지품이 가득 차서 강철의구두를 줄 수 없습니다.', { prev = false, next = true })
+        me:dialog(npc, '소지품이 가득 차서 강철의구두를 줄 수 없습니다.', { prev = false, next = false })
         return
     end
     q:step(2)
     me:push_achievement(9, '도삭산 100층 퀘스트 완료', 7, 1)
-    me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', { prev = false, next = true })
+    me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', { prev = false, next = false })
 end
 
 return {

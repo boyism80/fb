@@ -11,7 +11,7 @@ return {
             return
         end
 
-        local button = me:dialog(npc, "오, 장기알 왕이 있구만, 그걸 내게 주겠는가? 싫다면 지금 그만두게...", { prev = false, next = true })
+        local button = me:dialog(npc, "오, 장기알 왕이 있구만, 그걸 내게 주겠는가? 싫다면 지금 그만두게...", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -23,14 +23,14 @@ return {
         end
         local code = me:exchange(cost, reward)
         if code == enum.exchange_result.LACK_COST then
-            local btn = me:dialog(npc, "님 아이템복사 버그로 영정임", { prev = false, next = true })
+            local btn = me:dialog(npc, "님 아이템복사 버그로 영정임", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, "소지품이 가득 차서 황매주를 받을 수 없네.", { prev = false, next = true })
+            me:dialog(npc, "소지품이 가득 차서 황매주를 받을 수 없네.", { prev = false, next = false })
             return
         end
         if reward ~= nil then
@@ -46,12 +46,12 @@ return {
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            button = me:dialog(npc, "하여간 이제 자네에게 주겠네...", { prev = false, next = true })
+            button = me:dialog(npc, "하여간 이제 자네에게 주겠네...", { prev = false, next = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
         else
-            button = me:dialog(npc, "오늘도 져버렸군... 다음엔 이겨야 할텐데...", { prev = false, next = true })
+            button = me:dialog(npc, "오늘도 져버렸군... 다음엔 이겨야 할텐데...", { prev = false, next = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end

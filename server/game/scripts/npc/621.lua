@@ -9,7 +9,7 @@ local function do_craft(me, ch, need_items, money_needed, product_name, rate_per
         return nil
     end
 
-    btn = me:dialog(ch, '실패하더라도 저를 너무 원망하지는 말아주세요...', { prev = true, next = true })
+    btn = me:dialog(ch, '실패하더라도 저를 너무 원망하지는 말아주세요...', { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return nil
     end
@@ -27,18 +27,18 @@ local function do_craft(me, ch, need_items, money_needed, product_name, rate_per
     if code == enum.exchange_result.LACK_COST then
         for item_name, need_count in pairs(need_items) do
             if not me:has_items(item_name, need_count) then
-                return me:dialog(ch, name_with(item_name, '이', '가') .. ' 부족합니다.', { prev = false, next = true })
+                return me:dialog(ch, name_with(item_name, '이', '가') .. ' 부족합니다.', { prev = false, next = false })
             end
         end
-        return me:dialog(ch, '금전이 부족합니다.', { prev = false, next = true })
+        return me:dialog(ch, '금전이 부족합니다.', { prev = false, next = false })
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        return me:dialog(ch, '소지품이 가득 차서 줄 수 없습니다.', { prev = false, next = true })
+        return me:dialog(ch, '소지품이 가득 차서 줄 수 없습니다.', { prev = false, next = false })
     end
     if reward == nil then
-        return me:dialog(ch, '아앗... 깃털이 그만 접착제와 덕지덕지 붙어버려서 실패하고 말았어요... 죄송합니다....', { prev = false, next = true })
+        return me:dialog(ch, '아앗... 깃털이 그만 접착제와 덕지덕지 붙어버려서 실패하고 말았어요... 죄송합니다....', { prev = false, next = false })
     end
-    return me:dialog(ch, '자, 여기 [' .. product_name .. '] ' .. name_with(product_name, '을', '를') .. ' 만들어 드렸습니다. 예쁘게 입고 다니세요.', { prev = false, next = true })
+    return me:dialog(ch, '자, 여기 [' .. product_name .. '] ' .. name_with(product_name, '을', '를') .. ' 만들어 드렸습니다. 예쁘게 입고 다니세요.', { prev = false, next = false })
 end
 
 local function craft_with_rate_intro(me, ch, product, need_items, money_needed, rate_percent, req_detail)
@@ -47,7 +47,7 @@ local function craft_with_rate_intro(me, ch, product, need_items, money_needed, 
         return nil
     end
 
-    btn = me:dialog(ch, '성공률은 ' .. rate_percent .. '할로, 실패하더라도 저를 너무 원망하지는 말아주세요...', { prev = true, next = true })
+    btn = me:dialog(ch, '성공률은 ' .. rate_percent .. '할로, 실패하더라도 저를 너무 원망하지는 말아주세요...', { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return nil
     end

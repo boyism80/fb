@@ -23,7 +23,7 @@ return {
             { ['item'] = { [opt.item] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", { prev = false, next = true })
+            me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
@@ -31,7 +31,10 @@ return {
             return
         end
 
-        me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", { prev = false, next = true })
-        me:dialog(npc, "수련장은 소림사 뒤쪽으로 가보면 승려들이 수련하고 있을것이오.", { prev = false, next = true })
+        local btn = me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        me:dialog(npc, "수련장은 소림사 뒤쪽으로 가보면 승려들이 수련하고 있을것이오.", { prev = false, next = false })
     end
 }

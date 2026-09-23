@@ -1,8 +1,11 @@
 @page "/cache"
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using System.Text.Json
 @inject CacheService CacheService
+@inject LogService LogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JS
 @attribute [AuthorizeRole(Role.Admin)]
 
@@ -99,9 +102,19 @@
 @code {
     private bool isProcessing;
     private string errorMessage;
+    private string currentUserName = string.Empty;
     private int? lastClearResult;
     private DateTime lastClearTime;
     private List<string> executionLog = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var nameClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name);
+        if (nameClaim != null)
+            currentUserName = nameClaim.Value;
+        await Task.CompletedTask;
+    }
 
     private async Task HandleClearCache()
     {
@@ -118,6 +131,13 @@
             executionLog.Add("> OK");
             executionLog.Add($"> Deleted keys: {count:N0}");
             executionLog.Add("> System ready.");
+            await LogService.WriteAsync("cache_flush", new
+            {
+                action = "cache_flush",
+                source = "admin",
+                actor = currentUserName,
+                deleted_keys = count
+            });
         }
         catch (Exception ex)
         {

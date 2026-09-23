@@ -37,14 +37,14 @@ return {
                     { ['item'] = { ['부여-일본쾌속승선권'] = 1 } }
                 )
                 if code == enum.exchange_result.LACK_COST then
-                    me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', { prev = false, next = true })
+                    me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', { prev = false, next = false })
                     return
                 end
                 if code == enum.exchange_result.LACK_CAPACITY then
-                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
+                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                     return
                 end
-                me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', { prev = false, next = true })
+                me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', { prev = false, next = false })
                 return
             elseif selected2 == 2 then
                 ::NPC_53_0003::
@@ -83,22 +83,22 @@ return {
                         { ['item'] = { ['노란비서'] = 1, ['부여-일본쾌속승선권'] = 1 } }
                     )
                     if code == enum.exchange_result.LACK_COST then
-                        me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', { prev = false, next = true })
+                        me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', { prev = false, next = false })
                         return
                     end
                     if code == enum.exchange_result.LACK_CAPACITY then
-                        me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
+                        me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                         return
                     end
-                    me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', { prev = false, next = true })
+                    me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', { prev = false, next = false })
                     return
                 elseif selected3 == 2 then
-                    me:dialog(npc, '관심없음 그냥 가구.. 다른데 알아봐. 더 싼데 있나..', { prev = false, next = true })
+                    me:dialog(npc, '관심없음 그냥 가구.. 다른데 알아봐. 더 싼데 있나..', { prev = false, next = false })
                     return
                 end
             end
         elseif selected == 2 then
-            me:dialog(npc, '어허.. 이 사람 보게? 안사면 안사는거지 왜 사람을 사기꾼으로 몰고 그래!', { prev = false, next = true })
+            me:dialog(npc, '어허.. 이 사람 보게? 안사면 안사는거지 왜 사람을 사기꾼으로 몰고 그래!', { prev = false, next = false })
             return
         end
     end

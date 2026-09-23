@@ -45,7 +45,7 @@ return {
             end
             q = me:start_quest(quest.QUEST_WOOGAPUNG)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
@@ -56,7 +56,7 @@ return {
                 return
             end
             ::NPC_193_0006::
-            btn = me:dialog(npc, '꼭 그 못된 놈을 잡아서 호롱불을 찾아주게. 휴우.. 자네밖에 믿을 사람이 없네. 그럼..', { prev = true, next = true })
+            btn = me:dialog(npc, '꼭 그 못된 놈을 잡아서 호롱불을 찾아주게. 휴우.. 자네밖에 믿을 사람이 없네. 그럼..', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -67,7 +67,7 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, me:name() .. '씨 아닌가? 저번엔 정말 고마웠네. 덕분에 잠을 편안히 잘 수 있게 되었다네.', { prev = false, next = true })
+            me:dialog(npc, me:name() .. '씨 아닌가? 저번엔 정말 고마웠네. 덕분에 잠을 편안히 잘 수 있게 되었다네.', { prev = false, next = false })
             return
         end
 
@@ -101,7 +101,7 @@ return {
                 goto NPC_193_0007
             end
             ::NPC_193_0009::
-            btn = me:dialog(npc, '자네덕분에 오늘부터 잠을 편안히 잘 수 있겠군. 고마워~', { prev = true, next = true })
+            btn = me:dialog(npc, '자네덕분에 오늘부터 잠을 편안히 잘 수 있겠군. 고마워~', { prev = true, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -111,6 +111,6 @@ return {
             return
         end
 
-        me:dialog(npc, me:name() .. '씨 아닌가? 저번엔 정말 고마웠네. 덕분에 잠을 편안히 잘 수 있게 되었다네.', { prev = false, next = true })
+        me:dialog(npc, me:name() .. '씨 아닌가? 저번엔 정말 고마웠네. 덕분에 잠을 편안히 잘 수 있게 되었다네.', { prev = false, next = false })
     end
 }

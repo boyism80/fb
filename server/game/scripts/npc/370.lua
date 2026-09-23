@@ -39,7 +39,7 @@ return {
         end
 
         ::NPC_370_0003::
-        button = me:dialog(npc, "여길 가려면, 수정해골, 도삭산황금봉, 도삭산의서.. 세가지가 필요하답니다.", { prev = true, next = true })
+        button = me:dialog(npc, "여길 가려면, 수정해골, 도삭산황금봉, 도삭산의서.. 세가지가 필요하답니다.", { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

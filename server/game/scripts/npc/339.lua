@@ -15,7 +15,10 @@ return {
                 return
             end
             if sel == 1 then
-                me:dialog(npc, "안녕히 가십시오.", { prev = false, next = true })
+                local btn = me:dialog(npc, "안녕히 가십시오.", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
                 if not me:has_items("노란비서", 1) then
                     me:dialog(npc, "만일의 사태를 대비하기 위해 노란비서를 지참해 주시기 바랍니다.", { prev = false, next = false })
                     return
@@ -28,7 +31,7 @@ return {
                     me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
                 end
             elseif sel == 2 then
-                me:dialog(npc, "남아서 다른 의견을 더 들어보는 것도 좋은 일이지요.", { prev = false, next = true })
+                me:dialog(npc, "남아서 다른 의견을 더 들어보는 것도 좋은 일이지요.", { prev = false, next = false })
             end
             return
         end
@@ -100,6 +103,6 @@ return {
         if q then
             q:step(1)
         end
-        me:dialog(npc, "당신의 의견이 반영되었습니다.", { prev = false, next = true })
+        me:dialog(npc, "당신의 의견이 반영되었습니다.", { prev = false, next = false })
     end
 }

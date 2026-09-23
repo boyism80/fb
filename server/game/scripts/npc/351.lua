@@ -64,7 +64,7 @@ local function run_helmet_craft(me, npc)
         return
     end
 
-    local btn = me:dialog(npc, "오호, 세시풍습 아이템을 모두 모으셨군요. 세시투구를 만들어 드릴까요?", { prev = false, next = true })
+    local btn = me:dialog(npc, "오호, 세시풍습 아이템을 모두 모으셨군요. 세시투구를 만들어 드릴까요?", { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -93,7 +93,7 @@ local function run_helmet_craft(me, npc)
     end
 
     me:push_achievement(ACHIEVEMENT_SESIHELMET, "세시투구를 제작해보자", 7, 1)
-    me:dialog(npc, "자, 여기 세시투구입니다. 오래오래 간직하시게.", { prev = false, next = true })
+    me:dialog(npc, "자, 여기 세시투구입니다. 오래오래 간직하시게.", { prev = false, next = false })
 end
 
 return {

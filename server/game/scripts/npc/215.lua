@@ -47,18 +47,18 @@ return {
             end
             q = me:start_quest(quest.QUEST_GREATWALL)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
             me:push_achievement(21, '만리장성 수리를 부탁받다.', 7, 1)
-            me:dialog(npc, '수리에는 꼭 고구려의 벽돌을 써야만 하네. 벽돌은 국내성의 대장간에서 판다고 하더군. 만리장성을 돌아다니다 보면 수리해야 할곳을 찾을수 있을걸세. 10군데 이상 고친다면 적절한 보상을 해주겠네.', { prev = true, next = true })
+            me:dialog(npc, '수리에는 꼭 고구려의 벽돌을 써야만 하네. 벽돌은 국내성의 대장간에서 판다고 하더군. 만리장성을 돌아다니다 보면 수리해야 할곳을 찾을수 있을걸세. 10군데 이상 고친다면 적절한 보상을 해주겠네.', { prev = false, next = false })
             return
         end
 
         if q:step() == 0 then
             ::NPC_215_0020::
-            local btn = me:dialog(npc, '마침 잘 만났네. 자네 만리장성을 돌아보았나? 요즘 만리장성의 곳곳이 무너져내려 걱정이 보통이 아니라네.', { prev = true, next = true })
+            local btn = me:dialog(npc, '마침 잘 만났네. 자네 만리장성을 돌아보았나? 요즘 만리장성의 곳곳이 무너져내려 걱정이 보통이 아니라네.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -79,12 +79,12 @@ return {
             end
             q:step(1)
             me:push_achievement(21, '만리장성 수리를 부탁받다.', 7, 1)
-            me:dialog(npc, '수리에는 꼭 고구려의 벽돌을 써야만 하네. 벽돌은 국내성의 대장간에서 판다고 하더군. 만리장성을 돌아다니다 보면 수리해야 할곳을 찾을수 있을걸세. 10군데 이상 고친다면 적절한 보상을 해주겠네.', { prev = true, next = true })
+            me:dialog(npc, '수리에는 꼭 고구려의 벽돌을 써야만 하네. 벽돌은 국내성의 대장간에서 판다고 하더군. 만리장성을 돌아다니다 보면 수리해야 할곳을 찾을수 있을걸세. 10군데 이상 고친다면 적절한 보상을 해주겠네.', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, '저번엔 정말 고마웠네. 당신과 같이 만리장성의 수리에 힘써주는 사람이 많아 만리장성이 점차 옛 모습을 되찾고 있네.', { prev = true, next = true })
+            me:dialog(npc, '저번엔 정말 고마웠네. 당신과 같이 만리장성의 수리에 힘써주는 사람이 많아 만리장성이 점차 옛 모습을 되찾고 있네.', { prev = false, next = false })
             return
         end
 
@@ -92,16 +92,16 @@ return {
         local progress = q:progress()
         local tier = rewards[step]
         if tier == nil then
-            me:dialog(npc, '저번엔 정말 고마웠네. 당신과 같이 만리장성의 수리에 힘써주는 사람이 많아 만리장성이 점차 옛 모습을 되찾고 있네.', { prev = true, next = true })
+            me:dialog(npc, '저번엔 정말 고마웠네. 당신과 같이 만리장성의 수리에 힘써주는 사람이 많아 만리장성이 점차 옛 모습을 되찾고 있네.', { prev = false, next = false })
             return
         end
 
         if progress < tier.threshold then
-            me:dialog(npc, '조금 더 수리해야 할 것 같은데?', { prev = false, next = true })
+            me:dialog(npc, '조금 더 수리해야 할 것 같은데?', { prev = false, next = false })
             return
         end
         if seocheon_give_tier_reward(me, step) == nil then
-            me:dialog(npc, '소지품이 가득 차서 보상을 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 보상을 받을 수 없습니다.', { prev = false, next = false })
             return
         end
 
@@ -111,6 +111,6 @@ return {
             q:complete()
             me:push_achievement(21, '만리장성 수리에 성공하다.', 7, 1)
         end
-        me:dialog(npc, '오~ 수고했네!! 자 여기 받게나. 시간이 있다면 더 수고해 주길 바라겠네. 수고하는 만큼 댓가는 지불할테니...', { prev = true, next = true })
+        me:dialog(npc, '오~ 수고했네!! 자 여기 받게나. 시간이 있다면 더 수고해 주길 바라겠네. 수고하는 만큼 댓가는 지불할테니...', { prev = false, next = false })
     end
 }

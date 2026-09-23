@@ -323,7 +323,7 @@ return {
             if b == DIALOG_RESULT.QUIT then
                 return
             end
-            b = me:dialog(npc, "더이상 무슨 의견이나 계책이 나올지 의심스럽지만, 마지막으로 한 번만 더 수고해주지 않겠나.", { prev = false, next = true })
+            b = me:dialog(npc, "더이상 무슨 의견이나 계책이 나올지 의심스럽지만, 마지막으로 한 번만 더 수고해주지 않겠나.", { prev = false, next = false })
             return
         end
 

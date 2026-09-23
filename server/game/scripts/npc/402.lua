@@ -12,7 +12,7 @@ return {
         end
 
         if sel == 1 then
-            local button = me:dialog(npc, "비약은.. 말 그대로 비밀의 약품이지. 소문에는 천지인의 패들을 서로 합치는데 비약이 필요하다고 하더군.", { prev = false, next = true })
+            local button = me:dialog(npc, "비약은.. 말 그대로 비밀의 약품이지. 소문에는 천지인의 패들을 서로 합치는데 비약이 필요하다고 하더군.", { prev = false, next = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end

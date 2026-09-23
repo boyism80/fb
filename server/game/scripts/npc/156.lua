@@ -48,7 +48,7 @@ local function run_ice_sword(me, npc)
         return false
     end
     if sel == 1 then
-        me:dialog(npc, '얼음칼은 얼음으로 만들어진 칼로써 적을 마비시킬 수 있는 능력을 가지고 있지. 단점이 있다면 수리가 안된다고 해야하나? 허허..', { prev = false, next = true })
+        me:dialog(npc, '얼음칼은 얼음으로 만들어진 칼로써 적을 마비시킬 수 있는 능력을 가지고 있지. 단점이 있다면 수리가 안된다고 해야하나? 허허..', { prev = false, next = false })
         return true
     end
     if sel == 2 then
@@ -56,7 +56,7 @@ local function run_ice_sword(me, npc)
             me:dialog(npc, '얼음칼을 만들기 위해선 얼음 100개가 필요하네.', { prev = false, next = false })
             return true
         end
-        btn = me:dialog(npc, '오..모두 모아 왔구만.. 수고했네... 어디보자.. 전체적으로 얼음이 싱글탱글 하구먼.. 허허허.. 이보게..이 좋은 얼음이면..장식품으로 써도 좋아 보이는데..정말 얼음칼로 만들고 싶나?.. 흠.. 그래..할 수 없지... 만들어 주겠네...', { prev = false, next = true })
+        btn = me:dialog(npc, '오..모두 모아 왔구만.. 수고했네... 어디보자.. 전체적으로 얼음이 싱글탱글 하구먼.. 허허허.. 이보게..이 좋은 얼음이면..장식품으로 써도 좋아 보이는데..정말 얼음칼로 만들고 싶나?.. 흠.. 그래..할 수 없지... 만들어 주겠네...', { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return false
         end
@@ -82,7 +82,7 @@ local function run_ice_sword(me, npc)
         return true
     end
     if sel == 3 then
-        me:dialog(npc, '허허..싱겁기는..', { prev = false, next = true })
+        me:dialog(npc, '허허..싱겁기는..', { prev = false, next = false })
         return true
     end
     return true
@@ -129,7 +129,8 @@ local function run_spirit_summon_shark_weapon(me, npc)
         end
         q:step(2)
         me:push_achievement(24, '한빙장의 부탁을 들어주자.', 7, 1)
-        if me:dialog(npc, '보약의 재료는 나도 모르니까 자네가 직접 가서 물어보고 지어오라고.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        local btn = me:dialog(npc, '보약의 재료는 나도 모르니까 자네가 직접 가서 물어보고 지어오라고.', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         me:dialog(npc, '아, 그리고 난 산삼도 한뿌리 먹었으면 좋겠으니까 가서 산삼도 한뿌리 가져오시게나.', { prev = false, next = false })
@@ -151,17 +152,34 @@ local function run_spirit_summon_shark_weapon(me, npc)
         end
         q:step(3)
         me:push_achievement(24, '한빙장의 부탁을 들어주었다.', 7, 1)
-        if me:dialog(npc, '오. 재료를 다 모아왔군.\n\n그럼 잠시 기다리게나. 내 이걸 먼저 보약으로 만들어 먹고..', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        ::NPC_156_0010::
+        local btn = me:dialog(npc, '오. 재료를 다 모아왔군.\n\n그럼 잠시 기다리게나. 내 이걸 먼저 보약으로 만들어 먹고..', { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '.\n\n..\n\n...', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        ::NPC_156_0011::
+        btn = me:dialog(npc, '.\n\n..\n\n...', { prev = true, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '캬. 몸에 기운이 솟는구만. 솟아.\n\n그럼 받을대로 다 받았으니 슬슬 말해 주기로 하지.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_156_0010
+        end
+        ::NPC_156_0012::
+        btn = me:dialog(npc, '캬. 몸에 기운이 솟는구만. 솟아.\n\n그럼 받을대로 다 받았으니 슬슬 말해 주기로 하지.', { prev = true, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '사실 그 제작방법은 상어장군만이 알고 있다고 하더군.\n\n하지만 상어장군이 죽은 이 마당에...', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_156_0011
+        end
+        ::NPC_156_0013::
+        btn = me:dialog(npc, '사실 그 제작방법은 상어장군만이 알고 있다고 하더군.\n\n하지만 상어장군이 죽은 이 마당에...', { prev = true, next = true })
+        if btn == DIALOG_RESULT.QUIT then
             return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_156_0012
         end
         me:dialog(npc, '따라서 그를 저승에서 불러내서 물어봐야 한다네..\n\n그를 저승에서 불러내는 방법은 제단을 담당하고 있는 사람한테 가서 직접 물어보시게나.', { prev = false, next = false })
         return
@@ -202,12 +220,12 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
         { ['item'] = { [helmet_name] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.', { prev = false, next = true })
+        return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.', { prev = false, next = false })
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        return me:dialog(npc, '소지품이 가득 차서 ' .. helmet_name .. '를 받을 수 없네.', { prev = false, next = true })
+        return me:dialog(npc, '소지품이 가득 차서 ' .. helmet_name .. '를 받을 수 없네.', { prev = false, next = false })
     end
-    return me:dialog(npc, gem_name .. '으로 ' .. helmet_name .. '를 만들어주었네.', { prev = false, next = true })
+    return me:dialog(npc, gem_name .. '으로 ' .. helmet_name .. '를 만들어주었네.', { prev = false, next = false })
 end
 
 return {

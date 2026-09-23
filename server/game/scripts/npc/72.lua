@@ -97,7 +97,7 @@ return {
 
             local map = name2map('PK12지신의유적')
             if map == nil then
-                me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = true })
+                me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = false })
                 return
             end
             local x = 25 + math.random(1, 10)
@@ -160,7 +160,7 @@ return {
             local map_name = map_names[math.random(1, 2)]
             local map = name2map(map_name)
             if map == nil then
-                me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = true })
+                me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = false })
                 return
             end
             me:map(map)

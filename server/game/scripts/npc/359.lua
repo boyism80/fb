@@ -12,7 +12,7 @@ end
 
 return {
     on_click = function(me, npc)
-        local btn = me:dialog(npc, "안녕하세요? 저는 장명주입니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "안녕하세요? 저는 장명주입니다.", { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -123,7 +123,10 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                me:dialog(npc, "그래도 화면은 드려야 되는데.. 저희가 만들어 둔거라도 드릴께요. 맛있게 드세요.", { prev = false, next = false })
+                local btn = me:dialog(npc, "그래도 화면은 드려야 되는데.. 저희가 만들어 둔거라도 드릴께요. 맛있게 드세요.", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
                 me:mkitem("맛없는화면", 1)
             end
         end

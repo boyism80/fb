@@ -65,7 +65,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
 
         case DSL::script:
         {
-            std::ignore = ch->move(direction, position, walk_queue_slot);
+            std::ignore = co_await ch->move(direction, position, walk_queue_slot);
 
             auto params = fb::model::dsl::script(warp->dest.params);
             if (params.path.empty() || params.function.empty())
@@ -86,7 +86,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
     }
     else
     {
-        std::ignore = ch->move(direction, position, walk_queue_slot);
+        std::ignore = co_await ch->move(direction, position, walk_queue_slot);
     }
     co_return true;
 }

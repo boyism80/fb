@@ -7,7 +7,7 @@ return {
         local q = me:quest(quest.QUEST_GHOST)
 
         if q == nil or q:step() ~= 2 then
-            me:dialog(npc, '안녕하십니까? 저는 마타라고 합니다.', { prev = false, next = true })
+            me:dialog(npc, '안녕하십니까? 저는 마타라고 합니다.', { prev = false, next = false })
             return
         end
 
@@ -25,7 +25,7 @@ return {
             return
         end
         if me:mkitem('귀신퇴치부적', 5) == nil then
-            me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(3)

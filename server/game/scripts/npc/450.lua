@@ -156,8 +156,14 @@ return {
         if sel == 4 then
             local map = me:map()
             local map_name = (map and map:model()) and map:model():name() or "이곳"
-            me:dialog(npc, string.format("잔가지는 이곳 [%s]에서 나무를 베어 얻으실 수 있습니다.", map_name), { prev = false, next = true })
-            me:dialog(npc, "어디까지나 자잘한 가지들을 모으는 것이기 때문에, 곳곳에 있는 나무들에게 다가가 잔가지를 주워 오시면 됩니다. ", { prev = false, next = true })
+            local btn = me:dialog(npc, string.format("잔가지는 이곳 [%s]에서 나무를 베어 얻으실 수 있습니다.", map_name), { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            local btn = me:dialog(npc, "어디까지나 자잘한 가지들을 모으는 것이기 때문에, 곳곳에 있는 나무들에게 다가가 잔가지를 주워 오시면 됩니다. ", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             me:dialog(npc, "나무들은 맨손으로 공격하셔도 좋고 마법으로 공격하셔도 좋습니다.\n\n그렇게 나무 주위에서 떨어지는 잔가지들을 구해다 주시면 됩니다...", { prev = false, next = false })
             return
         end

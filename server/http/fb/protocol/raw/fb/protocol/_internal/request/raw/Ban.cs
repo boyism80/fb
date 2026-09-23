@@ -36,13 +36,22 @@ public struct Ban : IFlatbufferObject
 #endif
   public byte[] GetReasonArray() { return __p.__vector_as_array<byte>(8); }
   public nullable.nullable_uint? Days { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public string Actor { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetActorBytes() { return __p.__vector_as_span<byte>(12, 1); }
+#else
+  public ArraySegment<byte>? GetActorBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public byte[] GetActorArray() { return __p.__vector_as_array<byte>(12); }
 
   public static Offset<fb.protocol._internal.request.raw.Ban> CreateBan(FlatBufferBuilder builder,
       uint world = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset reasonOffset = default(StringOffset),
-      Offset<nullable.nullable_uint> daysOffset = default(Offset<nullable.nullable_uint>)) {
-    builder.StartTable(4);
+      Offset<nullable.nullable_uint> daysOffset = default(Offset<nullable.nullable_uint>),
+      StringOffset actorOffset = default(StringOffset)) {
+    builder.StartTable(5);
+    Ban.AddActor(builder, actorOffset);
     Ban.AddDays(builder, daysOffset);
     Ban.AddReason(builder, reasonOffset);
     Ban.AddName(builder, nameOffset);
@@ -50,11 +59,12 @@ public struct Ban : IFlatbufferObject
     return Ban.EndBan(builder);
   }
 
-  public static void StartBan(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartBan(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddReason(FlatBufferBuilder builder, StringOffset reasonOffset) { builder.AddOffset(2, reasonOffset.Value, 0); }
   public static void AddDays(FlatBufferBuilder builder, Offset<nullable.nullable_uint> daysOffset) { builder.AddOffset(3, daysOffset.Value, 0); }
+  public static void AddActor(FlatBufferBuilder builder, StringOffset actorOffset) { builder.AddOffset(4, actorOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Ban> EndBan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Ban>(o);
@@ -73,6 +83,7 @@ static public class BanVerify
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
       && verifier.VerifyString(tablePos, 8 /*Reason*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Days*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyString(tablePos, 12 /*Actor*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

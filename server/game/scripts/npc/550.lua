@@ -157,7 +157,7 @@ return {
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "참가 과정에서 별도의 파트너 동의 여부는 이루어지지 않습니다만, 추 후 검토하게 되므로 반드시 신중하게 참가 신청을 해 주시길 바랍니다.", { prev = false, next = true })
+        d = me:dialog(npc, "참가 과정에서 별도의 파트너 동의 여부는 이루어지지 않습니다만, 추 후 검토하게 되므로 반드시 신중하게 참가 신청을 해 주시길 바랍니다.", { prev = false, next = false })
         if d == DIALOG_RESULT.QUIT then
             return
         end

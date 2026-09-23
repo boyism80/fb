@@ -25,20 +25,20 @@ return {
 
             local q = me:start_quest(quest.QUEST_TANGTANG)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '나름대로 보답은 하겠어. 좀 서둘러만 줬음 좋겠군.', { prev = false, next = true })
+            me:dialog(npc, '나름대로 보답은 하겠어. 좀 서둘러만 줬음 좋겠군.', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, '태존도.. 정말 신기한 무기군.', { prev = false, next = true })
+            me:dialog(npc, '태존도.. 정말 신기한 무기군.', { prev = false, next = false })
             return
         end
 
         if not me:has_items('태존도', 1) then
-            me:dialog(npc, '아직 태존도를 구하지 못한건가?', { prev = false, next = true })
+            me:dialog(npc, '아직 태존도를 구하지 못한건가?', { prev = false, next = false })
             return
         end
 
@@ -52,15 +52,15 @@ return {
             { ['item'] = { ['선장의일기4'] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '아직 태존도를 구하지 못한건가?', { prev = false, next = true })
+            me:dialog(npc, '아직 태존도를 구하지 못한건가?', { prev = false, next = false })
             return
         elseif code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 선장의일기4를 줄 수 없네.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 선장의일기4를 줄 수 없네.', { prev = false, next = false })
             return
         end
         q:complete()
         lighthouse:step(5)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [5/6]', 7, 1)
-        me:dialog(npc, '고맙다는 말은 하지 않겠네. 이건 거래니까. 자, 가져가게', { prev = false, next = true })
+        me:dialog(npc, '고맙다는 말은 하지 않겠네. 이건 거래니까. 자, 가져가게', { prev = false, next = false })
     end
 }

@@ -278,6 +278,42 @@
                             </Grid>
                         </StackPanel>
                     </Border>
+
+                    <Border Style="{StaticResource SettingPanel}">
+                        <StackPanel>
+                            <TextBlock Text="Discord"
+                                       Style="{StaticResource SettingPanelTitle}"
+                                       Margin="0,0,0,10" />
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Bot Token"
+                                           Style="{StaticResource SettingLabel}"
+                                           Grid.Row="0"
+                                           Grid.Column="0" />
+                                <TextBox Text="{Binding DiscordBotToken}"
+                                         Tag="비워두면 알림 비활성"
+                                         Grid.Row="0"
+                                         Grid.Column="1"
+                                         Margin="0,4" />
+                                <TextBlock Text="Channel ID"
+                                           Style="{StaticResource SettingLabel}"
+                                           Grid.Row="1"
+                                           Grid.Column="0" />
+                                <TextBox Text="{Binding DiscordChannelId}"
+                                         Tag="비워두면 알림 비활성"
+                                         Grid.Row="1"
+                                         Grid.Column="1"
+                                         Margin="0,4" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- Gateway -->

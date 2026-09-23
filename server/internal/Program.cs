@@ -18,6 +18,7 @@ public class Program
         SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
 
         var builder = WebApplication.CreateBuilder(args);
+        builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
         builder.AddDatabaseMigrations();
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
@@ -38,10 +39,13 @@ public class Program
         builder.Services.AddHttpAutoMapper();
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<LogService>();
+        builder.Services.AddSingleton<DiscordNotifier>();
+        builder.Services.AddSingleton<OpsNotifyService>();
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddSingleton<ServerStateService>();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddScoped<BanService>();
+        builder.Services.AddSingleton<ShutdownService>();
         builder.Services.AddScoped<CacheService>();
         builder.Services.AddSingleton<WriteBackService>();
         builder.Services.AddSingleton<Http.Service.BulletinService>();

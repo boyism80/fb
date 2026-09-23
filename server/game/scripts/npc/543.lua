@@ -5,7 +5,7 @@ return {
     on_click = function(me, npc)
         local q = me:quest(quest.QUEST_JINHWANG)
         if q == nil or q:step() ~= 1 then
-            me:dialog(npc, "....", { prev = false, next = true })
+            me:dialog(npc, "....", { prev = false, next = false })
             return
         end
 

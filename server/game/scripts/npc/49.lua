@@ -9,7 +9,7 @@ return {
         end
 
         ::NPC_49_0002::
-        button = me:dialog(npc, '각종 귀신 몬스터들이 등장하며, 얻을 수 있는 아이템은 진호박이고, 성에 따라 각종 색호박들도 얻을 수 있습니다.', { prev = true, next = true })
+        button = me:dialog(npc, '각종 귀신 몬스터들이 등장하며, 얻을 수 있는 아이템은 진호박이고, 성에 따라 각종 색호박들도 얻을 수 있습니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

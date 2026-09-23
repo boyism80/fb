@@ -79,7 +79,7 @@ return {
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "어디 한번 잘 되었나 볼까?!", { prev = false, next = true })
+        d = me:dialog(npc, "어디 한번 잘 되었나 볼까?!", { prev = false, next = false })
         if d == DIALOG_RESULT.QUIT then
             return
         end

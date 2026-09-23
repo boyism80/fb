@@ -8,12 +8,12 @@ return {
         local btn
 
         if q == nil then
-            me:dialog(npc, '안녕하시오. 장안성에는 무슨일로 오셨는가?', { prev = false, next = true })
+            me:dialog(npc, '안녕하시오. 장안성에는 무슨일로 오셨는가?', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, '흐음..', { prev = false, next = true })
+            me:dialog(npc, '흐음..', { prev = false, next = false })
             return
         end
 
@@ -23,7 +23,7 @@ return {
                 return
             end
             if sel ~= 1 then
-                me:dialog(npc, '허허. 그러시오?', { prev = false, next = true })
+                me:dialog(npc, '허허. 그러시오?', { prev = false, next = false })
                 return
             end
             ::NPC_184_0001::
@@ -47,7 +47,7 @@ return {
         if q:step() == 1 then
             local materials = {['동충하초'] = 1, ['인삼'] = 1}
             if not me:has_items(materials) then
-                me:dialog(npc, '아직 재료가 부족한것 같소. 동충하초는 대방성입구, 인삼은 국경지대를 뒤져보면 나올걸세.', { prev = false, next = true })
+                me:dialog(npc, '아직 재료가 부족한것 같소. 동충하초는 대방성입구, 인삼은 국경지대를 뒤져보면 나올걸세.', { prev = false, next = false })
                 return
             end
             ::NPC_184_0020::
@@ -80,7 +80,7 @@ return {
         if q:step() == 2 then
             local materials = {['동충하초'] = 1, ['인삼'] = 1, ['비둘기고기'] = 1, ['구기자'] = 1}
             if not me:has_items(materials) then
-                me:dialog(npc, '아직 재료를 다 구하지 못했군. 재료는 동충하초,인삼,비둘기고기,구기자를 구해오게.', { prev = false, next = true })
+                me:dialog(npc, '아직 재료를 다 구하지 못했군. 재료는 동충하초,인삼,비둘기고기,구기자를 구해오게.', { prev = false, next = false })
                 return
             end
             ::NPC_184_0030::
@@ -94,11 +94,11 @@ return {
                 { ['item'] = { ['화기삼동충초돈유합'] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '아직 재료를 다 구하지 못하셨군요.', { prev = false, next = true })
+                me:dialog(npc, '아직 재료를 다 구하지 못하셨군요.', { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 화기삼동충초돈유합을 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 화기삼동충초돈유합을 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:step(3)

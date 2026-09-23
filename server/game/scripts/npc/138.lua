@@ -20,7 +20,7 @@ return {
         local q = me:quest(quest.QUEST_MOUNTAIN_GOD)
 
         if q ~= nil and q:completed() then
-            me:dialog(npc, '제가 만들어 드린 산신의옷은 잘 사용하고 계신가요?', { prev = false, next = true })
+            me:dialog(npc, '제가 만들어 드린 산신의옷은 잘 사용하고 계신가요?', { prev = false, next = false })
             return
         end
 
@@ -64,13 +64,13 @@ return {
             if q == nil then
                 q = me:start_quest(quest.QUEST_MOUNTAIN_GOD)
                 if q == nil then
-                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                    me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                     return
                 end
             end
             q:step(1)
             me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의보물지도를 찾자', 7, 25)
-            me:dialog(npc, '그럼 보물을 찾으시면 저에게도 꼭 보여주셔야 됩니다!', { prev = false, next = true })
+            me:dialog(npc, '그럼 보물을 찾으시면 저에게도 꼭 보여주셔야 됩니다!', { prev = false, next = false })
             return
         end
 
@@ -80,7 +80,10 @@ return {
                 me:dialog(npc, '아직 보물을 찾기 못하신 것 같군요. 801층 이후에는 책장들이 있는 곳이 있는데, 그중 어딘가 한군데에서 제가 보물지도를 본적이 있습니다. 아마 산신들의 귀중품을 숨겨놓은 곳을 표시해둔 것 같은데...', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '오오! 보물지도를 구하셨군요! 어서 빨리 보물을 찾아보시지요!', { prev = false, next = true })
+            local btn = me:dialog(npc, '오오! 보물지도를 구하셨군요! 어서 빨리 보물을 찾아보시지요!', { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             q:step(2)
             return
         end
@@ -191,7 +194,7 @@ return {
             end
             q:complete()
             me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의옷을 만들다!', 6, 25)
-            me:dialog(npc, '여기 있습니다! 멋진 옷을 만들게 되어 정말 기쁘군요!', { prev = false, next = true })
+            me:dialog(npc, '여기 있습니다! 멋진 옷을 만들게 되어 정말 기쁘군요!', { prev = false, next = false })
             return
         end
     end

@@ -231,7 +231,7 @@ return {
             ['흑룡의어금니'] = 1,
             ['감룡의어금니'] = 1
         }) then
-            me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = true })
+            me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
             return
         end
 
@@ -297,7 +297,7 @@ return {
         local dest = DESTINATIONS[selected]
         local map = name2map(dest.map)
         if map == nil then
-            me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = true })
+            me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = false })
             return
         end
 
@@ -342,7 +342,7 @@ return {
                 return
             end
             if not has_empty_slot(friend) then
-                me:dialog(npc, '동료의 가방에 빈 자리가 없다네.', { prev = false, next = true })
+                me:dialog(npc, '동료의 가방에 빈 자리가 없다네.', { prev = false, next = false })
                 return
             end
         end
@@ -358,20 +358,20 @@ return {
             ['흑룡의어금니'] = 1,
             ['감룡의어금니'] = 1
         }) then
-            me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = true })
+            me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
             return
         end
 
         local inst = map:clone()
         if inst == nil then
-            me:dialog(npc, '용왕굴을 열 수 없다네.', { prev = false, next = true })
+            me:dialog(npc, '용왕굴을 열 수 없다네.', { prev = false, next = false })
             return
         end
 
         local dirs = { DIRECTION.TOP, DIRECTION.RIGHT, DIRECTION.BOTTOM, DIRECTION.LEFT }
         if inst:spawn_mob(dest.mob, 10, 10, dirs[math.random(1, 4)]) == nil then
             inst:destroy()
-            me:dialog(npc, '용왕굴을 열 수 없다네.', { prev = false, next = true })
+            me:dialog(npc, '용왕굴을 열 수 없다네.', { prev = false, next = false })
             return
         end
 

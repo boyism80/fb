@@ -43,6 +43,9 @@ local function ranggyuryun_palgu(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_2_0010
+    end
     ::NPC_2_0021::
     btn = me:dialog(npc, '자 팔괘를 만들어 드렸습니다. 그럼 안녕히가십시요.', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
@@ -53,11 +56,11 @@ local function ranggyuryun_palgu(me, npc)
         { ['item'] = { ['팔괘'] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', { prev = false, next = true })
+        me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', { prev = false, next = true })
+        me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', { prev = false, next = false })
         return
     end
 end
@@ -104,7 +107,7 @@ local function ranggyuryun_pure_water(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', { prev = false, next = false })
             return
         end
         q:step(3)
@@ -120,8 +123,10 @@ local function ranggyuryun_pure_water(me, npc)
 end
 
 local function ranggyuryun_golden_amber(me, npc)
-    local btn = me:dialog(npc, '호박의 정수.. 황금호박별을 가지고 오셨습니까. 이것으로 무기를 만드시렵니까..', { prev = true, next = true })
-    if btn == DIALOG_RESULT.QUIT then return end
+    local btn = me:dialog(npc, '호박의 정수.. 황금호박별을 가지고 오셨습니까. 이것으로 무기를 만드시렵니까..', { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
     if not me:has_items('황금호박별', 1) then
         me:dialog(npc, '황금호박별을 가지고 있지 않으시군요. 아직은 때가 아닌가보군요..', { prev = false, next = false })
     end

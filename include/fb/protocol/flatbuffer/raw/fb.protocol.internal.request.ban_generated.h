@@ -30,7 +30,8 @@ struct Ban FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 4,
     VT_NAME = 6,
     VT_REASON = 8,
-    VT_DAYS = 10
+    VT_DAYS = 10,
+    VT_ACTOR = 12
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -44,6 +45,9 @@ struct Ban FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const nullable::nullable_uint *days() const {
     return GetPointer<const nullable::nullable_uint *>(VT_DAYS);
   }
+  const ::flatbuffers::String *actor() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ACTOR);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -53,6 +57,8 @@ struct Ban FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(reason()) &&
            VerifyOffset(verifier, VT_DAYS) &&
            verifier.VerifyTable(days()) &&
+           VerifyOffset(verifier, VT_ACTOR) &&
+           verifier.VerifyString(actor()) &&
            verifier.EndTable();
   }
 };
@@ -73,6 +79,9 @@ struct BanBuilder {
   void add_days(::flatbuffers::Offset<nullable::nullable_uint> days) {
     fbb_.AddOffset(Ban::VT_DAYS, days);
   }
+  void add_actor(::flatbuffers::Offset<::flatbuffers::String> actor) {
+    fbb_.AddOffset(Ban::VT_ACTOR, actor);
+  }
   explicit BanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -89,8 +98,10 @@ inline ::flatbuffers::Offset<Ban> CreateBan(
     uint32_t world = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> reason = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> days = 0) {
+    ::flatbuffers::Offset<nullable::nullable_uint> days = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> actor = 0) {
   BanBuilder builder_(_fbb);
+  builder_.add_actor(actor);
   builder_.add_days(days);
   builder_.add_reason(reason);
   builder_.add_name(name);
@@ -103,15 +114,18 @@ inline ::flatbuffers::Offset<Ban> CreateBanDirect(
     uint32_t world = 0,
     const char *name = nullptr,
     const char *reason = nullptr,
-    ::flatbuffers::Offset<nullable::nullable_uint> days = 0) {
+    ::flatbuffers::Offset<nullable::nullable_uint> days = 0,
+    const char *actor = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  auto actor__ = actor ? _fbb.CreateString(actor) : 0;
   return fb::protocol::internal::request::raw::CreateBan(
       _fbb,
       world,
       name__,
       reason__,
-      days);
+      days,
+      actor__);
 }
 
 inline const fb::protocol::internal::request::raw::Ban *GetBan(const void *buf) {

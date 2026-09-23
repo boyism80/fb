@@ -8,12 +8,12 @@ return {
         local q = me:quest(quest.QUEST_HWANGBIYEON)
 
         if q == nil then
-            me:dialog(npc, '안녕하신가요?', { prev = false, next = true })
+            me:dialog(npc, '안녕하신가요?', { prev = false, next = false })
             return
         end
 
         if q:step() == 0 then
-            me:dialog(npc, '안녕하신가요?', { prev = false, next = true })
+            me:dialog(npc, '안녕하신가요?', { prev = false, next = false })
             return
         end
 
@@ -40,7 +40,7 @@ return {
                 goto NPC_232_0001
             end
             if sel == 1 then
-                me:dialog(npc, '황비연이 현상금이 높긴 하죠... 하지만 쉽게 잡기는 어려울 겁니다.', { prev = false, next = true })
+                me:dialog(npc, '황비연이 현상금이 높긴 하죠... 하지만 쉽게 잡기는 어려울 겁니다.', { prev = false, next = false })
                 return
             end
             if sel ~= 2 then
@@ -99,7 +99,7 @@ return {
                 return
             end
             if me:mkitem('노비문서', 1) == nil then
-                me:dialog(npc, '소지품이 가득 차서 노비문서를 줄 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 노비문서를 줄 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:step(2)
@@ -108,13 +108,13 @@ return {
         end
 
         if q:step() == 2 then
-            me:dialog(npc, '아직 도삭산 100층에 계신분을 만나지 못하셨나 보군요.', { prev = false, next = true })
+            me:dialog(npc, '아직 도삭산 100층에 계신분을 만나지 못하셨나 보군요.', { prev = false, next = false })
             return
         end
 
         if q:step() == 3 then
             if not me:has_items('보패', 1) then
-                me:dialog(npc, '아직 도삭산 100층에 계신분을 만나지 못하셨나 보군요.', { prev = false, next = true })
+                me:dialog(npc, '아직 도삭산 100층에 계신분을 만나지 못하셨나 보군요.', { prev = false, next = false })
                 return
             end
             ::NPC_232_0023::
@@ -214,11 +214,11 @@ return {
                 { ['item'] = { ['황비연의머리띠'] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '보패를 가지고 있지 않으시군요.', { prev = false, next = true })
+                me:dialog(npc, '보패를 가지고 있지 않으시군요.', { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 황비연의머리띠를 줄 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 황비연의머리띠를 줄 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:step(4)
@@ -226,6 +226,6 @@ return {
             return
         end
 
-        me:dialog(npc, '안녕하신가요?', { prev = false, next = true })
+        me:dialog(npc, '안녕하신가요?', { prev = false, next = false })
     end
 }

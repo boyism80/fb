@@ -106,9 +106,7 @@ public:
 private:
     // clang-format off
     std::weak_ptr<fb::game::life>   find_target();
-    [[nodiscard]] async::task<bool> call_action_script();
-    [[nodiscard]] async::task<void> call_attack_script();
-    void                            AI(const fb::model::datetime& now);
+    [[nodiscard]] async::task<void> AI(const fb::model::datetime& now);
     static bool                     is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
     static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
     bool                            cover_blocks_move(const fb::game::map& map, const fb::model::point16_t& from, const fb::model::point16_t& to) const;
@@ -121,8 +119,8 @@ private:
 
 public:
     // clang-format off
-    bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
-    bool move_step(const fb::model::point16_t& position);
+    bool                            near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
+    [[nodiscard]] async::task<bool> move_step(const fb::model::point16_t& position);
     // clang-format on
 
 public:
@@ -144,7 +142,7 @@ public:
     async::task<void>               drop_items();
     async::task<void>               destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                            assert_thread() const override final;
-    bool                            move(DIRECTION direction) override final;
+    [[nodiscard]] async::task<bool> move(DIRECTION direction) override final;
     const item_vector_t&            items() const;
     bool                            push_item(std::shared_ptr<fb::game::item> item);
     fb::game::rezen*                spawn_rezen() const;

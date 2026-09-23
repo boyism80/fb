@@ -74,7 +74,7 @@ return {
         end
 
         ::NPC_541_0012::
-        button = me:dialog(npc, "그럼 잘 지내고 언제나 의협심을 잊지 말게나.", { prev = true, next = true })
+        button = me:dialog(npc, "그럼 잘 지내고 언제나 의협심을 잊지 말게나.", { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

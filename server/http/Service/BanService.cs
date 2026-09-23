@@ -8,17 +8,22 @@ namespace Http.Service
         private readonly DbContext _dbContext;
         private readonly ILogger<BanService> _logger;
         private readonly LogService _logService;
+        private readonly DiscordNotifier _discord;
 
-        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService)
+        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService, DiscordNotifier discord)
         {
             _dbContext = dbContext;
             _logger = logger;
             _logService = logService;
+            _discord = discord;
         }
 
 
-        public async Task<BanResult> Ban(uint world, string name, string reason, uint? days)
+        public async Task<BanResult> Ban(uint world, string name, string reason, uint? days, string actor, string source)
         {
+            actor ??= string.Empty;
+            source ??= string.Empty;
+
             // Get user ID from name
             var row = await _dbContext.Character.GetCharacterRef(name) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -44,18 +49,22 @@ namespace Http.Service
 
             _dbContext.Ban.Set(world, ban);
 
-            _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been banned. Reason: {Reason}, Expire: {ExpireDate}",
-                name, userId, world, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
+            _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been banned by {Actor} ({Source}). Reason: {Reason}, Expire: {ExpireDate}",
+                name, userId, world, actor, source, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
 
-            // Log ban event
             await _logService.WriteAsync("ban", new
             {
-                account_name = name,
+                action = "ban",
+                source,
+                actor,
+                target = name,
                 uid = userId,
-                world = world,
-                reason = reason,
+                world,
+                reason,
                 expire_date = expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
             });
+            var duration = days.HasValue && days.Value > 0 ? $"{days.Value}d" : "Permanent";
+            await _discord.NotifyAsync("ban", source, actor, name, world, $"reason: {reason} / {duration}");
 
             return new BanResult
             {
@@ -67,8 +76,11 @@ namespace Http.Service
         }
 
 
-        public async Task<UnbanResult> Unban(uint world, string name)
+        public async Task<UnbanResult> Unban(uint world, string name, string actor, string source)
         {
+            actor ??= string.Empty;
+            source ??= string.Empty;
+
             // Get user ID from name
             var row = await _dbContext.Character.GetCharacterRef(name) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -83,15 +95,18 @@ namespace Http.Service
             // Delete ban (soft delete)
             _dbContext.Ban.Delete(world, userId);
 
-            _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been unbanned.", name, userId, world);
+            _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been unbanned by {Actor} ({Source}).", name, userId, world, actor, source);
 
-            // Log unban event
             await _logService.WriteAsync("unban", new
             {
-                account_name = name,
+                action = "unban",
+                source,
+                actor,
+                target = name,
                 uid = userId,
-                world = world
+                world
             });
+            await _discord.NotifyAsync("unban", source, actor, name, world, null);
 
             return new UnbanResult
             {

@@ -17,7 +17,7 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, '저번에 날 도와줘서 고마우이. 가죽은 아주 유용하게 사용하고 있다네.', { prev = false, next = true })
+            me:dialog(npc, '저번에 날 도와줘서 고마우이. 가죽은 아주 유용하게 사용하고 있다네.', { prev = false, next = false })
             return
         end
 
@@ -63,7 +63,7 @@ return {
                 return
             end
             ::NPC_106_0006::
-            btn = me:dialog(npc, '도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.\n\n살쾡이와 악어는 무리를 지어서 공격해오니 조심하게!', { prev = true, next = true })
+            btn = me:dialog(npc, '도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.\n\n살쾡이와 악어는 무리를 지어서 공격해오니 조심하게!', { prev = true, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_106_0005
             end
@@ -93,7 +93,7 @@ return {
             end
             q:complete()
             me:push_achievement(ACHIEVEMENT_500, '도삭산 500층 퀘스트 완료', 7, 1)
-            btn = me:dialog(npc, '자 여기 내가 주는 선물이라네. 도와줘서 고맙네, 항상 좋은 일만 있게나!', { prev = false, next = true })
+            btn = me:dialog(npc, '자 여기 내가 주는 선물이라네. 도와줘서 고맙네, 항상 좋은 일만 있게나!', { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

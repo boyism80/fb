@@ -13,12 +13,15 @@ local function run_cidequest_jangdol(me, npc)
     end
     local pn = (q and q:progress()) or 0
     if me:has_items(ITEM_NEURAEJINDO, 1) then
-        me:dialog(npc, "오. 뇌진도를 가지고 왔구만.", { prev = false, next = true })
+        local btn = me:dialog(npc, "오. 뇌진도를 가지고 왔구만.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         if not me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE) then
             return
         end
-        me:dialog(npc, "사실 그 보물은 방천화극을 팔고 있던 내 친구가 들고 가는 것을 보았네.\n\n그러니 그 친구에게 찾아가 보시게나.", { prev = false, next = false })
         q:progress(2)
+        me:dialog(npc, "사실 그 보물은 방천화극을 팔고 있던 내 친구가 들고 가는 것을 보았네.\n\n그러니 그 친구에게 찾아가 보시게나.", { prev = false, next = false })
         return
     end
     if pn == 2 then
@@ -44,7 +47,10 @@ local function run_cidequest_jangdol(me, npc)
     if b4 == DIALOG_RESULT.QUIT then
         return
     end
-    me:dialog(npc, "기다리고 있겠네.", { prev = false, next = false })
+    local btn5 = me:dialog(npc, "기다리고 있겠네.", { prev = false, next = true })
+    if btn5 == DIALOG_RESULT.QUIT then
+        return
+    end
     q:progress(1)
 end
 

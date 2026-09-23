@@ -8,7 +8,7 @@ return {
         local q = me:quest(quest.QUEST_SAMJEONSIN)
 
         if quest_mother == nil or quest_mother:step() ~= 1 then
-            me:dialog(npc, '장안성엔 어쩐일로 오셨나? 보약이라도 한 채 지어먹으러 오셨나?', { prev = true, next = true })
+            me:dialog(npc, '장안성엔 어쩐일로 오셨나? 보약이라도 한 채 지어먹으러 오셨나?', { prev = false, next = false })
             return
         end
 
@@ -44,7 +44,7 @@ return {
             end
             q = me:start_quest(quest.QUEST_SAMJEONSIN)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
@@ -53,7 +53,7 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, '....', { prev = true, next = true })
+            me:dialog(npc, '....', { prev = false, next = false })
             return
         end
 
@@ -95,11 +95,11 @@ return {
         if q:step() == 1 then
             local materials = {['감초'] = 1, ['녹용'] = 1, ['국광'] = 1}
             if not me:has_items(materials) then
-                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', { prev = false, next = true })
+                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', { prev = false, next = false })
                 return
             end
             ::NPC_240_0009::
-            local btn = me:dialog(npc, '모든 재료를 가져왔군! 수고했네. 자, 그럼 삼전신보탕을 만들어 볼까? 잠시만 기다리게.', { prev = true, next = true })
+            local btn = me:dialog(npc, '모든 재료를 가져왔군! 수고했네. 자, 그럼 삼전신보탕을 만들어 볼까? 잠시만 기다리게.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -112,11 +112,11 @@ return {
                 { ['item'] = { ['삼전신보탕'] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', { prev = false, next = true })
+                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:step(2)
@@ -124,6 +124,6 @@ return {
             return
         end
 
-        me:dialog(npc, '....', { prev = true, next = true })
+        me:dialog(npc, '....', { prev = false, next = false })
     end
 }

@@ -708,12 +708,6 @@ return {
 
     on_move = function(me)
         lib.any_action(me)
-
-        -- if me:is(OBJECT_TYPE.CHARACTER) then
-        --     local quest = require('lib.quest')
-        --     quest.red_clay_on_move(me)
-        --     quest.mountain_treasure_fabric_on_move(me)
-        -- end
     end,
 
     on_direction = function(me)

@@ -47,7 +47,7 @@ return {
             q:step(1)
             me:push_achievement(511, "진황보검을 찾아서 (북천좌상과 만나자)", 7, 20)
 
-            me:dialog(npc, "그럼 일단 황실에 들어가 북천좌상님에게 진황보검에 대해 여쭈어보는게 좋겠네요.", { prev = false, next = true })
+            me:dialog(npc, "그럼 일단 황실에 들어가 북천좌상님에게 진황보검에 대해 여쭈어보는게 좋겠네요.", { prev = false, next = false })
             return
         end
 
@@ -59,7 +59,7 @@ return {
         local step = q:step()
 
         if step >= 1 and step <= 3 then
-            me:dialog(npc, "그럼 일단 황실에 들어가 북천좌상님에게 진황보검에 대해 여쭈어보는게 좋겠네요.", { prev = false, next = true })
+            me:dialog(npc, "그럼 일단 황실에 들어가 북천좌상님에게 진황보검에 대해 여쭈어보는게 좋겠네요.", { prev = false, next = false })
             return
         end
 
@@ -93,12 +93,15 @@ return {
         end
 
         if step == 5 then
-            me:dialog(npc, "돌아오시면 금방 찾을수 있을겁니다. 진랑검 잘 간수하시고 그때까지 기다려보심이 어떨런지..", { prev = false, next = true })
+            me:dialog(npc, "돌아오시면 금방 찾을수 있을겁니다. 진랑검 잘 간수하시고 그때까지 기다려보심이 어떨런지..", { prev = false, next = false })
             return
         end
 
         if step == 10 then
-            me:dialog(npc, "진황보검을 찾아서 황실에 돌려주셨다구요? 기어코 찾으셨군요! 정말 대단하시네요~ 찾으신것도 대단하지만 그 기보를 그냥 돌려주시다니. 정말 곧으신 분이군요.", { prev = false, next = true })
+            local btn = me:dialog(npc, "진황보검을 찾아서 황실에 돌려주셨다구요? 기어코 찾으셨군요! 정말 대단하시네요~ 찾으신것도 대단하지만 그 기보를 그냥 돌려주시다니. 정말 곧으신 분이군요.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             me:push_achievement(511, "진황보검을 찾았다!", 7, 20)
             q:complete()
             return

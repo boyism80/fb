@@ -12,7 +12,7 @@ return {
             return
         end
         ::NPC_239_0002::
-        btn = me:dialog(npc, '자네가 가진 지네를 전부 주면 한번 시도해 봄세...', { prev = true, next = true })
+        btn = me:dialog(npc, '자네가 가진 지네를 전부 주면 한번 시도해 봄세...', { prev = true, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -61,7 +61,10 @@ return {
             return
         end
         if reward ~= nil then
-            me:dialog(npc, '이거 쉽지 않구만... 간신히 만들었네... 자주 들리게나...', { prev = false, next = true })
+            local btn = me:dialog(npc, '이거 쉽지 않구만... 간신히 만들었네... 자주 들리게나...', { prev = false, next = false })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
         else
             me:dialog(npc, '이런... 지네가 모두 부숴저버렸군..', { prev = false, next = false })
         end

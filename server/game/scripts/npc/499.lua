@@ -50,12 +50,18 @@ return {
         end
 
         if sel == 2 then
-            me:dialog(npc, "남북무한대전 참가 신청은 공지된 일정에만 가능합니다. 현재는 진행 시간이 아니거나 준비중입니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "남북무한대전 참가 신청은 공지된 일정에만 가능합니다. 현재는 진행 시간이 아니거나 준비중입니다.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             goto NPC_499_MENU
         end
 
         if sel == 3 then
-            me:dialog(npc, "남북무한대전 현황 조회는 현재 준비중입니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "남북무한대전 현황 조회는 현재 준비중입니다.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             goto NPC_499_MENU
         end
 
@@ -63,9 +69,12 @@ return {
             local ns_start = property("ns_start")
             if ns_start == 2 then
                 local winner = property("ns_winner_team")
-                me:dialog(npc, "승리팀 상품 수령은 대전 종료 후 해당 기능이 연동되면 이용하실 수 있습니다.", { prev = false, next = true })
+                local btn = me:dialog(npc, "승리팀 상품 수령은 대전 종료 후 해당 기능이 연동되면 이용하실 수 있습니다.", { prev = false, next = false })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
             else
-                me:dialog(npc, "수령할 상품이 없습니다. 남북무한대전에 참가하고 승리한 뒤 이용해 주세요.", { prev = false, next = true })
+                me:dialog(npc, "수령할 상품이 없습니다. 남북무한대전에 참가하고 승리한 뒤 이용해 주세요.", { prev = false, next = false })
             end
             goto NPC_499_MENU
         end

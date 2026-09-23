@@ -11,7 +11,7 @@ return {
             if solved == "1" then
                 me:mkitem("담배", 1)
                 q:param("")
-                local btn = me:dialog(npc, "이야, 고맙네 고마워! 자네 덕분에 여자죄수의 큰 코를 납작하게 눌러 버릴 수 있었다네!", { prev = false, next = true })
+                local btn = me:dialog(npc, "이야, 고맙네 고마워! 자네 덕분에 여자죄수의 큰 코를 납작하게 눌러 버릴 수 있었다네!", { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -44,7 +44,7 @@ return {
             if q then
                 q:param(string.format("%d,%d,0", a, b))
             end
-            btn = me:dialog(npc, string.format("자, 내가 풀어야할 문제는 \\n [ %d ] + [ %d ] = [ ? ] \\n 이라네. [?]의 답을 생각해 건너편 죄수에게 전해주게.", a, b), { prev = false, next = true })
+            btn = me:dialog(npc, string.format("자, 내가 풀어야할 문제는 \\n [ %d ] + [ %d ] = [ ? ] \\n 이라네. [?]의 답을 생각해 건너편 죄수에게 전해주게.", a, b), { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -56,7 +56,7 @@ return {
         if a and b then
             a = tonumber(a)
             b = tonumber(b)
-            local btn = me:dialog(npc, string.format("자, 내가 풀어야할 문제는 \\n [ %d ] + [ %d ] = [ ? ] \\n 이라네. [?]의 답을 생각해 건너편 죄수에게 전해주게.", a, b), { prev = false, next = true })
+            local btn = me:dialog(npc, string.format("자, 내가 풀어야할 문제는 \\n [ %d ] + [ %d ] = [ ? ] \\n 이라네. [?]의 답을 생각해 건너편 죄수에게 전해주게.", a, b), { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

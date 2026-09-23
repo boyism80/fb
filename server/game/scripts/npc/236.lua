@@ -41,7 +41,7 @@ return {
             end
             q = me:start_quest(quest.QUEST_HOO_KILL)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:step(1)
@@ -50,14 +50,14 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, me:name() .. '씨 아니오? 저번엔 정말 감사했소. 덕분에 백성들의 고민을 한결 덜어주었다네.', { prev = false, next = true })
+            me:dialog(npc, me:name() .. '씨 아니오? 저번엔 정말 감사했소. 덕분에 백성들의 고민을 한결 덜어주었다네.', { prev = false, next = false })
             return
         end
 
         if q:step() == 1 then
             local btn
             if not me:has_items('후의뼈', BONE_COUNT) then
-                me:dialog(npc, '후의뼈가 너무 적은것은 아닌가? ' .. BONE_COUNT .. '마리 이상을 잡고 후의뼈 ' .. BONE_COUNT .. '개를 가져와주게.', { prev = false, next = true })
+                me:dialog(npc, '후의뼈가 너무 적은것은 아닌가? ' .. BONE_COUNT .. '마리 이상을 잡고 후의뼈 ' .. BONE_COUNT .. '개를 가져와주게.', { prev = false, next = false })
                 return
             end
             ::NPC_236_0005::
@@ -86,7 +86,7 @@ return {
                 return
             end
             ::NPC_236_0008::
-            btn = me:dialog(npc, '그럼 마저 부탁하지. 행운을 비네.', { prev = true, next = true })
+            btn = me:dialog(npc, '그럼 마저 부탁하지. 행운을 비네.', { prev = true, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_236_0007
             end
@@ -96,7 +96,7 @@ return {
         if q:step() == 2 then
             local btn
             if not me:has_items('마계천신의뼈', 1) then
-                me:dialog(npc, '아직 마계천신의뼈를 구하지 못한 모양이로군..', { prev = false, next = true })
+                me:dialog(npc, '아직 마계천신의뼈를 구하지 못한 모양이로군..', { prev = false, next = false })
                 return
             end
             ::NPC_236_0009::
@@ -133,11 +133,11 @@ return {
                 { ['item'] = { ['강철투구'] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '마계천신의뼈를 가지고 있지 않으시군요.', { prev = false, next = true })
+                me:dialog(npc, '마계천신의뼈를 가지고 있지 않으시군요.', { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 강철투구를 받을 수 없습니다.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 강철투구를 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
             q:complete()

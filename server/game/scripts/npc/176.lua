@@ -7,15 +7,15 @@ return {
         local btn
 
         if q == nil then
-            me:dialog(npc, '나무아비타불..', { prev = true, next = true })
+            me:dialog(npc, '나무아비타불..', { prev = false, next = false })
             return
         end
         if q:step() >= 3 then
-            me:dialog(npc, '나무아비타불..', { prev = true, next = true })
+            me:dialog(npc, '나무아비타불..', { prev = false, next = false })
             return
         end
         if q:step() == 0 then
-            me:dialog(npc, '나무아비타불..', { prev = true, next = true })
+            me:dialog(npc, '나무아비타불..', { prev = false, next = false })
             return
         end
 
@@ -30,7 +30,7 @@ return {
                 return
             end
             if sel == 2 then
-                me:dialog(npc, '그런가요?', { prev = true, next = true })
+                me:dialog(npc, '그런가요?', { prev = false, next = false })
                 return
             end
             if sel ~= 1 then
@@ -74,7 +74,7 @@ return {
                     return
                 end
                 ::NPC_176_0021::
-                btn = me:dialog(npc, '네? 그런건지는 몰랐다구요? 이런이런.. 그런 마음으론 불도에 입문하시기 힘드시겠습니다.', { prev = true, next = true })
+                btn = me:dialog(npc, '네? 그런건지는 몰랐다구요? 이런이런.. 그런 마음으론 불도에 입문하시기 힘드시겠습니다.', { prev = true, next = false })
                 if btn == DIALOG_RESULT.PREV then
                     goto NPC_176_0020
                 end
@@ -107,7 +107,7 @@ return {
                 return
             end
             if sel3 == 2 then
-                me:dialog(npc, '그러시군요.. 그거 아쉽게 됬네요.', { prev = true, next = true })
+                me:dialog(npc, '그러시군요.. 그거 아쉽게 됬네요.', { prev = false, next = false })
                 return
             end
             if sel3 ~= 1 then
@@ -115,12 +115,12 @@ return {
             end
             q:step(2)
             me:push_achievement(26, '소림사승려에게 비단을 가져다주자.', 7, 1)
-            me:dialog(npc, '네 감사합니다. 이정도는 주지스님께서도 이해해 주시겠지요..\n\n그럼 무사히 다녀오시길.. 나무아미타불..', { prev = false, next = true })
+            me:dialog(npc, '네 감사합니다. 이정도는 주지스님께서도 이해해 주시겠지요..\n\n그럼 무사히 다녀오시길.. 나무아미타불..', { prev = false, next = false })
             return
         end
 
         if not me:has_items('고구려비단', 1) then
-            me:dialog(npc, '아직 고구려비단을 못 사오신것 같군요.', { prev = false, next = true })
+            me:dialog(npc, '아직 고구려비단을 못 사오신것 같군요.', { prev = false, next = false })
             return
         end
         ::NPC_176_0040::

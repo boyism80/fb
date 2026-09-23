@@ -21,23 +21,23 @@ return {
 
             if selected == 1 then
                 if me:level() < 21 then
-                    me:dialog(npc, '21레벨 구매가 가능합니다.', { prev = false, next = true })
+                    me:dialog(npc, '21레벨 구매가 가능합니다.', { prev = false, next = false })
                     return
                 end
 
                 local money = me:money()
                 if money < 100 then
-                    me:dialog(npc, '방송쿠폰의 가격은 100 전 이라네. 돈이 부족한 것 아닌가?', { prev = false, next = true })
+                    me:dialog(npc, '방송쿠폰의 가격은 100 전 이라네. 돈이 부족한 것 아닌가?', { prev = false, next = false })
                     return
                 end
 
                 local item = me:mkitem('방송쿠폰', 1)
                 if item == nil then
-                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
+                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                     return
                 end
                 me:money(money - 100)
-                me:dialog(npc, '운이 좋군. 잘 쓰시게...', { prev = false, next = true })
+                me:dialog(npc, '운이 좋군. 잘 쓰시게...', { prev = false, next = false })
             end
             return
         end
@@ -67,14 +67,14 @@ return {
             end
 
             if (count_by_name['말린지네'] or 0) < 7 then
-                me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', { prev = false, next = true })
+                me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', { prev = false, next = false })
                 return
             end
 
             local dress_names = {'웨딩드레스1', '웨딩드레스2', '웨딩드레스3', '웨딩드레스4', '웨딩드레스5', '웨딩드레스6', '웨딩드레스7'}
             for _, name in ipairs(dress_names) do
                 if (count_by_name[name] or 0) < 1 then
-                    me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', { prev = false, next = true })
+                    me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', { prev = false, next = false })
                     return
                 end
             end
@@ -90,14 +90,14 @@ return {
                 { ['item'] = { [result_name] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', { prev = false, next = true })
+                me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
+                me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '여기 수선해 줬으니 잘 입으시게.', { prev = false, next = true })
+            me:dialog(npc, '여기 수선해 줬으니 잘 입으시게.', { prev = false, next = false })
         end
     end
 }

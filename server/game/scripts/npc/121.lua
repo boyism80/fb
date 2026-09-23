@@ -19,20 +19,20 @@ return {
             end
             local q = me:start_quest(quest.QUEST_TUNGTUNG)
             if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '내 좋은걸로 보답할테니 어서 다녀오게. 잊지 말게. 호박 열 개 일세.', { prev = false, next = true })
+            me:dialog(npc, '내 좋은걸로 보답할테니 어서 다녀오게. 잊지 말게. 호박 열 개 일세.', { prev = false, next = false })
             return
         end
 
         if q:completed() then
-            me:dialog(npc, '호박.. 참 예쁘군..', { prev = false, next = true })
+            me:dialog(npc, '호박.. 참 예쁘군..', { prev = false, next = false })
             return
         end
 
         if not me:has_items('호박', 10) then
-            me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', { prev = false, next = true })
+            me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', { prev = false, next = false })
             return
         end
 
@@ -46,16 +46,16 @@ return {
             { ['item'] = { ['선장의일기2'] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', { prev = false, next = true })
+            me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 선장의일기2를 줄 수 없네.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 선장의일기2를 줄 수 없네.', { prev = false, next = false })
             return
         end
         q:complete()
         lighthouse:step(3)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [3/6]', 7, 1)
-        me:dialog(npc, '음, 예쁘긴 예쁘군. 약속대로 좋은걸 주지.', { prev = false, next = true })
+        me:dialog(npc, '음, 예쁘긴 예쁘군. 약속대로 좋은걸 주지.', { prev = false, next = false })
     end
 }

@@ -5,12 +5,12 @@ return {
     on_click = function(me, npc)
         local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
         if q == nil then
-            me:dialog(npc, '더 예뻐질 방법이 없을까?', { prev = false, next = true })
+            me:dialog(npc, '더 예뻐질 방법이 없을까?', { prev = false, next = false })
             return
         end
 
         if q:step() < 5 then
-            me:dialog(npc, '더 예뻐질 방법이 없을까?', { prev = false, next = true })
+            me:dialog(npc, '더 예뻐질 방법이 없을까?', { prev = false, next = false })
             return
         end
 
@@ -53,32 +53,32 @@ return {
             end
             q:step(6)
             me:push_achievement(9, '도주영의 부탁을 들어주자!', 7, 1)
-            me:dialog(npc, '씨앗은 해파리 괴물들을 처치하면 얻을 수 있을거에요. 부디 제 부탁을 들어주시길. 그럼 몸조심하세요....', { prev = false, next = true })
+            me:dialog(npc, '씨앗은 해파리 괴물들을 처치하면 얻을 수 있을거에요. 부디 제 부탁을 들어주시길. 그럼 몸조심하세요....', { prev = false, next = false })
             return
         end
 
         if q:step() == 6 then
             local progress = q:progress()
             if progress >= 1 and progress <= 9 then
-                me:dialog(npc, '정말 감사해요. 덕분에 도삭산이 많이 보기 좋아졌어요.', { prev = false, next = true })
+                me:dialog(npc, '정말 감사해요. 덕분에 도삭산이 많이 보기 좋아졌어요.', { prev = false, next = false })
                 return
             end
             if progress >= 1000 then
                 if me:mkitem('적막의목걸이', 1) == nil then
-                    me:dialog(npc, '소지품이 가득 차서 적막의목걸이를 받을 수 없어요.', { prev = false, next = true })
+                    me:dialog(npc, '소지품이 가득 차서 적막의목걸이를 받을 수 없어요.', { prev = false, next = false })
                     return
                 end
                 q:step(7)
                 me:push_achievement(9, '도삭산 300층 퀘스트 완료', 7, 1)
-                me:dialog(npc, '흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..', { prev = false, next = true })
+                me:dialog(npc, '흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '아직 많이 심지 못하셨군요..', { prev = false, next = true })
+            me:dialog(npc, '아직 많이 심지 못하셨군요..', { prev = false, next = false })
             return
         end
 
         if q:step() >= 7 then
-            me:dialog(npc, '저번엔 정말 감사했어요. 덕분에 도삭산이 많이 보기가 좋아졌어요.', { prev = false, next = true })
+            me:dialog(npc, '저번엔 정말 감사했어요. 덕분에 도삭산이 많이 보기가 좋아졌어요.', { prev = false, next = false })
         end
     end
 }

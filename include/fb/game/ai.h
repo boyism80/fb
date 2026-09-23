@@ -2,6 +2,7 @@
 #define __AI_H__
 
 #include <fb/model/model.h>
+#include <async/task.h>
 #include <unordered_map>
 
 namespace fb::game {
@@ -31,21 +32,21 @@ private:
 public:
     virtual ~ai() = default;
     // clang-format off
-    virtual bool               execute(mob& mob_obj, const datetime& now);
-    virtual MOB_ATTACK_TYPE    get_type() const = 0;
-    virtual void               on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now);
-    static std::unique_ptr<ai> create(MOB_ATTACK_TYPE attack_type);
+    [[nodiscard]] virtual async::task<bool> execute(mob& mob_obj, const datetime& now);
+    virtual MOB_ATTACK_TYPE                 get_type() const = 0;
+    virtual void                            on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now);
+    static std::unique_ptr<ai>              create(MOB_ATTACK_TYPE attack_type);
     // clang-format on
 
 protected:
     // clang-format off
-    std::shared_ptr<life> find_target_in_sight(mob& mob_obj, const datetime& now);
-    std::shared_ptr<life> find_target_in_range(mob& mob_obj, const datetime& now);
-    void                  cleanup_expired_damage(const datetime& now);
-    bool                  should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const;
-    bool                  should_maintain_target(const mob& mob_obj, const datetime& now) const;
-    void                  record_damage(std::shared_ptr<life> attacker, const datetime& now);
-    void                  run_from_target(mob& mob_obj, std::shared_ptr<life> target);
+    std::shared_ptr<life>           find_target_in_sight(mob& mob_obj, const datetime& now);
+    std::shared_ptr<life>           find_target_in_range(mob& mob_obj, const datetime& now);
+    void                            cleanup_expired_damage(const datetime& now);
+    bool                            should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const;
+    bool                            should_maintain_target(const mob& mob_obj, const datetime& now) const;
+    void                            record_damage(std::shared_ptr<life> attacker, const datetime& now);
+    [[nodiscard]] async::task<void> run_from_target(mob& mob_obj, std::shared_ptr<life> target);
     // clang-format on
 };
 

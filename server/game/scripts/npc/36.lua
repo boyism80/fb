@@ -8,7 +8,7 @@ return {
             return
         end
 
-        button = me:dialog(npc, '주로 사슴들이 등장하며, 얻을 수 있는 아이템은 주로 사슴고기입니다.', { prev = true, next = true })
+        button = me:dialog(npc, '주로 사슴들이 등장하며, 얻을 수 있는 아이템은 주로 사슴고기입니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

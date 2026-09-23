@@ -3,7 +3,7 @@ include "internal.fbs";
 namespace fb.protocol.internal.request;
 
 table Shutdown {
-  
+  actor: string;
 }
 
 table Login {
@@ -385,11 +385,13 @@ table Ban {
   name: string;
   reason: string;
   days: uint?;
+  actor: string;
 }
 
 table Unban {
   world: uint;
   name: string;
+  actor: string;
 }
 
 table Heartbeat {
@@ -441,4 +443,13 @@ table SetClanMoney {
   host: uint;
   clan: uint;
   delta: long;
+}
+
+table OpsNotify {
+  action: string;
+  source: string;
+  actor: string;
+  target: string;
+  world: uint;
+  detail: string;
 }

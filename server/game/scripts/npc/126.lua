@@ -144,7 +144,10 @@ local function do_frolic(me, npc)
         return
     end
     if sel == 2 then
-        me:dialog(npc, "가위 바위 보? 음, 좋아! 절대 지지 않을거야!", { prev = false, next = true })
+        local btn = me:dialog(npc, "가위 바위 보? 음, 좋아! 절대 지지 않을거야!", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         local s2, b2 = me:list(npc, "가위...바위....보!", {
             "가위를 낸다.",
             "바위를 낸다.",
@@ -233,7 +236,10 @@ return {
         end
 
         if smile >= 1500 then
-            me:dialog(npc, "심심해~ 심심해~\n\n배고파~ 배고파~", { prev = false, next = true })
+            local btn = me:dialog(npc, "심심해~ 심심해~\n\n배고파~ 배고파~", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             local sel, btn = me:list(npc, me:name() .. "!!\n우리 친구하자! 어때?", {
                 "음... 좋아!",
                 "너랑 친구되기 싫은데?",

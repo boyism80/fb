@@ -45,13 +45,13 @@ return {
             { ['item'] = { ['구운' .. item_name] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, name_with(item_name, '이', '가') .. ' 부족한 것 같은데?', { prev = false, next = true })
+            me:dialog(npc, name_with(item_name, '이', '가') .. ' 부족한 것 같은데?', { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 구운 음식을 줄 수 없네.', { prev = false, next = true })
+            me:dialog(npc, '소지품이 가득 차서 구운 음식을 줄 수 없네.', { prev = false, next = false })
             return
         end
-        me:dialog(npc, '자, 다 됐네. 김이 모락모락 나는 것이 아주 잘 구워진 것 같군! 약속대로 내가 하나 먹고, 하나는 자네가 먹게나.', { prev = false, next = true })
+        me:dialog(npc, '자, 다 됐네. 김이 모락모락 나는 것이 아주 잘 구워진 것 같군! 약속대로 내가 하나 먹고, 하나는 자네가 먹게나.', { prev = false, next = false })
     end
 }

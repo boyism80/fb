@@ -167,8 +167,7 @@ void fb::crash::write_dump()
         }
     }
     catch (...)
-    {
-    }
+    { }
 
     void* frames[64] = {};
     auto  count      = backtrace(frames, 64);

@@ -71,11 +71,11 @@ return {
                     return
                 end
                 if not me:has_items("동동주", 3) then
-                    me:dialog(npc, "동동주를 구해오세요. 방장실 앞에 있는 술장수가 팔고 있을 겁니다.", { prev = false, next = true })
+                    me:dialog(npc, "동동주를 구해오세요. 방장실 앞에 있는 술장수가 팔고 있을 겁니다.", { prev = false, next = false })
                     return
                 end
                 if me:money() < 200 then
-                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = true })
+                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
                 if not me:rmitem("구기자", 5, ITEM_DELETE_TYPE.GIVE) or not me:rmitem("동동주", 3, ITEM_DELETE_TYPE.GIVE) then
@@ -102,11 +102,11 @@ return {
                     return
                 end
                 if not me:has_items("백세주", 5) then
-                    me:dialog(npc, "백세주를 구해오세요. 방장실 앞에 있는 술장수가 팔고 있을 겁니다.", { prev = false, next = true })
+                    me:dialog(npc, "백세주를 구해오세요. 방장실 앞에 있는 술장수가 팔고 있을 겁니다.", { prev = false, next = false })
                     return
                 end
                 if me:money() < 1000 then
-                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = true })
+                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
                 if not me:rmitem("구기자", 10, ITEM_DELETE_TYPE.GIVE) or not me:rmitem("백세주", 5, ITEM_DELETE_TYPE.GIVE) then
@@ -133,11 +133,11 @@ return {
                     return
                 end
                 if not me:has_items("백세주", 10) then
-                    me:dialog(npc, "백세주를 구해오세요. 방장실 앞에 있는 술장수가 팔고 있을 겁니다.", { prev = false, next = true })
+                    me:dialog(npc, "백세주를 구해오세요. 방장실 앞에 있는 술장수가 팔고 있을 겁니다.", { prev = false, next = false })
                     return
                 end
                 if me:money() < 5000 then
-                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = true })
+                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
                 if not me:rmitem("구기자", 20, ITEM_DELETE_TYPE.GIVE) or not me:rmitem("백세주", 10, ITEM_DELETE_TYPE.GIVE) then
@@ -168,11 +168,11 @@ return {
                     { ['item'] = { ["소림오행진"] = 1 } }
                 )
                 if code == enum.exchange_result.LACK_COST then
-                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = true })
+                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
                 if code == enum.exchange_result.LACK_CAPACITY then
-                    me:dialog(npc, "소지품이 가득 차서 소림오행진을 받을 수 없습니다.", { prev = false, next = true })
+                    me:dialog(npc, "소지품이 가득 차서 소림오행진을 받을 수 없습니다.", { prev = false, next = false })
                     return
                 end
             elseif sel2 == 5 then
@@ -197,11 +197,11 @@ return {
                     { ['item'] = { ["진소림오행진"] = 1 } }
                 )
                 if code == enum.exchange_result.LACK_COST then
-                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = true })
+                    me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
                 if code == enum.exchange_result.LACK_CAPACITY then
-                    me:dialog(npc, "소지품이 가득 차서 진소림오행진을 받을 수 없습니다.", { prev = false, next = true })
+                    me:dialog(npc, "소지품이 가득 차서 진소림오행진을 받을 수 없습니다.", { prev = false, next = false })
                     return
                 end
             else
@@ -209,7 +209,7 @@ return {
                 return
             end
 
-            btn = me:dialog(npc, "여기 있습니다. 잘 쓰시길 바라며, 수행이 필요 없을지라도 꾸준한 수행은 자신의 진의를 깨달을 수 있는 길입니다. 나무아미타불..", { prev = false, next = true })
+            btn = me:dialog(npc, "여기 있습니다. 잘 쓰시길 바라며, 수행이 필요 없을지라도 꾸준한 수행은 자신의 진의를 깨달을 수 있는 길입니다. 나무아미타불..", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
