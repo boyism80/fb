@@ -7,6 +7,9 @@ FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE} AS build
 ARG BUILD_TYPE=Release
 
 WORKDIR /app
+COPY tools/fb-cmake-jobs.sh /usr/local/bin/fb-cmake-jobs
+RUN chmod +x /usr/local/bin/fb-cmake-jobs
+
 COPY include ./include
 COPY server/game ./game
 COPY resources/maps/maps.zip ./maps.zip
@@ -16,7 +19,7 @@ RUN mkdir -p maps && unzip -qq maps.zip -d ./maps && rm -f maps.zip
 
 WORKDIR /app/game/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --config ${BUILD_TYPE} --parallel
+RUN cmake --build . --config ${BUILD_TYPE} --parallel "$(fb-cmake-jobs)"
 
 FROM ${DATA_IMAGE} AS data
 

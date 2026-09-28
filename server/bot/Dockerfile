@@ -7,6 +7,9 @@ FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE} AS build
 ARG BUILD_TYPE=Release
 
 WORKDIR /app
+COPY tools/fb-cmake-jobs.sh /usr/local/bin/fb-cmake-jobs
+RUN chmod +x /usr/local/bin/fb-cmake-jobs
+
 COPY include ./include
 COPY server/gateway/src/protocol ./server/gateway/src/protocol
 COPY server/login/src/protocol ./server/login/src/protocol
@@ -15,7 +18,7 @@ COPY server/bot ./bot
 
 WORKDIR /app/bot/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --config ${BUILD_TYPE} --parallel
+RUN cmake --build . --config ${BUILD_TYPE} --parallel "$(fb-cmake-jobs)"
 
 FROM ${DATA_IMAGE} AS data
 

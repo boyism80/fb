@@ -17,19 +17,21 @@ RUN ln -s -f /usr/bin/gcc-14 /usr/bin/gcc && ln -s -f /usr/bin/g++-14 /usr/bin/g
 RUN apt-get install libncurses5-dev libncursesw5-dev -y
 RUN apt-get install libubsan1 -y
 
+COPY tools/fb-cmake-jobs.sh /usr/local/bin/fb-cmake-jobs
+RUN chmod +x /usr/local/bin/fb-cmake-jobs
 
 WORKDIR /app
 RUN git clone --branch ${JSONCPP_REF} https://github.com/open-source-parsers/jsoncpp /app/jsoncpp
 WORKDIR /app/jsoncpp/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel "$(fb-cmake-jobs)"
 RUN make install
 
 WORKDIR /app
 RUN git clone --branch ${RABBITMQ_REF} https://github.com/alanxz/rabbitmq-c /app/rabbitmq-c
 WORKDIR /app/rabbitmq-c/build
 RUN cmake .. -DENABLE_SSL_SUPPORT=OFF
-RUN cmake --build . --config Release --parallel
+RUN cmake --build . --config Release --parallel "$(fb-cmake-jobs)"
 RUN make install
 
 # No pinned ref in update-modules.bat; tracks fork default branch.
@@ -37,14 +39,14 @@ WORKDIR /app
 RUN git clone --recursive https://github.com/boyism80/lua /app/lua
 WORKDIR /app/lua/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel "$(fb-cmake-jobs)"
 RUN make install
 
 WORKDIR /app
 RUN git clone --branch ${ZLIB_REF} https://github.com/intel/zlib /app/zlib
 WORKDIR /app/zlib/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel "$(fb-cmake-jobs)"
 RUN make install
 
 # No pinned ref in update-modules.bat; tracks fork default branch.
@@ -52,7 +54,7 @@ WORKDIR /app
 RUN git clone https://github.com/boyism80/flatbuffers /app/flatbuffers
 WORKDIR /app/flatbuffers/build
 RUN cmake .. -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF
-RUN cmake --build . --config Release --parallel
+RUN cmake --build . --config Release --parallel "$(fb-cmake-jobs)"
 RUN make install
 
 WORKDIR /app
@@ -74,8 +76,8 @@ RUN git clone --branch ${BOOST_REF} https://github.com/boostorg/boost /app/boost
 WORKDIR /app/boost
 RUN git submodule update --init --recursive
 RUN ./bootstrap.sh
-RUN ./b2 -j$(nproc)
-RUN ./b2 -j$(nproc) install
+RUN ./b2 -j"$(fb-cmake-jobs)"
+RUN ./b2 -j"$(fb-cmake-jobs)" install
 
 # fb.lib
 WORKDIR /app
@@ -83,7 +85,7 @@ COPY include ./include
 COPY server/fb ./fb
 WORKDIR /app/fb/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --parallel
+RUN cmake --build . --parallel "$(fb-cmake-jobs)"
 RUN make install
 
 RUN rm -rf /app
