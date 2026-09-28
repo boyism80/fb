@@ -191,15 +191,11 @@ void fb::game::equipment::durability(uint32_t value)
 
 bool fb::game::equipment::durability_down(uint32_t value)
 {
-    if (this->_container != nullptr)
-        return false;
-
-    auto owner = this->_container->owner();
+    auto owner = this->owner();
     if (owner == nullptr)
         return false;
 
-    auto& model  = this->model();
-    auto  before = this->_durability;
+    auto before = this->_durability;
 
     if (value > this->_durability)
     {
