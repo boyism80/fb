@@ -60,7 +60,7 @@ IF(WIN32)
                                 ws2_32
                                 dbghelp)
 ELSE()
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fstack-protector-strong -fno-omit-frame-pointer -DNDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer")
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address")
   target_link_options(${DEST} PRIVATE -rdynamic)

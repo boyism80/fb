@@ -60,7 +60,7 @@ IF(WIN32)
                                 flatbuffers$<$<CONFIG:Debug>:d>.lib
                                 ws2_32)
 ELSE()
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fstack-protector-strong -fno-omit-frame-pointer -DNDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer")
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address")
   set(THREADS_PREFER_PTHREAD_FLAG ON)
