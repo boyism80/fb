@@ -1,0 +1,25 @@
+name: Notify code review
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Forward push event to review webhook
+        env:
+          REVIEW_WEBHOOK_URL: ${{ secrets.REVIEW_WEBHOOK_URL }}
+          REVIEW_WEBHOOK_KEY: ${{ secrets.REVIEW_WEBHOOK_KEY }}
+        run: |
+          if [ -z "$REVIEW_WEBHOOK_URL" ] || [ -z "$REVIEW_WEBHOOK_KEY" ]; then
+            echo "REVIEW_WEBHOOK_URL or REVIEW_WEBHOOK_KEY secret is not set; skipping."
+            exit 0
+          fi
+          curl -sS --fail-with-body -X POST "$REVIEW_WEBHOOK_URL" \
+            -H "Authorization: Bearer $REVIEW_WEBHOOK_KEY" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: push" \
+            --data-binary @"$GITHUB_EVENT_PATH"
