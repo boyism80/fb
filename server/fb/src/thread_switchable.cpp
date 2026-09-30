@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <thread>
 
+// clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::thread_switchable, "fb.thread.switchable")
 END_LUA_EXTENSION; // clang-format on
 

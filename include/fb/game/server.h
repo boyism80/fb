@@ -41,6 +41,7 @@
 #include <unordered_map>
 #include <utility>
 
+// clang-format off
 REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteArticle, fb::protocol::internal::response::WriteArticle)
@@ -74,29 +75,24 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal
 REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMails, fb::protocol::internal::response::WriteMails)
-REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemMail,
-                  fb::protocol::internal::response::DeliverSystemMail)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemMail, fb::protocol::internal::response::DeliverSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::MatchTransfer, fb::protocol::internal::response::MatchTransfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
-REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox,
-                  fb::protocol::internal::response::WriteSystemStorageBox)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox, fb::protocol::internal::response::WriteSystemStorageBox)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteStorageBox, fb::protocol::internal::response::WriteStorageBox)
 REGISTER_RESPONSE(fb::protocol::internal::request::ClaimStorageBox, fb::protocol::internal::response::ClaimStorageBox)
-REGISTER_RESPONSE(fb::protocol::internal::request::UnclaimStorageBox,
-                  fb::protocol::internal::response::UnclaimStorageBox)
-REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemStorage,
-                  fb::protocol::internal::response::DeliverSystemStorage)
+REGISTER_RESPONSE(fb::protocol::internal::request::UnclaimStorageBox, fb::protocol::internal::response::UnclaimStorageBox)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemStorage, fb::protocol::internal::response::DeliverSystemStorage)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetExpMultiplier, fb::protocol::internal::response::SetExpMultiplier)
 REGISTER_RESPONSE(fb::protocol::internal::request::ReloadTables, fb::protocol::internal::response::ReloadTables)
 REGISTER_RESPONSE(fb::protocol::internal::request::ReloadScripts, fb::protocol::internal::response::ReloadScripts)
-REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier,
-                  fb::protocol::internal::response::SetDropRateMultiplier)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier, fb::protocol::internal::response::SetDropRateMultiplier)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDateTime, fb::protocol::internal::response::SetDateTime)
 REGISTER_RESPONSE(fb::protocol::internal::request::OpsNotify, fb::protocol::internal::response::OpsNotify)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
