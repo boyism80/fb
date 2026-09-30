@@ -1,8 +1,8 @@
 #ifndef FB_GAME_HANDLER_PROTOCOL_UNKNOWN_54_H
 #define FB_GAME_HANDLER_PROTOCOL_UNKNOWN_54_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
 
 namespace fb::game::handler::protocol {
 

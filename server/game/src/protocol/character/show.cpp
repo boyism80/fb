@@ -1,4 +1,9 @@
 #include <fb/game/protocol/character/show.h>
+
+#include <cstdint>
+#include <string>
+#include <utility>
+
 #ifndef BOT
 #include <fb/game/server.h>
 

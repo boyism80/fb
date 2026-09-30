@@ -1,8 +1,9 @@
 #ifndef __HOOK_PARAMS_H__
 #define __HOOK_PARAMS_H__
 
-#include <functional>
 #include <fb/protocol/header.h>
+
+#include <functional>
 
 namespace fb::bot {
 

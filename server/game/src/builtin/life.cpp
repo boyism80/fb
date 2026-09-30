@@ -1,8 +1,15 @@
-#include <fb/game/server.h>
-#include <fb/game/builtin/object.h>
 #include <fb/game/builtin/life.h>
+
+#include <fb/game/builtin/object.h>
 #include <fb/game/map.h>
+#include <fb/game/server.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <format>
+#include <memory>
 #include <tuple>
+#include <vector>
 
 using namespace fb::game;
 using namespace fb::model;

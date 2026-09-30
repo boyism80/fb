@@ -2,6 +2,10 @@
 #define __SECTOR_H__
 
 #include <fb/game/object.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <vector>
 
 namespace fb::game {

@@ -1,26 +1,36 @@
 #include <fb/bot/integration/lua_integration_test.h>
-#include <fb/bot/integration/lua_integration_model.h>
+
 #include <fb/bot/builtin/integration_test.h>
-#include <fb/bot/integration/lua_integration_protocol.h>
-#include <fb/bot/integration/game_controller.h>
-#include <fb/bot/integration/protocol_registry.h>
 #include <fb/bot/container.h>
 #include <fb/bot/game_bot.h>
+#include <fb/bot/integration/game_controller.h>
+#include <fb/bot/integration/lua_integration_model.h>
+#include <fb/bot/integration/lua_integration_protocol.h>
+#include <fb/bot/integration/protocol_registry.h>
 #include <fb/config.h>
 #include <fb/logger.h>
+#include <fb/lua.h>
 #include <fb/model/datetime.h>
 #include <fb/protocol/header.h>
 
-#include <fb/lua.h>
-
-#include <algorithm>
 #include <array>
-#include <cstring>
 #include <cctype>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <filesystem>
 #include <format>
-#include <functional>
+#include <memory>
 #include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <tuple>
 #include <typeinfo>
+#include <utility>
+#include <vector>
 
 using namespace std::chrono_literals;
 using namespace fb;

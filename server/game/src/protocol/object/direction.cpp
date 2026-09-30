@@ -1,5 +1,7 @@
 #include <fb/game/protocol/object/direction.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::request {
 
 #ifndef BOT

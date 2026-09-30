@@ -1,11 +1,8 @@
 #ifndef FB_GAME_HANDLER_AMQP_BAN_H
 #define FB_GAME_HANDLER_AMQP_BAN_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
-#include <string>
-#include <string_view>
-#include <optional>
+#include <fb/handler.h>
 
 namespace fb::game::handler::amqp {
 

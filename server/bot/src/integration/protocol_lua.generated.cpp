@@ -4,11 +4,12 @@
 #include <fb/bot/integration/lua_integration_protocol.h>
 #include <fb/bot/integration/protocol_registry.h>
 #include <fb/game/protocol.h>
-#include <fb/model/model.h>
 #include <fb/lua.h>
+#include <fb/model/model.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
-#include <string>
 
 namespace fb::bot::integration {
 

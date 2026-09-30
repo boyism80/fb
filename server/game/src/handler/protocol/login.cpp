@@ -1,17 +1,27 @@
 #include <fb/game/handler/protocol/login.h>
-#include <fb/game/server.h>
+
 #include <fb/amqp_route.h>
 #include <fb/config.h>
 #include <fb/game/handler/amqp/ban.h>
+#include <fb/game/server.h>
 #include <fb/game/storage.h>
-#include <fb/model/model.h>
 #include <fb/logger.h>
 #include <fb/model/datetime.h>
+#include <fb/model/model.h>
+
 #include <json/json.h>
-#include <sstream>
+
 #include <chrono>
-#include <tuple>
+#include <cstdint>
 #include <format>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using table = fb::model::table;

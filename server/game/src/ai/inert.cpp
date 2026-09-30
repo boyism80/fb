@@ -1,5 +1,7 @@
 #include <fb/game/ai/inert.h>
 
+#include <memory>
+
 using namespace fb::game;
 
 async::task<bool> inert_ai::execute(mob&, const datetime&)

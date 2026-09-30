@@ -1,5 +1,6 @@
-#include <fb/game/npc.h>
 #include <fb/game/builtin/npc.h>
+
+#include <fb/game/npc.h>
 
 using namespace fb::game;
 

@@ -1,5 +1,7 @@
 #include <fb/game/protocol/object/move.h>
 
+#include <cstdint>
+
 using namespace fb::model;
 
 namespace fb::protocol::game::request {

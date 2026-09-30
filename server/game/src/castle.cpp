@@ -1,5 +1,10 @@
 #include <fb/game/castle.h>
+
 #include <fb/game/server.h>
+
+#include <chrono>
+#include <cstdint>
+#include <optional>
 
 using namespace fb::game;
 using namespace std::chrono_literals;

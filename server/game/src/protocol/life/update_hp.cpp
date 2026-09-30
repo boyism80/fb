@@ -1,5 +1,10 @@
 #include <fb/game/protocol/life/update_hp.h>
+
 #include <fb/game/client_amount.h>
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
 
 namespace fb::protocol::game::response {
 

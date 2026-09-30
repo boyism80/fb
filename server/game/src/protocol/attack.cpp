@@ -1,5 +1,7 @@
 #include <fb/game/protocol/attack.h>
+
 #include <algorithm>
+#include <cstdint>
 
 namespace fb::protocol::game::request {
 

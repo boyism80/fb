@@ -1,5 +1,8 @@
 #include <fb/game/protocol/popup_input_submit.h>
 
+#include <cstdint>
+#include <string>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

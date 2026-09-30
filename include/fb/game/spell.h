@@ -1,11 +1,15 @@
 #ifndef __SPELL_H__
 #define __SPELL_H__
 
-#include <chrono>
-#include <fb/game/inventory.h>
-#include <fb/model/model.h>
-#include <fb/lua.h>
 #include <async/task.h>
+#include <fb/game/inventory.h>
+#include <fb/lua.h>
+#include <fb/model/model.h>
+
+#include <cstdint>
+#include <memory>
+#include <string_view>
+#include <unordered_map>
 
 namespace fb::game {
 

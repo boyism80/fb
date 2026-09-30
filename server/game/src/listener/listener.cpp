@@ -1,7 +1,14 @@
-﻿#include <fb/game/listener.h>
+#include <fb/game/listener.h>
+
 #include <fb/game/server.h>
 #include <fb/protocol/client_version.h>
 #include <macro.h>
+
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string_view>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;

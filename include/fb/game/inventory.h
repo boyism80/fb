@@ -1,9 +1,12 @@
 #ifndef __CONTAINER_H__
 #define __CONTAINER_H__
 
-#include <stdlib.h>
-#include <memory>
 #include <array>
+#include <cstdint>
+#include <memory>
+#include <utility>
+
+#include <stdlib.h>
 
 namespace fb { namespace game {
 

@@ -1,37 +1,37 @@
 #ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
-#include <fb/game/life.h>
-#include <algorithm>
-#include <fb/game/dialog.h>
-#include <fb/game/character.h>
-#include <fb/synchronized.h>
-#include <fb/socket.h>
-#include <iostream>
-#include <fb/game/mob.h>
-#include <sstream>
-#include <fb/game/trade.h>
 #include <fb/game/achievement.h>
+#include <fb/game/appearance.h>
 #include <fb/game/bulletin.h>
-#include <fb/game/mail_box.h>
-#include <fb/game/stat.h>
-#include <fb/game/quest.h>
 #include <fb/game/collection.h>
-#include <fb/game/storage.h>
+#include <fb/game/dialog.h>
+#include <fb/game/life.h>
+#include <fb/game/mail_box.h>
 #include <fb/game/marketplace.h>
 #include <fb/game/marriage.h>
 #include <fb/game/matchmaker.h>
-#include <fb/game/appearance.h>
+#include <fb/game/mob.h>
 #include <fb/game/protocol/group_portrait.h>
+#include <fb/game/quest.h>
+#include <fb/game/stat.h>
+#include <fb/game/storage.h>
+#include <fb/game/trade.h>
 #include <fb/protocol/client_version.h>
+#include <fb/socket.h>
+#include <fb/synchronized.h>
+
+#include <cstddef>
 #include <cstdint>
-#include <set>
+#include <functional>
+#include <list>
+#include <map>
+#include <memory>
+#include <optional>
 #include <shared_mutex>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <optional>
-#include <tuple>
 #include <vector>
 
 namespace fb {

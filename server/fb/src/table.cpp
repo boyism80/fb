@@ -1,5 +1,17 @@
 #include <fb/table.h>
+
 #include <fb/synchronized.h>
+
+#include <cstdint>
+#include <exception>
+#include <fstream>
+#include <future>
+#include <memory>
+#include <queue>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <utility>
 
 using namespace fb::table;
 

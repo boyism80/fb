@@ -1,5 +1,8 @@
 #include <fb/game/handler/amqp/broadcast_clan.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
 
 using namespace fb::game::handler::amqp;
 

@@ -1,5 +1,10 @@
 #include <fb/game/protocol/unknown_4f.h>
 
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

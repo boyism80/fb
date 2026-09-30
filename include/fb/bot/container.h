@@ -1,9 +1,14 @@
 #ifndef __BOT_CONTAINER_H__
 #define __BOT_CONTAINER_H__
 
-#include <atomic>
 #include <fb/bot/bot.h>
 #include <fb/thread_container.h>
+
+#include <atomic>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <unordered_map>
 
 namespace fb::bot {
 

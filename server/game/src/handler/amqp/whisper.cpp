@@ -1,8 +1,12 @@
 #include <fb/game/handler/amqp/whisper.h>
+
+#include <fb/encoding.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
-#include <fb/encoding.h>
+
 #include <json/json.h>
+
+#include <cstdint>
 #include <format>
 
 using namespace fb::game::handler::amqp;

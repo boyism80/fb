@@ -1,8 +1,10 @@
 #ifndef __PROTOCOL_GATEWAY_CONNECTION_ACK_H__
 #define __PROTOCOL_GATEWAY_CONNECTION_ACK_H__
 
-#include <fb/protocol/header.h>
 #include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
 #include <string>
 
 namespace fb::protocol::gateway::request {

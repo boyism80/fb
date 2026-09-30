@@ -1,5 +1,11 @@
 #include <fb/game/protocol/dialog/slot.h>
 
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

@@ -1,5 +1,8 @@
 #include <fb/game/handler/protocol/dialog_list.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
 
 namespace fb::game::handler::protocol {
 

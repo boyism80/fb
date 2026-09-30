@@ -1,9 +1,14 @@
 #include <fb/game/server.h>
 #include <fb/game/worker.h>
+
+#include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <format>
 #include <mutex>
 #include <set>
+#include <string>
+#include <vector>
 
 using table = fb::model::table;
 

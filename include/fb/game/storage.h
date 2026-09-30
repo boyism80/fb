@@ -1,11 +1,14 @@
 #ifndef FB_GAME_STORAGE_H
 #define FB_GAME_STORAGE_H
+
+#include <async/task.h>
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
-#include <async/task.h>
+
+#include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
-#include <map>
 #include <vector>
 
 namespace fb::protocol::internal {

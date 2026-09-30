@@ -1,14 +1,16 @@
 #include <fb/bot/integration/lua_integration_protocol.h>
-#include <fb/bot/integration/protocol_registry.h>
+
 #include <fb/bot/integration/protocol_lua.generated.h>
+#include <fb/bot/integration/protocol_registry.h>
 #include <fb/game/protocol.h>
 #include <fb/logger.h>
+#include <fb/lua.h>
 #include <fb/model/model.h>
 #include <fb/protocol/header.h>
 
-#include <fb/lua.h>
-
-#include <cstring>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
 #include <format>
 #include <memory>
 #include <stdexcept>
@@ -16,9 +18,9 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
-// The bot speaks the v550 C2S layout; versioned requests are instantiated for it.
 constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
 
 namespace fb::bot::integration::lua_protocol {

@@ -1,4 +1,5 @@
 #include <fb/game/handler/amqp/kick_out.h>
+
 #include <fb/game/server.h>
 
 using namespace fb::game::handler::amqp;

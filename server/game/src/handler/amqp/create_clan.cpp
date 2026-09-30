@@ -1,5 +1,11 @@
 #include <fb/game/handler/amqp/create_clan.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 using namespace fb::game::handler::amqp;
 

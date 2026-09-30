@@ -1,7 +1,14 @@
 #include <fb/game/protocol/character/external_info.h>
+
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+
 #ifndef BOT
 #include <fb/game/server.h>
-#include <sstream>
+
 #endif
 
 using table = fb::model::table;

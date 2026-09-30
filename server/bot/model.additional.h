@@ -1,8 +1,13 @@
 #ifndef __MODEL_PREPROCESSOR_H__
 #define __MODEL_PREPROCESSOR_H__
 
-#include <fb/model/datetime.h>
 #include <fb/lua.h>
+#include <fb/model/datetime.h>
+
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #define DECLARE_MAP_INHERIT : public fb::lua::luable
 

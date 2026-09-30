@@ -1,13 +1,15 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#include <fb/model/datetime.h>
-#include <chrono>
-#include <functional>
 #include <async/propagation.h>
 #include <async/task.h>
-#include <thread>
+#include <fb/model/datetime.h>
+
 #include <atomic>
+#include <chrono>
+#include <cstdint>
+#include <functional>
+#include <thread>
 
 namespace fb {
 

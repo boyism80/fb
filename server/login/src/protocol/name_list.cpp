@@ -1,5 +1,10 @@
 #include <fb/login/protocol/name_list.h>
 
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace fb::protocol::login::response {
 
 #ifndef BOT

@@ -1,8 +1,13 @@
 #include <fb/game/service/schedule.h>
+
 #include <fb/game/server.h>
-#include <fb/lua.h>
 #include <fb/logger.h>
+#include <fb/lua.h>
+
+#include <cstdint>
 #include <format>
+#include <tuple>
+#include <vector>
 
 using namespace fb::game;
 using table = fb::model::table;

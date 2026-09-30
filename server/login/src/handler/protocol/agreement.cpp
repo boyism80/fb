@@ -1,5 +1,8 @@
 #include <fb/login/handler/protocol/agreement.h>
 
+#include <exception>
+#include <memory>
+
 using namespace fb::login::handler::protocol;
 
 template <fb::protocol::CLIENT_VERSION V>

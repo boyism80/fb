@@ -1,10 +1,11 @@
 #ifndef FB_GAME_SYSTEM_MAIL_H
 #define FB_GAME_SYSTEM_MAIL_H
 
-#include <cstdint>
-#include <string>
-#include <optional>
 #include <fb/model/datetime.h>
+
+#include <cstdint>
+#include <optional>
+#include <string>
 
 namespace fb::game {
 

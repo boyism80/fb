@@ -1,7 +1,11 @@
-#include <fb/model/model.h>
 #include <fb/game/server.h>
-#include <unordered_map>
+#include <fb/model/model.h>
+
+#include <mutex>
 #include <shared_mutex>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
 fb::model::npc* fb::model::___npc::name2npc(std::string_view name) const
 {

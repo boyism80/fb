@@ -1,5 +1,11 @@
 #include <fb/game/protocol/spell/cast.h>
 
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

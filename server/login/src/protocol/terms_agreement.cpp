@@ -1,5 +1,11 @@
 #include <fb/login/protocol/terms_agreement.h>
+
+#include <cstdint>
+#include <cstring>
 #include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace fb::protocol::login::request {
 

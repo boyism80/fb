@@ -1,5 +1,7 @@
 #include <fb/timer.h>
 
+#include <utility>
+
 using namespace fb;
 
 timer::timer(const handle_callback_type& fn,

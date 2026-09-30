@@ -1,23 +1,13 @@
 #ifndef __ENCODING_H__
 #define __ENCODING_H__
 
-#ifndef _WIN32
-#include <locale>
-#include <iconv.h>
-#include <codecvt>
-#endif
-#include <cstdint>
-#include <wchar.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <string>
 #include <string_view>
-#include <cstring>
-#include <vector>
-#include <stdexcept>
-#include <memory>
-#include <sstream>
-#include <iomanip>
+#include <utility>
+
+#ifndef _WIN32
+#include <iconv.h>
+#endif
 
 namespace fb {
 

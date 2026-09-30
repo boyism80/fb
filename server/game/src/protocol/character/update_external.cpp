@@ -1,4 +1,9 @@
 #include <fb/game/protocol/character/update_external.h>
+
+#include <cstdint>
+#include <string>
+#include <utility>
+
 #ifndef BOT
 #include <fb/game/server.h>
 

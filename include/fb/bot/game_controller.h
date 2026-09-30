@@ -2,10 +2,16 @@
 #define __BOT_GAME_CONTROLLER_H__
 
 #include <fb/bot/controller.h>
-#include <fb/game/protocol.h>
 #include <fb/bot/game_bot.h>
+#include <fb/game/protocol.h>
 #include <fb/logger.h>
+
+#include <atomic>
+#include <cstdint>
+#include <memory>
 #include <mutex>
+#include <stdexcept>
+#include <unordered_map>
 
 namespace fb::bot {
 

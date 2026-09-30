@@ -1,11 +1,16 @@
 #ifndef __MST_H__
 #define __MST_H__
 
-#include <queue>
-#include <list>
-#include <set>
-#include <boost/algorithm/string/join.hpp>
 #include <fb/logger.h>
+
+#include <boost/algorithm/string/join.hpp>
+
+#include <functional>
+#include <list>
+#include <memory>
+#include <queue>
+#include <utility>
+#include <vector>
 
 namespace fb {
 

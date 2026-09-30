@@ -2,6 +2,9 @@
 #define __PROTOCOL_LOGIN_MESSAGE_H__
 
 #include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
 #include <string_view>
 
 namespace fb::protocol::login::response {

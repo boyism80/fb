@@ -2,6 +2,7 @@
 #define __TRACE_H__
 
 #include <fb/lua.h>
+
 #include <cstdint>
 #include <string>
 

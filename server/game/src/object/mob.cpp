@@ -1,11 +1,23 @@
+#include <fb/game/mob.h>
+
+#include <fb/game/ai.h>
 #include <fb/game/character.h>
+#include <fb/game/map.h>
 #include <fb/game/server.h>
 #include <fb/thread.h>
-#include <fb/game/map.h>
-#include <fb/game/mob.h>
-#include <fb/game/ai.h>
+
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <exception>
+#include <format>
 #include <limits>
+#include <memory>
+#include <thread>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using table = fb::model::table;

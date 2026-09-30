@@ -1,18 +1,26 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
-#include <fb/lua.h>
-#include <fb/stream.h>
-#include <fb/protocol/header.h>
-#include <fb/thread_switchable.h>
-#include <fb/model/model.h>
-#include <fb/game/spell.h>
-#include <random.h>
 #include <async/task.h>
+#include <fb/game/spell.h>
+#include <fb/lua.h>
+#include <fb/model/model.h>
+#include <fb/protocol/header.h>
+#include <fb/stream.h>
+#include <fb/thread_switchable.h>
+#include <random.h>
+
+#include <cstddef>
+#include <cstdint>
 #include <functional>
+#include <memory>
 #include <optional>
+#include <queue>
 #include <shared_mutex>
+#include <string>
 #include <string_view>
+#include <unordered_map>
+#include <vector>
 
 namespace fb::game {
 

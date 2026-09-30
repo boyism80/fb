@@ -1,6 +1,11 @@
 #include <fb/game/handler/protocol/web_map.h>
+
 #include <fb/game/protocol/web_map.h>
 #include <fb/game/server.h>
+
+#include <tuple>
+#include <utility>
+#include <vector>
 
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;

@@ -1,6 +1,9 @@
 #include <fb/game/ai/run_away.h>
-#include <fb/game/mob.h>
+
 #include <fb/game/map.h>
+#include <fb/game/mob.h>
+
+#include <cstdlib>
 
 using namespace fb::game;
 

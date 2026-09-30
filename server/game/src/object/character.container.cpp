@@ -1,7 +1,19 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
-#include <atomic>
+
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <memory>
+#include <mutex>
 #include <shared_mutex>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 using namespace fb::game;
 
 character::container::container(fb::game::server& server) :

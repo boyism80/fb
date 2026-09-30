@@ -1,12 +1,21 @@
-#include <fb/game/server.h>
 #include <fb/game/stat.h>
-#include <fb/game/character.h>
-#include <fb/game/mob.h>
-#include <fb/game/ai.h>
-#include <fb/game/client_amount.h>
-#include <fb/model/model.h>
+
 #include <fb/encoding.h>
+#include <fb/game/ai.h>
+#include <fb/game/character.h>
+#include <fb/game/client_amount.h>
+#include <fb/game/mob.h>
+#include <fb/game/server.h>
+#include <fb/model/model.h>
+
 #include <json/json.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <format>
+#include <limits>
+#include <memory>
+#include <utility>
 
 using namespace fb::game;
 

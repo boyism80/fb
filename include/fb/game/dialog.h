@@ -1,15 +1,17 @@
 #ifndef __DIALOG_H__
 #define __DIALOG_H__
 
-#include <stack>
-#include <string>
-#include <string_view>
-#include <optional>
-#include <utility>
-#include <vector>
+#include <fb/game/appearance.h>
 #include <fb/game/dialog_type.h>
 #include <fb/game/npc.h>
-#include <fb/game/appearance.h>
+
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace fb::game {
 class character;

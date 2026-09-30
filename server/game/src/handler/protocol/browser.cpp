@@ -1,6 +1,9 @@
 #include <fb/game/handler/protocol/browser.h>
+
 #include <fb/game/protocol/browser.h>
 #include <fb/game/server.h>
+
+#include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;

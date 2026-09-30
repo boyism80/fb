@@ -1,8 +1,11 @@
-#include <fb/game/server.h>
+#include <fb/encoding.h>
 #include <fb/game/character.h>
 #include <fb/game/item.h>
-#include <fb/encoding.h>
+#include <fb/game/server.h>
+
 #include <json/json.h>
+
+#include <tuple>
 
 using namespace fb::game;
 

@@ -1,16 +1,11 @@
 #ifndef __FB_TABLE_H__
 #define __FB_TABLE_H__
 
-#include <string>
-#include <string_view>
-#include <fstream>
-#include <sstream>
-#include <functional>
 #include <json/json.h>
-#include <queue>
-#include <mutex>
-#include <future>
-#include <thread>
+
+#include <cstdint>
+#include <functional>
+#include <string_view>
 
 namespace fb::table {
 

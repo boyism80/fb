@@ -1,9 +1,10 @@
 #ifndef FB_GAME_MATCH_H
 #define FB_GAME_MATCH_H
 
+#include <async/task.h>
 #include <fb/lua.h>
 #include <fb/timer.h>
-#include <async/task.h>
+
 #include <cstdint>
 #include <memory>
 #include <mutex>

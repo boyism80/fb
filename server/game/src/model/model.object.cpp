@@ -1,9 +1,11 @@
 #include <fb/game/character.h>
-#include <fb/game/server.h>
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
-#include <fb/model/model.h>
 #include <fb/game/object.h>
+#include <fb/game/server.h>
+#include <fb/model/model.h>
+
+#include <cstdint>
 
 uint8_t fb::model::object::dialog_look_type() const
 {

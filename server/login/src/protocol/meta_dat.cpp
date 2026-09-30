@@ -1,5 +1,8 @@
 #include <fb/login/protocol/meta_dat.h>
 
+#include <cstdint>
+#include <string>
+
 namespace fb::protocol::login::request {
 
 #ifdef BOT

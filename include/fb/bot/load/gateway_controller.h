@@ -1,9 +1,11 @@
 #ifndef __BOT_GATEWAY_LOAD_CONTROLLER_H__
 #define __BOT_GATEWAY_LOAD_CONTROLLER_H__
 
+#include <fb/bot/gateway_bot.h>
 #include <fb/bot/gateway_controller.h>
 #include <fb/gateway/protocol.h>
-#include <fb/bot/gateway_bot.h>
+
+#include <cstdint>
 
 namespace fb::bot::load {
 

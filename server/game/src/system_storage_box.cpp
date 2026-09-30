@@ -1,6 +1,9 @@
-#include <fb/game/character.h>
 #include <fb/game/system_storage_box.h>
+
+#include <fb/game/character.h>
+
 #include <json/json.h>
+
 #include <sstream>
 
 using namespace fb::game;

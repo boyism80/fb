@@ -1,12 +1,14 @@
 #ifndef __FB_CONTAINER_H__
 #define __FB_CONTAINER_H__
 
+#include <algorithm>
+#include <cstdint>
 #include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
-#include <stdexcept>
-#include <sstream>
-#include <algorithm>
 
 namespace fb {
 

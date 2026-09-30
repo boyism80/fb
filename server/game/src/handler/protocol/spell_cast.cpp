@@ -1,5 +1,8 @@
 #include <fb/game/handler/protocol/spell_cast.h>
+
 #include <fb/game/server.h>
+
+#include <format>
 
 namespace game_reqs = fb::protocol::game::request;
 

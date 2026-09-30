@@ -1,21 +1,21 @@
-﻿#ifndef __SYNCHRONIZED_H__
+#ifndef __SYNCHRONIZED_H__
 #define __SYNCHRONIZED_H__
-
-#include <shared_mutex>
-#include <functional>
-#include <queue>
-#include <vector>
-#include <atomic>
-#include <mutex>
-#include <memory>
-#include <optional>
-#include <tuple>
-#include <type_traits>
-#include <utility>
 
 // Microsoft cpp-async library
 #include <async/task.h>
 #include <async/task_completion_source.h>
+
+#include <atomic>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <queue>
+#include <shared_mutex>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace fb {
 

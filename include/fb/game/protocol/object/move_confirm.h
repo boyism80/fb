@@ -1,9 +1,12 @@
 #ifndef __PROTOCOL_GAME_MOVE_CONFIRM_H__
 #define __PROTOCOL_GAME_MOVE_CONFIRM_H__
 
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+
 #ifndef BOT
 #include <fb/game/object.h>
 #endif

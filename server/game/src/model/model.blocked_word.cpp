@@ -1,7 +1,10 @@
-#include <model.additional.h>
-
 #include <fb/model/model.h>
 #include <fb/model/substring_matcher.h>
+
+#include <string>
+#include <string_view>
+
+#include <model.additional.h>
 
 fb::model::___blocked_word::___blocked_word() :
     fb::model::kv_container<std::string, fb::model::blocked_word>(std::string_view("json/blocked_word.json"))

@@ -1,5 +1,9 @@
 #include <fb/game/protocol/bulletin/mails.h>
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

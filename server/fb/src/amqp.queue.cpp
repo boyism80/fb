@@ -2,6 +2,14 @@
 #include <fb/context.h>
 #include <fb/execution_context.h>
 
+#include <cstdint>
+#include <exception>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
 using namespace fb::amqp;
 
 queue::queue(socket& owner, const amqp_bytes_t& name, fb::thread_container& threads) :

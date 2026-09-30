@@ -1,9 +1,13 @@
 #ifndef __WORKER_H__
 #define __WORKER_H__
 
-#include <fb/model/loader.h>
-#include <filesystem>
 #include <async/task.h>
+#include <fb/model/loader.h>
+
+#include <exception>
+#include <functional>
+#include <string>
+#include <vector>
 
 namespace fb::lua {
 class root;

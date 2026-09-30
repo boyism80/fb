@@ -1,8 +1,11 @@
 #include <fb/login/handler/amqp/reload_tables.h>
+
+#include <fb/logger.h>
 #include <fb/login/server.h>
 #include <fb/model/loader.h>
 #include <fb/model/table_download.h>
-#include <fb/logger.h>
+
+#include <exception>
 
 using namespace fb::login::handler::amqp;
 

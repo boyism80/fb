@@ -1,15 +1,28 @@
 #include <fb/game/service/system_storage.h>
-#include <fb/game/server.h>
-#include <fb/game/character.h>
-#include <fb/config.h>
+
 #include <fb/amqp_route.h>
+#include <fb/config.h>
+#include <fb/game/character.h>
+#include <fb/game/server.h>
 #include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
 #include <json/json.h>
-#include <sstream>
+
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
 #include <format>
+#include <memory>
 #include <mutex>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;

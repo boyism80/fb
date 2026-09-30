@@ -2,10 +2,10 @@
 #define __HASH_H__
 
 #include <cstdint>
-#include <unordered_map>
-#include <string>
-#include <string_view>
+#include <functional>
 #include <memory>
+#include <string_view>
+#include <unordered_map>
 
 namespace fb {
 

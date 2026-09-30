@@ -4,12 +4,13 @@
 #include <fb/async_generator.h>
 #include <fb/game/system_mail.h>
 #include <fb/model/datetime.h>
+
+#include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <vector>
-#include <cstdint>
 
 namespace fb::protocol::internal {
 class SystemMail;

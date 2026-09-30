@@ -1,10 +1,12 @@
 #ifndef __PROTOCOL_GAME_USER_INFO_SUBMIT_H__
 #define __PROTOCOL_GAME_USER_INFO_SUBMIT_H__
 
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
 #include <array>
+#include <cstdint>
 #include <string>
 
 namespace fb::protocol::game::request {

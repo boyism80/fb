@@ -1,8 +1,14 @@
-#include <fb/bot/container.h>
-#include <fb/bot/game_controller.h>
 #include <fb/bot/load/login_controller.h>
+
+#include <fb/bot/container.h>
 #include <fb/bot/game_bot.h>
+#include <fb/bot/game_controller.h>
 #include <fb/bot/login_bot.h>
+
+#include <cstdint>
+#include <exception>
+#include <iostream>
+#include <random>
 
 using namespace fb::bot::load;
 

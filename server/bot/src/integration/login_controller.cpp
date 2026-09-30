@@ -1,8 +1,14 @@
 #include <fb/bot/integration/login_controller.h>
-#include <fb/bot/login_bot.h>
+
 #include <fb/bot/game_controller.h>
 #include <fb/bot/integration/game_controller.h>
+#include <fb/bot/login_bot.h>
 #include <fb/logger.h>
+
+#include <chrono>
+#include <cstdint>
+#include <exception>
+#include <random>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;

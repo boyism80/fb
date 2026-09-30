@@ -1,5 +1,9 @@
 #include <fb/game/crowd_control.h>
+
 #include <fb/game/life.h>
+
+#include <cstdint>
+#include <utility>
 
 using namespace fb::game;
 

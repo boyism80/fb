@@ -1,7 +1,12 @@
 #include <fb/game/handler/timer/afk_timer.h>
+
 #include <fb/game/thread_params.h>
-#include <fb/model/model.h>
 #include <fb/logger.h>
+#include <fb/model/model.h>
+
+#include <chrono>
+#include <exception>
+#include <thread>
 
 using namespace fb::game::handler::timer;
 using namespace fb::game;

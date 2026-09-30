@@ -1,4 +1,5 @@
 #include <fb/game/handler/protocol/move_blocked.h>
+
 #include <fb/game/server.h>
 
 namespace game_reqs = fb::protocol::game::request;

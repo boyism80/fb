@@ -2,11 +2,13 @@
 #ifndef __STAT_H__
 #define __STAT_H__
 
+#include <fb/model/model.h>
+
 #include <limits>
-#include <stdint.h>
 #include <memory>
 #include <unordered_map>
-#include <fb/model/model.h>
+
+#include <stdint.h>
 
 namespace fb::game {
 

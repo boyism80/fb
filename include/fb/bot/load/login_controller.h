@@ -1,9 +1,9 @@
 #ifndef __BOT_LOGIN_LOAD_CONTROLLER_H__
 #define __BOT_LOGIN_LOAD_CONTROLLER_H__
 
+#include <fb/bot/login_bot.h>
 #include <fb/bot/login_controller.h>
 #include <fb/login/protocol.h>
-#include <fb/bot/login_bot.h>
 
 namespace fb::bot::load {
 

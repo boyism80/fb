@@ -1,12 +1,17 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
-#include <fb/game/life.h>
-#include <fb/game/item.h>
-#include <fb/game/appearance.h>
 #include <async/task.h>
-#include <vector>
+#include <fb/game/appearance.h>
+#include <fb/game/item.h>
+#include <fb/game/life.h>
+
+#include <chrono>
+#include <cstdint>
 #include <memory>
+#include <optional>
+#include <thread>
+#include <vector>
 
 namespace fb::game {
 

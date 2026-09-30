@@ -1,8 +1,12 @@
 #ifndef __PROTOCOL_GAME_SPELL_DELAY_H__
 #define __PROTOCOL_GAME_SPELL_DELAY_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
+
 #ifndef BOT
 #include <fb/game/life.h>
 #include <fb/game/spell.h>

@@ -1,10 +1,13 @@
 #include <fb/crash.h>
+
 #include <fb/config.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
+
 #include <boost/stacktrace.hpp>
+
 #include <csignal>
-#include <cstdint>
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <exception>

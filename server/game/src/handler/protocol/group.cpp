@@ -1,5 +1,10 @@
 #include <fb/game/handler/protocol/group.h>
+
 #include <fb/game/server.h>
+
+#include <exception>
+#include <optional>
+#include <string>
 
 namespace game_reqs = fb::protocol::game::request;
 

@@ -2,8 +2,8 @@
 #define __BOT_LOGIN_CONTROLLER_H__
 
 #include <fb/bot/controller.h>
-#include <fb/login/protocol.h>
 #include <fb/bot/login_bot.h>
+#include <fb/login/protocol.h>
 
 namespace fb::bot {
 

@@ -1,12 +1,13 @@
 #ifndef __BOT_INTEGRATION_LUA_INTEGRATION_TEST_H__
 #define __BOT_INTEGRATION_LUA_INTEGRATION_TEST_H__
 
-#include <fb/bot/integration/test_case.h>
 #include <fb/bot/game_bot.h>
+#include <fb/bot/integration/test_case.h>
 #include <fb/lua.h>
+
 #include <chrono>
+#include <cstdint>
 #include <filesystem>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <string>

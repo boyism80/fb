@@ -1,5 +1,10 @@
 #include <fb/encryption.h>
 
+#include <algorithm>
+#include <cstdint>
+#include <cstring>
+#include <memory>
+
 using namespace fb;
 
 // clang-format off

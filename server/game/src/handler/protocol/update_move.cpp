@@ -1,4 +1,5 @@
 #include <fb/game/handler/protocol/update_move.h>
+
 #include <fb/game/handler/protocol/move.h>
 #include <fb/game/server.h>
 

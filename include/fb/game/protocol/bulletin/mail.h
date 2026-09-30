@@ -1,9 +1,12 @@
 #ifndef __PROTOCOL_GAME_MAIL_H__
 #define __PROTOCOL_GAME_MAIL_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
 
 namespace fb::protocol::game::response {
 

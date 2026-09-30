@@ -1,5 +1,7 @@
 #include <fb/game/protocol/object/sound.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

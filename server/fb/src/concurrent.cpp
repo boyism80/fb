@@ -1,5 +1,7 @@
 #include <fb/concurrent.h>
 
+#include <stdexcept>
+
 using namespace fb;
 
 lock_error::lock_error() :

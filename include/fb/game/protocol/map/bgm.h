@@ -1,9 +1,12 @@
 #ifndef __PROTOCOL_GAME_BGM_H__
 #define __PROTOCOL_GAME_BGM_H__
 
-#include <fb/protocol/header.h>
-#include <fb/model/model.h>
 #include <fb/game/protocol/audio.h>
+#include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+
 #ifndef BOT
 #include <fb/game/map.h>
 #endif

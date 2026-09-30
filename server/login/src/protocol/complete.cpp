@@ -1,4 +1,6 @@
 #include <fb/login/protocol/complete.h>
+
+#include <cstdint>
 #include <string>
 
 namespace fb::protocol::login::request {

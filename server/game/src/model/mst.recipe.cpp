@@ -1,5 +1,12 @@
 #include <fb/game/mst.recipe.h>
 
+#include <algorithm>
+#include <cstdint>
+#include <optional>
+#include <stdexcept>
+#include <unordered_map>
+#include <vector>
+
 fb::model::recipe_node::recipe_node(uint32_t id, uint32_t count, const recipe_node* parent) :
     _dsl(id, count, std::nullopt, std::nullopt, 100.0),
     fb::mst<const fb::model::dsl::item&>(_dsl, parent)

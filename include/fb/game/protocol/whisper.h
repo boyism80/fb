@@ -1,8 +1,11 @@
 #ifndef __GAME_PROTOCOL_WHISPER_H__
 #define __GAME_PROTOCOL_WHISPER_H__
 
-#include <fb/protocol/header.h>
 #include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
 #include <string_view>
 
 namespace fb::protocol::game::request {

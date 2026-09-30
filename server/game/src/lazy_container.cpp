@@ -1,12 +1,17 @@
+#include <fb/game/lazy_container.h>
+
 #include <fb/game/castle.h>
 #include <fb/game/clan.h>
 #include <fb/game/group.h>
-#include <fb/game/lazy_container.h>
 #include <fb/game/server.h>
 #include <fb/logger.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <exception>
 #include <format>
 #include <stdexcept>
+#include <utility>
 
 namespace fb::game {
 

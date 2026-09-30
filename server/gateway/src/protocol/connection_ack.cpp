@@ -1,5 +1,8 @@
 #include <fb/gateway/protocol/connection_ack.h>
-#include <cstring>
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 
 namespace fb::protocol::gateway::request {
 

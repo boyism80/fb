@@ -1,5 +1,7 @@
 #include <fb/game/handler/timer/announce.h>
 
+#include <cstdint>
+
 using namespace fb::game::handler::timer;
 using table = fb::model::table;
 

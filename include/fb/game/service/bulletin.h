@@ -2,10 +2,10 @@
 #define __FB_GAME_SERVICE_BULLETIN_H__
 
 #include <fb/game/bulletin.h>
-#include <list>
-#include <string>
-#include <string_view>
+
 #include <cstdint>
+#include <list>
+#include <string_view>
 
 namespace fb::protocol::internal {
 class ArticleSummary;

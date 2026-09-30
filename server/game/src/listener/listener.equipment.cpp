@@ -2,6 +2,12 @@
 #include <fb/model/model.h>
 #include <fb/protocol/client_version.h>
 
+#include <cmath>
+#include <cstdint>
+#include <format>
+#include <sstream>
+#include <string>
+
 using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;

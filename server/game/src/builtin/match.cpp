@@ -1,7 +1,10 @@
-#include <fb/game/server.h>
-#include <fb/game/match.h>
-#include <fb/game/character.h>
 #include <fb/game/builtin/match.h>
+
+#include <fb/game/character.h>
+#include <fb/game/match.h>
+#include <fb/game/server.h>
+
+#include <cstdint>
 
 using namespace fb::game;
 

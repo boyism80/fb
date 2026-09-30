@@ -3,6 +3,8 @@
 
 #include <fb/dead_lock.h>
 
+#include <stdexcept>
+
 namespace fb {
 
 class lock_error : public std::runtime_error

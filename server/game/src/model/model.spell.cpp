@@ -1,6 +1,10 @@
 #include <fb/model/model.h>
-#include <unordered_map>
+
+#include <mutex>
 #include <shared_mutex>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
 fb::model::spell* fb::model::___spell::name2spell(std::string_view name) const
 {

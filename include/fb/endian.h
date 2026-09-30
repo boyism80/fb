@@ -1,6 +1,7 @@
 #ifndef __ENDIAN_H__
 #define __ENDIAN_H__
 
+#include <cstdint>
 #include <cstring> // std::memcpy
 
 #if defined(__s390x__)

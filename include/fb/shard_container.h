@@ -1,26 +1,24 @@
 #ifndef FB_SHARD_CONTAINER_H
 #define FB_SHARD_CONTAINER_H
 
-#include <atomic>
-#include <mutex>
-#include <shared_mutex>
-#include <queue>
-#include <unordered_map>
-#include <vector>
-#include <array>
-#include <algorithm>
-#include <functional>
-#include <type_traits>
-#include <cstdint>
-#include <memory>
-#include <coroutine>
-#include <list>
-#include <stdexcept>
-#include <fb/synchronized.h>
-
 // Microsoft cpp-async library
 #include <async/task.h>
 #include <async/task_completion_source.h>
+#include <fb/synchronized.h>
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <list>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace fb {
 template <typename T, typename HashType = uint32_t>

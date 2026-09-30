@@ -1,8 +1,11 @@
 #ifndef __PROTOCOL_GAME_LIFE_ACTION_H__
 #define __PROTOCOL_GAME_LIFE_ACTION_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+
 #ifndef BOT
 #include <fb/game/life.h>
 #endif

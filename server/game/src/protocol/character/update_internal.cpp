@@ -1,5 +1,8 @@
 #include <fb/game/protocol/character/update_internal.h>
+
 #include <fb/game/client_amount.h>
+
+#include <cstdint>
 
 namespace fb::protocol::game::response {
 

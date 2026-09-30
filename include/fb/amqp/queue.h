@@ -1,11 +1,17 @@
 #ifndef __AMQP_QUEUE_H__
 #define __AMQP_QUEUE_H__
 
+#include <async/task.h>
 #include <fb/amqp/socket.h>
 #include <fb/stream_reader.h>
-#include <functional>
-#include <async/task.h>
 #include <fb/thread_container.h>
+
+#include <cstdint>
+#include <functional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
 
 namespace fb::amqp {
 

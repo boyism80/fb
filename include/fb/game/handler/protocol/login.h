@@ -1,8 +1,13 @@
 #ifndef FB_GAME_HANDLER_LOGIN_H
 #define FB_GAME_HANDLER_LOGIN_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
+
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace fb::game::handler::protocol {
 

@@ -1,5 +1,7 @@
 #include <fb/game/protocol/object/move_blocked.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::request {
 
 #ifndef BOT

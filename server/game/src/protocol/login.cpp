@@ -1,5 +1,9 @@
 #include <fb/game/protocol/login.h>
+
+#include <cstdint>
 #include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace fb::protocol::game::request {
 

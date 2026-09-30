@@ -1,8 +1,15 @@
+#include <fb/game/builtin/clan.h>
+
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
-#include <fb/game/builtin/clan.h>
 #include <macro.h>
-#include <string_view>
+
+#include <cstdint>
+#include <exception>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
 
 using namespace fb::game;
 

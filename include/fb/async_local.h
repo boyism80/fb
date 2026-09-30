@@ -2,8 +2,9 @@
 #define __ASYNC_LOCAL_H__
 
 #include <fb/execution_context.h>
+
 #include <atomic>
-#include <utility>
+#include <cstddef>
 
 namespace fb {
 

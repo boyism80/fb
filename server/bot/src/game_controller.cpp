@@ -1,4 +1,5 @@
 #include <fb/bot/game_controller.h>
+
 #include <fb/bot/container.h>
 #include <fb/bot/integration/bulletin_bot.h>
 #include <fb/bot/integration/dialog_bot.h>
@@ -6,6 +7,12 @@
 #include <fb/bot/integration/protocol_registry.h>
 #include <fb/bot/integration/trade_bot.h>
 #include <fb/logger.h>
+
+#include <cstdint>
+#include <format>
+#include <memory>
+#include <mutex>
+#include <stdexcept>
 
 using namespace fb::bot;
 

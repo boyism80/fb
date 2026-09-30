@@ -1,15 +1,24 @@
-#include <fb/login/server.h>
-#include <fb/crash.h>
 #include <fb/config.h>
 #include <fb/console.h>
+#include <fb/crash.h>
 #include <fb/logger.h>
-#include <fb/leak.h>
+#include <fb/login/server.h>
+
 #include <boost/program_options.hpp>
 #include <boost/stacktrace.hpp>
-#include <filesystem>
+
+#include <cstdint>
+#include <cstdlib>
+#include <exception>
+#include <iostream>
+#include <memory>
+#include <string>
+
 #ifdef _WIN32
 #include "resource.h"
 #endif
+
+#include <fb/leak.h>
 
 using namespace fb;
 

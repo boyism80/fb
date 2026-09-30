@@ -1,4 +1,5 @@
 #include <fb/game/handler/amqp/start_maintenance.h>
+
 #include <fb/game/server.h>
 
 using namespace fb::game::handler::amqp;

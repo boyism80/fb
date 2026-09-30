@@ -1,11 +1,15 @@
 #ifndef __THREAD_PARAMS_H__
 #define __THREAD_PARAMS_H__
 
+#include <async/task.h>
+#include <fb/game/character.h>
 #include <fb/game/group.h>
 #include <fb/game/map.h>
-#include <fb/game/character.h>
+
+#include <cstdint>
+#include <memory>
 #include <unordered_map>
-#include <async/task.h>
+#include <vector>
 
 namespace fb::game {
 

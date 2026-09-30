@@ -1,11 +1,27 @@
 #include <fb/bot/integration/test_case.h>
+
 #include <fb/bot/integration/game_controller.h>
 #include <fb/bot/integration/gateway_controller.h>
-#include <fb/logger.h>
-#include <fb/game/protocol.h>
 #include <fb/config.h>
+#include <fb/game/protocol.h>
+#include <fb/logger.h>
+
+#include <algorithm>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
 #include <format>
+#include <memory>
+#include <optional>
+#include <queue>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;

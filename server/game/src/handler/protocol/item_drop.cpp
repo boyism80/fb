@@ -1,5 +1,7 @@
 #include <fb/game/handler/protocol/item_drop.h>
+
 #include <fb/game/server.h>
+
 #include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;

@@ -3,9 +3,10 @@
 
 #include <fb/handler.h>
 #include <fb/login/server.h>
+
+#include <optional>
 #include <string>
 #include <string_view>
-#include <optional>
 
 namespace fb::login::handler::protocol {
 

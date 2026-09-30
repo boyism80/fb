@@ -1,10 +1,11 @@
 #ifndef __FB_GAME_CASTLE_H__
 #define __FB_GAME_CASTLE_H__
 
-#include <fb/socket.h>
 #include <fb/game/lazy_container.h>
 #include <fb/lua.h>
 #include <fb/model/model.h>
+#include <fb/socket.h>
+
 #include <chrono>
 #include <cstdint>
 #include <optional>

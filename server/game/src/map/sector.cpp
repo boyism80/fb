@@ -1,7 +1,16 @@
+#include <fb/game/sector.h>
+
 #include <fb/game/character.h>
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
-#include <fb/game/sector.h>
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <memory>
+#include <stdexcept>
+#include <vector>
 
 using namespace fb::game;
 

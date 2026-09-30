@@ -4,6 +4,12 @@
 #include <fb/lua.h>
 #include <fb/model/model.h>
 
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <unordered_map>
+#include <utility>
+
 namespace fb::game {
 
 class map;

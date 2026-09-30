@@ -1,14 +1,17 @@
 #ifndef __FB_PROTOCOL_HANDLER_REGISTRY_H__
 #define __FB_PROTOCOL_HANDLER_REGISTRY_H__
 
-#include <unordered_map>
+#include <async/task.h>
+#include <fb/model/datetime.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <chrono>
+#include <cstdint>
 #include <functional>
 #include <memory>
-#include <chrono>
-#include <async/task.h>
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
-#include <fb/model/datetime.h>
+#include <type_traits>
+#include <unordered_map>
 
 namespace fb {
 

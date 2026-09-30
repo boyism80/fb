@@ -1,5 +1,16 @@
 #include <fb/game/handler/protocol/give_item.h>
+
 #include <fb/game/server.h>
+
+#include <algorithm>
+#include <cstdlib>
+#include <exception>
+#include <format>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;
 

@@ -3,6 +3,8 @@
 
 #include <fb/lua.h>
 #include <fb/model/model.h>
+
+#include <string>
 #include <string_view>
 
 namespace fb::game {

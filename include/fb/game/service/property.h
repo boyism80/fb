@@ -2,7 +2,9 @@
 #define __FB_GAME_SERVICE_PROPERTY_H__
 
 #include <fb/synchronized.h>
+
 #include <json/json.h>
+
 #include <string>
 #include <unordered_map>
 

@@ -1,16 +1,21 @@
 #ifndef __PROTOCOL_GAME_INPUT_H__
 #define __PROTOCOL_GAME_INPUT_H__
 
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
+
 #ifndef BOT
 #include <fb/game/dialog.h>
 #else
 #include <fb/game/dialog_type.h>
 #endif
-#include <optional>
-#include <string_view>
 
 namespace fb::protocol::game::response {
 

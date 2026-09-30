@@ -1,6 +1,12 @@
 #include <fb/gateway/handler/protocol/version.h>
+
 #include <fb/config.h>
 #include <fb/model/model.h>
+
+#include <cstdint>
+#include <exception>
+#include <memory>
+#include <stdexcept>
 
 using namespace fb::gateway::handler::protocol;
 

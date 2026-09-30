@@ -1,22 +1,33 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-#include <exception>
-#include <unordered_map>
-#include <deque>
-#include <mutex>
-#include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
-#include <boost/system/error_code.hpp>
-#include <fb/protocol/header.h>
-#include <fb/encryption.h>
-#include <fb/logger.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <fb/asio_task.h>
 #include <fb/async_executor.h>
-#include <fb/thread.h>
+#include <fb/encryption.h>
+#include <fb/logger.h>
 #include <fb/model/datetime.h>
+#include <fb/protocol/header.h>
+#include <fb/thread.h>
+
+#include <boost/asio.hpp>
+#include <boost/bind/bind.hpp>
+#include <boost/system/error_code.hpp>
+
+#include <array>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
 
 namespace fb {
 

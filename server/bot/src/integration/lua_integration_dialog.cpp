@@ -1,17 +1,18 @@
 #include <fb/bot/builtin/game_bot.h>
+#include <fb/bot/game_bot.h>
 #include <fb/bot/integration/dialog_bot.h>
 #include <fb/bot/integration/dialog_ext_bot.h>
-#include <fb/bot/game_bot.h>
 #include <fb/bot/integration/lua_integration_protocol.h>
 #include <fb/bot/integration/lua_integration_test.h>
 #include <fb/game/protocol.h>
 #include <fb/logger.h>
-
 #include <fb/lua.h>
 
+#include <chrono>
+#include <cstddef>
+#include <exception>
 #include <memory>
-#include <string>
-#include <string_view>
+#include <optional>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;

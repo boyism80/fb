@@ -1,8 +1,9 @@
 #ifndef FB_GAME_HANDLER_CHAT_H
 #define FB_GAME_HANDLER_CHAT_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
+
 #include <memory>
 
 namespace fb::game::handler::protocol {

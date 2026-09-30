@@ -1,19 +1,22 @@
 #ifndef __AMQP_SOCKET_H__
 #define __AMQP_SOCKET_H__
 
+#include <async/awaitable_then.h>
+#include <fb/thread_container.h>
+
+#include <rabbitmq-c/amqp.h>
+#include <rabbitmq-c/tcp_socket.h>
+
+#include <cstdint>
+#include <memory>
+#include <string_view>
+#include <vector>
+
 #ifdef _WIN32
-#include <WinSock2.h>
+#include <fb/winsock.h>
 #else
 #include <sys/time.h>
 #endif
-#include <stdexcept>
-#include <string>
-#include <vector>
-#include <memory>
-#include <rabbitmq-c/amqp.h>
-#include <rabbitmq-c/tcp_socket.h>
-#include <async/awaitable_then.h>
-#include <fb/thread_container.h>
 
 namespace fb::amqp {
 class queue;

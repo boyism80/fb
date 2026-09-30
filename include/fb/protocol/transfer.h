@@ -3,6 +3,9 @@
 
 #include <fb/protocol/header.h>
 
+#include <cstdint>
+#include <vector>
+
 namespace fb::protocol::response {
 
 class transfer : public fb::protocol::header

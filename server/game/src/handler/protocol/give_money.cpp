@@ -1,7 +1,17 @@
 #include <fb/game/handler/protocol/give_money.h>
+
 #include <fb/game/server.h>
-#include <tuple>
+
+#include <algorithm>
+#include <cstdint>
+#include <exception>
+#include <format>
 #include <limits>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;
 

@@ -1,6 +1,10 @@
 #include <fb/game/handler/protocol/friends.h>
+
 #include <fb/game/server.h>
 #include <fb/model/model.h>
+
+#include <utility>
+#include <vector>
 
 namespace game_reqs     = fb::protocol::game::request;
 namespace internal_reqs = fb::protocol::internal::request;

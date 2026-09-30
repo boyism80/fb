@@ -1,10 +1,13 @@
 #ifndef __PROTOCOL_GAME_ITEM_UPDATE_H__
 #define __PROTOCOL_GAME_ITEM_UPDATE_H__
 
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
 #include <string>
+
 #ifndef BOT
 #include <fb/game/character.h>
 #endif

@@ -1,19 +1,21 @@
 #ifndef FB_BOT_BOT_CONTROLLER_FACTORY_H
 #define FB_BOT_BOT_CONTROLLER_FACTORY_H
 
-#include <memory>
 #include <fb/bot/container.h>
-#include <fb/bot/gateway_controller.h>
-#include <fb/bot/login_controller.h>
 #include <fb/bot/game_controller.h>
-#include <fb/bot/load/gateway_controller.h>
-#include <fb/bot/load/login_controller.h>
-#include <fb/bot/load/game_controller.h>
+#include <fb/bot/gateway_controller.h>
+#include <fb/bot/integration/game_controller.h>
 #include <fb/bot/integration/gateway_controller.h>
 #include <fb/bot/integration/login_controller.h>
-#include <fb/bot/integration/game_controller.h>
-#include <fb/config.h>
+#include <fb/bot/load/game_controller.h>
+#include <fb/bot/load/gateway_controller.h>
+#include <fb/bot/load/login_controller.h>
+#include <fb/bot/login_controller.h>
 #include <fb/bot/test_mode.h>
+#include <fb/config.h>
+
+#include <cstdint>
+#include <memory>
 
 template <fb::bot::test_mode Mode>
 class bot_controller_factory;

@@ -3,6 +3,8 @@
 
 #include <fb/model/model.h>
 
+#include <cstdint>
+
 namespace fb::game {
 
 using namespace fb::model::enum_value;

@@ -1,12 +1,16 @@
 #ifndef __PROTOCOL_GAME_BUFF_H__
 #define __PROTOCOL_GAME_BUFF_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
+#include <string_view>
+
 #ifndef BOT
 #include <fb/game/spell.h>
 #endif
-#include <string_view>
 
 namespace fb::protocol::game::response {
 

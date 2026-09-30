@@ -1,5 +1,8 @@
 #include <fb/game/protocol/spell/update.h>
 
+#include <cstdint>
+#include <string>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

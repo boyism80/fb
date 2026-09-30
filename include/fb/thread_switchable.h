@@ -1,9 +1,11 @@
 #ifndef __THREAD_SWITCHABLE_H__
 #define __THREAD_SWITCHABLE_H__
 
-#include <stdexcept>
-#include <memory>
 #include <fb/lua.h>
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
 
 namespace fb {
 

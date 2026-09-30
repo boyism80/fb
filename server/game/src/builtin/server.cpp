@@ -1,19 +1,26 @@
 #include <fb/game/builtin/server.h>
-#include <fb/lua.h>
-#include <fb/encoding.h>
+
 #include <fb/amqp_route.h>
 #include <fb/config.h>
-#include <json/json.h>
-#include <boost/xpressive/xpressive.hpp>
-#include <chrono>
-#include <unordered_map>
-#include <regex>
-#include <string_view>
+#include <fb/encoding.h>
+#include <fb/lua.h>
 #include <fb/model/datetime.h>
-#include <tuple>
-#include <format>
-#include <stdexcept>
+
+#include <boost/xpressive/xpressive.hpp>
+#include <json/json.h>
+
+#include <chrono>
+#include <cstdint>
 #include <cstdlib>
+#include <exception>
+#include <format>
+#include <memory>
+#include <optional>
+#include <random>
+#include <regex>
+#include <string>
+#include <tuple>
+#include <unordered_map>
 
 using namespace fb::game;
 using table = fb::model::table;

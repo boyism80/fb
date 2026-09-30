@@ -1,16 +1,17 @@
 #ifndef FB_GAME_MARKETPLACE_H
 #define FB_GAME_MARKETPLACE_H
 
+#include <async/task.h>
+#include <fb/lua.h>
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
-#include <fb/lua.h>
+
+#include <cstdint>
 #include <optional>
 #include <string>
-#include <map>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <cstdint>
-#include <async/task.h>
 
 namespace fb::protocol::internal {
 class MarketplacePending;

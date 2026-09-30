@@ -1,14 +1,22 @@
 #ifndef __BOT_H__
 #define __BOT_H__
 
-#include <random>
-#include <any>
-#include <memory>
-#include <fb/socket.h>
-#include <boost/endian/conversion.hpp>
-#include <fb/model/model.h>
 #include <fb/bot/hook_params.h>
 #include <fb/logger.h>
+#include <fb/model/model.h>
+#include <fb/socket.h>
+
+#include <boost/endian/conversion.hpp>
+
+#include <atomic>
+#include <chrono>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <stdexcept>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace fb::bot {
 

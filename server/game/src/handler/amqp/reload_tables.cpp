@@ -1,8 +1,11 @@
 #include <fb/game/handler/amqp/reload_tables.h>
+
 #include <fb/game/server.h>
+#include <fb/logger.h>
 #include <fb/model/loader.h>
 #include <fb/model/table_download.h>
-#include <fb/logger.h>
+
+#include <exception>
 
 using namespace fb::game::handler::amqp;
 

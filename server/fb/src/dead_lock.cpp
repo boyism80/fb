@@ -1,5 +1,10 @@
 #include <fb/dead_lock.h>
 
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
 fb::dead_lock_detector::dead_lock_detector(const std::string& data, const dead_lock_detector* parent) :
     fb::mst<std::string>(data, parent)
 { }

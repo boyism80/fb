@@ -5,6 +5,8 @@
 #include <fb/bot/integration/dialog_ext_bot.h>
 #include <fb/bot/integration/trade_bot.h>
 
+#include <functional>
+
 namespace fb::bot {
 
 using integration::bulletin_bot;

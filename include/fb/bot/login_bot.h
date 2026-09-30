@@ -2,14 +2,17 @@
 #define __BOT_LOGIN_H__
 
 #include <fb/bot/bot.h>
+#include <fb/encoding.h>
 #include <fb/login/protocol.h>
 #include <fb/protocol/client_version.h>
 #include <random.h>
-#include <fb/encoding.h>
-#include <shared_mutex>
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+
+#include <cstdint>
+#include <string>
 
 namespace fb::bot {
 

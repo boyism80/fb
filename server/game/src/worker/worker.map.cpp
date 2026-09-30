@@ -1,6 +1,8 @@
 #include <fb/game/server.h>
 #include <fb/game/worker.h>
 
+#include <exception>
+
 using namespace fb::game;
 using table = fb::model::table;
 

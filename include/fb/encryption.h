@@ -2,8 +2,8 @@
 #define __FB_ENCRYPTION_H__
 
 #include <fb/stream.h>
-#include <algorithm>
-#include <cstring>
+
+#include <cstdint>
 #include <memory>
 
 namespace fb {

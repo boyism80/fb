@@ -1,9 +1,13 @@
 #ifndef __BOT_INTEGRATION_BULLETIN_BOT_H__
 #define __BOT_INTEGRATION_BULLETIN_BOT_H__
 
-#include <fb/protocol/header.h>
-#include <fb/model/model.h>
 #include <fb/bot/bulletin.h>
+#include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace fb::bot::integration {
 

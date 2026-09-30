@@ -1,5 +1,7 @@
 #include <fb/game/protocol/item/drop_money.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

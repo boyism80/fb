@@ -1,5 +1,9 @@
 #include <fb/game/protocol/browser.h>
 
+#include <cstdint>
+#include <string>
+#include <utility>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

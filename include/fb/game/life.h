@@ -1,12 +1,15 @@
 #ifndef __LIFE_H__
 #define __LIFE_H__
 
+#include <fb/game/crowd_control.h>
 #include <fb/game/object.h>
 #include <fb/game/stat.h>
-#include <fb/game/crowd_control.h>
-#include <vector>
-#include <utility>
+
+#include <cstdint>
 #include <memory>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace fb::game {
 

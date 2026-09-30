@@ -1,5 +1,9 @@
 #include <fb/bot/integration/bulletin_bot.h>
 
+#include <cstdint>
+#include <stdexcept>
+#include <string>
+
 namespace fb::bot::integration {
 
 void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)

@@ -1,4 +1,5 @@
 #include <fb/game/handler/protocol/collection.h>
+
 #include <fb/game/protocol/collection.h>
 #include <fb/game/server.h>
 

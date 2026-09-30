@@ -1,27 +1,38 @@
-#include <fb/game/builtin/object.h>
 #include <fb/game/builtin/character.h>
-#include <fb/game/builtin/life.h>
-#include <fb/lua.h>
+
 #include <fb/game/appearance.h>
-#include <fb/game/server.h>
+#include <fb/game/builtin/life.h>
+#include <fb/game/builtin/object.h>
 #include <fb/game/marriage.h>
-#include <fb/game/protocol/item/update.h>
-#include <fb/game/protocol/item/update_slot.h>
-#include <fb/game/protocol/map/config.h>
+#include <fb/game/protocol/character/internal_info.h>
+#include <fb/game/protocol/character/option.h>
 #include <fb/game/protocol/character/show.h>
 #include <fb/game/protocol/character/update_external.h>
 #include <fb/game/protocol/character/update_internal.h>
-#include <fb/game/protocol/character/internal_info.h>
-#include <fb/game/protocol/character/option.h>
+#include <fb/game/protocol/item/update.h>
+#include <fb/game/protocol/item/update_slot.h>
+#include <fb/game/protocol/map/config.h>
+#include <fb/game/server.h>
+#include <fb/lua.h>
 #include <fb/model/datetime.h>
 #include <fb/protocol/client_version.h>
-#include <algorithm>
-#include <optional>
-#include <string_view>
-#include <unordered_map>
-#include <tuple>
-#include <format>
 #include <random.h>
+
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <format>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using table = fb::model::table;

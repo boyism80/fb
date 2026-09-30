@@ -1,5 +1,7 @@
 #include <fb/game/protocol/object/move_confirm.h>
 
+#include <cstdint>
+
 using namespace fb::model;
 
 namespace fb::protocol::game::response {

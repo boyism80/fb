@@ -3,6 +3,8 @@
 
 #include <fb/protocol/header.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::response {
 
 class screen_refresh_complete : public fb::protocol::header

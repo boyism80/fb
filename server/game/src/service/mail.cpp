@@ -1,9 +1,18 @@
 #include <fb/game/service/mail.h>
-#include <fb/game/server.h>
-#include <fb/game/character.h>
+
 #include <fb/encoding.h>
+#include <fb/game/character.h>
+#include <fb/game/server.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
 #include <json/json.h>
+
+#include <cstdint>
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
 using namespace fb;
 using namespace fb::game;

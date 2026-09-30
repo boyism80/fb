@@ -1,6 +1,10 @@
 #include <fb/game/service/weather.h>
+
 #include <fb/game/server.h>
 #include <macro.h>
+
+#include <cstdint>
+#include <ctime>
 #include <utility>
 
 using namespace fb::game;

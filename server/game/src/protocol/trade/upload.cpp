@@ -1,5 +1,8 @@
 #include <fb/game/protocol/trade/upload.h>
 
+#include <cstdint>
+#include <string>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

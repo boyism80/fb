@@ -1,5 +1,8 @@
 #include <fb/bot/load/game_controller.h>
+
 #include <fb/bot/game_bot.h>
+
+#include <thread>
 
 using namespace fb::bot::load;
 

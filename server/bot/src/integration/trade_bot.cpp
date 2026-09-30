@@ -1,5 +1,9 @@
 #include <fb/bot/integration/trade_bot.h>
+
 #include <fb/stream.h>
+
+#include <cstdint>
+#include <string>
 
 namespace fb::bot::integration {
 

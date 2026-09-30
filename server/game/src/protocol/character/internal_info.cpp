@@ -1,5 +1,14 @@
 #include <fb/game/protocol/character/internal_info.h>
+
 #include <fb/game/client_amount.h>
+
+#include <array>
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+
 #ifndef BOT
 #include <fb/game/group.h>
 #include <fb/game/server.h>

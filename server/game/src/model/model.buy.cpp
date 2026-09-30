@@ -1,5 +1,7 @@
 #include <fb/model/model.h>
 
+#include <cstdint>
+
 const fb::model::buy* fb::model::___buy::find(uint32_t pursuit, const fb::model::item& item) const
 {
     if (this->contains(pursuit) == false)

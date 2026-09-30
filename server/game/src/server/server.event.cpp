@@ -1,10 +1,17 @@
-#include <fb/game/server.h>
-#include <fb/game/handler.h>
-#include <fb/log_collector.h>
-#include <fb/encoding.h>
 #include <fb/amqp_route.h>
+#include <fb/encoding.h>
+#include <fb/game/handler.h>
+#include <fb/game/server.h>
+#include <fb/log_collector.h>
+
 #include <json/json.h>
-#include <format>
+
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <stdexcept>
+#include <string_view>
 #include <tuple>
 
 using namespace fb::game;

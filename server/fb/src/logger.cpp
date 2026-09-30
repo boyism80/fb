@@ -1,6 +1,17 @@
 #include <fb/logger.h>
+
+#include <atomic>
+#include <cstdio>
+#include <deque>
 #include <filesystem>
+#include <format>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <utility>
+
 #ifdef _WIN32
 #include <share.h>
 #endif

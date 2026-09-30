@@ -2,8 +2,8 @@
 #define __RUN_AWAY_AI_H__
 
 #include <fb/game/ai.h>
-#include <fb/game/mob.h>
 #include <fb/game/map.h>
+#include <fb/game/mob.h>
 
 namespace fb::game {
 

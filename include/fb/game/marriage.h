@@ -2,10 +2,12 @@
 #define FB_GAME_MARRIAGE_H
 
 #include <fb/model/datetime.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <utility>
-#include <fb/protocol/flatbuffer/protocol.h>
 
 namespace fb::game {
 

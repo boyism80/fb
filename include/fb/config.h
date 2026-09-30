@@ -1,19 +1,20 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#include <fb/console.h>
+
+#include <boost/program_options.hpp>
+#include <json/json.h>
+
+#include <cstdint>
+#include <exception>
+#include <fstream>
+#include <optional>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <iostream>
-#include <memory>
-#include <fstream>
-#include <json/json.h>
-#include <sstream>
-#include <format>
-#include <filesystem>
-#include <optional>
 #include <type_traits>
-#include <boost/program_options.hpp>
-#include <fb/console.h>
 
 namespace fb {
 

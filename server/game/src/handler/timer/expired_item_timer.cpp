@@ -1,6 +1,10 @@
 #include <fb/game/handler/timer/expired_item_timer.h>
+
 #include <fb/game/thread_params.h>
 #include <fb/logger.h>
+
+#include <exception>
+#include <thread>
 
 using namespace fb::game::handler::timer;
 

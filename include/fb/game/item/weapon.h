@@ -2,7 +2,11 @@
 #define __ITEM_WEAPON_H__
 
 #include <fb/game/item/equipment.h>
+
+#include <cstdint>
 #include <optional>
+#include <string>
+#include <string_view>
 
 namespace fb::game {
 

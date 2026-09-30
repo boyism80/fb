@@ -1,8 +1,8 @@
 #ifndef __FB_GATEWAY_HANDLER_SERVER_LIST_H__
 #define __FB_GATEWAY_HANDLER_SERVER_LIST_H__
 
-#include <fb/handler.h>
 #include <fb/gateway/server.h>
+#include <fb/handler.h>
 
 namespace fb::gateway::handler::protocol {
 

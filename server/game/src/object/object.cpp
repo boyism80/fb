@@ -1,10 +1,28 @@
+#include <fb/game/object.h>
+
 #include <fb/game/character.h>
 #include <fb/game/map.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
-#include <fb/game/object.h>
+
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
 #include <format>
+#include <iterator>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <shared_mutex>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 

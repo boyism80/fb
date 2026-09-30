@@ -1,5 +1,10 @@
 #include <fb/game/handler/protocol/exit.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <cstdlib>
+#include <string_view>
 
 namespace game_reqs = fb::protocol::game::request;
 

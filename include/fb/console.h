@@ -1,26 +1,23 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
+#include <cstdint>
+#include <format>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+
 #ifdef _WIN32
 #include <io.h>
 #else
-#include <locale.h>
+#include <ncursesw/curses.h>
+
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <ncursesw/curses.h>
 #endif
-#include <iostream>
-#include <stdarg.h>
-#include <sstream>
-#include <cstring>
-#include <mutex>
-#include <format>
-#include <cmath>
-#include <vector>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <string_view>
 
 #ifdef _WIN32
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"

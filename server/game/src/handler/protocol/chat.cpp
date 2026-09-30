@@ -1,7 +1,12 @@
 #include <fb/game/handler/protocol/chat.h>
-#include <fb/game/server.h>
+
 #include <fb/encoding.h>
+#include <fb/game/server.h>
+
 #include <json/json.h>
+
+#include <memory>
+#include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;
 

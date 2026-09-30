@@ -1,9 +1,14 @@
 #ifndef __AI_H__
 #define __AI_H__
 
-#include <fb/model/model.h>
 #include <async/task.h>
+#include <fb/model/model.h>
+
+#include <chrono>
+#include <cstdint>
+#include <memory>
 #include <unordered_map>
+#include <utility>
 
 namespace fb::game {
 

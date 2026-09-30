@@ -1,5 +1,10 @@
 #include <fb/game/mail_box.h>
+
 #include <fb/game/character.h>
+
+#include <cstdint>
+#include <string_view>
+#include <vector>
 
 using namespace fb::game;
 

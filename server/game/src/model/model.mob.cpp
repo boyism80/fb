@@ -1,10 +1,14 @@
 #include <fb/game/character.h>
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
-#include <fb/model/model.h>
 #include <fb/game/server.h>
-#include <unordered_map>
+#include <fb/model/model.h>
+
+#include <mutex>
 #include <shared_mutex>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
 fb::model::mob* fb::model::___mob::name2mob(std::string_view name) const
 {

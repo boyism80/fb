@@ -3,6 +3,8 @@
 
 #include <fb/protocol/header.h>
 
+#include <cstdint>
+
 namespace fb::protocol::gateway::response {
 
 class welcome : public fb::protocol::header

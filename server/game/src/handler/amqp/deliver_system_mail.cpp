@@ -1,6 +1,9 @@
 #include <fb/game/handler/amqp/deliver_system_mail.h>
-#include <fb/game/server.h>
+
 #include <fb/game/mail_box.h>
+#include <fb/game/server.h>
+
+#include <vector>
 
 using namespace fb::game::handler::amqp;
 

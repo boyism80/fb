@@ -1,8 +1,8 @@
 #ifndef FB_GAME_HANDLER_AMQP_MATCHMAKING_DISSOLVED_H
 #define FB_GAME_HANDLER_AMQP_MATCHMAKING_DISSOLVED_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
 
 namespace fb::game::handler::amqp {
 

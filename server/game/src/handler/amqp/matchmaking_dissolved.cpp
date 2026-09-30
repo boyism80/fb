@@ -1,7 +1,10 @@
 #include <fb/game/handler/amqp/matchmaking_dissolved.h>
+
 #include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+
+#include <tuple>
 
 using namespace fb::game::handler::amqp;
 

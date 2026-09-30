@@ -11,6 +11,13 @@ project(fb
         LANGUAGES CXX
 )
 
+# Defined before any header. Without it, windows.h includes winsock.h and
+# the wsock32 import library collides with ws2_32.
+if(WIN32)
+  # winsock2.h warns, and then guesses, when the target Windows version is unset.
+  add_compile_definitions(WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0601)
+endif()
+
 add_subdirectory(server/fb)
 add_subdirectory(server/gateway)
 add_subdirectory(server/login)

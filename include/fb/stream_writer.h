@@ -1,9 +1,16 @@
 #ifndef __STREAM_WRITER_H__
 #define __STREAM_WRITER_H__
 
-#include <fb/stream.h>
-#include <fb/endian.h>
 #include <fb/encoding.h>
+#include <fb/endian.h>
+#include <fb/stream.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 namespace fb {
 

@@ -1,8 +1,10 @@
 #ifndef __PROTOCOL_GATEWAY_ENCRYPTION_H__
 #define __PROTOCOL_GATEWAY_ENCRYPTION_H__
 
-#include <fb/protocol/header.h>
 #include <fb/encryption.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
 
 namespace fb::protocol::gateway::response {
 

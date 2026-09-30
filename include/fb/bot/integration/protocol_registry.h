@@ -1,11 +1,11 @@
 #ifndef __BOT_INTEGRATION_PROTOCOL_REGISTRY_H__
 #define __BOT_INTEGRATION_PROTOCOL_REGISTRY_H__
 
+#include <fb/bot/integration/protocol_registry.generated.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-
-#include <fb/bot/integration/protocol_registry.generated.h>
 
 struct lua_State;
 

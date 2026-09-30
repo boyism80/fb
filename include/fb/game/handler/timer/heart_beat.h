@@ -1,8 +1,8 @@
 #ifndef FB_GAME_HANDLER_TIMER_HEART_BEAT_H
 #define FB_GAME_HANDLER_TIMER_HEART_BEAT_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
 
 namespace fb::game::handler::timer {
 

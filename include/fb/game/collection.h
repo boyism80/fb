@@ -3,7 +3,9 @@
 
 #include <async/task.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
 #include <cstdint>
+#include <memory>
 #include <unordered_set>
 #include <vector>
 

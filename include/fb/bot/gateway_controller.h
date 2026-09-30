@@ -2,8 +2,8 @@
 #define __BOT_GATEWAY_CONTROLLER_H__
 
 #include <fb/bot/controller.h>
-#include <fb/gateway/protocol.h>
 #include <fb/bot/gateway_bot.h>
+#include <fb/gateway/protocol.h>
 
 namespace fb::bot {
 

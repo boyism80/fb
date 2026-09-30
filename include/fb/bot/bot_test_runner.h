@@ -1,15 +1,19 @@
 #ifndef FB_BOT_BOT_TEST_RUNNER_H
 #define FB_BOT_BOT_TEST_RUNNER_H
 
-#include <thread>
-#include <memory>
-#include <string_view>
-#include <boost/asio.hpp>
-#include <fb/console.h>
-#include <fb/config.h>
+#include <fb/bot/bot_controller_factory.h>
 #include <fb/bot/container.h>
 #include <fb/bot/test_mode.h>
-#include <fb/bot/bot_controller_factory.h>
+#include <fb/config.h>
+#include <fb/console.h>
+
+#include <boost/asio.hpp>
+
+#include <chrono>
+#include <cstdint>
+#include <memory>
+#include <string_view>
+#include <thread>
 
 using namespace std::chrono_literals;
 

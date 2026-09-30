@@ -4,9 +4,12 @@
 #include <fb/config.h>
 #include <fb/encoding.h>
 #include <fb/model/datetime.h>
+
 #include <boost/algorithm/string.hpp>
+
 #include <atomic>
 #include <condition_variable>
+#include <cstddef>
 #include <cstdio>
 #include <deque>
 #include <format>
@@ -14,6 +17,7 @@
 #include <string>
 #include <string_view>
 #include <thread>
+#include <utility>
 
 namespace fb {
 

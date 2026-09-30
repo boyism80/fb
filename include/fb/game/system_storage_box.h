@@ -1,11 +1,12 @@
 #ifndef FB_GAME_SYSTEM_STORAGE_BOX_H
 #define FB_GAME_SYSTEM_STORAGE_BOX_H
 
+#include <fb/game/storage.h>
+#include <fb/model/datetime.h>
+
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <fb/game/storage.h>
-#include <fb/model/datetime.h>
 
 namespace fb::game {
 

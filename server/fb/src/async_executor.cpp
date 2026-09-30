@@ -1,5 +1,12 @@
 #include <fb/async_executor.h>
+
 #include <fb/execution_context.h>
+
+#include <cstdint>
+#include <cstdlib>
+#include <mutex>
+#include <string>
+#include <string_view>
 
 using namespace fb;
 

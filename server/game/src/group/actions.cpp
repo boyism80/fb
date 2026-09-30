@@ -1,12 +1,22 @@
+#include <fb/amqp_route.h>
+#include <fb/config.h>
+#include <fb/encoding.h>
+#include <fb/game/character.h>
 #include <fb/game/group.h>
 #include <fb/game/server.h>
-#include <fb/game/character.h>
 #include <fb/game/thread_params.h>
-#include <fb/config.h>
-#include <fb/amqp_route.h>
-#include <fb/encoding.h>
 #include <macro.h>
+
+#include <cstdint>
+#include <exception>
+#include <format>
 #include <functional>
+#include <map>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
 
 using namespace fb::game;
 namespace internal_reqs = fb::protocol::internal::request;

@@ -1,10 +1,13 @@
 #ifndef FB_GAME_APPEARANCE_H
 #define FB_GAME_APPEARANCE_H
 
+#include <fb/lua.h>
 #include <fb/model/model.h>
 #include <fb/protocol/client_version.h>
 #include <fb/stream_writer.h>
-#include <fb/lua.h>
+
+#include <cstdint>
+#include <memory>
 #include <optional>
 
 namespace fb::game {

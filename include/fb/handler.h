@@ -1,9 +1,11 @@
 #ifndef FB_HANDLER_H
 #define FB_HANDLER_H
 
-#include <thread>
 #include <async/task.h>
 #include <fb/model/datetime.h>
+
+#include <cstdint>
+#include <thread>
 
 namespace fb::handler {
 

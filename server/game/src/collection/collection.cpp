@@ -1,6 +1,13 @@
 #include <fb/game/collection.h>
+
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
 
 namespace fb::game {
 

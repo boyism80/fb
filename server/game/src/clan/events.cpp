@@ -1,10 +1,21 @@
+#include <fb/encoding.h>
+#include <fb/game/character.h>
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
-#include <fb/game/character.h>
 #include <fb/game/thread_params.h>
-#include <fb/encoding.h>
-#include <json/json.h>
 #include <macro.h>
+
+#include <json/json.h>
+
+#include <cstdint>
+#include <format>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;

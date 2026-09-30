@@ -1,5 +1,8 @@
 #include <fb/game/protocol/bright.h>
 
+#include <algorithm>
+#include <cstdint>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

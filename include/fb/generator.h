@@ -2,8 +2,10 @@
 #define __GENERATOR_H__
 
 #include <coroutine>
+#include <exception>
 #include <optional>
 #include <stdexcept>
+#include <utility>
 
 namespace fb {
 

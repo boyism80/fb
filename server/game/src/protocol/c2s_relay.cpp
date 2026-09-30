@@ -1,5 +1,9 @@
 #include <fb/game/protocol/c2s_relay.h>
 
+#include <cstdint>
+#include <string>
+#include <string_view>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

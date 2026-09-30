@@ -1,10 +1,13 @@
 #ifndef __PROTOCOL_GATEWAY_SERVER_LIST_H__
 #define __PROTOCOL_GATEWAY_SERVER_LIST_H__
 
-#include <fb/protocol/header.h>
 #include <fb/protocol/client_version.h>
-#include <format>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
 #include <string_view>
+#include <vector>
 
 namespace fb::protocol::gateway {
 

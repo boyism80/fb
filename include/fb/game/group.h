@@ -1,12 +1,18 @@
 #ifndef __GROUP_H__
 #define __GROUP_H__
 
+#include <async/task.h>
 #include <fb/game/character.h>
 #include <fb/game/lazy_container.h>
-#include <async/task.h>
+
+#include <cstdint>
 #include <map>
-#include <unordered_set>
+#include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
+#include <unordered_set>
+#include <vector>
 
 namespace fb::game {
 

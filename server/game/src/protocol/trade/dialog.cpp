@@ -1,5 +1,8 @@
 #include <fb/game/protocol/trade/dialog.h>
+
+#include <cstdint>
 #include <sstream>
+#include <string>
 
 using table = fb::model::table;
 

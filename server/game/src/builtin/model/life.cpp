@@ -1,5 +1,5 @@
-#include <fb/model/model.h>
 #include <fb/game/builtin/model.h>
+#include <fb/model/model.h>
 
 using namespace fb::game;
 

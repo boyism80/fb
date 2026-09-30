@@ -3,9 +3,9 @@
 
 #include <async/task.h>
 #include <fb/model/datetime.h>
-#include <unordered_map>
-#include <vector>
+
 #include <cstdint>
+#include <unordered_map>
 
 namespace fb::game {
 class server;

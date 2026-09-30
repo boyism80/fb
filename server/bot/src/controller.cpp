@@ -1,10 +1,15 @@
 #include <fb/bot/container.h>
-#include <fb/bot/gateway_bot.h>
-#include <fb/bot/login_bot.h>
 #include <fb/bot/game_bot.h>
-#include <fb/bot/gateway_controller.h>
-#include <fb/bot/login_controller.h>
 #include <fb/bot/game_controller.h>
+#include <fb/bot/gateway_bot.h>
+#include <fb/bot/gateway_controller.h>
+#include <fb/bot/login_bot.h>
+#include <fb/bot/login_controller.h>
+
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <utility>
 
 using namespace fb::bot;
 

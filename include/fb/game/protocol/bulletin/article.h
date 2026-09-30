@@ -1,8 +1,12 @@
 #ifndef __PROTOCOL_GAME_ARTICLE_H__
 #define __PROTOCOL_GAME_ARTICLE_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
+
 #ifndef BOT
 #include <fb/game/bulletin.h>
 #else

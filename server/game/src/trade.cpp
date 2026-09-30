@@ -1,10 +1,22 @@
-#include <limits>
-#include <fb/game/server.h>
-#include <fb/game/character.h>
 #include <fb/game/trade.h>
-#include <fb/model/model.h>
+
 #include <fb/encoding.h>
+#include <fb/game/character.h>
+#include <fb/game/server.h>
+#include <fb/model/model.h>
+
 #include <json/json.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <exception>
+#include <format>
+#include <limits>
+#include <memory>
+#include <stdexcept>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
 
 using namespace fb::game;
 

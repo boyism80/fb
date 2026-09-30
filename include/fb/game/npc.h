@@ -1,10 +1,11 @@
 #ifndef __NPC_H__
 #define __NPC_H__
 
-#include <fb/game/item.h>
 #include <fb/game/appearance.h>
-#include <format>
-#include <optional>
+#include <fb/game/item.h>
+
+#include <cstdint>
+#include <memory>
 
 namespace fb::game {
 

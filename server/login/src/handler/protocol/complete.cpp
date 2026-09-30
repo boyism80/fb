@@ -1,6 +1,11 @@
 #include <fb/login/handler/protocol/complete.h>
+
 #include <fb/login/exception.h>
 #include <fb/model/model.h>
+
+#include <cstdint>
+#include <exception>
+#include <stdexcept>
 
 using namespace fb::login::handler::protocol;
 using namespace fb::model;

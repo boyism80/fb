@@ -1,5 +1,9 @@
 #include <fb/game/protocol/bulletin/sections.h>
+
 #include <algorithm>
+#include <cstdint>
+#include <string>
+#include <utility>
 #include <vector>
 
 using table = fb::model::table;

@@ -1,15 +1,27 @@
-#include <fb/game/group.h>
-#include <fb/game/server.h>
-#include <fb/game/character.h>
-#include <fb/game/thread_params.h>
-#include <fb/game/protocol/group_portrait.h>
-#include <fb/game/client_amount.h>
 #include <fb/encoding.h>
-#include <json/json.h>
+#include <fb/game/character.h>
+#include <fb/game/client_amount.h>
+#include <fb/game/group.h>
+#include <fb/game/protocol/group_portrait.h>
+#include <fb/game/server.h>
+#include <fb/game/thread_params.h>
 #include <macro.h>
+
+#include <json/json.h>
+
 #include <algorithm>
+#include <cstdint>
+#include <format>
+#include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 

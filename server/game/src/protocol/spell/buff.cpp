@@ -1,5 +1,10 @@
 #include <fb/game/protocol/spell/buff.h>
 
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include <string_view>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

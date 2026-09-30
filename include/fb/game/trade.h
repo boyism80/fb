@@ -1,9 +1,17 @@
 #ifndef __TRADE_H__
 #define __TRADE_H__
 
-#include <fb/stream.h>
 #include <async/task.h>
+#include <fb/stream.h>
+
+#include <cstdint>
+#include <memory>
 #include <unordered_map>
+#include <vector>
+
+namespace fb::model {
+class item;
+}
 
 namespace fb::game {
 

@@ -1,5 +1,7 @@
 #include <fb/game/protocol/item/inactive.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

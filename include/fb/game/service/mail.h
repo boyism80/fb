@@ -2,10 +2,10 @@
 #define __FB_GAME_SERVICE_MAIL_H__
 
 #include <fb/game/mail_box.h>
-#include <string>
+
+#include <cstdint>
 #include <string_view>
 #include <vector>
-#include <cstdint>
 
 namespace fb::protocol::internal {
 class MailSummary;

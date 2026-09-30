@@ -1,12 +1,14 @@
 #ifndef __FB_STREAM_H__
 #define __FB_STREAM_H__
 
-#include <stdexcept>
-#include <vector>
-#include <zlib.h>
-#include <cstdint>
-#include <memory>
 #include <fb/logger.h>
+
+#include <zlib.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <vector>
+
 #ifdef __linux__
 #include <sys/types.h>
 #endif

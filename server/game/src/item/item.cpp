@@ -1,6 +1,18 @@
-#include <fb/game/server.h>
 #include <fb/game/item.h>
+
+#include <fb/game/server.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <format>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <sstream>
 #include <stdexcept>
+#include <string>
+#include <tuple>
+#include <utility>
 
 using namespace fb::game;
 

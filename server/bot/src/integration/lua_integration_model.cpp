@@ -1,5 +1,8 @@
 #include <fb/bot/integration/lua_integration_model.h>
+
 #include <fb/model/model.h>
+
+#include <cstdint>
 
 using table = fb::model::table;
 

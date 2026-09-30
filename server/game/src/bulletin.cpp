@@ -1,5 +1,9 @@
 #include <fb/game/bulletin.h>
+
 #include <fb/game/character.h>
+
+#include <list>
+#include <string_view>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;

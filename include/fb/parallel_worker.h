@@ -1,16 +1,19 @@
 #ifndef __PARALLEL_WORKER_H__
 #define __PARALLEL_WORKER_H__
 
-#include <atomic>
-#include <memory>
-#include <optional>
-#include <queue>
-#include <type_traits>
-#include <vector>
+#include <async/task.h>
 #include <fb/async_executor.h>
 #include <fb/generator.h>
 #include <fb/synchronized.h>
-#include <async/task.h>
+
+#include <atomic>
+#include <cstdint>
+#include <exception>
+#include <optional>
+#include <queue>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace fb {
 

@@ -1,16 +1,14 @@
 #ifndef __FB_HTTP_CLIENT_H__
 #define __FB_HTTP_CLIENT_H__
 
-#include <atomic>
-#include <chrono>
-#include <format>
-#include <functional>
-#include <map>
-#include <mutex>
-#include <queue>
-#include <string>
-#include <string_view>
-#include <vector>
+#include <fb/async_executor.h>
+#include <fb/config.h>
+#include <fb/model/datetime.h>
+#include <fb/stream.h>
+#include <fb/stream_reader.h>
+#include <fb/stream_writer.h>
+#include <fb/thread.h>
+
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect.hpp>
@@ -21,13 +19,23 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
-#include <fb/stream.h>
-#include <fb/stream_reader.h>
-#include <fb/stream_writer.h>
-#include <fb/config.h>
-#include <fb/async_executor.h>
-#include <fb/model/datetime.h>
-#include <fb/thread.h>
+
+#include <atomic>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <format>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 #define REGISTER_RESPONSE(Request, Response) \
     template <> struct response_of<Request>  \

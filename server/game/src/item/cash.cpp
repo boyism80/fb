@@ -1,5 +1,13 @@
-#include <fb/game/server.h>
 #include <fb/game/item.h>
+#include <fb/game/server.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;

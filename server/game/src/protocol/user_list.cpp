@@ -1,5 +1,10 @@
 #include <fb/game/protocol/user_list.h>
 
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

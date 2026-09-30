@@ -4,11 +4,12 @@
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/model/model.h>
+
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <cstdint>
 
 namespace fb::protocol::internal {
 class StorageBox;

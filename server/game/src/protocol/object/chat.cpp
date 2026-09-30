@@ -1,5 +1,9 @@
 #include <fb/game/protocol/object/chat.h>
 
+#include <cstdint>
+#include <string>
+#include <string_view>
+
 namespace fb::protocol::game::request {
 
 #ifndef BOT

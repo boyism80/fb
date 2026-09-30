@@ -1,8 +1,8 @@
 #ifndef FB_GAME_HANDLER_DIALOG_H
 #define FB_GAME_HANDLER_DIALOG_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
 #include <fb/lua.h>
 
 namespace fb::game::handler::protocol {

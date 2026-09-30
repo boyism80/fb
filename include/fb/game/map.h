@@ -2,18 +2,25 @@
 #define __MAP_H__
 
 #include <async/task.h>
-#include <fb/container.h>
 #include <fb/config.h>
+#include <fb/container.h>
 #include <fb/game/door.h>
 #include <fb/game/object.h>
 #include <fb/game/sector.h>
 #include <fb/shard_container.h>
 #include <fb/synchronized.h>
+
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <mutex>
 #include <optional>
 #include <queue>
 #include <set>
 #include <shared_mutex>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 

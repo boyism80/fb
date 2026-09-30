@@ -1,8 +1,11 @@
 #ifndef __PROTOCOL_GAME_POSITION_H__
 #define __PROTOCOL_GAME_POSITION_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+
 #ifndef BOT
 #include <fb/game/character.h>
 #include <fb/game/map.h>

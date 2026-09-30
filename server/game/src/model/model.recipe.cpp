@@ -1,5 +1,9 @@
 #include <fb/game/mst.recipe.h>
 
+#include <memory>
+#include <string_view>
+#include <vector>
+
 fb::model::___recipe::___recipe() :
     fb::model::array_container<fb::model::recipe>(std::string_view("json/recipe.json"))
 {

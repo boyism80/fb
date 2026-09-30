@@ -1,8 +1,18 @@
 #include <fb/game/group.h>
-#include <fb/game/server.h>
+
 #include <fb/game/character.h>
+#include <fb/game/server.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
 #include <algorithm>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using namespace fb::protocol::internal::request;

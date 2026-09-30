@@ -1,5 +1,8 @@
 #include <fb/game/handler/protocol/front_info.h>
+
 #include <fb/game/server.h>
+
+#include <memory>
 
 namespace game_reqs = fb::protocol::game::request;
 

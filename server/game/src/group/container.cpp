@@ -1,7 +1,13 @@
+#include <fb/config.h>
 #include <fb/game/group.h>
 #include <fb/game/server.h>
-#include <fb/config.h>
 #include <fb/model/model.h>
+
+#include <cstdint>
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;

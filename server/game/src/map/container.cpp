@@ -1,5 +1,5 @@
-#include <fb/config.h>
 #include <fb/amqp_route.h>
+#include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/instance_map.h>
 #include <fb/game/map.h>
@@ -12,9 +12,24 @@
 #include <fb/model/model.h>
 #include <fb/stream_reader.h>
 #include <fb/stream_writer.h>
+
 #include <json/json.h>
+
 #include <algorithm>
+#include <cstdint>
+#include <format>
+#include <fstream>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <shared_mutex>
+#include <stdexcept>
+#include <string_view>
 #include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using table         = fb::model::table;

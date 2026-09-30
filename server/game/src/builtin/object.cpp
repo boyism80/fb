@@ -1,10 +1,21 @@
 #include <fb/game/builtin/object.h>
-#include <fb/game/server.h>
-#include <fb/game/character.h>
-#include <fb/game/appearance.h>
+
 #include <async/awaitable_then.h>
 #include <async/propagation.h>
+#include <fb/game/appearance.h>
+#include <fb/game/character.h>
+#include <fb/game/server.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <format>
+#include <memory>
+#include <optional>
+#include <set>
+#include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using table = fb::model::table;

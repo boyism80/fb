@@ -1,6 +1,9 @@
 #include <fb/game/handler/amqp/write_mail.h>
-#include <fb/game/server.h>
+
 #include <fb/game/mail_box.h>
+#include <fb/game/server.h>
+
+#include <cstdint>
 
 using namespace fb::game::handler::amqp;
 

@@ -1,12 +1,16 @@
 #ifndef __PROTOCOL_GAME_CHARACTER_UPDATE_EXTERNAL_H__
 #define __PROTOCOL_GAME_CHARACTER_UPDATE_EXTERNAL_H__
 
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
+
 #ifndef BOT
-#include <fb/game/character.h>
 #include <fb/game/appearance.h>
+#include <fb/game/character.h>
 #endif
 
 namespace fb::protocol::game::response {

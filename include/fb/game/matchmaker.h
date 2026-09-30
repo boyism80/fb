@@ -4,6 +4,8 @@
 #include <async/task.h>
 #include <fb/lua.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>

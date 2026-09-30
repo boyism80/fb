@@ -1,5 +1,8 @@
 #include <fb/game/protocol/item/combine.h>
 
+#include <cstdint>
+#include <vector>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

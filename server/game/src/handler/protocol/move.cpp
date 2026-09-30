@@ -1,5 +1,9 @@
 #include <fb/game/handler/protocol/move.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <stdexcept>
 #include <tuple>
 
 using namespace fb::model;

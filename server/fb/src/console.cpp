@@ -1,7 +1,23 @@
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <fb/console.h>
+
+#include <algorithm>
+#include <clocale>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <format>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#ifdef _WIN32
+#include <fb/windows.h>
+#endif
 
 using namespace fb;
 

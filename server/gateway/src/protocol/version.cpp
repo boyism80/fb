@@ -1,4 +1,6 @@
 #include <fb/gateway/protocol/version.h>
+
+#include <cstdint>
 #include <stdexcept>
 
 namespace fb::protocol::gateway::request {

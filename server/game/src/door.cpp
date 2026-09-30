@@ -1,7 +1,10 @@
-#include <fb/game/character.h>
-#include <fb/game/server.h>
 #include <fb/game/door.h>
+
+#include <fb/game/character.h>
 #include <fb/game/map.h>
+#include <fb/game/server.h>
+
+#include <cstdint>
 
 using namespace fb::game;
 using table = fb::model::table;

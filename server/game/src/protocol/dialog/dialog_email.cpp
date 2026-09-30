@@ -1,5 +1,10 @@
 #include <fb/game/protocol/dialog/dialog_email.h>
 
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <utility>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

@@ -1,5 +1,10 @@
 #include <fb/game/protocol/group_portrait.h>
 
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

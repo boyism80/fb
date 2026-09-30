@@ -1,9 +1,13 @@
+#include <fb/game/builtin/mob.h>
+
+#include <fb/game/builtin/object.h>
 #include <fb/game/mob.h>
 #include <fb/game/server.h>
-#include <fb/game/builtin/object.h>
-#include <fb/game/builtin/mob.h>
-#include <fb/model/model.h>
 #include <fb/lua.h>
+#include <fb/model/model.h>
+
+#include <cstddef>
+#include <memory>
 
 using namespace fb::game;
 using table = fb::model::table;

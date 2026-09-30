@@ -1,5 +1,10 @@
 #include <fb/bot/integration/dialog_ext_bot.h>
+
 #include <fb/stream.h>
+
+#include <cstdint>
+#include <stdexcept>
+#include <string>
 
 namespace fb::bot::integration {
 

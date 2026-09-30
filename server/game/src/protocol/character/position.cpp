@@ -1,5 +1,7 @@
 #include <fb/game/protocol/character/position.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

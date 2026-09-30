@@ -3,10 +3,27 @@
 
 #include <fb/bot/bot.h>
 #include <fb/bot/container.h>
-#include <fb/synchronized.h>
-#include <fb/protocol/header.h>
 #include <fb/logger.h>
+#include <fb/protocol/header.h>
+#include <fb/synchronized.h>
+
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
 #include <format>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <shared_mutex>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
 
 namespace fb::bot {
 

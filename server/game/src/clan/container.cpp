@@ -1,7 +1,14 @@
+#include <fb/config.h>
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
-#include <fb/config.h>
 #include <fb/model/model.h>
+
+#include <cstdint>
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;

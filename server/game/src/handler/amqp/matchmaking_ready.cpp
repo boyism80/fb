@@ -1,7 +1,11 @@
 #include <fb/game/handler/amqp/matchmaking_ready.h>
+
 #include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <tuple>
 
 using namespace fb::game::handler::amqp;
 

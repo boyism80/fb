@@ -1,6 +1,9 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
 
+#include <cstdint>
+#include <unordered_map>
+
 using table = fb::model::table;
 
 namespace fb::game {

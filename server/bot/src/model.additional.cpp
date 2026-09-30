@@ -1,11 +1,15 @@
 #include <fb/model/model.h>
-#include <unordered_map>
+
+#include <cstdint>
+#include <exception>
 #include <map>
+#include <mutex>
+#include <shared_mutex>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include <algorithm>
-#include <shared_mutex>
-#include <mutex>
 
 const fb::model::promotion* fb::model::___promotion::operator() (fb::model::enum_value::CLASS cls,
                                                                  uint8_t                      promotion) const

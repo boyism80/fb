@@ -1,6 +1,14 @@
 #include <fb/amqp.h>
 #include <fb/logger.h>
 
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
 using namespace fb::amqp;
 
 socket::socket()

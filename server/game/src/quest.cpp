@@ -1,8 +1,15 @@
 #include <fb/game/quest.h>
-#include <fb/game/server.h>
-#include <fb/game/character.h>
+
 #include <fb/encoding.h>
+#include <fb/game/character.h>
+#include <fb/game/server.h>
+
 #include <json/json.h>
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <string_view>
 
 using namespace fb::game;
 

@@ -1,6 +1,10 @@
-#include <fb/game/object.h>
 #include <fb/game/map.h>
+#include <fb/game/object.h>
 #include <fb/thread.h>
+
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
 
 using namespace fb::game;
 

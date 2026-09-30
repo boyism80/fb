@@ -1,6 +1,9 @@
+#include <fb/game/builtin/model.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
-#include <fb/game/builtin/model.h>
+
+#include <cstdint>
+#include <memory>
 
 using namespace fb::game;
 using table = fb::model::table;

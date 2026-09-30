@@ -1,4 +1,5 @@
 #include <fb/game/handler/amqp/broadcast_save.h>
+
 #include <fb/game/server.h>
 
 using namespace fb::game::handler::amqp;

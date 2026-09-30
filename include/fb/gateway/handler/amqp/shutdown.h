@@ -1,8 +1,8 @@
 #ifndef FB_GATEWAY_HANDLER_AMQP_SHUTDOWN_H
 #define FB_GATEWAY_HANDLER_AMQP_SHUTDOWN_H
 
-#include <fb/handler.h>
 #include <fb/gateway/server.h>
+#include <fb/handler.h>
 
 namespace fb::gateway::handler::amqp {
 

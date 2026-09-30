@@ -3,6 +3,10 @@
 #include <fb/model/model.h>
 #include <macro.h>
 
+#include <exception>
+#include <format>
+#include <stdexcept>
+
 using table = fb::model::table;
 
 fb::game::npc_spawner::npc_spawner(fb::game::server& server) :

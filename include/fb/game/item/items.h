@@ -2,17 +2,21 @@
 #define __ITEM_ITEMS_H__
 
 #include <fb/game/inventory.h>
-#include <fb/game/item/base.h>
-#include <fb/game/item/weapon.h>
 #include <fb/game/item/armor.h>
-#include <fb/game/item/helmet.h>
-#include <fb/game/item/shield.h>
-#include <fb/game/item/ring.h>
 #include <fb/game/item/auxiliary.h>
-#include <memory>
-#include <unordered_map>
-#include <vector>
+#include <fb/game/item/base.h>
+#include <fb/game/item/helmet.h>
+#include <fb/game/item/ring.h>
+#include <fb/game/item/shield.h>
+#include <fb/game/item/weapon.h>
+
+#include <cstdint>
 #include <map>
+#include <memory>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace fb::game {
 

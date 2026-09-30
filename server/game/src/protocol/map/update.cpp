@@ -1,5 +1,7 @@
 #include <fb/game/protocol/map/update.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;

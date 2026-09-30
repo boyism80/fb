@@ -1,5 +1,9 @@
 #include <fb/login/protocol/message.h>
 
+#include <cstdint>
+#include <string>
+#include <string_view>
+
 namespace fb::protocol::login::response {
 
 #ifndef BOT

@@ -1,13 +1,16 @@
 #ifndef __ITEM_BASE_H__
 #define __ITEM_BASE_H__
 
-#include <fb/game/object.h>
-#include <fb/game/appearance.h>
-#include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/model/datetime.h>
 #include <async/task.h>
-#include <optional>
+#include <fb/game/appearance.h>
+#include <fb/game/object.h>
+#include <fb/model/datetime.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+
+#include <cstdint>
 #include <memory>
+#include <optional>
+#include <string>
 
 namespace fb::game {
 

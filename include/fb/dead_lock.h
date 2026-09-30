@@ -3,6 +3,8 @@
 
 #include <fb/mst.h>
 
+#include <string>
+
 namespace fb {
 
 class dead_lock_detector : public fb::mst<std::string>

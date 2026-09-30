@@ -1,5 +1,9 @@
-#include <fb/game/server.h>
 #include <fb/game/npc.h>
+
+#include <fb/game/server.h>
+
+#include <cstdint>
+#include <memory>
 
 using namespace fb::game;
 using table = fb::model::table;

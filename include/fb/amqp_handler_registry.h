@@ -1,17 +1,21 @@
 #ifndef __FB_AMQP_HANDLER_REGISTRY_H__
 #define __FB_AMQP_HANDLER_REGISTRY_H__
 
-#include <unordered_map>
-#include <functional>
-#include <string>
-#include <string_view>
-#include <format>
-#include <stdexcept>
 #include <async/task.h>
 #include <fb/amqp.h>
 #include <fb/logger.h>
+
 #include <chrono>
+#include <cstdint>
+#include <exception>
+#include <format>
+#include <functional>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <unordered_map>
 
 namespace fb {
 

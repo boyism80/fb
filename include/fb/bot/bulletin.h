@@ -1,9 +1,10 @@
 #ifndef __BOT_BULLETIN_H__
 #define __BOT_BULLETIN_H__
 
-#include <stdint.h>
 #include <string>
 #include <string_view>
+
+#include <stdint.h>
 
 namespace fb::bot {
 

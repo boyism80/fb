@@ -1,9 +1,15 @@
 #include <fb/game/appearance.h>
+
 #include <fb/game/character.h>
 #include <fb/game/npc.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
+
+#include <cstdint>
+#include <memory>
+#include <optional>
 #include <stdexcept>
+#include <utility>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;

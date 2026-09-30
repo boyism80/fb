@@ -1,4 +1,5 @@
 #include <fb/game/handler/amqp/set_exp_multiplier.h>
+
 #include <fb/game/server.h>
 
 using namespace fb::game::handler::amqp;

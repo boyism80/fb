@@ -1,15 +1,30 @@
 #include <fb/bot/integration/game_controller.h>
-#include <fb/bot/integration/lua_integration_test.h>
-#include <fb/bot/integration/trade_bot.h>
-#include <fb/bot/game_bot.h>
-#include <fb/bot/container.h>
-#include <fb/bot/gateway_controller.h>
-#include <fb/bot/login_controller.h>
-#include <fb/logger.h>
-#include <fb/config.h>
+
 #include <async/awaitable_get.h>
 #include <async/awaitable_then.h>
+#include <fb/bot/container.h>
+#include <fb/bot/game_bot.h>
+#include <fb/bot/gateway_controller.h>
+#include <fb/bot/integration/lua_integration_test.h>
+#include <fb/bot/integration/trade_bot.h>
+#include <fb/bot/login_controller.h>
+#include <fb/config.h>
+#include <fb/logger.h>
+
+#include <chrono>
+#include <cstdint>
+#include <cstdlib>
+#include <exception>
 #include <format>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <shared_mutex>
+#include <stdexcept>
+#include <thread>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace fb::bot::integration;
 using table = fb::model::table;

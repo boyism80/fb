@@ -1,6 +1,9 @@
-#include <fb/bot/login_bot.h>
 #include <fb/bot/gateway_bot.h>
+
 #include <fb/bot/gateway_controller.h>
+#include <fb/bot/login_bot.h>
+
+#include <cstdint>
 
 using namespace fb::bot;
 

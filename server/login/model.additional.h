@@ -5,6 +5,9 @@
 #include <fb/model/substring_matcher.h>
 #include <macro.h>
 
+#include <string>
+#include <string_view>
+
 #define DECLARE_BLOCKED_NAME_CONTAINER_CUSTOM_CONSTRUCTOR \
     ___blocked_name();                                    \
     ___blocked_name(const ___blocked_name&) = delete;     \

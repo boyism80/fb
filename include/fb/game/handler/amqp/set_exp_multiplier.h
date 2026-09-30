@@ -1,8 +1,8 @@
 #ifndef FB_GAME_HANDLER_AMQP_SET_EXP_MULTIPLIER_H
 #define FB_GAME_HANDLER_AMQP_SET_EXP_MULTIPLIER_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
 
 namespace fb::game::handler::amqp {
 

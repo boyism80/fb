@@ -1,6 +1,14 @@
-#include <fb/game/server.h>
-#include <fb/game/matchmaker.h>
 #include <fb/game/builtin/matchmaker.h>
+
+#include <fb/game/matchmaker.h>
+#include <fb/game/server.h>
+
+#include <cstdint>
+#include <exception>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
 
 using namespace fb::game;
 

@@ -1,4 +1,5 @@
 #include <fb/game/ai.h>
+
 #include <fb/game/ai/aggressive.h>
 #include <fb/game/ai/inert.h>
 #include <fb/game/ai/none.h>
@@ -10,6 +11,11 @@
 #include <fb/game/life.h>
 #include <fb/game/map.h>
 #include <fb/game/server.h>
+
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <memory>
 
 using namespace fb::game;
 

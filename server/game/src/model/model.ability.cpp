@@ -1,9 +1,14 @@
-#include <model.additional.h>
 #include <fb/model/model.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <sstream>
+#include <stdexcept>
+#include <string_view>
+#include <unordered_map>
 #include <vector>
+
+#include <model.additional.h>
 
 fb::model::___ability::___ability() :
     fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>(

@@ -1,7 +1,18 @@
 #include <fb/game/clan.h>
+
+#include <fb/config.h>
 #include <fb/game/server.h>
 #include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/config.h>
+
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using namespace fb::model;

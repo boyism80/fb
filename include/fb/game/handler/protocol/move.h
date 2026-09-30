@@ -1,8 +1,10 @@
 #ifndef FB_GAME_HANDLER_MOVE_H
 #define FB_GAME_HANDLER_MOVE_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
+
+#include <cstdint>
 
 namespace fb::game::handler::protocol {
 

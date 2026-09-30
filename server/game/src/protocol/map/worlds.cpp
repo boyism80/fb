@@ -1,5 +1,8 @@
 #include <fb/game/protocol/map/worlds.h>
 
+#include <cstdint>
+#include <string>
+
 using table = fb::model::table;
 using namespace fb::protocol::game::response;
 

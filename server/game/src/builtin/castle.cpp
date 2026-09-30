@@ -1,7 +1,14 @@
+#include <fb/game/builtin/castle.h>
+
 #include <fb/game/castle.h>
 #include <fb/game/server.h>
-#include <fb/game/builtin/castle.h>
 #include <macro.h>
+
+#include <cstdint>
+#include <exception>
+#include <memory>
+#include <optional>
+#include <string>
 
 using namespace fb::game;
 

@@ -1,5 +1,10 @@
 #include <fb/game/protocol/collection.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <utility>
+#include <vector>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

@@ -1,5 +1,8 @@
 #include <fb/game/handler/protocol/door.h>
+
 #include <fb/game/server.h>
+
+#include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;
 

@@ -1,24 +1,21 @@
 #ifndef __FB_LOGIN_H__
 #define __FB_LOGIN_H__
 
-#include <string>
-#include <iostream>
-#include <memory>
-#include <fstream>
-#include <json/json.h>
-#include <regex>
-#include <ctime>
-#include <zlib.h>
-#include <fb/socket.h>
-#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/acceptor.h>
-#include <fb/model/model.h>
-#include <fb/login/session.h>
-#include <fb/login/protocol.h>
 #include <fb/log_collector.h>
+#include <fb/login/protocol.h>
+#include <fb/login/session.h>
 #include <fb/meta_dat_file.h>
-#include <memory>
+#include <fb/model/model.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/socket.h>
+
+#include <json/json.h>
+#include <zlib.h>
+
+#include <cstdint>
 #include <string_view>
+#include <vector>
 
 #define MAX_NXCLUB_SIZE 14
 

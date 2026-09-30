@@ -1,8 +1,17 @@
 #include <fb/game/service/bulletin.h>
-#include <fb/game/server.h>
+
 #include <fb/game/character.h>
+#include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
+#include <cstdint>
+#include <format>
+#include <list>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
 
 using namespace fb::game;
 using table             = fb::model::table;

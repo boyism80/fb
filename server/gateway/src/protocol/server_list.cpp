@@ -1,6 +1,13 @@
 #include <fb/gateway/protocol/server_list.h>
+
+#include <cstdint>
+#include <format>
+#include <string>
+#include <string_view>
+#include <vector>
+
 #ifdef _WIN32
-#include <winsock.h>
+#include <fb/winsock.h>
 #else
 #include <arpa/inet.h>
 #endif

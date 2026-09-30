@@ -2,11 +2,13 @@
 #define __FB_GATEWAY_H__
 
 #include <fb/acceptor.h>
-#include <fb/gateway/session.h>
 #include <fb/gateway/protocol.h>
-#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/gateway/session.h>
 #include <fb/log_collector.h>
-#include <memory>
+#include <fb/protocol/flatbuffer/protocol.h>
+
+#include <cstdint>
+#include <vector>
 
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 

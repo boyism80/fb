@@ -1,5 +1,7 @@
 #include <fb/game/protocol/ping.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

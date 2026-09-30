@@ -1,5 +1,9 @@
 #include <fb/gateway/protocol/encryption.h>
 
+#include <cstdint>
+#include <memory>
+#include <utility>
+
 namespace fb::protocol::gateway::response {
 
 #ifdef BOT

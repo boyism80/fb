@@ -1,4 +1,5 @@
 #include <fb/game/handler/amqp/friend_message.h>
+
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 

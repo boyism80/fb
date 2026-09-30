@@ -1,5 +1,7 @@
 #include <fb/game/protocol/ui_screen.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

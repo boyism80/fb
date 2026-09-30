@@ -1,5 +1,9 @@
 #include <fb/game/thread_params.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <memory>
 
 using namespace fb::game;
 

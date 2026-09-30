@@ -2,6 +2,11 @@
 #define __ITEM_EQUIPMENT_H__
 
 #include <fb/game/item/base.h>
+#include <fb/game/item/listener.h>
+
+#include <cstdint>
+#include <optional>
+#include <string>
 
 namespace fb::game {
 

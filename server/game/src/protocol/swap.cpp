@@ -1,5 +1,7 @@
 #include <fb/game/protocol/swap.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

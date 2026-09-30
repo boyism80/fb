@@ -3,6 +3,10 @@
 
 #include <fb/game/item/base.h>
 
+#include <cstdint>
+#include <optional>
+#include <string>
+
 namespace fb::game {
 
 class pack : public item

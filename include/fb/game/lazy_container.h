@@ -1,9 +1,11 @@
 #ifndef __FB_GAME_LAZY_CONTAINER_H__
 #define __FB_GAME_LAZY_CONTAINER_H__
 
+#include <async/task.h>
 #include <fb/shard_container.h>
 #include <fb/thread.h>
-#include <async/task.h>
+
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <optional>

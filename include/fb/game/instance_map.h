@@ -3,6 +3,9 @@
 
 #include <fb/game/map.h>
 
+#include <cstdint>
+#include <memory>
+
 namespace fb::game {
 
 class instance_map : public map

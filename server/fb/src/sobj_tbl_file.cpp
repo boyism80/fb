@@ -1,9 +1,16 @@
 #include <fb/sobj_tbl_file.h>
+
 #include <fb/stream_reader.h>
+
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <stdexcept>
-#include <format>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace fb {
 

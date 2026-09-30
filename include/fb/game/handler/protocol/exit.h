@@ -1,8 +1,10 @@
 #ifndef FB_GAME_HANDLER_EXIT_H
 #define FB_GAME_HANDLER_EXIT_H
 
-#include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/handler.h>
+
+#include <cstdlib>
 
 namespace fb::game::handler::protocol {
 

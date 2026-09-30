@@ -1,5 +1,10 @@
 #include <fb/model/model.h>
 
+#include <cstdint>
+#include <exception>
+#include <string>
+#include <string_view>
+
 const fb::model::promotion* fb::model::___promotion::operator() (fb::model::enum_value::CLASS cls,
                                                                  uint8_t                      promotion) const
 {

@@ -1,5 +1,8 @@
 #include <fb/game/ai/retaliate.h>
+
 #include <fb/game/mob.h>
+
+#include <cstdlib>
 
 using namespace fb::game;
 

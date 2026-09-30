@@ -1,8 +1,10 @@
 #ifndef __ITEM_LISTENER_H__
 #define __ITEM_LISTENER_H__
 
-#include <fb/game/object.h>
 #include <fb/game/item/base.h>
+#include <fb/game/object.h>
+
+#include <cstdint>
 
 namespace fb::game {
 

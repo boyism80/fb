@@ -1,6 +1,10 @@
 #include <fb/login/handler/protocol/meta_dat.h>
+
 #include <fb/login/protocol/name_list.h>
+
+#include <cstdint>
 #include <tuple>
+#include <utility>
 
 namespace login_reqs  = fb::protocol::login::request;
 namespace login_resps = fb::protocol::login::response;

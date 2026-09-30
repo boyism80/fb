@@ -1,9 +1,20 @@
 #include <fb/login/handler/protocol/login.h>
-#include <fb/login/exception.h>
+
 #include <fb/encoding.h>
 #include <fb/logger.h>
+#include <fb/login/exception.h>
+
 #include <json/json.h>
+
+#include <chrono>
+#include <cstdint>
+#include <exception>
 #include <format>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
 
 using namespace fb::login::handler::protocol;
 using table = fb::model::table;

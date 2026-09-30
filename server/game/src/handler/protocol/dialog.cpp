@@ -1,6 +1,9 @@
 #include <fb/game/handler/protocol/dialog.h>
-#include <fb/game/server.h>
+
 #include <fb/game/item/base.h>
+#include <fb/game/server.h>
+
+#include <string>
 
 namespace fb::game::handler::protocol {
 

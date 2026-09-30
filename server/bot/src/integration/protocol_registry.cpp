@@ -1,8 +1,10 @@
 #include <fb/bot/integration/protocol_registry.h>
-#include <fb/bot/integration/protocol_registry.generated.h>
+
 #include <fb/bot/game_controller.h>
+#include <fb/bot/integration/protocol_registry.generated.h>
 #include <fb/lua.h>
 
+#include <cstddef>
 #include <cstring>
 
 namespace fb::bot::integration {

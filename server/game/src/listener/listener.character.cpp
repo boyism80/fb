@@ -1,9 +1,20 @@
-#include <fb/game/server.h>
 #include <fb/game/protocol/collection.h>
+#include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <fb/protocol/client_version.h>
 #include <macro.h>
+
+#include <cstdint>
+#include <ctime>
+#include <list>
+#include <memory>
 #include <mutex>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 

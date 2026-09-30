@@ -1,5 +1,10 @@
 #include <fb/game/handler/protocol/item_drop_money.h>
+
 #include <fb/game/server.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;
 

@@ -1,5 +1,8 @@
 #include <fb/game/handler/amqp/shutdown.h>
+
 #include <fb/game/server.h>
+
+#include <cstdlib>
 
 using namespace fb::game::handler::amqp;
 

@@ -1,9 +1,14 @@
 #include <fb/game/handler/timer/soliloquy_timer.h>
-#include <fb/game/thread_params.h>
+
+#include <fb/game/map.h>
 #include <fb/game/npc.h>
 #include <fb/game/object.h>
-#include <fb/game/map.h>
+#include <fb/game/thread_params.h>
 #include <fb/logger.h>
+
+#include <exception>
+#include <memory>
+#include <thread>
 
 using namespace fb::game::handler::timer;
 

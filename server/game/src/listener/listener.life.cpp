@@ -1,5 +1,8 @@
 #include <fb/game/server.h>
 
+#include <cstdint>
+#include <memory>
+
 using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;

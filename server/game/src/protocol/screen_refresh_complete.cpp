@@ -1,5 +1,7 @@
 #include <fb/game/protocol/screen_refresh_complete.h>
 
+#include <cstdint>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

@@ -1,11 +1,15 @@
 #ifndef __GAME_PROTOCOL_LOGIN_H__
 #define __GAME_PROTOCOL_LOGIN_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
-#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/client_version.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/protocol/header.h>
 #include <macro.h>
+
+#include <cstdint>
+#include <optional>
+#include <string>
 
 namespace fb::protocol::game::request {
 

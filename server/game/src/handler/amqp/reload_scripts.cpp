@@ -1,7 +1,10 @@
 #include <fb/game/handler/amqp/reload_scripts.h>
+
 #include <fb/game/server.h>
-#include <fb/model/script_download.h>
 #include <fb/logger.h>
+#include <fb/model/script_download.h>
+
+#include <exception>
 
 using namespace fb::game::handler::amqp;
 

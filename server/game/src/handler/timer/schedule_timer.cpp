@@ -1,6 +1,10 @@
 #include <fb/game/handler/timer/schedule_timer.h>
-#include <fb/game/server.h>
+
 #include <fb/amqp_route.h>
+#include <fb/game/server.h>
+
+#include <cstdint>
+#include <optional>
 
 using namespace fb::game::handler::timer;
 

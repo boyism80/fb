@@ -1,8 +1,11 @@
 #ifndef __PROTOCOL_GAME_TIME_H__
 #define __PROTOCOL_GAME_TIME_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <ctime>
 
 namespace fb::protocol::game::response {
 

@@ -1,5 +1,9 @@
 #include <fb/game/instance_map.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <memory>
 
 using namespace fb::game;
 

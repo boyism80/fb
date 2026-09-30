@@ -1,4 +1,5 @@
 #include <fb/game/marriage.h>
+
 #include <fb/protocol/flatbuffer/protocol.h>
 
 namespace fb::game {

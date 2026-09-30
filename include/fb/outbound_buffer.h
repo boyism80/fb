@@ -1,9 +1,11 @@
 #ifndef __OUTBOUND_BUFFER_H__
 #define __OUTBOUND_BUFFER_H__
 
-#include <boost/asio/ip/tcp.hpp>
-#include <cstdint>
 #include <fb/stream.h>
+
+#include <boost/asio/ip/tcp.hpp>
+
+#include <cstdint>
 #include <memory>
 
 namespace fb {

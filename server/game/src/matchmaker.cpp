@@ -1,11 +1,23 @@
 #include <fb/game/matchmaker.h>
+
+#include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
-#include <fb/config.h>
 #include <fb/logger.h>
 #include <fb/model/model.h>
 #include <macro.h>
+
+#include <cstdint>
+#include <exception>
+#include <format>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using table = fb::model::table;

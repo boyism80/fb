@@ -1,5 +1,9 @@
 #include <fb/game/handler/protocol/click.h>
+
 #include <fb/game/server.h>
+
+#include <format>
+#include <utility>
 
 namespace game_reqs = fb::protocol::game::request;
 

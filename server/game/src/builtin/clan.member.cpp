@@ -1,5 +1,8 @@
-#include <fb/game/clan.member.h>
 #include <fb/game/builtin/clan.member.h>
+
+#include <fb/game/clan.member.h>
+
+#include <cstdint>
 
 using namespace fb::game;
 

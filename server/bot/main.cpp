@@ -1,12 +1,14 @@
-#include <iostream>
-#include <boost/program_options.hpp>
-#include <fb/console.h>
-#include <fb/config.h>
-#include <fb/encoding.h>
-#include <fb/model/model.h>
-#include <fb/bot/test_mode.h>
 #include <fb/bot/bot_controller_factory.h>
 #include <fb/bot/bot_test_runner.h>
+#include <fb/bot/test_mode.h>
+#include <fb/config.h>
+#include <fb/console.h>
+#include <fb/encoding.h>
+#include <fb/model/model.h>
+
+#include <boost/program_options.hpp>
+
+#include <sstream>
 
 using namespace std;
 namespace po = boost::program_options;

@@ -3,7 +3,8 @@
 
 #include <fb/bot/bot.h>
 #include <fb/gateway/protocol.h>
-#include <shared_mutex>
+
+#include <cstdint>
 
 namespace fb::bot {
 

@@ -1,14 +1,26 @@
 #include <fb/log_collector.h>
-#include <fb/context.h>
+
 #include <fb/amqp.h>
+#include <fb/context.h>
 #include <fb/logger.h>
 #include <fb/model/datetime.h>
+
 #include <json/json.h>
 #include <json/writer.h>
-#include <sstream>
+
+#include <atomic>
 #include <chrono>
+#include <cstdint>
+#include <exception>
 #include <format>
+#include <memory>
+#include <mutex>
 #include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <utility>
 #include <vector>
 
 using namespace fb;

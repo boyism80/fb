@@ -1,9 +1,9 @@
-#include <fb/game/server.h>
 #include <fb/game/appearance.h>
-#include <fb/model/model.h>
 #include <fb/game/builtin/model.h>
+#include <fb/game/server.h>
+#include <fb/model/model.h>
 
-#include <stdexcept>
+#include <exception>
 
 using namespace fb::game;
 

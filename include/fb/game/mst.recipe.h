@@ -1,10 +1,15 @@
 #ifndef __MST_RECIPE_H__
 #define __MST_RECIPE_H__
 
-#include <fb/model/model.h>
-#include <fb/mst.h>
 #include <fb/game/item.h>
 #include <fb/generator.h>
+#include <fb/model/model.h>
+#include <fb/mst.h>
+
+#include <cstdint>
+#include <functional>
+#include <list>
+#include <vector>
 
 namespace fb { namespace model {
 

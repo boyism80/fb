@@ -1,5 +1,11 @@
 #include <fb/game/handler/amqp/updated_group.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <utility>
 
 using namespace fb::game::handler::amqp;
 

@@ -3,6 +3,14 @@
 
 #include <fb/game/character.h>
 
+#include <cstdint>
+#include <list>
+#include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+
 namespace fb::game {
 
 class server;

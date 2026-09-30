@@ -1,15 +1,21 @@
 #ifndef __FB_LOG_COLLECTOR_H__
 #define __FB_LOG_COLLECTOR_H__
 
-#include <json/json.h>
 #include <fb/amqp.h>
+
+#include <json/json.h>
+
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
 #include <deque>
+#include <memory>
 #include <mutex>
 #include <optional>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 namespace fb {
 

@@ -1,5 +1,8 @@
 #include <fb/game/handler/amqp/destroy_group.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
 
 using namespace fb::game::handler::amqp;
 

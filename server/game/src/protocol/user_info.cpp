@@ -1,5 +1,10 @@
 #include <fb/game/protocol/user_info.h>
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

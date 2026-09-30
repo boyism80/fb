@@ -1,24 +1,39 @@
 #include <fb/game/character.h>
-#include <fb/game/server.h>
-#include <fb/game/match.h>
-#include <fb/game/thread_params.h>
-#include <fb/context.h>
-#include <fb/model/model.h>
-#include <fb/logger.h>
-#include <stdexcept>
-#include <fb/encoding.h>
-#include <fb/config.h>
+
 #include <fb/amqp_route.h>
+#include <fb/config.h>
+#include <fb/context.h>
+#include <fb/encoding.h>
+#include <fb/game/match.h>
+#include <fb/game/server.h>
+#include <fb/game/thread_params.h>
+#include <fb/logger.h>
+#include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+#include <macro.h>
+
 #include <json/json.h>
 #include <json/writer.h>
-#include <sstream>
-#include <chrono>
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <exception>
 #include <format>
-#include <tuple>
-#include <macro.h>
-#include <unordered_map>
+#include <limits>
+#include <map>
+#include <memory>
+#include <optional>
 #include <random>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 using namespace fb::model;

@@ -1,6 +1,12 @@
 #include <fb/game/handler/protocol/update_option.h>
-#include <fb/game/server.h>
+
 #include <fb/amqp_route.h>
+#include <fb/game/server.h>
+
+#include <cstdint>
+#include <exception>
+#include <utility>
+#include <vector>
 
 namespace game_reqs = fb::protocol::game::request;
 

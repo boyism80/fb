@@ -1,4 +1,5 @@
 #include <fb/game/ai/stationary.h>
+
 #include <fb/game/mob.h>
 
 using namespace fb::game;

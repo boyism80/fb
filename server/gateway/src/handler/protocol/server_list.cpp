@@ -1,5 +1,8 @@
 #include <fb/gateway/handler/protocol/server_list.h>
+
 #include <fb/gateway/server.h>
+
+#include <tuple>
 
 using namespace fb::gateway::handler::protocol;
 

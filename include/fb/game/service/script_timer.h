@@ -3,7 +3,10 @@
 
 #include <async/task.h>
 #include <fb/timer.h>
+
+#include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>

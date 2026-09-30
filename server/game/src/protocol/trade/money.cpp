@@ -1,5 +1,8 @@
 #include <fb/game/protocol/trade/money.h>
+
 #include <fb/game/client_amount.h>
+
+#include <cstdint>
 
 namespace fb::protocol::game::response {
 

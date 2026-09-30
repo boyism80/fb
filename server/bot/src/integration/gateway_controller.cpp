@@ -1,8 +1,11 @@
 #include <fb/bot/integration/gateway_controller.h>
+
 #include <fb/bot/gateway_bot.h>
-#include <fb/bot/login_controller.h>
 #include <fb/bot/integration/game_controller.h>
+#include <fb/bot/login_controller.h>
 #include <fb/protocol/client_version.h>
+
+#include <cstdint>
 
 using namespace fb::bot::integration;
 

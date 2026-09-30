@@ -2,8 +2,9 @@
 #define __FB_GAME_SERVICE_WEATHER_H__
 
 #include <fb/model/model.h>
-#include <vector>
+
 #include <cstdint>
+#include <vector>
 
 namespace fb::game {
 class server;

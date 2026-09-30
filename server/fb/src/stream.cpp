@@ -1,5 +1,12 @@
 #include <fb/stream.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <memory>
+#include <stdexcept>
+#include <vector>
+
 using namespace fb;
 
 stream::stream(const uint8_t* data, size_t size)

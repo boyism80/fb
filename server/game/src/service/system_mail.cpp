@@ -1,13 +1,26 @@
 #include <fb/game/service/system_mail.h>
-#include <fb/game/server.h>
-#include <fb/game/character.h>
-#include <fb/config.h>
+
 #include <fb/amqp_route.h>
+#include <fb/config.h>
+#include <fb/game/character.h>
+#include <fb/game/server.h>
 #include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
 #include <format>
+#include <memory>
 #include <mutex>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;

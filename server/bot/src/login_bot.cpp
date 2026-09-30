@@ -1,7 +1,13 @@
 #include <fb/bot/login_bot.h>
-#include <fb/bot/game_bot.h>
+
 #include <fb/bot/container.h>
+#include <fb/bot/game_bot.h>
 #include <fb/bot/login_controller.h>
+
+#include <cstdint>
+#include <cwchar>
+#include <memory>
+#include <string>
 
 using namespace fb::bot;
 

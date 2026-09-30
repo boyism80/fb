@@ -1,5 +1,10 @@
 #include <fb/game/builtin/quest.h>
+
 #include <fb/game/server.h>
+
+#include <cstdint>
+#include <memory>
+#include <string>
 
 using namespace fb::game;
 

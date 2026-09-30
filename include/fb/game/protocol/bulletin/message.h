@@ -1,9 +1,11 @@
 #ifndef __PROTOCOL_GAME_BULLETIN_MESSAGE_H__
 #define __PROTOCOL_GAME_BULLETIN_MESSAGE_H__
 
-#include <cstdint>
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
 #include <string_view>
 
 namespace fb::protocol::game::response {

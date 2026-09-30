@@ -1,12 +1,13 @@
 #ifndef __BULLETIN_H__
 #define __BULLETIN_H__
 
-#include <ctime>
-#include <stdint.h>
-#include <optional>
+#include <fb/model/model.h>
+
+#include <list>
 #include <string>
 #include <string_view>
-#include <fb/model/model.h>
+
+#include <stdint.h>
 
 namespace fb::game {
 

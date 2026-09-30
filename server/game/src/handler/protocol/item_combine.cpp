@@ -1,7 +1,20 @@
 #include <fb/game/handler/protocol/item_combine.h>
-#include <fb/game/server.h>
+
 #include <fb/encoding.h>
+#include <fb/game/server.h>
+
 #include <json/json.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <cstdlib>
+#include <format>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using table = fb::model::table;
 

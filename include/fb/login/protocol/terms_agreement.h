@@ -1,9 +1,12 @@
 #ifndef __PROTOCOL_LOGIN_TERMS_AGREEMENT_H__
 #define __PROTOCOL_LOGIN_TERMS_AGREEMENT_H__
 
-#include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+#include <string>
 #include <string_view>
 
 namespace fb::protocol::login::request {

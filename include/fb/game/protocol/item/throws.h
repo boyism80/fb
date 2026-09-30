@@ -1,12 +1,15 @@
 #ifndef __PROTOCOL_GAME_ITEM_THROWS_H__
 #define __PROTOCOL_GAME_ITEM_THROWS_H__
 
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
+
+#include <cstdint>
+
 #ifndef BOT
-#include <fb/game/item.h>
 #include <fb/game/character.h>
+#include <fb/game/item.h>
 #endif
 
 namespace fb::protocol::game::request {

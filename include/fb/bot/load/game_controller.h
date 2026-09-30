@@ -1,9 +1,11 @@
 #ifndef __BOT_GAME_LOAD_CONTROLLER_H__
 #define __BOT_GAME_LOAD_CONTROLLER_H__
 
+#include <fb/bot/game_bot.h>
 #include <fb/bot/game_controller.h>
 #include <fb/game/protocol.h>
-#include <fb/bot/game_bot.h>
+
+#include <thread>
 
 namespace fb::bot::load {
 

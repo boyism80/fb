@@ -1,13 +1,15 @@
 #ifndef __MAIL_BOX_H__
 #define __MAIL_BOX_H__
 
-#include <ctime>
-#include <stdint.h>
+#include <fb/model/model.h>
+
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <vector>
-#include <fb/model/model.h>
+
+#include <stdint.h>
 
 namespace fb::game {
 

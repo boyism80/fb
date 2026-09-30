@@ -3,6 +3,10 @@
 
 #include <fb/game/item/base.h>
 
+#include <cstdint>
+#include <memory>
+#include <string>
+
 namespace fb::game {
 
 class cash : public item

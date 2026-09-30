@@ -1,8 +1,15 @@
 #include <fb/game/builtin/map.h>
-#include <fb/game/server.h>
-#include <fb/game/mob.h>
+
 #include <fb/game/item.h>
+#include <fb/game/mob.h>
+#include <fb/game/server.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <optional>
+#include <string>
+#include <vector>
 
 using namespace fb::game;
 using table = fb::model::table;

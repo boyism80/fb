@@ -3,11 +3,11 @@
 #include <fb/bot/integration/lua_integration_protocol.h>
 #include <fb/bot/integration/trade_bot.h>
 #include <fb/logger.h>
-
 #include <fb/lua.h>
 
+#include <chrono>
+#include <exception>
 #include <memory>
-#include <string>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;

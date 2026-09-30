@@ -1,10 +1,20 @@
-#include <fb/game/server.h>
-#include <fb/game/life.h>
 #include <fb/game/spell.h>
-#include <fb/game/character.h>
-#include <fb/model/model.h>
+
 #include <fb/encoding.h>
+#include <fb/game/character.h>
+#include <fb/game/life.h>
+#include <fb/game/server.h>
+#include <fb/model/model.h>
+
 #include <json/json.h>
+
+#include <chrono>
+#include <cstdint>
+#include <format>
+#include <memory>
+#include <string_view>
+#include <tuple>
+#include <utility>
 
 using namespace fb::game;
 

@@ -1,8 +1,23 @@
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <fb/encoding.h>
+
 #include <random.h>
+
+#include <cctype>
+#include <codecvt>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <cwchar>
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
+#ifdef _WIN32
+#include <fb/windows.h>
+#endif
 
 std::string fb::cp949(std::string_view utf8)
 {

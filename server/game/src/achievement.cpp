@@ -1,5 +1,9 @@
 #include <fb/game/achievement.h>
 
+#include <cstdint>
+#include <string>
+#include <utility>
+
 using namespace fb::game;
 
 achievement::achievement(uint32_t id, std::string text, uint8_t icon, uint16_t color) :

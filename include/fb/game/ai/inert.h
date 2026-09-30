@@ -3,6 +3,8 @@
 
 #include <fb/game/ai.h>
 
+#include <memory>
+
 namespace fb::game {
 
 class inert_ai : public ai

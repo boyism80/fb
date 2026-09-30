@@ -1,11 +1,21 @@
 #include <fb/meta_dat_file.h>
+
 #include <fb/encoding.h>
 #include <fb/stream_reader.h>
+
 #include <zlib.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <cwchar>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <stdexcept>
-#include <format>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace fb {
 

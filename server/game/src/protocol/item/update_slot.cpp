@@ -1,5 +1,9 @@
 #include <fb/game/protocol/item/update_slot.h>
 
+#include <cstdint>
+#include <memory>
+#include <string>
+
 namespace fb::protocol::game::response {
 
 #ifndef BOT

@@ -1,9 +1,16 @@
 #include <fb/game/handler/protocol/bulletin.h>
-#include <fb/game/server.h>
+
+#include <fb/encoding.h>
 #include <fb/game/bulletin.h>
 #include <fb/game/mail_box.h>
-#include <fb/encoding.h>
+#include <fb/game/server.h>
+
 #include <json/json.h>
+
+#include <exception>
+#include <memory>
+#include <optional>
+#include <string>
 
 using table = fb::model::table;
 using namespace fb::model::enum_value;

@@ -1,5 +1,12 @@
-#include <fb/game/server.h>
 #include <fb/game/item.h>
+#include <fb/game/server.h>
+
+#include <iomanip>
+#include <iostream>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
 
 fb::game::weapon::weapon(fb::game::server& server, const fb::model::weapon& model, const initial_params& params) :
     equipment(server, model, params)

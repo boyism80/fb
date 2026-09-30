@@ -1,9 +1,14 @@
 #ifndef FB_GAME_QUEST_H
 #define FB_GAME_QUEST_H
 
-#include <cstdint>
-#include <fb/model/model.h>
 #include <fb/lua.h>
+#include <fb/model/model.h>
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
 namespace fb::game {
 

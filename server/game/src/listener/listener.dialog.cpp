@@ -1,6 +1,14 @@
-#include <fb/game/server.h>
 #include <fb/game/appearance.h>
+#include <fb/game/server.h>
 #include <fb/protocol/client_version.h>
+
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 

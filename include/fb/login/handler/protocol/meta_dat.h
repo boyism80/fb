@@ -2,8 +2,8 @@
 #define __FB_LOGIN_HANDLER_META_DAT_H__
 
 #include <fb/handler.h>
-#include <fb/login/server.h>
 #include <fb/login/protocol/meta_dat.h>
+#include <fb/login/server.h>
 
 namespace fb::login::handler::protocol {
 

@@ -1,6 +1,12 @@
 #include <fb/bot/bot.h>
+
 #include <fb/bot/container.h>
 #include <fb/bot/controller.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <functional>
+#include <utility>
 
 using namespace fb::bot;
 

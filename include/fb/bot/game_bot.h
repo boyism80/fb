@@ -2,17 +2,24 @@
 #define __BOT_GAME_H__
 
 #include <fb/bot/bot.h>
-#include <fb/lua.h>
-#include <fb/game/protocol.h>
-#include <fb/protocol/client_version.h>
-#include <shared_mutex>
-#include <set>
-#include <string>
-#include <map>
-#include <optional>
 #include <fb/bot/integration/dialog_bot.h>
 #include <fb/bot/integration/dialog_ext_bot.h>
+#include <fb/game/protocol.h>
+#include <fb/lua.h>
+#include <fb/protocol/client_version.h>
+
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <optional>
+#include <set>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace fb::bot {
 

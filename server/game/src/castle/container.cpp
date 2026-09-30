@@ -1,8 +1,13 @@
+#include <fb/config.h>
 #include <fb/game/castle.h>
 #include <fb/game/server.h>
-#include <fb/config.h>
 #include <fb/logger.h>
 #include <fb/model/model.h>
+
+#include <cstdint>
+#include <format>
+#include <optional>
+#include <tuple>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;

@@ -1,21 +1,25 @@
 #ifndef __BOT_INTEGRATION_TEST_CASE_H__
 #define __BOT_INTEGRATION_TEST_CASE_H__
 
-#include <fb/bot/game_bot.h>
-#include <fb/synchronized.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
-#include <memory>
-#include <vector>
-#include <atomic>
-#include <string>
-#include <boost/asio.hpp>
-#include <chrono>
-#include <functional>
-#include <optional>
+#include <fb/bot/game_bot.h>
 #include <fb/generator.h>
+#include <fb/synchronized.h>
+
+#include <boost/asio.hpp>
+
+#include <atomic>
+#include <chrono>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <optional>
 #include <queue>
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace fb::bot::integration {
 

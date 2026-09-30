@@ -3,9 +3,11 @@
 
 #include <fb/config.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+
 #include <array>
 #include <cstdint>
 #include <format>
+#include <optional>
 #include <string>
 #include <string_view>
 

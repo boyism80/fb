@@ -1,24 +1,24 @@
 #ifndef __BOT_GAME_INTEGRATION_CONTROLLER_H__
 #define __BOT_GAME_INTEGRATION_CONTROLLER_H__
 
-#include <fb/bot/game_controller.h>
-#include <fb/game/protocol.h>
 #include <fb/bot/game_bot.h>
+#include <fb/bot/game_controller.h>
 #include <fb/bot/integration/test_case.h>
-#include <fb/synchronized.h>
+#include <fb/game/protocol.h>
 #include <fb/model/loader.h>
-#include <memory>
-#include <queue>
+#include <fb/synchronized.h>
+
+#include <chrono>
+#include <cstdint>
 #include <deque>
-#include <vector>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <shared_mutex>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <typeindex>
-#include <functional>
-#include <shared_mutex>
-#include <mutex>
-#include <optional>
-#include <chrono>
+#include <vector>
 
 namespace fb::bot::integration {
 

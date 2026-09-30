@@ -1,21 +1,33 @@
 #include <fb/game/marketplace.h>
+
+#include <fb/encoding.h>
 #include <fb/game/character.h>
+#include <fb/game/item/weapon.h>
 #include <fb/game/server.h>
 #include <fb/game/storage.h>
-#include <fb/game/item/weapon.h>
-#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/model.h>
-#include <fb/encoding.h>
-#include <json/json.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <macro.h>
-#include <stdexcept>
-#include <sstream>
-#include <unordered_set>
-#include <algorithm>
-#include <limits>
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <json/json.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <exception>
+#include <format>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 using namespace fb::game;
 

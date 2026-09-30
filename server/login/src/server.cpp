@@ -1,15 +1,23 @@
-#include <boost/asio/high_resolution_timer.hpp>
 #include <fb/login/server.h>
-#include <fb/login/exception.h>
-#include <fb/login/handler.h>
-#include <fb/log_collector.h>
+
+#include <fb/amqp_route.h>
 #include <fb/console.h>
 #include <fb/encoding.h>
+#include <fb/log_collector.h>
 #include <fb/logger.h>
-#include <fb/amqp_route.h>
-#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/login/exception.h>
+#include <fb/login/handler.h>
 #include <fb/model/loader.h>
-#include <format>
+#include <fb/protocol/flatbuffer/protocol.h>
+
+#include <boost/asio/high_resolution_timer.hpp>
+
+#include <cstdint>
+#include <exception>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <tuple>
 
 using namespace fb::login;
 

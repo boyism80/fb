@@ -1,10 +1,12 @@
 #ifndef __PROTOCOL_GAME_USER_LIST_H__
 #define __PROTOCOL_GAME_USER_LIST_H__
 
-#include <fb/protocol/header.h>
-#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
+#include <fb/protocol/header.h>
 #include <fb/socket.h>
+
+#include <cstdint>
 #include <string>
 #include <vector>
 

@@ -1,5 +1,7 @@
 #include <fb/game/handler/protocol/swap.h>
+
 #include <fb/game/server.h>
+
 #include <tuple>
 
 namespace game_reqs = fb::protocol::game::request;

@@ -1,8 +1,8 @@
 #ifndef __SESSION_GATEWAY_H__
 #define __SESSION_GATEWAY_H__
 
-#include <fb/socket.h>
 #include <fb/protocol/client_version.h>
+#include <fb/socket.h>
 
 namespace fb { namespace gateway {
 

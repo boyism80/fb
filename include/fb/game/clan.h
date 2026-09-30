@@ -4,9 +4,15 @@
 #include <fb/game/character.h>
 #include <fb/game/clan.member.h>
 #include <fb/game/lazy_container.h>
+
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace fb::protocol::internal::response {
 class UpdatedClan;

@@ -1,9 +1,18 @@
 #ifndef __STREAM_READER_H__
 #define __STREAM_READER_H__
 
-#include <fb/stream.h>
-#include <fb/endian.h>
 #include <fb/encoding.h>
+#include <fb/endian.h>
+#include <fb/stream.h>
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 namespace fb {
 

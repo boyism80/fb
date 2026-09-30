@@ -3,6 +3,14 @@
 
 #include <fb/model/substring_matcher.h>
 
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
 #ifdef DELETE
 #undef DELETE
 #endif

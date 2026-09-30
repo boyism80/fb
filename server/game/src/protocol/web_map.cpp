@@ -1,5 +1,9 @@
 #include <fb/game/protocol/web_map.h>
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 namespace fb::protocol::game::request {
 
 #ifdef BOT

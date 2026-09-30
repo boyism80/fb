@@ -1,8 +1,11 @@
 #ifndef __SESSION_LOGIN_H__
 #define __SESSION_LOGIN_H__
 
-#include <fb/socket.h>
 #include <fb/protocol/client_version.h>
+#include <fb/socket.h>
+
+#include <cstdint>
+#include <string>
 
 namespace fb::login {
 

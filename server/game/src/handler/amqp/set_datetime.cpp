@@ -1,6 +1,7 @@
 #include <fb/game/handler/amqp/set_datetime.h>
-#include <fb/game/server.h>
+
 #include <fb/game/inventory.h>
+#include <fb/game/server.h>
 
 using namespace fb::game::handler::amqp;
 

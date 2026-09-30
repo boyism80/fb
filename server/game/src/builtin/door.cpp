@@ -1,6 +1,10 @@
-#include <fb/game/server.h>
-#include <fb/game/door.h>
 #include <fb/game/builtin/door.h>
+
+#include <fb/game/door.h>
+#include <fb/game/server.h>
+
+#include <cstdint>
+#include <memory>
 
 using namespace fb::game;
 

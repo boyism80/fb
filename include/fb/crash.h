@@ -4,7 +4,7 @@
 #include <cstddef>
 
 #ifdef _WIN32
-#include <Windows.h>
+#include <fb/windows.h>
 #endif
 
 namespace fb {
