@@ -72,11 +72,13 @@ public:
 private:
     static constexpr auto ACCEPT_RETRY_DELAY = std::chrono::milliseconds(100);
     static constexpr auto LOGIN_TIMEOUT      = std::chrono::seconds(30);
+    static constexpr auto ACCEPT_LOG_EVERY   = uint32_t(100);
 
 private:
     boost_timers        _timers;
     mutable std::mutex  _now_mutex;
     fb::model::timespan _now_offset;
+    uint32_t            _accept_failures = 0;
 
 protected:
     socket_container_sync _sockets;
@@ -359,7 +361,7 @@ private:
                 if (socket == nullptr || socket->data() != nullptr || socket->is_open() == false)
                     return;
 
-                fb::logger::warn("acceptor::accept: login timeout. fd: {}", socket->fd());
+                fb::logger::warn("acceptor::serve: login timeout. fd: {}", socket->fd());
                 socket->close();
             });
 
@@ -367,14 +369,14 @@ private:
         }
         catch (std::exception& e)
         {
-            fb::logger::fatal("acceptor::accept: error={}\n{}",
+            fb::logger::fatal("acceptor::serve: error={}\n{}",
                               e.what(),
                               boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
             socket_ptr->close();
         }
         catch (...)
         {
-            fb::logger::fatal("acceptor::accept: unknown error");
+            fb::logger::fatal("acceptor::serve: unknown error");
             socket_ptr->close();
         }
     }
@@ -394,7 +396,11 @@ private:
             if (error)
             {
                 // Keep listening after transient failures such as fd exhaustion; the delay avoids a busy loop.
-                fb::logger::fatal("acceptor::accept: error={}", error.message());
+                if (this->_accept_failures % ACCEPT_LOG_EVERY == 0)
+                    fb::logger::fatal("acceptor::accept: error={} (consecutive failures: {})",
+                                      error.message(),
+                                      this->_accept_failures + 1);
+                this->_accept_failures++;
                 socket_ptr->close();
 
                 auto& context = static_cast<boost::asio::io_context&>(*this);
@@ -408,6 +414,7 @@ private:
             }
             else
             {
+                this->_accept_failures = 0;
                 try
                 {
                     // Drive cpp-async handshake on an Asio awaitable without blocking the IO thread.

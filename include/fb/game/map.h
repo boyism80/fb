@@ -58,6 +58,10 @@ public:
     static constexpr uint32_t MAX_SCREEN_HEIGHT  = 15;
     static constexpr uint32_t HALF_SCREEN_HEIGHT = uint32_t(MAX_SCREEN_HEIGHT / 2);
 
+    // Client requests the visible tile rect with a one-tile margin on every side.
+    static constexpr uint32_t MAX_UPDATE_WIDTH  = MAX_SCREEN_WIDTH + 2;
+    static constexpr uint32_t MAX_UPDATE_HEIGHT = MAX_SCREEN_HEIGHT + 2;
+
 public:
     struct tile;
     struct cache_bytes;

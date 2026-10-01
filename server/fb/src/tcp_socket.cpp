@@ -1,7 +1,5 @@
 #include <fb/tcp_socket.h>
 
-#include <boost/asio/error.hpp>
-
 #include <cstddef>
 #include <memory>
 #include <mutex>
@@ -23,12 +21,35 @@ void tcp_socket::write(const std::shared_ptr<tcp_socket>& socket, fb::stream wir
         return;
     }
 
-    auto lock = std::lock_guard(socket->_write_mutex);
-    socket->_writes.push_back(
-        pending_write{.wire = std::make_shared<fb::stream>(std::move(wire)), .handler = std::move(handler)});
+    auto overflow = false;
+    {
+        auto lock = std::lock_guard(socket->_write_mutex);
+        if (socket->_write_bytes + wire.size() > MAX_PENDING_WRITE_BYTES)
+        {
+            overflow = true;
+        }
+        else
+        {
+            socket->_write_bytes += wire.size();
+            socket->_writes.push_back(
+                pending_write{.wire = std::make_shared<fb::stream>(std::move(wire)), .handler = std::move(handler)});
 
-    if (socket->_writes.size() == 1)
-        tcp_socket::write_front(socket);
+            if (socket->_writes.size() == 1)
+                tcp_socket::write_front(socket);
+        }
+    }
+
+    if (overflow)
+    {
+        // Close on the socket's executor; the in-flight write then fails and drops the rest of the queue.
+        boost::asio::post(socket->get_executor(), [socket]() {
+            auto ec = boost::system::error_code();
+            socket->close(ec);
+        });
+
+        if (handler != nullptr)
+            handler(boost::asio::error::no_buffer_space, 0);
+    }
 }
 
 // Requires socket->_write_mutex to be held by the caller.
@@ -44,6 +65,7 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
                                      auto lock = std::lock_guard(socket->_write_mutex);
                                      completed = std::move(socket->_writes.front().handler);
                                      socket->_writes.pop_front();
+                                     socket->_write_bytes -= wire->size();
 
                                      if (ec)
                                      {
@@ -52,6 +74,7 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
                                              dropped.push_back(std::move(pending.handler));
                                          }
                                          socket->_writes.clear();
+                                         socket->_write_bytes = 0;
                                      }
                                      else if (socket->_writes.empty() == false)
                                      {

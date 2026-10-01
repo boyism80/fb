@@ -102,6 +102,10 @@ void encryption::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const ui
 
 uint32_t encryption::encrypt(stream& data, uint32_t offset, uint32_t size)
 {
+    // Block keys advance 4 bytes per block from the pattern row and may run into later rows, never past the table.
+    if (size > 1 && (this->_pattern * 0x100 + (size - 2) / KEY_SIZE + 1) * sizeof(uint32_t) > sizeof(HEX_TABLE))
+        return -1;
+
     auto extended_size = size + 0x100;
     auto buffer_src    = (uint8_t*)data.data() + offset;
     auto buffer_dst    = std::make_unique<uint8_t[]>(extended_size);
@@ -111,14 +115,9 @@ uint32_t encryption::encrypt(stream& data, uint32_t offset, uint32_t size)
 
     if (size > 1)
     {
-        // Block keys advance 4 bytes per block from the pattern row and may run into later rows, never past the table.
-        auto loop = uint32_t((size - 2) / KEY_SIZE + 1);
-        if ((this->_pattern * 0x100 + loop) * sizeof(uint32_t) > sizeof(HEX_TABLE))
-            return -1;
-
         this->crypt(buffer_src + 1, buffer_dst.get() + 2, size - 1, this->_iv.get(), KEY_SIZE);
 
-        for (uint32_t i = 0; i < loop; i++)
+        for (uint32_t i = 0, loop = (size - 2) / KEY_SIZE + 1; i < loop; i++)
         {
             auto offset = buffer_dst.get() + (KEY_SIZE * i) + 2;
             if (i == this->_sequence)

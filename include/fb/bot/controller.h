@@ -246,6 +246,9 @@ public:
                     throw std::runtime_error("magic code mismatch");
 
                 auto size = reader.read<uint16_t>();
+                if (size < sizeof(uint8_t))
+                    throw std::runtime_error("invalid packet size");
+
                 if (size > reader.readable_size())
                 {
                     reader.seek(0);
@@ -284,7 +287,10 @@ public:
                     }
                 }
 
-                protocol = deserializer(reader);
+                // Deserialize from a copy of this packet's body so a parser cannot read into the next packet.
+                auto body        = fb::stream(stream.data(), size - sizeof(uint8_t));
+                auto body_reader = fb::stream_reader<big_endian>(body);
+                protocol         = deserializer(body_reader);
                 if (protocol != nullptr)
                 {
                     auto weak = bot.template weak_from_this_as<BotType>();

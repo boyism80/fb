@@ -25,9 +25,13 @@ async::task<bool> update_move<V>::handle(fb::socket<character>& session, game_re
 
     auto move_handler = fb::game::handler::protocol::move<V>(this->server);
     auto moved = co_await move_handler.handle(session, request.direction, request.position, request.walk_queue_slot);
-    if (moved)
-        ch->update_map(*map, request.begin, request.size, request.crc);
+    if (moved == false)
+        co_return true;
 
+    if (request.size.width > fb::game::map::MAX_UPDATE_WIDTH || request.size.height > fb::game::map::MAX_UPDATE_HEIGHT)
+        co_return true;
+
+    ch->update_map(*map, request.begin, request.size, request.crc);
     co_return true;
 }
 

@@ -2020,8 +2020,9 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
 
 fb::thread* character::thread() const
 {
-    if (this->_thread != nullptr)
-        return this->_thread;
+    auto thread = this->_thread.load();
+    if (thread != nullptr)
+        return thread;
     else
         return this->server.threads.modular(this->id);
 }

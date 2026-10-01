@@ -21,6 +21,9 @@ class tcp_socket : public boost::asio::ip::tcp::socket
 public:
     using write_handler = std::function<void(const boost::system::error_code&, size_t)>;
 
+    // A peer that stops reading would otherwise grow the queue without bound.
+    static constexpr size_t MAX_PENDING_WRITE_BYTES = 4 * 1024 * 1024;
+
 private:
     struct pending_write
     {
@@ -30,6 +33,7 @@ private:
 
     std::mutex                _write_mutex;
     std::deque<pending_write> _writes;
+    size_t                    _write_bytes = 0;
 
 public:
     explicit tcp_socket(boost::asio::io_context& context);

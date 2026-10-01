@@ -879,8 +879,9 @@ fb::thread* object::thread() const
 {
     auto _ = std::shared_lock(this->_map_lock);
 
-    if (this->_thread != nullptr)
-        return this->_thread;
+    auto thread = this->_thread.load();
+    if (thread != nullptr)
+        return thread;
     else
         return this->server.threads.modular(this->_model_id);
 }

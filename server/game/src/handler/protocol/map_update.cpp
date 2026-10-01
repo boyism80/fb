@@ -22,6 +22,9 @@ async::task<bool> map_update<V>::handle(fb::socket<character>& session, game_req
     if (map == nullptr)
         co_return true;
 
+    if (request.size.width > fb::game::map::MAX_UPDATE_WIDTH || request.size.height > fb::game::map::MAX_UPDATE_HEIGHT)
+        co_return true;
+
     ch->update_map(*map, request.begin, request.size, request.crc);
     co_return true;
 }
