@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
+#include <stdexcept>
 
 using namespace fb;
 
@@ -148,6 +149,10 @@ uint32_t encryption::encrypt(stream& data)
 
 uint32_t encryption::decrypt(stream& data, uint32_t offset, uint32_t size)
 {
+    // opcode + sequence are required; the result drops the sequence byte.
+    if (size < 2 || offset + size > data.size())
+        throw std::runtime_error("encryption::decrypt: invalid size");
+
     auto extended_size = size + 0x100;
     auto buffer_src    = (uint8_t*)data.data() + offset;
     auto buffer_dst    = std::make_unique<uint8_t[]>(extended_size);
@@ -198,14 +203,17 @@ uint32_t encryption::decrypt(stream& data)
 
 uint32_t encryption::wrap(stream& data, uint32_t offset) const
 {
-    uint16_t size = (uint16_t)data.size() - offset;
-    if (size == 0)
+    if (data.size() <= offset)
+        return -1;
+
+    auto size = data.size() - offset;
+    if (size > 0xFFFF)
         return -1;
 
     const uint8_t header[] = {0xAA, uint8_t(size >> 8 & 0xFF), uint8_t(size & 0xFF)};
     data.insert(data.begin() + offset, header, header + sizeof(header));
 
-    return size + sizeof(header);
+    return static_cast<uint32_t>(size + sizeof(header));
 }
 
 uint32_t encryption::wrap(stream& data) const
@@ -215,12 +223,12 @@ uint32_t encryption::wrap(stream& data) const
 
 uint32_t encryption::unwrap(stream& data, uint32_t offset) const
 {
-    uint16_t size = uint16_t(data.size() - offset);
-    if (size < 3)
+    if (data.size() < offset + 3)
         return -1;
 
+    auto size = data.size() - offset;
     data.erase(data.begin() + offset, data.begin() + offset + 3);
-    return size - 3;
+    return static_cast<uint32_t>(size - 3);
 }
 
 uint32_t encryption::unwrap(stream& data) const

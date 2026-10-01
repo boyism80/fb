@@ -32,7 +32,7 @@ bool is_version_allowed(uint16_t packed)
 
 template <fb::protocol::CLIENT_VERSION V>
 version<V>::version(fb::gateway::server& server) :
-    fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>>(server)
+    fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>

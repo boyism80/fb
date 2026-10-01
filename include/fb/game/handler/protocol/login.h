@@ -14,7 +14,7 @@ namespace fb::game::handler::protocol {
 namespace game_reqs = fb::protocol::game::request;
 
 template <fb::protocol::CLIENT_VERSION V>
-class login : public fb::handler::protocol<fb::game::server, game_reqs::login<V>>
+class login : public fb::handler::protocol<fb::game::server, game_reqs::login<V>, 1000, 10, true>
 {
     using ch_ptr_t = std::shared_ptr<character>;
 

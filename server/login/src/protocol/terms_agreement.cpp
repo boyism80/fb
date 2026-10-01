@@ -16,6 +16,8 @@ void agreement<V>::deserialize(fb::stream_reader<big_endian>& reader)
     header::deserialize(reader);
     this->enc_type     = reader.read<uint8_t>();
     this->enc_key_size = reader.read<uint8_t>();
+    if (this->enc_key_size > sizeof(this->enc_key))
+        throw std::runtime_error("invalid encryption key size in agreement transfer");
     reader.read(this->enc_key, this->enc_key_size);
 
     this->from  = reader.read<uint8_t>();

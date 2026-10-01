@@ -155,19 +155,6 @@ async::task<void> fb::game::server::on_exit()
     co_return;
 }
 
-uint32_t fb::game::server::thread_id(const fb::socket<character>& socket) const
-{
-    auto character = socket.data();
-    if (character == nullptr)
-        throw std::runtime_error("character is empty");
-
-    auto map = character->map();
-    if (map == nullptr)
-        return 0;
-
-    return map->model().id;
-}
-
 void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)
 {
     auto scope = fb::amqp_scope();

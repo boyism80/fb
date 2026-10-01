@@ -54,12 +54,12 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 
 bool base_bot::on_encrypt(fb::stream& out)
 {
-    return this->encryption().encrypt(out);
+    return this->encryption().encrypt(out) != static_cast<uint32_t>(-1);
 }
 
 bool base_bot::on_wrap(fb::stream& out)
 {
-    return this->encryption().wrap(out);
+    return this->encryption().wrap(out) != static_cast<uint32_t>(-1);
 }
 
 bool base_bot::process_hooks(uint8_t opcode, fb::protocol::header& header)

@@ -32,7 +32,7 @@ namespace fb::game::handler::protocol {
 
 template <fb::protocol::CLIENT_VERSION V>
 login<V>::login(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::login<V>>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::login<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -467,6 +467,9 @@ std::string login<V>::elapsed_message(std::string_view dt)
 template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::login<V>& request)
 {
+    if (fb::encryption::validate(request.enc_type, request.enc_key, request.key_size) == false)
+        co_return false;
+
     session.encryption(request.enc_type, request.enc_key);
     fb::logger::info("{} has connected.", request.name);
 

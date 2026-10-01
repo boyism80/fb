@@ -9,6 +9,7 @@
 #include <fb/logger.h>
 #include <fb/model/datetime.h>
 #include <fb/protocol/header.h>
+#include <fb/tcp_socket.h>
 #include <fb/thread.h>
 
 #include <boost/asio.hpp>
@@ -16,6 +17,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -32,7 +34,7 @@
 namespace fb {
 
 template <typename T = void*>
-class socket : public boost::asio::ip::tcp::socket, public thread_switchable
+class socket : public fb::tcp_socket, public thread_switchable
 {
 public:
     static constexpr uint32_t MAX_BUFFER_SIZE = 4096;
@@ -111,17 +113,20 @@ private:
     handler_event          _handle_closed;
     fb::stream             _stream;
     fb::model::datetime    _last_packet_time;
+    std::atomic<bool>      _disconnected = false;
 
 protected:
     std::array<char, MAX_BUFFER_SIZE> _buffer;
+    mutable std::mutex                _data_mutex;
     std::shared_ptr<T>                _data;
+    std::atomic<T*>                   _data_raw = nullptr;
 
 public:
     rate_limiter limiter;
 
 public:
     socket(fb::async_executor& executor, const handle_read_event& handle_received, const handler_event& handle_closed) :
-        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
+        fb::tcp_socket(static_cast<boost::asio::io_context&>(executor)),
         _executor(executor),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
@@ -133,7 +138,7 @@ public:
            const fb::encryption&    encryption,
            const handle_read_event& handle_received,
            const handler_event&     handle_closed) :
-        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(executor)),
+        fb::tcp_socket(static_cast<boost::asio::io_context&>(executor)),
         _executor(executor),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
@@ -147,13 +152,13 @@ public:
 protected:
     virtual bool on_encrypt(fb::stream& out)
     {
-        return this->_encryption.encrypt(out);
+        return this->_encryption.encrypt(out) != static_cast<uint32_t>(-1);
     }
 
 protected:
     virtual bool on_wrap(fb::stream& out)
     {
-        return this->_encryption.wrap(out);
+        return this->_encryption.wrap(out) != static_cast<uint32_t>(-1);
     }
 
 public:
@@ -192,15 +197,12 @@ public:
             return promise->task();
         }
 
-        auto buffer = boost::asio::buffer(clone.data(), clone.size());
-        {
-            boost::asio::async_write(*this, buffer, [promise](const boost::system::error_code& ec, size_t transferred) {
-                if (ec)
-                    promise->set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
-                else
-                    promise->set_value(transferred);
-            });
-        }
+        this->write(std::move(clone), [promise](const boost::system::error_code& ec, size_t transferred) {
+            if (ec)
+                promise->set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
+            else
+                promise->set_value(transferred);
+        });
 
         return promise->task();
     }
@@ -309,21 +311,22 @@ public:
 public:
     void data(std::shared_ptr<T> value)
     {
+        auto lock   = std::lock_guard(this->_data_mutex);
         this->_data = value;
+        this->_data_raw.store(this->_data.get());
     }
 
 public:
     std::shared_ptr<T> data_ptr() const
     {
+        auto lock = std::lock_guard(this->_data_mutex);
         return this->_data;
     }
 
+    // Read from the IO thread (version lookup, thread selection) while a logic thread may set the session.
     T* data() const
     {
-        if (this->_data == nullptr)
-            return nullptr;
-
-        return this->_data.get();
+        return this->_data_raw.load();
     }
 
 public:
@@ -358,8 +361,9 @@ public:
     {
         if constexpr (std::is_base_of_v<fb::thread_switchable, T>)
         {
-            if (this->_data != nullptr)
-                return this->_data->thread();
+            auto data = this->data();
+            if (data != nullptr)
+                return data->thread();
             else
                 return this->_executor.threads.modular(this->fd());
         }
@@ -379,6 +383,13 @@ public:
     const fb::model::datetime& last_packet_time() const
     {
         return this->_last_packet_time;
+    }
+
+public:
+    // Returns true only for the first caller so on_disconnected runs once per socket.
+    bool mark_disconnected()
+    {
+        return this->_disconnected.exchange(true) == false;
     }
 };
 

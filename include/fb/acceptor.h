@@ -70,6 +70,10 @@ public:
     fb::lua::context_pool lua;
 
 private:
+    static constexpr auto ACCEPT_RETRY_DELAY = std::chrono::milliseconds(100);
+    static constexpr auto LOGIN_TIMEOUT      = std::chrono::seconds(30);
+
+private:
     boost_timers        _timers;
     mutable std::mutex  _now_mutex;
     fb::model::timespan _now_offset;
@@ -132,8 +136,9 @@ private:
                 if (head != 0xAA)
                     throw std::runtime_error("magic code mismatch");
 
+                // size covers the opcode byte, so zero is never valid.
                 auto size = reader.read<uint16_t>();
-                if (size > fb::socket<T>::MAX_BUFFER_SIZE)
+                if (size < sizeof(uint8_t) || size > fb::socket<T>::MAX_BUFFER_SIZE)
                     throw std::runtime_error("packet size mismatch");
 
                 if (reader.readable_size() < size)
@@ -165,7 +170,10 @@ private:
                 }
                 else
                 {
-                    auto protocol       = this->handler.protocol.get_deserializer(*opcode, client_version)(reader);
+                    // Deserialize from a copy of this packet's body so a parser cannot read into the next packet.
+                    auto body           = fb::stream(stream.data(), size - sizeof(uint8_t));
+                    auto body_reader    = fb::stream_reader<big_endian>(body);
+                    auto protocol       = this->handler.protocol.get_deserializer(*opcode, client_version)(body_reader);
                     auto await_dispatch = this->handler.protocol.get_handler(*opcode, client_version).await_dispatch;
                     auto fd             = socket.fd();
                     auto weak           = socket.template weak_from_this_as<fb::socket<T>>();
@@ -243,13 +251,16 @@ private:
 private:
     async::task<void> erase(fb::socket<T>& socket)
     {
-        try
+        if (socket.mark_disconnected())
         {
-            std::ignore = co_await this->on_disconnected(socket);
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal(e.what());
+            try
+            {
+                std::ignore = co_await this->on_disconnected(socket);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+            }
         }
 
         if (socket.is_open())
@@ -317,14 +328,31 @@ private:
                                                           std::bind_front(&acceptor::on_socket_received, this),
                                                           std::bind_front(&acceptor::on_socket_closed, this));
         this->async_accept(*socket_ptr, [this, socket_ptr](boost::system::error_code error) mutable {
+            if (this->_running == false)
+            {
+                socket_ptr->close();
+                return;
+            }
+
+            if (error)
+            {
+                // Keep listening after transient failures such as fd exhaustion; the delay avoids a busy loop.
+                fb::logger::fatal("acceptor::accept: error={}", error.message());
+                socket_ptr->close();
+
+                auto timer = std::make_shared<boost::asio::steady_timer>(static_cast<boost::asio::io_context&>(*this),
+                                                                         ACCEPT_RETRY_DELAY);
+                timer->async_wait([this, timer](const boost::system::error_code& ec) {
+                    if (ec || this->_running == false)
+                        return;
+
+                    this->accept();
+                });
+                return;
+            }
+
             try
             {
-                if (error)
-                    throw std::runtime_error(error.message());
-
-                if (this->_running == false)
-                    throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
-
                 // Drive cpp-async handshake on an Asio awaitable without blocking the IO thread.
                 boost::asio::co_spawn(
                     *this,
@@ -351,6 +379,25 @@ private:
                             }
 
                             co_await fb::async_await_task(this->on_connected(*socket_ptr), boost::asio::use_awaitable);
+
+                            // Every server binds session data on its first accepted packet; drop connections that never
+                            // do.
+                            auto login_timer = std::make_shared<boost::asio::steady_timer>(
+                                static_cast<boost::asio::io_context&>(*this),
+                                LOGIN_TIMEOUT);
+                            login_timer->async_wait([login_timer, weak = std::weak_ptr<fb::socket<T>>(socket_ptr)](
+                                                        const boost::system::error_code& ec) {
+                                if (ec)
+                                    return;
+
+                                auto socket = weak.lock();
+                                if (socket == nullptr || socket->data() != nullptr || socket->is_open() == false)
+                                    return;
+
+                                fb::logger::warn("acceptor::accept: login timeout. fd: {}", socket->fd());
+                                socket->close();
+                            });
+
                             co_await socket_ptr->recv();
                         }
                         catch (std::exception& e)
@@ -367,7 +414,6 @@ private:
                         }
                     },
                     boost::asio::detached);
-                this->accept();
             }
             catch (std::exception& e)
             {
@@ -376,6 +422,8 @@ private:
                                   boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 socket_ptr->close();
             }
+
+            this->accept();
         });
     }
 
@@ -509,16 +557,6 @@ protected:
     }
 
 protected:
-    fb::thread* thread(const fb::socket<T>& socket) const
-    {
-        auto count = this->threads.count();
-        if (count == 0)
-            return 0xFF;
-
-        return this->threads[this->thread_id(socket) % count];
-    }
-
-protected:
     virtual async::task<void> on_exit()
     {
         co_return;
@@ -637,7 +675,7 @@ public:
 private:
     [[nodiscard]] async::task<void> disconnect_sockets()
     {
-        auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
+        auto pairs = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::socket<T>>>>();
         {
             auto guard = this->_sockets.enter_read();
             for (auto& [fd, socket] : guard.value())
@@ -645,7 +683,7 @@ private:
                 std::ignore = fd;
                 auto thread = socket->thread();
                 if (thread != nullptr)
-                    pairs[thread].push_back(socket.get());
+                    pairs[thread].push_back(socket);
             }
         }
 
@@ -654,14 +692,17 @@ private:
             co_await thread->switching();
             for (auto& socket : sockets)
             {
-                try
+                if (socket->mark_disconnected())
                 {
-                    std::ignore = co_await this->on_disconnected(*socket);
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::fatal(e.what());
-                    std::cerr << boost::stacktrace::stacktrace() << std::endl;
+                    try
+                    {
+                        std::ignore = co_await this->on_disconnected(*socket);
+                    }
+                    catch (std::exception& e)
+                    {
+                        fb::logger::fatal(e.what());
+                        std::cerr << boost::stacktrace::stacktrace() << std::endl;
+                    }
                 }
                 socket->close();
             }

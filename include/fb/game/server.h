@@ -235,7 +235,6 @@ public:
 
 public:
     // clang-format off
-    virtual uint32_t                                     thread_id(const fb::socket<character>& socket) const;
     const fb::model::datetime&                           time() const;
     async::task<void>                                    update_status();
     double                                               exp_multiplier() const;

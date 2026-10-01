@@ -62,6 +62,8 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
     header::deserialize(reader);
     this->enc_type = reader.read<uint8_t>();
     this->key_size = reader.read<uint8_t>();
+    if (this->key_size > sizeof(this->enc_key))
+        throw std::runtime_error("invalid encryption key size in login transfer");
     reader.read((void*)this->enc_key, this->key_size);
 #ifndef BOT
     this->from = static_cast<fb::protocol::internal::Service>(reader.read<uint8_t>());

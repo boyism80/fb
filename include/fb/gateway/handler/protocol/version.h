@@ -9,7 +9,7 @@ namespace fb::gateway::handler::protocol {
 namespace gateway_reqs = fb::protocol::gateway::request;
 
 template <fb::protocol::CLIENT_VERSION V>
-class version : public fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>>
+class version : public fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>, 1000, 10, true>
 {
 public:
     version(fb::gateway::server& server);

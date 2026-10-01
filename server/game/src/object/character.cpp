@@ -145,10 +145,7 @@ size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
         return 0;
     }
 
-    const auto endpoint =
-        std::shared_ptr<boost::asio::ip::tcp::socket>(socket_ptr,
-                                                      static_cast<boost::asio::ip::tcp::socket*>(socket_ptr.get()));
-    ctx->outbound.append(endpoint, std::move(wire));
+    ctx->outbound.append(socket_ptr, std::move(wire));
     return queued;
 }
 

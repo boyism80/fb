@@ -87,7 +87,10 @@ public:
 
     uint32_t readable_size() const
     {
-        return std::max<uint32_t>(0, this->_stream.size() - this->_seek);
+        if (this->_stream.size() <= this->_seek)
+            return 0;
+
+        return static_cast<uint32_t>(this->_stream.size() - this->_seek);
     }
 
     uint32_t seek() const

@@ -5,10 +5,8 @@
 #include <boost/asio.hpp>
 
 #include <cstddef>
-#include <cstdint>
 #include <memory>
 #include <mutex>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 
@@ -18,12 +16,13 @@ struct outbound_buffer::state
 {
     struct slot
     {
-        std::shared_ptr<boost::asio::ip::tcp::socket> endpoint;
-        fb::stream                                    wire;
+        std::shared_ptr<fb::tcp_socket> endpoint;
+        fb::stream                      wire;
     };
 
-    std::unordered_map<uint32_t, slot> pending;
-    std::recursive_mutex               mutex;
+    // Keyed by socket address: the slot holds a shared_ptr, so the address cannot be reused while pending.
+    std::unordered_map<fb::tcp_socket*, slot> pending;
+    std::recursive_mutex                      mutex;
 };
 
 outbound_buffer::outbound_buffer() :
@@ -32,27 +31,7 @@ outbound_buffer::outbound_buffer() :
 
 outbound_buffer::~outbound_buffer() = default;
 
-uint32_t outbound_buffer::endpoint_key(boost::asio::ip::tcp::socket& endpoint)
-{
-    return static_cast<uint32_t>(endpoint.native_handle());
-}
-
-void outbound_buffer::write(std::shared_ptr<boost::asio::ip::tcp::socket> endpoint, std::shared_ptr<fb::stream> wire)
-{
-    boost::asio::async_write(*endpoint,
-                             boost::asio::buffer(wire->data(), wire->size()),
-                             [endpoint, wire](const boost::system::error_code& ec, std::size_t transferred) {
-                                 if (ec)
-                                 {
-                                     fb::logger::debug("outbound_buffer flush failed: {}", ec.message());
-                                     return;
-                                 }
-
-                                 std::ignore = transferred;
-                             });
-}
-
-void outbound_buffer::append(std::shared_ptr<boost::asio::ip::tcp::socket> endpoint, fb::stream wire)
+void outbound_buffer::append(std::shared_ptr<fb::tcp_socket> endpoint, fb::stream wire)
 {
     if (endpoint == nullptr || wire.empty())
         return;
@@ -60,11 +39,9 @@ void outbound_buffer::append(std::shared_ptr<boost::asio::ip::tcp::socket> endpo
     if (endpoint->is_open() == false)
         return;
 
-    const auto key = outbound_buffer::endpoint_key(*endpoint);
-
     std::lock_guard lock(this->_state->mutex);
 
-    auto& slot = this->_state->pending[key];
+    auto& slot = this->_state->pending[endpoint.get()];
     if (slot.endpoint == nullptr)
         slot.endpoint = std::move(endpoint);
 
@@ -89,7 +66,9 @@ void outbound_buffer::flush()
         if (slot.endpoint == nullptr || slot.endpoint->is_open() == false)
             continue;
 
-        auto wire = std::make_shared<fb::stream>(std::move(slot.wire));
-        this->write(slot.endpoint, std::move(wire));
+        slot.endpoint->write(std::move(slot.wire), [](const boost::system::error_code& ec, size_t) {
+            if (ec)
+                fb::logger::debug("outbound_buffer flush failed: {}", ec.message());
+        });
     }
 }
