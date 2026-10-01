@@ -40,6 +40,10 @@ class socket : public fb::tcp_socket, public thread_switchable
 public:
     static constexpr uint32_t MAX_BUFFER_SIZE = 4096;
 
+    // 5.50 and 6.51 clients copy each frame (opcode + sequence + body, at most 40001 bytes) into a fixed receive
+    // buffer without a bounds check, so the plain payload (opcode + body) must not exceed 40000 bytes.
+    static constexpr size_t MAX_PAYLOAD_SIZE = 40000;
+
 public:
     using handle_read_event = std::function<async::task<void>(fb::socket<T>&, fb::stream&)>;
     using handler_event     = std::function<async::task<void>(fb::socket<T>&)>;
@@ -165,6 +169,15 @@ protected:
 public:
     [[nodiscard]] bool prepare_outbound(fb::stream& out, bool encrypt = true, bool wrap = true)
     {
+        if (out.size() > MAX_PAYLOAD_SIZE)
+        {
+            fb::logger::warn("socket::prepare_outbound: drop opcode 0x{:02X}, {} bytes exceeds {}",
+                             out[0],
+                             out.size(),
+                             MAX_PAYLOAD_SIZE);
+            return false;
+        }
+
         if (encrypt && this->on_encrypt(out) == false)
             return false;
 
@@ -190,15 +203,10 @@ public:
             ctx->outbound.flush();
 
         auto clone = fb::stream(stream);
-        if (encrypt && this->on_encrypt(clone) == false)
+        if (this->prepare_outbound(clone, encrypt, wrap) == false)
         {
-            promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown exception while send bytes")));
-            return promise->task();
-        }
-
-        if (wrap && this->on_wrap(clone) == false)
-        {
-            promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown exception while send bytes")));
+            fb::logger::warn("socket::send dropped: prepare failed (bytes={})", stream.size());
+            promise->set_value(0);
             return promise->task();
         }
 

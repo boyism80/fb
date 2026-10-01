@@ -19,6 +19,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -77,11 +78,14 @@ private:
     static constexpr auto DISCONNECT_TIMEOUT = std::chrono::seconds(30);
 
 private:
-    boost_timers          _timers;
-    mutable std::mutex    _now_mutex;
-    fb::model::timespan   _now_offset;
-    uint32_t              _accept_failures = 0;
-    std::atomic<uint32_t> _disconnecting   = 0;
+    boost_timers            _timers;
+    mutable std::mutex      _now_mutex;
+    fb::model::timespan     _now_offset;
+    uint32_t                _accept_failures = 0;
+    std::atomic<uint32_t>   _disconnecting   = 0;
+    std::mutex              _exit_mutex;
+    std::condition_variable _exit_cv;
+    bool                    _exit_requested = false;
 
 protected:
     socket_container_sync _sockets;
@@ -103,7 +107,7 @@ protected:
 public:
     virtual ~acceptor()
     {
-        this->exit();
+        this->shutdown();
     }
 
 protected:
@@ -644,6 +648,16 @@ public:
             this->handler.amqp.thread_loop();
         }));
 
+        // Shutdown blocks until disconnects and saves finish, which need the IO and logic threads to keep running.
+        // Run it here on the main thread, which is neither, instead of on whichever thread called exit().
+        {
+            auto lock = std::unique_lock(this->_exit_mutex);
+            this->_exit_cv.wait(lock, [this] {
+                return this->_exit_requested;
+            });
+        }
+        this->shutdown();
+
         for (auto& thread : threads)
         {
             thread.join();
@@ -738,7 +752,19 @@ public:
     }
 
 public:
+    // Only requests shutdown so it is safe from IO threads (signals) and logic threads (AMQP handlers); run() does the
+    // work.
     void exit() override final
+    {
+        {
+            auto lock             = std::lock_guard(this->_exit_mutex);
+            this->_exit_requested = true;
+        }
+        this->_exit_cv.notify_all();
+    }
+
+private:
+    void shutdown()
     {
         if (this->_running == false)
             return;
@@ -758,7 +784,8 @@ public:
         }
 
         if (this->_disconnecting.load() > 0)
-            fb::logger::warn("acceptor::exit: {} disconnects still running after timeout", this->_disconnecting.load());
+            fb::logger::warn("acceptor::shutdown: {} disconnects still running after timeout",
+                             this->_disconnecting.load());
 
         for (auto& timer : this->_timers)
         {

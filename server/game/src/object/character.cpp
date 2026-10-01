@@ -127,7 +127,10 @@ size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
 
     auto wire = fb::stream(stream);
     if (socket_ptr->prepare_outbound(wire, encrypt, wrap) == false)
-        throw std::runtime_error("unknown exception while send bytes");
+    {
+        fb::logger::warn("character::send dropped: prepare failed (name={}, bytes={})", this->name(), stream.size());
+        return 0;
+    }
 
     const auto queued = wire.size();
 

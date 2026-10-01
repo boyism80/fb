@@ -58,7 +58,7 @@ void user_list::serialize(fb::stream_writer<big_endian>& writer) const
         entry_writer.write<uint8_t>(0x10 * user.promotion + user.level);
         entry_writer.write<uint8_t>(user.color);
         entry_writer.write<std::string, uint8_t>(user.name);
-        if (head_size + entries.size() > MAX_PAYLOAD_SIZE)
+        if (head_size + entries.size() > fb::socket<>::MAX_PAYLOAD_SIZE)
         {
             entries.resize(before);
             break;

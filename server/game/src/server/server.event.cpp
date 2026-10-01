@@ -24,7 +24,8 @@ namespace internal_reqs = fb::protocol::internal::request;
 
 bool fb::game::server::assert_tps(const fb::socket<fb::game::character>& socket) const
 {
-    auto ch = socket.data();
+    // Called from the IO thread while a logic thread may release the session.
+    auto ch = socket.data_ptr();
     if (ch == nullptr)
         return true;
 
