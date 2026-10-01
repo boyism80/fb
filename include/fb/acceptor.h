@@ -17,6 +17,7 @@
 
 #include <boost/stacktrace.hpp>
 
+#include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -73,12 +74,14 @@ private:
     static constexpr auto ACCEPT_RETRY_DELAY = std::chrono::milliseconds(100);
     static constexpr auto LOGIN_TIMEOUT      = std::chrono::seconds(30);
     static constexpr auto ACCEPT_LOG_EVERY   = uint32_t(100);
+    static constexpr auto DISCONNECT_TIMEOUT = std::chrono::seconds(30);
 
 private:
-    boost_timers        _timers;
-    mutable std::mutex  _now_mutex;
-    fb::model::timespan _now_offset;
-    uint32_t            _accept_failures = 0;
+    boost_timers          _timers;
+    mutable std::mutex    _now_mutex;
+    fb::model::timespan   _now_offset;
+    uint32_t              _accept_failures = 0;
+    std::atomic<uint32_t> _disconnecting   = 0;
 
 protected:
     socket_container_sync _sockets;
@@ -158,7 +161,9 @@ private:
                 socket.update_last_packet_time();
 
                 // Session missing / version not established → deserialize as v550.
-                auto client_version = fb::protocol::client_version_or_default(socket.data());
+                // A logic thread may release the session at any time; keep it alive while reading the version.
+                auto session_data   = socket.data_ptr();
+                auto client_version = fb::protocol::client_version_or_default(session_data.get());
 
                 if (!this->handler.protocol.has_opcode(*opcode))
                 {
@@ -203,8 +208,11 @@ private:
                                 co_return;
 
                             [[maybe_unused]]
-                            volatile auto holder  = protocol;
-                            auto          success = co_await handler.fn(*socket, *protocol.get());
+                            volatile auto holder = protocol;
+                            // Handlers keep raw session.data() across co_await; on_disconnected may reset it meanwhile.
+                            [[maybe_unused]]
+                            auto session_data = socket->data_ptr();
+                            auto success      = co_await handler.fn(*socket, *protocol.get());
                             if (success == false)
                                 socket->close();
                         }
@@ -253,6 +261,8 @@ private:
 private:
     async::task<void> erase(fb::socket<T>& socket)
     {
+        // Counted before the mark so exit() never sees a skipped socket with a zero count.
+        this->_disconnecting++;
         if (socket.mark_disconnected())
         {
             try
@@ -263,7 +273,12 @@ private:
             {
                 fb::logger::fatal(e.what());
             }
+            catch (...)
+            {
+                fb::logger::fatal("on_disconnected: unknown exception");
+            }
         }
+        this->_disconnecting--;
 
         if (socket.is_open())
             socket.close();
@@ -436,7 +451,7 @@ private:
 private:
     static uint16_t transfer_client_version(fb::socket<T>& socket)
     {
-        auto* data = socket.data();
+        auto data = socket.data_ptr();
         if (data == nullptr)
             return static_cast<uint16_t>(fb::protocol::CLIENT_VERSION::v550);
 
@@ -733,6 +748,17 @@ public:
         // Sync boundary between main/shutdown thread and async-cpp (save, drain queues).
         async::awaitable_get(this->on_exit());
         async::awaitable_get(this->disconnect_sockets());
+
+        // disconnect_sockets() skips sockets whose on_disconnected already started in erase();
+        // logic threads must keep running until those finish (e.g. character save).
+        auto deadline = std::chrono::steady_clock::now() + DISCONNECT_TIMEOUT;
+        while (this->_disconnecting.load() > 0 && std::chrono::steady_clock::now() < deadline)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+        if (this->_disconnecting.load() > 0)
+            fb::logger::warn("acceptor::exit: {} disconnects still running after timeout", this->_disconnecting.load());
 
         for (auto& timer : this->_timers)
         {

@@ -331,7 +331,7 @@ public:
         return this->_data;
     }
 
-    // Read from the IO thread (version lookup, thread selection) while a logic thread may set the session.
+    // Non-owning; callers off the session thread or across co_await must hold data_ptr() instead.
     T* data() const
     {
         return this->_data_raw.load();
@@ -369,7 +369,7 @@ public:
     {
         if constexpr (std::is_base_of_v<fb::thread_switchable, T>)
         {
-            auto data = this->data();
+            auto data = this->data_ptr();
             if (data != nullptr)
                 return data->thread();
             else

@@ -53,6 +53,9 @@ class user_list : public fb::protocol::header
 public:
     static constexpr uint8_t opcode = 0x36;
 
+    // 5.50 and 6.51 clients assemble each frame (opcode + sequence + body) in a fixed ~40000 byte buffer unchecked.
+    static constexpr size_t MAX_PAYLOAD_SIZE = 40000;
+
     enum class SORT_TYPE : uint8_t
     {
         CLASS = 0x00, // sort by class (nation/cls nibble)
