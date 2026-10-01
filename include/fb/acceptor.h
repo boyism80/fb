@@ -322,6 +322,63 @@ private:
         }
     }
 
+    boost::asio::awaitable<void> serve(std::shared_ptr<fb::socket<T>> socket_ptr)
+    {
+        try
+        {
+            co_await fb::async_await_task(this->on_accepted(*socket_ptr), boost::asio::use_awaitable);
+            socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
+
+            {
+                auto  fd    = socket_ptr->fd();
+                auto  guard = this->_sockets.enter_write();
+                auto& v     = guard.value();
+                if (auto it = v.find(fd); it != v.end())
+                {
+                    if (it->second.get() != socket_ptr.get())
+                    {
+                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
+                        v.erase(it);
+                    }
+                }
+
+                v.insert_or_assign(fd, socket_ptr);
+            }
+
+            co_await fb::async_await_task(this->on_connected(*socket_ptr), boost::asio::use_awaitable);
+
+            // Every server binds session data on its first packet; drop connections that never send one.
+            auto& context     = static_cast<boost::asio::io_context&>(*this);
+            auto  login_timer = std::make_shared<boost::asio::steady_timer>(context, LOGIN_TIMEOUT);
+            auto  weak        = std::weak_ptr<fb::socket<T>>(socket_ptr);
+            login_timer->async_wait([login_timer, weak](const boost::system::error_code& ec) {
+                if (ec)
+                    return;
+
+                auto socket = weak.lock();
+                if (socket == nullptr || socket->data() != nullptr || socket->is_open() == false)
+                    return;
+
+                fb::logger::warn("acceptor::accept: login timeout. fd: {}", socket->fd());
+                socket->close();
+            });
+
+            co_await socket_ptr->recv();
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("acceptor::accept: error={}\n{}",
+                              e.what(),
+                              boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+            socket_ptr->close();
+        }
+        catch (...)
+        {
+            fb::logger::fatal("acceptor::accept: unknown error");
+            socket_ptr->close();
+        }
+    }
+
     void accept()
     {
         auto socket_ptr = std::make_shared<fb::socket<T>>(*this,
@@ -340,90 +397,32 @@ private:
                 fb::logger::fatal("acceptor::accept: error={}", error.message());
                 socket_ptr->close();
 
-                auto timer = std::make_shared<boost::asio::steady_timer>(static_cast<boost::asio::io_context&>(*this),
-                                                                         ACCEPT_RETRY_DELAY);
+                auto& context = static_cast<boost::asio::io_context&>(*this);
+                auto  timer   = std::make_shared<boost::asio::steady_timer>(context, ACCEPT_RETRY_DELAY);
                 timer->async_wait([this, timer](const boost::system::error_code& ec) {
                     if (ec || this->_running == false)
                         return;
 
                     this->accept();
                 });
-                return;
             }
-
-            try
+            else
             {
-                // Drive cpp-async handshake on an Asio awaitable without blocking the IO thread.
-                boost::asio::co_spawn(
-                    *this,
-                    [this, socket_ptr]() -> boost::asio::awaitable<void> {
-                        try
-                        {
-                            co_await fb::async_await_task(this->on_accepted(*socket_ptr), boost::asio::use_awaitable);
-                            socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
+                try
+                {
+                    // Drive cpp-async handshake on an Asio awaitable without blocking the IO thread.
+                    boost::asio::co_spawn(*this, this->serve(socket_ptr), boost::asio::detached);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::fatal("acceptor::accept: error={}\n{}",
+                                      e.what(),
+                                      boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                    socket_ptr->close();
+                }
 
-                            {
-                                auto  fd    = socket_ptr->fd();
-                                auto  guard = this->_sockets.enter_write();
-                                auto& v     = guard.value();
-                                if (auto it = v.find(fd); it != v.end())
-                                {
-                                    if (it->second.get() != socket_ptr.get())
-                                    {
-                                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
-                                        v.erase(it);
-                                    }
-                                }
-
-                                v.insert_or_assign(fd, socket_ptr);
-                            }
-
-                            co_await fb::async_await_task(this->on_connected(*socket_ptr), boost::asio::use_awaitable);
-
-                            // Every server binds session data on its first accepted packet; drop connections that never
-                            // do.
-                            auto login_timer = std::make_shared<boost::asio::steady_timer>(
-                                static_cast<boost::asio::io_context&>(*this),
-                                LOGIN_TIMEOUT);
-                            login_timer->async_wait([login_timer, weak = std::weak_ptr<fb::socket<T>>(socket_ptr)](
-                                                        const boost::system::error_code& ec) {
-                                if (ec)
-                                    return;
-
-                                auto socket = weak.lock();
-                                if (socket == nullptr || socket->data() != nullptr || socket->is_open() == false)
-                                    return;
-
-                                fb::logger::warn("acceptor::accept: login timeout. fd: {}", socket->fd());
-                                socket->close();
-                            });
-
-                            co_await socket_ptr->recv();
-                        }
-                        catch (std::exception& e)
-                        {
-                            fb::logger::fatal("acceptor::accept: error={}\n{}",
-                                              e.what(),
-                                              boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
-                            socket_ptr->close();
-                        }
-                        catch (...)
-                        {
-                            fb::logger::fatal("acceptor::accept: unknown error");
-                            socket_ptr->close();
-                        }
-                    },
-                    boost::asio::detached);
+                this->accept();
             }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal("acceptor::accept: error={}\n{}",
-                                  e.what(),
-                                  boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
-                socket_ptr->close();
-            }
-
-            this->accept();
         });
     }
 

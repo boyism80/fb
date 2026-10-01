@@ -5,6 +5,7 @@
 #include <async/task_completion_source.h>
 #include <fb/asio_task.h>
 #include <fb/async_executor.h>
+#include <fb/context.h>
 #include <fb/encryption.h>
 #include <fb/logger.h>
 #include <fb/model/datetime.h>
@@ -184,6 +185,10 @@ public:
             return promise->task();
         }
 
+        // Packets buffered earlier in this context already consumed encryption sequences; send them first.
+        if (auto* ctx = context::local::try_get(); ctx != nullptr)
+            ctx->outbound.flush();
+
         auto clone = fb::stream(stream);
         if (encrypt && this->on_encrypt(clone) == false)
         {
@@ -197,12 +202,15 @@ public:
             return promise->task();
         }
 
-        this->write(std::move(clone), [promise](const boost::system::error_code& ec, size_t transferred) {
-            if (ec)
-                promise->set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
-            else
-                promise->set_value(transferred);
-        });
+        auto self = this->template shared_from_this_as<fb::socket<T>>();
+        fb::tcp_socket::write(self,
+                              std::move(clone),
+                              [promise](const boost::system::error_code& ec, size_t transferred) {
+                                  if (ec)
+                                      promise->set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
+                                  else
+                                      promise->set_value(transferred);
+                              });
 
         return promise->task();
     }

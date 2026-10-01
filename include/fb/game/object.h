@@ -10,6 +10,7 @@
 #include <fb/thread_switchable.h>
 #include <random.h>
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -77,12 +78,12 @@ private:
     mutable std::shared_mutex _map_lock;
 
 protected:
-    uint32_t             _oid       = 0;
-    uint32_t             _model_id  = 0;
-    fb::model::point16_t _position  = fb::model::point16_t(0, 0);
-    DIRECTION            _direction = DIRECTION::BOTTOM;
-    map_ptr              _map       = nullptr;
-    fb::thread*          _thread    = nullptr;
+    uint32_t                 _oid       = 0;
+    uint32_t                 _model_id  = 0;
+    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
+    DIRECTION                _direction = DIRECTION::BOTTOM;
+    map_ptr                  _map       = nullptr;
+    std::atomic<fb::thread*> _thread    = nullptr; // read from IO threads for packet dispatch
 
 public:
     listener_t&       listener;

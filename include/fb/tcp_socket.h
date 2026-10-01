@@ -22,33 +22,28 @@ public:
     using write_handler = std::function<void(const boost::system::error_code&, size_t)>;
 
 private:
-    struct write_queue
+    struct pending_write
     {
-        struct entry
-        {
-            std::shared_ptr<fb::stream> wire;
-            write_handler               handler;
-        };
-
-        std::mutex        mutex;
-        std::deque<entry> entries;
-        tcp_socket*       owner = nullptr;
+        std::shared_ptr<fb::stream> wire;
+        write_handler               handler;
     };
 
-    std::shared_ptr<write_queue> _writes;
+    std::mutex                _write_mutex;
+    std::deque<pending_write> _writes;
 
 public:
     explicit tcp_socket(boost::asio::io_context& context);
-    ~tcp_socket();
+    ~tcp_socket() = default;
 
     tcp_socket(const tcp_socket&)             = delete;
     tcp_socket& operator= (const tcp_socket&) = delete;
 
 public:
-    void write(fb::stream wire, write_handler handler = nullptr);
+    // Takes shared ownership so the socket outlives every in-flight async_write.
+    static void write(const std::shared_ptr<tcp_socket>& socket, fb::stream wire, write_handler handler = nullptr);
 
 private:
-    static void write_front(const std::shared_ptr<write_queue>& queue);
+    static void write_front(const std::shared_ptr<tcp_socket>& socket);
 };
 
 } // namespace fb

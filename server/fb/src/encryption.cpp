@@ -111,9 +111,14 @@ uint32_t encryption::encrypt(stream& data, uint32_t offset, uint32_t size)
 
     if (size > 1)
     {
+        // Block keys advance 4 bytes per block from the pattern row and may run into later rows, never past the table.
+        auto loop = uint32_t((size - 2) / KEY_SIZE + 1);
+        if ((this->_pattern * 0x100 + loop) * sizeof(uint32_t) > sizeof(HEX_TABLE))
+            return -1;
+
         this->crypt(buffer_src + 1, buffer_dst.get() + 2, size - 1, this->_iv.get(), KEY_SIZE);
 
-        for (int i = 0, loop = uint32_t((size - 2) / KEY_SIZE + 1); i < loop; i++)
+        for (uint32_t i = 0; i < loop; i++)
         {
             auto offset = buffer_dst.get() + (KEY_SIZE * i) + 2;
             if (i == this->_sequence)
@@ -152,6 +157,9 @@ uint32_t encryption::decrypt(stream& data, uint32_t offset, uint32_t size)
     // opcode + sequence are required; the result drops the sequence byte.
     if (size < 2 || offset + size > data.size())
         throw std::runtime_error("encryption::decrypt: invalid size");
+
+    if (size > 2 && (this->_pattern * 0x100 + (size - 3) / KEY_SIZE + 1) * sizeof(uint32_t) > sizeof(HEX_TABLE))
+        throw std::runtime_error("encryption::decrypt: key offset out of range");
 
     auto extended_size = size + 0x100;
     auto buffer_src    = (uint8_t*)data.data() + offset;
@@ -275,7 +283,8 @@ encryption encryption::generate()
 
 bool encryption::validate(uint8_t type, const uint8_t* key, uint8_t ksize)
 {
-    if (type > KEY_SIZE)
+    // generate() only produces patterns below KEY_SIZE.
+    if (type >= KEY_SIZE)
         return false;
 
     if (ksize != KEY_SIZE)

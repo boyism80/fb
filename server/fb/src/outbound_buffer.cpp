@@ -66,7 +66,7 @@ void outbound_buffer::flush()
         if (slot.endpoint == nullptr || slot.endpoint->is_open() == false)
             continue;
 
-        slot.endpoint->write(std::move(slot.wire), [](const boost::system::error_code& ec, size_t) {
+        fb::tcp_socket::write(slot.endpoint, std::move(slot.wire), [](const boost::system::error_code& ec, size_t) {
             if (ec)
                 fb::logger::debug("outbound_buffer flush failed: {}", ec.message());
         });
