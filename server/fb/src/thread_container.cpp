@@ -31,11 +31,8 @@ thread_container::~thread_container()
 {
     // std::unique_ptr in thread::_data handles cleanup automatically
 
-    for (auto& [id, thread] : this->_logic_threads)
-    {
-        thread->exit();
-        thread->join();
-    }
+    this->exit();
+    this->join();
 }
 
 thread* thread_container::at(uint8_t index) const
@@ -152,6 +149,14 @@ void thread_container::exit()
     for (auto& [id, thread] : this->_logic_threads)
     {
         thread->exit();
+    }
+}
+
+void thread_container::join()
+{
+    for (auto& [id, thread] : this->_logic_threads)
+    {
+        thread->join();
     }
 }
 

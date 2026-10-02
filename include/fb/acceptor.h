@@ -685,6 +685,7 @@ public:
             {
                 thread.join();
             }
+            this->threads.join();
             throw;
         }
 
@@ -702,6 +703,10 @@ public:
         {
             thread.join();
         }
+
+        // Logic threads only had their exit flag set. Join them here so the server's last shared_ptr
+        // (timer callbacks hold one) can never be released on a logic thread that would then join itself.
+        this->threads.join();
     }
 
 public:

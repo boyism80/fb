@@ -124,6 +124,18 @@ void fb::thread::assert_exec() const
 
 void fb::thread::join()
 {
+    if (this->_thread.joinable() == false)
+        return;
+
+    // Joining itself throws resource_deadlock_would_occur, and a joinable std::thread terminates when destroyed.
+    // acceptor::run() joins logic threads before the server can be released, so this is only a last resort.
+    if (this->_thread.get_id() == std::this_thread::get_id())
+    {
+        fb::logger::fatal("thread {}: join requested from the thread itself; detaching", this->_index);
+        this->_thread.detach();
+        return;
+    }
+
     this->_thread.join();
 }
 

@@ -87,6 +87,7 @@ public:
     void        settimer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,
                          const fb::model::timespan&                                                      duration);
     void        exit();
+    void        join();
     fb::thread* least_loaded() const;
 
     iterator       begin();
@@ -120,8 +121,12 @@ class thread_container::builder
     friend class thread_container;
 
 private:
+    // A pivot that keeps changing threads would otherwise chain hops forever.
+    static constexpr size_t MAX_PIVOT_HOPS = 8;
+
     thread_container&     _container;
     std::weak_ptr<PivotT> _pivot;
+    size_t                _hops = 0;
 
 public:
     std::function<bool(fb::thread&)> when;
@@ -136,16 +141,67 @@ public:
         if (this->func == nullptr)
             throw std::runtime_error("thread container builder: func is not set");
 
-        auto* target = this->_container.thread_for<PivotT>(this->_pivot);
-        auto  wrapped =
-            this->make_wrapped_func(std::make_shared<thread::handle_func_type<T>>(std::move(this->func)), true);
+        auto* target      = this->_container.thread_for<PivotT>(this->_pivot);
+        auto  fn_holder   = std::make_shared<thread::handle_func_type<T>>(std::move(this->func));
+        auto  when_fn     = this->when ? this->when : std::function<bool(fb::thread&)>([](auto&) {
+            return true;
+        });
+        auto  on_error    = thread::on_error(std::move(this->on_error));
+        auto  on_complete = std::move(this->on_complete);
+        // Set only when func runs here; hopping to the pivot's new thread must not report completion twice.
+        auto ran = std::make_shared<bool>(false);
 
-        auto inner        = target->template new_builder<T>();
-        inner.func        = std::move(wrapped);
+        // The result of an enqueued func is discarded, so the inner task is void for every T.
+        // Exceptions from func are not caught here so retry_exception still reaches the retry loop.
+        auto inner = target->template new_builder<void>();
+        inner.func = [container   = &this->_container,
+                      pivot       = this->_pivot,
+                      hops        = this->_hops,
+                      retry_count = this->retry_count,
+                      context     = this->context,
+                      fn_holder,
+                      when_fn,
+                      on_error,
+                      on_complete,
+                      ran](fb::thread& thread) -> async::task<void> {
+            auto shared = pivot.lock();
+            if (shared == nullptr)
+                throw std::runtime_error("pivot object is expired");
+
+            if (when_fn(thread) == false)
+                throw std::runtime_error("condition not satisfied");
+
+            if (shared->thread() != &thread)
+            {
+                if (hops >= MAX_PIVOT_HOPS)
+                    throw std::runtime_error("pivot moved too many times");
+
+                auto retry  = container->template new_builder<T, PivotT>(shared->template weak_from_this_as<PivotT>());
+                retry._hops = hops + 1;
+                retry.when  = when_fn;
+                retry.func  = *fn_holder;
+                retry.on_error    = on_error;
+                retry.on_complete = on_complete;
+                retry.retry_count = retry_count;
+                retry.context     = context;
+                retry.enqueue();
+            }
+            else
+            {
+                *ran = true;
+                if constexpr (std::is_same_v<T, void>)
+                    co_await (*fn_holder)(thread);
+                else
+                    std::ignore = co_await (*fn_holder)(thread);
+            }
+        };
         inner.retry_count = this->retry_count;
         inner.context     = this->context;
-        inner.on_error    = thread::on_error(std::move(this->on_error));
-        inner.on_complete = std::move(this->on_complete);
+        inner.on_error    = on_error;
+        inner.on_complete = [ran, on_complete]() {
+            if (*ran && on_complete)
+                on_complete();
+        };
         inner.enqueue();
     }
 
@@ -187,10 +243,56 @@ public:
             }
         }
 
-        auto fn_holder    = std::make_shared<thread::handle_func_type<T>>(std::move(this->func));
-        auto wrapped      = this->make_wrapped_func(fn_holder, false);
-        auto inner        = target_thread->template new_builder<T>();
-        inner.func        = std::move(wrapped);
+        auto fn_holder = std::make_shared<thread::handle_func_type<T>>(std::move(this->func));
+        auto inner     = target_thread->template new_builder<T>();
+        inner.func     = [container   = &this->_container,
+                      pivot       = this->_pivot,
+                      hops        = this->_hops,
+                      retry_count = this->retry_count,
+                      context     = this->context,
+                      fn_holder,
+                      when_fn](fb::thread& thread) -> async::task<T> {
+            auto shared = pivot.lock();
+            if (shared == nullptr)
+                throw std::runtime_error("pivot object is expired");
+
+            if (when_fn(thread) == false)
+                throw std::runtime_error("condition not satisfied");
+
+            if (shared->thread() != &thread)
+            {
+                if (hops >= MAX_PIVOT_HOPS)
+                    throw std::runtime_error("pivot moved too many times");
+
+                auto retry  = container->template new_builder<T, PivotT>(shared->template weak_from_this_as<PivotT>());
+                retry._hops = hops + 1;
+                retry.when  = when_fn;
+                retry.func  = *fn_holder;
+                retry.retry_count = retry_count;
+                retry.context     = context;
+                if constexpr (std::is_same_v<T, void>)
+                {
+                    co_await retry.dispatch();
+                    co_return;
+                }
+                else
+                {
+                    co_return co_await retry.dispatch();
+                }
+            }
+            else
+            {
+                if constexpr (std::is_same_v<T, void>)
+                {
+                    co_await (*fn_holder)(thread);
+                    co_return;
+                }
+                else
+                {
+                    co_return co_await (*fn_holder)(thread);
+                }
+            }
+        };
         inner.retry_count = this->retry_count;
         inner.context     = this->context;
         co_return co_await inner.dispatch();
@@ -201,78 +303,6 @@ private:
         _container(container),
         _pivot(std::move(pivot))
     { }
-
-    thread::handle_func_type<T> make_wrapped_func(std::shared_ptr<thread::handle_func_type<T>> fn_holder,
-                                                  bool                                         for_enqueue) const
-    {
-        auto when_fn            = this->when ? this->when : std::function<bool(fb::thread&)>([](auto&) {
-            return true;
-        });
-        auto on_error_holder    = std::make_shared<thread::handle_error_type>(thread::on_error(this->on_error));
-        auto on_complete_holder = std::make_shared<std::function<void()>>(this->on_complete);
-        auto retry_count        = this->retry_count;
-        auto context            = this->context;
-
-        return [container = &this->_container,
-                pivot     = this->_pivot,
-                fn_holder,
-                when_fn = std::move(when_fn),
-                on_error_holder,
-                on_complete_holder,
-                retry_count,
-                context,
-                for_enqueue](fb::thread& thread) mutable -> async::task<T> {
-            auto shared = pivot.lock();
-            if (shared == nullptr)
-                throw std::runtime_error("pivot object is expired");
-
-            if (when_fn(thread) == false)
-                throw std::runtime_error("condition not satisfied");
-
-            auto* active_thread = shared->thread();
-            if (active_thread != &thread)
-            {
-                auto retry = container->template new_builder<T, PivotT>(shared->template weak_from_this_as<PivotT>());
-                retry.when = when_fn;
-                retry.func = *fn_holder;
-                retry.on_error    = *on_error_holder;
-                retry.on_complete = on_complete_holder ? *on_complete_holder : std::function<void()>{};
-                retry.retry_count = retry_count;
-                retry.context     = context;
-
-                if (for_enqueue)
-                {
-                    retry.enqueue();
-                    if constexpr (std::is_same_v<T, void>)
-                        co_return;
-                    else
-                        throw std::runtime_error("active thread not matched");
-                }
-                else
-                {
-                    if constexpr (std::is_same_v<T, void>)
-                    {
-                        co_await retry.dispatch();
-                        co_return;
-                    }
-                    else
-                    {
-                        co_return co_await retry.dispatch();
-                    }
-                }
-            }
-
-            if constexpr (std::is_same_v<T, void>)
-            {
-                co_await (*fn_holder)(*active_thread);
-                co_return;
-            }
-            else
-            {
-                co_return co_await (*fn_holder)(*active_thread);
-            }
-        };
-    }
 };
 
 } // namespace fb
