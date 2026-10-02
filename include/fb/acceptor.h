@@ -111,10 +111,12 @@ public:
         if (this->_running == false)
             return;
 
+        // Destructors are noexcept; use the error_code overloads so a closed descriptor cannot terminate.
+        auto ec        = boost::system::error_code();
         this->_running = false;
-        this->cancel();
+        this->cancel(ec);
         this->threads.exit();
-        this->close();
+        this->close(ec);
         static_cast<boost::asio::io_context&>(*this).stop();
     }
 
@@ -639,20 +641,49 @@ public:
         this->accept();
 
         auto threads = std::vector<std::thread>();
-        for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
+        try
         {
+            for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
+            {
+                threads.push_back(std::thread([this]() {
+                    // An exception escaping run() would leave the thread function and terminate the process.
+                    while (true)
+                    {
+                        try
+                        {
+                            this->io_context.run();
+                            break;
+                        }
+                        catch (std::exception& e)
+                        {
+                            fb::logger::fatal("acceptor::run: io handler error: {}", e.what());
+                        }
+                        catch (...)
+                        {
+                            fb::logger::fatal("acceptor::run: io handler error: unknown");
+                        }
+                    }
+                }));
+            }
+
             threads.push_back(std::thread([this]() {
-                this->io_context.run();
+                this->handler.amqp.on_initialize = [this](fb::amqp::socket& amqp) {
+                    this->on_init_amqp(amqp);
+                };
+
+                this->handler.amqp.thread_loop();
             }));
         }
-
-        threads.push_back(std::thread([this]() {
-            this->handler.amqp.on_initialize = [this](fb::amqp::socket& amqp) {
-                this->on_init_amqp(amqp);
-            };
-
-            this->handler.amqp.thread_loop();
-        }));
+        catch (...)
+        {
+            // Destroying a joinable std::thread terminates, so stop and join the threads already started.
+            this->shutdown();
+            for (auto& thread : threads)
+            {
+                thread.join();
+            }
+            throw;
+        }
 
         // Shutdown blocks until disconnects and saves finish, which need the IO and logic threads to keep running.
         // Run it here on the main thread, which is neither, instead of on whichever thread called exit().
@@ -775,10 +806,11 @@ private:
         if (this->_running == false)
             return;
 
+        // Nothing below may throw before io_context.stop(), or run() would wait on join() forever.
+        auto ec        = boost::system::error_code();
         this->_running = false;
-        this->cancel();
+        this->cancel(ec);
         // Sync boundary between main/shutdown thread and async-cpp (save, drain queues).
-        // A failure here must not skip the teardown below, or run() would destroy joinable threads.
         try
         {
             async::awaitable_get(this->on_exit());
@@ -786,6 +818,10 @@ private:
         catch (std::exception& e)
         {
             fb::logger::fatal("acceptor::shutdown: on_exit failed: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("acceptor::shutdown: on_exit failed: unknown");
         }
 
         try
@@ -795,6 +831,10 @@ private:
         catch (std::exception& e)
         {
             fb::logger::fatal("acceptor::shutdown: disconnect_sockets failed: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("acceptor::shutdown: disconnect_sockets failed: unknown");
         }
 
         // disconnect_sockets() skips sockets whose on_disconnected already started in erase();
@@ -811,11 +851,11 @@ private:
 
         for (auto& timer : this->_timers)
         {
-            timer->cancel();
+            timer->cancel(ec);
         }
 
         this->threads.exit();
-        this->close();
+        this->close(ec);
 
         static_cast<boost::asio::io_context&>(*this).stop();
     }
