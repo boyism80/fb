@@ -1163,7 +1163,10 @@ int builtin::game_bot::builtin_transfer(lua_State* L)
     auto request = lua_protocol::to_request(L, 2);
     auto bot_ptr = bot;
 
-    auto weak_slot = static_cast<std::weak_ptr<fb::bot::game_bot>*>(lua_touserdata(*lua, 1));
+    if (fb::lua::luable::is_weak_userdata(*lua, 1) == false)
+        return 0;
+
+    auto weak_slot = static_cast<std::weak_ptr<fb::lua::luable>*>(lua_touserdata(*lua, 1));
     if (weak_slot == nullptr)
         return 0;
 
@@ -1186,8 +1189,7 @@ int builtin::game_bot::builtin_transfer(lua_State* L)
             co_return 0;
         }
 
-        weak_slot->~weak_ptr<fb::bot::game_bot>();
-        new (weak_slot) std::weak_ptr<fb::bot::game_bot>(*result);
+        *weak_slot = *result;
         co_return 0;
     };
     return builder.run();

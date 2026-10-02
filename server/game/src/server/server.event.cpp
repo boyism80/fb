@@ -61,10 +61,12 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         {
             co_await this->save(*ch);
         }
-        auto world  = ch->world();
-        std::ignore = co_await this->http.post("internal",
-                                               "/in-game/logout",
-                                               internal_reqs::Logout{world, ch->name(), fb::config<uint8_t>("id")});
+        auto world = ch->world();
+        auto resp  = co_await this->http.post("internal",
+                                             "/in-game/logout",
+                                             internal_reqs::Logout{world, ch->name(), fb::config<uint8_t>("id")});
+        if (resp.success == false)
+            fb::logger::fatal("Character {} logout failed: {}", ch->name(), resp.reason.value_or(""));
     }
     catch (std::exception& e)
     {

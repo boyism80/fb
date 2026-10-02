@@ -161,42 +161,18 @@ public:
     virtual ~luable();
 
 public:
-    template <typename T>
+    // An object userdata holds either std::weak_ptr<luable> (shared-owned) or luable* (not shared-owned);
+    // the two are told apart by the userdata size.
+    static bool is_weak_userdata(lua_State* ctx, int offset)
+    {
+        static_assert(sizeof(std::weak_ptr<luable>) != sizeof(luable*));
+        return lua_rawlen(ctx, offset) == sizeof(std::weak_ptr<luable>);
+    }
+
     static int builtin_gc(lua_State* ctx)
     {
-        if constexpr (is_shared_ptr_v<T> || is_weak_ptr_v<T>)
-        {
-            using element_type = typename T::element_type;
-            static_assert(std::is_base_of_v<luable, element_type>, "pointer element type must inherit from luable");
-
-            // Handle weak_ptr stored in userdata
-            if constexpr (is_weak_ptr_v<T>)
-            {
-                auto allocated = static_cast<T*>(lua_touserdata(ctx, 1));
-                if (allocated != nullptr)
-                    allocated->~T(); // Explicitly call destructor for weak_ptr
-            }
-            else // shared_ptr case
-            {
-                auto allocated = static_cast<std::weak_ptr<element_type>*>(lua_touserdata(ctx, 1));
-                if (allocated != nullptr)
-                    allocated->~weak_ptr<element_type>(); // Explicitly call destructor
-            }
-        }
-        else if constexpr (std::is_pointer_v<T>)
-        {
-            using pointee_type = std::remove_pointer_t<T>;
-            static_assert(std::is_base_of_v<luable, pointee_type>, "Pointer type must point to luable");
-        }
-        else if constexpr (std::is_base_of_v<luable, T>)
-        {
-            // For direct luable objects (reference/value types)
-        }
-        else
-        {
-            // Skip static_assert for now - inheritance check is complex with multiple inheritance
-            // static_assert condition will be checked at runtime instead
-        }
+        if (is_weak_userdata(ctx, 1))
+            static_cast<std::weak_ptr<luable>*>(lua_touserdata(ctx, 1))->~weak_ptr();
         return 0;
     }
 
@@ -332,144 +308,30 @@ public:
     {
         if constexpr (is_shared_ptr_v<T>)
         {
-            // Handle shared_ptr<luable>
-            using element_type = typename T::element_type;
-            static_assert(std::is_base_of_v<luable, element_type>, "shared_ptr element type must inherit from luable");
-
-            if (!value)
-            {
-                this->pushnil();
-                return *this;
-            }
-
-            // Store as weak_ptr - preserves exact type
-            auto allocated =
-                static_cast<std::weak_ptr<element_type>*>(lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
-            new (allocated) std::weak_ptr<element_type>(value);
-
-            auto& metaname = value->metaname();
-            luaL_getmetatable(*this, metaname.c_str());
-            lua_pushcfunction(*this, luable::builtin_gc<std::weak_ptr<element_type>>);
-            lua_setfield(*this, -2, "__gc");
-            lua_setmetatable(*this, -2);
+            static_assert(std::is_base_of_v<luable, typename T::element_type>,
+                          "shared_ptr element type must inherit from luable");
+            if (value == nullptr)
+                return this->pushnil();
+            else
+                return this->pushuserdata(*value);
         }
         else if constexpr (std::is_pointer_v<T>)
         {
-            // Handle luable*
-            using element_type = std::remove_cv_t<std::remove_pointer_t<T>>;
-            static_assert(std::is_base_of_v<luable, element_type>,
+            static_assert(std::is_base_of_v<luable, std::remove_cv_t<std::remove_pointer_t<T>>>,
                           "pointer type must point to a type that inherits from luable");
-
             if (value == nullptr)
-            {
-                this->pushnil();
-                return *this;
-            }
-
-            // Try to use shared_from_this if available
-            if constexpr (std::is_base_of_v<fb::thread_switchable, element_type>)
-            {
-                try
-                {
-                    // Use thread_switchable's shared_from_this_as<T>() - this preserves EXACT type!
-                    auto const_shared = value->template shared_from_this_as<element_type>();
-                    auto typed_shared = std::const_pointer_cast<element_type>(const_shared);
-
-                    // Store as weak_ptr with the EXACT element_type
-                    auto allocated = static_cast<std::weak_ptr<element_type>*>(
-                        lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
-                    new (allocated) std::weak_ptr<element_type>(typed_shared);
-
-                    auto& metaname = value->metaname();
-                    luaL_getmetatable(*this, metaname.c_str());
-                    lua_pushcfunction(*this, luable::builtin_gc<std::weak_ptr<element_type>>);
-                    lua_setfield(*this, -2, "__gc");
-                    lua_setmetatable(*this, -2);
-                }
-                catch (const std::bad_weak_ptr&)
-                {
-                    // Fall back to raw pointer
-                    auto allocated =
-                        static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
-                    *allocated = value;
-
-                    auto& metaname = value->metaname();
-                    luaL_getmetatable(*this, metaname.c_str());
-                    lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
-                    lua_setfield(*this, -2, "__gc");
-                    lua_setmetatable(*this, -2);
-                }
-            }
+                return this->pushnil();
             else
-            {
-                // Store as raw pointer for non-thread_switchable objects
-                auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
-                *allocated     = value;
-
-                auto& metaname = value->metaname();
-                luaL_getmetatable(*this, metaname.c_str());
-                lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
-                lua_setfield(*this, -2, "__gc");
-                lua_setmetatable(*this, -2);
-            }
+                return this->pushuserdata(*value);
         }
         else
         {
-            // Handle luable&
-            using element_type = std::remove_cv_t<std::remove_reference_t<T>>;
-            static_assert(std::is_base_of_v<luable, element_type>,
+            static_assert(std::is_base_of_v<luable, std::remove_cv_t<std::remove_reference_t<T>>>,
                           "reference type must refer to a type that inherits from luable");
-
-            // Try to use shared_from_this if available
-            if constexpr (std::is_base_of_v<fb::thread_switchable, element_type>)
-            {
-                try
-                {
-                    // Use thread_switchable's shared_from_this_as<T>() - this preserves EXACT type!
-                    auto const_shared = value.template shared_from_this_as<element_type>();
-                    auto typed_shared = std::const_pointer_cast<element_type>(const_shared);
-
-                    // Store as weak_ptr with the EXACT element_type
-                    auto allocated = static_cast<std::weak_ptr<element_type>*>(
-                        lua_newuserdata(*this, sizeof(std::weak_ptr<element_type>)));
-                    new (allocated) std::weak_ptr<element_type>(typed_shared);
-
-                    auto& metaname = value.metaname();
-                    luaL_getmetatable(*this, metaname.c_str());
-                    lua_pushcfunction(*this, luable::builtin_gc<std::weak_ptr<element_type>>);
-                    lua_setfield(*this, -2, "__gc");
-                    lua_setmetatable(*this, -2);
-                }
-                catch (const std::bad_weak_ptr&)
-                {
-                    // Fall back to raw pointer
-                    auto allocated =
-                        static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
-                    *allocated = &value;
-
-                    auto& metaname = value.metaname();
-                    luaL_getmetatable(*this, metaname.c_str());
-                    lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
-                    lua_setfield(*this, -2, "__gc");
-                    lua_setmetatable(*this, -2);
-                }
-            }
-            else
-            {
-                // Store as raw pointer for non-thread_switchable objects
-                auto allocated = static_cast<const element_type**>(lua_newuserdata(*this, sizeof(const element_type*)));
-                *allocated     = &value;
-
-                auto& metaname = value.metaname();
-                luaL_getmetatable(*this, metaname.c_str());
-                lua_pushcfunction(*this, luable::builtin_gc<const element_type*>);
-                lua_setfield(*this, -2, "__gc");
-                lua_setmetatable(*this, -2);
-            }
+            return this->pushuserdata(value);
         }
-
-        return *this;
     }
+    context& pushuserdata(const luable& value);
     context& push(const void* value);
     context& pop(int offset);
 
@@ -533,19 +395,22 @@ public:
         else if (this->is_userdata<T>(offset) == false)
             return std::conditional_t<can_shared_from_this_v<T>, std::shared_ptr<T>, T*>{nullptr};
 
-        // Case 1: Type that can use shared_from_this -> return shared_ptr<T>
-        if constexpr (can_shared_from_this_v<T>)
+        auto data = lua_touserdata(*this, offset);
+        if (luable::is_weak_userdata(*this, offset))
         {
-            auto weak = static_cast<std::weak_ptr<T>*>(lua_touserdata(*this, offset));
-            if (auto shared = weak->lock())
-                return shared;
-            return std::shared_ptr<T>{nullptr};
+            auto shared = static_cast<std::weak_ptr<luable>*>(data)->lock();
+            if constexpr (can_shared_from_this_v<T>)
+                return std::static_pointer_cast<T>(shared);
+            else
+                return static_cast<T*>(shared.get());
         }
-        // Case 2: Regular luable type -> return T*
         else
         {
-            auto ptr = static_cast<T* const*>(lua_touserdata(*this, offset));
-            return *ptr;
+            auto raw = *static_cast<luable**>(data);
+            if constexpr (can_shared_from_this_v<T>)
+                return std::shared_ptr<T>(std::shared_ptr<T>(), static_cast<T*>(raw)); // non-owning
+            else
+                return static_cast<T*>(raw);
         }
     }
 

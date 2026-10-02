@@ -29,6 +29,7 @@ table Login {
 
 table Logout {
   success: bool;
+  reason: string?;
 }
 
 

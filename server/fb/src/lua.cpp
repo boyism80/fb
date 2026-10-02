@@ -144,6 +144,29 @@ context& context::pushboolean(bool value)
     return *this;
 }
 
+context& context::pushuserdata(const luable& value)
+{
+    auto& target = const_cast<luable&>(value);
+    auto  weak   = target.std::enable_shared_from_this<luable>::weak_from_this();
+    if (weak.expired())
+    {
+        auto allocated = static_cast<luable**>(lua_newuserdata(this->_ctx, sizeof(luable*)));
+        *allocated     = &target;
+    }
+    else
+    {
+        auto allocated =
+            static_cast<std::weak_ptr<luable>*>(lua_newuserdata(this->_ctx, sizeof(std::weak_ptr<luable>)));
+        new (allocated) std::weak_ptr<luable>(std::move(weak));
+    }
+
+    luaL_getmetatable(this->_ctx, value.metaname().c_str());
+    lua_pushcfunction(this->_ctx, luable::builtin_gc);
+    lua_setfield(this->_ctx, -2, "__gc");
+    lua_setmetatable(this->_ctx, -2);
+    return *this;
+}
+
 context& context::pushjson(const Json::Value& json)
 {
     if (json.isNull())

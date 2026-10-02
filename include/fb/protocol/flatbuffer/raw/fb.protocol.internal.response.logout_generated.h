@@ -25,14 +25,20 @@ struct LogoutBuilder;
 struct Logout FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LogoutBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SUCCESS = 4
+    VT_SUCCESS = 4,
+    VT_REASON = 6
   };
   bool success() const {
     return GetField<uint8_t>(VT_SUCCESS, 0) != 0;
   }
+  const ::flatbuffers::String *reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REASON);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_SUCCESS, 1) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.VerifyString(reason()) &&
            verifier.EndTable();
   }
 };
@@ -43,6 +49,9 @@ struct LogoutBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_success(bool success) {
     fbb_.AddElement<uint8_t>(Logout::VT_SUCCESS, static_cast<uint8_t>(success), 0);
+  }
+  void add_reason(::flatbuffers::Offset<::flatbuffers::String> reason) {
+    fbb_.AddOffset(Logout::VT_REASON, reason);
   }
   explicit LogoutBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -57,10 +66,23 @@ struct LogoutBuilder {
 
 inline ::flatbuffers::Offset<Logout> CreateLogout(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool success = false) {
+    bool success = false,
+    ::flatbuffers::Offset<::flatbuffers::String> reason = 0) {
   LogoutBuilder builder_(_fbb);
+  builder_.add_reason(reason);
   builder_.add_success(success);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Logout> CreateLogoutDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool success = false,
+    const char *reason = nullptr) {
+  auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  return fb::protocol::internal::response::raw::CreateLogout(
+      _fbb,
+      success,
+      reason__);
 }
 
 inline const fb::protocol::internal::response::raw::Logout *GetLogout(const void *buf) {

@@ -21,16 +21,26 @@ public struct Logout : IFlatbufferObject
   public Logout __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public string Reason { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetReasonBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
+  public ArraySegment<byte>? GetReasonBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetReasonArray() { return __p.__vector_as_array<byte>(6); }
 
   public static Offset<fb.protocol._internal.response.raw.Logout> CreateLogout(FlatBufferBuilder builder,
-      bool success = false) {
-    builder.StartTable(1);
+      bool success = false,
+      StringOffset reasonOffset = default(StringOffset)) {
+    builder.StartTable(2);
+    Logout.AddReason(builder, reasonOffset);
     Logout.AddSuccess(builder, success);
     return Logout.EndLogout(builder);
   }
 
-  public static void StartLogout(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartLogout(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
+  public static void AddReason(FlatBufferBuilder builder, StringOffset reasonOffset) { builder.AddOffset(1, reasonOffset.Value, 0); }
   public static Offset<fb.protocol._internal.response.raw.Logout> EndLogout(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.Logout>(o);
@@ -46,6 +56,7 @@ static public class LogoutVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyString(tablePos, 6 /*Reason*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

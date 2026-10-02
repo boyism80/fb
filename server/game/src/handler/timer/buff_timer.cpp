@@ -69,10 +69,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                     continue;
 
                 lua->pushobject(obj);
-                if (buff->caster == nullptr)
-                    lua->pushnil();
-                else
-                    lua->pushobject(buff->caster);
+                lua->pushobject(buff->caster.lock());
                 lua->pushobject(buff);
 
                 try

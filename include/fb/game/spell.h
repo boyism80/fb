@@ -99,13 +99,14 @@ private:
     uint32_t            _model_id = 0;
 
 public:
-    const fb::game::server&   server;
-    const fb::game::object*   caster;
-    const fb::model::datetime start;
+    const fb::game::server&               server;
+    const std::weak_ptr<fb::game::object> owner;
+    const std::weak_ptr<fb::game::object> caster;
+    const fb::model::datetime             start;
 
 public:
     // clang-format off
-    buff(const fb::game::server& server, const fb::model::spell& model, const fb::game::object* caster, uint32_t seconds);
+    buff(const fb::game::server& server, const fb::model::spell& model, const std::weak_ptr<fb::game::object>& owner, const std::weak_ptr<fb::game::object>& caster, uint32_t seconds);
    ~buff();
     // clang-format on
 

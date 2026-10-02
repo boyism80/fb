@@ -22,10 +22,14 @@ async::task<void> kick_out::handle(const internal_resp::KickOut& message)
     {
         try
         {
-            std::ignore = co_await this->server.http.post(
+            auto resp = co_await this->server.http.post(
                 "internal",
                 "/in-game/logout",
                 internal_reqs::Logout{message.world, message.name, fb::config<uint8_t>("id")});
+            if (resp.success == false)
+                fb::logger::fatal("Character {} logout after kick-out failed: {}",
+                                  message.name,
+                                  resp.reason.value_or(""));
         }
         catch (std::exception& e)
         {

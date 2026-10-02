@@ -254,8 +254,13 @@ bool spells::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-buff::buff(const fb::game::server& server, const fb::model::spell& model, const object* caster, uint32_t seconds) :
+buff::buff(const fb::game::server&                server,
+           const fb::model::spell&                model,
+           const std::weak_ptr<fb::game::object>& owner,
+           const std::weak_ptr<fb::game::object>& caster,
+           uint32_t                               seconds) :
     server(server),
+    owner(owner),
     caster(caster),
     start(server.now()),
     _model_id(model.id),
@@ -392,7 +397,7 @@ async::task<std::shared_ptr<buff>> buffs::push_back(const fb::model::spell&     
     this->discard_expired(model.id);
 
     auto& server  = this->_owner.server;
-    auto  created = server.make<buff>(model, caster.get(), seconds);
+    auto  created = server.make<buff>(model, this->_owner.weak_from_this_as<fb::game::object>(), caster, seconds);
     if (created == nullptr)
     {
         fb::logger::warn("Failed to create buff for {}", model.name);

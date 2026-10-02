@@ -615,10 +615,14 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
 
         try
         {
-            std::ignore = co_await this->server.http.post(
+            auto resp = co_await this->server.http.post(
                 "internal",
                 "/in-game/logout",
                 internal_reqs::Logout{this->world(request), request.name, fb::config<uint8_t>("id")});
+            if (resp.success == false)
+                fb::logger::fatal("Character {} logout after failed login failed: {}",
+                                  request.name,
+                                  resp.reason.value_or(""));
         }
         catch (std::exception& e)
         {

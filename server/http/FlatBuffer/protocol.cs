@@ -1268,7 +1268,8 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -3556,7 +3557,8 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -5875,7 +5877,8 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -8194,7 +8197,8 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -10457,7 +10461,8 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -12721,7 +12726,8 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -14985,7 +14991,8 @@ namespace fb.protocol.matchmaking
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -17247,7 +17254,8 @@ namespace fb.protocol.matchmaking.mq
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -19508,7 +19516,8 @@ namespace fb.protocol.matchmaking.request
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -21771,7 +21780,8 @@ namespace fb.protocol.matchmaking.response
                 return default;
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Success),
+                builder.Build(value.Reason));
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -27153,6 +27163,7 @@ namespace fb.protocol._internal.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Logout;
         public bool Success { get; set; } = false;
+        public string Reason { get; set; } = null;
 
         public Logout()
         { }
@@ -27160,6 +27171,7 @@ namespace fb.protocol._internal.response
         public Logout(fb.protocol._internal.response.raw.Logout raw)
         {
             Success = raw.Success;
+            Reason = raw.Reason;
         }
 
         public Logout(byte[] bytes) : this(fb.protocol._internal.response.raw.Logout.GetRootAsLogout(new ByteBuffer(bytes)))

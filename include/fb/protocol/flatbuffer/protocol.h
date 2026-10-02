@@ -5377,20 +5377,21 @@ public:
 
 public:
     bool success = false;
+    std::optional<std::string> reason = std::nullopt;
 
 public:
     Logout() = default;
 
     Logout(const Logout& x)
-        : success(x.success)
+        : success(x.success), reason(x.reason)
     { }
 
-    Logout(bool success)
-        : success(success)
+    Logout(bool success, const std::optional<std::string>& reason)
+        : success(success), reason(reason)
     { }
 
     Logout(const fb::protocol::internal::response::raw::Logout& raw)
-        : success(raw.success())
+        : success(raw.success()), reason(raw.reason() != nullptr ? flatbuffers::option::decode(raw.reason()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -10250,7 +10251,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Logout> build<fb::protocol::internal::response::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Logout& value)
 {
     return fb::protocol::internal::response::raw::CreateLogout(builder,
-            flatbuffers::build<bool>(builder, value.success));
+            flatbuffers::build<bool>(builder, value.success),
+            flatbuffers::build<std::optional<std::string>>(builder, value.reason));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Transfer> build<fb::protocol::internal::response::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Transfer& value)

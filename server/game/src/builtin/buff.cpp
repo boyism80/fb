@@ -2,7 +2,10 @@
 #include <fb/game/server.h>
 #include <fb/game/spell.h>
 
+#include <algorithm>
 #include <chrono>
+#include <cstdint>
+#include <memory>
 
 using namespace fb::game;
 
@@ -37,18 +40,33 @@ int builtin::buff::builtin_time(lua_State* L)
     if (buff == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        auto remaining_ms = buff->remaining().total_milliseconds();
-        if (remaining_ms < 0)
-            remaining_ms = 0;
-        lua->pushinteger(remaining_ms / 1000);
-        return 1;
-    }
-    else
-    {
-        auto seconds = lua->tointeger(2);
-        buff->remaining(fb::model::timespan{std::chrono::seconds(seconds)});
-        return 0;
-    }
+    // The buff timer reads and extends the duration on the owner's thread.
+    auto weak         = buff->weak_from_this_as<fb::game::buff>();
+    auto seconds      = argc == 1 ? 0 : lua->tointeger(2);
+    auto remaining_ms = std::make_shared<int64_t>(0);
+    auto builder      = lua->new_co_builder();
+    builder.weak      = buff->owner;
+    builder.yield     = [=]() -> async::task<void> {
+        auto locked = weak.lock();
+        if (locked == nullptr)
+            co_return;
+
+        if (argc == 1)
+            *remaining_ms = (std::max)(static_cast<int64_t>(locked->remaining().total_milliseconds()), int64_t(0));
+        else
+            locked->remaining(fb::model::timespan{std::chrono::seconds(seconds)});
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (argc == 1)
+        {
+            lua->pushinteger(static_cast<lua_Integer>(*remaining_ms / 1000));
+            co_return 1;
+        }
+        else
+        {
+            co_return 0;
+        }
+    };
+    return builder.run();
 }

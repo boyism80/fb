@@ -133,13 +133,16 @@ namespace Internal.Controllers
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
-            var world = request.World;
-            await _sessionService.Delete(world, request.Name, request.Host);
-
-            return new Response.Logout
+            try
             {
-                Success = true
-            };
+                await _sessionService.Delete(request.World, request.Name, request.Host);
+                return new Response.Logout { Success = true };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Logout failed for {Name}", request.Name);
+                return new Response.Logout { Success = false, Reason = e.Message };
+            }
         }
 
         [HttpPost("transfer")]
