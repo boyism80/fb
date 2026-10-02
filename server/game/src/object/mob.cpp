@@ -14,6 +14,7 @@
 #include <format>
 #include <limits>
 #include <memory>
+#include <random>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -80,38 +81,74 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     if (now < this->_respawn_time)
         co_return;
 
-    auto spawn_count = this->model().count - this->_count;
+    auto& model       = this->model();
+    auto  spawn_count = model.count - this->_count;
     if (spawn_count < 1)
         co_return;
 
-    auto mobs = std::vector<std::shared_ptr<fb::game::mob>>();
-    for (int i = 0; i < spawn_count; i++)
+    // Reservoir-sample up to spawn_count tiles in one pass over the area (end is exclusive):
+    // unoccupied tiles are placed first, then mobs overlap on tiles that were walkable before this spawn.
+    static thread_local auto random        = std::mt19937(std::random_device{}());
+    auto                     width         = std::max(model.end.x - model.begin.x, 1);
+    auto                     height        = std::max(model.end.y - model.begin.y, 1);
+    auto                     limit         = static_cast<size_t>(spawn_count);
+    auto                     vacant        = std::vector<fb::model::point16_t>{};
+    auto                     walkable      = std::vector<fb::model::point16_t>{};
+    auto                     vacant_seen   = size_t{0};
+    auto                     walkable_seen = size_t{0};
+    for (int y = 0; y < height; y++)
     {
-        // Use smart pointer for mob creation
-        auto mob = this->_server.make<fb::game::mob>(table::mob[this->model().mob],
-                                                     mob::initial_params{.alive = true, .rezen = this});
+        for (int x = 0; x < width; x++)
+        {
+            auto position = fb::model::point16_t(model.begin.x + x, model.begin.y + y);
+            if (map->movable(position, [](const auto&) {
+                    return false;
+                }) == false)
+                continue;
+
+            walkable_seen++;
+            if (walkable.size() < limit)
+                walkable.push_back(position);
+            else if (auto i = std::uniform_int_distribution<size_t>(0, walkable_seen - 1)(random); i < limit)
+                walkable[i] = position;
+
+            if (map->movable(position, [](const auto&) {
+                    return true;
+                }) == false)
+                continue;
+
+            vacant_seen++;
+            if (vacant.size() < limit)
+                vacant.push_back(position);
+            else if (auto i = std::uniform_int_distribution<size_t>(0, vacant_seen - 1)(random); i < limit)
+                vacant[i] = position;
+        }
+    }
+
+    if (walkable.empty())
+    {
+        fb::logger::warn("rezen: no walkable tile in spawn area (map={}, mob={})", map->id, model.mob);
+        this->_respawn_time = now + model.rezen;
+        co_return;
+    }
+
+    auto mobs = std::vector<std::shared_ptr<fb::game::mob>>();
+    for (size_t i = 0; i < limit; i++)
+    {
+        auto mob =
+            this->_server.make<fb::game::mob>(table::mob[model.mob], mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->stat.heal(mob->stat.base_hp());
 
-        while (true)
-        {
-            auto width    = this->model().end.x - this->model().begin.x;
-            auto height   = this->model().end.y - this->model().begin.y;
-            auto position = fb::model::point16_t(this->model().begin.x + (width > 0 ? std::rand() % width : 0),
-                                                 this->model().begin.y + (height > 0 ? std::rand() % height : 0));
+        auto position = fb::model::point16_t{};
+        if (i < vacant.size())
+            position = vacant[i];
+        else
+            position = walkable[std::uniform_int_distribution<size_t>(0, walkable.size() - 1)(random)];
 
-            if (position.x > map->width() - 1 || position.y > map->height() - 1)
-                continue;
-
-            if (map->blocked(position.x, position.y))
-                continue;
-
-            mob->position(position, true);
-            std::ignore = co_await mob->map(map, position, {.notify = false});
-            break;
-        }
-
+        mob->position(position, true);
+        std::ignore = co_await mob->map(map, position, {.notify = false});
         mobs.push_back(mob);
     }
 
