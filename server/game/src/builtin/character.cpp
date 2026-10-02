@@ -3899,6 +3899,8 @@ int builtin::character::builtin_transfer_to(lua_State* L)
     auto map      = std::shared_ptr<fb::game::map>{};
     auto position = fb::model::point16_t{};
     auto option   = fb::game::transfer_option{};
+    if (lua->is_number(4))
+        option.host = static_cast<uint8_t>(lua->tointeger(4));
 
     lua_getfield(*lua, 5, "match_id");
     lua_getfield(*lua, 5, "match_type");

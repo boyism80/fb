@@ -71,6 +71,7 @@ struct transfer_match
 struct transfer_option
 {
     std::optional<transfer_match> match;
+    std::optional<uint8_t>        host;
 };
 
 class character : public life

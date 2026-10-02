@@ -219,7 +219,13 @@ async::task<void> listener_impl::on_transfer(character&                  me,
     auto socket_ptr = me.socket_ptr();
     if (socket_ptr != nullptr)
         co_await this->server
-            .transfer(*socket_ptr, ip, port, internal::Service::Game, me.world(), map.model().host, stream);
+            .transfer(*socket_ptr,
+                      ip,
+                      port,
+                      internal::Service::Game,
+                      me.world(),
+                      option.host.value_or(map.model().host),
+                      stream);
 }
 
 void listener_impl::on_update_map(character& ch, const fb::game::map& map)

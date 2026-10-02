@@ -188,13 +188,14 @@ async::task<void> fb::game::server::save(character& ch)
     // Save overwrites items, spells, achievements and quests; a partially loaded character would wipe them.
     if (ch.inited() == false || ch.loaded() == false)
         co_return;
+
     if (!fb::config<std::optional<uint32_t>>("world") && ch.has_return_point() == false)
     {
         fb::logger::fatal("Character {} cross save without home snapshot", ch.name());
         co_return;
     }
 
-    auto weak    = ch.weak_from_this();
+    auto weak    = ch.weak_from_this_as<character>();
     auto world   = ch.world();
     auto payload = this->save_payload(ch);
     std::ignore  = co_await this->http.post("internal",
@@ -202,7 +203,11 @@ async::task<void> fb::game::server::save(character& ch)
                                            internal_reqs::Save{world, payload, fb::config<uint8_t>("id")});
 
     co_await this->threads.switching(weak);
-    ch.save_ack();
+    auto shared = weak.lock();
+    if (shared == nullptr)
+        co_return;
+
+    shared->save_ack();
 }
 
 async::task<internal_resp::Ban> fb::game::server::ban(std::string_view               actor,
@@ -331,8 +336,9 @@ async::task<void> fb::game::server::save(fb::thread& thread)
 {
     static constexpr size_t SAVE_BATCH_CHUNK_SIZE = 100;
 
-    auto params   = thread.template data<thread_params>();
-    auto by_world = std::map<uint32_t, std::pair<std::vector<character*>, std::vector<internal::SavePayload>>>{};
+    auto params = thread.template data<thread_params>();
+    auto by_world =
+        std::map<uint32_t, std::pair<std::vector<std::weak_ptr<character>>, std::vector<internal::SavePayload>>>{};
     co_await params->characters.foreach ([&](auto& character) {
         if (!character->inited() || !character->loaded())
             return;
@@ -344,7 +350,7 @@ async::task<void> fb::game::server::save(fb::thread& thread)
         }
 
         auto& chunk = by_world[character->world()];
-        chunk.first.push_back(character.get());
+        chunk.first.push_back(character);
         chunk.second.push_back(this->save_payload(*character));
     });
 
@@ -365,7 +371,29 @@ async::task<void> fb::game::server::save(fb::thread& thread)
 
             for (size_t i = offset; i < chunk_end; i++)
             {
-                characters[i]->save_ack();
+                auto shared = characters[i].lock();
+                if (shared == nullptr)
+                    continue;
+
+                // The character may have moved to another thread while the save request was in flight.
+                if (shared->matched_thread())
+                {
+                    shared->save_ack();
+                }
+                else
+                {
+                    auto builder = this->threads.new_builder<void, character>(characters[i]);
+                    builder.func = [weak = characters[i]](auto&) -> async::task<void> {
+                        auto moved = weak.lock();
+                        if (moved != nullptr)
+                            moved->save_ack();
+                        co_return;
+                    };
+                    builder.on_error = [](std::exception& e) {
+                        fb::logger::fatal("save_ack error: {}", e.what());
+                    };
+                    builder.enqueue();
+                }
             }
         }
     }

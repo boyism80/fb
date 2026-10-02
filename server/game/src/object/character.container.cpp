@@ -281,14 +281,31 @@ void character::container::foreach_enqueue(character_async_function_t&&        f
     for (auto& [thread, weak_ptrs] : group)
     {
         auto builder = thread->new_builder<void>();
-        builder.func = [fn_holder, weak_ptrs](auto& thread) -> async::task<void> {
+        builder.func = [threads = &this->_server.threads, fn_holder, weak_ptrs](auto&) -> async::task<void> {
             for (auto& weak_ptr : weak_ptrs)
             {
                 auto shared_ptr = weak_ptr.lock();
-                if (shared_ptr == nullptr)
+                if (shared_ptr == nullptr || shared_ptr->thread() == nullptr)
                     continue;
 
-                co_await (*fn_holder)(shared_ptr);
+                // The character may have moved to another thread after it was grouped.
+                if (shared_ptr->matched_thread() == false)
+                {
+                    auto retry = threads->new_builder<void, character>(weak_ptr);
+                    retry.func = [fn_holder, weak_ptr](auto&) -> async::task<void> {
+                        auto moved = weak_ptr.lock();
+                        if (moved != nullptr)
+                            co_await (*fn_holder)(moved);
+                    };
+                    retry.on_error = [](std::exception& e) {
+                        fb::logger::fatal("foreach_enqueue error: {}", e.what());
+                    };
+                    retry.enqueue();
+                }
+                else
+                {
+                    co_await (*fn_holder)(shared_ptr);
+                }
             }
         };
         builder.on_error = [](std::exception& e) {
