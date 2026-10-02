@@ -69,6 +69,10 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
 
                                      if (ec)
                                      {
+                                         // A partial write leaves the peer mid-frame; later writes would corrupt it.
+                                         auto close_ec = boost::system::error_code();
+                                         socket->close(close_ec);
+
                                          for (auto& pending : socket->_writes)
                                          {
                                              dropped.push_back(std::move(pending.handler));

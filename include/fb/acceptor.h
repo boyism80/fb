@@ -75,6 +75,7 @@ private:
     static constexpr auto ACCEPT_RETRY_DELAY = std::chrono::milliseconds(100);
     static constexpr auto LOGIN_TIMEOUT      = std::chrono::seconds(30);
     static constexpr auto ACCEPT_LOG_EVERY   = uint32_t(100);
+    static constexpr auto IO_ERROR_LOG_EVERY = uint32_t(100);
     static constexpr auto DISCONNECT_TIMEOUT = std::chrono::seconds(30);
 
 private:
@@ -111,13 +112,7 @@ public:
         if (this->_running == false)
             return;
 
-        // Destructors are noexcept; use the error_code overloads so a closed descriptor cannot terminate.
-        auto ec        = boost::system::error_code();
-        this->_running = false;
-        this->cancel(ec);
-        this->threads.exit();
-        this->close(ec);
-        static_cast<boost::asio::io_context&>(*this).stop();
+        this->teardown();
     }
 
 protected:
@@ -647,6 +642,7 @@ public:
             {
                 threads.push_back(std::thread([this]() {
                     // An exception escaping run() would leave the thread function and terminate the process.
+                    auto failures = uint32_t(0);
                     while (true)
                     {
                         try
@@ -656,12 +652,18 @@ public:
                         }
                         catch (std::exception& e)
                         {
-                            fb::logger::fatal("acceptor::run: io handler error: {}", e.what());
+                            if (failures % IO_ERROR_LOG_EVERY == 0)
+                                fb::logger::fatal("acceptor::run: io handler error: {} (failures: {})",
+                                                  e.what(),
+                                                  failures + 1);
                         }
                         catch (...)
                         {
-                            fb::logger::fatal("acceptor::run: io handler error: unknown");
+                            if (failures % IO_ERROR_LOG_EVERY == 0)
+                                fb::logger::fatal("acceptor::run: io handler error: unknown (failures: {})",
+                                                  failures + 1);
                         }
+                        failures++;
                     }
                 }));
             }
@@ -677,7 +679,8 @@ public:
         catch (...)
         {
             // Destroying a joinable std::thread terminates, so stop and join the threads already started.
-            this->shutdown();
+            // Skip shutdown(): its save goes through HTTP on this io_context and never finishes without IO threads.
+            this->teardown();
             for (auto& thread : threads)
             {
                 thread.join();
@@ -849,6 +852,16 @@ private:
             fb::logger::warn("acceptor::shutdown: {} disconnects still running after timeout",
                              this->_disconnecting.load());
 
+        this->teardown();
+    }
+
+    // Stops accepting, timers, logic threads and the io_context without saving.
+    // Uses error_code overloads only, so it is safe in the destructor and cannot leave run() stuck on join().
+    void teardown()
+    {
+        auto ec        = boost::system::error_code();
+        this->_running = false;
+        this->cancel(ec);
         for (auto& timer : this->_timers)
         {
             timer->cancel(ec);

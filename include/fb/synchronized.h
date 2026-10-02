@@ -43,19 +43,24 @@ public:
     }
 
 private:
-    std::atomic<int>                                                 _count;
+    int                                                              _count;
     std::mutex                                                       _mutex;
     std::queue<std::shared_ptr<async::task_completion_source<void>>> _waiters;
 
+    // The count check and waiter registration happen under _mutex in one step;
+    // otherwise release() could see a pending acquirer before it is queued and pop an empty queue.
     async::task<void> acquire()
     {
-        auto prev = this->_count.fetch_sub(1, std::memory_order_acquire);
-        if (prev > 0)
-            co_return;
-
-        auto tcs = std::make_shared<async::task_completion_source<void>>();
+        std::shared_ptr<async::task_completion_source<void>> tcs;
         {
             std::lock_guard lk(this->_mutex);
+            if (this->_count > 0)
+            {
+                this->_count--;
+                co_return;
+            }
+
+            tcs = std::make_shared<async::task_completion_source<void>>();
             this->_waiters.push(tcs);
         }
         co_await tcs->task();
@@ -63,34 +68,43 @@ private:
 
     void release()
     {
-        auto prev = this->_count.fetch_add(1, std::memory_order_release);
-        if (prev < 0)
+        std::shared_ptr<async::task_completion_source<void>> next;
         {
-            std::shared_ptr<async::task_completion_source<void>> next;
+            std::lock_guard lk(this->_mutex);
+            if (this->_waiters.empty())
             {
-                std::lock_guard lk(this->_mutex);
+                this->_count++;
+            }
+            else
+            {
+                // Hand the permit straight to the next waiter without returning it to the count.
                 next = this->_waiters.front();
                 this->_waiters.pop();
             }
-            next->set_value();
         }
+
+        if (next)
+            next->set_value();
     }
 };
 
 class async_shared_mutex
 {
 public:
+    // Every state check and waiter registration happens under _mutex in one step.
+    // Checking outside it let an unlock slip in between and leave the new waiter without a wakeup.
     async::task<void> lock_shared()
     {
-        if (!this->_writer.load(std::memory_order_acquire) && this->writer_queue_empty())
-        {
-            this->_reader_count.fetch_add(1, std::memory_order_relaxed);
-            co_return;
-        }
-
-        auto tcs = std::make_shared<async::task_completion_source<void>>();
+        std::shared_ptr<async::task_completion_source<void>> tcs;
         {
             std::lock_guard lk(this->_mutex);
+            if (this->_writer == false && this->_writer_waiters.empty())
+            {
+                this->_reader_count++;
+                co_return;
+            }
+
+            tcs = std::make_shared<async::task_completion_source<void>>();
             this->_reader_waiters.push(tcs);
         }
         co_await tcs->task();
@@ -98,22 +112,34 @@ public:
 
     void unlock_shared()
     {
-        if (this->_reader_count.fetch_sub(1, std::memory_order_acq_rel) == 1)
-            this->notify_writer();
+        std::shared_ptr<async::task_completion_source<void>> writer;
+        {
+            std::lock_guard lk(this->_mutex);
+            this->_reader_count--;
+            if (this->_reader_count == 0 && this->_writer_waiters.empty() == false)
+            {
+                writer = this->_writer_waiters.front();
+                this->_writer_waiters.pop();
+                this->_writer = true;
+            }
+        }
+
+        if (writer)
+            writer->set_value();
     }
 
     async::task<void> lock()
     {
-        auto expected = false;
-        if (this->_reader_count.load(std::memory_order_acquire) == 0 &&
-            this->_writer.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
-        {
-            co_return;
-        }
-
-        auto tcs = std::make_shared<async::task_completion_source<void>>();
+        std::shared_ptr<async::task_completion_source<void>> tcs;
         {
             std::lock_guard lk(this->_mutex);
+            if (this->_reader_count == 0 && this->_writer == false)
+            {
+                this->_writer = true;
+                co_return;
+            }
+
+            tcs = std::make_shared<async::task_completion_source<void>>();
             this->_writer_waiters.push(tcs);
         }
         co_await tcs->task();
@@ -121,18 +147,17 @@ public:
 
     void unlock()
     {
-        this->_writer.store(false, std::memory_order_release);
-
         std::shared_ptr<async::task_completion_source<void>>              next_writer;
         std::vector<std::shared_ptr<async::task_completion_source<void>>> readers;
         {
             std::lock_guard lk(this->_mutex);
+            this->_writer = false;
 
             if (!this->_writer_waiters.empty())
             {
                 next_writer = this->_writer_waiters.front();
                 this->_writer_waiters.pop();
-                this->_writer.store(true, std::memory_order_release);
+                this->_writer = true;
             }
             else
             {
@@ -140,7 +165,7 @@ public:
                 {
                     readers.push_back(this->_reader_waiters.front());
                     this->_reader_waiters.pop();
-                    this->_reader_count.fetch_add(1, std::memory_order_relaxed);
+                    this->_reader_count++;
                 }
             }
         }
@@ -159,9 +184,10 @@ public:
 
     bool try_lock_shared()
     {
-        if (!this->_writer.load(std::memory_order_acquire) && this->writer_queue_empty())
+        std::lock_guard lk(this->_mutex);
+        if (this->_writer == false && this->_writer_waiters.empty())
         {
-            this->_reader_count.fetch_add(1, std::memory_order_relaxed);
+            this->_reader_count++;
             return true;
         }
         return false;
@@ -169,44 +195,21 @@ public:
 
     bool try_lock()
     {
-        auto expected = false;
-        if (this->_reader_count.load(std::memory_order_acquire) == 0 &&
-            this->_writer.compare_exchange_strong(expected, true, std::memory_order_acq_rel))
+        std::lock_guard lk(this->_mutex);
+        if (this->_reader_count == 0 && this->_writer == false)
         {
+            this->_writer = true;
             return true;
         }
         return false;
     }
 
 private:
-    std::atomic<int>                                                 _reader_count{0};
-    std::atomic<bool>                                                _writer{false};
+    int                                                              _reader_count = 0;
+    bool                                                             _writer       = false;
     mutable std::mutex                                               _mutex;
     std::queue<std::shared_ptr<async::task_completion_source<void>>> _reader_waiters;
     std::queue<std::shared_ptr<async::task_completion_source<void>>> _writer_waiters;
-
-    bool writer_queue_empty() const
-    {
-        std::lock_guard lk(this->_mutex);
-        return this->_writer_waiters.empty();
-    }
-
-    void notify_writer()
-    {
-        std::shared_ptr<async::task_completion_source<void>> writer;
-        {
-            std::lock_guard lk(this->_mutex);
-            if (!this->_writer_waiters.empty())
-            {
-                writer = this->_writer_waiters.front();
-                this->_writer_waiters.pop();
-                this->_writer.store(true, std::memory_order_release);
-            }
-        }
-
-        if (writer)
-            writer->set_value();
-    }
 };
 
 template <typename ValueType>

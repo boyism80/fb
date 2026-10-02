@@ -86,20 +86,22 @@ protected:
                     if (!shared_this->_running)
                         break;
 
-                    async::awaitable_then((shared_this.get()->*fn)(), [](async::awaitable_result<void> result) {
-                        try
-                        {
-                            result();
-                        }
-                        catch (const std::exception& e)
-                        {
-                            fb::logger::warn(std::format("Timer callback error: {}", e.what()));
-                        }
-                        catch (...)
-                        {
-                            fb::logger::warn("Timer callback error: Unknown exception");
-                        }
-                    });
+                    // The callback task may suspend; keep the executor alive until it completes.
+                    async::awaitable_then((shared_this.get()->*fn)(),
+                                          [shared_this](async::awaitable_result<void> result) {
+                                              try
+                                              {
+                                                  result();
+                                              }
+                                              catch (const std::exception& e)
+                                              {
+                                                  fb::logger::warn(std::format("Timer callback error: {}", e.what()));
+                                              }
+                                              catch (...)
+                                              {
+                                                  fb::logger::warn("Timer callback error: Unknown exception");
+                                              }
+                                          });
                 }
             },
             boost::asio::detached);
@@ -169,7 +171,8 @@ protected:
                     if (!shared_this->_running)
                         break;
 
-                    async::awaitable_then(fn(), [](async::awaitable_result<void> result) {
+                    // The callback task may suspend; keep the executor alive until it completes.
+                    async::awaitable_then(fn(), [shared_this](async::awaitable_result<void> result) {
                         try
                         {
                             result();

@@ -243,22 +243,22 @@ private:
                 if (for_enqueue)
                 {
                     retry.enqueue();
+                    if constexpr (std::is_same_v<T, void>)
+                        co_return;
+                    else
+                        throw std::runtime_error("active thread not matched");
                 }
                 else
                 {
                     if constexpr (std::is_same_v<T, void>)
+                    {
                         co_await retry.dispatch();
+                        co_return;
+                    }
                     else
-                        std::ignore = co_await retry.dispatch();
-                }
-
-                if constexpr (std::is_same_v<T, void>)
-                {
-                    co_return;
-                }
-                else
-                {
-                    throw std::runtime_error("active thread not matched");
+                    {
+                        co_return co_await retry.dispatch();
+                    }
                 }
             }
 
