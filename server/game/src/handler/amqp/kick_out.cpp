@@ -10,6 +10,27 @@ kick_out::kick_out(fb::game::server& server) :
 
 async::task<void> kick_out::handle(const internal_resp::KickOut& message)
 {
-    this->server.characters.on_kick_out(message);
+    auto pending = this->server.pending_logins.read([&message](const std::unordered_multiset<std::string>& names) {
+        return names.contains(message.name);
+    });
+
+    if (this->server.characters.find(message.name) != nullptr)
+    {
+        this->server.characters.on_kick_out(message);
+    }
+    else if (pending == false)
+    {
+        try
+        {
+            std::ignore = co_await this->server.http.post(
+                "internal",
+                "/in-game/logout",
+                internal_reqs::Logout{message.world, message.name, fb::config<uint8_t>("id")});
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("Character {} logout after kick-out failed: {}", message.name, e.what());
+        }
+    }
     co_return;
 }

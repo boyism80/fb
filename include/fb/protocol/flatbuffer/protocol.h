@@ -2698,23 +2698,21 @@ public:
 public:
     uint32_t world = 0;
     std::string name;
-    uint32_t uid = 0;
-    uint8_t host = 0;
-    std::optional<uint32_t> process_world = std::nullopt;
+    std::optional<uint8_t> host = std::nullopt;
 
 public:
     Logout() = default;
 
     Logout(const Logout& x)
-        : world(x.world), name(x.name), uid(x.uid), host(x.host), process_world(x.process_world)
+        : world(x.world), name(x.name), host(x.host)
     { }
 
-    Logout(uint32_t world, std::string_view name, uint32_t uid, uint8_t host, const std::optional<uint32_t>& process_world)
-        : world(world), name(std::string(name)), uid(uid), host(host), process_world(process_world)
+    Logout(uint32_t world, std::string_view name, const std::optional<uint8_t>& host)
+        : world(world), name(std::string(name)), host(host)
     { }
 
     Logout(const fb::protocol::internal::request::raw::Logout& raw)
-        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str())), uid(raw.uid()), host(raw.host()), process_world(raw.process_world() != nullptr ? raw.process_world()->value() : std::optional<uint32_t>())
+        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str())), host(raw.host() != nullptr ? raw.host()->value() : std::optional<uint8_t>())
     { }
 
 public:
@@ -3202,20 +3200,21 @@ public:
 public:
     uint32_t world = 0;
     fb::protocol::internal::SavePayload payload;
+    std::optional<uint8_t> host = std::nullopt;
 
 public:
     Save() = default;
 
     Save(const Save& x)
-        : world(x.world), payload(x.payload)
+        : world(x.world), payload(x.payload), host(x.host)
     { }
 
-    Save(uint32_t world, const fb::protocol::internal::SavePayload& payload)
-        : world(world), payload(payload)
+    Save(uint32_t world, const fb::protocol::internal::SavePayload& payload, const std::optional<uint8_t>& host)
+        : world(world), payload(payload), host(host)
     { }
 
     Save(const fb::protocol::internal::request::raw::Save& raw)
-        : world(raw.world()), payload(*raw.payload())
+        : world(raw.world()), payload(*raw.payload()), host(raw.host() != nullptr ? raw.host()->value() : std::optional<uint8_t>())
     { }
 
 public:
@@ -3242,20 +3241,21 @@ public:
 public:
     uint32_t world = 0;
     std::vector<fb::protocol::internal::SavePayload> characters = {};
+    std::optional<uint8_t> host = std::nullopt;
 
 public:
     SaveBatch() = default;
 
     SaveBatch(const SaveBatch& x)
-        : world(x.world), characters(x.characters)
+        : world(x.world), characters(x.characters), host(x.host)
     { }
 
-    SaveBatch(uint32_t world, std::vector<fb::protocol::internal::SavePayload> characters)
-        : world(world), characters(characters)
+    SaveBatch(uint32_t world, std::vector<fb::protocol::internal::SavePayload> characters, const std::optional<uint8_t>& host)
+        : world(world), characters(characters), host(host)
     { }
 
     SaveBatch(const fb::protocol::internal::request::raw::SaveBatch& raw)
-        : world(raw.world()), characters(unpack<fb::protocol::internal::SavePayload>(raw.characters()))
+        : world(raw.world()), characters(unpack<fb::protocol::internal::SavePayload>(raw.characters())), host(raw.host() != nullptr ? raw.host()->value() : std::optional<uint8_t>())
     { }
 
 public:
@@ -5291,20 +5291,21 @@ public:
 public:
     uint32_t uid = 0;
     std::string name;
+    uint32_t world = 0;
 
 public:
     KickOut() = default;
 
     KickOut(const KickOut& x)
-        : uid(x.uid), name(x.name)
+        : uid(x.uid), name(x.name), world(x.world)
     { }
 
-    KickOut(uint32_t uid, std::string_view name)
-        : uid(uid), name(std::string(name))
+    KickOut(uint32_t uid, std::string_view name, uint32_t world)
+        : uid(uid), name(std::string(name)), world(world)
     { }
 
     KickOut(const fb::protocol::internal::response::raw::KickOut& raw)
-        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str()))
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), world(raw.world())
     { }
 
 public:
@@ -9681,9 +9682,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> build<fb::prot
     return fb::protocol::internal::request::raw::CreateLogout(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.name),
-            flatbuffers::build<uint32_t>(builder, value.uid),
-            flatbuffers::build<uint8_t>(builder, value.host),
-            flatbuffers::build<std::optional<uint32_t>>(builder, value.process_world));
+            flatbuffers::build<std::optional<uint8_t>>(builder, value.host));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> build<fb::protocol::internal::request::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Transfer& value)
@@ -9788,14 +9787,16 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Save> build<fb::protoc
 {
     return fb::protocol::internal::request::raw::CreateSave(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
-            flatbuffers::build<fb::protocol::internal::SavePayload>(builder, value.payload));
+            flatbuffers::build<fb::protocol::internal::SavePayload>(builder, value.payload),
+            flatbuffers::build<std::optional<uint8_t>>(builder, value.host));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SaveBatch> build<fb::protocol::internal::request::SaveBatch>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SaveBatch& value)
 {
     return fb::protocol::internal::request::raw::CreateSaveBatch(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
-            flatbuffers::build<std::vector<fb::protocol::internal::SavePayload>>(builder, value.characters));
+            flatbuffers::build<std::vector<fb::protocol::internal::SavePayload>>(builder, value.characters),
+            flatbuffers::build<std::optional<uint8_t>>(builder, value.host));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteArticle> build<fb::protocol::internal::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteArticle& value)
@@ -10229,7 +10230,8 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::pr
 {
     return fb::protocol::internal::response::raw::CreateKickOut(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
-            flatbuffers::build<std::string>(builder, value.name));
+            flatbuffers::build<std::string>(builder, value.name),
+            flatbuffers::build<uint32_t>(builder, value.world));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Login> build<fb::protocol::internal::response::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Login& value)

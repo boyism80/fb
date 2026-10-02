@@ -28,19 +28,23 @@ public struct KickOut : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
+  public uint World { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.KickOut> CreateKickOut(FlatBufferBuilder builder,
       uint uid = 0,
-      StringOffset nameOffset = default(StringOffset)) {
-    builder.StartTable(2);
+      StringOffset nameOffset = default(StringOffset),
+      uint world = 0) {
+    builder.StartTable(3);
+    KickOut.AddWorld(builder, world);
     KickOut.AddName(builder, nameOffset);
     KickOut.AddUid(builder, uid);
     return KickOut.EndKickOut(builder);
   }
 
-  public static void StartKickOut(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartKickOut(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(2, world, 0); }
   public static Offset<fb.protocol._internal.response.raw.KickOut> EndKickOut(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.KickOut>(o);
@@ -57,6 +61,7 @@ static public class KickOutVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
+      && verifier.VerifyField(tablePos, 8 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

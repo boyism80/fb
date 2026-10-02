@@ -407,6 +407,11 @@ public:
     {
         return this->_disconnected.exchange(true) == false;
     }
+
+    bool disconnected() const
+    {
+        return this->_disconnected.load();
+    }
 };
 
 } // namespace fb

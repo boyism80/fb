@@ -14,6 +14,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.savepayload_generated.h"
+#include "nullable_ubyte_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -28,7 +29,8 @@ struct SaveBatch FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SaveBatchBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
-    VT_CHARACTERS = 6
+    VT_CHARACTERS = 6,
+    VT_HOST = 8
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -36,12 +38,17 @@ struct SaveBatch FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>> *characters() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>> *>(VT_CHARACTERS);
   }
+  const nullable::nullable_ubyte *host() const {
+    return GetPointer<const nullable::nullable_ubyte *>(VT_HOST);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_CHARACTERS) &&
            verifier.VerifyVector(characters()) &&
            verifier.VerifyVectorOfTables(characters()) &&
+           VerifyOffset(verifier, VT_HOST) &&
+           verifier.VerifyTable(host()) &&
            verifier.EndTable();
   }
 };
@@ -55,6 +62,9 @@ struct SaveBatchBuilder {
   }
   void add_characters(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>>> characters) {
     fbb_.AddOffset(SaveBatch::VT_CHARACTERS, characters);
+  }
+  void add_host(::flatbuffers::Offset<nullable::nullable_ubyte> host) {
+    fbb_.AddOffset(SaveBatch::VT_HOST, host);
   }
   explicit SaveBatchBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -70,8 +80,10 @@ struct SaveBatchBuilder {
 inline ::flatbuffers::Offset<SaveBatch> CreateSaveBatch(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>>> characters = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>>> characters = 0,
+    ::flatbuffers::Offset<nullable::nullable_ubyte> host = 0) {
   SaveBatchBuilder builder_(_fbb);
+  builder_.add_host(host);
   builder_.add_characters(characters);
   builder_.add_world(world);
   return builder_.Finish();
@@ -80,12 +92,14 @@ inline ::flatbuffers::Offset<SaveBatch> CreateSaveBatch(
 inline ::flatbuffers::Offset<SaveBatch> CreateSaveBatchDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>> *characters = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>> *characters = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_ubyte> host = 0) {
   auto characters__ = characters ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload>>(*characters) : 0;
   return fb::protocol::internal::request::raw::CreateSaveBatch(
       _fbb,
       world,
-      characters__);
+      characters__,
+      host);
 }
 
 inline const fb::protocol::internal::request::raw::SaveBatch *GetSaveBatch(const void *buf) {

@@ -40,6 +40,7 @@
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 // clang-format off
@@ -148,25 +149,26 @@ private:
     std::unordered_map<uint32_t, fb::model::mob*> _collection_mobs;
 
 public:
-    fb::log_collector                log;
-    fb::meta_dat_file                meta;
-    fb::sobj_tbl_file                sobj;
-    listener_impl                    listener;
-    character::container             characters;
-    map::container                   maps;
-    clan::container                  clans;
-    castle::container                castles;
-    group::container                 groups;
-    match::container                 matches;
-    service::mail                    mail;
-    service::bulletin                bulletin;
-    service::system_storage          system_storage;
-    service::system_mail             system_mail;
-    service::schedule                schedules;
-    service::script_timer            script_timers;
-    service::property                property;
-    service::weather                 weather;
-    fb::transfer_ticket::nonce_cache transfer_nonces;
+    fb::log_collector                                      log;
+    fb::meta_dat_file                                      meta;
+    fb::sobj_tbl_file                                      sobj;
+    listener_impl                                          listener;
+    character::container                                   characters;
+    map::container                                         maps;
+    clan::container                                        clans;
+    castle::container                                      castles;
+    group::container                                       groups;
+    match::container                                       matches;
+    service::mail                                          mail;
+    service::bulletin                                      bulletin;
+    service::system_storage                                system_storage;
+    service::system_mail                                   system_mail;
+    service::schedule                                      schedules;
+    service::script_timer                                  script_timers;
+    service::property                                      property;
+    service::weather                                       weather;
+    fb::transfer_ticket::nonce_cache                       transfer_nonces;
+    fb::synchronized<std::unordered_multiset<std::string>> pending_logins;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

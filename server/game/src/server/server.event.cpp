@@ -43,6 +43,10 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     if (ch == nullptr)
         co_return false;
 
+    // A character still loading is cleaned up and logged out by the login handler.
+    if (ch->abort_login())
+        co_return false;
+
     auto weak = ch->weak_from_this_as<character>();
 
     if (ch->trade.trading())
@@ -60,11 +64,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         auto world  = ch->world();
         std::ignore = co_await this->http.post("internal",
                                                "/in-game/logout",
-                                               internal_reqs::Logout{world,
-                                                                     ch->name(),
-                                                                     ch->id,
-                                                                     fb::config<uint8_t>("id"),
-                                                                     fb::config<std::optional<uint32_t>>("world")});
+                                               internal_reqs::Logout{world, ch->name(), fb::config<uint8_t>("id")});
     }
     catch (std::exception& e)
     {

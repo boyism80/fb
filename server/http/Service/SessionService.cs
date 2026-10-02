@@ -14,26 +14,6 @@ namespace Http.Service
         private const int SessionTtlSeconds = 300; // 5 minutes
         private const int MinTtlSeconds = 240; // 4 minutes (minimum TTL before refresh)
 
-        private static readonly string GetAndDeleteSessionScript = """
-            local session = redis.call('hget', @key, @name)
-            if session ~= false then
-                redis.call('hdel', @key, @name)
-                return { 1, session }
-            else
-                return { 0 }
-            end
-            """;
-
-        // A forced shutdown may hand the name to another server before this one logs out; only the owner deletes.
-        // @session must be serialized exactly as Login stores it.
-        private static readonly string DeleteOwnedSessionScript = """
-            if redis.call('hget', @key, @name) == @session then
-                redis.call('hdel', @key, @name)
-                return 1
-            end
-            return 0
-            """;
-
         private static readonly string LoginScript = """
             local session = redis.call('hget', @key, @name)
             if session ~= false then
@@ -91,6 +71,24 @@ namespace Http.Service
             return JsonConvert.DeserializeObject<Session>(data.ToString());
         }
 
+        public async Task<Dictionary<string, Session>> GetMany(uint world, IReadOnlyList<string> names)
+        {
+            var sessions = new Dictionary<string, Session>();
+            var redis = _redisService.GetGlobalConnection(world);
+            if (redis == null || names.Count == 0)
+                return sessions;
+            var conn = redis.Connection;
+            var values = await conn.HashGetAsync(new RedisKey(new SessionKey().Key), names.Select(x => new RedisValue(x)).ToArray());
+            for (var i = 0; i < names.Count; i++)
+            {
+                if (values[i].IsNull)
+                    continue;
+
+                sessions[names[i]] = JsonConvert.DeserializeObject<Session>(values[i].ToString());
+            }
+            return sessions;
+        }
+
         public async Task Set(uint world, string name, Session session)
         {
             var key = new SessionKey().Key;
@@ -103,41 +101,35 @@ namespace Http.Service
             await RefreshTTL(world);
         }
 
-        public async Task Delete(uint world, string name, Session session)
+        // A null host comes from servers deployed before the field existed and deletes by name.
+        public async Task Delete(uint world, string name, byte? host)
         {
-            var key = new SessionKey().Key;
+            var key = new RedisKey(new SessionKey().Key);
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
                 return;
+            var conn = redis.Connection;
 
-            await redis.EvalAsync(DeleteOwnedSessionScript, new
+            if (host == null)
             {
-                key = new RedisKey(key),
-                name = name,
-                session = JsonConvert.SerializeObject(session)
-            });
+                await conn.HashDeleteAsync(key, name);
+            }
+            else
+            {
+                var raw = await conn.HashGetAsync(key, name);
+                if (raw.IsNull)
+                    return;
+
+                var session = JsonConvert.DeserializeObject<Session>(raw.ToString());
+                if (session == null || session.Host != host.Value)
+                    return;
+
+                var transaction = conn.CreateTransaction();
+                transaction.AddCondition(Condition.HashEqual(key, name, raw));
+                _ = transaction.HashDeleteAsync(key, name);
+                await transaction.ExecuteAsync();
+            }
             await RefreshTTL(world);
-        }
-
-        public async Task<Session> GetAndDelete(uint world, string name)
-        {
-            var key = new SessionKey().Key;
-            var redis = _redisService.GetGlobalConnection(world);
-            if (redis == null)
-                return null;
-
-            var redisResult = await redis.EvalAsync(GetAndDeleteSessionScript, new
-            {
-                key = new RedisKey(key),
-                name = name
-            });
-
-            var found = (bool)redisResult[0];
-            if (!found)
-                return null;
-
-            var sessionJson = redisResult[1].ToString();
-            return JsonConvert.DeserializeObject<Session>(sessionJson);
         }
 
         public async Task<bool> Login(uint world, string name, Session session, bool force = false)
@@ -170,7 +162,8 @@ namespace Http.Service
                 await _rabbitMqService.PublishAsync(new Response.KickOut
                 {
                     Uid = existingSession.Uid,
-                    Name = name
+                    Name = name,
+                    World = world
                 }, AmqpRoute.Exchange, AmqpRoute.Unicast(existingSession));
             }
 

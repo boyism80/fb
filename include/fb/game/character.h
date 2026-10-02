@@ -90,6 +90,13 @@ private:
     using mob_vector_t      = std::vector<std::shared_ptr<fb::game::mob>>;
     using achievement_map_t = std::map<uint32_t, std::unique_ptr<achievement>>;
 
+    enum class LOGIN_STATE : uint8_t
+    {
+        LOADING,
+        LOADED,
+        ABORTED,
+    };
+
 public:
     LUA_PROTOTYPE
 
@@ -111,40 +118,40 @@ public:
     };
 
 private:
-    const std::string                                _pw;
-    const fb::model::datetime                        _created_date;
-    const fb::model::datetime                        _updated_date;
-    const std::string                                _name;
-    uint32_t                                         _world = 0;
-    ROLE                                             _role;
-    std::optional<uint32_t>                          _birthday;
-    uint16_t                                         _hair          = 0;
-    uint8_t                                          _face          = 0;
-    uint8_t                                          _color         = 0;
-    std::optional<uint8_t>                           _armor_color   = 0;
-    std::optional<uint8_t>                           _weapon_color  = std::nullopt;
-    std::optional<uint8_t>                           _shield_color  = std::nullopt;
-    uint64_t                                         _experience    = 0;
-    NATION                                           _nation        = NATION::GOGURYEO;
-    DIVINE_BEAST                                     _divine_beast  = DIVINE_BEAST::AZURE_DRAGON;
-    int16_t                                          _reputation    = 0;
-    uint16_t                                         _evaluation    = 0;
-    GENDER                                           _gender        = GENDER::MALE;
-    STATE                                            _state         = STATE::NORMAL;
-    uint16_t                                         _ridable_id    = 1;
-    uint8_t                                          _level         = 1;
-    CLASS                                            _class         = CLASS::NONE;
-    uint8_t                                          _promotion     = 0;
-    uint64_t                                         _money         = 0;
-    std::optional<character_appearance<>>            _mimicry       = std::nullopt;
-    std::string                                      _title         = "";
-    std::optional<uint32_t>                          _group_id      = std::nullopt;
-    std::optional<uint32_t>                          _clan_id       = std::nullopt;
-    uint16_t                                         _weapon_damage = 0;
-    bool                                             _detect        = false;
-    mob_vector_t                                     _spawned_mobs  = {};
-    bool                                             _super_hide    = false;
-    std::atomic<bool>                                _loaded        = false; // read from IO threads on disconnect save
+    const std::string                     _pw;
+    const fb::model::datetime             _created_date;
+    const fb::model::datetime             _updated_date;
+    const std::string                     _name;
+    uint32_t                              _world = 0;
+    ROLE                                  _role;
+    std::optional<uint32_t>               _birthday;
+    uint16_t                              _hair          = 0;
+    uint8_t                               _face          = 0;
+    uint8_t                               _color         = 0;
+    std::optional<uint8_t>                _armor_color   = 0;
+    std::optional<uint8_t>                _weapon_color  = std::nullopt;
+    std::optional<uint8_t>                _shield_color  = std::nullopt;
+    uint64_t                              _experience    = 0;
+    NATION                                _nation        = NATION::GOGURYEO;
+    DIVINE_BEAST                          _divine_beast  = DIVINE_BEAST::AZURE_DRAGON;
+    int16_t                               _reputation    = 0;
+    uint16_t                              _evaluation    = 0;
+    GENDER                                _gender        = GENDER::MALE;
+    STATE                                 _state         = STATE::NORMAL;
+    uint16_t                              _ridable_id    = 1;
+    uint8_t                               _level         = 1;
+    CLASS                                 _class         = CLASS::NONE;
+    uint8_t                               _promotion     = 0;
+    uint64_t                              _money         = 0;
+    std::optional<character_appearance<>> _mimicry       = std::nullopt;
+    std::string                           _title         = "";
+    std::optional<uint32_t>               _group_id      = std::nullopt;
+    std::optional<uint32_t>               _clan_id       = std::nullopt;
+    uint16_t                              _weapon_damage = 0;
+    bool                                  _detect        = false;
+    mob_vector_t                          _spawned_mobs  = {};
+    bool                                  _super_hide    = false;
+    std::atomic<LOGIN_STATE>              _login_state   = LOGIN_STATE::LOADING; // raced by login and on_disconnected
     mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
     fb::model::datetime                              _last_afk_time;
     fb::game::marriage                               _marriage;
@@ -284,6 +291,8 @@ public:
     // clang-format off
     bool                                                      inited() const;
     bool                                                      loaded() const;
+    bool                                                      complete_login();
+    bool                                                      abort_login();
     ROLE                                                      role() const;
     uint32_t                                                  world() const;
     void                                                      save_return_point();

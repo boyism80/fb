@@ -197,7 +197,9 @@ async::task<void> fb::game::server::save(character& ch)
     auto weak    = ch.weak_from_this();
     auto world   = ch.world();
     auto payload = this->save_payload(ch);
-    std::ignore  = co_await this->http.post("internal", "/in-game/save", internal_reqs::Save{world, payload});
+    std::ignore  = co_await this->http.post("internal",
+                                           "/in-game/save",
+                                           internal_reqs::Save{world, payload, fb::config<uint8_t>("id")});
 
     co_await this->threads.switching(weak);
     ch.save_ack();
@@ -354,11 +356,12 @@ async::task<void> fb::game::server::save(fb::thread& thread)
         for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
         {
             const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, total);
-            auto batch  = std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
+            auto batch = std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
                                                             payloads.begin() + static_cast<std::ptrdiff_t>(chunk_end));
-            std::ignore = co_await this->http.post("internal",
-                                                   "/in-game/save-batch",
-                                                   internal_reqs::SaveBatch{world, std::move(batch)});
+            std::ignore =
+                co_await this->http.post("internal",
+                                         "/in-game/save-batch",
+                                         internal_reqs::SaveBatch{world, std::move(batch), fb::config<uint8_t>("id")});
 
             for (size_t i = offset; i < chunk_end; i++)
             {

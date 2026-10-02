@@ -134,12 +134,7 @@ namespace Internal.Controllers
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
             var world = request.World;
-            await _sessionService.Delete(world, request.Name, new Session
-            {
-                Uid = request.Uid,
-                Host = request.Host,
-                World = request.ProcessWorld
-            });
+            await _sessionService.Delete(world, request.Name, request.Host);
 
             return new Response.Logout
             {
@@ -193,15 +188,27 @@ namespace Internal.Controllers
 
                 if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
-                    var session = await _sessionService.GetAndDelete(world, request.Name);
+                    // A live owner deletes the session itself after its disconnect save; deleting it here would let
+                    // the next login read the character before that save lands.
+                    var session = await _sessionService.Get(world, request.Name);
                     if (session != null)
                     {
                         await _rabbitMqService.PublishAsync(new Response.KickOut
                         {
                             Uid = session.Uid,
-                            Name = request.Name
+                            Name = request.Name,
+                            World = world
                         }, AmqpRoute.Exchange, AmqpRoute.Unicast(session));
-                        throw new LogicException(ErrorCode.AlreadyLogin);
+
+                        var owner = await _serverStateService.GetHostConfig(session.World, Protocol.Service.Game, (byte)session.Host);
+                        if (owner != null)
+                        {
+                            throw new LogicException(ErrorCode.AlreadyLogin);
+                        }
+                        else
+                        {
+                            await _sessionService.Delete(world, request.Name, (byte)session.Host);
+                        }
                     }
                 }
 
@@ -544,7 +551,11 @@ namespace Internal.Controllers
                 if (request.Payload == null)
                     throw new Exception("Save request data is null");
 
-                await ApplySavePayload(request.World, new List<Protocol.SavePayload> { request.Payload });
+                var payloads = await OwnedSavePayloads(request.World, request.Host, new List<Protocol.SavePayload> { request.Payload });
+                if (payloads.Count == 0)
+                    return new Response.Save { Success = false };
+
+                await ApplySavePayload(request.World, payloads);
                 await _dbContext.SaveChangesAsync();
 
                 await _logService.WriteAsync("character_save", new
@@ -581,7 +592,8 @@ namespace Internal.Controllers
                 if (request.Characters == null || request.Characters.Count == 0)
                     return new Response.BatchSave { Success = true };
 
-                await ApplySavePayload(request.World, request.Characters);
+                var payloads = await OwnedSavePayloads(request.World, request.Host, request.Characters);
+                await ApplySavePayload(request.World, payloads);
                 await _dbContext.SaveChangesAsync();
 
                 await _logService.WriteAsync("character_save_batch", new
@@ -603,6 +615,29 @@ namespace Internal.Controllers
                     Success = false
                 };
             }
+        }
+
+        // A missing session is allowed: the new host registers before it reads, so such a save lands before that read.
+        private async Task<List<Protocol.SavePayload>> OwnedSavePayloads(uint world, byte? host, IReadOnlyList<Protocol.SavePayload> payloads)
+        {
+            if (host == null)
+                return payloads.ToList();
+
+            var sessions = await _sessionService.GetMany(world, payloads.Select(x => x.Character.Name).Distinct().ToList());
+            var owned = new List<Protocol.SavePayload>();
+            foreach (var payload in payloads)
+            {
+                if (sessions.TryGetValue(payload.Character.Name, out var session) && session != null && session.Host != host.Value)
+                {
+                    _logger.LogWarning("Save rejected for {Name}: session owned by host {Owner}, requested by host {Host}",
+                        payload.Character.Name, session.Host, host.Value);
+                }
+                else
+                {
+                    owned.Add(payload);
+                }
+            }
+            return owned;
         }
 
         private async Task ApplySavePayload(uint world, IReadOnlyList<Protocol.SavePayload> payloads)

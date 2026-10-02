@@ -23,17 +23,20 @@ public struct SaveBatch : IFlatbufferObject
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol._internal.raw.SavePayload? Characters(int j) { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.SavePayload?)(new fb.protocol._internal.raw.SavePayload()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int CharactersLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public nullable.nullable_ubyte? Host { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.request.raw.SaveBatch> CreateSaveBatch(FlatBufferBuilder builder,
       uint world = 0,
-      VectorOffset charactersOffset = default(VectorOffset)) {
-    builder.StartTable(2);
+      VectorOffset charactersOffset = default(VectorOffset),
+      Offset<nullable.nullable_ubyte> hostOffset = default(Offset<nullable.nullable_ubyte>)) {
+    builder.StartTable(3);
+    SaveBatch.AddHost(builder, hostOffset);
     SaveBatch.AddCharacters(builder, charactersOffset);
     SaveBatch.AddWorld(builder, world);
     return SaveBatch.EndSaveBatch(builder);
   }
 
-  public static void StartSaveBatch(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartSaveBatch(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddCharacters(FlatBufferBuilder builder, VectorOffset charactersOffset) { builder.AddOffset(1, charactersOffset.Value, 0); }
   public static VectorOffset CreateCharactersVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.SavePayload>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -41,6 +44,7 @@ public struct SaveBatch : IFlatbufferObject
   public static VectorOffset CreateCharactersVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.SavePayload>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateCharactersVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.SavePayload>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartCharactersVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddHost(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> hostOffset) { builder.AddOffset(2, hostOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.SaveBatch> EndSaveBatch(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.SaveBatch>(o);
@@ -57,6 +61,7 @@ static public class SaveBatchVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyVectorOfTables(tablePos, 6 /*Characters*/, fb.protocol._internal.raw.SavePayloadVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 8 /*Host*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

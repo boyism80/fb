@@ -19,9 +19,7 @@ table Login {
 table Logout {
   world: uint;
   name: string;
-  uid: uint;
-  host: ubyte;
-  process_world: uint?;
+  host: ubyte?;
 }
 
 
@@ -112,12 +110,14 @@ table ReserveName {
 table Save {
   world: uint;
   payload: fb.protocol.internal.SavePayload;
+  host: ubyte?;
 }
 
 /// Bulk save: multiple characters in one request (same world).
 table SaveBatch {
   world: uint;
   characters: [fb.protocol.internal.SavePayload];
+  host: ubyte?;
 }
 
 

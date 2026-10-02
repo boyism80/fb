@@ -575,9 +575,7 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -706,7 +704,8 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -715,7 +714,8 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -1244,7 +1244,8 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -2862,9 +2863,7 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -2993,7 +2992,8 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -3002,7 +3002,8 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -3531,7 +3532,8 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -5180,9 +5182,7 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -5311,7 +5311,8 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -5320,7 +5321,8 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -5849,7 +5851,8 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -7498,9 +7501,7 @@ namespace fb.protocol.marketplace
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -7629,7 +7630,8 @@ namespace fb.protocol.marketplace
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -7638,7 +7640,8 @@ namespace fb.protocol.marketplace
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -8167,7 +8170,8 @@ namespace fb.protocol.marketplace
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -9760,9 +9764,7 @@ namespace fb.protocol.marketplace.request
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -9891,7 +9893,8 @@ namespace fb.protocol.marketplace.request
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -9900,7 +9903,8 @@ namespace fb.protocol.marketplace.request
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -10429,7 +10433,8 @@ namespace fb.protocol.marketplace.request
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -12023,9 +12028,7 @@ namespace fb.protocol.marketplace.response
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -12154,7 +12157,8 @@ namespace fb.protocol.marketplace.response
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -12163,7 +12167,8 @@ namespace fb.protocol.marketplace.response
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -12692,7 +12697,8 @@ namespace fb.protocol.marketplace.response
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -14286,9 +14292,7 @@ namespace fb.protocol.matchmaking
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -14417,7 +14421,8 @@ namespace fb.protocol.matchmaking
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -14426,7 +14431,8 @@ namespace fb.protocol.matchmaking
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -14955,7 +14961,8 @@ namespace fb.protocol.matchmaking
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -16547,9 +16554,7 @@ namespace fb.protocol.matchmaking.mq
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -16678,7 +16683,8 @@ namespace fb.protocol.matchmaking.mq
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -16687,7 +16693,8 @@ namespace fb.protocol.matchmaking.mq
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -17216,7 +17223,8 @@ namespace fb.protocol.matchmaking.mq
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -18807,9 +18815,7 @@ namespace fb.protocol.matchmaking.request
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -18938,7 +18944,8 @@ namespace fb.protocol.matchmaking.request
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -18947,7 +18954,8 @@ namespace fb.protocol.matchmaking.request
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -19476,7 +19484,8 @@ namespace fb.protocol.matchmaking.request
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -21069,9 +21078,7 @@ namespace fb.protocol.matchmaking.response
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.World),
                 builder.Build(value.Name),
-                builder.Build(value.Uid),
-                builder.Build(value.Host),
-                builder.Build(value.ProcessWorld));
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
@@ -21200,7 +21207,8 @@ namespace fb.protocol.matchmaking.response
 
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.World),
-                builder.Build(value.Payload));
+                builder.Build(value.Payload),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.SaveBatch> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SaveBatch value)
         {
@@ -21209,7 +21217,8 @@ namespace fb.protocol.matchmaking.response
 
             return fb.protocol._internal.request.raw.SaveBatch.CreateSaveBatch(builder,
                 builder.Build(value.World),
-                builder.Build(value.Characters));
+                builder.Build(value.Characters),
+                builder.Build(value.Host));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -21738,7 +21747,8 @@ namespace fb.protocol.matchmaking.response
 
             return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
                 builder.Build(value.Uid),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.World));
         }
         public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
         {
@@ -24440,9 +24450,7 @@ namespace fb.protocol._internal.request
         public int ProtocolType => (int)FlatBufferProtocolType.Logout;
         public uint World { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
-        public uint Uid { get; set; } = 0;
-        public byte Host { get; set; } = 0;
-        public uint? ProcessWorld { get; set; } = null;
+        public byte? Host { get; set; } = null;
 
         public Logout()
         { }
@@ -24451,9 +24459,7 @@ namespace fb.protocol._internal.request
         {
             World = raw.World;
             Name = raw.Name;
-            Uid = raw.Uid;
-            Host = raw.Host;
-            ProcessWorld = raw.ProcessWorld != null ? (uint?)raw.ProcessWorld.Value.Value : null;
+            Host = raw.Host != null ? (byte?)raw.Host.Value.Value : null;
         }
 
         public Logout(byte[] bytes) : this(fb.protocol._internal.request.raw.Logout.GetRootAsLogout(new ByteBuffer(bytes)))
@@ -24944,6 +24950,7 @@ namespace fb.protocol._internal.request
         public int ProtocolType => (int)FlatBufferProtocolType.Save;
         public uint World { get; set; } = 0;
         public fb.protocol._internal.SavePayload Payload { get; set; } = new fb.protocol._internal.SavePayload();
+        public byte? Host { get; set; } = null;
 
         public Save()
         { }
@@ -24952,6 +24959,7 @@ namespace fb.protocol._internal.request
         {
             World = raw.World;
             Payload = new fb.protocol._internal.SavePayload(raw.Payload.Value);
+            Host = raw.Host != null ? (byte?)raw.Host.Value.Value : null;
         }
 
         public Save(byte[] bytes) : this(fb.protocol._internal.request.raw.Save.GetRootAsSave(new ByteBuffer(bytes)))
@@ -24982,6 +24990,7 @@ namespace fb.protocol._internal.request
         public int ProtocolType => (int)FlatBufferProtocolType.SaveBatch;
         public uint World { get; set; } = 0;
         public List<fb.protocol._internal.SavePayload> Characters { get; set; } = new List<fb.protocol._internal.SavePayload>();
+        public byte? Host { get; set; } = null;
 
         public SaveBatch()
         { }
@@ -24990,6 +24999,7 @@ namespace fb.protocol._internal.request
         {
             World = raw.World;
             Characters = Enumerable.Range(0, raw.CharactersLength).Select(i => raw.Characters(i)).Select(x => new fb.protocol._internal.SavePayload(x.Value)).ToList();
+            Host = raw.Host != null ? (byte?)raw.Host.Value.Value : null;
         }
 
         public SaveBatch(byte[] bytes) : this(fb.protocol._internal.request.raw.SaveBatch.GetRootAsSaveBatch(new ByteBuffer(bytes)))
@@ -27054,6 +27064,7 @@ namespace fb.protocol._internal.response
         public int ProtocolType => (int)FlatBufferProtocolType.KickOut;
         public uint Uid { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
+        public uint World { get; set; } = 0;
 
         public KickOut()
         { }
@@ -27062,6 +27073,7 @@ namespace fb.protocol._internal.response
         {
             Uid = raw.Uid;
             Name = raw.Name;
+            World = raw.World;
         }
 
         public KickOut(byte[] bytes) : this(fb.protocol._internal.response.raw.KickOut.GetRootAsKickOut(new ByteBuffer(bytes)))

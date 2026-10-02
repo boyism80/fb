@@ -28,31 +28,23 @@ public struct Logout : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
-  public uint Uid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public byte Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public nullable.nullable_uint? ProcessWorld { get { int o = __p.__offset(12); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? Host { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.request.raw.Logout> CreateLogout(FlatBufferBuilder builder,
       uint world = 0,
       StringOffset nameOffset = default(StringOffset),
-      uint uid = 0,
-      byte host = 0,
-      Offset<nullable.nullable_uint> process_worldOffset = default(Offset<nullable.nullable_uint>)) {
-    builder.StartTable(5);
-    Logout.AddProcessWorld(builder, process_worldOffset);
-    Logout.AddUid(builder, uid);
+      Offset<nullable.nullable_ubyte> hostOffset = default(Offset<nullable.nullable_ubyte>)) {
+    builder.StartTable(3);
+    Logout.AddHost(builder, hostOffset);
     Logout.AddName(builder, nameOffset);
     Logout.AddWorld(builder, world);
-    Logout.AddHost(builder, host);
     return Logout.EndLogout(builder);
   }
 
-  public static void StartLogout(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartLogout(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(2, uid, 0); }
-  public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(3, host, 0); }
-  public static void AddProcessWorld(FlatBufferBuilder builder, Offset<nullable.nullable_uint> processWorldOffset) { builder.AddOffset(4, processWorldOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> hostOffset) { builder.AddOffset(2, hostOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Logout> EndLogout(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Logout>(o);
@@ -69,9 +61,7 @@ static public class LogoutVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 8 /*Uid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*Host*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyTable(tablePos, 12 /*ProcessWorld*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 8 /*Host*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

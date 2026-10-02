@@ -9,6 +9,7 @@ table Shutdown {
 table KickOut {
   uid: uint;
   name: string;
+  world: uint;
 }
 
 

@@ -22,19 +22,23 @@ public struct Save : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol._internal.raw.SavePayload? Payload { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.SavePayload?)(new fb.protocol._internal.raw.SavePayload()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? Host { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.request.raw.Save> CreateSave(FlatBufferBuilder builder,
       uint world = 0,
-      Offset<fb.protocol._internal.raw.SavePayload> payloadOffset = default(Offset<fb.protocol._internal.raw.SavePayload>)) {
-    builder.StartTable(2);
+      Offset<fb.protocol._internal.raw.SavePayload> payloadOffset = default(Offset<fb.protocol._internal.raw.SavePayload>),
+      Offset<nullable.nullable_ubyte> hostOffset = default(Offset<nullable.nullable_ubyte>)) {
+    builder.StartTable(3);
+    Save.AddHost(builder, hostOffset);
     Save.AddPayload(builder, payloadOffset);
     Save.AddWorld(builder, world);
     return Save.EndSave(builder);
   }
 
-  public static void StartSave(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartSave(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddPayload(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.SavePayload> payloadOffset) { builder.AddOffset(1, payloadOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> hostOffset) { builder.AddOffset(2, hostOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Save> EndSave(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Save>(o);
@@ -51,6 +55,7 @@ static public class SaveVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTable(tablePos, 6 /*Payload*/, fb.protocol._internal.raw.SavePayloadVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 8 /*Host*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

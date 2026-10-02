@@ -304,40 +304,19 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
             co_return false;
         }
-
-        if (old_map != map)
-        {
-            // Log map transfer event
-            auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(this->id);
-            log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-            log_data["level"]          = this->level();
-            if (old_map != nullptr)
-            {
-                log_data["old_map"]        = old_map->model().id;
-                log_data["old_position_x"] = old_position.x;
-                log_data["old_position_y"] = old_position.y;
-            }
-            if (new_map_id.has_value())
-            {
-                log_data["new_map"]        = new_map_id.value();
-                log_data["new_position_x"] = new_position.x;
-                log_data["new_position_y"] = new_position.y;
-            }
-            this->server.log.write("map_transfer", log_data);
-        }
-        co_return true;
     }
-
-    this->_camera_pivot.reset();
-
-    if (co_await object::map(map, position, std::move(options)) == false)
-        co_return false;
-
-    if (callback)
+    else
     {
-        if (co_await callback() == false)
+        this->_camera_pivot.reset();
+
+        if (co_await object::map(map, position, std::move(options)) == false)
             co_return false;
+
+        if (callback)
+        {
+            if (co_await callback() == false)
+                co_return false;
+        }
     }
 
     if (old_map != map)
@@ -399,7 +378,19 @@ bool character::inited() const
 
 bool character::loaded() const
 {
-    return this->_loaded;
+    return this->_login_state == LOGIN_STATE::LOADED;
+}
+
+bool character::complete_login()
+{
+    auto expected = LOGIN_STATE::LOADING;
+    return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
+}
+
+bool character::abort_login()
+{
+    auto expected = LOGIN_STATE::LOADING;
+    return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::ABORTED);
 }
 
 ROLE character::role() const
@@ -1332,7 +1323,6 @@ void character::update_time(uint8_t hours, uint8_t minutes)
 
 void character::init()
 {
-    this->_loaded                    = true;
     this->_ping_state.enabled        = true;
     this->_ping_state.pong_received  = true;
     this->_ping_state.last_ping_time = this->server.now();

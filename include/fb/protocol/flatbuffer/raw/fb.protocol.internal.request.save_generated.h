@@ -14,6 +14,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.savepayload_generated.h"
+#include "nullable_ubyte_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -28,7 +29,8 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SaveBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
-    VT_PAYLOAD = 6
+    VT_PAYLOAD = 6,
+    VT_HOST = 8
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -36,11 +38,16 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const fb::protocol::internal::raw::SavePayload *payload() const {
     return GetPointer<const fb::protocol::internal::raw::SavePayload *>(VT_PAYLOAD);
   }
+  const nullable::nullable_ubyte *host() const {
+    return GetPointer<const nullable::nullable_ubyte *>(VT_HOST);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_PAYLOAD) &&
            verifier.VerifyTable(payload()) &&
+           VerifyOffset(verifier, VT_HOST) &&
+           verifier.VerifyTable(host()) &&
            verifier.EndTable();
   }
 };
@@ -54,6 +61,9 @@ struct SaveBuilder {
   }
   void add_payload(::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> payload) {
     fbb_.AddOffset(Save::VT_PAYLOAD, payload);
+  }
+  void add_host(::flatbuffers::Offset<nullable::nullable_ubyte> host) {
+    fbb_.AddOffset(Save::VT_HOST, host);
   }
   explicit SaveBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -69,8 +79,10 @@ struct SaveBuilder {
 inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> payload = 0) {
+    ::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> payload = 0,
+    ::flatbuffers::Offset<nullable::nullable_ubyte> host = 0) {
   SaveBuilder builder_(_fbb);
+  builder_.add_host(host);
   builder_.add_payload(payload);
   builder_.add_world(world);
   return builder_.Finish();

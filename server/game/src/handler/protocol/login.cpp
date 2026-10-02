@@ -566,40 +566,63 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
     auto delay = fb::config<uint32_t>("delay");
     co_await this->server.sleep(std::chrono::seconds(delay));
 
+    struct pending_login
+    {
+        fb::game::server&  server;
+        const std::string& name;
+
+        ~pending_login()
+        {
+            this->server.pending_logins.write([this](std::unordered_multiset<std::string>& names) {
+                names.erase(names.find(this->name));
+            });
+        }
+    };
+    this->server.pending_logins.write([&request](std::unordered_multiset<std::string>& names) {
+        names.insert(request.name);
+    });
+    auto pending = pending_login{this->server, request.name};
+
     if (co_await this->assert_login(request) == false)
         co_return false;
 
-    // From here the internal session is registered. on_disconnected only logs out once session.data() is set,
-    // so a failure before that point must log out here or the name stays locked.
+    // on_disconnected skips a character that has not completed login, so every failure below must log out here.
     auto ch = std::shared_ptr<character>();
-    try
+    if (session.disconnected() == false)
     {
-        ch = co_await this->init(request, session);
-    }
-    catch (std::exception& e)
-    {
-        fb::logger::fatal("Character {} login failed: {}", request.name, e.what());
+        try
+        {
+            ch = co_await this->init(request, session);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("Character {} login failed: {}", request.name, e.what());
+        }
     }
 
-    if (ch == nullptr)
+    if (ch == nullptr || ch->complete_login() == false)
     {
-        if (session.data() == nullptr)
+        if (auto data = session.data_ptr(); data != nullptr)
         {
-            try
-            {
-                std::ignore = co_await this->server.http.post(
-                    "internal",
-                    "/in-game/logout",
-                    internal_reqs::Logout{this->world(request),
-                                          request.name,
-                                          request.id,
-                                          fb::config<uint8_t>("id"),
-                                          fb::config<std::optional<uint32_t>>("world")});
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal("Character {} logout after failed login failed: {}", request.name, e.what());
-            }
+            co_await data->thread()->switching();
+            this->server.matches.leave(*data);
+            // remove() erases by id and name; a failed duplicate insert must not evict the character already online.
+            if (this->server.characters.find(data->id) == data)
+                this->server.characters.remove(data);
+            co_await data->destroy();
+            session.data(nullptr);
+        }
+
+        try
+        {
+            std::ignore = co_await this->server.http.post(
+                "internal",
+                "/in-game/logout",
+                internal_reqs::Logout{this->world(request), request.name, fb::config<uint8_t>("id")});
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("Character {} logout after failed login failed: {}", request.name, e.what());
         }
         co_return false;
     }
