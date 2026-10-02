@@ -148,7 +148,7 @@ public:
         });
         auto  on_error    = thread::on_error(std::move(this->on_error));
         auto  on_complete = std::move(this->on_complete);
-        // Set only when func runs here; hopping to the pivot's new thread must not report completion twice.
+        // Reflects the latest attempt: true when func ran here, false when it hopped to the pivot's new thread.
         auto ran = std::make_shared<bool>(false);
 
         // The result of an enqueued func is discarded, so the inner task is void for every T.
@@ -185,6 +185,9 @@ public:
                 retry.retry_count = retry_count;
                 retry.context     = context;
                 retry.enqueue();
+
+                // A retried attempt may have run func earlier; only the builder that runs it last reports completion.
+                *ran = false;
             }
             else
             {

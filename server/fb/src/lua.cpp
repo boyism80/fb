@@ -660,6 +660,16 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
     {
         try
         {
+            // Builtins capture the pivot as a raw pointer; pin it so a disconnect during yield cannot free it.
+            // The pin is scoped here so the last release, if any, happens on the object's thread, not the Lua thread.
+            auto pin = std::shared_ptr<fb::thread_switchable>();
+            if (weak.has_value())
+            {
+                pin = weak->lock();
+                if (pin == nullptr)
+                    throw std::runtime_error("pivot object is expired");
+            }
+
             co_await yield_fn();
         }
         catch (const std::exception& e)

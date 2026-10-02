@@ -630,14 +630,14 @@ public:
 public:
     void run()
     {
-        this->_running = true;
-        // Sync boundary between main thread and async-cpp (startup loaders / Lua init).
-        async::awaitable_get(this->on_start());
-        this->accept();
-
         auto threads = std::vector<std::thread>();
         try
         {
+            this->_running = true;
+            // Sync boundary between main thread and async-cpp (startup loaders / Lua init).
+            async::awaitable_get(this->on_start());
+            this->accept();
+
             for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
             {
                 threads.push_back(std::thread([this]() {
@@ -678,7 +678,8 @@ public:
         }
         catch (...)
         {
-            // Destroying a joinable std::thread terminates, so stop and join the threads already started.
+            // Stop and join every thread before leaving: a joinable std::thread terminates when destroyed, and a
+            // running logic thread could release the server's last shared_ptr and join itself.
             // Skip shutdown(): its save goes through HTTP on this io_context and never finishes without IO threads.
             this->teardown();
             for (auto& thread : threads)

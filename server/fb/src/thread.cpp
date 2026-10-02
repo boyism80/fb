@@ -127,13 +127,12 @@ void fb::thread::join()
     if (this->_thread.joinable() == false)
         return;
 
-    // Joining itself throws resource_deadlock_would_occur, and a joinable std::thread terminates when destroyed.
-    // acceptor::run() joins logic threads before the server can be released, so this is only a last resort.
+    // Joining itself throws, and detaching would let on_thread() keep reading this destroyed object.
+    // acceptor::run() joins logic threads on every exit path, so reaching this is a bug; crash loudly.
     if (this->_thread.get_id() == std::this_thread::get_id())
     {
-        fb::logger::fatal("thread {}: join requested from the thread itself; detaching", this->_index);
-        this->_thread.detach();
-        return;
+        fb::logger::fatal("thread {}: join requested from the thread itself; aborting", this->_index);
+        std::abort();
     }
 
     this->_thread.join();
