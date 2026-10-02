@@ -346,8 +346,8 @@ async::task<void> fb::game::server::init_script()
         auto* ctx = lua.get();
         if (::luaL_loadfile(*ctx, path) != LUA_OK)
         {
-            fb::lua::report_load_failed_from_stack(*ctx, path);
-            fb::logger::warn("Server init script failed: {}", path);
+            fb::logger::warn("Server init script failed: {}: {}", path, lua_tostring(*ctx, -1));
+            lua_pop(*ctx, 1);
             co_return;
         }
 

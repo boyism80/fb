@@ -157,13 +157,6 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
 {
     this->_owner.assert_thread();
 
-    fb::logger::debug("storage_box.receive_reward start user={} entry={} invent_free={} invent_size={} attachments={}",
-                      this->_owner.id,
-                      entry_id,
-                      this->_owner.items.free_size(),
-                      CONTAINER_CAPACITY - this->_owner.items.free_size(),
-                      this->_entries.contains(entry_id) ? this->_entries.at(entry_id).attachments.size() : 0);
-
     auto it = this->_entries.find(entry_id);
     if (it == this->_entries.end())
     {
@@ -172,39 +165,17 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     }
 
     if (it->second.received)
-    {
-        fb::logger::debug("storage_box.receive_reward already received user={} entry={}", this->_owner.id, entry_id);
         co_return false;
-    }
 
     auto now = this->_owner.server.now();
     if (it->second.expire_date.has_value() && it->second.expire_date.value() < now)
-    {
-        fb::logger::debug("storage_box.receive_reward expired user={} entry={}", this->_owner.id, entry_id);
         co_return false;
-    }
 
-    auto rewardable = this->_owner.items.is_rewardable(it->second.attachments);
-    fb::logger::debug("storage_box.receive_reward is_rewardable={} user={} entry={} free={}",
-                      rewardable,
-                      this->_owner.id,
-                      entry_id,
-                      this->_owner.items.free_size());
-    if (rewardable == false)
-    {
-        fb::logger::debug("storage_box.receive_reward reject before claim (not rewardable) user={} entry={}",
-                          this->_owner.id,
-                          entry_id);
+    if (this->_owner.items.is_rewardable(it->second.attachments) == false)
         co_return false;
-    }
 
     auto weak  = this->_owner.weak_from_this_as<character>();
     auto world = this->_owner.world();
-    fb::logger::debug("storage_box.receive_reward claim begin user={} entry={} world={} http_delay_ms={}",
-                      this->_owner.id,
-                      entry_id,
-                      world,
-                      this->_owner.server.http.response_delay().total_milliseconds());
 
     fb::protocol::internal::response::ClaimStorageBox claim_resp{};
     try
@@ -222,11 +193,6 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                          e.what());
         co_return false;
     }
-
-    fb::logger::debug("storage_box.receive_reward claim done user={} entry={} error={}",
-                      this->_owner.id,
-                      entry_id,
-                      claim_resp.error);
 
     co_await this->_owner.server.threads.switching(weak);
     auto ptr = weak.lock();
@@ -253,10 +219,6 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     }
 
     it->second.received = true;
-    fb::logger::debug("storage_box.receive_reward grant begin user={} entry={} free={}",
-                      ptr->id,
-                      entry_id,
-                      ptr->items.free_size());
 
     bool granted = false;
     try
@@ -272,15 +234,8 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         granted = false;
     }
 
-    fb::logger::debug("storage_box.receive_reward grant result={} user={} entry={} free={}",
-                      granted,
-                      ptr->id,
-                      entry_id,
-                      ptr->items.free_size());
-
     if (granted == false)
     {
-        fb::logger::debug("storage_box.receive_reward unclaim begin user={} entry={}", ptr->id, entry_id);
         fb::protocol::internal::response::UnclaimStorageBox unclaim_resp{};
         try
         {
@@ -312,10 +267,6 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                              entry_id,
                              unclaim_resp.error);
 
-        fb::logger::debug("storage_box.receive_reward unclaim done user={} entry={} error={}",
-                          this->_owner.id,
-                          entry_id,
-                          unclaim_resp.error);
         co_return false;
     }
 
@@ -331,8 +282,6 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     }
     log_data["attachments"] = attachments_array;
     ptr->server.log.write("storage_box_attachment_receive", log_data);
-
-    fb::logger::debug("storage_box.receive_reward success user={} entry={}", ptr->id, entry_id);
     co_return true;
 }
 

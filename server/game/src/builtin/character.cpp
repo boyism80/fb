@@ -6575,14 +6575,9 @@ int builtin::character::builtin_receive_storage_reward(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        fb::logger::debug("builtin_receive_storage_reward yield user={} entry={}", ch->id, entry_id);
         try
         {
             *success = co_await ch->storage_box.receive_reward(entry_id);
-            fb::logger::debug("builtin_receive_storage_reward done user={} entry={} success={}",
-                              ch->id,
-                              entry_id,
-                              *success);
         }
         catch (const std::exception& e)
         {

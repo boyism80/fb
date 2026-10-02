@@ -11,14 +11,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
-#include <filesystem>
 #include <format>
 #include <functional>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <optional>
-#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -28,53 +25,6 @@
 #include <vector>
 
 using namespace fb::lua;
-
-void fb::lua::report_load_failed(std::string_view path, std::string_view error)
-{
-    if (path.empty())
-        return;
-
-    if (std::filesystem::exists(std::string(path)) == false)
-        return;
-
-    static auto logs  = std::set<std::string>{};
-    static auto mutex = std::mutex{};
-    auto        key   = error.empty() ? std::string(path) : std::format("{}|{}", path, error);
-    auto        _     = std::lock_guard(mutex);
-    if (logs.contains(key))
-        return;
-
-    logs.insert(key);
-    if (error.empty())
-        fb::logger::warn("cannot load script {}", path);
-    else
-        fb::logger::warn("cannot load script {}: {}", path, error);
-}
-
-void fb::lua::report_load_failed_from_stack(lua_State* L, std::string_view path)
-{
-    const char* raw = L != nullptr ? lua_tostring(L, -1) : nullptr;
-    auto        err = raw != nullptr ? std::string(raw) : std::string{};
-    if (L != nullptr)
-        lua_pop(L, 1);
-    report_load_failed(path, err);
-}
-
-void fb::lua::report_func_missing(std::string_view path, std::string_view func)
-{
-    if (path.empty() || func.empty())
-        return;
-
-    static auto logs  = std::set<std::string>{};
-    static auto mutex = std::mutex{};
-    auto        key   = std::format("{}#{}", path, func);
-    auto        _     = std::lock_guard(mutex);
-    if (logs.contains(key))
-        return;
-
-    logs.insert(key);
-    fb::logger::warn("script function missing: {} in {}", func, path);
-}
 
 context* fb::lua::get(lua_State* ctx)
 {
@@ -912,9 +862,12 @@ bool root::dump(std::string_view path)
     if (auto cached = this->_bytecodes.find(path_str); cached != this->_bytecodes.end())
         return cached->second.empty() == false;
 
-    if (luaL_loadfile(*this, path_str.c_str()) != LUA_OK)
+    if (auto status = luaL_loadfile(*this, path_str.c_str()); status != LUA_OK)
     {
-        report_load_failed_from_stack(*this, path_str);
+        // A missing file is an optional hook, not an error.
+        if (status != LUA_ERRFILE)
+            fb::logger::warn("cannot load script {}: {}", path_str, lua_tostring(*this, -1));
+        lua_pop(*this, 1);
         this->_bytecodes[path_str] = std::vector<char>{};
         return false;
     }
@@ -941,7 +894,9 @@ bool root::dump(std::string_view path)
     if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
         this->_loading--;
-        report_load_failed_from_stack(*this, path_str);
+        const char* error = lua_tostring(*this, -1);
+        fb::logger::warn("cannot load script {}: {}", path_str, error != nullptr ? error : "");
+        lua_pop(*this, 1);
         this->_bytecodes[path_str].clear();
         return false;
     }
@@ -949,7 +904,7 @@ bool root::dump(std::string_view path)
     if (this->store_module(*this, path_str) == false)
     {
         this->_loading--;
-        report_load_failed(path_str, "module must return a table");
+        fb::logger::warn("cannot load script {}: module must return a table", path_str);
         this->_bytecodes[path_str].clear();
         return false;
     }
@@ -1181,20 +1136,10 @@ fb::lua::context_pool::open(std::string_view path, std::string_view func, contex
 {
     auto* ctx = this->new_context(parent, options);
     if (ctx == nullptr)
-    {
-        fb::logger::warn("lua open failed: path={} func={}", path, func);
         return context::guard{};
-    }
 
-    if (ctx->load(path) == false)
+    if (ctx->load(path) == false || ctx->func(func) == false)
     {
-        ctx->release();
-        return context::guard{};
-    }
-
-    if (ctx->func(func) == false)
-    {
-        fb::lua::report_func_missing(path, func);
         ctx->release();
         return context::guard{};
     }
@@ -1238,18 +1183,13 @@ void fb::lua::run_async(context::guard g, int argc)
 
     async::awaitable_then(
         [argc](context::guard g) -> async::task<void> {
+            // Lua errors are logged in resume; the rest are dialog cancellations.
             try
             {
                 std::ignore = co_await g->call(argc);
             }
-            catch (std::exception& e)
-            {
-                fb::logger::warn("lua run_async: {}", e.what());
-            }
             catch (...)
-            {
-                fb::logger::warn("lua run_async: unknown error");
-            }
+            { }
         }(std::move(g)),
         [](async::awaitable_result<void> result) {
             try

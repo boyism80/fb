@@ -128,10 +128,7 @@ size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
     // Encryption consumes a sequence, so every prepared wire below must be written.
     auto wire = fb::stream(stream);
     if (socket_ptr->prepare_outbound(wire, encrypt, wrap) == false)
-    {
-        fb::logger::warn("character::send dropped: prepare failed (name={}, bytes={})", this->name(), stream.size());
         return 0;
-    }
 
     const auto queued = wire.size();
     auto       frame  = execution_context::current();
@@ -139,9 +136,7 @@ size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
     if (ctx == nullptr)
     {
         // Timer and foreach_enqueue work can run without an outbound context.
-        fb::tcp_socket::write(socket_ptr, std::move(wire), [](const boost::system::error_code& ec, size_t) {
-            if (ec)
-                fb::logger::debug("character::send write failed: {}", ec.message());
+        fb::tcp_socket::write(socket_ptr, std::move(wire), [](const boost::system::error_code&, size_t) {
         });
     }
     else

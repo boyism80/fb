@@ -43,7 +43,6 @@ async::task<castle::container::entity_ptr> castle::container::fetch(uint32_t id)
             entry.owner_clan_id);
     }
 
-    fb::logger::warn("castle: no row found for divine_beast {}, defaulting to ownerless", id);
     co_return this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(id), std::nullopt);
 }
 

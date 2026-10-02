@@ -3,7 +3,6 @@
 #include <fb/logger.h>
 
 #include <exception>
-#include <format>
 #include <memory>
 #include <thread>
 #include <tuple>
@@ -70,17 +69,8 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                 try
                 {
                     auto& model = equipment->model();
-                    auto  path  = std::format("scripts/item/{}.lua", model.id);
-                    auto  func  = "on_concast";
-
-                    if (lua->load(path) == false)
+                    if (lua->load("scripts/item/{}.lua", model.id) == false || lua->func("on_concast") == false)
                         continue;
-
-                    if (lua->func(func) == false)
-                    {
-                        fb::lua::report_func_missing(path, func);
-                        continue;
-                    }
 
                     lua->pushobject(ch);
                     lua->pushobject(equipment);

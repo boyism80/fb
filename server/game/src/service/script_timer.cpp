@@ -170,13 +170,7 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
 
             auto lua = srv->lua.open(script_path, script_func);
             if (lua)
-            {
                 std::ignore = co_await lua->call(0);
-            }
-            else
-            {
-                fb::logger::warn("script_timer: failed to open {}:{}", script_path, script_func);
-            }
 
             if (once)
                 timers.cancel(timer_id);

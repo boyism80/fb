@@ -205,7 +205,6 @@ public:
         auto clone = fb::stream(stream);
         if (this->prepare_outbound(clone, encrypt, wrap) == false)
         {
-            fb::logger::warn("socket::send dropped: prepare failed (bytes={})", stream.size());
             promise->set_value(0);
             return promise->task();
         }
@@ -277,25 +276,9 @@ public:
                     throw std::runtime_error("disconnected");
             }
         }
-        catch (boost::system::system_error& e)
+        catch (boost::system::system_error&)
         {
-            auto ec = e.code();
-            if (ec == boost::asio::error::eof)
-            {
-                // do nothing
-            }
-            else if (ec == boost::asio::error::operation_aborted)
-            {
-                fb::logger::debug("socket recv cancelled (possibly shutdown)");
-            }
-            else if (ec == boost::asio::error::connection_reset)
-            {
-                fb::logger::debug("client disconnected (connection reset)");
-            }
-            else
-            {
-                // fb::logger::debug("recv error: {}", ec.message());
-            }
+            // Disconnects and shutdown cancellation surface here.
         }
         catch (std::exception& e)
         {

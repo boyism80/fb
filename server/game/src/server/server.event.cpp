@@ -80,9 +80,9 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         co_await this->threads.switching(weak);
         switched = true;
     }
-    catch (std::exception& e)
+    catch (std::exception&)
     {
-        fb::logger::warn("Thread switching failed during disconnect: {}", e.what());
+        // The character expired before the switch; fall back to the thread it was on.
     }
 
     if (!switched)
@@ -131,10 +131,6 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         this->characters.remove(ptr);
         co_await ch->destroy();
         socket.data(nullptr);
-    }
-    else
-    {
-        fb::logger::debug("Character expired during cleanup, skipping group/clan operations");
     }
 
     co_return true;

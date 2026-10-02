@@ -1,7 +1,5 @@
 #include <fb/outbound_buffer.h>
 
-#include <fb/logger.h>
-
 #include <boost/asio.hpp>
 
 #include <cstddef>
@@ -66,9 +64,7 @@ void outbound_buffer::flush()
         if (slot.endpoint == nullptr || slot.endpoint->is_open() == false)
             continue;
 
-        fb::tcp_socket::write(slot.endpoint, std::move(slot.wire), [](const boost::system::error_code& ec, size_t) {
-            if (ec)
-                fb::logger::debug("outbound_buffer flush failed: {}", ec.message());
+        fb::tcp_socket::write(slot.endpoint, std::move(slot.wire), [](const boost::system::error_code&, size_t) {
         });
     }
 }

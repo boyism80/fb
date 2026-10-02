@@ -277,15 +277,9 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
         if (target == nullptr || target->is(OBJECT_TYPE::MOB) == false)
             continue;
 
-        auto m    = std::static_pointer_cast<mob>(target);
-        auto path = std::format("scripts/mob/{}.lua", m->model().id);
-        auto func = "on_mob_damaged";
-
-        // Avoid open(path, func) — it reports missing funcs for every generic mob.
-        auto lua = this->server.lua.open();
+        auto m   = std::static_pointer_cast<mob>(target);
+        auto lua = this->server.lua.open(std::format("scripts/mob/{}.lua", m->model().id), "on_mob_damaged");
         if (!lua)
-            continue;
-        if (lua->load(path) == false || lua->func(func) == false)
             continue;
 
         lua->pushobject(m);

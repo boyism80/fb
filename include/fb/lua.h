@@ -643,15 +643,6 @@ public:
     ~thread();
 };
 
-// Debug: warn once when a script file exists but fails to load.
-// Missing files are silent (optional hooks). No-op in release.
-void report_load_failed(std::string_view path, std::string_view error = {});
-// Pop the Lua error on the top of the stack and forward it to report_load_failed.
-void report_load_failed_from_stack(lua_State* L, std::string_view path);
-// Debug: warn once when a loaded script is missing the expected entry function.
-// No-op in release.
-void report_func_missing(std::string_view path, std::string_view func);
-
 void run_async(context::guard g, int argc);
 
 } // namespace fb::lua
@@ -680,17 +671,22 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
         root->unload_remembered_libs();
 
     auto ok = false;
-    if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
+    if (auto status = luaL_loadfile(*this, fname.c_str()); status != LUA_OK)
     {
-        fb::lua::report_load_failed_from_stack(*this, fname);
+        // A missing file is an optional hook, not an error.
+        if (status != LUA_ERRFILE)
+            fb::logger::warn("cannot load script {}: {}", fname, lua_tostring(*this, -1));
+        lua_pop(*this, 1);
     }
     else if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
-        fb::lua::report_load_failed_from_stack(*this, fname);
+        const char* error = lua_tostring(*this, -1);
+        fb::logger::warn("cannot load script {}: {}", fname, error != nullptr ? error : "");
+        lua_pop(*this, 1);
     }
     else if (root->store_module(*this, fname) == false)
     {
-        fb::lua::report_load_failed(fname, "module must return a table");
+        fb::logger::warn("cannot load script {}: module must return a table", fname);
     }
     else
     {
