@@ -4,6 +4,8 @@
 #include <fb/protocol/header.h>
 
 #include <cstdint>
+#include <format>
+#include <stdexcept>
 #include <vector>
 
 namespace fb::protocol::response {
@@ -44,6 +46,8 @@ public:
         writer.write<uint8_t>(opcode);
         writer.write<uint32_t>(this->ip);
         writer.write<uint16_t>(this->port);
+        if (this->parameter.size() > UINT8_MAX)
+            throw std::runtime_error(std::format("transfer parameter too large ({} bytes)", this->parameter.size()));
         writer.write<uint8_t>(static_cast<uint8_t>(this->parameter.size()));
         writer.write(this->parameter);
     }

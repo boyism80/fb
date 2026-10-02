@@ -24,7 +24,7 @@ async::task<bool> server_list<V>::handle(fb::socket<fb::gateway::session>& sessi
             co_return false;
 
         const auto& entry = entrypoints[request.index];
-        std::ignore = this->server.transfer(session, entry.ip, entry.port, fb::protocol::internal::Service::Gateway);
+        co_await this->server.transfer(session, entry.ip, entry.port, fb::protocol::internal::Service::Gateway);
         co_return true;
     }
 

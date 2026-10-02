@@ -14,6 +14,7 @@
 #include <fb/protocol/transfer.h>
 #include <fb/protocol_handler_registry.h>
 #include <fb/socket.h>
+#include <fb/transfer_ticket.h>
 
 #include <boost/stacktrace.hpp>
 
@@ -507,6 +508,8 @@ public:
                                              uint32_t                        ip,
                                              uint16_t                        port,
                                              fb::protocol::internal::Service from,
+                                             uint32_t                        world,
+                                             uint8_t                         host,
                                              const fb::stream&               parameter)
     {
         auto& encryption = socket.encryption();
@@ -519,6 +522,18 @@ public:
             writer.write<uint8_t>(static_cast<uint8_t>(from));
             writer.write<uint16_t>(transfer_client_version(socket));
             writer.write<fb::stream>(parameter);
+            writer.write<uint32_t>(fb::transfer_ticket::now() + fb::transfer_ticket::TTL_SECONDS);
+            writer.write<uint64_t>(fb::transfer_ticket::make_nonce());
+
+            if (header.size() + fb::transfer_ticket::TAG_SIZE > fb::transfer_ticket::MAX_PARAMETER_SIZE)
+            {
+                throw std::runtime_error(std::format("transfer parameter too large ({} bytes, max {})",
+                                                     header.size() + fb::transfer_ticket::TAG_SIZE,
+                                                     fb::transfer_ticket::MAX_PARAMETER_SIZE));
+            }
+
+            auto tag = fb::transfer_ticket::sign(world, host, header.data(), header.size());
+            writer.write(tag.data(), tag.size());
         }
 
         auto stream = fb::stream();
@@ -542,9 +557,11 @@ public:
                                              std::string_view                ip,
                                              uint16_t                        port,
                                              fb::protocol::internal::Service from,
+                                             uint32_t                        world,
+                                             uint8_t                         host,
                                              const fb::stream&               parameter)
     {
-        co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from, parameter);
+        co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from, world, host, parameter);
     }
 
 protected:

@@ -3,6 +3,7 @@
 #include <fb/crash.h>
 #include <fb/logger.h>
 #include <fb/login/server.h>
+#include <fb/transfer_ticket.h>
 
 #include <boost/program_options.hpp>
 #include <boost/stacktrace.hpp>
@@ -46,6 +47,16 @@ int main(int argc, char** argv)
         if (!fb::init_config(config_path))
         {
             std::cerr << "Failed to initialize config from: " << config_path << std::endl;
+            return -1;
+        }
+
+        try
+        {
+            fb::transfer_ticket::secret();
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Failed to load transfer ticket secret: " << e.what() << std::endl;
             return -1;
         }
         fb::crash::install("login");

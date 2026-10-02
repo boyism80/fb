@@ -2,6 +2,7 @@
     "id": 0,
     "name": "game-0",
     "world": 1,
+    "transfer_secret": "c049fb55e1a0e6ba3793653f57ddbeeffc2956dbb950f518",
     "delay": 1,
     "ip": "__FB_HOST__",
     "port": 3004,

@@ -26,6 +26,7 @@
 #include <fb/meta_dat_file.h>
 #include <fb/sobj_tbl_file.h>
 #include <fb/synchronized.h>
+#include <fb/transfer_ticket.h>
 
 #include <boost/algorithm/string/join.hpp>
 #include <json/json.h>
@@ -147,24 +148,25 @@ private:
     std::unordered_map<uint32_t, fb::model::mob*> _collection_mobs;
 
 public:
-    fb::log_collector       log;
-    fb::meta_dat_file       meta;
-    fb::sobj_tbl_file       sobj;
-    listener_impl           listener;
-    character::container    characters;
-    map::container          maps;
-    clan::container         clans;
-    castle::container       castles;
-    group::container        groups;
-    match::container        matches;
-    service::mail           mail;
-    service::bulletin       bulletin;
-    service::system_storage system_storage;
-    service::system_mail    system_mail;
-    service::schedule       schedules;
-    service::script_timer   script_timers;
-    service::property       property;
-    service::weather        weather;
+    fb::log_collector                log;
+    fb::meta_dat_file                meta;
+    fb::sobj_tbl_file                sobj;
+    listener_impl                    listener;
+    character::container             characters;
+    map::container                   maps;
+    clan::container                  clans;
+    castle::container                castles;
+    group::container                 groups;
+    match::container                 matches;
+    service::mail                    mail;
+    service::bulletin                bulletin;
+    service::system_storage          system_storage;
+    service::system_mail             system_mail;
+    service::schedule                schedules;
+    service::script_timer            script_timers;
+    service::property                property;
+    service::weather                 weather;
+    fb::transfer_ticket::nonce_cache transfer_nonces;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

@@ -4,6 +4,8 @@
 #include <fb/game/server.h>
 #include <fb/handler.h>
 
+#include <chrono>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -17,6 +19,10 @@ template <fb::protocol::CLIENT_VERSION V>
 class login : public fb::handler::protocol<fb::game::server, game_reqs::login<V>, 1000, 10, true>
 {
     using ch_ptr_t = std::shared_ptr<character>;
+
+private:
+    static constexpr uint32_t LOGIN_RETRY_COUNT    = 10;
+    static constexpr auto     LOGIN_RETRY_INTERVAL = std::chrono::milliseconds(500);
 
 public:
     login(fb::game::server& server);

@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace fb::protocol::game::request {
 
@@ -22,44 +23,54 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(this->enc_type);
-    writer.write<uint8_t>(this->key_size);
-    writer.write((void*)this->enc_key, this->key_size);
-    writer.write<uint8_t>(static_cast<uint8_t>(this->from));
-    writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
-    writer.write<uint32_t>(this->id);
-    writer.write<std::string, uint8_t>(this->name);
-
-    auto flags = TRANSFER_PARAM::NONE;
-    if (this->transfer.has_value())
-        flags |= TRANSFER_PARAM::MAP;
-    if (this->match.has_value() && this->match->id.empty() == false)
-        flags |= TRANSFER_PARAM::MATCH;
-    if (this->client_version == CLIENT_VERSION::v651 && this->ui_mode == CLIENT_UI_MODE::NEW)
-        flags |= TRANSFER_PARAM::UI_MODE;
-
-    writer.write<uint8_t>(static_cast<uint8_t>(flags));
-    if (ENUM_IN(flags, TRANSFER_PARAM::MAP))
+    if (this->ticket.has_value())
     {
-        writer.write<uint32_t>(this->transfer.value().world);
-        writer.write<uint16_t>(this->transfer.value().map);
-        writer.write<uint16_t>(this->transfer.value().position.x);
-        writer.write<uint16_t>(this->transfer.value().position.y);
+        // The tag covers the exact received bytes; re-encoding the fields could change them.
+        writer.write(this->ticket->signed_bytes.data(), this->ticket->signed_bytes.size());
+        writer.write(this->ticket->tag.data(), this->ticket->tag.size());
     }
-    if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
+    else
     {
-        writer.write<std::string>(this->match->id);
-        writer.write<uint32_t>(this->match->type);
-        writer.write<uint32_t>(this->match->team);
+        writer.write<uint8_t>(this->enc_type);
+        writer.write<uint8_t>(this->key_size);
+        writer.write((void*)this->enc_key, this->key_size);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->from));
+        writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
+        writer.write<uint32_t>(this->id);
+        writer.write<std::string, uint8_t>(this->name);
+
+        auto flags = TRANSFER_PARAM::NONE;
+        if (this->transfer.has_value())
+            flags |= TRANSFER_PARAM::MAP;
+        if (this->match.has_value() && this->match->id.empty() == false)
+            flags |= TRANSFER_PARAM::MATCH;
+        if (this->client_version == CLIENT_VERSION::v651 && this->ui_mode == CLIENT_UI_MODE::NEW)
+            flags |= TRANSFER_PARAM::UI_MODE;
+
+        writer.write<uint8_t>(static_cast<uint8_t>(flags));
+        if (ENUM_IN(flags, TRANSFER_PARAM::MAP))
+        {
+            writer.write<uint32_t>(this->transfer.value().world);
+            writer.write<uint16_t>(this->transfer.value().map);
+            writer.write<uint16_t>(this->transfer.value().position.x);
+            writer.write<uint16_t>(this->transfer.value().position.y);
+        }
+        if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
+        {
+            writer.write<std::string>(this->match->id);
+            writer.write<uint32_t>(this->match->type);
+            writer.write<uint32_t>(this->match->team);
+        }
+        if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
+            writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
     }
-    if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
-        writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
 }
 
 template <CLIENT_VERSION V>
 void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
+    auto begin     = reader.seek();
     this->enc_type = reader.read<uint8_t>();
     this->key_size = reader.read<uint8_t>();
     if (this->key_size > sizeof(this->enc_key))
@@ -99,6 +110,24 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
         this->ui_mode = static_cast<CLIENT_UI_MODE>(reader.read<uint8_t>());
     else
         this->ui_mode = CLIENT_UI_MODE::OLD;
+
+    if (reader.readable_size() >= fb::transfer_ticket::SIZE)
+    {
+        auto ticket   = ticket_param{};
+        ticket.expire = reader.read<uint32_t>();
+        ticket.nonce  = reader.read<uint64_t>();
+
+        auto end = reader.seek();
+        ticket.signed_bytes.resize(end - begin);
+        reader.seek(begin);
+        reader.read(ticket.signed_bytes.data(), ticket.signed_bytes.size());
+        reader.read(ticket.tag.data(), ticket.tag.size());
+        this->ticket = std::move(ticket);
+    }
+    else
+    {
+        this->ticket = std::nullopt;
+    }
 }
 
 template class login<CLIENT_VERSION::v550>;

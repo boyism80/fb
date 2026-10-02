@@ -133,7 +133,8 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
         writer.write<uint8_t>(flags);
         if (flags == 0x04)
             writer.write<uint8_t>(static_cast<uint8_t>(sess->ui_mode));
-        std::ignore = this->server.transfer(session, resp3.ip, resp3.port, internal::Service::Login, parameter);
+        co_await this->server
+            .transfer(session, resp3.ip, resp3.port, internal::Service::Login, world, table::map[map].host, parameter);
         co_return true;
     }
     catch (login_exception& e)

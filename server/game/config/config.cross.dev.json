@@ -2,6 +2,7 @@
     "id": 200,
     "name": "game-cross-0",
     "world": null,
+    "transfer_secret": "c049fb55e1a0e6ba3793653f57ddbeeffc2956dbb950f518",
     "delay": 1,
     "ip": "127.0.0.1",
     "port": 3100,

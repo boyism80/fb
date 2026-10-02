@@ -5,11 +5,13 @@
 #include <fb/protocol/client_version.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/header.h>
+#include <fb/transfer_ticket.h>
 #include <macro.h>
 
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace fb::protocol::game::request {
 
@@ -23,8 +25,9 @@ enum class TRANSFER_PARAM : uint8_t
 
 /**
  * C2S game login (opcode 0x10). Echoed transfer blob:
- *   enc | key | from | client_version u16 | uid | name | flags u8 | sections
+ *   enc | key | from | client_version u16 | uid | name | flags u8 | sections | ticket
  * flags: MAP (world/map/xy), MATCH (match_id/match_type/team), UI_MODE (CLIENT_UI_MODE).
+ * ticket: expire u32 | nonce u64 | tag (see fb/transfer_ticket.h). The client echoes the blob verbatim.
  */
 template <CLIENT_VERSION V>
 class login : public fb::protocol::header
@@ -51,6 +54,15 @@ public:
         uint32_t    team = 0;
     };
 
+    struct ticket_param
+    {
+    public:
+        uint32_t                      expire = 0;
+        uint64_t                      nonce  = 0;
+        fb::transfer_ticket::tag_type tag    = {};
+        std::vector<uint8_t>          signed_bytes;
+    };
+
 public:
 #ifndef BOT
     fb::protocol::internal::Service from;
@@ -66,6 +78,7 @@ public:
     CLIENT_UI_MODE                ui_mode        = CLIENT_UI_MODE::OLD;
     std::optional<transfer_param> transfer;
     std::optional<match_param>    match;
+    std::optional<ticket_param>   ticket;
 
 public:
 #ifndef BOT

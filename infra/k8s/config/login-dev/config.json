@@ -2,6 +2,7 @@
     "id": 0,
     "name": "login-dev",
     "world": 1,
+    "transfer_secret": "c049fb55e1a0e6ba3793653f57ddbeeffc2956dbb950f518",
     "ip": "127.0.0.1",
     "port": 30010,
     "thread": {
@@ -51,7 +52,7 @@
     },
     "name_size": {
         "min": 2,
-        "max": 256
+        "max": 12
     },
     "pw_size": {
         "min": 4,

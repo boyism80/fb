@@ -5,9 +5,11 @@
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/server.h>
 #include <fb/game/storage.h>
+#include <fb/hmac.h>
 #include <fb/logger.h>
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
+#include <fb/transfer_ticket.h>
 
 #include <json/json.h>
 
@@ -221,6 +223,13 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         position_y = spawn.y;
     }
 
+    auto target_map = this->server.maps.find(map);
+    if (target_map == nullptr)
+    {
+        fb::logger::fatal("Character {} login failed: map {} does not exist on this server", resp.character.name, map);
+        co_return nullptr;
+    }
+
     auto socket_ptr     = session.shared_from_this_as<fb::socket<character>>();
     auto params         = character::initial_params{.socket = socket_ptr};
     params.id           = resp.character.id;
@@ -293,7 +302,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     ch->stat.mp(resp.character.mp, false);
     ch->stat.base_speed(resp.character.speed, false);
 
-    auto thread = this->server.maps[map]->thread();
+    auto thread = target_map->thread();
     ch->thread(thread);
     co_await thread->switching();
 
@@ -304,7 +313,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     if (ch->map() == nullptr)
     {
-        if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
+        if (co_await ch->map(target_map, fb::model::point16_t(position_x, position_y)) == false)
         {
             this->server.matches.leave(*ch);
             co_return nullptr;
@@ -417,26 +426,49 @@ async::task<bool> login<V>::assert_login(const game_reqs::login<V>& request)
         if (auto process = fb::config<std::optional<uint32_t>>("world"))
             world = *process;
     }
-    auto&& resp = co_await this->server.http.post("internal",
-                                                  "/in-game/login",
-                                                  internal_reqs::Login{world,
-                                                                       request.id,
-                                                                       request.name,
-                                                                       fb::config<uint8_t>("id"),
-                                                                       false,
-                                                                       fb::config<std::optional<uint32_t>>("world")});
-    switch (static_cast<ERROR_CODE>(resp.error))
+    // HTTP completions resume on an IO thread, where thread::sleep cannot run; keep the logic thread to wait on.
+    auto thread = this->server.threads.current();
+    if (thread == nullptr)
     {
-    case ERROR_CODE::NONE:
-        co_return true;
-
-    case ERROR_CODE::BANNED:
-        fb::logger::warn("Character {} is banned: {}", request.name, resp.ban_reason);
+        fb::logger::fatal("Character {} login must start on a logic thread", request.name);
         co_return false;
+    }
 
-    default:
-        fb::logger::fatal("Unknown error: {}", resp.error);
-        co_return false;
+    // The previous server deletes the session only after its disconnect save; overwriting it would load stale data.
+    for (auto attempt = uint32_t{1};; attempt++)
+    {
+        auto&& resp =
+            co_await this->server.http.post("internal",
+                                            "/in-game/login",
+                                            internal_reqs::Login{world,
+                                                                 request.id,
+                                                                 request.name,
+                                                                 fb::config<uint8_t>("id"),
+                                                                 false,
+                                                                 fb::config<std::optional<uint32_t>>("world")});
+        switch (static_cast<ERROR_CODE>(resp.error))
+        {
+        case ERROR_CODE::NONE:
+            co_return true;
+
+        case ERROR_CODE::ALREADY_LOGIN:
+            if (attempt >= LOGIN_RETRY_COUNT)
+            {
+                fb::logger::warn("Character {} is still logged in elsewhere after {} attempts", request.name, attempt);
+                co_return false;
+            }
+            co_await thread->switching();
+            co_await thread->sleep(LOGIN_RETRY_INTERVAL);
+            break;
+
+        case ERROR_CODE::BANNED:
+            fb::logger::warn("Character {} is banned: {}", request.name, resp.ban_reason);
+            co_return false;
+
+        default:
+            fb::logger::fatal("Unknown error: {}", resp.error);
+            co_return false;
+        }
     }
 }
 
@@ -467,6 +499,49 @@ std::string login<V>::elapsed_message(std::string_view dt)
 template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::login<V>& request)
 {
+    if (session.data() != nullptr)
+    {
+        fb::logger::warn("Login rejected: session already logged in as {}", session.data()->name());
+        co_return false;
+    }
+
+    if (request.ticket.has_value() == false)
+    {
+        fb::logger::warn("Login rejected: transfer ticket is missing ({})", request.name);
+        co_return false;
+    }
+
+    auto& ticket       = request.ticket.value();
+    auto  ticket_world = request.transfer.has_value() ? request.transfer->world
+                                                      : fb::config<std::optional<uint32_t>>("world").value_or(0);
+    auto  expected_tag = fb::transfer_ticket::sign(ticket_world,
+                                                  fb::config<uint8_t>("id"),
+                                                  ticket.signed_bytes.data(),
+                                                  ticket.signed_bytes.size());
+    if (fb::constant_time_equal(expected_tag.data(), ticket.tag.data(), fb::transfer_ticket::TAG_SIZE) == false)
+    {
+        fb::logger::warn("Login rejected: transfer ticket signature mismatch ({})", request.name);
+        co_return false;
+    }
+
+    auto now = fb::transfer_ticket::now();
+    if (uint64_t(now) > uint64_t(ticket.expire) + fb::transfer_ticket::CLOCK_SKEW_SECONDS ||
+        uint64_t(ticket.expire) >
+            uint64_t(now) + fb::transfer_ticket::TTL_SECONDS + fb::transfer_ticket::CLOCK_SKEW_SECONDS)
+    {
+        fb::logger::warn("Login rejected: transfer ticket expired ({}, expire={}, now={})",
+                         request.name,
+                         ticket.expire,
+                         now);
+        co_return false;
+    }
+
+    if (this->server.transfer_nonces.insert(ticket.nonce, ticket.expire, now) == false)
+    {
+        fb::logger::warn("Login rejected: transfer ticket replayed ({})", request.name);
+        co_return false;
+    }
+
     if (fb::encryption::validate(request.enc_type, request.enc_key, request.key_size) == false)
         co_return false;
 
@@ -488,9 +563,38 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
     if (co_await this->assert_login(request) == false)
         co_return false;
 
-    auto ch = co_await this->init(request, session);
+    // From here the internal session is registered. on_disconnected only logs out once session.data() is set,
+    // so a failure before that point must log out here or the name stays locked.
+    auto ch = std::shared_ptr<character>();
+    try
+    {
+        ch = co_await this->init(request, session);
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::fatal("Character {} login failed: {}", request.name, e.what());
+    }
+
     if (ch == nullptr)
+    {
+        if (session.data() == nullptr)
+        {
+            auto world = request.transfer.has_value() && request.transfer->world != 0
+                             ? request.transfer->world
+                             : fb::config<std::optional<uint32_t>>("world").value_or(0);
+            try
+            {
+                std::ignore = co_await this->server.http.post("internal",
+                                                              "/in-game/logout",
+                                                              internal_reqs::Logout{world, request.name});
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("Character {} logout after failed login failed: {}", request.name, e.what());
+            }
+        }
         co_return false;
+    }
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);

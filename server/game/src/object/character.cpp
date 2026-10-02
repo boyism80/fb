@@ -454,54 +454,59 @@ async::task<bool> character::transfer_home()
 
     auto position = this->_match_return_position.value();
     if (fb::config<std::optional<uint32_t>>("world"))
-        co_return co_await this->map(dest, position);
-
-    if (this->map() == nullptr)
-        co_return false;
-
-    try
     {
-        auto   world = this->world();
-        auto&& resp  = co_await this->server.http.post(
-            "internal",
-            "/in-game/transfer",
-            internal_reqs::Transfer{world, internal::Service::Game, dest->model().host, this->name(), false});
+        co_return co_await this->map(dest, position);
+    }
+    else
+    {
+        if (this->map() == nullptr)
+            co_return false;
 
-        switch (static_cast<ERROR_CODE>(resp.error))
+        try
         {
-        case ERROR_CODE::NONE:
-            break;
+            auto   world = this->world();
+            auto&& resp  = co_await this->server.http.post(
+                "internal",
+                "/in-game/transfer",
+                internal_reqs::Transfer{world, internal::Service::Game, dest->model().host, this->name(), false});
 
-        case ERROR_CODE::SERVER_NOT_READY:
-            throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+            switch (static_cast<ERROR_CODE>(resp.error))
+            {
+            case ERROR_CODE::NONE:
+                break;
 
-        case ERROR_CODE::BANNED:
-            throw std::runtime_error(character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
+            case ERROR_CODE::SERVER_NOT_READY:
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
-        default:
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
+            case ERROR_CODE::BANNED:
+                throw std::runtime_error(
+                    character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
+
+            default:
+                throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
+            }
+
+            std::ignore = co_await this->map(nullptr);
+            co_await this->server.save(*this);
+            co_await this->listener.on_transfer(*this, *dest, position, resp.ip, resp.port);
+        }
+        catch (std::exception& e)
+        {
+            this->update_map();
+            this->show();
+            this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
+            co_return false;
+        }
+        catch (boost::system::error_code& /*e*/)
+        {
+            this->update_map();
+            this->show();
+            this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+            co_return false;
         }
 
-        std::ignore = co_await this->map(nullptr);
-        co_await this->server.save(*this);
-        co_await this->listener.on_transfer(*this, *dest, position, resp.ip, resp.port);
+        co_return true;
     }
-    catch (std::exception& e)
-    {
-        this->update_map();
-        this->show();
-        this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
-        co_return false;
-    }
-    catch (boost::system::error_code& /*e*/)
-    {
-        this->update_map();
-        this->show();
-        this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
-        co_return false;
-    }
-
-    co_return true;
 }
 
 void character::role(ROLE value)
