@@ -600,7 +600,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         }
     }
 
-    if (ch == nullptr || ch->complete_login() == false)
+    if (ch == nullptr || session.disconnected() || ch->complete_login() == false)
     {
         if (auto data = session.data_ptr(); data != nullptr)
         {
