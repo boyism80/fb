@@ -173,16 +173,29 @@ void login<V>::init_storage(const fb::protocol::internal::response::Init& respon
 }
 
 template <fb::protocol::CLIENT_VERSION V>
+uint32_t login<V>::world(const game_reqs::login<V>& request) const
+{
+    if (auto world = fb::config<std::optional<uint32_t>>("world"))
+    {
+        return world.value();
+    }
+    else if (request.transfer.has_value())
+    {
+        // Cross servers serve every world; the world comes from the signed transfer blob.
+        return request.transfer->world;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+template <fb::protocol::CLIENT_VERSION V>
 async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>& request,
                                                        fb::socket<character>&     session)
 {
-    auto world = request.transfer.has_value() && request.transfer->world != 0 ? request.transfer->world : uint32_t{0};
-    if (world == 0)
-    {
-        if (auto process = fb::config<std::optional<uint32_t>>("world"))
-            world = *process;
-    }
-    auto&& resp = co_await this->server.http.template get<internal_resp::Init>(
+    auto   world = this->world(request);
+    auto&& resp  = co_await this->server.http.template get<internal_resp::Init>(
         "internal",
         std::format("/in-game/init/{}/{}", world, request.id));
     auto map        = request.transfer.has_value() ? request.transfer->map : resp.character.map;
@@ -420,12 +433,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> login<V>::assert_login(const game_reqs::login<V>& request)
 {
-    auto world = request.transfer.has_value() && request.transfer->world != 0 ? request.transfer->world : uint32_t{0};
-    if (world == 0)
-    {
-        if (auto process = fb::config<std::optional<uint32_t>>("world"))
-            world = *process;
-    }
+    auto world = this->world(request);
     // HTTP completions resume on an IO thread, where thread::sleep cannot run; keep the logic thread to wait on.
     auto thread = this->server.threads.current();
     if (thread == nullptr)
@@ -512,9 +520,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
     }
 
     auto& ticket       = request.ticket.value();
-    auto  ticket_world = request.transfer.has_value() ? request.transfer->world
-                                                      : fb::config<std::optional<uint32_t>>("world").value_or(0);
-    auto  expected_tag = fb::transfer_ticket::sign(ticket_world,
+    auto  expected_tag = fb::transfer_ticket::sign(this->world(request),
                                                   fb::config<uint8_t>("id"),
                                                   ticket.signed_bytes.data(),
                                                   ticket.signed_bytes.size());
@@ -536,7 +542,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         co_return false;
     }
 
-    if (this->server.transfer_nonces.insert(ticket.nonce, ticket.expire, now) == false)
+    if (this->server.transfer_nonces.insert(ticket.nonce) == false)
     {
         fb::logger::warn("Login rejected: transfer ticket replayed ({})", request.name);
         co_return false;
@@ -579,14 +585,16 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
     {
         if (session.data() == nullptr)
         {
-            auto world = request.transfer.has_value() && request.transfer->world != 0
-                             ? request.transfer->world
-                             : fb::config<std::optional<uint32_t>>("world").value_or(0);
             try
             {
-                std::ignore = co_await this->server.http.post("internal",
-                                                              "/in-game/logout",
-                                                              internal_reqs::Logout{world, request.name});
+                std::ignore = co_await this->server.http.post(
+                    "internal",
+                    "/in-game/logout",
+                    internal_reqs::Logout{this->world(request),
+                                          request.name,
+                                          request.id,
+                                          fb::config<uint8_t>("id"),
+                                          fb::config<std::optional<uint32_t>>("world")});
             }
             catch (std::exception& e)
             {

@@ -3913,6 +3913,8 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         lua->remove(-1);
         if (match_id.empty() || match_type == 0)
             throw std::runtime_error("transfer_to requires match_id and match_type together");
+        if (match_id.size() > fb::game::transfer_match::MAX_ID_SIZE)
+            throw std::runtime_error("transfer_to match_id is too long");
 
         auto type_enum = static_cast<MATCH_TYPE>(match_type);
         if (table::matchmaking->contains(type_enum) == false)

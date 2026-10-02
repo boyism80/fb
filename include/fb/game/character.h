@@ -60,6 +60,9 @@ struct friend_entry
 
 struct transfer_match
 {
+    // Matchmaking ids are Guid strings. The bound keeps the transfer blob under its 255-byte limit.
+    static constexpr size_t MAX_ID_SIZE = 36;
+
     std::string id;
     uint32_t    type = 0;
     uint32_t    team = 0;
@@ -115,32 +118,33 @@ private:
     uint32_t                                         _world = 0;
     ROLE                                             _role;
     std::optional<uint32_t>                          _birthday;
-    uint16_t                                         _hair             = 0;
-    uint8_t                                          _face             = 0;
-    uint8_t                                          _color            = 0;
-    std::optional<uint8_t>                           _armor_color      = 0;
-    std::optional<uint8_t>                           _weapon_color     = std::nullopt;
-    std::optional<uint8_t>                           _shield_color     = std::nullopt;
-    uint64_t                                         _experience       = 0;
-    NATION                                           _nation           = NATION::GOGURYEO;
-    DIVINE_BEAST                                     _divine_beast     = DIVINE_BEAST::AZURE_DRAGON;
-    int16_t                                          _reputation       = 0;
-    uint16_t                                         _evaluation       = 0;
-    GENDER                                           _gender           = GENDER::MALE;
-    STATE                                            _state            = STATE::NORMAL;
-    uint16_t                                         _ridable_id       = 1;
-    uint8_t                                          _level            = 1;
-    CLASS                                            _class            = CLASS::NONE;
-    uint8_t                                          _promotion        = 0;
-    uint64_t                                         _money            = 0;
-    std::optional<character_appearance<>>            _mimicry          = std::nullopt;
-    std::string                                      _title            = "";
-    std::optional<uint32_t>                          _group_id         = std::nullopt;
-    std::optional<uint32_t>                          _clan_id          = std::nullopt;
-    uint16_t                                         _weapon_damage    = 0;
-    bool                                             _detect           = false;
-    mob_vector_t                                     _spawned_mobs     = {};
-    bool                                             _super_hide       = false;
+    uint16_t                                         _hair          = 0;
+    uint8_t                                          _face          = 0;
+    uint8_t                                          _color         = 0;
+    std::optional<uint8_t>                           _armor_color   = 0;
+    std::optional<uint8_t>                           _weapon_color  = std::nullopt;
+    std::optional<uint8_t>                           _shield_color  = std::nullopt;
+    uint64_t                                         _experience    = 0;
+    NATION                                           _nation        = NATION::GOGURYEO;
+    DIVINE_BEAST                                     _divine_beast  = DIVINE_BEAST::AZURE_DRAGON;
+    int16_t                                          _reputation    = 0;
+    uint16_t                                         _evaluation    = 0;
+    GENDER                                           _gender        = GENDER::MALE;
+    STATE                                            _state         = STATE::NORMAL;
+    uint16_t                                         _ridable_id    = 1;
+    uint8_t                                          _level         = 1;
+    CLASS                                            _class         = CLASS::NONE;
+    uint8_t                                          _promotion     = 0;
+    uint64_t                                         _money         = 0;
+    std::optional<character_appearance<>>            _mimicry       = std::nullopt;
+    std::string                                      _title         = "";
+    std::optional<uint32_t>                          _group_id      = std::nullopt;
+    std::optional<uint32_t>                          _clan_id       = std::nullopt;
+    uint16_t                                         _weapon_damage = 0;
+    bool                                             _detect        = false;
+    mob_vector_t                                     _spawned_mobs  = {};
+    bool                                             _super_hide    = false;
+    std::atomic<bool>                                _loaded        = false; // read from IO threads on disconnect save
     mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
     fb::model::datetime                              _last_afk_time;
     fb::game::marriage                               _marriage;
@@ -279,6 +283,7 @@ public:
 public:
     // clang-format off
     bool                                                      inited() const;
+    bool                                                      loaded() const;
     ROLE                                                      role() const;
     uint32_t                                                  world() const;
     void                                                      save_return_point();

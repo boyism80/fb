@@ -134,7 +134,12 @@ namespace Internal.Controllers
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
             var world = request.World;
-            await _sessionService.Delete(world, request.Name);
+            await _sessionService.Delete(world, request.Name, new Session
+            {
+                Uid = request.Uid,
+                Host = request.Host,
+                World = request.ProcessWorld
+            });
 
             return new Response.Logout
             {

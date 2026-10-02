@@ -185,7 +185,8 @@ uint8_t fb::game::server::brightness() const
 
 async::task<void> fb::game::server::save(character& ch)
 {
-    if (ch.inited() == false)
+    // Save overwrites items, spells, achievements and quests; a partially loaded character would wipe them.
+    if (ch.inited() == false || ch.loaded() == false)
         co_return;
     if (!fb::config<std::optional<uint32_t>>("world") && ch.has_return_point() == false)
     {
@@ -331,7 +332,7 @@ async::task<void> fb::game::server::save(fb::thread& thread)
     auto params   = thread.template data<thread_params>();
     auto by_world = std::map<uint32_t, std::pair<std::vector<character*>, std::vector<internal::SavePayload>>>{};
     co_await params->characters.foreach ([&](auto& character) {
-        if (!character->inited())
+        if (!character->inited() || !character->loaded())
             return;
 
         if (!fb::config<std::optional<uint32_t>>("world") && character->has_return_point() == false)

@@ -33,6 +33,7 @@ public:
 
 private:
     // clang-format off
+    uint32_t              world(const game_reqs::login<V>& request) const;
     void                  init_option(const internal::Option& response, character& ch);
     void                  init_items(const std::vector<internal::Item>& response, character& ch);
     void                  init_spells(const std::vector<internal::Spell>& response, character& ch);

@@ -2,6 +2,7 @@
 #define __FB_TRANSFER_TICKET_H__
 
 #include <array>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <mutex>
@@ -31,18 +32,22 @@ uint32_t           now();
 uint64_t           make_nonce();
 tag_type           sign(uint32_t world, uint8_t host, const uint8_t* data, size_t size);
 
+// Purges by steady time since insertion so a wall clock jump cannot drop a nonce that is still acceptable.
 class nonce_cache
 {
 private:
-    static constexpr uint32_t PURGE_INTERVAL_SECONDS = 10;
+    using clock = std::chrono::steady_clock;
+
+    static constexpr auto PURGE_INTERVAL = std::chrono::seconds(10);
+    static constexpr auto RETENTION      = std::chrono::seconds(TTL_SECONDS + CLOCK_SKEW_SECONDS * 2);
 
 private:
-    std::mutex                             _mutex;
-    std::unordered_map<uint64_t, uint32_t> _nonces;
-    uint32_t                               _purged_at = 0;
+    std::mutex                                      _mutex;
+    std::unordered_map<uint64_t, clock::time_point> _nonces;
+    clock::time_point                               _purged_at = {};
 
 public:
-    bool insert(uint64_t nonce, uint32_t expire, uint32_t now);
+    bool insert(uint64_t nonce);
 };
 
 } // namespace fb::transfer_ticket

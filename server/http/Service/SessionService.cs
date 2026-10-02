@@ -24,6 +24,16 @@ namespace Http.Service
             end
             """;
 
+        // A forced shutdown may hand the name to another server before this one logs out; only the owner deletes.
+        // @session must be serialized exactly as Login stores it.
+        private static readonly string DeleteOwnedSessionScript = """
+            if redis.call('hget', @key, @name) == @session then
+                redis.call('hdel', @key, @name)
+                return 1
+            end
+            return 0
+            """;
+
         private static readonly string LoginScript = """
             local session = redis.call('hget', @key, @name)
             if session ~= false then
@@ -93,15 +103,19 @@ namespace Http.Service
             await RefreshTTL(world);
         }
 
-        public async Task Delete(uint world, string name)
+        public async Task Delete(uint world, string name, Session session)
         {
             var key = new SessionKey().Key;
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
                 return;
-            var conn = redis.Connection;
 
-            await conn.HashDeleteAsync(new RedisKey(key), name);
+            await redis.EvalAsync(DeleteOwnedSessionScript, new
+            {
+                key = new RedisKey(key),
+                name = name,
+                session = JsonConvert.SerializeObject(session)
+            });
             await RefreshTTL(world);
         }
 

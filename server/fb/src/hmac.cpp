@@ -92,11 +92,15 @@ sha256::digest_type sha256::final()
 
     auto zero = uint8_t{0};
     while (this->_buffered != BLOCK_SIZE - sizeof(uint64_t))
+    {
         this->update(&zero, 1);
+    }
 
     uint8_t length_bytes[sizeof(uint64_t)];
     for (int i = 0; i < 8; i++)
+    {
         length_bytes[i] = static_cast<uint8_t>(bit_length >> (56 - i * 8));
+    }
     this->update(length_bytes, sizeof(length_bytes));
 
     auto digest = digest_type{};
@@ -150,6 +154,8 @@ bool fb::constant_time_equal(const void* lhs, const void* rhs, size_t size)
     auto r    = static_cast<const volatile uint8_t*>(rhs);
     auto diff = uint8_t{0};
     for (size_t i = 0; i < size; i++)
+    {
         diff |= l[i] ^ r[i];
+    }
     return diff == 0;
 }

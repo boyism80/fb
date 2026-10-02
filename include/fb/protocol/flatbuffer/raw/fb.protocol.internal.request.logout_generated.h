@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -26,7 +28,10 @@ struct Logout FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LogoutBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
-    VT_NAME = 6
+    VT_NAME = 6,
+    VT_UID = 8,
+    VT_HOST = 10,
+    VT_PROCESS_WORLD = 12
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -34,11 +39,24 @@ struct Logout FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
+  uint32_t uid() const {
+    return GetField<uint32_t>(VT_UID, 0);
+  }
+  uint8_t host() const {
+    return GetField<uint8_t>(VT_HOST, 0);
+  }
+  const nullable::nullable_uint *process_world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_PROCESS_WORLD);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
+           VerifyField<uint32_t>(verifier, VT_UID, 4) &&
+           VerifyField<uint8_t>(verifier, VT_HOST, 1) &&
+           VerifyOffset(verifier, VT_PROCESS_WORLD) &&
+           verifier.VerifyTable(process_world()) &&
            verifier.EndTable();
   }
 };
@@ -52,6 +70,15 @@ struct LogoutBuilder {
   }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Logout::VT_NAME, name);
+  }
+  void add_uid(uint32_t uid) {
+    fbb_.AddElement<uint32_t>(Logout::VT_UID, uid, 0);
+  }
+  void add_host(uint8_t host) {
+    fbb_.AddElement<uint8_t>(Logout::VT_HOST, host, 0);
+  }
+  void add_process_world(::flatbuffers::Offset<nullable::nullable_uint> process_world) {
+    fbb_.AddOffset(Logout::VT_PROCESS_WORLD, process_world);
   }
   explicit LogoutBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -67,22 +94,34 @@ struct LogoutBuilder {
 inline ::flatbuffers::Offset<Logout> CreateLogout(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    uint32_t uid = 0,
+    uint8_t host = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   LogoutBuilder builder_(_fbb);
+  builder_.add_process_world(process_world);
+  builder_.add_uid(uid);
   builder_.add_name(name);
   builder_.add_world(world);
+  builder_.add_host(host);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Logout> CreateLogoutDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    const char *name = nullptr) {
+    const char *name = nullptr,
+    uint32_t uid = 0,
+    uint8_t host = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateLogout(
       _fbb,
       world,
-      name__);
+      name__,
+      uid,
+      host,
+      process_world);
 }
 
 inline const fb::protocol::internal::request::raw::Logout *GetLogout(const void *buf) {

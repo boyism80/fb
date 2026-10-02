@@ -68,16 +68,17 @@ transfer_ticket::tag_type transfer_ticket::sign(uint32_t world, uint8_t host, co
     return tag;
 }
 
-bool transfer_ticket::nonce_cache::insert(uint64_t nonce, uint32_t expire, uint32_t now)
+bool transfer_ticket::nonce_cache::insert(uint64_t nonce)
 {
-    auto _ = std::lock_guard(this->_mutex);
-    if (now - this->_purged_at >= PURGE_INTERVAL_SECONDS)
+    auto _   = std::lock_guard(this->_mutex);
+    auto now = clock::now();
+    if (now - this->_purged_at >= PURGE_INTERVAL)
     {
         std::erase_if(this->_nonces, [now](const auto& pair) {
-            return pair.second + CLOCK_SKEW_SECONDS < now;
+            return now - pair.second > RETENTION;
         });
         this->_purged_at = now;
     }
 
-    return this->_nonces.try_emplace(nonce, expire).second;
+    return this->_nonces.try_emplace(nonce, now).second;
 }

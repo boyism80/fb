@@ -397,6 +397,11 @@ bool character::inited() const
     return true;
 }
 
+bool character::loaded() const
+{
+    return this->_loaded;
+}
+
 ROLE character::role() const
 {
     return this->_role;
@@ -1327,6 +1332,7 @@ void character::update_time(uint8_t hours, uint8_t minutes)
 
 void character::init()
 {
+    this->_loaded                    = true;
     this->_ping_state.enabled        = true;
     this->_ping_state.pong_received  = true;
     this->_ping_state.last_ping_time = this->server.now();

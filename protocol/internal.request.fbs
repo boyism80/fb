@@ -19,6 +19,9 @@ table Login {
 table Logout {
   world: uint;
   name: string;
+  uid: uint;
+  host: ubyte;
+  process_world: uint?;
 }
 
 
