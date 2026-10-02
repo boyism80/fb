@@ -125,31 +125,30 @@ size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
     if (socket_ptr == nullptr || !socket_ptr->is_open())
         return 0;
 
-    auto wire = fb::stream(stream);
-    if (socket_ptr->prepare_outbound(wire, encrypt, wrap) == false)
-    {
-        fb::logger::warn("character::send dropped: prepare failed (name={}, bytes={})", this->name(), stream.size());
-        return 0;
-    }
-
-    const auto queued = wire.size();
-
-    auto frame = execution_context::current();
-    if (frame == nullptr)
-    {
-        fb::logger::warn("character::send dropped: no execution_context (name={}, bytes={})", this->name(), queued);
-        return 0;
-    }
-
-    auto* ctx = frame->slot<context>(context::local::slot_id());
+    // Encryption consumes a sequence, so encrypt only once the packet is certain to be written.
+    auto  frame = execution_context::current();
+    auto* ctx   = frame != nullptr ? frame->slot<context>(context::local::slot_id()) : nullptr;
     if (ctx == nullptr)
     {
-        fb::logger::warn("character::send dropped: no outbound context (name={}, bytes={})", this->name(), queued);
-        return 0;
+        // Timer and foreach_enqueue work can run without an outbound context.
+        std::ignore = socket_ptr->send(stream, encrypt, wrap);
+        return stream.size();
     }
+    else
+    {
+        auto wire = fb::stream(stream);
+        if (socket_ptr->prepare_outbound(wire, encrypt, wrap) == false)
+        {
+            fb::logger::warn("character::send dropped: prepare failed (name={}, bytes={})",
+                             this->name(),
+                             stream.size());
+            return 0;
+        }
 
-    ctx->outbound.append(socket_ptr, std::move(wire));
-    return queued;
+        const auto queued = wire.size();
+        ctx->outbound.append(socket_ptr, std::move(wire));
+        return queued;
+    }
 }
 
 size_t character::send(const fb::protocol::header& response, bool encrypt, bool wrap)

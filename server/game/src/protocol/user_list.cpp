@@ -50,9 +50,6 @@ void user_list::serialize(fb::stream_writer<big_endian>& writer) const
     auto count        = uint16_t(0);
     for (const auto& user : this->users)
     {
-        if (count == UINT16_MAX)
-            break;
-
         auto before = entries.size();
         entry_writer.write<uint8_t>(0x10 * user.nation + user.cls);
         entry_writer.write<uint8_t>(0x10 * user.promotion + user.level);

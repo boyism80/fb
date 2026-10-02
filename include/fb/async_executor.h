@@ -9,6 +9,7 @@
 
 #include <boost/asio.hpp>
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -34,8 +35,8 @@ private:
     using super = std::enable_shared_from_this<async_executor>;
 
 protected:
-    boost_timers _timers;
-    bool         _running = false;
+    boost_timers      _timers;
+    std::atomic<bool> _running = false;
 
 public:
     boost::asio::io_context& io_context;

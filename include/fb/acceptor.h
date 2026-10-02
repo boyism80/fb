@@ -107,7 +107,15 @@ protected:
 public:
     virtual ~acceptor()
     {
-        this->shutdown();
+        // Reached with _running only when run() aborted; derived overrides such as on_exit() are already gone.
+        if (this->_running == false)
+            return;
+
+        this->_running = false;
+        this->cancel();
+        this->threads.exit();
+        this->close();
+        static_cast<boost::asio::io_context&>(*this).stop();
     }
 
 protected:
@@ -494,8 +502,7 @@ public:
             fb::protocol::response::transfer(ip, port, params).serialize(writer);
         }
 
-        encryption.wrap(stream);
-        std::ignore = co_await socket.send(stream, false, false);
+        std::ignore = co_await socket.send(stream, false, true);
     }
 
 public:
@@ -523,8 +530,7 @@ public:
             fb::protocol::response::transfer(ip, port, header).serialize(writer);
         }
 
-        encryption.wrap(stream);
-        std::ignore = co_await socket.send(stream, false, false);
+        std::ignore = co_await socket.send(stream, false, true);
     }
 
 public:
@@ -752,8 +758,8 @@ public:
     }
 
 public:
-    // Only requests shutdown so it is safe from IO threads (signals) and logic threads (AMQP handlers); run() does the
-    // work.
+    // Only requests shutdown, so IO threads (signals) and logic threads (AMQP) can call it.
+    // run() performs the shutdown on the main thread.
     void exit() override final
     {
         {
@@ -772,8 +778,24 @@ private:
         this->_running = false;
         this->cancel();
         // Sync boundary between main/shutdown thread and async-cpp (save, drain queues).
-        async::awaitable_get(this->on_exit());
-        async::awaitable_get(this->disconnect_sockets());
+        // A failure here must not skip the teardown below, or run() would destroy joinable threads.
+        try
+        {
+            async::awaitable_get(this->on_exit());
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("acceptor::shutdown: on_exit failed: {}", e.what());
+        }
+
+        try
+        {
+            async::awaitable_get(this->disconnect_sockets());
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("acceptor::shutdown: disconnect_sockets failed: {}", e.what());
+        }
 
         // disconnect_sockets() skips sockets whose on_disconnected already started in erase();
         // logic threads must keep running until those finish (e.g. character save).
