@@ -4,15 +4,26 @@ on:
   push:
     branches:
       - '**'
+  issues:
+    types: [opened, edited, closed, reopened]
+  issue_comment:
+    types: [created]
 
 jobs:
   notify:
+    # The repository is public; only forward issues and comments written by the owner or collaborators.
+    if: >-
+      github.event_name == 'push' ||
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+               github.event.comment.author_association || github.event.issue.author_association)
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
-      - name: Forward push event to review webhook
+      - name: Forward event to review webhook
         env:
           REVIEW_WEBHOOK_URL: ${{ secrets.REVIEW_WEBHOOK_URL }}
           REVIEW_WEBHOOK_KEY: ${{ secrets.REVIEW_WEBHOOK_KEY }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ -z "$REVIEW_WEBHOOK_URL" ] || [ -z "$REVIEW_WEBHOOK_KEY" ]; then
             echo "REVIEW_WEBHOOK_URL or REVIEW_WEBHOOK_KEY secret is not set; skipping."
@@ -21,5 +32,5 @@ jobs:
           curl -sS --fail-with-body -X POST "$REVIEW_WEBHOOK_URL" \
             -H "Authorization: Bearer $REVIEW_WEBHOOK_KEY" \
             -H "Content-Type: application/json" \
-            -H "X-GitHub-Event: push" \
+            -H "X-GitHub-Event: $EVENT_NAME" \
             --data-binary @"$GITHUB_EVENT_PATH"
