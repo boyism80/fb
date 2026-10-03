@@ -3,6 +3,7 @@
 
 #include <fb/login/protocol/complete.h>
 #include <fb/login/protocol/create.h>
+#include <fb/login/protocol/keep_alive.h>
 #include <fb/login/protocol/login.h>
 #include <fb/login/protocol/message.h>
 #include <fb/login/protocol/meta_dat.h>

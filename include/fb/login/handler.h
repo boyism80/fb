@@ -8,6 +8,7 @@
 #include <fb/login/handler/protocol/change_password.h>
 #include <fb/login/handler/protocol/complete.h>
 #include <fb/login/handler/protocol/create_account.h>
+#include <fb/login/handler/protocol/keep_alive.h>
 #include <fb/login/handler/protocol/login.h>
 #include <fb/login/handler/protocol/meta_dat.h>
 #include <fb/login/handler/timer/heart_beat.h>

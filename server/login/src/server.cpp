@@ -39,6 +39,7 @@ fb::login::server::server(boost::asio::io_context& io_context, uint16_t port) :
     this->handler.protocol.bind<fb::login::handler::protocol::complete>();
     this->handler.protocol.bind<fb::login::handler::protocol::change_password>();
     this->handler.protocol.bind<fb::login::handler::protocol::meta_dat>();
+    this->handler.protocol.bind<fb::login::handler::protocol::keep_alive>();
 }
 
 fb::login::server::~server()
