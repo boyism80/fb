@@ -269,6 +269,35 @@ namespace Internal.Controllers
                 var oldTitle = clan.Title;
                 _dbContext.Clan.Delete(world, clan.Id);
 
+                var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
+                if (alliance != null)
+                {
+                    await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliance.AlliedClan));
+                    _dbContext.ClanAlliance.Delete(world, clan.Id);
+                    _dbContext.ClanAlliance.Delete(world, alliance.AlliedClan);
+                }
+
+                var enemies = (await _dbContext.ClanEnemy.Get(world, clan.Id)).ToList();
+                foreach (var enemy in enemies)
+                {
+                    _dbContext.ClanEnemy.Delete(world, enemy);
+                    var reverse = await _dbContext.ClanEnemy.Get(world, enemy.EnemyClan, clan.Id);
+                    if (reverse != null)
+                        _dbContext.ClanEnemy.Delete(world, reverse);
+                }
+
+                var clearedCastles = new List<byte>();
+                for (byte divineBeast = 0; divineBeast <= 3; divineBeast++)
+                {
+                    var castleRecord = await _dbContext.Castle.Get(world, divineBeast);
+                    if (castleRecord?.OwnerClan == clan.Id)
+                    {
+                        await using var _ = await _distributedLock.Lock(world, Castle.DistributedLockKey(divineBeast));
+                        _dbContext.Castle.Set(world, new Castle { DivineBeast = divineBeast, OwnerClan = null });
+                        clearedCastles.Add(divineBeast);
+                    }
+                }
+
                 await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
                 {
                     id = clan.Id
@@ -295,6 +324,14 @@ namespace Internal.Controllers
                 };
 
                 await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                foreach (var divineBeast in clearedCastles)
+                    await _rabbitMqService.PublishAsync(new Response.UpdatedCastle
+                    {
+                        Host = request.Host,
+                        DivineBeast = divineBeast,
+                        OwnerClanId = null,
+                        Error = (uint)ErrorCode.None
+                    }, AmqpRoute.Exchange, AmqpRoute.Home("castle", request.World));
                 return response;
             }
             catch (LogicException e)

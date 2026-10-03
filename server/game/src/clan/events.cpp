@@ -1,5 +1,6 @@
 #include <fb/encoding.h>
 #include <fb/game/character.h>
+#include <fb/game/castle.h>
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
@@ -211,6 +212,13 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
             },
             members);
     });
+
+    for (uint32_t i = 0; i <= 3; i++)
+    {
+        auto guard = co_await this->_server.castles.enter_write(i);
+        if (guard.value() != nullptr && guard.value()->owner_clan_id() == clan_id)
+            guard.value()->owner_clan_id(std::nullopt);
+    }
     co_return;
 }
 

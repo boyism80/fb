@@ -251,7 +251,11 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
         end
 
         local owner_clan = id2clan(owner_clan_id)
-        local owner_name = owner_clan and owner_clan:name() or ''
+        if owner_clan == nil then
+            me:dialog(npc_obj, '성의 주인이 없는것 같군.')
+            return true
+        end
+        local owner_name = owner_clan:name()
         local map_eye = name2map(totem_name_kr .. '의눈')
         if map_eye == nil then
             me:dialog(npc_obj, '입장할 수 있는 맵이 없습니다.')
@@ -289,13 +293,11 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
             end
 
             me:money(me:money() - ENTRANCE_FEE)
-            if owner_clan ~= nil then
-                local _, err = owner_clan:money(ENTRANCE_FEE_TO_OWNER)
-                if err ~= nil then
-                    me:money(me:money() + ENTRANCE_FEE)
-                    me:dialog(npc_obj, '문파자금 적립에 실패하여 입장할 수 없습니다.')
-                    return true
-                end
+            local _, err = owner_clan:money(ENTRANCE_FEE_TO_OWNER)
+            if err ~= nil then
+                me:money(me:money() + ENTRANCE_FEE)
+                me:dialog(npc_obj, '문파자금 적립에 실패하여 입장할 수 없습니다.')
+                return true
             end
 
             me:map(map_inner, math.random(74, 84), math.random(117, 130))
