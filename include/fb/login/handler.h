@@ -12,5 +12,6 @@
 #include <fb/login/handler/protocol/login.h>
 #include <fb/login/handler/protocol/meta_dat.h>
 #include <fb/login/handler/timer/heart_beat.h>
+#include <fb/login/handler/timer/name_keep_alive.h>
 
 #endif // __FB_LOGIN_HANDLER_H__

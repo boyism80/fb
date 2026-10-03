@@ -11,7 +11,7 @@ namespace fb::protocol::login::request {
 
 using namespace fb::model::enum_value;
 
-// The client login scene sends this every 20 s with no payload.
+// The client login scene sends this every 20 s with no payload, but only while the user is active.
 template <CLIENT_VERSION V>
 class keep_alive : public fb::protocol::header
 {

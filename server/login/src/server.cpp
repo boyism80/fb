@@ -65,6 +65,8 @@ async::task<void> fb::login::server::on_start()
 #endif
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
+    // Must stay well below the 120 s threshold passed to USP_NAME_RESERVE.
+    this->bind_timer<fb::login::handler::timer::name_keep_alive>(30s);
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global");
     this->handler.amqp.bind<fb::login::handler::amqp::set_datetime>(fb::amqp_key("global", fb::amqp_scope()));
     this->handler.amqp.bind<fb::login::handler::amqp::reload_tables>(fb::amqp_key("global", fb::amqp_scope()));
