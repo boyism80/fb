@@ -15,9 +15,16 @@ DROP PROCEDURE IF EXISTS `USP_NAME_RESERVE`;
 DELIMITER $$
 CREATE PROCEDURE `USP_NAME_RESERVE`(IN uname NVARCHAR(256), IN in_world INT UNSIGNED, IN threshold_sec INT UNSIGNED)
 BEGIN
-    DECLARE existing_id   INT UNSIGNED DEFAULT NULL;
-    DECLARE existing_reserved DATETIME DEFAULT NULL;
+    DECLARE existing_id       INT UNSIGNED DEFAULT NULL;
+    DECLARE existing_reserved DATETIME     DEFAULT NULL;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET existing_id = NULL;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS result, 0 AS uid;
+    END;
+
+    START TRANSACTION;
 
     SELECT `id`, `reserved_at` INTO existing_id, existing_reserved
     FROM `name_registry` WHERE `name` = uname FOR UPDATE;

@@ -155,16 +155,23 @@ namespace Internal.Controllers
         [HttpPost("reserve")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
-            await using var conn = _dbContext.GetUnifiedConnection();
-            var row = await conn.QueryFirstOrDefaultAsync(
-                "USP_NAME_RESERVE",
-                new { uname = request.Name, in_world = request.World, threshold_sec = 120 },
-                commandType: CommandType.StoredProcedure);
+            try
+            {
+                await using var conn = _dbContext.GetUnifiedConnection();
+                var row = await conn.QueryFirstOrDefaultAsync(
+                    "USP_NAME_RESERVE",
+                    new { uname = request.Name, in_world = request.World, threshold_sec = 120 },
+                    commandType: CommandType.StoredProcedure);
 
-            if (row == null || (int)row.result == 0)
+                if (row == null || (int)row.result == 0)
+                    return new Response.ReserveName { Success = false, Uid = 0 };
+
+                return new Response.ReserveName { Success = true, Uid = (uint)row.uid };
+            }
+            catch (Exception)
+            {
                 return new Response.ReserveName { Success = false, Uid = 0 };
-
-            return new Response.ReserveName { Success = true, Uid = (uint)row.uid };
+            }
         }
 
         [HttpPost("name-keepalive")]
