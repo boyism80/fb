@@ -56,8 +56,8 @@ namespace Marketplace.Reepository
             parameters.Add("ListingIds", listingIds);
 
             var sql = $@"
-                SELECT * FROM `marketplace_listing` 
-                WHERE `id` IN @ListingIds AND `status` != {ListingState.EXPIRED.Escape()}";
+                SELECT * FROM `marketplace_listing`
+                WHERE `id` IN @ListingIds";
 
             return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
         }
