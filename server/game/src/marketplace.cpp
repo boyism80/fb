@@ -740,41 +740,8 @@ async::task<void> marketplace::restore()
         auto purchase_it = purchases.find(pending_info.purchase_id);
         if (purchase_it != purchases.end())
         {
-            // Purchase record exists - check for refund if needed
-            const auto& purchase      = purchase_it->second;
-            auto        refund_amount = uint64_t{0};
-
-            if (purchase.purchase_count < pending_info.expected_purchase_count)
-            {
-                // Partial purchase - calculate refund
-                auto actual_price = purchase.purchase_price;
-                refund_amount     = pending_info.expected_total_price - actual_price;
-
-                if (refund_amount > 0)
-                {
-                    // Add refund to DSLs
-                    auto refund_dsl = fb::model::dsl::money(refund_amount);
-                    auto dsls_copy  = pending_info.dsls;
-                    dsls_copy.push_back(refund_dsl.to_dsl());
-
-                    std::ignore = co_await this->_owner.server.system_storage.create(
-                        this->_owner.world(),
-                        this->_owner.id,
-                        std::format("marketplace:purchase:refund:{}", purchase_id),
-                        _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_TITLE),
-                        _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_MESSAGE),
-                        dsls_copy);
-
-                    auto log_data             = Json::Value();
-                    log_data["character_id"]  = static_cast<Json::Int64>(this->_owner.id);
-                    log_data["purchase_id"]   = purchase_id;
-                    log_data["listing_id"]    = pending_info.listing_id;
-                    log_data["refund_amount"] = static_cast<Json::Int64>(refund_amount);
-                    this->_owner.server.log.write("marketplace_purchase_refund", log_data);
-                }
-            }
-
-            // Purchase succeeded - remove from pending (item already in storage_box from marketplace server)
+            // The marketplace server already delivered the item and any partial-purchase refund
+            // (marketplace:buy:{id}), so only the pending entry is cleared here.
             to_remove.push_back(purchase_id);
         }
         else
