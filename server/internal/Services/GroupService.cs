@@ -3,6 +3,7 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
+using Medallion.Threading.Redis;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
@@ -143,8 +144,11 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id));
+                // Lock in uid order so a simultaneous Create(A, B) and Create(B, A)
+                // can't acquire the two character locks in opposite order.
+                var (createLockUid1, createLockUid2) = actor.Id < target.Id ? (actor.Id, target.Id) : (target.Id, actor.Id);
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(createLockUid1));
+                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(createLockUid2));
 
                 var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -267,8 +271,11 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id));
+                // Lock in uid order to avoid a crossed-order deadlock with a
+                // concurrent call on the same pair.
+                var (enterLockUid1, enterLockUid2) = actor.Id < target.Id ? (actor.Id, target.Id) : (target.Id, actor.Id);
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(enterLockUid1));
+                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(enterLockUid2));
 
                 var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -434,8 +441,11 @@ namespace Internal.Services
                 if (Table.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id));
+                // Lock in uid order to avoid a crossed-order deadlock with a
+                // concurrent call on the same pair.
+                var (kickLockUid1, kickLockUid2) = actor.Id < target.Id ? (actor.Id, target.Id) : (target.Id, actor.Id);
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(kickLockUid1));
+                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(kickLockUid2));
 
                 var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -489,62 +499,97 @@ namespace Internal.Services
                 if (Table.Map.TryGetValue(character.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(character.Id));
+                // Lock every involved character before the group lock so Destroy can never
+                // circular-wait against a concurrent Leave on one of its members.
+                // The member set isn't known until the group is loaded, so lock the
+                // best-known set, verify it against the locked group's member list,
+                // and retry with the updated set if it moved.
+                var lockUids = new SortedSet<uint> { character.Id };
+                var characterLocks = new List<RedisDistributedLockHandle>();
+                RedisDistributedLockHandle groupLock = null;
+                CharacterRealtimeState sync;
+                Group group;
 
-                var sync = await _dbContext.CharacterRealtimeState.Get(world, character.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                var groupId = sync.Group ??
-                    throw new LogicException(ErrorCode.GroupNotJoined);
-
-                await using var _2 = await _distributedLock.Lock(world, Group.DistributedLockKey(groupId));
-
-                var group = await _dbContext.Group.Get(world, groupId) ??
-                    throw new LogicException(ErrorCode.GroupNotFound);
-
-                // Destroy group - character must be master
-                if (group.Master != character.Id)
-                    throw new LogicException(ErrorCode.NotGroupMaster);
-
-                // Remove all members from group
-                var memberNames = new List<string>();
-                foreach (var uid in group.Members)
+                try
                 {
-                    await using var _ = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid));
-
-                    var member = await _dbContext.Character.Get(world, uid) ??
-                        throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                    var memberSync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
-                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                    memberSync.Group = null;
-                    _dbContext.CharacterRealtimeState.Set(world, memberSync);
-                    memberNames.Add(member.Name);
-                }
-
-                sync.Group = null;
-                _dbContext.CharacterRealtimeState.Set(world, sync);
-
-                _dbContext.Group.Delete(world, group.Master);
-
-                await _dbContext.SaveChangesAsync();
-
-                var response = new Response.DestroyGroup
-                {
-                    Host = map.Host,
-                    GroupId = group.Master,
-                    GroupMaster = character.Name,
-                    Actor = new Protocol.CharacterRef
+                    while (true)
                     {
-                        Uid = character.Id,
-                        Name = character.Name
-                    },
-                    Error = (uint)ErrorCode.None
-                };
+                        foreach (var uid in lockUids)
+                            characterLocks.Add(await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid)));
 
-                await _rabbitMqService.PublishFanoutAsync(response, "group", world);
-                return response;
+                        sync = await _dbContext.CharacterRealtimeState.Get(world, character.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        var groupId = sync.Group ??
+                            throw new LogicException(ErrorCode.GroupNotJoined);
+
+                        groupLock = await _distributedLock.Lock(world, Group.DistributedLockKey(groupId));
+
+                        group = await _dbContext.Group.Get(world, groupId) ??
+                            throw new LogicException(ErrorCode.GroupNotFound);
+
+                        // Destroy group - character must be master
+                        if (group.Master != character.Id)
+                            throw new LogicException(ErrorCode.NotGroupMaster);
+
+                        var required = new SortedSet<uint>(group.Members) { character.Id };
+                        if (required.SetEquals(lockUids))
+                            break;
+
+                        await groupLock.DisposeAsync();
+                        groupLock = null;
+                        foreach (var @lock in characterLocks)
+                            await @lock.DisposeAsync();
+                        characterLocks.Clear();
+
+                        lockUids = required;
+                    }
+
+                    // Remove all members from group
+                    var memberNames = new List<string>();
+                    foreach (var uid in group.Members)
+                    {
+                        var member = await _dbContext.Character.Get(world, uid) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                        var memberSync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        memberSync.Group = null;
+                        _dbContext.CharacterRealtimeState.Set(world, memberSync);
+                        memberNames.Add(member.Name);
+                    }
+
+                    sync.Group = null;
+                    _dbContext.CharacterRealtimeState.Set(world, sync);
+
+                    _dbContext.Group.Delete(world, group.Master);
+
+                    await _dbContext.SaveChangesAsync();
+
+                    var response = new Response.DestroyGroup
+                    {
+                        Host = map.Host,
+                        GroupId = group.Master,
+                        GroupMaster = character.Name,
+                        Actor = new Protocol.CharacterRef
+                        {
+                            Uid = character.Id,
+                            Name = character.Name
+                        },
+                        Error = (uint)ErrorCode.None
+                    };
+
+                    await _rabbitMqService.PublishFanoutAsync(response, "group", world);
+                    return response;
+                }
+                finally
+                {
+                    if (groupLock != null)
+                        await groupLock.DisposeAsync();
+                    foreach (var @lock in characterLocks)
+                        await @lock.DisposeAsync();
+                }
             }
             catch (LogicException e)
             {
@@ -626,8 +671,11 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id));
+                // Lock in uid order to avoid a crossed-order deadlock with a
+                // concurrent call on the same pair.
+                var (toggleLockUid1, toggleLockUid2) = actor.Id < target.Id ? (actor.Id, target.Id) : (target.Id, actor.Id);
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(toggleLockUid1));
+                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(toggleLockUid2));
 
                 var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
