@@ -158,19 +158,37 @@ namespace Internal.Controllers
         [HttpPost("reserve")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
-            var world = request.World;
-            await using var connection = _dbContext.GetUnifiedConnection();
-            var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
-            {
-                uname = request.Name,
-                in_world = world
-            }, commandType: CommandType.StoredProcedure);
+            await using var conn = _dbContext.GetUnifiedConnection();
+            var taken = await conn.QueryFirstOrDefaultAsync<uint?>(
+                "SELECT id FROM name_registry WHERE name = @Name", new { Name = request.Name });
+            if (taken.HasValue)
+                return new Response.ReserveName { Success = false, Uid = 0 };
 
-            return new Response.ReserveName
-            {
-                Uid = result.Uid,
-                Success = result.Result
-            };
+            var redis = _redisService.GetUnifiedConnection();
+            const string reserveScript = @"
+                if redis.call('EXISTS', KEYS[1]) == 1 then return nil end
+                local uid = redis.call('INCR', KEYS[2])
+                redis.call('SETEX', KEYS[1], tonumber(ARGV[1]), tostring(uid))
+                return uid";
+
+            var result = await redis.EvalAsync(
+                reserveScript,
+                new StackExchange.Redis.RedisKey[] { $"fb:name-reservation:{request.Name}", "fb:name-uid-counter" },
+                new StackExchange.Redis.RedisValue[] { 120 });
+
+            if (result.IsNull)
+                return new Response.ReserveName { Success = false, Uid = 0 };
+
+            return new Response.ReserveName { Success = true, Uid = (uint)(long)result };
+        }
+
+        [HttpPost("name-keepalive")]
+        public async Task<Response.ReserveName> NameKeepAlive(Request.ReserveName request)
+        {
+            var redis = _redisService.GetUnifiedConnection();
+            await redis.Connection.KeyExpireAsync(
+                $"fb:name-reservation:{request.Name}", TimeSpan.FromSeconds(120));
+            return new Response.ReserveName { Success = true, Uid = 0 };
         }
         [HttpPost("init")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
@@ -194,10 +212,16 @@ namespace Internal.Controllers
                 Role = (Role)request.Role
             };
             _dbContext.Character.Set(world, ch);
-
             await _dbContext.SaveChangesAsync();
 
-            // Log account creation event
+            await using var conn = _dbContext.GetUnifiedConnection();
+            await conn.ExecuteAsync("USP_NAME_REGISTER",
+                new { uid = request.Uid, uname = request.Name, in_world = request.World },
+                commandType: CommandType.StoredProcedure);
+
+            var redis = _redisService.GetUnifiedConnection();
+            await redis.Connection.KeyDeleteAsync($"fb:name-reservation:{request.Name}");
+
             await _logService.WriteAsync("account_create", new
             {
                 account_name = request.Name,

@@ -4,6 +4,7 @@ using Http.Migration;
 using Http.Service;
 using Http.Service.Amqp;
 using Http.Worker;
+using StackExchange.Redis;
 
 namespace Http;
 public class Program
@@ -62,6 +63,7 @@ public class Program
 
         var app = builder.Build();
         await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Internal);
+        await SeedNameUidCounterAsync(app.Services);
         app.MapHealthChecks("/health");
         var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
         var dataTableLoader = new DataTableLoader(logger);
@@ -80,5 +82,21 @@ public class Program
         app.MapControllers();
 
         await app.RunAsync();
+    }
+
+    static async Task SeedNameUidCounterAsync(IServiceProvider services)
+    {
+        const string counterKey = "fb:name-uid-counter";
+        var redisService = services.GetRequiredService<RedisService>();
+        var redis = redisService.GetUnifiedConnection();
+
+        if (await redis.Connection.KeyExistsAsync(counterKey))
+            return;
+
+        await using var scope = services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        await using var conn = dbContext.GetUnifiedConnection();
+        var maxId = await conn.QuerySingleOrDefaultAsync<uint?>("SELECT MAX(id) FROM name_registry") ?? 0;
+        await redis.Connection.StringSetAsync(counterKey, (long)maxId, when: When.NotExists);
     }
 }

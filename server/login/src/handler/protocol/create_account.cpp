@@ -45,6 +45,8 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
         if (response1.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_EXISTS));
 
+        session_data->pending_name = name;
+
         auto        uid    = response1.uid;
         static auto device = std::random_device{};
         static auto gen    = std::mt19937{device()};
@@ -76,8 +78,9 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_EXISTS));
 
         this->server.send(session, response::message("", 0x00));
-        session_data->pk   = uid;
-        session_data->name = name;
+        session_data->pk           = uid;
+        session_data->name         = name;
+        session_data->pending_name = "";
 
         // Log account creation event
         auto log_data            = Json::Value();

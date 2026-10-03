@@ -14,6 +14,7 @@ class session
 public:
     uint32_t                           pk = -1;
     std::string                        name;
+    std::string                        pending_name;
     const fb::protocol::CLIENT_VERSION client_version;
     const fb::protocol::CLIENT_UI_MODE ui_mode;
 
