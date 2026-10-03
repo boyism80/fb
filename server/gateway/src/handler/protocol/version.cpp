@@ -40,6 +40,9 @@ async::task<bool> version<V>::handle(fb::socket<fb::gateway::session>& session, 
 {
     try
     {
+        if (session.data() != nullptr)
+            co_return false;
+
         if (is_version_allowed(request.v) == false)
             throw std::runtime_error(_TEXT(MESSAGE_CLIENT_VERSION_MISMATCH));
 

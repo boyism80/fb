@@ -15,6 +15,9 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> server_list<V>::handle(fb::socket<fb::gateway::session>& session,
                                          gateway_reqs::server_list<V>&     request)
 {
+    if (session.data() == nullptr)
+        co_return false;
+
     switch (request.action)
     {
     case 0x00:
