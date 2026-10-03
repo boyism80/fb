@@ -609,6 +609,29 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
         co_await this->server.threads.switching(weak);
 
+        // The instance may have started closing while this object was leaving its previous map.
+        // Checking again on the map thread is enough: nothing below suspends before objects.push,
+        // so a destroy that starts later still sees this object in its snapshot.
+        if (map->closing())
+        {
+            auto source = map->source();
+            if (source == nullptr)
+            {
+                auto _     = std::unique_lock(this->_map_lock);
+                this->_map = nullptr;
+                co_return false;
+            }
+
+            {
+                auto _ = std::unique_lock(this->_map_lock);
+
+                this->_map    = source;
+                this->_thread = source->thread();
+            }
+            map = source;
+            co_await this->server.threads.switching(weak);
+        }
+
         // Call listener for packet response
         this->listener.on_map_enter(*this, *map);
 
