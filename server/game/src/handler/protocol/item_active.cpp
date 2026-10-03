@@ -20,6 +20,12 @@ async::task<bool> item_active<V>::handle(fb::socket<character>& session, game_re
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
+    if (ch->trade.trading())
+    {
+        ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
+        co_return true;
+    }
+
     std::ignore = co_await ch->items.active(request.index);
     co_return true;
 }

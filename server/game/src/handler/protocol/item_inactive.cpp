@@ -20,6 +20,12 @@ async::task<bool> item_inactive<V>::handle(fb::socket<character>& session, game_
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
+    if (ch->trade.trading())
+    {
+        ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
+        co_return true;
+    }
+
     if (ch->items.free_size() == 0)
     {
         ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));

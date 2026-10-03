@@ -108,6 +108,13 @@ async::task<void> click<V>::handle_object_click(character* ch, game_reqs::click<
 
     case OBJECT_TYPE::NPC:
     {
+        // NPC dialogs sell, buy, store and list items through Lua.
+        if (ch->trade.trading())
+        {
+            ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
+            break;
+        }
+
         auto& model = static_cast<npc&>(*you).model();
         auto  path  = std::format("scripts/npc/{}.lua", model.id);
         auto  func  = "on_click";

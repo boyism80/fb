@@ -153,6 +153,9 @@ bool trade::up_item(uint8_t index)
         if (this->trading() == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
 
+        if (this->_locked || you->trade._locked)
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_ALREADY_LOCKED));
+
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE));
 
@@ -193,6 +196,9 @@ bool trade::up_money(uint64_t money)
 
     try
     {
+        if (this->_locked || you->trade._locked)
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_ALREADY_LOCKED));
+
         this->_money = std::min<uint64_t>(owner->money(), money);
         owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         owner->listener.on_trade_money(*owner, *you, this->_money);
@@ -226,6 +232,9 @@ bool trade::count(uint16_t count)
     {
         if (this->trading() == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
+
+        if (this->_locked || you->trade._locked)
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_ALREADY_LOCKED));
 
         if (this->_selected == 0xFF)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_SELECTED));
@@ -353,6 +362,13 @@ void trade::assert_exchange(const trade& trade) const
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         throw std::runtime_error("owner is nullptr");
+
+    for (auto& [index, order] : this->_items)
+    {
+        auto item = owner->items[index];
+        if (item == nullptr || item->trade_count() == 0 || item->count() < item->trade_count())
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_FAILED));
+    }
 
     if (std::numeric_limits<uint64_t>::max() - trade.money() < owner->money())
         throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));

@@ -34,6 +34,12 @@ async::task<bool> item_combine<V>::handle(fb::socket<character>& session, game_r
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
+    if (ch->trade.trading())
+    {
+        ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
+        co_return true;
+    }
+
     if (request.indices.size() > CONTAINER_CAPACITY - 1)
         co_return false;
 
