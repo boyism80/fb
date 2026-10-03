@@ -93,15 +93,22 @@ async::task<void> queue::invoke(const std::vector<uint8_t>& message)
 
 void queue::invoke_async(const std::vector<uint8_t>& message)
 {
+    auto stream = fb::stream(message.data(), message.size());
+    auto reader = fb::stream_reader<>(stream);
+    auto opcode = reader.read<uint32_t>();
+    auto found  = this->_handler.find(opcode);
+    if (found == this->_handler.end())
+        return;
+
+    auto fn = found->second;
+
     auto target_thread = this->_threads.least_loaded();
     if (target_thread == nullptr)
     {
-        // Fallback to synchronous invoke if no thread available
         auto frame = fb::execution_context::create();
         frame->slot(fb::context::local::slot_id(), fb::context{.transaction_id = fb::mint_transaction_id()});
         fb::execution_context::pending(fb::execution_context::token(std::move(frame)));
-        async::awaitable_then(this->invoke(message), [](async::awaitable_result<void> result) {
-            // work done
+        async::awaitable_then(fn(message.data() + sizeof(uint32_t) * 2), [](async::awaitable_result<void> result) {
             try
             {
                 result();
@@ -118,13 +125,12 @@ void queue::invoke_async(const std::vector<uint8_t>& message)
     }
     else
     {
-        // Enqueue to the least loaded thread
         auto builder = target_thread->new_builder<void>();
         auto frame   = fb::execution_context::create();
         frame->slot(fb::context::local::slot_id(), fb::context{.transaction_id = fb::mint_transaction_id()});
         builder.context = fb::execution_context::token(std::move(frame));
-        builder.func    = [message, this](auto& thread) -> async::task<void> {
-            co_await this->invoke(message);
+        builder.func    = [message, fn](auto& thread) -> async::task<void> {
+            co_await fn(message.data() + sizeof(uint32_t) * 2);
         };
         builder.on_error = [](std::exception& e) {
             fb::logger::fatal("AMQP message processing error: {}", e.what());
