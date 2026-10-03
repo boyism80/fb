@@ -22,6 +22,12 @@ async::task<bool> item_drop_money<V>::handle(fb::socket<character>& session, gam
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
+    if (ch->trade.trading())
+    {
+        ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
+        co_return true;
+    }
+
     auto map = ch->map();
     if (map == nullptr)
         co_return false;

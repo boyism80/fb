@@ -106,12 +106,9 @@ void trade::end()
         this->_you.reset();
     }
 
-    this->_locked = false;
-    if (this->_money > 0)
-    {
-        owner->money_add(this->_money);
-        this->_money = 0;
-    }
+    // The offered money never left the owner's balance, so there is nothing to refund.
+    this->_locked   = false;
+    this->_money    = 0;
     this->_selected = 0xFF;
 
     for (auto& [index, order] : this->_items)
@@ -363,6 +360,10 @@ void trade::assert_exchange(const trade& trade) const
     if (owner == nullptr)
         throw std::runtime_error("owner is nullptr");
 
+    // The offer is not escrowed; it must still be fully covered at exchange time.
+    if (owner->money() < this->_money)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_ENOUGH_MONEY));
+
     for (auto& [index, order] : this->_items)
     {
         auto item = owner->items[index];
@@ -543,6 +544,8 @@ async::task<bool> trade::lock()
     }
     catch (std::exception& e)
     {
+        this->restore();
+        you->trade.restore();
         owner->listener.on_trade_failed(*owner, *you);
 
         this->end();
