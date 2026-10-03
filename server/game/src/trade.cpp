@@ -112,6 +112,7 @@ void trade::end()
         owner->money_add(this->_money);
         this->_money = 0;
     }
+    this->_selected = 0xFF;
 
     for (auto& [index, order] : this->_items)
     {
@@ -229,13 +230,19 @@ bool trade::count(uint16_t count)
         if (this->_selected == 0xFF)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_SELECTED));
 
-        auto  item  = owner->items[this->_selected];
+        auto item = owner->items[this->_selected];
+        if (item == nullptr)
+        {
+            this->_selected = 0xFF;
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_SELECTED));
+        }
+
         auto& model = item->model();
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE));
 
         auto remained = item->count() - item->trade_count();
-        if (remained < count)
+        if (count == 0 || remained < count)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_INVALID_COUNT));
 
         item->trade_count(item->trade_count() + count);
@@ -316,7 +323,8 @@ void trade::restore()
     }
     this->_items.clear();
 
-    this->_money = 0;
+    this->_money    = 0;
+    this->_selected = 0xFF;
     owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
