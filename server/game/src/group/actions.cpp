@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <exception>
 #include <format>
-#include <functional>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -57,7 +56,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/group/create",
-        internal_reqs::CreateGroup{world, fb::config<uint32_t>("host"), me.id, target_name_str});
+        internal_reqs::CreateGroup{world, fb::config<uint32_t>("id"), me.id, target_name_str});
     co_await this->_server.threads.switching(weak);
 
     auto members = std::map<uint32_t, std::string>{};
@@ -81,7 +80,7 @@ async::task<void> group::container::destroy(character& me)
     auto&& resp =
         co_await this->_server.http.post("internal",
                                          "/group/destroy",
-                                         internal_reqs::DestroyGroup{world, fb::config<uint32_t>("host"), me.name()});
+                                         internal_reqs::DestroyGroup{world, fb::config<uint32_t>("id"), me.name()});
     co_await this->_server.threads.switching(weak);
     co_await this->on_error(resp.error, resp.actor.name);
     co_await this->on_destroyed(resp.actor.name, resp.group_id);
@@ -114,7 +113,7 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/group/toggle",
-        internal_reqs::EnterGroup{world, fb::config<uint32_t>("host"), actor.id, target_name_str});
+        internal_reqs::EnterGroup{world, fb::config<uint32_t>("id"), actor.id, target_name_str});
     co_await this->_server.threads.switching(weak);
 
     auto target = std::string{};
@@ -159,7 +158,7 @@ async::task<void> group::container::leave_member(character& leaver)
     auto&& resp =
         co_await this->_server.http.post("internal",
                                          "/group/leave",
-                                         internal_reqs::LeaveGroup{world, fb::config<uint32_t>("host"), leaver.name()});
+                                         internal_reqs::LeaveGroup{world, fb::config<uint32_t>("id"), leaver.name()});
     co_await this->_server.threads.switching(weak);
 
     auto target = std::string{};
@@ -201,7 +200,7 @@ group::container::broadcast(uint32_t world, uint32_t group_id, std::string_view 
     auto&& resp        = co_await this->_server.http.post("internal",
                                                    "/group/broadcast",
                                                    internal_reqs::BroadcastGroup{world,
-                                                                                 fb::config<uint32_t>("host"),
+                                                                                 fb::config<uint32_t>("id"),
                                                                                  group_id,
                                                                                  message_str,
                                                                                  static_cast<uint8_t>(type)});
@@ -216,84 +215,53 @@ async::task<void> group::container::handle_action(character& actor, std::string_
     if (actor.option(OPTION::GROUP) == false)
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
-    using action_func = std::function<async::task<void>(character&, const std::string&)>;
-    auto action       = action_func();
+    auto self     = (actor.name() == target_name_str);
+    auto group_id = actor.group_id();
+    if (self && group_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
-    if (actor.name() == target_name_str)
+    auto is_master = false;
+    if (group_id.has_value())
     {
-        auto group_id = actor.group_id();
-        if (group_id.has_value() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
-
         auto actor_name = actor.name();
-        bool is_master  = false;
-        {
-            auto guard = this->try_enter_read(group_id.value());
-            if (guard.has_value() == false || guard->value() == nullptr)
-                throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
+        auto guard      = this->try_enter_read(group_id.value());
+        if (guard.has_value() == false || guard->value() == nullptr)
+            throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
 
-            is_master = (guard->value()->master() == actor_name);
-        }
-        action = [this, is_master](character& actor, const std::string&) -> async::task<void> {
+        is_master = (guard->value()->master() == actor_name);
+    }
+
+    co_await this->_server.threads.switching(weak);
+
+    auto error = std::optional<std::string>{};
+    try
+    {
+        if (self)
+        {
             if (is_master)
                 co_await this->destroy(actor);
             else
                 co_await this->leave_member(actor);
-        };
-    }
-    else
-    {
-        auto actor_group_id = actor.group_id();
-
-        if (actor_group_id.has_value() == false)
+        }
+        else if (group_id.has_value() == false)
         {
-            action = [this, target_name_str](character& actor, const std::string&) -> async::task<void> {
-                co_await this->create(actor, target_name_str);
-            };
+            co_await this->create(actor, target_name_str);
+        }
+        else if (is_master)
+        {
+            co_await this->toggle_member(actor, target_name_str);
         }
         else
         {
-            auto actor_group_id_value = actor_group_id.value();
-            auto actor_name           = actor.name();
-            bool is_master            = false;
-            {
-                auto guard = this->try_enter_read(actor_group_id_value);
-                if (guard.has_value() == false || guard->value() == nullptr)
-                    throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
-
-                is_master = (guard->value()->master() == actor_name);
-            }
-
-            action = [this, is_master, target_name_str, weak](character& actor,
-                                                              const std::string&) -> async::task<void> {
-                if (is_master == false)
-                {
-                    auto actor_ptr = weak.lock();
-                    if (actor_ptr != nullptr)
-                        actor_ptr->message(_TEXT(MESSAGE_GROUP_NOT_OWNER));
-
-                    co_return;
-                }
-
-                co_await this->toggle_member(actor, target_name_str);
-            };
+            if (weak.expired() == false)
+                actor.message(_TEXT(MESSAGE_GROUP_NOT_OWNER));
         }
     }
-
-    co_await this->_server.threads.switching(weak);
-    if (action)
+    catch (std::exception& e)
     {
-        auto error = std::optional<std::string>{};
-        try
-        {
-            co_await action(actor, target_name_str);
-        }
-        catch (std::exception& e)
-        {
-            error = e.what();
-        }
-
-        if (error.has_value() && weak.expired() == false)
-            actor.message(error.value(), MESSAGE_TYPE::STATE);
+        error = e.what();
     }
+
+    if (error.has_value() && weak.expired() == false)
+        actor.message(error.value(), MESSAGE_TYPE::STATE);
 }

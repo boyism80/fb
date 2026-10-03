@@ -76,14 +76,16 @@ async::task<void> castle::container::on_updated(const internal_resp::UpdatedCast
 async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
                                                const std::optional<uint32_t>&      winner_clan_id)
 {
-    auto id    = static_cast<uint32_t>(divine_beast);
-    auto guard = co_await this->enter_write(id);
-    if (guard.value() == nullptr)
-        co_return;
+    auto id             = static_cast<uint32_t>(divine_beast);
+    auto previous_owner = std::optional<uint32_t>{};
+    {
+        auto guard = co_await this->enter_write(id);
+        if (guard.value() == nullptr)
+            co_return;
 
-    auto& entity         = guard.value();
-    auto  previous_owner = entity->owner_clan_id();
-    entity->clear_siege();
+        previous_owner = guard.value()->owner_clan_id();
+        guard.value()->clear_siege();
+    }
 
     if (winner_clan_id.has_value() == false)
         co_return;
@@ -99,7 +101,7 @@ async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEA
         co_await this->_server.http.post("internal",
                                          "/castle/owner",
                                          fb::protocol::internal::request::SetCastleOwner{*world,
-                                                                                         fb::config<uint32_t>("host"),
+                                                                                         fb::config<uint32_t>("id"),
                                                                                          static_cast<uint8_t>(id),
                                                                                          winner_clan_id});
 
@@ -109,5 +111,7 @@ async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEA
         co_return;
     }
 
-    entity->owner_clan_id(resp.owner_clan_id);
+    auto guard = co_await this->enter_write(id);
+    if (guard.value() != nullptr)
+        guard.value()->owner_clan_id(resp.owner_clan_id);
 }
