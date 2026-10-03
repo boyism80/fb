@@ -1535,6 +1535,112 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     co_return exchange_result::ok;
 }
 
+async::task<bool> items::combine(const std::vector<uint8_t>& indices)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        co_return false;
+
+    // The recipe is matched against the selected slots only, so materials are consumed from those slots only.
+    // A repeated index would count the same stack twice.
+    auto selected = std::vector<uint8_t>();
+    auto dsl      = std::vector<fb::model::dsl::item>();
+    for (auto index : indices)
+    {
+        if (std::find(selected.begin(), selected.end(), index) != selected.end())
+            continue;
+
+        auto item = this->at(index);
+        if (item == nullptr)
+            continue;
+
+        selected.push_back(index);
+        dsl.push_back(fb::model::dsl::item(item->model().id, item->count(), std::nullopt, std::nullopt, 100.0));
+    }
+
+    auto found = table::recipe->find(dsl);
+    if (found == nullptr)
+    {
+        owner->message(_TEXT(MESSAGE_NO_RECIPE));
+        co_return false;
+    }
+
+    if (found->success.size() > this->free_size() + found->source.size())
+    {
+        owner->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+        co_return false;
+    }
+
+    // Source items are consumed regardless of success or failure.
+    for (auto& x : found->source)
+    {
+        auto params    = fb::model::dsl::item(x.params);
+        auto remaining = static_cast<uint32_t>(params.count);
+        for (auto index : selected)
+        {
+            if (remaining == 0)
+                break;
+
+            auto item = this->at(index);
+            if (item == nullptr || item->model().id != params.id)
+                continue;
+
+            auto count   = std::min<uint32_t>(item->count(), remaining);
+            auto removed = this->remove(index, static_cast<uint16_t>(count));
+            if (removed != nullptr)
+                co_await removed->destroy();
+            remaining -= count;
+        }
+    }
+
+    auto  success = (std::rand() % 100) < found->percent;
+    auto& result  = success ? found->success : found->failed;
+    for (auto& x : result)
+    {
+        auto  params     = fb::model::dsl::item(x.params);
+        auto  item_table = table::item;
+        auto& model      = item_table[params.id];
+        auto  remain     = params.count;
+        while (remain > 0)
+        {
+            auto count   = std::min<uint16_t>(model.capacity, remain);
+            auto made    = model.make(owner->server, count);
+            std::ignore  = co_await this->add(made);
+            remain      -= count;
+        }
+    }
+
+    owner->message(success ? _TEXT(MESSAGE_MIX_SUCCESS) : _TEXT(MESSAGE_MIX_FAILED));
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
+    log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
+    log_data["success"]        = success;
+    auto source_items          = Json::Value(Json::arrayValue);
+    for (auto& x : found->source)
+    {
+        auto params          = fb::model::dsl::item(x.params);
+        auto item_data       = Json::Value();
+        item_data["item_id"] = static_cast<Json::Int64>(params.id);
+        item_data["count"]   = static_cast<Json::Int64>(params.count);
+        source_items.append(item_data);
+    }
+    log_data["source_items"] = source_items;
+    auto result_items        = Json::Value(Json::arrayValue);
+    for (auto& x : result)
+    {
+        auto params          = fb::model::dsl::item(x.params);
+        auto item_data       = Json::Value();
+        item_data["item_id"] = static_cast<Json::Int64>(params.id);
+        item_data["count"]   = static_cast<Json::Int64>(params.count);
+        result_items.append(item_data);
+    }
+    log_data["result_items"] = result_items;
+    owner->server.log.write("item_combine", log_data);
+
+    co_return true;
+}
+
 std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> items::equipments() const
 {
     return std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>>{
