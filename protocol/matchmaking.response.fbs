@@ -2,19 +2,19 @@ include "matchmaking.fbs";
 
 namespace fb.protocol.matchmaking.response;
 
-table Register {
-    registry_id: string;
+table Enqueue {
+    ticket_id: ulong;
     error: uint;
 }
 
-table Unregister {
+table Dequeue {
     success: bool;
     error: uint;
 }
 
 table Confirm {
     error: uint;
-    match_finalized: bool;
+    match_ready: bool;
 }
 
 table Decline {
@@ -22,10 +22,10 @@ table Decline {
 }
 
 table Status {
-    in_queue: bool;
+    queued: bool;
     match_type: uint;
-    registry_id: string;
-    pending_match_id: string;
+    ticket_id: ulong;
+    pending_match_id: ulong;
     confirm_deadline: string;
     error: uint;
 }

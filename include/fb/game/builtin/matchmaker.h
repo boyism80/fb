@@ -9,11 +9,11 @@ struct matchmaker
 {
     static int builtin_mu(lua_State* L);
     static int builtin_sigma(lua_State* L);
-    static int builtin_registered(lua_State* L);
-    static int builtin_registry_id(lua_State* L);
+    static int builtin_queued(lua_State* L);
+    static int builtin_ticket_id(lua_State* L);
     static int builtin_pending_match_id(lua_State* L);
-    static int builtin_register(lua_State* L);
-    static int builtin_unregister(lua_State* L);
+    static int builtin_enqueue(lua_State* L);
+    static int builtin_dequeue(lua_State* L);
     static int builtin_confirm(lua_State* L);
     static int builtin_decline(lua_State* L);
 };

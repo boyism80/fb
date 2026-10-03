@@ -1656,7 +1656,7 @@ int builtin::server::builtin_match_transfer(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto match_id = std::string(lua->tostring(1));
+    auto match_id = lua->touint64(1);
     if (!fb::config<std::optional<uint32_t>>("world"))
     {
         lua->pushnil();

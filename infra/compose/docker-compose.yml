@@ -173,6 +173,8 @@ services:
         BUILD_TYPE: ${BUILD_TYPE:-Release}
         DATA_IMAGE: fb/data:local
     depends_on:
+      redis:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     environment:

@@ -37,8 +37,9 @@ public class Program
         });
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<RedisService>();
+        builder.Services.AddSingleton<ServerStateService>();
         builder.Services.AddSingleton<CharacterMatchMaker>();
-        builder.Services.AddSingleton<MatchMaker<CharacterRegistryEntry>>(sp => sp.GetRequiredService<CharacterMatchMaker>());
+        builder.Services.AddSingleton<MatchMaker<CharacterTicketMember>>(sp => sp.GetRequiredService<CharacterMatchMaker>());
         builder.Services.AddHostedService<MatchmakingBackgroundService>();
         builder.Services.AddHostedService<MatchConfirmationBackgroundService>();
         builder.Services.AddAmqpListener<ReloadTablesHandler>();

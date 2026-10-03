@@ -7,11 +7,11 @@ public sealed class MatchConfirmationBackgroundService : BackgroundService
 {
     private const int HeartbeatSeconds = 30;
 
-    private readonly MatchMaker<CharacterRegistryEntry> _matchMaker;
+    private readonly MatchMaker<CharacterTicketMember> _matchMaker;
     private readonly ILogger<MatchConfirmationBackgroundService> _logger;
 
     public MatchConfirmationBackgroundService(
-        MatchMaker<CharacterRegistryEntry> matchMaker,
+        MatchMaker<CharacterTicketMember> matchMaker,
         ILogger<MatchConfirmationBackgroundService> logger)
     {
         _matchMaker = matchMaker;

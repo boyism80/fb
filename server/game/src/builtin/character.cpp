@@ -3906,17 +3906,15 @@ int builtin::character::builtin_transfer_to(lua_State* L)
     lua_getfield(*lua, 5, "match_type");
     if (lua->is_nil(-2) == false || lua->is_nil(-1) == false)
     {
-        if (lua->is_string(-2) == false || lua->is_number(-1) == false)
+        if (lua->is_number(-2) == false || lua->is_number(-1) == false)
             throw std::runtime_error("transfer_to requires match_id and match_type together");
 
-        auto match_id   = lua->tostring(-2);
+        auto match_id   = lua->touint64(-2);
         auto match_type = static_cast<uint32_t>(lua->tointeger(-1));
         lua->remove(-1);
         lua->remove(-1);
-        if (match_id.empty() || match_type == 0)
+        if (match_id == 0 || match_type == 0)
             throw std::runtime_error("transfer_to requires match_id and match_type together");
-        if (match_id.size() > fb::game::transfer_match::MAX_ID_SIZE)
-            throw std::runtime_error("transfer_to match_id is too long");
 
         auto type_enum = static_cast<MATCH_TYPE>(match_type);
         if (table::matchmaking->contains(type_enum) == false)
@@ -3938,7 +3936,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         if (params.bottom > params.y)
             position.y = random<uint16_t>(params.y, params.bottom);
 
-        option.match = fb::game::transfer_match{.id = std::move(match_id), .type = match_type};
+        option.match = fb::game::transfer_match{.id = match_id, .type = match_type};
 
         lua_getfield(*lua, 5, "match_team");
         if (lua->is_nil(-1) == false)

@@ -866,7 +866,7 @@ return {
         goto BIRTHDAY_MUST_SET
     end,
 
-    on_matchmaking_register = function(me, match_type, registry_id)
+    on_matchmaking_enqueue = function(me, match_type, ticket_id)
         local state = matchmaking_state(me)
         local now_ts = now()
         state.queue_started_at = now_ts
@@ -875,7 +875,7 @@ return {
         me:message(string.format('매치메이킹 대기를 시작했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
     end,
 
-    on_matchmaking_unregister = function(me, match_type, registry_id)
+    on_matchmaking_dequeue = function(me, match_type, ticket_id)
         matchmaking_clear_timer(me)
         matchmaking_clear_state(me)
         me:message(string.format('매치메이킹 대기를 취소했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)

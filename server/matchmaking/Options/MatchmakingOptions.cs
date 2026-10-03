@@ -19,6 +19,6 @@ public class MatchmakingOptions
     /// <summary>Effective-Mu span per bucket index (e.g. 1.0 or 0.5).</summary>
     public double SkillBucketWidth { get; set; } = 1.0;
 
-    /// <summary>Seconds for all registry entries to confirm after match creation.</summary>
+    /// <summary>Seconds for all ticket members to confirm after match creation.</summary>
     public int ConfirmTimeoutSeconds { get; set; } = 30;
 }

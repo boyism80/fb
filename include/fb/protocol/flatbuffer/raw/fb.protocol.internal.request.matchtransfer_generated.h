@@ -27,13 +27,12 @@ struct MatchTransfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_MATCH_ID = 4
   };
-  const ::flatbuffers::String *match_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_MATCH_ID);
+  uint64_t match_id() const {
+    return GetField<uint64_t>(VT_MATCH_ID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_MATCH_ID) &&
-           verifier.VerifyString(match_id()) &&
+           VerifyField<uint64_t>(verifier, VT_MATCH_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -42,8 +41,8 @@ struct MatchTransferBuilder {
   typedef MatchTransfer Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_match_id(::flatbuffers::Offset<::flatbuffers::String> match_id) {
-    fbb_.AddOffset(MatchTransfer::VT_MATCH_ID, match_id);
+  void add_match_id(uint64_t match_id) {
+    fbb_.AddElement<uint64_t>(MatchTransfer::VT_MATCH_ID, match_id, 0);
   }
   explicit MatchTransferBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -58,19 +57,10 @@ struct MatchTransferBuilder {
 
 inline ::flatbuffers::Offset<MatchTransfer> CreateMatchTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> match_id = 0) {
+    uint64_t match_id = 0) {
   MatchTransferBuilder builder_(_fbb);
   builder_.add_match_id(match_id);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<MatchTransfer> CreateMatchTransferDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *match_id = nullptr) {
-  auto match_id__ = match_id ? _fbb.CreateString(match_id) : 0;
-  return fb::protocol::internal::request::raw::CreateMatchTransfer(
-      _fbb,
-      match_id__);
 }
 
 inline const fb::protocol::internal::request::raw::MatchTransfer *GetMatchTransfer(const void *buf) {

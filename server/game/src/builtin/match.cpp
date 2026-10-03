@@ -40,7 +40,7 @@ int builtin::match::builtin_id(lua_State* L)
     if (session == nullptr)
         return 0;
 
-    lua->pushstring(session->id());
+    lua->pushinteger(static_cast<lua_Integer>(session->id()));
     return 1;
 }
 

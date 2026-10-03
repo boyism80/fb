@@ -153,25 +153,6 @@ namespace Http.Service
                 .ToList();
         }
 
-        public async Task<ServerInfo> PickLiveCrossServer(string matchId)
-        {
-            var ordered = (await ListLiveCrossServers())
-                .OrderBy(s => s.Id)
-                .ToList();
-            if (ordered.Count == 0)
-                return null;
-
-            if (string.IsNullOrEmpty(matchId))
-                return ordered[0];
-
-            ulong hash = 0;
-            foreach (var ch in matchId)
-            {
-                hash = hash * 31 + ch;
-            }
-            return ordered[(int)(hash % (ulong)ordered.Count)];
-        }
-
         public class HostConfig
         {
             [JsonProperty("Name")]

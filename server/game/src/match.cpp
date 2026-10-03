@@ -1,5 +1,6 @@
 #include <fb/game/match.h>
 
+#include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/map.h>
 #include <fb/game/object.h>
@@ -16,6 +17,7 @@
 #include <format>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -27,15 +29,15 @@ using namespace fb::game;
 using namespace std::chrono_literals;
 using table = fb::model::table;
 
-match::match(server& server, std::string id, uint32_t type, uint32_t slot, uint32_t expected) :
+match::match(server& server, uint64_t id, uint32_t type, uint32_t slot, uint32_t expected) :
     _server(server),
-    _id(std::move(id)),
+    _id(id),
     _type(type),
     _slot(slot),
     _expected(expected)
 { }
 
-const std::string& match::id() const
+uint64_t match::id() const
 {
     return this->_id;
 }
@@ -665,10 +667,15 @@ match::container::container(server& server) :
     _server(server)
 { }
 
-async::task<void> match::container::join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team)
+async::task<void> match::container::join(character& ch, uint64_t match_id, uint32_t match_type, uint32_t team)
 {
-    if (match_id.empty())
+    if (match_id == 0)
         co_return;
+
+    // Every player of a match must land on the host pinned at formation, or the match splits across hosts.
+    auto host = static_cast<uint8_t>((match_id >> match::ID_HOST_SHIFT) & 0xFF);
+    if (host != fb::config<uint8_t>("id"))
+        throw std::runtime_error(std::format("match {} belongs to host {}", match_id, host));
 
     auto current = ch.match();
     if (current != nullptr && current->id() == match_id)
@@ -678,9 +685,8 @@ async::task<void> match::container::join(character& ch, std::string_view match_i
 
     auto session = std::shared_ptr<match>{};
     {
-        auto key  = std::string(match_id);
         auto lock = std::lock_guard(this->_mutex);
-        auto it   = this->_sessions.find(key);
+        auto it   = this->_sessions.find(match_id);
         if (it != this->_sessions.end())
         {
             session = it->second;
@@ -701,8 +707,8 @@ async::task<void> match::container::join(character& ch, std::string_view match_i
             if (slot == 0)
                 slot = this->_next_slot++;
 
-            session = std::make_shared<match>(this->_server, key, match_type, slot, expected);
-            this->_sessions.emplace(key, session);
+            session = std::make_shared<match>(this->_server, match_id, match_type, slot, expected);
+            this->_sessions.emplace(match_id, session);
         }
     }
 
@@ -719,8 +725,8 @@ void match::container::leave(character& ch)
     session->leave(ch);
 }
 
-void match::container::remove(std::string_view match_id)
+void match::container::remove(uint64_t match_id)
 {
     auto lock = std::lock_guard(this->_mutex);
-    this->_sessions.erase(std::string(match_id));
+    this->_sessions.erase(match_id);
 }

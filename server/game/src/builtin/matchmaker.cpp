@@ -16,11 +16,11 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(matchmaker, "fb.game.matchmaker")
 {"mu",                 builtin::matchmaker::builtin_mu},
 {"sigma",              builtin::matchmaker::builtin_sigma},
-{"registered",         builtin::matchmaker::builtin_registered},
-{"registry_id",        builtin::matchmaker::builtin_registry_id},
+{"queued",             builtin::matchmaker::builtin_queued},
+{"ticket_id",          builtin::matchmaker::builtin_ticket_id},
 {"pending_match_id",   builtin::matchmaker::builtin_pending_match_id},
-{"register",           builtin::matchmaker::builtin_register},
-{"unregister",         builtin::matchmaker::builtin_unregister},
+{"enqueue",            builtin::matchmaker::builtin_enqueue},
+{"dequeue",            builtin::matchmaker::builtin_dequeue},
 {"confirm",            builtin::matchmaker::builtin_confirm},
 {"decline",            builtin::matchmaker::builtin_decline},
 END_LUA_EXTENSION; // clang-format on
@@ -95,7 +95,7 @@ int builtin::matchmaker::builtin_sigma(lua_State* L)
     return builder.run();
 }
 
-int builtin::matchmaker::builtin_registered(lua_State* L)
+int builtin::matchmaker::builtin_queued(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -105,26 +105,26 @@ int builtin::matchmaker::builtin_registered(lua_State* L)
     if (mm == nullptr)
         return 0;
 
-    auto weak       = mm->owner.weak_from_this_as<fb::game::character>();
-    auto registered = std::make_shared<bool>(false);
-    auto builder    = lua->new_co_builder();
-    builder.weak    = weak;
-    builder.yield   = [=]() -> async::task<void> {
+    auto weak     = mm->owner.weak_from_this_as<fb::game::character>();
+    auto queued   = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         auto self = weak.lock();
         if (self == nullptr)
             co_return;
 
-        *registered = self->matchmaker.registered();
+        *queued = self->matchmaker.queued();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*registered);
+        lua->pushboolean(*queued);
         co_return 1;
     };
     return builder.run();
 }
 
-int builtin::matchmaker::builtin_registry_id(lua_State* L)
+int builtin::matchmaker::builtin_ticket_id(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -134,23 +134,21 @@ int builtin::matchmaker::builtin_registry_id(lua_State* L)
     if (mm == nullptr)
         return 0;
 
-    auto weak        = mm->owner.weak_from_this_as<fb::game::character>();
-    auto registry_id = std::make_shared<std::optional<std::string>>();
-    auto builder     = lua->new_co_builder();
-    builder.weak     = weak;
-    builder.yield    = [=]() -> async::task<void> {
+    auto weak      = mm->owner.weak_from_this_as<fb::game::character>();
+    auto ticket_id = std::make_shared<std::optional<uint64_t>>();
+    auto builder   = lua->new_co_builder();
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
         auto self = weak.lock();
         if (self == nullptr)
             co_return;
 
-        auto id = self->matchmaker.registry_id();
-        if (id.has_value())
-            registry_id->emplace(id.value());
+        *ticket_id = self->matchmaker.ticket_id();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        if (registry_id->has_value())
-            lua->pushstring(registry_id->value());
+        if (ticket_id->has_value())
+            lua->pushinteger(static_cast<lua_Integer>(ticket_id->value()));
         else
             lua->pushnil();
         co_return 1;
@@ -169,7 +167,7 @@ int builtin::matchmaker::builtin_pending_match_id(lua_State* L)
         return 0;
 
     auto weak             = mm->owner.weak_from_this_as<fb::game::character>();
-    auto pending_match_id = std::make_shared<std::optional<std::string>>();
+    auto pending_match_id = std::make_shared<std::optional<uint64_t>>();
     auto builder          = lua->new_co_builder();
     builder.weak          = weak;
     builder.yield         = [=]() -> async::task<void> {
@@ -177,14 +175,12 @@ int builtin::matchmaker::builtin_pending_match_id(lua_State* L)
         if (self == nullptr)
             co_return;
 
-        auto& id = self->matchmaker.pending_match_id();
-        if (id.has_value())
-            pending_match_id->emplace(*id);
+        *pending_match_id = self->matchmaker.pending_match_id();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
         if (pending_match_id->has_value())
-            lua->pushstring(pending_match_id->value().c_str());
+            lua->pushinteger(static_cast<lua_Integer>(pending_match_id->value()));
         else
             lua->pushnil();
         co_return 1;
@@ -192,7 +188,7 @@ int builtin::matchmaker::builtin_pending_match_id(lua_State* L)
     return builder.run();
 }
 
-int builtin::matchmaker::builtin_register(lua_State* L)
+int builtin::matchmaker::builtin_enqueue(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -214,7 +210,7 @@ int builtin::matchmaker::builtin_register(lua_State* L)
 
         try
         {
-            co_await self->matchmaker.register_queue(match_type);
+            co_await self->matchmaker.enqueue(match_type);
         }
         catch (const std::exception& e)
         {
@@ -231,7 +227,7 @@ int builtin::matchmaker::builtin_register(lua_State* L)
     return builder.run();
 }
 
-int builtin::matchmaker::builtin_unregister(lua_State* L)
+int builtin::matchmaker::builtin_dequeue(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -252,7 +248,7 @@ int builtin::matchmaker::builtin_unregister(lua_State* L)
 
         try
         {
-            co_await self->matchmaker.unregister_queue(false);
+            co_await self->matchmaker.dequeue(fb::game::matchmaker::initiator::USER);
         }
         catch (const std::exception& e)
         {
@@ -288,17 +284,16 @@ int builtin::matchmaker::builtin_confirm(lua_State* L)
         if (self == nullptr)
             co_return;
 
-        auto& pending = self->matchmaker.pending_match_id();
-        if (!pending.has_value() || pending->empty())
+        auto pending = self->matchmaker.pending_match_id();
+        if (pending.has_value() == false)
         {
             *error = "no pending match to confirm";
             co_return;
         }
 
-        auto match_id = *pending;
         try
         {
-            co_await self->matchmaker.confirm_queue(std::move(match_id), false);
+            co_await self->matchmaker.confirm(pending.value());
         }
         catch (const std::exception& e)
         {
@@ -334,17 +329,16 @@ int builtin::matchmaker::builtin_decline(lua_State* L)
         if (self == nullptr)
             co_return;
 
-        auto& pending = self->matchmaker.pending_match_id();
-        if (!pending.has_value() || pending->empty())
+        auto pending = self->matchmaker.pending_match_id();
+        if (pending.has_value() == false)
         {
             *error = "no pending match to decline";
             co_return;
         }
 
-        auto match_id = *pending;
         try
         {
-            co_await self->matchmaker.decline_queue(std::move(match_id), false);
+            co_await self->matchmaker.decline(pending.value(), fb::game::matchmaker::initiator::USER);
         }
         catch (const std::exception& e)
         {

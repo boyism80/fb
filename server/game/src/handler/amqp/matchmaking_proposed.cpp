@@ -9,10 +9,10 @@
 using namespace fb::game::handler::amqp;
 
 matchmaking_proposed::matchmaking_proposed(fb::game::server& server) :
-    fb::handler::amqp<fb::game::server, fb::protocol::matchmaking::mq::Proposed>(server)
+    fb::handler::amqp<fb::game::server, fb::protocol::matchmaking::mq::MatchProposed>(server)
 { }
 
-async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::mq::Proposed& message)
+async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::mq::MatchProposed& message)
 {
     auto match_id         = message.match_id;
     auto match_type       = message.match_type;
@@ -20,20 +20,20 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
 
     for (auto& team : message.teams)
     {
-        for (auto& registry : team.registries)
+        for (auto& ticket : team.tickets)
         {
-            for (auto& entry : registry.entries)
+            for (auto& member : ticket.members)
             {
-                auto ch = this->server.characters.find(entry.character_id);
+                auto ch = this->server.characters.find(member.character_id);
                 if (ch == nullptr)
                     continue;
 
                 auto weak    = ch->weak_from_this_as<character>();
                 auto builder = this->server.threads.new_builder(weak);
                 builder.func = [ch, match_id, match_type, confirm_deadline](auto&) -> async::task<void> {
-                    if (ch->matchmaker.registered() == false)
+                    if (ch->matchmaker.queued() == false)
                     {
-                        co_await ch->matchmaker.decline_queue(match_id, true);
+                        co_await ch->matchmaker.decline(match_id, fb::game::matchmaker::initiator::SERVER);
                         co_return;
                     }
 
@@ -43,7 +43,7 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                     if (lua)
                     {
                         lua->pushobject(ch);
-                        lua->pushstring(match_id.c_str());
+                        lua->pushinteger(static_cast<lua_Integer>(match_id));
                         lua->pushinteger(match_type);
                         lua->pushstring(confirm_deadline.c_str());
                         std::ignore = co_await lua->call(4);

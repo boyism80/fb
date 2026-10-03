@@ -8,10 +8,10 @@ using Microsoft.Extensions.Options;
 
 namespace Matchmaking.Services;
 
-public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
+public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
 {
-    private const byte RegistryOutcomeExcluded = 0;
-    private const byte RegistryOutcomeRequeued = 1;
+    private const byte TicketOutcomeExcluded = 0;
+    private const byte TicketOutcomeRequeued = 1;
 
     private readonly RabbitMqService _rabbitMqService;
     private readonly IMapper _mapper;
@@ -31,90 +31,110 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         MatchProposed += OnMatchProposedAsync;
         MatchReady += OnMatchReadyAsync;
         MatchDissolved += OnMatchDissolvedAsync;
+        TicketRemoved += OnTicketRemovedAsync;
     }
 
     private async Task OnMatchProposedAsync(
-        ProposedMatchResult<CharacterRegistryEntry> args,
+        ProposedMatchResult<CharacterTicketMember> args,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Match {MatchId} awaiting confirmation for match type {MatchType}, deadline {ConfirmDeadline}, entries {Entries}",
-            args.Match.MatchId,
-            args.Match.MatchType,
+            "Match {MatchId} awaiting confirmation for match type {MatchType}, deadline {ConfirmDeadline}, members {Members}",
+            args.Match.Id,
+            args.Match.Type,
             args.ConfirmDeadline,
-            string.Join(",", args.Match.AllEntryIds));
+            string.Join(",", args.Match.AllMemberIds));
 
-        var message = new fb.protocol.matchmaking.mq.Proposed
+        var message = new fb.protocol.matchmaking.mq.MatchProposed
         {
-            MatchId = args.Match.MatchId.ToString(),
-            MatchType = args.Match.MatchType,
+            MatchId = args.Match.Id,
+            MatchType = args.Match.Type,
             ConfirmDeadline = args.ConfirmDeadline.ToString("yyyy-MM-dd HH:mm:ss"),
             Teams = BuildTeams(args.Match)
         };
 
-        await PublishToWorldsAsync(args.Match, message, cancellationToken);
+        await PublishToWorldsAsync(args.Match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken);
     }
 
     private async Task OnMatchReadyAsync(
-        Match<CharacterRegistryEntry> match,
+        Match<CharacterTicketMember> match,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Match {MatchId} finalized for match type {MatchType}, entries {Entries}",
-            match.MatchId,
-            match.MatchType,
-            string.Join(",", match.AllEntryIds));
+            "Match {MatchId} ready for match type {MatchType}, members {Members}",
+            match.Id,
+            match.Type,
+            string.Join(",", match.AllMemberIds));
 
-        var message = new fb.protocol.matchmaking.mq.Ready
+        var message = new fb.protocol.matchmaking.mq.MatchReady
         {
-            MatchId = match.MatchId.ToString(),
-            MatchType = match.MatchType,
+            MatchId = match.Id,
+            MatchType = match.Type,
             Teams = BuildTeams(match)
         };
 
-        await PublishToWorldsAsync(match, message, cancellationToken);
+        await PublishToWorldsAsync(match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken);
     }
 
     private async Task OnMatchDissolvedAsync(
-        DissolvedMatchResult<CharacterRegistryEntry> result,
+        DissolvedMatchResult<CharacterTicketMember> result,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Match {MatchId} dissolved due to {Reason}, outcomes {Outcomes}",
-            result.Match.MatchId,
+            result.Match.Id,
             result.Reason,
             string.Join(
                 " | ",
                 result.Outcomes.Select(outcome => string.Format(
                     "{0}={1} [{2}]",
-                    outcome.RegistryId,
+                    outcome.TicketId,
                     outcome.Requeued ? "requeued" : "dropped",
-                    string.Join(",", outcome.Entries.Select(entry => entry.EntryId))))));
+                    string.Join(",", outcome.Members.Select(member => member.MemberId))))));
 
-        var message = new fb.protocol.matchmaking.mq.Dissolved
+        var message = new fb.protocol.matchmaking.mq.MatchDissolved
         {
-            MatchId = result.Match.MatchId.ToString(),
-            MatchType = result.Match.MatchType,
+            MatchId = result.Match.Id,
+            MatchType = result.Match.Type,
             Reason = (byte)result.Reason,
-            RegistryOutcomes = result.Outcomes.Select(outcome => new fb.protocol.matchmaking.RegistryOutcomeEntry
+            TicketOutcomes = result.Outcomes.Select(outcome => new fb.protocol.matchmaking.TicketOutcome
             {
-                RegistryId = outcome.RegistryId.ToString(),
-                Outcome = outcome.Requeued ? RegistryOutcomeRequeued : RegistryOutcomeExcluded,
-                Entries = _mapper.Map<List<fb.protocol.matchmaking.RegistryEntry>>(outcome.Entries)
+                TicketId = outcome.TicketId,
+                Outcome = outcome.Requeued ? TicketOutcomeRequeued : TicketOutcomeExcluded,
+                Members = _mapper.Map<List<fb.protocol.matchmaking.TicketMember>>(outcome.Members)
             }).ToList()
         };
 
-        await PublishToWorldsAsync(result.Match, message, cancellationToken);
+        await PublishToWorldsAsync(result.Match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken);
+    }
+
+    private async Task OnTicketRemovedAsync(
+        Ticket<CharacterTicketMember> ticket,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation(
+            "Ticket {TicketId} of match type {MatchType} removed, notifying members {Members}",
+            ticket.Id,
+            ticket.MatchType,
+            string.Join(",", ticket.Members.Select(member => member.MemberId)));
+
+        var message = new fb.protocol.matchmaking.mq.TicketRemoved
+        {
+            MatchType = ticket.MatchType,
+            TicketId = ticket.Id,
+            Members = _mapper.Map<List<fb.protocol.matchmaking.TicketMember>>(ticket.Members)
+        };
+
+        await PublishToWorldsAsync(ticket.Members, message, cancellationToken);
     }
 
     private async Task PublishToWorldsAsync(
-        Match<CharacterRegistryEntry> match,
+        IEnumerable<CharacterTicketMember> members,
         IFlatBufferEx message,
         CancellationToken cancellationToken)
     {
-        var worlds = match.AllRegistries
-            .SelectMany(registry => registry.Entries)
-            .Select(entry => entry.World)
+        var worlds = members
+            .Select(member => member.World)
             .Distinct();
 
         foreach (var world in worlds)
@@ -139,11 +159,11 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         }
     }
 
-    private List<fb.protocol.matchmaking.MatchTeam> BuildTeams(Match<CharacterRegistryEntry> match)
+    private List<fb.protocol.matchmaking.MatchTeam> BuildTeams(Match<CharacterTicketMember> match)
     {
         return match.Teams.Select(team => new fb.protocol.matchmaking.MatchTeam
         {
-            Registries = _mapper.Map<List<fb.protocol.matchmaking.MatchRegistry>>(team.ToList())
+            Tickets = _mapper.Map<List<fb.protocol.matchmaking.Ticket>>(team.ToList())
         }).ToList();
     }
 }

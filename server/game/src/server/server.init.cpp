@@ -297,6 +297,7 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(fb::amqp_key("matchmaking", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(fb::amqp_key("matchmaking", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(fb::amqp_key("matchmaking", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ticket_removed>(fb::amqp_key("matchmaking", scope));
 
     if (fb::config<std::optional<uint32_t>>("world"))
     {

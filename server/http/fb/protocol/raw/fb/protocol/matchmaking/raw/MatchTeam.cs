@@ -20,23 +20,23 @@ public struct MatchTeam : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public MatchTeam __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public fb.protocol.matchmaking.raw.MatchRegistry? Registries(int j) { int o = __p.__offset(4); return o != 0 ? (fb.protocol.matchmaking.raw.MatchRegistry?)(new fb.protocol.matchmaking.raw.MatchRegistry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int RegistriesLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.matchmaking.raw.Ticket? Tickets(int j) { int o = __p.__offset(4); return o != 0 ? (fb.protocol.matchmaking.raw.Ticket?)(new fb.protocol.matchmaking.raw.Ticket()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int TicketsLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol.matchmaking.raw.MatchTeam> CreateMatchTeam(FlatBufferBuilder builder,
-      VectorOffset registriesOffset = default(VectorOffset)) {
+      VectorOffset ticketsOffset = default(VectorOffset)) {
     builder.StartTable(1);
-    MatchTeam.AddRegistries(builder, registriesOffset);
+    MatchTeam.AddTickets(builder, ticketsOffset);
     return MatchTeam.EndMatchTeam(builder);
   }
 
   public static void StartMatchTeam(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddRegistries(FlatBufferBuilder builder, VectorOffset registriesOffset) { builder.AddOffset(0, registriesOffset.Value, 0); }
-  public static VectorOffset CreateRegistriesVector(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.MatchRegistry>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateRegistriesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.MatchRegistry>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateRegistriesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.matchmaking.raw.MatchRegistry>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateRegistriesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.matchmaking.raw.MatchRegistry>>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartRegistriesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddTickets(FlatBufferBuilder builder, VectorOffset ticketsOffset) { builder.AddOffset(0, ticketsOffset.Value, 0); }
+  public static VectorOffset CreateTicketsVector(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.Ticket>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateTicketsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.Ticket>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateTicketsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.matchmaking.raw.Ticket>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateTicketsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.matchmaking.raw.Ticket>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartTicketsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol.matchmaking.raw.MatchTeam> EndMatchTeam(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.matchmaking.raw.MatchTeam>(o);
@@ -51,7 +51,7 @@ static public class MatchTeamVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyVectorOfTables(tablePos, 4 /*Registries*/, fb.protocol.matchmaking.raw.MatchRegistryVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 4 /*Tickets*/, fb.protocol.matchmaking.raw.TicketVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

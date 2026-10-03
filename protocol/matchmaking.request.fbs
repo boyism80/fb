@@ -2,26 +2,26 @@ include "matchmaking.fbs";
 
 namespace fb.protocol.matchmaking.request;
 
-table Register {
+table Enqueue {
     match_type: uint;
-    entries: [fb.protocol.matchmaking.RegistryEntry];
+    members: [fb.protocol.matchmaking.TicketMember];
 }
 
-table Unregister {
+table Dequeue {
     match_type: uint;
-    registry_id: string;
+    ticket_id: ulong;
     world: uint;
     character_id: uint;
 }
 
 table Confirm {
-    match_id: string;
+    match_id: ulong;
     world: uint;
     character_id: uint;
 }
 
 table Decline {
-    match_id: string;
+    match_id: ulong;
     world: uint;
     character_id: uint;
 }

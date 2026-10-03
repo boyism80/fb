@@ -13,7 +13,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.matchmaking.matchregistry_generated.h"
+#include "fb.protocol.matchmaking.ticket_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -26,16 +26,16 @@ struct MatchTeamBuilder;
 struct MatchTeam FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef MatchTeamBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_REGISTRIES = 4
+    VT_TICKETS = 4
   };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchRegistry>> *registries() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchRegistry>> *>(VT_REGISTRIES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::Ticket>> *tickets() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::Ticket>> *>(VT_TICKETS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_REGISTRIES) &&
-           verifier.VerifyVector(registries()) &&
-           verifier.VerifyVectorOfTables(registries()) &&
+           VerifyOffset(verifier, VT_TICKETS) &&
+           verifier.VerifyVector(tickets()) &&
+           verifier.VerifyVectorOfTables(tickets()) &&
            verifier.EndTable();
   }
 };
@@ -44,8 +44,8 @@ struct MatchTeamBuilder {
   typedef MatchTeam Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_registries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchRegistry>>> registries) {
-    fbb_.AddOffset(MatchTeam::VT_REGISTRIES, registries);
+  void add_tickets(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::Ticket>>> tickets) {
+    fbb_.AddOffset(MatchTeam::VT_TICKETS, tickets);
   }
   explicit MatchTeamBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -60,19 +60,19 @@ struct MatchTeamBuilder {
 
 inline ::flatbuffers::Offset<MatchTeam> CreateMatchTeam(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchRegistry>>> registries = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::Ticket>>> tickets = 0) {
   MatchTeamBuilder builder_(_fbb);
-  builder_.add_registries(registries);
+  builder_.add_tickets(tickets);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<MatchTeam> CreateMatchTeamDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchRegistry>> *registries = nullptr) {
-  auto registries__ = registries ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchRegistry>>(*registries) : 0;
+    const std::vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::Ticket>> *tickets = nullptr) {
+  auto tickets__ = tickets ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::Ticket>>(*tickets) : 0;
   return fb::protocol::matchmaking::raw::CreateMatchTeam(
       _fbb,
-      registries__);
+      tickets__);
 }
 
 inline const fb::protocol::matchmaking::raw::MatchTeam *GetMatchTeam(const void *buf) {

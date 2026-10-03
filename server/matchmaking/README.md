@@ -4,7 +4,7 @@
 
 The matchmaking server is a standalone ASP.NET Core HTTP service, structurally aligned with `internal` and `marketplace`. It is **not world-scoped**: queue state and matching logic operate on a single global namespace.
 
-Naming is fixed as **`MatchMaker`**, **`RegistryQueue`**, **`Registry`**, **`IRegistryEntry`**.
+Naming is fixed as **`MatchMaker`**, **`TicketQueue`**, **`Ticket`**, **`ITicketMember`**.
 
 ---
 
@@ -12,7 +12,7 @@ Naming is fixed as **`MatchMaker`**, **`RegistryQueue`**, **`Registry`**, **`IRe
 
 ### Goals
 
-- `MatchMaker.Register` and `RegistryQueue.TryFormMatch`
+- `MatchMaker.EnqueueAsync` and `TicketQueue.TryFormMatch`
 - Queue rules from config (`EntriesPerTeam`, `TeamsPerMatch`, tolerance, bucket width)
 - Single-instance deployment
 
@@ -26,50 +26,50 @@ Naming is fixed as **`MatchMaker`**, **`RegistryQueue`**, **`Registry`**, **`IRe
 ## Domain Model
 
 ```text
-MatchMaker<TEntry> where TEntry : IRegistryEntry
-  RegistryQueues: Dictionary<string, RegistryQueue<TEntry>>
+MatchMaker<TMember> where TMember : ITicketMember
+  TicketQueues: Dictionary<string, TicketQueue<TMember>>
 
-RegistryQueue<TEntry>
-  _byCreatedDate: SortedSet<Registry<TEntry>>              // global FIFO
-  _buckets: SortedDictionary<int, List<Registry<TEntry>>> // key = bucket index
+TicketQueue<TMember>
+  _byCreatedDate: SortedSet<Ticket<TMember>>              // global FIFO
+  _buckets: SortedDictionary<int, List<Ticket<TMember>>> // key = bucket index
 
-Registry<TEntry>
-  Id: Guid
-  CreatedDateTime: DateTime
-  Entries: List<TEntry>
+Ticket<TMember>
+  Id: ulong
+  CreatedAt: DateTime
+  Members: List<TMember>
 
-IRegistryEntry
-  EntryId: string               // opaque unique id (format defined by concrete type)
+ITicketMember
+  MemberId: string               // opaque unique id (format defined by concrete type)
   Mu: double
   Sigma: double
 
-CharacterRegistryEntry : IRegistryEntry   // example concrete type
+CharacterTicketMember : ITicketMember   // example concrete type
   World: uint
   CharacterId: uint
   Mu, Sigma
-  EntryId => "{World}:{CharacterId}"
+  MemberId => "{World}:{CharacterId}"
 ```
 
 | Type | Meaning |
 |------|---------|
-| `IRegistryEntry` | Required: `EntryId`, `Mu`, `Sigma`. Core treats `EntryId` as an opaque string. |
-| `CharacterRegistryEntry` | Example: `EntryId = "{World}:{CharacterId}"`; `World`/`CharacterId` are not used by matching logic. |
-| `Registry<TEntry>` | Party registered together. Never split across teams. |
-| `RegistryQueue<TEntry>` | Waiting queue for one mode/key. |
-| `Match<TEntry>` | `TeamsPerMatch` teams; each team's entry count sums to `EntriesPerTeam`. |
+| `ITicketMember` | Required: `MemberId`, `Mu`, `Sigma`. Core treats `MemberId` as an opaque string. |
+| `CharacterTicketMember` | Example: `MemberId = "{World}:{CharacterId}"`; `World`/`CharacterId` are not used by matching logic. |
+| `Ticket<TMember>` | Party registered together. Never split across teams. |
+| `TicketQueue<TMember>` | Waiting queue for one mode/key. |
+| `Match<TMember>` | `TeamsPerMatch` teams; each team's member count sums to `EntriesPerTeam`. |
 
-`MatchMaker<TEntry>` is generic; the host registers a concrete entry type (currently `CharacterRegistryEntry` in `Program.cs`). The core only compares `EntryId` strings.
+`MatchMaker<TMember>` is generic; the host registers a concrete member type (currently `CharacterTicketMember` in `Program.cs`). The core only compares `MemberId` strings.
 
-`CreatedDateTime` is set to `DateTime.UtcNow` in `MatchMaker.Register`.
+`CreatedAt` is set to `DateTime.UtcNow` in `MatchMaker.EnqueueAsync`.
 
-### Entry identity vs API identity
+### Member identity vs API identity
 
-- **Core**: `string EntryId` — opaque, compared as string equality.
-- **HTTP / game layer**: `CharacterRegistryEntry` uses `"{World}:{CharacterId}"`; confirm / decline / status APIs parse or pass through that convention.
+- **Core**: `string MemberId` — opaque, compared as string equality.
+- **HTTP / game layer**: `CharacterTicketMember` uses `"{World}:{CharacterId}"`; confirm / decline / status APIs parse or pass through that convention.
 
-### Registry ordering (FIFO index)
+### Ticket ordering (FIFO index)
 
-`_byCreatedDate` orders by `CreatedDateTime` ascending, tie-break by `Id`.
+`_byCreatedDate` orders by `CreatedAt` ascending, tie-break by `Id`.
 
 ---
 
@@ -78,28 +78,28 @@ CharacterRegistryEntry : IRegistryEntry   // example concrete type
 ### Sigma aggregation — RSS
 
 ```text
-RegistrySigma = sqrt( Σ entry.Sigma² )   over Registry.Entries
+TicketSigma = sqrt( Σ member.Sigma² )   over Ticket.Members
 
-TeamSigma     = sqrt( Σ registry.RegistrySigma² )   over registries on the team
-TeamMu        = entry-count weighted average of registry Mu
+TeamSigma     = sqrt( Σ ticket.TicketSigma² )   over tickets on the team
+TeamMu        = member-count weighted average of ticket Mu
 ```
 
 ### Effective Mu — bucket assignment
 
 ```text
-entryEffectiveMu  = entry.Mu - EffectiveMuSigmaFactor * entry.Sigma
-EffectiveMu       = average(entryEffectiveMu) over Registry.Entries
+entryEffectiveMu  = member.Mu - EffectiveMuSigmaFactor * member.Sigma
+EffectiveMu       = average(entryEffectiveMu) over Ticket.Members
 bucketIndex       = floor(EffectiveMu / SkillBucketWidth)
 ```
 
-Per-entry effective mu is averaged so party size does not shift bucket placement when members share the same individual rating. `ForRegistry` (aggregated sigma) is still used for team skill display.
+Per-member effective mu is averaged so party size does not shift bucket placement when members share the same individual rating. `ForTicket` (aggregated sigma) is still used for team skill display.
 
 - `EffectiveMuSigmaFactor` (k): default `3.0`
 - `SkillBucketWidth`: default `1.0` (use `0.5` for finer grouping)
 
 Bucket index is assigned once at enqueue and does not change while waiting.
 
-**Bucket index is not Mu.** It is a sparse integer key; only indices with waiting registries exist in `_buckets`.
+**Bucket index is not Mu.** It is a sparse integer key; only indices with waiting tickets exist in `_buckets`.
 
 | EffectiveMu | SkillBucketWidth | bucketIndex |
 |-------------|------------------|-------------|
@@ -110,12 +110,12 @@ Bucket index is assigned once at enqueue and does not change while waiting.
 
 Mu range for index `n`: `[n * width, (n + 1) * width)`.
 
-### Per-registry tolerance
+### Per-ticket tolerance
 
-Tolerance is **not stored** on `Registry`. When a registry acts as anchor:
+Tolerance is **not stored** on `Ticket`. When a ticket acts as anchor:
 
 ```text
-anchorWaitSeconds = (UtcNow - anchor.CreatedDateTime).TotalSeconds
+anchorWaitSeconds = (UtcNow - anchor.CreatedAt).TotalSeconds
 tolerance(anchor) = min(
     MaxSkillTolerance,
     BaseSkillTolerance + SkillTolerancePerSecond * anchorWaitSeconds
@@ -132,7 +132,7 @@ Tolerance is in **Mu space**. Bucket window is derived via `SkillBucketWidth`.
 
 | Setting | Description | Typical value |
 |---------|-------------|---------------|
-| `EntriesPerTeam` | Entry count per team | `1`, `3`, … |
+| `EntriesPerTeam` | Member count per team | `1`, `3`, … |
 | `TeamsPerMatch` | Teams per match | `2` |
 
 `EntriesPerMatch = EntriesPerTeam × TeamsPerMatch`.
@@ -147,7 +147,7 @@ Tolerance is in **Mu space**. Bucket window is derived via `SkillBucketWidth`.
 | `MaxSkillTolerance` | Upper cap on tolerance (Mu) | `5.0` |
 | `EffectiveMuSigmaFactor` | k in `effectiveMu = mu - k * sigma` | `3.0` |
 | `SkillBucketWidth` | Effective-Mu span per bucket index | `1.0` |
-| `ConfirmTimeoutSeconds` | Seconds for all entries to confirm a proposed match | `30` |
+| `ConfirmTimeoutSeconds` | Seconds for all members to confirm a proposed match | `30` |
 
 `SkillBucketWidth` must be `> 0`.
 
@@ -169,11 +169,11 @@ Tolerance is in **Mu space**. Bucket window is derived via `SkillBucketWidth`.
 }
 ```
 
-### Register validation
+### Enqueue validation
 
-- `entries` non-empty; `entries.Count ≤ EntriesPerTeam`
-- Each entry has valid `World`, `CharacterId`, `Mu`, `Sigma`
-- No duplicate `EntryId` within the same `Register` request
+- `members` non-empty; `members.Count ≤ EntriesPerTeam`
+- Each member has valid `World`, `CharacterId`, `Mu`, `Sigma`
+- No duplicate `MemberId` within the same `Enqueue` request
 - **Duplicate enrollment** rules (see below)
 - Unknown `queueKey` rejected
 
@@ -185,24 +185,24 @@ Exactly **one active matchmaking enrollment** per player. Structural rules:
 
 | Rule | Constraint |
 |------|------------|
-| Player | Each `EntryId` belongs to **at most one** `Registry` at a time |
-| Entry | Each `IRegistryEntry` belongs to **exactly one** `Registry<TEntry>` |
-| Registry | Each `Registry` exists in **at most one** `RegistryQueue` at a time |
+| Player | Each `MemberId` belongs to **at most one** `Ticket` at a time |
+| Member | Each `ITicketMember` belongs to **exactly one** `Ticket<TMember>` |
+| Ticket | Each `Ticket` exists in **at most one** `TicketQueue` at a time |
 | Queue | A player cannot be enrolled in multiple queue keys simultaneously |
 
-There is no concurrent waiting + pending, no duplicate `EntryId` across registries, and no registry shared across queues.
+There is no concurrent waiting + pending, no duplicate `MemberId` across tickets, and no ticket shared across queues.
 
 ---
 
 ## Duplicate Enrollment (decided)
 
-An `EntryId` may be enrolled **at most once** across all active matchmaking state on this server.
+An `MemberId` may be enrolled **at most once** across all active matchmaking state on this server.
 
 ### Active state
 
 | State | Counts as enrolled? |
 |-------|---------------------|
-| `Waiting` (in `RegistryQueue`) | Yes |
+| `Queued` (in `TicketQueue`) | Yes |
 | `PendingConfirmation` (in `PendingMatchStore`) | Yes |
 | Excluded / dissolved (fault) | No |
 | Auto re-queued (`Requeue`) | Yes — immediately active again in queue |
@@ -210,72 +210,72 @@ An `EntryId` may be enrolled **at most once** across all active matchmaking stat
 
 ### Rules
 
-1. **`Register`**: reject if any entry's `EntryId` is already active (Waiting or Pending).
-2. **Same request**: reject duplicate `EntryId` within `entries`.
-3. **One registry per entry**: an `EntryId` cannot appear in two registries.
-4. **One queue per registry**: a `Registry` cannot be in two `RegistryQueue` instances.
+1. **`Enqueue`**: reject if any member's `MemberId` is already active (Queued or Proposed).
+2. **Same request**: reject duplicate `MemberId` within `members`.
+3. **One ticket per member**: an `MemberId` cannot appear in two tickets.
+4. **One queue per ticket**: a `Ticket` cannot be in two `TicketQueue` instances.
 5. **Cross-queue**: one character cannot wait in `ranked-1v1` and `ranked-3v3` at the same time.
 
 ### Error
 
-`AlreadyEnrolled` when `Register` conflicts with an existing `EntryId`.
+`AlreadyEnrolled` when `Enqueue` conflicts with an existing `MemberId`.
 
 ### Index (implementation)
 
 ```text
-_activeEntries: Dictionary<string, EnrollmentRef>   // key = EntryId
-  EnrollmentRef → Waiting (queueKey, registryId) | Pending (matchId, registryId)
+_memberTickets: Dictionary<string, TicketRef>   // key = MemberId
+  TicketRef → Queued (queueKey, ticketId) | Proposed (matchId, ticketId)
 
-_registryIndex: Dictionary<Guid, (queueKey, state)>   // RegistryId → single location
 ```
 
-Updated on register, unregister, pending create, dissolve, exclude, requeue.
+Updated on enqueue, dequeue, pending create, dissolve, exclude, requeue.
 
 ---
 
 ## Exclude (decided)
 
-**Exclude** means a registry (party) is **removed from matchmaking** and is **not** auto re-queued. Excluded registries **cannot** be enqueued until the game server sends a new `Register`.
+**Exclude** means a ticket (party) is **removed from matchmaking** and is **not** auto re-queued. Excluded tickets **cannot** be enqueued until the game server sends a new `Enqueue`.
 
 ### What exclude does
 
 | Action | Yes / No |
 |--------|----------|
-| Remove from `RegistryQueue` / `PendingMatchStore` | Yes |
-| Clear `EntryId` from `_activeEntries` | Yes |
+| Remove from `TicketQueue` / `PendingMatchStore` | Yes |
+| Clear `MemberId` from `_memberTickets` | Yes |
+| Publish `TicketRemoved` to the members' worlds | Yes (queued tickets only) |
 | **Auto re-queue** | **No** |
-| Manual `Register` again later | Yes (new enrollment) |
+| Manual `Enqueue` again later | Yes (new enrollment) |
 
-### When a registry is excluded
+### When a ticket is excluded
 
-A registry is **excluded** if **any** of its entries:
+A ticket is **excluded** if **any** of its members:
 
 - calls **`decline`**, or
 - **fails to confirm before the deadline** (timeout)
 
-**Even if other members of the same registry already confirmed**, one decliner or one timeout fails the **entire registry**. Those who confirmed are excluded together with their party.
+**Even if other members of the same ticket already confirmed**, one decliner or one timeout fails the **entire ticket**. Those who confirmed are excluded together with their party.
 
-### When a registry is auto re-queued
+### When a ticket is auto re-queued
 
-When a `PendingMatch` **dissolves** (decline or timeout), each **non-excluded** registry is **automatically re-enqueued** with **`CreatedDateTime` preserved**:
+When a `PendingMatch` **dissolves** (decline or timeout), each **non-excluded** ticket is **automatically re-enqueued** with **`CreatedAt` preserved**:
 
-| Registry situation | Action |
+| Ticket situation | Action |
 |--------------------|--------|
-| **All entries confirmed** before dissolution (caused by another registry) | **Auto re-queue** |
-| **No entry declined / timed out** in this registry, but match dissolved early (another registry declined) | **Auto re-queue** (could not confirm due to others) |
-| **Any entry declined or timed out** in this registry | **Exclude** — no re-queue |
+| **All members confirmed** before dissolution (caused by another ticket) | **Auto re-queue** |
+| **No member declined / timed out** in this ticket, but match dissolved early (another ticket declined) | **Auto re-queue** (could not confirm due to others) |
+| **Any member declined or timed out** in this ticket | **Exclude** — no re-queue |
 
 Examples:
 
 ```text
-Pending match: Registry A (party), Registry B (solo), Registry C (solo)
+Pending match: Ticket A (party), Ticket B (solo), Ticket C (solo)
 
 A: member 1 declines → A excluded (member 2 had confirmed — still excluded)
 B: all confirmed      → auto re-queue
 C: no confirm yet     → auto re-queue (dissolved because of A)
 
 Timeout at deadline:
-A: 1 of 2 confirmed → A excluded (partial confirm does not save the registry)
+A: 1 of 2 confirmed → A excluded (partial confirm does not save the ticket)
 B: all confirmed    → auto re-queue (B ready, others failed)
 C: no confirm       → C excluded (timeout — did not confirm in time)
 ```
@@ -284,17 +284,17 @@ C: no confirm       → C excluded (timeout — did not confirm in time)
 
 `POST /matchmaking/decline` is **required**. On decline:
 
-1. Decliner's registry → **exclude**
+1. Decliner's ticket → **exclude**
 2. `PendingMatch` → **dissolve**
-3. Every other registry → classify with table above (**auto re-queue** or **exclude**)
+3. Every other ticket → classify with table above (**auto re-queue** or **exclude**)
 
-### Exclude vs unregister
+### Exclude vs dequeue
 
-| | `unregister` | exclude |
+| | `dequeue` | exclude |
 |--|--------------|---------|
-| Initiator | Voluntary leave while **Waiting** | Decline / timeout fault in registry |
+| Initiator | Voluntary leave while **Waiting** | Decline / timeout fault in ticket |
 | Auto re-queue | No | No |
-| Manual `Register` again | Allowed | Allowed |
+| Manual `Enqueue` again | Allowed | Allowed |
 
 ---
 
@@ -306,11 +306,11 @@ C: no confirm       → C excluded (timeout — did not confirm in time)
 bucketIndex = floor(EffectiveMu / SkillBucketWidth)
 ```
 
-Each bucket holds a `List<Registry>` in enqueue order (FIFO). The same registry also lives in `_byCreatedDate`.
+Each bucket holds a `List<Ticket>` in enqueue order (FIFO). The same ticket also lives in `_byCreatedDate`.
 
 Buckets are an **index**, not a fixed list of ranges and not rebuilt each tick:
 
-- **Enqueue**: create bucket key if missing; append registry
+- **Enqueue**: create bucket key if missing; append ticket
 - **Match attempt**: query index range from anchor + tolerance
 - **Dequeue**: remove from both structures; delete empty bucket keys
 
@@ -327,7 +327,7 @@ minBucket           = floor((anchorEffectiveMu - tolerance) / SkillBucketWidth)
 maxBucket           = floor((anchorEffectiveMu + tolerance) / SkillBucketWidth)
 ```
 
-Candidates are all registries in buckets `[minBucket .. maxBucket]`, then sorted by `CreatedDateTime`, `Id`.
+Candidates are all tickets in buckets `[minBucket .. maxBucket]`, then sorted by `CreatedAt`, `Id`.
 
 ### Cross-bucket matching (decided)
 
@@ -353,7 +353,7 @@ Do **not** sort candidates by Mu proximity.
 
 ```text
 every TickIntervalMs:
-  foreach (queueKey, queue) in RegistryQueues:
+  foreach (queueKey, queue) in TicketQueues:
     createdMatches = queue.TryFormMatch()
     foreach (match in createdMatches):
       dispatch(match)   // Phase 1: log only
@@ -362,7 +362,7 @@ every TickIntervalMs:
 ### `TryFormMatch() → List<Match>`
 
 ```text
-while total entry count >= EntriesPerMatch:
+while total member count >= EntriesPerMatch:
 
   match = null
   for anchor in _byCreatedDate (FIFO order):
@@ -373,7 +373,7 @@ while total entry count >= EntriesPerMatch:
   if match == null:
     break
 
-  remove matched registries
+  remove matched tickets
   append match
 
 return all matches formed this tick
@@ -381,9 +381,9 @@ return all matches formed this tick
 
 ### Anchor rotation (decided)
 
-1. Try the **oldest** registry as anchor.
+1. Try the **oldest** ticket as anchor.
 2. On failure, try the **next oldest** as anchor.
-3. Continue until a match is formed or **every** registry has been tried.
+3. Continue until a match is formed or **every** ticket has been tried.
 4. If all fail → **0 matches** this round.
 
 The longest-waiting player is **always tried first** each round, but may **not** be included when a later anchor succeeds in the same round. Their tolerance keeps growing on later ticks.
@@ -400,10 +400,11 @@ The longest-waiting player is **always tried first** each round, but may **not**
 
 ### Match rules
 
-1. Each team has exactly `EntriesPerTeam` entries.
+1. Each team has exactly `EntriesPerTeam` members.
 2. A match has exactly `TeamsPerMatch` teams.
-3. `Registry` is atomic — never split across teams.
-4. On formation, matched registries are **removed from the waiting queue** and moved to **pending confirmation** (see below).
+3. `Ticket` is atomic — never split across teams.
+4. On formation, matched tickets are **removed from the waiting queue** and moved to **pending confirmation** (see below).
+5. On formation, one live cross server (Redis heartbeat) is picked at random and its id is embedded in the snowflake `MatchId`. No live cross server means no match is formed; tickets stay queued.
 
 ---
 
@@ -411,31 +412,31 @@ The longest-waiting player is **always tried first** each round, but may **not**
 
 ### Requirement
 
-After a match is formed, **every `IRegistryEntry` (character)** must confirm within **n seconds** (`ConfirmTimeoutSeconds`, config).
+After a match is formed, **every `ITicketMember` (character)** must confirm within **n seconds** (`ConfirmTimeoutSeconds`, config).
 
 | Outcome | Action |
 |---------|--------|
-| All registries: every entry confirms in time | Match **finalized** → notify game servers |
-| Any registry: decline or timeout fault | `PendingMatch` **dissolved** → per-registry exclude or auto re-queue |
+| All tickets: every member confirms in time | Match **finalized** → notify game servers |
+| Any ticket: decline or timeout fault | `PendingMatch` **dissolved** → per-ticket exclude or auto re-queue |
 
 ### Dissolution resolution (decided)
 
-On dissolve (decline or timeout deadline), for **each registry** in the pending match:
+On dissolve (decline or timeout deadline), for **each ticket** in the pending match:
 
 ```text
-if registry has any declined entry OR any entry not confirmed by deadline:
-  exclude registry
+if ticket has any declined member OR any member not confirmed by deadline:
+  exclude ticket
 else:
-  auto re-queue registry (CreatedDateTime preserved)
+  auto re-queue ticket (CreatedAt preserved)
 ```
 
-- Confirm tracked per **`EntryId`**; fault judgment per **`Registry`** (atomic party).
-- **Innocent** registries (all members confirmed, or dissolved early without local fault) → **auto re-queue**.
-- **Fault** registries (any decline or timeout in party) → **exclude**, including members who had already confirmed.
+- Confirm tracked per **`MemberId`**; fault judgment per **`Ticket`** (atomic party).
+- **Innocent** tickets (all members confirmed, or dissolved early without local fault) → **auto re-queue**.
+- **Fault** tickets (any decline or timeout in party) → **exclude**, including members who had already confirmed.
 
 ### Decline (decided)
 
-`POST /matchmaking/decline` is **required**. Decline triggers immediate dissolution and exclude for the decliner's registry. See **Exclude** section.
+`POST /matchmaking/decline` is **required**. Decline triggers immediate dissolution and exclude for the decliner's ticket. See **Exclude** section.
 
 ### Config
 
@@ -450,34 +451,34 @@ else:
 ```text
 [Waiting Queue]  --TryFormMatch-->  [Pending Confirmation]  --all confirm-->  [Finalized]
                                            |
-                                           +-- dissolve -->  auto re-queue (innocent registries)
-                                                         -->  exclude (fault registries)
+                                           +-- dissolve -->  auto re-queue (innocent tickets)
+                                                         -->  exclude (fault tickets)
 ```
 
 ### States
 
 | State | Where stored | Description |
 |-------|--------------|-------------|
-| `Waiting` | `RegistryQueue` | In matchmaking queue |
-| `PendingConfirmation` | `MatchMaker._pendingMatches` | Match proposed; awaiting entry confirms |
+| `Queued` | `TicketQueue` | In matchmaking queue |
+| `PendingConfirmation` | `MatchMaker._pendingMatches` | Match proposed; awaiting member confirms |
 | `Finalized` | (transient) | All confirmed; dispatch to game then discard |
-| `Dissolved` | — | Timeout; registries split into re-queue / exclude |
+| `Dissolved` | — | Timeout; tickets split into re-queue / exclude |
 
 ### `Match` (confirmation state)
 
 ```text
-Match<TEntry>
-  MatchId: Guid
+Match<TMember>
+  MatchId: ulong   // snowflake: timestamp | cross host id | sequence
   QueueKey: string
   CreatedAt: DateTime
-  Teams: List<List<Registry<TEntry>>>
-  ConfirmedEntryIds: HashSet<string>
+  Teams: List<List<Ticket<TMember>>>
+  ConfirmedMemberIds: HashSet<string>
 ```
 
 Confirm deadline is derived at runtime: `CreatedAt + ConfirmTimeoutSeconds` (not stored on `Match`).
 Pending matches are stored in `MatchMaker._pendingMatches` while awaiting player confirmation.
 
-Participants are removed from `RegistryQueue` when moved to `PendingConfirmation`.
+Participants are removed from `TicketQueue` when moved to `PendingConfirmation`.
 
 ---
 
@@ -489,7 +490,7 @@ Participants are removed from `RegistryQueue` when moved to `PendingConfirmation
 |-----------|------|
 | `MatchmakingBackgroundService` | Forms matches → `PendingMatchStore.Add` (no longer logs-only) |
 | `MatchConfirmationBackgroundService` | Periodic scan for expired `Match`; apply re-queue / exclude |
-| `MatchMaker` | Queues, `_pendingMatches`, `Register`, `Unregister`, `Requeue` |
+| `MatchMaker` | Queues, `_pendingMatches`, `Enqueue`, `Dequeue`, `Requeue` |
 | `MatchmakingController` | HTTP API (FlatBuffer) |
 
 ### Tick flow
@@ -506,16 +507,16 @@ MatchConfirmationBackgroundService (new tick, e.g. every 1s):
     dissolve(pending, reason: Timeout)
 
 dissolve(pending, reason):
-  for each registry in pending:
-    if registry has declined entry OR unconfirmed entry at deadline:
-      exclude(registry)
+  for each ticket in pending:
+    if ticket has declined member OR unconfirmed member at deadline:
+      exclude(ticket)
     else:
-      MatchMaker.Requeue(queueKey, snapshot, preserved CreatedDateTime)
+      MatchMaker.Requeue(queueKey, snapshot, preserved CreatedAt)
   PendingMatchStore.Remove(pending.MatchId)
 
 Decline API:
-  mark declining EntryId
-  dissolve(pending, reason: Decline)   // same per-registry logic; early deadline not required
+  mark declining MemberId
+  dissolve(pending, reason: Decline)   // same per-ticket logic; early deadline not required
 ```
 
 ### Confirm API flow
@@ -526,7 +527,7 @@ POST /matchmaking/confirm
   2. Verify (World, CharacterId) is a participant
   3. If UtcNow > ConfirmDeadline → reject (too late)
   4. Mark Confirmations[playerKey] = true
-  5. If every `EntryId` in the match confirmed:
+  5. If every `MemberId` in the match confirmed:
        finalize match → notify game servers
        PendingMatchStore.Remove
   6. Return success
@@ -534,8 +535,8 @@ POST /matchmaking/confirm
 POST /matchmaking/decline
   1. Find PendingMatch by MatchId
   2. Verify (World, CharacterId) is a participant
-  3. Record decline for EntryId
-  4. dissolve(pending, Decline) — exclude fault registries, auto re-queue innocent registries
+  3. Record decline for MemberId
+  4. dissolve(pending, Decline) — exclude fault tickets, auto re-queue innocent tickets
   5. Return success
 ```
 
@@ -548,11 +549,11 @@ POST /matchmaking/decline
 
 ### Elapsed time preservation
 
-Auto re-queue uses the original `CreatedDateTime` from `RegistrySnapshot` (not `UtcNow`). Manual `Register` after exclude starts a new `CreatedDateTime`.
+Auto re-queue uses the original `CreatedAt` from `TicketSnapshot` (not `UtcNow`). Manual `Enqueue` after exclude starts a new `CreatedAt`.
 
 ```csharp
-MatchMaker.Requeue(queueKey, entries, preservedCreatedDateTime)
-// New RegistryId, CreatedDateTime = preservedCreatedDateTime, re-enters queue + _activePlayers
+MatchMaker.Requeue(queueKey, members, preservedCreatedAt)
+// New TicketId, CreatedAt = preservedCreatedAt, re-enters queue + _activePlayers
 ```
 
 ---
@@ -567,64 +568,64 @@ Controller route prefix: `/matchmaking`.
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| `POST` | `/matchmaking/register` | Enqueue a registry |
-| `POST` | `/matchmaking/unregister` | Leave queue (waiting state only) |
+| `POST` | `/matchmaking/enqueue` | Enqueue a ticket |
+| `POST` | `/matchmaking/dequeue` | Leave queue (waiting state only) |
 | `POST` | `/matchmaking/confirm` | Confirm participation in a pending match |
 | `POST` | `/matchmaking/decline` | Reject a pending match (required) |
 | `POST` | `/matchmaking/status` | Query waiting / pending state for a character |
 
 ### Request / Response (draft)
 
-#### `register`
+#### `enqueue`
 
 ```text
-Request.Register
+Request.Enqueue
   QueueKey: string
-  Entries: CharacterRegistryEntry[]   // World, CharacterId, Mu, Sigma
+  Members: CharacterTicketMember[]   // World, CharacterId, Mu, Sigma
 
-Response.Register
-  RegistryId: Guid
+Response.Enqueue
+  TicketId: ulong
   Error: uint
 ```
 
 - Caller: game server (after player requests queue).
-- Server sets `CreatedDateTime = UtcNow` on first register.
+- Server sets `CreatedAt = UtcNow` on first enqueue.
 
-#### `unregister`
+#### `dequeue`
 
 ```text
-Request.Unregister
+Request.Dequeue
   QueueKey: string
-  RegistryId: Guid
+  TicketId: ulong
   World: uint                // caller context (must match enrolled player)
   CharacterId: uint
 
-Response.Unregister
+Response.Dequeue
   Success: bool
   Error: uint
 ```
 
-- Only valid while registry is in **Waiting** state.
+- Only valid while ticket is in **Waiting** state.
 - Pending confirmation: use `decline` or wait for timeout.
 
 #### `confirm`
 
 ```text
 Request.Confirm
-  MatchId: Guid
+  MatchId: ulong
   World: uint
   CharacterId: uint
 
 Response.Confirm
   Error: uint
-  MatchFinalized: bool   // true when this confirm completed the last missing entry
+  MatchFinalized: bool   // true when this confirm completed the last missing member
 ```
 
 #### `decline`
 
 ```text
 Request.Decline
-  MatchId: Guid
+  MatchId: ulong
   World: uint
   CharacterId: uint
 
@@ -632,8 +633,8 @@ Response.Decline
   Error: uint
 ```
 
-- Excludes the decliner's registry (and any registry with local fault).
-- Dissolves match; **innocent** registries are **auto re-queued**.
+- Excludes the decliner's ticket (and any ticket with local fault).
+- Dissolves match; **innocent** tickets are **auto re-queued**.
 
 #### `status`
 
@@ -645,8 +646,8 @@ Request.Status
 Response.Status
   InQueue: bool
   QueueKey: string
-  RegistryId: Guid
-  PendingMatchId: Guid    // empty if none
+  TicketId: ulong
+  PendingMatchId: ulong   // 0 if none
   ConfirmDeadline: DateTime
   Error: uint
 ```
@@ -655,10 +656,10 @@ Response.Status
 
 | Code | When |
 |------|------|
-| Unknown queue key | Register |
-| Already enrolled (`EntryId` active) | Register |
-| Duplicate `EntryId` in same request | Register |
-| Registry not found | Unregister |
+| Unknown queue key | Enqueue |
+| Already enrolled (`MemberId` active) | Enqueue |
+| Duplicate `MemberId` in same request | Enqueue |
+| Ticket not found | Dequeue |
 | Not a participant | Confirm / Decline |
 | Match not found / expired | Confirm / Decline |
 | Already confirmed | Confirm |
@@ -686,12 +687,12 @@ When confirmation fails (decline or timeout):
 routing: fb.{world}.matchmaking.dissolved
 payload: fb.protocol.matchmaking.mq.Dissolved
   reason: 0=Timeout, 1=Decline
-  registry_outcomes[].outcome: 0=Excluded, 1=Requeued
+  ticket_outcomes[].outcome: 0=Excluded, 1=Requeued
 ```
 
 ### Match finalized
 
-When all entries confirm:
+When all members confirm:
 
 ```text
 routing: fb.{world}.matchmaking.ready
@@ -702,16 +703,16 @@ Game server creates arena / transfers players.
 
 ---
 
-## Internal `MatchMaker<TEntry>` API (extended)
+## Internal `MatchMaker<TMember>` API (extended)
 
 ```csharp
-Registry<TEntry> Register(string queueKey, IReadOnlyList<TEntry> entries)
-bool Unregister(string queueKey, Guid registryId)
-Registry<TEntry> Requeue(string queueKey, IReadOnlyList<TEntry> entries, DateTime preservedCreatedDateTime)
+Ticket<TMember> Enqueue(string queueKey, IReadOnlyList<TMember> members)
+bool Dequeue(string queueKey, ulong ticketId)
+Ticket<TMember> Requeue(string queueKey, IReadOnlyList<TMember> members, DateTime preservedCreatedAt)
 int GetQueueDepth(string queueKey)
 ```
 
-`TEntry : IRegistryEntry`. Validation uses `entry.EntryId` (non-empty string) for duplicate detection within a registry.
+`TMember : ITicketMember`. Validation uses `member.MemberId` (non-empty string) for duplicate detection within a ticket.
 
 `TryFormMatches()` remains internal to `MatchmakingBackgroundService`.
 
@@ -720,7 +721,7 @@ int GetQueueDepth(string queueKey)
 ## Concurrency
 
 - Single instance
-- Per-`RegistryQueue` lock for `Add`, `Remove`, `TryFormMatch`
+- Per-`TicketQueue` lock for `Add`, `Remove`, `TryFormMatch`
 
 ---
 
@@ -728,7 +729,7 @@ int GetQueueDepth(string queueKey)
 
 | Item | Status |
 |------|--------|
-| Project, `MatchMaker<TEntry>`, `IRegistryEntry`, models | Done |
+| Project, `MatchMaker<TMember>`, `ITicketMember`, models | Done |
 | Effective Mu buckets + RSS `SkillCalculator` | Done |
 | Configurable `SkillBucketWidth` | Done |
 | Anchor rotation per tick | Done |
@@ -747,7 +748,7 @@ int GetQueueDepth(string queueKey)
 ### Product
 
 1. **Queue key catalog** — Config-only vs datatable-driven?
-2. **Who builds Registry** — Solo queue vs game `Group` party?
+2. **Who builds Ticket** — Solo queue vs game `Group` party?
 3. **Who creates the match instance** — Game server vs separate arena service?
 
 ### Operations
@@ -766,15 +767,15 @@ server/matchmaking/
   appsettings.json
   Options/
   Model/
-    IRegistryEntry.cs
-    CharacterRegistryEntry.cs
-    Registry.cs
+    ITicketMember.cs
+    CharacterTicketMember.cs
+    Ticket.cs
     Match.cs
     Skill.cs
     SkillCalculator.cs
   Services/
     MatchMaker.cs
-    RegistryQueue.cs
+    TicketQueue.cs
     MatchmakingBackgroundService.cs
     MatchConfirmationBackgroundService.cs
   Controllers/

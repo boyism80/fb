@@ -1,8 +1,8 @@
 namespace Matchmaking.Model;
 
-public interface IRegistryEntry
+public interface ITicketMember
 {
-    string EntryId { get; }
+    string MemberId { get; }
 
     double Mu { get; }
 

@@ -4,6 +4,7 @@ using Http;
 using Http.Model;
 using Http.Model.Redis;
 using Http.Service;
+using Http.Util;
 using Internal.Services;
 using Microsoft.AspNetCore.Mvc;
 using Option = Http.Model.Option;
@@ -258,15 +259,16 @@ namespace Internal.Controllers
         {
             try
             {
-                var pick = await _serverStateService.PickLiveCrossServer(request.MatchId);
-                if (pick == null)
+                // The matchmaking server pinned the cross host into the match id when the match formed.
+                var hostId = SnowflakeId.HostId(request.MatchId);
+                var host = await _serverStateService.GetHostConfig(null, Protocol.Service.Game, hostId) ??
                     throw new LogicException(ErrorCode.ServerNotReady);
 
                 return new Response.MatchTransfer
                 {
-                    Ip = pick.IP,
-                    Port = pick.Port,
-                    Id = pick.Id
+                    Ip = host.IP,
+                    Port = host.Port,
+                    Id = hostId
                 };
             }
             catch (LogicException e)

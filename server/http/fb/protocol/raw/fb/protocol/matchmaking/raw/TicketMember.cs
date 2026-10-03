@@ -9,50 +9,50 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct RegistryEntry : IFlatbufferObject
+public struct TicketMember : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static RegistryEntry GetRootAsRegistryEntry(ByteBuffer _bb) { return GetRootAsRegistryEntry(_bb, new RegistryEntry()); }
-  public static RegistryEntry GetRootAsRegistryEntry(ByteBuffer _bb, RegistryEntry obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public static bool VerifyRegistryEntry(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, RegistryEntryVerify.Verify); }
+  public static TicketMember GetRootAsTicketMember(ByteBuffer _bb) { return GetRootAsTicketMember(_bb, new TicketMember()); }
+  public static TicketMember GetRootAsTicketMember(ByteBuffer _bb, TicketMember obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static bool VerifyTicketMember(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, TicketMemberVerify.Verify); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public RegistryEntry __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public TicketMember __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint CharacterId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public double Mu { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
   public double Sigma { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
 
-  public static Offset<fb.protocol.matchmaking.raw.RegistryEntry> CreateRegistryEntry(FlatBufferBuilder builder,
+  public static Offset<fb.protocol.matchmaking.raw.TicketMember> CreateTicketMember(FlatBufferBuilder builder,
       uint world = 0,
       uint character_id = 0,
       double mu = 0.0,
       double sigma = 0.0) {
     builder.StartTable(4);
-    RegistryEntry.AddSigma(builder, sigma);
-    RegistryEntry.AddMu(builder, mu);
-    RegistryEntry.AddCharacterId(builder, character_id);
-    RegistryEntry.AddWorld(builder, world);
-    return RegistryEntry.EndRegistryEntry(builder);
+    TicketMember.AddSigma(builder, sigma);
+    TicketMember.AddMu(builder, mu);
+    TicketMember.AddCharacterId(builder, character_id);
+    TicketMember.AddWorld(builder, world);
+    return TicketMember.EndTicketMember(builder);
   }
 
-  public static void StartRegistryEntry(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartTicketMember(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(1, characterId, 0); }
   public static void AddMu(FlatBufferBuilder builder, double mu) { builder.AddDouble(2, mu, 0.0); }
   public static void AddSigma(FlatBufferBuilder builder, double sigma) { builder.AddDouble(3, sigma, 0.0); }
-  public static Offset<fb.protocol.matchmaking.raw.RegistryEntry> EndRegistryEntry(FlatBufferBuilder builder) {
+  public static Offset<fb.protocol.matchmaking.raw.TicketMember> EndTicketMember(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<fb.protocol.matchmaking.raw.RegistryEntry>(o);
+    return new Offset<fb.protocol.matchmaking.raw.TicketMember>(o);
   }
-  public static void FinishRegistryEntryBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.RegistryEntry> offset) { builder.Finish(offset.Value); }
-  public static void FinishSizePrefixedRegistryEntryBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.RegistryEntry> offset) { builder.FinishSizePrefixed(offset.Value); }
+  public static void FinishTicketMemberBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.TicketMember> offset) { builder.Finish(offset.Value); }
+  public static void FinishSizePrefixedTicketMemberBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.raw.TicketMember> offset) { builder.FinishSizePrefixed(offset.Value); }
 }
 
 
-static public class RegistryEntryVerify
+static public class TicketMemberVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {

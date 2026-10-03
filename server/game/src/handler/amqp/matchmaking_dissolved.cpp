@@ -9,20 +9,20 @@
 using namespace fb::game::handler::amqp;
 
 matchmaking_dissolved::matchmaking_dissolved(fb::game::server& server) :
-    fb::handler::amqp<fb::game::server, fb::protocol::matchmaking::mq::Dissolved>(server)
+    fb::handler::amqp<fb::game::server, fb::protocol::matchmaking::mq::MatchDissolved>(server)
 { }
 
-async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking::mq::Dissolved& message)
+async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking::mq::MatchDissolved& message)
 {
     auto match_id   = message.match_id;
     auto match_type = message.match_type;
     auto reason     = message.reason;
 
-    for (auto& outcome : message.registry_outcomes)
+    for (auto& outcome : message.ticket_outcomes)
     {
-        for (auto& entry : outcome.entries)
+        for (auto& member : outcome.members)
         {
-            auto ch = this->server.characters.find(entry.character_id);
+            auto ch = this->server.characters.find(member.character_id);
             if (ch == nullptr)
                 continue;
 
@@ -32,13 +32,13 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
                 [ch, match_id, match_type, reason, outcome_value = outcome.outcome](auto&) -> async::task<void> {
                 ch->matchmaker.clear_pending_match_id_if(match_id);
                 if (outcome_value == 0)
-                    ch->matchmaker.clear_registration();
+                    ch->matchmaker.clear_ticket();
 
                 auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_dissolved");
                 if (lua)
                 {
                     lua->pushobject(ch);
-                    lua->pushstring(match_id.c_str());
+                    lua->pushinteger(static_cast<lua_Integer>(match_id));
                     lua->pushinteger(match_type);
                     lua->pushinteger(reason);
                     lua->pushinteger(outcome_value);

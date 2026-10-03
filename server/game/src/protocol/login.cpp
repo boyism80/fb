@@ -42,7 +42,7 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
         auto flags = TRANSFER_PARAM::NONE;
         if (this->transfer.has_value())
             flags |= TRANSFER_PARAM::MAP;
-        if (this->match.has_value() && this->match->id.empty() == false)
+        if (this->match.has_value() && this->match->id != 0)
             flags |= TRANSFER_PARAM::MATCH;
         if (this->client_version == CLIENT_VERSION::v651 && this->ui_mode == CLIENT_UI_MODE::NEW)
             flags |= TRANSFER_PARAM::UI_MODE;
@@ -57,7 +57,7 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
         }
         if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
         {
-            writer.write<std::string>(this->match->id);
+            writer.write<uint64_t>(this->match->id);
             writer.write<uint32_t>(this->match->type);
             writer.write<uint32_t>(this->match->team);
         }
@@ -101,10 +101,10 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
     }
     if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
     {
-        auto id     = reader.read<std::string>();
+        auto id     = reader.read<uint64_t>();
         auto type   = reader.read<uint32_t>();
         auto team   = reader.read<uint32_t>();
-        this->match = match_param{.id = std::move(id), .type = type, .team = team};
+        this->match = match_param{.id = id, .type = type, .team = team};
     }
     if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
         this->ui_mode = static_cast<CLIENT_UI_MODE>(reader.read<uint8_t>());

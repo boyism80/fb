@@ -321,7 +321,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     session.data(ch);
 
-    if (request.match.has_value() && request.match->id.empty() == false)
+    if (request.match.has_value() && request.match->id != 0)
         co_await this->server.matches.join(*ch, request.match->id, request.match->type, request.match->team);
 
     if (ch->map() == nullptr)
@@ -650,7 +650,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         if (ptr == nullptr)
             co_return;
 
-        co_await ptr->matchmaker.discard_leftover_registration();
+        co_await ptr->matchmaker.discard_leftover_ticket();
     };
     builder.enqueue();
 

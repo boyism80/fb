@@ -1,23 +1,23 @@
 namespace fb.protocol.matchmaking;
 
-table RegistryEntry {
+table TicketMember {
     world: uint;
     character_id: uint;
     mu: double;
     sigma: double;
 }
 
-table MatchRegistry {
-    registry_id: string;
-    entries: [RegistryEntry];
+table Ticket {
+    ticket_id: ulong;
+    members: [TicketMember];
 }
 
 table MatchTeam {
-    registries: [MatchRegistry];
+    tickets: [Ticket];
 }
 
-table RegistryOutcomeEntry {
-    registry_id: string;
+table TicketOutcome {
+    ticket_id: ulong;
     outcome: ubyte;
-    entries: [RegistryEntry];
+    members: [TicketMember];
 }

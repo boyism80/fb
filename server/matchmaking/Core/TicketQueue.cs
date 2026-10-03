@@ -4,16 +4,16 @@ using Matchmaking.Options;
 
 namespace Matchmaking.Core;
 
-public sealed class RegistryQueue<TEntry>
-    where TEntry : IRegistryEntry
+public sealed class TicketQueue<TMember>
+    where TMember : ITicketMember
 {
     private readonly Fb.Model.Matchmaking _config;
     private readonly MatchmakingOptions _options;
-    private readonly SortedSet<Registry<TEntry>> _byCreatedDate = new();
-    private readonly SortedDictionary<int, List<Registry<TEntry>>> _buckets = new();
+    private readonly SortedSet<Ticket<TMember>> _byCreatedAt = new();
+    private readonly SortedDictionary<int, List<Ticket<TMember>>> _buckets = new();
     private readonly object _lock = new();
 
-    public RegistryQueue(Fb.Model.Matchmaking config, MatchmakingOptions options)
+    public TicketQueue(Fb.Model.Matchmaking config, MatchmakingOptions options)
     {
         _config = config;
         _options = options;
@@ -31,7 +31,7 @@ public sealed class RegistryQueue<TEntry>
         {
             lock (_lock)
             {
-                return _byCreatedDate.Count;
+                return _byCreatedAt.Count;
             }
         }
     }
@@ -40,67 +40,67 @@ public sealed class RegistryQueue<TEntry>
     {
         lock (_lock)
         {
-            if (_byCreatedDate.Count == 0)
+            if (_byCreatedAt.Count == 0)
             {
                 return "empty";
             }
 
-            var oldest = (DateTime.UtcNow - _byCreatedDate.Min.CreatedDateTime).TotalSeconds;
-            return $"{_byCreatedDate.Count} registries / {TotalEntryCount()} entries (oldest {oldest:F1}s)";
+            var oldest = (DateTime.UtcNow - _byCreatedAt.Min.CreatedAt).TotalSeconds;
+            return $"{_byCreatedAt.Count} tickets / {TotalMemberCount()} members (oldest {oldest:F1}s)";
         }
     }
 
-    public void Add(Registry<TEntry> registry)
+    public void Add(Ticket<TMember> ticket)
     {
         lock (_lock)
         {
-            if (_byCreatedDate.Contains(registry))
+            if (_byCreatedAt.Contains(ticket))
             {
-                throw new InvalidOperationException($"Registry {registry.Id} is already in the queue.");
+                throw new InvalidOperationException($"Ticket {ticket.Id} is already in the queue.");
             }
 
-            _byCreatedDate.Add(registry);
+            _byCreatedAt.Add(ticket);
 
             var bucketKey = SkillCalculator.GetBucketKey(
-                registry,
+                ticket,
                 _options.EffectiveMuSigmaFactor,
                 _options.SkillBucketWidth);
             if (!_buckets.TryGetValue(bucketKey, out var bucket))
             {
-                bucket = new List<Registry<TEntry>>();
+                bucket = new List<Ticket<TMember>>();
                 _buckets[bucketKey] = bucket;
             }
 
-            bucket.Add(registry);
+            bucket.Add(ticket);
         }
     }
 
-    public bool Remove(Guid registryId)
+    public Ticket<TMember> Remove(ulong ticketId)
     {
         lock (_lock)
         {
-            var registry = _byCreatedDate.FirstOrDefault(candidate => candidate.Id == registryId);
-            if (registry == null)
+            var ticket = _byCreatedAt.FirstOrDefault(candidate => candidate.Id == ticketId);
+            if (ticket == null)
             {
-                return false;
+                return null;
             }
 
-            _byCreatedDate.Remove(registry);
-            RemoveFromBucket(registry);
-            return true;
+            _byCreatedAt.Remove(ticket);
+            RemoveFromBucket(ticket);
+            return ticket;
         }
     }
 
-    public List<Match<TEntry>> TryFormMatch()
+    public List<Match<TMember>> TryFormMatch()
     {
         lock (_lock)
         {
-            var matches = new List<Match<TEntry>>();
+            var matches = new List<Match<TMember>>();
 
-            while (TotalEntryCount() >= EntriesPerMatch)
+            while (TotalMemberCount() >= MembersPerMatch)
             {
-                Match<TEntry> match = null;
-                foreach (var anchor in _byCreatedDate)
+                Match<TMember> match = null;
+                foreach (var anchor in _byCreatedAt)
                 {
                     match = TryFormMatchWithAnchor(anchor);
                     if (match != null)
@@ -114,7 +114,7 @@ public sealed class RegistryQueue<TEntry>
                     break;
                 }
 
-                RemoveMatchedRegistries(match);
+                RemoveMatchedTickets(match);
                 matches.Add(match);
             }
 
@@ -122,7 +122,7 @@ public sealed class RegistryQueue<TEntry>
         }
     }
 
-    private Match<TEntry> TryFormMatchWithAnchor(Registry<TEntry> anchor)
+    private Match<TMember> TryFormMatchWithAnchor(Ticket<TMember> anchor)
     {
         var tolerance = GetSkillTolerance(anchor);
         var candidates = GetCandidatesInWindow(anchor, tolerance);
@@ -137,12 +137,12 @@ public sealed class RegistryQueue<TEntry>
             return null;
         }
 
-        var used = new HashSet<Guid>(anchorTeam.Select(registry => registry.Id));
-        var teams = new List<IReadOnlyList<Registry<TEntry>>> { anchorTeam };
+        var used = new HashSet<ulong>(anchorTeam.Select(ticket => ticket.Id));
+        var teams = new List<IReadOnlyList<Ticket<TMember>>> { anchorTeam };
 
         for (var teamIndex = 1; teamIndex < (int)_config.TeamCount; teamIndex++)
         {
-            var remaining = candidates.Where(registry => !used.Contains(registry.Id)).ToList();
+            var remaining = candidates.Where(ticket => !used.Contains(ticket.Id)).ToList();
             var team = TryBuildTeam(remaining, required: null, (int)_config.MemberCount);
             if (team == null)
             {
@@ -150,16 +150,16 @@ public sealed class RegistryQueue<TEntry>
             }
 
             teams.Add(team);
-            foreach (var registry in team)
+            foreach (var ticket in team)
             {
-                used.Add(registry.Id);
+                used.Add(ticket.Id);
             }
         }
 
-        return new Match<TEntry>(teams);
+        return new Match<TMember>(teams);
     }
 
-    private List<Registry<TEntry>> GetCandidatesInWindow(Registry<TEntry> anchor, double tolerance)
+    private List<Ticket<TMember>> GetCandidatesInWindow(Ticket<TMember> anchor, double tolerance)
     {
         var anchorEffectiveMu = SkillCalculator.GetEffectiveMu(anchor, _options.EffectiveMuSigmaFactor);
         SkillCalculator.GetBucketRange(
@@ -169,7 +169,7 @@ public sealed class RegistryQueue<TEntry>
             out var minBucket,
             out var maxBucket);
 
-        var candidates = new List<Registry<TEntry>>();
+        var candidates = new List<Ticket<TMember>>();
         foreach (var entry in _buckets)
         {
             if (entry.Key < minBucket)
@@ -186,54 +186,54 @@ public sealed class RegistryQueue<TEntry>
         }
 
         return candidates
-            .OrderBy(registry => registry.CreatedDateTime)
-            .ThenBy(registry => registry.Id)
+            .OrderBy(ticket => ticket.CreatedAt)
+            .ThenBy(ticket => ticket.Id)
             .ToList();
     }
 
-    private List<Registry<TEntry>> TryBuildTeam(List<Registry<TEntry>> candidates, Registry<TEntry> required, int targetEntries)
+    private List<Ticket<TMember>> TryBuildTeam(List<Ticket<TMember>> candidates, Ticket<TMember> required, int targetMembers)
     {
-        var team = new List<Registry<TEntry>>();
+        var team = new List<Ticket<TMember>>();
         var remaining = candidates;
 
         if (required != null)
         {
             team.Add(required);
-            remaining = candidates.Where(registry => registry.Id != required.Id).ToList();
+            remaining = candidates.Where(ticket => ticket.Id != required.Id).ToList();
         }
 
-        return BuildTeamRecursive(team, remaining, targetEntries);
+        return BuildTeamRecursive(team, remaining, targetMembers);
     }
 
-    private List<Registry<TEntry>> BuildTeamRecursive(List<Registry<TEntry>> team, List<Registry<TEntry>> remaining, int targetEntries)
+    private List<Ticket<TMember>> BuildTeamRecursive(List<Ticket<TMember>> team, List<Ticket<TMember>> remaining, int targetMembers)
     {
-        var currentEntries = team.Sum(registry => registry.Entries.Count);
-        if (currentEntries == targetEntries)
+        var currentMembers = team.Sum(ticket => ticket.Members.Count);
+        if (currentMembers == targetMembers)
         {
             return team;
         }
 
-        if (currentEntries > targetEntries)
+        if (currentMembers > targetMembers)
         {
             return null;
         }
 
-        var needed = targetEntries - currentEntries;
-        if (remaining.Sum(registry => registry.Entries.Count) < needed)
+        var needed = targetMembers - currentMembers;
+        if (remaining.Sum(ticket => ticket.Members.Count) < needed)
         {
             return null;
         }
 
         foreach (var next in remaining)
         {
-            if (next.Entries.Count > needed)
+            if (next.Members.Count > needed)
             {
                 continue;
             }
 
             var newTeam = team.Append(next).ToList();
-            var newRemaining = remaining.Where(registry => registry.Id != next.Id).ToList();
-            var result = BuildTeamRecursive(newTeam, newRemaining, targetEntries);
+            var newRemaining = remaining.Where(ticket => ticket.Id != next.Id).ToList();
+            var result = BuildTeamRecursive(newTeam, newRemaining, targetMembers);
             if (result != null)
             {
                 return result;
@@ -243,10 +243,10 @@ public sealed class RegistryQueue<TEntry>
         return null;
     }
 
-    private void RemoveFromBucket(Registry<TEntry> registry)
+    private void RemoveFromBucket(Ticket<TMember> ticket)
     {
         var bucketKey = SkillCalculator.GetBucketKey(
-            registry,
+            ticket,
             _options.EffectiveMuSigmaFactor,
             _options.SkillBucketWidth);
         if (!_buckets.TryGetValue(bucketKey, out var bucket))
@@ -254,33 +254,33 @@ public sealed class RegistryQueue<TEntry>
             return;
         }
 
-        bucket.RemoveAll(candidate => candidate.Id == registry.Id);
+        bucket.RemoveAll(candidate => candidate.Id == ticket.Id);
         if (bucket.Count == 0)
         {
             _buckets.Remove(bucketKey);
         }
     }
 
-    private void RemoveMatchedRegistries(Match<TEntry> match)
+    private void RemoveMatchedTickets(Match<TMember> match)
     {
-        foreach (var registry in match.AllRegistries)
+        foreach (var ticket in match.AllTickets)
         {
-            _byCreatedDate.Remove(registry);
-            RemoveFromBucket(registry);
+            _byCreatedAt.Remove(ticket);
+            RemoveFromBucket(ticket);
         }
     }
 
-    private int TotalEntryCount()
+    private int TotalMemberCount()
     {
-        return _byCreatedDate.Sum(registry => registry.Entries.Count);
+        return _byCreatedAt.Sum(ticket => ticket.Members.Count);
     }
 
-    private double GetSkillTolerance(Registry<TEntry> anchor)
+    private double GetSkillTolerance(Ticket<TMember> anchor)
     {
-        var waitSeconds = Math.Max(0, (DateTime.UtcNow - anchor.CreatedDateTime).TotalSeconds);
+        var waitSeconds = Math.Max(0, (DateTime.UtcNow - anchor.CreatedAt).TotalSeconds);
         var tolerance = _options.BaseSkillTolerance + (_options.SkillTolerancePerSecond * waitSeconds);
         return Math.Min(_options.MaxSkillTolerance, tolerance);
     }
 
-    private int EntriesPerMatch => (int)(_config.MemberCount * _config.TeamCount);
+    private int MembersPerMatch => (int)(_config.MemberCount * _config.TeamCount);
 }

@@ -91,7 +91,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     auto ptr = weak.lock();
     if (ptr != nullptr)
     {
-        co_await ptr->matchmaker.unregister_queue(true);
+        co_await ptr->matchmaker.dequeue(matchmaker::initiator::SERVER);
         this->matches.leave(*ptr);
 
         // Log logout event

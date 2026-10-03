@@ -7,8 +7,6 @@
 
 #include <cstdint>
 #include <optional>
-#include <string>
-#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -38,21 +36,26 @@ public:
     static constexpr double DEFAULT_MU    = 25.0;
     static constexpr double DEFAULT_SIGMA = 25.0 / 3.0;
 
+    // USER failures are thrown back to the script; SERVER cleanups only log them and skip script callbacks.
+    enum class initiator : uint8_t
+    {
+        USER,
+        SERVER,
+    };
+
     character& owner;
 
 private:
-    struct registration_state
+    struct ticket_state
     {
-        uint32_t    match_type;
-        std::string registry_id;
+        uint32_t match_type;
+        uint64_t ticket_id;
     };
 
-    std::unordered_map<uint32_t, matchmaking_skill> _entries;
-    std::optional<std::string>                      _pending_match_id;
-    std::optional<registration_state>               _registration;
-    bool                                            _registering = false;
-
-    void enqueue_squad_unregister(uint32_t match_type, std::string_view registry_id);
+    std::unordered_map<uint32_t, matchmaking_skill> _skills;
+    std::optional<uint64_t>                         _pending_match_id;
+    std::optional<ticket_state>                     _ticket;
+    bool                                            _enqueuing = false;
 
 public:
     explicit matchmaker(character& owner);
@@ -61,20 +64,21 @@ public:
     std::vector<matchmaking_skill::dto_type> to_protocol() const;
     std::optional<matchmaking_skill>         get(uint32_t match_type) const;
     void                                     upsert(uint32_t match_type, double mu, double sigma);
-    const std::optional<std::string>&        pending_match_id() const;
-    void                                     set_pending_match_id(std::string match_id);
+    const std::optional<uint64_t>&           pending_match_id() const;
+    void                                     set_pending_match_id(uint64_t match_id);
     void                                     clear_pending_match_id();
-    bool                                     clear_pending_match_id_if(std::string_view match_id);
-    bool                                     registered() const;
-    std::optional<std::string_view>          registry_id() const;
-    void                                     begin_registration(uint32_t match_type);
-    void                                     set_registration(uint32_t match_type, std::string registry_id);
-    void                                     clear_registration();
-    async::task<void>                        register_queue(uint32_t match_type);
-    async::task<void>                        unregister_queue(bool quiet = false);
-    async::task<void>                        discard_leftover_registration();
-    async::task<void>                        confirm_queue(std::string match_id, bool quiet = false);
-    async::task<void>                        decline_queue(std::string match_id, bool quiet = false);
+    bool                                     clear_pending_match_id_if(uint64_t match_id);
+    bool                                     queued() const;
+    bool                                     enqueuing() const;
+    std::optional<uint64_t>                  ticket_id() const;
+    void                                     begin_enqueue();
+    void                                     set_ticket(uint32_t match_type, uint64_t ticket_id);
+    void                                     clear_ticket();
+    async::task<void>                        enqueue(uint32_t match_type);
+    async::task<void>                        dequeue(initiator by);
+    async::task<void>                        discard_leftover_ticket();
+    async::task<void>                        confirm(uint64_t match_id);
+    async::task<void>                        decline(uint64_t match_id, initiator by);
 };
 
 } // namespace fb::game

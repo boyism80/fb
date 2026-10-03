@@ -13,6 +13,7 @@ module.exports = {
                     "Microsoft.AspNetCore": "Warning"
                 }
             },
+            "Redis": {},
             "RabbitMQ": {},
             "Matchmaking": {
                 "TickIntervalMs": 500,
@@ -22,6 +23,13 @@ module.exports = {
                 "EffectiveMuSigmaFactor": 3.0,
                 "SkillBucketWidth": 1.0,
                 "ConfirmTimeoutSeconds": 30
+            }
+        }
+
+        if (conf["unified-infra"] && conf["unified-infra"].redis && conf["unified-infra"].redis.port) {
+            config.Redis["unified"] = {
+                Host: `redis-unified`,
+                Port: conf["unified-infra"].redis.port.cluster
             }
         }
 

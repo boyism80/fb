@@ -1,24 +1,24 @@
 namespace Matchmaking.Model;
 
-public class Match<TEntry>
-    where TEntry : IRegistryEntry
+public class Match<TMember>
+    where TMember : ITicketMember
 {
-    public Match(IReadOnlyList<IReadOnlyList<Registry<TEntry>>> teams)
+    public Match(IReadOnlyList<IReadOnlyList<Ticket<TMember>>> teams)
     {
         Teams = teams;
     }
 
-    public Guid MatchId { get; set; }
+    public ulong Id { get; set; }
 
-    public uint MatchType { get; set; }
+    public uint Type { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public IReadOnlyList<IReadOnlyList<Registry<TEntry>>> Teams { get; }
+    public IReadOnlyList<IReadOnlyList<Ticket<TMember>>> Teams { get; }
 
-    public HashSet<string> ConfirmedEntryIds { get; } = new();
+    public HashSet<string> ConfirmedMemberIds { get; } = new();
 
-    public IReadOnlyList<Registry<TEntry>> AllRegistries => Teams.SelectMany(team => team).ToList();
+    public IReadOnlyList<Ticket<TMember>> AllTickets => Teams.SelectMany(team => team).ToList();
 
-    public IEnumerable<string> AllEntryIds => AllRegistries.SelectMany(registry => registry.Entries.Select(entry => entry.EntryId));
+    public IEnumerable<string> AllMemberIds => AllTickets.SelectMany(ticket => ticket.Members.Select(member => member.MemberId));
 }

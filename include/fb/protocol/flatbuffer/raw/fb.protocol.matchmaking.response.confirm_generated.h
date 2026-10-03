@@ -26,18 +26,18 @@ struct Confirm FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ConfirmBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ERROR = 4,
-    VT_MATCH_FINALIZED = 6
+    VT_MATCH_READY = 6
   };
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  bool match_finalized() const {
-    return GetField<uint8_t>(VT_MATCH_FINALIZED, 0) != 0;
+  bool match_ready() const {
+    return GetField<uint8_t>(VT_MATCH_READY, 0) != 0;
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyField<uint8_t>(verifier, VT_MATCH_FINALIZED, 1) &&
+           VerifyField<uint8_t>(verifier, VT_MATCH_READY, 1) &&
            verifier.EndTable();
   }
 };
@@ -49,8 +49,8 @@ struct ConfirmBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(Confirm::VT_ERROR, error, 0);
   }
-  void add_match_finalized(bool match_finalized) {
-    fbb_.AddElement<uint8_t>(Confirm::VT_MATCH_FINALIZED, static_cast<uint8_t>(match_finalized), 0);
+  void add_match_ready(bool match_ready) {
+    fbb_.AddElement<uint8_t>(Confirm::VT_MATCH_READY, static_cast<uint8_t>(match_ready), 0);
   }
   explicit ConfirmBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -66,10 +66,10 @@ struct ConfirmBuilder {
 inline ::flatbuffers::Offset<Confirm> CreateConfirm(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t error = 0,
-    bool match_finalized = false) {
+    bool match_ready = false) {
   ConfirmBuilder builder_(_fbb);
   builder_.add_error(error);
-  builder_.add_match_finalized(match_finalized);
+  builder_.add_match_ready(match_ready);
   return builder_.Finish();
 }
 

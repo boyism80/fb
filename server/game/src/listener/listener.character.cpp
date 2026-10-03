@@ -194,7 +194,7 @@ async::task<void> listener_impl::on_transfer(character&                  me,
     writer.write<std::string>(me.name());
 
     auto flags = game_reqs::TRANSFER_PARAM::MAP;
-    if (option.match.has_value() && option.match->id.empty() == false)
+    if (option.match.has_value() && option.match->id != 0)
         flags |= game_reqs::TRANSFER_PARAM::MATCH;
     if (me.client_version == fb::protocol::CLIENT_VERSION::v651 && me.ui_mode == fb::protocol::CLIENT_UI_MODE::NEW)
         flags |= game_reqs::TRANSFER_PARAM::UI_MODE;
@@ -209,7 +209,7 @@ async::task<void> listener_impl::on_transfer(character&                  me,
     }
     if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::MATCH))
     {
-        writer.write<std::string>(option.match->id);
+        writer.write<uint64_t>(option.match->id);
         writer.write<uint32_t>(option.match->type);
         writer.write<uint32_t>(option.match->team);
     }

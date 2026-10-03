@@ -9,24 +9,18 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct Proposed : IFlatbufferObject
+public struct MatchProposed : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static Proposed GetRootAsProposed(ByteBuffer _bb) { return GetRootAsProposed(_bb, new Proposed()); }
-  public static Proposed GetRootAsProposed(ByteBuffer _bb, Proposed obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public static bool VerifyProposed(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, ProposedVerify.Verify); }
+  public static MatchProposed GetRootAsMatchProposed(ByteBuffer _bb) { return GetRootAsMatchProposed(_bb, new MatchProposed()); }
+  public static MatchProposed GetRootAsMatchProposed(ByteBuffer _bb, MatchProposed obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static bool VerifyMatchProposed(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, MatchProposedVerify.Verify); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public Proposed __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public MatchProposed __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string MatchId { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetMatchIdBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetMatchIdBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetMatchIdArray() { return __p.__vector_as_array<byte>(4); }
+  public ulong MatchId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public uint MatchType { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string ConfirmDeadline { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -38,21 +32,21 @@ public struct Proposed : IFlatbufferObject
   public fb.protocol.matchmaking.raw.MatchTeam? Teams(int j) { int o = __p.__offset(10); return o != 0 ? (fb.protocol.matchmaking.raw.MatchTeam?)(new fb.protocol.matchmaking.raw.MatchTeam()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int TeamsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
 
-  public static Offset<fb.protocol.matchmaking.mq.raw.Proposed> CreateProposed(FlatBufferBuilder builder,
-      StringOffset match_idOffset = default(StringOffset),
+  public static Offset<fb.protocol.matchmaking.mq.raw.MatchProposed> CreateMatchProposed(FlatBufferBuilder builder,
+      ulong match_id = 0,
       uint match_type = 0,
       StringOffset confirm_deadlineOffset = default(StringOffset),
       VectorOffset teamsOffset = default(VectorOffset)) {
     builder.StartTable(4);
-    Proposed.AddTeams(builder, teamsOffset);
-    Proposed.AddConfirmDeadline(builder, confirm_deadlineOffset);
-    Proposed.AddMatchType(builder, match_type);
-    Proposed.AddMatchId(builder, match_idOffset);
-    return Proposed.EndProposed(builder);
+    MatchProposed.AddMatchId(builder, match_id);
+    MatchProposed.AddTeams(builder, teamsOffset);
+    MatchProposed.AddConfirmDeadline(builder, confirm_deadlineOffset);
+    MatchProposed.AddMatchType(builder, match_type);
+    return MatchProposed.EndMatchProposed(builder);
   }
 
-  public static void StartProposed(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddMatchId(FlatBufferBuilder builder, StringOffset matchIdOffset) { builder.AddOffset(0, matchIdOffset.Value, 0); }
+  public static void StartMatchProposed(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddMatchId(FlatBufferBuilder builder, ulong matchId) { builder.AddUlong(0, matchId, 0); }
   public static void AddMatchType(FlatBufferBuilder builder, uint matchType) { builder.AddUint(1, matchType, 0); }
   public static void AddConfirmDeadline(FlatBufferBuilder builder, StringOffset confirmDeadlineOffset) { builder.AddOffset(2, confirmDeadlineOffset.Value, 0); }
   public static void AddTeams(FlatBufferBuilder builder, VectorOffset teamsOffset) { builder.AddOffset(3, teamsOffset.Value, 0); }
@@ -61,21 +55,21 @@ public struct Proposed : IFlatbufferObject
   public static VectorOffset CreateTeamsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.matchmaking.raw.MatchTeam>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateTeamsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.matchmaking.raw.MatchTeam>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartTeamsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static Offset<fb.protocol.matchmaking.mq.raw.Proposed> EndProposed(FlatBufferBuilder builder) {
+  public static Offset<fb.protocol.matchmaking.mq.raw.MatchProposed> EndMatchProposed(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<fb.protocol.matchmaking.mq.raw.Proposed>(o);
+    return new Offset<fb.protocol.matchmaking.mq.raw.MatchProposed>(o);
   }
-  public static void FinishProposedBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.mq.raw.Proposed> offset) { builder.Finish(offset.Value); }
-  public static void FinishSizePrefixedProposedBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.mq.raw.Proposed> offset) { builder.FinishSizePrefixed(offset.Value); }
+  public static void FinishMatchProposedBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.mq.raw.MatchProposed> offset) { builder.Finish(offset.Value); }
+  public static void FinishSizePrefixedMatchProposedBuffer(FlatBufferBuilder builder, Offset<fb.protocol.matchmaking.mq.raw.MatchProposed> offset) { builder.FinishSizePrefixed(offset.Value); }
 }
 
 
-static public class ProposedVerify
+static public class MatchProposedVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*MatchId*/, false)
+      && verifier.VerifyField(tablePos, 4 /*MatchId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 6 /*MatchType*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*ConfirmDeadline*/, false)
       && verifier.VerifyVectorOfTables(tablePos, 10 /*Teams*/, fb.protocol.matchmaking.raw.MatchTeamVerify.Verify, false)

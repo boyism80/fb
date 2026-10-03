@@ -1,28 +1,31 @@
 using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
+using Http.Util;
 using Matchmaking.Model;
 using Matchmaking.Options;
 using Microsoft.Extensions.Options;
 
 namespace Matchmaking.Core;
 
-public class MatchMaker<TEntry>
-    where TEntry : IRegistryEntry
+public class MatchMaker<TMember>
+    where TMember : ITicketMember
 {
     private readonly MatchmakingOptions _options;
     private readonly ILogger _logger;
-    private readonly Dictionary<uint, RegistryQueue<TEntry>> _registryQueues = new();
-    private readonly Dictionary<Guid, Match<TEntry>> _pendingMatches = new();
-    private readonly Dictionary<string, EnrollmentRef> _activeEntries = new();
-    private readonly Dictionary<Guid, (uint MatchType, EnrollmentState State)> _registryIndex = new();
+    private readonly Dictionary<uint, TicketQueue<TMember>> _ticketQueues = new();
+    private readonly Dictionary<ulong, Match<TMember>> _pendingMatches = new();
+    private readonly Dictionary<string, TicketRef> _memberTickets = new();
+    private readonly SnowflakeId _ids = new();
     private readonly object _lock = new();
 
-    public event Func<ProposedMatchResult<TEntry>, CancellationToken, Task> MatchProposed;
+    public event Func<ProposedMatchResult<TMember>, CancellationToken, Task> MatchProposed;
 
-    public event Func<Match<TEntry>, CancellationToken, Task> MatchReady;
+    public event Func<Match<TMember>, CancellationToken, Task> MatchReady;
 
-    public event Func<DissolvedMatchResult<TEntry>, CancellationToken, Task> MatchDissolved;
+    public event Func<DissolvedMatchResult<TMember>, CancellationToken, Task> MatchDissolved;
+
+    public event Func<Ticket<TMember>, CancellationToken, Task> TicketRemoved;
 
     public MatchMaker(IOptions<MatchmakingOptions> options, ILogger logger)
     {
@@ -30,136 +33,160 @@ public class MatchMaker<TEntry>
         _logger = logger;
     }
 
-    public Guid Enroll(uint matchType, IReadOnlyList<TEntry> entries)
+    public async Task<ulong> EnqueueAsync(
+        uint matchType,
+        IReadOnlyList<TMember> members,
+        CancellationToken cancellationToken = default)
     {
-        if (entries == null || entries.Count == 0)
+        if (members == null || members.Count == 0)
         {
             throw new LogicException(ErrorCode.Unhandled);
         }
 
+        if (!Table.Matchmaking.TryGetValue((Fb.Model.EnumValue.MatchType)matchType, out var matchmakingConfig))
+        {
+            throw new LogicException(ErrorCode.MatchmakingUnknownQueue);
+        }
+
+        if (members.Count > matchmakingConfig.MemberCount)
+        {
+            throw new LogicException(ErrorCode.Unhandled);
+        }
+
+        Ticket<TMember> ticket;
+        var evicted = new List<Ticket<TMember>>();
+
         lock (_lock)
         {
-            var entryIds = new HashSet<string>();
-            foreach (var entry in entries)
+            var memberIds = new HashSet<string>();
+            foreach (var member in members)
             {
-                if (entry == null)
+                if (member == null
+                    || string.IsNullOrWhiteSpace(member.MemberId)
+                    || !double.IsFinite(member.Mu)
+                    || !double.IsFinite(member.Sigma)
+                    || member.Sigma <= 0)
                 {
                     throw new LogicException(ErrorCode.Unhandled);
                 }
 
-                if (!entryIds.Add(entry.EntryId))
+                if (!memberIds.Add(member.MemberId))
                 {
                     throw new LogicException(ErrorCode.MatchmakingDuplicateEntry);
                 }
 
-                if (_activeEntries.TryGetValue(entry.EntryId, out var active)
-                    && active.State == EnrollmentState.Pending)
+                if (_memberTickets.TryGetValue(member.MemberId, out var active)
+                    && active.State == TicketState.Proposed)
                 {
                     throw new LogicException(ErrorCode.MatchmakingAlreadyEnrolled);
                 }
             }
 
-            // A waiting enrollment without a live owner is leftover state, so drop it
+            // A queued ticket without a live owner is leftover state, so drop it
             // instead of locking the character out of the queue forever.
-            foreach (var entry in entries)
+            foreach (var member in members)
             {
-                if (!_activeEntries.TryGetValue(entry.EntryId, out var stale))
+                if (!_memberTickets.TryGetValue(member.MemberId, out var stale))
                 {
                     continue;
                 }
 
                 _logger.LogWarning(
-                    "Enroll evicted leftover registry {RegistryId} of {EntryId} for match type {MatchType}",
-                    stale.RegistryId,
-                    entry.EntryId,
+                    "Enqueue evicted leftover ticket {TicketId} of {MemberId} for match type {MatchType}",
+                    stale.TicketId,
+                    member.MemberId,
                     stale.MatchType);
-                UnregisterFromQueue(stale.MatchType, stale.RegistryId);
-                ClearRegistryEnrollment(stale.RegistryId);
+                var removed = RemoveTicket(stale.MatchType, stale.TicketId);
+                ClearMemberTickets(stale.TicketId);
+                if (removed == null)
+                {
+                    continue;
+                }
+
+                // Members re-entering with this request must not be told their new ticket is gone.
+                var notified = removed.Members.Where(m => !memberIds.Contains(m.MemberId)).ToList();
+                if (notified.Count > 0)
+                {
+                    evicted.Add(new Ticket<TMember>(removed.Id, removed.MatchType, removed.CreatedAt, notified));
+                }
             }
 
-            Registry<TEntry> registry;
-            try
+            ticket = new Ticket<TMember>(_ids.Next(0), matchType, DateTime.UtcNow, members.ToList());
+            if (!_ticketQueues.TryGetValue(matchType, out var queue))
             {
-                registry = RegisterToQueue(matchType, entries, DateTime.UtcNow);
-            }
-            catch (ArgumentException ex) when (ex.Message.Contains("Unknown match type"))
-            {
-                throw new LogicException(ErrorCode.MatchmakingUnknownQueue);
-            }
-            catch (ArgumentException ex) when (ex.Message.Contains("Duplicate EntryId"))
-            {
-                throw new LogicException(ErrorCode.MatchmakingDuplicateEntry);
-            }
-            catch (ArgumentException)
-            {
-                throw new LogicException(ErrorCode.Unhandled);
+                queue = new TicketQueue<TMember>(matchmakingConfig, _options);
+                _ticketQueues[matchType] = queue;
             }
 
-            foreach (var entry in entries)
+            queue.Add(ticket);
+            foreach (var member in members)
             {
-                _activeEntries[entry.EntryId] = new EnrollmentRef(
-                    EnrollmentState.Waiting,
-                    matchType,
-                    registry.Id);
+                _memberTickets[member.MemberId] = new TicketRef(TicketState.Queued, matchType, ticket.Id);
             }
 
-            _registryIndex[registry.Id] = (matchType, EnrollmentState.Waiting);
             _logger.LogInformation(
-                "Enrolled registry {RegistryId} for match type {MatchType} with entries {Entries}",
-                registry.Id,
+                "Enqueued ticket {TicketId} for match type {MatchType} with members {Members}",
+                ticket.Id,
                 matchType,
-                string.Join(",", entries.Select(entry => entry.EntryId)));
-            LogQueueState("enroll");
-            return registry.Id;
+                string.Join(",", members.Select(member => member.MemberId)));
+            LogQueueState("enqueue");
         }
+
+        foreach (var removed in evicted)
+        {
+            await RaiseTicketRemovedAsync(removed, cancellationToken);
+        }
+
+        return ticket.Id;
     }
 
-    public async Task UnenrollAsync(
+    public async Task DequeueAsync(
         uint matchType,
-        Guid registryId,
-        string entryId,
+        ulong ticketId,
+        string memberId,
         CancellationToken cancellationToken = default)
     {
-        DissolvedMatchResult<TEntry> dissolved = null;
+        DissolvedMatchResult<TMember> dissolved = null;
+        Ticket<TMember> removed = null;
 
         lock (_lock)
         {
-            if (!_activeEntries.TryGetValue(entryId, out var enrollment))
+            if (!_memberTickets.TryGetValue(memberId, out var ticketRef))
             {
                 _logger.LogWarning(
-                    "Unenroll from {EntryId} found nothing to remove (requested registry {RegistryId}, match type {MatchType})",
-                    entryId,
-                    registryId,
+                    "Dequeue from {MemberId} found nothing to remove (requested ticket {TicketId}, match type {MatchType})",
+                    memberId,
+                    ticketId,
                     matchType);
                 throw new LogicException(ErrorCode.MatchmakingRegistryNotFound);
             }
 
-            if (enrollment.RegistryId != registryId || enrollment.MatchType != matchType)
+            if (ticketRef.TicketId != ticketId || ticketRef.MatchType != matchType)
             {
                 _logger.LogWarning(
-                    "Unenroll from {EntryId} referenced {RegistryId}/{MatchType} but the live enrollment is {LiveRegistryId}/{LiveMatchType}",
-                    entryId,
-                    registryId,
+                    "Dequeue from {MemberId} referenced {TicketId}/{MatchType} but the live ticket is {LiveTicketId}/{LiveMatchType}",
+                    memberId,
+                    ticketId,
                     matchType,
-                    enrollment.RegistryId,
-                    enrollment.MatchType);
+                    ticketRef.TicketId,
+                    ticketRef.MatchType);
             }
 
-            if (enrollment.State == EnrollmentState.Pending && enrollment.MatchId.HasValue
-                && _pendingMatches.TryGetValue(enrollment.MatchId.Value, out var match))
+            if (ticketRef.State == TicketState.Proposed && ticketRef.MatchId.HasValue
+                && _pendingMatches.TryGetValue(ticketRef.MatchId.Value, out var match))
             {
-                dissolved = Dissolve(match, DissolveReason.Decline, entryId);
+                dissolved = Dissolve(match, DissolveReason.Decline, memberId);
             }
             else
             {
-                UnregisterFromQueue(enrollment.MatchType, enrollment.RegistryId);
-                ClearRegistryEnrollment(enrollment.RegistryId);
+                removed = RemoveTicket(ticketRef.MatchType, ticketRef.TicketId);
+                ClearMemberTickets(ticketRef.TicketId);
                 _logger.LogInformation(
-                    "Unenrolled registry {RegistryId} of match type {MatchType} requested by {EntryId}",
-                    enrollment.RegistryId,
-                    enrollment.MatchType,
-                    entryId);
-                LogQueueState("unenroll");
+                    "Dequeued ticket {TicketId} of match type {MatchType} requested by {MemberId}",
+                    ticketRef.TicketId,
+                    ticketRef.MatchType,
+                    memberId);
+                LogQueueState("dequeue");
             }
         }
 
@@ -167,12 +194,16 @@ public class MatchMaker<TEntry>
         {
             await RaiseMatchDissolvedAsync(dissolved, cancellationToken);
         }
+
+        if (removed != null)
+        {
+            await RaiseTicketRemovedAsync(removed, cancellationToken);
+        }
     }
 
-    public async Task<bool> ConfirmAsync(Guid matchId, string entryId, CancellationToken cancellationToken = default)
+    public async Task<bool> ConfirmAsync(ulong matchId, string memberId, CancellationToken cancellationToken = default)
     {
-        Match<TEntry> readyMatch = null;
-        var matchFinalized = false;
+        Match<TMember> readyMatch;
 
         lock (_lock)
         {
@@ -186,44 +217,39 @@ public class MatchMaker<TEntry>
                 throw new LogicException(ErrorCode.MatchmakingConfirmExpired);
             }
 
-            if (!match.AllEntryIds.Contains(entryId))
+            if (!match.AllMemberIds.Contains(memberId))
             {
                 throw new LogicException(ErrorCode.MatchmakingNotParticipant);
             }
 
-            if (match.ConfirmedEntryIds.Contains(entryId))
+            if (match.ConfirmedMemberIds.Contains(memberId))
             {
                 throw new LogicException(ErrorCode.MatchmakingAlreadyConfirmed);
             }
 
-            match.ConfirmedEntryIds.Add(entryId);
+            match.ConfirmedMemberIds.Add(memberId);
             _logger.LogInformation(
-                "Match {MatchId} confirmed by {EntryId} ({Confirmed}/{Total})",
+                "Match {MatchId} confirmed by {MemberId} ({Confirmed}/{Total})",
                 matchId,
-                entryId,
-                match.ConfirmedEntryIds.Count,
-                match.AllEntryIds.Count());
+                memberId,
+                match.ConfirmedMemberIds.Count,
+                match.AllMemberIds.Count());
 
-            if (!match.AllEntryIds.All(id => match.ConfirmedEntryIds.Contains(id)))
+            if (!match.AllMemberIds.All(id => match.ConfirmedMemberIds.Contains(id)))
             {
                 return false;
             }
 
-            readyMatch = FinalizeMatch(match);
-            matchFinalized = true;
+            readyMatch = MarkReady(match);
         }
 
-        if (matchFinalized && readyMatch != null)
-        {
-            await RaiseMatchReadyAsync(readyMatch, cancellationToken);
-        }
-
-        return matchFinalized;
+        await RaiseMatchReadyAsync(readyMatch, cancellationToken);
+        return true;
     }
 
-    public async Task DeclineAsync(Guid matchId, string entryId, CancellationToken cancellationToken = default)
+    public async Task DeclineAsync(ulong matchId, string memberId, CancellationToken cancellationToken = default)
     {
-        DissolvedMatchResult<TEntry> result;
+        DissolvedMatchResult<TMember> result;
 
         lock (_lock)
         {
@@ -232,91 +258,86 @@ public class MatchMaker<TEntry>
                 throw new LogicException(ErrorCode.MatchmakingMatchNotFound);
             }
 
-            if (!match.AllEntryIds.Contains(entryId))
+            if (!match.AllMemberIds.Contains(memberId))
             {
                 throw new LogicException(ErrorCode.MatchmakingNotParticipant);
             }
 
-            _logger.LogInformation("Match {MatchId} declined by {EntryId}", matchId, entryId);
-            result = Dissolve(match, DissolveReason.Decline, entryId);
+            _logger.LogInformation("Match {MatchId} declined by {MemberId}", matchId, memberId);
+            result = Dissolve(match, DissolveReason.Decline, memberId);
         }
 
         await RaiseMatchDissolvedAsync(result, cancellationToken);
     }
 
-    public MatchmakingStatus GetStatus(string entryId)
+    public MatchmakingStatus GetStatus(string memberId)
     {
         lock (_lock)
         {
-            if (!_activeEntries.TryGetValue(entryId, out var enrollment))
+            if (!_memberTickets.TryGetValue(memberId, out var ticketRef))
             {
                 return new MatchmakingStatus();
             }
 
-            if (enrollment.State == EnrollmentState.Waiting)
+            if (ticketRef.State == TicketState.Queued)
             {
                 return new MatchmakingStatus
                 {
-                    InQueue = true,
-                    MatchType = enrollment.MatchType,
-                    RegistryId = enrollment.RegistryId
+                    Queued = true,
+                    MatchType = ticketRef.MatchType,
+                    TicketId = ticketRef.TicketId
                 };
             }
 
-            if (!enrollment.MatchId.HasValue
-                || !_pendingMatches.TryGetValue(enrollment.MatchId.Value, out var match))
+            if (!ticketRef.MatchId.HasValue
+                || !_pendingMatches.TryGetValue(ticketRef.MatchId.Value, out var match))
             {
                 return new MatchmakingStatus();
             }
 
             return new MatchmakingStatus
             {
-                MatchType = enrollment.MatchType,
-                RegistryId = enrollment.RegistryId,
-                PendingMatchId = enrollment.MatchId,
+                MatchType = ticketRef.MatchType,
+                TicketId = ticketRef.TicketId,
+                PendingMatchId = ticketRef.MatchId,
                 ConfirmDeadline = GetConfirmDeadline(match)
             };
         }
     }
 
-    public async Task TickMatchmakingAsync(CancellationToken cancellationToken = default)
+    public async Task TickMatchmakingAsync(IReadOnlyList<byte> hostIds, CancellationToken cancellationToken = default)
     {
-        List<ProposedMatchResult<TEntry>> proposed;
+        List<ProposedMatchResult<TMember>> proposed;
 
         lock (_lock)
         {
-            proposed = new List<ProposedMatchResult<TEntry>>();
-            var results = TryFormMatches();
-
-            foreach (var (matchType, matches) in results)
+            proposed = new List<ProposedMatchResult<TMember>>();
+            foreach (var match in TryFormMatches(hostIds))
             {
-                foreach (var match in matches)
+                foreach (var ticket in match.AllTickets)
                 {
-                    foreach (var registry in match.AllRegistries)
+                    foreach (var member in ticket.Members)
                     {
-                        _registryIndex[registry.Id] = (matchType, EnrollmentState.Pending);
-                        foreach (var entry in registry.Entries)
-                        {
-                            _activeEntries[entry.EntryId] = new EnrollmentRef(
-                                EnrollmentState.Pending,
-                                matchType,
-                                registry.Id,
-                                match.MatchId);
-                        }
+                        _memberTickets[member.MemberId] = new TicketRef(
+                            TicketState.Proposed,
+                            match.Type,
+                            ticket.Id,
+                            match.Id);
                     }
-
-                    _logger.LogInformation(
-                        "Proposed match {MatchId} for match type {MatchType} with registries {Registries}",
-                        match.MatchId,
-                        matchType,
-                        string.Join(",", match.AllRegistries.Select(registry => registry.Id)));
-
-                    proposed.Add(new ProposedMatchResult<TEntry>
-                    {
-                        Match = match,
-                        ConfirmDeadline = GetConfirmDeadline(match)
-                    });
                 }
+
+                _logger.LogInformation(
+                    "Proposed match {MatchId} on host {HostId} for match type {MatchType} with tickets {Tickets}",
+                    match.Id,
+                    SnowflakeId.HostId(match.Id),
+                    match.Type,
+                    string.Join(",", match.AllTickets.Select(ticket => ticket.Id)));
+
+                proposed.Add(new ProposedMatchResult<TMember>
+                {
+                    Match = match,
+                    ConfirmDeadline = GetConfirmDeadline(match)
+                });
             }
 
             if (proposed.Count > 0)
@@ -334,18 +355,18 @@ public class MatchMaker<TEntry>
 
     public async Task TickConfirmationAsync(CancellationToken cancellationToken = default)
     {
-        List<DissolvedMatchResult<TEntry>> dissolved;
+        List<DissolvedMatchResult<TMember>> dissolved;
 
         lock (_lock)
         {
-            dissolved = new List<DissolvedMatchResult<TEntry>>();
+            dissolved = new List<DissolvedMatchResult<TMember>>();
             var expiredMatches = _pendingMatches.Values
                 .Where(match => IsExpired(match, DateTime.UtcNow))
                 .ToList();
 
             foreach (var match in expiredMatches)
             {
-                if (!_pendingMatches.ContainsKey(match.MatchId))
+                if (!_pendingMatches.ContainsKey(match.Id))
                 {
                     continue;
                 }
@@ -367,19 +388,19 @@ public class MatchMaker<TEntry>
         {
             var queues = string.Join(
                 ", ",
-                _registryQueues.Select(pair => $"{pair.Key}:{pair.Value.Describe()}"));
+                _ticketQueues.Select(pair => $"{pair.Key}:{pair.Value.Describe()}"));
 
             _logger.LogInformation(
-                "Matchmaking state after {Reason}: queues [{Queues}], pending matches {PendingMatches}, enrolled entries {EnrolledEntries}",
+                "Matchmaking state after {Reason}: queues [{Queues}], pending matches {PendingMatches}, members {Members}",
                 reason,
                 queues,
                 _pendingMatches.Count,
-                _activeEntries.Count);
+                _memberTickets.Count);
         }
     }
 
     private async Task RaiseMatchProposedAsync(
-        ProposedMatchResult<TEntry> args,
+        ProposedMatchResult<TMember> args,
         CancellationToken cancellationToken)
     {
         var handler = MatchProposed;
@@ -389,11 +410,11 @@ public class MatchMaker<TEntry>
         }
 
         var handlers = handler.GetInvocationList()
-            .Cast<Func<ProposedMatchResult<TEntry>, CancellationToken, Task>>();
+            .Cast<Func<ProposedMatchResult<TMember>, CancellationToken, Task>>();
         await Task.WhenAll(handlers.Select(h => h(args, cancellationToken)));
     }
 
-    private async Task RaiseMatchReadyAsync(Match<TEntry> match, CancellationToken cancellationToken)
+    private async Task RaiseMatchReadyAsync(Match<TMember> match, CancellationToken cancellationToken)
     {
         var handler = MatchReady;
         if (handler == null)
@@ -402,12 +423,12 @@ public class MatchMaker<TEntry>
         }
 
         var handlers = handler.GetInvocationList()
-            .Cast<Func<Match<TEntry>, CancellationToken, Task>>();
+            .Cast<Func<Match<TMember>, CancellationToken, Task>>();
         await Task.WhenAll(handlers.Select(h => h(match, cancellationToken)));
     }
 
     private async Task RaiseMatchDissolvedAsync(
-        DissolvedMatchResult<TEntry> result,
+        DissolvedMatchResult<TMember> result,
         CancellationToken cancellationToken)
     {
         var handler = MatchDissolved;
@@ -417,74 +438,86 @@ public class MatchMaker<TEntry>
         }
 
         var handlers = handler.GetInvocationList()
-            .Cast<Func<DissolvedMatchResult<TEntry>, CancellationToken, Task>>();
+            .Cast<Func<DissolvedMatchResult<TMember>, CancellationToken, Task>>();
         await Task.WhenAll(handlers.Select(h => h(result, cancellationToken)));
     }
 
-    private Match<TEntry> FinalizeMatch(Match<TEntry> match)
+    private async Task RaiseTicketRemovedAsync(Ticket<TMember> ticket, CancellationToken cancellationToken)
     {
-        foreach (var registry in match.AllRegistries)
+        var handler = TicketRemoved;
+        if (handler == null)
         {
-            ClearRegistryEnrollment(registry.Id);
+            return;
         }
 
-        _pendingMatches.Remove(match.MatchId);
-        LogQueueState("finalize");
+        var handlers = handler.GetInvocationList()
+            .Cast<Func<Ticket<TMember>, CancellationToken, Task>>();
+        await Task.WhenAll(handlers.Select(h => h(ticket, cancellationToken)));
+    }
+
+    private Match<TMember> MarkReady(Match<TMember> match)
+    {
+        foreach (var ticket in match.AllTickets)
+        {
+            ClearMemberTickets(ticket.Id);
+        }
+
+        _pendingMatches.Remove(match.Id);
+        LogQueueState("ready");
         return match;
     }
 
-    private DissolvedMatchResult<TEntry> Dissolve(Match<TEntry> match, DissolveReason reason, string decliningEntryId = null)
+    private DissolvedMatchResult<TMember> Dissolve(Match<TMember> match, DissolveReason reason, string decliningMemberId = null)
     {
-        var outcomes = new List<RegistryOutcomeNotification<TEntry>>();
-        foreach (var registry in match.AllRegistries)
+        var outcomes = new List<TicketOutcome<TMember>>();
+        foreach (var ticket in match.AllTickets)
         {
             var hasFault = reason == DissolveReason.Decline
-                ? registry.Entries.Any(entry => entry.EntryId == decliningEntryId)
-                : registry.Entries.Any(entry => !match.ConfirmedEntryIds.Contains(entry.EntryId));
+                ? ticket.Members.Any(member => member.MemberId == decliningMemberId)
+                : ticket.Members.Any(member => !match.ConfirmedMemberIds.Contains(member.MemberId));
 
-            outcomes.Add(new RegistryOutcomeNotification<TEntry>
+            outcomes.Add(new TicketOutcome<TMember>
             {
-                RegistryId = registry.Id,
+                TicketId = ticket.Id,
                 Requeued = !hasFault,
-                Entries = registry.Entries.ToList()
+                Members = ticket.Members.ToList()
             });
         }
 
-        foreach (var (registry, outcome) in match.AllRegistries.Zip(outcomes))
+        foreach (var (ticket, outcome) in match.AllTickets.Zip(outcomes))
         {
             if (!outcome.Requeued)
             {
-                ClearRegistryEnrollment(registry.Id);
+                ClearMemberTickets(ticket.Id);
                 _logger.LogInformation(
-                    "Registry {RegistryId} dropped from match {MatchId} ({Reason})",
-                    registry.Id,
-                    match.MatchId,
+                    "Ticket {TicketId} dropped from match {MatchId} ({Reason})",
+                    ticket.Id,
+                    match.Id,
                     reason);
             }
             else
             {
-                // The registry keeps its id so game servers never hold a dangling reference.
-                _registryQueues[match.MatchType].Add(registry);
-                _registryIndex[registry.Id] = (match.MatchType, EnrollmentState.Waiting);
-                foreach (var entry in registry.Entries)
+                // The ticket keeps its id so game servers never hold a dangling reference.
+                _ticketQueues[match.Type].Add(ticket);
+                foreach (var member in ticket.Members)
                 {
-                    _activeEntries[entry.EntryId] = new EnrollmentRef(
-                        EnrollmentState.Waiting,
-                        match.MatchType,
-                        registry.Id);
+                    _memberTickets[member.MemberId] = new TicketRef(
+                        TicketState.Queued,
+                        match.Type,
+                        ticket.Id);
                 }
 
                 _logger.LogInformation(
-                    "Registry {RegistryId} requeued after match {MatchId} ({Reason})",
-                    registry.Id,
-                    match.MatchId,
+                    "Ticket {TicketId} requeued after match {MatchId} ({Reason})",
+                    ticket.Id,
+                    match.Id,
                     reason);
             }
         }
 
-        _pendingMatches.Remove(match.MatchId);
+        _pendingMatches.Remove(match.Id);
         LogQueueState("dissolve");
-        return new DissolvedMatchResult<TEntry>
+        return new DissolvedMatchResult<TMember>
         {
             Match = match,
             Reason = reason,
@@ -492,152 +525,62 @@ public class MatchMaker<TEntry>
         };
     }
 
-    private void ClearRegistryEnrollment(Guid registryId)
+    private void ClearMemberTickets(ulong ticketId)
     {
-        if (!_registryIndex.Remove(registryId, out _))
-        {
-            return;
-        }
-
-        var entryIds = _activeEntries
-            .Where(pair => pair.Value.RegistryId == registryId)
+        var memberIds = _memberTickets
+            .Where(pair => pair.Value.TicketId == ticketId)
             .Select(pair => pair.Key)
             .ToList();
 
-        foreach (var entryId in entryIds)
+        foreach (var memberId in memberIds)
         {
-            _activeEntries.Remove(entryId);
+            _memberTickets.Remove(memberId);
         }
     }
 
-    private Registry<TEntry> RegisterToQueue(uint matchType, IReadOnlyList<TEntry> entries, DateTime createdDateTime)
+    private Ticket<TMember> RemoveTicket(uint matchType, ulong ticketId)
     {
-        if (matchType == 0)
+        if (!_ticketQueues.TryGetValue(matchType, out var queue))
         {
-            throw new ArgumentException("Match type is required.", nameof(matchType));
+            return null;
         }
 
-        if (entries == null || entries.Count == 0)
-        {
-            throw new ArgumentException("At least one registry entry is required.", nameof(entries));
-        }
-
-        if (!Table.Matchmaking.TryGetValue((Fb.Model.EnumValue.MatchType)matchType, out var matchmakingConfig))
-        {
-            throw new ArgumentException($"Unknown match type: {matchType}", nameof(matchType));
-        }
-
-        if (entries.Count > matchmakingConfig.MemberCount)
-        {
-            throw new ArgumentException(
-                $"Registry cannot contain more than {matchmakingConfig.MemberCount} entries for match type {matchType}.",
-                nameof(entries));
-        }
-
-        ValidateEntries(entries);
-
-        var registry = new Registry<TEntry>(Guid.NewGuid(), createdDateTime, entries.ToList());
-        if (!_registryQueues.TryGetValue(matchType, out var queue))
-        {
-            queue = new RegistryQueue<TEntry>(matchmakingConfig, _options);
-            _registryQueues[matchType] = queue;
-        }
-
-        queue.Add(registry);
-        return registry;
+        return queue.Remove(ticketId);
     }
 
-    private bool UnregisterFromQueue(uint matchType, Guid registryId)
+    private List<Match<TMember>> TryFormMatches(IReadOnlyList<byte> hostIds)
     {
-        if (matchType == 0)
+        var results = new List<Match<TMember>>();
+
+        // Without a live cross server nobody could host the match, so tickets stay queued.
+        if (hostIds.Count == 0)
         {
-            throw new ArgumentException("Match type is required.", nameof(matchType));
+            return results;
         }
 
-        if (!_registryQueues.TryGetValue(matchType, out var queue))
+        foreach (var (matchType, queue) in _ticketQueues)
         {
-            return false;
-        }
-
-        return queue.Remove(registryId);
-    }
-
-    private IReadOnlyList<(uint MatchType, List<Match<TEntry>> Matches)> TryFormMatches()
-    {
-        var results = new List<(uint, List<Match<TEntry>>)>();
-
-        foreach (var entry in _registryQueues)
-        {
-            var matches = entry.Value.TryFormMatch();
-            if (matches.Count == 0)
-            {
-                continue;
-            }
-
             var createdAt = DateTime.UtcNow;
-            foreach (var match in matches)
+            foreach (var match in queue.TryFormMatch())
             {
-                match.MatchId = Guid.NewGuid();
-                match.MatchType = entry.Key;
+                match.Id = _ids.Next(hostIds[Random.Shared.Next(hostIds.Count)]);
+                match.Type = matchType;
                 match.CreatedAt = createdAt;
-                _pendingMatches[match.MatchId] = match;
+                _pendingMatches[match.Id] = match;
+                results.Add(match);
             }
-
-            results.Add((entry.Key, matches));
         }
 
         return results;
     }
 
-    private static DateTime GetConfirmDeadline(Match<TEntry> match, MatchmakingOptions options)
+    private DateTime GetConfirmDeadline(Match<TMember> match)
     {
-        return match.CreatedAt.AddSeconds(Math.Max(1, options.ConfirmTimeoutSeconds));
+        return match.CreatedAt.AddSeconds(Math.Max(1, _options.ConfirmTimeoutSeconds));
     }
 
-    private DateTime GetConfirmDeadline(Match<TEntry> match)
+    private bool IsExpired(Match<TMember> match, DateTime utcNow)
     {
-        return GetConfirmDeadline(match, _options);
-    }
-
-    private static bool IsExpired(Match<TEntry> match, DateTime utcNow, MatchmakingOptions options)
-    {
-        return utcNow >= GetConfirmDeadline(match, options);
-    }
-
-    private bool IsExpired(Match<TEntry> match, DateTime utcNow)
-    {
-        return IsExpired(match, utcNow, _options);
-    }
-
-    private static void ValidateEntries(IReadOnlyList<TEntry> entries)
-    {
-        var entryIds = new HashSet<string>();
-        foreach (var entry in entries)
-        {
-            if (entry == null)
-            {
-                throw new ArgumentException("Registry entry must not be null.");
-            }
-
-            if (string.IsNullOrWhiteSpace(entry.EntryId))
-            {
-                throw new ArgumentException("EntryId is required.");
-            }
-
-            if (!double.IsFinite(entry.Mu))
-            {
-                throw new ArgumentException("Mu must be a finite number.");
-            }
-
-            if (!double.IsFinite(entry.Sigma) || entry.Sigma <= 0)
-            {
-                throw new ArgumentException("Sigma must be a finite number greater than zero.");
-            }
-
-            if (!entryIds.Add(entry.EntryId))
-            {
-                throw new ArgumentException("Duplicate EntryId within registry entries.");
-            }
-        }
+        return utcNow >= GetConfirmDeadline(match);
     }
 }

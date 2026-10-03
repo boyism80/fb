@@ -18,6 +18,7 @@
 #include <fb/game/handler/amqp/matchmaking_dissolved.h>
 #include <fb/game/handler/amqp/matchmaking_proposed.h>
 #include <fb/game/handler/amqp/matchmaking_ready.h>
+#include <fb/game/handler/amqp/matchmaking_ticket_removed.h>
 #include <fb/game/handler/amqp/reload_scripts.h>
 #include <fb/game/handler/amqp/reload_tables.h>
 #include <fb/game/handler/amqp/set_datetime.h>

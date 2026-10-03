@@ -2,13 +2,13 @@ namespace Matchmaking.Model;
 
 public sealed class MatchmakingStatus
 {
-    public bool InQueue { get; init; }
+    public bool Queued { get; init; }
 
     public uint MatchType { get; init; }
 
-    public Guid RegistryId { get; init; }
+    public ulong TicketId { get; init; }
 
-    public Guid? PendingMatchId { get; init; }
+    public ulong? PendingMatchId { get; init; }
 
     public DateTime? ConfirmDeadline { get; init; }
 }

@@ -29,8 +29,8 @@ struct Decline FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 6,
     VT_CHARACTER_ID = 8
   };
-  const ::flatbuffers::String *match_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_MATCH_ID);
+  uint64_t match_id() const {
+    return GetField<uint64_t>(VT_MATCH_ID, 0);
   }
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -40,8 +40,7 @@ struct Decline FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_MATCH_ID) &&
-           verifier.VerifyString(match_id()) &&
+           VerifyField<uint64_t>(verifier, VT_MATCH_ID, 8) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
            verifier.EndTable();
@@ -52,8 +51,8 @@ struct DeclineBuilder {
   typedef Decline Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_match_id(::flatbuffers::Offset<::flatbuffers::String> match_id) {
-    fbb_.AddOffset(Decline::VT_MATCH_ID, match_id);
+  void add_match_id(uint64_t match_id) {
+    fbb_.AddElement<uint64_t>(Decline::VT_MATCH_ID, match_id, 0);
   }
   void add_world(uint32_t world) {
     fbb_.AddElement<uint32_t>(Decline::VT_WORLD, world, 0);
@@ -74,27 +73,14 @@ struct DeclineBuilder {
 
 inline ::flatbuffers::Offset<Decline> CreateDecline(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> match_id = 0,
+    uint64_t match_id = 0,
     uint32_t world = 0,
     uint32_t character_id = 0) {
   DeclineBuilder builder_(_fbb);
+  builder_.add_match_id(match_id);
   builder_.add_character_id(character_id);
   builder_.add_world(world);
-  builder_.add_match_id(match_id);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<Decline> CreateDeclineDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *match_id = nullptr,
-    uint32_t world = 0,
-    uint32_t character_id = 0) {
-  auto match_id__ = match_id ? _fbb.CreateString(match_id) : 0;
-  return fb::protocol::matchmaking::request::raw::CreateDecline(
-      _fbb,
-      match_id__,
-      world,
-      character_id);
 }
 
 inline const fb::protocol::matchmaking::request::raw::Decline *GetDecline(const void *buf) {

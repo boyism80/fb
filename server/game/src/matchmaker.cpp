@@ -14,7 +14,6 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -39,22 +38,22 @@ matchmaking_skill::dto_type matchmaking_skill::to_protocol(uint32_t user) const
 
 void matchmaker::load(const std::vector<matchmaking_skill::dto_type>& skills)
 {
-    this->_entries.clear();
+    this->_skills.clear();
     for (auto& skill : skills)
     {
-        this->_entries.emplace(skill.match_type,
-                               matchmaking_skill{
-                                   .match_type = skill.match_type,
-                                   .mu         = skill.mu,
-                                   .sigma      = skill.sigma,
-                               });
+        this->_skills.emplace(skill.match_type,
+                              matchmaking_skill{
+                                  .match_type = skill.match_type,
+                                  .mu         = skill.mu,
+                                  .sigma      = skill.sigma,
+                              });
     }
 
     for (auto& [type, row] : table::matchmaking)
     {
         std::ignore = row;
         auto id     = static_cast<uint32_t>(type);
-        if (this->_entries.contains(id) == false)
+        if (this->_skills.contains(id) == false)
         {
             this->upsert(id, DEFAULT_MU, DEFAULT_SIGMA);
         }
@@ -64,8 +63,8 @@ void matchmaker::load(const std::vector<matchmaking_skill::dto_type>& skills)
 std::vector<matchmaking_skill::dto_type> matchmaker::to_protocol() const
 {
     auto result = std::vector<matchmaking_skill::dto_type>{};
-    result.reserve(this->_entries.size());
-    for (auto& [match_type, skill] : this->_entries)
+    result.reserve(this->_skills.size());
+    for (auto& [match_type, skill] : this->_skills)
     {
         result.emplace_back(skill.to_protocol(this->owner.id));
     }
@@ -75,8 +74,8 @@ std::vector<matchmaking_skill::dto_type> matchmaker::to_protocol() const
 
 std::optional<matchmaking_skill> matchmaker::get(uint32_t match_type) const
 {
-    auto i = this->_entries.find(match_type);
-    if (i == this->_entries.end())
+    auto i = this->_skills.find(match_type);
+    if (i == this->_skills.end())
         return std::nullopt;
 
     return i->second;
@@ -84,22 +83,22 @@ std::optional<matchmaking_skill> matchmaker::get(uint32_t match_type) const
 
 void matchmaker::upsert(uint32_t match_type, double mu, double sigma)
 {
-    this->_entries.insert_or_assign(match_type,
-                                    matchmaking_skill{
-                                        .match_type = match_type,
-                                        .mu         = mu,
-                                        .sigma      = sigma,
-                                    });
+    this->_skills.insert_or_assign(match_type,
+                                   matchmaking_skill{
+                                       .match_type = match_type,
+                                       .mu         = mu,
+                                       .sigma      = sigma,
+                                   });
 }
 
-const std::optional<std::string>& matchmaker::pending_match_id() const
+const std::optional<uint64_t>& matchmaker::pending_match_id() const
 {
     return this->_pending_match_id;
 }
 
-void matchmaker::set_pending_match_id(std::string match_id)
+void matchmaker::set_pending_match_id(uint64_t match_id)
 {
-    this->_pending_match_id = std::move(match_id);
+    this->_pending_match_id = match_id;
 }
 
 void matchmaker::clear_pending_match_id()
@@ -107,88 +106,66 @@ void matchmaker::clear_pending_match_id()
     this->_pending_match_id = std::nullopt;
 }
 
-bool matchmaker::clear_pending_match_id_if(std::string_view match_id)
+bool matchmaker::clear_pending_match_id_if(uint64_t match_id)
 {
-    if (!this->_pending_match_id.has_value() || this->_pending_match_id.value() != match_id)
+    if (this->_pending_match_id != match_id)
         return false;
 
     this->_pending_match_id = std::nullopt;
     return true;
 }
 
-bool matchmaker::registered() const
+bool matchmaker::queued() const
 {
     this->owner.assert_thread();
 
-    return this->_registration.has_value() || this->_registering;
+    return this->_ticket.has_value() || this->_enqueuing;
 }
 
-std::optional<std::string_view> matchmaker::registry_id() const
+bool matchmaker::enqueuing() const
 {
     this->owner.assert_thread();
 
-    if (!this->_registration.has_value())
+    return this->_enqueuing;
+}
+
+std::optional<uint64_t> matchmaker::ticket_id() const
+{
+    this->owner.assert_thread();
+
+    if (!this->_ticket.has_value())
         return std::nullopt;
 
-    return this->_registration->registry_id;
+    return this->_ticket->ticket_id;
 }
 
-void matchmaker::begin_registration([[maybe_unused]] uint32_t match_type)
+void matchmaker::begin_enqueue()
 {
     this->owner.assert_thread();
 
-    this->_registering = true;
+    this->_enqueuing = true;
 }
 
-void matchmaker::set_registration(uint32_t match_type, std::string registry_id)
+void matchmaker::set_ticket(uint32_t match_type, uint64_t ticket_id)
 {
     this->owner.assert_thread();
 
-    this->_registering  = false;
-    this->_registration = registration_state{
-        .match_type  = match_type,
-        .registry_id = std::move(registry_id),
+    this->_enqueuing = false;
+    this->_ticket    = ticket_state{
+           .match_type = match_type,
+           .ticket_id  = ticket_id,
     };
 }
 
-void matchmaker::clear_registration()
+void matchmaker::clear_ticket()
 {
     this->owner.assert_thread();
 
-    this->_registering  = false;
-    this->_registration = std::nullopt;
+    this->_enqueuing = false;
+    this->_ticket    = std::nullopt;
 }
 
-void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view registry_id)
-{
-    this->owner.assert_thread();
-
-    auto registry_id_str = std::string(registry_id);
-    auto owner_id        = this->owner.id;
-    this->owner.server.characters.foreach_enqueue(
-        [registry_id_str, match_type](auto& ch) -> async::task<void> {
-            auto id = ch->matchmaker.registry_id();
-            if (id.has_value() == false || id.value() != registry_id_str)
-                co_return;
-
-            auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
-            if (lua)
-            {
-                lua->pushobject(ch);
-                lua->pushinteger(match_type);
-                lua->pushstring(registry_id_str.c_str());
-                std::ignore = co_await lua->call(3);
-            }
-            ch->matchmaker.clear_pending_match_id();
-            ch->matchmaker.clear_registration();
-            co_return;
-        },
-        [owner_id](const character::container::character_ptr_t& ch) {
-            return ch->id != owner_id;
-        });
-}
-
-async::task<void> matchmaker::discard_leftover_registration()
+async::task<void> matchmaker::discard_leftover_ticket()
 {
     auto& server       = this->owner.server;
     auto  world        = this->owner.world();
@@ -199,16 +176,16 @@ async::task<void> matchmaker::discard_leftover_registration()
         auto&& status =
             co_await server.http.post("matchmaking", "/matchmaking/status", mp_reqs::Status{world, character_id});
 
-        if (status.error != 0 || status.registry_id.empty())
+        if (status.error != 0 || status.ticket_id == 0)
             co_return;
 
         auto&& resp =
             co_await server.http.post("matchmaking",
-                                      "/matchmaking/unregister",
-                                      mp_reqs::Unregister{status.match_type, status.registry_id, world, character_id});
+                                      "/matchmaking/dequeue",
+                                      mp_reqs::Dequeue{status.match_type, status.ticket_id, world, character_id});
 
-        fb::logger::warn("matchmaking dropped leftover registry {} of character {} at login (success: {})",
-                         status.registry_id,
+        fb::logger::warn("matchmaking dropped leftover ticket {} of character {} at login (success: {})",
+                         status.ticket_id,
                          character_id,
                          resp.success);
     }
@@ -218,91 +195,76 @@ async::task<void> matchmaker::discard_leftover_registration()
     }
 }
 
-async::task<void> matchmaker::unregister_queue(bool quiet)
+async::task<void> matchmaker::dequeue(initiator by)
 {
     this->owner.assert_thread();
 
-    if (this->_registration.has_value() == false)
+    if (this->_ticket.has_value() == false)
     {
-        if (this->_registering)
-            this->clear_registration();
+        // An enqueue still waiting for its response sees the cleared flag and cancels the ticket itself.
+        this->clear_ticket();
         co_return;
     }
 
-    auto registration = this->_registration.value();
-    auto registry_id  = registration.registry_id;
+    auto ticket       = this->_ticket.value();
     auto world        = this->owner.world();
-    auto match_type   = registration.match_type;
     auto character_id = this->owner.id;
     auto weak         = this->owner.weak_from_this_as<character>();
-    this->clear_registration();
+    this->clear_ticket();
 
     auto error = std::optional<std::string>{};
     try
     {
-        auto&& resp =
-            co_await this->owner.server.http.post("matchmaking",
-                                                  "/matchmaking/unregister",
-                                                  mp_reqs::Unregister{match_type, registry_id, world, character_id});
+        auto&& resp = co_await this->owner.server.http.post(
+            "matchmaking",
+            "/matchmaking/dequeue",
+            mp_reqs::Dequeue{ticket.match_type, ticket.ticket_id, world, character_id});
 
-        if (weak.lock() == nullptr)
-            co_return;
-        co_await this->owner.server.threads.switching(weak);
-
-        if (resp.error != 0 || resp.success == false)
-        {
-            auto message = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
-            if (quiet)
-                fb::logger::warn("matchmaking unregister failed for character {}: {}", character_id, message);
-            else
-                error = message;
-        }
+        auto code = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
+        // The service already dropped the ticket (leftover cleanup or a teammate's dequeue), which is the goal.
+        if (code != fb::model::enum_value::ERROR_CODE::NONE &&
+            code != fb::model::enum_value::ERROR_CODE::MATCHMAKING_REGISTRY_NOT_FOUND)
+            error = enum_tostring(code);
     }
     catch (const std::exception& e)
     {
         error = e.what();
     }
 
+    if (weak.lock() == nullptr)
+        co_return;
+    co_await this->owner.server.threads.switching(weak);
+
     if (error.has_value())
     {
-        if (weak.lock() != nullptr)
-            co_await this->owner.server.threads.switching(weak);
-
-        if (quiet)
+        if (by == initiator::USER)
         {
-            fb::logger::warn("matchmaking unregister failed for character {}: {}", character_id, error.value());
+            this->set_ticket(ticket.match_type, ticket.ticket_id);
+            throw std::runtime_error(error.value());
         }
         else
         {
-            this->set_registration(match_type, registry_id);
-            throw std::runtime_error(error.value());
+            fb::logger::warn("matchmaking dequeue failed for character {}: {}", character_id, error.value());
         }
     }
-
-    this->enqueue_squad_unregister(match_type, registry_id);
 
     auto ptr = weak.lock();
-    if (ptr != nullptr)
-    {
-        auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
-        if (lua)
-        {
-            lua->pushobject(ptr);
-            lua->pushinteger(match_type);
-            lua->pushstring(registry_id.c_str());
-            std::ignore = co_await lua->call(3);
-        }
-    }
+    if (ptr == nullptr)
+        co_return;
 
-    co_return;
+    auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_dequeue");
+    if (lua)
+    {
+        lua->pushobject(ptr);
+        lua->pushinteger(ticket.match_type);
+        lua->pushinteger(static_cast<lua_Integer>(ticket.ticket_id));
+        std::ignore = co_await lua->call(3);
+    }
 }
 
-async::task<void> matchmaker::confirm_queue(std::string match_id, bool quiet)
+async::task<void> matchmaker::confirm(uint64_t match_id)
 {
     this->owner.assert_thread();
-
-    if (match_id.empty())
-        co_return;
 
     auto world        = this->owner.world();
     auto character_id = this->owner.id;
@@ -314,62 +276,39 @@ async::task<void> matchmaker::confirm_queue(std::string match_id, bool quiet)
         auto&& resp = co_await this->owner.server.http.post("matchmaking",
                                                             "/matchmaking/confirm",
                                                             mp_reqs::Confirm{match_id, world, character_id});
-
-        if (weak.lock() == nullptr)
-            co_return;
-        co_await this->owner.server.threads.switching(weak);
-
         if (resp.error != 0)
-        {
-            auto message = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
-            if (quiet)
-                fb::logger::warn("matchmaking confirm failed for character {}: {}", character_id, message);
-            else
-                error = message;
-        }
+            error = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
     }
     catch (const std::exception& e)
     {
         error = e.what();
     }
 
+    if (weak.lock() == nullptr)
+        co_return;
+    co_await this->owner.server.threads.switching(weak);
+
     if (error.has_value())
+        throw std::runtime_error(error.value());
+
+    auto ptr = weak.lock();
+    if (ptr == nullptr)
+        co_return;
+
+    auto match_type = this->_ticket.has_value() ? this->_ticket->match_type : 0;
+    auto lua        = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
+    if (lua)
     {
-        if (weak.lock() != nullptr)
-            co_await this->owner.server.threads.switching(weak);
-
-        if (quiet)
-            fb::logger::warn("matchmaking confirm failed for character {}: {}", character_id, error.value());
-        else
-            throw std::runtime_error(error.value());
+        lua->pushobject(ptr);
+        lua->pushinteger(static_cast<lua_Integer>(match_id));
+        lua->pushinteger(match_type);
+        std::ignore = co_await lua->call(3);
     }
-
-    if (!quiet)
-    {
-        auto match_type = this->_registration.has_value() ? this->_registration->match_type : 0;
-        auto ptr        = weak.lock();
-        if (ptr != nullptr)
-        {
-            auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
-            if (lua)
-            {
-                lua->pushobject(ptr);
-                lua->pushstring(match_id.c_str());
-                lua->pushinteger(match_type);
-                std::ignore = co_await lua->call(3);
-            }
-        }
-    }
-
-    co_return;
 }
 
-async::task<void> matchmaker::decline_queue(std::string match_id, bool quiet)
+async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
 {
     this->owner.assert_thread();
-
-    if (match_id.empty())
-        co_return;
 
     auto world        = this->owner.world();
     auto character_id = this->owner.id;
@@ -381,67 +320,49 @@ async::task<void> matchmaker::decline_queue(std::string match_id, bool quiet)
         auto&& resp = co_await this->owner.server.http.post("matchmaking",
                                                             "/matchmaking/decline",
                                                             mp_reqs::Decline{match_id, world, character_id});
-
-        if (weak.lock() == nullptr)
-            co_return;
-        co_await this->owner.server.threads.switching(weak);
-
         if (resp.error != 0)
-        {
-            auto message = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
-            if (quiet)
-                fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, message);
-            else
-                error = message;
-        }
+            error = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
     }
     catch (const std::exception& e)
     {
         error = e.what();
     }
 
+    if (weak.lock() == nullptr)
+        co_return;
+    co_await this->owner.server.threads.switching(weak);
+
     if (error.has_value())
     {
-        if (weak.lock() != nullptr)
-            co_await this->owner.server.threads.switching(weak);
-
-        if (quiet)
-            fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, error.value());
-        else
+        if (by == initiator::USER)
             throw std::runtime_error(error.value());
+        else
+            fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, error.value());
     }
 
+    // Teammates learn about the dropped ticket from the MatchDissolved message.
+    auto match_type = this->_ticket.has_value() ? this->_ticket->match_type : 0;
     this->clear_pending_match_id_if(match_id);
+    this->clear_ticket();
 
-    auto squad_notify = this->_registration;
+    if (by == initiator::SERVER)
+        co_return;
 
-    if (!quiet)
+    auto ptr = weak.lock();
+    if (ptr == nullptr)
+        co_return;
+
+    auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_decline");
+    if (lua)
     {
-        auto match_type = squad_notify.has_value() ? squad_notify->match_type : 0;
-        auto ptr        = weak.lock();
-        if (ptr != nullptr)
-        {
-            auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_decline");
-            if (lua)
-            {
-                lua->pushobject(ptr);
-                lua->pushstring(match_id.c_str());
-                lua->pushinteger(match_type);
-                std::ignore = co_await lua->call(3);
-            }
-        }
+        lua->pushobject(ptr);
+        lua->pushinteger(static_cast<lua_Integer>(match_id));
+        lua->pushinteger(match_type);
+        std::ignore = co_await lua->call(3);
     }
-
-    if (squad_notify.has_value())
-    {
-        this->clear_registration();
-        this->enqueue_squad_unregister(squad_notify->match_type, squad_notify->registry_id);
-    }
-
-    co_return;
 }
 
-async::task<void> matchmaker::register_queue(uint32_t match_type)
+async::task<void> matchmaker::enqueue(uint32_t match_type)
 {
     this->owner.assert_thread();
 
@@ -449,12 +370,9 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
         throw std::runtime_error("교차 서버에서는 매치메이킹을 등록할 수 없습니다.");
 
     auto weak = this->owner.weak_from_this_as<character>();
-    if (weak.expired())
-        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
-
     auto self = weak.lock();
     if (self == nullptr)
-        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+        co_return;
 
     auto match_type_enum = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
     if (table::matchmaking->contains(match_type_enum) == false)
@@ -462,8 +380,10 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
 
     auto  matchmaking_table  = table::matchmaking;
     auto& matchmaking_config = matchmaking_table[match_type_enum];
+    auto& server             = this->owner.server;
     auto  world              = this->owner.world();
-    auto  entries            = std::vector<mp::RegistryEntry>{};
+    auto  character_id       = this->owner.id;
+    auto  members            = std::vector<mp::TicketMember>{};
     auto  participants       = std::vector<std::shared_ptr<character>>{};
 
     auto group_id = this->owner.group_id();
@@ -473,7 +393,7 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
     }
     else
     {
-        auto group_guard = this->owner.server.groups.try_enter_read(group_id.value());
+        auto group_guard = server.groups.try_enter_read(group_id.value());
         if (group_guard.has_value() == false || group_guard->value() == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
 
@@ -486,7 +406,7 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
 
         for (auto& name : member_names)
         {
-            auto ch = this->owner.server.characters.find(name);
+            auto ch = server.characters.find(name);
             if (ch == nullptr)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_CANNOT_FIND_TARGET));
 
@@ -494,114 +414,44 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
         }
     }
 
-    entries.reserve(participants.size());
+    members.reserve(participants.size());
     for (auto& ch : participants)
     {
-        auto weak    = ch->weak_from_this_as<character>();
-        auto builder = this->owner.server.threads.new_builder<mp::RegistryEntry>(weak);
-        builder.func = [weak, world, match_type](auto&) -> async::task<mp::RegistryEntry> {
-            auto ptr = weak.lock();
+        auto member_weak = ch->weak_from_this_as<character>();
+        auto builder     = server.threads.new_builder<mp::TicketMember>(member_weak);
+        builder.func     = [member_weak, world, match_type](auto&) -> async::task<mp::TicketMember> {
+            auto ptr = member_weak.lock();
             if (ptr == nullptr)
-                throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+                throw std::runtime_error(_TEXT(MESSAGE_GROUP_CANNOT_FIND_TARGET));
 
             auto skill = ptr->matchmaker.get(match_type);
             auto mu    = skill.has_value() ? skill->mu : matchmaker::DEFAULT_MU;
             auto sigma = skill.has_value() ? skill->sigma : matchmaker::DEFAULT_SIGMA;
-            co_return mp::RegistryEntry{world, ptr->id, mu, sigma};
+            co_return mp::TicketMember{world, ptr->id, mu, sigma};
         };
-        entries.push_back(co_await builder.dispatch());
+        members.push_back(co_await builder.dispatch());
     }
 
-    if (entries.size() > matchmaking_config.member_count)
+    if (members.size() > matchmaking_config.member_count)
         throw std::runtime_error(std::format("이 매치는 {}명까지 참가할 수 있습니다. (현재 그룹 {}명)",
                                              matchmaking_config.member_count,
-                                             entries.size()));
-
-    auto& server       = this->owner.server;
-    auto  character_id = this->owner.id;
+                                             members.size()));
 
     for (auto& ch : participants)
     {
-        if (ch.get() == &this->owner)
-        {
-            this->begin_registration(match_type);
-            continue;
-        }
-
         auto member_weak = ch->weak_from_this_as<character>();
-        auto builder     = this->owner.server.threads.new_builder(member_weak);
-        builder.func     = [member_weak, match_type](auto&) -> async::task<void> {
+        auto builder     = server.threads.new_builder(member_weak);
+        builder.func     = [member_weak](auto&) -> async::task<void> {
             auto ptr = member_weak.lock();
             if (ptr == nullptr)
                 co_return;
-            ptr->matchmaker.begin_registration(match_type);
+            ptr->matchmaker.begin_enqueue();
             co_return;
         };
         co_await builder.dispatch();
     }
 
-    auto clear_in_flight = [this, &participants]() -> async::task<void> {
-        for (auto& ch : participants)
-        {
-            if (ch.get() == &this->owner)
-            {
-                if (this->_registering && this->_registration.has_value() == false)
-                    this->clear_registration();
-                continue;
-            }
-
-            auto member_weak = ch->weak_from_this_as<character>();
-            auto builder     = this->owner.server.threads.new_builder(member_weak);
-            builder.func     = [member_weak](auto&) -> async::task<void> {
-                auto ptr = member_weak.lock();
-                if (ptr == nullptr)
-                    co_return;
-                if (ptr->matchmaker.registry_id().has_value() == false)
-                    ptr->matchmaker.clear_registration();
-                co_return;
-            };
-            co_await builder.dispatch();
-        }
-        co_return;
-    };
-
-    mp_resp::Register resp;
-    {
-        auto http_error = std::optional<std::exception_ptr>{};
-        try
-        {
-            resp = co_await server.http.post("matchmaking",
-                                             "/matchmaking/register",
-                                             mp_reqs::Register{match_type, entries});
-        }
-        catch (...)
-        {
-            http_error = std::current_exception();
-        }
-
-        if (http_error.has_value())
-        {
-            if (weak.lock() != nullptr)
-                co_await server.threads.switching(weak);
-            co_await clear_in_flight();
-            std::rethrow_exception(http_error.value());
-        }
-    }
-
-    if (resp.error != 0)
-    {
-        if (weak.lock() != nullptr)
-            co_await server.threads.switching(weak);
-        co_await clear_in_flight();
-        throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
-    }
-
-    self = weak.lock();
-    if (self == nullptr)
-    {
-        std::ignore = co_await server.http.post("matchmaking",
-                                                "/matchmaking/unregister",
-                                                mp_reqs::Unregister{match_type, resp.registry_id, world, character_id});
+    auto clear_enqueuing = [&server, &participants]() -> async::task<void> {
         for (auto& ch : participants)
         {
             auto member_weak = ch->weak_from_this_as<character>();
@@ -610,40 +460,111 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
                 auto ptr = member_weak.lock();
                 if (ptr == nullptr)
                     co_return;
-                if (ptr->matchmaker.registry_id().has_value() == false)
-                    ptr->matchmaker.clear_registration();
+                if (ptr->matchmaker.ticket_id().has_value() == false)
+                    ptr->matchmaker.clear_ticket();
                 co_return;
             };
             co_await builder.dispatch();
         }
-        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
-    }
-    co_await server.threads.switching(weak);
+        co_return;
+    };
 
-    this->set_registration(match_type, resp.registry_id);
-
+    mp_resp::Enqueue resp;
     {
-        auto registry_id_str = resp.registry_id;
+        auto http_error = std::optional<std::exception_ptr>{};
+        try
+        {
+            resp =
+                co_await server.http.post("matchmaking", "/matchmaking/enqueue", mp_reqs::Enqueue{match_type, members});
+        }
+        catch (...)
+        {
+            http_error = std::current_exception();
+        }
+
+        if (http_error.has_value())
+        {
+            co_await clear_enqueuing();
+            co_await server.threads.switching(weak);
+            std::rethrow_exception(http_error.value());
+        }
+    }
+
+    if (resp.error != 0)
+    {
+        co_await clear_enqueuing();
+        co_await server.threads.switching(weak);
+        throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
+    }
+
+    // A participant who disconnected or left the group meanwhile had its enqueuing flag cleared by dequeue.
+    // Claim the ticket only for members still waiting on this request; one gap invalidates the whole ticket.
+    auto ticket_id = resp.ticket_id;
+    auto claimed   = std::vector<std::shared_ptr<character>>{};
+    for (auto& ch : participants)
+    {
+        auto member_weak = ch->weak_from_this_as<character>();
+        auto builder     = server.threads.new_builder<bool>(member_weak);
+        builder.func     = [member_weak, match_type, ticket_id](auto&) -> async::task<bool> {
+            auto ptr = member_weak.lock();
+            if (ptr == nullptr || ptr->matchmaker.enqueuing() == false)
+                co_return false;
+
+            ptr->matchmaker.set_ticket(match_type, ticket_id);
+            co_return true;
+        };
+        if (co_await builder.dispatch())
+            claimed.push_back(ch);
+    }
+
+    if (claimed.size() != participants.size())
+    {
+        try
+        {
+            std::ignore = co_await server.http.post("matchmaking",
+                                                    "/matchmaking/dequeue",
+                                                    mp_reqs::Dequeue{match_type, ticket_id, world, character_id});
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("matchmaking dequeue of abandoned ticket {} failed: {}", ticket_id, e.what());
+        }
+
+        for (auto& ch : claimed)
+        {
+            auto member_weak = ch->weak_from_this_as<character>();
+            auto builder     = server.threads.new_builder(member_weak);
+            builder.func     = [member_weak, ticket_id](auto&) -> async::task<void> {
+                auto ptr = member_weak.lock();
+                if (ptr == nullptr)
+                    co_return;
+                if (ptr->matchmaker.ticket_id() == ticket_id)
+                    ptr->matchmaker.clear_ticket();
+                co_return;
+            };
+            co_await builder.dispatch();
+        }
+
+        co_await server.threads.switching(weak);
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_CANNOT_FIND_TARGET));
+    }
+    else
+    {
         for (auto& ch : participants)
         {
-            if (ch.get() == &this->owner)
-                continue;
-
             auto member_weak = ch->weak_from_this_as<character>();
-            auto builder     = this->owner.server.threads.new_builder(member_weak);
-            builder.func     = [member_weak, match_type, registry_id_str](auto&) -> async::task<void> {
+            auto builder     = server.threads.new_builder(member_weak);
+            builder.func     = [member_weak, match_type, ticket_id](auto&) -> async::task<void> {
                 auto ptr = member_weak.lock();
                 if (ptr == nullptr)
                     co_return;
 
-                ptr->matchmaker.set_registration(match_type, registry_id_str);
-
-                auto lua = ptr->server.lua.open("scripts/interaction.lua", "on_matchmaking_register");
+                auto lua = ptr->server.lua.open("scripts/interaction.lua", "on_matchmaking_enqueue");
                 if (lua)
                 {
                     lua->pushobject(ptr);
                     lua->pushinteger(match_type);
-                    lua->pushstring(registry_id_str.c_str());
+                    lua->pushinteger(static_cast<lua_Integer>(ticket_id));
                     std::ignore = co_await lua->call(3);
                 }
                 co_return;
@@ -652,16 +573,5 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
         }
     }
 
-    {
-        auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_register");
-        if (lua)
-        {
-            lua->pushobject(self);
-            lua->pushinteger(match_type);
-            lua->pushstring(resp.registry_id.c_str());
-            std::ignore = co_await lua->call(3);
-        }
-    }
-
-    co_return;
+    co_await server.threads.switching(weak);
 }

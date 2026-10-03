@@ -7,10 +7,10 @@ public class MatchmakingMappingProfile : Profile
 {
     public MatchmakingMappingProfile()
     {
-        CreateMap<CharacterRegistryEntry, fb.protocol.matchmaking.RegistryEntry>();
+        CreateMap<CharacterTicketMember, fb.protocol.matchmaking.TicketMember>();
 
-        CreateMap<Registry<CharacterRegistryEntry>, fb.protocol.matchmaking.MatchRegistry>()
-            .ForMember(dest => dest.RegistryId, opt => opt.MapFrom(src => src.Id.ToString()))
-            .ForMember(dest => dest.Entries, opt => opt.MapFrom(src => src.Entries));
+        CreateMap<Ticket<CharacterTicketMember>, fb.protocol.matchmaking.Ticket>()
+            .ForMember(dest => dest.TicketId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Members, opt => opt.MapFrom(src => src.Members));
     }
 }

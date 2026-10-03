@@ -1,3 +1,4 @@
+using Http.Service;
 using Matchmaking.Core;
 using Matchmaking.Model;
 using Matchmaking.Options;
@@ -7,16 +8,19 @@ namespace Matchmaking.Services;
 
 public sealed class MatchmakingBackgroundService : BackgroundService
 {
-    private readonly MatchMaker<CharacterRegistryEntry> _matchMaker;
+    private readonly MatchMaker<CharacterTicketMember> _matchMaker;
+    private readonly ServerStateService _serverStateService;
     private readonly MatchmakingOptions _options;
     private readonly ILogger<MatchmakingBackgroundService> _logger;
 
     public MatchmakingBackgroundService(
-        MatchMaker<CharacterRegistryEntry> matchMaker,
+        MatchMaker<CharacterTicketMember> matchMaker,
+        ServerStateService serverStateService,
         IOptions<MatchmakingOptions> options,
         ILogger<MatchmakingBackgroundService> logger)
     {
         _matchMaker = matchMaker;
+        _serverStateService = serverStateService;
         _options = options.Value;
         _logger = logger;
     }
@@ -29,7 +33,10 @@ public sealed class MatchmakingBackgroundService : BackgroundService
         {
             try
             {
-                await _matchMaker.TickMatchmakingAsync(stoppingToken);
+                var hostIds = (await _serverStateService.ListLiveCrossServers())
+                    .Select(server => server.Id)
+                    .ToList();
+                await _matchMaker.TickMatchmakingAsync(hostIds, stoppingToken);
             }
             catch (Exception ex)
             {

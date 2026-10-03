@@ -6,7 +6,7 @@
 
 namespace fb::game::handler::amqp {
 
-class matchmaking_ready : public fb::handler::amqp<fb::game::server, fb::protocol::matchmaking::mq::Ready>
+class matchmaking_ready : public fb::handler::amqp<fb::game::server, fb::protocol::matchmaking::mq::MatchReady>
 {
 public:
     matchmaking_ready(fb::game::server& server);
@@ -16,7 +16,7 @@ public:
     matchmaking_ready& operator= (matchmaking_ready&&)      = delete;
 
 public:
-    async::task<void> handle(const fb::protocol::matchmaking::mq::Ready& message) override;
+    async::task<void> handle(const fb::protocol::matchmaking::mq::MatchReady& message) override;
 };
 
 } // namespace fb::game::handler::amqp

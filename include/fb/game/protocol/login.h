@@ -49,9 +49,9 @@ public:
     struct match_param
     {
     public:
-        std::string id;
-        uint32_t    type = 0;
-        uint32_t    team = 0;
+        uint64_t id   = 0;
+        uint32_t type = 0;
+        uint32_t team = 0;
     };
 
     struct ticket_param

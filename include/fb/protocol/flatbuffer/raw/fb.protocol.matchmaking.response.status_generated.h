@@ -25,24 +25,24 @@ struct StatusBuilder;
 struct Status FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef StatusBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_IN_QUEUE = 4,
+    VT_QUEUED = 4,
     VT_MATCH_TYPE = 6,
-    VT_REGISTRY_ID = 8,
+    VT_TICKET_ID = 8,
     VT_PENDING_MATCH_ID = 10,
     VT_CONFIRM_DEADLINE = 12,
     VT_ERROR = 14
   };
-  bool in_queue() const {
-    return GetField<uint8_t>(VT_IN_QUEUE, 0) != 0;
+  bool queued() const {
+    return GetField<uint8_t>(VT_QUEUED, 0) != 0;
   }
   uint32_t match_type() const {
     return GetField<uint32_t>(VT_MATCH_TYPE, 0);
   }
-  const ::flatbuffers::String *registry_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_REGISTRY_ID);
+  uint64_t ticket_id() const {
+    return GetField<uint64_t>(VT_TICKET_ID, 0);
   }
-  const ::flatbuffers::String *pending_match_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_PENDING_MATCH_ID);
+  uint64_t pending_match_id() const {
+    return GetField<uint64_t>(VT_PENDING_MATCH_ID, 0);
   }
   const ::flatbuffers::String *confirm_deadline() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CONFIRM_DEADLINE);
@@ -52,12 +52,10 @@ struct Status FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_IN_QUEUE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_QUEUED, 1) &&
            VerifyField<uint32_t>(verifier, VT_MATCH_TYPE, 4) &&
-           VerifyOffset(verifier, VT_REGISTRY_ID) &&
-           verifier.VerifyString(registry_id()) &&
-           VerifyOffset(verifier, VT_PENDING_MATCH_ID) &&
-           verifier.VerifyString(pending_match_id()) &&
+           VerifyField<uint64_t>(verifier, VT_TICKET_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_PENDING_MATCH_ID, 8) &&
            VerifyOffset(verifier, VT_CONFIRM_DEADLINE) &&
            verifier.VerifyString(confirm_deadline()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
@@ -69,17 +67,17 @@ struct StatusBuilder {
   typedef Status Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_in_queue(bool in_queue) {
-    fbb_.AddElement<uint8_t>(Status::VT_IN_QUEUE, static_cast<uint8_t>(in_queue), 0);
+  void add_queued(bool queued) {
+    fbb_.AddElement<uint8_t>(Status::VT_QUEUED, static_cast<uint8_t>(queued), 0);
   }
   void add_match_type(uint32_t match_type) {
     fbb_.AddElement<uint32_t>(Status::VT_MATCH_TYPE, match_type, 0);
   }
-  void add_registry_id(::flatbuffers::Offset<::flatbuffers::String> registry_id) {
-    fbb_.AddOffset(Status::VT_REGISTRY_ID, registry_id);
+  void add_ticket_id(uint64_t ticket_id) {
+    fbb_.AddElement<uint64_t>(Status::VT_TICKET_ID, ticket_id, 0);
   }
-  void add_pending_match_id(::flatbuffers::Offset<::flatbuffers::String> pending_match_id) {
-    fbb_.AddOffset(Status::VT_PENDING_MATCH_ID, pending_match_id);
+  void add_pending_match_id(uint64_t pending_match_id) {
+    fbb_.AddElement<uint64_t>(Status::VT_PENDING_MATCH_ID, pending_match_id, 0);
   }
   void add_confirm_deadline(::flatbuffers::Offset<::flatbuffers::String> confirm_deadline) {
     fbb_.AddOffset(Status::VT_CONFIRM_DEADLINE, confirm_deadline);
@@ -100,39 +98,37 @@ struct StatusBuilder {
 
 inline ::flatbuffers::Offset<Status> CreateStatus(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool in_queue = false,
+    bool queued = false,
     uint32_t match_type = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> registry_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> pending_match_id = 0,
+    uint64_t ticket_id = 0,
+    uint64_t pending_match_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> confirm_deadline = 0,
     uint32_t error = 0) {
   StatusBuilder builder_(_fbb);
+  builder_.add_pending_match_id(pending_match_id);
+  builder_.add_ticket_id(ticket_id);
   builder_.add_error(error);
   builder_.add_confirm_deadline(confirm_deadline);
-  builder_.add_pending_match_id(pending_match_id);
-  builder_.add_registry_id(registry_id);
   builder_.add_match_type(match_type);
-  builder_.add_in_queue(in_queue);
+  builder_.add_queued(queued);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Status> CreateStatusDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool in_queue = false,
+    bool queued = false,
     uint32_t match_type = 0,
-    const char *registry_id = nullptr,
-    const char *pending_match_id = nullptr,
+    uint64_t ticket_id = 0,
+    uint64_t pending_match_id = 0,
     const char *confirm_deadline = nullptr,
     uint32_t error = 0) {
-  auto registry_id__ = registry_id ? _fbb.CreateString(registry_id) : 0;
-  auto pending_match_id__ = pending_match_id ? _fbb.CreateString(pending_match_id) : 0;
   auto confirm_deadline__ = confirm_deadline ? _fbb.CreateString(confirm_deadline) : 0;
   return fb::protocol::matchmaking::response::raw::CreateStatus(
       _fbb,
-      in_queue,
+      queued,
       match_type,
-      registry_id__,
-      pending_match_id__,
+      ticket_id,
+      pending_match_id,
       confirm_deadline__,
       error);
 }

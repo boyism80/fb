@@ -20,22 +20,10 @@ public struct Status : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Status __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public bool InQueue { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool Queued { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public uint MatchType { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string RegistryId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetRegistryIdBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetRegistryIdBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetRegistryIdArray() { return __p.__vector_as_array<byte>(8); }
-  public string PendingMatchId { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetPendingMatchIdBytes() { return __p.__vector_as_span<byte>(10, 1); }
-#else
-  public ArraySegment<byte>? GetPendingMatchIdBytes() { return __p.__vector_as_arraysegment(10); }
-#endif
-  public byte[] GetPendingMatchIdArray() { return __p.__vector_as_array<byte>(10); }
+  public ulong TicketId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong PendingMatchId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string ConfirmDeadline { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetConfirmDeadlineBytes() { return __p.__vector_as_span<byte>(12, 1); }
@@ -46,27 +34,27 @@ public struct Status : IFlatbufferObject
   public uint Error { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.matchmaking.response.raw.Status> CreateStatus(FlatBufferBuilder builder,
-      bool in_queue = false,
+      bool queued = false,
       uint match_type = 0,
-      StringOffset registry_idOffset = default(StringOffset),
-      StringOffset pending_match_idOffset = default(StringOffset),
+      ulong ticket_id = 0,
+      ulong pending_match_id = 0,
       StringOffset confirm_deadlineOffset = default(StringOffset),
       uint error = 0) {
     builder.StartTable(6);
+    Status.AddPendingMatchId(builder, pending_match_id);
+    Status.AddTicketId(builder, ticket_id);
     Status.AddError(builder, error);
     Status.AddConfirmDeadline(builder, confirm_deadlineOffset);
-    Status.AddPendingMatchId(builder, pending_match_idOffset);
-    Status.AddRegistryId(builder, registry_idOffset);
     Status.AddMatchType(builder, match_type);
-    Status.AddInQueue(builder, in_queue);
+    Status.AddQueued(builder, queued);
     return Status.EndStatus(builder);
   }
 
   public static void StartStatus(FlatBufferBuilder builder) { builder.StartTable(6); }
-  public static void AddInQueue(FlatBufferBuilder builder, bool inQueue) { builder.AddBool(0, inQueue, false); }
+  public static void AddQueued(FlatBufferBuilder builder, bool queued) { builder.AddBool(0, queued, false); }
   public static void AddMatchType(FlatBufferBuilder builder, uint matchType) { builder.AddUint(1, matchType, 0); }
-  public static void AddRegistryId(FlatBufferBuilder builder, StringOffset registryIdOffset) { builder.AddOffset(2, registryIdOffset.Value, 0); }
-  public static void AddPendingMatchId(FlatBufferBuilder builder, StringOffset pendingMatchIdOffset) { builder.AddOffset(3, pendingMatchIdOffset.Value, 0); }
+  public static void AddTicketId(FlatBufferBuilder builder, ulong ticketId) { builder.AddUlong(2, ticketId, 0); }
+  public static void AddPendingMatchId(FlatBufferBuilder builder, ulong pendingMatchId) { builder.AddUlong(3, pendingMatchId, 0); }
   public static void AddConfirmDeadline(FlatBufferBuilder builder, StringOffset confirmDeadlineOffset) { builder.AddOffset(4, confirmDeadlineOffset.Value, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(5, error, 0); }
   public static Offset<fb.protocol.matchmaking.response.raw.Status> EndStatus(FlatBufferBuilder builder) {
@@ -83,10 +71,10 @@ static public class StatusVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*InQueue*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*Queued*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 6 /*MatchType*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*RegistryId*/, false)
-      && verifier.VerifyString(tablePos, 10 /*PendingMatchId*/, false)
+      && verifier.VerifyField(tablePos, 8 /*TicketId*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 10 /*PendingMatchId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 12 /*ConfirmDeadline*/, false)
       && verifier.VerifyField(tablePos, 14 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);

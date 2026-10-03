@@ -14,75 +14,69 @@ namespace Matchmaking.Controllers;
 public class MatchmakingController : ControllerBase
 {
     private readonly ILogger<MatchmakingController> _logger;
-    private readonly MatchMaker<CharacterRegistryEntry> _matchMaker;
+    private readonly MatchMaker<CharacterTicketMember> _matchMaker;
 
     public MatchmakingController(
         ILogger<MatchmakingController> logger,
-        MatchMaker<CharacterRegistryEntry> matchMaker)
+        MatchMaker<CharacterTicketMember> matchMaker)
     {
         _logger = logger;
         _matchMaker = matchMaker;
     }
 
-    [HttpPost("register")]
-    public Response.Register Register(Request.Register request)
+    [HttpPost("enqueue")]
+    public async Task<Response.Enqueue> Enqueue(Request.Enqueue request, CancellationToken cancellationToken)
     {
         try
         {
-            var entries = (request.Entries ?? new List<fb.protocol.matchmaking.RegistryEntry>())
-                .Select(CharacterRegistryEntry.FromProtocol)
+            var members = (request.Members ?? new List<fb.protocol.matchmaking.TicketMember>())
+                .Select(CharacterTicketMember.FromProtocol)
                 .ToList();
 
-            var registryId = _matchMaker.Enroll(request.MatchType, entries);
+            var ticketId = await _matchMaker.EnqueueAsync(request.MatchType, members, cancellationToken);
 
-            return new Response.Register
+            return new Response.Enqueue
             {
-                RegistryId = registryId.ToString(),
+                TicketId = ticketId,
                 Error = (uint)ErrorCode.None
             };
         }
         catch (LogicException e)
         {
             _logger.LogWarning(
-                "Matchmaking register rejected for match type {MatchType}: {Error}",
+                "Matchmaking enqueue rejected for match type {MatchType}: {Error}",
                 request.MatchType,
                 e.Error);
-            return new Response.Register
+            return new Response.Enqueue
             {
-                RegistryId = string.Empty,
                 Error = (uint)e.Error
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Matchmaking register failed");
-            return new Response.Register
+            _logger.LogError(ex, "Matchmaking enqueue failed");
+            return new Response.Enqueue
             {
-                RegistryId = string.Empty,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
     }
 
-    [HttpPost("unregister")]
-    public async Task<Response.Unregister> Unregister(
-        Request.Unregister request,
+    [HttpPost("dequeue")]
+    public async Task<Response.Dequeue> Dequeue(
+        Request.Dequeue request,
         CancellationToken cancellationToken)
     {
         try
         {
-            // The registry id is only a hint; the caller is identified by its entry id.
-            Guid.TryParse(request.RegistryId, out var registryId);
-
-            var entryId = CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId);
-
-            await _matchMaker.UnenrollAsync(
+            // The ticket id is only a hint; the caller is identified by its member id.
+            await _matchMaker.DequeueAsync(
                 request.MatchType,
-                registryId,
-                entryId,
+                request.TicketId,
+                CharacterTicketMember.ToMemberId(request.World, request.CharacterId),
                 cancellationToken);
 
-            return new Response.Unregister
+            return new Response.Dequeue
             {
                 Success = true,
                 Error = (uint)ErrorCode.None
@@ -91,11 +85,11 @@ public class MatchmakingController : ControllerBase
         catch (LogicException e)
         {
             _logger.LogWarning(
-                "Matchmaking unregister rejected for character {World}:{CharacterId}: {Error}",
+                "Matchmaking dequeue rejected for character {World}:{CharacterId}: {Error}",
                 request.World,
                 request.CharacterId,
                 e.Error);
-            return new Response.Unregister
+            return new Response.Dequeue
             {
                 Success = false,
                 Error = (uint)e.Error
@@ -103,8 +97,8 @@ public class MatchmakingController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Matchmaking unregister failed");
-            return new Response.Unregister
+            _logger.LogError(ex, "Matchmaking dequeue failed");
+            return new Response.Dequeue
             {
                 Success = false,
                 Error = (uint)ErrorCode.Unhandled
@@ -117,20 +111,15 @@ public class MatchmakingController : ControllerBase
     {
         try
         {
-            if (!Guid.TryParse(request.MatchId, out var matchId))
-            {
-                throw new LogicException(ErrorCode.MatchmakingMatchNotFound);
-            }
-
-            var matchFinalized = await _matchMaker.ConfirmAsync(
-                matchId,
-                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
+            var matchReady = await _matchMaker.ConfirmAsync(
+                request.MatchId,
+                CharacterTicketMember.ToMemberId(request.World, request.CharacterId),
                 cancellationToken);
 
             return new Response.Confirm
             {
                 Error = (uint)ErrorCode.None,
-                MatchFinalized = matchFinalized
+                MatchReady = matchReady
             };
         }
         catch (LogicException e)
@@ -144,7 +133,7 @@ public class MatchmakingController : ControllerBase
             return new Response.Confirm
             {
                 Error = (uint)e.Error,
-                MatchFinalized = false
+                MatchReady = false
             };
         }
         catch (Exception ex)
@@ -153,7 +142,7 @@ public class MatchmakingController : ControllerBase
             return new Response.Confirm
             {
                 Error = (uint)ErrorCode.Unhandled,
-                MatchFinalized = false
+                MatchReady = false
             };
         }
     }
@@ -163,14 +152,9 @@ public class MatchmakingController : ControllerBase
     {
         try
         {
-            if (!Guid.TryParse(request.MatchId, out var matchId))
-            {
-                throw new LogicException(ErrorCode.MatchmakingMatchNotFound);
-            }
-
             await _matchMaker.DeclineAsync(
-                matchId,
-                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
+                request.MatchId,
+                CharacterTicketMember.ToMemberId(request.World, request.CharacterId),
                 cancellationToken);
 
             return new Response.Decline
@@ -207,14 +191,14 @@ public class MatchmakingController : ControllerBase
         try
         {
             var status = _matchMaker.GetStatus(
-                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId));
+                CharacterTicketMember.ToMemberId(request.World, request.CharacterId));
 
             return new Response.Status
             {
-                InQueue = status.InQueue,
+                Queued = status.Queued,
                 MatchType = status.MatchType,
-                RegistryId = status.RegistryId == Guid.Empty ? string.Empty : status.RegistryId.ToString(),
-                PendingMatchId = status.PendingMatchId?.ToString() ?? string.Empty,
+                TicketId = status.TicketId,
+                PendingMatchId = status.PendingMatchId ?? 0,
                 ConfirmDeadline = status.ConfirmDeadline?.ToString("yyyy-MM-dd HH:mm:ss") ?? string.Empty,
                 Error = (uint)ErrorCode.None
             };

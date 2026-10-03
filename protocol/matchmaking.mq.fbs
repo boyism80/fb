@@ -2,22 +2,28 @@ include "matchmaking.fbs";
 
 namespace fb.protocol.matchmaking.mq;
 
-table Proposed {
-    match_id: string;
+table MatchProposed {
+    match_id: ulong;
     match_type: uint;
     confirm_deadline: string;
     teams: [fb.protocol.matchmaking.MatchTeam];
 }
 
-table Ready {
-    match_id: string;
+table MatchReady {
+    match_id: ulong;
     match_type: uint;
     teams: [fb.protocol.matchmaking.MatchTeam];
 }
 
-table Dissolved {
-    match_id: string;
+table MatchDissolved {
+    match_id: ulong;
     match_type: uint;
     reason: ubyte;
-    registry_outcomes: [fb.protocol.matchmaking.RegistryOutcomeEntry];
+    ticket_outcomes: [fb.protocol.matchmaking.TicketOutcome];
+}
+
+table TicketRemoved {
+    match_type: uint;
+    ticket_id: ulong;
+    members: [fb.protocol.matchmaking.TicketMember];
 }

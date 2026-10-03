@@ -60,12 +60,9 @@ struct friend_entry
 
 struct transfer_match
 {
-    // Matchmaking ids are Guid strings. The bound keeps the transfer blob under its 255-byte limit.
-    static constexpr size_t MAX_ID_SIZE = 36;
-
-    std::string id;
-    uint32_t    type = 0;
-    uint32_t    team = 0;
+    uint64_t id   = 0;
+    uint32_t type = 0;
+    uint32_t team = 0;
 };
 
 struct transfer_option

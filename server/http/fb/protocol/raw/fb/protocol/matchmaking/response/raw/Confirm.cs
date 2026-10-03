@@ -21,20 +21,20 @@ public struct Confirm : IFlatbufferObject
   public Confirm __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public bool MatchFinalized { get { int o = __p.__offset(6); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool MatchReady { get { int o = __p.__offset(6); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol.matchmaking.response.raw.Confirm> CreateConfirm(FlatBufferBuilder builder,
       uint error = 0,
-      bool match_finalized = false) {
+      bool match_ready = false) {
     builder.StartTable(2);
     Confirm.AddError(builder, error);
-    Confirm.AddMatchFinalized(builder, match_finalized);
+    Confirm.AddMatchReady(builder, match_ready);
     return Confirm.EndConfirm(builder);
   }
 
   public static void StartConfirm(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
-  public static void AddMatchFinalized(FlatBufferBuilder builder, bool matchFinalized) { builder.AddBool(1, matchFinalized, false); }
+  public static void AddMatchReady(FlatBufferBuilder builder, bool matchReady) { builder.AddBool(1, matchReady, false); }
   public static Offset<fb.protocol.matchmaking.response.raw.Confirm> EndConfirm(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.matchmaking.response.raw.Confirm>(o);
@@ -50,7 +50,7 @@ static public class ConfirmVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*MatchFinalized*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*MatchReady*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

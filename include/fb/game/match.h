@@ -33,13 +33,16 @@ class match : public fb::lua::luable
 public:
     LUA_PROTOTYPE
 
+    // Must match Http.Util.SnowflakeId.HostShift; bits above it carry the cross host chosen by matchmaking.
+    static constexpr uint32_t ID_HOST_SHIFT = 14;
+
 public:
     class team;
     class container;
 
 private:
     server&                                             _server;
-    const std::string                                   _id;
+    const uint64_t                                      _id;
     const uint32_t                                      _type;
     const uint32_t                                      _slot;
     const uint32_t                                      _expected;
@@ -50,13 +53,13 @@ private:
     std::shared_ptr<fb::timer>                          _timer;
 
 public:
-    match(server& server, std::string id, uint32_t type, uint32_t slot, uint32_t expected);
+    match(server& server, uint64_t id, uint32_t type, uint32_t slot, uint32_t expected);
     match(const match&) = delete;
     match(match&&)      = delete;
     ~match()            = default;
 
 public:
-    const std::string&                      id() const;
+    uint64_t                                id() const;
     uint32_t                                type() const;
     uint32_t                                slot() const;
     uint32_t                                expected() const;
@@ -116,18 +119,18 @@ public:
 class match::container
 {
 private:
-    server&                                                 _server;
-    std::mutex                                              _mutex;
-    std::unordered_map<std::string, std::shared_ptr<match>> _sessions;
-    uint32_t                                                _next_slot = 1;
+    server&                                              _server;
+    std::mutex                                           _mutex;
+    std::unordered_map<uint64_t, std::shared_ptr<match>> _sessions;
+    uint32_t                                             _next_slot = 1;
 
 public:
     explicit container(server& server);
 
 public:
-    async::task<void> join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team = 0);
+    async::task<void> join(character& ch, uint64_t match_id, uint32_t match_type, uint32_t team = 0);
     void              leave(character& ch);
-    void              remove(std::string_view match_id);
+    void              remove(uint64_t match_id);
 };
 
 } // namespace fb::game

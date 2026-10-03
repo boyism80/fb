@@ -360,7 +360,7 @@ async::task<void> group::container::on_leave(std::string                target,
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
-            co_await ptr->matchmaker.unregister_queue(true);
+            co_await ptr->matchmaker.dequeue(matchmaker::initiator::SERVER);
             ptr->group_reset();
             this->clear_portraits(*ptr);
             ptr->message(_TEXT(MESSAGE_GROUP_LEFT_SUCCESS), MESSAGE_TYPE::STATE);
@@ -436,7 +436,7 @@ async::task<void> group::container::on_kick(std::string                target,
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
-            co_await ptr->matchmaker.unregister_queue(true);
+            co_await ptr->matchmaker.dequeue(matchmaker::initiator::SERVER);
             ptr->group_reset();
             this->clear_portraits(*ptr);
             ptr->message(_TEXT(MESSAGE_GROUP_KICKED), MESSAGE_TYPE::STATE);
@@ -485,8 +485,8 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
         auto members = roster_names(*group);
 
         this->_server.characters.foreach_enqueue(members, [this](auto& ch) -> async::task<void> {
-            if (ch->matchmaker.registered())
-                co_await ch->matchmaker.unregister_queue(true);
+            if (ch->matchmaker.queued())
+                co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
             ch->group_reset();
             this->clear_portraits(*ch);
             ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
