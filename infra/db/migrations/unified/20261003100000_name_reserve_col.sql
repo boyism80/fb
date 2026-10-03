@@ -35,9 +35,8 @@ BEGIN
     ELSEIF existing_reserved IS NULL THEN
         SELECT 0 AS result, 0 AS uid;
     ELSEIF TIMESTAMPDIFF(SECOND, existing_reserved, NOW()) >= threshold_sec THEN
-        DELETE FROM `name_registry` WHERE `id` = existing_id;
-        INSERT INTO `name_registry` (`name`, `world`, `reserved_at`) VALUES (uname, in_world, NOW());
-        SELECT 1 AS result, LAST_INSERT_ID() AS uid;
+        UPDATE `name_registry` SET `reserved_at` = NOW(), `world` = in_world WHERE `id` = existing_id;
+        SELECT 1 AS result, existing_id AS uid;
     ELSE
         SELECT 0 AS result, 0 AS uid;
     END IF;
