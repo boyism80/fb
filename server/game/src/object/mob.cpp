@@ -137,6 +137,8 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     {
         auto mob =
             this->_server.make<fb::game::mob>(table::mob[model.mob], mob::initial_params{.alive = true, .rezen = this});
+        // Paired with decrease() in ~mob.
+        this->_count++;
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->stat.heal(mob->stat.base_hp());
