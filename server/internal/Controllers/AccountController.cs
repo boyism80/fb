@@ -21,7 +21,6 @@ namespace Internal.Controllers
     {
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
-        private readonly RedisService _redisService;
         private readonly ILogger<AccountController> _logger;
         private readonly LogService _logService;
 
@@ -94,13 +93,11 @@ namespace Internal.Controllers
         }
         public AccountController(IMapper mapper,
             DbContext dbContext,
-            RedisService redisService,
             ILogger<AccountController> logger,
             LogService logService)
         {
             _mapper = mapper;
             _dbContext = dbContext;
-            _redisService = redisService;
             _logger = logger;
             _logService = logService;
         }
@@ -159,35 +156,24 @@ namespace Internal.Controllers
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
-            var taken = await conn.QueryFirstOrDefaultAsync<uint?>(
-                "SELECT id FROM name_registry WHERE name = @Name", new { Name = request.Name });
-            if (taken.HasValue)
+            var row = await conn.QueryFirstOrDefaultAsync(
+                "USP_NAME_RESERVE",
+                new { uname = request.Name, in_world = request.World, threshold_sec = 120 },
+                commandType: CommandType.StoredProcedure);
+
+            if (row == null || (int)row.result == 0)
                 return new Response.ReserveName { Success = false, Uid = 0 };
 
-            var redis = _redisService.GetUnifiedConnection();
-            const string reserveScript = @"
-                if redis.call('EXISTS', KEYS[1]) == 1 then return nil end
-                local uid = redis.call('INCR', KEYS[2])
-                redis.call('SETEX', KEYS[1], tonumber(ARGV[1]), tostring(uid))
-                return uid";
-
-            var result = await redis.EvalAsync(
-                reserveScript,
-                new StackExchange.Redis.RedisKey[] { $"fb:name-reservation:{request.Name}", "fb:name-uid-counter" },
-                new StackExchange.Redis.RedisValue[] { 120 });
-
-            if (result.IsNull)
-                return new Response.ReserveName { Success = false, Uid = 0 };
-
-            return new Response.ReserveName { Success = true, Uid = (uint)(long)result };
+            return new Response.ReserveName { Success = true, Uid = (uint)row.uid };
         }
 
         [HttpPost("name-keepalive")]
         public async Task<Response.ReserveName> NameKeepAlive(Request.ReserveName request)
         {
-            var redis = _redisService.GetUnifiedConnection();
-            await redis.Connection.KeyExpireAsync(
-                $"fb:name-reservation:{request.Name}", TimeSpan.FromSeconds(120));
+            await using var conn = _dbContext.GetUnifiedConnection();
+            await conn.ExecuteAsync("USP_NAME_KEEPALIVE",
+                new { uname = request.Name },
+                commandType: CommandType.StoredProcedure);
             return new Response.ReserveName { Success = true, Uid = 0 };
         }
         [HttpPost("init")]
@@ -213,14 +199,6 @@ namespace Internal.Controllers
             };
             _dbContext.Character.Set(world, ch);
             await _dbContext.SaveChangesAsync();
-
-            await using var conn = _dbContext.GetUnifiedConnection();
-            await conn.ExecuteAsync("USP_NAME_REGISTER",
-                new { uid = request.Uid, uname = request.Name, in_world = request.World },
-                commandType: CommandType.StoredProcedure);
-
-            var redis = _redisService.GetUnifiedConnection();
-            await redis.Connection.KeyDeleteAsync($"fb:name-reservation:{request.Name}");
 
             await _logService.WriteAsync("account_create", new
             {
@@ -275,6 +253,12 @@ namespace Internal.Controllers
                 _dbContext.Character.Set(world, ch);
 
                 await _dbContext.SaveChangesAsync();
+
+                await using var conn = _dbContext.GetUnifiedConnection();
+                await conn.ExecuteAsync("USP_NAME_CONFIRM",
+                    new { uname = ch.Name },
+                    commandType: CommandType.StoredProcedure);
+
                 return new Response.MakeCharacter
                 {
                     Success = true

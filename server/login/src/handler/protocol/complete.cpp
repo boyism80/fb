@@ -67,6 +67,7 @@ async::task<bool> complete<V>::handle(fb::socket<fb::login::session>& session, l
         session.send(response::message(_TEXT(MESSAGE_ACCOUNT_SUCCESS_REGISTER_ACCOUNT), 0x00));
         session_data->pk = -1;
         session_data->name.clear();
+        session_data->pending_name.clear();
         co_return true;
     }
     catch (login_exception& e)
