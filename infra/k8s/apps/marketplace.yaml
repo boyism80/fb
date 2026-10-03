@@ -52,11 +52,10 @@ metadata:
   name: marketplace
   namespace: fb
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: marketplace
   ports:
     - name: marketplace
       port: 80
       targetPort: marketplace
-      nodePort: 30220

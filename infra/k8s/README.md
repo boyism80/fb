@@ -68,13 +68,12 @@ kubectl -n fb get pods
 | Login | 30010 |
 | Game | 30030 |
 | Game (cross) | 30320, 30321, 30322 |
-| Internal | 30200 |
 | Admin Tool | 30210 |
-| Marketplace | 30220 |
-| Matchmaking | 30240 |
 | MySQL unified | 31000 |
 | Redis unified | 31010 |
 | RabbitMQ internal AMQP | 31020 |
+
+Internal, marketplace and matchmaking are ClusterIP only; use `kubectl -n fb port-forward svc/<name> <local>:80` to reach them from outside the cluster.
 
 Connect clients to `<node-ip>:30000` (gateway). Ensure `FB_HOST` in C++ configs matches the reachable node IP.
 

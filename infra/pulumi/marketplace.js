@@ -234,13 +234,12 @@ module.exports = {
         const service = new k8s.core.v1.Service("marketplace", {
             metadata: { name: "marketplace", namespace: namespace.metadata.name },
             spec: {
-                type: "NodePort",
+                type: "ClusterIP",
                 ports: [{ 
                     name: "marketplace",
                     port: marketplaceConf.port.cluster,
                     targetPort: "marketplace",
-                    protocol: "TCP",
-                    nodePort: marketplaceConf.port.node 
+                    protocol: "TCP"
                 }],
                 selector: appLabels,
             },

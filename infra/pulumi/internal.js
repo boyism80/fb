@@ -245,13 +245,12 @@ module.exports = {
         const service = new k8s.core.v1.Service("internal", {
             metadata: { name: "internal", namespace: namespace.metadata.name },
             spec: {
-                type: "NodePort",
+                type: "ClusterIP",
                 ports: [{ 
                     name: "internal",
                     port: internalConf.port.cluster,
                     targetPort: "internal",
-                    protocol: "TCP",
-                    nodePort: internalConf.port.node 
+                    protocol: "TCP"
                 }],
                 selector: appLabels,
             },

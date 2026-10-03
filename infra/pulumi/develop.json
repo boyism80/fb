@@ -1938,8 +1938,7 @@
     "internal": {
         "replicas": 10,
         "port": {
-            "cluster": 80,
-            "node": 30200
+            "cluster": 80
         }
     },
     "gateway": {
@@ -1953,15 +1952,13 @@
     "marketplace": {
         "replicas": 10,
         "port": {
-            "cluster": 80,
-            "node": 30220
+            "cluster": 80
         }
     },
     "matchmaking": {
         "replicas": 1,
         "port": {
-            "cluster": 80,
-            "node": 30240
+            "cluster": 80
         }
     },
     "cross": {

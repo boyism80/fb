@@ -100,13 +100,12 @@ module.exports = {
         const service = new k8s.core.v1.Service("matchmaking", {
             metadata: { name: "matchmaking", namespace: namespace.metadata.name },
             spec: {
-                type: "NodePort",
+                type: "ClusterIP",
                 ports: [{
                     name: "matchmaking",
                     port: matchmakingConf.port.cluster,
                     targetPort: "matchmaking",
-                    protocol: "TCP",
-                    nodePort: matchmakingConf.port.node
+                    protocol: "TCP"
                 }],
                 selector: appLabels,
             },
