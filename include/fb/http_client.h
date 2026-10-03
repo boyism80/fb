@@ -15,6 +15,8 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/asio/strand.hpp>
+#include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -118,33 +120,35 @@ private:
         return {.host = host_url.substr(0, colon_pos), .port = host_url.substr(colon_pos + 1)};
     }
 
+    // The executor must be the strand running the owning coroutine. A wait handler already queued when
+    // release() runs can still execute after this object and the socket are gone, so it only holds the
+    // shared flag and touches the socket while the flag says the coroutine has not released it yet.
     class http_request_deadline
     {
     public:
         http_request_deadline(boost::asio::any_io_executor        executor,
                               boost::asio::ip::tcp::socket&       socket,
                               std::chrono::steady_clock::duration timeout) :
-            _socket(socket),
             _timer(std::move(executor))
         {
-            _timer.expires_after(timeout);
-            _timer.async_wait([this](const boost::system::error_code& ec) {
-                if (ec || _released.load(std::memory_order_acquire))
+            this->_timer.expires_after(timeout);
+            this->_timer.async_wait([&socket, released = this->_released](const boost::system::error_code& ec) {
+                if (ec || *released)
                     return;
 
                 boost::system::error_code cancel_ec;
-                _socket.cancel(cancel_ec);
+                socket.cancel(cancel_ec);
             });
         }
 
         void release()
         {
-            if (_released.load(std::memory_order_acquire))
+            if (*this->_released)
                 return;
 
-            _released.store(true, std::memory_order_release);
+            *this->_released = true;
             boost::system::error_code ec;
-            _timer.cancel(ec);
+            this->_timer.cancel(ec);
         }
 
         ~http_request_deadline()
@@ -153,9 +157,8 @@ private:
         }
 
     private:
-        boost::asio::ip::tcp::socket& _socket;
-        boost::asio::steady_timer     _timer;
-        std::atomic<bool>             _released{false};
+        std::shared_ptr<bool>     _released = std::make_shared<bool>(false);
+        boost::asio::steady_timer _timer;
     };
 
     static void close_http_socket(boost::asio::ip::tcp::socket& socket)
@@ -183,15 +186,15 @@ private:
     }
 
     template <typename Request>
-    boost::asio::awaitable<std::vector<uint8_t>> exchange_http_async(boost::asio::io_context&            io_context,
-                                                                     const http_endpoint&                endpoint,
+    boost::asio::awaitable<std::vector<uint8_t>> exchange_http_async(const http_endpoint&                endpoint,
                                                                      std::chrono::steady_clock::duration timeout,
                                                                      Request                             request)
     {
-        auto resolver = boost::asio::ip::tcp::resolver{io_context};
-        auto socket   = boost::asio::ip::tcp::socket{io_context};
+        auto executor = co_await boost::asio::this_coro::executor;
+        auto resolver = boost::asio::ip::tcp::resolver{executor};
+        auto socket   = boost::asio::ip::tcp::socket{executor};
 
-        http_request_deadline deadline{io_context.get_executor(), socket, timeout};
+        http_request_deadline deadline{executor, socket, timeout};
 
         const auto results = co_await resolver.async_resolve(endpoint.host, endpoint.port, boost::asio::use_awaitable);
         co_await boost::asio::async_connect(socket, results, boost::asio::use_awaitable);
@@ -235,8 +238,7 @@ private:
     {
         try
         {
-            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-            auto  endpoint   = parse_http_endpoint(std::move(host));
+            auto endpoint = parse_http_endpoint(std::move(host));
 
             auto req =
                 boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get,
@@ -247,10 +249,11 @@ private:
             for (const auto& [name, value] : headers)
                 req.set(name, value);
 
-            auto resolver = boost::asio::ip::tcp::resolver{io_context};
-            auto socket   = boost::asio::ip::tcp::socket{io_context};
+            auto executor = co_await boost::asio::this_coro::executor;
+            auto resolver = boost::asio::ip::tcp::resolver{executor};
+            auto socket   = boost::asio::ip::tcp::socket{executor};
 
-            http_request_deadline deadline{io_context.get_executor(), socket, timeout};
+            http_request_deadline deadline{executor, socket, timeout};
 
             const auto results =
                 co_await resolver.async_resolve(endpoint.host, endpoint.port, boost::asio::use_awaitable);
@@ -293,8 +296,7 @@ private:
     {
         try
         {
-            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-            auto  endpoint   = parse_http_endpoint(std::move(host));
+            auto endpoint = parse_http_endpoint(std::move(host));
 
             auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{
                 boost::beast::http::verb::post,
@@ -309,7 +311,7 @@ private:
             req.body() = std::move(body);
             req.prepare_payload();
 
-            co_return co_await exchange_http_async(io_context, endpoint, timeout, std::move(req));
+            co_return co_await exchange_http_async(endpoint, timeout, std::move(req));
         }
         catch (const std::exception& e)
         {
@@ -371,7 +373,7 @@ private:
 
         pending_task task = [this, promise, host_str, path_str, headers]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
-            boost::asio::co_spawn(ctx,
+            boost::asio::co_spawn(boost::asio::make_strand(ctx),
                                   this->boost_get_raw_async(host_str, path_str, headers, 5s),
                                   [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
                                       if (ep)
@@ -452,7 +454,7 @@ public:
 
         pending_task task = [this, promise, host = std::move(host), path = std::move(path), headers]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
-            boost::asio::co_spawn(ctx,
+            boost::asio::co_spawn(boost::asio::make_strand(ctx),
                                   this->boost_get_raw_async(host, path, headers, std::chrono::seconds{30}, true),
                                   [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
                                       if (ep)
@@ -501,7 +503,7 @@ private:
 
         pending_task task = [this, promise, host, path, headers, body_vec]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
-            boost::asio::co_spawn(ctx,
+            boost::asio::co_spawn(boost::asio::make_strand(ctx),
                                   this->boost_post_raw_async(host, path, headers, std::chrono::seconds{5}, body_vec),
                                   [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
                                       if (ep)
@@ -558,7 +560,7 @@ private:
         pending_task task = [this, promise, url_str, path_str, headers, body]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
             boost::asio::co_spawn(
-                ctx,
+                boost::asio::make_strand(ctx),
                 this->boost_post_raw_async(url_str, path_str, headers, std::chrono::seconds{30}, body),
                 [this, promise](std::exception_ptr ep, std::vector<uint8_t> /*bytes*/) {
                     if (ep)
