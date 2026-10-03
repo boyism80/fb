@@ -475,17 +475,24 @@ async::task<void> clan::container::on_ally(uint32_t clan_id, std::optional<uint3
 
     auto other_id = related_clan_id.value();
 
-    auto guard = co_await this->enter_write(clan_id);
-    if (guard.value() != nullptr)
-        guard.value()->allied_clan_id(other_id);
+    // Bucket locks are not reentrant; never hold two clan guards at once.
+    auto members = std::vector<std::shared_ptr<character>>{};
+    {
+        auto guard = co_await this->enter_write(clan_id);
+        if (guard.value() != nullptr)
+            guard.value()->allied_clan_id(other_id);
 
-    auto other_guard = co_await this->enter_write(other_id);
-    if (other_guard.value() != nullptr)
-        other_guard.value()->allied_clan_id(clan_id);
+        members = online_members(guard.value());
+    }
 
-    auto members = online_members(guard.value());
-    auto others  = online_members(other_guard.value());
-    members.insert(members.end(), others.begin(), others.end());
+    {
+        auto other_guard = co_await this->enter_write(other_id);
+        if (other_guard.value() != nullptr)
+            other_guard.value()->allied_clan_id(clan_id);
+
+        auto others = online_members(other_guard.value());
+        members.insert(members.end(), others.begin(), others.end());
+    }
 
     this->_server.characters.foreach_enqueue(
         [](auto& member) -> async::task<void> {
@@ -497,11 +504,14 @@ async::task<void> clan::container::on_ally(uint32_t clan_id, std::optional<uint3
 
 async::task<void> clan::container::on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id)
 {
-    auto guard = co_await this->enter_write(clan_id);
-    if (guard.value() != nullptr)
-        guard.value()->allied_clan_id(std::nullopt);
+    auto members = std::vector<std::shared_ptr<character>>{};
+    {
+        auto guard = co_await this->enter_write(clan_id);
+        if (guard.value() != nullptr)
+            guard.value()->allied_clan_id(std::nullopt);
 
-    auto members = online_members(guard.value());
+        members = online_members(guard.value());
+    }
 
     if (related_clan_id.has_value())
     {
@@ -528,17 +538,23 @@ async::task<void> clan::container::on_enemy(uint32_t clan_id, std::optional<uint
 
     auto other_id = related_clan_id.value();
 
-    auto guard = co_await this->enter_write(clan_id);
-    if (guard.value() != nullptr)
-        guard.value()->add_enemy_clan(other_id);
+    auto members = std::vector<std::shared_ptr<character>>{};
+    {
+        auto guard = co_await this->enter_write(clan_id);
+        if (guard.value() != nullptr)
+            guard.value()->add_enemy_clan(other_id);
 
-    auto other_guard = co_await this->enter_write(other_id);
-    if (other_guard.value() != nullptr)
-        other_guard.value()->add_enemy_clan(clan_id);
+        members = online_members(guard.value());
+    }
 
-    auto members = online_members(guard.value());
-    auto others  = online_members(other_guard.value());
-    members.insert(members.end(), others.begin(), others.end());
+    {
+        auto other_guard = co_await this->enter_write(other_id);
+        if (other_guard.value() != nullptr)
+            other_guard.value()->add_enemy_clan(clan_id);
+
+        auto others = online_members(other_guard.value());
+        members.insert(members.end(), others.begin(), others.end());
+    }
 
     this->_server.characters.foreach_enqueue(
         [](auto& member) -> async::task<void> {
@@ -555,17 +571,23 @@ async::task<void> clan::container::on_unenemy(uint32_t clan_id, std::optional<ui
 
     auto other_id = related_clan_id.value();
 
-    auto guard = co_await this->enter_write(clan_id);
-    if (guard.value() != nullptr)
-        guard.value()->remove_enemy_clan(other_id);
+    auto members = std::vector<std::shared_ptr<character>>{};
+    {
+        auto guard = co_await this->enter_write(clan_id);
+        if (guard.value() != nullptr)
+            guard.value()->remove_enemy_clan(other_id);
 
-    auto other_guard = co_await this->enter_write(other_id);
-    if (other_guard.value() != nullptr)
-        other_guard.value()->remove_enemy_clan(clan_id);
+        members = online_members(guard.value());
+    }
 
-    auto members = online_members(guard.value());
-    auto others  = online_members(other_guard.value());
-    members.insert(members.end(), others.begin(), others.end());
+    {
+        auto other_guard = co_await this->enter_write(other_id);
+        if (other_guard.value() != nullptr)
+            other_guard.value()->remove_enemy_clan(clan_id);
+
+        auto others = online_members(other_guard.value());
+        members.insert(members.end(), others.begin(), others.end());
+    }
 
     this->_server.characters.foreach_enqueue(
         [](auto& member) -> async::task<void> {
