@@ -4877,15 +4877,24 @@ int builtin::character::builtin_send_mail(lua_State* L)
         contents = lua->tostring(4);
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<bool>(false);
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        server.mail.send(*ch, to, title, contents);
-        co_return;
+        try
+        {
+            co_await server.mail.send(*ch, to, title, contents);
+            *result = true;
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("send_mail from script failed: {}", e.what());
+        }
     };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
     };
     return builder.run();
 }

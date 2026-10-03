@@ -335,8 +335,7 @@ async::task<void> bulletin<V>::handle_send_mail(character*               ch,
     auto error = std::optional<std::string>{};
     try
     {
-        this->server.mail.send(*ch, request.user, request.title, request.contents);
-        co_await this->server.threads.switching(weak);
+        co_await this->server.mail.send(*ch, request.user, request.title, request.contents);
         auto ptr = weak.lock();
         if (ptr == nullptr)
             co_return;
