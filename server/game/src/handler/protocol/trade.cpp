@@ -24,15 +24,17 @@ async::task<bool> trade<V>::handle(fb::socket<character>& session, game_reqs::tr
     if (map == nullptr)
         co_return true;
 
-    auto you = static_cast<character*>(map->objects[request.oid]);
-    if (you == nullptr)
-        co_return true;
-
     switch (request.action)
     {
     case fb::game::trade::state::REQUEST:
+    {
+        auto you = map->objects[request.oid];
+        if (you == nullptr || you->is(OBJECT_TYPE::CHARACTER) == false)
+            break;
+
         std::ignore = me->trade.begin(you->shared_from_this_as<character>());
         break;
+    }
 
     case fb::game::trade::state::UP_ITEM:
         std::ignore = me->trade.up_item(request.parameter.index - 1);
