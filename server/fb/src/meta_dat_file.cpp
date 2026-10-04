@@ -107,7 +107,7 @@ std::string trim_copy(std::string_view s)
 
 } // namespace
 
-void meta_dat_file::load(std::string_view path, bool parse_collections)
+void meta_dat_file::load(std::string_view path, META_DAT_PARSE parse)
 {
     this->_entries.clear();
     this->_groups.clear();
@@ -163,7 +163,7 @@ void meta_dat_file::load(std::string_view path, bool parse_collections)
         plains.push_back(std::move(plain));
     }
 
-    if (parse_collections == false)
+    if (parse == META_DAT_PARSE::ENTRIES_ONLY)
         return;
 
     for (size_t i = 0; i < this->_entries.size(); ++i)

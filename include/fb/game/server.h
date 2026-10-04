@@ -143,10 +143,9 @@ public:
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
 
 private:
-    fb::model::datetime                           _time;
-    double                                        _exp_multiplier;
-    double                                        _drop_rate_multiplier;
-    std::unordered_map<uint32_t, fb::model::mob*> _collection_mobs;
+    fb::model::datetime _time;
+    double              _exp_multiplier;
+    double              _drop_rate_multiplier;
 
 public:
     fb::log_collector                                      log;
@@ -186,7 +185,6 @@ private:
     void                  init_amqp_handlers();
     async::task<void>     init_map_scripts();
     async::task<void>     init_script();
-    void                  init_collection_mobs();
     // clang-format on
 
 public:
@@ -245,9 +243,8 @@ public:
     void                                                 exp_multiplier(double value);
     double                                               drop_rate_multiplier() const;
     void                                                 drop_rate_multiplier(double value);
-    const std::unordered_map<uint32_t, fb::model::mob*>& collection_mobs() const;
-    fb::model::mob*                                      collection_mob(uint32_t mob_id) const;
-    fb::model::mob*                                      collection_mob(const fb::meta_dat_collection_item& item) const;
+    const fb::model::mob*                                collection_mob(uint32_t mob_id) const;
+    const fb::model::mob*                                collection_mob(const fb::meta_dat_collection_item& item) const;
     // clang-format on
 };
 

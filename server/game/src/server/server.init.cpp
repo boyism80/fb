@@ -450,9 +450,8 @@ async::task<void> fb::game::server::on_start()
 
     co_await this->init_lua();
     co_await fb::model::loader(*this).run();
-    this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), true);
+    this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), fb::META_DAT_PARSE::WITH_COLLECTIONS);
     this->sobj.load(fb::config<std::string>("sobj_tbl", std::string("SObj.tbl")));
-    this->init_collection_mobs();
     co_await map_loader(*this).run();
     co_await script_loader(*this).run();
     co_await npc_spawner(*this).run();

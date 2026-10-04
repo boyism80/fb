@@ -55,7 +55,7 @@ async::task<void> fb::login::server::on_start()
 #endif
 
     co_await fb::model::loader(*this).run();
-    this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), false);
+    this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), fb::META_DAT_PARSE::ENTRIES_ONLY);
 
     co_await fb::acceptor<session>::on_start();
 

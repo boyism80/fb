@@ -9,6 +9,12 @@
 
 namespace fb {
 
+enum class META_DAT_PARSE : uint8_t
+{
+    ENTRIES_ONLY,
+    WITH_COLLECTIONS,
+};
+
 struct meta_dat_entry
 {
     std::string name;
@@ -39,7 +45,7 @@ private:
     std::vector<meta_dat_collection_group> _groups;
 
 public:
-    void load(std::string_view path, bool parse_collections);
+    void load(std::string_view path, META_DAT_PARSE parse);
 
     const std::vector<meta_dat_entry>&            entries() const;
     const meta_dat_entry*                         find(std::string_view name) const;

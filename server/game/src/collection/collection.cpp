@@ -148,27 +148,30 @@ async::task<uint32_t> character_collections::unlock_all()
         co_return 0;
 
     auto added = uint32_t{0};
-    for (const auto& [mob_id, mob] : ch->server.collection_mobs())
+    for (const auto& group : ch->server.meta.groups())
     {
-        if (mob == nullptr)
-            continue;
+        for (const auto& item : group.items)
+        {
+            if (item.name.empty())
+                continue;
 
-        if (this->contains(mob_id))
-            continue;
+            auto* mob = ch->server.collection_mob(item);
+            if (mob == nullptr)
+                continue;
 
-        if (this->unlock(mob_id) == false)
-            continue;
+            if (this->contains(mob->id))
+                continue;
 
-        ++added;
+            if (this->unlock(mob->id) == false)
+                continue;
 
-        if (ch->client_version != fb::protocol::CLIENT_VERSION::v651)
-            continue;
+            ++added;
 
-        auto* item = ch->server.meta.find_item(mob->name);
-        if (item == nullptr)
-            continue;
+            if (ch->client_version != fb::protocol::CLIENT_VERSION::v651)
+                continue;
 
-        ch->listener.on_collection_flag(*ch, item->group_id, item->slot, true);
+            ch->listener.on_collection_flag(*ch, item.group_id, item.slot, true);
+        }
     }
 
     if (added > 0 && ch->client_version == fb::protocol::CLIENT_VERSION::v651)
