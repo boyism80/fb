@@ -18,6 +18,8 @@ namespace Http.Service
 
         public static string GetWriteBackQueueName(uint world, int db) => $"{WriteBackExchangeName}.{world}.{db}";
 
+        public static readonly IDictionary<string, object> QueueArguments = new Dictionary<string, object> { ["x-queue-type"] = "quorum" };
+
         private readonly RabbitMqService _rabbitMqService;
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
@@ -56,6 +58,8 @@ namespace Http.Service
             }
             catch (Exception ex)
             {
+                _declaredQueues.TryRemove(GetWriteBackQueueName(world, db), out _);
+
                 // Redis is already written and the cref stays incremented, so the Redis value remains
                 // pinned until the write_back_failure row is replayed. Callers cannot roll back Redis.
                 _logger.LogError(ex, "Failed to publish write-back message for world {World} db {Db} key {Key}: {Sql}", world, db, key, sql);
@@ -94,7 +98,7 @@ namespace Http.Service
                 await _rabbitMqService.WithChannelAsync(async channel =>
                 {
                     await channel.ExchangeDeclareAsync(WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
-                    await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
+                    await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: QueueArguments, passive: false, noWait: false, cancellationToken);
                     await channel.QueueBindAsync(queueName, WriteBackExchangeName, queueName, arguments: null, noWait: false, cancellationToken);
                 }, cancellationToken);
 

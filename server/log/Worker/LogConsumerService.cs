@@ -218,7 +218,7 @@ namespace Log.Worker
                         durable: true,
                         exclusive: false,
                         autoDelete: false,
-                        arguments: null,
+                        arguments: new Dictionary<string, object> { ["x-queue-type"] = "quorum" },
                         passive: false,
                         noWait: false,
                         cancellationToken: cancellationToken);

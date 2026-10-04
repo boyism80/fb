@@ -103,7 +103,7 @@ namespace Http.Service
                 if (persistent)
                 {
                     var props = new BasicProperties { Persistent = true };
-                    await _channel.BasicPublishAsync(exchangeName, routingKey, mandatory: false, basicProperties: props, body: body, cancellationToken: cancellationToken);
+                    await _channel.BasicPublishAsync(exchangeName, routingKey, mandatory: true, basicProperties: props, body: body, cancellationToken: cancellationToken);
                 }
                 else
                 {

@@ -158,7 +158,7 @@ namespace WriteBack.Service
                 channel = await _rabbitMqConnection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), stoppingToken);
                 await channel.ExchangeDeclareAsync(Http.Service.WriteBackService.WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, stoppingToken);
                 queueName = Http.Service.WriteBackService.GetWriteBackQueueName(_world, db);
-                await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken: stoppingToken);
+                await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: Http.Service.WriteBackService.QueueArguments, passive: false, noWait: false, cancellationToken: stoppingToken);
                 await channel.QueueBindAsync(queueName, Http.Service.WriteBackService.WriteBackExchangeName, queueName, arguments: null, noWait: false, stoppingToken);
             }
             catch (Exception ex)

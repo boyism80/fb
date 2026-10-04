@@ -2,6 +2,7 @@
 #include <fb/logger.h>
 
 #include <cstdint>
+#include <format>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -28,7 +29,8 @@ bool socket::connect(std::string_view hostname,
                      uint16_t         port,
                      std::string_view id,
                      std::string_view pw,
-                     std::string_view vhost)
+                     std::string_view vhost,
+                     uint16_t         heartbeat)
 {
     // Clean up any existing connection before creating a new one
     if (this->_conn != nullptr)
@@ -61,7 +63,14 @@ bool socket::connect(std::string_view hostname,
         return false;
     }
 
-    if (amqp_login(this->_conn, vhost_str.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id_str.c_str(), pw_str.c_str())
+    if (amqp_login(this->_conn,
+                   vhost_str.c_str(),
+                   0,
+                   131072,
+                   heartbeat,
+                   AMQP_SASL_METHOD_PLAIN,
+                   id_str.c_str(),
+                   pw_str.c_str())
             .reply_type != AMQP_RESPONSE_NORMAL)
     {
         amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
@@ -221,8 +230,11 @@ bool socket::select(const timeval* timeout)
     if (ret.reply_type != AMQP_RESPONSE_LIBRARY_EXCEPTION)
         return false;
 
-    if (ret.library_error != AMQP_STATUS_UNEXPECTED_STATE)
+    if (ret.library_error == AMQP_STATUS_TIMEOUT)
         return false;
+
+    if (ret.library_error != AMQP_STATUS_UNEXPECTED_STATE)
+        throw std::runtime_error(std::format("amqp_consume_message failed: {}", amqp_error_string2(ret.library_error)));
 
     amqp_frame_t frame;
     if (amqp_simple_wait_frame(this->_conn, &frame) != AMQP_STATUS_OK)

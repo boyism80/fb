@@ -32,6 +32,9 @@ public:
     using initialize_handler = std::function<void(fb::amqp::socket&)>; ///< Type for AMQP initialization handler
 
 private:
+    static constexpr uint16_t HEARTBEAT_SECONDS = 30;
+
+private:
     fb::acceptor<T>& _owner; ///< Reference to the owner acceptor
     std::unordered_map<std::string, std::unordered_map<uint32_t, handler_func>>
                                       _handlers; ///< Maps exchange+routing_key to handlers
@@ -65,7 +68,8 @@ public:
                                                       fb::config<uint16_t>("amqp:internal:port"),
                                                       fb::config<std::string_view>("amqp:internal:uid"),
                                                       fb::config<std::string_view>("amqp:internal:pwd"),
-                                                      "/");
+                                                      "/",
+                                                      HEARTBEAT_SECONDS);
 
                 if (connected == false)
                 {
@@ -100,9 +104,10 @@ public:
                     if (this->_amqp->select(&timeout) == false)
                         continue; // No messages, continue polling
                 }
-                catch (std::exception&)
+                catch (std::exception& e)
                 {
-                    break; // Connection error, reconnect
+                    fb::logger::warn("AMQP connection lost, reconnecting: {}", e.what());
+                    break;
                 }
             }
         }

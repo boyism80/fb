@@ -34,8 +34,12 @@ public:
     ~socket();
 
 public:
-    bool
-    connect(std::string_view hostname, uint16_t port, std::string_view id, std::string_view pw, std::string_view vhost);
+    bool   connect(std::string_view hostname,
+                   uint16_t         port,
+                   std::string_view id,
+                   std::string_view pw,
+                   std::string_view vhost,
+                   uint16_t         heartbeat = 0);
     queue& declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum, fb::thread_container& threads);
     bool   select(const timeval* timeout = nullptr);
     bool   publish(std::string_view               exchange,

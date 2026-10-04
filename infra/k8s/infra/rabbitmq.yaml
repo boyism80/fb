@@ -25,6 +25,7 @@ metadata:
   namespace: fb
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   selector:
     app: rabbitmq
     type: internal
@@ -47,7 +48,7 @@ metadata:
 spec:
   serviceName: rabbitmq-internal-headless
   replicas: 1
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app: rabbitmq
@@ -68,6 +69,19 @@ spec:
                   - key: infra
                     operator: In
                     values: ["true"]
+      initContainers:
+        - name: chown-data
+          image: busybox:1.36
+          command: ["sh", "-c", "chown -R 999:999 /var/lib/rabbitmq"]
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/rabbitmq
+              subPathExpr: $(MY_POD_NAME)
       containers:
         - name: rabbitmq
           image: rabbitmq:4.0.2-management
@@ -108,9 +122,12 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/rabbitmq
+            - name: data
+              mountPath: /var/lib/rabbitmq
+              subPathExpr: $(MY_POD_NAME)
           readinessProbe:
-            exec:
-              command: ["rabbitmq-diagnostics", "ping"]
+            tcpSocket:
+              port: amqp
             initialDelaySeconds: 20
             periodSeconds: 10
             timeoutSeconds: 5
@@ -124,6 +141,10 @@ spec:
         - name: config
           configMap:
             name: rabbitmq-internal-config
+        - name: data
+          hostPath:
+            path: /mnt/fb/rabbitmq/internal
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
@@ -188,6 +209,7 @@ metadata:
   namespace: fb
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   selector:
     app: rabbitmq
     type: log
@@ -210,7 +232,7 @@ metadata:
 spec:
   serviceName: rabbitmq-log-headless
   replicas: 1
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app: rabbitmq
@@ -231,6 +253,19 @@ spec:
                   - key: infra
                     operator: In
                     values: ["true"]
+      initContainers:
+        - name: chown-data
+          image: busybox:1.36
+          command: ["sh", "-c", "chown -R 999:999 /var/lib/rabbitmq"]
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/rabbitmq
+              subPathExpr: $(MY_POD_NAME)
       containers:
         - name: rabbitmq
           image: rabbitmq:4.0.2-management
@@ -271,9 +306,12 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/rabbitmq
+            - name: data
+              mountPath: /var/lib/rabbitmq
+              subPathExpr: $(MY_POD_NAME)
           readinessProbe:
-            exec:
-              command: ["rabbitmq-diagnostics", "ping"]
+            tcpSocket:
+              port: amqp
             initialDelaySeconds: 20
             periodSeconds: 10
             timeoutSeconds: 5
@@ -287,6 +325,10 @@ spec:
         - name: config
           configMap:
             name: rabbitmq-log-config
+        - name: data
+          hostPath:
+            path: /mnt/fb/rabbitmq/log
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service

@@ -94,6 +94,8 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                     },
                     spec: {
                         clusterIP: "None",
+                        // Peers must resolve each other while waiting for the last-stopped node on restart
+                        publishNotReadyAddresses: true,
                         selector: { app: "rabbitmq", type: type },
                         ports: [
                             { name: "amqp", port: 5672, targetPort: 5672 },
@@ -103,14 +105,14 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                     },
                 }, { dependsOn: [configMap] });
                 
-                // Create StatefulSet with volumeClaimTemplates for persistent storage
                 const statefulSet = new k8s.apps.v1.StatefulSet(resourceName, {
                     metadata: { name: resourceName, namespace: namespace.metadata.name },
                     spec: {
                         serviceName: headlessServiceName,
                         replicas: replicas,
                         selector: { matchLabels: { app: "rabbitmq", type: type } },
-                        podManagementPolicy: "OrderedReady",
+                        // OrderedReady deadlocks a full restart: pod-0 waits for peers that are never created
+                        podManagementPolicy: "Parallel",
                         template: {
                             metadata: { labels: { app: "rabbitmq", type: type } },
                             spec: {
@@ -128,6 +130,17 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                                         }
                                     }
                                 },
+                                initContainers: [{
+                                    name: "chown-data",
+                                    image: "busybox:1.36",
+                                    command: ["sh", "-c", "chown -R 999:999 /var/lib/rabbitmq"],
+                                    env: [
+                                        { name: "MY_POD_NAME", valueFrom: { fieldRef: { fieldPath: "metadata.name" } } },
+                                    ],
+                                    volumeMounts: [
+                                        { name: "data", mountPath: "/var/lib/rabbitmq", subPathExpr: "$(MY_POD_NAME)" }
+                                    ],
+                                }],
                                 containers: [{
                                     name: "rabbitmq",
                                     image: "rabbitmq:4.0.2-management",
@@ -153,10 +166,13 @@ export RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
 exec docker-entrypoint.sh rabbitmq-server
 `],
                                         volumeMounts: [
-                                            { name: "config", mountPath: "/etc/rabbitmq" }
+                                            { name: "config", mountPath: "/etc/rabbitmq" },
+                                            { name: "data", mountPath: "/var/lib/rabbitmq", subPathExpr: "$(MY_POD_NAME)" }
                                         ],
+                                        // The AMQP listener opens only after the node has joined the cluster;
+                                        // diagnostics ping succeeds as soon as the Erlang VM is up
                                         readinessProbe: {
-                                            exec: { command: ["rabbitmq-diagnostics", "ping"] },
+                                            tcpSocket: { port: "amqp" },
                                             initialDelaySeconds: 20,
                                             periodSeconds: 10,
                                             timeoutSeconds: 5,
@@ -172,12 +188,16 @@ exec docker-entrypoint.sh rabbitmq-server
                                         {
                                             name: "config",
                                             configMap: { name: configMap.metadata.name }
+                                        },
+                                        {
+                                            name: "data",
+                                            hostPath: { path: `/mnt/fb/rabbitmq/${type}`, type: "DirectoryOrCreate" }
                                         }
                                     ]
                                 }
                             }
                         },
-                    }, { dependsOn: [headlessService, configMap, serviceAccount, roleBinding] })
+                    }, { dependsOn: [headlessService, configMap, serviceAccount, roleBinding], deleteBeforeReplace: true })
                     
                     // Create ClusterIP service
                     const clusterIPService = new k8s.core.v1.Service(resourceName, {

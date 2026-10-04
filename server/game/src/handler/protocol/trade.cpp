@@ -32,7 +32,7 @@ async::task<bool> trade<V>::handle(fb::socket<character>& session, game_reqs::tr
         if (you == nullptr || you->is(OBJECT_TYPE::CHARACTER) == false)
             break;
 
-        std::ignore = me->trade.begin(you->shared_from_this_as<character>());
+        std::ignore = me->trade.begin(you->template shared_from_this_as<character>());
         break;
     }
 
