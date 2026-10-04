@@ -91,7 +91,7 @@ namespace Log.Worker
             {
                 var processedCount = 0;
                 var allLogs = new List<JsonElement>();
-                var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
+                var messagesToAck = new List<(string QueueName, ulong DeliveryTag, bool Redelivered, string Body)>();
 
                 foreach (var queueName in _queueNames)
                 {
@@ -109,7 +109,7 @@ namespace Log.Worker
                             var jsonString = Encoding.UTF8.GetString(body);
                             using var doc = JsonDocument.Parse(jsonString);
                             ParseLogMessage(doc.RootElement, allLogs);
-                            messagesToAck.Add((queueName, result.DeliveryTag));
+                            messagesToAck.Add((queueName, result.DeliveryTag, result.Redelivered, jsonString));
                             processedCount++;
                         }
                         catch (Exception ex)
@@ -127,18 +127,7 @@ namespace Log.Worker
 
                 totalProcessed += processedCount;
 
-                foreach (var (queueName, deliveryTag) in messagesToAck)
-                {
-                    try
-                    {
-                        await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
-                    }
-                }
-
+                var inserted = true;
                 if (allLogs.Count > 0)
                 {
                     try
@@ -151,6 +140,32 @@ namespace Log.Worker
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, $"Failed to bulk insert {allLogs.Count} log entries during shutdown");
+                        inserted = false;
+                    }
+                }
+
+                // Requeue a failed batch once; a redelivered message that fails again is dropped after logging.
+                foreach (var (queueName, deliveryTag, redelivered, body) in messagesToAck)
+                {
+                    try
+                    {
+                        if (inserted)
+                        {
+                            await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
+                        }
+                        else if (redelivered == false)
+                        {
+                            await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
+                        }
+                        else
+                        {
+                            _logger.LogCritical("Dropping redelivered log message from queue {QueueName} after insert failure: {Body}", queueName, body);
+                            await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
                     }
                 }
             }
@@ -233,7 +248,7 @@ namespace Log.Worker
             }
 
             var allLogs = new List<JsonElement>();
-            var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
+            var messagesToAck = new List<(string QueueName, ulong DeliveryTag, bool Redelivered, string Body)>();
 
             foreach (var queueName in _queueNames)
             {
@@ -253,7 +268,7 @@ namespace Log.Worker
                         var jsonString = Encoding.UTF8.GetString(body);
                         using var doc = JsonDocument.Parse(jsonString);
                         ParseLogMessage(doc.RootElement, allLogs);
-                        messagesToAck.Add((queueName, result.DeliveryTag));
+                        messagesToAck.Add((queueName, result.DeliveryTag, result.Redelivered, jsonString));
                         messageCount++;
                     }
                     catch (Exception ex)
@@ -264,23 +279,7 @@ namespace Log.Worker
                 }
             }
 
-            if (allLogs.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var (queueName, deliveryTag) in messagesToAck)
-            {
-                try
-                {
-                    await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
-                }
-            }
-
+            var inserted = true;
             if (allLogs.Count > 0)
             {
                 try
@@ -293,6 +292,32 @@ namespace Log.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Failed to bulk insert {allLogs.Count} log entries");
+                    inserted = false;
+                }
+            }
+
+            // Requeue a failed batch once; a redelivered message that fails again is dropped after logging.
+            foreach (var (queueName, deliveryTag, redelivered, body) in messagesToAck)
+            {
+                try
+                {
+                    if (inserted)
+                    {
+                        await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
+                    }
+                    else if (redelivered == false)
+                    {
+                        await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
+                    }
+                    else
+                    {
+                        _logger.LogCritical("Dropping redelivered log message from queue {QueueName} after insert failure: {Body}", queueName, body);
+                        await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
                 }
             }
         }

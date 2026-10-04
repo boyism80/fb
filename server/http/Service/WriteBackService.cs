@@ -38,23 +38,41 @@ namespace Http.Service
 
         public async Task Post(uint world, int db, string sql, string key, uint? hash, CancellationToken cancellationToken = default)
         {
+            var entry = new BackgroundCommitEntry
+            {
+                SQL = sql,
+                RedisKey = key,
+                Hash = hash
+            };
+
             try
             {
                 var queueName = GetWriteBackQueueName(world, db);
                 await EnsureExchangeReadyAsync(queueName, cancellationToken);
 
-                var json = JsonConvert.SerializeObject(new BackgroundCommitEntry
-                {
-                    SQL = sql,
-                    RedisKey = key,
-                    Hash = hash
-                });
+                var json = JsonConvert.SerializeObject(entry);
                 var body = Encoding.UTF8.GetBytes(json);
                 await _rabbitMqService.PublishAsync(WriteBackExchangeName, queueName, body, persistent: true, cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to publish write-back message for world {World} db {Db}", world, db);
+                // Redis is already written and the cref stays incremented, so the Redis value remains
+                // pinned until the write_back_failure row is replayed. Callers cannot roll back Redis.
+                _logger.LogError(ex, "Failed to publish write-back message for world {World} db {Db} key {Key}: {Sql}", world, db, key, sql);
+                try
+                {
+                    await using var logConn = _dbContext.GetGlobalConnection(world);
+                    await WriteBackFailureRecorder.RecordAsync(logConn, world, db, entry, ex, CancellationToken.None);
+                }
+                catch (Exception logEx)
+                {
+                    _logger.LogCritical(logEx,
+                        "Failed to insert write_back_failure for world {World} db {Db} key {Key}. Unrecorded SQL: {Sql}",
+                        world,
+                        db,
+                        key,
+                        sql);
+                }
             }
         }
 

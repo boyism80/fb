@@ -32,10 +32,7 @@ namespace Log.Repository
 
             var shardSize = _dbContext.GetShardDbSize(_world);
             if (shardSize == 0)
-            {
-                _logger.LogWarning("No MySQL shards available for world {World}", _world);
-                return;
-            }
+                throw new InvalidOperationException($"No MySQL shards available for world {_world}");
 
             // Parse all log entries
             var entries = new List<LogEntry>();
@@ -70,6 +67,7 @@ namespace Log.Repository
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to bulk insert logs for world {_world} shard {shard}");
+                throw;
             }
         }
 
