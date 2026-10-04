@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
@@ -1750,6 +1751,8 @@ namespace Runner.ViewModel
             if (!Directory.Exists(destDir))
                 Directory.CreateDirectory(destDir);
 
+            var destRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(destDir)) + Path.DirectorySeparatorChar;
+
             await Task.Run(() =>
             {
                 using var fs = new FileStream(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -1765,7 +1768,10 @@ namespace Runner.ViewModel
                 var extractedCount = 0;
                 foreach (var entry in entries)
                 {
-                    var destinationPath = Path.Combine(destDir, entry.FullName);
+                    var destinationPath = Path.GetFullPath(Path.Combine(destRoot, entry.FullName));
+                    if (destinationPath.StartsWith(destRoot, StringComparison.OrdinalIgnoreCase) == false)
+                        throw new InvalidDataException($"ZIP entry escapes the destination directory: {entry.FullName}");
+
                     var destinationDir = Path.GetDirectoryName(destinationPath);
                     if (string.IsNullOrEmpty(destinationDir) == false)
                         Directory.CreateDirectory(destinationDir);
@@ -1859,8 +1865,25 @@ namespace Runner.ViewModel
                         });
                     });
 
+                    string expectedHash;
+                    using (var httpClient = new HttpClient())
+                    {
+                        var hashText = await httpClient.GetStringAsync(zipUrl + ".sha256");
+                        expectedHash = hashText.Trim().Split(' ', '\t', '\r', '\n')[0];
+                    }
+
+                    string actualHash;
+                    using (var zipStream = File.OpenRead(zipPath))
+                    {
+                        actualHash = Convert.ToHexString(await SHA256.HashDataAsync(zipStream));
+                    }
+
+                    if (string.Equals(expectedHash, actualHash, StringComparison.OrdinalIgnoreCase) == false)
+                        throw new InvalidDataException($"dist.zip SHA-256 mismatch: expected {expectedHash}, actual {actualHash}");
+
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
+                        BuildLog += $"Verified SHA-256: {actualHash}{Environment.NewLine}";
                         BuildLog += $"Extracting ZIP to: {distDir}{Environment.NewLine}";
                     });
 

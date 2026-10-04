@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <exception>
 #include <format>
+#include <iterator>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -32,18 +33,14 @@ log_collector::log_collector(std::string_view        hostname,
                              std::string_view        server_id,
                              std::string_view        server_name,
                              std::optional<uint32_t> world) :
+    _hostname(std::string(hostname)),
+    _port(port),
+    _uid(std::string(uid)),
+    _pwd(std::string(pwd)),
     _server_id(std::string(server_id)),
     _server_name(std::string(server_name)),
     _world(world)
 {
-    this->_amqp    = std::make_unique<fb::amqp::socket>();
-    auto connected = this->_amqp->connect(hostname, port, uid, pwd, "/");
-    if (!connected)
-    {
-        fb::logger::warn("Failed to connect to log RabbitMQ at {}:{}", hostname, port);
-        this->_amqp.reset();
-    }
-
     this->_worker = std::thread(&log_collector::worker_run, this);
 }
 
@@ -109,19 +106,27 @@ void log_collector::worker_run()
         if (batch.empty())
             continue;
 
-        if (this->_amqp != nullptr)
+        if (this->publish(batch) == false)
         {
-            auto body        = this->serialize_log_array(batch);
-            auto message     = std::vector<uint8_t>(body.begin(), body.end());
-            auto routing_key = this->get_routing_key();
-            if (!this->_amqp->publish("amq.direct", routing_key, message))
-                fb::logger::warn("Failed to publish log batch ({} entries) with routing key: {}",
-                                 batch.size(),
-                                 routing_key);
+            std::unique_lock<std::mutex> lock(this->_buffer_mutex);
+            this->_buffer.insert(this->_buffer.begin(),
+                                 std::make_move_iterator(batch.begin()),
+                                 std::make_move_iterator(batch.end()));
+            if (this->_buffer.size() > MAX_BUFFERED_LOGS)
+            {
+                auto dropped = this->_buffer.size() - MAX_BUFFERED_LOGS;
+                this->_buffer.erase(this->_buffer.begin(), this->_buffer.begin() + dropped);
+                fb::logger::warn("Dropped {} oldest log entries while log RabbitMQ is unavailable", dropped);
+            }
+
+            this->_buffer_cv.wait_for(lock, batch_interval, [this] {
+                return this->_stop_requested.load(std::memory_order_relaxed);
+            });
         }
     }
 
     // Drain remaining buffer on shutdown
+    this->_next_connect = {};
     while (true)
     {
         std::vector<Json::Value> batch;
@@ -137,17 +142,42 @@ void log_collector::worker_run()
             }
         }
 
-        if (this->_amqp != nullptr)
+        if (this->publish(batch) == false)
         {
-            auto body        = this->serialize_log_array(batch);
-            auto message     = std::vector<uint8_t>(body.begin(), body.end());
-            auto routing_key = this->get_routing_key();
-            if (!this->_amqp->publish("amq.direct", routing_key, message))
-                fb::logger::warn("Failed to publish final log batch ({} entries) with routing key: {}",
-                                 batch.size(),
-                                 routing_key);
+            fb::logger::warn("Dropped final log batch ({} entries) on shutdown", batch.size());
+            break;
         }
     }
+}
+
+bool log_collector::publish(const std::vector<Json::Value>& batch)
+{
+    if (this->_amqp == nullptr)
+    {
+        auto now = std::chrono::steady_clock::now();
+        if (now < this->_next_connect)
+            return false;
+
+        this->_next_connect = now + RECONNECT_INTERVAL;
+        auto amqp           = std::make_unique<fb::amqp::socket>();
+        if (amqp->connect(this->_hostname, this->_port, this->_uid, this->_pwd, "/") == false)
+        {
+            fb::logger::warn("Failed to connect to log RabbitMQ at {}:{}", this->_hostname, this->_port);
+            return false;
+        }
+        this->_amqp = std::move(amqp);
+    }
+
+    auto body        = this->serialize_log_array(batch);
+    auto message     = std::vector<uint8_t>(body.begin(), body.end());
+    auto routing_key = this->get_routing_key();
+    if (this->_amqp->publish("amq.direct", routing_key, message) == false)
+    {
+        fb::logger::warn("Failed to publish log batch ({} entries) with routing key: {}", batch.size(), routing_key);
+        this->_amqp.reset();
+        return false;
+    }
+    return true;
 }
 
 std::string log_collector::serialize_log_array(const std::vector<Json::Value>& entries) const

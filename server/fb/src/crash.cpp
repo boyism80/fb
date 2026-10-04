@@ -4,8 +4,6 @@
 #include <fb/encoding.h>
 #include <fb/logger.h>
 
-#include <boost/stacktrace.hpp>
-
 #include <csignal>
 #include <cstddef>
 #include <cstdio>
@@ -20,9 +18,17 @@
 #include <dbghelp.h>
 #pragma comment(lib, "dbghelp.lib")
 #else
+#include <cerrno>
+#include <cstdint>
 #include <execinfo.h>
 #include <fcntl.h>
+#include <link.h>
+#include <poll.h>
+#include <sys/wait.h>
 #include <unistd.h>
+
+extern "C" const ElfW(Ehdr) __ehdr_start __attribute__((visibility("hidden")));
+extern "C" char _end[] __attribute__((visibility("hidden")));
 #endif
 
 void fb::crash::write_bytes(const void* data, size_t size)
@@ -158,24 +164,111 @@ void fb::crash::dump(const char* kind, size_t kind_len, EXCEPTION_POINTERS* info
 #else
 void fb::crash::write_dump()
 {
-    try
-    {
-        auto text = boost::stacktrace::to_string(boost::stacktrace::stacktrace(0, 64));
-        if (text.empty() == false)
-        {
-            write_bytes(text.data(), text.size());
-            if (text.back() != '\n')
-                write_bytes("\n", 1);
-            return;
-        }
-    }
-    catch (...)
-    { }
-
+    // Runs inside signal handlers: only async-signal-safe calls (no allocation, no in-process symbolizer).
     void* frames[64] = {};
     auto  count      = backtrace(frames, 64);
     if (count <= 0)
         return;
+
+    if (_exe_path[0] != '\0')
+    {
+        static char  offsets[64][20];
+        static char* argv[64 + 9];
+        auto         argc = 0;
+        argv[argc++]      = const_cast<char*>("addr2line");
+        argv[argc++]      = const_cast<char*>("-e");
+        argv[argc++]      = _exe_path;
+        argv[argc++]      = const_cast<char*>("-a");
+        argv[argc++]      = const_cast<char*>("-f");
+        argv[argc++]      = const_cast<char*>("-C");
+        argv[argc++]      = const_cast<char*>("-i");
+        argv[argc++]      = const_cast<char*>("-p");
+
+        auto begin   = reinterpret_cast<uintptr_t>(&__ehdr_start);
+        auto end     = reinterpret_cast<uintptr_t>(_end);
+        auto is_pie  = __ehdr_start.e_type == ET_DYN;
+        auto symbols = 0;
+        for (int i = 0; i < count; i++)
+        {
+            auto address = reinterpret_cast<uintptr_t>(frames[i]);
+            if (address < begin || address >= end)
+                continue;
+
+            auto value = address - (i > 0 ? 1 : 0) - (is_pie ? begin : 0);
+            char digits[16];
+            auto len = 0;
+            do
+            {
+                digits[len++]   = "0123456789abcdef"[value & 0xF];
+                value         >>= 4;
+            } while (value != 0);
+
+            auto text = offsets[symbols++];
+            text[0]   = '0';
+            text[1]   = 'x';
+            for (int j = 0; j < len; j++)
+                text[2 + j] = digits[len - 1 - j];
+            text[2 + len] = '\0';
+            argv[argc++]  = text;
+        }
+        argv[argc] = nullptr;
+
+        int pipe_fds[2];
+        if (symbols > 0 && ::pipe(pipe_fds) == 0)
+        {
+            auto pid = _Fork();
+            if (pid == 0)
+            {
+                ::close(pipe_fds[0]);
+                ::dup2(pipe_fds[1], STDOUT_FILENO);
+                ::dup2(pipe_fds[1], STDERR_FILENO);
+                char* envp[] = {nullptr};
+                ::execve("/usr/bin/addr2line", argv, envp);
+                ::_exit(127);
+            }
+            else if (pid > 0)
+            {
+                ::close(pipe_fds[1]);
+                char buffer[4096];
+                auto timed_out = false;
+                while (true)
+                {
+                    pollfd fd{pipe_fds[0], POLLIN, 0};
+                    auto   ready = ::poll(&fd, 1, 10000);
+                    if (ready > 0)
+                    {
+                        auto n = ::read(pipe_fds[0], buffer, sizeof(buffer));
+                        if (n <= 0)
+                            break;
+                        write_bytes(buffer, static_cast<size_t>(n));
+                    }
+                    else if (ready == 0)
+                    {
+                        timed_out = true;
+                        break;
+                    }
+                    else if (errno != EINTR)
+                    {
+                        break;
+                    }
+                }
+
+                if (timed_out)
+                    ::kill(pid, SIGKILL);
+                while (::waitpid(pid, nullptr, 0) < 0 && errno == EINTR)
+                {
+                }
+                ::close(pipe_fds[0]);
+            }
+            else
+            {
+                ::close(pipe_fds[0]);
+                ::close(pipe_fds[1]);
+            }
+        }
+    }
+
+    write_bytes("raw:\n", 5);
     backtrace_symbols_fd(frames, count, STDERR_FILENO);
     if (_file_fd >= 0)
         backtrace_symbols_fd(frames, count, _file_fd);
@@ -307,6 +400,13 @@ void fb::crash::install(const char* service)
             _header_len = sizeof(_header) - 1;
 
 #ifndef _WIN32
+        // backtrace() loads libgcc and allocates on first use; do it here, not in the signal handler.
+        void* warmup[1] = {};
+        backtrace(warmup, 1);
+
+        auto exe_len                         = ::readlink("/proc/self/exe", _exe_path, sizeof(_exe_path) - 1);
+        _exe_path[exe_len > 0 ? exe_len : 0] = '\0';
+
         struct sigaction sa{};
         sa.sa_handler = on_signal;
         sigemptyset(&sa.sa_mask);

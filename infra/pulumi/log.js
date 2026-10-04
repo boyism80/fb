@@ -7,10 +7,12 @@ module.exports = {
         const resources = []
         const appLabels = { app: "log" }
         const autoMigration = !!(conf.database && conf.database.autoMigration)
+        const firstWorldName = Object.keys(conf.worlds || {})[0]
         for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
             if (!worldConf.log) continue
             const config = {
                 "World": parseInt(worldConf.id),
+                "CrossLog": worldName === firstWorldName,
                 "Database": {
                     "AutoMigration": autoMigration
                 },

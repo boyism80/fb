@@ -21,6 +21,7 @@ namespace Log.Worker
         private const int BatchSize = 1000;
         private const string ExchangeName = "amq.direct";
         private readonly uint _world;
+        private readonly bool _crossLog;
 
         public LogConsumerService(
             IConfiguration configuration,
@@ -35,6 +36,8 @@ namespace Log.Worker
             {
                 throw new Exception("Log consumer service requires a world > 0. Unified-global is not supported.");
             }
+
+            _crossLog = _configuration.GetValue<bool>("CrossLog", false);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -198,31 +201,39 @@ namespace Log.Worker
 
             await _channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
 
-            var routingKey = $"fb.{_world}.log";
-            var queueName = routingKey;
-
-            try
+            var routingKeys = new List<string> { $"fb.{_world}.log" };
+            if (_crossLog)
             {
-                await _channel.QueueDeclareAsync(
-                    queue: queueName,
-                    durable: true,
-                    exclusive: false,
-                    autoDelete: false,
-                    arguments: null,
-                    passive: false,
-                    noWait: false,
-                    cancellationToken: cancellationToken);
-
-                await _channel.QueueBindAsync(queueName, ExchangeName, routingKey, arguments: null, noWait: false, cancellationToken);
-                _queueNames.Add(queueName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to declare or bind queue '{QueueName}' to routing key '{RoutingKey}'", queueName, routingKey);
-                throw;
+                routingKeys.Add("fb.log");
             }
 
-            _logger.LogInformation("Connected to RabbitMQ and declared queue {QueueName}", queueName);
+            foreach (var routingKey in routingKeys)
+            {
+                var queueName = routingKey;
+
+                try
+                {
+                    await _channel.QueueDeclareAsync(
+                        queue: queueName,
+                        durable: true,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null,
+                        passive: false,
+                        noWait: false,
+                        cancellationToken: cancellationToken);
+
+                    await _channel.QueueBindAsync(queueName, ExchangeName, routingKey, arguments: null, noWait: false, cancellationToken);
+                    _queueNames.Add(queueName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to declare or bind queue '{QueueName}' to routing key '{RoutingKey}'", queueName, routingKey);
+                    throw;
+                }
+
+                _logger.LogInformation("Connected to RabbitMQ and declared queue {QueueName}", queueName);
+            }
         }
 
         private static void ParseLogMessage(JsonElement root, List<JsonElement> allLogs)

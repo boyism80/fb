@@ -6,6 +6,7 @@
 #include <json/json.h>
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <cstdint>
 #include <deque>
@@ -22,10 +23,19 @@ namespace fb {
 class log_collector
 {
 private:
-    std::unique_ptr<fb::amqp::socket> _amqp;
-    std::string                       _server_id;
-    std::string                       _server_name;
-    std::optional<uint32_t>           _world;
+    static constexpr size_t MAX_BUFFERED_LOGS  = 100000;
+    static constexpr auto   RECONNECT_INTERVAL = std::chrono::seconds(5);
+
+private:
+    std::string                           _hostname;
+    uint16_t                              _port;
+    std::string                           _uid;
+    std::string                           _pwd;
+    std::unique_ptr<fb::amqp::socket>     _amqp;
+    std::chrono::steady_clock::time_point _next_connect;
+    std::string                           _server_id;
+    std::string                           _server_name;
+    std::optional<uint32_t>               _world;
 
     std::deque<Json::Value> _buffer;
     std::mutex              _buffer_mutex;
@@ -59,6 +69,7 @@ public:
 
 private:
     void        worker_run();
+    bool        publish(const std::vector<Json::Value>& batch);
     std::string serialize_log_array(const std::vector<Json::Value>& entries) const;
     std::string get_routing_key() const;
 };

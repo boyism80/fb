@@ -19,7 +19,8 @@ private:
     inline static HANDLE _file = INVALID_HANDLE_VALUE;
     inline static HANDLE _err  = INVALID_HANDLE_VALUE;
 #else
-    inline static int _file_fd = -1;
+    inline static int  _file_fd = -1;
+    inline static char _exe_path[512]{};
 #endif
 
 public:
