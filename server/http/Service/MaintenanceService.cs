@@ -355,12 +355,14 @@ namespace Http.Service
             return checkTime >= windowStart && checkTime <= windowEnd;
         }
 
+        // Returns the start of the latest occurrence that began at or before checkTime, so a window that
+        // crossed midnight is still found after the date changes. DateTime.MinValue means no occurrence.
         private DateTime GetWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             return schedule.RepeatType switch
             {
                 MaintenanceRepeatType.None => schedule.StartTime,
-                MaintenanceRepeatType.Daily => checkTime.Date.Add(schedule.StartTime.TimeOfDay),
+                MaintenanceRepeatType.Daily => GetDailyWindowStart(schedule, checkTime),
                 MaintenanceRepeatType.Weekly => GetWeeklyWindowStart(schedule, checkTime),
                 MaintenanceRepeatType.Monthly => GetMonthlyWindowStart(schedule, checkTime),
                 MaintenanceRepeatType.Yearly => GetYearlyWindowStart(schedule, checkTime),
@@ -371,44 +373,59 @@ namespace Http.Service
         private DateTime GetWindowEnd(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var windowStart = GetWindowStart(schedule, checkTime);
-            var duration = schedule.EndTime - schedule.StartTime;
-            var windowEnd = windowStart.Add(duration);
+            if (windowStart == DateTime.MinValue)
+                return DateTime.MinValue;
 
-            // Handle wrap-around for daily/weekly schedules that span midnight
-            if (schedule.RepeatType == MaintenanceRepeatType.Daily ||
-                schedule.RepeatType == MaintenanceRepeatType.Weekly ||
-                schedule.RepeatType == MaintenanceRepeatType.Monthly ||
-                schedule.RepeatType == MaintenanceRepeatType.Yearly)
+            var duration = schedule.EndTime - schedule.StartTime;
+            if (schedule.RepeatType != MaintenanceRepeatType.None && duration < TimeSpan.Zero)
             {
-                if (schedule.EndTime.TimeOfDay < schedule.StartTime.TimeOfDay)
-                {
-                    windowEnd = windowEnd.AddDays(1);
-                }
+                duration = duration.Add(TimeSpan.FromDays(1));
             }
 
-            return windowEnd;
+            return windowStart.Add(duration);
+        }
+
+        private DateTime GetDailyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        {
+            var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            if (checkTime >= today)
+                return today;
+            else
+                return today.AddDays(-1);
         }
 
         private DateTime GetWeeklyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var daysDiff = ((int)checkTime.DayOfWeek - (int)schedule.StartTime.DayOfWeek + 7) % 7;
-            return checkTime.Date.AddDays(-daysDiff).Add(schedule.StartTime.TimeOfDay);
+            var start = checkTime.Date.AddDays(-daysDiff).Add(schedule.StartTime.TimeOfDay);
+            if (checkTime >= start)
+                return start;
+            else
+                return start.AddDays(-7);
         }
 
         private DateTime GetMonthlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
-            if (checkTime.Day != schedule.StartTime.Day)
-                return DateTime.MinValue; // Not this month
-
-            return checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            var yesterday = checkTime.Date.AddDays(-1);
+            if (checkTime.Day == schedule.StartTime.Day && checkTime >= today)
+                return today;
+            else if (yesterday.Day == schedule.StartTime.Day)
+                return today.AddDays(-1);
+            else
+                return DateTime.MinValue;
         }
 
         private DateTime GetYearlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
-            if (checkTime.Month != schedule.StartTime.Month || checkTime.Day != schedule.StartTime.Day)
-                return DateTime.MinValue; // Not this year
-
-            return checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            var yesterday = checkTime.Date.AddDays(-1);
+            if (checkTime.Month == schedule.StartTime.Month && checkTime.Day == schedule.StartTime.Day && checkTime >= today)
+                return today;
+            else if (yesterday.Month == schedule.StartTime.Month && yesterday.Day == schedule.StartTime.Day)
+                return today.AddDays(-1);
+            else
+                return DateTime.MinValue;
         }
     }
 }
