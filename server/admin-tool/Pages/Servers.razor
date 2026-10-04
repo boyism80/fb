@@ -399,7 +399,7 @@
                 return;
             }
             var packet = new Response.BroadcastSave();
-            await RabbitMqService.PublishAsync(packet, "amq.direct", $"fb.{selectedWorld.Value}.system");
+            await RabbitMqService.PublishAsync(packet, AmqpRoute.Exchange, AmqpRoute.Home("system", selectedWorld.Value));
             await LogService.WriteAsync("save", new
             {
                 action = "save",

@@ -1982,29 +1982,30 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
 
     character::container::assert_whisper(resp.error, resp.to);
 
+    // A receiver on this host is skipped by the AMQP whisper handler (same host id), so deliver it here
     auto receiver = this->server.characters.find(resp.to);
-    if (receiver == nullptr)
-        co_return;
-
-    auto receiver_weak = receiver->weak_from_this_as<character>();
-    auto before        = this->server.threads.current();
-    co_await this->server.threads.switching(receiver_weak);
-
-    receiver = receiver_weak.lock();
     if (receiver != nullptr)
     {
-        receiver->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
+        auto receiver_weak = receiver->weak_from_this_as<character>();
+        auto before        = this->server.threads.current();
+        co_await this->server.threads.switching(receiver_weak);
 
-        auto recv_log             = Json::Value();
-        recv_log["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
-        recv_log["receiver_id"]   = static_cast<Json::Int64>(receiver->id);
-        recv_log["receiver_name"] = UTF8(resp.to, PLATFORM::WINDOWS);
-        recv_log["message"]       = UTF8(resp.message, PLATFORM::WINDOWS);
-        this->server.log.write("whisper", recv_log);
+        receiver = receiver_weak.lock();
+        if (receiver != nullptr)
+        {
+            receiver->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
+
+            auto recv_log             = Json::Value();
+            recv_log["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
+            recv_log["receiver_id"]   = static_cast<Json::Int64>(receiver->id);
+            recv_log["receiver_name"] = UTF8(resp.to, PLATFORM::WINDOWS);
+            recv_log["message"]       = UTF8(resp.message, PLATFORM::WINDOWS);
+            this->server.log.write("whisper", recv_log);
+        }
+
+        if (before != nullptr)
+            co_await before->switching();
     }
-
-    if (before != nullptr)
-        co_await before->switching();
 
     this->message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
 

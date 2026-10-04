@@ -423,7 +423,9 @@
             };
 
             foreach (var world in targetWorlds)
-                await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
+                await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", world));
+            if (applyAllWorlds)
+                await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", null));
 
             var targetLabel = applyAllWorlds ? "전체 월드" : GetWorldDisplayName(selectedWorld.Value);
             var detail = string.Join(", ", orderedPaths);

@@ -203,7 +203,8 @@
             if (useBroadcast)
             {
                 foreach (var world in GetWorlds())
-                    await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
+                    await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", world));
+                await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", null));
             }
             else
             {
@@ -212,7 +213,7 @@
                     errorMessage = "월드가 선택되지 않았습니다.";
                     return;
                 }
-                await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{selectedWorld.Value}.global");
+                await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", selectedWorld.Value));
             }
 
             var targetLabel = useBroadcast ? "전체 월드" : $"World {selectedWorld}";

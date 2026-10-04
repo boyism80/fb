@@ -319,7 +319,9 @@
             };
 
             foreach (var world in targetWorlds)
-                await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
+                await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", world));
+            if (applyAllWorlds)
+                await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", null));
 
             await RabbitMqService.PublishAsync(message, "amq.direct", "fb.global");
 
