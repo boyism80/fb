@@ -139,8 +139,13 @@ return {
             x = math.random(WARP_X_MIN, WARP_X_MAX)
             y = math.random(WARP_Y_MIN, WARP_Y_MAX)
         end
-        me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
-        me:map(map, { x, y })
+        local name = item:model():name()
+        if not me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE) then
+            return
+        end
+        if me:map(map, { x, y }) ~= true then
+            me:mkitem(name, 1)
+        end
     end,
 
     -- on_deactivated = function(me, item)

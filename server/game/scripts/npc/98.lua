@@ -375,15 +375,23 @@ return {
             return
         end
 
-        for _, name in ipairs(REQUIRED_FANGS) do
-            me:rmitem(name, 1, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem({
+            ['진룡의어금니'] = 1,
+            ['묵룡의어금니'] = 1,
+            ['흑룡의어금니'] = 1,
+            ['감룡의어금니'] = 1
+        }, ITEM_DELETE_TYPE.GIVE) then
+            inst:destroy()
+            me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
+            return
         end
 
         if me:map(inst, { math.random(11, 14), math.random(22, 24) }) ~= true then
             inst:destroy()
-            return
-        end
-        if friend ~= nil then
+            for _, name in ipairs(REQUIRED_FANGS) do
+                me:mkitem(name, 1)
+            end
+        elseif friend ~= nil then
             friend:map(inst, { math.random(11, 14), math.random(22, 24) })
         end
     end

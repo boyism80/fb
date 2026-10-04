@@ -26,19 +26,24 @@ local function run_hunt_event_entry(me, npc)
         me:dialog(npc, "만일의 사태를 대비하기 위해 노란비서를 지참해 주시기 바랍니다.", { prev = false, next = false })
         return
     end
+    local event_map = name2map("사냥이벤트1")
+    local fallback = name2map("부여성")
+    if event_map == nil and fallback == nil then
+        me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
+        return
+    end
     if not me:rmitem("노란비서", 1, ITEM_DELETE_TYPE.REDUCE) then
         return
     end
-    local event_map = name2map("사냥이벤트1")
-    if event_map then
-        me:map(event_map, math.random(2, 199), math.random(2, 199))
+
+    local moved = false
+    if event_map ~= nil then
+        moved = me:map(event_map, math.random(2, 199), math.random(2, 199)) == true
     else
-        local fallback = name2map("부여성")
-        if fallback then
-            me:map(fallback, math.random(70, 80), math.random(138, 145))
-        else
-            me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
-        end
+        moved = me:map(fallback, math.random(70, 80), math.random(138, 145)) == true
+    end
+    if moved == false then
+        me:mkitem("노란비서", 1)
     end
 end
 

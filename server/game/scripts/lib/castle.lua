@@ -300,7 +300,12 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
                 return true
             end
 
-            me:map(map_inner, math.random(74, 84), math.random(117, 130))
+            if me:map(map_inner, math.random(74, 84), math.random(117, 130)) ~= true then
+                local _, refund_err = owner_clan:money(-ENTRANCE_FEE_TO_OWNER)
+                if refund_err == nil then
+                    me:money(me:money() + ENTRANCE_FEE)
+                end
+            end
         end
     end
     return true

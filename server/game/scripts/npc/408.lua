@@ -32,14 +32,17 @@ return {
             return
         end
 
+        local exit_map = name2map("부여성")
+        if exit_map == nil then
+            return
+        end
+
         if not me:rmitem("담배", REQUIRED_CIGARETTES, ITEM_DELETE_TYPE.GIVE) then
             me:dialog(npc, "음? 그새 담배를 어디다 두었담?", { prev = false, next = false })
             return
         end
-
-        local exit_map = name2map("부여성")
-        if exit_map then
-            me:map(exit_map, 70, 140)
+        if me:map(exit_map, 70, 140) ~= true then
+            me:mkitem("담배", REQUIRED_CIGARETTES)
         end
     end
 }

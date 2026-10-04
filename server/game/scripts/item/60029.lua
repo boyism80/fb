@@ -15,8 +15,12 @@ return {
         local i = math.random(1, #maps)
         local map = maps[i]
 
-        if me:map(map) then
-            me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
+        local name = item:model():name()
+        if not me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE) then
+            return
+        end
+        if me:map(map) ~= true then
+            me:mkitem(name, 1)
         end
     end,
 

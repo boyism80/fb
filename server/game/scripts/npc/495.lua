@@ -159,10 +159,10 @@ return {
                     return
                 end
                 if sel2 == 1 then
-                    if me:rmitem("서바이벌증표", 1, ITEM_DELETE_TYPE.GIVE) then
-                        local exit_map = name2map("부여성")
-                        if exit_map then
-                            me:map(exit_map, 70, 140)
+                    local exit_map = name2map("부여성")
+                    if exit_map ~= nil and me:rmitem("서바이벌증표", 1, ITEM_DELETE_TYPE.GIVE) then
+                        if me:map(exit_map, 70, 140) ~= true then
+                            me:mkitem("서바이벌증표", 1)
                         end
                     end
                 end

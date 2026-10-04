@@ -90,17 +90,19 @@ return {
             me:dialog(npc, '승선권이 없으면 선실에 탑승하실 수 없습니다.', { prev = false, next = false })
             return
         end
-        if not me:rmitem('부여-고균도승선권', 1, ITEM_DELETE_TYPE.GIVE) then
+        local map = name2map('부여-고균도배선실')
+        if map == nil then
             return
         end
 
-        -- Ticket already consumed: do not allow QUIT to skip boarding.
         me:dialog(npc, '그럼, 선실에 승선시켜드리도록 하겠습니다.', { prev = false, next = true })
         me:dialog(npc, '배가 출항한뒤 일정 시간 후에 고균도에 도착하게 됩니다. 즐거운 여행 되시길..', { prev = false, next = false })
 
-        local map = name2map('부여-고균도배선실')
-        if map ~= nil then
-            me:map(map, {math.random(2, 15), 7})
+        if not me:rmitem('부여-고균도승선권', 1, ITEM_DELETE_TYPE.GIVE) then
+            return
+        end
+        if me:map(map, {math.random(2, 15), 7}) ~= true then
+            me:mkitem('부여-고균도승선권', 1)
         end
     end
 }

@@ -81,20 +81,26 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:rmitem('동문열쇠', 1, ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, '열쇠를 가지고 있지 않습니다.', { prev = false, next = false })
-            return
-        end
-
         local map = name2map('풍석의방')
         if map == nil then
             me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = false })
             return
         end
 
-        teammates[#teammates + 1] = me
+        if not me:rmitem('동문열쇠', 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '열쇠를 가지고 있지 않습니다.', { prev = false, next = false })
+            return
+        end
+
+        -- The key stays consumed once any teammate got in.
+        local entered = false
         for _, teammate in ipairs(teammates) do
-            teammate:map(map, 13, 13)
+            if teammate:map(map, 13, 13) == true then
+                entered = true
+            end
+        end
+        if me:map(map, 13, 13) ~= true and entered == false then
+            me:mkitem('동문열쇠', 1)
         end
     end,
 

@@ -1,5 +1,7 @@
 -- item: 낙랑의두루마리1
 
+local enum = require('lib.enum')
+
 return {
     on_activated = function(me, item)
         ::NAK_1::
@@ -32,14 +34,24 @@ return {
 
         math.randomseed(seed())
         local map = maps[math.random(1, #maps)]
-        me:map(map, nil, {
-            callback = function()
-                me:exchange(
-                    { ['item'] = { ['낙랑의두루마리1'] = 1 } },
-                    { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } }
-                )
-            end,
-        })
+        local code = me:exchange(
+            { ['item'] = { ['낙랑의두루마리1'] = 1 } },
+            { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } }
+        )
+        if code == enum.exchange_result.LACK_CAPACITY then
+            me:dialog(item, '소지품이 가득 찼습니다.', { prev = false, next = false })
+            return
+        end
+        if code ~= enum.exchange_result.OK then
+            return
+        end
+
+        if me:map(map) ~= true then
+            me:exchange(
+                { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } },
+                { ['item'] = { ['낙랑의두루마리1'] = 1 } }
+            )
+        end
     end,
 
     -- on_deactivated = function(me, item)

@@ -26,21 +26,23 @@ return {
                 me:dialog(npc, "자네는 귀문흑색부적을 가지고 있지 않은 것 같군...", { prev = false, next = false })
                 return
             end
-            if not me:rmitem("귀문흑색부적", 1, ITEM_DELETE_TYPE.GIVE) then
-                return
-            end
             local map = name2map(saved_map)
             if map == nil then
-                me:mkitem("귀문흑색부적", 1)
                 me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
+                return
+            end
+            if not me:rmitem("귀문흑색부적", 1, ITEM_DELETE_TYPE.GIVE) then
                 return
             end
             local x = math.random(10, 15)
             local y = math.random(12, 20)
-            me:map(map, x, y)
-            q = me:start_quest(quest.QUEST_GMD_SAVED)
-            if q then
-                q:param("귀문암동대기실")
+            if me:map(map, x, y) ~= true then
+                me:mkitem("귀문흑색부적", 1)
+            else
+                q = me:start_quest(quest.QUEST_GMD_SAVED)
+                if q then
+                    q:param("귀문암동대기실")
+                end
             end
         else
             me:dialog(npc, "그래. 잘 생각해 보게나...", { prev = false, next = false })

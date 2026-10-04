@@ -2,8 +2,12 @@
 
 return {
     on_activated = function(me, item)
-        if me:map('장안성주막') then
-            me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
+        local name = item:model():name()
+        if not me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE) then
+            return
+        end
+        if me:map('장안성주막') ~= true then
+            me:mkitem(name, 1)
         end
     end,
 
