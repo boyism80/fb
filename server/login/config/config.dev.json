@@ -67,5 +67,8 @@
     "http": {
         "max_concurrent": 128
     },
-    "meta_dat": "Meta.dat"
+    "meta_dat": "Meta.dat",
+    "download": {
+        "table": "http://cshyeon.com:8080/fb/json"
+    }
 }

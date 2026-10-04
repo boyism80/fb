@@ -13,11 +13,17 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 FB_HOST="${FB_HOST:-127.0.0.1}"
+TABLE_PUBLISH_DOWNLOAD_BASE_URL="${TABLE_PUBLISH_DOWNLOAD_BASE_URL:-}"
+SCRIPT_PUBLISH_DOWNLOAD_BASE_URL="${SCRIPT_PUBLISH_DOWNLOAD_BASE_URL:-}"
 
 render_template() {
     local template="$1"
     local output="$2"
-    sed "s/__FB_HOST__/${FB_HOST}/g" "$template" > "$output"
+    # URLs contain '/', so these substitutions use '|' as the delimiter.
+    sed -e "s/__FB_HOST__/${FB_HOST}/g" \
+        -e "s|__TABLE_PUBLISH_DOWNLOAD_BASE_URL__|${TABLE_PUBLISH_DOWNLOAD_BASE_URL}|g" \
+        -e "s|__SCRIPT_PUBLISH_DOWNLOAD_BASE_URL__|${SCRIPT_PUBLISH_DOWNLOAD_BASE_URL}|g" \
+        "$template" > "$output"
     echo "Generated $output (FB_HOST=$FB_HOST)"
 }
 

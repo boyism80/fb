@@ -1,5 +1,7 @@
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using Fb.Model;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Response = fb.protocol._internal.response;
 
@@ -9,14 +11,16 @@ namespace Http.Service.Amqp
     public sealed class ReloadTablesHandler : AmqpHandler<Response.ReloadTables>
     {
         private readonly ILogger<ReloadTablesHandler> _logger;
+        private readonly IConfiguration _configuration;
         private static readonly HttpClient Http = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(30)
         };
 
-        public ReloadTablesHandler(ILogger<ReloadTablesHandler> logger)
+        public ReloadTablesHandler(ILogger<ReloadTablesHandler> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         protected override async Task HandleAsync(Response.ReloadTables message, CancellationToken cancellationToken)
@@ -49,15 +53,17 @@ namespace Http.Service.Amqp
 
         private async Task DownloadTablesAsync(string baseUrl, List<string> tableNames, CancellationToken cancellationToken)
         {
+            // The URL arrives over AMQP; only the configured publish location may be fetched.
             var baseTrimmed = baseUrl.TrimEnd('/');
+            var allowed = (_configuration["TablePublish:DownloadBaseUrl"] ?? string.Empty).TrimEnd('/');
+            if (allowed.Length == 0 || !string.Equals(baseTrimmed, allowed, StringComparison.Ordinal))
+                throw new InvalidOperationException($"table download url is not allowed: {baseUrl}");
+
             var downloaded = new List<(string Stem, byte[] Bytes)>();
 
             foreach (var name in tableNames)
             {
                 var stem = NormalizeStem(name);
-                if (string.IsNullOrEmpty(stem))
-                    throw new InvalidOperationException("empty table name in ReloadTables");
-
                 var url = $"{baseTrimmed}/{stem}.json";
                 using var response = await Http.GetAsync(url, cancellationToken);
                 if (!response.IsSuccessStatusCode)
@@ -100,11 +106,16 @@ namespace Http.Service.Amqp
             _logger.LogInformation("Downloaded {Count} table file(s) from {Url}", downloaded.Count, baseUrl);
         }
 
+        // Table files sit flat in json/; anything outside [a-z0-9_] could escape the directory.
+        private static readonly Regex SafeStem = new(@"^[a-z0-9_]+\z", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
         private static string NormalizeStem(string name)
         {
             var stem = name.Trim();
             if (stem.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 stem = stem[..^5];
+            if (!SafeStem.IsMatch(stem))
+                throw new InvalidOperationException($"invalid table name in ReloadTables: {stem}");
             return stem;
         }
     }

@@ -1,5 +1,6 @@
 const pulumi = require("@pulumi/pulumi");
 const k8s = require("@pulumi/kubernetes");
+const { downloadBaseUrls } = require("./publish");
 
 module.exports = function () {
 
@@ -13,6 +14,7 @@ module.exports = function () {
             const worldNames = Object.keys(conf.worlds || {})
             const firstWorldName = worldNames[0]
             const firstWorld = firstWorldName ? conf.worlds[firstWorldName] : null
+            const downloadUrls = downloadBaseUrls()
 
             for (const [worldName, worldConf] of Object.entries(conf.worlds || {})) {
                 if (!worldConf.game || !worldConf.game.containers) continue
@@ -101,7 +103,8 @@ module.exports = function () {
                 const configMap = new k8s.core.v1.ConfigMap(game.resourceName, {
                     metadata: { name: game.resourceName, namespace: namespace.metadata.name },
                     data: {
-                        "config.json": JSON.stringify(config),
+                        "config.json": pulumi.all([downloadUrls.table, downloadUrls.script]).apply(([table, script]) =>
+                            JSON.stringify({ ...config, download: { table, script } })),
                     },
                 })
 

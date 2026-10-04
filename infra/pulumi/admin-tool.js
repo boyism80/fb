@@ -1,19 +1,6 @@
 const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
-
-function secretOrEnv(stackConfig, configKey, envKeys) {
-    const fromConfig = stackConfig.getSecret(configKey)
-    if (fromConfig !== undefined)
-        return fromConfig
-
-    for (const key of envKeys) {
-        const value = process.env[key]
-        if (value)
-            return value
-    }
-
-    return ""
-}
+const { secretOrEnv, downloadBaseUrls } = require("./publish")
 
 module.exports = {
     setup: function (namespace, conf, dependsOn) {
@@ -150,9 +137,8 @@ module.exports = {
         const tablePublishUploadBaseUrl = secretOrEnv(stackConfig, "tablePublishUploadBaseUrl", [
             "TABLE_PUBLISH_UPLOAD_BASE_URL"
         ])
-        const tablePublishDownloadBaseUrl = secretOrEnv(stackConfig, "tablePublishDownloadBaseUrl", [
-            "TABLE_PUBLISH_DOWNLOAD_BASE_URL"
-        ])
+        const downloadUrls = downloadBaseUrls()
+        const tablePublishDownloadBaseUrl = downloadUrls.table
         const tablePublishUsername = secretOrEnv(stackConfig, "tablePublishUsername", [
             "TABLE_PUBLISH_USERNAME",
             "NAS_ID"
@@ -164,9 +150,7 @@ module.exports = {
         const scriptPublishUploadBaseUrl = secretOrEnv(stackConfig, "scriptPublishUploadBaseUrl", [
             "SCRIPT_PUBLISH_UPLOAD_BASE_URL"
         ])
-        const scriptPublishDownloadBaseUrl = secretOrEnv(stackConfig, "scriptPublishDownloadBaseUrl", [
-            "SCRIPT_PUBLISH_DOWNLOAD_BASE_URL"
-        ])
+        const scriptPublishDownloadBaseUrl = downloadUrls.script
         const scriptPublishUsername = secretOrEnv(stackConfig, "scriptPublishUsername", [
             "SCRIPT_PUBLISH_USERNAME",
             "TABLE_PUBLISH_USERNAME",

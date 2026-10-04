@@ -56,5 +56,9 @@
         "max_concurrent": 128
     },
     "meta_dat": "Meta.dat",
-    "sobj_tbl": "SObj.tbl"
+    "sobj_tbl": "SObj.tbl",
+    "download": {
+        "table": "__TABLE_PUBLISH_DOWNLOAD_BASE_URL__",
+        "script": "__SCRIPT_PUBLISH_DOWNLOAD_BASE_URL__"
+    }
 }

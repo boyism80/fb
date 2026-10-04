@@ -1,5 +1,6 @@
 const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
+const { downloadBaseUrls } = require("./publish")
 
 module.exports = {
     setup: function (namespace, conf, dependsOn) {
@@ -121,7 +122,8 @@ module.exports = {
         const configMap = new k8s.core.v1.ConfigMap("internal", {
             metadata: { name: "internal", namespace: namespace.metadata.name },
             data: {
-                "appsettings.k8s.json": JSON.stringify(config),
+                "appsettings.k8s.json": pulumi.output(downloadBaseUrls().table).apply(table =>
+                    JSON.stringify({ ...config, TablePublish: { DownloadBaseUrl: table } })),
             },
         })
 

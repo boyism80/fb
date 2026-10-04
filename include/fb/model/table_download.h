@@ -1,22 +1,34 @@
 #ifndef __FB_MODEL_TABLE_DOWNLOAD_H__
 #define __FB_MODEL_TABLE_DOWNLOAD_H__
 
+#include <fb/config.h>
 #include <fb/http_client.h>
 #include <fb/logger.h>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace fb::model {
 
+// Table files sit flat in json/; anything outside [a-z0-9_] could escape the directory.
 inline std::string table_file_stem(std::string_view name)
 {
     auto stem = std::string(name);
-    if (stem.size() >= 5 && stem.ends_with(".json"))
+    if (stem.ends_with(".json"))
         stem.resize(stem.size() - 5);
+
+    if (stem.empty())
+        throw std::runtime_error("empty table name in ReloadTables");
+
+    for (auto ch : stem)
+    {
+        if ((ch < 'a' || ch > 'z') && (ch < '0' || ch > '9') && ch != '_')
+            throw std::runtime_error(std::format("invalid table name in ReloadTables: {}", stem));
+    }
     return stem;
 }
 
@@ -39,15 +51,22 @@ inline async::task<void> download_tables(fb::http_client&                  http,
         std::vector<uint8_t>     bytes;
     };
 
+    // The URL arrives over AMQP; only the configured publish location may be fetched.
+    auto requested = std::string(base_url);
+    auto allowed   = fb::config<std::string>("download:table", std::string());
+    while (!requested.empty() && requested.back() == '/')
+        requested.pop_back();
+    while (!allowed.empty() && allowed.back() == '/')
+        allowed.pop_back();
+    if (allowed.empty() || requested != allowed)
+        throw std::runtime_error(std::format("table download url is not allowed: {}", base_url));
+
     auto files = std::vector<downloaded_file>{};
     files.reserve(table_names.size());
 
     for (const auto& name : table_names)
     {
         auto stem = table_file_stem(name);
-        if (stem.empty())
-            throw std::runtime_error("empty table name in ReloadTables");
-
         auto url  = join_download_url(base_url, stem);
         auto bytes = co_await http.get_bytes(url);
         if (bytes.empty())

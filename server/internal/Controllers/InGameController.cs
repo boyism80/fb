@@ -7,6 +7,7 @@ using Http.Service;
 using Http.Util;
 using Internal.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 using Option = Http.Model.Option;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
@@ -379,6 +380,22 @@ namespace Internal.Controllers
         [HttpPost("reload-tables")]
         public async Task<Response.ReloadTables> ReloadTables(Request.ReloadTables request)
         {
+            // Every host writes json/{stem}.json from these names; reject anything that could leave json/.
+            var invalidName = (request.TableNames ?? new List<string>())
+                .Select(x => x.Trim())
+                .Select(x => x.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? x[..^5] : x)
+                .FirstOrDefault(x => !Regex.IsMatch(x, @"^[a-z0-9_]+\z", RegexOptions.CultureInvariant));
+            if (invalidName != null)
+            {
+                _logger.LogWarning("ReloadTables rejected invalid table name {Name}", invalidName);
+                return new Response.ReloadTables
+                {
+                    Error = (uint)ErrorCode.Unhandled,
+                    Url = string.Empty,
+                    TableNames = new List<string>()
+                };
+            }
+
             var response = new Response.ReloadTables
             {
                 Error = (uint)ErrorCode.None,

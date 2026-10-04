@@ -1,5 +1,6 @@
 const pulumi = require("@pulumi/pulumi");
 const k8s = require("@pulumi/kubernetes");
+const { downloadBaseUrls } = require("./publish");
 
 module.exports = function () {
 
@@ -9,6 +10,7 @@ module.exports = function () {
             const resources = []
             let index = 0
             const ports = []
+            const downloadUrls = downloadBaseUrls()
             for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
                 if (!worldConf.login) continue
                 const config = {
@@ -82,7 +84,8 @@ module.exports = function () {
                 const configMap = new k8s.core.v1.ConfigMap(`login-${worldName}`, {
                     metadata: { name: `login-${worldName}`, namespace: namespace.metadata.name },
                     data: {
-                        "config.json": JSON.stringify(config),
+                        "config.json": pulumi.output(downloadUrls.table).apply(table =>
+                            JSON.stringify({ ...config, download: { table } })),
                     },
                 })
 

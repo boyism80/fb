@@ -1,6 +1,7 @@
 #ifndef __FB_MODEL_SCRIPT_DOWNLOAD_H__
 #define __FB_MODEL_SCRIPT_DOWNLOAD_H__
 
+#include <fb/config.h>
 #include <fb/http_client.h>
 #include <fb/logger.h>
 #include <filesystem>
@@ -26,7 +27,9 @@ inline std::string normalize_script_relative_path(std::string_view path)
 
     if (relative.empty())
         throw std::runtime_error("empty script path in ReloadScripts");
-    if (relative.find("..") != std::string::npos)
+    // ':' covers drive letters (C:/, C:x) and NTFS alternate streams; "//" would leave an empty segment.
+    if (relative.find("..") != std::string::npos || relative.find(':') != std::string::npos ||
+        relative.find("//") != std::string::npos || std::filesystem::path(relative).has_root_path())
         throw std::runtime_error(std::format("invalid script path: {}", relative));
     if (relative.starts_with("scripts/"))
         throw std::runtime_error(std::format("script path must not include scripts/ prefix: {}", relative));
@@ -54,6 +57,16 @@ inline async::task<void> download_scripts(fb::http_client&                http,
         std::string          relative;
         std::vector<uint8_t> bytes;
     };
+
+    // The URL arrives over AMQP; only the configured publish location may be fetched.
+    auto requested = std::string(base_url);
+    auto allowed   = fb::config<std::string>("download:script", std::string());
+    while (!requested.empty() && requested.back() == '/')
+        requested.pop_back();
+    while (!allowed.empty() && allowed.back() == '/')
+        allowed.pop_back();
+    if (allowed.empty() || requested != allowed)
+        throw std::runtime_error(std::format("script download url is not allowed: {}", base_url));
 
     auto files = std::vector<downloaded_file>{};
     files.reserve(script_paths.size());
