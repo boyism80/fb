@@ -15,6 +15,7 @@
 #include <chrono>
 #include <cstdint>
 #include <exception>
+#include <format>
 #include <memory>
 #include <optional>
 #include <string>
@@ -28,8 +29,53 @@ using namespace fb::model::enum_value;
 using namespace std::chrono_literals;
 using table = fb::model::table;
 
+void fb::game::server::bind_script_error(fb::lua::context& ctx, int argc)
+{
+    auto top = lua_gettop(ctx);
+    if (argc < 1 || top < argc)
+        return;
+
+    // Stack is [function, arg1, ...]. The actor is the first argument (spell/npc/item `me`).
+    auto index = top - argc + 1;
+    if (ctx.is_userdata<character>(index) == false)
+        return;
+
+    auto ch = ctx.touserdata<character>(index);
+    if (ch == nullptr || ch->role() < ROLE::ADMIN)
+        return;
+
+    auto weak = ch->weak_from_this_as<character>();
+    ctx.on_error([weak](std::string_view message) {
+        auto self = weak.lock();
+        if (self == nullptr || self->role() < ROLE::ADMIN)
+            return;
+
+        auto text = std::string(message);
+        if (text.size() > 180)
+        {
+            text.resize(180);
+            while (text.empty() == false && (static_cast<unsigned char>(text.back()) & 0xC0) == 0x80)
+                text.pop_back();
+        }
+
+        auto line    = std::format("LUAERR: {}", text);
+        auto builder = self->server.threads.new_builder(weak);
+        builder.func = [weak, line](auto&) -> async::task<void> {
+            auto locked = weak.lock();
+            if (locked == nullptr || locked->role() < ROLE::ADMIN)
+                co_return;
+
+            locked->message(line, MESSAGE_TYPE::STATE);
+            co_return;
+        };
+        builder.enqueue();
+    });
+}
+
 async::task<void> fb::game::server::init_lua()
 {
+    fb::lua::set_script_error_bind(&server::bind_script_error);
+
     for (auto& [_, root] : this->lua)
     {
         co_await root->switching();

@@ -4,6 +4,8 @@ local protocol = require("integration.protocol")
 
 local CANNOT_PICKUP_TEXT = "더 이상 가질 수 없습니다."
 
+local g_npcs = {}
+
 local function setup_npc(ctx, bot, index, npc_name)
     log("debug", string.format("Chat[%d]: %s", index, "setup_npc: " .. npc_name))
     bot:direction("BOTTOM")
@@ -15,6 +17,7 @@ local function setup_npc(ctx, bot, index, npc_name)
     bot:move("TOP")
     bot:direction("BOTTOM")
 
+    g_npcs[index] = npc
     return npc
 end
 
@@ -233,9 +236,9 @@ local function test_scenario_3(ctx, index)
     end
 
     log("debug", string.format("Chat[%d]: %s", index, "scenario 3: waiting for NORMAL state (current=" .. tostring(bot:state()) .. ")"))
-    while bot:state() ~= "NORMAL" do
-        ctx:sleep(100)
-    end
+    lib.wait.state(bot, resp.show, function()
+        return bot:state() == "NORMAL"
+    end, 30000)
     log("debug", string.format("Chat[%d]: %s", index, "scenario 3: state is NORMAL, hp=" .. tostring(bot:hp())))
 
     log("debug", string.format("Chat[%d]: %s", index, "scenario 3: thanking NPC"))
@@ -317,8 +320,16 @@ test_suite {
 
     on_parallel_scenario_finished = function(ctx, id)
         log("debug", "Chat[" .. tostring(id) .. "]: parallel scenario finished, removing NPCs")
-        ctx:bot(id):chat("/엔피씨제거")
-        ctx:sleep(1000)
+        local bot = ctx:bot(id)
+        local npc = g_npcs[id]
+        g_npcs[id] = nil
+        if npc ~= nil then
+            bot:request(resp.hide, protocol.chat(false, "/엔피씨제거"), function(packet)
+                return packet.oid == npc.oid
+            end, 5000)
+        else
+            bot:chat("/엔피씨제거")
+        end
     end,
 
     scenarios = {

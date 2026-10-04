@@ -84,6 +84,7 @@ public:
 
     static std::vector<discovered_script> discover_scripts();
     static uint32_t                       peek_bot_count(const std::filesystem::path& script_path);
+    static void                           select(std::vector<std::string> names, std::string label);
 
     void capture_suite(lua_State* L, int table_index);
 

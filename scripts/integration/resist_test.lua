@@ -1,7 +1,6 @@
 local lib      = require("integration.lib")
 
-local SCRIPT           = "test/integration"
-local DEFAULT_INTERVAL = 100
+local SCRIPT = "test/integration"
 
 local function progress(bot, message)
     log("debug", message)
@@ -11,7 +10,6 @@ end
 local function spawn_target(ctx, bot)
     local pos = bot:position()
     local mob = bot:spawn_monster("다람쥐", pos[1], pos[2] + 1)
-    ctx:sleep(DEFAULT_INTERVAL)
     if mob.oid == 0 then
         return nil
     end

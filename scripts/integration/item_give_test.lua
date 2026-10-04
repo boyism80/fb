@@ -101,7 +101,9 @@ test_suite {
                 return false
             end
 
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot2, resp.item_update, function()
+                return bot2:has_item_by_name("목도")
+            end)
             if bot2:has_item_by_name("목도") == false then
                 progress(bot2, "FAILED: did not receive 목도")
                 return false
@@ -176,7 +178,9 @@ test_suite {
             bot1:request(resp.update_internal, protocol.give_money(0xFFFFFFFE), function(packet)
                 return packet.ch_money == 0
             end)
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot2, resp.update_internal, function()
+                return bot2:money() == 0xFFFFFFFE
+            end)
             if bot2:money() ~= 0xFFFFFFFE then
                 progress(bot2, "FAILED: bot2 money mismatch after give")
                 return false
@@ -188,7 +192,9 @@ test_suite {
             bot1:request(resp.update_internal, protocol.give_money(2), function(packet)
                 return packet.ch_money == 0
             end)
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot2, resp.update_internal, function()
+                return bot2:money() == ENCODED_PAST_U32
+            end)
 
             if bot1:money() ~= 0 or bot2:money() ~= ENCODED_PAST_U32 then
                 progress(bot1, "FAILED: money past-uint32 encode outcome wrong")
@@ -262,7 +268,9 @@ test_suite {
                 return false
             end
 
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot1, resp.item_update, function()
+                return bot1:has_item_by_name("목도")
+            end)
             if bot1:has_item_by_name("목도") == false then
                 progress(bot1, "FAILED: 목도 not recovered")
                 return false

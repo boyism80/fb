@@ -73,6 +73,8 @@ struct game_bot
     static int builtin_clear_all_drop_items(lua_State* L);
     static int builtin_request_dialog(lua_State* L);
     static int builtin_request_dialog_ext(lua_State* L);
+    static int builtin_last_dialog(lua_State* L);
+    static int builtin_take_messages(lua_State* L);
     static int builtin_request_trade(lua_State* L);
     static int builtin_bulletin_write(lua_State* L);
     static int builtin_bulletin_get_sections(lua_State* L);

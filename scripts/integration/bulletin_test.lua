@@ -183,8 +183,6 @@ test_suite {
                 return false
             end
 
-            ctx:sleep(1000)
-
             progress(bot2, "CHECKING " .. bot2:name() .. "'S MAILBOX")
             local mails = bot2:bulletin_get_mails()
             local mail = find_mail_by_sender(mails, bot1:name())

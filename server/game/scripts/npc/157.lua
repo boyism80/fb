@@ -3,16 +3,12 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 local function do_jungki(me, npc)
     local q = me:quest(quest.QUEST_SHARK_WEAPON)
-
-    if q  == nil then
-    end
-
-    local step = q:step()
-    if step < 4 then
+    if q == nil or q:step() < 4 then
         me:dialog(npc, '자네는 아직 알 때가 아니군.', { prev = false, next = false })
         return
     end
-    
+
+    local step = q:step()
     if step == 4 then
         local sel = me:list(npc, '무슨 일인가?', { '용궁의정기를 만들줄 아십니까?' }, { prev = false })
         if sel == nil or sel ~= 1 then

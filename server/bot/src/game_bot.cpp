@@ -1052,6 +1052,43 @@ void game_bot::remove_buffs()
     this->send(game_reqs::chat<BOT_CLIENT_VERSION>{false, "/버프해제"});
 }
 
+void game_bot::record_dialog(const integration::dialog_bot& dialog)
+{
+    auto lock = std::lock_guard(this->_record_mutex);
+    this->_dialog_seq++;
+    this->_last_dialog = dialog;
+    this->_last_dialog_ext.reset();
+}
+
+void game_bot::record_dialog(const integration::dialog_ext_bot& dialog)
+{
+    auto lock = std::lock_guard(this->_record_mutex);
+    this->_dialog_seq++;
+    this->_last_dialog.reset();
+    this->_last_dialog_ext = dialog;
+}
+
+uint32_t game_bot::last_dialog(std::optional<integration::dialog_bot>&     dialog,
+                               std::optional<integration::dialog_ext_bot>& dialog_ext) const
+{
+    auto lock  = std::lock_guard(this->_record_mutex);
+    dialog     = this->_last_dialog;
+    dialog_ext = this->_last_dialog_ext;
+    return this->_dialog_seq;
+}
+
+void game_bot::record_message(std::string_view text)
+{
+    auto lock = std::lock_guard(this->_record_mutex);
+    this->_messages.emplace_back(text);
+}
+
+std::vector<std::string> game_bot::take_messages()
+{
+    auto lock = std::lock_guard(this->_record_mutex);
+    return std::exchange(this->_messages, {});
+}
+
 void game_bot::chat(std::string_view message)
 {
     this->send(game_reqs::chat<BOT_CLIENT_VERSION>{false, std::string(message)});

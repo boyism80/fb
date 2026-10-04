@@ -19,7 +19,6 @@ test_suite {
         bot:clear_inventory()
         bot:remove_buffs()
         bot:setup_bot_stats(1000, 1000)
-        ctx:sleep(500)
     end,
 
     scenarios = {

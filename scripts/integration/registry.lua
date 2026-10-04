@@ -1,5 +1,10 @@
 -- Integration test registry
 -- Phase A: parallel (default). Phase B: serial after Phase A drains.
+-- label (a name or a list of names) selects the tests run by bot.exe --label <label>.
+-- Tests without a label are "regular", which also runs when --label is omitted.
+--   regular   the regular suite
+--   script    NPC script tests
+--   explorer  NPC dialog explorer, about 9 minutes with 16 bots
 
 register_test("movement_test")
 register_test("attack_test")
@@ -25,6 +30,13 @@ register_test("marketplace_test", { serial = true })
 register_test("storage_box_test")
 register_test("worldmap_test")
 register_test("door_test")
-register_test("rabbit_quest_test")
+register_test("rabbit_quest_test", { label = { "regular", "script" } })
 register_test("mob_parts_test")
 register_test("resist_test")
+
+register_test("quest_clear_shield_test", { label = "script" })
+register_test("quest_lighthouse_test", { label = "script" })
+register_test("quest_reward_capacity_test", { label = "script" })
+register_test("quest_hwangbiyeon_test", { label = "script" })
+
+register_test("npc_explorer_test", { label = "explorer" })

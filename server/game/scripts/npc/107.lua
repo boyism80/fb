@@ -79,24 +79,6 @@ local function dojaeyoung_nobidocument(me, npc)
     me:push_achievement(39, '보패를 가지고 다시 상해주민에게 가보자.', 7, 2)
 end
 
-local function dojaeyoung_herb_quest(me, npc)
-    local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
-
-    if q == nil then
-        dojaeyoung_herb_start(me, npc)
-        return
-    end
-    if q:step() == 0 then
-        dojaeyoung_herb_start(me, npc)
-        return
-    end
-    if q:step() == 1 then
-        dojaeyoung_herb_turnin(me, npc)
-        return
-    end
-    me:dialog(npc, '저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.', { prev = true, next = false })
-end
-
 local function dojaeyoung_herb_start(me, npc)
     ::NPC_107_0020::
     local btn = me:dialog(npc, '안녕하세요 ' .. me:name() .. '님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.', { prev = false, next = true })
@@ -175,11 +157,30 @@ local function dojaeyoung_herb_turnin(me, npc)
     me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', { prev = false, next = false })
 end
 
+local function dojaeyoung_herb_quest(me, npc)
+    local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
+
+    if q == nil then
+        dojaeyoung_herb_start(me, npc)
+        return
+    end
+    if q:step() == 0 then
+        dojaeyoung_herb_start(me, npc)
+        return
+    end
+    if q:step() == 1 then
+        dojaeyoung_herb_turnin(me, npc)
+        return
+    end
+    me:dialog(npc, '저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.', { prev = true, next = false })
+end
+
 return {
     on_click = function(me, npc)
         local options = {'황비연 퀘스트'}
-        local herb_quest = me:quest(quest.QUEST_HWANGBIYEON)
-        if herb_quest ~= nil and herb_quest:step() == 2 then
+        local hwangbiyeon = me:quest(quest.QUEST_HWANGBIYEON)
+        local herb = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
+        if herb ~= nil or (hwangbiyeon ~= nil and hwangbiyeon:step() >= 2) then
             table.insert(options, '약초 퀘스트')
         end
 

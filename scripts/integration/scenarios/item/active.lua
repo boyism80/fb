@@ -1,5 +1,6 @@
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
+local wait     = require("integration.lib.wait")
 
 local M = {}
 
@@ -281,9 +282,10 @@ local function run_uitae_variant(ctx, variant)
         return false
     end
 
-    caster:sleep(1000)
-
-    if caster:item_count(ITEM_UITAE) ~= before_count - 1 then
+    local consumed = wait.state(caster, resp.item_remove, function()
+        return caster:item_count(ITEM_UITAE) == before_count - 1
+    end, 1000)
+    if consumed == false then
         log("fatal", string.format("uitae %s: item not consumed", variant))
         return false
     end

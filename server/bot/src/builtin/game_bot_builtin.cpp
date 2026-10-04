@@ -237,6 +237,8 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"clear_all_drop_items",     builtin::game_bot::builtin_clear_all_drop_items},
     {"request_dialog",           builtin::game_bot::builtin_request_dialog},
     {"request_dialog_ext",       builtin::game_bot::builtin_request_dialog_ext},
+    {"last_dialog",              builtin::game_bot::builtin_last_dialog},
+    {"take_messages",            builtin::game_bot::builtin_take_messages},
     {"request_trade",            builtin::game_bot::builtin_request_trade},
     {"bulletin_write",           builtin::game_bot::builtin_bulletin_write},
     {"bulletin_get_sections",    builtin::game_bot::builtin_bulletin_get_sections},
@@ -1032,7 +1034,9 @@ int builtin::game_bot::builtin_send(lua_State* L)
         if (bot_ptr == nullptr)
             co_return;
 
-        std::ignore = co_await bot_ptr->send(*request);
+        // Awaiting the write would resume Lua on the socket thread when the write completes asynchronously.
+        std::ignore = bot_ptr->send(*request);
+        co_return;
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;

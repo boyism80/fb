@@ -26,6 +26,17 @@
 
 using namespace fb::lua;
 
+namespace {
+
+void (*g_script_error_bind)(context&, int) = nullptr;
+
+} // namespace
+
+void fb::lua::set_script_error_bind(void (*fn)(context&, int))
+{
+    g_script_error_bind = fn;
+}
+
 context* fb::lua::get(lua_State* ctx)
 {
     if (ctx == nullptr)
@@ -395,6 +406,36 @@ void fb::lua::context::clear_script_path()
     this->_script_path.clear();
 }
 
+void fb::lua::context::on_error(std::function<void(std::string_view)> handler)
+{
+    this->_on_error = std::move(handler);
+}
+
+void fb::lua::context::clear_on_error()
+{
+    this->_on_error = nullptr;
+}
+
+void fb::lua::context::report_error(std::string_view message)
+{
+    auto handler = this->_on_error;
+    if (handler == nullptr || message.empty())
+        return;
+
+    try
+    {
+        handler(message);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::fatal("lua error handler failed: {}", e.what());
+    }
+    catch (...)
+    {
+        fb::logger::fatal("lua error handler failed");
+    }
+}
+
 std::string_view fb::lua::context::script_path() const
 {
     return this->_script_path;
@@ -451,6 +492,10 @@ void fb::lua::context::resume(int argc, int* n)
         return;
     }
 
+    // Fresh coroutine (LUA_OK, not yet started). After a yield the status is LUA_YIELD and the actor is already bound.
+    if (this->_on_error == nullptr && argc > 0 && lua_status(*this) == LUA_OK && g_script_error_bind != nullptr)
+        g_script_error_bind(*this, argc);
+
     this->_running++;
     auto state = lua_resume(*this, nullptr, argc);
     if (state == LUA_YIELD)
@@ -464,6 +509,11 @@ void fb::lua::context::resume(int argc, int* n)
         const char* raw = lua_tostring(*this, -1);
         auto        message =
             std::format("lua error message : {}", raw != nullptr ? std::string_view{raw} : std::string_view{});
+        auto path = std::string(this->script_path());
+        if (path.empty())
+            this->report_error(message);
+        else
+            this->report_error(std::format("{}: {}", path, message));
         lua_pop(*this, 1);
         fb::logger::fatal(message);
 
@@ -608,6 +658,9 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
             fb::logger::fatal("lua co_builder {} error", phase);
 
         auto error_text = message != nullptr ? std::string(message) : std::format("lua co_builder {} error", phase);
+        // A lua_resume failure already reported from the script context. This path is the C++ failure around it.
+        if (error_text.find("lua error message") == std::string::npos)
+            lua_ptr->report_error(std::format("{}: {}", phase, error_text));
         lua_ptr->reject(error_text);
     };
 
@@ -1034,6 +1087,7 @@ void root::release(context& ctx)
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
         ctx.options(call_options{});
+        ctx.clear_on_error();
         ctx.clear_script_path();
         ctx.clear_dialog_slot();
 
@@ -1073,6 +1127,7 @@ void root::revoke(context& ctx)
             ctx.ref = LUA_NOREF;
         }
 
+        ctx.clear_on_error();
         ctx.clear_dialog_slot();
         this->busy.erase(it);
     };

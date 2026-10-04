@@ -11,12 +11,17 @@ function M.run_chat_step(bot, command, pass_prefix, fail_prefix)
         pass_prefix,
         fail_prefix))
 
+    local oid = bot:oid()
     local attempts = 3
     for attempt = 1, attempts do
         local packet = bot:request(
             resp.chat,
             protocol.chat(false, command),
             function(p)
+                -- The script reports as normal chat, which every bot nearby also receives.
+                if p.oid ~= oid then
+                    return false
+                end
                 local text = p.text or ""
                 if string.find(text, command, 1, true) ~= nil then
                     local pass_match = string.find(text, pass_prefix, 1, true) ~= nil

@@ -7,7 +7,7 @@ return {
         if map == nil then
             me:message('맵 정보 없음', MESSAGE_TYPE.POPUP)
         else
-            me:message(map:model():id(), MESSAGE_TYPE.POPUP)
+            me:message(tostring(map:model():id()), MESSAGE_TYPE.POPUP)
         end
     end,
 

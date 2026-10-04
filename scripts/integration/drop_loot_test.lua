@@ -164,8 +164,6 @@ test_suite {
 
             bot1:setup_bot_stats(100000, 10000)
             bot2:setup_bot_stats(100000, 100000, 50)
-
-            ctx:sleep(DEFAULT_INTERVAL)
             bot2:direction("BOTTOM")
 
             bot2:create_item("도토리", 200)

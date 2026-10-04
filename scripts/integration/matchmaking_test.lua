@@ -338,8 +338,7 @@ local function confirm_lanes(indices, trigger)
             return false
         end
         local bot = ctx:bot(trigger.index)
-        progress(bot, "SETTLE THEN REGISTER " .. trigger.option)
-        bot:sleep(SETTLE_MS)
+        progress(bot, "REGISTER " .. trigger.option)
         if f1_register_await_proposal(bot, trigger.option) == false then
             return abort_remaining(bot, "FAILED: REGISTER/PROPOSAL " .. trigger.option)
         end
@@ -508,8 +507,18 @@ test_suite {
                     return false
                 end
                 local bot = ctx:bot(5)
-                progress(bot, "SETTLE THEN REGISTER MATCH 1")
-                bot:sleep(SETTLE_MS)
+                local e = ctx:bot(4)
+                progress(bot, "WAIT FOR E TO REGISTER, THEN REGISTER MATCH 1")
+                e:take_messages()
+                local e_registered = false
+                lib.wait.state(e, resp.message, function()
+                    for _, text in ipairs(e:take_messages()) do
+                        if text:find(MSG_REGISTER_START, 1, true) ~= nil then
+                            e_registered = true
+                        end
+                    end
+                    return e_registered
+                end, SETTLE_MS)
                 if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
                     return abort_remaining(bot, "FAILED: MATCH 1 REGISTER/PROPOSAL F")
                 end

@@ -2,8 +2,6 @@ local lib      = require("integration.lib")
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
-local DEFAULT_INTERVAL = 100
-
 test_suite {
     name      = "Throw Test",
     bot_count = 2,
@@ -25,7 +23,6 @@ test_suite {
             local bot2 = ctx:bot(1)
 
             bot1:create_item("도토리", 201)
-            ctx:sleep(DEFAULT_INTERVAL)
 
             local pos = bot1:position()
             bot1:request(
@@ -58,7 +55,6 @@ test_suite {
 
             bot2:move("BOTTOM", 4)
             bot2:move("LEFT", 1)
-            ctx:sleep(500)
             bot2:direction("BOTTOM")
 
             local from = bot1:position()

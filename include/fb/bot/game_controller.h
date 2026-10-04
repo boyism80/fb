@@ -134,7 +134,6 @@ private:
     async::task<void> on_hide(game_bot& bot, const game_resp::hide& response);
     async::task<void> on_die(game_bot& bot, const game_resp::die& response);
     async::task<void> on_buff(game_bot& bot, const game_resp::spell_buff& response);
-    async::task<void> on_unbuff(game_bot& bot, const game_resp::spell_unbuff& response);
     async::task<void> on_update_cc(game_bot& bot, const game_resp::update_cc& response);
     async::task<void> on_update(game_bot& bot, const game_resp::update_v550& response);
     async::task<void> on_map(game_bot& bot, const game_resp::map_config_v550& response);

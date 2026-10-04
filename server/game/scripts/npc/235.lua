@@ -35,11 +35,6 @@ local function bokgeon_sell_doll(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        q = me:start_quest(quest.QUEST_SELL_DOLL)
-        if q == nil then
-            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
-            return
-        end
         local code = me:exchange(
             { ['item'] = { ['청자다람쥐인형'] = 1 } },
             { ['money'] = 100000 }
@@ -50,6 +45,11 @@ local function bokgeon_sell_doll(me, npc)
         end
         if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '금전을 받을 여유가 없군요.', { prev = false, next = false })
+            return
+        end
+        q = me:start_quest(quest.QUEST_SELL_DOLL)
+        if q == nil then
+            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
             return
         end
         q:complete()

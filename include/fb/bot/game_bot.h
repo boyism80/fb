@@ -14,6 +14,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <set>
 #include <string>
@@ -149,6 +150,14 @@ private:
     std::string                     _group_info;
     uint8_t                         _group_option = 0;
     uint32_t                        _remained_exp = 0;
+
+    // Last dialog of either opcode (0x2F menu / 0x30 ext) and received message texts,
+    // kept for tests that do not know which reply comes next.
+    mutable std::mutex                             _record_mutex;
+    uint32_t                                       _dialog_seq = 0;
+    std::optional<integration::dialog_bot>         _last_dialog;
+    std::optional<integration::dialog_ext_bot>     _last_dialog_ext;
+    std::vector<std::string>                       _messages;
     // clang-format on
 
 public:
@@ -304,6 +313,11 @@ public:
     uint8_t                               get_item_slot_by_name(std::string_view name) const;
     uint8_t                               get_spell_slot_by_name(std::string_view name) const;
     void                                  remove_buffs();
+    void                                  record_dialog(const integration::dialog_bot& dialog);
+    void                                  record_dialog(const integration::dialog_ext_bot& dialog);
+    uint32_t                              last_dialog(std::optional<integration::dialog_bot>& dialog, std::optional<integration::dialog_ext_bot>& dialog_ext) const;
+    void                                  record_message(std::string_view text);
+    std::vector<std::string>              take_messages();
     void                                  chat(std::string_view message);
     async::task<void>                     create_item(std::string_view item_name, uint32_t count, std::chrono::milliseconds timeout);
     async::task<simple_npc>               create_npc(std::string_view npc_name, std::chrono::milliseconds timeout);

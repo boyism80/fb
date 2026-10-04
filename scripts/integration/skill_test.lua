@@ -17,6 +17,7 @@ local healing_group = require("integration.scenarios.skill.healing_group")
 local area          = require("integration.scenarios.skill.area")
 local delay         = require("integration.scenarios.skill.delay")
 local special       = require("integration.scenarios.skill.special")
+local remaining     = require("integration.scenarios.skill.remaining")
 
 local formation = lib.formation
 
@@ -78,7 +79,6 @@ test_suite {
         if scenario_index == 0 then
             slog("cleanup", "parallel done - rearrange in line for sequential")
             formation.arrange_in_line(ctx)
-            ctx:sleep(skill.DEFAULT_INTERVAL)
         end
 
         slog("cleanup", "on_scenario_finished begin scenario=%d", scenario_index)
@@ -183,6 +183,11 @@ test_suite {
         function(ctx) return run_scenario({
             scope = "seq", name = "delay", run = delay.run,
             ctx = ctx, causer = 0,
+        }) end,
+
+        function(ctx) return run_scenario({
+            scope = "seq", name = "remaining", run = remaining.run,
+            ctx = ctx, causer = 0, target = 1,
         }) end,
     },
 }

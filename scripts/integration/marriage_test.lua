@@ -32,7 +32,6 @@ local MSG_CALLER_NOT_MARRIED  = "결혼하지 않아 사용할 수 없습니다.
 local MSG_SPOUSE_PREFIX       = "배우자: "
 local MSG_ASKING              = "에게 의사를 묻고 있습니다."
 
-local LISTENER_ARM_MS = 500
 local TIME_FORWARD_7D = "7.00:00:00"
 
 local g_npc          = nil
@@ -305,8 +304,10 @@ local function use_caller_teleport(ctx, bot, spouse)
         return false, "caller item missing"
     end
     local spouse_map = spouse:map()
-    bot:send(protocol.item_active(slot))
-    ctx:sleep(1500)
+    -- A cross-map warp sends map_config then position, so the first position on the new map is final.
+    bot:request(resp.position, protocol.item_active(slot), function()
+        return bot:map() == spouse_map
+    end, 5000)
     if bot:map() ~= spouse_map then
         return false, string.format("map mismatch got=%s want=%s", tostring(bot:map()), tostring(spouse_map))
     end
@@ -410,10 +411,8 @@ test_suite {
             local b = ctx:bot(1)
             progress(a, "M2: NOT NEAR")
             b:map_move(OFF_MAP, 1, 1, g_suite_slot)
-            ctx:sleep(500)
             local msg, err = marry_input_expect_normal(a, b:name())
             restore_home(b, 1)
-            ctx:sleep(300)
             if msg == nil or msg:find(MSG_NOT_NEAR, 1, true) == nil then
                 progress(a, "FAILED: " .. tostring(msg or err))
                 return false
@@ -475,7 +474,6 @@ test_suite {
                         progress(a, "M6: REJECT (requester)")
                         g_parallel_ok = false
                         g_parallel_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
                         local ok, err = marry_start_input(a)
                         if ok == false then
                             progress(a, "FAILED: " .. tostring(err))
@@ -531,7 +529,6 @@ test_suite {
                         g_parallel_ok = false
                         g_parallel_msg = nil
                         g_partner_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
                         local ok, err = marry_start_input(a)
                         if ok == false then
                             progress(a, "FAILED: " .. tostring(err))
@@ -614,11 +611,9 @@ test_suite {
             local b = ctx:bot(1)
             progress(a, "L2: CALLER TELEPORT")
             b:map_move(OFF_MAP, 5, 5, g_suite_slot)
-            ctx:sleep(500)
             local ok, err = use_caller_teleport(ctx, a, b)
             restore_home(a, 0)
             restore_home(b, 1)
-            ctx:sleep(300)
             if ok == false then
                 progress(a, "FAILED: " .. tostring(err))
                 return false
@@ -676,7 +671,6 @@ test_suite {
                         progress(a, "D2: DIVORCE REJECT (requester)")
                         g_parallel_ok = false
                         g_parallel_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
                         local ok, err = divorce_select(a)
                         if ok == false then
                             progress(a, "FAILED: " .. tostring(err))
@@ -731,7 +725,6 @@ test_suite {
                         g_parallel_ok = false
                         g_parallel_msg = nil
                         g_partner_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
                         local ok, err = divorce_select(a)
                         if ok == false then
                             progress(a, "FAILED: " .. tostring(err))
@@ -855,7 +848,6 @@ test_suite {
                         g_parallel_ok = false
                         g_parallel_msg = nil
                         g_partner_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
                         local ok, err = marry_start_input(a)
                         if ok == false then
                             progress(a, "FAILED: " .. tostring(err))

@@ -1,4 +1,5 @@
 local lib      = require("integration.lib")
+local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
 local NPC_NAME = "문파대리인"
@@ -66,10 +67,9 @@ local MSG_UNALLY_OK  = "동맹파기가 완료되었습니다"
 local MSG_ENEMY_OK   = "적대관계 설정이 완료되었습니다"
 local MSG_UNENEMY_OK = "종전 협약이 완료되었습니다"
 
-local LISTENER_ARM_MS = 500
-
 -- Shared across parallel steps
 local g_npc         = nil
+local g_npc_owner   = nil
 local g_invite_ok   = false
 local g_invite_err  = nil
 local g_invitee_msg = nil
@@ -106,6 +106,7 @@ local function setup_npc(bot)
     bot:move("TOP")
     bot:direction("BOTTOM")
     g_npc = npc
+    g_npc_owner = bot
     progress(bot, string.format("NPC created oid=%s", tostring(npc.oid)))
     return npc
 end
@@ -425,7 +426,6 @@ local function diplomacy_scenario(label, action_index, requester_idx, target_idx
                     g_invite_ok = false
                     g_inviter_msg = nil
                     g_invitee_msg = nil
-                    ctx:sleep(LISTENER_ARM_MS)
 
                     local ok, err = diplomacy_start(requester, action_index)
                     if ok == false then
@@ -483,11 +483,20 @@ test_suite {
     end,
 
     on_scenario_finished = function(ctx)
+        local npc   = g_npc
+        local owner = g_npc_owner
         for i = 0, ctx:bot_count() - 1 do
-            ctx:bot(i):chat("/엔피씨제거")
+            local bot = ctx:bot(i)
+            if npc ~= nil and bot:name() == owner:name() then
+                bot:request(resp.hide, protocol.chat(false, "/엔피씨제거"), function(packet)
+                    return packet.oid == npc.oid
+                end)
+            else
+                bot:chat("/엔피씨제거")
+            end
         end
         g_npc = nil
-        ctx:sleep(500)
+        g_npc_owner = nil
     end,
 
     scenarios = {
@@ -550,7 +559,6 @@ test_suite {
             progress(master, "S3: INVITE NOT NEAR")
 
             spare:map_move(OFF_MAP, 1, 1, g_suite_slot)
-            ctx:sleep(500)
 
             local ok, err = invite_start(master, spare:name())
             if ok == false then
@@ -566,7 +574,6 @@ test_suite {
             end
             dismiss_normal(master)
             restore_bot_home(spare, 3)
-            ctx:sleep(300)
 
             progress(master, "S3 PASSED")
             return true
@@ -580,7 +587,6 @@ test_suite {
                         local master = ctx:bot(0)
                         local other  = ctx:bot(1)
                         progress(master, "S4: INVITE REJECT (inviter)")
-                        ctx:sleep(LISTENER_ARM_MS)
 
                         local ok, err = invite_start(master, other:name())
                         if ok == false then
@@ -638,7 +644,6 @@ test_suite {
                         g_invite_ok = false
                         g_inviter_msg = nil
                         g_invitee_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
 
                         local ok, err = invite_start(master, other:name())
                         if ok == false then
@@ -706,7 +711,6 @@ test_suite {
                         local other  = ctx:bot(1)
                         progress(master, "S6: INVITE ALREADY (inviter)")
                         g_invitee_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
 
                         local ok, err = invite_start(master, other:name())
                         if ok == false then
@@ -764,7 +768,6 @@ test_suite {
                         local outsider = ctx:bot(2)
                         progress(mate, "S7: MATE INVITE FAIL (inviter)")
                         g_invitee_msg = nil
-                        ctx:sleep(LISTENER_ARM_MS)
 
                         local ok, err = invite_start(mate, outsider:name())
                         if ok == false then
@@ -838,7 +841,6 @@ test_suite {
                         local deputy   = ctx:bot(1)
                         local outsider = ctx:bot(2)
                         progress(deputy, "S8b: DEPUTY INVITE (inviter)")
-                        ctx:sleep(LISTENER_ARM_MS)
                         local ok, err = invite_start(deputy, outsider:name())
                         if ok == false then
                             progress(deputy, "FAILED: " .. tostring(err))

@@ -5,6 +5,7 @@ local M = {}
 
 local resp = require("integration.response")
 local skill = require("integration.lib.skill")
+local wait = require("integration.lib.wait")
 
 local function build_cases(ctx)
     local function verify_group_healing_effects(before_hp_values, expected_hp_gain)
@@ -14,7 +15,10 @@ local function build_cases(ctx)
             local recoverable_amount = max_hp - before_hp_values[i + 1]
             local actual_hp_gain = math.min(expected_hp_gain, recoverable_amount)
             local expected_hp = before_hp_values[i + 1] + actual_hp_gain
-            if bot:hp() ~= expected_hp then
+            local healed = wait.state(bot, resp.update_internal, function()
+                return bot:hp() == expected_hp
+            end, 1000)
+            if healed == false then
                 return false
             end
         end
@@ -53,7 +57,6 @@ local function build_cases(ctx)
                 return true
             end,
             post = function(caster, _, state)
-                ctx:sleep(500)
                 if caster:mp() ~= state.expected_mp then
                     return false
                 end
@@ -90,7 +93,6 @@ local function build_cases(ctx)
                 return true
             end,
             post = function(caster, _, state)
-                ctx:sleep(500)
                 if caster:mp() ~= state.expected_mp then
                     return false
                 end

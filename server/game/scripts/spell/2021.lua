@@ -13,7 +13,7 @@ return {
     end,
 
     on_unbuff = function(me, spell)
-        me:buff_phydef(me:buff_phydef() - 40)
+        me:buff_phydef(me:buff_phydef() + 40)
     end,
 
     -- on_concast = function(me, sp)

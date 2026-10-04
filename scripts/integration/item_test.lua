@@ -31,7 +31,6 @@ test_suite {
         local bot = ctx:bot(id)
         bot:clear_all_drop_items()
         bot:clear_inventory()
-        ctx:sleep(500)
         bot:money(0)
         bot:level(1)
         bot:str(1)

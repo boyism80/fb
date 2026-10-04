@@ -1,7 +1,6 @@
 local lib      = require("integration.lib")
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
-local skill    = require("integration.lib.skill")
 
 local function progress(bot, message)
     local level = "debug"
@@ -63,7 +62,6 @@ test_suite {
             caster:mp(1000)
             local pos2 = caster:position()
             local mob2 = caster:spawn_monster("다람쥐", pos2[1], pos2[2] + 1)
-            ctx:sleep(skill.DEFAULT_INTERVAL)
 
             caster:request(
                 resp.update_internal,
@@ -138,29 +136,22 @@ test_suite {
             progress(leader, "CORRECTLY PREVENTED NON-MASTER FROM INVITING TO GROUP")
 
             progress(leader, "GROUP MASTER DISBANDING GROUP")
-            local member_disbanded = false
-            ctx:hook("message", function(_, bot, packet)
-                if bot:name() == bots[1]:name()
-                    and packet.type == "STATE"
-                    and packet.text == "그룹 해체" then
-                    member_disbanded = true
-                end
-            end)
-
+            bots[1]:take_messages()
             if lib.group.disband(bots[0]) == false then
-                ctx:unhook("message")
                 progress(leader, "FAILED TO DISBAND GROUP")
                 return false
             end
             progress(leader, "GROUP MASTER SUCCESSFULLY DISBANDED GROUP")
 
-            local waited_ms = 0
-            local max_wait_ms = 3000
-            while member_disbanded == false and waited_ms < max_wait_ms do
-                ctx:sleep(skill.DEFAULT_INTERVAL)
-                waited_ms = waited_ms + skill.DEFAULT_INTERVAL
-            end
-            ctx:unhook("message")
+            local member_disbanded = false
+            lib.wait.state(bots[1], resp.message, function()
+                for _, text in ipairs(bots[1]:take_messages()) do
+                    if text == "그룹 해체" then
+                        member_disbanded = true
+                    end
+                end
+                return member_disbanded
+            end, 3000)
 
             if member_disbanded == false then
                 progress(leader, "FAILED: MEMBER DID NOT RECEIVE DISBAND MESSAGE")

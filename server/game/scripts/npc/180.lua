@@ -33,17 +33,17 @@ return {
             end
 
             if selected == 1 then
+                if me:mkitem('쇠도끼', 1) == nil then
+                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
+                    return
+                end
+
                 local q = me:start_quest(quest.QUEST_NAMGUN)
                 if q == nil then
                     me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                     return
                 end
                 me:push_achievement(28, '쇠도끼로 나무를 하자.', 7, 5)
-
-                if me:mkitem('쇠도끼', 1) == nil then
-                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
-                    return
-                end
                 me:dialog(npc, '그럼 여기 도끼가 있으니 잘 쓰시오. 그럼 난 낮잠이나 자야겠구려. 나무 열심히 하시오...', { prev = false, next = false })
             end
             return

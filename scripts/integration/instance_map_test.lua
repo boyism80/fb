@@ -3,8 +3,10 @@
 -- Note:
 -- - Client map id is model.id for both S and C, so bot:map_move / map_config
 --   cannot distinguish instances. Isolation is asserted via ground drops + front_info.
--- - Instance enter/leave uses /맵이동 with an explicit slot (or without for S),
---   then sleeps briefly. Tighten waits when a better client signal exists.
+-- - Instance enter/leave uses /맵이동 with an explicit slot (or without for S).
+--   Switching S/C sends map_config then position, and a new tile on the same instance sends
+--   position, but the same tile on the same instance sends nothing. g_slots tracks which
+--   instance each bot is on so warp() knows whether to wait for position.
 
 local lib      = require("integration.lib")
 local resp     = require("integration.response")
@@ -16,8 +18,32 @@ local DROP_POS     = {7, 6}
 local MARKER_S     = "목도"
 local MARKER_C     = "목검"
 local MARKER_SHARE = "양첨목봉"
-local ENTER_WAIT   = 1500
 local DESTROY_WAIT = 3000
+
+-- bot name -> instance slot (0 = S). Missing means the bot is not on MAP yet.
+local g_slots = {}
+
+local function warp(bot, x, y, slot)
+    local command = string.format("/맵이동 %s %d %d", MAP, x, y)
+    if slot ~= 0 then
+        command = string.format("%s %d", command, slot)
+    end
+
+    local pos = bot:position()
+    if g_slots[bot:name()] == slot and pos[1] == x and pos[2] == y then
+        bot:chat(command)
+    else
+        bot:request(resp.position, protocol.chat(false, command), function(packet)
+            return packet.abs[1] == x and packet.abs[2] == y
+        end)
+    end
+    g_slots[bot:name()] = slot
+end
+
+local function is_adjacent(bot, x, y)
+    local pos = bot:position()
+    return math.abs(pos[1] - x) + math.abs(pos[2] - y) == 1
+end
 
 local function progress(bot, message)
     local level = "debug"
@@ -35,7 +61,7 @@ local function move_to_source(bot, x, y)
     y = y or POS[2]
     progress(bot, string.format("MOVE TO S %s (%d,%d)", MAP, x, y))
     -- Always chat: map_move early-outs when bot already thinks it is on this model.id.
-    bot:chat(string.format("/맵이동 %s %d %d", MAP, x, y))
+    warp(bot, x, y, 0)
 end
 
 local function move_to_instance(bot, x, y, slot)
@@ -45,7 +71,7 @@ local function move_to_instance(bot, x, y, slot)
         error("move_to_instance requires suite_slot")
     end
     progress(bot, string.format("MOVE TO C %s slot=%d (%d,%d)", MAP, slot, x, y))
-    bot:chat(string.format("/맵이동 %s %d %d %d", MAP, x, y, slot))
+    warp(bot, x, y, slot)
 end
 
 local function drop_marker(bot, item_name)
@@ -136,7 +162,6 @@ local function face_drop_marker(ctx, bot, use_instance, slot)
     else
         move_to_source(bot, POS[1], POS[2])
     end
-    ctx:sleep(ENTER_WAIT)
     bot:direction("RIGHT")
 end
 
@@ -144,12 +169,10 @@ end
 local function clear_maps(ctx, bot, slot)
     progress(bot, string.format("CLEAR GROUND ON S AND SLOT %d", slot))
     move_to_source(bot, POS[1], POS[2])
-    ctx:sleep(ENTER_WAIT)
     bot:chat("/아이템삭제")
     ctx:sleep(300)
 
     move_to_instance(bot, POS[1], POS[2], slot)
-    ctx:sleep(ENTER_WAIT)
     bot:chat("/아이템삭제")
     ctx:sleep(300)
 
@@ -184,6 +207,7 @@ test_suite {
             local b = ctx:bot(1)
             local SLOT = ctx:suite_slot()
             local SLOT_B = ctx:extra_slot() -- reserved seat K; unused by this scenario
+            g_slots = {}
 
             progress(a, string.format("SCENARIO START map=%s slot=%d extra=%s", MAP, SLOT, tostring(SLOT_B)))
 
@@ -196,12 +220,10 @@ test_suite {
 
             clear_maps(ctx, a, SLOT)
             move_to_source(b, POS[1] + 2, POS[2])
-            ctx:sleep(ENTER_WAIT)
 
             -- 0) Baseline on source (S)
             progress(a, "STEP 0: baseline on S")
-            a:chat(string.format("/맵이동 %s %d %d", MAP, DROP_POS[1], DROP_POS[2]))
-            ctx:sleep(ENTER_WAIT)
+            warp(a, DROP_POS[1], DROP_POS[2], 0)
             drop_marker(a, MARKER_S)
             face_drop_marker(ctx, a, false, SLOT)
 
@@ -212,12 +234,10 @@ test_suite {
             -- 1) Ensure instance slot and enter (C)
             progress(a, string.format("STEP 1: enter instance slot %d", SLOT))
             move_to_instance(a, POS[1], POS[2], SLOT)
-            ctx:sleep(ENTER_WAIT)
 
             -- 2) Isolation on C
             progress(a, "STEP 2: isolation on C")
-            a:chat(string.format("/맵이동 %s %d %d %d", MAP, DROP_POS[1], DROP_POS[2], SLOT))
-            ctx:sleep(ENTER_WAIT)
+            warp(a, DROP_POS[1], DROP_POS[2], SLOT)
             drop_marker(a, MARKER_C)
             face_drop_marker(ctx, a, true, SLOT)
 
@@ -239,8 +259,7 @@ test_suite {
 
             -- 4) Shared C drop
             progress(a, "STEP 4: shared drop on C")
-            a:chat(string.format("/맵이동 %s %d %d %d", MAP, DROP_POS[1], DROP_POS[2], SLOT))
-            ctx:sleep(ENTER_WAIT)
+            warp(a, DROP_POS[1], DROP_POS[2], SLOT)
             drop_marker(a, MARKER_SHARE)
             face_drop_marker(ctx, a, true, SLOT)
             face_drop_marker(ctx, b, true, SLOT)
@@ -251,28 +270,39 @@ test_suite {
             -- 5) 소환 / 출두
             progress(a, "STEP 5: 소환 then 출두")
             move_to_source(b, POS[1] + 2, POS[2])
-            ctx:sleep(ENTER_WAIT)
             move_to_instance(a, POS[1], POS[2], SLOT)
-            ctx:sleep(ENTER_WAIT)
 
             if cast_by_name(a, b:name(), "소환") == false then
                 progress(a, "FAILED: step5: 소환 failed")
                 return false
             end
-            ctx:sleep(1000)
-            -- teleport_lookup places B beside A; re-align for front_info.
+            -- teleport_lookup places B on a tile next to A; re-align for front_info.
+            lib.wait.state(b, resp.position, function()
+                return is_adjacent(b, POS[1], POS[2])
+            end, 1000)
+            g_slots[b:name()] = SLOT
             face_drop_marker(ctx, b, true, SLOT)
             if assert_front_contains(b, MARKER_SHARE, "step5-summon") == false then
                 return false
             end
 
             move_to_source(a, POS[1], POS[2])
-            ctx:sleep(ENTER_WAIT)
+            a:take_messages()
             if cast_by_name(a, b:name(), "출두") == false then
                 progress(a, "FAILED: step5: 출두 failed")
                 return false
             end
-            ctx:sleep(1000)
+            -- 출두 warps the caster, then on_cast_bulk turns it and sends the cast message last.
+            local chuldu_done = false
+            lib.wait.state(a, resp.message, function()
+                for _, text in ipairs(a:take_messages()) do
+                    if string.find(text, "외웠습니다", 1, true) ~= nil then
+                        chuldu_done = true
+                    end
+                end
+                return chuldu_done
+            end, 1000)
+            g_slots[a:name()] = SLOT
             face_drop_marker(ctx, a, true, SLOT)
             if assert_front_contains(a, MARKER_SHARE, "step5-chuldu") == false then
                 return false
@@ -281,7 +311,6 @@ test_suite {
             -- 6) Enter again while occupied
             progress(a, "STEP 6: re-enter occupied instance")
             move_to_source(a, POS[1], POS[2])
-            ctx:sleep(ENTER_WAIT)
             face_drop_marker(ctx, a, true, SLOT)
             if assert_front_contains(a, MARKER_SHARE, "step6") == false then
                 return false
@@ -294,9 +323,7 @@ test_suite {
             ctx:sleep(DESTROY_WAIT)
 
             move_to_instance(a, POS[1], POS[2], SLOT)
-            ctx:sleep(ENTER_WAIT)
-            a:chat(string.format("/맵이동 %s %d %d %d", MAP, DROP_POS[1], DROP_POS[2], SLOT))
-            ctx:sleep(ENTER_WAIT)
+            warp(a, DROP_POS[1], DROP_POS[2], SLOT)
             drop_marker(a, MARKER_C)
             face_drop_marker(ctx, a, true, SLOT)
 
@@ -311,11 +338,9 @@ test_suite {
 
             progress(a, "CLEANUP MAPS")
             move_to_instance(a, POS[1], POS[2], SLOT)
-            ctx:sleep(ENTER_WAIT)
             a:chat("/아이템삭제")
             move_to_source(a, POS[1], POS[2])
             move_to_source(b, POS[1] + 2, POS[2])
-            ctx:sleep(ENTER_WAIT)
             a:chat("/아이템삭제")
             a:clear_inventory()
             b:clear_inventory()

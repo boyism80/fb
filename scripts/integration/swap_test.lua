@@ -2,7 +2,8 @@ local lib      = require("integration.lib")
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
-local DEFAULT_INTERVAL = 100
+-- A swap sends the src slot packet first and the dst slot packet last on the same socket,
+-- so each request waits for the dst packet and the src packet is already applied.
 
 local function test_item_swap_1(ctx, index)
     log("debug", "Starting test_item_swap_1")
@@ -15,10 +16,8 @@ local function test_item_swap_1(ctx, index)
         resp.item_update,
         protocol.swap("ITEM", 1, 2),
         function(packet)
-            return packet.index == 0 or packet.index == 1
+            return packet.index == 1
         end)
-
-    ctx:sleep(DEFAULT_INTERVAL)
 
     if bot:item_slot("도토리") ~= 1 then
         return false
@@ -38,10 +37,8 @@ local function test_item_swap_2(ctx, index)
         resp.item_update,
         protocol.swap("ITEM", 1, 3),
         function(packet)
-            return packet.index == 0 or packet.index == 2
+            return packet.index == 2
         end)
-
-    ctx:sleep(DEFAULT_INTERVAL)
 
     if bot:has_item(0) then
         return false
@@ -55,13 +52,11 @@ local function test_item_swap_3(ctx, index)
     local bot = ctx:bot(index)
 
     bot:request(
-        resp.item_update,
+        resp.item_remove,
         protocol.swap("ITEM", 1, 3),
         function(packet)
-            return packet.index == 0 or packet.index == 1
+            return packet.index == 2
         end)
-
-    ctx:sleep(DEFAULT_INTERVAL)
 
     if bot:has_item(2) then
         return false
@@ -81,10 +76,8 @@ local function test_spell_swap_1(ctx, index)
         resp.spell_update,
         protocol.swap("SPELL", 1, 2),
         function(packet)
-            return packet.index == 0 or packet.index == 1
+            return packet.index == 1
         end)
-
-    ctx:sleep(DEFAULT_INTERVAL)
 
     if bot:spell_slot("누리의기원") ~= 1 then
         return false
@@ -104,10 +97,8 @@ local function test_spell_swap_2(ctx, index)
         resp.spell_update,
         protocol.swap("SPELL", 1, 3),
         function(packet)
-            return packet.index == 0 or packet.index == 2
+            return packet.index == 2
         end)
-
-    ctx:sleep(DEFAULT_INTERVAL)
 
     if bot:spell_slot("바다의기원") ~= 2 then
         return false
@@ -121,13 +112,11 @@ local function test_spell_swap_3(ctx, index)
     local bot = ctx:bot(index)
 
     bot:request(
-        resp.spell_update,
+        resp.spell_remove,
         protocol.swap("SPELL", 1, 3),
         function(packet)
-            return packet.index == 0 or packet.index == 2
+            return packet.index == 2
         end)
-
-    ctx:sleep(DEFAULT_INTERVAL)
 
     if bot:has_spell(2) then
         return false

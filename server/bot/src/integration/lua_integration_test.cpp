@@ -23,6 +23,7 @@
 #include <format>
 #include <memory>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -40,6 +41,11 @@ namespace {
 
 constexpr const char* TEST_REGISTRY_KEY = "fb.bot.integration.test";
 
+constexpr const char* DEFAULT_TEST_LABEL = "regular";
+
+std::vector<std::string> g_only_tests;
+std::string              g_test_label = DEFAULT_TEST_LABEL;
+
 struct suite_capture
 {
     lua_integration_test*           test{nullptr};
@@ -51,6 +57,7 @@ struct discovery_script
     std::filesystem::path path;
     bool                  serial{false};
     bool                  extra_slot{false};
+    std::set<std::string> labels{DEFAULT_TEST_LABEL};
 };
 
 struct discovery_context
@@ -112,6 +119,24 @@ int lua_register_test(lua_State* L)
 
         if (lua_getfield(L, 2, "extra_slot"); lua_isboolean(L, -1))
             script.extra_slot = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+
+        // label = "name" or { "name", ... }
+        lua_getfield(L, 2, "label");
+        if (lua_isstring(L, -1))
+        {
+            script.labels = {lua_tostring(L, -1)};
+        }
+        else if (lua_istable(L, -1))
+        {
+            script.labels.clear();
+            for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) == LUA_TSTRING; i++)
+            {
+                script.labels.insert(lua_tostring(L, -1));
+                lua_pop(L, 1);
+            }
+            lua_pop(L, 1);
+        }
         lua_pop(L, 1);
     }
 
@@ -383,6 +408,28 @@ std::vector<lua_integration_test::discovered_script> lua_integration_test::disco
     result.reserve(context.scripts.size());
     for (auto& script : context.scripts)
     {
+        // Tests named in --test run regardless of their label.
+        if (g_only_tests.empty())
+        {
+            if (script.labels.contains(g_test_label) == false)
+                continue;
+        }
+        else
+        {
+            auto stem     = script.path.stem().string();
+            auto selected = false;
+            for (auto& name : g_only_tests)
+            {
+                if (stem == name || stem == name + "_test")
+                {
+                    selected = true;
+                    break;
+                }
+            }
+            if (selected == false)
+                continue;
+        }
+
         result.push_back(discovered_script{
             .path       = std::move(script.path),
             .serial     = script.serial,
@@ -390,6 +437,12 @@ std::vector<lua_integration_test::discovered_script> lua_integration_test::disco
         });
     }
     return result;
+}
+
+void lua_integration_test::select(std::vector<std::string> names, std::string label)
+{
+    g_only_tests = std::move(names);
+    g_test_label = label.empty() ? DEFAULT_TEST_LABEL : std::move(label);
 }
 
 lua_integration_test::lua_integration_test(game_bot_controller&  controller,

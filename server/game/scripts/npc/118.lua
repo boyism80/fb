@@ -188,11 +188,6 @@ return {
             if sel == nil or sel ~= 1 then
                 return
             end
-            q = me:start_quest(quest.QUEST_JINJIN)
-            if q == nil then
-                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
-                return
-            end
             local code = me:exchange(
                 { ['item'] = { ['초보도시락'] = 1 } },
                 { ['item'] = { ['선장의일기1'] = 1 } }
@@ -202,6 +197,11 @@ return {
                 return
             elseif code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 선장의일기1을 줄 수 없네.', { prev = false, next = false })
+                return
+            end
+            q = me:start_quest(quest.QUEST_JINJIN)
+            if q == nil then
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
                 return
             end
             q:complete()

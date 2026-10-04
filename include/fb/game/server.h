@@ -179,6 +179,7 @@ private:
     // clang-format off
     internal::SavePayload save_payload(const character& ch) const;
     async::task<void>     init_lua();
+    static void           bind_script_error(fb::lua::context& ctx, int argc);
     async::task<void>     init_thread_params();
     void                  init_handlers();
     void                  init_timers();

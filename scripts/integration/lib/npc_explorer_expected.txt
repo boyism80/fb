@@ -1,0 +1,919 @@
+TARGET|0|낙랑|6 seeds
+EXPLORE|낙랑|clear;m=100000;q=1:none|NEXT > NEXT > NEXT > NEXT > NEXT|낙랑의두루마리1+1|end after: <낙랑의두루마리1>을 얻다!!!
+SUSPECT|낙랑|clear;m=100000;q=1:none|NEXT > NEXT > NEXT > NEXT > NEXT|reward without a quest change: 낙랑의두루마리1+1
+EXPLORE|낙랑|clear;m=100000;q=1:none|NEXT > NEXT > NEXT > NEXT > QUIT|낙랑의두루마리1+1|end after: <낙랑의두루마리1>을 얻다!!!
+SUSPECT|낙랑|clear;m=100000;q=1:none|NEXT > NEXT > NEXT > NEXT > QUIT|reward without a quest change: 낙랑의두루마리1+1
+EXPLORE|낙랑|clear;m=100000;q=1:0|NEXT > NEXT > NEXT > NEXT > NEXT|낙랑의두루마리1+1|end after: <낙랑의두루마리1>을 얻다!!!
+SUSPECT|낙랑|clear;m=100000;q=1:0|NEXT > NEXT > NEXT > NEXT > NEXT|reward without a quest change: 낙랑의두루마리1+1
+EXPLORE|낙랑|clear;m=100000;q=1:0|NEXT > NEXT > NEXT > NEXT > QUIT|낙랑의두루마리1+1|end after: <낙랑의두루마리1>을 얻다!!!
+SUSPECT|낙랑|clear;m=100000;q=1:0|NEXT > NEXT > NEXT > NEXT > QUIT|reward without a quest change: 낙랑의두루마리1+1
+EXPLORE|낙랑|clear;m=100000;q=1:0!|NEXT > NEXT > NEXT > NEXT > NEXT|낙랑의두루마리1+1|end after: <낙랑의두루마리1>을 얻다!!!
+SUSPECT|낙랑|clear;m=100000;q=1:0!|NEXT > NEXT > NEXT > NEXT > NEXT|reward without a quest change: 낙랑의두루마리1+1
+EXPLORE|낙랑|clear;m=100000;q=1:0!|NEXT > NEXT > NEXT > NEXT > QUIT|낙랑의두루마리1+1|end after: <낙랑의두루마리1>을 얻다!!!
+SUSPECT|낙랑|clear;m=100000;q=1:0!|NEXT > NEXT > NEXT > NEXT > QUIT|reward without a quest change: 낙랑의두루마리1+1
+TARGET|2|랑구륜|15 seeds
+EXPLORE|랑구륜|clear;m=100000;q=209:1|P:순수한물 > L:물을 정화시키는 방법을 아시나요? > L:무슨 대가인가요? > L:예. 알겠습니다. > NEXT|q209:1>2|end after: 아참 전 국광보다는 홍옥을 좋아하니 꼭 홍옥..
+EXPLORE|랑구륜|clear;m=100000;q=209:1|P:순수한물 > L:물을 정화시키는 방법을 아시나요? > L:무슨 대가인가요? > L:예. 알겠습니다. > QUIT|q209:1>2|end after: 아참 전 국광보다는 홍옥을 좋아하니 꼭 홍옥..
+EXPLORE|랑구륜|clear;m=100000;q=209:1;i=황금호박별=1|P:순수한물 > L:물을 정화시키는 방법을 아시나요? > L:무슨 대가인가요? > L:예. 알겠습니다. > NEXT|q209:1>2|end after: 아참 전 국광보다는 홍옥을 좋아하니 꼭 홍옥..
+EXPLORE|랑구륜|clear;m=100000;q=209:1;i=황금호박별=1|P:순수한물 > L:물을 정화시키는 방법을 아시나요? > L:무슨 대가인가요? > L:예. 알겠습니다. > QUIT|q209:1>2|end after: 아참 전 국광보다는 홍옥을 좋아하니 꼭 홍옥..
+TARGET|32|배전|8 seeds
+EXPLORE|배전|clear;m=100000;q=254:10|NEXT > L:어떻게든 수를 내주세요. > NEXT > NEXT > L:음, 대신 물어드릴께요. > NEXT|money-20000 q254:10>11 창힐독본+1|end after: 수고했네.
+EXPLORE|배전|clear;m=100000;q=254:10|NEXT > L:어떻게든 수를 내주세요. > NEXT > NEXT > L:음, 대신 물어드릴께요. > QUIT|money-20000 q254:10>11 창힐독본+1|end after: 수고했네.
+TARGET|62|방물장수|9 seeds
+EXPLORE|방물장수|clear;m=100000;q=211:none|NEXT > L:예 > NEXT|q211:none>0 물병보관증+1|end after: 물병을 빚는데는 시간이 걸립니다. 여기 보관..
+EXPLORE|방물장수|clear;m=100000;q=211:none|NEXT > L:예 > QUIT|q211:none>0 물병보관증+1|end after: 물병을 빚는데는 시간이 걸립니다. 여기 보관..
+EXPLORE|방물장수|clear;m=100000;q=211:none;i=물병보관증=1|NEXT > L:예 > NEXT|q211:none>0 물병보관증+1|end after: 물병을 빚는데는 시간이 걸립니다. 여기 보관..
+EXPLORE|방물장수|clear;m=100000;q=211:none;i=물병보관증=1|NEXT > L:예 > QUIT|q211:none>0 물병보관증+1|end after: 물병을 빚는데는 시간이 걸립니다. 여기 보관..
+EXPLORE|방물장수|clear;m=100000;q=211:none;i=물병보관증=1;fill|NEXT > L:예 > NEXT|q211:none>0|end after: 물병을 빚는데는 시간이 걸립니다. 여기 보관..
+EXPLORE|방물장수|clear;m=100000;q=211:none;i=물병보관증=1;fill|NEXT > L:예 > QUIT|q211:none>0|end after: 물병을 빚는데는 시간이 걸립니다. 여기 보관..
+SUSPECT|방물장수|clear;m=100000;q=211:none;i=물병보관증=1;fill|NEXT > L:예 > NEXT|full inventory advanced the quest without the reward: full q211:none>0, normal q211:none>0 물병보관증+1
+SUSPECT|방물장수|clear;m=100000;q=211:none;i=물병보관증=1;fill|NEXT > L:예 > QUIT|full inventory advanced the quest without the reward: full q211:none>0, normal q211:none>0 물병보관증+1
+TARGET|75|용왕|40 seeds
+EXPLORE|용왕|clear;m=100000;q=210:none,243:none|L:물론이지오. > NEXT > NEXT > NEXT > L:좋습니다. 제가 해보지요. > NEXT|q210:none>1|end after: 고맙네 어서 정보를 얻어오게나. 복홍이라면 ..
+EXPLORE|용왕|clear;m=100000;q=210:none,243:none|L:물론이지오. > NEXT > NEXT > NEXT > L:좋습니다. 제가 해보지요. > QUIT|q210:none>1|end after: 고맙네 어서 정보를 얻어오게나. 복홍이라면 ..
+EXPLORE|용왕|clear;m=100000;q=210:none,243:none;i=내통문서=1,번역된내통문서=1,수정=3,여의주=1,용궁의보물=1,전략문서=1,크리스탈=3|L:물론이지오. > NEXT > NEXT > NEXT > L:좋습니다. 제가 해보지요. > NEXT|q210:none>1|end after: 고맙네 어서 정보를 얻어오게나. 복홍이라면 ..
+EXPLORE|용왕|clear;m=100000;q=210:none,243:none;i=내통문서=1,번역된내통문서=1,수정=3,여의주=1,용궁의보물=1,전략문서=1,크리스탈=3|L:물론이지오. > NEXT > NEXT > NEXT > L:좋습니다. 제가 해보지요. > QUIT|q210:none>1|end after: 고맙네 어서 정보를 얻어오게나. 복홍이라면 ..
+EXPLORE|용왕|clear;m=100000;q=210:2,243:none|NEXT > L:좋습니다. > NEXT > PREV|q210:2>3|open: 고맙네, 내 듣기로 게장군이 더 강한 힘을 얻�..
+EXPLORE|용왕|clear;m=100000;q=210:2,243:none|NEXT > L:좋습니다. > NEXT > QUIT|q210:2>3|end after: 하지만 게장군은 자기 수하들을 극히 아낀다 ..
+EXPLORE|용왕|clear;m=100000;q=210:2,243:none|NEXT > L:좋습니다. > QUIT|q210:2>3|end after: 고맙네, 내 듣기로 게장군이 더 강한 힘을 얻�..
+EXPLORE|용왕|clear;m=100000;q=210:2,243:none;i=내통문서=1,번역된내통문서=1,수정=3,여의주=1,용궁의보물=1,전략문서=1,크리스탈=3|NEXT > L:좋습니다. > NEXT > PREV|q210:2>3|open: 고맙네, 내 듣기로 게장군이 더 강한 힘을 얻�..
+EXPLORE|용왕|clear;m=100000;q=210:2,243:none;i=내통문서=1,번역된내통문서=1,수정=3,여의주=1,용궁의보물=1,전략문서=1,크리스탈=3|NEXT > L:좋습니다. > NEXT > QUIT|q210:2>3|end after: 하지만 게장군은 자기 수하들을 극히 아낀다 ..
+EXPLORE|용왕|clear;m=100000;q=210:2,243:none;i=내통문서=1,번역된내통문서=1,수정=3,여의주=1,용궁의보물=1,전략문서=1,크리스탈=3|NEXT > L:좋습니다. > QUIT|q210:2>3|end after: 고맙네, 내 듣기로 게장군이 더 강한 힘을 얻�..
+EXPLORE|용왕|clear;m=100000;q=210:10,243:none;i=내통문서=1,번역된내통문서=1,수정=3,여의주=1,용궁의보물=1,전략문서=1,크리스탈=3|L:네, 여기 있습니다. > NEXT|q210:10>11 번역된내통문서-1 인어장군지팡이+1|end after: 고맙네. 이 지팡이를 받아 주게. 그리고 앞으�..
+EXPLORE|용왕|clear;m=100000;q=210:10,243:none;i=내통문서=1,번역된내통문서=1,수정=3,여의주=1,용궁의보물=1,전략문서=1,크리스탈=3|L:네, 여기 있습니다. > QUIT|q210:10>11 번역된내통문서-1 인어장군지팡이+1|end after: 고맙네. 이 지팡이를 받아 주게. 그리고 앞으�..
+TARGET|76|좌선녀|8 seeds
+EXPLORE|좌선녀|clear;m=100000;q=208:none|NEXT > NEXT > NEXT > L:아.물론입니다. > NEXT > NEXT|q208:none>1|end after: 그럼 부탁드리겠습니다.
+EXPLORE|좌선녀|clear;m=100000;q=208:none|NEXT > NEXT > NEXT > L:아.물론입니다. > NEXT > QUIT|q208:none>1|end after: 그럼 부탁드리겠습니다.
+EXPLORE|좌선녀|clear;m=100000;q=208:none|NEXT > NEXT > NEXT > L:아.물론입니다. > PREV|q208:none>1|open: 그럼 부탁드리겠습니다.
+EXPLORE|좌선녀|clear;m=100000;q=208:none|NEXT > NEXT > NEXT > L:아.물론입니다. > QUIT|q208:none>1|end after: <bot>님 정말 감사합니다. 부탁드릴 재료는 [게..
+TARGET|77|우선녀|24 seeds
+EXPLORE|우선녀|clear;m=100000;q=209:none|NEXT > NEXT > L:물론입니다. > NEXT|q209:none>1|end after: 고마워요. 한시라도 빨리 정화하는 방법을 알..
+EXPLORE|우선녀|clear;m=100000;q=209:none|NEXT > NEXT > L:물론입니다. > QUIT|q209:none>1|end after: 고마워요. 한시라도 빨리 정화하는 방법을 알..
+EXPLORE|우선녀|clear;m=100000;q=209:none;i=숯의정화=3,정화비서=1|NEXT > NEXT > L:물론입니다. > NEXT|q209:none>1|end after: 고마워요. 한시라도 빨리 정화하는 방법을 알..
+EXPLORE|우선녀|clear;m=100000;q=209:none;i=숯의정화=3,정화비서=1|NEXT > NEXT > L:물론입니다. > QUIT|q209:none>1|end after: 고마워요. 한시라도 빨리 정화하는 방법을 알..
+EXPLORE|우선녀|clear;m=100000;q=209:3;i=숯의정화=3,정화비서=1|NEXT > NEXT > NEXT > NEXT|q209:3>4 정화비서-1|end after: 숯의정화를 만들기 위해서는 불의 힘이 깃든 ..
+EXPLORE|우선녀|clear;m=100000;q=209:4;i=숯의정화=3,정화비서=1|NEXT > NEXT|q209:4>5! 숯의정화-3 정화의방패+1|end after: 이건 감사의 뜻으로 드리는 것이니까 받아두�..
+EXPLORE|우선녀|clear;m=100000;q=209:4;i=숯의정화=3,정화비서=1|NEXT > QUIT|q209:4>5! 숯의정화-3 정화의방패+1|end after: 이건 감사의 뜻으로 드리는 것이니까 받아두�..
+EXPLORE|우선녀|clear;m=100000;q=209:4;i=숯의정화=3,정화비서=1|PREV|q209:4>5! 숯의정화-3 정화의방패+1|open: 이건 감사의 뜻으로 드리는 것이니까 받아두�..
+EXPLORE|우선녀|clear;m=100000;q=209:4;i=숯의정화=3,정화비서=1|QUIT|q209:4>5! 숯의정화-3 정화의방패+1|end after: 아. 이제야 용궁이 다시 깨끗함을 찾을 수 있�..
+TARGET|90|천성현|15 seeds
+TARGET|95|무타|30 seeds
+EXPLORE|무타|clear;m=100000;q=231:0|NEXT > NEXT > NEXT > L:제가 오제의 음모를 막아보겠습니다. > NEXT > NEXT > NEXT > NEXT > NEXT|q231:0>1|end after: 먼저 장안성 성곽 부근에 위치한 신전으로 가..
+EXPLORE|무타|clear;m=100000;q=231:0|NEXT > NEXT > NEXT > L:제가 오제의 음모를 막아보겠습니다. > NEXT > NEXT > NEXT > NEXT > QUIT|q231:0>1|end after: 먼저 장안성 성곽 부근에 위치한 신전으로 가..
+EXPLORE|무타|clear;m=100000;q=231:0;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > NEXT > L:제가 오제의 음모를 막아보겠습니다. > NEXT > NEXT > NEXT > NEXT > NEXT|q231:0>1|end after: 먼저 장안성 성곽 부근에 위치한 신전으로 가..
+EXPLORE|무타|clear;m=100000;q=231:0;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > NEXT > L:제가 오제의 음모를 막아보겠습니다. > NEXT > NEXT > NEXT > NEXT > QUIT|q231:0>1|end after: 먼저 장안성 성곽 부근에 위치한 신전으로 가..
+EXPLORE|무타|clear;m=100000;q=231:1;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > PREV|q231:1>2 소호의증표-1|open: 소호를 잘 물리쳐 주었네. 하지만, 이제 시작�..
+EXPLORE|무타|clear;m=100000;q=231:1;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > QUIT|q231:1>2 소호의증표-1|end after: 주의할 점은 임무를 완수하거든 곧장 나에게 ..
+EXPLORE|무타|clear;m=100000;q=231:1;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|QUIT|q231:1>2 소호의증표-1|end after: 소호를 잘 물리쳐 주었네. 하지만, 이제 시작�..
+EXPLORE|무타|clear;m=100000;q=231:2;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > PREV|q231:2>3 전욱의증표-1|open: 전욱까지 제거하다니, 잘 해주고 있네. 하지�..
+EXPLORE|무타|clear;m=100000;q=231:2;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > QUIT|q231:2>3 전욱의증표-1|end after: 주의할 점은 임무를 완수하거든 곧장 나에게 ..
+EXPLORE|무타|clear;m=100000;q=231:2;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|QUIT|q231:2>3 전욱의증표-1|end after: 전욱까지 제거하다니, 잘 해주고 있네. 하지�..
+EXPLORE|무타|clear;m=100000;q=231:3;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > PREV|q231:3>4 제곡의증표-1|open: 제곡을 물리치다니, 대단하네. 하지만, 다음 �..
+EXPLORE|무타|clear;m=100000;q=231:3;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > QUIT|q231:3>4 제곡의증표-1|end after: 주의할 점은 임무를 완수하거든 곧장 나에게 ..
+EXPLORE|무타|clear;m=100000;q=231:3;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|QUIT|q231:3>4 제곡의증표-1|end after: 제곡을 물리치다니, 대단하네. 하지만, 다음 �..
+EXPLORE|무타|clear;m=100000;q=231:4;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > PREV|q231:4>5 요제의증표-1|open: 훌륭하네. 요제까지... 인간으로서 신과 대등�..
+EXPLORE|무타|clear;m=100000;q=231:4;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > QUIT|q231:4>5 요제의증표-1|end after: 주의할 점은 임무를 완수하거든 곧장 나에게 ..
+EXPLORE|무타|clear;m=100000;q=231:4;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|QUIT|q231:4>5 요제의증표-1|end after: 훌륭하네. 요제까지... 인간으로서 신과 대등�..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > L:이 땅이 아직 건재한데, 포기하긴 이릅니다. > NEXT > PREV|q231:5>6 순제의증표-1|open: 자네의 기개가 대단하군. 그래, 아직은 아니�..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > L:이 땅이 아직 건재한데, 포기하긴 이릅니다. > NEXT > QUIT|q231:5>6 순제의증표-1|end after: 주의할 점은 임무를 완수하거든 곧장 나에게 ..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > L:이 땅이 아직 건재한데, 포기하긴 이릅니다. > PREV|q231:5>6 순제의증표-1|open: 그렇다면 자네는 어떻게 하겠나?
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > L:이 땅이 아직 건재한데, 포기하긴 이릅니다. > QUIT|q231:5>6 순제의증표-1|end after: 자네의 기개가 대단하군. 그래, 아직은 아니�..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > L:만고를 제거해야 하지 않겠습니까?|q231:5>6 순제의증표-1|open: 자네의 기개가 대단하군. 그래, 아직은 아니�..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > PREV|q231:5>6 순제의증표-1|open: 오~ 이럴수가... 바로 그것이었나? 그때문에 �..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > NEXT > QUIT|q231:5>6 순제의증표-1|end after: 그렇다면 자네는 어떻게 하겠나?
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > PREV|q231:5>6 순제의증표-1|open: 대단하네! 드디어 오제를 모두 멸하였군. 휴�..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > QUIT|q231:5>6 순제의증표-1|end after: 오~ 이럴수가... 바로 그것이었나? 그때문에 �..
+EXPLORE|무타|clear;m=100000;q=231:5;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|QUIT|q231:5>6 순제의증표-1|end after: 대단하네! 드디어 오제를 모두 멸하였군. 휴�..
+EXPLORE|무타|clear;m=100000;q=231:6;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > PREV|q231:6>7|open: 자네를 다시 보게 되어 반가우면서도 놀랍기 ..
+EXPLORE|무타|clear;m=100000;q=231:6;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|NEXT > QUIT|q231:6>7|end after: 반고의 심장을 들고 천상계의 천성랑을 찾아�..
+EXPLORE|무타|clear;m=100000;q=231:6;i=반고의심장=1,소호의증표=1,순제의증표=1,요제의증표=1,전욱의증표=1,제곡의증표=1|QUIT|q231:6>7|end after: 자네를 다시 보게 되어 반가우면서도 놀랍기 ..
+TARGET|96|천성랑|12 seeds
+TARGET|105|주막행자|10 seeds
+EXPLORE|주막행자|clear;m=100000;q=188:none|NEXT > NEXT > NEXT|q188:none>1|end after: 길은 아직 나도 확실히는 모르겠고, 일단 성 �..
+EXPLORE|주막행자|clear;m=100000;q=188:4|NEXT > NEXT|q188:4>5|end after: 언제 가냐고? 마음 내키면 언제든지 갈 생각�..
+TARGET|106|황만령|8 seeds
+TARGET|107|도재영|21 seeds
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:none>1|open: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:none>1|end after: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > PREV|q196:none>1|open: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:none>1|end after: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:황비연 퀘스트 > L:상해에서 물건을 전해달라는 부탁을 받고 왔습니다. > L:예, 실은... > NEXT > NEXT > L:..... > NEXT > NEXT|q195:2>3 노비문서-1 보패+1|end after: 아마, 아무리 의적이라고 해도 도둑직을 한 �..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:none>1|open: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:none>1|end after: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > PREV|q196:none>1|open: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:2,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:none>1|end after: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:none>1|open: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:none>1|end after: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > PREV|q196:none>1|open: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:none>1|end after: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:none>1|open: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:none>1|end after: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > PREV|q196:none>1|open: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:3,196:none;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:none>1|end after: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:0>1|open: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:0>1|end after: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > PREV|q196:0>1|open: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:0>1|end after: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:0>1|open: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:0>1|end after: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > PREV|q196:0>1|open: 도삭산의 토끼들은 151층에서 200층에서 나온�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:0;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:0>1|end after: 아.. 정말 감사합니다. <bot>님은 마음도 넓으�..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:1;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > NEXT|q196:1>2 강철의구두+1 약초가지-1 약초잎사귀-5|end after: 약소하지만 보답으로 강철의구두를 드리겠습..
+EXPLORE|도재영|clear;m=100000;q=195:none,196:1;i=노비문서=1,약초가지=1,약초잎사귀=5|L:약초 퀘스트 > NEXT > QUIT|q196:1>2 강철의구두+1 약초가지-1 약초잎사귀-5|end after: 약소하지만 보답으로 강철의구두를 드리겠습..
+TARGET|108|도성연|18 seeds
+EXPLORE|도성연|clear;m=100000;q=196:2|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > NEXT > L:네, 보내주십시오.|q196:2>3|end after: 지금 지름길로 292층으로 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:2|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > NEXT > L:나중에 가겠습니다.|q196:2>3|end after: 지금 지름길로 292층으로 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:2|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > NEXT > QUIT|q196:2>3|end after: 지금 지름길로 292층으로 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:2|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:2>3|open: 오오. 고맙소. 인어의방울..은 도삭산고양이�..
+EXPLORE|도성연|clear;m=100000;q=196:2|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:2>3|end after: 뫼롱씨는 내 생명의 은인이니 292층으로 가는 ..
+EXPLORE|도성연|clear;m=100000;q=196:2|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:2>3|end after: 오오. 고맙소. 인어의방울..은 도삭산고양이�..
+EXPLORE|도성연|clear;m=100000;q=196:2;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > NEXT > L:네, 보내주십시오.|q196:2>3|end after: 지금 지름길로 292층으로 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:2;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > NEXT > L:나중에 가겠습니다.|q196:2>3|end after: 지금 지름길로 292층으로 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:2;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > NEXT > QUIT|q196:2>3|end after: 지금 지름길로 292층으로 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:2;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > PREV|q196:2>3|open: 오오. 고맙소. 인어의방울..은 도삭산고양이�..
+EXPLORE|도성연|clear;m=100000;q=196:2;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > NEXT > QUIT|q196:2>3|end after: 뫼롱씨는 내 생명의 은인이니 292층으로 가는 ..
+EXPLORE|도성연|clear;m=100000;q=196:2;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > NEXT > L:제가 구해드리겠습니다. > QUIT|q196:2>3|end after: 오오. 고맙소. 인어의방울..은 도삭산고양이�..
+EXPLORE|도성연|clear;m=100000;q=196:3;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > L:네, 구하는 김에 거울도 구하지요. > NEXT > L:네, 보내주십시오.|q196:3>4 인어의방울-1|end after: 지금 지름길로 292층에 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:3;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > L:네, 구하는 김에 거울도 구하지요. > NEXT > L:나중에 가겠습니다.|q196:3>4 인어의방울-1|end after: 지금 지름길로 292층에 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:3;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > L:네, 구하는 김에 거울도 구하지요. > NEXT > QUIT|q196:3>4 인어의방울-1|end after: 지금 지름길로 292층에 가시겠소?
+EXPLORE|도성연|clear;m=100000;q=196:3;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT > L:네, 구하는 김에 거울도 구하지요. > QUIT|q196:3>4 인어의방울-1|end after: 정말 고맙소. 인어의거울은.. 도삭산이쁘니인..
+EXPLORE|도성연|clear;m=100000;q=196:4;i=인어의거울=1,인어의방울=1|NEXT > NEXT > NEXT|q196:4>5 봉마의목걸이+1 인어의거울-1|end after: 뭐 어쨌든 기념으로 드릴테니.. 잘 쓰시오.. �..
+EXPLORE|도성연|clear;m=100000;q=196:4;i=인어의거울=1,인어의방울=1|NEXT > NEXT > QUIT|q196:4>5 봉마의목걸이+1 인어의거울-1|end after: 뭐 어쨌든 기념으로 드릴테니.. 잘 쓰시오.. �..
+TARGET|110|도주영|10 seeds
+EXPLORE|도주영|clear;m=100000;q=196:5|NEXT > NEXT > NEXT > NEXT > L:그런 부탁이라면 기꺼이~! > NEXT|q196:5>6|end after: 씨앗은 해파리 괴물들을 처치하면 얻을 수 있..
+EXPLORE|도주영|clear;m=100000;q=196:5|NEXT > NEXT > NEXT > NEXT > L:그런 부탁이라면 기꺼이~! > QUIT|q196:5>6|end after: 씨앗은 해파리 괴물들을 처치하면 얻을 수 있..
+TARGET|113|원주민정령사|27 seeds
+EXPLORE|원주민정령사|clear;m=100000;q=251:12,191:none|L:문화재 유출에 대해 듣고자 합니다. > NEXT > NEXT|q251:12>13|end after: 보름달이 뜨면 정령들이 분노를 이기지 못하�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:12,191:none|L:문화재 유출에 대해 듣고자 합니다. > NEXT > QUIT|q251:12>13|end after: 보름달이 뜨면 정령들이 분노를 이기지 못하�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:12,191:none;i=여신의이슬=1,자연의인장=1|L:문화재 유출에 대해 듣고자 합니다. > NEXT > NEXT|q251:12>13|end after: 보름달이 뜨면 정령들이 분노를 이기지 못하�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:12,191:none;i=여신의이슬=1,자연의인장=1|L:문화재 유출에 대해 듣고자 합니다. > NEXT > QUIT|q251:12>13|end after: 보름달이 뜨면 정령들이 분노를 이기지 못하�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의갑주를 주세요.(남자전사용) > NEXT|q191:2>3 자연의인장-1 황혼의갑주+1|end after: 황혼의갑주가 완성되었다.. 황혼의갑주에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의갑주를 주세요.(남자전사용) > QUIT|q191:2>3 자연의인장-1 황혼의갑주+1|end after: 황혼의갑주가 완성되었다.. 황혼의갑주에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여명의연갑을 주세요.(여자전사용) > NEXT|q191:2>3 여명의연갑+1 자연의인장-1|end after: 여명의연갑이 완성되었다.. 여명의연갑에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여명의연갑을 주세요.(여자전사용) > QUIT|q191:2>3 여명의연갑+1 자연의인장-1|end after: 여명의연갑이 완성되었다.. 여명의연갑에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의활복을 주세요.(남자도적용) > NEXT|q191:2>3 자연의인장-1 황혼의활복+1|end after: 황혼의활복이 완성되었다.. 황혼의활복에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의활복을 주세요.(남자도적용) > QUIT|q191:2>3 자연의인장-1 황혼의활복+1|end after: 황혼의활복이 완성되었다.. 황혼의활복에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여병의도복을 주세요.(여자도적용) > NEXT|q191:2>3 여명의도복+1 자연의인장-1|end after: 여명의도복이 완성되었다.. 여명의도복에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여병의도복을 주세요.(여자도적용) > QUIT|q191:2>3 여명의도복+1 자연의인장-1|end after: 여명의도복이 완성되었다.. 여명의도복에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의도포를 주세요.(남자주술사용) > NEXT|q191:2>3 자연의인장-1 황혼의도포+1|end after: 황혼의도포가 완성되었다.. 황혼의도포에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의도포를 주세요.(남자주술사용) > QUIT|q191:2>3 자연의인장-1 황혼의도포+1|end after: 황혼의도포가 완성되었다.. 황혼의도포에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여명의치마를 주세요.(여자주술사용) > NEXT|q191:2>3 여명의치마+1 자연의인장-1|end after: 여명의치마가 완성되었다.. 여명의치마에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여명의치마를 주세요.(여자주술사용) > QUIT|q191:2>3 여명의치마+1 자연의인장-1|end after: 여명의치마가 완성되었다.. 여명의치마에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의장삼을 주세요.(남자도사용) > NEXT|q191:2>3 자연의인장-1 황혼의장삼+1|end after: 황혼의장삼이 완성되었다.. 황혼의장삼에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:황혼의장삼을 주세요.(남자도사용) > QUIT|q191:2>3 자연의인장-1 황혼의장삼+1|end after: 황혼의장삼이 완성되었다.. 황혼의장삼에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여명의통옷을 주세요.(여자도사용) > NEXT|q191:2>3 여명의통옷+1 자연의인장-1|end after: 여명의통옷이 완성되었다.. 여명의통옷에 깃�..
+EXPLORE|원주민정령사|clear;m=100000;q=251:none,191:2;i=여신의이슬=1,자연의인장=1|L:여명의통옷을 주세요.(여자도사용) > QUIT|q191:2>3 여명의통옷+1 자연의인장-1|end after: 여명의통옷이 완성되었다.. 여명의통옷에 깃�..
+TARGET|115|준준|14 seeds
+EXPLORE|준준|clear;m=100000;q=184:none,190:5|P:문화재보호공무원 > NEXT > L:네, 구해 보겠습니다. > NEXT|q184:none>0|end after: 그럼 부탁하네. 주로 토템들이 도굴당하고 있..
+EXPLORE|준준|clear;m=100000;q=184:none,190:5|P:문화재보호공무원 > NEXT > L:네, 구해 보겠습니다. > QUIT|q184:none>0|end after: 그럼 부탁하네. 주로 토템들이 도굴당하고 있..
+TARGET|117|조염|21 seeds
+EXPLORE|조염|clear;m=100000;q=251:none,181:none|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:none,181:none|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:none,181:none;i=봉래산전설=1|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:none,181:none;i=봉래산전설=1|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:0,181:none|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:0,181:none|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:0,181:none;i=봉래산전설=1|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:0,181:none;i=봉래산전설=1|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:4,181:none|L:참. 봉래산 전설말이에요. > L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:4,181:none|L:참. 봉래산 전설말이에요. > L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:4,181:none;i=봉래산전설=1|L:참. 봉래산 전설말이에요. > L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:4,181:none;i=봉래산전설=1|L:참. 봉래산 전설말이에요. > L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:7,181:none|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:7,181:none|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:7,181:none;i=봉래산전설=1|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:7,181:none;i=봉래산전설=1|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15,181:none|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15,181:none|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15,181:none;i=봉래산전설=1|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15,181:none;i=봉래산전설=1|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15!,181:none|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15!,181:none|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15!,181:none;i=봉래산전설=1|L:예, 주세요. > NEXT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:15!,181:none;i=봉래산전설=1|L:예, 주세요. > QUIT|q181:none>0 봉래산전설+1|end after: 여기있네. 그럼 재밌게 읽게나.
+EXPLORE|조염|clear;m=100000;q=251:none,181:0|NEXT > L:봉래산전설을 다시 읽고싶어요. 1000전에 주세요. > NEXT|money-1000 봉래산전설+1|end after: 다시 잘 읽어봐!
+EXPLORE|조염|clear;m=100000;q=251:none,181:0|NEXT > L:봉래산전설을 다시 읽고싶어요. 1000전에 주세요. > QUIT|money-1000 봉래산전설+1|end after: 다시 잘 읽어봐!
+TARGET|118|진진|33 seeds
+EXPLORE|진진|clear;m=100000;q=251:none,185:none,190:1;i=초보도시락=1|L:네, 그러지요. > NEXT|q185:none>0! q190:1>2 선장의일기1+1 초보도시락-1|end after: 고맙소! 일이 급해서 도시락 만들 여유가 없�..
+EXPLORE|진진|clear;m=100000;q=251:none,185:none,190:1;i=초보도시락=1|L:네, 그러지요. > QUIT|q185:none>0! q190:1>2 선장의일기1+1 초보도시락-1|end after: 고맙소! 일이 급해서 도시락 만들 여유가 없�..
+TARGET|119|찬찬|8 seeds
+TARGET|120|탕탕대감|21 seeds
+EXPLORE|탕탕대감|clear;m=100000;q=183:none,190:4|NEXT > L:네, 구해다 드리겠습니다. > NEXT|q183:none>0|end after: 나름대로 보답은 하겠어. 좀 서둘러만 줬음 �..
+EXPLORE|탕탕대감|clear;m=100000;q=183:none,190:4|NEXT > L:네, 구해다 드리겠습니다. > QUIT|q183:none>0|end after: 나름대로 보답은 하겠어. 좀 서둘러만 줬음 �..
+EXPLORE|탕탕대감|clear;m=100000;q=183:none,190:4;i=태존도=1|NEXT > L:네, 구해다 드리겠습니다. > NEXT|q183:none>0|end after: 나름대로 보답은 하겠어. 좀 서둘러만 줬음 �..
+EXPLORE|탕탕대감|clear;m=100000;q=183:none,190:4;i=태존도=1|NEXT > L:네, 구해다 드리겠습니다. > QUIT|q183:none>0|end after: 나름대로 보답은 하겠어. 좀 서둘러만 줬음 �..
+TARGET|121|퉁퉁대감|21 seeds
+EXPLORE|퉁퉁대감|clear;m=100000;q=186:none,190:2|L:네, 구해드리지요. > NEXT|q186:none>0|end after: 내 좋은걸로 보답할테니 어서 다녀오게. 잊지..
+EXPLORE|퉁퉁대감|clear;m=100000;q=186:none,190:2|L:네, 구해드리지요. > QUIT|q186:none>0|end after: 내 좋은걸로 보답할테니 어서 다녀오게. 잊지..
+EXPLORE|퉁퉁대감|clear;m=100000;q=186:none,190:2;i=호박=10|L:네, 구해드리지요. > NEXT|q186:none>0|end after: 내 좋은걸로 보답할테니 어서 다녀오게. 잊지..
+EXPLORE|퉁퉁대감|clear;m=100000;q=186:none,190:2;i=호박=10|L:네, 구해드리지요. > QUIT|q186:none>0|end after: 내 좋은걸로 보답할테니 어서 다녀오게. 잊지..
+TARGET|122|통통대감|33 seeds
+EXPLORE|통통대감|clear;m=100000;q=251:5,187:none,190:none|L:조염에게 준 귀중한 문화재는 어디서 난거죠? > NEXT > NEXT > NEXT|q251:5>6|end after: 에이! 진진처럼 게으르고 굼뜨고 못미더운 사..
+EXPLORE|통통대감|clear;m=100000;q=251:5,187:none,190:none|L:조염에게 준 귀중한 문화재는 어디서 난거죠? > NEXT > NEXT > QUIT|q251:5>6|end after: 에이! 진진처럼 게으르고 굼뜨고 못미더운 사..
+EXPLORE|통통대감|clear;m=100000;q=251:5,187:none,190:none;i=망치=1|L:조염에게 준 귀중한 문화재는 어디서 난거죠? > NEXT > NEXT > NEXT|q251:5>6|end after: 에이! 진진처럼 게으르고 굼뜨고 못미더운 사..
+EXPLORE|통통대감|clear;m=100000;q=251:5,187:none,190:none;i=망치=1|L:조염에게 준 귀중한 문화재는 어디서 난거죠? > NEXT > NEXT > QUIT|q251:5>6|end after: 에이! 진진처럼 게으르고 굼뜨고 못미더운 사..
+EXPLORE|통통대감|clear;m=100000;q=251:none,187:none,190:3|NEXT > L:네, 구해드리겠습니다. > NEXT|q187:none>0|end after: 이 일기같은건 잘 보관하고 있을테니, 조심해..
+EXPLORE|통통대감|clear;m=100000;q=251:none,187:none,190:3|NEXT > L:네, 구해드리겠습니다. > QUIT|q187:none>0|end after: 이 일기같은건 잘 보관하고 있을테니, 조심해..
+EXPLORE|통통대감|clear;m=100000;q=251:none,187:none,190:3;i=망치=1|NEXT > L:네, 구해드리겠습니다. > NEXT|q187:none>0|end after: 이 일기같은건 잘 보관하고 있을테니, 조심해..
+EXPLORE|통통대감|clear;m=100000;q=251:none,187:none,190:3;i=망치=1|NEXT > L:네, 구해드리겠습니다. > QUIT|q187:none>0|end after: 이 일기같은건 잘 보관하고 있을테니, 조심해..
+TARGET|126|화화|18 seeds
+TARGET|133|돌순이|16 seeds
+EXPLORE|돌순이|clear;m=100000;q=265:5,251:none|NEXT > NEXT > NEXT > NEXT|q265:5>6|end after: 아, 정말 다들 똑같이 생겨서 잘은 모르겠지�..
+TARGET|134|돌돌이|10 seeds
+TARGET|135|남문행자|12 seeds
+EXPLORE|남문행자|clear;m=100000;q=188:1|NEXT > NEXT|q188:1>2|end after: 환상의 섬으로 가려면 배를 타야 하는데, 남�..
+EXPLORE|남문행자|clear;m=100000;q=188:5|NEXT > NEXT|q188:5>6|end after: 다녀와서 사람들이 하는 이야기를 듣고서야 �..
+TARGET|136|선착행자|12 seeds
+EXPLORE|선착행자|clear;m=100000;q=188:2|NEXT > NEXT|q188:2>3|end after: 그럼 샛길이 나오는데, 좀 더 걸어가면 또 다�..
+EXPLORE|선착행자|clear;m=100000;q=188:6|NEXT > NEXT|q188:6>7|end after: 특히 그곳에서만 구할 수 있다는 요리를 이야..
+TARGET|138|마석주|18 seeds
+EXPLORE|마석주|clear;m=100000;q=218:none|NEXT > NEXT > NEXT > NEXT > L:네, 찾아가봐야 겠군요. > NEXT|q218:none>1|end after: 그럼 보물을 찾으시면 저에게도 꼭 보여주셔�..
+EXPLORE|마석주|clear;m=100000;q=218:none|NEXT > NEXT > NEXT > NEXT > L:네, 찾아가봐야 겠군요. > QUIT|q218:none>1|end after: 그럼 보물을 찾으시면 저에게도 꼭 보여주셔�..
+EXPLORE|마석주|clear;m=100000;q=218:none;i=산신의바늘=1,산신의보물지도=1,산신의비단=1|NEXT > NEXT > NEXT > NEXT > L:네, 찾아가봐야 겠군요. > NEXT|q218:none>1|end after: 그럼 보물을 찾으시면 저에게도 꼭 보여주셔�..
+EXPLORE|마석주|clear;m=100000;q=218:none;i=산신의바늘=1,산신의보물지도=1,산신의비단=1|NEXT > NEXT > NEXT > NEXT > L:네, 찾아가봐야 겠군요. > QUIT|q218:none>1|end after: 그럼 보물을 찾으시면 저에게도 꼭 보여주셔�..
+EXPLORE|마석주|clear;m=100000;q=218:1;i=산신의바늘=1,산신의보물지도=1,산신의비단=1|NEXT|q218:1>2|end after: 오오! 보물지도를 구하셨군요! 어서 빨리 보�..
+EXPLORE|마석주|clear;m=100000;q=218:2;i=산신의바늘=1,산신의보물지도=1,산신의비단=1|NEXT > L:네 그럼 부탁합니다. > NEXT > NEXT|q218:2>3 산신의비단-1|end after: 그런데 이 옷감.. 너무 튼튼해서 보통 바늘로�..
+EXPLORE|마석주|clear;m=100000;q=218:3;i=산신의바늘=1,산신의보물지도=1,산신의비단=1|NEXT > NEXT > NEXT > L:산신의천수를 만들어주십시오 > NEXT > NEXT > NEXT|q218:3>3! 산신의바늘-1 산신의천수+1|end after: 여기 있습니다! 멋진 옷을 만들게 되어 정말 �..
+EXPLORE|마석주|clear;m=100000;q=218:3;i=산신의바늘=1,산신의보물지도=1,산신의비단=1|NEXT > NEXT > NEXT > L:산신의천수를 만들어주십시오 > NEXT > NEXT > QUIT|q218:3>3! 산신의바늘-1 산신의천수+1|end after: 여기 있습니다! 멋진 옷을 만들게 되어 정말 �..
+TARGET|143|중국공주|9 seeds
+EXPLORE|중국공주|clear;m=100000;q=205:none|NEXT > NEXT > L:걱정마세요. 제가 꼭 찾아드리죠. > NEXT|q205:none>0|end after: 정말 고마워요. 그럼 믿고 기다리죠.
+EXPLORE|중국공주|clear;m=100000;q=205:none|NEXT > NEXT > L:걱정마세요. 제가 꼭 찾아드리죠. > QUIT|q205:none>0|end after: 정말 고마워요. 그럼 믿고 기다리죠.
+EXPLORE|중국공주|clear;m=100000;q=205:none;i=공주의반지=1|NEXT > NEXT > L:걱정마세요. 제가 꼭 찾아드리죠. > NEXT|q205:none>0|end after: 정말 고마워요. 그럼 믿고 기다리죠.
+EXPLORE|중국공주|clear;m=100000;q=205:none;i=공주의반지=1|NEXT > NEXT > L:걱정마세요. 제가 꼭 찾아드리죠. > QUIT|q205:none>0|end after: 정말 고마워요. 그럼 믿고 기다리죠.
+EXPLORE|중국공주|clear;m=100000;q=205:0;i=공주의반지=1|NEXT|q205:0>0! 공주의반지-1 청옥반지+1|end after: 정말 감사해요. 정말... 이 은혜는 잊지 못할�..
+TARGET|144|거북장군|24 seeds
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:none|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:none|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:none|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:0,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > NEXT > PREV|q214:0>0! 주홍투구+1 토끼의간-1|open: <bot>님은 저희 용궁의 은인이십니다. 감사의 �..
+EXPLORE|거북장군|clear;m=100000;q=214:0,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > NEXT > QUIT|q214:0>0! 주홍투구+1 토끼의간-1|end after: 그럼 이 투구를 잘 쓰시길...
+EXPLORE|거북장군|clear;m=100000;q=214:0,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > PREV|q214:0>0! 주홍투구+1 토끼의간-1|open: 아아.. 감사합니다. 이것으로 용왕님도 건강�..
+EXPLORE|거북장군|clear;m=100000;q=214:0,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > QUIT|q214:0>0! 주홍투구+1 토끼의간-1|end after: <bot>님은 저희 용궁의 은인이십니다. 감사의 �..
+EXPLORE|거북장군|clear;m=100000;q=214:0,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > QUIT|q214:0>0! 주홍투구+1 토끼의간-1|end after: 아아.. 감사합니다. 이것으로 용왕님도 건강�..
+EXPLORE|거북장군|clear;m=100000;q=214:1,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > NEXT > PREV|q214:1>1! 주홍투구+1 토끼의간-1|open: <bot>님은 저희 용궁의 은인이십니다. 감사의 �..
+EXPLORE|거북장군|clear;m=100000;q=214:1,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > NEXT > QUIT|q214:1>1! 주홍투구+1 토끼의간-1|end after: 그럼 이 투구를 잘 쓰시길...
+EXPLORE|거북장군|clear;m=100000;q=214:1,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > PREV|q214:1>1! 주홍투구+1 토끼의간-1|open: 아아.. 감사합니다. 이것으로 용왕님도 건강�..
+EXPLORE|거북장군|clear;m=100000;q=214:1,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > NEXT > QUIT|q214:1>1! 주홍투구+1 토끼의간-1|end after: <bot>님은 저희 용궁의 은인이십니다. 감사의 �..
+EXPLORE|거북장군|clear;m=100000;q=214:1,232:none;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > L:네, 가져가세요. > QUIT|q214:1>1! 주홍투구+1 토끼의간-1|end after: 아아.. 감사합니다. 이것으로 용왕님도 건강�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:0|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:0|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:0|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:0;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:0;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:0;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:1;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:1;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:1;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:12|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:12|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:12|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:12;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:12;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:12;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:13|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:13|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:13|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:13;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > PREV|q214:none>1|open: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:13;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > NEXT > QUIT|q214:none>1|end after: 장터의 장돌뱅이가 토끼가 어디에 있는지 알�..
+EXPLORE|거북장군|clear;m=100000;q=214:none,232:13;i=무기제조법=1,토끼의간=1|L:별주부전 > NEXT > NEXT > NEXT > L:당연히 구해다 드려야죠. > QUIT|q214:none>1|end after: <bot>님 정말 감사합니다.. 제발 토끼의 간을 �..
+TARGET|145|말단선원|6 seeds
+EXPLORE|말단선원|clear;m=100000;q=217:none|L:무슨 일이세요? > NEXT > L:흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요. > NEXT|q217:none>1|end after: 헛! 정말입니까? 꼭 좀 부탁드립니다. 알을 찾..
+EXPLORE|말단선원|clear;m=100000;q=217:none|L:무슨 일이세요? > NEXT > L:흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요. > QUIT|q217:none>1|end after: 헛! 정말입니까? 꼭 좀 부탁드립니다. 알을 찾..
+EXPLORE|말단선원|clear;m=100000;q=217:0|L:무슨 일이세요? > NEXT > L:흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요. > NEXT|q217:0>1|end after: 헛! 정말입니까? 꼭 좀 부탁드립니다. 알을 찾..
+EXPLORE|말단선원|clear;m=100000;q=217:0|L:무슨 일이세요? > NEXT > L:흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요. > QUIT|q217:0>1|end after: 헛! 정말입니까? 꼭 좀 부탁드립니다. 알을 찾..
+TARGET|155|수선도사|9 seeds
+TARGET|156|한빙장|18 seeds
+TARGET|157|무달|6 seeds
+EXPLORE|무달|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > PREV|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > QUIT|money-1000|end after: 그럼 언제나 행운이 함께 하시기를 빌겠습니�..
+EXPLORE|무달|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:북팀 - 검은색 > QUIT|money-1000|end after: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:남팀 - 붉은색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:동팀 - 파란색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:서팀 - 하얀색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > PREV|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > QUIT|money-1000|end after: 그럼 언제나 행운이 함께 하시기를 빌겠습니�..
+EXPLORE|무달|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:북팀 - 검은색 > QUIT|money-1000|end after: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:남팀 - 붉은색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:동팀 - 파란색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:서팀 - 하얀색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:5|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > PREV|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:5|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > QUIT|money-1000|end after: 그럼 언제나 행운이 함께 하시기를 빌겠습니�..
+EXPLORE|무달|clear;m=100000;q=232:5|P:무한 복장 > L:예 > L:북팀 - 검은색 > QUIT|money-1000|end after: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:5|P:무한 복장 > L:예 > L:남팀 - 붉은색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:5|P:무한 복장 > L:예 > L:동팀 - 파란색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무달|clear;m=100000;q=232:5|P:무한 복장 > L:예 > L:서팀 - 하얀색|money-1000|open: 염색비로 1000전을 받았습니다.
+TARGET|158|무두|8 seeds
+EXPLORE|무두|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > NEXT|money-1000|open: 안녕하세요. 어떻게 오셨나요?
+EXPLORE|무두|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > PREV|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > QUIT|money-1000|end after: 그럼 언제나 행운이 함께 하시기를 빌겠습니�..
+EXPLORE|무두|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:북팀 - 검은색 > QUIT|money-1000|end after: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:남팀 - 붉은색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:동팀 - 파란색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:none|P:무한 복장 > L:예 > L:서팀 - 하얀색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > NEXT|money-1000|open: 안녕하세요. 어떻게 오셨나요?
+EXPLORE|무두|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > PREV|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > QUIT|money-1000|end after: 그럼 언제나 행운이 함께 하시기를 빌겠습니�..
+EXPLORE|무두|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:북팀 - 검은색 > QUIT|money-1000|end after: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:남팀 - 붉은색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:동팀 - 파란색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:0|P:무한 복장 > L:예 > L:서팀 - 하얀색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:4|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > NEXT|money-1000|open: 안녕하세요. 어떻게 오셨나요?
+EXPLORE|무두|clear;m=100000;q=232:4|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > PREV|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:4|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > QUIT|money-1000|end after: 그럼 언제나 행운이 함께 하시기를 빌겠습니�..
+EXPLORE|무두|clear;m=100000;q=232:4|P:무한 복장 > L:예 > L:북팀 - 검은색 > QUIT|money-1000|end after: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:4|P:무한 복장 > L:예 > L:남팀 - 붉은색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:4|P:무한 복장 > L:예 > L:동팀 - 파란색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:4|P:무한 복장 > L:예 > L:서팀 - 하얀색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:11|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > NEXT|money-1000|open: 안녕하세요. 어떻게 오셨나요?
+EXPLORE|무두|clear;m=100000;q=232:11|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > PREV|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:11|P:무한 복장 > L:예 > L:북팀 - 검은색 > NEXT > QUIT|money-1000|end after: 그럼 언제나 행운이 함께 하시기를 빌겠습니�..
+EXPLORE|무두|clear;m=100000;q=232:11|P:무한 복장 > L:예 > L:북팀 - 검은색 > QUIT|money-1000|end after: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:11|P:무한 복장 > L:예 > L:남팀 - 붉은색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:11|P:무한 복장 > L:예 > L:동팀 - 파란색|money-1000|open: 염색비로 1000전을 받았습니다.
+EXPLORE|무두|clear;m=100000;q=232:11|P:무한 복장 > L:예 > L:서팀 - 하얀색|money-1000|open: 염색비로 1000전을 받았습니다.
+TARGET|159|장돌뱅이|15 seeds
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:none;i=금은보화=1,뇌진도=1|P:금은보화 > NEXT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:none;i=금은보화=1,뇌진도=1|P:금은보화 > QUIT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:0,214:none;i=금은보화=1,뇌진도=1|P:금은보화 > NEXT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:0,214:none;i=금은보화=1,뇌진도=1|P:금은보화 > QUIT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:1,214:none;i=금은보화=1,뇌진도=1|P:용왕의보물 > NEXT > NEXT|뇌진도-1|end after: 사실 그 보물은 방천화극을 팔고 있던 내 친�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:1,214:none;i=금은보화=1,뇌진도=1|P:용왕의보물 > NEXT > QUIT|뇌진도-1|end after: 사실 그 보물은 방천화극을 팔고 있던 내 친�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:1,214:none;i=금은보화=1,뇌진도=1|P:금은보화 > NEXT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:1,214:none;i=금은보화=1,뇌진도=1|P:금은보화 > QUIT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:0;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > NEXT > PREV|q214:0>2 뇌진도-1|open: 분명한 것은 한두고개에서 깊지 않은 곳에서 ..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:0;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > NEXT > QUIT|q214:0>2 뇌진도-1|end after: 그럼 행운을 비네.. 아참, 이건 자네를 위해서..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:0;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > PREV|q214:0>2 뇌진도-1|open: 그 토끼가 출현하는 곳은 다름 아닌 한두고개..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:0;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > QUIT|q214:0>2 뇌진도-1|end after: 분명한 것은 한두고개에서 깊지 않은 곳에서 ..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:0;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > QUIT|q214:0>2 뇌진도-1|end after: 그 토끼가 출현하는 곳은 다름 아닌 한두고개..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:0;i=금은보화=1,뇌진도=1|P:금은보화 > NEXT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:0;i=금은보화=1,뇌진도=1|P:금은보화 > QUIT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:2;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > NEXT > PREV|뇌진도-1|open: 분명한 것은 한두고개에서 깊지 않은 곳에서 ..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:2;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > NEXT > QUIT|뇌진도-1|end after: 그럼 행운을 비네.. 아참, 이건 자네를 위해서..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:2;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > PREV|뇌진도-1|open: 그 토끼가 출현하는 곳은 다름 아닌 한두고개..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:2;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > NEXT > QUIT|뇌진도-1|end after: 분명한 것은 한두고개에서 깊지 않은 곳에서 ..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:2;i=금은보화=1,뇌진도=1|P:별주부전 > L:뇌진도를 드리겠습니다. > QUIT|뇌진도-1|end after: 그 토끼가 출현하는 곳은 다름 아닌 한두고개..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:2;i=금은보화=1,뇌진도=1|P:금은보화 > NEXT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+EXPLORE|장돌뱅이|clear;m=100000;q=243:none,214:2;i=금은보화=1,뇌진도=1|P:금은보화 > QUIT|money+15000 금은보화-1|end after: 이 귀한것을 가지고 있다니... 자, 여기 만오�..
+TARGET|168|먹염|6 seeds
+EXPLORE|먹염|clear;m=100000;q=189:none|NEXT > NEXT > L:저도 요리를 만들 줄 아는데, 도와드릴까요? > NEXT > PREV|q189:none>1|open: 자네가 도와주겠다고? 허허! 그거 듣던 중 반�..
+EXPLORE|먹염|clear;m=100000;q=189:none|NEXT > NEXT > L:저도 요리를 만들 줄 아는데, 도와드릴까요? > NEXT > QUIT|q189:none>1|end after: 그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐�..
+EXPLORE|먹염|clear;m=100000;q=189:none|NEXT > NEXT > L:저도 요리를 만들 줄 아는데, 도와드릴까요? > QUIT|q189:none>1|end after: 자네가 도와주겠다고? 허허! 그거 듣던 중 반�..
+EXPLORE|먹염|clear;m=100000;q=189:0|NEXT > NEXT > L:저도 요리를 만들 줄 아는데, 도와드릴까요? > NEXT > PREV|q189:0>1|open: 자네가 도와주겠다고? 허허! 그거 듣던 중 반�..
+EXPLORE|먹염|clear;m=100000;q=189:0|NEXT > NEXT > L:저도 요리를 만들 줄 아는데, 도와드릴까요? > NEXT > QUIT|q189:0>1|end after: 그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐�..
+EXPLORE|먹염|clear;m=100000;q=189:0|NEXT > NEXT > L:저도 요리를 만들 줄 아는데, 도와드릴까요? > QUIT|q189:0>1|end after: 자네가 도와주겠다고? 허허! 그거 듣던 중 반�..
+TARGET|169|고구려선원|9 seeds
+EXPLORE|고구려선원|clear;m=100000;q=210:10;i=내통문서=1|L:혹시 이 문서에 적힌 > NEXT > NEXT > L:그럼 이것을 알아보실 수 있는지요? > L:...... > NEXT > NEXT > NEXT > L:정말 고맙습니다. > NEXT|내통문서-1 번역된내통문서+1|end after: 하하.. 앞으로 자주 인사하세나.
+EXPLORE|고구려선원|clear;m=100000;q=210:10;i=내통문서=1|L:혹시 이 문서에 적힌 > NEXT > NEXT > L:그럼 이것을 알아보실 수 있는지요? > L:...... > NEXT > NEXT > NEXT > L:정말 고맙습니다. > QUIT|내통문서-1 번역된내통문서+1|end after: 하하.. 앞으로 자주 인사하세나.
+EXPLORE|고구려선원|clear;m=100000;q=210:10;i=내통문서=1|L:혹시 이 문서에 적힌 > NEXT > NEXT > L:그럼 이것을 알아보실 수 있는지요? > L:...... > NEXT > NEXT > NEXT > L:일본에 자주 왔다갔다 하는데,|내통문서-1 번역된내통문서+1|open: 하하.. 앞으로 자주 인사하세나.
+EXPLORE|고구려선원|clear;m=100000;q=210:10;i=내통문서=1|L:혹시 이 문서에 적힌 > NEXT > NEXT > L:그럼 이것을 알아보실 수 있는지요? > L:...... > NEXT > NEXT > NEXT > L:항상 말이 없어 매우 무뚝뚝하고|내통문서-1 번역된내통문서+1|open: 하하.. 앞으로 자주 인사하세나.
+EXPLORE|고구려선원|clear;m=100000;q=210:10;i=내통문서=1|L:혹시 이 문서에 적힌 > NEXT > NEXT > L:그럼 이것을 알아보실 수 있는지요? > L:...... > NEXT > NEXT > NEXT > L:무서우신 분인 줄 알았는데|내통문서-1 번역된내통문서+1|open: 하하.. 앞으로 자주 인사하세나.
+EXPLORE|고구려선원|clear;m=100000;q=210:10;i=내통문서=1|L:혹시 이 문서에 적힌 > NEXT > NEXT > L:그럼 이것을 알아보실 수 있는지요? > L:...... > NEXT > NEXT > NEXT > L:참 친절하신 분이시군요.|내통문서-1 번역된내통문서+1|open: 하하.. 앞으로 자주 인사하세나.
+TARGET|172|금고주인|15 seeds
+EXPLORE|금고주인|clear;m=100000;q=216:none|NEXT > L:무슨 일이라도 있나요? > NEXT > L:열지 못하면 그냥 부수는 건 어때요? > NEXT > NEXT > L:이리 주세요. 제가 부숴 드리죠. > NEXT > NEXT > L:예, 절대 안 열어보고 그대로 가져다 드리지요. > NEXT > NEXT|q216:none>1 낡은금고+1|end after: 그리고! 다시 한 번 말해두지만 안에 있는 봉�..
+EXPLORE|금고주인|clear;m=100000;q=216:none;i=낡은연애편지=1|NEXT > L:무슨 일이라도 있나요? > NEXT > L:열지 못하면 그냥 부수는 건 어때요? > NEXT > NEXT > L:이리 주세요. 제가 부숴 드리죠. > NEXT > NEXT > L:예, 절대 안 열어보고 그대로 가져다 드리지요. > NEXT > NEXT|q216:none>1 낡은금고+1|end after: 그리고! 다시 한 번 말해두지만 안에 있는 봉�..
+EXPLORE|금고주인|clear;m=100000;q=216:none;i=낡은연애편지=1;fill|NEXT > L:무슨 일이라도 있나요? > NEXT > L:열지 못하면 그냥 부수는 건 어때요? > NEXT > NEXT > L:이리 주세요. 제가 부숴 드리죠. > NEXT > NEXT > L:예, 절대 안 열어보고 그대로 가져다 드리지요. > NEXT > NEXT|q216:none>1|end after: 그리고! 다시 한 번 말해두지만 안에 있는 봉�..
+EXPLORE|금고주인|clear;m=100000;q=216:1;i=낡은연애편지=1|L:아뇨, 다 됐습니다. > NEXT|q216:1>2 낡은연애편지-1|end after: 이...이놈! 내가 그렇게 말했는데 결국 봉투를..
+EXPLORE|금고주인|clear;m=100000;q=216:2|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > PREV|q216:2>2! 흑장단검+1|open: 좋아. 그럼 자네가 노력한 것을 봐서 보수를 �..
+EXPLORE|금고주인|clear;m=100000;q=216:2|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > QUIT|q216:2>2! 흑장단검+1|end after: 그럼 잘 가게. 편지 내용은 아무에게도 말하�..
+EXPLORE|금고주인|clear;m=100000;q=216:2|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > QUIT|q216:2>2! 흑장단검+1|end after: 좋아. 그럼 자네가 노력한 것을 봐서 보수를 �..
+EXPLORE|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > PREV|q216:2>2! 흑장단검+1|open: 좋아. 그럼 자네가 노력한 것을 봐서 보수를 �..
+EXPLORE|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > QUIT|q216:2>2! 흑장단검+1|end after: 그럼 잘 가게. 편지 내용은 아무에게도 말하�..
+EXPLORE|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > QUIT|q216:2>2! 흑장단검+1|end after: 좋아. 그럼 자네가 노력한 것을 봐서 보수를 �..
+EXPLORE|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1;fill|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > PREV|q216:2>2!|open: 좋아. 그럼 자네가 노력한 것을 봐서 보수를 �..
+EXPLORE|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1;fill|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > QUIT|q216:2>2!|end after: 그럼 잘 가게. 편지 내용은 아무에게도 말하�..
+EXPLORE|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1;fill|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > QUIT|q216:2>2!|end after: 좋아. 그럼 자네가 노력한 것을 봐서 보수를 �..
+SUSPECT|금고주인|clear;m=100000;q=216:none;i=낡은연애편지=1;fill|NEXT > L:무슨 일이라도 있나요? > NEXT > L:열지 못하면 그냥 부수는 건 어때요? > NEXT > NEXT > L:이리 주세요. 제가 부숴 드리죠. > NEXT > NEXT > L:예, 절대 안 열어보고 그대로 가져다 드리지요. > NEXT > NEXT|full inventory advanced the quest without the reward: full q216:none>1, normal q216:none>1 낡은금고+1
+SUSPECT|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1;fill|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > PREV|full inventory advanced the quest without the reward: full q216:2>2!, normal q216:2>2! 흑장단검+1
+SUSPECT|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1;fill|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > NEXT > QUIT|full inventory advanced the quest without the reward: full q216:2>2!, normal q216:2>2! 흑장단검+1
+SUSPECT|금고주인|clear;m=100000;q=216:2;i=낡은연애편지=1;fill|NEXT > L:...... > NEXT > NEXT > L:예! 물론입니다. 아무렇게도 말하지 않겠어요. > QUIT|full inventory advanced the quest without the reward: full q216:2>2!, normal q216:2>2! 흑장단검+1
+TARGET|174|진백랑|8 seeds
+EXPLORE|진백랑|clear;m=100000;q=190:none|NEXT > L:네, 도와드리지요. > NEXT > NEXT > NEXT|q190:none>1|end after: 전부 삼만장 정도 되는데, 아홉장만 모아도 �..
+EXPLORE|진백랑|clear;m=100000;q=190:0|NEXT > L:네, 도와드리지요. > NEXT > NEXT > NEXT|q190:0>1|end after: 전부 삼만장 정도 되는데, 아홉장만 모아도 �..
+TARGET|175|고구려무도가|8 seeds
+EXPLORE|고구려무도가|clear;m=100000;q=193:none|NEXT > NEXT > L:중국가는길이니 그렇게하겠소. > NEXT|q193:none>1|end after: 고맙소! 자세한것은 모르지만 요즘 만리장성�..
+EXPLORE|고구려무도가|clear;m=100000;q=193:none|NEXT > NEXT > L:중국가는길이니 그렇게하겠소. > QUIT|q193:none>1|end after: 고맙소! 자세한것은 모르지만 요즘 만리장성�..
+EXPLORE|고구려무도가|clear;m=100000;q=193:0|NEXT > NEXT > L:중국가는길이니 그렇게하겠소. > NEXT|q193:0>1|end after: 고맙소! 자세한것은 모르지만 요즘 만리장성�..
+EXPLORE|고구려무도가|clear;m=100000;q=193:0|NEXT > NEXT > L:중국가는길이니 그렇게하겠소. > QUIT|q193:0>1|end after: 고맙소! 자세한것은 모르지만 요즘 만리장성�..
+TARGET|176|소림사승려|15 seeds
+EXPLORE|소림사승려|clear;m=100000;q=193:1|NEXT > L:소림사의 절기를 전수해주십시오. > NEXT > NEXT > NEXT > L:아니오, 그건좀... > NEXT > NEXT > L:네, 비단을 구해드리겠습니다. > NEXT|q193:1>2|end after: 네 감사합니다. 이정도는 주지스님께서도 이�..
+EXPLORE|소림사승려|clear;m=100000;q=193:1|NEXT > L:소림사의 절기를 전수해주십시오. > NEXT > NEXT > NEXT > L:아니오, 그건좀... > NEXT > NEXT > L:네, 비단을 구해드리겠습니다. > QUIT|q193:1>2|end after: 네 감사합니다. 이정도는 주지스님께서도 이�..
+EXPLORE|소림사승려|clear;m=100000;q=193:1;i=고구려비단=1|NEXT > L:소림사의 절기를 전수해주십시오. > NEXT > NEXT > NEXT > L:아니오, 그건좀... > NEXT > NEXT > L:네, 비단을 구해드리겠습니다. > NEXT|q193:1>2|end after: 네 감사합니다. 이정도는 주지스님께서도 이�..
+EXPLORE|소림사승려|clear;m=100000;q=193:1;i=고구려비단=1|NEXT > L:소림사의 절기를 전수해주십시오. > NEXT > NEXT > NEXT > L:아니오, 그건좀... > NEXT > NEXT > L:네, 비단을 구해드리겠습니다. > QUIT|q193:1>2|end after: 네 감사합니다. 이정도는 주지스님께서도 이�..
+EXPLORE|소림사승려|clear;m=100000;q=193:2;i=고구려비단=1|NEXT > NEXT > NEXT|q193:2>3 고구려비단-1|end after: 그럼 또 인연이 닿으면 만나겠지요. 살펴가십..
+TARGET|180|나무꾼|6 seeds
+EXPLORE|나무꾼|clear;m=100000;q=180:none|NEXT > NEXT > L:예, 빌려주세요. > NEXT|q180:none>0 쇠도끼+1|end after: 그럼 여기 도끼가 있으니 잘 쓰시오. 그럼 난 ..
+EXPLORE|나무꾼|clear;m=100000;q=180:none|NEXT > NEXT > L:예, 빌려주세요. > QUIT|q180:none>0 쇠도끼+1|end after: 그럼 여기 도끼가 있으니 잘 쓰시오. 그럼 난 ..
+EXPLORE|나무꾼|clear;m=100000;q=180:0|L:다시 빌려주세요. > NEXT|money-10000 쇠도끼+1|end after: 자, 여기있소. 또 잃어버리지 않게 조심하시�..
+EXPLORE|나무꾼|clear;m=100000;q=180:0|L:다시 빌려주세요. > QUIT|money-10000 쇠도끼+1|end after: 자, 여기있소. 또 잃어버리지 않게 조심하시�..
+TARGET|181|안도|12 seeds
+EXPLORE|안도|clear;m=100000;q=206:none|NEXT > NEXT > L:제가 좀 도와 드리죠. > NEXT > NEXT|q206:none>1 귀신퇴치부적+5|end after: 이 부적을 가지고 집 구석구석을 살피다가... ..
+EXPLORE|안도|clear;m=100000;q=206:none;fill|NEXT > NEXT > L:제가 좀 도와 드리죠. > NEXT > NEXT|q206:none>1|open: 소지품이 가득 차서 귀신퇴치부적을 받을 수 ..
+SUSPECT|안도|clear;m=100000;q=206:none;fill|NEXT > NEXT > L:제가 좀 도와 드리죠. > NEXT > NEXT|full inventory advanced the quest without the reward: full q206:none>1, normal q206:none>1 귀신퇴치부적+5
+TARGET|182|마타|8 seeds
+EXPLORE|마타|clear;m=100000;q=206:2|NEXT > NEXT|q206:2>3 귀신퇴치부적+5|end after: 그나저나 참 친절한 분이시군요. 생판 모르는..
+TARGET|183|조왕의동생|9 seeds
+EXPLORE|조왕의동생|clear;m=100000;q=203:none|NEXT > NEXT > NEXT > L:물론입니다. 부인의 몸조리에나 신경쓰십시오. > NEXT|q203:none>0|end after: 그럼 자네만 믿고 있겠네. 장안성의 푸줏간에..
+EXPLORE|조왕의동생|clear;m=100000;q=203:none|NEXT > NEXT > NEXT > L:물론입니다. 부인의 몸조리에나 신경쓰십시오. > QUIT|q203:none>0|end after: 그럼 자네만 믿고 있겠네. 장안성의 푸줏간에..
+EXPLORE|조왕의동생|clear;m=100000;q=203:none;i=화기삼동충초돈유합=1|NEXT > NEXT > NEXT > L:물론입니다. 부인의 몸조리에나 신경쓰십시오. > NEXT|q203:none>0|end after: 그럼 자네만 믿고 있겠네. 장안성의 푸줏간에..
+EXPLORE|조왕의동생|clear;m=100000;q=203:none;i=화기삼동충초돈유합=1|NEXT > NEXT > NEXT > L:물론입니다. 부인의 몸조리에나 신경쓰십시오. > QUIT|q203:none>0|end after: 그럼 자네만 믿고 있겠네. 장안성의 푸줏간에..
+EXPLORE|조왕의동생|clear;m=100000;q=203:0;i=화기삼동충초돈유합=1|NEXT > NEXT|q203:0>0! 자양강장요리+1 화기삼동충초돈유합-1|end after: 이걸 먹으면 자네의 체력이 더 강해질 걸세! �..
+TARGET|184|돈유합의달인|12 seeds
+EXPLORE|돈유합의달인|clear;m=100000;q=203:0|L:화기삼동충초돈유합의 달인이라 하여 찾아왔습니다. > NEXT > NEXT|q203:0>1|end after: 동충하초는 대방성입구에, 인삼은 국경지대�..
+TARGET|185|표신궁역사가|40 seeds
+TARGET|186|천선도사|12 seeds
+EXPLORE|천선도사|clear;m=100000;q=192:3;i=청심사주=1|NEXT > NEXT|q192:3>4 고대금속조각'음+1 청심사주-1|end after: 정말 오랫만에 보는 술이군! 고맙네. 이 술을 ..
+TARGET|188|고균도선착행자|12 seeds
+EXPLORE|고균도선착행자|clear;m=100000;q=188:3|NEXT|q188:3>4|end after: 결국 왔구만! 어때, 와 보니 정말 좋은 곳이지..
+EXPLORE|고균도선착행자|clear;m=100000;q=188:7|NEXT > NEXT|q188:7>8 정령인형+1|end after: 그렇지, 이렇게 계속 만나는 것도 인연인데 �..
+EXPLORE|고균도선착행자|clear;m=100000;q=188:7|NEXT > QUIT|q188:7>8 정령인형+1|end after: 그렇지, 이렇게 계속 만나는 것도 인연인데 �..
+TARGET|190|하태현|8 seeds
+EXPLORE|하태현|clear;m=100000;q=221:none|NEXT > NEXT > NEXT > L:그런일이라면 맡겨만 주세요. > NEXT|q221:none>1|end after: 그럼 전 <bot>님만 기다리고 있을께요. 적어도 ..
+EXPLORE|하태현|clear;m=100000;q=221:none|NEXT > NEXT > NEXT > L:그런일이라면 맡겨만 주세요. > QUIT|q221:none>1|end after: 그럼 전 <bot>님만 기다리고 있을께요. 적어도 ..
+TARGET|191|도태연|10 seeds
+EXPLORE|도태연|clear;m=100000;q=219:none|NEXT > NEXT > NEXT > L:좋습니다. 맘에 드는군요. > NEXT|q219:none>1|end after: 다시 한번 말하지만 도삭산코뿔소의 발톱,이�..
+EXPLORE|도태연|clear;m=100000;q=219:none|NEXT > NEXT > NEXT > L:좋습니다. 맘에 드는군요. > QUIT|q219:none>1|end after: 다시 한번 말하지만 도삭산코뿔소의 발톱,이�..
+TARGET|193|우가풍|8 seeds
+EXPLORE|우가풍|clear;m=100000;q=220:none|NEXT > NEXT > NEXT > L:알겠습니다. 제가 찾아다드리죠. > NEXT > PREV|q220:none>1|open: 정말 고맙네. 그 마음만으로도. 문비는 무슈�..
+EXPLORE|우가풍|clear;m=100000;q=220:none|NEXT > NEXT > NEXT > L:알겠습니다. 제가 찾아다드리죠. > NEXT > QUIT|q220:none>1|end after: 꼭 그 못된 놈을 잡아서 호롱불을 찾아주게. �..
+EXPLORE|우가풍|clear;m=100000;q=220:none|NEXT > NEXT > NEXT > L:알겠습니다. 제가 찾아다드리죠. > QUIT|q220:none>1|end after: 정말 고맙네. 그 마음만으로도. 문비는 무슈�..
+TARGET|209|사천족제사장|6 seeds
+TARGET|211|산소소탕대장|15 seeds
+EXPLORE|산소소탕대장|clear;m=100000;q=207:none|NEXT > NEXT > NEXT > L:좋습니다! 제 힘이 도움이 된다면 기꺼이.. > NEXT > NEXT > NEXT|q207:none>1|end after: 우선 약한 산소부터 시작하도록 하죠. 연청산..
+EXPLORE|산소소탕대장|clear;m=100000;q=207:none;i=녹산소괴의뿔=30,산소괴왕의뿔=1|NEXT > NEXT > NEXT > L:좋습니다! 제 힘이 도움이 된다면 기꺼이.. > NEXT > NEXT > NEXT|q207:none>1|end after: 우선 약한 산소부터 시작하도록 하죠. 연청산..
+EXPLORE|산소소탕대장|clear;m=100000;q=207:7;i=녹산소괴의뿔=30,산소괴왕의뿔=1|NEXT > NEXT > NEXT|q207:7>7! 산소괴왕의뿔-1 흑영패도+1|end after: 부디 좋은 곳에 써주시기 발바니다. 그럼 안�..
+EXPLORE|산소소탕대장|clear;m=100000;q=207:7;i=녹산소괴의뿔=30,산소괴왕의뿔=1|NEXT > NEXT > QUIT|q207:7>7! 산소괴왕의뿔-1 흑영패도+1|end after: 부디 좋은 곳에 써주시기 발바니다. 그럼 안�..
+EXPLORE|산소소탕대장|clear;m=100000;q=207:7;i=녹산소괴의뿔=30,산소괴왕의뿔=1|NEXT > QUIT|q207:7>7! 산소괴왕의뿔-1 흑영패도+1|end after: 정말 감사드립니다. 그 보답으로 이 보검을 �..
+TARGET|215|서천좌상|8 seeds
+EXPLORE|서천좌상|clear;m=100000;q=199:none|NEXT > NEXT > L:만리장성이!! 제가 꼭 고치겠습니다!! > NEXT|q199:none>1|end after: 수리에는 꼭 고구려의 벽돌을 써야만 하네. �..
+EXPLORE|서천좌상|clear;m=100000;q=199:none|NEXT > NEXT > L:만리장성이!! 제가 꼭 고치겠습니다!! > QUIT|q199:none>1|end after: 수리에는 꼭 고구려의 벽돌을 써야만 하네. �..
+EXPLORE|서천좌상|clear;m=100000;q=199:0|NEXT > NEXT > L:만리장성이!! 제가 꼭 고치겠습니다!! > NEXT|q199:0>1|end after: 수리에는 꼭 고구려의 벽돌을 써야만 하네. �..
+EXPLORE|서천좌상|clear;m=100000;q=199:0|NEXT > NEXT > L:만리장성이!! 제가 꼭 고치겠습니다!! > QUIT|q199:0>1|end after: 수리에는 꼭 고구려의 벽돌을 써야만 하네. �..
+TARGET|216|한상약|6 seeds
+EXPLORE|한상약|clear;m=100000;q=182:none|L:네, 무슨 일이세요? > NEXT > NEXT > L:네, 해보죠. > NEXT|q182:none>0|end after: 고맙네. 내가 필요로 하는 흙은 이렇게 생겼�..
+EXPLORE|한상약|clear;m=100000;q=182:none|L:네, 무슨 일이세요? > NEXT > NEXT > L:네, 해보죠. > QUIT|q182:none>0|end after: 고맙네. 내가 필요로 하는 흙은 이렇게 생겼�..
+EXPLORE|한상약|clear;m=100000;q=182:0!|L:좋습니다. 누구시더라? > NEXT|q182:0!>0|end after: 괴수들이 있는 근처에서 적심토를 찾을 수 있..
+EXPLORE|한상약|clear;m=100000;q=182:0!|L:좋습니다. 누구시더라? > QUIT|q182:0!>0|end after: 괴수들이 있는 근처에서 적심토를 찾을 수 있..
+TARGET|231|장안성장군|18 seeds
+EXPLORE|장안성장군|clear;m=100000;q=195:none|NEXT > L:잘 모르겠는데요. 그게 누굽니까? > NEXT > L:의적이군요? 그럼 슬쩍 눈감아줘도 되지 않을까요? > NEXT > NEXT > L:저도 협조하겠습니다. 황비연을 만나보고 싶군요. > NEXT > NEXT|q195:none>1|end after: 황비연이 마지막으로 나타난 장소는 상해일�..
+EXPLORE|장안성장군|clear;m=100000;q=195:none;i=황비연의머리띠=1|NEXT > L:잘 모르겠는데요. 그게 누굽니까? > NEXT > L:의적이군요? 그럼 슬쩍 눈감아줘도 되지 않을까요? > NEXT > NEXT > L:저도 협조하겠습니다. 황비연을 만나보고 싶군요. > NEXT > NEXT|q195:none>1|end after: 황비연이 마지막으로 나타난 장소는 상해일�..
+EXPLORE|장안성장군|clear;m=100000;q=195:4;i=황비연의머리띠=1|L:그는 죽었고, 그의 머리띠를 가져왔습니다. > NEXT > NEXT|money+100000 q195:4>4! 황비연의머리띠-1|end after: 그가 정말로 죽었는지 어떤지는 자네만이 알�..
+TARGET|232|상해주민|18 seeds
+EXPLORE|상해주민|clear;m=100000;q=195:1|L:황비연이라는 사람을 찾고 있습니다. > NEXT > L:꼭 한 번 만나 보고 싶은 사람입니다. > NEXT > NEXT > NEXT > NEXT > L:알겠습니다, 그렇게 하죠. > NEXT > NEXT|q195:1>2 노비문서+1|end after: 그럼 수고스러우시겠지만 잘 부탁드립니다.
+EXPLORE|상해주민|clear;m=100000;q=195:1;i=보패=1|L:황비연이라는 사람을 찾고 있습니다. > NEXT > L:꼭 한 번 만나 보고 싶은 사람입니다. > NEXT > NEXT > NEXT > NEXT > L:알겠습니다, 그렇게 하죠. > NEXT > NEXT|q195:1>2 노비문서+1|end after: 그럼 수고스러우시겠지만 잘 부탁드립니다.
+EXPLORE|상해주민|clear;m=100000;q=195:3;i=보패=1|L:예, 확실히 전해 줬습니다. > NEXT > L:예, 당신을 자랑스러워하셨습니다. 황비연씨. > NEXT > L:그럴 수는 없습니다. > L:당신은 의적으로서 많은 사람을 도왔죠. > L:그런 사람을 체포할 수는 없습니다. > L:앞으로 좋은 일을 더 많이 하시면 되지 않겠습니까? > NEXT > NEXT > NEXT > NEXT|q195:3>4 보패-1 황비연의머리띠+1|end after: 저는 더 많은 사람들을 돕도록 하겠습니다. �..
+TARGET|233|병든아이어머니|12 seeds
+TARGET|235|복건성태자|27 seeds
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:none|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:none;i=청자다람쥐인형=1|L:청자다람쥐인형 > NEXT > L:그래, 팔께! > NEXT > NEXT|money+100000 q201:none>0! 청자다람쥐인형-1|end after: 다른 재미있는 장난감이 있으면 제게 가져와 ..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:none;i=청자다람쥐인형=1|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:0,202:none,237:none|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:0,202:none,237:none;i=청자다람쥐인형=1|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:0!,202:none,237:none|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:0!,202:none,237:none;i=청자다람쥐인형=1|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:0,237:none;i=청자다람쥐인형=1|L:청자다람쥐인형 > NEXT > L:그래, 팔께! > NEXT > NEXT|money+100000 q201:none>0! 청자다람쥐인형-1|end after: 다른 재미있는 장난감이 있으면 제게 가져와 ..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:0!,237:none;i=청자다람쥐인형=1|L:청자다람쥐인형 > NEXT > L:그래, 팔께! > NEXT > NEXT|money+100000 q201:none>0! 청자다람쥐인형-1|end after: 다른 재미있는 장난감이 있으면 제게 가져와 ..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:0|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:0;i=청자다람쥐인형=1|L:청자다람쥐인형 > NEXT > L:그래, 팔께! > NEXT > NEXT|money+100000 q201:none>0! 청자다람쥐인형-1|end after: 다른 재미있는 장난감이 있으면 제게 가져와 ..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:0;i=청자다람쥐인형=1|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:2|L:혹시 사탕 좀 가지고 있니? > NEXT > NEXT|q237:2>3 꿀사탕+1|end after: 대신 다음에 시간이 되시면 제 장난감 찾는 �..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:2|L:혹시 사탕 좀 가지고 있니? > NEXT > QUIT|q237:2>3 꿀사탕+1|end after: 대신 다음에 시간이 되시면 제 장난감 찾는 �..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:2;i=청자다람쥐인형=1|L:혹시 사탕 좀 가지고 있니? > NEXT > NEXT|q237:2>3 꿀사탕+1|end after: 대신 다음에 시간이 되시면 제 장난감 찾는 �..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:2;i=청자다람쥐인형=1|L:혹시 사탕 좀 가지고 있니? > NEXT > QUIT|q237:2>3 꿀사탕+1|end after: 대신 다음에 시간이 되시면 제 장난감 찾는 �..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:3|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:3;i=청자다람쥐인형=1|L:청자다람쥐인형 > NEXT > L:그래, 팔께! > NEXT > NEXT|money+100000 q201:none>0! 청자다람쥐인형-1|end after: 다른 재미있는 장난감이 있으면 제게 가져와 ..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:3;i=청자다람쥐인형=1|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:3!|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:3!;i=청자다람쥐인형=1|L:청자다람쥐인형 > NEXT > L:그래, 팔께! > NEXT > NEXT|money+100000 q201:none>0! 청자다람쥐인형-1|end after: 다른 재미있는 장난감이 있으면 제게 가져와 ..
+EXPLORE|복건성태자|clear;m=100000;q=201:none,202:none,237:3!;i=청자다람쥐인형=1|L:잃어버린 장난감 > NEXT > L:난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니? > NEXT > L:장난감은 내가 찾아 줄 테니 여기서 기다리렴. > NEXT > NEXT > NEXT|q202:none>0|end after: 그럼 저는 여기서 기다릴께요. 장난감을 찾으..
+TARGET|236|남천좌상|15 seeds
+EXPLORE|남천좌상|clear;m=100000;q=200:none|NEXT > NEXT > L:그러죠. 제가 처리하겠습니다!! > NEXT > NEXT|q200:none>1|end after: 자네가 후를 500마리 이상 잡았다는 증거로, 50..
+EXPLORE|남천좌상|clear;m=100000;q=200:none;i=마계천신의뼈=1,후의뼈=1|NEXT > NEXT > L:그러죠. 제가 처리하겠습니다!! > NEXT > NEXT|q200:none>1|end after: 자네가 후를 500마리 이상 잡았다는 증거로, 50..
+EXPLORE|남천좌상|clear;m=100000;q=200:2;i=마계천신의뼈=1,후의뼈=1|NEXT > NEXT > NEXT > NEXT|q200:2>2! 강철투구+1 마계천신의뼈-1|end after: 이 투구를 쓰고 있으면 자네의 무기와 갑옷의..
+TARGET|240|보약의달인|14 seeds
+EXPLORE|보약의달인|clear;m=100000;q=194:1,197:none|L:실은 아픈 아이가 있는데... > NEXT > NEXT > NEXT > NEXT|q197:none>1|end after: 재료를 가져오기만 하면 만드는 건 금방이라�..
+TARGET|241|주경원|10 seeds
+EXPLORE|주경원|clear;m=100000;q=192:none|NEXT > NEXT > NEXT > L:제가 도와드리죠. 뱀을 구해 드리면 되는 건가요? > NEXT|q192:none>1|end after: 아아! 고맙네 고마워. 재료를 구해주면 내가 �..
+EXPLORE|주경원|clear;m=100000;q=192:none|NEXT > NEXT > NEXT > L:제가 도와드리죠. 뱀을 구해 드리면 되는 건가요? > QUIT|q192:none>1|end after: 아아! 고맙네 고마워. 재료를 구해주면 내가 �..
+EXPLORE|주경원|clear;m=100000;q=192:0|NEXT > NEXT > NEXT > L:제가 도와드리죠. 뱀을 구해 드리면 되는 건가요? > NEXT|q192:0>1|end after: 아아! 고맙네 고마워. 재료를 구해주면 내가 �..
+EXPLORE|주경원|clear;m=100000;q=192:0|NEXT > NEXT > NEXT > L:제가 도와드리죠. 뱀을 구해 드리면 되는 건가요? > QUIT|q192:0>1|end after: 아아! 고맙네 고마워. 재료를 구해주면 내가 �..
+TARGET|273|마타제자|12 seeds
+EXPLORE|마타제자|clear;m=100000;q=237:none|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > NEXT > NEXT|q237:none>1|end after: 아직 스승님께 들키진 않았습니다만 만약 들�..
+EXPLORE|마타제자|clear;m=100000;q=237:none|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > NEXT > QUIT|q237:none>1|end after: 아직 스승님께 들키진 않았습니다만 만약 들�..
+EXPLORE|마타제자|clear;m=100000;q=237:none|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > PREV|q237:none>1|open: 예? 정말 그래도 되겠습니까? 이렇게 고마울 �..
+EXPLORE|마타제자|clear;m=100000;q=237:none|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > QUIT|q237:none>1|end after: 음, 그럼 이 근처를 먼저 좀 뒤져 주십시오. �..
+EXPLORE|마타제자|clear;m=100000;q=237:none|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > PREV|q237:none>1|open: 누가 가져갔는지, 아니면 제가 어디에 떨어뜨..
+EXPLORE|마타제자|clear;m=100000;q=237:none|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > QUIT|q237:none>1|end after: 예? 정말 그래도 되겠습니까? 이렇게 고마울 �..
+EXPLORE|마타제자|clear;m=100000;q=237:none;i=파마의피리=1|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > NEXT > NEXT|q237:none>1|end after: 아직 스승님께 들키진 않았습니다만 만약 들�..
+EXPLORE|마타제자|clear;m=100000;q=237:none;i=파마의피리=1|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > NEXT > QUIT|q237:none>1|end after: 아직 스승님께 들키진 않았습니다만 만약 들�..
+EXPLORE|마타제자|clear;m=100000;q=237:none;i=파마의피리=1|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > PREV|q237:none>1|open: 예? 정말 그래도 되겠습니까? 이렇게 고마울 �..
+EXPLORE|마타제자|clear;m=100000;q=237:none;i=파마의피리=1|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > NEXT > QUIT|q237:none>1|end after: 음, 그럼 이 근처를 먼저 좀 뒤져 주십시오. �..
+EXPLORE|마타제자|clear;m=100000;q=237:none;i=파마의피리=1|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > PREV|q237:none>1|open: 누가 가져갔는지, 아니면 제가 어디에 떨어뜨..
+EXPLORE|마타제자|clear;m=100000;q=237:none;i=파마의피리=1|L:무슨 잃어버린 물건이라도 있습니까? > NEXT > NEXT > L:저도 찾는 것을 돕겠습니다. > QUIT|q237:none>1|end after: 예? 정말 그래도 되겠습니까? 이렇게 고마울 �..
+TARGET|276|말하기도우미|18 seeds
+EXPLORE|말하기도우미|clear;m=100000;q=238:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:none>1|end after: 그럼 먼저 가르쳐 드린 대로 [']키나 [Enter]를 �..
+EXPLORE|말하기도우미|clear;m=100000;q=238:none;i=도톨=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:none>1|end after: 그럼 먼저 가르쳐 드린 대로 [']키나 [Enter]를 �..
+EXPLORE|말하기도우미|clear;m=100000;q=238:0|NEXT > NEXT > NEXT|q238:0>3|end after: 보다 넓은 세계에서 잘 해내리라 믿어요. 안�..
+EXPLORE|말하기도우미|clear;m=100000;q=238:0|NEXT > NEXT > QUIT|q238:0>3|end after: 보다 넓은 세계에서 잘 해내리라 믿어요. 안�..
+EXPLORE|말하기도우미|clear;m=100000;q=238:0|NEXT > QUIT|q238:0>3|end after: 이제 제가 가르쳐 드릴 것은 모두 가르쳐 드�..
+EXPLORE|말하기도우미|clear;m=100000;q=238:0|QUIT|q238:0>3|end after: 정말 잘 하셨어요!.
+EXPLORE|말하기도우미|clear;m=100000;q=238:1|NEXT > NEXT > NEXT|q238:1>2 도톨+2|end after: 그럼, 제가 알려드린 방법을 사용하여 [e, a]를..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1|NEXT > NEXT > QUIT|q238:1>2 도톨+2|end after: 그럼, 제가 알려드린 방법을 사용하여 [e, a]를..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1|NEXT > QUIT|q238:1>2 도톨+2|end after: 제가 드린 도톨을 확인하시려면 [i]를 눌러 아..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1;i=도톨=1|NEXT > NEXT > NEXT|q238:1>2 도톨+2|end after: 그럼, 제가 알려드린 방법을 사용하여 [e, a]를..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1;i=도톨=1|NEXT > NEXT > QUIT|q238:1>2 도톨+2|end after: 그럼, 제가 알려드린 방법을 사용하여 [e, a]를..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1;i=도톨=1|NEXT > QUIT|q238:1>2 도톨+2|end after: 제가 드린 도톨을 확인하시려면 [i]를 눌러 아..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1;i=도톨=1;fill|NEXT > NEXT > NEXT|q238:1>2 도톨+2|end after: 그럼, 제가 알려드린 방법을 사용하여 [e, a]를..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1;i=도톨=1;fill|NEXT > NEXT > QUIT|q238:1>2 도톨+2|end after: 그럼, 제가 알려드린 방법을 사용하여 [e, a]를..
+EXPLORE|말하기도우미|clear;m=100000;q=238:1;i=도톨=1;fill|NEXT > QUIT|q238:1>2 도톨+2|end after: 제가 드린 도톨을 확인하시려면 [i]를 눌러 아..
+EXPLORE|말하기도우미|clear;m=100000;q=238:2|NEXT > NEXT > NEXT|q238:2>3|end after: 보다 넓은 세계에서 잘 해내리라 믿어요. 안�..
+EXPLORE|말하기도우미|clear;m=100000;q=238:2|NEXT > NEXT > QUIT|q238:2>3|end after: 보다 넓은 세계에서 잘 해내리라 믿어요. 안�..
+EXPLORE|말하기도우미|clear;m=100000;q=238:2|NEXT > QUIT|q238:2>3|end after: 이제 제가 가르쳐 드릴 것은 모두 가르쳐 드�..
+EXPLORE|말하기도우미|clear;m=100000;q=238:2|QUIT|q238:2>3|end after: 정말 잘 하셨어요!.
+TARGET|277|사냥도우미|10 seeds
+EXPLORE|사냥도우미|clear;m=100000;q=238:4|L:네, 다 잡았어요. > NEXT > NEXT > NEXT > NEXT|q238:4>6 초보자용남자갑주+1|end after: 이로서 제가 가르쳐 드릴것은 끝이 났군요. �..
+EXPLORE|사냥도우미|clear;m=100000;q=238:4|L:네, 다 잡았어요. > NEXT > NEXT > NEXT > QUIT|q238:4>6 초보자용남자갑주+1|end after: 이로서 제가 가르쳐 드릴것은 끝이 났군요. �..
+EXPLORE|사냥도우미|clear;m=100000;q=238:4|L:네, 다 잡았어요. > NEXT > NEXT > QUIT|q238:4>6 초보자용남자갑주+1|end after: 바람의나라에서는 다양한 갑옷이 준비되어 �..
+EXPLORE|사냥도우미|clear;m=100000;q=238:4|L:네, 다 잡았어요. > NEXT > QUIT|q238:4>6 초보자용남자갑주+1|end after: 갑옷은 방어력을 낮춰주는 역할을 하며, 방어..
+SUSPECT|사냥도우미|clear;m=100000;q=238:4;fill|L:네, 다 잡았어요. > NEXT > NEXT > NEXT > NEXT|dialog closed before the path ended
+SUSPECT|사냥도우미|clear;m=100000;q=238:4;fill|L:네, 다 잡았어요. > NEXT > NEXT > NEXT > QUIT|dialog closed before the path ended
+SUSPECT|사냥도우미|clear;m=100000;q=238:4;fill|L:네, 다 잡았어요. > NEXT > NEXT > QUIT|dialog closed before the path ended
+TARGET|279|신규낙랑|8 seeds
+EXPLORE|신규낙랑|clear;m=100000;q=238:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:none>7 노란비서+20|end after: <노란비서>을 얻다!!!
+EXPLORE|신규낙랑|clear;m=100000;q=238:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > QUIT|q238:none>7 노란비서+20|end after: <노란비서>을 얻다!!!
+EXPLORE|신규낙랑|clear;m=100000;q=238:none;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:none>7|end after: 소지품이 가득 차서 노란비서를 줄 수 없습니..
+EXPLORE|신규낙랑|clear;m=100000;q=238:none;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > QUIT|q238:none>7|end after: 소지품이 가득 차서 노란비서를 줄 수 없습니..
+EXPLORE|신규낙랑|clear;m=100000;q=238:0|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:0>7 노란비서+20|end after: <노란비서>을 얻다!!!
+EXPLORE|신규낙랑|clear;m=100000;q=238:0|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > QUIT|q238:0>7 노란비서+20|end after: <노란비서>을 얻다!!!
+EXPLORE|신규낙랑|clear;m=100000;q=238:0;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:0>7|end after: 소지품이 가득 차서 노란비서를 줄 수 없습니..
+EXPLORE|신규낙랑|clear;m=100000;q=238:0;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > QUIT|q238:0>7|end after: 소지품이 가득 차서 노란비서를 줄 수 없습니..
+SUSPECT|신규낙랑|clear;m=100000;q=238:none;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q238:none>7, normal q238:none>7 노란비서+20
+SUSPECT|신규낙랑|clear;m=100000;q=238:none;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > QUIT|full inventory advanced the quest without the reward: full q238:none>7, normal q238:none>7 노란비서+20
+SUSPECT|신규낙랑|clear;m=100000;q=238:0;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q238:0>7, normal q238:0>7 노란비서+20
+SUSPECT|신규낙랑|clear;m=100000;q=238:0;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > QUIT|full inventory advanced the quest without the reward: full q238:0>7, normal q238:0>7 노란비서+20
+TARGET|307|미궁무기장인|9 seeds
+EXPLORE|미궁무기장인|clear;m=100000;q=243:none;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 작약주가 있습니다. > NEXT|방천화극+1 작약주-1|end after: 작약주를 가지고 있구만... 예전엔 참 좋은 술..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:none;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 작약주가 있습니다. > QUIT|방천화극+1 작약주-1|end after: 작약주를 가지고 있구만... 예전엔 참 좋은 술..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:none;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 신작약주가 있습니다. > NEXT|신작약주-1 전사방천화극+1|end after: 신작약주를 가지고 있구만... 예전엔 참 좋은 ..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:none;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 신작약주가 있습니다. > QUIT|신작약주-1 전사방천화극+1|end after: 신작약주를 가지고 있구만... 예전엔 참 좋은 ..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:0;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 작약주가 있습니다. > NEXT|방천화극+1 작약주-1|end after: 작약주를 가지고 있구만... 예전엔 참 좋은 술..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:0;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 작약주가 있습니다. > QUIT|방천화극+1 작약주-1|end after: 작약주를 가지고 있구만... 예전엔 참 좋은 술..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:0;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 신작약주가 있습니다. > NEXT|신작약주-1 전사방천화극+1|end after: 신작약주를 가지고 있구만... 예전엔 참 좋은 ..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:0;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 신작약주가 있습니다. > QUIT|신작약주-1 전사방천화극+1|end after: 신작약주를 가지고 있구만... 예전엔 참 좋은 ..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:2;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 작약주가 있습니다. > NEXT|방천화극+1 작약주-1|end after: 작약주를 가지고 있구만... 예전엔 참 좋은 술..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:2;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 작약주가 있습니다. > QUIT|방천화극+1 작약주-1|end after: 작약주를 가지고 있구만... 예전엔 참 좋은 술..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:2;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 신작약주가 있습니다. > NEXT|신작약주-1 전사방천화극+1|end after: 신작약주를 가지고 있구만... 예전엔 참 좋은 ..
+EXPLORE|미궁무기장인|clear;m=100000;q=243:2;i=신작약주=1,작약주=1|NEXT > NEXT > NEXT > L:예 신작약주가 있습니다. > QUIT|신작약주-1 전사방천화극+1|end after: 신작약주를 가지고 있구만... 예전엔 참 좋은 ..
+TARGET|336|톨루이|4 seeds
+EXPLORE|톨루이|clear;m=100000;q=250:none|NEXT > NEXT > NEXT > NEXT > L:예 > NEXT|money-1000 q250:none>0 청도톨+1|end after: 청도톨 받았습니다.
+EXPLORE|톨루이|clear;m=100000;q=250:none|NEXT > NEXT > NEXT > NEXT > L:예 > QUIT|money-1000 q250:none>0 청도톨+1|end after: 청도톨 받았습니다.
+EXPLORE|톨루이|clear;m=100000;q=250:0|NEXT > NEXT > NEXT > NEXT > L:예 > NEXT|money-1000 청도톨+1|end after: 청도톨 받았습니다.
+EXPLORE|톨루이|clear;m=100000;q=250:0|NEXT > NEXT > NEXT > NEXT > L:예 > QUIT|money-1000 청도톨+1|end after: 청도톨 받았습니다.
+TARGET|339|배심원투표도우미|9 seeds
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > NEXT|q247:none>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > QUIT|q247:none>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:우측(오른쪽)의 사람이 잘못했습니다.|q247:none>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:판단할 자신이 없군요. 기권합니다.|q247:none>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > NEXT|q247:none>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > QUIT|q247:none>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:우측(오른쪽)의 사람이 잘못했습니다.|q247:none>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:none;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:판단할 자신이 없군요. 기권합니다.|q247:none>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > NEXT|q247:0>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > QUIT|q247:0>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:우측(오른쪽)의 사람이 잘못했습니다.|q247:0>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:판단할 자신이 없군요. 기권합니다.|q247:0>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > NEXT|q247:0>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:좌측(왼쪽)의 사람이 잘못했습니다. > QUIT|q247:0>1|end after: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:우측(오른쪽)의 사람이 잘못했습니다.|q247:0>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:0;i=노란비서=1|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT > L:예. 동의합니다. > NEXT > NEXT > L:판단할 자신이 없군요. 기권합니다.|q247:0>1|open: 당신의 의견이 반영되었습니다.
+EXPLORE|배심원투표도우미|clear;m=100000;q=247:1;i=노란비서=1|L:예. 지금 귀환하겠습니다. > NEXT|q247:1>0 노란비서-1|end after: 안녕히 가십시오.
+TARGET|352|촌장부인|18 seeds
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > NEXT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 고사반을 드릴께요. 고사반은 장수를 의미하�..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 어머.. 감사합니다. 그럼 저도 보답으로 뭔가 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:0,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > NEXT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:0,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:0,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 고사반을 드릴께요. 고사반은 장수를 의미하�..
+EXPLORE|촌장부인|clear;m=100000;q=267:0,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 어머.. 감사합니다. 그럼 저도 보답으로 뭔가 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:1,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > NEXT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:1,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:1,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 고사반을 드릴께요. 고사반은 장수를 의미하�..
+EXPLORE|촌장부인|clear;m=100000;q=267:1,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 어머.. 감사합니다. 그럼 저도 보답으로 뭔가 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:1!,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > NEXT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:1!,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:1!,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 고사반을 드릴께요. 고사반은 장수를 의미하�..
+EXPLORE|촌장부인|clear;m=100000;q=267:1!,269:none;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > QUIT|q269:none>0! 고사반+1 파김치-1|end after: 어머.. 감사합니다. 그럼 저도 보답으로 뭔가 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > NEXT|q269:0>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > QUIT|q269:0>0! 고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > QUIT|q269:0>0! 고사반+1 파김치-1|end after: 고사반을 드릴께요. 고사반은 장수를 의미하�..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > QUIT|q269:0>0! 고사반+1 파김치-1|end after: 어머.. 감사합니다. 그럼 저도 보답으로 뭔가 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0!;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > NEXT|고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0!;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > NEXT > QUIT|고사반+1 파김치-1|end after: 매달 아이템을 모으시고 계신가요? 고사반도 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0!;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > NEXT > QUIT|고사반+1 파김치-1|end after: 고사반을 드릴께요. 고사반은 장수를 의미하�..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0!;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:네. 드릴께요 > QUIT|고사반+1 파김치-1|end after: 어머.. 감사합니다. 그럼 저도 보답으로 뭔가 ..
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0!;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > L:안돼요.|q269:0!>0|end after: 파김치를 저에게 주시겠어요?
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0!;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > NEXT > QUIT|q269:0!>0|end after: 파김치를 저에게 주시겠어요?
+EXPLORE|촌장부인|clear;m=100000;q=267:none,269:0!;i=벌레쫓는부적=2,벼=1,색비단=1,조=1,콩=1,파김치=1|NEXT > QUIT|q269:0!>0|end after: 파김치를 담그셨군요! 저에게도 좀 주시면 안..
+TARGET|353|백몽연|12 seeds
+TARGET|354|백나연|6 seeds
+TARGET|362|오선릉|9 seeds
+TARGET|363|백리향|12 seeds
+TARGET|367|고대유물연구가|4 seeds
+EXPLORE|고대유물연구가|clear;m=100000;q=234:none|NEXT > NEXT > L:저도 발굴 작업을 돕겠습니다! > NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q234:none>0|end after: 그럼 주의하면서 구슬조각을 구해다 주겠는�..
+TARGET|368|도삭산대신선|12 seeds
+EXPLORE|도삭산대신선|clear;m=100000;q=236:1;i=신선의책=1|NEXT > NEXT > NEXT > NEXT|도삭산의서+1 신선의책-1|end after: 그럼 다음에 기회가 되면 또 보세..
+TARGET|369|도삭산신선|9 seeds
+TARGET|370|도나영|12 seeds
+TARGET|378|비밀|6 seeds
+EXPLORE|비밀|clear;m=100000;q=249:none|NEXT > NEXT > NEXT|q249:none>0|end after: 요술구슬, 좌우막대, 상하막대, 누름막대...이..
+EXPLORE|비밀|clear;m=100000;q=249:none;i=요술놀이구슬=1|NEXT > NEXT > NEXT|q249:none>0|end after: 요술구슬, 좌우막대, 상하막대, 누름막대...이..
+EXPLORE|비밀|clear;m=100000;q=249:0;i=요술놀이구슬=1|L:이 요술놀이 구슬은 얼마나 하나요? > NEXT > NEXT > L:15만전이라... 좋아요, 팔께요. > NEXT|money+150000 요술놀이구슬-1|end after: 아주 현명한 선택이야. 자, 15만전 여기있네. �..
+EXPLORE|비밀|clear;m=100000;q=249:0;i=요술놀이구슬=1|L:이 요술놀이 구슬은 얼마나 하나요? > NEXT > NEXT > L:15만전이라... 좋아요, 팔께요. > QUIT|money+150000 요술놀이구슬-1|end after: 아주 현명한 선택이야. 자, 15만전 여기있네. �..
+TARGET|379|두만|14 seeds
+TARGET|392|털보죄수|4 seeds
+OUTCOME|털보죄수|clear;m=100000;q=246:none|q246:none>0
+TARGET|393|여자죄수|4 seeds
+TARGET|445|말도|10 seeds
+EXPLORE|말도|clear;m=100000;q=238:none|NEXT > NEXT > NEXT > NEXT|q238:none>1|end after: 안녕하세요
+TARGET|446|사도|14 seeds
+TARGET|447|아도|18 seeds
+EXPLORE|아도|clear;m=100000;q=238:8|NEXT > NEXT > NEXT > NEXT > NEXT|q238:8>9 동동주+1 막걸리+1|end after: 동동주 1개, 막걸리 1개 받았다.
+EXPLORE|아도|clear;m=100000;q=238:8|NEXT > NEXT > NEXT > NEXT > QUIT|q238:8>9 동동주+1 막걸리+1|end after: 동동주 1개, 막걸리 1개 받았다.
+EXPLORE|아도|clear;m=100000;q=238:8;i=도토리=50,동동주=1,막걸리=1,탁주=1|NEXT > NEXT > NEXT > NEXT > NEXT|q238:8>9 동동주+1 막걸리+1|end after: 동동주 1개, 막걸리 1개 받았다.
+SUSPECT|아도|clear;m=100000;q=238:8;i=도토리=50,동동주=1,막걸리=1,탁주=1|NEXT > NEXT > NEXT > NEXT > NEXT|repeatable reward: first q238:8>9 동동주+1 막걸리+1, second q238:9>10 노란비서+21 직업의길비서+1
+EXPLORE|아도|clear;m=100000;q=238:8;i=도토리=50,동동주=1,막걸리=1,탁주=1|NEXT > NEXT > NEXT > NEXT > QUIT|q238:8>9 동동주+1 막걸리+1|end after: 동동주 1개, 막걸리 1개 받았다.
+SUSPECT|아도|clear;m=100000;q=238:8;i=도토리=50,동동주=1,막걸리=1,탁주=1|NEXT > NEXT > NEXT > NEXT > QUIT|repeatable reward: first q238:8>9 동동주+1 막걸리+1, second q238:9>10 노란비서+21 직업의길비서+1
+EXPLORE|아도|clear;m=100000;q=238:9;i=도토리=50,동동주=1,막걸리=1,탁주=1|NEXT > NEXT|q238:9>10 노란비서+21 직업의길비서+1|end after: 이제 직업의길로 보내드릴테니, 어떤 직업을 ..
+EXPLORE|아도|clear;m=100000;q=238:9;i=도토리=50,동동주=1,막걸리=1,탁주=1;fill|NEXT > NEXT|q238:9>10|end after: 이제 직업의길로 보내드릴테니, 어떤 직업을 ..
+SUSPECT|아도|clear;m=100000;q=238:9;i=도토리=50,동동주=1,막걸리=1,탁주=1;fill|NEXT > NEXT|full inventory advanced the quest without the reward: full q238:9>10, normal q238:9>10 노란비서+21 직업의길비서+1
+TARGET|450|북방나무꾼|4 seeds
+TARGET|451|일본전설대장장이|9 seeds
+TARGET|463|대원왕|36 seeds
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:none|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:none;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:0,255:none,254:none|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:0,255:none,254:none;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:1,255:none,254:none;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|NEXT > QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:1,255:none,254:none;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT|q261:1>2 건강한아기원숭이+1 아픈아기원숭이-1|end after: 헉헉, 자, 씻으신듯이 열이 가라앉으셨다. 어�..
+EXPLORE|대원왕|clear;m=100000;q=261:2,255:none,254:none|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:2,255:none,254:none;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:0,254:none|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:0>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:0,254:none;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:0>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:1,254:none;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT|q255:1>2 깨끗한얼음-1 오도독망고과편+1|end after: 자, 이건 내가 드리시는 답례이시다. 이 땅에�..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:0|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:0;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:9|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:9;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:13|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:13;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:14|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:14;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:28|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+EXPLORE|대원왕|clear;m=100000;q=261:none,255:none,254:28;i=깨끗한얼음=1,마른갈대=1,아픈아기원숭이=1,진원비전탕=2,창힐독본=1|QUIT > NEXT > NEXT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q255:none>1|end after: 할 수가 없으시다. 나에게 그 얼음이라는걸 �..
+TARGET|464|소원왕|24 seeds
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:none|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:none;i=마른갈대=1|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:none;i=마른갈대=1;fill|NEXT > NEXT > NEXT|q256:none>1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:0,254:none|NEXT > NEXT > NEXT|q256:0>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:0,254:none;i=마른갈대=1|NEXT > NEXT > NEXT|q256:0>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:0,254:none;i=마른갈대=1;fill|NEXT > NEXT > NEXT|q256:0>1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:2,254:none|NEXT > NEXT|q256:2>3 비철단도+1|end after: 인간들이 버리시고 가신 물건 중에서 제일 무..
+EXPLORE|소원왕|clear;m=100000;q=256:2,254:none;i=마른갈대=1|NEXT > NEXT|q256:2>3 비철단도+1|end after: 인간들이 버리시고 가신 물건 중에서 제일 무..
+EXPLORE|소원왕|clear;m=100000;q=256:2,254:none;i=마른갈대=1;fill|NEXT > NEXT|q256:2>3|end after: 인간들이 버리시고 가신 물건 중에서 제일 무..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:0|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:0;i=마른갈대=1|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:0;i=마른갈대=1;fill|NEXT > NEXT > NEXT|q256:none>1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:33|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:33;i=마른갈대=1|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:33;i=마른갈대=1;fill|NEXT > NEXT > NEXT|q256:none>1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:34|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:34;i=마른갈대=1|NEXT > NEXT > NEXT|q256:none>1 원숭이편지+1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+EXPLORE|소원왕|clear;m=100000;q=256:none,254:34;i=마른갈대=1;fill|NEXT > NEXT > NEXT|q256:none>1|end after: 상의하고 싶은 문제가 있으시니, 일단 편지를..
+SUSPECT|소원왕|clear;m=100000;q=256:none,254:none;i=마른갈대=1;fill|NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q256:none>1, normal q256:none>1 원숭이편지+1
+SUSPECT|소원왕|clear;m=100000;q=256:0,254:none;i=마른갈대=1;fill|NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q256:0>1, normal q256:0>1 원숭이편지+1
+SUSPECT|소원왕|clear;m=100000;q=256:2,254:none;i=마른갈대=1;fill|NEXT > NEXT|full inventory advanced the quest without the reward: full q256:2>3, normal q256:2>3 비철단도+1
+SUSPECT|소원왕|clear;m=100000;q=256:none,254:0;i=마른갈대=1;fill|NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q256:none>1, normal q256:none>1 원숭이편지+1
+SUSPECT|소원왕|clear;m=100000;q=256:none,254:33;i=마른갈대=1;fill|NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q256:none>1, normal q256:none>1 원숭이편지+1
+SUSPECT|소원왕|clear;m=100000;q=256:none,254:34;i=마른갈대=1;fill|NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q256:none>1, normal q256:none>1 원숭이편지+1
+TARGET|465|토원왕|33 seeds
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:none|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:none;i=마른갈대=1,원숭이편지=1,좌황활력환=1|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:0,257:none,254:none|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:0,257:none,254:none;i=마른갈대=1,원숭이편지=1,좌황활력환=1|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:1,257:none,254:none|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:1,257:none,254:none;i=마른갈대=1,원숭이편지=1,좌황활력환=1|NEXT > NEXT > NEXT|q256:1>2 원숭이편지-1|end after: 편지는 잘 받았으니 소원왕에게도 안부 전해�..
+EXPLORE|토원왕|clear;m=100000;q=256:1,257:none,254:none;i=마른갈대=1,원숭이편지=1,좌황활력환=1|NEXT > NEXT > PREV > L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:2,257:none,254:none|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:2,257:none,254:none;i=마른갈대=1,원숭이편지=1,좌황활력환=1|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:0,254:none|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:0>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:0,254:none;i=마른갈대=1,원숭이편지=1,좌황활력환=1|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:0>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:2,254:none;i=마른갈대=1,원숭이편지=1,좌황활력환=1|NEXT > NEXT|q257:2>3 과일나라+1 좌황활력환-1|end after: 최대한 절약하셔서 많이 나누어 드셔야 하시�..
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:0|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:0;i=마른갈대=1,원숭이편지=1,좌황활력환=1|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:3|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:3;i=마른갈대=1,원숭이편지=1,좌황활력환=1|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:29|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+EXPLORE|토원왕|clear;m=100000;q=256:none,257:none,254:29;i=마른갈대=1,원숭이편지=1,좌황활력환=1|L:무슨 일이신가요? > NEXT > NEXT > NEXT|q257:none>1|end after: 그 약을 좀 구해다주셔야한다.
+TARGET|466|중원왕|24 seeds
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:none;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:0,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:0>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:0,254:none;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:0>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:0,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:0>1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:2,254:none|NEXT > NEXT|q258:2>3 진원창+1|end after: 부하들과 같이 물고기 사냥 가실때 쓰셨던 물..
+EXPLORE|중원왕|clear;m=100000;q=258:2,254:none;i=마른갈대=1|NEXT > NEXT|q258:2>3 진원창+1|end after: 부하들과 같이 물고기 사냥 가실때 쓰셨던 물..
+EXPLORE|중원왕|clear;m=100000;q=258:2,254:none;i=마른갈대=1;fill|NEXT > NEXT|q258:2>3|end after: 부하들과 같이 물고기 사냥 가실때 쓰셨던 물..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:0|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:0;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:0;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:34|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:34;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:34;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:35|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:35;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1 아기원숭이+1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+EXPLORE|중원왕|clear;m=100000;q=258:none,254:35;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|q258:none>1|end after: 이 아이의 부족을 찾아 데려다 주셔야 한다. �..
+SUSPECT|중원왕|clear;m=100000;q=258:none,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|full inventory advanced the quest without the reward: full q258:none>1, normal q258:none>1 아기원숭이+1
+SUSPECT|중원왕|clear;m=100000;q=258:0,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|full inventory advanced the quest without the reward: full q258:0>1, normal q258:0>1 아기원숭이+1
+SUSPECT|중원왕|clear;m=100000;q=258:2,254:none;i=마른갈대=1;fill|NEXT > NEXT|full inventory advanced the quest without the reward: full q258:2>3, normal q258:2>3 진원창+1
+SUSPECT|중원왕|clear;m=100000;q=258:none,254:0;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|full inventory advanced the quest without the reward: full q258:none>1, normal q258:none>1 아기원숭이+1
+SUSPECT|중원왕|clear;m=100000;q=258:none,254:34;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|full inventory advanced the quest without the reward: full q258:none>1, normal q258:none>1 아기원숭이+1
+SUSPECT|중원왕|clear;m=100000;q=258:none,254:35;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT|full inventory advanced the quest without the reward: full q258:none>1, normal q258:none>1 아기원숭이+1
+TARGET|467|수원왕|30 seeds
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:none;i=마른갈대=1,아기원숭이=1,원숭이편지=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:0,259:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:0,259:none,254:none;i=마른갈대=1,아기원숭이=1,원숭이편지=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:1,259:none,254:none;i=마른갈대=1,아기원숭이=1,원숭이편지=1|NEXT > NEXT|q258:1>2 아기원숭이-1|end after: 밥도 안드시고 실의에 빠져계시는 원숭이 부�..
+EXPLORE|수원왕|clear;m=100000;q=258:1,259:none,254:none;i=마른갈대=1,아기원숭이=1,원숭이편지=1|NEXT > QUIT > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:2,259:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:2,259:none,254:none;i=마른갈대=1,아기원숭이=1,원숭이편지=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:0,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:0>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:0,254:none;i=마른갈대=1,아기원숭이=1,원숭이편지=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:0>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:1,254:none;i=마른갈대=1,아기원숭이=1,원숭이편지=1|NEXT > NEXT|q259:1>2 바나나다발+1 원숭이편지-1|end after: 분명 이걸 찾아오시느라 많은 고생을 하셨겠�..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:0|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:0;i=마른갈대=1,아기원숭이=1,원숭이편지=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:29|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:29;i=마른갈대=1,아기원숭이=1,원숭이편지=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:30|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+EXPLORE|수원왕|clear;m=100000;q=258:none,259:none,254:30;i=마른갈대=1,아기원숭이=1,원숭이편지=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q259:none>1|end after: 부족이 사시는 이 건물안에 남아계신 것은 확..
+TARGET|468|성원왕|21 seeds
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:none;i=마른갈대=1,호박=80|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:0,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:0>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:0,254:none;i=마른갈대=1,호박=80|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:0>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:1,254:none;i=마른갈대=1,호박=80|NEXT > NEXT|q260:1>2 바다거북의알+1 호박-80|end after: 들여다 보실거다! 고마우시다! 아주 수고하셨..
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:0|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:0;i=마른갈대=1,호박=80|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:21|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:21;i=마른갈대=1,호박=80|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:31|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+EXPLORE|성원왕|clear;m=100000;q=260:none,254:31;i=마른갈대=1,호박=80|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q260:none>1|end after: 구해주시길 원하신다. 그래 한 80개면 충분하�..
+TARGET|469|화원왕|33 seeds
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:0,261:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:0,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:0,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:1,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|NEXT > NEXT|q263:1>2 특제원숭이술-1|end after: 고마우시다. 잘 받으셨다고 내 인사를 전해주..
+EXPLORE|화원왕|clear;m=100000;q=263:1,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|NEXT > PREV > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:1,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|NEXT > PREV > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:2,261:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:2,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:2,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:0,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:0>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:0,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:0>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:0,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:0>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:2,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|NEXT > NEXT|q261:2>3 건강한아기원숭이-1 초코바나나+1|end after: 참, 이건 작은 답례이시다. 이 근처에서 얻으�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:0|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:0;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:0;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:24|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:24;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:24;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:27|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:27;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1 아픈아기원숭이+1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+EXPLORE|화원왕|clear;m=100000;q=263:none,261:none,254:27;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q261:none>1|end after: 우두머리만이 열병을 치료하시는 능력을 가�..
+SUSPECT|화원왕|clear;m=100000;q=263:none,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:none>1, normal q261:none>1 아픈아기원숭이+1
+SUSPECT|화원왕|clear;m=100000;q=263:0,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:none>1, normal q261:none>1 아픈아기원숭이+1
+SUSPECT|화원왕|clear;m=100000;q=263:1,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|NEXT > PREV > L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:none>1, normal q261:none>1 아픈아기원숭이+1
+SUSPECT|화원왕|clear;m=100000;q=263:2,261:none,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:none>1, normal q261:none>1 아픈아기원숭이+1
+SUSPECT|화원왕|clear;m=100000;q=263:none,261:0,254:none;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:0>1, normal q261:0>1 아픈아기원숭이+1
+SUSPECT|화원왕|clear;m=100000;q=263:none,261:none,254:0;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:none>1, normal q261:none>1 아픈아기원숭이+1
+SUSPECT|화원왕|clear;m=100000;q=263:none,261:none,254:24;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:none>1, normal q261:none>1 아픈아기원숭이+1
+SUSPECT|화원왕|clear;m=100000;q=263:none,261:none,254:27;i=건강한아기원숭이=1,마른갈대=1,특제원숭이술=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q261:none>1, normal q261:none>1 아픈아기원숭이+1
+TARGET|470|금원왕|24 seeds
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:none;i=두목의증표=1,마른갈대=1,사각방패=3,철도=3|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:0,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:0>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:0,254:none;i=두목의증표=1,마른갈대=1,사각방패=3,철도=3|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:0>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:1,254:none;i=두목의증표=1,마른갈대=1,사각방패=3,철도=3|NEXT > NEXT|q262:1>2 두목의증표-1 사각방패+1|end after: 이건 내가 요 앞에 보초를 서고있으시는 병사..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:0|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:0;i=두목의증표=1,마른갈대=1,사각방패=3,철도=3|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:17|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:17;i=두목의증표=1,마른갈대=1,사각방패=3,철도=3|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:19|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:19;i=두목의증표=1,마른갈대=1,사각방패=3,철도=3|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:32|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+EXPLORE|금원왕|clear;m=100000;q=262:none,254:32;i=두목의증표=1,마른갈대=1,사각방패=3,철도=3|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q262:none>1|end after: 그걸 자네가 도로 되찾아주셨으면 좋으시겠�..
+TARGET|471|목원왕|24 seeds
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:none;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:0,254:none|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:0>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:0,254:none;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:0>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:0,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:0>1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:2,254:none|NEXT > NEXT|q263:2>3 거울방패+1|end after: 나는 워낙 미남이시라 더이상 필요없으시니�..
+EXPLORE|목원왕|clear;m=100000;q=263:2,254:none;i=마른갈대=1|NEXT > NEXT|q263:2>3 거울방패+1|end after: 나는 워낙 미남이시라 더이상 필요없으시니�..
+EXPLORE|목원왕|clear;m=100000;q=263:2,254:none;i=마른갈대=1;fill|NEXT > NEXT|q263:2>3|end after: 나는 워낙 미남이시라 더이상 필요없으시니�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:0|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:0;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:0;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:32|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:32;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:32;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:33|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:33;i=마른갈대=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1 특제원숭이술+1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+EXPLORE|목원왕|clear;m=100000;q=263:none,254:33;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|q263:none>1|end after: 자, 이 술을 내 친구 화원왕에게 가져다 주시�..
+SUSPECT|목원왕|clear;m=100000;q=263:none,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q263:none>1, normal q263:none>1 특제원숭이술+1
+SUSPECT|목원왕|clear;m=100000;q=263:0,254:none;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q263:0>1, normal q263:0>1 특제원숭이술+1
+SUSPECT|목원왕|clear;m=100000;q=263:2,254:none;i=마른갈대=1;fill|NEXT > NEXT|full inventory advanced the quest without the reward: full q263:2>3, normal q263:2>3 거울방패+1
+SUSPECT|목원왕|clear;m=100000;q=263:none,254:0;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q263:none>1, normal q263:none>1 특제원숭이술+1
+SUSPECT|목원왕|clear;m=100000;q=263:none,254:32;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q263:none>1, normal q263:none>1 특제원숭이술+1
+SUSPECT|목원왕|clear;m=100000;q=263:none,254:33;i=마른갈대=1;fill|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q263:none>1, normal q263:none>1 특제원숭이술+1
+TARGET|472|진봉쇄장군|21 seeds
+EXPLORE|진봉쇄장군|clear;m=100000;q=257:1,254:none|L:원숭이들이 약이 필요하다고 합니다. > NEXT > NEXT|q257:1>2 좌황활력환+1|end after: 얼마나 효능이 있을런지는 모르지만, 모른 척..
+EXPLORE|진봉쇄장군|clear;m=100000;q=257:1,254:none;i=원숭이의편지=1|L:원숭이들이 약이 필요하다고 합니다. > NEXT > NEXT|q257:1>2 좌황활력환+1|end after: 얼마나 효능이 있을런지는 모르지만, 모른 척..
+EXPLORE|진봉쇄장군|clear;m=100000;q=257:1,254:none;i=원숭이의편지=1;fill|L:원숭이들이 약이 필요하다고 합니다. > NEXT > NEXT|q257:1>2|end after: 얼마나 효능이 있을런지는 모르지만, 모른 척..
+SUSPECT|진봉쇄장군|clear;m=100000;q=257:1,254:none;i=원숭이의편지=1;fill|L:원숭이들이 약이 필요하다고 합니다. > NEXT > NEXT|full inventory advanced the quest without the reward: full q257:1>2, normal q257:1>2 좌황활력환+1
+TARGET|474|참원왕|40 seeds
+EXPLORE|참원왕|clear;m=100000;q=254:1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > L:네, 괜찮습니다. > NEXT > NEXT|q254:1>2|end after: 나에게 알려주지 않겠나? 부탁하겠네. 아마, �..
+EXPLORE|참원왕|clear;m=100000;q=254:1;i=마른갈대=1,진원비전탕=1,창힐독본=1,횃불=1|L:제가 도와드릴 일은 없을까요? > L:네, 꼭 도와드릴께요. > NEXT > NEXT > L:네, 괜찮습니다. > NEXT > NEXT|q254:1>2|end after: 나에게 알려주지 않겠나? 부탁하겠네. 아마, �..
+EXPLORE|참원왕|clear;m=100000;q=254:15|NEXT > NEXT|q254:15>16|end after: 좀 더 수고해서 다른 왕들의 의견을 들어줬으..
+EXPLORE|참원왕|clear;m=100000;q=254:15;i=마른갈대=1,진원비전탕=1,창힐독본=1,횃불=1|NEXT > NEXT|q254:15>16|end after: 좀 더 수고해서 다른 왕들의 의견을 들어줬으..
+TARGET|475|인랑|21 seeds
+TARGET|476|오른이|6 seeds
+TARGET|489|피리부는소년|15 seeds
+TARGET|539|장안성백성|10 seeds
+EXPLORE|장안성백성|clear;m=100000;q=235:none|NEXT > NEXT > L:진황보검이라. 멋지군요! > NEXT|q235:none>1|end after: 그럼 일단 황실에 들어가 북천좌상님에게 진�..
+EXPLORE|장안성백성|clear;m=100000;q=235:none|NEXT > NEXT > L:진황보검이라. 멋지군요! > QUIT|q235:none>1|end after: 그럼 일단 황실에 들어가 북천좌상님에게 진�..
+TARGET|540|장안성백성2|8 seeds
+EXPLORE|장안성백성2|clear;m=100000;q=235:5|NEXT > NEXT > NEXT|q235:5>6|end after: 영환도사님을 찾아가보세요. 곧 또 여행을 떠..
+TARGET|541|북천좌상|9 seeds
+TARGET|542|영환도사|18 seeds
+EXPLORE|영환도사|clear;m=100000;q=235:7;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > PREV|q235:7>8 강시의손톱-100|open: 바로 만년원귀가 그들의 우두머리네. 만년원�..
+EXPLORE|영환도사|clear;m=100000;q=235:7;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > QUIT|q235:7>8 강시의손톱-100|end after: 그럼 조심하고 꼭 성공하길 빌겠네!
+EXPLORE|영환도사|clear;m=100000;q=235:7;i=강시의손톱=100,만년원귀의손톱=1|NEXT > PREV|q235:7>8 강시의손톱-100|open: 수고했네. 해내리라 믿었다네. 그럼 이제 강�..
+EXPLORE|영환도사|clear;m=100000;q=235:7;i=강시의손톱=100,만년원귀의손톱=1|NEXT > QUIT|q235:7>8 강시의손톱-100|end after: 바로 만년원귀가 그들의 우두머리네. 만년원�..
+EXPLORE|영환도사|clear;m=100000;q=235:7;i=강시의손톱=100,만년원귀의손톱=1|QUIT|q235:7>8 강시의손톱-100|end after: 수고했네. 해내리라 믿었다네. 그럼 이제 강�..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > NEXT > NEXT > NEXT > PREV|q235:8>9 만년원귀의손톱-1 혈황검+1|open: 그럼 이걸 자네에게 주도록 하지. 나에게 필�..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > NEXT > NEXT > NEXT > QUIT|q235:8>9 만년원귀의손톱-1 혈황검+1|end after: 그럼 황실에 안부라도 전해주시게나. 허허허.
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > NEXT > NEXT > PREV|q235:8>9 만년원귀의손톱-1 혈황검+1|open: 엇. 이 칼의 귀퉁이에 조그맣게 글자가 써있�..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > NEXT > NEXT > QUIT|q235:8>9 만년원귀의손톱-1 혈황검+1|end after: 그럼 이걸 자네에게 주도록 하지. 나에게 필�..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > NEXT > PREV|q235:8>9 만년원귀의손톱-1 혈황검+1|open: 음.. 음.. 내가 가진 검과 비슷하게 생긴것인�..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > NEXT > QUIT|q235:8>9 만년원귀의손톱-1 혈황검+1|end after: 엇. 이 칼의 귀퉁이에 조그맣게 글자가 써있�..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > PREV|q235:8>9 만년원귀의손톱-1 혈황검+1|open: 그런데 혈황검이란 것은 어떻게 생긴 검인가?..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > NEXT > QUIT|q235:8>9 만년원귀의손톱-1 혈황검+1|end after: 음.. 음.. 내가 가진 검과 비슷하게 생긴것인�..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > PREV|q235:8>9 만년원귀의손톱-1 혈황검+1|open: 해냈군! 드디어 만년원귀를.. 내 나이가 들어 ..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|NEXT > QUIT|q235:8>9 만년원귀의손톱-1 혈황검+1|end after: 그런데 혈황검이란 것은 어떻게 생긴 검인가?..
+EXPLORE|영환도사|clear;m=100000;q=235:8;i=강시의손톱=100,만년원귀의손톱=1|QUIT|q235:8>9 만년원귀의손톱-1 혈황검+1|end after: 해냈군! 드디어 만년원귀를.. 내 나이가 들어 ..
+TARGET|543|장안성간수|8 seeds
+EXPLORE|장안성간수|clear;m=100000;q=235:1|NEXT > NEXT > NEXT > NEXT > NEXT|q235:1>2 종이쪽지+1|end after: 이 종이쪽지를 가져가면 내가 보냈다는걸 알�..
+TARGET|544|부여성북문지기|12 seeds
+EXPLORE|부여성북문지기|clear;m=100000;q=235:2;i=종이쪽지=1|NEXT > L:편지 여기있습니다. > NEXT > NEXT|q235:2>3 종이쪽지-1 천상복숭아+1|end after: 천상복숭아라. 저희집에 가보로 내려오는 물�..
+TARGET|545|흉노장로2|12 seeds
+EXPLORE|흉노장로2|clear;m=100000;q=235:3;i=천상복숭아=1|NEXT > L:좋소! 대신 진황보검을 넘겨주시오! > NEXT > NEXT > NEXT|q235:3>4 진랑검+1 천상복숭아-1|end after: 어찌됐든 아들의 목숨을 구할 수 있게 되어서..
+TARGET|549|만월늑대인간|28 seeds
+EXPLORE|만월늑대인간|clear;m=100000;q=248:none|L:당신은 누구신가요?|q248:none>1|end after: 이 곳은 저주받은자들이 기거하는 곳...
+EXPLORE|만월늑대인간|clear;m=100000;q=248:0|L:당신은 누구신가요?|q248:0>1|end after: 이 곳은 저주받은자들이 기거하는 곳...
+EXPLORE|만월늑대인간|clear;m=100000;q=248:1|L:올라오는 길에 살펴보니,|q248:1>2|end after: 내 이름은 노정월. 저주를 받아 늑대의 형상�..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:1|L:다른 비슷한 늑대인간이 있던데요.|q248:1>2|end after: 내 이름은 노정월. 저주를 받아 늑대의 형상�..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:2|L:당신은 어떻게 저와 얘기를 나눌 수 있죠?|q248:2>3|end after: 그렇지. 그들 모두 저주를 받아, 음의 기운이 ..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:3|L:그런 일이...|q248:3>4|end after: 양의기운이 가장 강한 장소인 이 곳은 나의 �..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:4|L:저런, 안타까운 일이로군요.|q248:4>5|end after: 이 곳에서 미쳐 있는 그들은 보름달이 뜨는 �..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:5|L:음의기운... 양의기운...|q248:5>6|end after: 이 곳을 감싸는 불의 기운은 양의 기운으로 �..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:5|L:어려운 말이로군요.|q248:5>6|end after: 이 곳을 감싸는 불의 기운은 양의 기운으로 �..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:6|L:그런 불행한 일이...|q248:6>7|end after: 그 둘의 기운이 완벽하게 조화를 이루는 시점..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:7|L:제가 도와드릴 일이라도?|q248:7>8|end after: 그런데... 최근들어 저주받은 자, 망령된 자들..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:8|L:신궁에서 보았던 자 들이로군요...|q248:8>9|end after: 악귀가 되어버린 해골왕, 귀기 서린 유성지, �..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:9|L:알겠습니다. 무엇을 가져오면 될까요?|q248:9>10|end after: 그들을 쓰러뜨리고, 그들의 증표를 가져와 주..
+EXPLORE|만월늑대인간|clear;m=100000;q=248:10|NEXT|q248:10>11|end after: 해골왕의 증표인 [해골왕의뼈], 그리고 유성�..
+TARGET|550|마동참가신청|6 seeds
+TARGET|551|암흑귀인|4 seeds
+TARGET|553|추모NPC|4 seeds
+TARGET|555|률|8 seeds
+EXPLORE|률|clear;m=100000;q=238:none|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:none>7 노란비서+20|end after: 단, 이것들은 1회용 이므로, 반드시 필요할 때..
+EXPLORE|률|clear;m=100000;q=238:none;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:none>7|open: 소지품이 가득 차서 노란비서를 줄 수 없습니..
+EXPLORE|률|clear;m=100000;q=238:0|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:0>7 노란비서+20|end after: 단, 이것들은 1회용 이므로, 반드시 필요할 때..
+EXPLORE|률|clear;m=100000;q=238:0;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|q238:0>7|open: 소지품이 가득 차서 노란비서를 줄 수 없습니..
+SUSPECT|률|clear;m=100000;q=238:none;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q238:none>7, normal q238:none>7 노란비서+20
+SUSPECT|률|clear;m=100000;q=238:0;fill|NEXT > NEXT > NEXT > NEXT > NEXT > NEXT|full inventory advanced the quest without the reward: full q238:0>7, normal q238:0>7 노란비서+20
+TARGET|562|자철공|8 seeds
+EXPLORE|자철공|clear;m=100000;q=245:none|L:지남침을 구해주십시오. > NEXT > NEXT > NEXT > NEXT > NEXT|q245:none>1|end after: 괴성왕에게서 자철석을, 무슈후슈에게서 뿔 1..

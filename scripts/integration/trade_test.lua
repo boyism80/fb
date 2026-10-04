@@ -8,8 +8,6 @@ local MESSAGE_TRADE_CANCELLED_BY_ME      = "내가 교환을 취소했습니다.
 local MESSAGE_TRADE_SUCCESS              = "교환에 성공했습니다."
 local MESSAGE_TRADE_FAILED               = "교환에 실패했습니다."
 
-local DEFAULT_INTERVAL = 100
-
 local function progress(bot, message)
     local level = "debug"
     if message:find("FAILED", 1, true) ~= nil
@@ -45,11 +43,10 @@ test_suite {
         for i = 0, ctx:bot_count() - 1 do
             local bot = ctx:bot(i)
             progress(bot, "CLEANUP INVENTORY")
-            bot:chat("/아이템초기화")
+            bot:clear_inventory()
             bot:chat("/아이템삭제")
             bot:money(0)
         end
-        ctx:sleep(1000)
     end,
 
     scenarios = {
@@ -106,7 +103,9 @@ test_suite {
             progress(bot2, "LOCK TRADE (COMPLETE)")
             trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_SUCCESS))
 
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot1, resp.update_internal, function()
+                return bot1:money() == 20000
+            end)
 
             if bot1:money() ~= 20000 or bot2:money() ~= 10000 then
                 progress(bot1, "FAILED: money mismatch")
@@ -156,7 +155,9 @@ test_suite {
             progress(bot2, "LOCK TRADE (COMPLETE)")
             trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_SUCCESS))
 
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot1, resp.update_internal, function()
+                return bot1:money() == ENCODED_PAST_U32
+            end)
 
             if bot1:money() ~= ENCODED_PAST_U32 or bot2:money() ~= 0 then
                 progress(bot1, "FAILED: money past-uint32 encode outcome wrong")
@@ -191,7 +192,9 @@ test_suite {
             trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
             progress(bot2, "TRADE FAILED AS EXPECTED")
 
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot1, resp.item_update, function()
+                return bot1:item_count("도토리") == 150
+            end)
 
             if bot1:item_count("도토리") ~= 150 or bot2:item_count("도토리") ~= 150 then
                 progress(bot1, "FAILED: item count changed after stack overflow reject")
@@ -224,8 +227,6 @@ test_suite {
             progress(bot2, "LOCK TRADE (expect fail)")
             trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
             progress(bot2, "TRADE FAILED AS EXPECTED")
-
-            ctx:sleep(DEFAULT_INTERVAL)
 
             if bot1:has_item_by_name("현철중검") or bot2:has_item_by_name("현철중검") == false then
                 progress(bot1, "FAILED: inventory-full trade outcome wrong")
@@ -263,7 +264,9 @@ test_suite {
             trade.lock(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
             progress(bot1, "TRADE FAILED AS EXPECTED")
 
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot2, resp.item_update, function()
+                return bot2:item_count("도토리") == 200
+            end)
 
             if bot1:item_count("도토리") ~= 100 or bot2:item_count("도토리") ~= 200 then
                 progress(bot1, "FAILED: counts changed after first overflow reject")
@@ -283,7 +286,9 @@ test_suite {
             progress(bot1, "LOCK TRADE (COMPLETE)")
             trade.lock(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_SUCCESS))
 
-            ctx:sleep(DEFAULT_INTERVAL)
+            lib.wait.state(bot2, resp.item_update, function()
+                return bot2:item_count("도토리") == 99
+            end)
 
             if bot1:item_count("도토리") ~= 201 then
                 progress(bot1, "FAILED: bot1 도토리 != 201")

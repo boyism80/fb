@@ -1,5 +1,6 @@
 #include <fb/bot/bot_controller_factory.h>
 #include <fb/bot/bot_test_runner.h>
+#include <fb/bot/integration/lua_integration_test.h>
 #include <fb/bot/test_mode.h>
 #include <fb/config.h>
 #include <fb/console.h>
@@ -9,6 +10,7 @@
 #include <boost/program_options.hpp>
 
 #include <sstream>
+#include <vector>
 
 using namespace std;
 namespace po = boost::program_options;
@@ -27,7 +29,13 @@ int main(int argc, char** argv)
         "Test mode: 'load' for load testing, 'integration' for integration testing")(
         "config,c",
         po::value<string>()->default_value("config/config.dev.json"),
-        "Configuration file path");
+        "Configuration file path")(
+        "test,t",
+        po::value<string>()->default_value(""),
+        "Integration mode: comma-separated test names to run (e.g. skill,matchmaking), regardless of label")(
+        "label,l",
+        po::value<string>()->default_value(""),
+        "Integration mode: run the tests registered with this label (regular, script, explorer). Empty runs regular");
 
     po::variables_map vm;
     try
@@ -57,6 +65,16 @@ int main(int argc, char** argv)
     auto& mode_str    = vm["mode"].as<string>();
     if (mode_str == "integration")
     {
+        auto names   = std::vector<string>();
+        auto sstream = std::stringstream(vm["test"].as<string>());
+        auto name    = string();
+        while (std::getline(sstream, name, ','))
+        {
+            if (name.empty() == false)
+                names.push_back(name);
+        }
+        fb::bot::integration::lua_integration_test::select(std::move(names), vm["label"].as<string>());
+
         return run_bot_test<fb::bot::test_mode::INTEGRATION_TEST>(config_path);
     }
     else if (mode_str == "load")

@@ -122,13 +122,13 @@ return {
                 return
             end
             if selected == 1 then
+                if me:mkitem(ITEM_BONG_BOOK, 1) == nil then
+                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
+                    return
+                end
                 local q = me:start_quest(quest.QUEST_BONG_BOOK)
                 if q == nil then
                     me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
-                    return
-                end
-                if me:mkitem(ITEM_BONG_BOOK, 1) == nil then
-                    me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                     return
                 end
                 local btn = me:dialog(npc, '여기있네. 그럼 재밌게 읽게나.', { prev = false, next = false })

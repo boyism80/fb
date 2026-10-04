@@ -39,7 +39,6 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_hide);
     this->bind(&game_bot_controller::on_die);
     this->bind(&game_bot_controller::on_buff);
-    this->bind(&game_bot_controller::on_unbuff);
     this->bind(&game_bot_controller::on_update_cc);
     this->bind(&game_bot_controller::on_update);
     this->bind(&game_bot_controller::on_map);
@@ -57,8 +56,15 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     // generated per-subtype types would otherwise own the opcode and later
     // request<bulletin_bot>() would skip binding.
     this->bind_default<integration::bulletin_bot>();
-    this->bind_default<integration::dialog_bot>();
-    this->bind_default<integration::dialog_ext_bot>();
+    this->bind<integration::dialog_bot>([](game_bot& bot, integration::dialog_bot& dialog) -> async::task<void> {
+        bot.record_dialog(dialog);
+        co_return;
+    });
+    this->bind<integration::dialog_ext_bot>(
+        [](game_bot& bot, integration::dialog_ext_bot& dialog) -> async::task<void> {
+            bot.record_dialog(dialog);
+            co_return;
+        });
     this->bind_default<integration::trade_bot>();
     integration::protocol_registry::bind_default(*this);
 }
@@ -129,6 +135,8 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp
     //{
     //     bot.send(game_reqs::chat(false, "/랜덤이동"));
     // }
+
+    bot.record_message(response.text);
 
     if (response.type == MESSAGE_TYPE::NOTIFY)
     {
@@ -267,15 +275,11 @@ async::task<void> game_bot_controller::on_die(game_bot& bot, const game_resp::di
 
 async::task<void> game_bot_controller::on_buff(game_bot& bot, const game_resp::spell_buff& response)
 {
-    // Add the buff to the bot's active buffs by name
-    bot.add_buff(response.name);
-    co_return;
-}
-
-async::task<void> game_bot_controller::on_unbuff(game_bot& bot, const game_resp::spell_unbuff& response)
-{
-    // Remove the buff from the bot's active buffs by name
-    bot.remove_buff(response.buff_name);
+    // spell_unbuff shares opcode 0x3A with spell_buff and is sent as the buff name with a zero duration.
+    if (response.duration.total_milliseconds() == 0)
+        bot.remove_buff(response.name);
+    else
+        bot.add_buff(response.name);
     co_return;
 }
 

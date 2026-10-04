@@ -133,8 +133,7 @@ test_suite {
 
             -- Bot2 hellfire while invincible — mob must survive.
             log("debug", "rabbit quest: bot2 hellfire while invincible")
-            bot2:chat("/마력바꾸기 10000")
-            ctx:sleep(DEFAULT_INTERVAL)
+            bot2:base_mp(10000)
 
             bot2:request(
                 resp.update_internal,

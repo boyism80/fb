@@ -1,7 +1,6 @@
 local lib = require("integration.lib")
 
-local SCRIPT           = "test/integration"
-local DEFAULT_INTERVAL = 150
+local SCRIPT = "test/integration"
 
 local function progress(bot, message)
     log("debug", message)
@@ -13,7 +12,6 @@ local function spawn_assembly(ctx, bot)
     local body = bot:spawn_monster("다람쥐", pos[1], pos[2] + 1)
     local p1   = bot:spawn_monster("토끼", pos[1] + 1, pos[2] + 1)
     local p2   = bot:spawn_monster("토끼", pos[1] + 2, pos[2] + 1)
-    ctx:sleep(DEFAULT_INTERVAL)
 
     if body.oid == 0 or p1.oid == 0 or p2.oid == 0 then
         return nil

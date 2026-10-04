@@ -5,8 +5,6 @@ local model    = require("integration.model")
 local MESSAGE_NO_RECIPE   = "조합할 수 없습니다."
 local MESSAGE_MIX_SUCCESS = "성공하였습니다."
 
-local DEFAULT_INTERVAL = 100
-
 function run(ctx, index)
     local bot       = ctx:bot(index)
     local bot_count = ctx:bot_count()
@@ -14,7 +12,6 @@ function run(ctx, index)
     for recipe_index, recipe in ipairs(model.recipes()) do
         if (recipe_index - 1) % bot_count == index then
             bot:clear_inventory()
-            ctx:sleep(DEFAULT_INTERVAL)
 
             local expected_success = {}
             local expected_failed  = {}

@@ -243,6 +243,12 @@ function M.run_case(case, caster, target, slot, opts)
             protocol.spell_cast(cast_type, slot, message, oid, position),
             wrapped)
 
+        if packet == nil or packet == false then
+            progress(caster, "CASE %s FAILED no matching response", case.name)
+            log_fail("[spell_runner] %s got no matching response", case.name)
+            return false
+        end
+
         if should_retry() then
             local retry_text = packet and packet.text or ""
             if #retry_text > 40 then

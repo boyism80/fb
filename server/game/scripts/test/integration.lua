@@ -43,6 +43,97 @@ local function harden(mob, extra_hp)
     mob:hp(mob:maxhp())
 end
 
+local function explorer_snapshot(me, quest_ids)
+    local quests = {}
+    for id in tostring(quest_ids or ''):gmatch('%d+') do
+        local q = me:quest(tonumber(id))
+        local state = 'none'
+        if q ~= nil then
+            state = tostring(q:step()) .. (q:completed() and '!' or '')
+        end
+        table.insert(quests, id .. ':' .. state)
+    end
+
+    local counts = {}
+    for _, item in pairs(me:items()) do
+        local name = item:model():name()
+        counts[name] = (counts[name] or 0) + item:count()
+    end
+    local items = {}
+    for name, count in pairs(counts) do
+        table.insert(items, name .. '=' .. count)
+    end
+    table.sort(items)
+
+    local map = me:map()
+    local map_id = map ~= nil and map:id() or 0
+    return string.format('q=%s;m=%d;map=%d;i=%s',
+        table.concat(quests, ','), me:money(), map_id, table.concat(items, ','))
+end
+
+-- spec: ';'-separated parts, applied in this order:
+--   'clear'                   empty the inventory and remove every quest in lib.quest
+--   'i=<name>=<count>,...'    create items
+--   'q=<id>:<state>,...'      quest state as in snapshot ('none', '<step>', '<step>!')
+--   'm=<money>'               set the money
+--   'fill'                    fill every empty inventory slot with 목도
+-- Returns an error message, or nil on success.
+local function apply_state(me, spec)
+    local parts = {}
+    for part in tostring(spec or ''):gmatch('[^;]+') do
+        parts[part:match('^(%a+)') or part] = part
+    end
+
+    if parts.clear ~= nil then
+        for slot, item in pairs(me:items()) do
+            me:rmitem(slot, item:count())
+        end
+        -- NPC scripts also touch quests the seed does not name, and those must not leak
+        -- into the next path.
+        for name, id in pairs(require('lib.quest')) do
+            if name:match('^QUEST_') and type(id) == 'number' then
+                me:remove_quest(id)
+            end
+        end
+        -- Bots are created with a random gender, and some rewards depend on it.
+        me:gender(GENDER.MALE)
+    end
+    if parts.i ~= nil then
+        for name, count in parts.i:sub(3):gmatch('([^,=]+)=(%d+)') do
+            if me:mkitem(name, tonumber(count)) == nil then
+                return 'cannot create ' .. name
+            end
+        end
+    end
+    if parts.q ~= nil then
+        for id, state in parts.q:sub(3):gmatch('(%d+):([^,]+)') do
+            id = tonumber(id)
+            me:remove_quest(id)
+            if state ~= 'none' then
+                local q = me:start_quest(id)
+                if q == nil then
+                    return 'cannot start quest ' .. id
+                end
+                q:step(tonumber(state:match('%d+')))
+                if state:sub(-1) == '!' then
+                    q:complete()
+                end
+            end
+        end
+    end
+    if parts.m ~= nil then
+        me:money(tonumber(parts.m:sub(3)))
+    end
+    if parts.fill ~= nil then
+        for _ = 1, 52 do
+            if me:mkitem('목도', 1) == nil then
+                break
+            end
+        end
+    end
+    return nil
+end
+
 -- Links two parts to a body and sets its parts mode.
 -- mode: 'PARTS' (default) or 'BODY'.
 
@@ -390,6 +481,307 @@ return {
         end
 
         report(me, ok, step)
+    end,
+
+    explode = function(me, step)
+        error('integration boom')
+    end,
+
+    verify_super_hide = function(me, step, expect)
+        local want   = expect == '1'
+        local hidden = me:super_hide() == true
+        local cloack = me:state() == STATE.CLOACK
+        if want then
+            if hidden == false or cloack == false then
+                return report(me, false, step, string.format('hide=%s cloack=%s', tostring(hidden), tostring(cloack)))
+            end
+        else
+            if hidden or cloack then
+                return report(me, false, step, 'still hidden')
+            end
+        end
+        report(me, true, step)
+    end,
+
+    clear_super_hide = function(me, step)
+        me:super_hide(false)
+        me:state(STATE.NORMAL)
+        if me:super_hide() == true or me:state() == STATE.CLOACK then
+            return report(me, false, step, 'still hidden')
+        end
+        report(me, true, step)
+    end,
+
+    set_role = function(me, step, name, role)
+        local you = name2ch(name)
+        if you == nil then
+            return report(me, false, step, 'missing')
+        end
+        local value = tonumber(role)
+        you:role(value)
+        if you:role() ~= value then
+            return report(me, false, step, 'role mismatch')
+        end
+        report(me, true, step)
+    end,
+
+    verify_no_buff = function(me, step, name, spell_name)
+        local you = name2ch(name)
+        if you == nil then
+            return report(me, false, step, 'missing')
+        end
+        local names = {}
+        for _, buff in pairs(you:buffs()) do
+            table.insert(names, buff:model():name())
+        end
+        local listed = table.concat(names, ',')
+        if you:isbuff(spell_name) then
+            return report(me, false, step, listed)
+        end
+        report(me, true, step, listed)
+    end,
+
+    -- kind: phydef | derate | rates. Applies the buff and checks the stat comes back on unbuff.
+    verify_buff_roundtrip = function(me, step, spell_name, kind)
+        local function read_stat()
+            if kind == 'phydef' then
+                return me:buff_phydef()
+            elseif kind == 'derate' then
+                return me:damage_derate()
+            elseif kind == 'rates' then
+                return me:damage_rate() + me:skill_damage_rate()
+            end
+            return nil
+        end
+
+        if name2spell(spell_name) == nil then
+            return report(me, false, step, 'no spell')
+        end
+
+        local before = read_stat()
+        if before == nil then
+            return report(me, false, step, 'unknown kind')
+        end
+
+        me:buff(spell_name, 30)
+        local mid = read_stat()
+        me:unbuff(spell_name)
+        local after = read_stat()
+
+        if mid == before then
+            return report(me, false, step, 'stat unchanged while buffed')
+        end
+        if after ~= before then
+            return report(me, false, step, string.format('before=%s mid=%s after=%s', before, mid, after))
+        end
+        report(me, true, step)
+    end,
+
+    verify_derate = function(me, step, expected)
+        local now  = me:damage_derate()
+        local want = tonumber(expected)
+        if now ~= want then
+            return report(me, false, step, string.format('derate=%s expected=%s', tostring(now), tostring(want)))
+        end
+        report(me, true, step)
+    end,
+
+    snapshot_derate = function(me, step)
+        report(me, true, step, tostring(me:damage_derate()))
+    end,
+
+    snapshot_buff_phydef = function(me, step)
+        report(me, true, step, tostring(me:buff_phydef()))
+    end,
+
+    verify_buff_phydef = function(me, step, expected)
+        local now  = me:buff_phydef()
+        local want = tonumber(expected)
+        if now ~= want then
+            return report(me, false, step, string.format('phydef=%s expected=%s', tostring(now), tostring(want)))
+        end
+        report(me, true, step)
+    end,
+
+    verify_concast_heal = function(me, step, spell_name)
+        if name2spell(spell_name) == nil then
+            return report(me, false, step, 'no spell')
+        end
+        if me:isbuff(spell_name) ~= true then
+            me:buff(spell_name, 30)
+        end
+
+        local maxhp = me:maxhp()
+        me:hp(math.max(1, maxhp // 2))
+        local before = me:hp()
+        sleep(2200)
+        local after = me:hp()
+        me:unbuff(spell_name)
+
+        if after <= before then
+            return report(me, false, step, string.format('before=%s after=%s', before, after))
+        end
+        report(me, true, step)
+    end,
+
+    verify_mimic = function(me, step)
+        if me:isbuff('의태') ~= true then
+            return report(me, false, step, 'no buff')
+        end
+        report(me, true, step)
+    end,
+
+    -- mode 'warp': the caller already stands in 견우직녀의집, so the warp stays on this server.
+    -- mode 'blocked': 견우직녀의집 is hosted by a server that is not running, so the warp is refused.
+    verify_reunion = function(me, step, mode)
+        local origin = me:map()
+        if origin == nil or origin:model() == nil then
+            return report(me, false, step, 'no map')
+        end
+        local origin_name = origin:model():name()
+        if mode == 'warp' and origin_name ~= '견우직녀의집' then
+            return report(me, false, step, 'warp mode must start in 견우직녀의집, map=' .. origin_name)
+        end
+
+        local hair = me:hair()
+        me:buff('견우직녀축복', 30)
+        me:unbuff('견우직녀축복')
+
+        -- The warp in on_unbuff runs on the map thread, so the new position shows up after a short delay.
+        local now_name = ''
+        local x, y = 0, 0
+        for _ = 1, 10 do
+            local now = me:map()
+            if now ~= nil and now:model() ~= nil then
+                now_name = now:model():name()
+            end
+            x, y = me:position()
+            if mode == 'warp' and x >= 7 and x <= 12 and y >= 6 and y <= 15 then
+                break
+            end
+            sleep(100)
+        end
+
+        local expect_hair = 89
+        if me:gender() == GENDER.MALE then
+            expect_hair = 19
+        end
+        local hair_now = me:hair()
+        me:hair(hair)
+
+        local ok = hair_now == expect_hair
+        if mode == 'warp' then
+            ok = ok and now_name == '견우직녀의집' and x >= 7 and x <= 12 and y >= 6 and y <= 15
+        else
+            ok = ok and now_name == origin_name
+        end
+
+        if ok then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('mode=%s map=%s pos=(%d,%d) hair=%s',
+                tostring(mode), now_name, x, y, tostring(hair_now)))
+        end
+    end,
+
+    -- state: 'none' removes the quest, '<n>' starts it at step n, '<n>:done' also completes it.
+    set_quest = function(me, step, id, state)
+        id = tonumber(id)
+        if id == nil or state == nil then
+            return report(me, false, step, 'usage: set_quest <step> <id> <none|n|n:done>')
+        end
+
+        me:remove_quest(id)
+        if state == 'none' then
+            return report(me, true, step)
+        end
+
+        local qstep, done = state:match('^(%d+)(.*)$')
+        if qstep == nil or (done ~= '' and done ~= ':done') then
+            return report(me, false, step, 'bad quest state ' .. state)
+        end
+        local q = me:start_quest(id)
+        if q == nil then
+            return report(me, false, step, 'cannot start quest ' .. tostring(id))
+        end
+        q:step(tonumber(qstep))
+        if done == ':done' then
+            q:complete()
+        end
+        report(me, true, step)
+    end,
+
+    set_money = function(me, step, value)
+        me:money(tonumber(value))
+        report(me, true, step)
+    end,
+
+    -- expected: 'none', '<n>' (in progress at step n) or '<n>:done' (completed at step n).
+    verify_quest = function(me, step, id, expected)
+        local q = me:quest(tonumber(id))
+        local actual = 'none'
+        if q ~= nil then
+            actual = tostring(q:step())
+            if q:completed() then
+                actual = actual .. ':done'
+            end
+        end
+
+        if actual == expected then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('quest %s is %s, expected %s', tostring(id), actual, tostring(expected)))
+        end
+    end,
+
+    -- spec: comma-separated 'name=count' pairs, e.g. '홍옥=0,정화비서=1'. 'money=n' checks the money.
+    verify_items = function(me, step, spec)
+        local mismatches = {}
+        for name, expected in tostring(spec):gmatch('([^,=]+)=(%d+)') do
+            local actual = 0
+            if name == 'money' then
+                actual = me:money()
+            else
+                for _, item in pairs(me:items(name) or {}) do
+                    actual = actual + item:count()
+                end
+            end
+            if actual ~= tonumber(expected) then
+                table.insert(mismatches, string.format('%s=%d(expected %s)', name, actual, expected))
+            end
+        end
+
+        if #mismatches == 0 then
+            report(me, true, step)
+        else
+            report(me, false, step, table.concat(mismatches, ','))
+        end
+    end,
+
+    -- Reports 'q=<id>:<state>,...;m=<money>;map=<id>;i=<name>=<count>,...' for the NPC explorer.
+    -- Quest state is 'none', '<step>' or '<step>!' when completed. Items are summed by name and sorted.
+    snapshot = function(me, step, quest_ids)
+        report(me, true, step, explorer_snapshot(me, quest_ids))
+    end,
+
+    -- Applies a set_state spec; see apply_state for the format.
+    set_state = function(me, step, spec)
+        local error = apply_state(me, spec)
+        if error ~= nil then
+            return report(me, false, step, error)
+        end
+        report(me, true, step)
+    end,
+
+    -- Reports the snapshot, then applies the set_state spec so the explorer saves one request
+    -- per dialog path.
+    snapshot_reset = function(me, step, quest_ids, spec)
+        local text = explorer_snapshot(me, quest_ids)
+        local error = apply_state(me, spec)
+        if error ~= nil then
+            return report(me, false, step, error)
+        end
+        report(me, true, step, text)
     end,
 
     cleanup = function(me, step)

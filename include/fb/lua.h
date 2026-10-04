@@ -259,13 +259,14 @@ public:
     using promise_type = std::shared_ptr<async::task_completion_source<bool>>;
 
 private:
-    context*     _parent = nullptr;
-    promise_type _promise;
-    call_options _options;
-    context**    _dialog_slot     = nullptr; // &character::dialog while parked
-    int          _running         = 0;
-    bool         _release_pending = false;
-    std::string  _script_path;
+    context*                              _parent = nullptr;
+    promise_type                          _promise;
+    call_options                          _options;
+    context**                             _dialog_slot     = nullptr; // &character::dialog while parked
+    int                                   _running         = 0;
+    bool                                  _release_pending = false;
+    std::string                           _script_path;
+    std::function<void(std::string_view)> _on_error;
 
     void finish_resume();
 
@@ -442,6 +443,9 @@ public:
     void                options(call_options opts);
     const call_options& options() const;
     void                clear_script_path();
+    void                on_error(std::function<void(std::string_view)> handler);
+    void                clear_on_error();
+    void                report_error(std::string_view message);
     bool                has_dialog_slot() const;
     void                bind_dialog_slot(context*& slot);
     void                clear_dialog_slot();
@@ -644,6 +648,10 @@ public:
 };
 
 void run_async(context::guard g, int argc);
+
+// Called once, before the first resume of a script, with the argument count still on the stack.
+// The game server uses this to attach an admin-only error reporter. nullptr disables it.
+void set_script_error_bind(void (*fn)(context& ctx, int argc));
 
 } // namespace fb::lua
 

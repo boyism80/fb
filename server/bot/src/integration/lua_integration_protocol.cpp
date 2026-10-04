@@ -320,7 +320,14 @@ int lua_builder_dialog(lua_State* L)
     auto name      = lua.argc() >= 6 && lua.is_nil(6) == false ? lua.tostring(6) : std::string{};
     auto button    = DIALOG_RESULT::NEXT;
     if (lua.argc() >= 7 && lua.is_nil(7) == false)
+    {
         button = enum_parse<DIALOG_RESULT>(lua.tostring(7));
+
+        // TEXT dialogs carry the pressed button in the action field.
+        if (type_name == "NORMAL" || type_name == "TEXT" || type_name == "TEXT_NO_MSG" ||
+            type_name == "NORMAL_NO_MSG" || type_name == "LOOK")
+            action = static_cast<uint8_t>(button);
+    }
 
     if (type_name == "NORMAL" || type_name == "TEXT")
     {

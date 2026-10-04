@@ -330,3 +330,62 @@ int builtin::game_bot::builtin_request_dialog_ext(lua_State* L)
 {
     return bot_request_dialog_impl<dialog_ext_bot, push_dialog_ext>(L);
 }
+
+// bot:last_dialog() -> seq, dialog table or nil. The table carries kind = "menu" (0x2F) or "ext" (0x30).
+int builtin::game_bot::builtin_last_dialog(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    auto dialog     = std::optional<dialog_bot>{};
+    auto dialog_ext = std::optional<dialog_ext_bot>{};
+    auto seq        = bot->last_dialog(dialog, dialog_ext);
+
+    lua->pushinteger(static_cast<lua_Integer>(seq));
+    if (dialog.has_value())
+    {
+        push_dialog(lua, dialog.value());
+        lua->pushstring("kind");
+        lua->pushstring("menu");
+        lua->settable(-3);
+    }
+    else if (dialog_ext.has_value())
+    {
+        push_dialog_ext(lua, dialog_ext.value());
+        lua->pushstring("kind");
+        lua->pushstring("ext");
+        lua->settable(-3);
+    }
+    else
+    {
+        lua->pushnil();
+    }
+    return 2;
+}
+
+// bot:take_messages() -> array of message texts received since the last call.
+int builtin::game_bot::builtin_take_messages(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    auto messages = bot->take_messages();
+    lua->new_table();
+    for (size_t i = 0; i < messages.size(); ++i)
+    {
+        lua->pushinteger(static_cast<lua_Integer>(i + 1));
+        lua->pushstring(messages[i]);
+        lua->settable(-3);
+    }
+    return 1;
+}

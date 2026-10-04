@@ -23,7 +23,6 @@ local function build_cases(ctx)
             end,
             pre = function(caster, target, state)
                 caster:map_move("가상계", 1, 1, ctx:suite_slot())
-                ctx:sleep(500)
                 state.expected_mp = caster:mp() - 30
             end,
             condition = function(packet, _, _, state)
@@ -33,7 +32,9 @@ local function build_cases(ctx)
                 return nil
             end,
             post = function(caster, target)
-                ctx:sleep(1000)
+                lib.wait.state(caster, resp.position, function()
+                    return caster:map() == target:map()
+                end, 1000)
                 if distance_near(caster:position(), target:position()) == false then
                     -- warn only
                 end
@@ -49,7 +50,6 @@ local function build_cases(ctx)
             end,
             pre = function(caster, target, state)
                 target:map_move("가상계", 1, 1, ctx:suite_slot())
-                ctx:sleep(500)
                 state.expected_mp = caster:mp() - 30
             end,
             condition = function(packet, _, _, state)
@@ -59,7 +59,9 @@ local function build_cases(ctx)
                 return nil
             end,
             post = function(caster, target)
-                ctx:sleep(1000)
+                lib.wait.state(target, resp.position, function()
+                    return target:map() == caster:map()
+                end, 1000)
                 if distance_near(target:position(), caster:position()) == false then
                     -- warn only
                 end

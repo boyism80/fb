@@ -31,9 +31,10 @@ local CASES = {
                 return false
             end
 
-            caster:sleep(1000)
-
-            if caster:mp() ~= 0 then
+            local drained = lib.wait.state(caster, resp.update_internal, function()
+                return caster:mp() == 0
+            end, 1000)
+            if drained == false then
                 return false
             end
             state.packet = target_result
