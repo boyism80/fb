@@ -1,4 +1,5 @@
 {
+    "transfer_secret": "c049fb55e1a0e6ba3793653f57ddbeeffc2956dbb950f518",
     "worlds": {
         "world-1": {
             "id": 1,

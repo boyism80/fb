@@ -17,6 +17,7 @@ module.exports = function () {
                     id: 0,
                     name: `login-${worldName}`,
                     world: worldConf.id,
+                    transfer_secret: conf.transfer_secret,
                     ip: conf.host,
                     port: worldConf.login.port,
                     thread: {

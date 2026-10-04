@@ -52,6 +52,7 @@ module.exports = function () {
                     id: game.id,
                     name: game.name,
                     world: game.world,
+                    transfer_secret: conf.transfer_secret,
                     delay: 5,
                     ip: conf.host,
                     port: game.port,
