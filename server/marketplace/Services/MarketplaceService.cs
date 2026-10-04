@@ -197,28 +197,58 @@ public class MarketplaceService : IMarketplaceService
             throw new LogicException(ErrorCode.MarketplaceListingNotFound);
         }
 
-        await _dbContext.Marketplace.UpdateListingStatusAsync(listing.Id, ListingState.CANCELLED);
+        await using var conn = _dbContext.GetUnifiedConnection();
+        await conn.OpenAsync();
+        await using var transaction = await conn.BeginTransactionAsync();
+
+        // The snapshot above only selects the error code; purchase and expire may have changed the row since
+        var lockedListing = await _dbContext.Marketplace.GetListingByIdForUpdateAsync(listingId, transaction);
+        if (lockedListing == null)
+        {
+            await transaction.RollbackAsync();
+            await _logService.WriteAsync("marketplace_cancel_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                error = "listing_not_found_or_inactive"
+            });
+            throw new LogicException(ErrorCode.MarketplaceListingNotFound);
+        }
+
+        if (await _dbContext.Marketplace.UpdateListingStatusAsync(lockedListing.Id, ListingState.CANCELLED, transaction) == false)
+        {
+            await transaction.RollbackAsync();
+            await _logService.WriteAsync("marketplace_cancel_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                error = "concurrent_status_change"
+            });
+            throw new LogicException(ErrorCode.MarketplaceListingNotFound);
+        }
+
+        await transaction.CommitAsync();
 
         // Return remaining items to seller via storage_box
         var attachments = new List<Fb.Model.Dsl>
         {
             new Fb.Model.Dsl.Item
             {
-                Id = listing.ItemModel,
-                Count = listing.RemainingCount,
-                Durability = listing.ItemDurability,
-                CustomName = listing.ItemCustomName,
+                Id = lockedListing.ItemModel,
+                Count = lockedListing.RemainingCount,
+                Durability = lockedListing.ItemDurability,
+                CustomName = lockedListing.ItemCustomName,
                 Percent = 100.0
             }.ToDSL()
         };
 
         await _storageService.CreateStorageBoxAsync(
             world,
-            listing.SellerId,
+            lockedListing.SellerId,
             Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
             Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
             attachments: attachments,
-            externalRef: $"marketplace:cancel:{listing.Id}");
+            externalRef: $"marketplace:cancel:{lockedListing.Id}");
 
         // Log successful cancellation
         await _logService.WriteAsync("marketplace_cancel_success", new
@@ -261,6 +291,7 @@ public class MarketplaceService : IMarketplaceService
         await using var conn = _dbContext.GetUnifiedConnection();
         await conn.OpenAsync();
         await using var transaction = await conn.BeginTransactionAsync();
+        var finished = false;
 
         try
         {
@@ -269,6 +300,7 @@ public class MarketplaceService : IMarketplaceService
             if (listing == null)
             {
                 await transaction.RollbackAsync();
+                finished = true;
                 await _logService.WriteAsync("marketplace_purchase_failed", new
                 {
                     buyer_id = buyerId,
@@ -284,6 +316,7 @@ public class MarketplaceService : IMarketplaceService
             if (actualPurchaseCount == 0)
             {
                 await transaction.RollbackAsync();
+                finished = true;
                 await _logService.WriteAsync("marketplace_purchase_failed", new
                 {
                     buyer_id = buyerId,
@@ -309,6 +342,7 @@ public class MarketplaceService : IMarketplaceService
             {
                 // Another transaction already purchased or insufficient stock
                 await transaction.RollbackAsync();
+                finished = true;
                 await _logService.WriteAsync("marketplace_purchase_failed", new
                 {
                     buyer_id = buyerId,
@@ -391,6 +425,7 @@ public class MarketplaceService : IMarketplaceService
 
             // Commit transaction
             await transaction.CommitAsync();
+            finished = true;
 
             // Log successful purchase
             await _logService.WriteAsync("marketplace_purchase_success", new
@@ -416,14 +451,18 @@ public class MarketplaceService : IMarketplaceService
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
-            await _logService.WriteAsync("marketplace_purchase_failed", new
+            // Guarded paths already rolled back and logged; after commit the purchase has succeeded.
+            if (finished == false)
             {
-                buyer_id = buyerId,
-                listing_id = listingId,
-                purchase_id = purchaseId,
-                error = ex.Message
-            });
+                await transaction.RollbackAsync();
+                await _logService.WriteAsync("marketplace_purchase_failed", new
+                {
+                    buyer_id = buyerId,
+                    listing_id = listingId,
+                    purchase_id = purchaseId,
+                    error = ex.Message
+                });
+            }
             throw;
         }
     }

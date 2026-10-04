@@ -102,15 +102,18 @@ namespace Marketplace.Services
             await using var conn = dbContext.GetUnifiedConnection();
             await conn.OpenAsync(cancellationToken);
             await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
+            var committed = false;
 
             try
             {
-                // Get expired active listings
+                // Lock expired active listings; rows held by cancel/purchase are left for the next run
                 var sql = $@"
                     SELECT * FROM `marketplace_listing`
                     WHERE `status` = {ListingState.ACTIVE.Escape()}
                       AND `expire_date` < NOW()
-                    LIMIT {ExpireBatchSize}";
+                    ORDER BY `expire_date`
+                    LIMIT {ExpireBatchSize}
+                    FOR UPDATE SKIP LOCKED";
 
                 var expiredListings = (await conn.QueryAsync<MarketplaceListing>(sql, null, transaction)).ToList();
 
@@ -120,17 +123,21 @@ namespace Marketplace.Services
                     return;
                 }
 
-                // Update status to EXPIRED
+                // Update only the locked batch so every EXPIRED row gets its items returned below
+                var parameters = new DynamicParameters();
+                parameters.Add("ListingIds", expiredListings.Select(x => x.Id).ToList());
+
                 var updateSql = $@"
                     UPDATE `marketplace_listing`
                     SET `status` = {ListingState.EXPIRED.Escape()},
                         `updated_date` = NOW()
-                    WHERE `status` = {ListingState.ACTIVE.Escape()}
-                      AND `expire_date` < NOW()";
+                    WHERE `id` IN @ListingIds
+                      AND `status` = {ListingState.ACTIVE.Escape()}";
 
-                await conn.ExecuteAsync(updateSql, null, transaction);
+                await conn.ExecuteAsync(updateSql, parameters, transaction);
 
                 await transaction.CommitAsync(cancellationToken);
+                committed = true;
 
                 // Process each expired listing to return items with registration fee
                 // This is done after transaction commit
@@ -147,7 +154,10 @@ namespace Marketplace.Services
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync(cancellationToken);
+                if (committed == false)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                }
                 await logService.WriteAsync("marketplace_expire_failed", new
                 {
                     error = ex.Message

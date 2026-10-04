@@ -126,16 +126,29 @@ namespace Marketplace.Reepository
             return listingId;
         }
 
-        public async Task<bool> UpdateListingStatusAsync(string listingId, ListingState status)
+        public async Task<bool> UpdateListingStatusAsync(
+            string listingId,
+            ListingState status,
+            System.Data.IDbTransaction transaction = null)
         {
-            await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 UPDATE `marketplace_listing` 
                 SET `status` = {status.Escape()},
                     `updated_date` = NOW()
-                WHERE `id` = {listingId.Escape()}";
+                WHERE `id` = {listingId.Escape()}
+                    AND `status` = {ListingState.ACTIVE.Escape()}";
 
-            var rowsAffected = await conn.ExecuteAsync(sql);
+            int rowsAffected;
+            if (transaction != null)
+            {
+                rowsAffected = await transaction.Connection.ExecuteAsync(sql, null, transaction);
+            }
+            else
+            {
+                await using var conn = _dbContext.GetUnifiedConnection();
+                rowsAffected = await conn.ExecuteAsync(sql);
+            }
+
             return rowsAffected > 0;
         }
 
