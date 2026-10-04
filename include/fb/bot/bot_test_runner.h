@@ -26,12 +26,12 @@ inline void display_spawned_bots(const fb::bot::bot_container& container)
 }
 
 template <fb::bot::test_mode Mode>
-void run_bot_test(std::string_view config_path)
+int run_bot_test(std::string_view config_path)
 {
     if (!fb::init_config(config_path))
     {
         fb::console::puts("Failed to initialize config system with file: {}", config_path);
-        return;
+        return -1;
     }
 
     using guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
@@ -88,6 +88,19 @@ void run_bot_test(std::string_view config_path)
     exit = true;
     if (display_thread)
         display_thread->join();
+
+    if constexpr (Mode == fb::bot::test_mode::INTEGRATION_TEST)
+    {
+        auto game = std::static_pointer_cast<fb::bot::integration::game_bot_controller>(container->game);
+        if (game->has_failures())
+            return 1;
+        else
+            return 0;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 #endif // FB_BOT_BOT_TEST_RUNNER_H

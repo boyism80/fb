@@ -81,13 +81,18 @@ void bot_integration_test::notify_ready()
     auto* seat = this->controller.seat_thread(this->suite_slot());
     if (seat == nullptr || seat->id() == std::this_thread::get_id())
     {
-        promise->set_value();
+        // The ready wait may already have timed out, so completion can legitimately fail here.
+        auto completion_exception = std::exception_ptr{};
+        if (promise->try_set_value(completion_exception) == false && completion_exception != nullptr)
+            std::rethrow_exception(completion_exception);
         return;
     }
 
     auto builder = seat->new_builder<void>();
     builder.func = [promise](auto&) -> async::task<void> {
-        promise->set_value();
+        auto completion_exception = std::exception_ptr{};
+        if (promise->try_set_value(completion_exception) == false && completion_exception != nullptr)
+            std::rethrow_exception(completion_exception);
         co_return;
     };
     builder.enqueue();
@@ -100,6 +105,10 @@ void bot_integration_test::prepare_ready_wait()
 
 async::task<void> bot_integration_test::wait_until_ready()
 {
+    auto* seat = this->controller.seat_thread(this->suite_slot());
+    if (seat == nullptr)
+        throw std::runtime_error(std::format("{}: seat thread is not assigned", this->name()));
+
     if (this->_ready_promise == nullptr)
         this->prepare_ready_wait();
 
@@ -109,7 +118,23 @@ async::task<void> bot_integration_test::wait_until_ready()
         this->_ready_promise->set_value();
     }
 
-    co_await this->_ready_promise->task();
+    auto promise = this->_ready_promise;
+    auto error   = std::make_exception_ptr(
+        std::runtime_error(std::format("{}: bots were not ready within {}s",
+                                       this->name(),
+                                       std::chrono::duration_cast<std::chrono::seconds>(READY_TIMEOUT).count())));
+    auto timer = seat->settimer(
+        [promise, error](auto& datetime, auto thread_id) -> async::task<void> {
+            auto completion_exception = std::exception_ptr{};
+            if (promise->try_set_exception(error, completion_exception) == false && completion_exception != nullptr)
+                std::rethrow_exception(completion_exception);
+            co_return;
+        },
+        READY_TIMEOUT,
+        fb::timer::repeat_type::once);
+
+    co_await promise->task();
+    timer->cancel();
 }
 
 void bot_integration_test::suite_slot(uint32_t slot)

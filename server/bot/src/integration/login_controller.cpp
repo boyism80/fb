@@ -117,6 +117,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
     catch (std::exception& e)
     {
         fb::logger::fatal("login flow failed: bot_id={} account={} error={}", bot.id, id, e.what());
+        bot.close();
     }
 
     co_return;

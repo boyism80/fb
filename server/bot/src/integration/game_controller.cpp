@@ -11,6 +11,7 @@
 #include <fb/config.h>
 #include <fb/logger.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -687,6 +688,14 @@ bool game_bot_controller::has_more_tests() const
 {
     return this->_parallel_queue.empty() == false || this->_serial_queue.empty() == false ||
            this->_active_seats.empty() == false;
+}
+
+bool game_bot_controller::has_failures() const
+{
+    auto lock = std::lock_guard(this->_results_mutex);
+    return std::any_of(this->_test_results.begin(), this->_test_results.end(), [](const auto& result) {
+        return result.success == false;
+    });
 }
 
 void game_bot_controller::print_final_test_results()

@@ -76,9 +76,11 @@ public:
 #ifdef _DEBUG
     static constexpr auto DEFAULT_TIMEOUT  = 30s;
     static constexpr auto DEFAULT_INTERVAL = 100ms;
+    static constexpr auto READY_TIMEOUT    = 120s;
 #else
     static constexpr auto DEFAULT_TIMEOUT  = 10s;
     static constexpr auto DEFAULT_INTERVAL = 100ms;
+    static constexpr auto READY_TIMEOUT    = 60s;
 #endif
 
 protected:

@@ -57,11 +57,11 @@ int main(int argc, char** argv)
     auto& mode_str    = vm["mode"].as<string>();
     if (mode_str == "integration")
     {
-        run_bot_test<fb::bot::test_mode::INTEGRATION_TEST>(config_path);
+        return run_bot_test<fb::bot::test_mode::INTEGRATION_TEST>(config_path);
     }
     else if (mode_str == "load")
     {
-        run_bot_test<fb::bot::test_mode::LOAD_TEST>(config_path);
+        return run_bot_test<fb::bot::test_mode::LOAD_TEST>(config_path);
     }
     else
     {
@@ -69,6 +69,4 @@ int main(int argc, char** argv)
         fb::console::puts("Valid modes: 'load', 'integration'");
         return -1;
     }
-
-    return 0;
 }

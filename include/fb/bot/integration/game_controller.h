@@ -53,7 +53,7 @@ private:
         std::string message;
     };
     std::vector<test_result>              _test_results;
-    std::mutex                            _results_mutex;
+    mutable std::mutex                    _results_mutex;
     std::chrono::steady_clock::time_point _suite_start{};
 
     using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
@@ -76,6 +76,7 @@ public:
     void     enqueue_test(std::unique_ptr<bot_integration_test> test, bool serial, bool extra_slot);
     bool     has_more_tests() const;
     void     print_final_test_results();
+    bool     has_failures() const;
     uint32_t logic_seats() const;
 
 private:
