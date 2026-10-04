@@ -177,25 +177,25 @@ public:
 public:
     node_list::iterator begin()
     {
-        return _nodes.begin();
+        return this->_nodes.begin();
     }
 
 public:
     node_list::iterator end()
     {
-        return _nodes.end();
+        return this->_nodes.end();
     }
 
 public:
     node_list::const_iterator begin() const
     {
-        return _nodes.cbegin();
+        return this->_nodes.cbegin();
     }
 
 public:
     node_list::const_iterator end() const
     {
-        return _nodes.cend();
+        return this->_nodes.cend();
     }
 
 public:
