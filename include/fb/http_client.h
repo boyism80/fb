@@ -36,6 +36,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -57,12 +58,14 @@ class http_client
 private:
     using pending_task = std::function<void()>;
 
-    fb::async_executor&      _executor;
-    size_t                   _max_concurrent;
-    std::mutex               _queue_mutex;
-    std::queue<pending_task> _queue;
-    std::atomic<size_t>      _in_flight{0};
-    std::atomic<int64_t>     _response_delay_ms{0};
+    fb::async_executor&             _executor;
+    size_t                          _max_concurrent;
+    std::mutex                      _queue_mutex;
+    std::queue<pending_task>        _queue;
+    std::atomic<size_t>             _in_flight{0};
+    std::atomic<int64_t>            _response_delay_ms{0};
+    mutable std::mutex              _fault_mutex;
+    std::unordered_set<std::string> _faulted_services;
 
     [[nodiscard]] async::task<void> sleep(fb::thread* thread)
     {
@@ -348,8 +351,27 @@ public:
         return fb::model::timespan(std::chrono::milliseconds(this->_response_delay_ms.load(std::memory_order_relaxed)));
     }
 
+    // Test hook: requests to a faulted service fail before connecting, like an unreachable host.
+    void fault(std::string_view service, bool enabled)
+    {
+        auto lock = std::lock_guard(this->_fault_mutex);
+        if (enabled)
+            this->_faulted_services.emplace(service);
+        else
+            this->_faulted_services.erase(std::string(service));
+    }
+
+    bool fault(std::string_view service) const
+    {
+        auto lock = std::lock_guard(this->_fault_mutex);
+        return this->_faulted_services.contains(std::string(service));
+    }
+
     template <typename T> async::task<T> get(std::string_view service, std::string_view path)
     {
+        if (this->fault(service))
+            throw std::runtime_error(std::format("HTTP GET request failed: fault injected for {}", service));
+
         auto  service_str = std::string(service);
         auto& config      = fb::config<>(service_str);
         auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
@@ -416,6 +438,9 @@ public:
     template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type>
     post(std::string_view service, std::string_view path, const Request& request)
     {
+        if (this->fault(service))
+            throw std::runtime_error(std::format("HTTP POST request failed: fault injected for {}", service));
+
         auto  service_str = std::string(service);
         auto& config      = fb::config<>(service_str);
         auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());

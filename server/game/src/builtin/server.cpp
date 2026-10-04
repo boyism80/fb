@@ -1561,6 +1561,28 @@ int builtin::server::builtin_http_response_delay(lua_State* L)
     return 1;
 }
 
+int builtin::server::builtin_http_fault(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
+    if (argc < 1 || lua->is_string(1) == false)
+    {
+        lua->pushstring("Invalid arguments: http_fault(service, [enabled])");
+        return 1;
+    }
+
+    auto service = lua->tostring(1);
+    if (argc >= 2)
+        srv.http.fault(service, lua->toboolean(2));
+
+    lua->pushboolean(srv.http.fault(service));
+    return 1;
+}
+
 int builtin::server::builtin_property(lua_State* L)
 {
     auto lua = fb::lua::get(L);

@@ -27,6 +27,11 @@ local MQ_WAIT_MS     = 2000
 local HTTP_DELAY_MS  = 3000
 local DELAY_PROBE_MS = 3500
 local DIALOG_TIMEOUT_MS = 30000
+-- marketplace_restore_timer runs every 30s; poll the storage box after the first tick could have passed.
+local RESTORE_FIRST_WAIT_MS = 30000
+local RESTORE_POLL_MS       = 5000
+local RESTORE_POLL_COUNT    = 6
+local MARKETPLACE_SERVICE   = "marketplace"
 
 local MSG_FEE_FAIL       = "등록 수수료가 부족합니다"
 local MSG_LIST_OK        = "등록이 완료되었습니다"
@@ -42,6 +47,7 @@ local MSG_CANCEL_EMPTY = "등록한 물품이 없습니다"
 local STORAGE_CANCEL_TITLE   = "거래소 등록 취소"
 local STORAGE_PURCHASE_TITLE = "거래소 구매"
 local STORAGE_SALE_TITLE     = "거래소 판매"
+local STORAGE_LIST_RECOVERY_TITLE = "거래소 등록 복구"
 
 -- Shared across sequential/parallel scenario steps
 local g_list_msg     = nil
@@ -105,6 +111,7 @@ end
 
 local function cleanup_bot(bot)
     bot:chat("/HTTP지연 0")
+    bot:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
     bot:chat("/아이템초기화")
     bot:chat("/아이템삭제")
     bot:money(0)
@@ -1049,6 +1056,79 @@ test_suite {
             cleanup_bot(a)
             cleanup_bot(b)
             progress(a, "M5 PASSED")
+            return true
+        end,
+
+        -- M6: marketplace unreachable during listing; item and fee come back through the restore timer
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "M6: LIST UNREACHABLE RECOVERY")
+
+            cleanup_bot(a)
+            if prepare_weapon(a) == false then
+                progress(a, "FAILED: prepare weapon")
+                return false
+            end
+            local fee = listing_fee(1, WEAPON_LIST_PRICE)
+            local money_before = fee + 1000
+            a:money(money_before)
+
+            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " on")
+            local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE)
+            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+            if msg == nil then
+                progress(a, "FAILED: " .. tostring(err))
+                return false
+            end
+            if msg:find(MSG_LIST_FAIL, 1, true) == nil then
+                progress(a, "FAILED: expected list failure msg=" .. tostring(msg))
+                return false
+            end
+
+            -- The result is unknown to the game server, so the cost stays deducted until restore checks it.
+            if a:has_item_by_name(WEAPON_ITEM) then
+                progress(a, "FAILED: weapon still in inventory after unreachable list")
+                return false
+            end
+            if a:money() ~= money_before - fee then
+                progress(a, string.format("FAILED: fee not deducted money=%d expected=%d", a:money(), money_before - fee))
+                return false
+            end
+
+            local ok, search_err = assert_search_has_item(a, WEAPON_ITEM, false)
+            if ok == false then
+                progress(a, "FAILED: listing created while unreachable " .. tostring(search_err))
+                return false
+            end
+
+            ctx:sleep(RESTORE_FIRST_WAIT_MS)
+            local received = false
+            local recv_err = nil
+            for attempt = 1, RESTORE_POLL_COUNT do
+                received, recv_err = receive_storage(a, STORAGE_LIST_RECOVERY_TITLE)
+                if received then
+                    break
+                end
+                progress(a, string.format("M6: recovery storage not yet available attempt=%d err=%s",
+                    attempt, tostring(recv_err)))
+                ctx:sleep(RESTORE_POLL_MS)
+            end
+            if received == false then
+                progress(a, "FAILED: recovery storage " .. tostring(recv_err))
+                return false
+            end
+
+            if a:has_item_by_name(WEAPON_ITEM) == false then
+                progress(a, "FAILED: weapon not restored")
+                return false
+            end
+            if a:money() ~= money_before then
+                progress(a, string.format("FAILED: fee not restored money=%d expected=%d", a:money(), money_before))
+                return false
+            end
+
+            cleanup_bot(a)
+            progress(a, "M6 PASSED")
             return true
         end,
 

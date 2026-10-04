@@ -2367,6 +2367,34 @@ M.functions = {
             end,
         },
 
+        ['HTTP장애'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<서비스> [on|off] - 서비스(marketplace 등)로 가는 HTTP 요청을 실패시킴 (테스트용)',
+            ['command'] = function (me, args)
+                if #args == 0 then
+                    me:message("사용법: /HTTP장애 <서비스> [on|off]")
+                    return true
+                end
+
+                local service = args[1]
+                if #args >= 2 then
+                    local arg = string.lower(tostring(args[2]))
+                    if arg == 'on' or arg == '1' or arg == 'true' then
+                        http_fault(service, true)
+                    elseif arg == 'off' or arg == '0' or arg == 'false' then
+                        http_fault(service, false)
+                    else
+                        me:message("on 또는 off를 입력해야 합니다.")
+                        return true
+                    end
+                end
+
+                local state = http_fault(service) and "ON" or "OFF"
+                me:message(string.format("HTTP 장애(%s): %s (이 서버에만 적용됩니다)", service, state), MESSAGE_TYPE.BROWN)
+                return true
+            end,
+        },
+
         ['이속고정'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[on|off] - LOCK_WALK_SPEED(0x04) 조회/설정 (클라 스티키, off 후 재접 필요할 수 있음)',

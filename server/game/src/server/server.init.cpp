@@ -122,6 +122,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("exp_multiplier", builtin::server::builtin_exp_multiplier);
         lua.build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
         lua.build("http_response_delay", builtin::server::builtin_http_response_delay);
+        lua.build("http_fault", builtin::server::builtin_http_fault);
         lua.build("property", builtin::server::builtin_property);
         lua.build("match_transfer", builtin::server::builtin_match_transfer);
         lua.build("is_cross", builtin::server::builtin_is_cross);
