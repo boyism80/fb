@@ -58,7 +58,7 @@
     "meta_dat": "Meta.dat",
     "sobj_tbl": "SObj.tbl",
     "download": {
-        "table": "http://cshyeon.com:8080/fb/json",
-        "script": "http://cshyeon.com:8080/fb/scripts"
+        "table": "http://192.168.0.181:8080/fb/json",
+        "script": "http://192.168.0.181:8080/fb/scripts"
     }
 }
