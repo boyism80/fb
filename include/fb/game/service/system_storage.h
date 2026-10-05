@@ -51,7 +51,6 @@ public:
     void              deliver(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids);
     void              on_write_box(const fb::protocol::internal::StorageBox& dto);
     void              on_deliver(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries);
-    void              init_character(character& ch, const std::vector<storage_box::entry>& entries);
     void              init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes);
     // clang-format on
 };

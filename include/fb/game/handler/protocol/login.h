@@ -37,12 +37,9 @@ private:
     void                  init_option(const internal::Option& response, character& ch);
     void                  init_items(const std::vector<internal::Item>& response, character& ch);
     void                  init_spells(const std::vector<internal::Spell>& response, character& ch);
-    void                  init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch);
     void                  init_quests(const std::vector<internal::Quest>& response, character& ch);
     void                  init_marketplace(const std::vector<internal::MarketplacePending>& response, character& ch);
     void                  init_achievements(const std::vector<internal::Achievement>& response, character& ch);
-    void                  init_collection_unlocks(const std::vector<internal::CollectionUnlock>& response, character& ch);
-    void                  init_storage(const internal_resp::Init& response, character& ch);
     async::task<ch_ptr_t> init(const game_reqs::login<V>& request, fb::socket<character>& session);
     std::string           elapsed_message(std::string_view dt);
     async::task<bool>     assert_login(const game_reqs::login<V>& request);

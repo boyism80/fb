@@ -169,11 +169,6 @@ void service::system_storage::on_deliver(const std::vector<fb::protocol::interna
     this->deliver(converted, user_ids);
 }
 
-void service::system_storage::init_character(character& ch, const std::vector<storage_box::entry>& entries)
-{
-    ch.storage_box.init(entries);
-}
-
 void service::system_storage::init_from_login(character&                                             ch,
                                               const std::vector<fb::protocol::internal::StorageBox>& boxes)
 {
@@ -184,7 +179,7 @@ void service::system_storage::init_from_login(character&                        
         entries.push_back(from_storage_box_dto(dto));
     }
 
-    this->init_character(ch, entries);
+    ch.storage_box.init(entries);
 }
 
 async::task<void> service::system_storage::sync(character& ch)

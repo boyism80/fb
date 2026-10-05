@@ -101,12 +101,6 @@ void login<V>::init_spells(const std::vector<internal::Spell>& response, charact
 }
 
 template <fb::protocol::CLIENT_VERSION V>
-void login<V>::init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch)
-{
-    ch.matchmaker.load(response);
-}
-
-template <fb::protocol::CLIENT_VERSION V>
 void login<V>::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
 {
     for (auto& x : response)
@@ -149,13 +143,6 @@ void login<V>::init_marketplace(const std::vector<fb::protocol::internal::Market
 }
 
 template <fb::protocol::CLIENT_VERSION V>
-void login<V>::init_collection_unlocks(const std::vector<fb::protocol::internal::CollectionUnlock>& response,
-                                       fb::game::character&                                         ch)
-{
-    ch.collections.load(response);
-}
-
-template <fb::protocol::CLIENT_VERSION V>
 void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
                                  fb::game::character&                                    ch)
 {
@@ -164,12 +151,6 @@ void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achie
         auto ptr = std::make_unique<fb::game::achievement>(a.model, a.text, a.icon, a.color);
         ch.achievements.insert({a.model, std::move(ptr)});
     }
-}
-
-template <fb::protocol::CLIENT_VERSION V>
-void login<V>::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
-{
-    ch.server.system_storage.init_from_login(ch, response.storage_boxes);
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -375,12 +356,12 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     ch->mail_box.init_system_mails(resp.system_mail_ids);
     this->init_items(resp.items, *ch);
     this->init_spells(resp.spells, *ch);
-    this->init_matchmaker(resp.matchmaking_skills, *ch);
+    ch->matchmaker.load(resp.matchmaking_skills);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
-    this->init_collection_unlocks(resp.collection_unlocks, *ch);
+    ch->collections.load(resp.collection_unlocks);
     this->init_marketplace(resp.marketplace_pendings, *ch);
-    this->init_storage(resp, *ch);
+    this->server.system_storage.init_from_login(*ch, resp.storage_boxes);
     this->init_option(resp.option, *ch);
     {
         auto entries = std::vector<friend_entry>{};
