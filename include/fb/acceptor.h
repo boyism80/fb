@@ -141,7 +141,7 @@ private:
             {
                 opcode.reset();
 
-                if (socket.is_open() == false)
+                if (socket.is_open() == false || this->running() == false)
                     break;
 
                 if (reader.readable_size() < base_size)

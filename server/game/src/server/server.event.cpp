@@ -138,8 +138,6 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
 
 async::task<void> fb::game::server::on_exit()
 {
-    co_await this->save();
-
     while (true)
     {
         auto pending = size_t{0};
@@ -156,6 +154,7 @@ async::task<void> fb::game::server::on_exit()
         co_await this->sleep(10ms);
     }
 
+    co_await this->save();
     co_await this->maps.cleanup();
     co_return;
 }
