@@ -664,7 +664,7 @@ function M.show_buy_menu(me, npc)
             goto NPC_BUY_DIALOG_000
         end
 
-        count = tonumber(count)
+        count = math.tointeger(tonumber(count))
         if count == nil or count <= 0 then
             return me:dialog(npc, '갯수가 올바르지 않습니다.', { prev = false, next = true })
         end
@@ -732,7 +732,7 @@ local function show_sell_catalog(me, npc, sell_id)
             goto NPC_SELL_DIALOG_000
         end
 
-        count = tonumber(count)
+        count = math.tointeger(tonumber(count))
         if count == nil or count <= 0 then
             return me:dialog(npc, '갯수가 올바르지 않습니다.', { prev = false, next = true })
         end
@@ -916,7 +916,7 @@ function M.show_hold_money_menu(me, npc)
         return DIALOG_RESULT.NEXT
     end
 
-    count = tonumber(count)
+    count = math.tointeger(tonumber(count))
     if count == nil or count <= 0 then
         return me:dialog(npc, '금액이 올바르지 않습니다.', { prev = false, next = true })
     end
@@ -968,7 +968,7 @@ function M.show_hold_item_menu(me, npc)
             return DIALOG_RESULT.NEXT
         end
 
-        count = tonumber(count)
+        count = math.tointeger(tonumber(count))
         if count == nil or count <= 0 then
             return me:dialog(npc, '수량이 올바르지 않습니다.', { prev = false, next = true })
         end
@@ -1022,7 +1022,7 @@ function M.show_return_money_menu(me, npc)
         return DIALOG_RESULT.NEXT
     end
 
-    count = tonumber(count)
+    count = math.tointeger(tonumber(count))
     if count == nil or count <= 0 then
         return me:dialog(npc, '금액이 올바르지 않습니다.', { prev = false, next = true })
     end
@@ -1078,7 +1078,7 @@ function M.show_return_item_menu(me, npc)
             count = 1
         end
 
-        count = tonumber(count)
+        count = math.tointeger(tonumber(count))
         if count == nil or count <= 0 then
             return me:dialog(npc, '수량이 올바르지 않습니다.', { prev = false, next = true })
         end

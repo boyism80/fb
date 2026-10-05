@@ -1141,7 +1141,15 @@ int builtin::character::builtin_rmitem(lua_State* L)
         return builder.run();
     }
 
-    auto count       = static_cast<uint16_t>(lua->tointeger(3, 1));
+    // lua_tointeger turns a non-integral count such as 0.5 into 0.
+    auto raw_count = lua->tointeger(3, 1);
+    if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto count       = static_cast<uint16_t>(raw_count);
     auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
 
     if (lua->is_userdata<fb::game::item>(2))

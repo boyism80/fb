@@ -366,7 +366,7 @@ function M.list(me, npc)
             goto MARKETPLACE_LIST
         end
 
-        count = tonumber(count_input)
+        count = math.tointeger(tonumber(count_input))
         if count == nil or count <= 0 or count > selected_item:count() then
             local button = me:dialog(npc, '올바른 수량을 입력해주세요.', { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
@@ -384,7 +384,7 @@ function M.list(me, npc)
         goto MARKETPLACE_LIST
     end
 
-    local price = tonumber(price_input)
+    local price = math.tointeger(tonumber(price_input))
     if price == nil or price <= 0 then
         local button = me:dialog(npc, '올바른 가격을 입력해주세요.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then

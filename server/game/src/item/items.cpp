@@ -1167,6 +1167,10 @@ async::task<bool> items::throws(uint8_t index, bool all)
 
 std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
 {
+    // split(0) on a bundle returns a new zero-count item and leaves the stack intact.
+    if (count == 0)
+        return nullptr;
+
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         return nullptr;

@@ -236,7 +236,7 @@ local function clan_vault(me, npc_obj)
         if amount == nil then
             return
         end
-        amount = tonumber(amount)
+        amount = math.tointeger(tonumber(amount))
         if amount == nil or amount <= 0 then
             me:dialog(npc_obj, '금액이 올바르지 않습니다.', { prev = false, next = false })
             return
@@ -273,7 +273,7 @@ local function clan_vault(me, npc_obj)
         if amount == nil then
             return
         end
-        amount = tonumber(amount)
+        amount = math.tointeger(tonumber(amount))
         if amount == nil or amount < 0 then
             me:dialog(npc_obj, '장난이 과하군.', { prev = false, next = false })
             return
