@@ -2149,8 +2149,15 @@ int builtin::character::builtin_store_item(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto item  = lua->touserdata<fb::game::item>(2);
-    auto count = lua->tointeger(3, 1);
+    auto item      = lua->touserdata<fb::game::item>(2);
+    auto raw_count = lua->tointeger(3, 1);
+    if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto count = static_cast<uint16_t>(raw_count);
 
     // Find the shared_ptr that contains this item
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -2181,8 +2188,15 @@ int builtin::character::builtin_retrieve_item(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto item  = lua->touserdata<fb::game::item>(2);
-    auto count = lua->tointeger(3, 1);
+    auto item      = lua->touserdata<fb::game::item>(2);
+    auto raw_count = lua->tointeger(3, 1);
+    if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto count = static_cast<uint16_t>(raw_count);
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto returned = std::make_shared<std::shared_ptr<fb::game::item>>();

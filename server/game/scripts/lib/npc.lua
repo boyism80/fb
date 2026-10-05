@@ -317,6 +317,11 @@ function M.store_item(me, npc, name, count)
     end
 
     if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
+        if count <= 0 then
+            npc:chat('몇 개를 맡길지 말씀해 주세요.')
+            return true
+        end
+
         if count > item:count() then
             npc:chat('갯수가 모자라는데요?')
             return true
@@ -330,7 +335,10 @@ function M.store_item(me, npc, name, count)
         return true
     end
 
-    me:store_item(item, count)
+    if me:store_item(item, count) == false then
+        npc:chat('더 이상 맡을 수 없습니다.')
+        return true
+    end
     me:money(me:money() - model:storage_fee())
     if count > 1 then
         npc:chat(string.format('%s %d개 맡았습니다.', name_with(name, '을', '를'), count))
@@ -359,6 +367,11 @@ function M.retrieve_item(me, npc, name, count)
     end
 
     if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
+        if count <= 0 then
+            npc:chat('몇 개를 돌려받을지 말씀해 주세요.')
+            return true
+        end
+
         if count > item:count() then
             npc:chat('그만큼 맡고 있지 않습니다.')
             return true
@@ -990,18 +1003,22 @@ function M.show_hold_item_menu(me, npc)
     local storage_fee = model:storage_fee()
     if storage_fee > 0 then
         local selected = me:menu(npc, string.format('맡기는데 %d전이 필요합니다. 맡기시겠습니까?', storage_fee), {'네', '아니오'})
-        if selected == 1 then
-            if me:money() < storage_fee then
-                return me:dialog(npc, '돈이 모자랍니다.')
-            else
-                me:money(me:money() - storage_fee)
-            end
-        else
+        if selected ~= 1 then
             return DIALOG_RESULT.NEXT
+        end
+
+        if me:money() < storage_fee then
+            return me:dialog(npc, '돈이 모자랍니다.')
         end
     end
 
-    me:store_item(item, count)
+    if me:store_item(item, count) == false then
+        return me:dialog(npc, '더 이상 맡길 수 없습니다.', { prev = false, next = true })
+    end
+    if storage_fee > 0 then
+        me:money(me:money() - storage_fee)
+    end
+
     if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         return me:dialog(npc, string.format('%s %d개를 맡았습니다.', model:name(), count), { prev = false, next = true })
     else

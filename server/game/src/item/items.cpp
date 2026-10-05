@@ -317,11 +317,14 @@ async::task<bool> items::store(uint8_t index, uint16_t count)
     if (item == nullptr)
         co_return false;
 
-    if (item->count() < count)
+    if (count == 0 || item->count() < count)
         co_return false;
 
     auto deleted = this->remove(item, count, ITEM_DELETE_TYPE::NONE, false);
-    auto result  = this->store(deleted);
+    if (deleted == nullptr)
+        co_return false;
+
+    auto result = this->store(deleted);
     if (result == false)
         std::ignore = co_await this->add(deleted);
 
@@ -381,6 +384,9 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
         co_return nullptr;
 
     owner->assert_thread();
+
+    if (count == 0)
+        co_return nullptr;
 
     if (index > this->_stored.size() - 1)
         co_return nullptr;
