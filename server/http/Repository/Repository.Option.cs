@@ -50,6 +50,7 @@ namespace Http.Reepository
                     `effect_sound`,
                     `pk_protect`,
                     `visible_helmet`,
+                    `super_hide`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -67,6 +68,7 @@ namespace Http.Reepository
                     {value.EffectSound.Escape()},
                     {value.PkProtect.Escape()},
                     {value.VisibleHelmet.Escape()},
+                    {value.SuperHide.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -83,6 +85,7 @@ namespace Http.Reepository
                     `effect_sound`=VALUES(`effect_sound`),
                     `pk_protect`=VALUES(`pk_protect`),
                     `visible_helmet`=VALUES(`visible_helmet`),
+                    `super_hide`=VALUES(`super_hide`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

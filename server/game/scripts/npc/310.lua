@@ -36,7 +36,7 @@ local function run_ox_admin(me, ch)
         return me:dialog(ch, '대상 아이디를 입력해 주세요.', { prev = false, next = false })
     end
 
-    local target = name2ch(raw)
+    local target = name2ch(raw, me)
     if target == nil then
         return me:dialog(ch, '해당 유저가 접속중이 아닙니다.', { prev = false, next = false })
     end

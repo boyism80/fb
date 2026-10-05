@@ -18,7 +18,7 @@ return {
         local x, y = me:position()
         local direction = me:direction()
         local my_level = me:level()
-        local ch = name2ch(name)
+        local ch = name2ch(name, me)
         if ch == nil then
             me:message(string.format('%s님은 현재 바람의나라에 없습니다.', name))
             return

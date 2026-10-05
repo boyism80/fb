@@ -567,27 +567,7 @@ int builtin::character::builtin_item_free_space(lua_State* L)
     if (ch == nullptr || model == nullptr)
         return 0;
 
-    // A stack held for a listing keeps its slot, and new count joins that slot.
-    auto free_space = static_cast<uint32_t>(model->capacity);
-    auto item       = ch->items.find(*model);
-    if (item != nullptr)
-    {
-        free_space = item->free_space();
-    }
-    else
-    {
-        for (auto i : ch->items.escrow_indices())
-        {
-            auto escrow = ch->items.escrow(i);
-            if (escrow->item->model() == *model)
-            {
-                free_space = model->capacity - escrow->item->count();
-                break;
-            }
-        }
-    }
-
-    lua->pushinteger(free_space);
+    lua->pushinteger(ch->items.free_space(*model));
     return 1;
 }
 
@@ -4932,7 +4912,19 @@ int builtin::character::builtin_super_hide(lua_State* L)
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             ch->super_hide(value);
-            co_await ch->server.save(*ch);
+
+            auto&  server = ch->server;
+            auto&& resp   = co_await server.http.post(
+                "internal",
+                "/in-game/option",
+                fb::protocol::internal::request::SetOption{ch->world(),
+                                                           ch->id,
+                                                             {{static_cast<uint8_t>(OPTION::SUPER_HIDE), value}}});
+            co_await server.threads.switching(weak);
+
+            auto locked = weak.lock();
+            if (locked != nullptr && resp.success == false)
+                locked->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
         };
         builder.resume = []() -> async::task<int> {
             co_return 0;

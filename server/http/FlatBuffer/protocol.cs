@@ -211,7 +211,6 @@ namespace fb.protocol._internal
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -296,7 +295,8 @@ namespace fb.protocol._internal
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -2534,7 +2534,6 @@ namespace fb.protocol._internal.request
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -2619,7 +2618,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -4888,7 +4888,6 @@ namespace fb.protocol._internal.response
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -4973,7 +4972,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -7242,7 +7242,6 @@ namespace fb.protocol.marketplace
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -7327,7 +7326,8 @@ namespace fb.protocol.marketplace
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -9540,7 +9540,6 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -9625,7 +9624,8 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -11840,7 +11840,6 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -11925,7 +11924,8 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -14140,7 +14140,6 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -14225,7 +14224,8 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -16437,7 +16437,6 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -16522,7 +16521,8 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -18734,7 +18734,6 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -18819,7 +18818,8 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -21032,7 +21032,6 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
                 builder.Build(value.FirstLoginDate),
-                builder.Build(value.SuperHide),
                 builder.Build(value.Speed),
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
@@ -21117,7 +21116,8 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.FastMove),
                 builder.Build(value.EffectSound),
                 builder.Build(value.PkProtect),
-                builder.Build(value.VisibleHelmet));
+                builder.Build(value.VisibleHelmet),
+                builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.ArticleSummary value)
         {
@@ -23391,7 +23391,6 @@ namespace fb.protocol._internal
         public string CreatedDate { get; set; } = string.Empty;
         public string UpdatedDate { get; set; } = string.Empty;
         public string FirstLoginDate { get; set; } = null;
-        public bool SuperHide { get; set; } = false;
         public byte Speed { get; set; } = 0;
         public short Reputation { get; set; } = 0;
         public ushort Evaluation { get; set; } = 0;
@@ -23444,7 +23443,6 @@ namespace fb.protocol._internal
             CreatedDate = raw.CreatedDate;
             UpdatedDate = raw.UpdatedDate;
             FirstLoginDate = raw.FirstLoginDate;
-            SuperHide = raw.SuperHide;
             Speed = raw.Speed;
             Reputation = raw.Reputation;
             Evaluation = raw.Evaluation;
@@ -23711,6 +23709,7 @@ namespace fb.protocol._internal
         public bool EffectSound { get; set; } = false;
         public bool PkProtect { get; set; } = false;
         public bool VisibleHelmet { get; set; } = true;
+        public bool SuperHide { get; set; } = false;
 
         public Option()
         { }
@@ -23730,6 +23729,7 @@ namespace fb.protocol._internal
             EffectSound = raw.EffectSound;
             PkProtect = raw.PkProtect;
             VisibleHelmet = raw.VisibleHelmet;
+            SuperHide = raw.SuperHide;
         }
 
         public Option(byte[] bytes) : this(fb.protocol._internal.raw.Option.GetRootAsOption(new ByteBuffer(bytes)))

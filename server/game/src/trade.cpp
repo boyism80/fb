@@ -393,8 +393,8 @@ void trade::assert_exchange(const trade& trade) const
         if (buffer.contains(model.id) == false)
             continue;
 
-        if (buffer[model.id] > item->count())
-            buffer[model.id] -= item->count();
+        if (buffer[model.id] > item->trade_count())
+            buffer[model.id] -= item->trade_count();
         else
             buffer.erase(model.id);
     }
@@ -451,13 +451,17 @@ async::task<void> trade::exchange(trade& trade1, trade& trade2)
 
     for (auto& item : buffer2)
     {
-        std::ignore = co_await owner1->items.add(item);
+        std::ignore = co_await owner1->items.add(std::vector<std::shared_ptr<fb::game::item>>{item}, true);
+        if (item->empty() == false && owner1->items.index(item) == 0xFF)
+            std::ignore = co_await owner2->items.add(item);
     }
     owner1->money_add(money2);
 
     for (auto& item : buffer1)
     {
-        std::ignore = co_await owner2->items.add(item);
+        std::ignore = co_await owner2->items.add(std::vector<std::shared_ptr<fb::game::item>>{item}, true);
+        if (item->empty() == false && owner2->items.index(item) == 0xFF)
+            std::ignore = co_await owner1->items.add(item);
     }
     owner2->money_add(money1);
 }

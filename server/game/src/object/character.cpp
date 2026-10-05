@@ -2371,7 +2371,6 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
     dto.title            = this->_title;
-    dto.super_hide       = this->_super_hide;
     dto.speed            = this->stat.base_speed();
 
     for (auto& [_, buff] : this->buffs)

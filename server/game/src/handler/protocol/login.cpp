@@ -278,7 +278,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     }
     params.nation         = static_cast<NATION>(resp.character.nation);
     params.divine_beast   = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
-    params.super_hide     = resp.character.super_hide;
+    params.super_hide     = resp.option.super_hide;
     params.client_version = request.client_version;
     params.ui_mode        = request.ui_mode;
 

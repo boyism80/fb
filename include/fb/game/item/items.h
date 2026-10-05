@@ -129,6 +129,7 @@ public:
     item_ptr                                        find(std::string_view name) const;
     item_ptr                                        find(const fb::model::item& model) const;
     bool                                            has(const fb::model::item& model, uint16_t count) const;
+    uint16_t                                        free_space(const fb::model::item& model) const;
     bool                                            has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& required) const;
     [[nodiscard]] async::task<item_ptr>             drop(uint8_t index, uint8_t count, bool action = true, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::DROP);
     [[nodiscard]] async::task<void>                 loot(bool boost);

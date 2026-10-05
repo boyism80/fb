@@ -71,12 +71,11 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CREATED_DATE = 80,
     VT_UPDATED_DATE = 82,
     VT_FIRST_LOGIN_DATE = 84,
-    VT_SUPER_HIDE = 86,
-    VT_SPEED = 88,
-    VT_REPUTATION = 90,
-    VT_EVALUATION = 92,
-    VT_FACE = 94,
-    VT_RIDABLE_ID = 96
+    VT_SPEED = 86,
+    VT_REPUTATION = 88,
+    VT_EVALUATION = 90,
+    VT_FACE = 92,
+    VT_RIDABLE_ID = 94
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -201,9 +200,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *first_login_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_FIRST_LOGIN_DATE);
   }
-  bool super_hide() const {
-    return GetField<uint8_t>(VT_SUPER_HIDE, 0) != 0;
-  }
   uint8_t speed() const {
     return GetField<uint8_t>(VT_SPEED, 0);
   }
@@ -281,7 +277,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(updated_date()) &&
            VerifyOffset(verifier, VT_FIRST_LOGIN_DATE) &&
            verifier.VerifyString(first_login_date()) &&
-           VerifyField<uint8_t>(verifier, VT_SUPER_HIDE, 1) &&
            VerifyField<uint8_t>(verifier, VT_SPEED, 1) &&
            VerifyField<int16_t>(verifier, VT_REPUTATION, 2) &&
            VerifyField<uint16_t>(verifier, VT_EVALUATION, 2) &&
@@ -418,9 +413,6 @@ struct CharacterBuilder {
   void add_first_login_date(::flatbuffers::Offset<::flatbuffers::String> first_login_date) {
     fbb_.AddOffset(Character::VT_FIRST_LOGIN_DATE, first_login_date);
   }
-  void add_super_hide(bool super_hide) {
-    fbb_.AddElement<uint8_t>(Character::VT_SUPER_HIDE, static_cast<uint8_t>(super_hide), 0);
-  }
   void add_speed(uint8_t speed) {
     fbb_.AddElement<uint8_t>(Character::VT_SPEED, speed, 0);
   }
@@ -490,7 +482,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> first_login_date = 0,
-    bool super_hide = false,
     uint8_t speed = 0,
     int16_t reputation = 0,
     uint16_t evaluation = 0,
@@ -534,7 +525,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_hair(hair);
   builder_.add_face(face);
   builder_.add_speed(speed);
-  builder_.add_super_hide(super_hide);
   builder_.add_level(level);
   builder_.add_promotion(promotion);
   builder_.add_class_type(class_type);
@@ -590,7 +580,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *created_date = nullptr,
     const char *updated_date = nullptr,
     const char *first_login_date = nullptr,
-    bool super_hide = false,
     uint8_t speed = 0,
     int16_t reputation = 0,
     uint16_t evaluation = 0,
@@ -646,7 +635,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       created_date__,
       updated_date__,
       first_login_date__,
-      super_hide,
       speed,
       reputation,
       evaluation,

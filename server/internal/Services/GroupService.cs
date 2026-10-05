@@ -144,7 +144,10 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                if (target.SuperHide && target.Role > actor.Role)
+                var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
+                    throw new Exception($"user option {request.Member} not found");
+
+                if (memberSetting.SuperHide && target.Role > actor.Role)
                     throw new LogicException(ErrorCode.Offline);
 
                 // Lock in uid order so a simultaneous Create(A, B) and Create(B, A)
@@ -171,9 +174,6 @@ namespace Internal.Services
 
                 if (masterSetting.Group == false)
                     throw new LogicException(ErrorCode.DisabledGroup);
-
-                var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
-                    throw new Exception($"user option {request.Member} not found");
 
                 if (memberSetting.Group == false)
                     throw new LogicException(ErrorCode.DisabledGroupTarget);
@@ -274,7 +274,10 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                if (target.SuperHide && target.Role > actor.Role)
+                var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
+                    throw new Exception($"user option {request.Member} not found");
+
+                if (memberSetting.SuperHide && target.Role > actor.Role)
                     throw new LogicException(ErrorCode.Offline);
 
                 // Lock in uid order to avoid a crossed-order deadlock with a
@@ -304,9 +307,6 @@ namespace Internal.Services
 
                 if (masterSetting.Group == false)
                     throw new LogicException(ErrorCode.DisabledGroup);
-
-                var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
-                    throw new Exception($"user option {request.Member} not found");
 
                 if (memberSetting.Group == false)
                     throw new LogicException(ErrorCode.DisabledGroupTarget);
@@ -707,7 +707,10 @@ namespace Internal.Services
                 else
                 {
                     // Add member to group
-                    if (target.SuperHide && target.Role > actor.Role)
+                    var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
+                        throw new Exception($"user option {request.Member} not found");
+
+                    if (memberSetting.SuperHide && target.Role > actor.Role)
                         throw new LogicException(ErrorCode.Offline);
 
                     if (targetSync.Group != null)
@@ -718,9 +721,6 @@ namespace Internal.Services
 
                     if (masterSetting.Group == false)
                         throw new LogicException(ErrorCode.DisabledGroup);
-
-                    var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
-                        throw new Exception($"user option {request.Member} not found");
 
                     if (memberSetting.Group == false)
                         throw new LogicException(ErrorCode.DisabledGroupTarget);

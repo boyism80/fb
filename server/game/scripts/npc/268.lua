@@ -45,7 +45,7 @@ return {
                 return
             end
 
-            local teammate = name2ch(name)
+            local teammate = name2ch(name, me)
             if teammate == nil then
                 local btn = me:dialog(npc, '존재하지 않는 캐릭터입니다.', { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then

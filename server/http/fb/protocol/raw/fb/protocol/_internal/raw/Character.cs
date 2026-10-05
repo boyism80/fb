@@ -98,12 +98,11 @@ public struct Character : IFlatbufferObject
   public ArraySegment<byte>? GetFirstLoginDateBytes() { return __p.__vector_as_arraysegment(84); }
 #endif
   public byte[] GetFirstLoginDateArray() { return __p.__vector_as_array<byte>(84); }
-  public bool SuperHide { get { int o = __p.__offset(86); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public byte Speed { get { int o = __p.__offset(88); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public short Reputation { get { int o = __p.__offset(90); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
-  public ushort Evaluation { get { int o = __p.__offset(92); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public byte Face { get { int o = __p.__offset(94); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public ushort RidableId { get { int o = __p.__offset(96); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public byte Speed { get { int o = __p.__offset(86); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public short Reputation { get { int o = __p.__offset(88); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
+  public ushort Evaluation { get { int o = __p.__offset(90); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public byte Face { get { int o = __p.__offset(92); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public ushort RidableId { get { int o = __p.__offset(94); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -147,13 +146,12 @@ public struct Character : IFlatbufferObject
       StringOffset created_dateOffset = default(StringOffset),
       StringOffset updated_dateOffset = default(StringOffset),
       StringOffset first_login_dateOffset = default(StringOffset),
-      bool super_hide = false,
       byte speed = 0,
       short reputation = 0,
       ushort evaluation = 0,
       byte face = 0,
       ushort ridable_id = 0) {
-    builder.StartTable(47);
+    builder.StartTable(46);
     Character.AddAdditionalMp(builder, additional_mp);
     Character.AddBaseMp(builder, base_mp);
     Character.AddMp(builder, mp);
@@ -191,7 +189,6 @@ public struct Character : IFlatbufferObject
     Character.AddHair(builder, hair);
     Character.AddFace(builder, face);
     Character.AddSpeed(builder, speed);
-    Character.AddSuperHide(builder, super_hide);
     Character.AddLevel(builder, level);
     Character.AddPromotion(builder, promotion);
     Character.AddClassType(builder, class_type);
@@ -204,7 +201,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(47); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(46); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(1, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
@@ -251,12 +248,11 @@ public struct Character : IFlatbufferObject
   public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(38, createdDateOffset.Value, 0); }
   public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(39, updatedDateOffset.Value, 0); }
   public static void AddFirstLoginDate(FlatBufferBuilder builder, StringOffset firstLoginDateOffset) { builder.AddOffset(40, firstLoginDateOffset.Value, 0); }
-  public static void AddSuperHide(FlatBufferBuilder builder, bool superHide) { builder.AddBool(41, superHide, false); }
-  public static void AddSpeed(FlatBufferBuilder builder, byte speed) { builder.AddByte(42, speed, 0); }
-  public static void AddReputation(FlatBufferBuilder builder, short reputation) { builder.AddShort(43, reputation, 0); }
-  public static void AddEvaluation(FlatBufferBuilder builder, ushort evaluation) { builder.AddUshort(44, evaluation, 0); }
-  public static void AddFace(FlatBufferBuilder builder, byte face) { builder.AddByte(45, face, 0); }
-  public static void AddRidableId(FlatBufferBuilder builder, ushort ridableId) { builder.AddUshort(46, ridableId, 0); }
+  public static void AddSpeed(FlatBufferBuilder builder, byte speed) { builder.AddByte(41, speed, 0); }
+  public static void AddReputation(FlatBufferBuilder builder, short reputation) { builder.AddShort(42, reputation, 0); }
+  public static void AddEvaluation(FlatBufferBuilder builder, ushort evaluation) { builder.AddUshort(43, evaluation, 0); }
+  public static void AddFace(FlatBufferBuilder builder, byte face) { builder.AddByte(44, face, 0); }
+  public static void AddRidableId(FlatBufferBuilder builder, ushort ridableId) { builder.AddUshort(45, ridableId, 0); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -312,12 +308,11 @@ static public class CharacterVerify
       && verifier.VerifyString(tablePos, 80 /*CreatedDate*/, false)
       && verifier.VerifyString(tablePos, 82 /*UpdatedDate*/, false)
       && verifier.VerifyString(tablePos, 84 /*FirstLoginDate*/, false)
-      && verifier.VerifyField(tablePos, 86 /*SuperHide*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyField(tablePos, 88 /*Speed*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 90 /*Reputation*/, 2 /*short*/, 2, false)
-      && verifier.VerifyField(tablePos, 92 /*Evaluation*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 94 /*Face*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 96 /*RidableId*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 86 /*Speed*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 88 /*Reputation*/, 2 /*short*/, 2, false)
+      && verifier.VerifyField(tablePos, 90 /*Evaluation*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 92 /*Face*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 94 /*RidableId*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

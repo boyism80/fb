@@ -321,11 +321,11 @@ namespace Internal.Controllers
                 var sender = await _dbContext.Character.Get(world, session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                if (target.SuperHide && target.Role > sender.Role)
-                    throw new LogicException(ErrorCode.Offline);
-
                 var targetOption = await _dbContext.Option.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundOption);
+
+                if (targetOption.SuperHide && target.Role > sender.Role)
+                    throw new LogicException(ErrorCode.Offline);
 
                 if (!targetOption.Whisper)
                     throw new LogicException(ErrorCode.DisabledWhisperTarget);
@@ -921,6 +921,10 @@ namespace Internal.Controllers
 
                 case Fb.Model.EnumValue.Option.VisibleHelmet:
                     option.VisibleHelmet = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.SuperHide:
+                    option.SuperHide = enabled;
                     break;
 
                 default:

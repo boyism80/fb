@@ -24,5 +24,6 @@ namespace Http.Model
         public bool EffectSound { get; set; } = true;
         public bool PkProtect { get; set; } = true;
         public bool VisibleHelmet { get; set; } = true;
+        public bool SuperHide { get; set; }
     }
 }

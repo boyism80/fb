@@ -36,7 +36,8 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_FAST_MOVE = 22,
     VT_EFFECT_SOUND = 24,
     VT_PK_PROTECT = 26,
-    VT_VISIBLE_HELMET = 28
+    VT_VISIBLE_HELMET = 28,
+    VT_SUPER_HIDE = 30
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -77,6 +78,9 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool visible_helmet() const {
     return GetField<uint8_t>(VT_VISIBLE_HELMET, 0) != 0;
   }
+  bool super_hide() const {
+    return GetField<uint8_t>(VT_SUPER_HIDE, 0) != 0;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
@@ -92,6 +96,7 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_EFFECT_SOUND, 1) &&
            VerifyField<uint8_t>(verifier, VT_PK_PROTECT, 1) &&
            VerifyField<uint8_t>(verifier, VT_VISIBLE_HELMET, 1) &&
+           VerifyField<uint8_t>(verifier, VT_SUPER_HIDE, 1) &&
            verifier.EndTable();
   }
 };
@@ -139,6 +144,9 @@ struct OptionBuilder {
   void add_visible_helmet(bool visible_helmet) {
     fbb_.AddElement<uint8_t>(Option::VT_VISIBLE_HELMET, static_cast<uint8_t>(visible_helmet), 0);
   }
+  void add_super_hide(bool super_hide) {
+    fbb_.AddElement<uint8_t>(Option::VT_SUPER_HIDE, static_cast<uint8_t>(super_hide), 0);
+  }
   explicit OptionBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -164,9 +172,11 @@ inline ::flatbuffers::Offset<Option> CreateOption(
     bool fast_move = false,
     bool effect_sound = false,
     bool pk_protect = false,
-    bool visible_helmet = false) {
+    bool visible_helmet = false,
+    bool super_hide = false) {
   OptionBuilder builder_(_fbb);
   builder_.add_uid(uid);
+  builder_.add_super_hide(super_hide);
   builder_.add_visible_helmet(visible_helmet);
   builder_.add_pk_protect(pk_protect);
   builder_.add_effect_sound(effect_sound);

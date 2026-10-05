@@ -1030,6 +1030,21 @@ std::shared_ptr<item> items::find(const fb::model::item& model) const
     return nullptr;
 }
 
+uint16_t items::free_space(const fb::model::item& model) const
+{
+    auto item = this->find(model);
+    if (item != nullptr)
+        return item->free_space();
+
+    for (auto i : this->escrow_indices())
+    {
+        if (this->_escrows[i]->item->model() == model)
+            return model.capacity - this->_escrows[i]->item->count();
+    }
+
+    return model.capacity;
+}
+
 bool items::has(const fb::model::item& model, uint16_t count) const
 {
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE))

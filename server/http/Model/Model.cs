@@ -840,7 +840,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "LOCK_WALK_SPEED")]
         LockWalkSpeed = 0x0e, 
         [EnumMember(Value = "VISIBLE_HELMET")]
-        VisibleHelmet = 0x0e
+        VisibleHelmet = 0x0e, 
+        [EnumMember(Value = "SUPER_HIDE")]
+        SuperHide = 0x80
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

@@ -52,7 +52,6 @@ namespace Http.Model
         public byte? AuxBotColor { get; set; }
         public List<Buff> Buffs { get; set; } = new List<Buff>();
         public string Title { get; set; } = string.Empty;
-        public bool SuperHide { get; set; }
         public byte Speed { get; set; }
         public short Reputation { get; set; }
         public ushort Evaluation { get; set; }

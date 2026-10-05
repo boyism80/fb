@@ -42,6 +42,9 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
         }
         break;
 
+    case OPTION::SUPER_HIDE:
+        break;
+
     default:
         auto next = !ch->option(option);
 
@@ -118,7 +121,7 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
             if (current == nullptr)
                 co_return true;
 
-            if (option == OPTION::EXTENSION)
+            if (option == OPTION::EXTENSION || option == OPTION::SUPER_HIDE)
                 continue;
 
             auto next = !current->option(option);

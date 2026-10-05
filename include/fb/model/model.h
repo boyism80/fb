@@ -2426,7 +2426,8 @@ enum class OPTION
     PK_PROTECT = 0x0B, 
     EFFECT_SOUND = 0x0D, 
     LOCK_WALK_SPEED = 0x0E, 
-    VISIBLE_HELMET = 0x0E
+    VISIBLE_HELMET = 0x0E, 
+    SUPER_HIDE = 0x80
 }; // end of enum 'OPTION'
 
 template <>
@@ -2447,7 +2448,8 @@ inline OPTION enum_parse<OPTION>(std::string_view k)
         { "PK_PROTECT", OPTION::PK_PROTECT }, 
         { "EFFECT_SOUND", OPTION::EFFECT_SOUND }, 
         { "LOCK_WALK_SPEED", OPTION::LOCK_WALK_SPEED }, 
-        { "VISIBLE_HELMET", OPTION::VISIBLE_HELMET }
+        { "VISIBLE_HELMET", OPTION::VISIBLE_HELMET }, 
+        { "SUPER_HIDE", OPTION::SUPER_HIDE }
     };
 
     auto k_str = std::string(k);
@@ -2476,7 +2478,8 @@ inline const char* enum_tostring<OPTION>(OPTION k)
         { OPTION::PK_PROTECT, "PK_PROTECT" }, 
         { OPTION::EFFECT_SOUND, "EFFECT_SOUND" }, 
         { OPTION::LOCK_WALK_SPEED, "LOCK_WALK_SPEED" }, 
-        { OPTION::VISIBLE_HELMET, "VISIBLE_HELMET" }
+        { OPTION::VISIBLE_HELMET, "VISIBLE_HELMET" }, 
+        { OPTION::SUPER_HIDE, "SUPER_HIDE" }
     };
 
     auto i = enums.find(k);
@@ -4269,6 +4272,8 @@ inline void enum_map<fb::model::enum_value::OPTION>(lua_State* lua)
     lua_setfield(lua, -2, "LOCK_WALK_SPEED");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::OPTION::VISIBLE_HELMET));
     lua_setfield(lua, -2, "VISIBLE_HELMET");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::OPTION::SUPER_HIDE));
+    lua_setfield(lua, -2, "SUPER_HIDE");
     lua_setglobal(lua, "OPTION");
 }
 

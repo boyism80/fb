@@ -62,17 +62,17 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
         {
         case OBJECT_TYPE::CHARACTER:
         {
-            auto you = std::static_pointer_cast<fb::game::character>(forward);
-            if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && you->items.index(model) != 0xFF)
+            auto you        = std::static_pointer_cast<fb::game::character>(forward);
+            auto free_space = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? you->items.free_space(model) : model.capacity;
+            if (free_space == model.capacity)
             {
-                auto exists = you->items.find(model);
-                count       = std::min(model.capacity - exists->count(), count);
-                if (count == 0)
+                if (you->items.free() == false)
                     throw std::runtime_error(_TEXT(MESSAGE_ITEM_TARGET_INVENTORY_FULL));
             }
             else
             {
-                if (you->items.free() == false)
+                count = std::min<uint16_t>(free_space, count);
+                if (count == 0)
                     throw std::runtime_error(_TEXT(MESSAGE_ITEM_TARGET_INVENTORY_FULL));
             }
 
@@ -82,7 +82,9 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
             else
                 you->message(
                     std::format(_TEXT(MESSAGE_ITEM_GIVE_MULTIPLE), me->name(), name_with(item->name()), count));
-            std::ignore = co_await you->items.add(item);
+            std::ignore = co_await you->items.add(std::vector<std::shared_ptr<fb::game::item>>{item}, true);
+            if (item->empty() == false && you->items.index(item) == 0xFF)
+                std::ignore = co_await me->items.add(item);
         }
         break;
 
