@@ -69,7 +69,7 @@ private:
         }
         catch (std::exception& e)
         {
-            promise->set_exception(std::make_exception_ptr(e));
+            promise->set_exception(std::current_exception());
         }
     }
 
@@ -130,7 +130,7 @@ private:
         }
         catch (std::exception& e)
         {
-            promise->set_exception(std::make_exception_ptr(e));
+            promise->set_exception(std::current_exception());
             co_return false;
         }
 

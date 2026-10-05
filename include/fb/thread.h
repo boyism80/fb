@@ -83,127 +83,37 @@ private:
     void on_idle();
     void assert_exec() const;
 
-    template <typename T, typename OnSuccess, typename OnFailure>
-    void run_retry_loop(handle_func_type<T>&&     fn,
-                        size_t                    max_retries,
-                        async::propagation::token context,
-                        OnSuccess&&               on_success,
-                        OnFailure&&               on_failure)
-    {
-        const auto     retry_limit = max_retries;
-        auto           attempts    = std::make_shared<size_t>(0);
-        auto           fn_holder   = std::make_shared<handle_func_type<T>>(std::move(fn));
-        constexpr auto retry_delay = 100ms;
-
-        auto retry_func = std::make_shared<std::function<void()>>();
-        *retry_func     = [=,
-                       this,
-                       on_success = std::forward<OnSuccess>(on_success),
-                       on_failure = std::forward<OnFailure>(on_failure)]() mutable {
-            execution_context::pending(context);
-            async::awaitable_then(
-                (*fn_holder)(*this),
-                [=, this, on_success = std::move(on_success), on_failure = std::move(on_failure)](
-                    async::awaitable_result<T> result) mutable {
-                    try
-                    {
-                        if constexpr (std::is_same_v<T, void>)
-                        {
-                            result();
-                            on_success();
-                        }
-                        else
-                        {
-                            on_success(result());
-                        }
-                    }
-                    catch (const retry_exception&)
-                    {
-                        if (*attempts < retry_limit)
-                        {
-                            (*attempts)++;
-                            async::awaitable_then(
-                                this->sleep(retry_delay),
-                                [=, this, on_success = std::move(on_success), on_failure = std::move(on_failure)](
-                                    async::awaitable_result<void> sleep_result) mutable {
-                                    try
-                                    {
-                                        sleep_result();
-                                        {
-                                            auto guard = this->_queue.enter_write();
-                                            guard.value().push(*retry_func);
-                                        }
-                                    }
-                                    catch (std::exception& e)
-                                    {
-                                        on_failure(e);
-                                    }
-                                    catch (...)
-                                    {
-                                        auto unknown = std::runtime_error("unknown error");
-                                        on_failure(unknown);
-                                    }
-                                });
-                        }
-                        else
-                        {
-                            auto exhausted = std::runtime_error("max retries exceeded");
-                            on_failure(exhausted);
-                        }
-                    }
-                    catch (std::exception& e)
-                    {
-                        on_failure(e);
-                    }
-                    catch (...)
-                    {
-                        auto unknown = std::runtime_error("unknown error");
-                        on_failure(unknown);
-                    }
-                });
-        };
-
-        {
-            auto guard = this->_queue.enter_write();
-            guard.value().push(*retry_func);
-        }
-    }
-
     template <typename T>
     async::task<T> dispatch_with_retry(handle_func_type<T>&&     fn,
                                        size_t                    max_retries,
                                        async::propagation::token context = {})
     {
-        auto promise = std::make_shared<async::task_completion_source<T>>();
-
-        if constexpr (std::is_same_v<T, void>)
+        auto fn_holder = std::make_shared<handle_func_type<T>>(std::move(fn));
+        for (size_t attempt = 0;; ++attempt)
         {
-            this->run_retry_loop<T>(
-                std::move(fn),
-                max_retries,
-                std::move(context),
-                [promise]() {
-                    promise->set_value();
-                },
-                [promise](std::exception& e) {
-                    promise->set_exception(std::make_exception_ptr(e));
+            try
+            {
+                auto func = handle_func_type<T>([fn_holder](fb::thread& thread) {
+                    return (*fn_holder)(thread);
                 });
-        }
-        else
-        {
-            this->run_retry_loop<T>(
-                std::move(fn),
-                max_retries,
-                std::move(context),
-                [promise](T&& value) {
-                    promise->set_value(std::move(value));
-                },
-                [promise](std::exception& e) {
-                    promise->set_exception(std::make_exception_ptr(e));
-                });
-        }
+                if constexpr (std::is_same_v<T, void>)
+                {
+                    co_await this->dispatch(std::move(func), context);
+                    co_return;
+                }
+                else
+                {
+                    co_return co_await this->dispatch<T>(std::move(func), context);
+                }
+            }
+            catch (const retry_exception&)
+            {
+                if (attempt >= max_retries)
+                    throw std::runtime_error("max retries exceeded");
+            }
 
-        return promise->task();
+            co_await this->sleep(100ms);
+        }
     }
 
     template <typename T>
@@ -213,30 +123,25 @@ private:
                             std::function<void()>     on_complete,
                             async::propagation::token context = {})
     {
-        if constexpr (std::is_same_v<T, void>)
-        {
-            this->run_retry_loop<T>(
-                std::move(fn),
-                max_retries,
-                std::move(context),
-                [on_complete = std::move(on_complete)]() {
+        async::awaitable_then(
+            this->dispatch_with_retry<T>(std::move(fn), max_retries, std::move(context)),
+            [error = std::move(error), on_complete = std::move(on_complete)](async::awaitable_result<T> result) {
+                try
+                {
+                    result();
                     if (on_complete)
                         on_complete();
-                },
-                std::move(error));
-        }
-        else
-        {
-            this->run_retry_loop<T>(
-                std::move(fn),
-                max_retries,
-                std::move(context),
-                [on_complete = std::move(on_complete)](T&&) {
-                    if (on_complete)
-                        on_complete();
-                },
-                std::move(error));
-        }
+                }
+                catch (std::exception& e)
+                {
+                    error(e);
+                }
+                catch (...)
+                {
+                    auto unknown = std::runtime_error("unknown error");
+                    error(unknown);
+                }
+            });
     }
 
 public:
@@ -337,7 +242,7 @@ public:
         this->enqueue<ReturnType>(
             std::move(fn),
             [promise](std::exception& e) {
-                promise->set_exception(std::make_exception_ptr(e));
+                promise->set_exception(std::current_exception());
             },
             [promise](ReturnType&& value) {
                 promise->set_value(std::move(value));

@@ -457,7 +457,7 @@ private:
                                       }
                                       catch (std::exception& e)
                                       {
-                                          promise->set_exception(std::make_exception_ptr(e));
+                                          promise->set_exception(std::current_exception());
                                       }
                                       this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
                                       this->pump();

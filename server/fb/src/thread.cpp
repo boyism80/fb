@@ -258,7 +258,7 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propa
             }
             catch (std::exception& e)
             {
-                promise->set_exception(std::make_exception_ptr(e));
+                promise->set_exception(std::current_exception());
             }
             catch (...)
             {
@@ -271,7 +271,7 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propa
         this->enqueue(
             std::move(*fn_holder),
             [promise](std::exception& e) {
-                promise->set_exception(std::make_exception_ptr(e));
+                promise->set_exception(std::current_exception());
             },
             [promise]() {
                 promise->set_value();
