@@ -14,25 +14,6 @@ namespace Http.Reepository.Cache
 
         private static string ToKey(RedisKey redisKey) => redisKey.ToString();
 
-        public bool HasField(RedisKey redisKey, RedisValue field)
-        {
-            if (!_cache.TryGetValue(ToKey(redisKey), out var fields))
-                return false;
-
-            return fields.ContainsKey(field.ToString());
-        }
-
-        public TModel TryGetField(RedisKey redisKey, RedisValue field)
-        {
-            if (!_cache.TryGetValue(ToKey(redisKey), out var fields))
-                return null;
-
-            if (!fields.TryGetValue(field.ToString(), out var json))
-                return null;
-
-            return JsonConvert.DeserializeObject<TModel>(json);
-        }
-
         public bool HasKey(RedisKey redisKey)
         {
             return _cache.ContainsKey(ToKey(redisKey));

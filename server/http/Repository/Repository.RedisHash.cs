@@ -45,31 +45,11 @@ namespace Http.Reepository
             return mysqlValues;
         }
 
+        // A cached hash always holds every field of its key, so a field missing from it does not exist.
         protected override async Task<TModel> Get(uint world, TKey key)
         {
-            await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
-
-            if (_local.HasField(key.GetRedisKey(), key.GetRedisField()))
-                return _local.TryGetField(key.GetRedisKey(), key.GetRedisField());
-
-            var redis = _redis.GetConnection(world, key.GetHash());
-            var redisValues = await _redis.TryGetAllAsync(redis, key.GetRedisKey());
-            if (redisValues.Count > 0)
-            {
-                _local.PutAll(key.GetRedisKey(), redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
-                if (redisValues.TryGetValue(key.GetRedisField(), out var redisValue))
-                    return redisValue;
-            }
-            else
-            {
-                var keyStatus = await _redis.LookupHashKeyAsync(redis, key.GetRedisKey());
-                if (keyStatus == RedisCacheLookupStatus.Pending)
-                    return null;
-            }
-
-            var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
-            return mysqlValues.FirstOrDefault(x =>
-                x.GetRedisKey() == key.GetRedisKey() && x.GetRedisField() == key.GetRedisField());
+            var values = await GetAll(world, key);
+            return values.FirstOrDefault(x => x.GetRedisKey() == key.GetRedisKey() && x.GetRedisField() == key.GetRedisField());
         }
 
         protected override async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
@@ -210,7 +190,9 @@ namespace Http.Reepository
                     }
 
                     await _redis.SetFieldAsync(redis, redisKey, value.GetRedisField(), value);
-                    _local.PutField(redisKey, value.GetRedisField(), value);
+                    // Creating a one-field L1 entry would make GetAll treat it as the whole hash.
+                    if (_local.HasKey(redisKey))
+                        _local.PutField(redisKey, value.GetRedisField(), value);
                 }
 
                 var sql = OnUpsert(value);
@@ -249,9 +231,12 @@ namespace Http.Reepository
                             }
 
                             await _redis.SetFieldsAsync(redis, redisKey, valueSet);
-                            foreach (var (field, val) in valueSet)
+                            if (_local.HasKey(redisKey))
                             {
-                                _local.PutField(redisKey, field, val);
+                                foreach (var (field, val) in valueSet)
+                                {
+                                    _local.PutField(redisKey, field, val);
+                                }
                             }
                         }
 
