@@ -221,7 +221,7 @@ namespace Http.Reepository
         {
             await using var conn = _dbContext.GetUnifiedConnection();
             return await conn.QueryFirstOrDefaultAsync<CharacterName>(
-                "SELECT id, world, name FROM name_registry WHERE name = @name",
+                "SELECT id, world, name FROM name_registry WHERE name = @name AND reserved_at IS NULL",
                 new { name });
         }
 
