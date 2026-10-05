@@ -45,12 +45,6 @@ namespace Http.Redis
             return values.ToDictionary(x => x.Name, x => JsonConvert.DeserializeObject<T>(x.Value));
         }
 
-        public static async Task<IReadOnlyDictionary<RedisValue, T>> JsonHashGetAsync<T>(this IDatabaseAsync database, RedisKey key) where T : class
-        {
-            var value = await database.HashGetAllAsync(key);
-            return value.ToDictionary(x => x.Name, x => JsonConvert.DeserializeObject<T>(x.Value));
-        }
-
         public static async Task<bool> JsonSetAsync<T>(this IDatabaseAsync database, RedisKey key, T value, TimeSpan? expiry = null) where T : class
         {
             return await database.StringSetAsync(key, JsonConvert.SerializeObject(value), expiry);

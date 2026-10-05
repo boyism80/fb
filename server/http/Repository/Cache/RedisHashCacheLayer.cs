@@ -143,14 +143,6 @@ namespace Http.Reepository.Cache
             return await redis.Connection.JsonHashGetAllAsync<TModel>(redisKey);
         }
 
-        public async Task<IReadOnlyDictionary<RedisValue, TModel>> TryGetFieldsAsync(Service.Redis redis, RedisKey redisKey)
-        {
-            if (redis == null)
-                return new Dictionary<RedisValue, TModel>();
-
-            return await redis.Connection.JsonHashGetAsync<TModel>(redisKey);
-        }
-
         public async Task<bool> KeyExistsAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)

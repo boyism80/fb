@@ -80,7 +80,7 @@ namespace Http.Reepository
                 return _local.GetAll(key.GetRedisKey());
 
             var redis = _redis.GetConnection(world, key.GetHash());
-            var redisValues = await _redis.TryGetFieldsAsync(redis, key.GetRedisKey());
+            var redisValues = await _redis.TryGetAllAsync(redis, key.GetRedisKey());
             if (redisValues.Count > 0)
             {
                 _local.PutAll(key.GetRedisKey(), redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
