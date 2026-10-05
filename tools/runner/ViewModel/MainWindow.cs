@@ -1830,7 +1830,7 @@ namespace Runner.ViewModel
             IsConverting = true;
             BuildLog = string.Empty;
 
-            var zipUrl = "http://cshyeon.com:8080/fb/dist.zip";
+            var zipUrl = "https://github.com/boyism80/fb/releases/download/dist/dist.zip";
             var buildDir = Path.Combine(WorkingDirectory, "build");
             var distDir = Path.Combine(buildDir, "dist");
             var zipPath = Path.Combine(buildDir, "dist.zip");

@@ -705,7 +705,7 @@ jobs:
   build-windows:
     runs-on: [self-hosted, windows, build]
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - name: Checkout repository
@@ -873,6 +873,7 @@ jobs:
           if (Test-Path build\json) { Copy-Item build\json -Destination (Join-Path $distZip "json") -Recurse }
           if (Test-Path build\Meta.dat) { Copy-Item build\Meta.dat -Destination (Join-Path $distZip "Meta.dat") }
           if (Test-Path build\SObj.tbl) { Copy-Item build\SObj.tbl -Destination (Join-Path $distZip "SObj.tbl") }
+          Get-ChildItem $distZip -Recurse -Filter appsettings.Local.json | Remove-Item -Force
 
       - name: Zip dist package
         shell: powershell
@@ -881,12 +882,32 @@ jobs:
           $hash = (Get-FileHash dist.zip -Algorithm SHA256).Hash.ToLowerInvariant()
           [System.IO.File]::WriteAllText("dist.zip.sha256", "$hash  dist.zip`n", [System.Text.UTF8Encoding]::new($false))
 
-      - name: Upload zip to NAS
+      - name: Upload zip to GitHub release
         shell: powershell
         run: |
-          curl.exe -T dist.zip -u "$env:NAS_ID`:$env:NAS_PW" http://cshyeon.com:8080/upload/fb/dist.zip
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          curl.exe -T dist.zip.sha256 -u "$env:NAS_ID`:$env:NAS_PW" http://cshyeon.com:8080/upload/fb/dist.zip.sha256
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = "application/vnd.github+json" }
+          $api = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases"
+          try {
+            $release = Invoke-RestMethod -Uri "$api/tags/dist" -Headers $headers
+          } catch {
+            if ($_.Exception.Response.StatusCode.value__ -ne 404) { throw }
+            $create = @{ tag_name = "dist"; target_commitish = $env:GITHUB_SHA; name = "dist"; prerelease = $true } | ConvertTo-Json
+            $release = Invoke-RestMethod -Method Post -Uri $api -Headers $headers -ContentType "application/json" -Body $create
+          }
+
+          $notes = @{ body = "Latest Windows build from $env:GITHUB_SHA" } | ConvertTo-Json
+          Invoke-RestMethod -Method Patch -Uri "$api/$($release.id)" -Headers $headers -ContentType "application/json" -Body $notes | Out-Null
+
+          foreach ($asset in $release.assets) {
+            if ($asset.name -in @("dist.zip", "dist.zip.sha256")) {
+              Invoke-RestMethod -Method Delete -Uri "$api/assets/$($asset.id)" -Headers $headers | Out-Null
+            }
+          }
+
+          foreach ($file in @("dist.zip", "dist.zip.sha256")) {
+            curl.exe --fail -sS -o NUL -X POST -H "Authorization: Bearer $env:GITHUB_TOKEN" -H "Content-Type: application/octet-stream" --data-binary "@$file" "https://uploads.github.com/repos/$env:GITHUB_REPOSITORY/releases/$($release.id)/assets?name=$file"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
         env:
-          NAS_ID: ${{ secrets.NAS_ID }}
-          NAS_PW: ${{ secrets.NAS_PW }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
