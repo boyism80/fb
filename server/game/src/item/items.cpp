@@ -1389,7 +1389,8 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
 async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items,
                                              uint64_t                                      cost_money,
                                              const std::unordered_map<uint32_t, uint16_t>& reward_items,
-                                             uint64_t                                      reward_money)
+                                             uint64_t                                      reward_money,
+                                             ITEM_DELETE_TYPE                              delete_type)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1507,7 +1508,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
             }
 
             uint16_t to_remove = std::min(in_slot, remaining);
-            auto     removed   = this->remove(index, to_remove, ITEM_DELETE_TYPE::GIVE, true);
+            auto     removed   = this->remove(index, to_remove, delete_type, true);
             if (removed != nullptr)
                 co_await removed->destroy();
             remaining -= to_remove;

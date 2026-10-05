@@ -1141,7 +1141,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
         return builder.run();
     }
 
-    auto count       = static_cast<uint8_t>(lua->tointeger(3, 1));
+    auto count       = static_cast<uint16_t>(lua->tointeger(3, 1));
     auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
 
     if (lua->is_userdata<fb::game::item>(2))
@@ -1160,10 +1160,10 @@ int builtin::character::builtin_rmitem(lua_State* L)
         builder.yield = [=]() -> async::task<void> {
             try
             {
-                auto found = ch->items.find(item->model());
-                if (found != nullptr && found->count() >= count)
+                auto index = ch->items.index(item);
+                if (index != 0xFF && item->count() >= count)
                 {
-                    auto dropped = ch->items.remove(ch->items.index(item->model()), count, delete_attr);
+                    auto dropped = ch->items.remove(index, count, delete_attr);
                     if (dropped != nullptr)
                     {
                         co_await dropped->destroy();
@@ -1402,18 +1402,19 @@ int builtin::character::builtin_exchange(lua_State* L)
         lua->pop(1);
     }
 
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto result   = std::make_shared<exchange_result>(exchange_result::ok);
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
+    auto delete_type = lua->toenum(4, ITEM_DELETE_TYPE::GIVE);
+    auto weak        = ch->weak_from_this_as<fb::game::character>();
+    auto result      = std::make_shared<exchange_result>(exchange_result::ok);
+    auto builder     = lua->new_co_builder();
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
         if (cost_exp > 0 && ch->exp() < cost_exp)
         {
             *result = exchange_result::lack_cost;
         }
         else
         {
-            *result = co_await ch->items.exchange(cost_items, cost_money, reward_items, reward_money);
+            *result = co_await ch->items.exchange(cost_items, cost_money, reward_items, reward_money, delete_type);
             if (*result == exchange_result::ok)
             {
                 if (cost_exp > 0)

@@ -1,3 +1,5 @@
+local enum = require('lib.enum')
+
 local M = {}
 
 function M.revive(me, npc, discourteous)
@@ -450,7 +452,6 @@ function M.buy_item(me, npc, name, count)
     if model == nil then
         return true
     end
-    local is_bundle = model:attr(ITEM_ATTRIBUTE.BUNDLE)
 
     local price = npc:model():buy_price(name)
     if price == nil then
@@ -459,44 +460,19 @@ function M.buy_item(me, npc, name, count)
     end
 
 
-    local slots = {}
-    for slot, item in pairs(me:items()) do
-        if item:model():name() == name then
-            table.insert(slots, slot)
-            if is_bundle then
-                break
-            else
-                if count ~= nil and #slots > count then
-                    break
-                end
-            end
-        end
-    end
-
-    if #slots == 0 then
+    local owned = M.count_item_by_name(me, name)
+    if owned == 0 then
         npc:chat('가지고 있지 않습니다.')
         return false
     end
 
-    if is_bundle then
-        local item = me:item(slots[1] - 1)
-        if count == nil then
-            count = item:count()
-        end
+    if count == nil then
+        count = owned
+    end
 
-        if count > item:count() then
-            npc:chat('그만큼 가지고 있지 않습니다.')
-            return false
-        end
-    else
-        if count == nil then
-            count = #slots
-        end
-
-        if count > #slots then
-            npc:chat('그만큼 가지고 있지 않습니다.')
-            return false
-        end
+    if count > owned then
+        npc:chat('그만큼 가지고 있지 않습니다.')
+        return false
     end
 
     price = price * count
@@ -506,14 +482,12 @@ function M.buy_item(me, npc, name, count)
         return false
     end
 
-    if is_bundle then
-        me:rmitem(slots[1], count, ITEM_DELETE_TYPE.SELL)
-    else
-        for _, slot in pairs(slots) do
-            me:rmitem(slot, 1, ITEM_DELETE_TYPE.SELL)
-        end
+    local code = me:exchange({ item = { [name] = count } }, { money = price }, ITEM_DELETE_TYPE.SELL)
+    if code ~= enum.exchange_result.OK then
+        npc:chat('그만큼 가지고 있지 않습니다.')
+        return false
     end
-    me:money(me:money() + price)
+
     if count > 1 then
         npc:chat(string.format('%s %d개를 %d전에 샀습니다.', name, count, price))
     else
@@ -708,8 +682,9 @@ function M.show_buy_menu(me, npc)
         message = string.format('%s %d전에 파시겠습니까?', name_with(model:name()), price)
     end
     if me:menu(npc, message, {'네', '아니오'}) == 1 then
-        me:money(me:money() + price)
-        me:rmitem(slot, count, ITEM_DELETE_TYPE.SELL)
+        if me:rmitem(item, count, ITEM_DELETE_TYPE.SELL) then
+            me:money(me:money() + price)
+        end
     end
     return DIALOG_RESULT.NEXT
 end
