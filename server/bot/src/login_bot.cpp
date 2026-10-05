@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cwchar>
 #include <memory>
+#include <optional>
 #include <string>
 
 using namespace fb::bot;
@@ -70,4 +71,24 @@ uint8_t login_bot::transfer_from() const
 fb::protocol::CLIENT_VERSION login_bot::client_version() const
 {
     return this->_client_version;
+}
+
+const std::optional<fb::bot::credential>& login_bot::credential() const
+{
+    return this->_credential;
+}
+
+void login_bot::credential(const std::optional<fb::bot::credential>& value)
+{
+    this->_credential = value;
+}
+
+uint32_t login_bot::reconnect_from() const
+{
+    return this->_reconnect_from;
+}
+
+void login_bot::reconnect_from(uint32_t value)
+{
+    this->_reconnect_from = value;
 }

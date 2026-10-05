@@ -9,6 +9,7 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <json/json.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -1551,14 +1552,25 @@ int builtin::server::builtin_http_response_delay(lua_State* L)
         lua->pushinteger(srv.http.response_delay().total_milliseconds());
         return 1;
     }
+    else if (lua->is_string(1) && lua->is_number(1) == false)
+    {
+        auto service = lua->tostring(1);
+        if (argc >= 2)
+        {
+            auto ms = std::max<int64_t>(0, lua->tointeger(2));
+            srv.http.response_delay(service, fb::model::timespan(std::chrono::milliseconds(ms)));
+        }
 
-    auto ms = static_cast<int64_t>(lua->tointeger(1));
-    if (ms < 0)
-        ms = 0;
-
-    srv.http.response_delay(fb::model::timespan(std::chrono::milliseconds(ms)));
-    lua->pushinteger(srv.http.response_delay().total_milliseconds());
-    return 1;
+        lua->pushinteger(srv.http.response_delay_for(service).total_milliseconds());
+        return 1;
+    }
+    else
+    {
+        auto ms = std::max<int64_t>(0, lua->tointeger(1));
+        srv.http.response_delay(fb::model::timespan(std::chrono::milliseconds(ms)));
+        lua->pushinteger(srv.http.response_delay().total_milliseconds());
+        return 1;
+    }
 }
 
 int builtin::server::builtin_http_fault(lua_State* L)
@@ -1571,15 +1583,39 @@ int builtin::server::builtin_http_fault(lua_State* L)
     auto  argc = lua->argc();
     if (argc < 1 || lua->is_string(1) == false)
     {
-        lua->pushstring("Invalid arguments: http_fault(service, [enabled])");
+        lua->pushstring("Invalid arguments: http_fault(service, ['off'|'unreachable'|'lost'])");
         return 1;
     }
 
     auto service = lua->tostring(1);
     if (argc >= 2)
-        srv.http.fault(service, lua->toboolean(2));
+    {
+        auto mode = lua->tostring(2);
+        if (mode == "off")
+            srv.http.fault(service, fb::http_client::FAULT::NONE);
+        else if (mode == "unreachable")
+            srv.http.fault(service, fb::http_client::FAULT::UNREACHABLE);
+        else if (mode == "lost")
+            srv.http.fault(service, fb::http_client::FAULT::RESPONSE_LOST);
+        else
+        {
+            lua->pushstring("Invalid arguments: http_fault(service, ['off'|'unreachable'|'lost'])");
+            return 1;
+        }
+    }
 
-    lua->pushboolean(srv.http.fault(service));
+    switch (srv.http.fault(service))
+    {
+    case fb::http_client::FAULT::UNREACHABLE:
+        lua->pushstring("unreachable");
+        break;
+    case fb::http_client::FAULT::RESPONSE_LOST:
+        lua->pushstring("lost");
+        break;
+    default:
+        lua->pushstring("off");
+        break;
+    }
     return 1;
 }
 

@@ -33,6 +33,10 @@ constexpr auto INTEGRATION_DEFAULT_TIMEOUT = 30s;
 constexpr auto INTEGRATION_DEFAULT_TIMEOUT = 10s;
 #endif
 
+constexpr auto LOGOUT_DEFAULT_TIMEOUT = 10s;
+// Covers the login server's relogin retry window plus the gateway -> login -> game hops.
+constexpr auto LOGIN_DEFAULT_TIMEOUT = 60s;
+
 void lua_arg_error(lua_State* L, int index, const char* expected)
 {
     luaL_error(L, "argument %d must be %s", index, expected);
@@ -208,6 +212,8 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"direction",                builtin::game_bot::builtin_direction},
     {"map_move",                 builtin::game_bot::builtin_map_move},
     {"transfer",                 builtin::game_bot::builtin_transfer},
+    {"logout",                   builtin::game_bot::builtin_logout},
+    {"login",                    builtin::game_bot::builtin_login},
     {"create_item",              builtin::game_bot::builtin_create_item},
     {"equip",                    builtin::game_bot::builtin_equip},
     {"unequip",                  builtin::game_bot::builtin_unequip},
@@ -1195,6 +1201,84 @@ int builtin::game_bot::builtin_transfer(lua_State* L)
 
         *weak_slot = *result;
         co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::game_bot::builtin_logout(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    auto timeout = fb::model::timespan(LOGOUT_DEFAULT_TIMEOUT);
+    if (lua->argc() >= 2 && lua->is_nil(2) == false)
+        timeout = fb::model::timespan(std::chrono::milliseconds(require_integer<int>(L, lua, 2)));
+
+    auto bot_ptr = bot;
+    auto result  = std::make_shared<bool>(false);
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [bot_ptr, timeout, result]() -> async::task<void> {
+        *result = co_await bot_ptr->logout(timeout);
+    };
+    builder.resume = [lua, result]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::game_bot::builtin_login(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    if (fb::lua::luable::is_weak_userdata(*lua, 1) == false)
+        return 0;
+
+    auto weak_slot = static_cast<std::weak_ptr<fb::lua::luable>*>(lua_touserdata(*lua, 1));
+    if (weak_slot == nullptr)
+        return 0;
+
+    auto timeout = fb::model::timespan(LOGIN_DEFAULT_TIMEOUT);
+    if (lua->argc() >= 2 && lua->is_nil(2) == false)
+        timeout = fb::model::timespan(std::chrono::milliseconds(require_integer<int>(L, lua, 2)));
+
+    auto bot_ptr = bot;
+    auto result  = std::make_shared<std::shared_ptr<fb::bot::game_bot>>();
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [bot_ptr, timeout, result]() -> async::task<void> {
+        try
+        {
+            *result = co_await bot_ptr->login(timeout);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("builtin login: bot={} error={}", bot_ptr->name(), e.what());
+            *result = nullptr;
+        }
+    };
+    builder.resume = [lua, weak_slot, result]() -> async::task<int> {
+        if (*result == nullptr)
+        {
+            lua->pushboolean(false);
+            co_return 1;
+        }
+
+        *weak_slot = *result;
+        lua->pushboolean(true);
+        co_return 1;
     };
     return builder.run();
 }

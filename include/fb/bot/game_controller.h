@@ -188,7 +188,7 @@ private:
     async::task<void> on_ping(game_bot& bot, const game_resp::ping& response);
 
 public:
-    bool register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context);
+    bool register_transfer_context(std::shared_ptr<transfer_context> context);
     void remove_transfer_context(uint32_t source_bot_id);
     bool has_transfer_context(uint32_t source_bot_id) const;
     bool invoke_transfer_context(uint32_t source_bot_id, std::shared_ptr<game_bot> bot);

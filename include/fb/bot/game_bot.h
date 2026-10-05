@@ -110,6 +110,7 @@ private:
     fb::stream                      _transfer_buffer;
     fb::protocol::CLIENT_VERSION    _client_version = fb::protocol::CLIENT_VERSION::v550;
     uint32_t                        _transfer_from_bot_id = 0;
+    std::optional<fb::bot::credential> _credential;
     DIRECTION                       _direction            = DIRECTION::BOTTOM;
     uint16_t                        _look                 = 0;
     uint8_t                         _color                = 0;
@@ -191,6 +192,8 @@ public:
     fb::protocol::CLIENT_VERSION           client_version() const;
     uint32_t                               transfer_from_bot_id() const;
     void                                   set_transfer_from_bot_id(uint32_t value);
+    const std::optional<fb::bot::credential>& credential() const;
+    void                                   credential(const std::optional<fb::bot::credential>& value);
     DIRECTION                              direction() const;
     void                                   set_direction(DIRECTION value);
     uint16_t                               look() const;
@@ -351,7 +354,13 @@ public:
     async::task<bool>                     leave_group(std::chrono::milliseconds timeout);
     async::task<bool>                     kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
     game_bot_ptr_task                     transfer(const fb::protocol::header& protocol, const fb::model::timespan& timeout = 15s, bool encrypt = true, bool wrap = true);
+    async::task<bool>                     logout(const fb::model::timespan& timeout);
+    game_bot_ptr_task                     login(const fb::model::timespan& timeout);
     // clang-format on
+
+private:
+    // Resolves with the bot that replaces this one once it has logged in on the new connection.
+    game_bot_ptr_task wait_reconnect(const fb::model::timespan& timeout);
 };
 
 } // namespace fb::bot

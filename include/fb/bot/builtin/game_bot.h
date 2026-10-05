@@ -44,6 +44,8 @@ struct game_bot
     static int builtin_direction(lua_State* L);
     static int builtin_map_move(lua_State* L);
     static int builtin_transfer(lua_State* L);
+    static int builtin_logout(lua_State* L);
+    static int builtin_login(lua_State* L);
     static int builtin_create_item(lua_State* L);
     static int builtin_equip(lua_State* L);
     static int builtin_unequip(lua_State* L);

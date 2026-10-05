@@ -87,7 +87,9 @@ async::task<void> gateway_bot_controller::on_transfer(gateway_bot& bot, const fb
 
     bot.close();
 
-    auto created  = this->container.login->create(response.parameter);
+    auto created = this->container.login->create(response.parameter);
+    created->credential(bot.credential());
+    created->reconnect_from(bot.reconnect_from());
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
 

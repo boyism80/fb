@@ -36,7 +36,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <unordered_set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -55,26 +55,35 @@ using namespace std::chrono_literals;
 
 class http_client
 {
+public:
+    enum class FAULT
+    {
+        NONE,
+        UNREACHABLE,
+        RESPONSE_LOST,
+    };
+
 private:
     using pending_task = std::function<void()>;
 
-    fb::async_executor&             _executor;
-    size_t                          _max_concurrent;
-    std::mutex                      _queue_mutex;
-    std::queue<pending_task>        _queue;
-    std::atomic<size_t>             _in_flight{0};
-    std::atomic<int64_t>            _response_delay_ms{0};
-    mutable std::mutex              _fault_mutex;
-    std::unordered_set<std::string> _faulted_services;
+    fb::async_executor&                      _executor;
+    size_t                                   _max_concurrent;
+    std::mutex                               _queue_mutex;
+    std::queue<pending_task>                 _queue;
+    std::atomic<size_t>                      _in_flight{0};
+    std::atomic<int64_t>                     _response_delay_ms{0};
+    mutable std::mutex                       _hook_mutex;
+    std::unordered_map<std::string, int64_t> _service_delays_ms;
+    std::unordered_map<std::string, FAULT>   _faults;
 
-    [[nodiscard]] async::task<void> sleep(fb::thread* thread)
+    [[nodiscard]] async::task<void> sleep(fb::thread* thread, std::string_view service = {})
     {
         if (thread == nullptr)
             co_return;
 
         co_await thread->switching();
 
-        auto delay_ms = this->_response_delay_ms.load(std::memory_order_relaxed);
+        auto delay_ms = this->response_delay_for(service).total_milliseconds();
         if (delay_ms <= 0)
             co_return;
 
@@ -351,34 +360,67 @@ public:
         return fb::model::timespan(std::chrono::milliseconds(this->_response_delay_ms.load(std::memory_order_relaxed)));
     }
 
-    // Test hook: requests to a faulted service fail before connecting, like an unreachable host.
-    void fault(std::string_view service, bool enabled)
+    // Test hook: a service delay overrides the global delay; zero removes it.
+    void response_delay(std::string_view service, const fb::model::timespan& value)
     {
-        auto lock = std::lock_guard(this->_fault_mutex);
-        if (enabled)
-            this->_faulted_services.emplace(service);
+        auto lock = std::lock_guard(this->_hook_mutex);
+        if (value.total_milliseconds() > 0)
+            this->_service_delays_ms[std::string(service)] = value.total_milliseconds();
         else
-            this->_faulted_services.erase(std::string(service));
+            this->_service_delays_ms.erase(std::string(service));
     }
 
-    bool fault(std::string_view service) const
+    fb::model::timespan response_delay_for(std::string_view service) const
     {
-        auto lock = std::lock_guard(this->_fault_mutex);
-        return this->_faulted_services.contains(std::string(service));
+        {
+            auto lock  = std::lock_guard(this->_hook_mutex);
+            auto found = this->_service_delays_ms.find(std::string(service));
+            if (found != this->_service_delays_ms.end())
+                return fb::model::timespan(std::chrono::milliseconds(found->second));
+        }
+        return this->response_delay();
+    }
+
+    // Test hook: both faults wait for the response delay before throwing.
+    // UNREACHABLE never sends the request; RESPONSE_LOST sends it and drops the response.
+    void fault(std::string_view service, FAULT value)
+    {
+        auto lock = std::lock_guard(this->_hook_mutex);
+        if (value == FAULT::NONE)
+            this->_faults.erase(std::string(service));
+        else
+            this->_faults[std::string(service)] = value;
+    }
+
+    FAULT fault(std::string_view service) const
+    {
+        auto lock  = std::lock_guard(this->_hook_mutex);
+        auto found = this->_faults.find(std::string(service));
+        if (found == this->_faults.end())
+            return FAULT::NONE;
+        return found->second;
     }
 
     template <typename T> async::task<T> get(std::string_view service, std::string_view path)
     {
-        if (this->fault(service))
-            throw std::runtime_error(std::format("HTTP GET request failed: fault injected for {}", service));
+        auto thread = this->_executor.threads.current();
+        auto fault  = this->fault(service);
+        if (fault == FAULT::UNREACHABLE)
+        {
+            co_await this->sleep(thread, service);
+            throw std::runtime_error(
+                std::format("HTTP GET request failed: unreachable fault injected for {}", service));
+        }
 
         auto  service_str = std::string(service);
         auto& config      = fb::config<>(service_str);
         auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         auto  path_str    = std::string(path);
-        auto  thread      = this->_executor.threads.current();
         auto  result      = co_await this->boost_get_async<T>(host, path_str);
-        co_await this->sleep(thread);
+        co_await this->sleep(thread, service);
+        if (fault == FAULT::RESPONSE_LOST)
+            throw std::runtime_error(
+                std::format("HTTP GET request failed: response lost fault injected for {}", service));
         co_return result;
     }
 
@@ -438,16 +480,24 @@ public:
     template <typename Request> [[nodiscard]] async::task<typename response_of<Request>::type>
     post(std::string_view service, std::string_view path, const Request& request)
     {
-        if (this->fault(service))
-            throw std::runtime_error(std::format("HTTP POST request failed: fault injected for {}", service));
+        auto thread = this->_executor.threads.current();
+        auto fault  = this->fault(service);
+        if (fault == FAULT::UNREACHABLE)
+        {
+            co_await this->sleep(thread, service);
+            throw std::runtime_error(
+                std::format("HTTP POST request failed: unreachable fault injected for {}", service));
+        }
 
         auto  service_str = std::string(service);
         auto& config      = fb::config<>(service_str);
         auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         auto  path_str    = std::string(path);
-        auto  thread      = this->_executor.threads.current();
         auto  result      = co_await this->boost_post_async<Request>(host, path_str, request);
-        co_await this->sleep(thread);
+        co_await this->sleep(thread, service);
+        if (fault == FAULT::RESPONSE_LOST)
+            throw std::runtime_error(
+                std::format("HTTP POST request failed: response lost fault injected for {}", service));
         co_return result;
     }
 

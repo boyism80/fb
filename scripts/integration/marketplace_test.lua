@@ -1,5 +1,6 @@
 local lib      = require("integration.lib")
 local protocol = require("integration.protocol")
+local resp     = require("integration.response")
 
 local F1_OID          = 0xFFFFFFFF
 local DIALOG_CLOSE_OID = 0xFFFFFFFD
@@ -25,17 +26,23 @@ local WEAPON_DURABILITY = 50
 
 local MQ_WAIT_MS     = 2000
 local HTTP_DELAY_MS  = 3000
-local DELAY_PROBE_MS = 3500
 local DIALOG_TIMEOUT_MS = 30000
--- marketplace_restore_timer runs every 30s; poll the storage box after the first tick could have passed.
+-- Marketplace-only delay so the escrow save to internal is not delayed and the lock checks land inside the window.
+local LIST_DELAY_MS   = 5000
+local LOCK_SETTLE_MS  = 500
+local LOCK_PROBE_MS   = 3000
+-- marketplace_restore_timer runs every 30s.
 local RESTORE_FIRST_WAIT_MS = 30000
 local RESTORE_POLL_MS       = 5000
-local RESTORE_POLL_COUNT    = 6
+local RESTORE_POLL_COUNT    = 8
 local MARKETPLACE_SERVICE   = "marketplace"
 
 local MSG_FEE_FAIL       = "등록 수수료가 부족합니다"
 local MSG_LIST_OK        = "등록이 완료되었습니다"
 local MSG_LIST_FAIL      = "등록 실패"
+local MSG_LIST_PENDING   = "등록 결과를 확인하고 있습니다"
+local MSG_ITEM_LOCKED    = "거래소 등록 처리 중인 아이템입니다"
+local MSG_NO_LISTABLE    = "등록할 수 있는 아이템이 없습니다"
 local MSG_PURCHASE_OK    = "구매가 완료되었습니다"
 local MSG_CANCEL_OK      = "취소가 완료되었습니다"
 local MSG_FEE_CONFIRM    = "등록하시겠습니까"
@@ -47,15 +54,15 @@ local MSG_CANCEL_EMPTY = "등록한 물품이 없습니다"
 local STORAGE_CANCEL_TITLE   = "거래소 등록 취소"
 local STORAGE_PURCHASE_TITLE = "거래소 구매"
 local STORAGE_SALE_TITLE     = "거래소 판매"
-local STORAGE_LIST_RECOVERY_TITLE = "거래소 등록 복구"
 
 -- Shared across sequential/parallel scenario steps
 local g_list_msg     = nil
+local g_list_confirm_sent = false
+local g_lock_ok      = false
+local g_lock_err     = nil
 local g_purchase_msg = nil
 local g_purchase_done = false
 local g_cancel_msg   = nil
-local g_search_ok    = false
-local g_search_err   = nil
 local g_money_ok              = false
 local g_pay_amount            = 0
 local g_purchase_api_started  = false
@@ -111,6 +118,7 @@ end
 
 local function cleanup_bot(bot)
     bot:chat("/HTTP지연 0")
+    bot:chat("/HTTP지연 " .. MARKETPLACE_SERVICE .. " 0")
     bot:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
     bot:chat("/아이템초기화")
     bot:chat("/아이템삭제")
@@ -305,7 +313,10 @@ local function prepare_bundle(bot)
     return bot:item_count(BUNDLE_ITEM) == BUNDLE_PREP_COUNT
 end
 
-local function list_item_flow(bot, item_name, count, price)
+-- options.before_confirm(bot) runs right before the final YES; returning false aborts the flow.
+-- options.confirm_only sends the YES without waiting for the result and returns "".
+local function list_item_flow(bot, item_name, count, price, options)
+    options = options or {}
     progress(bot, string.format(
         "list_item_flow start item=%s count=%s price=%s money=%s invent=%s",
         item_name,
@@ -378,7 +389,20 @@ local function list_item_flow(bot, item_name, count, price)
         return nil, "unexpected fee dialog: " .. tostring(packet.message)
     end
 
+    if options.before_confirm ~= nil then
+        local ok, before_err = options.before_confirm(bot)
+        if ok == false then
+            close_marketplace_menu(bot)
+            return nil, "before_confirm: " .. tostring(before_err)
+        end
+    end
+
     progress(bot, "list_item_flow confirm YES")
+    g_list_confirm_sent = true
+    if options.confirm_only then
+        bot:send(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES))
+        return "", nil
+    end
     packet = bot:request_dialog_ext(
         protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
         function(p)
@@ -823,6 +847,195 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
     return observed_deduct, observed_money
 end
 
+-- Escrowed items stay visible in the client, so a lock is observed by the drop being refused.
+local function probe_item_locked(bot, item_name)
+    local slot = bot:item_slot(item_name)
+    if slot == nil or slot == 0xFF then
+        return false
+    end
+    local packet = bot:request(
+        resp.message,
+        protocol.item_drop(slot + 1, false),
+        function(p)
+            return p.text ~= nil and p.text:find(MSG_ITEM_LOCKED, 1, true) ~= nil
+        end,
+        LOCK_PROBE_MS)
+    return packet ~= nil and packet ~= false
+end
+
+-- Run after the listing confirm; fails if the lock is not visible as "shown but unusable".
+local function check_listing_locked(seller, item_name, locked_money)
+    if seller:has_item_by_name(item_name) == false then
+        return false, "locked item hidden from inventory"
+    end
+    if probe_item_locked(seller, item_name) == false then
+        return false, "drop of locked item was not refused"
+    end
+    if seller:has_item_by_name(item_name) == false then
+        return false, "locked item removed by drop attempt"
+    end
+
+    -- The display shows usable + locked money; dropping all of it must leave the locked fee behind.
+    local display = seller:money()
+    if display <= locked_money then
+        return false, string.format("no usable money to probe display=%d locked=%d", display, locked_money)
+    end
+    local packet = seller:request(
+        resp.update_internal,
+        protocol.item_drop_money(display),
+        function(p)
+            return p.ch_money == locked_money
+        end,
+        LOCK_PROBE_MS)
+    if packet == nil or packet == false then
+        return false, string.format("locked fee was droppable display=%d now=%d locked=%d",
+            display, seller:money(), locked_money)
+    end
+    return true, nil
+end
+
+local function wait_list_confirm_sent(ctx)
+    local waited = 0
+    while g_list_confirm_sent == false and waited < DIALOG_TIMEOUT_MS do
+        ctx:sleep(100)
+        waited = waited + 100
+    end
+    if g_list_confirm_sent == false then
+        return false
+    end
+    ctx:sleep(LOCK_SETTLE_MS)
+    return true
+end
+
+-- Unlock sends nothing to the client, so poll until the item can actually be dropped.
+local function wait_item_unlocked(ctx, bot, item_name, first_wait_ms)
+    ctx:sleep(first_wait_ms)
+    for attempt = 1, RESTORE_POLL_COUNT do
+        local slot = bot:item_slot(item_name)
+        if slot == nil or slot == 0xFF then
+            return false, "item missing while waiting for unlock"
+        end
+        local packet = bot:request(
+            resp.item_remove,
+            protocol.item_drop(slot + 1, false),
+            function(p)
+                return p.index == slot
+            end,
+            LOCK_PROBE_MS)
+        if packet ~= nil and packet ~= false then
+            return true, nil
+        end
+        progress(bot, string.format("unlock not settled yet attempt=%d", attempt))
+        ctx:sleep(RESTORE_POLL_MS)
+    end
+    return false, "item still locked after restore timer"
+end
+
+-- Deduct removes the escrowed item from the client and lowers the displayed money by the fee.
+local function wait_item_deducted(ctx, bot, item_name, expected_money, first_wait_ms)
+    ctx:sleep(first_wait_ms)
+    for attempt = 1, RESTORE_POLL_COUNT do
+        if bot:has_item_by_name(item_name) == false and bot:money() == expected_money then
+            return true, nil
+        end
+        progress(bot, string.format("deduct not settled yet attempt=%d has_item=%s money=%d expected=%d",
+            attempt, tostring(bot:has_item_by_name(item_name)), bot:money(), expected_money))
+        ctx:sleep(RESTORE_POLL_MS)
+    end
+    return false, string.format("escrow not deducted has_item=%s money=%d expected=%d",
+        tostring(bot:has_item_by_name(item_name)), bot:money(), expected_money)
+end
+
+-- Logging out mid-request must neither return the item while the listing exists nor lose it when it does not.
+-- The HTTP fault outlives the session, so the escrow must survive the relogin until the marketplace answers.
+local function logout_during_delay_scenario(label, fault, listing_created)
+    return function(ctx)
+        local a = ctx:bot(0)
+        progress(a, string.format("%s: LOGOUT DURING DELAY fault=%s", label, fault))
+
+        cleanup_bot(a)
+        if prepare_weapon(a) == false then
+            progress(a, "FAILED: prepare weapon")
+            return false
+        end
+        local fee = listing_fee(1, WEAPON_LIST_PRICE)
+        local money_before = fee + 1000
+        a:money(money_before)
+        a:chat(string.format("/HTTP지연 %s %d", MARKETPLACE_SERVICE, LIST_DELAY_MS))
+        a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " " .. fault)
+
+        local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE, { confirm_only = true })
+        if msg == nil then
+            progress(a, "FAILED: " .. tostring(err))
+            return false
+        end
+        ctx:sleep(LOCK_SETTLE_MS)
+
+        if a:logout() == false then
+            progress(a, "FAILED: logout")
+            return false
+        end
+        if a:login() == false then
+            progress(a, "FAILED: relogin")
+            return false
+        end
+        a = ctx:bot(0)
+
+        local locked, lock_err = check_listing_locked(a, WEAPON_ITEM, fee)
+        if locked == false then
+            progress(a, "FAILED: after relogin " .. tostring(lock_err))
+            return false
+        end
+
+        a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+        a:chat("/HTTP지연 " .. MARKETPLACE_SERVICE .. " 0")
+
+        local ok, settle_err
+        if listing_created then
+            -- Usable money was dropped by the lock check, so only the locked fee is left to deduct.
+            ok, settle_err = wait_item_deducted(ctx, a, WEAPON_ITEM, 0, RESTORE_FIRST_WAIT_MS)
+        else
+            ok, settle_err = wait_item_unlocked(ctx, a, WEAPON_ITEM, RESTORE_FIRST_WAIT_MS)
+            if ok then
+                local packet = a:request(
+                    resp.update_internal,
+                    protocol.item_drop_money(fee),
+                    function(p)
+                        return p.ch_money == 0
+                    end,
+                    LOCK_PROBE_MS)
+                if packet == nil or packet == false then
+                    ok, settle_err = false, string.format("fee not released after relogin money=%d", a:money())
+                end
+            end
+        end
+        if ok == false then
+            progress(a, "FAILED: " .. tostring(settle_err))
+            return false
+        end
+
+        if listing_created then
+            local cancel_msg, cancel_err = cancel_item_flow(a, WEAPON_ITEM)
+            if cancel_msg == nil or cancel_msg:find(MSG_CANCEL_OK, 1, true) == nil then
+                progress(a, "FAILED: cancel listing after logout " .. tostring(cancel_msg or cancel_err))
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            local received, recv_err = receive_storage(a, STORAGE_CANCEL_TITLE)
+            if received == false or a:has_item_by_name(WEAPON_ITEM) == false then
+                progress(a, "FAILED: cancelled weapon not received " .. tostring(recv_err))
+                return false
+            end
+        end
+
+        a:clear_all_drop_items()
+        cleanup_bot(a)
+        lib.formation.arrange_in_line(ctx)
+        progress(a, label .. " PASSED")
+        return true
+    end
+end
+
 test_suite {
     name      = "Marketplace Test",
     bot_count = 2,
@@ -913,6 +1126,10 @@ test_suite {
             end
             if a:has_item_by_name(WEAPON_ITEM) then
                 progress(a, "FAILED: weapon still in inventory")
+                return false
+            end
+            if a:money() ~= 1000 then
+                progress(a, string.format("FAILED: fee not deducted on success money=%d expected=1000", a:money()))
                 return false
             end
 
@@ -1059,84 +1276,124 @@ test_suite {
             return true
         end,
 
-        -- M6: marketplace unreachable during listing; item and fee come back through the restore timer
+        -- A1: dropping the item after choosing it but before the confirm must not create a listing
         function(ctx)
             local a = ctx:bot(0)
-            progress(a, "M6: LIST UNREACHABLE RECOVERY")
+            progress(a, "A1: DROP BEFORE CONFIRM")
 
             cleanup_bot(a)
             if prepare_weapon(a) == false then
                 progress(a, "FAILED: prepare weapon")
                 return false
             end
-            local fee = listing_fee(1, WEAPON_LIST_PRICE)
-            local money_before = fee + 1000
+            local money_before = listing_fee(1, WEAPON_LIST_PRICE) + 1000
             a:money(money_before)
 
-            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " on")
-            local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE)
-            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
-            if msg == nil then
-                progress(a, "FAILED: " .. tostring(err))
-                return false
-            end
-            if msg:find(MSG_LIST_FAIL, 1, true) == nil then
-                progress(a, "FAILED: expected list failure msg=" .. tostring(msg))
-                return false
-            end
-
-            -- The result is unknown to the game server, so the cost stays deducted until restore checks it.
-            if a:has_item_by_name(WEAPON_ITEM) then
-                progress(a, "FAILED: weapon still in inventory after unreachable list")
-                return false
-            end
-            if a:money() ~= money_before - fee then
-                progress(a, string.format("FAILED: fee not deducted money=%d expected=%d", a:money(), money_before - fee))
-                return false
-            end
-
-            local ok, search_err = assert_search_has_item(a, WEAPON_ITEM, false)
-            if ok == false then
-                progress(a, "FAILED: listing created while unreachable " .. tostring(search_err))
-                return false
-            end
-
-            ctx:sleep(RESTORE_FIRST_WAIT_MS)
-            local received = false
-            local recv_err = nil
-            for attempt = 1, RESTORE_POLL_COUNT do
-                received, recv_err = receive_storage(a, STORAGE_LIST_RECOVERY_TITLE)
-                if received then
-                    break
-                end
-                progress(a, string.format("M6: recovery storage not yet available attempt=%d err=%s",
-                    attempt, tostring(recv_err)))
-                ctx:sleep(RESTORE_POLL_MS)
-            end
-            if received == false then
-                progress(a, "FAILED: recovery storage " .. tostring(recv_err))
-                return false
-            end
-
-            if a:has_item_by_name(WEAPON_ITEM) == false then
-                progress(a, "FAILED: weapon not restored")
+            local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE, {
+                before_confirm = function(bot)
+                    local slot = bot:item_slot(WEAPON_ITEM)
+                    local packet = bot:request(
+                        resp.item_remove,
+                        protocol.item_drop(slot + 1, false),
+                        function(p)
+                            return p.index == slot
+                        end,
+                        LOCK_PROBE_MS)
+                    if packet == nil or packet == false then
+                        return false, "drop before confirm was refused"
+                    end
+                    return true, nil
+                end,
+            })
+            if msg == nil or msg:find(MSG_LIST_FAIL, 1, true) == nil then
+                progress(a, "FAILED: expected list failure " .. tostring(msg or err))
                 return false
             end
             if a:money() ~= money_before then
-                progress(a, string.format("FAILED: fee not restored money=%d expected=%d", a:money(), money_before))
+                progress(a, string.format("FAILED: fee charged money=%d expected=%d", a:money(), money_before))
+                return false
+            end
+            local ok, check_err = assert_search_has_item(a, WEAPON_ITEM, false)
+            if ok == false then
+                progress(a, "FAILED: dropped item listed " .. tostring(check_err))
+                return false
+            end
+            ok, check_err = assert_cancel_list_empty(a)
+            if ok == false then
+                progress(a, "FAILED: " .. tostring(check_err))
+                return false
+            end
+
+            a:clear_all_drop_items()
+            cleanup_bot(a)
+            progress(a, "A1 PASSED")
+            return true
+        end,
+
+        -- A2: swapping another item into the chosen slot before the confirm must not list that item
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "A2: SWAP BEFORE CONFIRM")
+
+            cleanup_bot(a)
+            if prepare_weapon(a) == false then
+                progress(a, "FAILED: prepare weapon")
+                return false
+            end
+            a:create_item(BUNDLE_ITEM, 1)
+            local money_before = listing_fee(1, WEAPON_LIST_PRICE) + 1000
+            a:money(money_before)
+
+            local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE, {
+                before_confirm = function(bot)
+                    local weapon_slot = bot:item_slot(WEAPON_ITEM)
+                    local other_slot = bot:item_slot(BUNDLE_ITEM)
+                    bot:request(
+                        resp.item_update,
+                        protocol.swap("ITEM", weapon_slot + 1, other_slot + 1),
+                        function(p)
+                            return p.index == other_slot
+                        end,
+                        LOCK_PROBE_MS)
+                    if bot:item_slot(WEAPON_ITEM) ~= other_slot then
+                        return false, "swap before confirm did not happen"
+                    end
+                    return true, nil
+                end,
+            })
+            if msg == nil or msg:find(MSG_LIST_FAIL, 1, true) == nil then
+                progress(a, "FAILED: expected list failure " .. tostring(msg or err))
+                return false
+            end
+            if a:money() ~= money_before then
+                progress(a, string.format("FAILED: fee charged money=%d expected=%d", a:money(), money_before))
+                return false
+            end
+            if a:has_item_by_name(WEAPON_ITEM) == false or a:item_count(BUNDLE_ITEM) ~= 1 then
+                progress(a, "FAILED: items changed after rejected swap listing")
+                return false
+            end
+            local ok, check_err = assert_search_has_item(a, BUNDLE_ITEM, false)
+            if ok == false then
+                progress(a, "FAILED: swapped item listed " .. tostring(check_err))
+                return false
+            end
+            ok, check_err = assert_cancel_list_empty(a)
+            if ok == false then
+                progress(a, "FAILED: " .. tostring(check_err))
                 return false
             end
 
             cleanup_bot(a)
-            progress(a, "M6 PASSED")
+            progress(a, "A2 PASSED")
             return true
         end,
 
-        -- P1 prep
+        -- M6 prep: marketplace unreachable after the delay, so the list request never arrives
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
-            progress(a, "P1 PREP: LIST HTTP DELAY")
+            progress(a, "M6 PREP: LIST UNREACHABLE")
 
             cleanup_bot(a)
             cleanup_bot(b)
@@ -1145,15 +1402,144 @@ test_suite {
                 return false
             end
             a:money(listing_fee(1, WEAPON_LIST_PRICE) + 1000)
-            a:chat(string.format("/HTTP지연 %d", HTTP_DELAY_MS))
+            a:chat(string.format("/HTTP지연 %s %d", MARKETPLACE_SERVICE, LIST_DELAY_MS))
+            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " on")
             g_list_msg = nil
-            g_search_ok = false
-            g_search_err = nil
+            g_list_confirm_sent = false
+            g_lock_ok = false
+            g_lock_err = nil
+            progress(a, "M6 PREP DONE")
+            return true
+        end,
+
+        -- M6 parallel: the escrow must be shown but unusable while the request is still waiting
+        {
+            parallel = {
+                [0] = {
+                    function(ctx)
+                        local bot = ctx:bot(0)
+                        progress(bot, "M6: CONFIRM LIST")
+                        g_list_msg = select(1, list_item_flow(bot, WEAPON_ITEM, 1, WEAPON_LIST_PRICE))
+                        progress(bot, "M6: LIST DONE msg=" .. tostring(g_list_msg))
+                        return g_list_msg ~= nil
+                    end,
+                },
+                [1] = {
+                    function(ctx)
+                        local seller = ctx:bot(0)
+                        progress(seller, "M6: CHECK LOCK DURING DELAY")
+                        if wait_list_confirm_sent(ctx) == false then
+                            g_lock_err = "list confirm never sent"
+                            progress(seller, "FAILED: " .. g_lock_err)
+                            return false
+                        end
+                        g_lock_ok, g_lock_err = check_listing_locked(seller, WEAPON_ITEM, listing_fee(1, WEAPON_LIST_PRICE))
+                        if g_lock_ok and g_list_msg ~= nil then
+                            g_lock_ok, g_lock_err = false, "list finished before the lock was probed"
+                        end
+                        if g_lock_ok == false then
+                            progress(seller, "FAILED: " .. tostring(g_lock_err))
+                        end
+                        return g_lock_ok
+                    end,
+                },
+            },
+        },
+
+        -- M6 verify: the lock survives a restore tick while unreachable, then abort-list unlocks it
+        function(ctx)
+            local a = ctx:bot(0)
+            local fee = listing_fee(1, WEAPON_LIST_PRICE)
+
+            if g_list_msg == nil or g_list_msg:gsub("%s+", " "):find(MSG_LIST_PENDING, 1, true) == nil then
+                progress(a, "FAILED: expected pending msg=" .. tostring(g_list_msg))
+                return false
+            end
+            if g_lock_ok == false then
+                progress(a, "FAILED: lock during delay " .. tostring(g_lock_err))
+                return false
+            end
+            if a:has_item_by_name(WEAPON_ITEM) == false or a:money() ~= fee then
+                progress(a, string.format("FAILED: escrow display changed has_item=%s money=%d expected=%d",
+                    tostring(a:has_item_by_name(WEAPON_ITEM)), a:money(), fee))
+                return false
+            end
+
+            -- Relisting the escrowed slot must not be offered; the weapon is the only item held.
+            local menu, menu_err = open_marketplace_menu(a)
+            if menu == nil then
+                progress(a, "FAILED: relist menu " .. tostring(menu_err))
+                return false
+            end
+            local relist = f1_select_pursuit(a, OPT_REGISTER, "normal")
+            close_marketplace_menu(a)
+            if message_normalized_contains(relist, MSG_NO_LISTABLE) == false then
+                progress(a, "FAILED: escrowed item offered for relisting msg=" .. tostring(relist and relist.message))
+                return false
+            end
+
+            ctx:sleep(RESTORE_FIRST_WAIT_MS + LIST_DELAY_MS)
+            if probe_item_locked(a, WEAPON_ITEM) == false then
+                progress(a, "FAILED: escrow released while marketplace unreachable")
+                return false
+            end
+
+            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+            a:chat("/HTTP지연 " .. MARKETPLACE_SERVICE .. " 0")
+            local ok, search_err = assert_search_has_item(a, WEAPON_ITEM, false)
+            if ok == false then
+                progress(a, "FAILED: listing created while unreachable " .. tostring(search_err))
+                return false
+            end
+
+            local unlocked, unlock_err = wait_item_unlocked(ctx, a, WEAPON_ITEM, RESTORE_FIRST_WAIT_MS)
+            if unlocked == false then
+                progress(a, "FAILED: " .. tostring(unlock_err))
+                return false
+            end
+
+            local packet = a:request(
+                resp.update_internal,
+                protocol.item_drop_money(fee),
+                function(p)
+                    return p.ch_money == 0
+                end,
+                LOCK_PROBE_MS)
+            if packet == nil or packet == false then
+                progress(a, string.format("FAILED: fee not released money=%d", a:money()))
+                return false
+            end
+
+            a:clear_all_drop_items()
+            cleanup_bot(a)
+            progress(a, "M6 PASSED")
+            return true
+        end,
+
+        -- P1 prep: marketplace processes the list but the response is lost after the delay
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            progress(a, "P1 PREP: LIST DELAY + RESPONSE LOST")
+
+            cleanup_bot(a)
+            cleanup_bot(b)
+            if prepare_weapon(a) == false then
+                progress(a, "FAILED: prepare weapon")
+                return false
+            end
+            a:money(listing_fee(1, WEAPON_LIST_PRICE) + 1000)
+            a:chat(string.format("/HTTP지연 %s %d", MARKETPLACE_SERVICE, LIST_DELAY_MS))
+            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " lost")
+            g_list_msg = nil
+            g_list_confirm_sent = false
+            g_lock_ok = false
+            g_lock_err = nil
             progress(a, "P1 PREP DONE")
             return true
         end,
 
-        -- P1 parallel: list + search during delay
+        -- P1 parallel: during the delay the listing is searchable while the seller's escrow stays locked
         {
             parallel = {
                 [0] = {
@@ -1162,55 +1548,87 @@ test_suite {
                         progress(bot, "P1: CONFIRM LIST")
                         g_list_msg = select(1, list_item_flow(bot, WEAPON_ITEM, 1, WEAPON_LIST_PRICE))
                         progress(bot, "P1: LIST DONE msg=" .. tostring(g_list_msg))
-                        return g_list_msg ~= nil and g_list_msg:find(MSG_LIST_OK, 1, true) ~= nil
+                        return g_list_msg ~= nil
                     end,
                 },
                 [1] = {
                     function(ctx)
                         local bot = ctx:bot(1)
                         local seller = ctx:bot(0)
-                        progress(bot, "P1: SEARCH DURING DELAY")
-                        ctx:sleep(DELAY_PROBE_MS)
-                        if seller:has_item_by_name(WEAPON_ITEM) then
-                            g_search_err = "seller still holds item during delay"
-                            progress(bot, "FAILED: " .. g_search_err)
+                        progress(bot, "P1: LOCK + SEARCH DURING DELAY")
+                        if wait_list_confirm_sent(ctx) == false then
+                            g_lock_err = "list confirm never sent"
+                            progress(bot, "FAILED: " .. g_lock_err)
                             return false
                         end
-                        g_search_ok, g_search_err = assert_search_has_item(bot, WEAPON_ITEM, true)
-                        if g_search_ok == false then
-                            progress(bot, "FAILED: " .. tostring(g_search_err))
+                        g_lock_ok, g_lock_err = check_listing_locked(seller, WEAPON_ITEM, listing_fee(1, WEAPON_LIST_PRICE))
+                        if g_lock_ok and g_list_msg ~= nil then
+                            g_lock_ok, g_lock_err = false, "list finished before the lock was probed"
+                        end
+                        if g_lock_ok == false then
+                            progress(bot, "FAILED: " .. tostring(g_lock_err))
                             return false
                         end
-                        progress(bot, "P1: SEARCH FOUND DURING DELAY")
+                        progress(bot, "P1: LOCKED DURING DELAY")
                         return true
                     end,
                 },
             },
         },
 
-        -- P1 verify + cleanup
+        -- P1 verify: abort-list reports the listing as created, so the escrow is deducted
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
-            a:chat("/HTTP지연 0")
+            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+            a:chat("/HTTP지연 " .. MARKETPLACE_SERVICE .. " 0")
 
-            if g_list_msg == nil or g_list_msg:find(MSG_LIST_OK, 1, true) == nil then
-                progress(a, "FAILED: list " .. tostring(g_list_msg))
+            if g_list_msg == nil or g_list_msg:gsub("%s+", " "):find(MSG_LIST_PENDING, 1, true) == nil then
+                progress(a, "FAILED: expected pending msg=" .. tostring(g_list_msg))
                 return false
             end
-            if g_search_ok == false then
-                progress(a, "FAILED: mid-delay search " .. tostring(g_search_err))
+            if g_lock_ok == false then
+                progress(a, "FAILED: lock during delay " .. tostring(g_lock_err))
+                return false
+            end
+            -- The fault covers every marketplace call, so the created listing is only searchable once it is off.
+            local found, search_err = assert_search_has_item(b, WEAPON_ITEM, true)
+            if found == false then
+                progress(b, "FAILED: created listing not searchable " .. tostring(search_err))
                 return false
             end
 
-            cancel_item_flow(a, WEAPON_ITEM)
+            -- Usable money was dropped during the delay, so only the locked fee is left to deduct.
+            local deducted, deduct_err = wait_item_deducted(ctx, a, WEAPON_ITEM, 0, RESTORE_FIRST_WAIT_MS)
+            if deducted == false then
+                progress(a, "FAILED: " .. tostring(deduct_err))
+                return false
+            end
+
+            local msg, err = cancel_item_flow(a, WEAPON_ITEM)
+            if msg == nil or msg:find(MSG_CANCEL_OK, 1, true) == nil then
+                progress(a, "FAILED: cancel recovered listing " .. tostring(msg or err))
+                return false
+            end
             ctx:sleep(MQ_WAIT_MS)
-            receive_storage(a, STORAGE_CANCEL_TITLE)
+            local ok, recv_err = receive_storage(a, STORAGE_CANCEL_TITLE)
+            if ok == false or a:has_item_by_name(WEAPON_ITEM) == false then
+                progress(a, "FAILED: cancelled weapon not received " .. tostring(recv_err))
+                return false
+            end
+
+            a:clear_all_drop_items()
             cleanup_bot(a)
             cleanup_bot(b)
             progress(a, "P1 PASSED")
             return true
         end,
+
+        -- L1: logout while the listing request is in flight and the listing was created
+        logout_during_delay_scenario("L1", "lost", true),
+
+        -- L2: logout while the listing request is in flight and the marketplace never received it
+        logout_during_delay_scenario("L2", "on", false),
 
         -- P2 prep
         function(ctx)

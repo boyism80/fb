@@ -2349,30 +2349,43 @@ M.functions = {
 
         ['HTTP지연'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[밀리초] - HTTP 응답 지연 조회/설정 (테스트용)',
+            ['usage'] = '[서비스] [밀리초] - HTTP 응답 지연 조회/설정, 서비스 지정 시 해당 서비스만 (0이면 전체 값 사용) (테스트용)',
             ['command'] = function (me, args)
-                if #args == 0 then
-                    local delay = http_response_delay()
-                    me:message(string.format("현재 HTTP 응답 지연: %dms", delay), MESSAGE_TYPE.BROWN)
-                else
-                    local value = tonumber(table.unpack(args))
-                    if not value or value < 0 then
-                        me:message("지연 시간은 0 이상의 숫자여야 합니다.")
-                        return true
-                    end
-                    http_response_delay(value)
-                    me:message(string.format("HTTP 응답 지연을 %dms로 설정했습니다. (이 서버에만 적용됩니다)", value), MESSAGE_TYPE.BROWN)
+                local service = nil
+                local value_arg = args[1]
+                if #args >= 1 and tonumber(args[1]) == nil then
+                    service = args[1]
+                    value_arg = args[2]
                 end
+
+                if value_arg == nil then
+                    local delay = service and http_response_delay(service) or http_response_delay()
+                    me:message(string.format("현재 HTTP 응답 지연(%s): %dms", service or "전체", delay), MESSAGE_TYPE.BROWN)
+                    return true
+                end
+
+                local value = tonumber(value_arg)
+                if not value or value < 0 then
+                    me:message("지연 시간은 0 이상의 숫자여야 합니다.")
+                    return true
+                end
+
+                if service then
+                    http_response_delay(service, value)
+                else
+                    http_response_delay(value)
+                end
+                me:message(string.format("HTTP 응답 지연(%s)을 %dms로 설정했습니다. (이 서버에만 적용됩니다)", service or "전체", value), MESSAGE_TYPE.BROWN)
                 return true
             end,
         },
 
         ['HTTP장애'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '<서비스> [on|off] - 서비스(marketplace 등)로 가는 HTTP 요청을 실패시킴 (테스트용)',
+            ['usage'] = '<서비스> [on|lost|off] - on: 요청 미전송(접속 불가), lost: 요청 처리 후 응답 유실. 둘 다 HTTP 지연 후 실패 (테스트용)',
             ['command'] = function (me, args)
                 if #args == 0 then
-                    me:message("사용법: /HTTP장애 <서비스> [on|off]")
+                    me:message("사용법: /HTTP장애 <서비스> [on|lost|off]")
                     return true
                 end
 
@@ -2380,16 +2393,18 @@ M.functions = {
                 if #args >= 2 then
                     local arg = string.lower(tostring(args[2]))
                     if arg == 'on' or arg == '1' or arg == 'true' then
-                        http_fault(service, true)
+                        http_fault(service, 'unreachable')
+                    elseif arg == 'lost' then
+                        http_fault(service, 'lost')
                     elseif arg == 'off' or arg == '0' or arg == 'false' then
-                        http_fault(service, false)
+                        http_fault(service, 'off')
                     else
-                        me:message("on 또는 off를 입력해야 합니다.")
+                        me:message("on, lost, off 중 하나를 입력해야 합니다.")
                         return true
                     end
                 end
 
-                local state = http_fault(service) and "ON" or "OFF"
+                local state = string.upper(http_fault(service))
                 me:message(string.format("HTTP 장애(%s): %s (이 서버에만 적용됩니다)", service, state), MESSAGE_TYPE.BROWN)
                 return true
             end,

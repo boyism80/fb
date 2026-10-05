@@ -14,6 +14,7 @@
 #include <functional>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -22,6 +23,13 @@ namespace fb::bot {
 
 using namespace std::chrono_literals;
 using namespace fb::model;
+
+// Account a bot logged in with; carried across gateway -> login -> game so the same character can log in again.
+struct credential
+{
+    std::string id;
+    std::string pw;
+};
 
 // Forward declarations
 class bot_container;

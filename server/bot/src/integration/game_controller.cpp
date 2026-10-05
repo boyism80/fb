@@ -4,6 +4,7 @@
 #include <async/awaitable_then.h>
 #include <fb/bot/container.h>
 #include <fb/bot/game_bot.h>
+#include <fb/bot/gateway_bot.h>
 #include <fb/bot/gateway_controller.h>
 #include <fb/bot/integration/lua_integration_test.h>
 #include <fb/bot/integration/trade_bot.h>
@@ -22,6 +23,7 @@
 #include <optional>
 #include <shared_mutex>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -580,6 +582,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     auto created = this->create(response.parameter);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
+    created->credential(bot.credential());
     this->move_owner(bot.id, created->id);
     fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
@@ -642,6 +645,30 @@ async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
                       bot.id,
                       bot.inited());
     co_return;
+}
+
+async::task<std::shared_ptr<fb::bot::game_bot>> fb::bot::game_bot::login(const fb::model::timespan& timeout)
+{
+    if (this->_credential.has_value() == false)
+        throw std::runtime_error(std::format("bot login: {} has no credential", this->name()));
+
+    if (this->controller.contains(this->id))
+        throw std::runtime_error(std::format("bot login: {} is still connected", this->name()));
+
+    auto& container = this->controller.container;
+    auto  task      = this->wait_reconnect(timeout);
+    auto  gateway   = container.gateway->create();
+    gateway->credential(this->_credential);
+    gateway->reconnect_from(this->id);
+
+    // The test still owns this disconnected bot; hand ownership down the new gateway -> login -> game chain.
+    if (auto* game = dynamic_cast<fb::bot::integration::game_bot_controller*>(container.game.get()))
+        game->move_owner(this->id, gateway->id);
+
+    auto ip = container.ipv4(fb::config<std::string_view>("ip"));
+    gateway->connect(
+        boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port")));
+    return task;
 }
 
 async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t                     opcode,

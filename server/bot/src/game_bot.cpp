@@ -141,6 +141,16 @@ void game_bot::set_transfer_from_bot_id(uint32_t value)
     this->_transfer_from_bot_id = value;
 }
 
+const std::optional<fb::bot::credential>& game_bot::credential() const
+{
+    return this->_credential;
+}
+
+void game_bot::credential(const std::optional<fb::bot::credential>& value)
+{
+    this->_credential = value;
+}
+
 DIRECTION game_bot::direction() const
 {
     return this->_direction;

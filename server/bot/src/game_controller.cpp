@@ -8,6 +8,7 @@
 #include <fb/bot/integration/trade_bot.h>
 #include <fb/logger.h>
 
+#include <chrono>
 #include <cstdint>
 #include <format>
 #include <memory>
@@ -325,8 +326,7 @@ async::task<void> game_bot_controller::on_ping(game_bot& bot, const game_resp::p
     co_return;
 }
 
-bool game_bot_controller::register_transfer_context(const fb::protocol::header&       protocol,
-                                                    std::shared_ptr<transfer_context> context)
+bool game_bot_controller::register_transfer_context(std::shared_ptr<transfer_context> context)
 {
     auto lock          = std::lock_guard(this->_transfer_mutex);
     auto source_bot_id = context->source_bot_id;
@@ -393,8 +393,7 @@ bool game_bot_controller::invoke_transfer_context(uint32_t source_bot_id, std::s
     return true;
 }
 
-async::task<std::shared_ptr<game_bot>>
-game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
+async::task<std::shared_ptr<game_bot>> game_bot::wait_reconnect(const fb::model::timespan& timeout)
 {
     auto promise = std::make_shared<async::task_completion_source<std::shared_ptr<game_bot>>>();
     auto context = std::make_shared<game_bot_controller::transfer_context>(
@@ -402,14 +401,14 @@ game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timesp
         this->id,
         this->controller.weak_from_this_as<game_bot_controller>());
     auto& controller = static_cast<game_bot_controller&>(this->controller);
-    if (controller.register_transfer_context(protocol, context) == false)
+    if (controller.register_transfer_context(context) == false)
     {
-        fb::logger::warn("bot transfer start aborted: bot={} (failed to register context)", this->name());
+        fb::logger::warn("bot reconnect wait aborted: bot={} (failed to register context)", this->name());
         promise->set_exception(std::make_exception_ptr(std::runtime_error("duplicate transfer context")));
         return promise->task();
     }
 
-    fb::logger::debug("bot transfer start: bot={} bot_id={} timeout_ms={}",
+    fb::logger::debug("bot reconnect wait: bot={} bot_id={} timeout_ms={}",
                       this->name(),
                       this->id,
                       timeout.total_milliseconds());
@@ -432,6 +431,35 @@ game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timesp
         builder.enqueue();
     }
 
-    this->send(protocol, encrypt, wrap);
     return promise->task();
+}
+
+async::task<std::shared_ptr<game_bot>>
+game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
+{
+    auto task = this->wait_reconnect(timeout);
+    this->send(protocol, encrypt, wrap);
+    return task;
+}
+
+async::task<bool> game_bot::logout(const fb::model::timespan& timeout)
+{
+    auto& controller = this->controller;
+    auto  id         = this->id;
+    auto  thread     = this->thread();
+    if (controller.contains(id) == false)
+        co_return false;
+
+    // A real client logs out by closing the socket; the server saves and releases the session on its own.
+    this->close();
+
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout.total_milliseconds());
+    while (controller.contains(id))
+    {
+        if (std::chrono::steady_clock::now() >= deadline)
+            co_return false;
+
+        co_await thread->sleep(50ms);
+    }
+    co_return true;
 }
