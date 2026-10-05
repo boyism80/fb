@@ -12,9 +12,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Linq
 @using Response = fb.protocol._internal.response
-@inject UserService UserService
-@inject BanService BanService
-@inject DbContext DbContext
+@inject IServiceScopeFactory ScopeFactory
 @inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject SecurityService SecurityService
@@ -513,7 +511,9 @@
                 errorMessage = "World is not selected.";
                 return;
             }
-            userList = await UserService.GetUsers(
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+            userList = await userService.GetUsers(
                 selectedWorld.Value,
                 currentPage,
                 pageSize,
@@ -533,7 +533,9 @@
     {
         if (selectedWorld.HasValue && !string.IsNullOrWhiteSpace(searchTerm))
         {
-            var userId = await UserService.TryResolveUserIdAsync(selectedWorld.Value, searchTerm);
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+            var userId = await userService.TryResolveUserIdAsync(selectedWorld.Value, searchTerm);
             if (userId.HasValue)
             {
                 Navigation.NavigateTo($"/users/{userId.Value}");
@@ -630,7 +632,11 @@
             CloseChangeRoleModal();
             return;
         }
-        if (await UserService.IsOnline(selectedWorld.Value, selectedUser.Name))
+
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        if (await userService.IsOnline(selectedWorld.Value, selectedUser.Name))
         {
             errorMessage = "Cannot change role while the user is online. Please try again after they log out.";
             CloseChangeRoleModal();
@@ -675,7 +681,7 @@
                 CloseChangeRoleModal();
                 return;
             }
-            var character = await DbContext.Character.Get(selectedWorld.Value, selectedUser.Id);
+            var character = await dbContext.Character.Get(selectedWorld.Value, selectedUser.Id);
             if (character == null)
             {
                 errorMessage = "Character not found.";
@@ -686,8 +692,8 @@
             var oldRole = character.Role;
             character.Role = newRole;
             character.UpdatedDate = DateTime.Now;
-            DbContext.Character.Set(selectedWorld.Value, character);
-            await DbContext.SaveChangesAsync();
+            dbContext.Character.Set(selectedWorld.Value, character);
+            await dbContext.SaveChangesAsync();
 
             await OpsNotifyService.Notify(
                 "role_change",
@@ -750,8 +756,11 @@
                 CloseBanModal();
                 return;
             }
-            var result = await BanService.Ban(selectedWorld.Value, selectedUser.Name, banModel.Reason, days, currentUserName, "admin");
-            await DbContext.SaveChangesAsync();
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var banService = scope.ServiceProvider.GetRequiredService<BanService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var result = await banService.Ban(selectedWorld.Value, selectedUser.Name, banModel.Reason, days, currentUserName, "admin");
+            await dbContext.SaveChangesAsync();
 
             // Publish notification via RabbitMQ
             var response = new Response.Ban
@@ -794,8 +803,11 @@
                 CloseUnbanModal();
                 return;
             }
-            var result = await BanService.Unban(selectedWorld.Value, selectedUser.Name, currentUserName, "admin");
-            await DbContext.SaveChangesAsync();
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var banService = scope.ServiceProvider.GetRequiredService<BanService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var result = await banService.Unban(selectedWorld.Value, selectedUser.Name, currentUserName, "admin");
+            await dbContext.SaveChangesAsync();
 
             // Publish notification via RabbitMQ
             var response = new Response.Unban

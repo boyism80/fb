@@ -8,7 +8,7 @@
 @using AdminTool.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
-@inject UserService UserService
+@inject IServiceScopeFactory ScopeFactory
 @inject ThemeService ThemeService
 @inject IJSRuntime JS
 @inject IConfiguration Configuration
@@ -188,7 +188,11 @@
     private async Task HandleSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(globalSearchTerm))
-            await UserSearchNavigation.NavigateFromSearchAsync(Navigation, UserService, selectedWorld, globalSearchTerm);
+        {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+            await UserSearchNavigation.NavigateFromSearchAsync(Navigation, userService, selectedWorld, globalSearchTerm);
+        }
     }
 
     private void NavigateToLogin()

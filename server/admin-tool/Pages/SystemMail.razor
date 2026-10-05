@@ -7,7 +7,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.ComponentModel.DataAnnotations
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject DbContext DbContext
+@inject IServiceScopeFactory ScopeFactory
 @inject LogService LogService
 @inject AdminActivityLogService ActivityLog
 @attribute [AuthorizeRole(Role.Admin)]
@@ -237,13 +237,15 @@
                 return;
             }
 
-            var systemMail = await DbContext.SystemMail.Write(
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var systemMail = await dbContext.SystemMail.Write(
                 selectedWorld.Value,
                 currentUserId,
                 mailModel.Title,
                 mailModel.Contents,
                 expireDateValue);
-            await DbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
 
             await LogService.WriteAsync("system_mail_create", new
             {

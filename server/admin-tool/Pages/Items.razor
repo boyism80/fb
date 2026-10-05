@@ -6,8 +6,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.WebUtilities
 @attribute [AuthorizeRole(Role.Admin)]
-@inject StorageService StorageService
-@inject DbContext DbContext
+@inject IServiceScopeFactory ScopeFactory
 @inject AdminActivityLogService ActivityLog
 @inject NavigationManager Navigation
 
@@ -503,9 +502,12 @@
                 return;
             }
 
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
             if (model.IsGlobal)
             {
-                var result = await StorageService.CreateSystemStorageAsync(
+                var result = await storageService.CreateSystemStorageAsync(
                     selectedWorld.Value,
                     model.Title.Trim(),
                     model.Message.Trim(),
@@ -528,14 +530,14 @@
             else
             {
                 var userName = model.UserName?.Trim();
-                var userId = await DbContext.Character.GetCharacterId(selectedWorld.Value, userName);
+                var userId = await dbContext.Character.GetCharacterId(selectedWorld.Value, userName);
                 if (userId.HasValue == false)
                 {
                     errorMessage = $"Character '{userName}' not found.";
                     return;
                 }
 
-                var result = await StorageService.CreateStorageBoxAsync(
+                var result = await storageService.CreateStorageBoxAsync(
                     selectedWorld.Value,
                     userId.Value,
                     model.Title.Trim(),

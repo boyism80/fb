@@ -3,7 +3,7 @@
 @using AdminTool.Services
 @using AdminTool.Authentication
 @using System.ComponentModel.DataAnnotations
-@inject AuthService AuthService
+@inject IServiceScopeFactory ScopeFactory
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IConfiguration Configuration
@@ -124,7 +124,9 @@
                 return;
             }
 
-            var result = await AuthService.Authenticate(world, loginModel.Username, loginModel.Password);
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var authService = scope.ServiceProvider.GetRequiredService<AuthService>();
+            var result = await authService.Authenticate(world, loginModel.Username, loginModel.Password);
             if (result.Success && result.UserId.HasValue && result.Role.HasValue)
             {
                 if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)

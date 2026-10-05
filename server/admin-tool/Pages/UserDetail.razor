@@ -10,10 +10,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @using Response = fb.protocol._internal.response
-@inject UserDetailService UserDetailService
-@inject UserService UserService
-@inject BanService BanService
-@inject DbContext DbContext
+@inject IServiceScopeFactory ScopeFactory
 @inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject SecurityService SecurityService
@@ -377,14 +374,16 @@
 
         try
         {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var userDetailService = scope.ServiceProvider.GetRequiredService<UserDetailService>();
             if (core == null)
             {
-                core = await UserDetailService.LoadCoreAsync(selectedWorld.Value, (uint)UserId);
+                core = await userDetailService.LoadCoreAsync(selectedWorld.Value, (uint)UserId);
                 if (core == null)
                     return;
 
                 changeRoleButtonTitle = GetChangeRoleButtonTitle();
-                await LoadItemCountsAsync(selectedWorld.Value);
+                await LoadItemCountsAsync(userDetailService, selectedWorld.Value);
             }
 
             var tabKey = GetTabKey();
@@ -392,7 +391,7 @@
                 return;
 
             tabLoading = true;
-            await LoadTabDataAsync(selectedWorld.Value, activeTab);
+            await LoadTabDataAsync(userDetailService, selectedWorld.Value, activeTab);
             loadedTabKey = tabKey;
         }
         catch (Exception ex)
@@ -406,9 +405,9 @@
         }
     }
 
-    private async Task LoadItemCountsAsync(uint world)
+    private async Task LoadItemCountsAsync(UserDetailService userDetailService, uint world)
     {
-        var itemData = await UserDetailService.LoadItemsAsync(world, (uint)UserId);
+        var itemData = await userDetailService.LoadItemsAsync(world, (uint)UserId);
         itemCounts = (
             itemData.Inventory.Count,
             itemData.Storage.Count,
@@ -418,34 +417,34 @@
             items = itemData;
     }
 
-    private async Task LoadTabDataAsync(uint world, string tab)
+    private async Task LoadTabDataAsync(UserDetailService userDetailService, uint world, string tab)
     {
         switch (tab)
         {
             case "overview":
                 if (items == null)
-                    await LoadItemCountsAsync(world);
+                    await LoadItemCountsAsync(userDetailService, world);
                 break;
             case "character":
-                collection = await UserDetailService.LoadCollectionAsync(world, (uint)UserId);
+                collection = await userDetailService.LoadCollectionAsync(world, (uint)UserId);
                 break;
             case "items":
-                items = await UserDetailService.LoadItemsAsync(world, (uint)UserId);
+                items = await userDetailService.LoadItemsAsync(world, (uint)UserId);
                 itemCounts = (
                     items.Inventory.Count,
                     items.Storage.Count,
                     items.Storage.Select(i => i.Stored).Distinct().Count());
                 break;
             case "progress":
-                progress = await UserDetailService.LoadProgressAsync(world, (uint)UserId);
+                progress = await userDetailService.LoadProgressAsync(world, (uint)UserId);
                 break;
             case "social":
-                social = await UserDetailService.LoadSocialAsync(world, (uint)UserId, core?.RealtimeState);
+                social = await userDetailService.LoadSocialAsync(world, (uint)UserId, core?.RealtimeState);
                 if (social.Marriage?.SpouseId is uint spouseId)
-                    spouseName = await UserDetailService.ResolveCharacterNameAsync(world, spouseId);
+                    spouseName = await userDetailService.ResolveCharacterNameAsync(world, spouseId);
                 break;
             case "mail":
-                mailData = await UserDetailService.LoadMailPageAsync(
+                mailData = await userDetailService.LoadMailPageAsync(
                     world,
                     (uint)UserId,
                     mailPage,
@@ -453,10 +452,10 @@
                     mailFilter);
                 break;
             case "matchmaking":
-                matchmaking = await UserDetailService.LoadMatchmakingAsync(world, (uint)UserId);
+                matchmaking = await userDetailService.LoadMatchmakingAsync(world, (uint)UserId);
                 break;
             case "settings":
-                options = await UserDetailService.LoadOptionsAsync(world, (uint)UserId);
+                options = await userDetailService.LoadOptionsAsync(world, (uint)UserId);
                 optionsLoaded = true;
                 break;
         }
@@ -493,7 +492,9 @@
 
         try
         {
-            mailData = await UserDetailService.LoadMailPageAsync(
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var userDetailService = scope.ServiceProvider.GetRequiredService<UserDetailService>();
+            mailData = await userDetailService.LoadMailPageAsync(
                 selectedWorld.Value,
                 (uint)UserId,
                 mailPage,
@@ -683,7 +684,11 @@
             CloseChangeRoleModal();
             return;
         }
-        if (await UserService.IsOnline(selectedWorld.Value, core.Character.Name))
+
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        if (await userService.IsOnline(selectedWorld.Value, core.Character.Name))
         {
             errorMessage = "Cannot change role while the user is online. Please try again after they log out.";
             CloseChangeRoleModal();
@@ -722,7 +727,7 @@
 
         try
         {
-            var character = await DbContext.Character.Get(selectedWorld.Value, core.Character.Id);
+            var character = await dbContext.Character.Get(selectedWorld.Value, core.Character.Id);
             if (character == null)
             {
                 errorMessage = "Character not found.";
@@ -733,8 +738,8 @@
             var oldRole = character.Role;
             character.Role = newRole;
             character.UpdatedDate = DateTime.Now;
-            DbContext.Character.Set(selectedWorld.Value, character);
-            await DbContext.SaveChangesAsync();
+            dbContext.Character.Set(selectedWorld.Value, character);
+            await dbContext.SaveChangesAsync();
 
             await OpsNotifyService.Notify(
                 "role_change",
@@ -800,8 +805,11 @@
             if (!string.IsNullOrWhiteSpace(banModel.Days) && uint.TryParse(banModel.Days, out var parsedDays))
                 days = parsedDays;
 
-            var result = await BanService.Ban(selectedWorld.Value, core.Character.Name, banModel.Reason, days, currentUserName, "admin");
-            await DbContext.SaveChangesAsync();
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var banService = scope.ServiceProvider.GetRequiredService<BanService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var result = await banService.Ban(selectedWorld.Value, core.Character.Name, banModel.Reason, days, currentUserName, "admin");
+            await dbContext.SaveChangesAsync();
 
             var response = new Response.Ban
             {
@@ -837,8 +845,11 @@
 
         try
         {
-            var result = await BanService.Unban(selectedWorld.Value, core.Character.Name, currentUserName, "admin");
-            await DbContext.SaveChangesAsync();
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var banService = scope.ServiceProvider.GetRequiredService<BanService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var result = await banService.Unban(selectedWorld.Value, core.Character.Name, currentUserName, "admin");
+            await dbContext.SaveChangesAsync();
 
             var response = new Response.Unban
             {

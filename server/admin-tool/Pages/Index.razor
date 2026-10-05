@@ -7,7 +7,7 @@
 @inject ServerStateService ServerStateService
 @inject MaintenanceService MaintenanceService
 @inject BulletinService BulletinService
-@inject UserService UserService
+@inject IServiceScopeFactory ScopeFactory
 @inject NavigationManager Navigation
 @using Microsoft.AspNetCore.WebUtilities
 
@@ -374,14 +374,16 @@
 
             try
             {
-                var stats = await UserService.GetDashboardStatsAsync(selectedWorld.Value);
+                await using var scope = ScopeFactory.CreateAsyncScope();
+                var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+                var stats = await userService.GetDashboardStatsAsync(selectedWorld.Value);
                 totalAccounts = stats.TotalAccounts;
                 onlineCount = stats.OnlineCount;
                 bannedCount = stats.BannedCount;
                 adminCount = stats.AdminCount;
                 onlineUsers = stats.OnlineUsers;
 
-                var userResult = await UserService.GetUsers(selectedWorld.Value, 1, 5);
+                var userResult = await userService.GetUsers(selectedWorld.Value, 1, 5);
                 recentSignups = userResult.Users
                     .Select(u => new RecentSignupItem { Id = u.Id, Name = u.Name, CreatedAt = u.CreatedDate })
                     .ToList();
@@ -415,7 +417,11 @@
     private async Task HandleSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(searchTerm))
-            await UserSearchNavigation.NavigateFromSearchAsync(Navigation, UserService, selectedWorld, searchTerm);
+        {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+            await UserSearchNavigation.NavigateFromSearchAsync(Navigation, userService, selectedWorld, searchTerm);
+        }
     }
 
     private static string FormatCount(int value) => value.ToString("N0");
