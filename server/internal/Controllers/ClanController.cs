@@ -23,13 +23,15 @@ namespace Internal.Controllers
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly SessionService _sessionService;
+        private readonly ILogger<ClanController> _logger;
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
             RedisService redisService,
             RabbitMqService rabbitMqService,
             IMapper mapper,
             RedisDistributedLockService distributedLock,
-            SessionService sessionService)
+            SessionService sessionService,
+            ILogger<ClanController> logger)
         {
             _configuration = configuration;
             _dbContext = dbContext;
@@ -38,6 +40,21 @@ namespace Internal.Controllers
             _mapper = mapper;
             _distributedLock = distributedLock;
             _sessionService = sessionService;
+            _logger = logger;
+        }
+
+        // The change is already saved and the requesting game server applies the HTTP response; other servers reload
+        // the clan on login or /clan/id. Failing the request here would make the caller undo a change that persisted.
+        private async Task PublishSavedAsync(Google.FlatBuffers.IFlatBufferEx response, uint world)
+        {
+            try
+            {
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", world);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Clan change saved but the notification failed");
+            }
         }
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint world, uint id)
         {
@@ -140,6 +157,7 @@ namespace Internal.Controllers
             await using var db = _dbContext.GetUnifiedConnection();
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
+            var committed = false;
             try
             {
                 var ch = await _dbContext.Character.Get(world, request.Master) ??
@@ -187,6 +205,7 @@ namespace Internal.Controllers
 
                 await _dbContext.SaveChangesAsync();
                 await trans.CommitAsync();
+                committed = true;
 
                 var response = new Response.ClanDetails
                 {
@@ -197,7 +216,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -212,7 +231,8 @@ namespace Internal.Controllers
             }
             catch (Exception)
             {
-                await trans.RollbackAsync();
+                if (committed == false)
+                    await trans.RollbackAsync();
                 return new Response.ClanDetails
                 {
                     Host = request.Host,
@@ -232,6 +252,7 @@ namespace Internal.Controllers
             await using var db = _dbContext.GetUnifiedConnection();
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
+            var committed = false;
             try
             {
                 await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(request.Master));
@@ -305,6 +326,7 @@ namespace Internal.Controllers
 
                 await _dbContext.SaveChangesAsync();
                 await trans.CommitAsync();
+                committed = true;
 
                 var conn = _dbContext.GetUnifiedConnection();
                 var masterName = await conn.QueryFirstOrDefaultAsync<string>(
@@ -323,15 +345,24 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 foreach (var divineBeast in clearedCastles)
-                    await _rabbitMqService.PublishAsync(new Response.UpdatedCastle
+                {
+                    try
                     {
-                        Host = request.Host,
-                        DivineBeast = divineBeast,
-                        OwnerClanId = null,
-                        Error = (uint)ErrorCode.None
-                    }, AmqpRoute.Exchange, AmqpRoute.Home("castle", request.World));
+                        await _rabbitMqService.PublishAsync(new Response.UpdatedCastle
+                        {
+                            Host = request.Host,
+                            DivineBeast = divineBeast,
+                            OwnerClanId = null,
+                            Error = (uint)ErrorCode.None
+                        }, AmqpRoute.Exchange, AmqpRoute.Home("castle", request.World));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Castle {DivineBeast} cleared but the notification failed", divineBeast);
+                    }
+                }
                 return response;
             }
             catch (LogicException e)
@@ -345,7 +376,8 @@ namespace Internal.Controllers
             }
             catch (Exception)
             {
-                await trans.RollbackAsync();
+                if (committed == false)
+                    await trans.RollbackAsync();
                 return new Response.DestroyClan
                 {
                     Host = request.Host,
@@ -415,7 +447,7 @@ namespace Internal.Controllers
                     NewTitle = request.Title,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -530,7 +562,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -617,7 +649,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -737,7 +769,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -900,7 +932,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -991,7 +1023,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1072,7 +1104,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1158,7 +1190,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1218,7 +1250,7 @@ namespace Internal.Controllers
                     Money = clan.Money,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", world);
+                await PublishSavedAsync(response, world);
                 return response;
             }
             catch (LogicException e)
@@ -1297,7 +1329,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                await PublishSavedAsync(response, request.World);
                 return response;
             }
             catch (LogicException e)
