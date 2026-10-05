@@ -47,6 +47,7 @@ namespace Http.Service
                 await using var conn = dbContext.GetShardConnection(world, section);
 
                 var dynamicParams = new DynamicParameters();
+                dynamicParams.Add("section", section);
                 dynamicParams.Add("id", id);
                 dynamicParams.Add("user", user);
                 dynamicParams.Add("ignore_owner", ignoreOwner ? 1 : 0);
@@ -95,6 +96,7 @@ namespace Http.Service
                 foreach (var id in ids)
                 {
                     var dynamicParams = new DynamicParameters();
+                    dynamicParams.Add("section", section);
                     dynamicParams.Add("id", id);
                     dynamicParams.Add("user", user);
                     dynamicParams.Add("ignore_owner", ignoreOwner ? 1 : 0);
@@ -145,6 +147,7 @@ namespace Http.Service
                 await using var conn = dbContext.GetShardConnection(world, section);
 
                 var dynamicParams = new DynamicParameters();
+                dynamicParams.Add("p_section", section);
                 dynamicParams.Add("p_id", id);
                 dynamicParams.Add("p_user", user);
                 dynamicParams.Add("p_title", title);
