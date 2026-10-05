@@ -215,6 +215,42 @@ public:
     }
 };
 
+// A Lua value copied out of one lua_State so it can be pushed into another root.
+// Functions, coroutines and foreign userdata cannot cross roots and are copied as nil.
+class value
+{
+public:
+    enum class type : uint8_t
+    {
+        NIL,
+        BOOLEAN,
+        INTEGER,
+        NUMBER,
+        STRING,
+        OBJECT,
+        TABLE
+    };
+
+private:
+    type                    _type    = type::NIL;
+    bool                    _boolean = false;
+    lua_Integer             _integer = 0;
+    lua_Number              _number  = 0;
+    std::string             _string;
+    std::shared_ptr<luable> _shared;
+    luable*                 _raw = nullptr;
+    std::vector<value>      _keys;
+    std::vector<value>      _values;
+
+private:
+    static value copy(lua_State* L, int offset, std::unordered_set<const void*>& visited);
+
+public:
+    static value copy(lua_State* L, int offset);
+    void         push(context& ctx) const;
+    bool         is_false() const;
+};
+
 class context
 {
 public:

@@ -678,61 +678,6 @@ int builtin::object::builtin_map(lua_State* L)
         return builder.run();
     }
 
-    struct lua_map_callback_ref
-    {
-        fb::lua::context* lua = nullptr;
-        int               ref = LUA_NOREF;
-
-        ~lua_map_callback_ref()
-        {
-            this->release();
-        }
-
-        void release()
-        {
-            if (this->lua != nullptr && this->ref != LUA_NOREF)
-            {
-                luaL_unref(*this->lua, LUA_REGISTRYINDEX, this->ref);
-                this->ref = LUA_NOREF;
-            }
-        }
-    };
-
-    const auto make_lua_map_callback = [](fb::lua::context*                     lua_ctx,
-                                          std::shared_ptr<lua_map_callback_ref> holder,
-                                          std::weak_ptr<fb::game::object>       object_weak) -> map_callback {
-        return [lua_ctx, holder, object_weak]() -> async::task<bool> {
-            auto shared = object_weak.lock();
-            if (shared == nullptr)
-                co_return false;
-
-            co_await lua_ctx->switching();
-
-            if (holder->ref == LUA_NOREF)
-                co_return false;
-
-            lua_rawgeti(*lua_ctx, LUA_REGISTRYINDEX, holder->ref);
-            holder->release();
-
-            if (lua_isfunction(*lua_ctx, -1) == false)
-            {
-                lua_pop(*lua_ctx, 1);
-                co_return false;
-            }
-
-            lua_ctx->pushobject(*shared);
-            if (lua_pcall(*lua_ctx, 1, 0, 0) != LUA_OK)
-            {
-                const char* raw = lua_tostring(*lua_ctx, -1);
-                if (raw != nullptr)
-                    fb::logger::warn("lua map callback error : {}", raw);
-                lua_pop(*lua_ctx, 1);
-                co_return false;
-            }
-            co_return true;
-        };
-    };
-
     const auto is_position_table = [](fb::lua::context* lua_ctx, int index) -> bool {
         if (lua_ctx->is_table(index) == false)
             return false;
@@ -761,41 +706,89 @@ int builtin::object::builtin_map(lua_State* L)
         return fb::model::point16_t{x, y};
     };
 
-    const auto parse_map_option_table = [&](fb::lua::context*                      lua_ctx,
-                                            int                                    index,
-                                            map_options&                           opts,
-                                            std::shared_ptr<lua_map_callback_ref>& callback_ref,
-                                            std::weak_ptr<fb::game::object>        object_weak) {
-        if (lua_ctx->is_table(index) == false)
-            return;
-
-        ::lua_getfield(*lua_ctx, index, "callback");
-        if (lua_ctx->is_function(-1))
+    // { script = 'scripts/x.lua', func = 'name', args = { ... } }
+    // The hook runs as a script on the moving object's thread, so the arguments are copied here
+    // and a Lua closure is not accepted: it belongs to this thread's lua_State.
+    const auto parse_map_hook = [](fb::lua::context*               lua_ctx,
+                                   int                             index,
+                                   const char*                     name,
+                                   std::weak_ptr<fb::game::object> object_weak) -> map_callback {
+        ::lua_getfield(*lua_ctx, index, name);
+        if (lua_ctx->is_table(-1) == false)
         {
-            ::lua_pushvalue(*lua_ctx, -1);
-            callback_ref      = std::make_shared<lua_map_callback_ref>();
-            callback_ref->lua = lua_ctx;
-            callback_ref->ref = ::luaL_ref(*lua_ctx, LUA_REGISTRYINDEX);
-            opts.callback     = make_lua_map_callback(lua_ctx, callback_ref, object_weak);
+            ::lua_pop(*lua_ctx, 1);
+            return {};
         }
+
+        ::lua_getfield(*lua_ctx, -1, "script");
+        auto script = lua_ctx->tostring(-1);
         ::lua_pop(*lua_ctx, 1);
 
-        ::lua_getfield(*lua_ctx, index, "notify");
-        if (lua_ctx->is_nil(-1) == false)
-            opts.notify = lua_ctx->toboolean(-1);
+        ::lua_getfield(*lua_ctx, -1, "func");
+        auto func = lua_ctx->tostring(-1);
         ::lua_pop(*lua_ctx, 1);
 
-        ::lua_getfield(*lua_ctx, index, "skip_instance_rule");
-        if (lua_ctx->is_nil(-1) == false)
-            opts.skip_instance_rule = lua_ctx->toboolean(-1);
-        ::lua_pop(*lua_ctx, 1);
+        auto args = std::vector<fb::lua::value>{};
+        ::lua_getfield(*lua_ctx, -1, "args");
+        if (lua_ctx->is_table(-1))
+        {
+            auto count = lua_ctx->rawlen(-1);
+            for (auto i = 1; i <= count; i++)
+            {
+                lua_ctx->rawgeti(-1, i);
+                args.push_back(fb::lua::value::copy(*lua_ctx, -1));
+                ::lua_pop(*lua_ctx, 1);
+            }
+        }
+        ::lua_pop(*lua_ctx, 2);
+
+        if (script.empty() || func.empty())
+        {
+            fb::logger::warn("map {} hook requires script and func", name);
+            return []() -> async::task<bool> {
+                co_return false;
+            };
+        }
+
+        return [object_weak, script, func, args]() -> async::task<bool> {
+            auto shared = object_weak.lock();
+            if (shared == nullptr)
+                co_return false;
+
+            auto results = co_await shared->script(script, func, args);
+            if (results.has_value() == false)
+            {
+                fb::logger::warn("map hook script not found: {} {}", script, func);
+                co_return false;
+            }
+
+            co_return results->empty() || results->front().is_false() == false;
+        };
     };
 
-    auto map             = std::shared_ptr<fb::game::map>(nullptr);
-    auto position        = std::optional<fb::model::point16_t>{};
-    auto options         = map_options{};
-    auto weak            = obj->weak_from_this_as<fb::game::object>();
-    auto callback_holder = std::shared_ptr<lua_map_callback_ref>{nullptr};
+    const auto parse_map_option_table =
+        [&](fb::lua::context* lua_ctx, int index, map_options& opts, std::weak_ptr<fb::game::object> object_weak) {
+            if (lua_ctx->is_table(index) == false)
+                return;
+
+            opts.before = parse_map_hook(lua_ctx, index, "before", object_weak);
+            opts.after  = parse_map_hook(lua_ctx, index, "after", object_weak);
+
+            ::lua_getfield(*lua_ctx, index, "notify");
+            if (lua_ctx->is_nil(-1) == false)
+                opts.notify = lua_ctx->toboolean(-1);
+            ::lua_pop(*lua_ctx, 1);
+
+            ::lua_getfield(*lua_ctx, index, "skip_instance_rule");
+            if (lua_ctx->is_nil(-1) == false)
+                opts.skip_instance_rule = lua_ctx->toboolean(-1);
+            ::lua_pop(*lua_ctx, 1);
+        };
+
+    auto map      = std::shared_ptr<fb::game::map>(nullptr);
+    auto position = std::optional<fb::model::point16_t>{};
+    auto options  = map_options{};
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
 
     if (lua->is_userdata<fb::game::map>(2))
     {
@@ -846,7 +839,7 @@ int builtin::object::builtin_map(lua_State* L)
     }
 
     if (argc >= offset && lua->is_table(offset))
-        parse_map_option_table(lua, offset, options, callback_holder, weak);
+        parse_map_option_table(lua, offset, options, weak);
 
     if (position.has_value() == false)
         position = map->model().spawn_position();
@@ -857,16 +850,9 @@ int builtin::object::builtin_map(lua_State* L)
     builder.yield       = [=]() -> async::task<void> {
         auto shared = weak.lock();
         if (shared == nullptr)
-        {
-            if (callback_holder != nullptr)
-                callback_holder->release();
             co_return;
-        }
 
-        *success_holder = co_await shared->map(map, position, std::move(options));
-        if (callback_holder != nullptr && *success_holder == false)
-            callback_holder->release();
-        co_return;
+        *success_holder = co_await shared->map(map, position, options);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success_holder);
@@ -1242,9 +1228,8 @@ int builtin::object::builtin_script(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto& srv  = static_cast<fb::game::server&>(lua->executor);
-    auto  argc = lua->argc();
-    auto  obj  = lua->touserdata<fb::game::object>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1252,14 +1237,12 @@ int builtin::object::builtin_script(lua_State* L)
     auto func = lua->tostring(3, "func");
     auto weak = obj->weak_from_this_as<fb::game::object>();
 
-    struct script_child
-    {
-        fb::lua::context::guard g{};
-    };
-
-    auto child_holder = std::make_shared<script_child>();
-    auto retc_holder  = std::make_shared<int>(0);
-    auto obj_holder   = std::make_shared<std::shared_ptr<fb::game::object>>();
+    // The script runs in the root of the object's thread, so arguments and results are copied
+    // instead of moved: two roots are independent lua_States.
+    auto args = std::make_shared<std::vector<fb::lua::value>>();
+    for (auto i = 4; i <= argc; i++)
+        args->push_back(fb::lua::value::copy(*lua, i));
+    auto results = std::make_shared<std::vector<fb::lua::value>>();
 
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -1268,38 +1251,14 @@ int builtin::object::builtin_script(lua_State* L)
         if (shared == nullptr)
             co_return;
 
-        *obj_holder = shared;
-
-        auto path = file;
-        if (path.starts_with("scripts/") == false)
-            path = std::format("scripts/{}", file);
-
-        auto g = static_cast<fb::game::server&>(lua->executor).lua.open(path, func, lua, {.auto_resume_parent = false});
-        if (!g)
-            co_return;
-
-        g->pushobject(*obj_holder);
-        lua_xmove(*lua, *g, argc - 3);
-
-        child_holder->g = std::move(g);
-        try
-        {
-            std::ignore = co_await child_holder->g->call(argc - 2, retc_holder.get());
-        }
-        catch (...)
-        {
-            child_holder->g = fb::lua::context::guard{};
-            throw;
-        }
+        auto values = co_await shared->script(file, func, *args);
+        if (values.has_value())
+            *results = std::move(*values);
     };
     builder.resume = [=]() -> async::task<int> {
-        if (!child_holder->g)
-            co_return 0;
-
-        auto n = *retc_holder;
-        lua_xmove(*child_holder->g, *lua, n);
-        child_holder->g = fb::lua::context::guard{};
-        co_return n;
+        for (const auto& result : *results)
+            result.push(*lua);
+        co_return static_cast<int>(results->size());
     };
     return builder.run();
 }

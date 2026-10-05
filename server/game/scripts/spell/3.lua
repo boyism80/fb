@@ -31,8 +31,13 @@ return {
             local x, y = ch:position()
             local direction = me:direction()
             local new_x, new_y, direction = spell.teleport_lookup(me, map, x, y, direction)
-            me:map(map, new_x, new_y)
-            me:script('scripts/spell/3.lua', 'on_cast_bulk', sp:name(), map:model():name(), {new_x, new_y}, direction, sound, effect)
+            me:map(map, new_x, new_y, {
+                after = {
+                    script = 'scripts/spell/3.lua',
+                    func = 'on_arrive',
+                    args = { sp:name(), direction, sound, effect },
+                },
+            })
         end
     end,
 
@@ -45,7 +50,7 @@ return {
     -- on_concast = function(me, sp)
     -- end,
 
-    on_cast_bulk = function(me, sp, map, position, direction, sound, effect)
+    on_arrive = function(me, sp, direction, sound, effect)
         me:direction(direction)
         me:sound(sound)
         me:effect(effect)

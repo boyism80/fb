@@ -242,9 +242,6 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     else
         new_position = fb::model::point16_t{0, 0};
 
-    auto callback    = std::move(options.callback);
-    options.callback = {};
-
     if (switch_process)
     {
         if (this->map() == nullptr)
@@ -274,11 +271,8 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
             }
 
-            if (callback)
-            {
-                if (co_await callback() == false)
-                    co_return false;
-            }
+            if (options.before && co_await options.before() == false)
+                co_return false;
 
             std::ignore = co_await this->map(nullptr);
             co_await this->server.save(*this);
@@ -306,12 +300,6 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
         if (co_await object::map(map, position, std::move(options)) == false)
             co_return false;
-
-        if (callback)
-        {
-            if (co_await callback() == false)
-                co_return false;
-        }
     }
 
     if (old_map != map)

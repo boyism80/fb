@@ -179,6 +179,162 @@ context& context::pushjson(const Json::Value& json)
     return *this;
 }
 
+value value::copy(lua_State* L, int offset)
+{
+    auto visited = std::unordered_set<const void*>{};
+    return value::copy(L, offset, visited);
+}
+
+value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& visited)
+{
+    auto result = value{};
+    offset      = lua_absindex(L, offset);
+    switch (lua_type(L, offset))
+    {
+    case LUA_TNIL:
+        break;
+
+    case LUA_TBOOLEAN:
+        result._type    = type::BOOLEAN;
+        result._boolean = lua_toboolean(L, offset) != 0;
+        break;
+
+    case LUA_TNUMBER:
+        if (lua_isinteger(L, offset))
+        {
+            result._type    = type::INTEGER;
+            result._integer = lua_tointeger(L, offset);
+        }
+        else
+        {
+            result._type   = type::NUMBER;
+            result._number = lua_tonumber(L, offset);
+        }
+        break;
+
+    case LUA_TSTRING:
+    {
+        auto size    = size_t{0};
+        auto data    = lua_tolstring(L, offset, &size);
+        result._type = type::STRING;
+        result._string.assign(data, size);
+        break;
+    }
+
+    case LUA_TUSERDATA:
+    {
+        auto is_luable = false;
+        if (lua_getmetatable(L, offset) != 0)
+        {
+            lua_getfield(L, -1, "__gc");
+            is_luable = lua_tocfunction(L, -1) == luable::builtin_gc;
+            lua_pop(L, 2);
+        }
+
+        if (is_luable == false)
+        {
+            fb::logger::warn("lua value copy: userdata is not an object, copied as nil");
+        }
+        else if (luable::is_weak_userdata(L, offset))
+        {
+            result._shared = static_cast<std::weak_ptr<luable>*>(lua_touserdata(L, offset))->lock();
+            if (result._shared != nullptr)
+                result._type = type::OBJECT;
+        }
+        else
+        {
+            result._raw  = *static_cast<luable**>(lua_touserdata(L, offset));
+            result._type = type::OBJECT;
+        }
+        break;
+    }
+
+    case LUA_TTABLE:
+    {
+        auto ptr = lua_topointer(L, offset);
+        if (visited.insert(ptr).second == false)
+        {
+            fb::logger::warn("lua value copy: recursive table, copied as nil");
+            break;
+        }
+
+        if (lua_checkstack(L, 2) == 0)
+        {
+            fb::logger::warn("lua value copy: table too deep, copied as nil");
+            visited.erase(ptr);
+            break;
+        }
+
+        result._type = type::TABLE;
+        lua_pushnil(L);
+        while (lua_next(L, offset) != 0)
+        {
+            result._keys.push_back(value::copy(L, -2, visited));
+            result._values.push_back(value::copy(L, -1, visited));
+            lua_pop(L, 1);
+        }
+        visited.erase(ptr);
+        break;
+    }
+
+    default:
+        fb::logger::warn("lua value copy: {} cannot cross lua states, copied as nil", luaL_typename(L, offset));
+        break;
+    }
+    return result;
+}
+
+void value::push(context& ctx) const
+{
+    switch (this->_type)
+    {
+    case type::NIL:
+        ctx.pushnil();
+        break;
+
+    case type::BOOLEAN:
+        ctx.pushboolean(this->_boolean);
+        break;
+
+    case type::INTEGER:
+        ctx.pushinteger(this->_integer);
+        break;
+
+    case type::NUMBER:
+        ctx.pushnumber(this->_number);
+        break;
+
+    case type::STRING:
+        lua_pushlstring(ctx, this->_string.data(), this->_string.size());
+        break;
+
+    case type::OBJECT:
+        if (this->_shared != nullptr)
+            ctx.pushuserdata(*this->_shared);
+        else
+            ctx.pushuserdata(*this->_raw);
+        break;
+
+    case type::TABLE:
+        ctx.new_table();
+        for (auto i = size_t{0}; i < this->_keys.size(); i++)
+        {
+            if (this->_keys[i]._type == type::NIL)
+                continue;
+
+            this->_keys[i].push(ctx);
+            this->_values[i].push(ctx);
+            lua_rawset(ctx, -3);
+        }
+        break;
+    }
+}
+
+bool value::is_false() const
+{
+    return this->_type == type::BOOLEAN && this->_boolean == false;
+}
+
 context& context::push(const void* value)
 {
     lua_pushlightuserdata(this->_ctx, const_cast<void*>(value));

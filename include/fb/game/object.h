@@ -38,12 +38,17 @@ enum class OBJECT_CURSOR : uint8_t
 
 using map_callback = std::function<async::task<bool>()>;
 
+// Hooks run on the moving object's thread and must not wait for dialog input.
+// before: the move is confirmed and the object has not left yet (also right before a server transfer).
+//         Returning false cancels the move.
+// after:  the object has just entered the map, in the same task. Not called on a server transfer.
 struct map_options
 {
     DESTROY_TYPE destroy_type       = DESTROY_TYPE::DEFAULT;
     bool         notify             = true;
     bool         skip_instance_rule = false;
-    map_callback callback           = {};
+    map_callback before             = {};
+    map_callback after              = {};
 };
 
 class server;
@@ -143,6 +148,7 @@ public:
     bool                                    direction(DIRECTION value);
     virtual async::task<bool>               map(map_ptr map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {});
     map_ptr                                 map() const;
+    async::task<std::optional<std::vector<fb::lua::value>>> script(std::string path, std::string func, std::vector<fb::lua::value> args);
     bool                                    active_sector() const;
     bool                                    sight(const fb::model::point16_t& position) const;
     bool                                    sight(const fb::game::object& object) const;

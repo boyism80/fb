@@ -34,24 +34,23 @@ return {
 
         math.randomseed(seed())
         local map = maps[math.random(1, #maps)]
+        me:map(map, nil, {
+            before = {
+                script = 'scripts/item/1.lua',
+                func = 'on_before_warp',
+            },
+        })
+    end,
+
+    on_before_warp = function(me)
         local code = me:exchange(
             { ['item'] = { ['낙랑의두루마리1'] = 1 } },
             { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } }
         )
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(item, '소지품이 가득 찼습니다.', { prev = false, next = false })
-            return
+            me:message('소지품이 가득 찼습니다.')
         end
-        if code ~= enum.exchange_result.OK then
-            return
-        end
-
-        if me:map(map) ~= true then
-            me:exchange(
-                { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } },
-                { ['item'] = { ['낙랑의두루마리1'] = 1 } }
-            )
-        end
+        return code == enum.exchange_result.OK
     end,
 
     -- on_deactivated = function(me, item)

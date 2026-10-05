@@ -22,7 +22,16 @@ return {
         local x, y = spouse:position()
         local direction = me:direction()
         local new_x, new_y, direction = spell.teleport_lookup(me, map, x, y, direction)
-        me:map(map, new_x, new_y)
+        me:map(map, new_x, new_y, {
+            after = {
+                script = 'scripts/item/10529.lua',
+                func = 'on_arrive',
+                args = { direction },
+            },
+        })
+    end,
+
+    on_arrive = function(me, direction)
         me:direction(direction)
     end,
 

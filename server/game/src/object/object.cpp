@@ -379,6 +379,34 @@ async::task<void> object::invoke_map_character_hook(const fb::model::map& map_mo
     std::ignore = co_await lua->call(1);
 }
 
+async::task<std::optional<std::vector<fb::lua::value>>> object::script(std::string                 path,
+                                                                       std::string                 func,
+                                                                       std::vector<fb::lua::value> args)
+{
+    this->assert_thread();
+
+    if (path.starts_with("scripts/") == false)
+        path = std::format("scripts/{}", path);
+
+    // No parent: completion must stay on the thread that resumes the child, not hop to the caller.
+    auto lua = this->server.lua.open(path, func);
+    if (!lua)
+        co_return std::nullopt;
+
+    lua->pushobject(*this);
+    for (const auto& arg : args)
+        arg.push(*lua);
+
+    auto retc   = 0;
+    std::ignore = co_await lua->call(static_cast<int>(args.size()) + 1, &retc);
+
+    auto results = std::vector<fb::lua::value>{};
+    auto top     = lua_gettop(*lua);
+    for (auto i = top - retc + 1; i <= top; i++)
+        results.push_back(fb::lua::value::copy(*lua, i));
+    co_return results;
+}
+
 void object::update_sector()
 {
     this->assert_thread();
@@ -511,7 +539,22 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
     {
         if (this->_map == map)
         {
+            if (options.before && co_await options.before() == false)
+                co_return false;
+
             this->position(resolved, true);
+
+            if (options.after)
+            {
+                try
+                {
+                    std::ignore = co_await options.after();
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("map after hook error: {}", e.what());
+                }
+            }
             co_return true;
         }
 
@@ -573,6 +616,9 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
             co_return false;
 
         if (this->server.maps.load_tiles(map) == false)
+            co_return false;
+
+        if (options.before && co_await options.before() == false)
             co_return false;
 
         // here the character is on some map.
@@ -679,6 +725,17 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         // thread before returning so the caller's assert_thread / name() stay valid.
         co_await this->server.threads.switching(weak);
 
+        if (options.after)
+        {
+            try
+            {
+                std::ignore = co_await options.after();
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("map after hook error: {}", e.what());
+            }
+        }
         co_return true;
     }
     catch (std::exception& e)

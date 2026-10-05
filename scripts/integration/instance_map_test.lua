@@ -292,7 +292,7 @@ test_suite {
                 progress(a, "FAILED: step5: 출두 failed")
                 return false
             end
-            -- 출두 warps the caster, then on_cast_bulk turns it and sends the cast message last.
+            -- 출두 warps the caster, then the on_arrive map hook turns it and sends the cast message last.
             local chuldu_done = false
             lib.wait.state(a, resp.message, function()
                 for _, text in ipairs(a:take_messages()) do
