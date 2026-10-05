@@ -2747,8 +2747,8 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
     if (this->items.is_rewardable(reward) == false)
         co_return false;
 
-    auto money = 0;
-    auto exp   = 0;
+    auto money = uint64_t{0};
+    auto exp   = uint64_t{0};
     for (auto& item : reward)
     {
         switch (item.header)
