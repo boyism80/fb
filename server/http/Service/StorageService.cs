@@ -165,14 +165,12 @@ namespace Http.Service
                 };
 
                 _dbContext.StorageBox.Set(world, box);
+                await _dbContext.StorageBox.SaveChangesAsync();
                 written.Add(box);
             }
 
             if (written.Count > 0)
-            {
-                await _dbContext.StorageBox.SaveChangesAsync();
                 await PublishDeliverAsync(world, written, host);
-            }
 
             return written;
         }

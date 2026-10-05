@@ -107,7 +107,8 @@ std::string service::system_storage::attachments_to_json(const std::vector<fb::m
 }
 
 service::system_storage::system_storage(fb::game::server& server) :
-    server(server)
+    server(server),
+    _delivery(delivery_coroutine())
 { }
 
 void service::system_storage::deliver(const std::vector<storage_box::entry>& entries,
@@ -361,96 +362,110 @@ async::task<bool> service::system_storage::create_system(uint32_t               
 
 async::task<void> service::system_storage::poll_and_deliver()
 {
-    auto world = fb::config<std::optional<uint32_t>>("world");
-    if (!world)
-        co_return;
-
-    const auto now = this->server.now();
-    prune_expired_boxes(this->_pending_boxes, now);
-
-    if (this->server.characters.size() == 0)
-        co_return;
-
-    auto        max_box_id = uint32_t{0};
-    const auto& fetch_url  = std::format("/storage/system/{}?offset={}", *world, this->_poll_offset);
-
-    try
-    {
-        auto&& resp = co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>("internal", fetch_url);
-        if (resp.error == 0)
-        {
-            for (const auto& dto : resp.boxes)
-            {
-                auto box = from_system_storage_dto(dto);
-                if (box.expired(now))
-                    continue;
-
-                max_box_id = std::max(max_box_id, box.id);
-
-                const auto already_tracked = std::any_of(this->_pending_boxes.cbegin(),
-                                                         this->_pending_boxes.cend(),
-                                                         [&](const system_storage_box& existing) {
-                                                             return existing.id == box.id;
-                                                         });
-                if (!already_tracked)
-                    this->_pending_boxes.push_back(std::move(box));
-            }
-        }
-    }
-    catch (const std::exception& e)
-    {
-        fb::logger::warn("Failed to fetch system storage boxes: {}", e.what());
-    }
-
-    if (max_box_id > 0)
-        this->_poll_offset = max_box_id + 1;
-
-    static constexpr size_t chunk_limit = 100;
-    for (const auto& box : this->_pending_boxes)
-    {
-        if (box.expired(now))
-            continue;
-
-        auto eligible = std::make_shared<std::vector<uint32_t>>();
-        auto mutex    = std::make_shared<std::mutex>();
-        co_await this->server.characters.foreach_async(
-            [eligible, mutex, box_id = box.id, created = box.created_date](auto& ch) -> async::task<void> {
-                if (ch->created_date() < created && !ch->storage_box.contains_system_box(box_id))
-                {
-                    auto _ = std::lock_guard(*mutex);
-                    eligible->push_back(ch->id);
-                }
-                co_return;
-            });
-
-        if (eligible->empty())
-            continue;
-
-        for (std::size_t i = 0; i < eligible->size(); i += chunk_limit)
-        {
-            const auto end         = std::min(i + chunk_limit, eligible->size());
-            auto       chunk_users = std::vector<uint32_t>{};
-            chunk_users.assign(eligible->begin() + static_cast<std::ptrdiff_t>(i),
-                               eligible->begin() + static_cast<std::ptrdiff_t>(end));
-
-            try
-            {
-                auto&& resp =
-                    co_await this->server.http.post("internal",
-                                                    "/storage/system/deliver",
-                                                    internal_reqs::DeliverSystemStorage{*world,
-                                                                                        box.id,
-                                                                                        std::move(chunk_users),
-                                                                                        fb::config<uint32_t>("id")});
-                if (resp.error != 0)
-                    fb::logger::warn("DeliverSystemStorage failed for box {}: error {}", box.id, resp.error);
-            }
-            catch (const std::exception& e)
-            {
-                fb::logger::warn("DeliverSystemStorage request failed for box {}: {}", box.id, e.what());
-            }
-        }
-    }
-
+    std::ignore = this->_delivery.next();
     co_return;
+}
+
+fb::async_generator<void> service::system_storage::delivery_coroutine()
+{
+    while (true)
+    {
+        auto world = fb::config<std::optional<uint32_t>>("world");
+        if (!world)
+        {
+            co_await fb::async_suspend{};
+            continue;
+        }
+
+        const auto now = this->server.now();
+        prune_expired_boxes(this->_pending_boxes, now);
+
+        if (this->server.characters.size() == 0)
+        {
+            co_await fb::async_suspend{};
+            continue;
+        }
+
+        auto        max_box_id = uint32_t{0};
+        const auto& fetch_url  = std::format("/storage/system/{}?offset={}", *world, this->_poll_offset);
+
+        try
+        {
+            auto&& resp = co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>("internal", fetch_url);
+            if (resp.error == 0)
+            {
+                for (const auto& dto : resp.boxes)
+                {
+                    auto box = from_system_storage_dto(dto);
+                    if (box.expired(now))
+                        continue;
+
+                    max_box_id = std::max(max_box_id, box.id);
+
+                    const auto already_tracked = std::any_of(this->_pending_boxes.cbegin(),
+                                                             this->_pending_boxes.cend(),
+                                                             [&](const system_storage_box& existing) {
+                                                                 return existing.id == box.id;
+                                                             });
+                    if (!already_tracked)
+                        this->_pending_boxes.push_back(std::move(box));
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("Failed to fetch system storage boxes: {}", e.what());
+        }
+
+        if (max_box_id > 0)
+            this->_poll_offset = max_box_id + 1;
+
+        for (const auto& box : this->_pending_boxes)
+        {
+            if (box.expired(now))
+                continue;
+
+            auto eligible = std::make_shared<std::vector<uint32_t>>();
+            auto mutex    = std::make_shared<std::mutex>();
+            co_await this->server.characters.foreach_async(
+                [eligible, mutex, box_id = box.id, created = box.created_date](auto& ch) -> async::task<void> {
+                    if (ch->created_date() < created && !ch->storage_box.contains_system_box(box_id))
+                    {
+                        auto _ = std::lock_guard(*mutex);
+                        eligible->push_back(ch->id);
+                    }
+                    co_return;
+                });
+
+            if (eligible->empty())
+                continue;
+
+            for (std::size_t i = 0; i < eligible->size(); i += chunk_limit)
+            {
+                const auto end         = std::min(i + chunk_limit, eligible->size());
+                auto       chunk_users = std::vector<uint32_t>{};
+                chunk_users.assign(eligible->begin() + static_cast<std::ptrdiff_t>(i),
+                                   eligible->begin() + static_cast<std::ptrdiff_t>(end));
+
+                try
+                {
+                    auto&& resp = co_await this->server.http.post(
+                        "internal",
+                        "/storage/system/deliver",
+                        internal_reqs::DeliverSystemStorage{*world,
+                                                            box.id,
+                                                            std::move(chunk_users),
+                                                            fb::config<uint32_t>("id")});
+                    if (resp.error != 0)
+                        fb::logger::warn("DeliverSystemStorage failed for box {}: error {}", box.id, resp.error);
+                }
+                catch (const std::exception& e)
+                {
+                    fb::logger::warn("DeliverSystemStorage request failed for box {}: {}", box.id, e.what());
+                }
+            }
+        }
+
+        co_await fb::async_suspend{};
+    }
 }

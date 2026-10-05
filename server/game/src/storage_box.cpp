@@ -88,9 +88,26 @@ void storage_box::init(const std::vector<entry>& entries)
 
     for (const auto& e : entries)
     {
-        this->_entries.emplace(e.id, e);
         if (e.id >= this->_sequence)
             this->_sequence = e.id + 1;
+
+        // Copies of one system box may exist from older duplicate deliveries; keep a single one, the received one if
+        // any.
+        if (e.system_storage_box_id.has_value())
+        {
+            auto found = std::find_if(this->_entries.begin(), this->_entries.end(), [&](const auto& pair) {
+                return pair.second.system_storage_box_id == e.system_storage_box_id;
+            });
+            if (found != this->_entries.end())
+            {
+                if (found->second.received || e.received == false)
+                    continue;
+
+                this->_entries.erase(found);
+            }
+        }
+
+        this->_entries.emplace(e.id, e);
     }
 }
 

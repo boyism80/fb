@@ -1,10 +1,12 @@
 #ifndef __FB_GAME_SERVICE_SYSTEM_STORAGE_H__
 #define __FB_GAME_SERVICE_SYSTEM_STORAGE_H__
 
+#include <fb/async_generator.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/model/model.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -31,12 +33,18 @@ private:
     static storage_box::entry from_storage_box_dto(const fb::protocol::internal::StorageBox& dto);
     static void        prune_expired_boxes(std::vector<system_storage_box>& boxes, const fb::model::datetime& now);
     static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
+    fb::async_generator<void> delivery_coroutine();
+
+    static constexpr std::size_t chunk_limit = 100;
 
     uint32_t                        _poll_offset = 0;
     std::vector<system_storage_box> _pending_boxes;
 
 public:
     fb::game::server& server;
+
+private:
+    fb::async_generator<void> _delivery;
 
 public:
     explicit system_storage(fb::game::server& server);
