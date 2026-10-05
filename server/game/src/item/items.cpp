@@ -1565,13 +1565,8 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
         co_return false;
     }
 
-    if (found->success.size() > this->free_size() + found->source.size())
-    {
-        owner->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
-        co_return false;
-    }
-
-    // Source items are consumed regardless of success or failure.
+    // The consumption is planned first so that the space check and the actual removal use the same numbers.
+    auto consume = std::map<uint8_t, uint16_t>();
     for (auto& x : found->source)
     {
         auto params    = fb::model::dsl::item(x.params);
@@ -1585,12 +1580,70 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
             if (item == nullptr || item->model().id != params.id)
                 continue;
 
-            auto count   = std::min<uint32_t>(item->count(), remaining);
-            auto removed = this->remove(index, static_cast<uint16_t>(count));
-            if (removed != nullptr)
-                co_await removed->destroy();
-            remaining -= count;
+            auto count      = std::min<uint32_t>(item->count() - consume[index], remaining);
+            consume[index] += static_cast<uint16_t>(count);
+            remaining      -= count;
         }
+    }
+
+    // A material stack that keeps some count after consumption still occupies its slot.
+    auto free_slots = static_cast<int>(this->free_size());
+    for (auto& [index, count] : consume)
+    {
+        if (this->at(index)->count() == count)
+            free_slots++;
+    }
+
+    // items::add merges a bundle into its existing stack and drops what does not fit, so a bundle result must fit
+    // in one stack: the remaining material stack of the same model, or a new slot.
+    auto fits = [&](const auto& results) {
+        auto totals = std::map<uint32_t, uint32_t>();
+        for (auto& x : results)
+        {
+            auto params        = fb::model::dsl::item(x.params);
+            totals[params.id] += params.count;
+        }
+
+        auto required = 0;
+        for (auto& [id, total] : totals)
+        {
+            auto  item_table = table::item;
+            auto& model      = item_table[id];
+            if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+            {
+                required += static_cast<int>(total);
+                continue;
+            }
+
+            auto existing = this->find(model);
+            auto left     = uint32_t{0};
+            if (existing != nullptr)
+            {
+                auto index = this->index(existing);
+                left       = existing->count() - (consume.contains(index) ? consume[index] : 0);
+            }
+
+            if (left + total > model.capacity)
+                return false;
+
+            if (left == 0)
+                required++;
+        }
+        return required <= free_slots;
+    };
+
+    if (fits(found->success) == false || fits(found->failed) == false)
+    {
+        owner->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+        co_return false;
+    }
+
+    // Source items are consumed regardless of success or failure.
+    for (auto& [index, count] : consume)
+    {
+        auto removed = this->remove(index, count);
+        if (removed != nullptr)
+            co_await removed->destroy();
     }
 
     auto  success = (std::rand() % 100) < found->percent;
