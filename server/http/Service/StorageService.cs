@@ -1,6 +1,7 @@
 using AutoMapper;
 using Fb.Model.EnumValue;
 using Http.Model;
+using Microsoft.Extensions.Logging;
 using Protocol = fb.protocol._internal;
 using Response = fb.protocol._internal.response;
 
@@ -13,18 +14,21 @@ namespace Http.Service
         private readonly RabbitMqService _rabbitMqService;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly IMapper _mapper;
+        private readonly ILogger<StorageService> _logger;
 
         public StorageService(DbContext dbContext,
             LogService logService,
             RabbitMqService rabbitMqService,
             RedisDistributedLockService distributedLock,
-            IMapper mapper)
+            IMapper mapper,
+            ILogger<StorageService> logger)
         {
             _dbContext = dbContext;
             _logService = logService;
             _rabbitMqService = rabbitMqService;
             _distributedLock = distributedLock;
             _mapper = mapper;
+            _logger = logger;
         }
 
         private static string OpsLockKey(uint user) => $"fb:lock:storage:box:ops:{user}";
@@ -215,6 +219,7 @@ namespace Http.Service
             return true;
         }
 
+        // The box is already stored and the game loads it on the next login, so a failed notification must not fail the caller.
         private async Task PublishWriteAsync(uint world, StorageBox box, uint host)
         {
             var response = new Response.WriteStorageBox
@@ -223,7 +228,14 @@ namespace Http.Service
                 Host  = host,
                 Error = (uint)ErrorCode.None
             };
-            await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
+            try
+            {
+                await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Storage box {Id} of user {User} saved but the notification failed", box.Id, box.User);
+            }
         }
 
         private async Task PublishDeliverAsync(uint world, List<StorageBox> boxes, uint host)
@@ -240,7 +252,14 @@ namespace Http.Service
                 Host    = host,
                 Error   = (uint)ErrorCode.None
             };
-            await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
+            try
+            {
+                await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "{Count} system storage boxes saved but the notification failed", boxes.Count);
+            }
         }
     }
 }

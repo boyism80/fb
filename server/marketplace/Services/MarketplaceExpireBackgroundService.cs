@@ -143,7 +143,20 @@ namespace Marketplace.Services
                 // This is done after transaction commit
                 foreach (var listing in expiredListings)
                 {
-                    await ProcessExpiredListingAsync(listing, storageService, logService, cancellationToken);
+                    try
+                    {
+                        await ProcessExpiredListingAsync(listing, storageService, logService, cancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to return expired marketplace listing {ListingId}", listing.Id);
+                        await logService.WriteAsync("marketplace_expire_return_failed", new
+                        {
+                            listing_id = listing.Id,
+                            seller_id = listing.SellerId,
+                            error = e.Message
+                        });
+                    }
                 }
 
                 // Log success
