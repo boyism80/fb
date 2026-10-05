@@ -17,13 +17,12 @@ return {
 
         local x, y = me:position()
         local direction = me:direction()
-        local my_level = me:level()
         local ch = name2ch(name, me)
         if ch == nil then
             me:message(string.format('%s님은 현재 바람의나라에 없습니다.', name))
             return
         end
-        if ch:level() > my_level then
+        if ch:role() > me:role() or (ch:role() == me:role() and ch:level() > me:level()) then
             me:message('마력이 미치지 않습니다.')
             return
         end
