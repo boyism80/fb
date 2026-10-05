@@ -14,6 +14,8 @@ namespace Marketplace.Services
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan Retention = Fb.Model.ConstValue.Marketplace.ExpireTime;
+        private const int BatchSize = 500;
         private const string LockKey = "fb:marketplace:archive:lock";
 
         private static readonly string AcquireLockScript = """
@@ -93,14 +95,49 @@ namespace Marketplace.Services
             LogService logService,
             CancellationToken cancellationToken)
         {
+            var archivedCount = 0;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var count = await ArchiveBatchAsync(dbContext, logService, cancellationToken);
+                archivedCount += count;
+                if (count < BatchSize)
+                    break;
+            }
+
+            await logService.WriteAsync("marketplace_archive_success", new
+            {
+                archived_count = archivedCount
+            });
+        }
+
+        // Insert and delete only the pinned ids: abort-list treats a listing missing from both tables as never created.
+        private async Task<int> ArchiveBatchAsync(
+            Marketplace.Service.DbContext dbContext,
+            LogService logService,
+            CancellationToken cancellationToken)
+        {
             await using var conn = dbContext.GetUnifiedConnection();
             await conn.OpenAsync(cancellationToken);
             await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
 
             try
             {
-                // Archive all non-active listings in a single query
-                var archiveSql = $@"
+                var selectSql = $@"
+                    SELECT `id` FROM `marketplace_listing`
+                    WHERE `status` != {ListingState.ACTIVE.Escape()}
+                        AND `updated_date` < NOW() - INTERVAL {(long)Retention.TotalSeconds} SECOND
+                    ORDER BY `updated_date`
+                    LIMIT {BatchSize}
+                    FOR UPDATE";
+
+                var ids = (await conn.QueryAsync<string>(selectSql, null, transaction)).ToList();
+                if (ids.Count == 0)
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                    return 0;
+                }
+
+                var archiveSql = @"
                     INSERT INTO `marketplace_listing_archive` (
                         `id`,
                         `world`,
@@ -132,27 +169,15 @@ namespace Marketplace.Services
                         `updated_date`,
                         NOW() AS `archived_date`
                     FROM `marketplace_listing`
-                    WHERE `status` != {ListingState.ACTIVE.Escape()}";
+                    WHERE `id` IN @Ids";
 
-                var archivedCount = await conn.ExecuteAsync(archiveSql, null, transaction);
-
-                if (archivedCount > 0)
-                {
-                    // Delete archived listings from original table
-                    var deleteSql = $@"
-                        DELETE FROM `marketplace_listing`
-                        WHERE `status` != {ListingState.ACTIVE.Escape()}";
-
-                    await conn.ExecuteAsync(deleteSql, null, transaction);
-                }
+                var archivedCount = await conn.ExecuteAsync(archiveSql, new { Ids = ids }, transaction);
+                var deletedCount = await conn.ExecuteAsync("DELETE FROM `marketplace_listing` WHERE `id` IN @Ids", new { Ids = ids }, transaction);
+                if (archivedCount != ids.Count || deletedCount != ids.Count)
+                    throw new InvalidOperationException($"Archive count mismatch: pinned {ids.Count}, archived {archivedCount}, deleted {deletedCount}");
 
                 await transaction.CommitAsync(cancellationToken);
-
-                // Log success
-                await logService.WriteAsync("marketplace_archive_success", new
-                {
-                    archived_count = archivedCount
-                });
+                return ids.Count;
             }
             catch (Exception ex)
             {

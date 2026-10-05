@@ -34,7 +34,9 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_COUNT = 14,
     VT_DURABILITY = 16,
     VT_CUSTOM_NAME = 18,
-    VT_EXPIRE_TIME = 20
+    VT_EXPIRE_TIME = 20,
+    VT_LISTING_ID = 22,
+    VT_LOCKED_MONEY = 24
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
@@ -63,6 +65,12 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *expire_time() const {
     return GetPointer<const ::flatbuffers::String *>(VT_EXPIRE_TIME);
   }
+  const ::flatbuffers::String *listing_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  }
+  uint64_t locked_money() const {
+    return GetField<uint64_t>(VT_LOCKED_MONEY, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
@@ -77,6 +85,9 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(custom_name()) &&
            VerifyOffset(verifier, VT_EXPIRE_TIME) &&
            verifier.VerifyString(expire_time()) &&
+           VerifyOffset(verifier, VT_LISTING_ID) &&
+           verifier.VerifyString(listing_id()) &&
+           VerifyField<uint64_t>(verifier, VT_LOCKED_MONEY, 8) &&
            verifier.EndTable();
   }
 };
@@ -112,6 +123,12 @@ struct ItemBuilder {
   void add_expire_time(::flatbuffers::Offset<::flatbuffers::String> expire_time) {
     fbb_.AddOffset(Item::VT_EXPIRE_TIME, expire_time);
   }
+  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
+    fbb_.AddOffset(Item::VT_LISTING_ID, listing_id);
+  }
+  void add_locked_money(uint64_t locked_money) {
+    fbb_.AddElement<uint64_t>(Item::VT_LOCKED_MONEY, locked_money, 0);
+  }
   explicit ItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -133,8 +150,12 @@ inline ::flatbuffers::Offset<Item> CreateItem(
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
     ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> expire_time = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> expire_time = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
+    uint64_t locked_money = 0) {
   ItemBuilder builder_(_fbb);
+  builder_.add_locked_money(locked_money);
+  builder_.add_listing_id(listing_id);
   builder_.add_expire_time(expire_time);
   builder_.add_custom_name(custom_name);
   builder_.add_durability(durability);
@@ -157,9 +178,12 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
     const char *custom_name = nullptr,
-    const char *expire_time = nullptr) {
+    const char *expire_time = nullptr,
+    const char *listing_id = nullptr,
+    uint64_t locked_money = 0) {
   auto custom_name__ = custom_name ? _fbb.CreateString(custom_name) : 0;
   auto expire_time__ = expire_time ? _fbb.CreateString(expire_time) : 0;
+  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   return fb::protocol::internal::raw::CreateItem(
       _fbb,
       user,
@@ -170,7 +194,9 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
       count,
       durability,
       custom_name__,
-      expire_time__);
+      expire_time__,
+      listing_id__,
+      locked_money);
 }
 
 inline const fb::protocol::internal::raw::Item *GetItem(const void *buf) {

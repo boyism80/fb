@@ -62,7 +62,7 @@ namespace AdminTool.Services
             {
                 Equipped = allItems.Where(i => i.Stored == -1 && i.Parts != 0).ToList(),
                 Inventory = allItems.Where(i => i.Stored == -1 && i.Parts == 0).ToList(),
-                Storage = allItems.Where(i => i.Stored != -1).ToList()
+                Storage = allItems.Where(i => i.Stored >= 0).ToList()
             };
         }
 

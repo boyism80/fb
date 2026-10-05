@@ -91,6 +91,8 @@ namespace Http.Reepository
                     `durability`,
                     `custom_name`,
                     `expire_time`,
+                    `listing_id`,
+                    `locked_money`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -104,6 +106,8 @@ namespace Http.Reepository
                     {value.Durability.Escape()},
                     {value.CustomName.Escape()},
                     {value.ExpireTime.Escape()},
+                    {value.ListingId.Escape()},
+                    {value.LockedMoney.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -113,6 +117,8 @@ namespace Http.Reepository
                     `durability`=VALUES(`durability`),
                     `custom_name`=VALUES(`custom_name`),
                     `expire_time`=VALUES(`expire_time`),
+                    `listing_id`=VALUES(`listing_id`),
+                    `locked_money`=VALUES(`locked_money`),
                     `deleted`=0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
@@ -134,6 +140,8 @@ namespace Http.Reepository
                          {item.Durability.Escape()},
                          {item.CustomName.Escape()},
                          {item.ExpireTime.Escape()},
+                         {item.ListingId.Escape()},
+                         {item.LockedMoney.Escape()},
                          0,
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
@@ -151,6 +159,8 @@ namespace Http.Reepository
                         `durability`,
                         `custom_name`,
                         `expire_time`,
+                        `listing_id`,
+                        `locked_money`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
@@ -161,11 +171,65 @@ namespace Http.Reepository
                         `durability`=VALUES(`durability`),
                         `custom_name`=VALUES(`custom_name`),
                         `expire_time`=VALUES(`expire_time`),
+                        `listing_id`=VALUES(`listing_id`),
+                        `locked_money`=VALUES(`locked_money`),
                         `deleted`=0,
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
+        }
+
+        // Removed rows are soft deletes, so they fold into the same upsert and the whole snapshot is one statement.
+        protected override string OnReplace(IReadOnlyList<Item> removed, Item[] values)
+        {
+            var args = removed.Select(item => (Item: item, Deleted: 1))
+                .Concat(values.Select(item => (Item: item, Deleted: 0)))
+                .Select(x => $"""
+                        ({x.Item.Owner.Escape()},
+                         {x.Item.Index.Escape()},
+                         {x.Item.Parts.Escape()},
+                         {x.Item.Stored.Escape()},
+                         {x.Item.Model.Escape()},
+                         {x.Item.Count.Escape()},
+                         {x.Item.Durability.Escape()},
+                         {x.Item.CustomName.Escape()},
+                         {x.Item.ExpireTime.Escape()},
+                         {x.Item.ListingId.Escape()},
+                         {x.Item.LockedMoney.Escape()},
+                         {x.Deleted},
+                         {x.Item.CreatedDate.Escape()},
+                         {x.Item.UpdatedDate.Escape()})
+                        """);
+
+            return $"""
+                    INSERT INTO item (
+                        `owner`,
+                        `index`,
+                        `parts`,
+                        `stored`,
+                        `model`,
+                        `count`,
+                        `durability`,
+                        `custom_name`,
+                        `expire_time`,
+                        `listing_id`,
+                        `locked_money`,
+                        `deleted`,
+                        `created_date`,
+                        `updated_date`)
+                    VALUES {string.Join(',', args)}
+                    ON DUPLICATE KEY UPDATE
+                        `model`=VALUES(`model`),
+                        `count`=VALUES(`count`),
+                        `durability`=VALUES(`durability`),
+                        `custom_name`=VALUES(`custom_name`),
+                        `expire_time`=VALUES(`expire_time`),
+                        `listing_id`=VALUES(`listing_id`),
+                        `locked_money`=VALUES(`locked_money`),
+                        `deleted`=VALUES(`deleted`),
+                        `updated_date`=NOW();
+                    """;
         }
 
         protected override string OnDelete(ItemKey key)

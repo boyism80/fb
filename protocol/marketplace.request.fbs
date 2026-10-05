@@ -10,6 +10,14 @@ table List {
     price: ulong;
 }
 
+table AbortList {
+    world: uint;
+    character_id: uint;
+    listing_id: string;
+    item: fb.protocol.marketplace.Item;
+    price: ulong;
+}
+
 table Cancel {
     world: uint;
     character_id: uint;

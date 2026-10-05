@@ -41,10 +41,16 @@ public:
     {
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
-            if (this->at(i) == nullptr)
+            if (this->at(i) == nullptr && this->reserved(i) == false)
                 return i;
         }
         return 0xFF;
+    }
+
+    // A reserved slot is taken for capacity even when it holds no usable element.
+    virtual bool reserved(uint8_t index) const
+    {
+        return false;
     }
 
     virtual std::shared_ptr<T> at(uint8_t index) const
@@ -95,7 +101,7 @@ public:
     {
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
-            if (this->_elements[i] == nullptr)
+            if (this->_elements[i] == nullptr && this->reserved(i) == false)
                 return true;
         }
         return false;
@@ -106,7 +112,7 @@ public:
         uint8_t count = 0;
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
-            if (this->_elements[i] == nullptr)
+            if (this->_elements[i] == nullptr && this->reserved(i) == false)
                 count++;
         }
         return count;

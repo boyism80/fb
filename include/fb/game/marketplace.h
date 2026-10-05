@@ -11,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace fb::protocol::internal {
@@ -99,6 +100,9 @@ public:
 private:
     character&         _owner;
     pending_listings_t _pending_listings; // Key: purchase_id (for purchase) or listing_id (for list)
+    // Escrows whose list request is still in flight; abort-list on them would race the request.
+    std::unordered_set<std::string> _listing;
+    bool                            _restoring = false;
 
 public:
     explicit marketplace(character& owner);
@@ -107,8 +111,9 @@ private:
     static std::string generate_uuid();
 
 public:
-    async::task<listing>              list(uint8_t slot, uint16_t count, uint64_t price, uint16_t expire_hours = 72);
-    async::task<bool>                 cancel(std::string_view id);
+    async::task<listing>
+                      list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t price, uint16_t expire_hours = 72);
+    async::task<bool> cancel(std::string_view id);
     async::task<listing>              purchase(std::string_view listing_id, uint16_t purchase_count);
     async::task<search_result>        search(const search_option& option);
     async::task<std::vector<listing>> get_listings(const string_vector_t& listing_ids, uint32_t buyer_id = 0);

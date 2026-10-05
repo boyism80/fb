@@ -23,33 +23,36 @@ enum ListingState : uint8_t {
   ListingState_SOLD = 1,
   ListingState_CANCELLED = 2,
   ListingState_EXPIRED = 3,
+  ListingState_ABORTED = 4,
   ListingState_MIN = ListingState_ACTIVE,
-  ListingState_MAX = ListingState_EXPIRED
+  ListingState_MAX = ListingState_ABORTED
 };
 
-inline const ListingState (&EnumValuesListingState())[4] {
+inline const ListingState (&EnumValuesListingState())[5] {
   static const ListingState values[] = {
     ListingState_ACTIVE,
     ListingState_SOLD,
     ListingState_CANCELLED,
-    ListingState_EXPIRED
+    ListingState_EXPIRED,
+    ListingState_ABORTED
   };
   return values;
 }
 
 inline const char * const *EnumNamesListingState() {
-  static const char * const names[5] = {
+  static const char * const names[6] = {
     "ACTIVE",
     "SOLD",
     "CANCELLED",
     "EXPIRED",
+    "ABORTED",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameListingState(ListingState e) {
-  if (::flatbuffers::IsOutRange(e, ListingState_ACTIVE, ListingState_EXPIRED)) return "";
+  if (::flatbuffers::IsOutRange(e, ListingState_ACTIVE, ListingState_ABORTED)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesListingState()[index];
 }

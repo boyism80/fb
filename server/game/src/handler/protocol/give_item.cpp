@@ -43,7 +43,11 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
 
     auto item = me->items[request.slot];
     if (item == nullptr)
+    {
+        if (me->items.reserved(request.slot))
+            me->message(_TEXT(MESSAGE_MARKETPLACE_ITEM_LOCKED));
         co_return true;
+    }
 
     auto  count = request.all ? item->count() : 1;
     auto& model = item->model();

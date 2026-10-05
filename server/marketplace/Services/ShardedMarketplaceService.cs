@@ -1,4 +1,4 @@
-﻿using Marketplace.Model;
+using Marketplace.Model;
 
 namespace Marketplace.Services;
 
@@ -14,6 +14,19 @@ public class ShardedMarketplaceService : IMarketplaceService
         string itemCustomName,
         ulong price,
         TimeSpan expireTime)
+    {
+        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
+    }
+
+    public Task<bool> AbortListAsync(
+        uint world,
+        uint characterId,
+        string listingId,
+        uint itemModel,
+        ushort remainingCount,
+        uint? itemDurability,
+        string itemCustomName,
+        ulong price)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }

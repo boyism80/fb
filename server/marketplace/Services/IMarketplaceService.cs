@@ -1,4 +1,4 @@
-﻿using Marketplace.Model;
+using Marketplace.Model;
 
 namespace Marketplace.Services;
 
@@ -14,6 +14,16 @@ public interface IMarketplaceService
         string itemCustomName,
         ulong price,
         TimeSpan expireTime);
+
+    Task<bool> AbortListAsync(
+        uint world,
+        uint characterId,
+        string listingId,
+        uint itemModel,
+        ushort remainingCount,
+        uint? itemDurability,
+        string itemCustomName,
+        ulong price);
 
     Task CancelListingAsync(uint world, uint characterId, string listingId);
 

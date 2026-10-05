@@ -1,6 +1,7 @@
 #include <fb/game/protocol/item/update.h>
 
 #include <cstdint>
+#include <format>
 #include <string>
 #include <utility>
 
@@ -20,16 +21,20 @@ item_update<V>::item_update(uint8_t index, uint16_t look, uint8_t color, std::st
 template <CLIENT_VERSION V>
 item_update<V> item_update<V>::from_inventory(const fb::game::character& me, uint8_t index)
 {
-    auto item = me.items.at(index);
-    if (item == nullptr)
+    // A slot shows its usable part and the part held for a listing as one stack.
+    auto item   = me.items.at(index);
+    auto escrow = me.items.escrow(index);
+    if (item == nullptr && escrow == nullptr)
         return item_update<V>(index, 0, 0, std::string{}, 0, false);
 
-    return item_update<V>(index,
-                          item->look(),
-                          item->color(),
-                          item->inven_name(),
-                          static_cast<uint32_t>(item->count() - item->trade_count()),
-                          true);
+    auto shown = item != nullptr ? item : escrow->item;
+    auto count = static_cast<uint32_t>(item != nullptr ? item->count() - item->trade_count() : 0) +
+                 static_cast<uint32_t>(escrow != nullptr ? escrow->item->count() : 0);
+    auto name = shown->inven_name();
+    if (item != nullptr && escrow != nullptr && count > 1)
+        name = std::format("{} {}개", shown->model().name, count);
+
+    return item_update<V>(index, shown->look(), shown->color(), name, count, true);
 }
 
 template <CLIENT_VERSION V>
@@ -78,16 +83,19 @@ item_update<CLIENT_VERSION::v651>::item_update(uint8_t     index,
 item_update<CLIENT_VERSION::v651> item_update<CLIENT_VERSION::v651>::from_inventory(const fb::game::character& me,
                                                                                     uint8_t                    index)
 {
-    auto item = me.items.at(index);
-    if (item == nullptr)
+    auto item   = me.items.at(index);
+    auto escrow = me.items.escrow(index);
+    if (item == nullptr && escrow == nullptr)
         return item_update<CLIENT_VERSION::v651>(index, 0, 0, std::string{}, 0, false);
 
-    return item_update<CLIENT_VERSION::v651>(index,
-                                             item->look(),
-                                             item->color(),
-                                             item->inven_name(),
-                                             static_cast<uint32_t>(item->count() - item->trade_count()),
-                                             true);
+    auto shown = item != nullptr ? item : escrow->item;
+    auto count = static_cast<uint32_t>(item != nullptr ? item->count() - item->trade_count() : 0) +
+                 static_cast<uint32_t>(escrow != nullptr ? escrow->item->count() : 0);
+    auto name = shown->inven_name();
+    if (item != nullptr && escrow != nullptr && count > 1)
+        name = std::format("{} {}개", shown->model().name, count);
+
+    return item_update<CLIENT_VERSION::v651>(index, shown->look(), shown->color(), name, count, true);
 }
 
 item_update<CLIENT_VERSION::v651>::item_update(const fb::game::character& me, uint8_t index) :

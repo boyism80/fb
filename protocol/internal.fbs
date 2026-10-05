@@ -103,6 +103,8 @@ table Item {
     durability: uint?;
     custom_name: string?;
     expire_time: string?;
+    listing_id: string?;
+    locked_money: ulong;
 }
 
 table Spell {

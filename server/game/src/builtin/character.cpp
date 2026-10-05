@@ -69,6 +69,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"ui_mode",                      builtin::character::builtin_ui_mode},
 {"gender",                       builtin::character::builtin_gender},
 {"money",                        builtin::character::builtin_money},
+{"money_free_space",             builtin::character::builtin_money_free_space},
+{"item_free_space",              builtin::character::builtin_item_free_space},
 {"exp",                          builtin::character::builtin_exp},
 {"item",                         builtin::character::builtin_item},
 {"items",                        builtin::character::builtin_items},
@@ -525,6 +527,68 @@ int builtin::character::builtin_money(lua_State* L)
         };
         return builder.run();
     }
+}
+
+int builtin::character::builtin_money_free_space(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    // The client shows money as 32 bits and counts money held for a listing in it.
+    auto weak       = ch->weak_from_this_as<fb::game::character>();
+    auto free_space = std::make_shared<uint64_t>();
+    auto builder    = lua->new_co_builder();
+    builder.weak    = weak;
+    builder.yield   = [=]() -> async::task<void> {
+        auto held   = ch->money() + ch->items.locked_money();
+        *free_space = held < 0xFFFFFFFF ? 0xFFFFFFFF - held : 0;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*free_space);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_item_free_space(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch    = lua->touserdata<fb::game::character>(1);
+    auto model = lua->touserdata<fb::model::item>(2);
+    if (ch == nullptr || model == nullptr)
+        return 0;
+
+    // A stack held for a listing keeps its slot, and new count joins that slot.
+    auto free_space = static_cast<uint32_t>(model->capacity);
+    auto item       = ch->items.find(*model);
+    if (item != nullptr)
+    {
+        free_space = item->free_space();
+    }
+    else
+    {
+        for (auto i : ch->items.escrow_indices())
+        {
+            auto escrow = ch->items.escrow(i);
+            if (escrow->item->model() == *model)
+            {
+                free_space = model->capacity - escrow->item->count();
+                break;
+            }
+        }
+    }
+
+    lua->pushinteger(free_space);
+    return 1;
 }
 
 int builtin::character::builtin_exp(lua_State* L)
@@ -6637,16 +6701,17 @@ int builtin::character::builtin_marketplace_list(lua_State* L)
         return 0;
 
     auto argc = lua->argc();
-    if (argc < 4)
+    if (argc < 5)
     {
-        lua->pushstring("Invalid arguments: marketplace_list(item_index, count, price, [expire_hours])");
+        lua->pushstring("Invalid arguments: marketplace_list(item_index, model_id, count, price, [expire_hours])");
         return 1;
     }
 
     auto item_index   = static_cast<uint8_t>(lua->tointeger(2) - 1);
-    auto count        = static_cast<uint16_t>(lua->tointeger(3));
-    auto price        = lua->touint64(4);
-    auto expire_hours = static_cast<uint16_t>(lua->tointeger(5, 72));
+    auto model_id     = static_cast<uint32_t>(lua->tointeger(3));
+    auto count        = static_cast<uint16_t>(lua->tointeger(4));
+    auto price        = lua->touint64(5);
+    auto expire_hours = static_cast<uint16_t>(lua->tointeger(6, 72));
 
     auto weak           = ch->weak_from_this_as<fb::game::character>();
     auto error          = std::make_shared<std::optional<std::string>>();
@@ -6660,7 +6725,8 @@ int builtin::character::builtin_marketplace_list(lua_State* L)
             if (shared == nullptr)
                 throw std::runtime_error("Character is not alive");
 
-            listing_holder->emplace(co_await shared->marketplace.list(item_index, count, price, expire_hours));
+            listing_holder->emplace(
+                co_await shared->marketplace.list(item_index, model_id, count, price, expire_hours));
         }
         catch (std::exception& e)
         {

@@ -68,7 +68,9 @@ void login<V>::init_items(const std::vector<internal::Item>& response, character
         if (x.durability.has_value())
             item->durability(x.durability.value());
 
-        if (x.stored != -1)
+        if (x.stored == ESCROW_STORED)
+            std::ignore = ch.items.lock(x.index, item, x.locked_money, x.listing_id.value_or(std::string{}));
+        else if (x.stored != -1)
             std::ignore = ch.items.store(item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
             std::ignore = ch.items.add(item, x.index);
@@ -405,6 +407,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     }
 
     co_await this->server.system_storage.sync(*ch);
+    std::ignore = ch->marketplace.restore();
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();

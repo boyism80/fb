@@ -409,7 +409,7 @@ function M.list(me, npc)
         goto MARKETPLACE_LIST
     end
 
-    local list_error, list_result = me:marketplace_list(slot_index, count, price)
+    local list_error, list_result = me:marketplace_list(slot_index, selected_model:id(), count, price)
     if list_error ~= nil then
         local button = me:dialog(npc, '등록 실패: ' .. list_error, { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then

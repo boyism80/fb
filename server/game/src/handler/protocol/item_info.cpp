@@ -18,7 +18,10 @@ async::task<bool> item_info<V>::handle(fb::socket<character>& session, game_reqs
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto item = ch->items[request.slot];
+    auto item   = ch->items[request.slot];
+    auto escrow = ch->items.escrow(request.slot);
+    if (item == nullptr && escrow != nullptr)
+        item = escrow->item;
     if (item == nullptr)
         co_return false;
 

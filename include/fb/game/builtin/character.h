@@ -16,6 +16,8 @@ struct character
     static int builtin_ui_mode(lua_State* L);
     static int builtin_gender(lua_State* L);
     static int builtin_money(lua_State* L);
+    static int builtin_money_free_space(lua_State* L);
+    static int builtin_item_free_space(lua_State* L);
     static int builtin_exp(lua_State* L);
     static int builtin_item(lua_State* L);
     static int builtin_items(lua_State* L);

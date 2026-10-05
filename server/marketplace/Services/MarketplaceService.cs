@@ -5,6 +5,7 @@ using Http;
 using Http.Service;
 using Marketplace.Extension;
 using Marketplace.Model;
+using MySqlConnector;
 
 namespace Marketplace.Services;
 
@@ -110,17 +111,30 @@ public class MarketplaceService : IMarketplaceService
             expire_hours = expireTime.ToString()
         });
 
-        // Create listing with listing_id as the primary key
-        await _dbContext.Marketplace.CreateListingAsync(
-            listingId,
-            world,
-            characterId,
-            itemModel,
-            remainingCount,
-            itemDurability,
-            itemCustomName,
-            price,
-            DateTime.UtcNow + expireTime);
+        // The primary key is the final check: an abort tombstone may land between the pre-check and this insert.
+        try
+        {
+            await _dbContext.Marketplace.CreateListingAsync(
+                listingId,
+                world,
+                characterId,
+                itemModel,
+                remainingCount,
+                itemDurability,
+                itemCustomName,
+                price,
+                DateTime.UtcNow + expireTime);
+        }
+        catch (MySqlException e) when (e.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+        {
+            await _logService.WriteAsync("marketplace_list_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                error = "listing_id_already_exists"
+            });
+            throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
+        }
 
         // Log successful listing creation
         await _logService.WriteAsync("marketplace_list_success", new
@@ -131,6 +145,75 @@ public class MarketplaceService : IMarketplaceService
 
         // Return created listing
         return await _dbContext.Marketplace.GetListingByIdAsync(listingId);
+    }
+
+    public async Task<bool> AbortListAsync(
+        uint world,
+        uint characterId,
+        string listingId,
+        uint itemModel,
+        ushort remainingCount,
+        uint? itemDurability,
+        string itemCustomName,
+        ulong price)
+    {
+        // A listing that is not found anywhere gets an ABORTED tombstone, so a late list request fails on the primary key.
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+
+            var listing = await _dbContext.Marketplace.GetAnyListingByIdForUpdateAsync(listingId, transaction)
+                ?? await _dbContext.Marketplace.GetArchivedListingByIdAsync(listingId, transaction);
+            if (listing != null)
+            {
+                await transaction.CommitAsync();
+                if (listing.SellerId != characterId)
+                    throw new LogicException(ErrorCode.MarketplaceNotListingOwner);
+
+                var created = listing.Status != ListingState.ABORTED;
+                await _logService.WriteAsync("marketplace_abort_list", new
+                {
+                    character_id = characterId,
+                    listing_id = listingId,
+                    created = created,
+                    status = listing.Status.ToString()
+                });
+                return created;
+            }
+
+            try
+            {
+                await _dbContext.Marketplace.CreateAbortedListingAsync(
+                    listingId,
+                    world,
+                    characterId,
+                    itemModel,
+                    remainingCount,
+                    itemDurability,
+                    itemCustomName,
+                    price,
+                    transaction);
+                await transaction.CommitAsync();
+            }
+            catch (MySqlException e) when (e.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+            {
+                await transaction.RollbackAsync();
+                continue;
+            }
+
+            await _logService.WriteAsync("marketplace_abort_list", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                created = false,
+                status = "tombstone"
+            });
+            return false;
+        }
+
+        throw new LogicException(ErrorCode.Unhandled);
     }
 
     public async Task CancelListingAsync(uint world, uint characterId, string listingId)

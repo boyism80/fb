@@ -76,6 +76,50 @@ public class MarketplaceController : ControllerBase
         }
     }
 
+    [HttpPost("abort-list")]
+    public async Task<Response.AbortList> AbortList(Request.AbortList request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(request.ListingId))
+                throw new LogicException(ErrorCode.MarketplaceListingNotFound);
+
+            var created = await _marketplaceService.AbortListAsync(
+                request.World,
+                request.CharacterId,
+                request.ListingId,
+                request.Item.Model,
+                request.Item.Count,
+                request.Item.Durability,
+                request.Item.CustomName,
+                request.Price);
+
+            return new Response.AbortList
+            {
+                Created = created,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            _logger.LogWarning("Marketplace abort list error: {ErrorCode}", e.Error);
+            return new Response.AbortList
+            {
+                Created = false,
+                Error = (uint)e.Error
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to abort listing {ListingId}", request.ListingId);
+            return new Response.AbortList
+            {
+                Created = false,
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
     [HttpPost("cancel")]
     public async Task<Response.Cancel> CancelListing(Request.Cancel request)
     {

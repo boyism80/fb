@@ -727,11 +727,12 @@ namespace Internal.Controllers
             _dbContext.Marriage.Set(world, marriage);
 
             var items = _mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>());
-            ApplyHashEntitySnapshot(
-                items,
-                existingItems,
-                removed => _dbContext.Item.Delete(world, removed),
-                alive => _dbContext.Item.Set(world, alive));
+            // Escrow rows move between slots and the inventory in one save, so removal and upsert must land together.
+            var itemFields = items.Select(x => x.GetRedisField()).ToHashSet();
+            var removedItems = existingItems.Where(x => itemFields.Contains(x.GetRedisField()) == false).ToList();
+            if (removedItems.Count > 0)
+                _logger.LogWarning($"deleted keys : {string.Join(", ", removedItems.Select(x => $"{x.GetRedisKey()}:{x.GetRedisField()}"))}");
+            _dbContext.Item.Replace(world, removedItems, items);
 
             var spells = _mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>());
             ApplyHashEntitySnapshot(

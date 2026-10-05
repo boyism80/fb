@@ -202,8 +202,7 @@ function M.withdraw_money(me, npc, money)
         return true
     end
 
-    local capacity = 0xFFFFFFFF - me:money()
-    if money > capacity then
+    if money > me:money_free_space() then
         npc:chat('소지금이 너무 많습니다.')
         return false
     end
@@ -380,12 +379,7 @@ function M.retrieve_item(me, npc, name, count)
         count = 1
     end
 
-    local exists_count = 0
-    local exists = me:item(name)
-    if exists ~= nil then
-        exists_count = exists:count()
-    end
-    if exists_count + count > model:capacity() then
+    if count > me:item_free_space(model) then
         npc:chat('더 이상 가질 수 없습니다.')
         return true
     end
@@ -428,17 +422,9 @@ function M.sell_item(me, npc, name, count)
         return false
     end
 
-    if is_bundle then
-        local exist_count = 0
-        local exist = me:item(name)
-        if exist ~= nil then
-            exist_count = exist:count()
-        end
-
-        if exist_count + count > model:capacity() then
-            npc:chat('더 이상 가질 수 없습니다.')
-            return false
-        end
+    if is_bundle and count > me:item_free_space(model) then
+        npc:chat('더 이상 가질 수 없습니다.')
+        return false
     end
 
     if me:mkitem(name, count) == nil then
@@ -489,8 +475,7 @@ function M.buy_item(me, npc, name, count)
     end
 
     price = price * count
-    local capacity = 0xFFFFFFFF - me:money()
-    if price > capacity then
+    if price > me:money_free_space() then
         npc:chat('돈이 너무 많습니다.')
         return false
     end
@@ -763,13 +748,7 @@ local function show_sell_catalog(me, npc, sell_id)
         return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
     end
 
-    local exist_count = 0
-    local exist = me:item(selected_name)
-    if exist ~= nil then
-        exist_count = exist:count()
-    end
-
-    if is_bundle and exist_count + count > item:capacity() then
+    if is_bundle and count > me:item_free_space(item) then
         return me:dialog(npc, '더 이상 가질 수 없습니다.', { prev = false, next = true })
     end
     
@@ -1049,8 +1028,7 @@ function M.show_return_money_menu(me, npc)
     end
 
     local current_money = me:money()
-    local capacity = 0xFFFFFFFF - current_money
-    if count > capacity then
+    if count > me:money_free_space() then
        return me:dialog(npc, '가진 돈이 너무 많습니다.', { prev = false, next = true })
     end
 
@@ -1104,12 +1082,7 @@ function M.show_return_item_menu(me, npc)
             return me:dialog(npc, '그만큼 맡고 있지 않습니다.', { prev = false, next = true })
         end
 
-        local exists_count = 0
-        local exists = me:item(model)
-        if exists ~= nil then
-            exists_count = exists:count()
-        end
-        if exists_count + count > model:capacity() then
+        if count > me:item_free_space(model) then
             return me:dialog(npc, '더 이상 가질 수 없습니다.', { prev = false, next = true })
         end
     end

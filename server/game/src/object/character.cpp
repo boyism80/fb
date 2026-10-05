@@ -1160,7 +1160,7 @@ uint64_t character::money_add(uint64_t value) // Returns remaining value that co
 {
     this->assert_thread();
 
-    uint64_t capacity = std::numeric_limits<uint64_t>::max() - this->_money;
+    uint64_t capacity = std::numeric_limits<uint64_t>::max() - this->_money - this->items.locked_money();
     uint64_t lack     = 0;
     if (value > capacity)
     {

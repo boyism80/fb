@@ -98,6 +98,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier, fb::pr
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDateTime, fb::protocol::internal::response::SetDateTime)
 REGISTER_RESPONSE(fb::protocol::internal::request::OpsNotify, fb::protocol::internal::response::OpsNotify)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
+REGISTER_RESPONSE(fb::protocol::marketplace::request::AbortList, fb::protocol::marketplace::response::AbortList)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Cancel, fb::protocol::marketplace::response::Cancel)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::marketplace::response::Purchase)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Search, fb::protocol::marketplace::response::Search)
@@ -228,7 +229,7 @@ public:
     void                              send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
     async::task<void>                 save();
     async::task<void>                 save(fb::thread& thread);
-    async::task<void>                 save(character& ch);
+    async::task<bool>                 save(character& ch);
     void                              sync_time();
     static uint8_t                    brightness_from_time(uint8_t hours, uint8_t minutes);
     uint8_t                           brightness() const;

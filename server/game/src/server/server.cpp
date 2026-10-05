@@ -183,31 +183,33 @@ uint8_t fb::game::server::brightness() const
     return brightness_from_time(static_cast<uint8_t>(this->_time.hours()), static_cast<uint8_t>(this->_time.minutes()));
 }
 
-async::task<void> fb::game::server::save(character& ch)
+async::task<bool> fb::game::server::save(character& ch)
 {
     // Save overwrites items, spells, achievements and quests; a partially loaded character would wipe them.
     if (ch.inited() == false || ch.loaded() == false)
-        co_return;
+        co_return false;
 
     if (!fb::config<std::optional<uint32_t>>("world") && ch.has_return_point() == false)
     {
         fb::logger::fatal("Character {} cross save without home snapshot", ch.name());
-        co_return;
+        co_return false;
     }
 
-    auto weak    = ch.weak_from_this_as<character>();
-    auto world   = ch.world();
-    auto payload = this->save_payload(ch);
-    std::ignore  = co_await this->http.post("internal",
+    auto   weak    = ch.weak_from_this_as<character>();
+    auto   world   = ch.world();
+    auto   payload = this->save_payload(ch);
+    auto&& resp    = co_await this->http.post("internal",
                                            "/in-game/save",
                                            internal_reqs::Save{world, payload, fb::config<uint8_t>("id")});
+    auto   success = resp.success;
 
     co_await this->threads.switching(weak);
     auto shared = weak.lock();
     if (shared == nullptr)
-        co_return;
+        co_return success;
 
     shared->save_ack();
+    co_return success;
 }
 
 async::task<internal_resp::Ban> fb::game::server::ban(std::string_view               actor,
@@ -273,6 +275,17 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
 
         auto protocol  = item->to_protocol();
         protocol.index = i;
+        items.push_back(protocol);
+    }
+
+    for (auto i : ch.items.escrow_indices())
+    {
+        auto escrow           = ch.items.escrow(i);
+        auto protocol         = escrow->item->to_protocol();
+        protocol.index        = i;
+        protocol.stored       = ESCROW_STORED;
+        protocol.listing_id   = escrow->listing_id;
+        protocol.locked_money = escrow->money;
         items.push_back(protocol);
     }
 

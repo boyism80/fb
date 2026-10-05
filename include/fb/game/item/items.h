@@ -10,15 +10,21 @@
 #include <fb/game/item/shield.h>
 #include <fb/game/item/weapon.h>
 
+#include <array>
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace fb::game {
+
+// `stored` of a saved item row held for a marketplace listing; -1 is the inventory and 0.. is the storage.
+static constexpr int16_t ESCROW_STORED = -2;
 
 enum class exchange_result
 {
@@ -29,6 +35,16 @@ enum class exchange_result
 
 class items : public fb::game::inventory<fb::game::item>
 {
+public:
+    // Items and money held for a marketplace listing until its result is known.
+    // The slot stays taken and the client sees the slot and money as if nothing was held.
+    struct escrow_entry
+    {
+        std::string                     listing_id;
+        std::shared_ptr<fb::game::item> item;
+        uint64_t                        money = 0;
+    };
+
 private:
     using super = fb::game::inventory<fb::game::item>;
 
@@ -45,15 +61,18 @@ private:
     using equipment_map_t = std::map<EQUIPMENT_PARTS, equipment_ptr>;
 
 private:
-    std::weak_ptr<fb::game::character> _owner;
-    weapon_ptr                         _weapon         = nullptr;
-    armor_ptr                          _armor          = nullptr;
-    helmet_ptr                         _helmet         = nullptr;
-    shield_ptr                         _shield         = nullptr;
-    ring_ptr                           _rings[2]       = {nullptr, nullptr};
-    auxiliary_ptr                      _auxiliaries[2] = {nullptr, nullptr};
-    std::vector<item_ptr>              _stored;
-    uint64_t                           _deposited = 0;
+    std::weak_ptr<fb::game::character>                          _owner;
+    weapon_ptr                                                  _weapon         = nullptr;
+    armor_ptr                                                   _armor          = nullptr;
+    helmet_ptr                                                  _helmet         = nullptr;
+    shield_ptr                                                  _shield         = nullptr;
+    ring_ptr                                                    _rings[2]       = {nullptr, nullptr};
+    auxiliary_ptr                                               _auxiliaries[2] = {nullptr, nullptr};
+    std::vector<item_ptr>                                       _stored;
+    uint64_t                                                    _deposited = 0;
+    std::array<std::optional<escrow_entry>, CONTAINER_CAPACITY> _escrows;
+    uint8_t                                                     _escrow_count = 0;
+    uint64_t                                                    _locked_money = 0;
 
 public:
     // clang-format off
@@ -123,6 +142,15 @@ public:
     bool                                            is_rewardable(const std::vector<fb::model::dsl>& items) const;
     [[nodiscard]] async::task<exchange_result>      exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint64_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint64_t reward_money, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::GIVE);
     [[nodiscard]] async::task<bool>                 combine(const std::vector<uint8_t>& indices);
+    bool                                            reserved(uint8_t index) const override;
+    const escrow_entry*                             escrow(uint8_t index) const;
+    std::vector<uint8_t>                            escrow_indices() const;
+    uint16_t                                        locked_count(const fb::game::item& item) const;
+    uint64_t                                        locked_money() const;
+    bool                                            lock(uint8_t index, uint16_t count, uint64_t money, std::string_view listing_id);
+    bool                                            lock(uint8_t index, item_ptr item, uint64_t money, std::string_view listing_id);
+    void                                            unlock(std::string_view listing_id);
+    void                                            deduct(std::string_view listing_id);
     // clang-format on
 };
 

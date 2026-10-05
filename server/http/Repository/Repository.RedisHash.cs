@@ -249,6 +249,68 @@ namespace Http.Reepository
             return values;
         }
 
+        // Removes and upserts fields of one hash in a single Redis script and a single write-back statement.
+        protected virtual string OnReplace(IReadOnlyList<TModel> removed, TModel[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Replace(uint world, IReadOnlyList<TModel> removed, TModel[] values)
+        {
+            if (removed.Count == 0 && values.Length == 0)
+                return;
+
+            _buffer.Enqueue(async () =>
+            {
+                foreach (var value in values)
+                {
+                    value.UpdatedDate = DateTime.Now;
+                }
+
+                var groups = removed.Select(x => (Row: x, Removed: true))
+                    .Concat(values.Select(x => (Row: x, Removed: false)))
+                    .GroupBy(x => (Hash: x.Row.GetHash(), RedisKey: x.Row.GetRedisKey()));
+
+                foreach (var group in groups)
+                {
+                    var redis = _redis.GetConnection(world, group.Key.Hash);
+                    if (redis == null)
+                        continue;
+
+                    var redisKey = group.Key.RedisKey;
+                    var removedRows = group.Where(x => x.Removed).Select(x => x.Row).ToList();
+                    var aliveRows = group.Where(x => x.Removed == false).Select(x => x.Row).ToArray();
+                    var removedFields = removedRows.Select(x => x.GetRedisField()).ToList();
+                    var valueSet = aliveRows.ToDictionary(x => x.GetRedisField(), x => x);
+
+                    await using (await _distributedLock.Lock(world, GetLockKey(redisKey)))
+                    {
+                        if (!await _redis.KeyExistsAsync(redis, redisKey))
+                        {
+                            _local.Remove(redisKey);
+                            await SyncCacheFromDatabase(world, redis, group.First().Row);
+                        }
+
+                        await _redis.ReplaceFieldsAsync(redis, redisKey, removedFields, valueSet);
+                        if (_local.HasKey(redisKey))
+                        {
+                            foreach (var field in removedFields)
+                            {
+                                _local.RemoveField(redisKey, field);
+                            }
+                            foreach (var (field, val) in valueSet)
+                            {
+                                _local.PutField(redisKey, field, val);
+                            }
+                        }
+                    }
+
+                    var sql = OnReplace(removedRows, aliveRows);
+                    await _dbExecuteService.Post(world, group.Key.Hash, sql, redisKey.ToString());
+                }
+            });
+        }
+
         public override void Delete(uint world, TKey key)
         {
             _buffer.Enqueue(async () =>

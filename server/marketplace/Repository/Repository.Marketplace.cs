@@ -21,9 +21,69 @@ namespace Marketplace.Reepository
             await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
                 SELECT * FROM `marketplace_listing` 
-                WHERE `id` = {listingId.Escape()} AND `status` != {ListingState.EXPIRED.Escape()}";
+                WHERE `id` = {listingId.Escape()}
+                    AND `status` != {ListingState.EXPIRED.Escape()}
+                    AND `status` != {ListingState.ABORTED.Escape()}";
 
             return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql);
+        }
+
+        public async Task<MarketplaceListing> GetAnyListingByIdForUpdateAsync(string listingId, System.Data.IDbTransaction transaction)
+        {
+            var sql = $@"
+                SELECT * FROM `marketplace_listing`
+                WHERE `id` = {listingId.Escape()}
+                FOR UPDATE";
+
+            return await transaction.Connection.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, null, transaction);
+        }
+
+        public async Task<MarketplaceListing> GetArchivedListingByIdAsync(string listingId, System.Data.IDbTransaction transaction)
+        {
+            var sql = $@"
+                SELECT * FROM `marketplace_listing_archive`
+                WHERE `id` = {listingId.Escape()}";
+
+            return await transaction.Connection.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, null, transaction);
+        }
+
+        public async Task CreateAbortedListingAsync(
+            string listingId,
+            uint world,
+            uint sellerId,
+            uint itemModel,
+            ushort remainingCount,
+            uint? itemDurability,
+            string itemCustomName,
+            ulong price,
+            System.Data.IDbTransaction transaction)
+        {
+            var sql = $"""
+                INSERT INTO `marketplace_listing` (
+                    `id`,
+                    `world`,
+                    `seller_id`,
+                    `item_model`,
+                    `remaining_count`,
+                    `item_durability`,
+                    `item_custom_name`,
+                    `price`,
+                    `status`,
+                    `expire_date`)
+                VALUES (
+                    {listingId.Escape()},
+                    {world.Escape()},
+                    {sellerId.Escape()},
+                    {itemModel.Escape()},
+                    {remainingCount.Escape()},
+                    {(itemDurability.HasValue ? itemDurability.Value.Escape() : "NULL")},
+                    {(itemCustomName != null ? itemCustomName.Escape() : "NULL")},
+                    {price.Escape()},
+                    {ListingState.ABORTED.Escape()},
+                    NOW())
+                """;
+
+            await transaction.Connection.ExecuteAsync(sql, null, transaction);
         }
 
         public async Task<MarketplaceListing> GetListingByIdForUpdateAsync(string listingId, System.Data.IDbTransaction transaction = null)

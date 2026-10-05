@@ -11,6 +11,7 @@ public enum ListingState : byte
   SOLD = 1,
   CANCELLED = 2,
   EXPIRED = 3,
+  ABORTED = 4,
 };
 
 

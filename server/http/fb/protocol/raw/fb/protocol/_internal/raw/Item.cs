@@ -41,6 +41,14 @@ public struct Item : IFlatbufferObject
   public ArraySegment<byte>? GetExpireTimeBytes() { return __p.__vector_as_arraysegment(20); }
 #endif
   public byte[] GetExpireTimeArray() { return __p.__vector_as_array<byte>(20); }
+  public string ListingId { get { int o = __p.__offset(22); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(22, 1); }
+#else
+  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(22); }
+#endif
+  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(22); }
+  public ulong LockedMoney { get { int o = __p.__offset(24); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol._internal.raw.Item> CreateItem(FlatBufferBuilder builder,
       uint user = 0,
@@ -51,8 +59,12 @@ public struct Item : IFlatbufferObject
       ushort count = 0,
       Offset<nullable.nullable_uint> durabilityOffset = default(Offset<nullable.nullable_uint>),
       StringOffset custom_nameOffset = default(StringOffset),
-      StringOffset expire_timeOffset = default(StringOffset)) {
-    builder.StartTable(9);
+      StringOffset expire_timeOffset = default(StringOffset),
+      StringOffset listing_idOffset = default(StringOffset),
+      ulong locked_money = 0) {
+    builder.StartTable(11);
+    Item.AddLockedMoney(builder, locked_money);
+    Item.AddListingId(builder, listing_idOffset);
     Item.AddExpireTime(builder, expire_timeOffset);
     Item.AddCustomName(builder, custom_nameOffset);
     Item.AddDurability(builder, durabilityOffset);
@@ -65,7 +77,7 @@ public struct Item : IFlatbufferObject
     return Item.EndItem(builder);
   }
 
-  public static void StartItem(FlatBufferBuilder builder) { builder.StartTable(9); }
+  public static void StartItem(FlatBufferBuilder builder) { builder.StartTable(11); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddIndex(FlatBufferBuilder builder, short index) { builder.AddShort(1, index, 0); }
   public static void AddParts(FlatBufferBuilder builder, short parts) { builder.AddShort(2, parts, 0); }
@@ -75,6 +87,8 @@ public struct Item : IFlatbufferObject
   public static void AddDurability(FlatBufferBuilder builder, Offset<nullable.nullable_uint> durabilityOffset) { builder.AddOffset(6, durabilityOffset.Value, 0); }
   public static void AddCustomName(FlatBufferBuilder builder, StringOffset customNameOffset) { builder.AddOffset(7, customNameOffset.Value, 0); }
   public static void AddExpireTime(FlatBufferBuilder builder, StringOffset expireTimeOffset) { builder.AddOffset(8, expireTimeOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(9, listingIdOffset.Value, 0); }
+  public static void AddLockedMoney(FlatBufferBuilder builder, ulong lockedMoney) { builder.AddUlong(10, lockedMoney, 0); }
   public static Offset<fb.protocol._internal.raw.Item> EndItem(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Item>(o);
@@ -98,6 +112,8 @@ static public class ItemVerify
       && verifier.VerifyTable(tablePos, 16 /*Durability*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyString(tablePos, 18 /*CustomName*/, false)
       && verifier.VerifyString(tablePos, 20 /*ExpireTime*/, false)
+      && verifier.VerifyString(tablePos, 22 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 24 /*LockedMoney*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

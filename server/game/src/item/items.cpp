@@ -197,7 +197,48 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
             }
             else
             {
-                auto index = this->next();
+                // A bundle whose whole stack is held for a listing keeps its slot, so the new count joins that slot.
+                auto index = uint8_t{0xFF};
+                if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+                {
+                    for (auto i : this->escrow_indices())
+                    {
+                        if (this->_escrows[i]->item->model() == model)
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (index != 0xFF)
+                {
+                    auto free_space = static_cast<uint16_t>(model.capacity - this->_escrows[index]->item->count());
+                    if (free_space == 0)
+                    {
+                        owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
+                        if (stop_if_remained)
+                            break;
+                        continue;
+                    }
+
+                    if (item->count() > free_space)
+                    {
+                        auto part   = item->split(free_space);
+                        std::ignore = this->add(part, index);
+                        updates.insert({index, part});
+                        indices.push_back(index);
+                        owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
+                        if (stop_if_remained)
+                            break;
+                        continue;
+                    }
+                }
+                else
+                {
+                    index = this->next();
+                }
+
                 if (index == 0xFF)
                 {
                     owner->message(_TEXT(MESSAGE_ITEM_FULL));
@@ -221,6 +262,11 @@ uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
+        return 0xFF;
+
+    auto escrow = this->escrow(index);
+    if (escrow != nullptr &&
+        (item->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || escrow->item->model() != item->model()))
         return 0xFF;
 
     if (super::add(item, index) == 0xFF)
@@ -1309,14 +1355,17 @@ bool items::swap(uint8_t src, uint8_t dst)
     if (inventory<item>::swap(src, dst) == false)
         return false;
 
+    // The client sees a slot as one stack, so a held part moves with the slot.
+    std::swap(this->_escrows[src], this->_escrows[dst]);
+
     const auto right = this->at(src);
-    if (right != nullptr)
+    if (right != nullptr || this->reserved(src))
         owner->listener.on_item_update(*owner, src);
     else
         owner->listener.on_item_remove(*owner, src);
 
     const auto left = this->at(dst);
-    if (left != nullptr)
+    if (left != nullptr || this->reserved(dst))
         owner->listener.on_item_update(*owner, dst);
     else
         owner->listener.on_item_remove(*owner, dst);
@@ -1331,7 +1380,7 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
     if (owner == nullptr)
         return false;
 
-    auto money_cap = std::numeric_limits<uint64_t>::max() - owner->money();
+    auto money_cap = std::numeric_limits<uint64_t>::max() - owner->money() - this->_locked_money;
     if (money_cap < money)
         return false;
 
@@ -1349,18 +1398,21 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
     auto free_size = this->free_size();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        auto item = this->at(i);
-        if (item == nullptr)
+        auto item   = this->at(i);
+        auto escrow = this->escrow(i);
+        auto shown  = item != nullptr ? item : (escrow != nullptr ? escrow->item : nullptr);
+        if (shown == nullptr)
             continue;
 
-        auto& model = item->model();
+        auto& model = shown->model();
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
         if (items.contains(model.id) == false)
             continue;
 
-        if (model.capacity < item->count() + items.at(model.id))
+        auto held = (item != nullptr ? item->count() : 0) + (escrow != nullptr ? escrow->item->count() : 0);
+        if (model.capacity < held + items.at(model.id))
             return false;
 
         free_size++;
@@ -1442,10 +1494,11 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
                 co_return exchange_result::lack_cost;
 
             auto remain = static_cast<uint16_t>(current - cost_count);
-            if (remain == 0)
+            auto locked = this->locked_count(*slot);
+            if (remain == 0 && locked == 0)
                 effective_free_slots++;
             else
-                simulated_bundle_remaining[id] = remain;
+                simulated_bundle_remaining[id] = remain + locked;
         }
         else
         {
@@ -1458,7 +1511,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         }
     }
 
-    uint64_t money_after         = owner->money() - cost_money;
+    uint64_t money_after         = owner->money() + this->_locked_money - cost_money;
     uint64_t effective_money_cap = std::numeric_limits<uint64_t>::max() - money_after;
     if (effective_money_cap < reward_money)
         co_return exchange_result::lack_capacity;
@@ -1601,7 +1654,7 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
     auto free_slots = static_cast<int>(this->free_size());
     for (auto& [index, count] : consume)
     {
-        if (this->at(index)->count() == count)
+        if (this->at(index)->count() == count && this->reserved(index) == false)
             free_slots++;
     }
 
@@ -1631,7 +1684,8 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
             if (existing != nullptr)
             {
                 auto index = this->index(existing);
-                left       = existing->count() - (consume.contains(index) ? consume[index] : 0);
+                left =
+                    existing->count() - (consume.contains(index) ? consume[index] : 0) + this->locked_count(*existing);
             }
 
             if (left + total > model.capacity)
@@ -1717,4 +1771,178 @@ std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> items::equipments() const
         {EQUIPMENT_PARTS::LEFT_AUX,   _auxiliaries[static_cast<int>(EQUIPMENT_POSITION::LEFT)] },
         {EQUIPMENT_PARTS::RIGHT_AUX,  _auxiliaries[static_cast<int>(EQUIPMENT_POSITION::RIGHT)]}
     };
+}
+
+bool items::reserved(uint8_t index) const
+{
+    if (index > CONTAINER_CAPACITY - 1)
+        return false;
+
+    return this->_escrows[index].has_value();
+}
+
+const items::escrow_entry* items::escrow(uint8_t index) const
+{
+    if (index > CONTAINER_CAPACITY - 1 || this->_escrows[index].has_value() == false)
+        return nullptr;
+
+    return &this->_escrows[index].value();
+}
+
+std::vector<uint8_t> items::escrow_indices() const
+{
+    auto result = std::vector<uint8_t>();
+    if (this->_escrow_count == 0)
+        return result;
+
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        if (this->_escrows[i].has_value())
+            result.push_back(static_cast<uint8_t>(i));
+    }
+    return result;
+}
+
+uint16_t items::locked_count(const fb::game::item& item) const
+{
+    if (this->_escrow_count == 0)
+        return 0;
+
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        if (this->at(i).get() != &item)
+            continue;
+
+        if (this->_escrows[i].has_value() == false)
+            return 0;
+
+        return this->_escrows[i]->item->count();
+    }
+    return 0;
+}
+
+uint64_t items::locked_money() const
+{
+    return this->_locked_money;
+}
+
+bool items::lock(uint8_t index, uint16_t count, uint64_t money, std::string_view listing_id)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    owner->assert_thread();
+
+    if (index > CONTAINER_CAPACITY - 1 || this->_escrows[index].has_value())
+        return false;
+
+    auto item = this->at(index);
+    if (item == nullptr || count == 0 || item->count() - item->trade_count() < count)
+        return false;
+
+    if (owner->money() < money)
+        return false;
+
+    auto locked = item->split(count);
+    if (locked == item)
+        std::ignore = inventory<fb::game::item>::remove(index);
+    locked->container(this);
+
+    this->_escrows[index] = escrow_entry{.listing_id = std::string(listing_id), .item = locked, .money = money};
+    this->_escrow_count++;
+
+    // The display shows usable and locked money together, so the lock is counted before the usable money drops.
+    this->_locked_money += money;
+    owner->money_reduce(money);
+    return true;
+}
+
+bool items::lock(uint8_t index, std::shared_ptr<item> item, uint64_t money, std::string_view listing_id)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    if (index > CONTAINER_CAPACITY - 1 || this->_escrows[index].has_value())
+        return false;
+
+    auto regular = this->at(index);
+    if (regular != nullptr &&
+        (regular->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || regular->model() != item->model()))
+        return false;
+
+    item->container(this);
+    this->_escrows[index] = escrow_entry{.listing_id = std::string(listing_id), .item = item, .money = money};
+    this->_escrow_count++;
+    this->_locked_money += money;
+    owner->listener.on_item_update(*owner, index);
+    return true;
+}
+
+void items::unlock(std::string_view listing_id)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    owner->assert_thread();
+
+    auto indices = this->escrow_indices();
+    auto found   = std::find_if(indices.begin(), indices.end(), [this, listing_id](auto i) {
+        return this->_escrows[i]->listing_id == listing_id;
+    });
+    if (found == indices.end())
+        return;
+
+    auto index = *found;
+    auto entry = std::move(this->_escrows[index].value());
+    this->_escrows[index].reset();
+    this->_escrow_count--;
+
+    auto regular = this->at(index);
+    if (regular == nullptr)
+    {
+        std::ignore = inventory<fb::game::item>::add(entry.item, index);
+    }
+    else
+    {
+        regular->count(regular->count() + entry.item->count());
+        entry.item->container(nullptr);
+    }
+
+    this->_locked_money -= entry.money;
+    if (entry.money > 0)
+        std::ignore = owner->money_add(entry.money);
+}
+
+void items::deduct(std::string_view listing_id)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    owner->assert_thread();
+
+    auto indices = this->escrow_indices();
+    auto found   = std::find_if(indices.begin(), indices.end(), [this, listing_id](auto i) {
+        return this->_escrows[i]->listing_id == listing_id;
+    });
+    if (found == indices.end())
+        return;
+
+    auto index = *found;
+    auto entry = std::move(this->_escrows[index].value());
+    this->_escrows[index].reset();
+    this->_escrow_count--;
+    entry.item->container(nullptr);
+
+    if (this->at(index) == nullptr)
+        owner->listener.on_item_remove(*owner, index, ITEM_DELETE_TYPE::REMOVED);
+    else
+        owner->listener.on_item_update(*owner, index);
+
+    this->_locked_money -= entry.money;
+    if (entry.money > 0)
+        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }

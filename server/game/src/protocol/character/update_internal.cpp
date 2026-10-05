@@ -85,8 +85,8 @@ void update_internal<V>::serialize(fb::stream_writer<big_endian>& writer) const
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::EXP_MONEY))
     {
         writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.exp()));
-        writer.write<uint32_t>(
-            fb::game::encode_client_amount(this->ch.money() - std::min(this->ch.money(), this->ch.trade.money())));
+        writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.money() + this->ch.items.locked_money() -
+                                                              std::min(this->ch.money(), this->ch.trade.money())));
     }
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
@@ -152,8 +152,8 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::EXP_MONEY))
     {
         writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.exp()));
-        writer.write<uint32_t>(
-            fb::game::encode_client_amount(this->ch.money() - std::min(this->ch.money(), this->ch.trade.money())));
+        writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.money() + this->ch.items.locked_money() -
+                                                              std::min(this->ch.money(), this->ch.trade.money())));
         writer.write<uint8_t>(this->unknown_exp_pad);
     }
 

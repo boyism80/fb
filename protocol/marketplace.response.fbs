@@ -7,6 +7,11 @@ table List {
     error: uint;
 }
 
+table AbortList {
+    created: bool;
+    error: uint;
+}
+
 table Cancel {
     error: uint;
 }

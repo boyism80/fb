@@ -121,6 +121,27 @@ namespace Http.Reepository.Cache
             return 1
             """;
 
+        private static readonly string ReplaceFieldsScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+            local REMOVED = tonumber(ARGV[1])
+            local LENGTH = tonumber(ARGV[2])
+
+            for i = 1, REMOVED do
+                redis.call('hdel', CACHE_KEY, ARGV[2 + i])
+            end
+
+            local offset = 2 + REMOVED
+            for i = 1, LENGTH do
+                redis.call('hset', CACHE_KEY, ARGV[offset + i * 2 - 1], ARGV[offset + i * 2])
+            end
+
+            redis.call('persist', CACHE_KEY)
+            redis.call('hincrby', COUNT_REFS, CACHE_KEY, 1)
+
+            return 1
+            """;
+
         private readonly RedisService _redisService;
 
         public RedisHashCacheLayer(RedisService redisService)
@@ -216,6 +237,29 @@ namespace Http.Reepository.Cache
 
             await redis.EvalAsync(
                 SetHashFieldsScript,
+                [cacheKey, new RedisKey(Const.ReferenceCountKey)],
+                scriptValues.ToArray());
+        }
+
+        public async Task ReplaceFieldsAsync(
+            Service.Redis redis,
+            RedisKey cacheKey,
+            IReadOnlyList<RedisValue> removedFields,
+            IReadOnlyDictionary<RedisValue, TModel> values)
+        {
+            if (redis == null)
+                return;
+
+            var scriptValues = new List<RedisValue> { removedFields.Count, values.Count };
+            scriptValues.AddRange(removedFields);
+            foreach (var (field, val) in values)
+            {
+                scriptValues.Add(field);
+                scriptValues.Add(JsonConvert.SerializeObject(val));
+            }
+
+            await redis.EvalAsync(
+                ReplaceFieldsScript,
                 [cacheKey, new RedisKey(Const.ReferenceCountKey)],
                 scriptValues.ToArray());
         }
