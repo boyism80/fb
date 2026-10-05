@@ -147,6 +147,21 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
 
         co_await this->_owner.server.threads.switching(weak);
         error_code = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
+        switch (error_code)
+        {
+        case fb::model::enum_value::ERROR_CODE::NONE:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_ID_ALREADY_EXISTS:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_ITEM_NOT_FOUND:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_ITEM_NOT_TRADEABLE:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_LIMIT_EXCEEDED:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_NOT_FOUND:
+            break;
+
+        default:
+            unknown    = true;
+            error_what = enum_tostring(error_code);
+            break;
+        }
     }
     catch (const std::exception& e)
     {

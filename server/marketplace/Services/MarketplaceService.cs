@@ -38,7 +38,7 @@ public class MarketplaceService : IMarketplaceService
         _logService = logService;
     }
 
-    public async Task<MarketplaceListing> ListItemAsync(
+    public async Task ListItemAsync(
         uint world,
         uint characterId,
         string listingId,
@@ -142,9 +142,6 @@ public class MarketplaceService : IMarketplaceService
             character_id = characterId,
             listing_id = listingId
         });
-
-        // Return created listing
-        return await _dbContext.Marketplace.GetListingByIdAsync(listingId);
     }
 
     public async Task<bool> AbortListAsync(

@@ -38,7 +38,7 @@ public class MarketplaceController : ControllerBase
                 };
             }
 
-            var listing = await _marketplaceService.ListItemAsync(
+            await _marketplaceService.ListItemAsync(
                 request.World,
                 request.CharacterId,
                 request.ListingId,
@@ -47,12 +47,11 @@ public class MarketplaceController : ControllerBase
                 request.Item.Durability,
                 request.Item.CustomName,
                 request.Price,
-                Fb.Model.ConstValue.Marketplace.ExpireTime) ?? throw new LogicException(ErrorCode.Unhandled);
+                Fb.Model.ConstValue.Marketplace.ExpireTime);
 
-            // Return listing_id (UUID)
             return new Response.List
             {
-                ListingId = listing.Id ?? string.Empty,
+                ListingId = request.ListingId,
                 Error = (uint)ErrorCode.None
             };
         }

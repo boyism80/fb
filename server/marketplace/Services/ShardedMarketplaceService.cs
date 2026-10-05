@@ -4,7 +4,7 @@ namespace Marketplace.Services;
 
 public class ShardedMarketplaceService : IMarketplaceService
 {
-    public Task<MarketplaceListing> ListItemAsync(
+    public Task ListItemAsync(
         uint world,
         uint characterId,
         string listingId,

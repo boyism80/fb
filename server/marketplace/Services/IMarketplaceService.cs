@@ -4,7 +4,7 @@ namespace Marketplace.Services;
 
 public interface IMarketplaceService
 {
-    Task<MarketplaceListing> ListItemAsync(
+    Task ListItemAsync(
         uint world,
         uint characterId,
         string listingId,
