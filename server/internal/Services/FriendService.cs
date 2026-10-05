@@ -125,7 +125,7 @@ namespace Internal.Services
                         }
                     }
 
-                    ApplyHashEntitySnapshot(
+                    ReplaceHashEntities(
                         nextFriends.ToArray(),
                         existing,
                         removedList => _dbContext.Friend.Delete(world, removedList),
@@ -252,7 +252,7 @@ namespace Internal.Services
                 await locks[i].DisposeAsync();
         }
 
-        private static void ApplyHashEntitySnapshot(
+        private static void ReplaceHashEntities(
             Friend[] request,
             IReadOnlyList<Friend> existing,
             Action<IReadOnlyList<Friend>> deleteMany,

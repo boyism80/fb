@@ -36,6 +36,7 @@ public struct SavePayload : IFlatbufferObject
   public int MarketplacePendingsLength { get { int o = __p.__offset(18); return o != 0 ? __p.__vector_len(o) : 0; } }
   public fb.protocol._internal.raw.CollectionUnlock? CollectionUnlocks(int j) { int o = __p.__offset(20); return o != 0 ? (fb.protocol._internal.raw.CollectionUnlock?)(new fb.protocol._internal.raw.CollectionUnlock()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int CollectionUnlocksLength { get { int o = __p.__offset(20); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public long SnapshotTime { get { int o = __p.__offset(22); return o != 0 ? __p.bb.GetLong(o + __p.bb_pos) : (long)0; } }
 
   public static Offset<fb.protocol._internal.raw.SavePayload> CreateSavePayload(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Character> characterOffset = default(Offset<fb.protocol._internal.raw.Character>),
@@ -46,8 +47,10 @@ public struct SavePayload : IFlatbufferObject
       VectorOffset achievementsOffset = default(VectorOffset),
       VectorOffset questsOffset = default(VectorOffset),
       VectorOffset marketplace_pendingsOffset = default(VectorOffset),
-      VectorOffset collection_unlocksOffset = default(VectorOffset)) {
-    builder.StartTable(9);
+      VectorOffset collection_unlocksOffset = default(VectorOffset),
+      long snapshot_time = 0) {
+    builder.StartTable(10);
+    SavePayload.AddSnapshotTime(builder, snapshot_time);
     SavePayload.AddCollectionUnlocks(builder, collection_unlocksOffset);
     SavePayload.AddMarketplacePendings(builder, marketplace_pendingsOffset);
     SavePayload.AddQuests(builder, questsOffset);
@@ -60,7 +63,7 @@ public struct SavePayload : IFlatbufferObject
     return SavePayload.EndSavePayload(builder);
   }
 
-  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(9); }
+  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(10); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
   public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(2, itemsOffset.Value, 0); }
@@ -105,6 +108,7 @@ public struct SavePayload : IFlatbufferObject
   public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.CollectionUnlock>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.CollectionUnlock>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartCollectionUnlocksVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddSnapshotTime(FlatBufferBuilder builder, long snapshotTime) { builder.AddLong(9, snapshotTime, 0); }
   public static Offset<fb.protocol._internal.raw.SavePayload> EndSavePayload(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.SavePayload>(o);
@@ -128,6 +132,7 @@ static public class SavePayloadVerify
       && verifier.VerifyVectorOfTables(tablePos, 16 /*Quests*/, fb.protocol._internal.raw.QuestVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 18 /*MarketplacePendings*/, fb.protocol._internal.raw.MarketplacePendingVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 20 /*CollectionUnlocks*/, fb.protocol._internal.raw.CollectionUnlockVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 22 /*SnapshotTime*/, 8 /*long*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

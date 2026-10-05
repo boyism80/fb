@@ -6,6 +6,7 @@ using Http.Model.Redis;
 using Http.Service;
 using Http.Util;
 using Internal.Services;
+using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 using Option = Http.Model.Option;
@@ -30,6 +31,9 @@ namespace Internal.Controllers
         private readonly LogService _logService;
         private readonly MaintenanceService _maintenanceService;
         private readonly FriendService _friendService;
+        private readonly RedisService _redisService;
+        private static readonly TimeSpan SnapshotTimeTtl = TimeSpan.FromDays(1);
+
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
@@ -40,7 +44,8 @@ namespace Internal.Controllers
             ServerStateService serverStateService,
             LogService logService,
             MaintenanceService maintenanceService,
-            FriendService friendService)
+            FriendService friendService,
+            RedisService redisService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -53,6 +58,7 @@ namespace Internal.Controllers
             _logService = logService;
             _maintenanceService = maintenanceService;
             _friendService = friendService;
+            _redisService = redisService;
         }
 
         [HttpPost("login")]
@@ -528,7 +534,7 @@ namespace Internal.Controllers
             };
         }
 
-        private void ApplyHashEntitySnapshot<T>(
+        private void ReplaceHashEntities<T>(
             T[] request,
             IReadOnlyList<T> existing,
             Action<IReadOnlyList<T>> deleteMany,
@@ -548,7 +554,7 @@ namespace Internal.Controllers
                 setMany(request);
         }
 
-        private void ApplyMarketplacePendingSnapshot(
+        private void ReplaceMarketplacePendings(
             uint world,
             uint userId,
             MarketplacePending[] request,
@@ -577,8 +583,7 @@ namespace Internal.Controllers
                 if (payloads.Count == 0)
                     return new Response.Save { Success = false };
 
-                await ApplySavePayload(request.World, payloads);
-                await _dbContext.SaveChangesAsync();
+                await SaveNewerSnapshots(request.World, payloads);
 
                 await _logService.WriteAsync("character_save", new
                 {
@@ -615,8 +620,7 @@ namespace Internal.Controllers
                     return new Response.BatchSave { Success = true };
 
                 var payloads = await OwnedSavePayloads(request.World, request.Host, request.Characters);
-                await ApplySavePayload(request.World, payloads);
-                await _dbContext.SaveChangesAsync();
+                await SaveNewerSnapshots(request.World, payloads);
 
                 await _logService.WriteAsync("character_save_batch", new
                 {
@@ -662,7 +666,63 @@ namespace Internal.Controllers
             return owned;
         }
 
-        private async Task ApplySavePayload(uint world, IReadOnlyList<Protocol.SavePayload> payloads)
+        private async Task SaveNewerSnapshots(uint world, IReadOnlyList<Protocol.SavePayload> payloads)
+        {
+            if (payloads.Count == 0)
+                return;
+
+            var latest = payloads
+                .GroupBy(x => x.Character.Id)
+                .Select(x => x.MaxBy(payload => payload.SnapshotTime))
+                .OrderBy(x => x.Character.Id)
+                .ToList();
+
+            var locks = new List<RedisDistributedLockHandle>();
+            try
+            {
+                foreach (var payload in latest)
+                    locks.Add(await _distributedLock.Lock(world, Character.SaveLockKey(payload.Character.Id)));
+
+                var appliedTimes = await Task.WhenAll(latest.Select(x =>
+                {
+                    var key = Character.SnapshotTimeKey(x.Character.Id);
+                    return _redisService.GetShardConnection(world, key).Connection.StringGetAsync(key);
+                }));
+
+                var newer = new List<Protocol.SavePayload>();
+                for (var i = 0; i < latest.Count; i++)
+                {
+                    var payload = latest[i];
+                    if (appliedTimes[i].HasValue && (long)appliedTimes[i] > payload.SnapshotTime)
+                    {
+                        _logger.LogWarning("Save dropped for {Name}: snapshot {Snapshot} is older than applied {Applied}",
+                            payload.Character.Name, payload.SnapshotTime, (long)appliedTimes[i]);
+                    }
+                    else
+                    {
+                        newer.Add(payload);
+                    }
+                }
+                if (newer.Count == 0)
+                    return;
+
+                await ReplaceSnapshots(world, newer);
+                await _dbContext.SaveChangesAsync();
+
+                await Task.WhenAll(newer.Select(x =>
+                {
+                    var key = Character.SnapshotTimeKey(x.Character.Id);
+                    return _redisService.GetShardConnection(world, key).Connection.StringSetAsync(key, x.SnapshotTime, SnapshotTimeTtl);
+                }));
+            }
+            finally
+            {
+                foreach (var handle in locks)
+                    await handle.DisposeAsync();
+            }
+        }
+
+        private async Task ReplaceSnapshots(uint world, IReadOnlyList<Protocol.SavePayload> payloads)
         {
             if (payloads == null || payloads.Count == 0)
                 return;
@@ -693,7 +753,7 @@ namespace Internal.Controllers
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
                     throw new Exception($"Character not found: {characterId}");
 
-                ApplyOneSavePayload(world, data, existingCharacter,
+                ReplaceSnapshot(world, data, existingCharacter,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
@@ -703,7 +763,7 @@ namespace Internal.Controllers
             }
         }
 
-        private void ApplyOneSavePayload(
+        private void ReplaceSnapshot(
             uint world,
             Protocol.SavePayload data,
             Character existingCharacter,
@@ -735,7 +795,7 @@ namespace Internal.Controllers
             _dbContext.Item.Replace(world, removedItems, items);
 
             var spells = _mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>());
-            ApplyHashEntitySnapshot(
+            ReplaceHashEntities(
                 spells,
                 existingSpells,
                 removed => _dbContext.Spell.Delete(world, removed),
@@ -747,14 +807,14 @@ namespace Internal.Controllers
                 _dbContext.MatchmakingSkill.Set(world, matchmakingSkills);
 
             var achievements = _mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>());
-            ApplyHashEntitySnapshot(
+            ReplaceHashEntities(
                 achievements,
                 existingAchievements,
                 removed => _dbContext.Achievement.Delete(world, removed),
                 alive => _dbContext.Achievement.Set(world, alive));
 
             var quests = _mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>());
-            ApplyHashEntitySnapshot(
+            ReplaceHashEntities(
                 quests,
                 existingQuests,
                 removed => _dbContext.Quest.Delete(world, removed),
@@ -762,7 +822,7 @@ namespace Internal.Controllers
 
             var collectionUnlocks = _mapper.Map<Protocol.CollectionUnlock[], CollectionUnlock[]>(
                 data.CollectionUnlocks?.ToArray() ?? Array.Empty<Protocol.CollectionUnlock>());
-            ApplyHashEntitySnapshot(
+            ReplaceHashEntities(
                 collectionUnlocks,
                 existingCollectionUnlocks,
                 removed => _dbContext.CollectionUnlock.Delete(world, removed),
@@ -770,7 +830,7 @@ namespace Internal.Controllers
 
             var marketplacePendings = _mapper.Map<Protocol.MarketplacePending[], MarketplacePending[]>(
                 data.MarketplacePendings?.ToArray() ?? Array.Empty<Protocol.MarketplacePending>());
-            ApplyMarketplacePendingSnapshot(world, characterId, marketplacePendings, existingMarketplacePendings);
+            ReplaceMarketplacePendings(world, characterId, marketplacePendings, existingMarketplacePendings);
         }
 
         [HttpPost("option")]
@@ -786,7 +846,7 @@ namespace Internal.Controllers
                     throw new Exception($"option {request.User} not found");
 
                 foreach (var change in request.Changes)
-                    ApplyOption(option, change.Type, change.Enabled);
+                    SetOption(option, change.Type, change.Enabled);
 
                 _dbContext.Option.Set(world, option);
 
@@ -805,7 +865,7 @@ namespace Internal.Controllers
             }
         }
 
-        private static void ApplyOption(Option option, byte type, bool enabled)
+        private static void SetOption(Option option, byte type, bool enabled)
         {
             switch ((Fb.Model.EnumValue.Option)type)
             {

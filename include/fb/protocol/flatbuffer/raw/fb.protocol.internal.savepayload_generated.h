@@ -42,7 +42,8 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ACHIEVEMENTS = 14,
     VT_QUESTS = 16,
     VT_MARKETPLACE_PENDINGS = 18,
-    VT_COLLECTION_UNLOCKS = 20
+    VT_COLLECTION_UNLOCKS = 20,
+    VT_SNAPSHOT_TIME = 22
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -71,6 +72,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *>(VT_COLLECTION_UNLOCKS);
   }
+  int64_t snapshot_time() const {
+    return GetField<int64_t>(VT_SNAPSHOT_TIME, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -98,6 +102,7 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_COLLECTION_UNLOCKS) &&
            verifier.VerifyVector(collection_unlocks()) &&
            verifier.VerifyVectorOfTables(collection_unlocks()) &&
+           VerifyField<int64_t>(verifier, VT_SNAPSHOT_TIME, 8) &&
            verifier.EndTable();
   }
 };
@@ -133,6 +138,9 @@ struct SavePayloadBuilder {
   void add_collection_unlocks(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks) {
     fbb_.AddOffset(SavePayload::VT_COLLECTION_UNLOCKS, collection_unlocks);
   }
+  void add_snapshot_time(int64_t snapshot_time) {
+    fbb_.AddElement<int64_t>(SavePayload::VT_SNAPSHOT_TIME, snapshot_time, 0);
+  }
   explicit SavePayloadBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -154,8 +162,10 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
+    int64_t snapshot_time = 0) {
   SavePayloadBuilder builder_(_fbb);
+  builder_.add_snapshot_time(snapshot_time);
   builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_marketplace_pendings(marketplace_pendings);
   builder_.add_quests(quests);
@@ -178,7 +188,8 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
+    int64_t snapshot_time = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -196,7 +207,8 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
       achievements__,
       quests__,
       marketplace_pendings__,
-      collection_unlocks__);
+      collection_unlocks__,
+      snapshot_time);
 }
 
 inline const fb::protocol::internal::raw::SavePayload *GetSavePayload(const void *buf) {

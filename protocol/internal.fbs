@@ -322,6 +322,7 @@ table SavePayload {
     quests: [Quest];
     marketplace_pendings: [MarketplacePending];
     collection_unlocks: [CollectionUnlock];
+    snapshot_time: long;
 }
 
 table OptionChange {

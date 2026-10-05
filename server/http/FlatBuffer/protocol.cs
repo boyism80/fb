@@ -537,7 +537,8 @@ namespace fb.protocol._internal
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -2859,7 +2860,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -5212,7 +5214,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -7565,7 +7568,8 @@ namespace fb.protocol.marketplace
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -9862,7 +9866,8 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -12161,7 +12166,8 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -14460,7 +14466,8 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -16756,7 +16763,8 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -19052,7 +19060,8 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -21349,7 +21358,8 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.SnapshotTime));
         }
         public static Offset<fb.protocol._internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol._internal.OptionChange value)
         {
@@ -24587,6 +24597,7 @@ namespace fb.protocol._internal
         public List<fb.protocol._internal.Quest> Quests { get; set; } = new List<fb.protocol._internal.Quest>();
         public List<fb.protocol._internal.MarketplacePending> MarketplacePendings { get; set; } = new List<fb.protocol._internal.MarketplacePending>();
         public List<fb.protocol._internal.CollectionUnlock> CollectionUnlocks { get; set; } = new List<fb.protocol._internal.CollectionUnlock>();
+        public long SnapshotTime { get; set; } = 0L;
 
         public SavePayload()
         { }
@@ -24602,6 +24613,7 @@ namespace fb.protocol._internal
             Quests = Enumerable.Range(0, raw.QuestsLength).Select(i => raw.Quests(i)).Select(x => new fb.protocol._internal.Quest(x.Value)).ToList();
             MarketplacePendings = Enumerable.Range(0, raw.MarketplacePendingsLength).Select(i => raw.MarketplacePendings(i)).Select(x => new fb.protocol._internal.MarketplacePending(x.Value)).ToList();
             CollectionUnlocks = Enumerable.Range(0, raw.CollectionUnlocksLength).Select(i => raw.CollectionUnlocks(i)).Select(x => new fb.protocol._internal.CollectionUnlock(x.Value)).ToList();
+            SnapshotTime = raw.SnapshotTime;
         }
 
         public SavePayload(byte[] bytes) : this(fb.protocol._internal.raw.SavePayload.GetRootAsSavePayload(new ByteBuffer(bytes)))

@@ -2483,20 +2483,21 @@ public:
     std::vector<fb::protocol::internal::Quest> quests = {};
     std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings = {};
     std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks = {};
+    int64_t snapshot_time = 0LL;
 
 public:
     SavePayload() = default;
 
     SavePayload(const SavePayload& x)
-        : character(x.character), marriage(x.marriage), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), achievements(x.achievements), quests(x.quests), marketplace_pendings(x.marketplace_pendings), collection_unlocks(x.collection_unlocks)
+        : character(x.character), marriage(x.marriage), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), achievements(x.achievements), quests(x.quests), marketplace_pendings(x.marketplace_pendings), collection_unlocks(x.collection_unlocks), snapshot_time(x.snapshot_time)
     { }
 
-    SavePayload(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks)
-        : character(character), marriage(marriage), items(items), spells(spells), matchmaking_skills(matchmaking_skills), achievements(achievements), quests(quests), marketplace_pendings(marketplace_pendings), collection_unlocks(collection_unlocks)
+    SavePayload(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, int64_t snapshot_time)
+        : character(character), marriage(marriage), items(items), spells(spells), matchmaking_skills(matchmaking_skills), achievements(achievements), quests(quests), marketplace_pendings(marketplace_pendings), collection_unlocks(collection_unlocks), snapshot_time(snapshot_time)
     { }
 
     SavePayload(const fb::protocol::internal::raw::SavePayload& raw)
-        : character(*raw.character()), marriage(*raw.marriage()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), marketplace_pendings(unpack<fb::protocol::internal::MarketplacePending>(raw.marketplace_pendings())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks()))
+        : character(*raw.character()), marriage(*raw.marriage()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), marketplace_pendings(unpack<fb::protocol::internal::MarketplacePending>(raw.marketplace_pendings())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), snapshot_time(raw.snapshot_time())
     { }
 
 public:
@@ -9798,7 +9799,8 @@ flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> build<fb::protocol
             flatbuffers::build<std::vector<fb::protocol::internal::Achievement>>(builder, value.achievements),
             flatbuffers::build<std::vector<fb::protocol::internal::Quest>>(builder, value.quests),
             flatbuffers::build<std::vector<fb::protocol::internal::MarketplacePending>>(builder, value.marketplace_pendings),
-            flatbuffers::build<std::vector<fb::protocol::internal::CollectionUnlock>>(builder, value.collection_unlocks));
+            flatbuffers::build<std::vector<fb::protocol::internal::CollectionUnlock>>(builder, value.collection_unlocks),
+            flatbuffers::build<int64_t>(builder, value.snapshot_time));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::OptionChange> build<fb::protocol::internal::OptionChange>(FlatBufferBuilder& builder, const fb::protocol::internal::OptionChange& value)

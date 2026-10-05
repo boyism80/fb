@@ -165,22 +165,23 @@ private:
     };
 
 public:
-    const uint32_t                     id;
-    const fb::protocol::CLIENT_VERSION client_version;
-    const fb::protocol::CLIENT_UI_MODE ui_mode;
-    fb::game::trade                    trade;
-    fb::game::items                    items;
-    fb::game::quests                   quests;
-    fb::game::character_collections    collections;
-    fb::game::bulletin                 bulletin = fb::game::bulletin(*this);
-    fb::game::mail_box                 mail_box = fb::game::mail_box(*this);
-    fb::game::storage_box              storage_box;
-    fb::game::marketplace              marketplace;
-    fb::game::matchmaker               matchmaker;
-    fb::lua::context*                  dialog = nullptr;
-    achievement_map_t                  achievements;
-    listener_t&                        listener;
-    character_stat                     stat;
+    const uint32_t                                id;
+    const fb::protocol::CLIENT_VERSION            client_version;
+    const fb::protocol::CLIENT_UI_MODE            ui_mode;
+    fb::game::trade                               trade;
+    fb::game::items                               items;
+    fb::game::quests                              quests;
+    fb::game::character_collections               collections;
+    fb::game::bulletin                            bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box                            mail_box = fb::game::mail_box(*this);
+    fb::game::storage_box                         storage_box;
+    fb::game::marketplace                         marketplace;
+    fb::game::matchmaker                          matchmaker;
+    fb::lua::context*                             dialog = nullptr;
+    achievement_map_t                             achievements;
+    listener_t&                                   listener;
+    character_stat                                stat;
+    const std::shared_ptr<fb::async_shared_mutex> save_lock = std::make_shared<fb::async_shared_mutex>();
 
 public:
     struct initial_params : fb::game::life::initial_params

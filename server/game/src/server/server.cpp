@@ -8,6 +8,7 @@
 #include <json/json.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -195,13 +196,33 @@ async::task<bool> fb::game::server::save(character& ch)
         co_return false;
     }
 
-    auto   weak    = ch.weak_from_this_as<character>();
-    auto   world   = ch.world();
-    auto   payload = this->save_payload(ch);
-    auto&& resp    = co_await this->http.post("internal",
-                                           "/in-game/save",
-                                           internal_reqs::Save{world, payload, fb::config<uint8_t>("id")});
-    auto   success = resp.success;
+    auto weak      = ch.weak_from_this_as<character>();
+    auto save_lock = ch.save_lock;
+    co_await save_lock->lock();
+
+    auto success = false;
+    try
+    {
+        co_await this->threads.switching(weak);
+        auto locked = weak.lock();
+        if (locked == nullptr)
+            throw std::runtime_error("character destroyed before its save snapshot");
+
+        auto world   = locked->world();
+        auto payload = this->save_payload(*locked);
+        locked.reset();
+
+        auto&& resp = co_await this->http.post("internal",
+                                               "/in-game/save",
+                                               internal_reqs::Save{world, payload, fb::config<uint8_t>("id")});
+        success     = resp.success;
+    }
+    catch (...)
+    {
+        save_lock->unlock();
+        throw;
+    }
+    save_lock->unlock();
 
     co_await this->threads.switching(weak);
     auto shared = weak.lock();
@@ -333,6 +354,9 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
     auto marketplace_pendings = ch.marketplace.to_save_dtos();
     auto matchmaking_skills   = ch.matchmaker.to_protocol();
     auto collection_unlocks   = ch.collections.to_protocol(ch.id);
+    auto snapshot_time =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())
+            .count();
 
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
@@ -342,16 +366,16 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  achievements,
                                  quests,
                                  marketplace_pendings,
-                                 collection_unlocks);
+                                 collection_unlocks,
+                                 snapshot_time);
 }
 
 async::task<void> fb::game::server::save(fb::thread& thread)
 {
     static constexpr size_t SAVE_BATCH_CHUNK_SIZE = 100;
 
-    auto params = thread.template data<thread_params>();
-    auto by_world =
-        std::map<uint32_t, std::pair<std::vector<std::weak_ptr<character>>, std::vector<internal::SavePayload>>>{};
+    auto params   = thread.template data<thread_params>();
+    auto by_world = std::map<uint32_t, std::vector<std::weak_ptr<character>>>{};
     co_await params->characters.foreach ([&](auto& character) {
         if (!character->inited() || !character->loaded())
             return;
@@ -362,29 +386,60 @@ async::task<void> fb::game::server::save(fb::thread& thread)
             return;
         }
 
-        auto& chunk = by_world[character->world()];
-        chunk.first.push_back(character);
-        chunk.second.push_back(this->save_payload(*character));
+        by_world[character->world()].push_back(character);
     });
 
-    for (auto& [world, chunk] : by_world)
+    for (auto& [world, characters] : by_world)
     {
-        auto&        characters = chunk.first;
-        auto&        payloads   = chunk.second;
-        const size_t total      = payloads.size();
-        for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
+        for (size_t offset = 0; offset < characters.size(); offset += SAVE_BATCH_CHUNK_SIZE)
         {
-            const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, total);
-            auto batch = std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
-                                                            payloads.begin() + static_cast<std::ptrdiff_t>(chunk_end));
-            std::ignore =
-                co_await this->http.post("internal",
-                                         "/in-game/save-batch",
-                                         internal_reqs::SaveBatch{world, std::move(batch), fb::config<uint8_t>("id")});
+            const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, characters.size());
 
+            auto saving = std::vector<std::pair<std::weak_ptr<character>, std::shared_ptr<fb::async_shared_mutex>>>{};
+            auto batch  = std::vector<internal::SavePayload>{};
             for (size_t i = offset; i < chunk_end; i++)
             {
                 auto shared = characters[i].lock();
+                if (shared == nullptr || shared->matched_thread() == false)
+                    continue;
+
+                if (shared->save_lock->try_lock() == false)
+                    continue;
+
+                saving.push_back({characters[i], shared->save_lock});
+                batch.push_back(this->save_payload(*shared));
+            }
+            if (batch.empty())
+                continue;
+
+            auto count  = batch.size();
+            auto failed = false;
+            try
+            {
+                std::ignore = co_await this->http.post(
+                    "internal",
+                    "/in-game/save-batch",
+                    internal_reqs::SaveBatch{world, std::move(batch), fb::config<uint8_t>("id")});
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("save batch failed: world={} count={} error={}", world, count, e.what());
+                failed = true;
+            }
+
+            for (auto& entry : saving)
+                entry.second->unlock();
+
+            if (failed)
+            {
+                co_await thread.switching();
+                continue;
+            }
+
+            for (auto& entry : saving)
+            {
+                auto weak   = entry.first;
+                auto shared = weak.lock();
                 if (shared == nullptr)
                     continue;
 
@@ -395,8 +450,8 @@ async::task<void> fb::game::server::save(fb::thread& thread)
                 }
                 else
                 {
-                    auto builder = this->threads.new_builder<void, character>(characters[i]);
-                    builder.func = [weak = characters[i]](auto&) -> async::task<void> {
+                    auto builder = this->threads.new_builder<void, character>(weak);
+                    builder.func = [weak](auto&) -> async::task<void> {
                         auto moved = weak.lock();
                         if (moved != nullptr)
                             moved->save_ack();
