@@ -62,11 +62,11 @@ namespace Marketplace.Services
                             // Create scope for service resolution
                             using var scope = _scopeFactory.CreateScope();
                             var dbContext = scope.ServiceProvider.GetRequiredService<Marketplace.Service.DbContext>();
-                            var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
+                            var deliveryService = scope.ServiceProvider.GetRequiredService<MarketplaceDeliveryService>();
                             var logService = scope.ServiceProvider.GetRequiredService<LogService>();
 
                             // Process expired listings
-                            await ProcessExpiredListingsAsync(dbContext, storageService, logService, stoppingToken);
+                            await ProcessExpiredListingsAsync(dbContext, deliveryService, logService, stoppingToken);
                         }
                         catch (Exception e)
                         {
@@ -95,7 +95,7 @@ namespace Marketplace.Services
 
         private async Task ProcessExpiredListingsAsync(
             Marketplace.Service.DbContext dbContext,
-            StorageService storageService,
+            MarketplaceDeliveryService deliveryService,
             LogService logService,
             CancellationToken cancellationToken)
         {
@@ -136,27 +136,31 @@ namespace Marketplace.Services
 
                 await conn.ExecuteAsync(updateSql, parameters, transaction);
 
+                // Return items with registration fee; the delivery rows commit together with the EXPIRED status
+                var deliveries = new List<MarketplaceDelivery>(expiredListings.Count);
+                foreach (var listing in expiredListings)
+                {
+                    deliveries.Add(await CreateExpiredDeliveryAsync(listing, dbContext, transaction));
+                }
+
                 await transaction.CommitAsync(cancellationToken);
                 committed = true;
 
-                // Process each expired listing to return items with registration fee
-                // This is done after transaction commit
-                foreach (var listing in expiredListings)
+                for (var i = 0; i < expiredListings.Count; i++)
                 {
-                    try
+                    var listing = expiredListings[i];
+                    var delivered = await deliveryService.DeliverAsync(deliveries[i]);
+                    var totalPrice = listing.Price * listing.RemainingCount;
+                    await logService.WriteAsync("marketplace_expired_listing_processed", new
                     {
-                        await ProcessExpiredListingAsync(listing, storageService, logService, cancellationToken);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "Failed to return expired marketplace listing {ListingId}", listing.Id);
-                        await logService.WriteAsync("marketplace_expire_return_failed", new
-                        {
-                            listing_id = listing.Id,
-                            seller_id = listing.SellerId,
-                            error = e.Message
-                        });
-                    }
+                        listing_id = listing.Id,
+                        seller_id = listing.SellerId,
+                        item_model = listing.ItemModel,
+                        remaining_count = listing.RemainingCount,
+                        total_price = totalPrice,
+                        registration_fee = (ulong)(totalPrice * Fb.Model.ConstValue.Marketplace.ListingFee),
+                        delivered
+                    });
                 }
 
                 // Log success
@@ -179,11 +183,10 @@ namespace Marketplace.Services
             }
         }
 
-        private async Task ProcessExpiredListingAsync(
+        private async Task<MarketplaceDelivery> CreateExpiredDeliveryAsync(
             MarketplaceListing listing,
-            StorageService storageService,
-            LogService logService,
-            CancellationToken cancellationToken)
+            Marketplace.Service.DbContext dbContext,
+            System.Data.IDbTransaction transaction)
         {
             // Calculate registration fee that was paid when listing was created
             var totalPrice = listing.Price * listing.RemainingCount;
@@ -219,24 +222,17 @@ namespace Marketplace.Services
                 ? string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessageWithFee.ToCSharpFormat(), itemName, listing.RemainingCount, registrationFee)
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
-            await storageService.CreateStorageBoxAsync(
-                listing.World,
-                listing.SellerId,
-                Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
-                message,
-                attachments: attachments,
-                externalRef: $"marketplace:expire:{listing.Id}");
-
-            // Log expired listing processing
-            await logService.WriteAsync("marketplace_expired_listing_processed", new
+            var delivery = new MarketplaceDelivery
             {
-                listing_id = listing.Id,
-                seller_id = listing.SellerId,
-                item_model = listing.ItemModel,
-                remaining_count = listing.RemainingCount,
-                total_price = totalPrice,
-                registration_fee = registrationFee
-            });
+                ExternalRef = $"marketplace:expire:{listing.Id}",
+                World = listing.World,
+                User = listing.SellerId,
+                Title = Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
+                Message = message,
+                Attachments = attachments
+            };
+            await dbContext.MarketplaceDelivery.CreateAsync(delivery, transaction);
+            return delivery;
         }
     }
 }

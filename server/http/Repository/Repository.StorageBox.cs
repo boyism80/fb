@@ -144,6 +144,7 @@ namespace Http.Reepository
                     `user`,
                     `id`,
                     `system_storage_box_id`,
+                    `external_ref`,
                     `title`,
                     `message`,
                     `attachments`,
@@ -156,6 +157,7 @@ namespace Http.Reepository
                     {value.User.Escape()},
                     {value.Id.Escape()},
                     {value.SystemStorageBoxId.Escape()},
+                    {value.ExternalRef.Escape()},
                     {value.Title.Escape()},
                     {value.Message.Escape()},
                     {attachmentsJson.Escape()},
@@ -166,6 +168,7 @@ namespace Http.Reepository
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
                     `system_storage_box_id`=VALUES(`system_storage_box_id`),
+                    `external_ref`=VALUES(`external_ref`),
                     `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
@@ -185,6 +188,7 @@ namespace Http.Reepository
                         ({value.User.Escape()},
                          {value.Id.Escape()},
                          {value.SystemStorageBoxId.Escape()},
+                         {value.ExternalRef.Escape()},
                          {value.Title.Escape()},
                          {value.Message.Escape()},
                          {attachmentsJson.Escape()},
@@ -201,6 +205,7 @@ namespace Http.Reepository
                     `user`,
                     `id`,
                     `system_storage_box_id`,
+                    `external_ref`,
                     `title`,
                     `message`,
                     `attachments`,
@@ -212,6 +217,7 @@ namespace Http.Reepository
                 VALUES {string.Join(',', args)}
                 ON DUPLICATE KEY UPDATE
                     `system_storage_box_id`=VALUES(`system_storage_box_id`),
+                    `external_ref`=VALUES(`external_ref`),
                     `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),

@@ -61,6 +61,14 @@ namespace Http.Service
 
             await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId));
 
+            // A retried delivery with the same external ref returns the box it already created.
+            if (externalRef != null)
+            {
+                var existing = (await _dbContext.StorageBox.Get(world, userId)).FirstOrDefault(b => b.ExternalRef == externalRef);
+                if (existing != null)
+                    return existing;
+            }
+
             var now = DateTime.Now;
             var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
             var box = new StorageBox
@@ -68,6 +76,7 @@ namespace Http.Service
                 User               = userId,
                 Id                 = id,
                 SystemStorageBoxId = null,
+                ExternalRef        = externalRef,
                 Title              = title.Trim(),
                 Message            = message.Trim(),
                 Attachments        = attachmentsList,

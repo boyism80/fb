@@ -23,16 +23,16 @@ public class ListingWithPurchase
 
 public class MarketplaceService : IMarketplaceService
 {
-    private readonly StorageService _storageService;
+    private readonly MarketplaceDeliveryService _deliveryService;
     private readonly Marketplace.Service.DbContext _dbContext;
     private readonly LogService _logService;
 
     public MarketplaceService(
-        StorageService storageService,
+        MarketplaceDeliveryService deliveryService,
         Marketplace.Service.DbContext dbContext,
         LogService logService)
     {
-        _storageService = storageService;
+        _deliveryService = deliveryService;
         _dbContext = dbContext;
         _logService = logService;
     }
@@ -227,28 +227,31 @@ public class MarketplaceService : IMarketplaceService
             throw new LogicException(ErrorCode.MarketplaceListingNotFound);
         }
 
+        // Return remaining items to seller via storage_box
+        var delivery = new MarketplaceDelivery
+        {
+            ExternalRef = $"marketplace:cancel:{lockedListing.Id}",
+            World = world,
+            User = lockedListing.SellerId,
+            Title = Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
+            Message = Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
+            Attachments =
+            [
+                new Fb.Model.Dsl.Item
+                {
+                    Id = lockedListing.ItemModel,
+                    Count = lockedListing.RemainingCount,
+                    Durability = lockedListing.ItemDurability,
+                    CustomName = lockedListing.ItemCustomName,
+                    Percent = 100.0
+                }.ToDSL()
+            ]
+        };
+        await _dbContext.MarketplaceDelivery.CreateAsync(delivery, transaction);
+
         await transaction.CommitAsync();
 
-        // Return remaining items to seller via storage_box
-        var attachments = new List<Fb.Model.Dsl>
-        {
-            new Fb.Model.Dsl.Item
-            {
-                Id = lockedListing.ItemModel,
-                Count = lockedListing.RemainingCount,
-                Durability = lockedListing.ItemDurability,
-                CustomName = lockedListing.ItemCustomName,
-                Percent = 100.0
-            }.ToDSL()
-        };
-
-        await _storageService.CreateStorageBoxAsync(
-            world,
-            lockedListing.SellerId,
-            Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
-            Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
-            attachments: attachments,
-            externalRef: $"marketplace:cancel:{lockedListing.Id}");
+        await _deliveryService.DeliverAsync(delivery);
 
         // Log successful cancellation
         await _logService.WriteAsync("marketplace_cancel_success", new
@@ -372,13 +375,16 @@ public class MarketplaceService : IMarketplaceService
             }
 
             // Send seller revenue via storage_box (full price, no fees deducted)
-            await _storageService.CreateStorageBoxAsync(
-                listing.World,
-                listing.SellerId,
-                Fb.Model.ConstValue.String.MessageMarketplaceSaleTitle,
-                string.Format(Fb.Model.ConstValue.String.MessageMarketplaceSaleMessage.ToCSharpFormat(), itemName, actualPurchaseCount, actualPrice),
-                attachments: [new Fb.Model.Dsl.Money { Value = actualPrice }.ToDSL()],
-                externalRef: $"marketplace:sale:{purchaseId}");
+            var saleDelivery = new MarketplaceDelivery
+            {
+                ExternalRef = $"marketplace:sale:{purchaseId}",
+                World = listing.World,
+                User = listing.SellerId,
+                Title = Fb.Model.ConstValue.String.MessageMarketplaceSaleTitle,
+                Message = string.Format(Fb.Model.ConstValue.String.MessageMarketplaceSaleMessage.ToCSharpFormat(), itemName, actualPurchaseCount, actualPrice),
+                Attachments = [new Fb.Model.Dsl.Money { Value = actualPrice }.ToDSL()]
+            };
+            await _dbContext.MarketplaceDelivery.CreateAsync(saleDelivery, transaction);
 
             // Prepare buyer attachments (item + refund if any) - all in one storage box
             var buyerAttachments = new List<Fb.Model.Dsl>
@@ -415,17 +421,23 @@ public class MarketplaceService : IMarketplaceService
                 buyerMessage = string.Format(Fb.Model.ConstValue.String.MessageMarketplacePurchaseMessage.ToCSharpFormat(), itemName, actualPurchaseCount, actualPrice);
             }
 
-            await _storageService.CreateStorageBoxAsync(
-                world,
-                buyerId,
-                buyerTitle,
-                buyerMessage,
-                attachments: buyerAttachments,
-                externalRef: $"marketplace:buy:{purchaseId}");
+            var buyDelivery = new MarketplaceDelivery
+            {
+                ExternalRef = $"marketplace:buy:{purchaseId}",
+                World = world,
+                User = buyerId,
+                Title = buyerTitle,
+                Message = buyerMessage,
+                Attachments = buyerAttachments
+            };
+            await _dbContext.MarketplaceDelivery.CreateAsync(buyDelivery, transaction);
 
             // Commit transaction
             await transaction.CommitAsync();
             finished = true;
+
+            await _deliveryService.DeliverAsync(saleDelivery);
+            await _deliveryService.DeliverAsync(buyDelivery);
 
             // Log successful purchase
             await _logService.WriteAsync("marketplace_purchase_success", new
