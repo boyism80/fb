@@ -4932,7 +4932,7 @@ int builtin::character::builtin_super_hide(lua_State* L)
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             ch->super_hide(value);
-            co_return;
+            co_await ch->server.save(*ch);
         };
         builder.resume = []() -> async::task<int> {
             co_return 0;

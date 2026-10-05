@@ -144,6 +144,9 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
+                if (target.SuperHide && target.Role > actor.Role)
+                    throw new LogicException(ErrorCode.Offline);
+
                 // Lock in uid order so a simultaneous Create(A, B) and Create(B, A)
                 // can't acquire the two character locks in opposite order.
                 var (createLockUid1, createLockUid2) = actor.Id < target.Id ? (actor.Id, target.Id) : (target.Id, actor.Id);
@@ -269,6 +272,9 @@ namespace Internal.Services
                     throw new LogicException(ErrorCode.Offline);
 
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
+                    throw new LogicException(ErrorCode.Offline);
+
+                if (target.SuperHide && target.Role > actor.Role)
                     throw new LogicException(ErrorCode.Offline);
 
                 // Lock in uid order to avoid a crossed-order deadlock with a
@@ -701,6 +707,9 @@ namespace Internal.Services
                 else
                 {
                     // Add member to group
+                    if (target.SuperHide && target.Role > actor.Role)
+                        throw new LogicException(ErrorCode.Offline);
+
                     if (targetSync.Group != null)
                         throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 

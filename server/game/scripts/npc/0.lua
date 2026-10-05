@@ -118,15 +118,9 @@ local function sample_clan(me, npc)
             end
 
         elseif selected == 3 then
-            local map = me:map()
-            if map == nil then
-                return
-            end
-
             local name = me:input(npc, '상대 이름 입력')
-            local nears = map:nears({me:position()}, OBJECT_TYPE.CHARACTER)
             local found = nil
-            for _, ch in pairs(nears) do
+            for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
                 if ch:name() == name then
                     found = ch
                     break

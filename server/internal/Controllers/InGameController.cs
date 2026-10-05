@@ -318,6 +318,12 @@ namespace Internal.Controllers
                 var target = await _dbContext.Character.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
+                var sender = await _dbContext.Character.Get(world, session.Uid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                if (target.SuperHide && target.Role > sender.Role)
+                    throw new LogicException(ErrorCode.Offline);
+
                 var targetOption = await _dbContext.Option.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundOption);
 

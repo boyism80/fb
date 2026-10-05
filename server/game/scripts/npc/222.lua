@@ -27,13 +27,8 @@ local function marriage_npc(me, npc)
             return
         end
 
-        local map = me:map()
-        if map == nil then
-            return
-        end
-        local nears = map:nears({ me:position() }, OBJECT_TYPE.CHARACTER)
         local found = nil
-        for _, ch in pairs(nears) do
+        for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
             if ch:name() == name then
                 found = ch
                 break

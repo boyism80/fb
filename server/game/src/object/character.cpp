@@ -1956,6 +1956,9 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
         auto receiver = params->characters.find(receiver_name);
         if (receiver != nullptr)
         {
+            if (receiver->hidden(*this))
+                throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), receiver_name));
+
             if (receiver->option(OPTION::WHISPER) == false)
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), receiver_name));
 

@@ -37,13 +37,7 @@ local DESTINATIONS = {
 local INVENTORY_CAPACITY = 52
 
 local function find_nearby_character(me, name)
-    local map = me:map()
-    if map == nil then
-        return nil
-    end
-
-    local nears = map:nears({me:position()}, OBJECT_TYPE.CHARACTER)
-    for _, ch in pairs(nears) do
+    for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
         if ch:name() == name then
             return ch
         end

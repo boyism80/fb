@@ -34,6 +34,9 @@ async::task<void> group::container::create(character& me, std::string_view targe
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
     auto target = this->_server.characters.find(target_name_str);
+    if (target != nullptr && target->hidden(me))
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name_str));
+
     if (target != nullptr && target->world() != me.world())
         throw std::runtime_error("다른 월드 플레이어와는 그룹할 수 없습니다.");
 
@@ -93,6 +96,9 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
 
     {
         auto found = this->_server.characters.find(target_name_str);
+        if (found != nullptr && found->hidden(actor) && found->group_id() != actor.group_id())
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name_str));
+
         if (found != nullptr && found->world() != actor.world())
             throw std::runtime_error("다른 월드 플레이어와는 그룹할 수 없습니다.");
     }
