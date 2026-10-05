@@ -149,10 +149,12 @@ void clan::detach(std::weak_ptr<character> ch)
     if (shared == nullptr)
         return;
 
-    if (!this->_characters.contains(shared->id))
+    // A duplicate session never replaced the online character's entry, so it must not remove it.
+    auto found = this->_characters.find(shared->id);
+    if (found == this->_characters.end() || found->second.lock() != shared)
         return;
 
-    this->_characters.erase(shared->id);
+    this->_characters.erase(found);
 }
 
 const std::optional<uint32_t>& clan::allied_clan_id() const
