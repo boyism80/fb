@@ -56,13 +56,10 @@ namespace Http.Model
         public short Reputation { get; set; }
         public ushort Evaluation { get; set; }
         public DateTime? FirstLoginDate { get; set; }
+        public long? SnapshotTime { get; set; }
         public static string SaveLockKey(uint id)
         {
             return $"fb:lock:character-save:{id}";
-        }
-        public static string SnapshotTimeKey(uint id)
-        {
-            return $"fb:character-save-snapshot:{id}";
         }
     }
 }

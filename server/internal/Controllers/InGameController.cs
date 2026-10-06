@@ -31,8 +31,6 @@ namespace Internal.Controllers
         private readonly LogService _logService;
         private readonly MaintenanceService _maintenanceService;
         private readonly FriendService _friendService;
-        private readonly RedisService _redisService;
-        private static readonly TimeSpan SnapshotTimeTtl = TimeSpan.FromDays(1);
 
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
@@ -44,8 +42,7 @@ namespace Internal.Controllers
             ServerStateService serverStateService,
             LogService logService,
             MaintenanceService maintenanceService,
-            FriendService friendService,
-            RedisService redisService)
+            FriendService friendService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -58,7 +55,6 @@ namespace Internal.Controllers
             _logService = logService;
             _maintenanceService = maintenanceService;
             _friendService = friendService;
-            _redisService = redisService;
         }
 
         [HttpPost("login")]
@@ -690,20 +686,15 @@ namespace Internal.Controllers
                 foreach (var payload in latest)
                     locks.Add(await _distributedLock.Lock(world, Character.SaveLockKey(payload.Character.Id)));
 
-                var appliedTimes = await Task.WhenAll(latest.Select(x =>
-                {
-                    var key = Character.SnapshotTimeKey(x.Character.Id);
-                    return _redisService.GetShardConnection(world, key).Connection.StringGetAsync(key);
-                }));
-
+                var characters = await _dbContext.Character.GetMany(world, latest.Select(x => x.Character.Id).ToList());
                 var newer = new List<Protocol.SavePayload>();
-                for (var i = 0; i < latest.Count; i++)
+                foreach (var payload in latest)
                 {
-                    var payload = latest[i];
-                    if (appliedTimes[i].HasValue && (long)appliedTimes[i] > payload.SnapshotTime)
+                    var applied = characters.GetValueOrDefault(payload.Character.Id)?.SnapshotTime;
+                    if (applied.HasValue && applied.Value > payload.SnapshotTime)
                     {
                         _logger.LogWarning("Save dropped for {Name}: snapshot {Snapshot} is older than applied {Applied}",
-                            payload.Character.Name, payload.SnapshotTime, (long)appliedTimes[i]);
+                            payload.Character.Name, payload.SnapshotTime, applied.Value);
                     }
                     else
                     {
@@ -715,12 +706,6 @@ namespace Internal.Controllers
 
                 await ReplaceSnapshots(world, newer);
                 await _dbContext.SaveChangesAsync();
-
-                await Task.WhenAll(newer.Select(x =>
-                {
-                    var key = Character.SnapshotTimeKey(x.Character.Id);
-                    return _redisService.GetShardConnection(world, key).Connection.StringSetAsync(key, x.SnapshotTime, SnapshotTimeTtl);
-                }));
             }
             finally
             {
@@ -787,6 +772,7 @@ namespace Internal.Controllers
             ch.Pw = existingCharacter.Pw;
             ch.Reputation = existingCharacter.Reputation;
             ch.Evaluation = existingCharacter.Evaluation;
+            ch.SnapshotTime = data.SnapshotTime;
             _dbContext.Character.Set(world, ch);
 
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);

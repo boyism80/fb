@@ -101,7 +101,8 @@ namespace Http.Reepository
                     `deleted`,
                     `created_date`,
                     `updated_date`,
-                    `first_login_date`)
+                    `first_login_date`,
+                    `snapshot_time`)
                 VALUES (
                     {value.Id.Escape()},
                     {value.World.Escape()},
@@ -150,7 +151,8 @@ namespace Http.Reepository
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()},
-                    {value.FirstLoginDate.Escape()})
+                    {value.FirstLoginDate.Escape()},
+                    {value.SnapshotTime.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `pw`=VALUES(`pw`),
                     `role`=VALUES(`role`),
@@ -194,7 +196,8 @@ namespace Http.Reepository
                     `reputation`=VALUES(`reputation`),
                     `evaluation`=VALUES(`evaluation`),
                     `updated_date`=VALUES(`updated_date`),
-                    `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`);
+                    `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`),
+                    `snapshot_time`=COALESCE(VALUES(`snapshot_time`), `snapshot_time`);
                 """;
 
             return sql;
