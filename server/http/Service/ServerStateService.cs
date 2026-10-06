@@ -27,6 +27,8 @@ namespace Http.Service
             public string IP { get; set; } = string.Empty;
 
             public ushort Port { get; set; }
+
+            public uint Online { get; set; }
         }
 
         public async Task<List<ServerInfo>> GetRunningServers()
@@ -79,7 +81,8 @@ namespace Http.Service
                             Id = id,
                             Name = config.Name,
                             IP = config.IP,
-                            Port = config.Port
+                            Port = config.Port,
+                            Online = config.Online
                         });
                     }
                 }
@@ -107,7 +110,7 @@ namespace Http.Service
             return keys.Count > 0;
         }
 
-        public async Task<bool> UpdateHeartbeat(uint? world, Protocol.Service service, byte id, string name, string ip, ushort port)
+        public async Task<bool> UpdateHeartbeat(uint? world, Protocol.Service service, byte id, string name, string ip, ushort port, uint online)
         {
             try
             {
@@ -119,7 +122,8 @@ namespace Http.Service
                 {
                     Name = name,
                     IP = ip,
-                    Port = port
+                    Port = port,
+                    Online = online
                 };
                 var key = new HeartBeatKey { World = world, Service = service, Id = id };
                 var json = JsonConvert.SerializeObject(config);
@@ -163,6 +167,9 @@ namespace Http.Service
 
             [JsonProperty("Port")]
             public ushort Port { get; set; }
+
+            [JsonProperty("Online")]
+            public uint Online { get; set; }
         }
     }
 }

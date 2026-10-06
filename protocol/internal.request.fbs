@@ -404,6 +404,7 @@ table Heartbeat {
   name: string;
   ip: string;
   port: ushort;
+  online: uint;
 }
 
 table SetExpMultiplier {

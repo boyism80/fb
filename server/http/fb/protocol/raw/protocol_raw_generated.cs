@@ -4536,6 +4536,7 @@ public struct Heartbeat : IFlatbufferObject
 #endif
   public byte[] GetIpArray() { return __p.__vector_as_array<byte>(12); }
   public ushort Port { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public uint Online { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.Heartbeat> CreateHeartbeat(FlatBufferBuilder builder,
       Offset<nullable.nullable_uint> worldOffset = default(Offset<nullable.nullable_uint>),
@@ -4543,8 +4544,10 @@ public struct Heartbeat : IFlatbufferObject
       byte id = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset ipOffset = default(StringOffset),
-      ushort port = 0) {
-    builder.StartTable(6);
+      ushort port = 0,
+      uint online = 0) {
+    builder.StartTable(7);
+    Heartbeat.AddOnline(builder, online);
     Heartbeat.AddIp(builder, ipOffset);
     Heartbeat.AddName(builder, nameOffset);
     Heartbeat.AddWorld(builder, worldOffset);
@@ -4554,13 +4557,14 @@ public struct Heartbeat : IFlatbufferObject
     return Heartbeat.EndHeartbeat(builder);
   }
 
-  public static void StartHeartbeat(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartHeartbeat(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddWorld(FlatBufferBuilder builder, Offset<nullable.nullable_uint> worldOffset) { builder.AddOffset(0, worldOffset.Value, 0); }
   public static void AddService(FlatBufferBuilder builder, fb.protocol._internal.raw.Service service) { builder.AddSbyte(1, (sbyte)service, 0); }
   public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(2, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(3, nameOffset.Value, 0); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(4, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(5, port, 0); }
+  public static void AddOnline(FlatBufferBuilder builder, uint online) { builder.AddUint(6, online, 0); }
   public static Offset<fb.protocol._internal.request.raw.Heartbeat> EndHeartbeat(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Heartbeat>(o);
@@ -4579,6 +4583,7 @@ static public class HeartbeatVerify
       && verifier.VerifyString(tablePos, 10 /*Name*/, false)
       && verifier.VerifyString(tablePos, 12 /*Ip*/, false)
       && verifier.VerifyField(tablePos, 14 /*Port*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 16 /*Online*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

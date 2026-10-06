@@ -9306,7 +9306,8 @@ struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 8,
     VT_NAME = 10,
     VT_IP = 12,
-    VT_PORT = 14
+    VT_PORT = 14,
+    VT_ONLINE = 16
   };
   const nullable::nullable_uint *world() const {
     return GetPointer<const nullable::nullable_uint *>(VT_WORLD);
@@ -9326,6 +9327,9 @@ struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t port() const {
     return GetField<uint16_t>(VT_PORT, 0);
   }
+  uint32_t online() const {
+    return GetField<uint32_t>(VT_ONLINE, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_WORLD) &&
@@ -9337,6 +9341,7 @@ struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_IP) &&
            verifier.VerifyString(ip()) &&
            VerifyField<uint16_t>(verifier, VT_PORT, 2) &&
+           VerifyField<uint32_t>(verifier, VT_ONLINE, 4) &&
            verifier.EndTable();
   }
 };
@@ -9363,6 +9368,9 @@ struct HeartbeatBuilder {
   void add_port(uint16_t port) {
     fbb_.AddElement<uint16_t>(Heartbeat::VT_PORT, port, 0);
   }
+  void add_online(uint32_t online) {
+    fbb_.AddElement<uint32_t>(Heartbeat::VT_ONLINE, online, 0);
+  }
   explicit HeartbeatBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -9381,8 +9389,10 @@ inline ::flatbuffers::Offset<Heartbeat> CreateHeartbeat(
     uint8_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
-    uint16_t port = 0) {
+    uint16_t port = 0,
+    uint32_t online = 0) {
   HeartbeatBuilder builder_(_fbb);
+  builder_.add_online(online);
   builder_.add_ip(ip);
   builder_.add_name(name);
   builder_.add_world(world);
@@ -9399,7 +9409,8 @@ inline ::flatbuffers::Offset<Heartbeat> CreateHeartbeatDirect(
     uint8_t id = 0,
     const char *name = nullptr,
     const char *ip = nullptr,
-    uint16_t port = 0) {
+    uint16_t port = 0,
+    uint32_t online = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::request::raw::CreateHeartbeat(
@@ -9409,7 +9420,8 @@ inline ::flatbuffers::Offset<Heartbeat> CreateHeartbeatDirect(
       id,
       name__,
       ip__,
-      port);
+      port,
+      online);
 }
 
 struct SetExpMultiplier FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -33,10 +33,8 @@ public sealed class MatchmakingBackgroundService : BackgroundService
         {
             try
             {
-                var hostIds = (await _serverStateService.ListLiveCrossServers())
-                    .Select(server => server.Id)
-                    .ToList();
-                await _matchMaker.TickMatchmakingAsync(hostIds, stoppingToken);
+                var hosts = await _serverStateService.ListLiveCrossServers();
+                await _matchMaker.TickMatchmakingAsync(hosts, stoppingToken);
             }
             catch (Exception ex)
             {

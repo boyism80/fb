@@ -1,6 +1,7 @@
 using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
+using Http.Service;
 using Http.Util;
 using Matchmaking.Model;
 using Matchmaking.Options;
@@ -305,14 +306,14 @@ public class MatchMaker<TMember>
         }
     }
 
-    public async Task TickMatchmakingAsync(IReadOnlyList<byte> hostIds, CancellationToken cancellationToken = default)
+    public async Task TickMatchmakingAsync(IReadOnlyList<ServerStateService.ServerInfo> hosts, CancellationToken cancellationToken = default)
     {
         List<ProposedMatchResult<TMember>> proposed;
 
         lock (_lock)
         {
             proposed = new List<ProposedMatchResult<TMember>>();
-            foreach (var match in TryFormMatches(hostIds))
+            foreach (var match in TryFormMatches(hosts))
             {
                 foreach (var ticket in match.AllTickets)
                 {
@@ -548,12 +549,12 @@ public class MatchMaker<TMember>
         return queue.Remove(ticketId);
     }
 
-    private List<Match<TMember>> TryFormMatches(IReadOnlyList<byte> hostIds)
+    private List<Match<TMember>> TryFormMatches(IReadOnlyList<ServerStateService.ServerInfo> hosts)
     {
         var results = new List<Match<TMember>>();
 
         // Without a live cross server nobody could host the match, so tickets stay queued.
-        if (hostIds.Count == 0)
+        if (hosts.Count == 0)
         {
             return results;
         }
@@ -563,7 +564,21 @@ public class MatchMaker<TMember>
             var createdAt = DateTime.UtcNow;
             foreach (var match in queue.TryFormMatch())
             {
-                match.Id = _ids.Next(hostIds[Random.Shared.Next(hostIds.Count)]);
+                // The less populated of two random hosts; always taking the emptiest would pull every match there while the count lags.
+                ServerStateService.ServerInfo host;
+                if (hosts.Count == 1)
+                {
+                    host = hosts[0];
+                }
+                else
+                {
+                    var first = Random.Shared.Next(hosts.Count);
+                    var second = Random.Shared.Next(hosts.Count - 1);
+                    if (second >= first)
+                        second++;
+                    host = hosts[second].Online < hosts[first].Online ? hosts[second] : hosts[first];
+                }
+                match.Id = _ids.Next(host.Id);
                 match.Type = matchType;
                 match.CreatedAt = createdAt;
                 _pendingMatches[match.Id] = match;

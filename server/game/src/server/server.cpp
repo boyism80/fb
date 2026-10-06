@@ -492,15 +492,17 @@ async::task<void> fb::game::server::update_status()
 {
     try
     {
-        auto world  = fb::config<std::optional<uint32_t>>("world");
-        std::ignore = co_await this->http.post("internal",
-                                               "/server/heartbeat",
-                                               internal_reqs::Heartbeat{world,
-                                                                        internal::Service::Game,
-                                                                        this->id(),
-                                                                        this->name(),
-                                                                        fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port")});
+        auto world = fb::config<std::optional<uint32_t>>("world");
+        std::ignore =
+            co_await this->http.post("internal",
+                                     "/server/heartbeat",
+                                     internal_reqs::Heartbeat{world,
+                                                              internal::Service::Game,
+                                                              this->id(),
+                                                              this->name(),
+                                                              fb::config<std::string_view>("ip"),
+                                                              fb::config<uint16_t>("port"),
+                                                              static_cast<uint32_t>(this->characters.size())});
     }
     catch (const std::exception& e)
     {
