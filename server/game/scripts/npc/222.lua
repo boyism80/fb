@@ -27,6 +27,11 @@ local function marriage_npc(me, npc)
             return
         end
 
+        if name == me:name() then
+            me:dialog(npc, '자신과는 결혼할 수 없습니다.')
+            return
+        end
+
         local found = nil
         for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
             if ch:name() == name then
@@ -37,11 +42,6 @@ local function marriage_npc(me, npc)
 
         if found == nil then
             me:dialog(npc, name .. '님은 근처에 없습니다.')
-            return
-        end
-
-        if found:uid() == me:uid() then
-            me:dialog(npc, '자신과는 결혼할 수 없습니다.')
             return
         end
 
