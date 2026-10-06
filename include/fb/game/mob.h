@@ -28,30 +28,38 @@ enum class MOB_PARTS_MODE : uint8_t
     BODY  = 1, // Part is hitbox only; only body HP decreases
 };
 
-class rezen
+class rezen : public std::enable_shared_from_this<rezen>
 {
+public:
+    using table_ptr = std::shared_ptr<fb::model::___mob_spawn>;
+
 private:
     fb::game::server&                  _server;
     std::weak_ptr<fb::game::map>       _map;
+    table_ptr                          _table; // generation the index belongs to; a reload does not shift it
     uint32_t                           _parent = 0;
     uint32_t                           _index  = 0;
     uint16_t                           _count  = 0;
     std::optional<fb::model::datetime> _respawn_time;
 
 public:
-    rezen(fb::game::server& server, uint32_t parent, uint32_t index, const std::shared_ptr<fb::game::map>& map);
+    rezen(fb::game::server&                     server,
+          const table_ptr&                      table,
+          uint32_t                              parent,
+          uint32_t                              index,
+          const std::shared_ptr<fb::game::map>& map);
     ~rezen() = default;
 
     // clang-format off
     const fb::model::mob_spawn&     model() const;
+    const table_ptr&                table() const;
+    void                            table(const table_ptr& value);
     uint32_t                        map_id() const;
     void                            decrease();
     [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
     void                            force_spawn(std::thread::id thread_id);
-    // clang-format on
-
-private:
     [[nodiscard]] async::task<void> despawn_all();
+    // clang-format on
 };
 
 class mob : public life
@@ -74,16 +82,16 @@ public:
     struct initial_params : fb::game::life::initial_params
     {
     public:
-        const bool             alive = false;
-        fb::game::rezen* const rezen = nullptr;
-        character*             owner = nullptr;
+        const bool                     alive = false;
+        std::weak_ptr<fb::game::rezen> rezen;
+        character*                     owner = nullptr;
     };
 
 private:
     fb::model::datetime             _action_time;
     std::weak_ptr<life>             _target;
     std::weak_ptr<life>             _oblivion;
-    rezen*                          _rezen       = nullptr;
+    std::weak_ptr<rezen>            _rezen;
     bool                            _action_busy = false;
     item_vector_t                   _items;
     bool                            _hidden = false;

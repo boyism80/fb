@@ -20,7 +20,7 @@ class thread_params
 public:
     using group_container     = std::unordered_map<uint32_t, std::unique_ptr<group>>;
     using map_container       = std::unordered_map<uint32_t, std::shared_ptr<map>>;
-    using rezen_container     = std::vector<std::unique_ptr<rezen>>;
+    using rezen_container     = std::vector<std::shared_ptr<rezen>>;
     using character_container = character::container;
     using map_snapshot        = std::vector<std::shared_ptr<map>>;
 

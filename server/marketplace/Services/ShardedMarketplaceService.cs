@@ -13,7 +13,8 @@ public class ShardedMarketplaceService : IMarketplaceService
         uint? itemDurability,
         string itemCustomName,
         ulong price,
-        TimeSpan expireTime)
+        TimeSpan expireTime,
+        DateTime deadline)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }
@@ -41,7 +42,13 @@ public class ShardedMarketplaceService : IMarketplaceService
         uint buyerId,
         string listingId,
         ushort purchaseCount,
-        string purchaseId)
+        string purchaseId,
+        DateTime deadline)
+    {
+        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
+    }
+
+    public Task<bool> AbortPurchaseAsync(uint world, uint buyerId, string listingId, string purchaseId)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }
@@ -59,11 +66,6 @@ public class ShardedMarketplaceService : IMarketplaceService
     public Task<List<ListingWithPurchase>> GetListingsByIdsAsync(
         List<string> listingIds,
         uint? buyerId = null)
-    {
-        throw new NotImplementedException("Sharded marketplace service is not yet implemented");
-    }
-
-    public Task<Dictionary<string, MarketplacePurchase>> GetPurchasesByIdsAsync(List<string> purchaseIds)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");
     }

@@ -33,22 +33,26 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
         if (std::this_thread::get_id() != thread->id())
             co_await thread->switching();
 
-        auto concast = std::vector<fb::game::object*>{};
+        // Scripts suspend between objects, so an object may leave or be freed before its turn.
+        auto concast = std::vector<std::weak_ptr<fb::game::object>>{};
         for (auto& [fd, obj] : map->objects)
         {
             if (obj->buffs.size() == 0)
                 continue;
 
-            concast.push_back(obj.get());
+            concast.push_back(obj->weak_from_this_as<fb::game::object>());
         }
 
-        for (auto obj : concast)
+        for (auto& weak : concast)
         {
             auto map_id = map->id;
-            auto weak   = obj->weak_from_this_as<fb::game::object>();
 
             if (std::this_thread::get_id() != thread->id())
                 co_await thread->switching();
+
+            auto obj = weak.lock();
+            if (obj == nullptr)
+                continue;
 
             auto ended_buffs = std::vector<std::shared_ptr<fb::game::buff>>();
             auto buffs       = obj->buffs; // To avoid iterator invalidation
@@ -68,8 +72,14 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                 if (!lua)
                     continue;
 
+                // A caster on another map gets no credit; on_concast receives nil and applies damage only.
+                // thread() is compared first because map() may only be read on the caster's own thread.
+                auto caster = buff->caster.lock();
+                if (caster != nullptr && (caster->thread() != obj->thread() || caster->map() != obj->map()))
+                    caster = nullptr;
+
                 lua->pushobject(obj);
-                lua->pushobject(buff->caster.lock());
+                lua->pushobject(caster);
                 lua->pushobject(buff);
 
                 try

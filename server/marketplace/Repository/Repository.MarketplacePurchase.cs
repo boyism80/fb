@@ -56,34 +56,45 @@ namespace Marketplace.Reepository
             return purchaseId;
         }
 
-        public async Task<Dictionary<string, MarketplacePurchase>> GetPurchasesByIdsAsync(List<string> purchaseIds)
+        public async Task<MarketplacePurchase> GetAnyPurchaseByIdForUpdateAsync(string purchaseId, System.Data.IDbTransaction transaction)
         {
-            if (purchaseIds == null || purchaseIds.Count == 0)
-            {
-                return new Dictionary<string, MarketplacePurchase>();
-            }
+            var sql = $@"
+                SELECT * FROM `marketplace_purchase`
+                WHERE `id` = {purchaseId.Escape()}
+                FOR UPDATE";
 
-            await using var conn = _dbContext.GetUnifiedConnection();
-            var parameters = new DynamicParameters();
-            parameters.Add("PurchaseIds", purchaseIds);
-
-            var sql = @"
-                SELECT * FROM `marketplace_purchase` 
-                WHERE `id` IN @PurchaseIds";
-
-            var purchases = await conn.QueryAsync<MarketplacePurchase>(sql, parameters);
-            return purchases.ToDictionary(p => p.Id, p => p);
+            return await transaction.Connection.QueryFirstOrDefaultAsync<MarketplacePurchase>(sql, null, transaction);
         }
 
-        public async Task<List<MarketplacePurchase>> GetPurchasesByListingIdAsync(string listingId)
+        public async Task CreateAbortedPurchaseAsync(
+            string purchaseId,
+            uint world,
+            string listingId,
+            uint buyerId,
+            System.Data.IDbTransaction transaction)
         {
-            await using var conn = _dbContext.GetUnifiedConnection();
-            var sql = $@"
-                SELECT * FROM `marketplace_purchase` 
-                WHERE `listing_id` = {listingId.Escape()}
-                ORDER BY `created_date` DESC";
+            var sql = $"""
+                INSERT INTO `marketplace_purchase` (
+                    `id`,
+                    `world`,
+                    `listing_id`,
+                    `buyer_id`,
+                    `purchase_count`,
+                    `purchase_price`,
+                    `aborted`,
+                    `created_date`)
+                VALUES (
+                    {purchaseId.Escape()},
+                    {world.Escape()},
+                    {listingId.Escape()},
+                    {buyerId.Escape()},
+                    0,
+                    0,
+                    1,
+                    NOW())
+                """;
 
-            return (await conn.QueryAsync<MarketplacePurchase>(sql)).ToList();
+            await transaction.Connection.ExecuteAsync(sql, null, transaction);
         }
 
         public async Task<bool> CheckPurchaseIdExistsAsync(string purchaseId)

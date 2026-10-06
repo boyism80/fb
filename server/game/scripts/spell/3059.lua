@@ -30,6 +30,10 @@ return {
         if damage > me:hp() - 100 then
             damage = math.max(0, me:hp() - 100)
         end
-        caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
+        if caster ~= nil then
+            caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
+        else
+            me:damage(damage)
+        end
     end
 }

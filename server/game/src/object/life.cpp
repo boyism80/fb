@@ -87,12 +87,13 @@ void life::handle_death(std::shared_ptr<fb::game::object> killer)
     this->assert_thread();
 }
 
-life::damage_settle life::damage_targets(const damage_list& targets, const damage_opts& opts)
+life::damage_settle life::damage_targets(const damage_list&    targets,
+                                         const damage_opts&    opts,
+                                         std::shared_ptr<life> attacker)
 {
     this->assert_thread();
 
-    auto attacker = this->shared_from_this_as<life>();
-    auto settle   = damage_settle{};
+    auto settle = damage_settle{};
 
     for (auto& [target, value] : targets)
     {
@@ -215,9 +216,24 @@ async::task<void> life::damage_to(const damage_list& targets)
 async::task<void> life::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    auto settle = this->damage_targets(targets, opts);
+    auto settle = this->damage_targets(targets, opts, this->shared_from_this_as<life>());
     co_await this->invoke_on_mob_damaged(targets);
     co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
+    if (settle.dead_mobs.empty() == false)
+        co_await this->settle_deaths(std::move(settle.dead_mobs));
+    co_return;
+}
+
+async::task<void> life::damage(uint64_t value, const damage_opts& opts)
+{
+    this->assert_thread();
+    auto settle = this->damage_targets(
+        {
+            {this->shared_from_this_as<life>(), value}
+    },
+        opts,
+        nullptr);
+    co_await this->settle_character_deaths(settle.dead_characters, nullptr);
     if (settle.dead_mobs.empty() == false)
         co_await this->settle_deaths(std::move(settle.dead_mobs));
     co_return;

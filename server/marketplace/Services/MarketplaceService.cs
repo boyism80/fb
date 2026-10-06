@@ -47,7 +47,8 @@ public class MarketplaceService : IMarketplaceService
         uint? itemDurability,
         string itemCustomName,
         ulong price,
-        TimeSpan expireTime)
+        TimeSpan expireTime,
+        DateTime deadline)
     {
         // Check if listing ID already exists
         if (await _dbContext.Marketplace.CheckListingIdExistsAsync(listingId))
@@ -110,6 +111,17 @@ public class MarketplaceService : IMarketplaceService
             price = price,
             expire_hours = expireTime.ToString()
         });
+
+        if (DateTime.UtcNow > deadline)
+        {
+            await _logService.WriteAsync("marketplace_list_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                error = "request_expired"
+            });
+            throw new LogicException(ErrorCode.MarketplaceRequestExpired);
+        }
 
         // The primary key is the final check: an abort tombstone may land between the pre-check and this insert.
         try
@@ -346,7 +358,8 @@ public class MarketplaceService : IMarketplaceService
         uint buyerId,
         string listingId,
         ushort purchaseCount,
-        string purchaseId)
+        string purchaseId,
+        DateTime deadline)
     {
         // Check if purchase ID already exists
         if (await _dbContext.MarketplacePurchase.CheckPurchaseIdExistsAsync(purchaseId))
@@ -436,15 +449,31 @@ public class MarketplaceService : IMarketplaceService
                 throw new LogicException(ErrorCode.MarketplaceInsufficientStock);
             }
 
-            // Create purchase record
-            await _dbContext.MarketplacePurchase.CreatePurchaseAsync(
-                purchaseId,
-                world,
-                listingId,
-                buyerId,
-                actualPurchaseCount,
-                actualPrice,
-                transaction);
+            // The primary key is the final check: an abort tombstone may land between the pre-check and this insert.
+            try
+            {
+                await _dbContext.MarketplacePurchase.CreatePurchaseAsync(
+                    purchaseId,
+                    world,
+                    listingId,
+                    buyerId,
+                    actualPurchaseCount,
+                    actualPrice,
+                    transaction);
+            }
+            catch (MySqlException e) when (e.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+            {
+                await transaction.RollbackAsync();
+                finished = true;
+                await _logService.WriteAsync("marketplace_purchase_failed", new
+                {
+                    buyer_id = buyerId,
+                    listing_id = listingId,
+                    purchase_id = purchaseId,
+                    error = "purchase_id_already_exists"
+                });
+                throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
+            }
 
             // Get item name for sale message
             var itemName = "unknown item name";
@@ -512,7 +541,20 @@ public class MarketplaceService : IMarketplaceService
             };
             await _dbContext.MarketplaceDelivery.CreateAsync(buyDelivery, transaction);
 
-            // Commit transaction
+            if (DateTime.UtcNow > deadline)
+            {
+                await transaction.RollbackAsync();
+                finished = true;
+                await _logService.WriteAsync("marketplace_purchase_failed", new
+                {
+                    buyer_id = buyerId,
+                    listing_id = listingId,
+                    purchase_id = purchaseId,
+                    error = "request_expired"
+                });
+                throw new LogicException(ErrorCode.MarketplaceRequestExpired);
+            }
+
             await transaction.CommitAsync();
             finished = true;
 
@@ -557,6 +599,57 @@ public class MarketplaceService : IMarketplaceService
             }
             throw;
         }
+    }
+
+    public async Task<bool> AbortPurchaseAsync(uint world, uint buyerId, string listingId, string purchaseId)
+    {
+        // A purchase that is not found gets an aborted tombstone, so a late purchase request fails on the primary key.
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+
+            var purchase = await _dbContext.MarketplacePurchase.GetAnyPurchaseByIdForUpdateAsync(purchaseId, transaction);
+            if (purchase != null)
+            {
+                await transaction.CommitAsync();
+                if (purchase.BuyerId != buyerId)
+                    throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
+
+                var purchased = purchase.Aborted == false;
+                await _logService.WriteAsync("marketplace_abort_purchase", new
+                {
+                    buyer_id = buyerId,
+                    listing_id = listingId,
+                    purchase_id = purchaseId,
+                    purchased = purchased
+                });
+                return purchased;
+            }
+
+            try
+            {
+                await _dbContext.MarketplacePurchase.CreateAbortedPurchaseAsync(purchaseId, world, listingId, buyerId, transaction);
+                await transaction.CommitAsync();
+            }
+            catch (MySqlException e) when (e.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+            {
+                await transaction.RollbackAsync();
+                continue;
+            }
+
+            await _logService.WriteAsync("marketplace_abort_purchase", new
+            {
+                buyer_id = buyerId,
+                listing_id = listingId,
+                purchase_id = purchaseId,
+                purchased = false
+            });
+            return false;
+        }
+
+        throw new LogicException(ErrorCode.Unhandled);
     }
 
     public async Task<MarketplaceSearchResult> SearchItemsAsync(MarketplaceSearchOption option)
@@ -647,10 +740,4 @@ public class MarketplaceService : IMarketplaceService
             };
         }).ToList();
     }
-
-    public async Task<Dictionary<string, MarketplacePurchase>> GetPurchasesByIdsAsync(List<string> purchaseIds)
-    {
-        return await _dbContext.MarketplacePurchase.GetPurchasesByIdsAsync(purchaseIds);
-    }
-
 }

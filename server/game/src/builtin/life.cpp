@@ -22,6 +22,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"mp",                   builtin::life::builtin_mp},
 {"heal",                 builtin::life::builtin_heal},
 {"damage_to",            builtin::life::builtin_damage_to},
+{"damage",               builtin::life::builtin_damage},
 {"mp_up",                builtin::life::builtin_mp_up},
 {"mp_down",              builtin::life::builtin_mp_down},
 {"action",               builtin::life::builtin_action},
@@ -324,6 +325,33 @@ int builtin::life::builtin_damage_to(lua_State* L)
         if (attacker == nullptr)
             co_return;
         co_await attacker->damage_to(*targets, opts);
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::life::builtin_damage(lua_State* L)
+{
+    // me:damage(value): damage with no attacker (no kill reward, no on_mob_damaged)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto me = lua->touserdata<fb::game::life>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto value    = lua->touint64(2);
+    auto weak     = me->weak_from_this();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto target = std::static_pointer_cast<fb::game::life>(weak.lock());
+        if (target == nullptr)
+            co_return;
+        co_await target->damage(value, fb::game::life::damage_opts{});
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;

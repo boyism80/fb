@@ -138,10 +138,26 @@ namespace Marketplace.Reepository
 
             var sql = @"
                 SELECT * FROM `marketplace_purchase` 
-                WHERE `listing_id` IN @ListingIds AND `buyer_id` = @BuyerId";
+                WHERE `listing_id` IN @ListingIds AND `buyer_id` = @BuyerId AND `aborted` = 0";
 
+            // A buyer can buy the same listing more than once (partial purchases), so the rows are summed per listing.
             var purchases = await conn.QueryAsync<MarketplacePurchase>(sql, parameters);
-            return purchases.ToDictionary(p => p.ListingId, p => p);
+            return purchases
+                .GroupBy(p => p.ListingId)
+                .ToDictionary(g => g.Key, g =>
+                {
+                    var latest = g.MaxBy(p => p.CreatedDate);
+                    return new MarketplacePurchase
+                    {
+                        Id = latest.Id,
+                        World = latest.World,
+                        ListingId = g.Key,
+                        BuyerId = buyerId,
+                        PurchaseCount = (ushort)g.Sum(p => p.PurchaseCount),
+                        PurchasePrice = g.Aggregate(0UL, (sum, p) => sum + p.PurchasePrice),
+                        CreatedDate = latest.CreatedDate
+                    };
+                });
         }
 
 

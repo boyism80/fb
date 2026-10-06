@@ -44,6 +44,7 @@ local MSG_LIST_PENDING   = "등록 결과를 확인하고 있습니다"
 local MSG_ITEM_LOCKED    = "거래소 등록 처리 중인 아이템입니다"
 local MSG_NO_LISTABLE    = "등록할 수 있는 아이템이 없습니다"
 local MSG_PURCHASE_OK    = "구매가 완료되었습니다"
+local MSG_PURCHASE_PENDING = "구매 결과를 확인하고 있습니다"
 local MSG_CANCEL_OK      = "취소가 완료되었습니다"
 local MSG_FEE_CONFIRM    = "등록하시겠습니까"
 local MSG_CANCEL_CONFIRM = "정말 취소하시겠습니까"
@@ -54,6 +55,10 @@ local MSG_CANCEL_EMPTY = "등록한 물품이 없습니다"
 local STORAGE_CANCEL_TITLE   = "거래소 등록 취소"
 local STORAGE_PURCHASE_TITLE = "거래소 구매"
 local STORAGE_SALE_TITLE     = "거래소 판매"
+local STORAGE_PURCHASE_RECOVERY_TITLE = "거래소 구매 복구"
+
+local PURCHASE_PATH      = "/marketplace/purchase"
+local STORAGE_WRITE_PATH = "/storage/write"
 
 -- Shared across sequential/parallel scenario steps
 local g_list_msg     = nil
@@ -120,6 +125,7 @@ local function cleanup_bot(bot)
     bot:chat("/HTTP지연 0")
     bot:chat("/HTTP지연 " .. MARKETPLACE_SERVICE .. " 0")
     bot:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+    bot:chat("/HTTP보류 off")
     bot:chat("/아이템초기화")
     bot:chat("/아이템삭제")
     bot:money(0)
@@ -946,6 +952,113 @@ local function wait_item_deducted(ctx, bot, item_name, expected_money, first_wai
         tostring(bot:has_item_by_name(item_name)), bot:money(), expected_money)
 end
 
+-- An empty storage answers with a normal dialog instead of the entry menu, so watch either kind.
+local function storage_titles(ctx, bot)
+    if f1_open_menu(bot) == nil then
+        return nil, "f1 open failed"
+    end
+    local seq = bot:last_dialog()
+    bot:send(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_STORAGE))
+    local waited = 0
+    while waited < DIALOG_TIMEOUT_MS do
+        ctx:sleep(200)
+        waited = waited + 200
+        local current, dialog = bot:last_dialog()
+        if current ~= seq and dialog ~= nil then
+            close_marketplace_menu(bot)
+            if dialog.kind == "menu" then
+                return dialog.menu_menus or {}, nil
+            else
+                return {}, nil
+            end
+        end
+    end
+    close_marketplace_menu(bot)
+    return nil, "storage dialog missing"
+end
+
+local function count_storage_title(titles, title)
+    local n = 0
+    for _, name in ipairs(titles) do
+        if name == title then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+local function wait_storage_title(ctx, bot, title, first_wait_ms)
+    ctx:sleep(first_wait_ms)
+    for attempt = 1, RESTORE_POLL_COUNT do
+        local titles, err = storage_titles(ctx, bot)
+        if titles ~= nil and count_storage_title(titles, title) > 0 then
+            return true, nil
+        end
+        progress(bot, string.format("storage entry not arrived yet attempt=%d title=%s err=%s",
+            attempt, title, tostring(err)))
+        ctx:sleep(RESTORE_POLL_MS)
+    end
+    return false, "storage entry missing: " .. title
+end
+
+local function held_request_count(ctx, bot)
+    bot:take_messages()
+    bot:chat("/HTTP보류")
+    ctx:sleep(MQ_WAIT_MS)
+    local count = nil
+    for _, text in ipairs(bot:take_messages()) do
+        local n = text:match("HTTP.-: (%d+)")
+        if n ~= nil then
+            count = tonumber(n)
+        end
+    end
+    return count
+end
+
+local function wait_held_request(ctx, bot, first_wait_ms, min_count)
+    ctx:sleep(first_wait_ms)
+    for attempt = 1, RESTORE_POLL_COUNT do
+        local count = held_request_count(ctx, bot)
+        if count ~= nil and count >= min_count then
+            return true
+        end
+        progress(bot, string.format("held request not arrived yet attempt=%d count=%s", attempt, tostring(count)))
+        ctx:sleep(RESTORE_POLL_MS)
+    end
+    return false
+end
+
+local function cancel_leftover_listings(bot)
+    for _ = 1, 5 do
+        if assert_cancel_list_empty(bot) then
+            return true
+        end
+        local packet = open_cancel_list_expect_present(bot)
+        local first = packet and packet.item_items and packet.item_items[1]
+        close_marketplace_menu(bot)
+        if first == nil then
+            return false
+        end
+        cancel_item_flow(bot, first.name)
+    end
+    return assert_cancel_list_empty(bot)
+end
+
+local function prepare_purchase_listing(a, b)
+    cleanup_bot(a)
+    cleanup_bot(b)
+    if prepare_weapon(a) == false then
+        return false, "prepare weapon"
+    end
+    a:money(listing_fee(1, WEAPON_LIST_PRICE) + 1000)
+    local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE)
+    if msg == nil or msg:find(MSG_LIST_OK, 1, true) == nil then
+        return false, "setup list " .. tostring(msg or err)
+    end
+    b:money(WEAPON_LIST_PRICE + 1000)
+    return true, nil
+end
+
 -- Logging out mid-request must neither return the item while the listing exists nor lose it when it does not.
 -- The HTTP fault outlives the session, so the escrow must survive the relogin until the marketplace answers.
 local function logout_during_delay_scenario(label, fault, listing_created)
@@ -1043,17 +1156,18 @@ test_suite {
     on_initialize = function(ctx)
         progress(ctx:bot(0), "MARKETPLACE TEST INITIALIZED")
         lib.formation.arrange_in_line(ctx)
-        local ok, err = assert_cancel_list_empty(ctx:bot(0))
-        if ok == false then
-            progress(ctx:bot(0), "FAILED: precondition own listings not empty " .. tostring(err))
+        -- HTTP faults and holds are server-wide and outlive an aborted run.
+        cleanup_bot(ctx:bot(0))
+        cleanup_bot(ctx:bot(1))
+        if cancel_leftover_listings(ctx:bot(0)) == false then
+            progress(ctx:bot(0), "FAILED: precondition own listings not empty")
             error("precondition failed: bot0 own listings not empty")
         end
-        ok, err = assert_cancel_list_empty(ctx:bot(1))
-        if ok == false then
-            progress(ctx:bot(1), "FAILED: precondition own listings not empty " .. tostring(err))
+        if cancel_leftover_listings(ctx:bot(1)) == false then
+            progress(ctx:bot(1), "FAILED: precondition own listings not empty")
             error("precondition failed: bot1 own listings not empty")
         end
-        ok, err = assert_search_has_item(ctx:bot(0), WEAPON_ITEM, false)
+        local ok, err = assert_search_has_item(ctx:bot(0), WEAPON_ITEM, false)
         if ok == false then
             progress(ctx:bot(0), "FAILED: precondition weapon listing exists " .. tostring(err))
             error("precondition failed: weapon listing exists")
@@ -1817,6 +1931,216 @@ test_suite {
             cleanup_bot(a)
             cleanup_bot(b)
             progress(a, "P4 PASSED")
+            return true
+        end,
+
+        -- R1: a purchase request that reaches the marketplace after restore refunded it must be rejected
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            progress(b, "R1: LATE PURCHASE AFTER RESTORE")
+
+            local prepared, prep_err = prepare_purchase_listing(a, b)
+            if prepared == false then
+                progress(a, "FAILED: " .. tostring(prep_err))
+                return false
+            end
+
+            b:chat("/HTTP보류 on " .. PURCHASE_PATH)
+            local msg = select(1, purchase_item_flow(b, WEAPON_ITEM, 1))
+            if msg == nil or msg:find(MSG_PURCHASE_PENDING, 1, true) == nil then
+                progress(b, "FAILED: held purchase msg=" .. tostring(msg))
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            if b:money() ~= 1000 then
+                progress(b, string.format("FAILED: pending purchase money=%d expected=1000", b:money()))
+                return false
+            end
+
+            local arrived, arrive_err = wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE, RESTORE_FIRST_WAIT_MS)
+            if arrived == false then
+                progress(b, "FAILED: " .. tostring(arrive_err))
+                return false
+            end
+
+            b:chat("/HTTP보류 send")
+            ctx:sleep(MQ_WAIT_MS * 2)
+
+            local titles, titles_err = storage_titles(ctx, b)
+            if titles == nil then
+                progress(b, "FAILED: " .. tostring(titles_err))
+                return false
+            end
+            if count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
+                progress(b, string.format("FAILED: late purchase delivered storage=[%s]", table.concat(titles, "|")))
+                return false
+            end
+            local ok, search_err = assert_search_has_item(a, WEAPON_ITEM, true)
+            if ok == false then
+                progress(a, "FAILED: listing consumed by late purchase " .. tostring(search_err))
+                return false
+            end
+
+            if receive_storage(b, STORAGE_PURCHASE_RECOVERY_TITLE) == false then
+                progress(b, "FAILED: recovery storage receive")
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            if b:money() ~= WEAPON_LIST_PRICE + 1000 then
+                progress(b, string.format("FAILED: refund money=%d expected=%d", b:money(), WEAPON_LIST_PRICE + 1000))
+                return false
+            end
+
+            msg = select(1, cancel_item_flow(a, WEAPON_ITEM))
+            if msg == nil or msg:find(MSG_CANCEL_OK, 1, true) == nil then
+                progress(a, "FAILED: cleanup cancel " .. tostring(msg))
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            receive_storage(a, STORAGE_CANCEL_TITLE)
+
+            cleanup_bot(a)
+            cleanup_bot(b)
+            progress(b, "R1 PASSED")
+            return true
+        end,
+
+        -- R2: a refund that fails to reach storage keeps the pending entry and is retried exactly once
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            progress(b, "R2: REFUND RETRY")
+
+            local prepared, prep_err = prepare_purchase_listing(a, b)
+            if prepared == false then
+                progress(a, "FAILED: " .. tostring(prep_err))
+                return false
+            end
+
+            b:chat("/HTTP보류 on " .. PURCHASE_PATH)
+            b:chat("/HTTP보류 on " .. STORAGE_WRITE_PATH)
+            local msg = select(1, purchase_item_flow(b, WEAPON_ITEM, 1))
+            if msg ~= nil and msg:find(MSG_PURCHASE_OK, 1, true) ~= nil then
+                progress(b, "FAILED: held purchase reported success")
+                return false
+            end
+
+            if wait_held_request(ctx, b, RESTORE_FIRST_WAIT_MS, 2) == false then
+                progress(b, "FAILED: restore never tried the refund")
+                return false
+            end
+
+            b:chat("/HTTP보류 send")
+            local arrived, arrive_err = wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE, MQ_WAIT_MS)
+            if arrived == false then
+                progress(b, "FAILED: " .. tostring(arrive_err))
+                return false
+            end
+            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+
+            b:chat("/HTTP보류 on " .. STORAGE_WRITE_PATH)
+            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+            local held = held_request_count(ctx, b)
+            b:chat("/HTTP보류 off")
+            if held ~= 0 then
+                progress(b, "FAILED: pending purchase not settled held=" .. tostring(held))
+                return false
+            end
+
+            local titles, titles_err = storage_titles(ctx, b)
+            if titles == nil then
+                progress(b, "FAILED: " .. tostring(titles_err))
+                return false
+            end
+            if count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
+                progress(b, string.format("FAILED: recovery box count storage=[%s]", table.concat(titles, "|")))
+                return false
+            end
+
+            if receive_storage(b, STORAGE_PURCHASE_RECOVERY_TITLE) == false then
+                progress(b, "FAILED: recovery storage receive")
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            if b:money() ~= WEAPON_LIST_PRICE + 1000 then
+                progress(b, string.format("FAILED: refund money=%d expected=%d", b:money(), WEAPON_LIST_PRICE + 1000))
+                return false
+            end
+
+            msg = select(1, cancel_item_flow(a, WEAPON_ITEM))
+            if msg == nil or msg:find(MSG_CANCEL_OK, 1, true) == nil then
+                progress(a, "FAILED: cleanup cancel " .. tostring(msg))
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            receive_storage(a, STORAGE_CANCEL_TITLE)
+
+            cleanup_bot(a)
+            cleanup_bot(b)
+            progress(b, "R2 PASSED")
+            return true
+        end,
+
+        -- R3: a committed purchase whose response was lost is settled without a refund
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            progress(b, "R3: LOST PURCHASE RESPONSE")
+
+            local prepared, prep_err = prepare_purchase_listing(a, b)
+            if prepared == false then
+                progress(a, "FAILED: " .. tostring(prep_err))
+                return false
+            end
+
+            b:chat("/HTTP보류 on " .. PURCHASE_PATH)
+            local msg = select(1, purchase_item_flow(b, WEAPON_ITEM, 1))
+            b:chat("/HTTP보류 send")
+            if msg ~= nil and msg:find(MSG_PURCHASE_OK, 1, true) ~= nil then
+                progress(b, "FAILED: held purchase reported success")
+                return false
+            end
+
+            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+
+            local titles, titles_err = storage_titles(ctx, b)
+            if titles == nil then
+                progress(b, "FAILED: " .. tostring(titles_err))
+                return false
+            end
+            if count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 1
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 0 then
+                progress(b, string.format("FAILED: committed purchase storage=[%s]", table.concat(titles, "|")))
+                return false
+            end
+            if b:money() ~= 1000 then
+                progress(b, string.format("FAILED: committed purchase money=%d expected=1000", b:money()))
+                return false
+            end
+
+            if receive_storage(b, STORAGE_PURCHASE_TITLE) == false then
+                progress(b, "FAILED: buyer purchase storage")
+                return false
+            end
+            if b:has_item_by_name(WEAPON_ITEM) == false then
+                progress(b, "FAILED: buyer missing weapon")
+                return false
+            end
+            if receive_storage(a, STORAGE_SALE_TITLE) == false then
+                progress(a, "FAILED: seller sale storage")
+                return false
+            end
+            local ok, search_err = assert_search_has_item(a, WEAPON_ITEM, false)
+            if ok == false then
+                progress(a, "FAILED: listing remains " .. tostring(search_err))
+                return false
+            end
+
+            cleanup_bot(a)
+            cleanup_bot(b)
+            progress(b, "R3 PASSED")
             return true
         end,
     },

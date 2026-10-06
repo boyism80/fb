@@ -2268,7 +2268,7 @@ async::task<void> character::damage_to(const damage_list& targets)
 async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    auto settle = this->damage_targets(targets, opts);
+    auto settle = this->damage_targets(targets, opts, this->shared_from_this_as<life>());
     co_await this->invoke_on_mob_damaged(targets);
     co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
     if (settle.dead_mobs.empty() == false)

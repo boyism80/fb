@@ -25,7 +25,11 @@ return {
 
     on_concast = function(me, caster, buff)
         local damage = (me:maxhp() * 5) // 100
-        caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
+        if caster ~= nil then
+            caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
+        else
+            me:damage(damage)
+        end
         me:effect(96)
     end
 }

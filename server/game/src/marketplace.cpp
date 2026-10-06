@@ -87,7 +87,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     auto id = generate_uuid();
     if (this->_owner.items.lock(slot, count, listing_fee, id) == false)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR), "lock"));
-    this->_listing.insert(id);
+    this->_listing[id] = clock::time_point::max();
 
     auto log_data_before            = Json::Value();
     log_data_before["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -133,8 +133,11 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     auto unknown    = false;
     try
     {
-        auto   world = this->_owner.world();
-        auto&& resp  = co_await this->_owner.server.http.post(
+        auto world    = this->_owner.world();
+        auto deadline = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            (std::chrono::system_clock::now() + REQUEST_TTL).time_since_epoch())
+                            .count();
+        auto&& resp = co_await this->_owner.server.http.post(
             weak,
             "marketplace",
             "/marketplace/list",
@@ -143,7 +146,8 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
                 this->_owner.id,
                 id,
                 mp::Item{this->_owner.id, model.id, count, durability, custom_name},
-                price
+                price,
+                deadline
         });
         error_code = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
         switch (error_code)
@@ -154,6 +158,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
         case fb::model::enum_value::ERROR_CODE::MARKETPLACE_ITEM_NOT_TRADEABLE:
         case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_LIMIT_EXCEEDED:
         case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_NOT_FOUND:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_REQUEST_EXPIRED:
             break;
 
         default:
@@ -171,11 +176,11 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     if (weak.expired())
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
-    this->_listing.erase(id);
-
     if (unknown)
     {
         // The listing may or may not exist, so the escrow stays until abort-list settles it.
+        this->_listing[id] = clock::now() + RESTORE_GRACE;
+
         auto log_data            = Json::Value();
         log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
         log_data["listing_id"]   = id;
@@ -185,6 +190,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     }
     else if (error_code != fb::model::enum_value::ERROR_CODE::NONE)
     {
+        this->_listing.erase(id);
         this->_owner.items.unlock(id);
 
         auto log_data            = Json::Value();
@@ -197,6 +203,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     }
     else
     {
+        this->_listing.erase(id);
         this->_owner.items.deduct(id);
 
         auto log_data_success            = Json::Value();
@@ -298,6 +305,15 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
     }
 
     this->_owner.money_reduce(expected_price);
+    this->_pending_listings.emplace(purchase_id,
+                                    pending_listing_info{.type                    = pending_type::PURCHASE,
+                                                         .purchase_id             = purchase_id,
+                                                         .listing_id              = listing_id_copy,
+                                                         .dsls                    = std::move(dsls),
+                                                         .character_id            = this->_owner.id,
+                                                         .expected_purchase_count = purchase_count,
+                                                         .expected_total_price    = expected_price});
+    this->_purchasing[purchase_id] = clock::time_point::max();
 
     // Log before API call (after deduction)
     auto log_data_before              = Json::Value();
@@ -309,111 +325,139 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
     log_data_before["expected_price"] = static_cast<Json::Int64>(expected_price);
     this->_owner.server.log.write("marketplace_purchase", log_data_before);
 
-    // Send purchase request to marketplace server
-    auto world           = this->_owner.world();
-    auto unhandled_error = true;
-    auto restore_money   = false;
-    auto character_gone  = false;
-    auto error_what      = std::string{};
-
+    // The pending entry must be durable before the request leaves: a crash after it leaves is settled by
+    // abort-purchase on the next login, which refunds only a purchase that never committed.
+    auto saved      = false;
+    auto error_what = std::string{};
     try
     {
-        auto   req  = mp_reqs::Purchase{world, this->_owner.id, listing_id_copy, purchase_count, purchase_id};
+        saved = co_await this->_owner.server.save(this->_owner);
+        co_await this->_owner.server.threads.switching(weak);
+    }
+    catch (const std::exception& e)
+    {
+        error_what = e.what();
+    }
+
+    if (weak.expired())
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+
+    if (saved == false)
+    {
+        co_await this->_owner.server.threads.switching(weak);
+        this->_purchasing.erase(purchase_id);
+        this->_pending_listings.erase(purchase_id);
+        std::ignore = this->_owner.money_add(expected_price);
+
+        auto log_data            = Json::Value();
+        log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+        log_data["listing_id"]   = listing_id_copy;
+        log_data["purchase_id"]  = purchase_id;
+        log_data["error"]        = error_what.empty() ? std::string{"save failed"} : error_what;
+        this->_owner.server.log.write("marketplace_purchase_failed", log_data);
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM_WITH_ERROR), "save"));
+    }
+
+    auto error_code = fb::model::enum_value::ERROR_CODE::NONE;
+    auto unknown    = false;
+    auto purchased  = std::optional<marketplace::listing>{};
+    auto refund     = uint64_t{0};
+    try
+    {
+        auto world    = this->_owner.world();
+        auto deadline = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            (std::chrono::system_clock::now() + REQUEST_TTL).time_since_epoch())
+                            .count();
+        auto   req  = mp_reqs::Purchase{world, this->_owner.id, listing_id_copy, purchase_count, purchase_id, deadline};
         auto&& resp = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/purchase", req);
-
-        auto ec = (fb::model::enum_value::ERROR_CODE)resp.error;
-        if (ec != fb::model::enum_value::ERROR_CODE::NONE)
+        error_code  = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
+        switch (error_code)
         {
-            // Check if this is a definite failure (logical error) or system error
-            switch (ec)
-            {
-            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_NOT_FOUND:
-            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_EXPIRED:
-            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_ALREADY_SOLD:
-            case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_ALREADY_CANCELLED:
-                unhandled_error = false;
-                break;
+        case fb::model::enum_value::ERROR_CODE::NONE:
+            purchased = marketplace::listing{
+                .id           = listing_id_copy,
+                .seller_id    = 0, // Not provided in response
+                .item_data    = {.owner       = resp.item.owner,
+                                 .model       = resp.item.model,
+                                 .count       = resp.item.count,
+                                 .durability  = resp.item.durability,
+                                 .custom_name = resp.item.custom_name},
+                .price        = 0, // Not provided in response
+                .listing_fee  = 0,
+                .state        = 0,
+                .expire_date  = std::nullopt,
+                .created_date = std::nullopt,
+                .purchase     = std::nullopt
+            };
+            refund = resp.refund_amount;
+            break;
 
-            default:
-                unhandled_error = true;
-                break;
-            }
-            throw std::runtime_error(
-                std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM), enum_tostring(ec)));
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_NOT_FOUND:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_EXPIRED:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_ALREADY_SOLD:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_LISTING_ALREADY_CANCELLED:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_INSUFFICIENT_STOCK:
+        case fb::model::enum_value::ERROR_CODE::MARKETPLACE_REQUEST_EXPIRED:
+            break;
+
+        default:
+            unknown    = true;
+            error_what = enum_tostring(error_code);
+            break;
         }
+    }
+    catch (const std::exception& e)
+    {
+        unknown    = true;
+        error_what = e.what();
+    }
 
-        // Log successful purchase
+    if (weak.expired())
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+
+    if (unknown)
+    {
+        // The purchase may or may not have committed, so the pending entry stays until abort-purchase settles it.
+        this->_purchasing[purchase_id] = clock::now() + RESTORE_GRACE;
+
+        auto log_data            = Json::Value();
+        log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+        log_data["listing_id"]   = listing_id_copy;
+        log_data["purchase_id"]  = purchase_id;
+        log_data["error"]        = error_what;
+        this->_owner.server.log.write("marketplace_purchase_pending", log_data);
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_PURCHASE_PENDING));
+    }
+    else if (error_code != fb::model::enum_value::ERROR_CODE::NONE)
+    {
+        this->_purchasing.erase(purchase_id);
+        this->_pending_listings.erase(purchase_id);
+        std::ignore = this->_owner.money_add(expected_price);
+
+        auto log_data            = Json::Value();
+        log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+        log_data["listing_id"]   = listing_id_copy;
+        log_data["purchase_id"]  = purchase_id;
+        log_data["error"]        = enum_tostring(error_code);
+        this->_owner.server.log.write("marketplace_purchase_failed", log_data);
+        throw std::runtime_error(
+            std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM), enum_tostring(error_code)));
+    }
+    else
+    {
+        this->_purchasing.erase(purchase_id);
+        this->_pending_listings.erase(purchase_id);
+
         auto log_data_success             = Json::Value();
         log_data_success["character_id"]  = static_cast<Json::Int64>(this->_owner.id);
         log_data_success["listing_id"]    = listing_id_copy;
         log_data_success["purchase_id"]   = purchase_id;
-        log_data_success["actual_count"]  = static_cast<Json::Int64>(resp.actual_purchase_count);
-        log_data_success["refund_amount"] = static_cast<Json::Int64>(resp.refund_amount);
+        log_data_success["actual_count"]  = static_cast<Json::Int64>(purchased->item_data.count);
+        log_data_success["refund_amount"] = static_cast<Json::Int64>(refund);
         this->_owner.server.log.write("marketplace_purchase_success", log_data_success);
 
-        // Build and return listing (from response item data)
-        co_return marketplace::listing{
-            .id           = listing_id_copy,
-            .seller_id    = 0, // Not provided in response
-            .item_data    = {.owner       = resp.item.owner,
-                             .model       = resp.item.model,
-                             .count       = resp.item.count,
-                             .durability  = resp.item.durability,
-                             .custom_name = resp.item.custom_name},
-            .price        = 0, // Not provided in response
-            .listing_fee  = 0,
-            .state        = 0,
-            .expire_date  = std::nullopt,
-            .created_date = std::nullopt,
-            .purchase     = std::nullopt
-        };
+        co_return std::move(purchased.value());
     }
-    catch (const std::exception& e)
-    {
-        if (weak.expired())
-        {
-            character_gone = true;
-        }
-        else
-        {
-            error_what = e.what();
-            if (unhandled_error)
-            {
-                this->_pending_listings.emplace(purchase_id,
-                                                pending_listing_info{.type                    = pending_type::PURCHASE,
-                                                                     .purchase_id             = purchase_id,
-                                                                     .listing_id              = listing_id_copy,
-                                                                     .dsls                    = std::move(dsls),
-                                                                     .character_id            = this->_owner.id,
-                                                                     .expected_purchase_count = purchase_count,
-                                                                     .expected_total_price    = expected_price});
-                auto log_data            = Json::Value();
-                log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-                log_data["listing_id"]   = listing_id_copy;
-                log_data["purchase_id"]  = purchase_id;
-                log_data["error"]        = error_what;
-                this->_owner.server.log.write("marketplace_purchase_failed", log_data);
-            }
-            else
-            {
-                restore_money            = true;
-                auto log_data            = Json::Value();
-                log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-                log_data["listing_id"]   = listing_id_copy;
-                log_data["purchase_id"]  = purchase_id;
-                log_data["error"]        = error_what;
-                this->_owner.server.log.write("marketplace_purchase_failed", log_data);
-            }
-        }
-    }
-
-    if (character_gone)
-        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
-
-    if (restore_money)
-        std::ignore = this->_owner.money_add(expected_price);
-
-    throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM_WITH_ERROR), error_what));
 }
 
 async::task<marketplace::search_result> marketplace::search(const search_option& option)
@@ -538,41 +582,6 @@ marketplace::get_listings(const marketplace::string_vector_t& listing_ids, uint3
     co_return result;
 }
 
-async::task<marketplace::purchase_map_t> marketplace::get_purchases(const marketplace::string_vector_t& purchase_ids)
-{
-    this->_owner.assert_thread();
-
-    if (purchase_ids.empty())
-        co_return std::unordered_map<std::string, marketplace::purchase_info>{};
-
-    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
-    // Call get_purchases API to get purchase records
-    auto&& resp = co_await this->_owner.server.http.post(weak,
-                                                         "marketplace",
-                                                         "/marketplace/get-purchases",
-                                                         mp_reqs::GetPurchases{purchase_ids});
-
-    if (resp.error != 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_GET_LISTINGS), resp.error));
-
-    // Convert response purchases to marketplace::purchase_info map
-    std::unordered_map<std::string, marketplace::purchase_info> result;
-
-    for (const auto& purchase : resp.purchases)
-    {
-        auto created_date_opt = std::optional<fb::model::datetime>{};
-        if (!purchase.created_date.empty())
-            created_date_opt = fb::model::datetime(purchase.created_date);
-
-        result.emplace(purchase.id,
-                       marketplace::purchase_info{.purchase_count = purchase.purchase_count,
-                                                  .purchase_price = purchase.purchase_price,
-                                                  .created_date   = created_date_opt});
-    }
-
-    co_return result;
-}
-
 void marketplace::set_pending_listings(marketplace::pending_listings_t pending_listings)
 {
     this->_owner.assert_thread();
@@ -639,13 +648,15 @@ async::task<void> marketplace::restore()
         co_return;
 
     auto world = this->_owner.world();
+    auto now   = clock::now();
 
     // Escrows and legacy LIST pendings are settled by abort-list, which also finds archived listings.
     auto abort_targets = std::vector<std::tuple<std::string, mp::Item, bool>>{}; // listing_id, item, legacy
     for (auto i : this->_owner.items.escrow_indices())
     {
         auto escrow = this->_owner.items.escrow(i);
-        if (this->_listing.contains(escrow->listing_id))
+        auto found  = this->_listing.find(escrow->listing_id);
+        if (found != this->_listing.end() && found->second > now)
             continue;
 
         auto& item        = *escrow->item;
@@ -660,13 +671,13 @@ async::task<void> marketplace::restore()
     }
 
     auto purchase_pending = std::vector<std::pair<std::string, pending_listing_info>>{};
-    auto purchase_ids     = std::vector<std::string>{};
     for (const auto& [key, pending_info] : this->_pending_listings)
     {
         if (pending_info.type == pending_type::PURCHASE)
         {
-            purchase_pending.emplace_back(key, pending_info);
-            purchase_ids.push_back(pending_info.purchase_id);
+            auto found = this->_purchasing.find(key);
+            if (found == this->_purchasing.end() || found->second <= now)
+                purchase_pending.emplace_back(key, pending_info);
         }
         else
         {
@@ -719,7 +730,7 @@ async::task<void> marketplace::restore()
 
         if (legacy && created.value() == false)
         {
-            std::ignore =
+            auto returned =
                 co_await this->_owner.server.system_storage.create(this->_owner.world(),
                                                                    this->_owner.id,
                                                                    std::format("marketplace:list:{}", listing_id),
@@ -727,6 +738,10 @@ async::task<void> marketplace::restore()
                                                                    _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE),
                                                                    this->_pending_listings[listing_id].dsls);
             co_await this->_owner.server.threads.switching(weak);
+
+            // The pending entry is the only record of the item; keep it for the next restore.
+            if (returned == false)
+                continue;
         }
 
         if (legacy)
@@ -735,6 +750,7 @@ async::task<void> marketplace::restore()
             this->_owner.items.deduct(listing_id);
         else
             this->_owner.items.unlock(listing_id);
+        this->_listing.erase(listing_id);
 
         auto log_data            = Json::Value();
         log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -744,44 +760,35 @@ async::task<void> marketplace::restore()
         this->_owner.server.log.write("marketplace_restore_success", log_data);
     }
 
-    if (purchase_pending.empty())
-    {
-        this->_restoring = false;
-        co_return;
-    }
-
-    auto purchases = std::unordered_map<std::string, marketplace::purchase_info>{};
-    auto fetched   = false;
-    try
-    {
-        purchases = co_await this->get_purchases(purchase_ids);
-        fetched   = true;
-    }
-    catch (std::exception& e)
-    {
-        fb::logger::warn("Failed to get purchase records during restore: {}", e.what());
-    }
-
-    co_await this->_owner.server.threads.switching(weak);
-    this->_restoring = false;
-
-    // A missing record only means not purchased when the lookup itself succeeded.
-    if (fetched == false)
-        co_return;
-
     for (const auto& [purchase_id, pending_info] : purchase_pending)
     {
-        auto purchase_it = purchases.find(pending_info.purchase_id);
-        if (purchase_it != purchases.end())
+        auto purchased = std::optional<bool>{};
+        try
         {
-            // The marketplace server already delivered the item and any partial-purchase refund
-            // (marketplace:buy:{id}), so only the pending entry is cleared here.
-            this->_pending_listings.erase(purchase_id);
+            auto&& resp = co_await this->_owner.server.http.post(
+                weak,
+                "marketplace",
+                "/marketplace/abort-purchase",
+                mp_reqs::AbortPurchase{world, this->_owner.id, pending_info.listing_id, purchase_id});
+            if (resp.error == 0)
+                purchased = resp.purchased;
+            else
+                fb::logger::warn("abort-purchase {} failed: {}", purchase_id, resp.error);
         }
-        else
+        catch (std::exception& e)
         {
-            // Purchase record does not exist - restore money
-            std::ignore =
+            fb::logger::warn("abort-purchase {} failed: {}", purchase_id, e.what());
+        }
+
+        if (weak.expired())
+            throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+
+        if (purchased.has_value() == false)
+            continue;
+
+        if (purchased.value() == false)
+        {
+            auto refunded =
                 co_await this->_owner.server.system_storage.create(this->_owner.world(),
                                                                    this->_owner.id,
                                                                    std::format("marketplace:purchase:{}", purchase_id),
@@ -790,16 +797,22 @@ async::task<void> marketplace::restore()
                                                                    pending_info.dsls);
             co_await this->_owner.server.threads.switching(weak);
 
-            auto log_data            = Json::Value();
-            log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-            log_data["purchase_id"]  = purchase_id;
-            log_data["listing_id"]   = pending_info.listing_id;
-            log_data["type"]         = static_cast<Json::Int64>(pending_info.type);
-            this->_owner.server.log.write("marketplace_restore_success", log_data);
-
-            this->_pending_listings.erase(purchase_id);
+            if (refunded == false)
+                continue;
         }
+
+        this->_pending_listings.erase(purchase_id);
+        this->_purchasing.erase(purchase_id);
+
+        auto log_data            = Json::Value();
+        log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+        log_data["purchase_id"]  = purchase_id;
+        log_data["listing_id"]   = pending_info.listing_id;
+        log_data["purchased"]    = purchased.value();
+        this->_owner.server.log.write("marketplace_restore_success", log_data);
     }
+
+    this->_restoring = false;
 }
 
 const marketplace::pending_listings_t& marketplace::pending_listings() const

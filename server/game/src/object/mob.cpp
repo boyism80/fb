@@ -23,9 +23,14 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-rezen::rezen(server& server, uint32_t parent, uint32_t index, const std::shared_ptr<fb::game::map>& map) :
+rezen::rezen(server&                               server,
+             const table_ptr&                      table,
+             uint32_t                              parent,
+             uint32_t                              index,
+             const std::shared_ptr<fb::game::map>& map) :
     _server(server),
     _map(map),
+    _table(table),
     _parent(parent),
     _index(index)
 {
@@ -34,7 +39,17 @@ rezen::rezen(server& server, uint32_t parent, uint32_t index, const std::shared_
 
 const fb::model::mob_spawn& rezen::model() const
 {
-    return fb::model::table::mob_spawn[this->_parent][this->_index];
+    return (*this->_table)[this->_parent][this->_index];
+}
+
+const rezen::table_ptr& rezen::table() const
+{
+    return this->_table;
+}
+
+void rezen::table(const table_ptr& value)
+{
+    this->_table = value;
 }
 
 uint32_t rezen::map_id() const
@@ -136,7 +151,8 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     for (size_t i = 0; i < limit; i++)
     {
         auto mob =
-            this->_server.make<fb::game::mob>(table::mob[model.mob], mob::initial_params{.alive = true, .rezen = this});
+            this->_server.make<fb::game::mob>(table::mob[model.mob],
+                                              mob::initial_params{.alive = true, .rezen = this->weak_from_this()});
         // Paired with decrease() in ~mob.
         this->_count++;
 
@@ -223,13 +239,13 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
 
 mob::~mob()
 {
-    if (this->_rezen != nullptr)
-        this->_rezen->decrease();
+    if (auto rezen = this->_rezen.lock(); rezen != nullptr)
+        rezen->decrease();
 }
 
 fb::game::rezen* mob::spawn_rezen() const
 {
-    return this->_rezen;
+    return this->_rezen.lock().get();
 }
 
 const fb::model::mob& mob::model() const
@@ -475,7 +491,7 @@ async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& 
     this->assert_thread();
 
     // Damage is always applied as this mob (not redirected to owner).
-    auto settle = this->damage_targets(targets, opts);
+    auto settle = this->damage_targets(targets, opts, this->shared_from_this_as<life>());
     co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
     if (settle.dead_mobs.empty())
         co_return;

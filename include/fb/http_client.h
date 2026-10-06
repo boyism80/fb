@@ -37,7 +37,9 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -76,6 +78,8 @@ private:
     mutable std::mutex                       _hook_mutex;
     std::unordered_map<std::string, int64_t> _service_delays_ms;
     std::unordered_map<std::string, FAULT>   _faults;
+    std::unordered_set<std::string>          _held_paths;
+    std::vector<pending_task>                _held_requests;
 
     [[nodiscard]] async::task<void> sleep(fb::thread* thread, std::string_view service = {})
     {
@@ -402,6 +406,39 @@ public:
         return found->second;
     }
 
+    // Test hook: a POST to a held path fails but is kept, so send_held() can deliver it after the caller gave up.
+    void hold(std::string_view path)
+    {
+        auto lock = std::lock_guard(this->_hook_mutex);
+        this->_held_paths.insert(std::string(path));
+    }
+
+    void send_held()
+    {
+        auto requests = std::vector<pending_task>{};
+        {
+            auto lock = std::lock_guard(this->_hook_mutex);
+            this->_held_paths.clear();
+            requests.swap(this->_held_requests);
+        }
+
+        for (auto& request : requests)
+            request();
+    }
+
+    void clear_held()
+    {
+        auto lock = std::lock_guard(this->_hook_mutex);
+        this->_held_paths.clear();
+        this->_held_requests.clear();
+    }
+
+    size_t held_count() const
+    {
+        auto lock = std::lock_guard(this->_hook_mutex);
+        return this->_held_requests.size();
+    }
+
     template <typename T> async::task<T> get(std::string_view service, std::string_view path)
     {
         auto thread = this->_executor.threads.current();
@@ -527,8 +564,27 @@ public:
         auto& config      = fb::config<>(service_str);
         auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         auto  path_str    = std::string(path);
-        auto  result      = std::optional<typename response_of<Request>::type>{};
-        auto  error       = std::exception_ptr{};
+
+        auto held = false;
+        {
+            auto lock = std::lock_guard(this->_hook_mutex);
+            if (this->_held_paths.contains(path_str))
+            {
+                this->_held_requests.push_back([this, host, path_str, request]() {
+                    std::ignore = this->boost_post_async<Request>(host, path_str, request);
+                });
+                held = true;
+            }
+        }
+        if (held)
+        {
+            co_await this->sleep(thread, service);
+            throw std::runtime_error(
+                std::format("HTTP POST request failed: request held for {}{}", service_str, path_str));
+        }
+
+        auto result = std::optional<typename response_of<Request>::type>{};
+        auto error  = std::exception_ptr{};
         try
         {
             result = co_await this->boost_post_async<Request>(host, path_str, request);

@@ -229,6 +229,7 @@ public:
     std::shared_ptr<fb::game::map>    choice_entry(character& ch, const std::shared_ptr<fb::game::map>& dest);
     async::task<void>                 destroy(const std::shared_ptr<fb::game::map>& map);
     void                              rezen_force();
+    async::task<void>                 rebuild_rezens();
     void                              erase_map_cache(uint32_t map_id, const fb::model::point16_t& point);
     std::optional<fb::stream>         map_update_stream(character& ch, const fb::game::map& map, const fb::model::point16_t& position, const fb::model::size8_t& size, uint16_t crc);
     void                              update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);

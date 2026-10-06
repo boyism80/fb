@@ -1,5 +1,8 @@
 #include <fb/game/handler/timer/mob_respawn_timer.h>
 
+#include <fb/logger.h>
+
+#include <exception>
 #include <thread>
 
 using namespace fb::game::handler::timer;
@@ -13,9 +16,18 @@ async::task<void> mob_respawn_timer::handle(const fb::model::datetime& now, std:
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
-    for (auto& rezen : params->rezens)
+    // Copy: a table reload or instance destroy may edit params->rezens while a spawn is suspended.
+    auto rezens = params->rezens;
+    for (auto& rezen : rezens)
     {
-        co_await rezen->spawn(id);
+        try
+        {
+            co_await rezen->spawn(id);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::warn("rezen spawn failed (map={}): {}", rezen->map_id(), e.what());
+        }
     }
     co_return;
 }

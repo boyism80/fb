@@ -2410,6 +2410,30 @@ M.functions = {
             end,
         },
 
+        ['HTTP보류'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[on <경로>|send|off] - on: 해당 경로 POST를 보내지 않고 실패 처리한 뒤 보관, send: 보관한 요청을 늦게 전송, off: 보관한 요청 폐기 (테스트용)',
+            ['command'] = function (me, args)
+                local count = nil
+                if #args == 0 then
+                    count = http_hold()
+                else
+                    local action = string.lower(tostring(args[1]))
+                    if action == 'on' and args[2] ~= nil then
+                        count = http_hold('on', args[2])
+                    elseif action == 'send' or action == 'off' then
+                        count = http_hold(action)
+                    else
+                        me:message("사용법: /HTTP보류 [on <경로>|send|off]")
+                        return true
+                    end
+                end
+
+                me:message(string.format("HTTP 보류 요청: %d건 (이 서버에만 적용됩니다)", count), MESSAGE_TYPE.BROWN)
+                return true
+            end,
+        },
+
         ['이속고정'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[on|off] - LOCK_WALK_SPEED(0x04) 조회/설정 (클라 스티키, off 후 재접 필요할 수 있음)',

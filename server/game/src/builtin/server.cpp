@@ -1624,6 +1624,40 @@ int builtin::server::builtin_http_fault(lua_State* L)
     return 1;
 }
 
+int builtin::server::builtin_http_hold(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
+    if (argc >= 1)
+    {
+        auto action = lua->tostring(1);
+        if (action == "on" && argc >= 2)
+        {
+            srv.http.hold(lua->tostring(2));
+        }
+        else if (action == "send")
+        {
+            srv.http.send_held();
+        }
+        else if (action == "off")
+        {
+            srv.http.clear_held();
+        }
+        else
+        {
+            lua->pushstring("Invalid arguments: http_hold(['on', path]|'send'|'off')");
+            return 1;
+        }
+    }
+
+    lua->pushinteger(srv.http.held_count());
+    return 1;
+}
+
 int builtin::server::builtin_property(lua_State* L)
 {
     auto lua = fb::lua::get(L);

@@ -656,6 +656,22 @@ void fb::lua::context::resume(int argc, int* n)
     }
 
     // Fresh coroutine (LUA_OK, not yet started). After a yield the status is LUA_YIELD and the actor is already bound.
+    if (lua_status(*this) == LUA_OK)
+    {
+        // Stack is [function, arg1, ...]. The actor is the first argument (spell/npc/item `me`, mob script mob).
+        this->_actor.reset();
+        auto index = lua_gettop(*this) - argc + 1;
+        if (argc > 0 && this->is_userdata<luable>(index) && luable::is_weak_userdata(*this, index))
+            this->_actor = *static_cast<std::weak_ptr<luable>*>(lua_touserdata(*this, index));
+    }
+    else if (this->_actor.has_value() && this->_actor->expired())
+    {
+        this->_running++;
+        this->reject("script actor is expired");
+        this->finish_resume();
+        return;
+    }
+
     if (this->_on_error == nullptr && argc > 0 && lua_status(*this) == LUA_OK && g_script_error_bind != nullptr)
         g_script_error_bind(*this, argc);
 
@@ -973,7 +989,8 @@ int fb::lua::context::co_builder::run()
         return lua_ptr->yield(0);
     }
 
-    if (immediate)
+    // A rejected pipeline must not resume the script with the default 0 results; the pool revokes the yielded context.
+    if (immediate && rejected == false)
         return sync_result;
     else
         return lua_ptr->yield(0);

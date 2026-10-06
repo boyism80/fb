@@ -1894,19 +1894,6 @@ namespace fb.protocol._internal
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -1927,7 +1914,8 @@ namespace fb.protocol._internal
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -1961,6 +1949,18 @@ namespace fb.protocol._internal
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -1984,14 +1984,6 @@ namespace fb.protocol._internal
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -2030,6 +2022,15 @@ namespace fb.protocol._internal
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -2046,15 +2047,6 @@ namespace fb.protocol._internal
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -2337,10 +2329,6 @@ namespace fb.protocol._internal
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -4217,19 +4205,6 @@ namespace fb.protocol._internal.request
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -4250,7 +4225,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -4284,6 +4260,18 @@ namespace fb.protocol._internal.request
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -4307,14 +4295,6 @@ namespace fb.protocol._internal.request
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -4353,6 +4333,15 @@ namespace fb.protocol._internal.request
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -4369,15 +4358,6 @@ namespace fb.protocol._internal.request
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -4660,10 +4640,6 @@ namespace fb.protocol._internal.request
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -6571,19 +6547,6 @@ namespace fb.protocol._internal.response
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -6604,7 +6567,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -6638,6 +6602,18 @@ namespace fb.protocol._internal.response
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -6661,14 +6637,6 @@ namespace fb.protocol._internal.response
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -6707,6 +6675,15 @@ namespace fb.protocol._internal.response
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -6723,15 +6700,6 @@ namespace fb.protocol._internal.response
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -7014,10 +6982,6 @@ namespace fb.protocol._internal.response
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -8925,19 +8889,6 @@ namespace fb.protocol.marketplace
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -8958,7 +8909,8 @@ namespace fb.protocol.marketplace
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -8992,6 +8944,18 @@ namespace fb.protocol.marketplace
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -9015,14 +8979,6 @@ namespace fb.protocol.marketplace
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -9061,6 +9017,15 @@ namespace fb.protocol.marketplace
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -9077,15 +9042,6 @@ namespace fb.protocol.marketplace
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -9369,10 +9325,6 @@ namespace fb.protocol.marketplace
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
-        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.matchmaking.raw.TicketMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -9420,7 +9372,6 @@ namespace fb.protocol.marketplace
         Item,
         PurchaseInfo,
         Listing,
-        Purchase,
         SearchResult
     }
 }
@@ -11223,19 +11174,6 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -11256,7 +11194,8 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -11290,6 +11229,18 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -11313,14 +11264,6 @@ namespace fb.protocol.marketplace.request
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -11359,6 +11302,15 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -11375,15 +11327,6 @@ namespace fb.protocol.marketplace.request
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -11667,10 +11610,6 @@ namespace fb.protocol.marketplace.request
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
-        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.matchmaking.raw.TicketMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -11719,9 +11658,9 @@ namespace fb.protocol.marketplace.request
         AbortList,
         Cancel,
         Purchase,
+        AbortPurchase,
         Search,
-        GetListings,
-        GetPurchases
+        GetListings
     }
 }
 namespace fb.protocol.marketplace.response
@@ -13523,19 +13462,6 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -13556,7 +13482,8 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -13590,6 +13517,18 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -13613,14 +13552,6 @@ namespace fb.protocol.marketplace.response
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -13659,6 +13590,15 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -13675,15 +13615,6 @@ namespace fb.protocol.marketplace.response
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -13967,10 +13898,6 @@ namespace fb.protocol.marketplace.response
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
-        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.matchmaking.raw.TicketMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -14019,9 +13946,9 @@ namespace fb.protocol.marketplace.response
         AbortList,
         Cancel,
         Purchase,
+        AbortPurchase,
         Search,
-        GetListings,
-        GetPurchases
+        GetListings
     }
 }
 namespace fb.protocol.matchmaking
@@ -15823,19 +15750,6 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -15856,7 +15770,8 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -15890,6 +15805,18 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -15913,14 +15840,6 @@ namespace fb.protocol.matchmaking
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -15959,6 +15878,15 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -15975,15 +15903,6 @@ namespace fb.protocol.matchmaking
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -16266,10 +16185,6 @@ namespace fb.protocol.matchmaking
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -18120,19 +18035,6 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -18153,7 +18055,8 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -18187,6 +18090,18 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -18210,14 +18125,6 @@ namespace fb.protocol.matchmaking.mq
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -18256,6 +18163,15 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -18272,15 +18188,6 @@ namespace fb.protocol.matchmaking.mq
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -18563,10 +18470,6 @@ namespace fb.protocol.matchmaking.mq
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -20417,19 +20320,6 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -20450,7 +20340,8 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -20484,6 +20375,18 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -20507,14 +20410,6 @@ namespace fb.protocol.matchmaking.request
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -20553,6 +20448,15 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -20569,15 +20473,6 @@ namespace fb.protocol.matchmaking.request
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -20860,10 +20755,6 @@ namespace fb.protocol.matchmaking.request
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -22715,19 +22606,6 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.CreatedDate),
                 builder.Build(value.PurchaseInfo));
         }
-        public static Offset<fb.protocol.marketplace.raw.Purchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Purchase value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.raw.Purchase.CreatePurchase(builder,
-                builder.Build(value.Id),
-                builder.Build(value.ListingId),
-                builder.Build(value.BuyerId),
-                builder.Build(value.PurchaseCount),
-                builder.Build(value.PurchasePrice),
-                builder.Build(value.CreatedDate));
-        }
         public static Offset<fb.protocol.marketplace.raw.SearchResult> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.SearchResult value)
         {
             if (value == null)
@@ -22748,7 +22626,8 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.CharacterId),
                 builder.Build(value.ListingId),
                 builder.Build(value.Item),
-                builder.Build(value.Price));
+                builder.Build(value.Price),
+                builder.Build(value.Deadline));
         }
         public static Offset<fb.protocol.marketplace.request.raw.AbortList> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortList value)
         {
@@ -22782,6 +22661,18 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.BuyerId),
                 builder.Build(value.ListingId),
                 builder.Build(value.PurchaseCount),
+                builder.Build(value.PurchaseId),
+                builder.Build(value.Deadline));
+        }
+        public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.request.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.World),
+                builder.Build(value.BuyerId),
+                builder.Build(value.ListingId),
                 builder.Build(value.PurchaseId));
         }
         public static Offset<fb.protocol.marketplace.request.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.Search value)
@@ -22805,14 +22696,6 @@ namespace fb.protocol.matchmaking.response
             return fb.protocol.marketplace.request.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.ListingIds),
                 builder.Build(value.BuyerId));
-        }
-        public static Offset<fb.protocol.marketplace.request.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.request.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.request.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.PurchaseIds));
         }
         public static Offset<fb.protocol.marketplace.response.raw.List> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.List value)
         {
@@ -22851,6 +22734,15 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.RefundAmount),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.marketplace.response.raw.AbortPurchase> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.AbortPurchase value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.marketplace.response.raw.AbortPurchase.CreateAbortPurchase(builder,
+                builder.Build(value.Purchased),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol.marketplace.response.raw.Search> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.Search value)
         {
             if (value == null)
@@ -22867,15 +22759,6 @@ namespace fb.protocol.matchmaking.response
 
             return fb.protocol.marketplace.response.raw.GetListings.CreateGetListings(builder,
                 builder.Build(value.Listings),
-                builder.Build(value.Error));
-        }
-        public static Offset<fb.protocol.marketplace.response.raw.GetPurchases> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.response.GetPurchases value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.marketplace.response.raw.GetPurchases.CreateGetPurchases(builder,
-                builder.Build(value.Purchases),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.matchmaking.raw.TicketMember> Build(this FlatBufferBuilder builder, fb.protocol.matchmaking.TicketMember value)
@@ -23158,10 +23041,6 @@ namespace fb.protocol.matchmaking.response
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Purchase> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Purchase>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -30066,52 +29945,6 @@ namespace fb.protocol.marketplace
             return new Listing(bytes);
         }
     }
-    public class Purchase : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.Purchase;
-        public string Id { get; set; } = string.Empty;
-        public string ListingId { get; set; } = string.Empty;
-        public uint BuyerId { get; set; } = 0;
-        public ushort PurchaseCount { get; set; } = 0;
-        public ulong PurchasePrice { get; set; } = 0L;
-        public string CreatedDate { get; set; } = string.Empty;
-
-        public Purchase()
-        { }
-
-        public Purchase(fb.protocol.marketplace.raw.Purchase raw)
-        {
-            Id = raw.Id;
-            ListingId = raw.ListingId;
-            BuyerId = raw.BuyerId;
-            PurchaseCount = raw.PurchaseCount;
-            PurchasePrice = raw.PurchasePrice;
-            CreatedDate = raw.CreatedDate;
-        }
-
-        public Purchase(byte[] bytes) : this(fb.protocol.marketplace.raw.Purchase.GetRootAsPurchase(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static Purchase Deserialize(byte[] bytes)
-        {
-            return new Purchase(bytes);
-        }
-    }
     public class SearchResult : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SearchResult;
@@ -30162,7 +29995,6 @@ namespace fb.protocol.marketplace
                 FlatBufferProtocolType.Item => typeof(fb.protocol.marketplace.Item),
                 FlatBufferProtocolType.PurchaseInfo => typeof(fb.protocol.marketplace.PurchaseInfo),
                 FlatBufferProtocolType.Listing => typeof(fb.protocol.marketplace.Listing),
-                FlatBufferProtocolType.Purchase => typeof(fb.protocol.marketplace.Purchase),
                 FlatBufferProtocolType.SearchResult => typeof(fb.protocol.marketplace.SearchResult),
                 _ => throw new ArgumentException(),
             };
@@ -30180,6 +30012,7 @@ namespace fb.protocol.marketplace.request
         public string ListingId { get; set; } = string.Empty;
         public fb.protocol.marketplace.Item Item { get; set; } = new fb.protocol.marketplace.Item();
         public ulong Price { get; set; } = 0L;
+        public long Deadline { get; set; } = 0L;
 
         public List()
         { }
@@ -30191,6 +30024,7 @@ namespace fb.protocol.marketplace.request
             ListingId = raw.ListingId;
             Item = new fb.protocol.marketplace.Item(raw.Item.Value);
             Price = raw.Price;
+            Deadline = raw.Deadline;
         }
 
         public List(byte[] bytes) : this(fb.protocol.marketplace.request.raw.List.GetRootAsList(new ByteBuffer(bytes)))
@@ -30308,6 +30142,7 @@ namespace fb.protocol.marketplace.request
         public string ListingId { get; set; } = string.Empty;
         public ushort PurchaseCount { get; set; } = 0;
         public string PurchaseId { get; set; } = string.Empty;
+        public long Deadline { get; set; } = 0L;
 
         public Purchase()
         { }
@@ -30319,6 +30154,7 @@ namespace fb.protocol.marketplace.request
             ListingId = raw.ListingId;
             PurchaseCount = raw.PurchaseCount;
             PurchaseId = raw.PurchaseId;
+            Deadline = raw.Deadline;
         }
 
         public Purchase(byte[] bytes) : this(fb.protocol.marketplace.request.raw.Purchase.GetRootAsPurchase(new ByteBuffer(bytes)))
@@ -30342,6 +30178,48 @@ namespace fb.protocol.marketplace.request
         public static Purchase Deserialize(byte[] bytes)
         {
             return new Purchase(bytes);
+        }
+    }
+    public class AbortPurchase : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.AbortPurchase;
+        public uint World { get; set; } = 0;
+        public uint BuyerId { get; set; } = 0;
+        public string ListingId { get; set; } = string.Empty;
+        public string PurchaseId { get; set; } = string.Empty;
+
+        public AbortPurchase()
+        { }
+
+        public AbortPurchase(fb.protocol.marketplace.request.raw.AbortPurchase raw)
+        {
+            World = raw.World;
+            BuyerId = raw.BuyerId;
+            ListingId = raw.ListingId;
+            PurchaseId = raw.PurchaseId;
+        }
+
+        public AbortPurchase(byte[] bytes) : this(fb.protocol.marketplace.request.raw.AbortPurchase.GetRootAsAbortPurchase(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static AbortPurchase Deserialize(byte[] bytes)
+        {
+            return new AbortPurchase(bytes);
         }
     }
     public class Search : IFlatBufferEx
@@ -30428,42 +30306,6 @@ namespace fb.protocol.marketplace.request
             return new GetListings(bytes);
         }
     }
-    public class GetPurchases : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetPurchases;
-        public List<string> PurchaseIds { get; set; } = new List<string>();
-
-        public GetPurchases()
-        { }
-
-        public GetPurchases(fb.protocol.marketplace.request.raw.GetPurchases raw)
-        {
-            PurchaseIds = Enumerable.Range(0, raw.PurchaseIdsLength).Select(i => raw.PurchaseIds(i)).Select(x => x).ToList();
-        }
-
-        public GetPurchases(byte[] bytes) : this(fb.protocol.marketplace.request.raw.GetPurchases.GetRootAsGetPurchases(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static GetPurchases Deserialize(byte[] bytes)
-        {
-            return new GetPurchases(bytes);
-        }
-    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -30475,9 +30317,9 @@ namespace fb.protocol.marketplace.request
                 FlatBufferProtocolType.AbortList => typeof(fb.protocol.marketplace.request.AbortList),
                 FlatBufferProtocolType.Cancel => typeof(fb.protocol.marketplace.request.Cancel),
                 FlatBufferProtocolType.Purchase => typeof(fb.protocol.marketplace.request.Purchase),
+                FlatBufferProtocolType.AbortPurchase => typeof(fb.protocol.marketplace.request.AbortPurchase),
                 FlatBufferProtocolType.Search => typeof(fb.protocol.marketplace.request.Search),
                 FlatBufferProtocolType.GetListings => typeof(fb.protocol.marketplace.request.GetListings),
-                FlatBufferProtocolType.GetPurchases => typeof(fb.protocol.marketplace.request.GetPurchases),
                 _ => throw new ArgumentException(),
             };
         }
@@ -30640,6 +30482,44 @@ namespace fb.protocol.marketplace.response
             return new Purchase(bytes);
         }
     }
+    public class AbortPurchase : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.AbortPurchase;
+        public bool Purchased { get; set; } = false;
+        public uint Error { get; set; } = 0;
+
+        public AbortPurchase()
+        { }
+
+        public AbortPurchase(fb.protocol.marketplace.response.raw.AbortPurchase raw)
+        {
+            Purchased = raw.Purchased;
+            Error = raw.Error;
+        }
+
+        public AbortPurchase(byte[] bytes) : this(fb.protocol.marketplace.response.raw.AbortPurchase.GetRootAsAbortPurchase(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static AbortPurchase Deserialize(byte[] bytes)
+        {
+            return new AbortPurchase(bytes);
+        }
+    }
     public class Search : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Search;
@@ -30716,44 +30596,6 @@ namespace fb.protocol.marketplace.response
             return new GetListings(bytes);
         }
     }
-    public class GetPurchases : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetPurchases;
-        public List<fb.protocol.marketplace.Purchase> Purchases { get; set; } = new List<fb.protocol.marketplace.Purchase>();
-        public uint Error { get; set; } = 0;
-
-        public GetPurchases()
-        { }
-
-        public GetPurchases(fb.protocol.marketplace.response.raw.GetPurchases raw)
-        {
-            Purchases = Enumerable.Range(0, raw.PurchasesLength).Select(i => raw.Purchases(i)).Select(x => new fb.protocol.marketplace.Purchase(x.Value)).ToList();
-            Error = raw.Error;
-        }
-
-        public GetPurchases(byte[] bytes) : this(fb.protocol.marketplace.response.raw.GetPurchases.GetRootAsGetPurchases(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static GetPurchases Deserialize(byte[] bytes)
-        {
-            return new GetPurchases(bytes);
-        }
-    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -30765,9 +30607,9 @@ namespace fb.protocol.marketplace.response
                 FlatBufferProtocolType.AbortList => typeof(fb.protocol.marketplace.response.AbortList),
                 FlatBufferProtocolType.Cancel => typeof(fb.protocol.marketplace.response.Cancel),
                 FlatBufferProtocolType.Purchase => typeof(fb.protocol.marketplace.response.Purchase),
+                FlatBufferProtocolType.AbortPurchase => typeof(fb.protocol.marketplace.response.AbortPurchase),
                 FlatBufferProtocolType.Search => typeof(fb.protocol.marketplace.response.Search),
                 FlatBufferProtocolType.GetListings => typeof(fb.protocol.marketplace.response.GetListings),
-                FlatBufferProtocolType.GetPurchases => typeof(fb.protocol.marketplace.response.GetPurchases),
                 _ => throw new ArgumentException(),
             };
         }

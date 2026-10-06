@@ -23,6 +23,11 @@ table Purchase {
     error: uint;
 }
 
+table AbortPurchase {
+    purchased: bool;
+    error: uint;
+}
+
 table Search {
     result: fb.protocol.marketplace.SearchResult;
     error: uint;
@@ -32,9 +37,3 @@ table GetListings {
     listings: [fb.protocol.marketplace.Listing];
     error: uint;
 }
-
-table GetPurchases {
-    purchases: [fb.protocol.marketplace.Purchase];
-    error: uint;
-}
-

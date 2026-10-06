@@ -201,7 +201,6 @@ namespace fb::protocol::marketplace
     class Item;
     class PurchaseInfo;
     class Listing;
-    class Purchase;
     class SearchResult;
     enum class ListingState : uint8_t;
 } // end of namespace fb::protocol::marketplace
@@ -211,9 +210,9 @@ namespace fb::protocol::marketplace::request
     class AbortList;
     class Cancel;
     class Purchase;
+    class AbortPurchase;
     class Search;
     class GetListings;
-    class GetPurchases;
 } // end of namespace fb::protocol::marketplace::request
 namespace fb::protocol::marketplace::response
 {
@@ -221,9 +220,9 @@ namespace fb::protocol::marketplace::response
     class AbortList;
     class Cancel;
     class Purchase;
+    class AbortPurchase;
     class Search;
     class GetListings;
-    class GetPurchases;
 } // end of namespace fb::protocol::marketplace::response
 namespace fb::protocol::matchmaking
 {
@@ -501,22 +500,21 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::OpsNotify>
 template <> struct FlatBufferOffset<fb::protocol::marketplace::Item> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::Item> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::PurchaseInfo> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::Listing> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::Listing> type; };
-template <> struct FlatBufferOffset<fb::protocol::marketplace::Purchase> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::Purchase> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::SearchResult> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::SearchResult> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::request::List> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::List> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::request::AbortList> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::AbortList> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::request::Cancel> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::Cancel> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::request::Purchase> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::Purchase> type; };
+template <> struct FlatBufferOffset<fb::protocol::marketplace::request::AbortPurchase> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::AbortPurchase> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::request::Search> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::Search> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::request::GetListings> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::GetListings> type; };
-template <> struct FlatBufferOffset<fb::protocol::marketplace::request::GetPurchases> { typedef flatbuffers::Offset<fb::protocol::marketplace::request::raw::GetPurchases> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::response::List> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::List> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::response::AbortList> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::AbortList> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::response::Cancel> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::Cancel> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::response::Purchase> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::Purchase> type; };
+template <> struct FlatBufferOffset<fb::protocol::marketplace::response::AbortPurchase> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::AbortPurchase> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::response::Search> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::Search> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::response::GetListings> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::GetListings> type; };
-template <> struct FlatBufferOffset<fb::protocol::marketplace::response::GetPurchases> { typedef flatbuffers::Offset<fb::protocol::marketplace::response::raw::GetPurchases> type; };
 template <> struct FlatBufferOffset<fb::protocol::matchmaking::TicketMember> { typedef flatbuffers::Offset<fb::protocol::matchmaking::raw::TicketMember> type; };
 template <> struct FlatBufferOffset<fb::protocol::matchmaking::Ticket> { typedef flatbuffers::Offset<fb::protocol::matchmaking::raw::Ticket> type; };
 template <> struct FlatBufferOffset<fb::protocol::matchmaking::MatchTeam> { typedef flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam> type; };
@@ -859,8 +857,6 @@ flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> build<fb::prot
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::raw::Listing> build<fb::protocol::marketplace::Listing>(FlatBufferBuilder& builder, const fb::protocol::marketplace::Listing& value);
 template <>
-flatbuffers::Offset<fb::protocol::marketplace::raw::Purchase> build<fb::protocol::marketplace::Purchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::Purchase& value);
-template <>
 flatbuffers::Offset<fb::protocol::marketplace::raw::SearchResult> build<fb::protocol::marketplace::SearchResult>(FlatBufferBuilder& builder, const fb::protocol::marketplace::SearchResult& value);
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::List> build<fb::protocol::marketplace::request::List>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::List& value);
@@ -871,11 +867,11 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::Cancel> build<fb::p
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::Purchase> build<fb::protocol::marketplace::request::Purchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::Purchase& value);
 template <>
+flatbuffers::Offset<fb::protocol::marketplace::request::raw::AbortPurchase> build<fb::protocol::marketplace::request::AbortPurchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::AbortPurchase& value);
+template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::Search> build<fb::protocol::marketplace::request::Search>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::Search& value);
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::GetListings> build<fb::protocol::marketplace::request::GetListings>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::GetListings& value);
-template <>
-flatbuffers::Offset<fb::protocol::marketplace::request::raw::GetPurchases> build<fb::protocol::marketplace::request::GetPurchases>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::GetPurchases& value);
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::response::raw::List> build<fb::protocol::marketplace::response::List>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::List& value);
 template <>
@@ -885,11 +881,11 @@ flatbuffers::Offset<fb::protocol::marketplace::response::raw::Cancel> build<fb::
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::response::raw::Purchase> build<fb::protocol::marketplace::response::Purchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::Purchase& value);
 template <>
+flatbuffers::Offset<fb::protocol::marketplace::response::raw::AbortPurchase> build<fb::protocol::marketplace::response::AbortPurchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::AbortPurchase& value);
+template <>
 flatbuffers::Offset<fb::protocol::marketplace::response::raw::Search> build<fb::protocol::marketplace::response::Search>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::Search& value);
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::response::raw::GetListings> build<fb::protocol::marketplace::response::GetListings>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::GetListings& value);
-template <>
-flatbuffers::Offset<fb::protocol::marketplace::response::raw::GetPurchases> build<fb::protocol::marketplace::response::GetPurchases>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::GetPurchases& value);
 template <>
 flatbuffers::Offset<fb::protocol::matchmaking::raw::TicketMember> build<fb::protocol::matchmaking::TicketMember>(FlatBufferBuilder& builder, const fb::protocol::matchmaking::TicketMember& value);
 template <>
@@ -7581,7 +7577,6 @@ enum class FlatBufferProtocolType
     Item,
     PurchaseInfo,
     Listing,
-    Purchase,
     SearchResult,
 };
 
@@ -7715,50 +7710,6 @@ public:
         return Listing(*raw);
     }
 };
-class Purchase
-{
-public:
-    static inline fb::protocol::marketplace::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::FlatBufferProtocolType::Purchase;
-
-public:
-    std::string id;
-    std::string listing_id;
-    uint32_t buyer_id = 0;
-    uint16_t purchase_count = 0;
-    uint64_t purchase_price = 0ULL;
-    std::string created_date;
-
-public:
-    Purchase() = default;
-
-    Purchase(const Purchase& x)
-        : id(x.id), listing_id(x.listing_id), buyer_id(x.buyer_id), purchase_count(x.purchase_count), purchase_price(x.purchase_price), created_date(x.created_date)
-    { }
-
-    Purchase(std::string_view id, std::string_view listing_id, uint32_t buyer_id, uint16_t purchase_count, uint64_t purchase_price, std::string_view created_date)
-        : id(std::string(id)), listing_id(std::string(listing_id)), buyer_id(buyer_id), purchase_count(purchase_count), purchase_price(purchase_price), created_date(std::string(created_date))
-    { }
-
-    Purchase(const fb::protocol::marketplace::raw::Purchase& raw)
-        : id(flatbuffers::option::decode(raw.id()->c_str())), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), buyer_id(raw.buyer_id()), purchase_count(raw.purchase_count()), purchase_price(raw.purchase_price()), created_date(flatbuffers::option::decode(raw.created_date()->c_str()))
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::marketplace::Purchase>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static Purchase Deserialize(const uint8_t* bytes)
-    {
-        auto raw = flatbuffers::GetRoot<fb::protocol::marketplace::raw::Purchase>(bytes);
-        return Purchase(*raw);
-    }
-};
 class SearchResult
 {
 public:
@@ -7811,9 +7762,9 @@ enum class FlatBufferProtocolType
     AbortList,
     Cancel,
     Purchase,
+    AbortPurchase,
     Search,
     GetListings,
-    GetPurchases,
 };
 
 class List
@@ -7827,20 +7778,21 @@ public:
     std::string listing_id;
     fb::protocol::marketplace::Item item;
     uint64_t price = 0ULL;
+    int64_t deadline = 0LL;
 
 public:
     List() = default;
 
     List(const List& x)
-        : world(x.world), character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price)
+        : world(x.world), character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price), deadline(x.deadline)
     { }
 
-    List(uint32_t world, uint32_t character_id, std::string_view listing_id, const fb::protocol::marketplace::Item& item, uint64_t price)
-        : world(world), character_id(character_id), listing_id(std::string(listing_id)), item(item), price(price)
+    List(uint32_t world, uint32_t character_id, std::string_view listing_id, const fb::protocol::marketplace::Item& item, uint64_t price, int64_t deadline)
+        : world(world), character_id(character_id), listing_id(std::string(listing_id)), item(item), price(price), deadline(deadline)
     { }
 
     List(const fb::protocol::marketplace::request::raw::List& raw)
-        : world(raw.world()), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price())
+        : world(raw.world()), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price()), deadline(raw.deadline())
     { }
 
 public:
@@ -7954,20 +7906,21 @@ public:
     std::string listing_id;
     uint16_t purchase_count = 0;
     std::string purchase_id;
+    int64_t deadline = 0LL;
 
 public:
     Purchase() = default;
 
     Purchase(const Purchase& x)
-        : world(x.world), buyer_id(x.buyer_id), listing_id(x.listing_id), purchase_count(x.purchase_count), purchase_id(x.purchase_id)
+        : world(x.world), buyer_id(x.buyer_id), listing_id(x.listing_id), purchase_count(x.purchase_count), purchase_id(x.purchase_id), deadline(x.deadline)
     { }
 
-    Purchase(uint32_t world, uint32_t buyer_id, std::string_view listing_id, uint16_t purchase_count, std::string_view purchase_id)
-        : world(world), buyer_id(buyer_id), listing_id(std::string(listing_id)), purchase_count(purchase_count), purchase_id(std::string(purchase_id))
+    Purchase(uint32_t world, uint32_t buyer_id, std::string_view listing_id, uint16_t purchase_count, std::string_view purchase_id, int64_t deadline)
+        : world(world), buyer_id(buyer_id), listing_id(std::string(listing_id)), purchase_count(purchase_count), purchase_id(std::string(purchase_id)), deadline(deadline)
     { }
 
     Purchase(const fb::protocol::marketplace::request::raw::Purchase& raw)
-        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), purchase_count(raw.purchase_count()), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str()))
+        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), purchase_count(raw.purchase_count()), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str())), deadline(raw.deadline())
     { }
 
 public:
@@ -7984,6 +7937,48 @@ public:
     {
         auto raw = flatbuffers::GetRoot<fb::protocol::marketplace::request::raw::Purchase>(bytes);
         return Purchase(*raw);
+    }
+};
+class AbortPurchase
+{
+public:
+    static inline fb::protocol::marketplace::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::request::FlatBufferProtocolType::AbortPurchase;
+
+public:
+    uint32_t world = 0;
+    uint32_t buyer_id = 0;
+    std::string listing_id;
+    std::string purchase_id;
+
+public:
+    AbortPurchase() = default;
+
+    AbortPurchase(const AbortPurchase& x)
+        : world(x.world), buyer_id(x.buyer_id), listing_id(x.listing_id), purchase_id(x.purchase_id)
+    { }
+
+    AbortPurchase(uint32_t world, uint32_t buyer_id, std::string_view listing_id, std::string_view purchase_id)
+        : world(world), buyer_id(buyer_id), listing_id(std::string(listing_id)), purchase_id(std::string(purchase_id))
+    { }
+
+    AbortPurchase(const fb::protocol::marketplace::request::raw::AbortPurchase& raw)
+        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::marketplace::request::AbortPurchase>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static AbortPurchase Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::marketplace::request::raw::AbortPurchase>(bytes);
+        return AbortPurchase(*raw);
     }
 };
 class Search
@@ -8070,45 +8065,6 @@ public:
         return GetListings(*raw);
     }
 };
-class GetPurchases
-{
-public:
-    static inline fb::protocol::marketplace::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::request::FlatBufferProtocolType::GetPurchases;
-
-public:
-    std::vector<std::string> purchase_ids = {};
-
-public:
-    GetPurchases() = default;
-
-    GetPurchases(const GetPurchases& x)
-        : purchase_ids(x.purchase_ids)
-    { }
-
-    GetPurchases(std::vector<std::string> purchase_ids)
-        : purchase_ids(purchase_ids)
-    { }
-
-    GetPurchases(const fb::protocol::marketplace::request::raw::GetPurchases& raw)
-        : purchase_ids(unpack<std::string>(raw.purchase_ids()))
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::marketplace::request::GetPurchases>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GetPurchases Deserialize(const uint8_t* bytes)
-    {
-        auto raw = flatbuffers::GetRoot<fb::protocol::marketplace::request::raw::GetPurchases>(bytes);
-        return GetPurchases(*raw);
-    }
-};
 
 } // end of namespace fb::protocol::marketplace::request
 
@@ -8120,9 +8076,9 @@ enum class FlatBufferProtocolType
     AbortList,
     Cancel,
     Purchase,
+    AbortPurchase,
     Search,
     GetListings,
-    GetPurchases,
 };
 
 class List
@@ -8286,6 +8242,46 @@ public:
         return Purchase(*raw);
     }
 };
+class AbortPurchase
+{
+public:
+    static inline fb::protocol::marketplace::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::response::FlatBufferProtocolType::AbortPurchase;
+
+public:
+    bool purchased = false;
+    uint32_t error = 0;
+
+public:
+    AbortPurchase() = default;
+
+    AbortPurchase(const AbortPurchase& x)
+        : purchased(x.purchased), error(x.error)
+    { }
+
+    AbortPurchase(bool purchased, uint32_t error)
+        : purchased(purchased), error(error)
+    { }
+
+    AbortPurchase(const fb::protocol::marketplace::response::raw::AbortPurchase& raw)
+        : purchased(raw.purchased()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::marketplace::response::AbortPurchase>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static AbortPurchase Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::marketplace::response::raw::AbortPurchase>(bytes);
+        return AbortPurchase(*raw);
+    }
+};
 class Search
 {
 public:
@@ -8364,46 +8360,6 @@ public:
     {
         auto raw = flatbuffers::GetRoot<fb::protocol::marketplace::response::raw::GetListings>(bytes);
         return GetListings(*raw);
-    }
-};
-class GetPurchases
-{
-public:
-    static inline fb::protocol::marketplace::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::response::FlatBufferProtocolType::GetPurchases;
-
-public:
-    std::vector<fb::protocol::marketplace::Purchase> purchases = {};
-    uint32_t error = 0;
-
-public:
-    GetPurchases() = default;
-
-    GetPurchases(const GetPurchases& x)
-        : purchases(x.purchases), error(x.error)
-    { }
-
-    GetPurchases(std::vector<fb::protocol::marketplace::Purchase> purchases, uint32_t error)
-        : purchases(purchases), error(error)
-    { }
-
-    GetPurchases(const fb::protocol::marketplace::response::raw::GetPurchases& raw)
-        : purchases(unpack<fb::protocol::marketplace::Purchase>(raw.purchases())), error(raw.error())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::marketplace::response::GetPurchases>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GetPurchases Deserialize(const uint8_t* bytes)
-    {
-        auto raw = flatbuffers::GetRoot<fb::protocol::marketplace::response::raw::GetPurchases>(bytes);
-        return GetPurchases(*raw);
     }
 };
 
@@ -10708,17 +10664,6 @@ flatbuffers::Offset<fb::protocol::marketplace::raw::Listing> build<fb::protocol:
             flatbuffers::build<std::optional<fb::protocol::marketplace::PurchaseInfo>>(builder, value.purchase_info));
 }
 template <>
-flatbuffers::Offset<fb::protocol::marketplace::raw::Purchase> build<fb::protocol::marketplace::Purchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::Purchase& value)
-{
-    return fb::protocol::marketplace::raw::CreatePurchase(builder,
-            flatbuffers::build<std::string>(builder, value.id),
-            flatbuffers::build<std::string>(builder, value.listing_id),
-            flatbuffers::build<uint32_t>(builder, value.buyer_id),
-            flatbuffers::build<uint16_t>(builder, value.purchase_count),
-            flatbuffers::build<uint64_t>(builder, value.purchase_price),
-            flatbuffers::build<std::string>(builder, value.created_date));
-}
-template <>
 flatbuffers::Offset<fb::protocol::marketplace::raw::SearchResult> build<fb::protocol::marketplace::SearchResult>(FlatBufferBuilder& builder, const fb::protocol::marketplace::SearchResult& value)
 {
     return fb::protocol::marketplace::raw::CreateSearchResult(builder,
@@ -10734,7 +10679,8 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::List> build<fb::pro
             flatbuffers::build<uint32_t>(builder, value.character_id),
             flatbuffers::build<std::string>(builder, value.listing_id),
             flatbuffers::build<fb::protocol::marketplace::Item>(builder, value.item),
-            flatbuffers::build<uint64_t>(builder, value.price));
+            flatbuffers::build<uint64_t>(builder, value.price),
+            flatbuffers::build<int64_t>(builder, value.deadline));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::AbortList> build<fb::protocol::marketplace::request::AbortList>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::AbortList& value)
@@ -10762,6 +10708,16 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::Purchase> build<fb:
             flatbuffers::build<uint32_t>(builder, value.buyer_id),
             flatbuffers::build<std::string>(builder, value.listing_id),
             flatbuffers::build<uint16_t>(builder, value.purchase_count),
+            flatbuffers::build<std::string>(builder, value.purchase_id),
+            flatbuffers::build<int64_t>(builder, value.deadline));
+}
+template <>
+flatbuffers::Offset<fb::protocol::marketplace::request::raw::AbortPurchase> build<fb::protocol::marketplace::request::AbortPurchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::AbortPurchase& value)
+{
+    return fb::protocol::marketplace::request::raw::CreateAbortPurchase(builder,
+            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<uint32_t>(builder, value.buyer_id),
+            flatbuffers::build<std::string>(builder, value.listing_id),
             flatbuffers::build<std::string>(builder, value.purchase_id));
 }
 template <>
@@ -10781,12 +10737,6 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::GetListings> build<
     return fb::protocol::marketplace::request::raw::CreateGetListings(builder,
             flatbuffers::build<std::vector<std::string>>(builder, value.listing_ids),
             flatbuffers::build<std::optional<uint32_t>>(builder, value.buyer_id));
-}
-template <>
-flatbuffers::Offset<fb::protocol::marketplace::request::raw::GetPurchases> build<fb::protocol::marketplace::request::GetPurchases>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::GetPurchases& value)
-{
-    return fb::protocol::marketplace::request::raw::CreateGetPurchases(builder,
-            flatbuffers::build<std::vector<std::string>>(builder, value.purchase_ids));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::response::raw::List> build<fb::protocol::marketplace::response::List>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::List& value)
@@ -10818,6 +10768,13 @@ flatbuffers::Offset<fb::protocol::marketplace::response::raw::Purchase> build<fb
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
+flatbuffers::Offset<fb::protocol::marketplace::response::raw::AbortPurchase> build<fb::protocol::marketplace::response::AbortPurchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::AbortPurchase& value)
+{
+    return fb::protocol::marketplace::response::raw::CreateAbortPurchase(builder,
+            flatbuffers::build<bool>(builder, value.purchased),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
 flatbuffers::Offset<fb::protocol::marketplace::response::raw::Search> build<fb::protocol::marketplace::response::Search>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::Search& value)
 {
     return fb::protocol::marketplace::response::raw::CreateSearch(builder,
@@ -10829,13 +10786,6 @@ flatbuffers::Offset<fb::protocol::marketplace::response::raw::GetListings> build
 {
     return fb::protocol::marketplace::response::raw::CreateGetListings(builder,
             flatbuffers::build<std::vector<fb::protocol::marketplace::Listing>>(builder, value.listings),
-            flatbuffers::build<uint32_t>(builder, value.error));
-}
-template <>
-flatbuffers::Offset<fb::protocol::marketplace::response::raw::GetPurchases> build<fb::protocol::marketplace::response::GetPurchases>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::GetPurchases& value)
-{
-    return fb::protocol::marketplace::response::raw::CreateGetPurchases(builder,
-            flatbuffers::build<std::vector<fb::protocol::marketplace::Purchase>>(builder, value.purchases),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>

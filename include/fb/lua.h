@@ -303,6 +303,7 @@ private:
     bool                                  _release_pending = false;
     std::string                           _script_path;
     std::function<void(std::string_view)> _on_error;
+    std::optional<std::weak_ptr<luable>>  _actor; // first argument of the script call (`me`)
 
     void finish_resume();
 

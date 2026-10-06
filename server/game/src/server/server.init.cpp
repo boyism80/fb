@@ -169,6 +169,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
         lua.build("http_response_delay", builtin::server::builtin_http_response_delay);
         lua.build("http_fault", builtin::server::builtin_http_fault);
+        lua.build("http_hold", builtin::server::builtin_http_hold);
         lua.build("property", builtin::server::builtin_property);
         lua.build("match_transfer", builtin::server::builtin_match_transfer);
         lua.build("is_cross", builtin::server::builtin_is_cross);
@@ -211,16 +212,18 @@ async::task<void> fb::game::server::init_thread_params()
     {
         auto builder = thread->new_builder<void>();
         builder.func = [this, maps = std::move(maps)](auto& thread) -> async::task<void> {
-            auto params = std::make_unique<thread_params>(*this);
+            auto params      = std::make_unique<thread_params>(*this);
+            auto spawn_table = table::mob_spawn.get();
             for (const auto& map : maps)
             {
                 params->add_map(map);
-                if (table::mob_spawn->contains(map->model().id))
+                if (spawn_table->contains(map->model().id))
                 {
-                    auto& spawns = table::mob_spawn[map->model().id];
+                    auto& spawns = (*spawn_table)[map->model().id];
                     for (uint32_t i = 0; i < spawns.size(); i++)
                     {
-                        params->rezens.push_back(std::make_unique<fb::game::rezen>(*this, map->model().id, i, map));
+                        params->rezens.push_back(
+                            std::make_shared<fb::game::rezen>(*this, spawn_table, map->model().id, i, map));
                     }
                 }
             }

@@ -13,7 +13,8 @@ public interface IMarketplaceService
         uint? itemDurability,
         string itemCustomName,
         ulong price,
-        TimeSpan expireTime);
+        TimeSpan expireTime,
+        DateTime deadline);
 
     Task<bool> AbortListAsync(
         uint world,
@@ -32,7 +33,10 @@ public interface IMarketplaceService
         uint buyerId,
         string listingId,
         ushort purchaseCount,
-        string purchaseId);
+        string purchaseId,
+        DateTime deadline);
+
+    Task<bool> AbortPurchaseAsync(uint world, uint buyerId, string listingId, string purchaseId);
 
     Task<MarketplaceSearchResult> SearchItemsAsync(MarketplaceSearchOption option);
 
@@ -41,6 +45,4 @@ public interface IMarketplaceService
     Task<List<ListingWithPurchase>> GetListingsByIdsAsync(
         List<string> listingIds,
         uint? buyerId = null);
-
-    Task<Dictionary<string, MarketplacePurchase>> GetPurchasesByIdsAsync(List<string> purchaseIds);
 }

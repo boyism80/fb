@@ -8,6 +8,7 @@ table List {
     listing_id: string;
     item: fb.protocol.marketplace.Item;
     price: ulong;
+    deadline: long;
 }
 
 table AbortList {
@@ -30,6 +31,14 @@ table Purchase {
     listing_id: string;
     purchase_count: ushort;
     purchase_id: string;
+    deadline: long;
+}
+
+table AbortPurchase {
+    world: uint;
+    buyer_id: uint;
+    listing_id: string;
+    purchase_id: string;
 }
 
 table Search {
@@ -45,8 +54,3 @@ table GetListings {
     listing_ids: [string];
     buyer_id: uint?;
 }
-
-table GetPurchases {
-    purchase_ids: [string];
-}
-

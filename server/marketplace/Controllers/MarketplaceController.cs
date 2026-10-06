@@ -47,7 +47,8 @@ public class MarketplaceController : ControllerBase
                 request.Item.Durability,
                 request.Item.CustomName,
                 request.Price,
-                Fb.Model.ConstValue.Marketplace.ExpireTime);
+                Fb.Model.ConstValue.Marketplace.ExpireTime,
+                DateTimeOffset.FromUnixTimeMilliseconds(request.Deadline).UtcDateTime);
 
             return new Response.List
             {
@@ -161,7 +162,8 @@ public class MarketplaceController : ControllerBase
                 request.BuyerId,
                 request.ListingId,
                 request.PurchaseCount,
-                request.PurchaseId);
+                request.PurchaseId,
+                DateTimeOffset.FromUnixTimeMilliseconds(request.Deadline).UtcDateTime);
 
             return new Response.Purchase
             {
@@ -211,6 +213,46 @@ public class MarketplaceController : ControllerBase
                 },
                 ActualPurchaseCount = 0,
                 RefundAmount = 0,
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
+    [HttpPost("abort-purchase")]
+    public async Task<Response.AbortPurchase> AbortPurchase(Request.AbortPurchase request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(request.PurchaseId))
+                throw new LogicException(ErrorCode.MarketplaceListingNotFound);
+
+            var purchased = await _marketplaceService.AbortPurchaseAsync(
+                request.World,
+                request.BuyerId,
+                request.ListingId,
+                request.PurchaseId);
+
+            return new Response.AbortPurchase
+            {
+                Purchased = purchased,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            _logger.LogWarning("Marketplace abort purchase error: {ErrorCode}", e.Error);
+            return new Response.AbortPurchase
+            {
+                Purchased = false,
+                Error = (uint)e.Error
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to abort purchase {PurchaseId}", request.PurchaseId);
+            return new Response.AbortPurchase
+            {
+                Purchased = false,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
@@ -342,40 +384,4 @@ public class MarketplaceController : ControllerBase
             };
         }
     }
-
-    [HttpPost("get-purchases")]
-    public async Task<Response.GetPurchases> GetPurchases(Request.GetPurchases request)
-    {
-        try
-        {
-            var purchases = await _marketplaceService.GetPurchasesByIdsAsync(
-                request.PurchaseIds ?? new List<string>());
-
-            var protocolPurchases = purchases.Values.Select(p => new Protocol.Purchase
-            {
-                Id = p.Id,
-                ListingId = p.ListingId,
-                BuyerId = p.BuyerId,
-                PurchaseCount = p.PurchaseCount,
-                PurchasePrice = p.PurchasePrice,
-                CreatedDate = p.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-            }).ToList();
-
-            return new Response.GetPurchases
-            {
-                Purchases = protocolPurchases,
-                Error = (uint)ErrorCode.None
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to get purchases");
-            return new Response.GetPurchases
-            {
-                Purchases = [],
-                Error = (uint)ErrorCode.Unhandled
-            };
-        }
-    }
-
 }

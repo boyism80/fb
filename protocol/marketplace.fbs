@@ -33,15 +33,6 @@ table Listing {
     purchase_info: PurchaseInfo?;
 }
 
-table Purchase {
-    id: string;
-    listing_id: string;
-    buyer_id: uint;
-    purchase_count: ushort;
-    purchase_price: ulong;
-    created_date: string;
-}
-
 table SearchResult {
     listings: [Listing];
     total_count: uint;

@@ -74,7 +74,7 @@ public:
 
 protected:
     // clang-format off
-    damage_settle     damage_targets(const damage_list& targets, const damage_opts& opts);
+    damage_settle     damage_targets(const damage_list& targets, const damage_opts& opts, std::shared_ptr<life> attacker);
     async::task<void> settle_deaths(mob_vector dead);
     async::task<void> invoke_on_mob_damaged(const damage_list& targets);
     async::task<void> settle_character_deaths(const character_vector& dead, std::shared_ptr<life> killer);
@@ -94,6 +94,7 @@ public:
     virtual void              handle_death(std::shared_ptr<fb::game::object> killer = nullptr);
     virtual async::task<void> damage_to(const damage_list& targets);
     virtual async::task<void> damage_to(const damage_list& targets, const damage_opts& opts);
+    async::task<void>         damage(uint64_t value, const damage_opts& opts);
     virtual bool              alive() const;
     bool                      active(fb::game::spell& spell);
     bool                      active(fb::game::spell& spell, uint32_t oid);

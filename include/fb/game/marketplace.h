@@ -6,12 +6,12 @@
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
 
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace fb::protocol::internal {
@@ -93,16 +93,22 @@ public:
     };
 
     // Type aliases for commonly used types
-    using purchase_map_t     = std::unordered_map<std::string, purchase_info>;
     using pending_listings_t = std::unordered_map<std::string, pending_listing_info>;
     using string_vector_t    = std::vector<std::string>;
 
 private:
+    using clock = std::chrono::steady_clock;
+
+    // The marketplace rejects requests past sent + REQUEST_TTL; the extra margin covers clock skew.
+    inline static constexpr auto REQUEST_TTL   = std::chrono::seconds(10);
+    inline static constexpr auto RESTORE_GRACE = REQUEST_TTL + std::chrono::seconds(5);
+
     character&         _owner;
     pending_listings_t _pending_listings; // Key: purchase_id (for purchase) or listing_id (for list)
-    // Escrows whose list request is still in flight; abort-list on them would race the request.
-    std::unordered_set<std::string> _listing;
-    bool                            _restoring = false;
+    // Earliest time restore may abort the escrow / purchase pending.
+    std::unordered_map<std::string, clock::time_point> _listing;
+    std::unordered_map<std::string, clock::time_point> _purchasing;
+    bool                                               _restoring = false;
 
 public:
     explicit marketplace(character& owner);
@@ -117,7 +123,6 @@ public:
     async::task<listing>              purchase(std::string_view listing_id, uint16_t purchase_count);
     async::task<search_result>        search(const search_option& option);
     async::task<std::vector<listing>> get_listings(const string_vector_t& listing_ids, uint32_t buyer_id = 0);
-    async::task<purchase_map_t>       get_purchases(const string_vector_t& purchase_ids);
     void                              set_pending_listings(pending_listings_t pending_listings);
     async::task<void>                 restore();
     const pending_listings_t&         pending_listings() const;

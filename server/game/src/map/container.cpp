@@ -486,12 +486,14 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
     builder.func = [this, map](auto& thread) -> async::task<void> {
         auto params = thread.template data<thread_params>();
         params->add_map(map);
-        if (table::mob_spawn->contains(map->model().id))
+        auto spawn_table = table::mob_spawn.get();
+        if (spawn_table->contains(map->model().id))
         {
-            auto& spawns = table::mob_spawn[map->model().id];
+            auto& spawns = (*spawn_table)[map->model().id];
             for (uint32_t i = 0; i < spawns.size(); i++)
             {
-                params->rezens.push_back(std::make_unique<fb::game::rezen>(this->server, map->model().id, i, map));
+                params->rezens.push_back(
+                    std::make_shared<fb::game::rezen>(this->server, spawn_table, map->model().id, i, map));
             }
         }
         co_return;
@@ -753,6 +755,79 @@ void map::container::rezen_force()
         };
         builder.enqueue();
     }
+}
+
+async::task<void> map::container::rebuild_rezens()
+{
+    auto spawn_table = table::mob_spawn.get();
+    auto tasks       = std::vector<async::task<void>>();
+    for (auto& [id, thread] : this->server.threads)
+    {
+        auto builder = thread->new_builder<void>();
+        builder.func = [this, spawn_table](auto& thread) -> async::task<void> {
+            auto  params  = thread.template data<thread_params>();
+            auto& rezens  = params->rezens;
+            auto  removed = std::vector<std::shared_ptr<fb::game::rezen>>();
+            auto  rebuilt = 0;
+            for (auto& [_, map] : params->maps)
+            {
+                auto current = std::vector<std::shared_ptr<fb::game::rezen>>();
+                for (auto& rezen : rezens)
+                {
+                    if (rezen->map_id() == map->id)
+                        current.push_back(rezen);
+                }
+
+                auto latest = spawn_table->find(map->model().id);
+                auto same   = (latest != nullptr ? latest->size() : 0) == current.size();
+                for (uint32_t i = 0; same && i < current.size(); i++)
+                {
+                    auto& before = current[i]->model();
+                    auto& after  = (*latest)[i];
+                    same = before.begin == after.begin && before.end == after.end && before.count == after.count &&
+                           before.mob == after.mob && before.rezen == after.rezen &&
+                           before.condition.size() == after.condition.size();
+                    for (size_t j = 0; same && j < before.condition.size(); j++)
+                        same = before.condition[j].to_json() == after.condition[j].to_json();
+                }
+
+                if (same)
+                {
+                    for (auto& rezen : current)
+                        rezen->table(spawn_table);
+                }
+                else
+                {
+                    rezens.erase(std::remove_if(rezens.begin(),
+                                                rezens.end(),
+                                                [id = map->id](const auto& rezen) {
+                                                    return rezen->map_id() == id;
+                                                }),
+                                 rezens.end());
+                    removed.insert(removed.end(), current.begin(), current.end());
+
+                    for (uint32_t i = 0; latest != nullptr && i < latest->size(); i++)
+                    {
+                        rezens.push_back(
+                            std::make_shared<fb::game::rezen>(this->server, spawn_table, map->model().id, i, map));
+                    }
+                    rebuilt++;
+                }
+            }
+
+            for (auto& rezen : removed)
+                co_await rezen->despawn_all();
+
+            if (rebuilt > 0)
+                fb::logger::info("rezen rebuilt for {} map(s) after table reload", rebuilt);
+            co_return;
+        };
+        tasks.push_back(builder.dispatch());
+    }
+
+    for (auto& task : tasks)
+        co_await task;
+    co_return;
 }
 
 void map::container::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)

@@ -27,6 +27,8 @@ async::task<void> reload_tables::handle(const internal_resp::ReloadTables& messa
         co_await fb::model::reload_async();
         fb::logger::info("Data tables reloaded");
 
+        co_await this->server.maps.rebuild_rezens();
+
         this->server.characters.foreach_enqueue(
             [](auto& ch) -> async::task<void> {
                 ch->message("테이블 패치가 완료되었습니다.", MESSAGE_TYPE::NOTIFY);
