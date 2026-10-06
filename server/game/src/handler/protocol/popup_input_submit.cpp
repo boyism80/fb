@@ -2,8 +2,6 @@
 
 #include <fb/game/server.h>
 
-#include <tuple>
-
 namespace game_reqs = fb::protocol::game::request;
 
 namespace fb::game::handler::protocol {
@@ -16,12 +14,14 @@ async::task<bool> popup_input_submit<V>::handle(fb::socket<character>&          
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua = ch->take_dialog();
+    auto lua = ch->take_dialog(fb::game::dialog::response::POPUP_INPUT);
     if (lua == nullptr)
         co_return true;
 
-    std::ignore = request.param0;
-    lua->pushstring(request.text);
+    auto text = request.text;
+    co_await lua->switching();
+
+    lua->pushstring(text);
     lua->resume(1);
     co_return true;
 }

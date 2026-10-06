@@ -648,6 +648,13 @@ void fb::lua::context::resume(int argc, int* n)
         return;
     }
 
+    if (this->_initial_thread.id() != std::this_thread::get_id())
+    {
+        fb::logger::fatal("lua resume on a foreign thread: {}", this->script_path());
+        this->reject("lua resume on a foreign thread");
+        return;
+    }
+
     // Fresh coroutine (LUA_OK, not yet started). After a yield the status is LUA_YIELD and the actor is already bound.
     if (this->_on_error == nullptr && argc > 0 && lua_status(*this) == LUA_OK && g_script_error_bind != nullptr)
         g_script_error_bind(*this, argc);

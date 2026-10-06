@@ -191,27 +191,28 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     if (this->_owner.items.is_rewardable(it->second.attachments) == false)
         co_return false;
 
-    auto weak  = this->_owner.weak_from_this_as<character>();
-    auto world = this->_owner.world();
+    auto weak     = this->_owner.weak_from_this_as<character>();
+    auto world    = this->_owner.world();
+    auto owner_id = this->_owner.id;
 
     fb::protocol::internal::response::ClaimStorageBox claim_resp{};
     try
     {
         claim_resp = co_await this->_owner.server.http.post(
+            weak,
             "internal",
             "/storage/claim",
-            fb::protocol::internal::request::ClaimStorageBox{world, this->_owner.id, entry_id});
+            fb::protocol::internal::request::ClaimStorageBox{world, owner_id, entry_id});
     }
     catch (const std::exception& e)
     {
         fb::logger::warn("storage_box.receive_reward claim exception user={} entry={}: {}",
-                         this->_owner.id,
+                         owner_id,
                          entry_id,
                          e.what());
         co_return false;
     }
 
-    co_await this->_owner.server.threads.switching(weak);
     auto ptr = weak.lock();
     if (ptr == nullptr)
     {
@@ -257,6 +258,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         try
         {
             unclaim_resp = co_await ptr->server.http.post(
+                weak,
                 "internal",
                 "/storage/unclaim",
                 fb::protocol::internal::request::UnclaimStorageBox{world, ptr->id, entry_id});
@@ -269,7 +271,6 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                              e.what());
         }
 
-        co_await ptr->server.threads.switching(weak);
         ptr = weak.lock();
         if (ptr != nullptr)
         {

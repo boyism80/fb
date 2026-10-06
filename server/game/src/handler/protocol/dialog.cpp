@@ -123,34 +123,69 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua = ch->take_dialog();
-    if (lua == nullptr)
-        co_return true;
-
+    auto response = fb::game::dialog::response::MENU;
     switch (request.type)
     {
     case fb::game::dialog::type::INPUT:
     case fb::game::dialog::type::INPUT_NO_EXT:
-        lua->pushstring(request.message);
+        response = fb::game::dialog::response::INPUT;
+        break;
+
+    case fb::game::dialog::type::MENU:
+    case fb::game::dialog::type::MENU_NO_EXT:
+        response = fb::game::dialog::response::MENU;
+        break;
+
+    case fb::game::dialog::type::SLOT:
+    case fb::game::dialog::type::SPELL:
+        response = fb::game::dialog::response::SLOT;
+        break;
+
+    case fb::game::dialog::type::ITEM:
+    case fb::game::dialog::type::PURSUIT:
+    case fb::game::dialog::type::BUY:
+        response = fb::game::dialog::response::SELECT;
+        break;
+
+    default:
+        co_return true;
+    }
+
+    auto lua = ch->take_dialog(response);
+    if (lua == nullptr)
+        co_return true;
+
+    auto choices = ch->dialog_choices();
+    auto reply   = request;
+    co_await lua->switching();
+
+    switch (reply.type)
+    {
+    case fb::game::dialog::type::INPUT:
+    case fb::game::dialog::type::INPUT_NO_EXT:
+        lua->pushstring(reply.message);
         lua->resume(1);
         break;
 
     case fb::game::dialog::type::MENU:
     case fb::game::dialog::type::MENU_NO_EXT:
-        lua->pushinteger(request.index);
+        if (reply.index >= 1 && reply.index <= choices)
+            lua->pushinteger(reply.index);
+        else
+            lua->pushnil();
         lua->resume(1);
         break;
 
     case fb::game::dialog::type::SLOT:
     case fb::game::dialog::type::SPELL:
-        lua->pushinteger(request.index);
+        lua->pushinteger(reply.index);
         lua->resume(1);
         break;
 
     case fb::game::dialog::type::ITEM:
     case fb::game::dialog::type::PURSUIT:
     {
-        auto found = this->selected(lua, request);
+        auto found = this->selected(lua, reply);
         if (found != 0)
             lua->pushinteger(found);
         else
@@ -162,12 +197,12 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     case fb::game::dialog::type::BUY:
     {
         // Yields: selected (1-based index or nil), count (v651 NEW quantity; else nil)
-        auto found = this->selected(lua, request);
+        auto found = this->selected(lua, reply);
         if (found != 0)
         {
             lua->pushinteger(found);
             if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
-                lua->pushinteger(request.count);
+                lua->pushinteger(reply.count);
             else
                 lua->pushnil();
             lua->resume(2);
@@ -181,7 +216,6 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     }
 
     default:
-        lua->reject("unsupported dialog type");
         break;
     }
 

@@ -12,6 +12,10 @@ local function parse_positive_number(raw)
 end
 
 function M.handle(me, npc)
+    if me:role() < ROLE.ADMIN then
+        return true
+    end
+
     local target_sel, btn = me:pursuit(npc, '누구에게 보낼까요?', { '전체 유저', '특정 유저' })
     if btn == DIALOG_RESULT.QUIT then
         return true

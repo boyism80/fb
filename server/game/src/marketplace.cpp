@@ -135,6 +135,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     {
         auto   world = this->_owner.world();
         auto&& resp  = co_await this->_owner.server.http.post(
+            weak,
             "marketplace",
             "/marketplace/list",
             mp_reqs::List{
@@ -144,8 +145,6 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
                 mp::Item{this->_owner.id, model.id, count, durability, custom_name},
                 price
         });
-
-        co_await this->_owner.server.threads.switching(weak);
         error_code = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
         switch (error_code)
         {
@@ -172,7 +171,6 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     if (weak.expired())
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
-    co_await this->_owner.server.threads.switching(weak);
     this->_listing.erase(id);
 
     if (unknown)
@@ -239,9 +237,7 @@ async::task<bool> marketplace::cancel(std::string_view id)
     auto   weak  = this->_owner.weak_from_this_as<fb::game::character>();
     auto   world = this->_owner.world();
     auto   req   = mp_reqs::Cancel{world, this->_owner.id, id_copy};
-    auto&& resp  = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
-
-    co_await this->_owner.server.threads.switching(weak);
+    auto&& resp  = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/cancel", req);
 
     if (resp.error != 0)
     {
@@ -323,9 +319,7 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
     try
     {
         auto   req  = mp_reqs::Purchase{world, this->_owner.id, listing_id_copy, purchase_count, purchase_id};
-        auto&& resp = co_await this->_owner.server.http.post("marketplace", "/marketplace/purchase", req);
-
-        co_await this->_owner.server.threads.switching(weak);
+        auto&& resp = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/purchase", req);
 
         auto ec = (fb::model::enum_value::ERROR_CODE)resp.error;
         if (ec != fb::model::enum_value::ERROR_CODE::NONE)
@@ -427,7 +421,8 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
     this->_owner.assert_thread();
 
     auto   weak = this->_owner.weak_from_this_as<fb::game::character>();
-    auto&& resp = co_await this->_owner.server.http.post("marketplace",
+    auto&& resp = co_await this->_owner.server.http.post(weak,
+                                                         "marketplace",
                                                          "/marketplace/search",
                                                          mp_reqs::Search{option.item_name,
                                                                          option.min_price,
@@ -435,8 +430,6 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
                                                                          option.seller_id,
                                                                          option.sort_by,
                                                                          option.page});
-
-    co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_SEARCH_ITEMS),
@@ -488,11 +481,10 @@ marketplace::get_listings(const marketplace::string_vector_t& listing_ids, uint3
     auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     // Call get_listings API to get all listing data (with optional buyer_id for purchase_info)
     auto&& resp = co_await this->_owner.server.http.post(
+        weak,
         "marketplace",
         "/marketplace/get-listings",
         mp_reqs::GetListings{listing_ids, buyer_id > 0 ? std::optional<uint32_t>(buyer_id) : std::nullopt});
-
-    co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_GET_LISTINGS), resp.error));
@@ -555,11 +547,10 @@ async::task<marketplace::purchase_map_t> marketplace::get_purchases(const market
 
     auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     // Call get_purchases API to get purchase records
-    auto&& resp = co_await this->_owner.server.http.post("marketplace",
+    auto&& resp = co_await this->_owner.server.http.post(weak,
+                                                         "marketplace",
                                                          "/marketplace/get-purchases",
                                                          mp_reqs::GetPurchases{purchase_ids});
-
-    co_await this->_owner.server.threads.switching(weak);
 
     if (resp.error != 0)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_GET_LISTINGS), resp.error));
@@ -706,7 +697,8 @@ async::task<void> marketplace::restore()
         try
         {
             auto&& resp =
-                co_await this->_owner.server.http.post("marketplace",
+                co_await this->_owner.server.http.post(weak,
+                                                       "marketplace",
                                                        "/marketplace/abort-list",
                                                        mp_reqs::AbortList{world, this->_owner.id, listing_id, item, 0});
             if (resp.error == 0)
@@ -719,7 +711,9 @@ async::task<void> marketplace::restore()
             fb::logger::warn("abort-list {} failed: {}", listing_id, e.what());
         }
 
-        co_await this->_owner.server.threads.switching(weak);
+        if (weak.expired())
+            throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+
         if (created.has_value() == false)
             continue;
 

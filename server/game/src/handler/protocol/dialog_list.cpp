@@ -18,15 +18,44 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua = ch->take_dialog();
-    if (lua == nullptr)
-        co_return true;
-
+    auto response = fb::game::dialog::response::TEXT;
     switch (request.type)
     {
     case fb::game::dialog::list_type::TEXT:
     case fb::game::dialog::list_type::TEXT_NO_MSG:
-        lua->pushinteger(request.action);
+        response = fb::game::dialog::response::TEXT;
+        break;
+
+    case fb::game::dialog::list_type::INPUT:
+    case fb::game::dialog::list_type::INPUT_NO_MSG:
+    case fb::game::dialog::list_type::INPUT_PASSWORD:
+    case fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG:
+    case fb::game::dialog::list_type::EMAIL:
+        response = fb::game::dialog::response::LIST_INPUT;
+        break;
+
+    case fb::game::dialog::list_type::LIST:
+    case fb::game::dialog::list_type::LIST_NO_MSG:
+        response = fb::game::dialog::response::LIST;
+        break;
+
+    default:
+        co_return true;
+    }
+
+    auto lua = ch->take_dialog(response);
+    if (lua == nullptr)
+        co_return true;
+
+    auto choices = ch->dialog_choices();
+    auto reply   = request;
+    co_await lua->switching();
+
+    switch (reply.type)
+    {
+    case fb::game::dialog::list_type::TEXT:
+    case fb::game::dialog::list_type::TEXT_NO_MSG:
+        lua->pushinteger(reply.action);
         lua->resume(1);
         break;
 
@@ -35,27 +64,26 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     case fb::game::dialog::list_type::INPUT_PASSWORD:
     case fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG:
     case fb::game::dialog::list_type::EMAIL:
-        if (request.action == 0x02) // OK button
-            lua->pushstring(request.message);
+        if (reply.action == 0x02) // OK button
+            lua->pushstring(reply.message);
         else
-            lua->pushinteger(request.action);
+            lua->pushinteger(reply.action);
 
         lua->resume(1);
         break;
 
     case fb::game::dialog::list_type::LIST:
     case fb::game::dialog::list_type::LIST_NO_MSG:
-        if (request.button == DIALOG_RESULT::NEXT)
-            lua->pushinteger(request.index);
+        if (reply.button == DIALOG_RESULT::NEXT && reply.index >= 1 && reply.index <= choices)
+            lua->pushinteger(reply.index);
         else
             lua->pushnil();
 
-        lua->pushinteger(static_cast<uint32_t>(request.button));
+        lua->pushinteger(static_cast<uint32_t>(reply.button));
         lua->resume(2);
         break;
 
     default:
-        lua->reject("unsupported dialog list type");
         break;
     }
 

@@ -279,52 +279,59 @@ async::task<void> group::container::on_enter(std::string                target,
         co_return;
 
     auto new_member_name = new_member.value();
-    auto guard           = co_await this->enter_write(group_id);
-    if (guard.value() == nullptr)
-        co_return;
-    auto& group = guard.value();
-
-    auto ch = this->_server.characters.find(new_member_name);
-    if (ch == nullptr)
-        co_return;
-
-    auto weak    = ch->template weak_from_this_as<character>();
-    auto ch_id   = ch->id;
-    auto members = std::vector<std::shared_ptr<character>>();
-
-    for (auto& member_ptr : group->characters())
-        members.push_back(member_ptr);
-
-    group->enter(weak);
-    group->add_member(new_member_name);
-
-    this->_server.characters.foreach_enqueue(
-        [new_member_name](auto& member) -> async::task<void> {
-            member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), new_member_name), MESSAGE_TYPE::STATE);
-            co_return;
-        },
-        members);
-
-    auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
-    log_data["character_name"] = UTF8(new_member_name, PLATFORM::WINDOWS);
-    log_data["group_id"]       = static_cast<Json::Int64>(group->id());
-    this->_server.log.write("group_enter", log_data);
-
-    auto before = this->_server.threads.current();
-    co_await this->_server.threads.switching(weak);
-
-    auto ptr = weak.lock();
-    if (ptr != nullptr)
+    auto weak            = std::weak_ptr<character>();
+    auto ch_id           = uint32_t{0};
+    auto members         = std::vector<std::shared_ptr<character>>();
     {
-        ptr->group_id(group->id());
-        ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+        auto guard = co_await this->enter_write(group_id);
+        if (guard.value() == nullptr)
+            co_return;
+        auto& group = guard.value();
+
+        group->add_member(new_member_name);
+
+        auto ch = this->_server.characters.find(new_member_name);
+        if (ch != nullptr)
+        {
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            for (auto& member_ptr : group->characters())
+                members.push_back(member_ptr);
+
+            group->enter(weak);
+        }
     }
 
-    if (before != nullptr)
-        co_await before->switching();
+    if (weak.expired() == false)
+    {
+        this->_server.characters.foreach_enqueue(
+            [new_member_name](auto& member) -> async::task<void> {
+                member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), new_member_name), MESSAGE_TYPE::STATE);
+                co_return;
+            },
+            members);
 
-    this->update_portraits(*group);
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
+        log_data["character_name"] = UTF8(new_member_name, PLATFORM::WINDOWS);
+        log_data["group_id"]       = static_cast<Json::Int64>(group_id);
+        this->_server.log.write("group_enter", log_data);
+
+        auto before = this->_server.threads.current();
+        co_await this->_server.threads.switching(weak);
+
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+        {
+            ptr->group_id(group_id);
+            ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+        }
+
+        if (before != nullptr)
+            co_await before->switching();
+    }
+
+    this->update_portraits(group_id);
 }
 
 async::task<void> group::container::on_leave(std::string                target,
@@ -335,21 +342,27 @@ async::task<void> group::container::on_leave(std::string                target,
         co_return;
 
     auto deleted_member_name = deleted_member.value();
-    auto guard               = co_await this->enter_write(group_id);
-    if (guard.value() == nullptr)
-        co_return;
-    auto& group = guard.value();
-
-    group->remove_member(deleted_member_name);
-
-    std::weak_ptr<character> weak;
-    uint32_t                 ch_id = 0;
-    auto                     ch    = this->_server.characters.find(deleted_member_name);
-    if (ch != nullptr)
+    auto weak                = std::weak_ptr<character>();
+    auto ch_id               = uint32_t{0};
+    auto members             = std::vector<std::shared_ptr<character>>();
     {
-        weak  = ch->template weak_from_this_as<character>();
-        ch_id = ch->id;
-        group->detach(weak);
+        auto guard = co_await this->enter_write(group_id);
+        if (guard.value() == nullptr)
+            co_return;
+        auto& group = guard.value();
+
+        group->remove_member(deleted_member_name);
+
+        auto ch = this->_server.characters.find(deleted_member_name);
+        if (ch != nullptr)
+        {
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            group->detach(weak);
+        }
+
+        for (auto& member_ptr : group->characters())
+            members.push_back(member_ptr);
     }
 
     if (weak.expired() == false)
@@ -382,16 +395,12 @@ async::task<void> group::container::on_leave(std::string                target,
         auto log_data              = Json::Value();
         log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
         log_data["character_name"] = UTF8(deleted_member_name, PLATFORM::WINDOWS);
-        log_data["group_id"]       = static_cast<Json::Int64>(group->id());
+        log_data["group_id"]       = static_cast<Json::Int64>(group_id);
         this->_server.log.write("group_leave", log_data);
 
         if (before != nullptr)
             co_await before->switching();
     }
-
-    auto members = std::vector<std::shared_ptr<character>>();
-    for (auto& member_ptr : group->characters())
-        members.push_back(member_ptr);
 
     auto message = std::format(_TEXT(MESSAGE_GROUP_MEMBER_LEFT), deleted_member_name);
     this->_server.characters.foreach_enqueue(
@@ -400,7 +409,7 @@ async::task<void> group::container::on_leave(std::string                target,
             co_return;
         },
         members);
-    this->update_portraits(*group);
+    this->update_portraits(group_id);
 }
 
 async::task<void> group::container::on_kick(std::string                target,
@@ -411,21 +420,27 @@ async::task<void> group::container::on_kick(std::string                target,
         co_return;
 
     auto deleted_member_name = deleted_member.value();
-    auto guard               = co_await this->enter_write(group_id);
-    if (guard.value() == nullptr)
-        co_return;
-    auto& group = guard.value();
-
-    group->remove_member(deleted_member_name);
-
-    std::weak_ptr<character> weak;
-    uint32_t                 ch_id = 0;
-    auto                     ch    = this->_server.characters.find(deleted_member_name);
-    if (ch != nullptr)
+    auto weak                = std::weak_ptr<character>();
+    auto ch_id               = uint32_t{0};
+    auto members             = std::vector<std::shared_ptr<character>>();
     {
-        weak  = ch->template weak_from_this_as<character>();
-        ch_id = ch->id;
-        group->detach(weak);
+        auto guard = co_await this->enter_write(group_id);
+        if (guard.value() == nullptr)
+            co_return;
+        auto& group = guard.value();
+
+        group->remove_member(deleted_member_name);
+
+        auto ch = this->_server.characters.find(deleted_member_name);
+        if (ch != nullptr)
+        {
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            group->detach(weak);
+        }
+
+        for (auto& member_ptr : group->characters())
+            members.push_back(member_ptr);
     }
 
     if (weak.expired() == false)
@@ -458,16 +473,12 @@ async::task<void> group::container::on_kick(std::string                target,
         auto log_data              = Json::Value();
         log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
         log_data["character_name"] = UTF8(deleted_member_name, PLATFORM::WINDOWS);
-        log_data["group_id"]       = static_cast<Json::Int64>(group->id());
+        log_data["group_id"]       = static_cast<Json::Int64>(group_id);
         this->_server.log.write("group_kick", log_data);
 
         if (before != nullptr)
             co_await before->switching();
     }
-
-    auto members = std::vector<std::shared_ptr<character>>();
-    for (auto& member_ptr : group->characters())
-        members.push_back(member_ptr);
 
     auto message = std::format(_TEXT(MESSAGE_GROUP_MEMBER_KICKED), deleted_member_name);
     this->_server.characters.foreach_enqueue(
@@ -476,35 +487,39 @@ async::task<void> group::container::on_kick(std::string                target,
             co_return;
         },
         members);
-    this->update_portraits(*group);
+    this->update_portraits(group_id);
 }
 
 async::task<void> group::container::on_destroyed(std::string actor, uint32_t group_id)
 {
-    this->erase(group_id, [this, group_id](const auto& group) {
-        auto members = roster_names(*group);
+    this->erase(group_id, [this](const auto& group) {
+        auto members = std::vector<std::shared_ptr<character>>();
+        for (auto& member_ptr : group->characters())
+            members.push_back(member_ptr);
 
-        this->_server.characters.foreach_enqueue(members, [this](auto& ch) -> async::task<void> {
-            if (ch->matchmaker.queued())
-                co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
-            ch->group_reset();
-            this->clear_portraits(*ch);
-            ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
+        this->_server.characters.foreach_enqueue(
+            [this](auto& ch) -> async::task<void> {
+                if (ch->matchmaker.queued())
+                    co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
+                ch->group_reset();
+                this->clear_portraits(*ch);
+                ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
 
-            auto map = ch->map();
-            if (map != nullptr && map->is_instance() &&
-                map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
-            {
-                auto source = map->source();
-                if (source != nullptr)
+                auto map = ch->map();
+                if (map != nullptr && map->is_instance() &&
+                    map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
                 {
-                    map_options opts;
-                    opts.skip_instance_rule = true;
-                    std::ignore             = co_await ch->map(source, std::nullopt, opts);
+                    auto source = map->source();
+                    if (source != nullptr)
+                    {
+                        map_options opts;
+                        opts.skip_instance_rule = true;
+                        std::ignore             = co_await ch->map(source, std::nullopt, opts);
+                    }
                 }
-            }
-            co_return;
-        });
+                co_return;
+            },
+            members);
     });
     co_return;
 }

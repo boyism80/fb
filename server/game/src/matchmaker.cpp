@@ -216,6 +216,7 @@ async::task<void> matchmaker::dequeue(initiator by)
     try
     {
         auto&& resp = co_await this->owner.server.http.post(
+            weak,
             "matchmaking",
             "/matchmaking/dequeue",
             mp_reqs::Dequeue{ticket.match_type, ticket.ticket_id, world, character_id});
@@ -233,7 +234,6 @@ async::task<void> matchmaker::dequeue(initiator by)
 
     if (weak.lock() == nullptr)
         co_return;
-    co_await this->owner.server.threads.switching(weak);
 
     if (error.has_value())
     {
@@ -273,7 +273,8 @@ async::task<void> matchmaker::confirm(uint64_t match_id)
     auto error = std::optional<std::string>{};
     try
     {
-        auto&& resp = co_await this->owner.server.http.post("matchmaking",
+        auto&& resp = co_await this->owner.server.http.post(weak,
+                                                            "matchmaking",
                                                             "/matchmaking/confirm",
                                                             mp_reqs::Confirm{match_id, world, character_id});
         if (resp.error != 0)
@@ -286,7 +287,6 @@ async::task<void> matchmaker::confirm(uint64_t match_id)
 
     if (weak.lock() == nullptr)
         co_return;
-    co_await this->owner.server.threads.switching(weak);
 
     if (error.has_value())
         throw std::runtime_error(error.value());
@@ -317,7 +317,8 @@ async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
     auto error = std::optional<std::string>{};
     try
     {
-        auto&& resp = co_await this->owner.server.http.post("matchmaking",
+        auto&& resp = co_await this->owner.server.http.post(weak,
+                                                            "matchmaking",
                                                             "/matchmaking/decline",
                                                             mp_reqs::Decline{match_id, world, character_id});
         if (resp.error != 0)
@@ -330,7 +331,6 @@ async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
 
     if (weak.lock() == nullptr)
         co_return;
-    co_await this->owner.server.threads.switching(weak);
 
     if (error.has_value())
     {

@@ -191,8 +191,7 @@ async::task<void> service::system_storage::sync(character& ch)
     auto weak = ch.weak_from_this_as<character>();
     try
     {
-        auto&& resp = co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>("internal", url);
-        co_await this->server.threads.switching(weak);
+        auto&& resp = co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>(weak, "internal", url);
 
         auto ptr = weak.lock();
         if (ptr == nullptr)

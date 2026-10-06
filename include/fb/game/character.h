@@ -116,7 +116,8 @@ public:
     };
 
 private:
-    const std::string                     _pw;
+    fb::game::dialog::response            _dialog_response = fb::game::dialog::response::MENU;
+    size_t                                _dialog_choices  = 0;
     const fb::model::datetime             _created_date;
     const fb::model::datetime             _updated_date;
     const std::string                     _name;
@@ -191,7 +192,6 @@ public:
         uint32_t                               id    = 0;
         uint32_t                               world = 0;
         std::string                            name;
-        std::string                            pw;
         std::optional<uint32_t>                birthday = std::nullopt;
         fb::model::datetime                    created_date;
         fb::model::datetime                    updated_date;
@@ -378,8 +378,9 @@ public:
     bool                                                      alive() const;
     void                                                      message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
     void                                                      cancel_dialog(std::string_view message);
-    fb::lua::context*                                         take_dialog();
-    void                                                      set_dialog(fb::lua::context* ctx);
+    fb::lua::context*                                         take_dialog(fb::game::dialog::response response);
+    void                                                      set_dialog(fb::lua::context* ctx, fb::game::dialog::response response, size_t choices = 0);
+    size_t                                                    dialog_choices() const;
     async::task<void>                                         whisper(std::string receiver_name, std::string message);
     void                                                      thread(fb::thread* value);
     void                                                      browse_ch(const character& ch);

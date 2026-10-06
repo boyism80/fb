@@ -121,10 +121,10 @@ service::mail::send(character& sender, std::string_view to, std::string_view tit
     auto   contents_str = std::string(contents);
     auto   world        = sender.world();
     auto&& resp         = co_await this->server.http.post(
+        weak,
         "internal",
         "/mail/write",
         internal_reqs::WriteMail{world, sender.id, to_str, title_str, contents_str, fb::config<uint32_t>("id")});
-    co_await this->server.threads.switching(weak);
     if (weak.expired())
         throw std::runtime_error("character expired while sending mail");
 
@@ -145,9 +145,9 @@ async::task<std::vector<mail_box::summary>> service::mail::list(const character&
     auto   weak  = ch.weak_from_this();
     auto   world = ch.world();
     auto&& resp  = co_await this->server.http.get<internal_resp::GetMailList>(
+        weak,
         "internal",
         std::format("/mail/{}/{}?offset={}&count={}", world, ch.id, offset, count));
-    co_await this->server.threads.switching(weak);
     if (weak.expired())
         throw std::runtime_error("character expired while listing mail");
 
@@ -168,9 +168,8 @@ async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
     auto   weak  = ch.weak_from_this_as<character>();
     auto   world = ch.world();
     auto   url   = std::format("/mail/{}/{}/{}", world, ch.id, id);
-    auto&& resp  = co_await this->server.http.get<internal_resp::GetMail>("internal", url);
-    co_await this->server.threads.switching(weak);
-    auto ptr = weak.lock();
+    auto&& resp  = co_await this->server.http.get<internal_resp::GetMail>(weak, "internal", url);
+    auto   ptr   = weak.lock();
     if (ptr == nullptr)
         throw std::runtime_error("character expired while reading mail");
 
@@ -184,8 +183,7 @@ async::task<void> service::mail::remove(character& ch, uint16_t id)
     auto   weak  = ch.weak_from_this_as<character>();
     auto   world = ch.world();
     auto&& resp =
-        co_await this->server.http.post("internal", "/mail/delete", internal_reqs::DeleteMail{world, ch.id, id});
-    co_await this->server.threads.switching(weak);
+        co_await this->server.http.post(weak, "internal", "/mail/delete", internal_reqs::DeleteMail{world, ch.id, id});
     auto ptr = weak.lock();
     if (ptr == nullptr)
         throw std::runtime_error("character expired while deleting mail");

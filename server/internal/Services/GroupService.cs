@@ -135,8 +135,6 @@ namespace Internal.Services
                 if (await _sessionService.Get(world, actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
-                if (Table.Map.TryGetValue(actor.Map, out var map) == false)
-                    throw new Exception("invalid map");
 
                 var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
@@ -210,7 +208,7 @@ namespace Internal.Services
 
                 var response = new Response.GroupDetails
                 {
-                    Host = map.Host,
+                    Host = request.Host,
                     Action = Protocol.GroupDetailsAction.Create,
                     Group = new Protocol.Group
                     {
@@ -265,8 +263,6 @@ namespace Internal.Services
                 if (await _sessionService.Get(world, actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
-                if (Table.Map.TryGetValue(actor.Map, out var map) == false)
-                    throw new Exception("invalid map");
 
                 var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
@@ -313,7 +309,7 @@ namespace Internal.Services
 
                 await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id));
 
-                return await EnterInternal(world, actor, target, actorSync, targetSync, map);
+                return await EnterInternal(world, actor, target, actorSync, targetSync, request.Host);
             }
             catch (LogicException e)
             {
@@ -346,8 +342,6 @@ namespace Internal.Services
                 var character = await _dbContext.Character.Get(world, session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                if (Table.Map.TryGetValue(character.Map, out var map) == false)
-                    throw new LogicException(ErrorCode.NotFoundMap);
 
                 await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(character.Id));
 
@@ -382,7 +376,7 @@ namespace Internal.Services
 
                 var response = new Response.UpdatedGroup
                 {
-                    Host = map.Host,
+                    Host = request.Host,
                     Action = Protocol.GroupActionType.Leave,
                     GroupId = group.Master,
                     GroupMaster = master.Name,
@@ -444,8 +438,6 @@ namespace Internal.Services
                 if (actor.Name == target.Name)
                     throw new LogicException(ErrorCode.CannotGroupSelf);
 
-                if (Table.Map.TryGetValue(actor.Map, out var map) == false)
-                    throw new LogicException(ErrorCode.NotFoundMap);
 
                 // Lock in uid order to avoid a crossed-order deadlock with a
                 // concurrent call on the same pair.
@@ -469,7 +461,7 @@ namespace Internal.Services
 
                 await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actorSync.Group.Value));
 
-                return await KickInternal(world, actor, target, actorSync, targetSync, map);
+                return await KickInternal(world, actor, target, actorSync, targetSync, request.Host);
             }
             catch (LogicException e)
             {
@@ -502,8 +494,6 @@ namespace Internal.Services
                 var character = await _dbContext.Character.Get(world, session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                if (Table.Map.TryGetValue(character.Map, out var map) == false)
-                    throw new LogicException(ErrorCode.NotFoundMap);
 
                 // Lock every involved character before the group lock so Destroy can never
                 // circular-wait against a concurrent Leave on one of its members.
@@ -575,7 +565,7 @@ namespace Internal.Services
 
                     var response = new Response.DestroyGroup
                     {
-                        Host = map.Host,
+                        Host = request.Host,
                         GroupId = group.Master,
                         GroupMaster = character.Name,
                         Actor = new Protocol.CharacterRef
@@ -668,8 +658,6 @@ namespace Internal.Services
                 if (await _sessionService.Get(world, actor.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
-                if (Table.Map.TryGetValue(actor.Map, out var map) == false)
-                    throw new Exception("invalid map");
 
                 var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
@@ -702,7 +690,7 @@ namespace Internal.Services
                 if (targetSync.Group == actorSync.Group)
                 {
                     // Kick the member
-                    return await KickInternal(world, actor, target, actorSync, targetSync, map);
+                    return await KickInternal(world, actor, target, actorSync, targetSync, request.Host);
                 }
                 else
                 {
@@ -725,7 +713,7 @@ namespace Internal.Services
                     if (memberSetting.Group == false)
                         throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                    return await EnterInternal(world, actor, target, actorSync, targetSync, map);
+                    return await EnterInternal(world, actor, target, actorSync, targetSync, request.Host);
                 }
             }
             catch (LogicException e)
@@ -752,7 +740,7 @@ namespace Internal.Services
             }
         }
 
-        private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, Map map)
+        private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, uint host)
         {
             var group = await _dbContext.Group.Get(world, actor.Id) ??
                 throw new LogicException(ErrorCode.GroupNotFound);
@@ -769,7 +757,7 @@ namespace Internal.Services
 
             var response = new Response.UpdatedGroup
             {
-                Host = map.Host,
+                Host = host,
                 Action = Protocol.GroupActionType.Enter,
                 GroupId = group.Master,
                 GroupMaster = actor.Name,
@@ -790,7 +778,7 @@ namespace Internal.Services
             return response;
         }
 
-        private async Task<Response.UpdatedGroup> KickInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, Map map)
+        private async Task<Response.UpdatedGroup> KickInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, uint host)
         {
             var group = await _dbContext.Group.Get(world, actorSync.Group.Value) ??
                 throw new LogicException(ErrorCode.GroupNotFound);
@@ -814,7 +802,7 @@ namespace Internal.Services
 
             var response = new Response.UpdatedGroup
             {
-                Host = map.Host,
+                Host = host,
                 Action = Protocol.GroupActionType.Kick,
                 GroupId = group.Master,
                 GroupMaster = actor.Name,

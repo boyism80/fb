@@ -57,10 +57,10 @@ async::task<void> group::container::create(character& me, std::string_view targe
 
     auto   world = me.world();
     auto&& resp  = co_await this->_server.http.post(
+        weak,
         "internal",
         "/group/create",
         internal_reqs::CreateGroup{world, fb::config<uint32_t>("id"), me.id, target_name_str});
-    co_await this->_server.threads.switching(weak);
 
     auto members = std::map<uint32_t, std::string>{};
     for (const auto& member : resp.members)
@@ -81,10 +81,10 @@ async::task<void> group::container::destroy(character& me)
     auto   weak  = me.weak_from_this_as<character>();
     auto   world = me.world();
     auto&& resp =
-        co_await this->_server.http.post("internal",
+        co_await this->_server.http.post(weak,
+                                         "internal",
                                          "/group/destroy",
                                          internal_reqs::DestroyGroup{world, fb::config<uint32_t>("id"), me.name()});
-    co_await this->_server.threads.switching(weak);
     co_await this->on_error(resp.error, resp.actor.name);
     co_await this->on_destroyed(resp.actor.name, resp.group_id);
 }
@@ -117,10 +117,10 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
 
     auto   world = actor.world();
     auto&& resp  = co_await this->_server.http.post(
+        weak,
         "internal",
         "/group/toggle",
         internal_reqs::EnterGroup{world, fb::config<uint32_t>("id"), actor.id, target_name_str});
-    co_await this->_server.threads.switching(weak);
 
     auto target = std::string{};
     if (resp.target.has_value())
@@ -162,10 +162,10 @@ async::task<void> group::container::leave_member(character& leaver)
 
     auto   world = leaver.world();
     auto&& resp =
-        co_await this->_server.http.post("internal",
+        co_await this->_server.http.post(weak,
+                                         "internal",
                                          "/group/leave",
                                          internal_reqs::LeaveGroup{world, fb::config<uint32_t>("id"), leaver.name()});
-    co_await this->_server.threads.switching(weak);
 
     auto target = std::string{};
     if (resp.target.has_value())

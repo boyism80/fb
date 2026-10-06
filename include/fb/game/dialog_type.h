@@ -32,6 +32,20 @@ enum class list_type : uint8_t
     LOOK                  = 10, // look picker (DLGMSGH.EPF)
 };
 
+// The reply a parked dialog accepts. Grouped by how the reply is handled, so a client cannot
+// answer a name-matched dialog with a raw index (or the reverse).
+enum class response : uint8_t
+{
+    MENU,        // 0x39 MENU / MENU_NO_EXT, index checked against the choice count
+    INPUT,       // 0x39 INPUT / INPUT_NO_EXT
+    SLOT,        // 0x39 SLOT / SPELL
+    SELECT,      // 0x39 ITEM / PURSUIT / BUY, matched by name
+    TEXT,        // 0x3A TEXT / TEXT_NO_MSG
+    LIST,        // 0x3A LIST / LIST_NO_MSG, index checked against the choice count
+    LIST_INPUT,  // 0x3A INPUT* / EMAIL
+    POPUP_INPUT, // popup input submit
+};
+
 } // namespace fb::game::dialog
 
 #endif

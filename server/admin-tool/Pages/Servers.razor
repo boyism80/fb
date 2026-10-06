@@ -133,7 +133,7 @@
         <div class="card-bg dash-card dash-ops-panel" style="margin-top:var(--section-gap);">
             <h2 class="dash-card-title">DB 초기화</h2>
             <p class="dash-ops-desc">
-                선택한 월드의 MySQL 게임 DB(캐릭터/아이템/도감 등)를 비웁니다. Redis 캐시·세션과는 별개로 처리되며, 이 작업은 되돌릴 수 없습니다.
+                선택한 월드의 MySQL 게임 DB(캐릭터/아이템/도감 등)와 통합 DB의 그 월드 이름 등록부·문파 이름·거래소 기록을 비웁니다. Redis 캐시·세션과는 별개로 처리되며, 이 작업은 되돌릴 수 없습니다.
             </p>
             <ul class="dash-ops-hint" style="margin:0 0 1rem;padding-left:1.25rem;">
                 <li>모든 게임 서버가 종료된 상태여야 합니다.</li>
@@ -519,12 +519,13 @@
             showDbResetModal = false;
             dbResetConfirmText = string.Empty;
             successMessage =
-                $"월드 {world} DB 초기화 완료 (테이블 {result.TruncatedTables}개, 캐시 키 {result.ClearedCacheKeys}개).";
+                $"월드 {world} DB 초기화 완료 (테이블 {result.TruncatedTables}개, 통합 DB 행 {result.DeletedUnifiedRows}개, 캐시 키 {result.ClearedCacheKeys}개).";
 
             await LogService.WriteAsync("db_reset", new
             {
                 world,
                 truncated_tables = result.TruncatedTables,
+                deleted_unified_rows = result.DeletedUnifiedRows,
                 cleared_cache_keys = result.ClearedCacheKeys,
                 actor
             });
@@ -533,7 +534,7 @@
             {
                 Category = "db_reset",
                 Summary = $"월드 {world} DB 초기화 완료",
-                Detail = $"tables={result.TruncatedTables}, cache_keys={result.ClearedCacheKeys}",
+                Detail = $"tables={result.TruncatedTables}, unified_rows={result.DeletedUnifiedRows}, cache_keys={result.ClearedCacheKeys}",
                 Actor = actor,
                 Target = $"world:{world}",
                 Success = true

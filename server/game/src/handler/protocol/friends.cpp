@@ -23,16 +23,21 @@ async::task<bool> friends<V>::handle(fb::socket<character>& session, game_reqs::
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
+    auto   weak  = ch->weak_from_this_as<character>();
     auto   world = ch->world();
-    auto&& resp  = co_await this->server.http.post("internal",
+    auto&& resp  = co_await this->server.http.post(weak,
+                                                  "internal",
                                                   "/in-game/update-friends",
                                                   internal_reqs::UpdateFriends{world, ch->id, request.names});
+    auto   ptr   = weak.lock();
+    if (ptr == nullptr)
+        co_return true;
 
     auto entries = std::vector<friend_entry>{};
     entries.reserve(resp.friends.size());
     for (auto& entry : resp.friends)
         entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
-    ch->friends(std::move(entries));
+    ptr->friends(std::move(entries));
 
     co_return true;
 }

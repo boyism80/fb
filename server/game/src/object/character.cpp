@@ -54,7 +54,7 @@ character::character(fb::game::server& server, const initial_params& params) :
               .direction = params.direction,
               }
 }),
-    listener(server.listener), _socket(params.socket), _pw(params.pw), _created_date(params.created_date),
+    listener(server.listener), _socket(params.socket), _created_date(params.created_date),
     _updated_date(params.updated_date), _first_login_date(params.first_login_date), _name(params.name),
     _world(params.world), _role(params.role), _birthday(params.birthday), _hair(params.hair), _face(params.face),
     _color(params.color), _armor_color(params.armor_color), _weapon_color(params.weapon_color),
@@ -90,22 +90,32 @@ void character::cancel_dialog(std::string_view message)
     this->dialog->reject(message);
 }
 
-fb::lua::context* character::take_dialog()
+fb::lua::context* character::take_dialog(fb::game::dialog::response response)
 {
     auto* ctx = this->dialog;
     if (ctx == nullptr)
+        return nullptr;
+
+    if (this->_dialog_response != response)
         return nullptr;
 
     ctx->clear_dialog_slot();
     return ctx;
 }
 
-void character::set_dialog(fb::lua::context* ctx)
+void character::set_dialog(fb::lua::context* ctx, fb::game::dialog::response response, size_t choices)
 {
     if (ctx == nullptr)
         throw std::runtime_error("set_dialog requires a context");
 
     ctx->bind_dialog_slot(this->dialog);
+    this->_dialog_response = response;
+    this->_dialog_choices  = choices;
+}
+
+size_t character::dialog_choices() const
+{
+    return this->_dialog_choices;
 }
 
 void character::on_init()
@@ -1876,12 +1886,13 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            co_await this->server.clans.broadcast(this->world(), this->clan_id().value(), text, MESSAGE_TYPE::BROWN);
+            auto cid = this->clan_id().value();
+            co_await this->server.clans.broadcast(this->world(), cid, text, MESSAGE_TYPE::BROWN);
 
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
             log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-            log_data["clan_id"]     = static_cast<Json::Int64>(this->clan_id().value());
+            log_data["clan_id"]     = static_cast<Json::Int64>(cid);
             log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
             this->server.log.write("clan_chat", log_data);
         }
@@ -1893,12 +1904,13 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            co_await this->server.groups.broadcast(this->world(), this->group_id().value(), text, MESSAGE_TYPE::YELLOW);
+            auto gid = this->group_id().value();
+            co_await this->server.groups.broadcast(this->world(), gid, text, MESSAGE_TYPE::YELLOW);
 
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
             log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-            log_data["group_id"]    = static_cast<Json::Int64>(this->group_id().value());
+            log_data["group_id"]    = static_cast<Json::Int64>(gid);
             log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
             this->server.log.write("group_chat", log_data);
         }
@@ -1919,8 +1931,8 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            co_await this->broadcast_friends(text, MESSAGE_TYPE::NOTIFY, true);
             this->message(text, MESSAGE_TYPE::NOTIFY);
+            co_await this->broadcast_friends(text, MESSAGE_TYPE::NOTIFY, true);
 
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
@@ -1966,10 +1978,10 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
     }
 
     auto   world = this->world();
-    auto&& resp  = co_await this->server.http.post("internal",
+    auto&& resp  = co_await this->server.http.post(sender_weak,
+                                                  "internal",
                                                   "/in-game/whisper",
                                                   internal_reqs::Whisper{world, sender_name, receiver_name, message});
-    co_await this->server.threads.switching(sender_weak);
 
     character::container::assert_whisper(resp.error, resp.to);
 
@@ -2221,13 +2233,21 @@ void character::award_exp(const fb::game::mob& mob)
     auto  map      = this->map();
     auto  exp      = mob.total_exp();
 
+    auto nears = std::vector<std::weak_ptr<character>>{};
     if (group_id.has_value() && map != nullptr)
     {
-        auto  guard      = this->server.groups.enter_read(group_id.value());
-        auto& group      = guard.value();
-        auto  nears      = group->nears(*map, this->position());
-        auto  size       = nears.size();
-        auto  divide_exp = exp / size;
+        auto guard = this->server.groups.try_enter_read(group_id.value());
+        if (guard.has_value() && guard->value() != nullptr)
+            nears = guard->value()->nears(*map, this->position());
+    }
+
+    if (nears.empty())
+    {
+        this->add_exp(exp, true, true);
+    }
+    else
+    {
+        auto divide_exp = exp / nears.size();
         for (auto& member : nears)
         {
             auto shared_ptr = member.lock();
@@ -2236,10 +2256,6 @@ void character::award_exp(const fb::game::mob& mob)
 
             shared_ptr->add_exp(divide_exp, true, true);
         }
-    }
-    else
-    {
-        this->add_exp(exp, true, true);
     }
 }
 
@@ -2271,7 +2287,6 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.id               = this->id;
     dto.world            = this->_world;
     dto.name             = this->_name;
-    dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
     dto.created_date     = this->_created_date.to_string();
     dto.updated_date     = this->server.now().to_string();

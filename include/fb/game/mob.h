@@ -110,7 +110,6 @@ public:
 
 private:
     // clang-format off
-    std::weak_ptr<fb::game::life>   find_target();
     [[nodiscard]] async::task<void> AI(const fb::model::datetime& now);
     static bool                     is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
     static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
@@ -138,7 +137,6 @@ public:
     void                            target(std::shared_ptr<fb::game::life> value);
     std::shared_ptr<fb::game::life> oblivion() const;
     void                            oblivion(std::shared_ptr<fb::game::life> value);
-    std::shared_ptr<fb::game::life> update_target();
     virtual bool                    available() const;
     uint64_t                        normal_attack_damage(MOB_SIZE size) const override final;
     void                            kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;

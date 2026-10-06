@@ -231,7 +231,6 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     params.id           = resp.character.id;
     params.world        = resp.character.world != 0 ? resp.character.world : world;
     params.name         = resp.character.name;
-    params.pw           = resp.character.pw;
     params.birthday     = resp.character.birth;
     params.created_date = fb::model::datetime(resp.character.created_date);
     params.updated_date = fb::model::datetime(resp.character.updated_date);
@@ -329,6 +328,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         if (auto& group = guard.value(); group != nullptr)
         {
             group->enter(weak);
+            group->add_member(ch->name());
             ch->group_id(group->id());
             this->server.groups.update_portraits(*group);
         }

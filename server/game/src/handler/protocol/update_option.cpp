@@ -66,10 +66,10 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
 
         auto   world = ch->world();
         auto&& resp  = co_await this->server.http.post(
+            weak,
             "internal",
             "/in-game/option",
             internal_reqs::SetOption{world, ch->id, {{static_cast<uint8_t>(option), next}}});
-        co_await this->server.threads.switching(weak);
         auto ptr = weak.lock();
         if (ptr == nullptr)
             co_return true;
@@ -153,11 +153,11 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
             co_return true;
 
         auto   uid  = current->id;
-        auto&& resp = co_await this->server.http.post("internal",
+        auto&& resp = co_await this->server.http.post(weak,
+                                                      "internal",
                                                       "/in-game/option",
                                                       internal_reqs::SetOption{world, uid, std::move(changes)});
-        co_await this->server.threads.switching(weak);
-        current = weak.lock();
+        current     = weak.lock();
         if (current == nullptr)
             co_return true;
 

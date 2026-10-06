@@ -32,6 +32,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <stdexcept>
 #include <string>
@@ -416,12 +417,45 @@ public:
         auto& config      = fb::config<>(service_str);
         auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         auto  path_str    = std::string(path);
-        auto  result      = co_await this->boost_get_async<T>(host, path_str);
+        auto  result      = std::optional<T>{};
+        auto  error       = std::exception_ptr{};
+        try
+        {
+            result = co_await this->boost_get_async<T>(host, path_str);
+        }
+        catch (...)
+        {
+            error = std::current_exception();
+        }
+
         co_await this->sleep(thread, service);
+        if (error)
+            std::rethrow_exception(error);
         if (fault == FAULT::RESPONSE_LOST)
             throw std::runtime_error(
                 std::format("HTTP GET request failed: response lost fault injected for {}", service));
-        co_return result;
+        co_return std::move(*result);
+    }
+
+    // Resumes on the pivot's current thread, success or failure. The pivot may have moved threads while waiting.
+    template <typename T, typename PivotT>
+    async::task<T> get(std::weak_ptr<PivotT> pivot, std::string_view service, std::string_view path)
+    {
+        auto result = std::optional<T>{};
+        auto error  = std::exception_ptr{};
+        try
+        {
+            result = co_await this->get<T>(service, path);
+        }
+        catch (...)
+        {
+            error = std::current_exception();
+        }
+
+        co_await this->_executor.threads.switching(pivot);
+        if (error)
+            std::rethrow_exception(error);
+        co_return std::move(*result);
     }
 
 private:
@@ -493,12 +527,45 @@ public:
         auto& config      = fb::config<>(service_str);
         auto  host        = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         auto  path_str    = std::string(path);
-        auto  result      = co_await this->boost_post_async<Request>(host, path_str, request);
+        auto  result      = std::optional<typename response_of<Request>::type>{};
+        auto  error       = std::exception_ptr{};
+        try
+        {
+            result = co_await this->boost_post_async<Request>(host, path_str, request);
+        }
+        catch (...)
+        {
+            error = std::current_exception();
+        }
+
         co_await this->sleep(thread, service);
+        if (error)
+            std::rethrow_exception(error);
         if (fault == FAULT::RESPONSE_LOST)
             throw std::runtime_error(
                 std::format("HTTP POST request failed: response lost fault injected for {}", service));
-        co_return result;
+        co_return std::move(*result);
+    }
+
+    // Resumes on the pivot's current thread, success or failure. The pivot may have moved threads while waiting.
+    template <typename Request, typename PivotT> [[nodiscard]] async::task<typename response_of<Request>::type>
+    post(std::weak_ptr<PivotT> pivot, std::string_view service, std::string_view path, const Request& request)
+    {
+        auto result = std::optional<typename response_of<Request>::type>{};
+        auto error  = std::exception_ptr{};
+        try
+        {
+            result = co_await this->post<Request>(service, path, request);
+        }
+        catch (...)
+        {
+            error = std::current_exception();
+        }
+
+        co_await this->_executor.threads.switching(pivot);
+        if (error)
+            std::rethrow_exception(error);
+        co_return std::move(*result);
     }
 
     /// <summary>
@@ -513,8 +580,19 @@ public:
         auto url_str  = std::string(url);
         auto path_str = std::string(path);
         auto thread   = this->_executor.threads.current();
-        co_await this->boost_post_binary_async(url_str, path_str, data);
+        auto error    = std::exception_ptr{};
+        try
+        {
+            co_await this->boost_post_binary_async(url_str, path_str, data);
+        }
+        catch (...)
+        {
+            error = std::current_exception();
+        }
+
         co_await this->sleep(thread);
+        if (error)
+            std::rethrow_exception(error);
     }
 
     /// <summary>

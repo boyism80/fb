@@ -252,22 +252,17 @@ async::task<void> mob::action(fb::model::datetime now)
     // Claim this speed interval before script/AI so on_mob_action matches model.speed.
     this->_action_time = now;
 
-    this->update_target();
+    auto target = this->target();
+    if (target == nullptr)
+        this->_target.reset();
 
     auto path = std::format("scripts/mob/{}.lua", model.id);
     auto lua  = this->server.lua.open(path, "on_mob_action");
     if (lua)
     {
         lua->pushobject(this);
-
-        if (this->_target.expired() == false)
-        {
-            auto shared = this->_target.lock();
-            if (shared != nullptr)
-                lua->pushobject(shared);
-            else
-                lua->pushnil();
-        }
+        if (target != nullptr)
+            lua->pushobject(target);
         else
             lua->pushnil();
 
@@ -385,56 +380,6 @@ void mob::oblivion(std::shared_ptr<life> value)
     this->assert_thread();
 
     this->_oblivion = value;
-}
-
-std::shared_ptr<life> mob::update_target()
-{
-    this->assert_thread();
-
-    auto target = this->target();
-    if (target == nullptr)
-    {
-        this->_target.reset();
-
-        auto& model = this->model();
-        if (model.attack_type == MOB_ATTACK_TYPE::AGGRESSIVE)
-            this->_target = this->find_target();
-        else
-            this->_target.reset();
-    }
-
-    return this->_target.lock();
-}
-
-std::weak_ptr<life> mob::find_target()
-{
-    this->assert_thread();
-
-    auto map = this->_map;
-    if (map == nullptr)
-        return std::weak_ptr<life>();
-
-    if (this->owner.expired())
-        return std::weak_ptr<life>();
-
-    auto min_distance_sqrt = 0xFFFFFFFF;
-    for (const auto& x : this->sight_in(OBJECT_TYPE::CHARACTER))
-    {
-        auto life = std::static_pointer_cast<fb::game::life>(x);
-        if (life == this->_oblivion.lock())
-            continue;
-
-        if (life->alive() == false)
-            continue;
-
-        auto distance_sqrt = (uint32_t)std::abs(x->x() - this->x()) * std::abs(x->y() - this->y());
-        if (distance_sqrt > min_distance_sqrt)
-            continue;
-
-        this->_target = life->weak_from_this_as<fb::game::life>();
-    }
-
-    return this->_target;
 }
 
 bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const

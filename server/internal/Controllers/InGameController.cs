@@ -516,6 +516,7 @@ namespace Internal.Controllers
             await _dbContext.SaveChangesAsync();
             var now = DateTime.Now;
             var character = _mapper.Map<Protocol.Character>(ch);
+            character.Pw = string.Empty;
             return new Response.Init
             {
                 Character = character,
@@ -783,6 +784,7 @@ namespace Internal.Controllers
             var characterId = data.Character.Id;
 
             var ch = _mapper.Map<Character>(data.Character);
+            ch.Pw = existingCharacter.Pw;
             ch.Reputation = existingCharacter.Reputation;
             ch.Evaluation = existingCharacter.Evaluation;
             _dbContext.Character.Set(world, ch);

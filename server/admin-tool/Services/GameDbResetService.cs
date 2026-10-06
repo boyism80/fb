@@ -59,19 +59,22 @@ namespace AdminTool.Services
                         $"world-{world}-data-{i}");
                 }
 
+                var deletedUnifiedRows = await DeleteUnifiedWorldRowsAsync(world);
                 var clearedCacheKeys = await ClearWorldCacheAsync(world);
                 await _cacheService.ClearUserSessions(world);
 
                 _logger.LogWarning(
-                    "Game DB reset completed for world {World}. TruncatedTables={TruncatedTables}, ClearedCacheKeys={ClearedCacheKeys}",
+                    "Game DB reset completed for world {World}. TruncatedTables={TruncatedTables}, DeletedUnifiedRows={DeletedUnifiedRows}, ClearedCacheKeys={ClearedCacheKeys}",
                     world,
                     truncatedTables,
+                    deletedUnifiedRows,
                     clearedCacheKeys);
 
                 return new GameDbResetResult
                 {
                     Success = true,
                     TruncatedTables = truncatedTables,
+                    DeletedUnifiedRows = deletedUnifiedRows,
                     ClearedCacheKeys = clearedCacheKeys
                 };
             }
@@ -122,11 +125,28 @@ namespace AdminTool.Services
             }
         }
 
+        // The unified DB is shared by every world, so only rows of this world are deleted.
+        private async Task<int> DeleteUnifiedWorldRowsAsync(uint world)
+        {
+            await using var connection = _dbContext.GetUnifiedConnection();
+            await connection.OpenAsync();
+
+            var deleted = 0;
+            foreach (var table in new[] { "name_registry", "clan_name", "marketplace_listing", "marketplace_listing_archive", "marketplace_purchase", "marketplace_delivery" })
+            {
+                deleted += await connection.ExecuteAsync($"DELETE FROM `{table}` WHERE `world` = @world;", new { world });
+            }
+
+            _logger.LogInformation("Deleted {Count} unified rows for world {World}", deleted, world);
+            return deleted;
+        }
+
         private async Task<int> ClearWorldCacheAsync(uint world)
         {
             var count = 0;
             var shardSize = _redisService.GetShardSize(world);
-            for (var i = 0; i < shardSize; i++)
+            // Index -1 is the world global Redis (castle, system mail and system storage caches).
+            for (var i = -1; i < shardSize; i++)
             {
                 var redis = _redisService.GetDataConnection(world, i);
                 if (redis == null)
@@ -155,6 +175,8 @@ namespace AdminTool.Services
         public string Error { get; set; }
 
         public int TruncatedTables { get; set; }
+
+        public int DeletedUnifiedRows { get; set; }
 
         public int ClearedCacheKeys { get; set; }
 

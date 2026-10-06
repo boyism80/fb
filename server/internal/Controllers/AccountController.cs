@@ -23,6 +23,7 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly ILogger<AccountController> _logger;
         private readonly LogService _logService;
+        private readonly RedisDistributedLockService _distributedLock;
 
         // Object pool for SHA256 instances to reduce GC pressure
         // Limit pool size to 64 instances (reasonable for most scenarios)
@@ -94,12 +95,14 @@ namespace Internal.Controllers
         public AccountController(IMapper mapper,
             DbContext dbContext,
             ILogger<AccountController> logger,
-            LogService logService)
+            LogService logService,
+            RedisDistributedLockService distributedLock)
         {
             _mapper = mapper;
             _dbContext = dbContext;
             _logger = logger;
             _logService = logService;
+            _distributedLock = distributedLock;
         }
         [HttpGet("{world}/uid/{name}")]
         public async Task<Response.GetUid> Uid(uint world, string name)
@@ -285,6 +288,7 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
+                await using var _ = await _distributedLock.Lock(world, Character.SaveLockKey(request.Uid));
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
