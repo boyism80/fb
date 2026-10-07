@@ -1,0 +1,41 @@
+<Window x:Class="MapEditor.PickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converter="clr-namespace:MapEditor.Converter"
+        x:Name="Root"
+        Width="420" Height="600" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <Window.Resources>
+        <converter:MonsterThumbnailConverter x:Key="MonsterThumbnail" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Window.Resources>
+    <DockPanel Margin="6">
+        <TextBox x:Name="Query" DockPanel.Dock="Top" TextChanged="OnQueryChanged" PreviewKeyDown="OnQueryKeyDown" ToolTip="ID 또는 이름 검색" />
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="선택" IsDefault="True" Click="OnOk" />
+            <Button Content="취소" IsCancel="True" />
+        </StackPanel>
+        <ListBox x:Name="Items" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" Margin="0 4"
+                 MouseDoubleClick="OnOk">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="56" MaxHeight="72" ClipToBounds="True"
+                                Visibility="{Binding HasImages, ElementName=Root, Converter={StaticResource BoolToVisibility}}">
+                            <Image Stretch="None" VerticalAlignment="Bottom" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                <Image.Source>
+                                    <MultiBinding Converter="{StaticResource MonsterThumbnail}">
+                                        <Binding Path="Assets" ElementName="Root" />
+                                        <Binding />
+                                    </MultiBinding>
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Margin="4 0" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>

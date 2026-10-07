@@ -1,0 +1,38 @@
+<Window x:Class="MapEditor.ShortcutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="단축키 설정" Width="640" Height="720" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <Window.Resources>
+        <DataTemplate x:Key="CaptureFirst">
+            <TextBox Text="{Binding First, Mode=OneWay}" IsReadOnly="True" Tag="First" Margin="1"
+                     PreviewKeyDown="OnCaptureKey" PreviewMouseDown="OnCaptureMouse" GotKeyboardFocus="OnCaptureFocus" LostKeyboardFocus="OnCaptureLostFocus" />
+        </DataTemplate>
+        <DataTemplate x:Key="CaptureSecond">
+            <TextBox Text="{Binding Second, Mode=OneWay}" IsReadOnly="True" Tag="Second" Margin="1"
+                     PreviewKeyDown="OnCaptureKey" PreviewMouseDown="OnCaptureMouse" GotKeyboardFocus="OnCaptureFocus" LostKeyboardFocus="OnCaptureLostFocus" />
+        </DataTemplate>
+    </Window.Resources>
+    <DockPanel Margin="6">
+        <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="{StaticResource SemiTextBrush}" Margin="2 0 2 6"
+                   Text="단축키 칸을 클릭하고 원하는 키 조합(또는 마우스 옆 버튼)을 누르면 지정됩니다. Backspace: 지우기. Ctrl/Alt 없는 키는 글자 입력 칸에 포커스가 있을 때 동작하지 않습니다." />
+        <TextBlock x:Name="Conflicts" DockPanel.Dock="Bottom" Foreground="Orange" TextWrapping="Wrap" Margin="2 4" />
+        <DockPanel DockPanel.Dock="Bottom" LastChildFill="False">
+            <Button DockPanel.Dock="Left" Content="선택 항목 기본값" Click="OnResetSelected" />
+            <Button DockPanel.Dock="Left" Content="전체 기본값" Click="OnResetAll" />
+            <Button DockPanel.Dock="Right" Content="취소" IsCancel="True" />
+            <Button DockPanel.Dock="Right" Content="저장" Click="OnSave" />
+        </DockPanel>
+        <DataGrid x:Name="Rows" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="분류" Binding="{Binding Action.Category}" IsReadOnly="True" Width="50" />
+                <DataGridTextColumn Header="기능" Binding="{Binding Action.Label}" IsReadOnly="True" Width="*" />
+                <DataGridTemplateColumn Header="단축키 1" CellTemplate="{StaticResource CaptureFirst}" Width="130" />
+                <DataGridTemplateColumn Header="단축키 2" CellTemplate="{StaticResource CaptureSecond}" Width="130" />
+                <DataGridTextColumn Header="기본값" Binding="{Binding Action.Default}" IsReadOnly="True" Width="130" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>

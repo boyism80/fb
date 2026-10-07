@@ -1,0 +1,774 @@
+<Window x:Class="MapEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:control="clr-namespace:MapEditor.Control"
+        xmlns:converter="clr-namespace:MapEditor.Converter"
+        xmlns:table="clr-namespace:MapEditor.Table"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="{Binding Document.Title, StringFormat=FB Map Editor - {0}, FallbackValue=FB Map Editor, TargetNullValue=FB Map Editor}"
+        Width="1600" Height="950"
+        Background="{StaticResource BackgroundBrush}"
+        Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <Window.Resources>
+        <converter:EnumBoolConverter x:Key="EnumBool" />
+        <converter:ObjectThumbnailConverter x:Key="ObjectThumbnail" />
+        <converter:MonsterThumbnailConverter x:Key="MonsterThumbnail" />
+        <converter:DoorStripConverter x:Key="DoorStrip" />
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <converter:DoorUsageConverter x:Key="DoorUsage" />
+
+        <Style x:Key="FieldLabel" TargetType="{x:Type TextBlock}">
+            <Setter Property="Width" Value="64" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="6 0 0 0" />
+            <Setter Property="Foreground" Value="{StaticResource SemiTextBrush}" />
+        </Style>
+        <Style x:Key="NumberBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="56" />
+        </Style>
+
+        <!-- Property panel: one template per spawn type. Commands live on the window's view model. -->
+        <DataTemplate DataType="{x:Type table:NpcSpawn}">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Header}" Text="NPC 스폰" />
+                <Image Stretch="None" HorizontalAlignment="Left" Margin="6 2" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    <Image.LayoutTransform>
+                        <ScaleTransform ScaleX="2" ScaleY="2" />
+                    </Image.LayoutTransform>
+                    <Image.Source>
+                        <MultiBinding Converter="{StaticResource MonsterThumbnail}">
+                            <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                            <Binding Path="Info" />
+                            <Binding Path="DirectionIndex" />
+                        </MultiBinding>
+                    </Image.Source>
+                </Image>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="npc" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding Npc}" />
+                    <Button Content="찾기..." Command="{Binding DataContext.PickNpcCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="6 0" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="위치" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding X}" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding Y}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="방향" />
+                    <RadioButton Style="{StaticResource ToolButton}" GroupName="NpcDirection" Content="↑ TOP"
+                                 IsChecked="{Binding Direction, Converter={StaticResource EnumBool}, ConverterParameter=TOP}" />
+                    <RadioButton Style="{StaticResource ToolButton}" GroupName="NpcDirection" Content="→ RIGHT"
+                                 IsChecked="{Binding Direction, Converter={StaticResource EnumBool}, ConverterParameter=RIGHT}" />
+                    <RadioButton Style="{StaticResource ToolButton}" GroupName="NpcDirection" Content="↓ BOTTOM"
+                                 IsChecked="{Binding Direction, Converter={StaticResource EnumBool}, ConverterParameter=BOTTOM}" />
+                    <RadioButton Style="{StaticResource ToolButton}" GroupName="NpcDirection" Content="← LEFT"
+                                 IsChecked="{Binding Direction, Converter={StaticResource EnumBool}, ConverterParameter=LEFT}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type table:MobSpawn}">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Header}" Text="몹 스폰" />
+                <Image Stretch="None" HorizontalAlignment="Left" Margin="6 2" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    <Image.LayoutTransform>
+                        <ScaleTransform ScaleX="2" ScaleY="2" />
+                    </Image.LayoutTransform>
+                    <Image.Source>
+                        <MultiBinding Converter="{StaticResource MonsterThumbnail}">
+                            <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                            <Binding Path="Info" />
+                        </MultiBinding>
+                    </Image.Source>
+                </Image>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="mob" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding Mob}" />
+                    <Button Content="찾기..." Command="{Binding DataContext.PickMobCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="6 0" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="시작" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding BeginX}" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding BeginY}" />
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="끝" Width="24" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding EndX}" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding EndY}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="수" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding Count}" />
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="리젠" Width="30" />
+                    <TextBox Text="{Binding Rezen}" Width="80" ToolTip="TimeSpan (hh:mm:ss)" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="조건" />
+                    <TextBox Text="{Binding Condition}" Width="260" ToolTip="dsl" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type table:WarpEntry}">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Header}" Text="워프" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="출발" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding X}" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding Y}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="목적지" />
+                    <TextBox Text="{Binding Dest}" Width="260" ToolTip="dsl: map(id, x, y) 또는 world(...)" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="맵 / 좌표" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding DestMap, TargetNullValue=''}" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding DestX, TargetNullValue=''}" />
+                    <TextBox Style="{StaticResource NumberBox}" Text="{Binding DestY, TargetNullValue=''}" />
+                    <Button Content="맵 찾기..." Command="{Binding DataContext.PickWarpMapCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Button Content="열기" Command="{Binding DataContext.OpenWarpDestinationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            ToolTip="목적지 맵을 열고 목적지 칸으로 이동" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="맵 이름" />
+                    <TextBlock Text="{Binding DestName}" VerticalAlignment="Center" Margin="4 0" Foreground="Cyan" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="조건" />
+                    <TextBox Text="{Binding Condition}" Width="260" ToolTip="dsl" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <!-- Shortcuts are dispatched in MainWindow.xaml.cs from the user settings (설정 → 단축키) -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Menu -->
+        <Menu Grid.Row="0" Padding="4 2">
+            <MenuItem Header="파일(_F)">
+                <MenuItem Header="선택한 맵 열기" Command="{Binding OpenMapCommand}" IsEnabled="{Binding CanOpen}" />
+                <MenuItem Header="저장" InputGestureText="{Binding ShortcutMap[Save].Text}" Command="{Binding SaveCommand}" />
+                <MenuItem Header="door.xlsx 저장" Command="{Binding SaveDoorTableCommand}" />
+                <Separator />
+                <MenuItem Header="리소스 버전">
+                    <MenuItem Header="5.50" Command="{Binding VersionCommand}" CommandParameter="v550"
+                              IsChecked="{Binding SelectedVersion.Version, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=v550}" />
+                    <MenuItem Header="6.51" Command="{Binding VersionCommand}" CommandParameter="v651"
+                              IsChecked="{Binding SelectedVersion.Version, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=v651}" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="종료" Command="{Binding ExitCommand}" />
+            </MenuItem>
+            <MenuItem Header="편집(_E)">
+                <MenuItem Header="실행 취소" InputGestureText="{Binding ShortcutMap[Undo].Text}" Command="{Binding UndoCommand}" />
+                <MenuItem Header="다시 실행" InputGestureText="{Binding ShortcutMap[Redo].Text}" Command="{Binding RedoCommand}" />
+                <Separator />
+                <MenuItem Header="복사" InputGestureText="{Binding ShortcutMap[Copy].Text}" Command="{Binding CopyCommand}" />
+                <MenuItem Header="붙여넣기" InputGestureText="{Binding ShortcutMap[Paste].Text}" Command="{Binding PasteCommand}" />
+                <MenuItem Header="삭제 (선택한 스폰 + 현재 레이어)" InputGestureText="{Binding ShortcutMap[Delete].Text}" Command="{Binding DeleteSelectionCommand}" />
+                <MenuItem Header="블록 토글" InputGestureText="{Binding ShortcutMap[ToggleBlock].Text}" Command="{Binding ToggleBlockSelectionCommand}" />
+                <Separator />
+                <MenuItem Header="전체 선택" InputGestureText="{Binding ShortcutMap[SelectAll].Text}" Command="{Binding SelectAllCommand}" />
+                <MenuItem Header="선택 해제" InputGestureText="{Binding ShortcutMap[ClearSelection].Text}" Command="{Binding ClearSelectionCommand}" />
+                <Separator />
+                <MenuItem Header="선택 이동 시 타일도 이동" IsCheckable="True" IsChecked="{Binding MoveTiles}" />
+                <MenuItem Header="선택 이동 시 블록도 이동" IsCheckable="True" IsChecked="{Binding MoveBlocks}" />
+            </MenuItem>
+            <MenuItem Header="이동(_G)">
+                <MenuItem Header="뒤로 (이전에 보던 위치)" InputGestureText="{Binding ShortcutMap[NavigateBack].Text}" Command="{Binding NavigateBackCommand}" IsEnabled="{Binding CanNavigateBack}" />
+                <MenuItem Header="앞으로" InputGestureText="{Binding ShortcutMap[NavigateForward].Text}" Command="{Binding NavigateForwardCommand}" IsEnabled="{Binding CanNavigateForward}" />
+                <Separator />
+                <MenuItem Header="맵 검색" InputGestureText="{Binding ShortcutMap[FindMap].Text}" Click="OnFindMap" />
+                <MenuItem Header="선택한 워프의 목적지 열기" InputGestureText="{Binding ShortcutMap[OpenWarpDestination].Text}" Command="{Binding OpenWarpDestinationCommand}" />
+            </MenuItem>
+            <MenuItem Header="보기(_V)">
+                <MenuItem Header="타일" IsCheckable="True" IsChecked="{Binding ShowTiles}" />
+                <MenuItem Header="오브젝트" IsCheckable="True" IsChecked="{Binding ShowObjects}" />
+                <MenuItem Header="블록 (.block)" IsCheckable="True" IsChecked="{Binding ShowBlocks}" />
+                <MenuItem Header="유효 충돌 (막힌 칸 + 방향 충돌 테두리)" IsCheckable="True" IsChecked="{Binding ShowCollision}" InputGestureText="{Binding ShortcutMap[ToggleCollision].Text}" />
+                <MenuItem Header="그리드" IsCheckable="True" IsChecked="{Binding ShowGrid}" InputGestureText="{Binding ShortcutMap[ToggleGrid].Text}" />
+                <MenuItem Header="문" IsCheckable="True" IsChecked="{Binding ShowDoors}" />
+                <MenuItem Header="NPC" IsCheckable="True" IsChecked="{Binding ShowNpcs}" />
+                <MenuItem Header="NPC / 몹 그림" IsCheckable="True" IsChecked="{Binding ShowSprites}" InputGestureText="{Binding ShortcutMap[ToggleSprites].Text}" />
+                <MenuItem Header="몹 스폰 영역" IsCheckable="True" IsChecked="{Binding ShowMobs}" />
+                <MenuItem Header="워프" IsCheckable="True" IsChecked="{Binding ShowWarps}" />
+                <MenuItem Header="5.50에 없는 타일/오브젝트를 검은색으로 (6.51 리소스일 때)" IsCheckable="True" IsChecked="{Binding ShowMissing550}" />
+                <Separator />
+                <MenuItem Header="미니맵" IsCheckable="True" IsChecked="{Binding ShowMinimap}" InputGestureText="{Binding ShortcutMap[ToggleMinimap].Text}" />
+                <Separator />
+                <MenuItem Header="확대 (Ctrl+휠)" InputGestureText="{Binding ShortcutMap[ZoomIn].Text}" Command="{Binding ZoomCommand}" CommandParameter="in" />
+                <MenuItem Header="축소 (Ctrl+휠)" InputGestureText="{Binding ShortcutMap[ZoomOut].Text}" Command="{Binding ZoomCommand}" CommandParameter="out" />
+                <MenuItem Header="100%" InputGestureText="{Binding ShortcutMap[ZoomReset].Text}" Command="{Binding ZoomCommand}" CommandParameter="reset" />
+            </MenuItem>
+            <MenuItem Header="도구(_T)">
+                <MenuItem Header="선택 / 이동" Command="{Binding ToolCommand}" CommandParameter="Select"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Select}" />
+                <MenuItem Header="브러시" Command="{Binding ToolCommand}" CommandParameter="Brush"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Brush}" />
+                <MenuItem Header="사각형 채우기" Command="{Binding ToolCommand}" CommandParameter="Rect"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Rect}" />
+                <MenuItem Header="영역 채우기" Command="{Binding ToolCommand}" CommandParameter="Fill"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Fill}" />
+                <MenuItem Header="지우개" Command="{Binding ToolCommand}" CommandParameter="Eraser"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Eraser}" />
+                <MenuItem Header="스포이트" Command="{Binding ToolCommand}" CommandParameter="Eyedropper"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Eyedropper}" />
+                <MenuItem Header="문 배치" Command="{Binding ToolCommand}" CommandParameter="Door"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Door}" />
+                <MenuItem Header="몹 영역 그리기" Command="{Binding ToolCommand}" CommandParameter="Mob"
+                          IsChecked="{Binding Tool, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Mob}" />
+                <Separator />
+                <MenuItem Header="편집 레이어">
+                    <MenuItem Header="타일" Command="{Binding LayerCommand}" CommandParameter="Tile"
+                              IsChecked="{Binding Layer, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Tile}" />
+                    <MenuItem Header="오브젝트" Command="{Binding LayerCommand}" CommandParameter="Object"
+                              IsChecked="{Binding Layer, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Object}" />
+                    <MenuItem Header="블록" Command="{Binding LayerCommand}" CommandParameter="Block"
+                              IsChecked="{Binding Layer, Mode=OneWay, Converter={StaticResource EnumBool}, ConverterParameter=Block}" />
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="맵(_M)">
+                <MenuItem Header="NPC 추가..." Command="{Binding AddSpawnCommand}" CommandParameter="npc" />
+                <MenuItem Header="몹 스폰 추가 (맵 전체)..." Command="{Binding AddSpawnCommand}" CommandParameter="mob" />
+                <MenuItem Header="워프 추가..." Command="{Binding AddSpawnCommand}" CommandParameter="warp" />
+                <Separator />
+                <MenuItem Header="선택 영역으로 문 정의 만들기" Command="{Binding CreateDoorFromSelectionCommand}" />
+                <Separator />
+                <MenuItem Header="검증 실행" InputGestureText="{Binding ShortcutMap[Validate].Text}" Command="{Binding ValidateCommand}" />
+                <MenuItem Header="현재 맵 워프 검사" InputGestureText="{Binding ShortcutMap[CheckWarps].Text}" Command="{Binding CheckWarpsCommand}" CommandParameter="map" />
+                <MenuItem Header="전체 맵 워프 검사" InputGestureText="{Binding ShortcutMap[CheckAllWarps].Text}" Command="{Binding CheckWarpsCommand}" CommandParameter="all" />
+            </MenuItem>
+            <MenuItem Header="설정(_S)">
+                <MenuItem Header="단축키..." InputGestureText="{Binding ShortcutMap[ShortcutEditor].Text}" Command="{Binding ShortcutEditorCommand}" />
+            </MenuItem>
+            <MenuItem Header="MCP">
+                <MenuItem Header="{Binding McpStatus}" HeaderStringFormat="상태: {0}" IsEnabled="False" />
+                <MenuItem Header="쓰기 허용" IsCheckable="True" IsChecked="{Binding McpAllowWrite}" />
+            </MenuItem>
+            <MenuItem Header="도움말(_H)">
+                <MenuItem Header="조작 안내" Click="OnHelp" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" Padding="6 4">
+            <WrapPanel VerticalAlignment="Center">
+                <TextBlock Text="리소스" VerticalAlignment="Center" Margin="2 0 6 0" Foreground="{StaticResource SemiTextBrush}" />
+                <ComboBox ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}" DisplayMemberPath="Label" Width="130" Margin="0 0 10 0" />
+                <Button Content="저장 (Ctrl+S)" Command="{Binding SaveCommand}" />
+                <Button Content="실행 취소" Command="{Binding UndoCommand}" />
+                <Button Content="다시 실행" Command="{Binding RedoCommand}" />
+                <Button Content="◀" Command="{Binding NavigateBackCommand}" IsEnabled="{Binding CanNavigateBack}"
+                        ToolTip="{Binding ShortcutMap[NavigateBack].Text}" ToolTipService.ShowOnDisabled="True" />
+                <Button Content="▶" Command="{Binding NavigateForwardCommand}" IsEnabled="{Binding CanNavigateForward}"
+                        ToolTip="{Binding ShortcutMap[NavigateForward].Text}" ToolTipService.ShowOnDisabled="True" />
+                <Rectangle Width="1" Fill="{StaticResource ControlLightBrush}" Margin="8 2" />
+
+                <RadioButton Style="{StaticResource ToolButton}" Content="선택 / 이동"
+                             ToolTip="끌기: NPC·워프·오브젝트·몹 영역 테두리·선택 영역 이동, 빈 곳 끌기: 영역 선택, Ctrl+클릭: 추가/빼기, Shift·Ctrl+끌기: 영역 추가, Ctrl+Shift+끌기: 영역 제외, 더블클릭: 같은 값 전체, Alt+클릭: 키 큰 오브젝트를 그림 위치로 잡기"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Select}" />
+                <RadioButton Style="{StaticResource ToolButton}" Content="브러시"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Brush}" />
+                <RadioButton Style="{StaticResource ToolButton}" Content="사각형 채우기"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Rect}" />
+                <RadioButton Style="{StaticResource ToolButton}" Content="영역 채우기"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Fill}" />
+                <RadioButton Style="{StaticResource ToolButton}" Content="지우개"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Eraser}" />
+                <RadioButton Style="{StaticResource ToolButton}" Content="스포이트"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Eyedropper}" />
+                <RadioButton Style="{StaticResource ToolButton}" Content="문"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Door}" />
+                <RadioButton Style="{StaticResource ToolButton}" Content="몹 영역" ToolTip="드래그: 선택한 몹 스폰의 영역 지정 (선택이 없으면 새 몹 스폰)"
+                             IsChecked="{Binding Tool, Converter={StaticResource EnumBool}, ConverterParameter=Mob}" />
+                <Rectangle Width="1" Fill="{StaticResource ControlLightBrush}" Margin="8 2" />
+
+                <TextBlock Text="편집 레이어" VerticalAlignment="Center" Margin="2 0 6 0" Foreground="{StaticResource SemiTextBrush}" />
+                <RadioButton Style="{StaticResource ToolButton}" GroupName="Layer" Content="타일"
+                             IsChecked="{Binding Layer, Converter={StaticResource EnumBool}, ConverterParameter=Tile}" />
+                <RadioButton Style="{StaticResource ToolButton}" GroupName="Layer" Content="오브젝트"
+                             IsChecked="{Binding Layer, Converter={StaticResource EnumBool}, ConverterParameter=Object}" />
+                <RadioButton Style="{StaticResource ToolButton}" GroupName="Layer" Content="블록"
+                             IsChecked="{Binding Layer, Converter={StaticResource EnumBool}, ConverterParameter=Block}" />
+                <Rectangle Width="1" Fill="{StaticResource ControlLightBrush}" Margin="8 2" />
+
+                <Button Content="－" Command="{Binding ZoomCommand}" CommandParameter="out" />
+                <Button Content="100%" Command="{Binding ZoomCommand}" CommandParameter="reset" />
+                <Button Content="＋" Command="{Binding ZoomCommand}" CommandParameter="in" />
+                <TextBlock Text="{Binding Zoom, StringFormat={}{0:P0}}" VerticalAlignment="Center" Margin="6 0" />
+            </WrapPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="400" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: map list + layers -->
+            <Grid Grid.Column="0" Background="{StaticResource PanelBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource Header}" Text="맵 목록" />
+                <TextBox Grid.Row="1" x:Name="MapQueryBox" Text="{Binding MapQuery, UpdateSourceTrigger=PropertyChanged, Delay=200}" ToolTip="ID 또는 이름 검색 (Enter: 첫 맵 열기, ↓: 목록으로)"
+                         PreviewKeyDown="OnMapQueryKeyDown" />
+                <ListBox Grid.Row="2" x:Name="MapList" ItemsSource="{Binding MapView}" SelectedItem="{Binding SelectedMap}"
+                         DisplayMemberPath="Label" VirtualizingPanel.IsVirtualizing="True" Margin="2"
+                         MouseDoubleClick="OnMapDoubleClick" />
+                <Button Grid.Row="3" Content="열기" Command="{Binding OpenMapCommand}" IsEnabled="{Binding CanOpen}" />
+                <StackPanel Grid.Row="4" Margin="0 4 0 8">
+                    <TextBlock Style="{StaticResource Header}" Text="레이어 표시" />
+                    <CheckBox Content="타일" IsChecked="{Binding ShowTiles}" />
+                    <CheckBox Content="오브젝트" IsChecked="{Binding ShowObjects}" />
+                    <CheckBox Content="블록 (.block)" IsChecked="{Binding ShowBlocks}" />
+                    <CheckBox Content="유효 충돌 (막힌 칸 + 방향 충돌 테두리)" IsChecked="{Binding ShowCollision}"
+                              ToolTip="주황 칸: 타일 0 또는 사방이 막힌 오브젝트. 주황 선: 그 변으로 드나들 수 없음 (오브젝트 SObj 방향 충돌)" />
+                    <CheckBox Content="그리드" IsChecked="{Binding ShowGrid}" />
+                    <CheckBox Content="문" IsChecked="{Binding ShowDoors}" />
+                    <CheckBox Content="NPC" IsChecked="{Binding ShowNpcs}" />
+                    <CheckBox Content="NPC / 몹 그림" IsChecked="{Binding ShowSprites}" />
+                    <CheckBox Content="몹 스폰 영역" IsChecked="{Binding ShowMobs}" />
+                    <CheckBox Content="워프" IsChecked="{Binding ShowWarps}" />
+                    <CheckBox Content="5.50에 없는 타일 검은색" IsChecked="{Binding ShowMissing550}"
+                              ToolTip="6.51 리소스로 볼 때 5.50 클라이언트에 없는 타일/오브젝트 id를 검은색으로 표시" />
+                </StackPanel>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" />
+
+            <!-- Center: map -->
+            <Grid Grid.Column="2">
+                <ScrollViewer CanContentScroll="True"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <control:MapCanvas x:Name="MapView" Editor="{Binding}" />
+                </ScrollViewer>
+
+                <!-- Minimap over the bottom-right corner, clear of the scroll bars -->
+                <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0 0 24 24" Padding="4"
+                        Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource ControlLightBrush}" BorderThickness="1"
+                        Visibility="{Binding MinimapVisible, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Text="미니맵" Foreground="{StaticResource SemiTextBrush}" Margin="0 0 0 3" />
+                        <control:MiniMap Editor="{Binding}" Canvas="{Binding ElementName=MapView}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" />
+
+            <!-- Right: properties of the selected spawn, then palette, selection, doors, spawns, validation, MCP -->
+            <Grid Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource ControlLightBrush}" BorderThickness="0 0 0 1"
+                        Padding="0 0 0 4">
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedEntity}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel>
+                        <ContentControl Content="{Binding SelectedEntity}" />
+                        <WrapPanel Margin="4 2">
+                            <Button Content="화면 이동" Command="{Binding FocusEntityCommand}" />
+                            <Button Content="삭제" Command="{Binding DeleteEntityCommand}" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <TabControl Grid.Row="1">
+                    <TabItem Header="타일">
+                        <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <control:PaletteView Editor="{Binding}" Kind="Tile" />
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="오브젝트">
+                        <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <control:PaletteView Editor="{Binding}" Kind="Object" />
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="선택">
+                        <StackPanel Margin="6">
+                            <TextBlock Style="{StaticResource Header}" Text="선택 영역" />
+                            <TextBlock Text="{Binding SelectionText}" TextWrapping="Wrap" Margin="6" />
+                            <WrapPanel>
+                                <Button Content="삭제 (Del)" Command="{Binding DeleteSelectionCommand}" />
+                                <Button Content="블록 토글 (Ctrl+B)" Command="{Binding ToggleBlockSelectionCommand}" />
+                                <Button Content="복사 (Ctrl+C)" Command="{Binding CopyCommand}" />
+                                <Button Content="붙여넣기 (Ctrl+V)" Command="{Binding PasteCommand}" />
+                                <Button Content="선택 해제 (Esc)" Command="{Binding ClearSelectionCommand}" />
+                            </WrapPanel>
+                            <CheckBox Content="선택 이동 시 타일도 이동" IsChecked="{Binding MoveTiles}" />
+                            <CheckBox Content="선택 이동 시 블록도 이동" IsChecked="{Binding MoveBlocks}" />
+                            <TextBlock Style="{StaticResource Header}" Text="브러시 값" />
+                            <StackPanel Orientation="Horizontal" Margin="6 2">
+                                <TextBlock Text="타일" Width="60" VerticalAlignment="Center" />
+                                <TextBox Text="{Binding SelectedTile, UpdateSourceTrigger=LostFocus}" Width="80" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="6 2">
+                                <TextBlock Text="오브젝트" Width="60" VerticalAlignment="Center" />
+                                <TextBox Text="{Binding SelectedObject, UpdateSourceTrigger=LostFocus}" Width="80" />
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
+                    <TabItem Header="문">
+                        <Grid Margin="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="0.7*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="1.5*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Style="{StaticResource Header}" Text="이 맵의 문 (서버 규칙으로 인식)" />
+                            <ListBox Grid.Row="1" ItemsSource="{Binding Document.Doors}" SelectedItem="{Binding SelectedMapDoor}"
+                                     DisplayMemberPath="Label" MouseDoubleClick="OnDoorDoubleClick" />
+                            <WrapPanel Grid.Row="2">
+                                <Button Content="열림/닫힘 전환" Command="{Binding ToggleDoorCommand}" />
+                                <Button Content="문 삭제" Command="{Binding DeleteDoorCommand}" />
+                            </WrapPanel>
+
+                            <DockPanel Grid.Row="3">
+                                <CheckBox DockPanel.Dock="Right" Content="이 맵에서 쓰는 문만" IsChecked="{Binding OnlyMapDoors}" VerticalAlignment="Center" />
+                                <TextBlock Style="{StaticResource Header}" Text="문 정의 (door) — 문 도구로 클릭하면 배치" />
+                            </DockPanel>
+                            <DataGrid Grid.Row="4" ItemsSource="{Binding DoorModelsView}" SelectedItem="{Binding SelectedDoorModel}" CanUserDeleteRows="False"
+                                      RowHeight="44" VirtualizingPanel.IsVirtualizing="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="id" Binding="{Binding Id}" Width="40" />
+                                    <DataGridTextColumn Header="pairs (&amp; 구분)" Binding="{Binding PairsText, UpdateSourceTrigger=LostFocus}" Width="90" />
+                                    <DataGridTemplateColumn Header="이 맵 사용" Width="70">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock VerticalAlignment="Center" TextWrapping="Wrap">
+                                                    <TextBlock.Text>
+                                                        <MultiBinding Converter="{StaticResource DoorUsage}">
+                                                            <Binding />
+                                                            <Binding Path="DataContext.Document.Doors" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="닫힘" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Image Stretch="Uniform" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                                    <Image.Source>
+                                                        <MultiBinding Converter="{StaticResource DoorStrip}">
+                                                            <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding Path="DataContext.DoorTable" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding />
+                                                            <Binding Path="DataContext.DoorRevision" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                        </MultiBinding>
+                                                    </Image.Source>
+                                                </Image>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="열림" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Image Stretch="Uniform" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                                    <Image.Source>
+                                                        <MultiBinding Converter="{StaticResource DoorStrip}" ConverterParameter="open">
+                                                            <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding Path="DataContext.DoorTable" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding />
+                                                            <Binding Path="DataContext.DoorRevision" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                        </MultiBinding>
+                                                    </Image.Source>
+                                                </Image>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <WrapPanel Grid.Row="5">
+                                <Button Content="추가" Command="{Binding AddDoorModelCommand}" />
+                                <Button Content="삭제" Command="{Binding RemoveDoorModelCommand}" />
+                                <CheckBox Content="열린 상태로 배치" IsChecked="{Binding PlaceDoorOpened}" VerticalAlignment="Center" />
+                                <Button Content="선택 영역으로 문 만들기" Command="{Binding CreateDoorFromSelectionCommand}"
+                                        ToolTip="한 행에서 가로로 이어진 칸을 선택하면 현재 오브젝트를 닫힘으로 하는 door_pair와 door를 만든다" />
+                            </WrapPanel>
+
+                            <!-- Larger preview of the selected door model: the joined close and open shapes -->
+                            <Border Grid.Row="6" Background="{StaticResource InputBrush}" Margin="2" Padding="4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="닫힘" Foreground="Gold" />
+                                        <Image Height="96" Stretch="Uniform" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource DoorStrip}">
+                                                    <Binding Path="Assets" />
+                                                    <Binding Path="DoorTable" />
+                                                    <Binding Path="SelectedDoorModel" />
+                                                    <Binding Path="DoorRevision" />
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="열림" Foreground="LimeGreen" />
+                                        <Image Height="96" Stretch="Uniform" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource DoorStrip}" ConverterParameter="open">
+                                                    <Binding Path="Assets" />
+                                                    <Binding Path="DoorTable" />
+                                                    <Binding Path="SelectedDoorModel" />
+                                                    <Binding Path="DoorRevision" />
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Grid.Row="7">
+                                <TextBlock Style="{StaticResource Header}" Text="선택한 문이 이 맵에서 쓰이는 좌표 (클릭: 이동)" />
+                                <ListBox ItemsSource="{Binding SelectedDoorUsages}" DisplayMemberPath="Label"
+                                         MaxHeight="90" Margin="2" PreviewMouseLeftButtonUp="OnDoorUsageClick" />
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="8" Style="{StaticResource Header}" Text="door_pair (칸별 열림/닫힘 오브젝트)" />
+                            <DataGrid Grid.Row="9" ItemsSource="{Binding DoorTable.Pairs}" SelectedItem="{Binding SelectedDoorPair}" CanUserDeleteRows="False" RowHeight="52">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="id" Binding="{Binding Id}" Width="50" />
+                                    <DataGridTextColumn Header="open" Binding="{Binding Open}" Width="60" />
+                                    <DataGridTemplateColumn Header="열림" Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Image Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                                    <Image.Source>
+                                                        <MultiBinding Converter="{StaticResource ObjectThumbnail}">
+                                                            <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding Path="Open" />
+                                                        </MultiBinding>
+                                                    </Image.Source>
+                                                </Image>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="close" Binding="{Binding Close}" Width="60" />
+                                    <DataGridTemplateColumn Header="닫힘" Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Image Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                                    <Image.Source>
+                                                        <MultiBinding Converter="{StaticResource ObjectThumbnail}">
+                                                            <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding Path="Close" />
+                                                        </MultiBinding>
+                                                    </Image.Source>
+                                                </Image>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <WrapPanel Grid.Row="10">
+                                <Button Content="추가" Command="{Binding AddDoorPairCommand}" />
+                                <Button Content="삭제" Command="{Binding RemoveDoorPairCommand}" />
+                                <Button Content="door.xlsx 저장" Command="{Binding SaveDoorTableCommand}" />
+                                <TextBlock Text="● 저장 안 됨" Foreground="Orange" VerticalAlignment="Center" Margin="6 0"
+                                           Visibility="{Binding DoorTableDirty, Converter={StaticResource BoolToVisibility}}" />
+                            </WrapPanel>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="스폰">
+                        <TabControl>
+                            <TabItem Header="NPC">
+                                <DockPanel>
+                                    <WrapPanel DockPanel.Dock="Bottom">
+                                        <Button Content="추가..." Command="{Binding AddSpawnCommand}" CommandParameter="npc" />
+                                        <Button Content="삭제" Command="{Binding RemoveSpawnCommand}" CommandParameter="npc" />
+                                        <TextBlock Text="맵에서 끌어 이동, 우클릭으로 방향/삭제" Foreground="{StaticResource SemiTextBrush}" VerticalAlignment="Center" Margin="6 0" />
+                                    </WrapPanel>
+                                    <DataGrid ItemsSource="{Binding Document.Npcs}" SelectedItem="{Binding SelectedNpc}" CanUserDeleteRows="False"
+                                              MouseDoubleClick="OnNpcDoubleClick">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="npc" Binding="{Binding Npc}" Width="50" />
+                                            <DataGridTextColumn Header="이름" Binding="{Binding Name}" IsReadOnly="True" Width="*" />
+                                            <DataGridTextColumn Header="x" Binding="{Binding X}" Width="40" />
+                                            <DataGridTextColumn Header="y" Binding="{Binding Y}" Width="40" />
+                                            <DataGridComboBoxColumn Header="방향" SelectedItemBinding="{Binding Direction}" Width="80">
+                                                <DataGridComboBoxColumn.ItemsSource>
+                                                    <x:Array Type="{x:Type sys:String}">
+                                                        <sys:String>TOP</sys:String>
+                                                        <sys:String>RIGHT</sys:String>
+                                                        <sys:String>BOTTOM</sys:String>
+                                                        <sys:String>LEFT</sys:String>
+                                                    </x:Array>
+                                                </DataGridComboBoxColumn.ItemsSource>
+                                            </DataGridComboBoxColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </DockPanel>
+                            </TabItem>
+                            <TabItem Header="몹">
+                                <DockPanel>
+                                    <WrapPanel DockPanel.Dock="Bottom">
+                                        <Button Content="추가..." Command="{Binding AddSpawnCommand}" CommandParameter="mob" />
+                                        <Button Content="삭제" Command="{Binding RemoveSpawnCommand}" CommandParameter="mob" />
+                                        <TextBlock Text="맵에서 우클릭 드래그로 영역 지정 추가" Foreground="{StaticResource SemiTextBrush}" VerticalAlignment="Center" Margin="6 0" />
+                                    </WrapPanel>
+                                    <DataGrid ItemsSource="{Binding Document.Mobs}" SelectedItem="{Binding SelectedMob}" CanUserDeleteRows="False"
+                                              MouseDoubleClick="OnMobDoubleClick">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="mob" Binding="{Binding Mob}" Width="50" />
+                                            <DataGridTextColumn Header="이름" Binding="{Binding Name}" IsReadOnly="True" Width="*" />
+                                            <DataGridTextColumn Header="x0" Binding="{Binding BeginX}" Width="34" />
+                                            <DataGridTextColumn Header="y0" Binding="{Binding BeginY}" Width="34" />
+                                            <DataGridTextColumn Header="x1" Binding="{Binding EndX}" Width="34" />
+                                            <DataGridTextColumn Header="y1" Binding="{Binding EndY}" Width="34" />
+                                            <DataGridTextColumn Header="수" Binding="{Binding Count}" Width="34" />
+                                            <DataGridTextColumn Header="리젠" Binding="{Binding Rezen}" Width="64" />
+                                            <DataGridTextColumn Header="조건" Binding="{Binding Condition}" Width="60" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </DockPanel>
+                            </TabItem>
+                            <TabItem Header="워프">
+                                <DockPanel>
+                                    <WrapPanel DockPanel.Dock="Bottom">
+                                        <Button Content="추가..." Command="{Binding AddSpawnCommand}" CommandParameter="warp" />
+                                        <Button Content="삭제" Command="{Binding RemoveSpawnCommand}" CommandParameter="warp" />
+                                        <TextBlock Text="맵에서 끌어 이동, 우클릭으로 추가/목적지 열기" Foreground="{StaticResource SemiTextBrush}" VerticalAlignment="Center" Margin="6 0" />
+                                    </WrapPanel>
+                                    <DataGrid ItemsSource="{Binding Document.Warps}" SelectedItem="{Binding SelectedWarp}" CanUserDeleteRows="False"
+                                              MouseDoubleClick="OnWarpDoubleClick">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="x" Binding="{Binding X}" Width="40" />
+                                            <DataGridTextColumn Header="y" Binding="{Binding Y}" Width="40" />
+                                            <DataGridTextColumn Header="목적지 (dsl)" Binding="{Binding Dest}" Width="*" />
+                                            <DataGridTextColumn Header="목적지 맵 이름" Binding="{Binding DestName}" IsReadOnly="True" Width="*" />
+                                            <DataGridTextColumn Header="조건" Binding="{Binding Condition}" Width="60" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </DockPanel>
+                            </TabItem>
+                        </TabControl>
+                    </TabItem>
+                    <TabItem Header="검증">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Top" Content="검증 실행" Command="{Binding ValidateCommand}" HorizontalAlignment="Left" />
+                            <ListBox ItemsSource="{Binding Validation}" DisplayMemberPath="Label" VirtualizingPanel.IsVirtualizing="True"
+                                     MouseDoubleClick="OnValidationDoubleClick" />
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem x:Name="WarpCheckTab" Header="워프 검사">
+                        <DockPanel Margin="4">
+                            <StackPanel DockPanel.Dock="Top">
+                                <WrapPanel>
+                                    <Button Content="현재 맵 검사" Command="{Binding CheckWarpsCommand}" CommandParameter="map" />
+                                    <Button Content="전체 맵 검사" Command="{Binding CheckWarpsCommand}" CommandParameter="all" />
+                                    <TextBlock Text="검사 중..." Foreground="Orange" VerticalAlignment="Center" Margin="6 0"
+                                               Visibility="{Binding CheckingWarps, Converter={StaticResource BoolToVisibility}}" />
+                                </WrapPanel>
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SemiTextBrush}" Margin="4 2"
+                                           Text="확실: 워프 칸이 막힘/NPC, 들어갈 인접 칸 없음, 목적지 맵·좌표 오류. 의심: 다른 맵에서 오는 도착 지점에서 걸어서 못 감, 목적지 칸이 막힘 (스크립트·로그인 위치는 모름). 결과만 보여주고 고치지는 않음. 클릭하면 그 맵과 워프로 이동." />
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding WarpIssues}" IsReadOnly="True" VirtualizingPanel.IsVirtualizing="True"
+                                      PreviewMouseLeftButtonUp="OnWarpIssueClick">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="구분" Binding="{Binding Severity}" Width="36" />
+                                    <DataGridTextColumn Header="맵" Binding="{Binding MapLabel}" Width="110" />
+                                    <DataGridTextColumn Header="x" Binding="{Binding X}" Width="32" />
+                                    <DataGridTextColumn Header="y" Binding="{Binding Y}" Width="32" />
+                                    <DataGridTextColumn Header="목적지" Binding="{Binding DestLabel}" Width="120" />
+                                    <DataGridTextColumn Header="문제" Binding="{Binding Message}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem Header="MCP">
+                        <DockPanel Margin="4">
+                            <StackPanel DockPanel.Dock="Top">
+                                <TextBlock Style="{StaticResource Header}" Text="상태" />
+                                <TextBox Text="{Binding McpStatus, Mode=OneWay}" IsReadOnly="True" />
+                                <CheckBox Content="MCP 쓰기 허용 (set_cells, fill_rect, door, undo, save)" IsChecked="{Binding McpAllowWrite}" />
+                                <TextBlock Style="{StaticResource Header}" Text="호출 로그" />
+                            </StackPanel>
+                            <ListBox ItemsSource="{Binding McpLog}" />
+                        </DockPanel>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Grid>
+
+        <!-- Status bar -->
+        <Border Grid.Row="3" Background="{StaticResource PanelBrush}" Padding="8 3">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding HoverText}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="1" Text="{Binding StatusText}" Foreground="{StaticResource SemiTextBrush}" Margin="12 0" TextTrimming="CharacterEllipsis" MaxWidth="700" />
+                <TextBlock Grid.Column="2" Text="{Binding McpStatus, StringFormat=MCP {0}}" Foreground="{StaticResource SemiTextBrush}" />
+            </Grid>
+        </Border>
+
+        <!-- Loading popup: covers the window so nothing is edited while data is being read -->
+        <Grid Grid.Row="0" Grid.RowSpan="4" Background="#99000000"
+              Visibility="{Binding LoadingVisible, Converter={StaticResource BoolToVisibility}}">
+            <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource ControlLightBrush}" BorderThickness="1"
+                    CornerRadius="4" Padding="16 12" MinWidth="360" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="{Binding LoadingTitle}" FontWeight="Bold" FontSize="14" Margin="0 0 0 8" />
+                    <ProgressBar Height="6" Minimum="0" Maximum="{Binding LoadingTotal}" Value="{Binding LoadingDone, Mode=OneWay}"
+                                 Foreground="{StaticResource HighlightBrush}" Background="{StaticResource InputBrush}" BorderThickness="0" />
+                    <ItemsControl ItemsSource="{Binding LoadingSteps}" Margin="0 8 0 0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0 2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Name}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding State}" Margin="16 0 0 0" Foreground="{StaticResource SemiTextBrush}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
