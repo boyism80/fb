@@ -316,7 +316,7 @@ public:
 
         auto ms = std::abs(this->milliseconds());
         if (ms != 0)
-            sstream << '.' << ms;
+            sstream << '.' << std::setw(3) << std::setfill('0') << ms;
 
         return sstream.str();
     }
@@ -870,7 +870,7 @@ public:
 
         auto ms = this->milliseconds();
         if (ms > 0)
-            sstream << '.' << ms;
+            sstream << '.' << std::setw(3) << std::setfill('0') << ms;
 
         return sstream.str();
     }
