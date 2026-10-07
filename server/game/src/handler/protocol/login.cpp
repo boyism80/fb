@@ -71,17 +71,10 @@ void login<V>::init_items(const std::vector<internal::Item>& response, character
         if (x.uid.has_value())
             item->uid(x.uid.value());
 
-        if (x.stored == ESCROW_STORED)
-            std::ignore = ch.items.lock(x.index, item, x.locked_money, x.listing_id.value_or(0));
-        else if (x.stored != -1)
-            std::ignore = ch.items.store(item);
-        else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            std::ignore = ch.items.add(item, x.index);
-        else
-            std::ignore = ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
-
         if (x.custom_name.has_value() && item->model().attr(ITEM_ATTRIBUTE::WEAPON))
             static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
+
+        ch.items.load(item, x);
     }
 }
 
@@ -306,6 +299,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     session.data(ch);
 
+    // Others can reach the character as soon as it is on the map, so the slots are filled before that.
+    this->init_items(resp.items, *ch);
+
     if (request.match.has_value() && request.match->id != 0)
         co_await this->server.matches.join(*ch, request.match->id, request.match->type, request.match->team);
 
@@ -359,7 +355,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     ch->mail_box.unread_count(resp.mail);
     ch->mail_box.init_system_mails(resp.system_mail_ids);
-    this->init_items(resp.items, *ch);
+    ch->items.sync();
     this->init_spells(resp.spells, *ch);
     ch->matchmaker.load(resp.matchmaking_skills);
     this->init_achievements(resp.achievements, *ch);

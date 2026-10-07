@@ -62,6 +62,7 @@ struct equipment::listener_t : public virtual fb::game::item::listener_t
     // clang-format off
     virtual void on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)                                  = 0;
     virtual void on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)             = 0;
+    virtual void on_equipment_sync(character& me)                                                                   = 0;
     virtual void on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) = 0;
     // clang-format on
 };

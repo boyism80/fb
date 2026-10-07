@@ -12,14 +12,11 @@ using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;
 
-void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
+void listener_impl::send_equipment_on(character& me, const item& item, EQUIPMENT_PARTS parts)
 {
-    me.stat.equipment_on(static_cast<equipment&>(item).model());
-
     fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
         me.send(game_resp::item_update_slot<V>(me, parts));
     });
-    me.sound(SOUND::EQUIPMENT_ON);
 
     std::stringstream sstream;
     switch (parts)
@@ -59,21 +56,35 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
 
     sstream << item.name();
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
+}
 
-    sstream.str(std::string());
-    sstream << std::format(_TEXT(MESSAGE_EQUIPMENT_STAT_ARMOR),
-                           me.stat.phydef(),
-                           me.stat.regenerative(),
-                           me.stat.magdef());
-    me.message(sstream.str(), MESSAGE_TYPE::STATE);
+void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
+{
+    this->send_equipment_on(me, item, parts);
+    me.sound(SOUND::EQUIPMENT_ON);
+    me.message(
+        std::format(_TEXT(MESSAGE_EQUIPMENT_STAT_ARMOR), me.stat.phydef(), me.stat.regenerative(), me.stat.magdef()),
+        MESSAGE_TYPE::STATE);
+    me.update(UPDATE_STATE_LEVEL::BASED | UPDATE_STATE_LEVEL::HP_MP);
+}
 
+void listener_impl::on_equipment_sync(character& me)
+{
+    for (auto& [parts, equipment] : me.items.equipments())
+    {
+        if (equipment != nullptr)
+            this->send_equipment_on(me, *equipment, parts);
+    }
+
+    me.sound(SOUND::EQUIPMENT_ON);
+    me.message(
+        std::format(_TEXT(MESSAGE_EQUIPMENT_STAT_ARMOR), me.stat.phydef(), me.stat.regenerative(), me.stat.magdef()),
+        MESSAGE_TYPE::STATE);
     me.update(UPDATE_STATE_LEVEL::BASED | UPDATE_STATE_LEVEL::HP_MP);
 }
 
 void listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
-    me.stat.equipment_off(equipment.model());
-
     fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
         me.send(game_resp::item_unequip<V>(parts));
     });

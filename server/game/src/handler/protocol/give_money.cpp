@@ -50,7 +50,10 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
         {
         case OBJECT_TYPE::CHARACTER:
         {
-            auto you      = std::static_pointer_cast<fb::game::character>(forward);
+            auto you = std::static_pointer_cast<fb::game::character>(forward);
+            if (you->loaded() == false)
+                co_return true;
+
             auto capacity = std::numeric_limits<uint64_t>::max() - you->money();
             money         = std::min(capacity, static_cast<uint64_t>(money));
             if (money == 0)

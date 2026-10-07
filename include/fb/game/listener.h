@@ -40,6 +40,7 @@ private:
                                 const fb::model::appearance& appearance);
     void send_non_character_external(fb::game::object& me);
     void send_non_character_external(fb::game::object& me, fb::game::character& you);
+    void send_equipment_on(character& me, const item& item, EQUIPMENT_PARTS parts);
 
 public:
     // clang-format off
@@ -99,6 +100,7 @@ public:
     void                            on_item_swap(character& me, uint8_t src, uint8_t dst) override final;
     void                            on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) override final;
     void                            on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment) override final;
+    void                            on_equipment_sync(character& me) override final;
     void                            on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) override final;
     void                            on_item_active(character& me, item& item) override final;
     void                            on_item_throws(character& me, item& item, const fb::model::point16_t& to) override final;

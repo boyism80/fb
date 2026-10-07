@@ -62,7 +62,10 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
         {
         case OBJECT_TYPE::CHARACTER:
         {
-            auto you        = std::static_pointer_cast<fb::game::character>(forward);
+            auto you = std::static_pointer_cast<fb::game::character>(forward);
+            if (you->loaded() == false)
+                co_return true;
+
             auto free_space = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? you->items.free_space(model) : model.capacity;
             if (free_space == model.capacity)
             {

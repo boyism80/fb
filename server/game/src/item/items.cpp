@@ -3,6 +3,7 @@
 #include <fb/game/item.h>
 #include <fb/game/map.h>
 #include <fb/game/server.h>
+#include <fb/logger.h>
 
 #include <json/json.h>
 
@@ -787,6 +788,147 @@ std::shared_ptr<equipment> items::wear(EQUIPMENT_PARTS parts, std::shared_ptr<eq
     }
 }
 
+// Nothing is sent here; sync() sends the restored state once the client has the map.
+void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item& row)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    item->container(this);
+    if (row.stored == ESCROW_STORED)
+    {
+        auto regular = row.index >= 0 && row.index < CONTAINER_CAPACITY ? this->at(row.index) : nullptr;
+        if (row.index < 0 || row.index >= CONTAINER_CAPACITY || this->_escrows[row.index].has_value() ||
+            (regular != nullptr &&
+             (regular->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || regular->model() != item->model())))
+        {
+            fb::logger::fatal("{} escrow item {} cannot be restored at slot {} (listing {})",
+                              owner->name(),
+                              item->model().id,
+                              row.index,
+                              row.listing_id.value_or(0));
+            return;
+        }
+
+        this->_escrows[row.index] =
+            escrow_entry{.listing_id = row.listing_id.value_or(0), .item = item, .money = row.locked_money};
+        this->_escrow_count++;
+        this->_locked_money += row.locked_money;
+    }
+    else if (row.stored != -1)
+    {
+        this->_stored.push_back(item);
+    }
+    else if (row.parts == static_cast<int16_t>(EQUIPMENT_PARTS::UNKNOWN))
+    {
+        auto escrow = row.index >= 0 && row.index < CONTAINER_CAPACITY ? this->escrow(row.index) : nullptr;
+        if (row.index < 0 || row.index >= CONTAINER_CAPACITY ||
+            (escrow != nullptr &&
+             (item->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || escrow->item->model() != item->model())) ||
+            super::add(item, row.index) == 0xFF)
+        {
+            fb::logger::warn("{} item {} cannot be restored at slot {}; moved to storage",
+                             owner->name(),
+                             item->model().id,
+                             row.index);
+            this->_stored.push_back(item);
+        }
+    }
+    else
+    {
+        auto parts    = static_cast<EQUIPMENT_PARTS>(row.parts);
+        auto occupied = false;
+        switch (parts)
+        {
+        case EQUIPMENT_PARTS::WEAPON:
+            occupied = this->_weapon != nullptr;
+            if (occupied == false)
+                this->_weapon = std::static_pointer_cast<fb::game::weapon>(item);
+            break;
+
+        case EQUIPMENT_PARTS::ARMOR:
+            occupied = this->_armor != nullptr;
+            if (occupied == false)
+                this->_armor = std::static_pointer_cast<fb::game::armor>(item);
+            break;
+
+        case EQUIPMENT_PARTS::SHIELD:
+            occupied = this->_shield != nullptr;
+            if (occupied == false)
+                this->_shield = std::static_pointer_cast<fb::game::shield>(item);
+            break;
+
+        case EQUIPMENT_PARTS::HELMET:
+            occupied = this->_helmet != nullptr;
+            if (occupied == false)
+                this->_helmet = std::static_pointer_cast<fb::game::helmet>(item);
+            break;
+
+        case EQUIPMENT_PARTS::LEFT_HAND:
+        case EQUIPMENT_PARTS::RIGHT_HAND:
+        {
+            auto& ring = this->_rings[static_cast<int>(
+                parts == EQUIPMENT_PARTS::LEFT_HAND ? EQUIPMENT_POSITION::LEFT : EQUIPMENT_POSITION::RIGHT)];
+            occupied   = ring != nullptr;
+            if (occupied == false)
+                ring = std::static_pointer_cast<fb::game::ring>(item);
+        }
+        break;
+
+        case EQUIPMENT_PARTS::LEFT_AUX:
+        case EQUIPMENT_PARTS::RIGHT_AUX:
+        {
+            auto& auxiliary = this->_auxiliaries[static_cast<int>(
+                parts == EQUIPMENT_PARTS::LEFT_AUX ? EQUIPMENT_POSITION::LEFT : EQUIPMENT_POSITION::RIGHT)];
+            occupied        = auxiliary != nullptr;
+            if (occupied == false)
+                auxiliary = std::static_pointer_cast<fb::game::auxiliary>(item);
+        }
+        break;
+
+        default:
+            occupied = true;
+            break;
+        }
+
+        if (occupied)
+        {
+            fb::logger::warn("{} equipment {} cannot be restored at parts {}; moved to storage",
+                             owner->name(),
+                             item->model().id,
+                             row.parts);
+            this->_stored.push_back(item);
+        }
+        else
+        {
+            owner->stat.equipment_on(std::static_pointer_cast<fb::game::equipment>(item)->model());
+        }
+    }
+}
+
+void items::sync() const
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    for (uint8_t i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        if (this->at(i) != nullptr || this->_escrows[i].has_value())
+            owner->listener.on_item_update(*owner, i);
+    }
+
+    auto equipments = this->equipments();
+    if (std::ranges::any_of(equipments, [](const auto& x) {
+            return x.second != nullptr;
+        }))
+    {
+        owner->listener.on_equipment_sync(*owner);
+        owner->update_external();
+    }
+}
+
 void items::notify_equipment_swap(EQUIPMENT_PARTS parts, const equipment_ptr& before, const equipment_ptr& after)
 {
     auto owner = this->_owner.lock();
@@ -797,10 +939,16 @@ void items::notify_equipment_swap(EQUIPMENT_PARTS parts, const equipment_ptr& be
         return;
 
     if (before != nullptr)
+    {
+        owner->stat.equipment_off(before->model());
         owner->listener.on_equipment_off(*owner, parts, *before);
+    }
 
     if (after != nullptr)
+    {
+        owner->stat.equipment_on(after->model());
         owner->listener.on_equipment_on(*owner, *after, parts);
+    }
 }
 
 std::shared_ptr<weapon> items::weapon() const
