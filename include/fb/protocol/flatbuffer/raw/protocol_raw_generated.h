@@ -27,14 +27,14 @@ struct nullable_uintBuilder;
 struct nullable_fb_protocol_internal_mimicry;
 struct nullable_fb_protocol_internal_mimicryBuilder;
 
+struct nullable_ulong;
+struct nullable_ulongBuilder;
+
 struct nullable_fb_protocol_internal_characterref;
 struct nullable_fb_protocol_internal_characterrefBuilder;
 
 struct nullable_fb_protocol_marketplace_purchaseinfo;
 struct nullable_fb_protocol_marketplace_purchaseinfoBuilder;
-
-struct nullable_ulong;
-struct nullable_ulongBuilder;
 
 }  // namespace nullable
 
@@ -1064,6 +1064,47 @@ inline ::flatbuffers::Offset<nullable_fb_protocol_internal_mimicry> Createnullab
   return builder_.Finish();
 }
 
+struct nullable_ulong FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef nullable_ulongBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_VALUE = 4
+  };
+  uint64_t value() const {
+    return GetField<uint64_t>(VT_VALUE, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_VALUE, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct nullable_ulongBuilder {
+  typedef nullable_ulong Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_value(uint64_t value) {
+    fbb_.AddElement<uint64_t>(nullable_ulong::VT_VALUE, value, 0);
+  }
+  explicit nullable_ulongBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<nullable_ulong> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<nullable_ulong>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<nullable_ulong> Createnullable_ulong(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t value = 0) {
+  nullable_ulongBuilder builder_(_fbb);
+  builder_.add_value(value);
+  return builder_.Finish();
+}
+
 struct nullable_fb_protocol_internal_characterref FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef nullable_fb_protocol_internal_characterrefBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -1144,47 +1185,6 @@ inline ::flatbuffers::Offset<nullable_fb_protocol_marketplace_purchaseinfo> Crea
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> value = 0) {
   nullable_fb_protocol_marketplace_purchaseinfoBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
-
-struct nullable_ulong FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef nullable_ulongBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUE = 4
-  };
-  uint64_t value() const {
-    return GetField<uint64_t>(VT_VALUE, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint64_t>(verifier, VT_VALUE, 8) &&
-           verifier.EndTable();
-  }
-};
-
-struct nullable_ulongBuilder {
-  typedef nullable_ulong Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_value(uint64_t value) {
-    fbb_.AddElement<uint64_t>(nullable_ulong::VT_VALUE, value, 0);
-  }
-  explicit nullable_ulongBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<nullable_ulong> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<nullable_ulong>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<nullable_ulong> Createnullable_ulong(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint64_t value = 0) {
-  nullable_ulongBuilder builder_(_fbb);
   builder_.add_value(value);
   return builder_.Finish();
 }
@@ -2115,7 +2115,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CUSTOM_NAME = 18,
     VT_EXPIRE_TIME = 20,
     VT_LISTING_ID = 22,
-    VT_LOCKED_MONEY = 24
+    VT_LOCKED_MONEY = 24,
+    VT_UID = 26
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
@@ -2144,11 +2145,14 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *expire_time() const {
     return GetPointer<const ::flatbuffers::String *>(VT_EXPIRE_TIME);
   }
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  const nullable::nullable_ulong *listing_id() const {
+    return GetPointer<const nullable::nullable_ulong *>(VT_LISTING_ID);
   }
   uint64_t locked_money() const {
     return GetField<uint64_t>(VT_LOCKED_MONEY, 0);
+  }
+  const nullable::nullable_ulong *uid() const {
+    return GetPointer<const nullable::nullable_ulong *>(VT_UID);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2165,8 +2169,10 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_EXPIRE_TIME) &&
            verifier.VerifyString(expire_time()) &&
            VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
+           verifier.VerifyTable(listing_id()) &&
            VerifyField<uint64_t>(verifier, VT_LOCKED_MONEY, 8) &&
+           VerifyOffset(verifier, VT_UID) &&
+           verifier.VerifyTable(uid()) &&
            verifier.EndTable();
   }
 };
@@ -2202,11 +2208,14 @@ struct ItemBuilder {
   void add_expire_time(::flatbuffers::Offset<::flatbuffers::String> expire_time) {
     fbb_.AddOffset(Item::VT_EXPIRE_TIME, expire_time);
   }
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
+  void add_listing_id(::flatbuffers::Offset<nullable::nullable_ulong> listing_id) {
     fbb_.AddOffset(Item::VT_LISTING_ID, listing_id);
   }
   void add_locked_money(uint64_t locked_money) {
     fbb_.AddElement<uint64_t>(Item::VT_LOCKED_MONEY, locked_money, 0);
+  }
+  void add_uid(::flatbuffers::Offset<nullable::nullable_ulong> uid) {
+    fbb_.AddOffset(Item::VT_UID, uid);
   }
   explicit ItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -2230,10 +2239,12 @@ inline ::flatbuffers::Offset<Item> CreateItem(
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
     ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expire_time = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
-    uint64_t locked_money = 0) {
+    ::flatbuffers::Offset<nullable::nullable_ulong> listing_id = 0,
+    uint64_t locked_money = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> uid = 0) {
   ItemBuilder builder_(_fbb);
   builder_.add_locked_money(locked_money);
+  builder_.add_uid(uid);
   builder_.add_listing_id(listing_id);
   builder_.add_expire_time(expire_time);
   builder_.add_custom_name(custom_name);
@@ -2258,11 +2269,11 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
     const char *custom_name = nullptr,
     const char *expire_time = nullptr,
-    const char *listing_id = nullptr,
-    uint64_t locked_money = 0) {
+    ::flatbuffers::Offset<nullable::nullable_ulong> listing_id = 0,
+    uint64_t locked_money = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> uid = 0) {
   auto custom_name__ = custom_name ? _fbb.CreateString(custom_name) : 0;
   auto expire_time__ = expire_time ? _fbb.CreateString(expire_time) : 0;
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   return fb::protocol::internal::raw::CreateItem(
       _fbb,
       user,
@@ -2274,8 +2285,9 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
       durability,
       custom_name__,
       expire_time__,
-      listing_id__,
-      locked_money);
+      listing_id,
+      locked_money,
+      uid);
 }
 
 struct Spell FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -3933,17 +3945,17 @@ struct MarketplacePending FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
-  const ::flatbuffers::String *pending_key() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_PENDING_KEY);
+  uint64_t pending_key() const {
+    return GetField<uint64_t>(VT_PENDING_KEY, 0);
   }
   uint8_t type() const {
     return GetField<uint8_t>(VT_TYPE, 0);
   }
-  const ::flatbuffers::String *purchase_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_PURCHASE_ID);
+  uint64_t purchase_id() const {
+    return GetField<uint64_t>(VT_PURCHASE_ID, 0);
   }
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  uint64_t listing_id() const {
+    return GetField<uint64_t>(VT_LISTING_ID, 0);
   }
   const ::flatbuffers::String *attachments() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ATTACHMENTS);
@@ -3960,13 +3972,10 @@ struct MarketplacePending FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyOffset(verifier, VT_PENDING_KEY) &&
-           verifier.VerifyString(pending_key()) &&
+           VerifyField<uint64_t>(verifier, VT_PENDING_KEY, 8) &&
            VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
-           VerifyOffset(verifier, VT_PURCHASE_ID) &&
-           verifier.VerifyString(purchase_id()) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
+           VerifyField<uint64_t>(verifier, VT_PURCHASE_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_LISTING_ID, 8) &&
            VerifyOffset(verifier, VT_ATTACHMENTS) &&
            verifier.VerifyString(attachments()) &&
            VerifyField<uint16_t>(verifier, VT_EXPECTED_PURCHASE_COUNT, 2) &&
@@ -3983,17 +3992,17 @@ struct MarketplacePendingBuilder {
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(MarketplacePending::VT_USER, user, 0);
   }
-  void add_pending_key(::flatbuffers::Offset<::flatbuffers::String> pending_key) {
-    fbb_.AddOffset(MarketplacePending::VT_PENDING_KEY, pending_key);
+  void add_pending_key(uint64_t pending_key) {
+    fbb_.AddElement<uint64_t>(MarketplacePending::VT_PENDING_KEY, pending_key, 0);
   }
   void add_type(uint8_t type) {
     fbb_.AddElement<uint8_t>(MarketplacePending::VT_TYPE, type, 0);
   }
-  void add_purchase_id(::flatbuffers::Offset<::flatbuffers::String> purchase_id) {
-    fbb_.AddOffset(MarketplacePending::VT_PURCHASE_ID, purchase_id);
+  void add_purchase_id(uint64_t purchase_id) {
+    fbb_.AddElement<uint64_t>(MarketplacePending::VT_PURCHASE_ID, purchase_id, 0);
   }
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
-    fbb_.AddOffset(MarketplacePending::VT_LISTING_ID, listing_id);
+  void add_listing_id(uint64_t listing_id) {
+    fbb_.AddElement<uint64_t>(MarketplacePending::VT_LISTING_ID, listing_id, 0);
   }
   void add_attachments(::flatbuffers::Offset<::flatbuffers::String> attachments) {
     fbb_.AddOffset(MarketplacePending::VT_ATTACHMENTS, attachments);
@@ -4021,21 +4030,21 @@ struct MarketplacePendingBuilder {
 inline ::flatbuffers::Offset<MarketplacePending> CreateMarketplacePending(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> pending_key = 0,
+    uint64_t pending_key = 0,
     uint8_t type = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> purchase_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
+    uint64_t purchase_id = 0,
+    uint64_t listing_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
     uint16_t expected_purchase_count = 0,
     uint64_t expected_total_price = 0,
     uint32_t character_id = 0) {
   MarketplacePendingBuilder builder_(_fbb);
   builder_.add_expected_total_price(expected_total_price);
-  builder_.add_character_id(character_id);
-  builder_.add_attachments(attachments);
   builder_.add_listing_id(listing_id);
   builder_.add_purchase_id(purchase_id);
   builder_.add_pending_key(pending_key);
+  builder_.add_character_id(character_id);
+  builder_.add_attachments(attachments);
   builder_.add_user(user);
   builder_.add_expected_purchase_count(expected_purchase_count);
   builder_.add_type(type);
@@ -4045,25 +4054,22 @@ inline ::flatbuffers::Offset<MarketplacePending> CreateMarketplacePending(
 inline ::flatbuffers::Offset<MarketplacePending> CreateMarketplacePendingDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
-    const char *pending_key = nullptr,
+    uint64_t pending_key = 0,
     uint8_t type = 0,
-    const char *purchase_id = nullptr,
-    const char *listing_id = nullptr,
+    uint64_t purchase_id = 0,
+    uint64_t listing_id = 0,
     const char *attachments = nullptr,
     uint16_t expected_purchase_count = 0,
     uint64_t expected_total_price = 0,
     uint32_t character_id = 0) {
-  auto pending_key__ = pending_key ? _fbb.CreateString(pending_key) : 0;
-  auto purchase_id__ = purchase_id ? _fbb.CreateString(purchase_id) : 0;
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   auto attachments__ = attachments ? _fbb.CreateString(attachments) : 0;
   return fb::protocol::internal::raw::CreateMarketplacePending(
       _fbb,
       user,
-      pending_key__,
+      pending_key,
       type,
-      purchase_id__,
-      listing_id__,
+      purchase_id,
+      listing_id,
       attachments__,
       expected_purchase_count,
       expected_total_price,
@@ -14548,7 +14554,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MODEL = 6,
     VT_COUNT = 8,
     VT_DURABILITY = 10,
-    VT_CUSTOM_NAME = 12
+    VT_CUSTOM_NAME = 12,
+    VT_UID = 14
   };
   uint32_t owner() const {
     return GetField<uint32_t>(VT_OWNER, 0);
@@ -14565,6 +14572,9 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *custom_name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CUSTOM_NAME);
   }
+  const nullable::nullable_ulong *uid() const {
+    return GetPointer<const nullable::nullable_ulong *>(VT_UID);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_OWNER, 4) &&
@@ -14574,6 +14584,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(durability()) &&
            VerifyOffset(verifier, VT_CUSTOM_NAME) &&
            verifier.VerifyString(custom_name()) &&
+           VerifyOffset(verifier, VT_UID) &&
+           verifier.VerifyTable(uid()) &&
            verifier.EndTable();
   }
 };
@@ -14597,6 +14609,9 @@ struct ItemBuilder {
   void add_custom_name(::flatbuffers::Offset<::flatbuffers::String> custom_name) {
     fbb_.AddOffset(Item::VT_CUSTOM_NAME, custom_name);
   }
+  void add_uid(::flatbuffers::Offset<nullable::nullable_ulong> uid) {
+    fbb_.AddOffset(Item::VT_UID, uid);
+  }
   explicit ItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -14614,8 +14629,10 @@ inline ::flatbuffers::Offset<Item> CreateItem(
     uint32_t model = 0,
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> uid = 0) {
   ItemBuilder builder_(_fbb);
+  builder_.add_uid(uid);
   builder_.add_custom_name(custom_name);
   builder_.add_durability(durability);
   builder_.add_model(model);
@@ -14630,7 +14647,8 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
     uint32_t model = 0,
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
-    const char *custom_name = nullptr) {
+    const char *custom_name = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_ulong> uid = 0) {
   auto custom_name__ = custom_name ? _fbb.CreateString(custom_name) : 0;
   return fb::protocol::marketplace::raw::CreateItem(
       _fbb,
@@ -14638,7 +14656,8 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
       model,
       count,
       durability,
-      custom_name__);
+      custom_name__,
+      uid);
 }
 
 struct PurchaseInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -14728,8 +14747,8 @@ struct Listing FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CREATED_DATE = 16,
     VT_PURCHASE_INFO = 18
   };
-  const ::flatbuffers::String *id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_ID);
+  uint64_t id() const {
+    return GetField<uint64_t>(VT_ID, 0);
   }
   uint32_t seller_id() const {
     return GetField<uint32_t>(VT_SELLER_ID, 0);
@@ -14754,8 +14773,7 @@ struct Listing FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_ID) &&
-           verifier.VerifyString(id()) &&
+           VerifyField<uint64_t>(verifier, VT_ID, 8) &&
            VerifyField<uint32_t>(verifier, VT_SELLER_ID, 4) &&
            VerifyOffset(verifier, VT_ITEM) &&
            verifier.VerifyTable(item()) &&
@@ -14775,8 +14793,8 @@ struct ListingBuilder {
   typedef Listing Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(::flatbuffers::Offset<::flatbuffers::String> id) {
-    fbb_.AddOffset(Listing::VT_ID, id);
+  void add_id(uint64_t id) {
+    fbb_.AddElement<uint64_t>(Listing::VT_ID, id, 0);
   }
   void add_seller_id(uint32_t seller_id) {
     fbb_.AddElement<uint32_t>(Listing::VT_SELLER_ID, seller_id, 0);
@@ -14812,7 +14830,7 @@ struct ListingBuilder {
 
 inline ::flatbuffers::Offset<Listing> CreateListing(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> id = 0,
+    uint64_t id = 0,
     uint32_t seller_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
     uint64_t price = 0,
@@ -14822,19 +14840,19 @@ inline ::flatbuffers::Offset<Listing> CreateListing(
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> purchase_info = 0) {
   ListingBuilder builder_(_fbb);
   builder_.add_price(price);
+  builder_.add_id(id);
   builder_.add_purchase_info(purchase_info);
   builder_.add_created_date(created_date);
   builder_.add_expire_date(expire_date);
   builder_.add_item(item);
   builder_.add_seller_id(seller_id);
-  builder_.add_id(id);
   builder_.add_state(state);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Listing> CreateListingDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *id = nullptr,
+    uint64_t id = 0,
     uint32_t seller_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
     uint64_t price = 0,
@@ -14842,12 +14860,11 @@ inline ::flatbuffers::Offset<Listing> CreateListingDirect(
     const char *expire_date = nullptr,
     const char *created_date = nullptr,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> purchase_info = 0) {
-  auto id__ = id ? _fbb.CreateString(id) : 0;
   auto expire_date__ = expire_date ? _fbb.CreateString(expire_date) : 0;
   auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
   return fb::protocol::marketplace::raw::CreateListing(
       _fbb,
-      id__,
+      id,
       seller_id,
       item,
       price,
@@ -14954,8 +14971,8 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t character_id() const {
     return GetField<uint32_t>(VT_CHARACTER_ID, 0);
   }
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  uint64_t listing_id() const {
+    return GetField<uint64_t>(VT_LISTING_ID, 0);
   }
   const fb::protocol::marketplace::raw::Item *item() const {
     return GetPointer<const fb::protocol::marketplace::raw::Item *>(VT_ITEM);
@@ -14970,8 +14987,7 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
+           VerifyField<uint64_t>(verifier, VT_LISTING_ID, 8) &&
            VerifyOffset(verifier, VT_ITEM) &&
            verifier.VerifyTable(item()) &&
            VerifyField<uint64_t>(verifier, VT_PRICE, 8) &&
@@ -14990,8 +15006,8 @@ struct ListBuilder {
   void add_character_id(uint32_t character_id) {
     fbb_.AddElement<uint32_t>(List::VT_CHARACTER_ID, character_id, 0);
   }
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
-    fbb_.AddOffset(List::VT_LISTING_ID, listing_id);
+  void add_listing_id(uint64_t listing_id) {
+    fbb_.AddElement<uint64_t>(List::VT_LISTING_ID, listing_id, 0);
   }
   void add_item(::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item) {
     fbb_.AddOffset(List::VT_ITEM, item);
@@ -15017,37 +15033,18 @@ inline ::flatbuffers::Offset<List> CreateList(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t character_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
+    uint64_t listing_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
     uint64_t price = 0,
     int64_t deadline = 0) {
   ListBuilder builder_(_fbb);
   builder_.add_deadline(deadline);
   builder_.add_price(price);
-  builder_.add_item(item);
   builder_.add_listing_id(listing_id);
+  builder_.add_item(item);
   builder_.add_character_id(character_id);
   builder_.add_world(world);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<List> CreateListDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t character_id = 0,
-    const char *listing_id = nullptr,
-    ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
-    uint64_t price = 0,
-    int64_t deadline = 0) {
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
-  return fb::protocol::marketplace::request::raw::CreateList(
-      _fbb,
-      world,
-      character_id,
-      listing_id__,
-      item,
-      price,
-      deadline);
 }
 
 struct AbortList FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -15065,8 +15062,8 @@ struct AbortList FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t character_id() const {
     return GetField<uint32_t>(VT_CHARACTER_ID, 0);
   }
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  uint64_t listing_id() const {
+    return GetField<uint64_t>(VT_LISTING_ID, 0);
   }
   const fb::protocol::marketplace::raw::Item *item() const {
     return GetPointer<const fb::protocol::marketplace::raw::Item *>(VT_ITEM);
@@ -15078,8 +15075,7 @@ struct AbortList FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
+           VerifyField<uint64_t>(verifier, VT_LISTING_ID, 8) &&
            VerifyOffset(verifier, VT_ITEM) &&
            verifier.VerifyTable(item()) &&
            VerifyField<uint64_t>(verifier, VT_PRICE, 8) &&
@@ -15097,8 +15093,8 @@ struct AbortListBuilder {
   void add_character_id(uint32_t character_id) {
     fbb_.AddElement<uint32_t>(AbortList::VT_CHARACTER_ID, character_id, 0);
   }
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
-    fbb_.AddOffset(AbortList::VT_LISTING_ID, listing_id);
+  void add_listing_id(uint64_t listing_id) {
+    fbb_.AddElement<uint64_t>(AbortList::VT_LISTING_ID, listing_id, 0);
   }
   void add_item(::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item) {
     fbb_.AddOffset(AbortList::VT_ITEM, item);
@@ -15121,33 +15117,16 @@ inline ::flatbuffers::Offset<AbortList> CreateAbortList(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t character_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
+    uint64_t listing_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
     uint64_t price = 0) {
   AbortListBuilder builder_(_fbb);
   builder_.add_price(price);
-  builder_.add_item(item);
   builder_.add_listing_id(listing_id);
+  builder_.add_item(item);
   builder_.add_character_id(character_id);
   builder_.add_world(world);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<AbortList> CreateAbortListDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t character_id = 0,
-    const char *listing_id = nullptr,
-    ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
-    uint64_t price = 0) {
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
-  return fb::protocol::marketplace::request::raw::CreateAbortList(
-      _fbb,
-      world,
-      character_id,
-      listing_id__,
-      item,
-      price);
 }
 
 struct Cancel FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -15163,15 +15142,14 @@ struct Cancel FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t character_id() const {
     return GetField<uint32_t>(VT_CHARACTER_ID, 0);
   }
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  uint64_t listing_id() const {
+    return GetField<uint64_t>(VT_LISTING_ID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
+           VerifyField<uint64_t>(verifier, VT_LISTING_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -15186,8 +15164,8 @@ struct CancelBuilder {
   void add_character_id(uint32_t character_id) {
     fbb_.AddElement<uint32_t>(Cancel::VT_CHARACTER_ID, character_id, 0);
   }
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
-    fbb_.AddOffset(Cancel::VT_LISTING_ID, listing_id);
+  void add_listing_id(uint64_t listing_id) {
+    fbb_.AddElement<uint64_t>(Cancel::VT_LISTING_ID, listing_id, 0);
   }
   explicit CancelBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -15204,25 +15182,12 @@ inline ::flatbuffers::Offset<Cancel> CreateCancel(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t character_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0) {
+    uint64_t listing_id = 0) {
   CancelBuilder builder_(_fbb);
   builder_.add_listing_id(listing_id);
   builder_.add_character_id(character_id);
   builder_.add_world(world);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<Cancel> CreateCancelDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t character_id = 0,
-    const char *listing_id = nullptr) {
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
-  return fb::protocol::marketplace::request::raw::CreateCancel(
-      _fbb,
-      world,
-      character_id,
-      listing_id__);
 }
 
 struct Purchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -15241,14 +15206,14 @@ struct Purchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t buyer_id() const {
     return GetField<uint32_t>(VT_BUYER_ID, 0);
   }
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  uint64_t listing_id() const {
+    return GetField<uint64_t>(VT_LISTING_ID, 0);
   }
   uint16_t purchase_count() const {
     return GetField<uint16_t>(VT_PURCHASE_COUNT, 0);
   }
-  const ::flatbuffers::String *purchase_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_PURCHASE_ID);
+  uint64_t purchase_id() const {
+    return GetField<uint64_t>(VT_PURCHASE_ID, 0);
   }
   int64_t deadline() const {
     return GetField<int64_t>(VT_DEADLINE, 0);
@@ -15257,11 +15222,9 @@ struct Purchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_BUYER_ID, 4) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
+           VerifyField<uint64_t>(verifier, VT_LISTING_ID, 8) &&
            VerifyField<uint16_t>(verifier, VT_PURCHASE_COUNT, 2) &&
-           VerifyOffset(verifier, VT_PURCHASE_ID) &&
-           verifier.VerifyString(purchase_id()) &&
+           VerifyField<uint64_t>(verifier, VT_PURCHASE_ID, 8) &&
            VerifyField<int64_t>(verifier, VT_DEADLINE, 8) &&
            verifier.EndTable();
   }
@@ -15277,14 +15240,14 @@ struct PurchaseBuilder {
   void add_buyer_id(uint32_t buyer_id) {
     fbb_.AddElement<uint32_t>(Purchase::VT_BUYER_ID, buyer_id, 0);
   }
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
-    fbb_.AddOffset(Purchase::VT_LISTING_ID, listing_id);
+  void add_listing_id(uint64_t listing_id) {
+    fbb_.AddElement<uint64_t>(Purchase::VT_LISTING_ID, listing_id, 0);
   }
   void add_purchase_count(uint16_t purchase_count) {
     fbb_.AddElement<uint16_t>(Purchase::VT_PURCHASE_COUNT, purchase_count, 0);
   }
-  void add_purchase_id(::flatbuffers::Offset<::flatbuffers::String> purchase_id) {
-    fbb_.AddOffset(Purchase::VT_PURCHASE_ID, purchase_id);
+  void add_purchase_id(uint64_t purchase_id) {
+    fbb_.AddElement<uint64_t>(Purchase::VT_PURCHASE_ID, purchase_id, 0);
   }
   void add_deadline(int64_t deadline) {
     fbb_.AddElement<int64_t>(Purchase::VT_DEADLINE, deadline, 0);
@@ -15304,9 +15267,9 @@ inline ::flatbuffers::Offset<Purchase> CreatePurchase(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t buyer_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
+    uint64_t listing_id = 0,
     uint16_t purchase_count = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> purchase_id = 0,
+    uint64_t purchase_id = 0,
     int64_t deadline = 0) {
   PurchaseBuilder builder_(_fbb);
   builder_.add_deadline(deadline);
@@ -15316,26 +15279,6 @@ inline ::flatbuffers::Offset<Purchase> CreatePurchase(
   builder_.add_world(world);
   builder_.add_purchase_count(purchase_count);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<Purchase> CreatePurchaseDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t buyer_id = 0,
-    const char *listing_id = nullptr,
-    uint16_t purchase_count = 0,
-    const char *purchase_id = nullptr,
-    int64_t deadline = 0) {
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
-  auto purchase_id__ = purchase_id ? _fbb.CreateString(purchase_id) : 0;
-  return fb::protocol::marketplace::request::raw::CreatePurchase(
-      _fbb,
-      world,
-      buyer_id,
-      listing_id__,
-      purchase_count,
-      purchase_id__,
-      deadline);
 }
 
 struct AbortPurchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -15352,20 +15295,18 @@ struct AbortPurchase FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t buyer_id() const {
     return GetField<uint32_t>(VT_BUYER_ID, 0);
   }
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  uint64_t listing_id() const {
+    return GetField<uint64_t>(VT_LISTING_ID, 0);
   }
-  const ::flatbuffers::String *purchase_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_PURCHASE_ID);
+  uint64_t purchase_id() const {
+    return GetField<uint64_t>(VT_PURCHASE_ID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_BUYER_ID, 4) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
-           VerifyOffset(verifier, VT_PURCHASE_ID) &&
-           verifier.VerifyString(purchase_id()) &&
+           VerifyField<uint64_t>(verifier, VT_LISTING_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_PURCHASE_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -15380,11 +15321,11 @@ struct AbortPurchaseBuilder {
   void add_buyer_id(uint32_t buyer_id) {
     fbb_.AddElement<uint32_t>(AbortPurchase::VT_BUYER_ID, buyer_id, 0);
   }
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
-    fbb_.AddOffset(AbortPurchase::VT_LISTING_ID, listing_id);
+  void add_listing_id(uint64_t listing_id) {
+    fbb_.AddElement<uint64_t>(AbortPurchase::VT_LISTING_ID, listing_id, 0);
   }
-  void add_purchase_id(::flatbuffers::Offset<::flatbuffers::String> purchase_id) {
-    fbb_.AddOffset(AbortPurchase::VT_PURCHASE_ID, purchase_id);
+  void add_purchase_id(uint64_t purchase_id) {
+    fbb_.AddElement<uint64_t>(AbortPurchase::VT_PURCHASE_ID, purchase_id, 0);
   }
   explicit AbortPurchaseBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -15401,30 +15342,14 @@ inline ::flatbuffers::Offset<AbortPurchase> CreateAbortPurchase(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t buyer_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> purchase_id = 0) {
+    uint64_t listing_id = 0,
+    uint64_t purchase_id = 0) {
   AbortPurchaseBuilder builder_(_fbb);
   builder_.add_purchase_id(purchase_id);
   builder_.add_listing_id(listing_id);
   builder_.add_buyer_id(buyer_id);
   builder_.add_world(world);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<AbortPurchase> CreateAbortPurchaseDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t buyer_id = 0,
-    const char *listing_id = nullptr,
-    const char *purchase_id = nullptr) {
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
-  auto purchase_id__ = purchase_id ? _fbb.CreateString(purchase_id) : 0;
-  return fb::protocol::marketplace::request::raw::CreateAbortPurchase(
-      _fbb,
-      world,
-      buyer_id,
-      listing_id__,
-      purchase_id__);
 }
 
 struct Search FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -15549,8 +15474,8 @@ struct GetListings FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_LISTING_IDS = 4,
     VT_BUYER_ID = 6
   };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *listing_ids() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_LISTING_IDS);
+  const ::flatbuffers::Vector<uint64_t> *listing_ids() const {
+    return GetPointer<const ::flatbuffers::Vector<uint64_t> *>(VT_LISTING_IDS);
   }
   const nullable::nullable_uint *buyer_id() const {
     return GetPointer<const nullable::nullable_uint *>(VT_BUYER_ID);
@@ -15559,7 +15484,6 @@ struct GetListings FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_LISTING_IDS) &&
            verifier.VerifyVector(listing_ids()) &&
-           verifier.VerifyVectorOfStrings(listing_ids()) &&
            VerifyOffset(verifier, VT_BUYER_ID) &&
            verifier.VerifyTable(buyer_id()) &&
            verifier.EndTable();
@@ -15570,7 +15494,7 @@ struct GetListingsBuilder {
   typedef GetListings Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_listing_ids(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> listing_ids) {
+  void add_listing_ids(::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> listing_ids) {
     fbb_.AddOffset(GetListings::VT_LISTING_IDS, listing_ids);
   }
   void add_buyer_id(::flatbuffers::Offset<nullable::nullable_uint> buyer_id) {
@@ -15589,7 +15513,7 @@ struct GetListingsBuilder {
 
 inline ::flatbuffers::Offset<GetListings> CreateGetListings(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> listing_ids = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint64_t>> listing_ids = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> buyer_id = 0) {
   GetListingsBuilder builder_(_fbb);
   builder_.add_buyer_id(buyer_id);
@@ -15599,9 +15523,9 @@ inline ::flatbuffers::Offset<GetListings> CreateGetListings(
 
 inline ::flatbuffers::Offset<GetListings> CreateGetListingsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *listing_ids = nullptr,
+    const std::vector<uint64_t> *listing_ids = nullptr,
     ::flatbuffers::Offset<nullable::nullable_uint> buyer_id = 0) {
-  auto listing_ids__ = listing_ids ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*listing_ids) : 0;
+  auto listing_ids__ = listing_ids ? _fbb.CreateVector<uint64_t>(*listing_ids) : 0;
   return fb::protocol::marketplace::request::raw::CreateGetListings(
       _fbb,
       listing_ids__,
@@ -15620,16 +15544,15 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_LISTING_ID = 4,
     VT_ERROR = 6
   };
-  const ::flatbuffers::String *listing_id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LISTING_ID);
+  uint64_t listing_id() const {
+    return GetField<uint64_t>(VT_LISTING_ID, 0);
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyString(listing_id()) &&
+           VerifyField<uint64_t>(verifier, VT_LISTING_ID, 8) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -15639,8 +15562,8 @@ struct ListBuilder {
   typedef List Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_listing_id(::flatbuffers::Offset<::flatbuffers::String> listing_id) {
-    fbb_.AddOffset(List::VT_LISTING_ID, listing_id);
+  void add_listing_id(uint64_t listing_id) {
+    fbb_.AddElement<uint64_t>(List::VT_LISTING_ID, listing_id, 0);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(List::VT_ERROR, error, 0);
@@ -15658,23 +15581,12 @@ struct ListBuilder {
 
 inline ::flatbuffers::Offset<List> CreateList(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
+    uint64_t listing_id = 0,
     uint32_t error = 0) {
   ListBuilder builder_(_fbb);
-  builder_.add_error(error);
   builder_.add_listing_id(listing_id);
+  builder_.add_error(error);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<List> CreateListDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *listing_id = nullptr,
-    uint32_t error = 0) {
-  auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
-  return fb::protocol::marketplace::response::raw::CreateList(
-      _fbb,
-      listing_id__,
-      error);
 }
 
 struct AbortList FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

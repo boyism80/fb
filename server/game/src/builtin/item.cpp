@@ -14,6 +14,7 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(item, "fb.game.item")
 {"model",               builtin::item::builtin_model},
 {"count",               builtin::item::builtin_count},
+{"uid",                 builtin::item::builtin_uid},
 {"durability",          builtin::item::builtin_durability},
 {"rename",              builtin::item::builtin_rename},
 END_LUA_EXTENSION; // clang-format on
@@ -61,6 +62,33 @@ int builtin::item::builtin_count(lua_State* L)
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*count);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::item::builtin_uid(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto item = lua->touserdata<fb::game::item>(1);
+    if (item == nullptr)
+        return 0;
+
+    auto uid      = std::make_shared<uint64_t>();
+    auto weak     = item->weak_from_this_as<fb::game::item>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *uid = item->uid();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*uid == 0)
+            lua->pushnil();
+        else
+            lua->pushinteger(*uid);
         co_return 1;
     };
     return builder.run();

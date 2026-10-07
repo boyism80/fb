@@ -29,11 +29,11 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            if (string.IsNullOrEmpty(request.ListingId))
+            if (request.ListingId == 0)
             {
                 return new Response.List
                 {
-                    ListingId = string.Empty,
+                    ListingId = 0,
                     Error = (uint)ErrorCode.MarketplaceListingNotFound
                 };
             }
@@ -46,6 +46,7 @@ public class MarketplaceController : ControllerBase
                 request.Item.Count,
                 request.Item.Durability,
                 request.Item.CustomName,
+                request.Item.Uid,
                 request.Price,
                 Fb.Model.ConstValue.Marketplace.ExpireTime,
                 DateTimeOffset.FromUnixTimeMilliseconds(request.Deadline).UtcDateTime);
@@ -61,7 +62,7 @@ public class MarketplaceController : ControllerBase
             _logger.LogWarning("Marketplace list validation error: {ErrorCode}", e.Error);
             return new Response.List
             {
-                ListingId = string.Empty,
+                ListingId = 0,
                 Error = (uint)e.Error
             };
         }
@@ -70,7 +71,7 @@ public class MarketplaceController : ControllerBase
             _logger.LogError(ex, "Failed to create listing for character {CharacterId}", request.CharacterId);
             return new Response.List
             {
-                ListingId = string.Empty,
+                ListingId = 0,
                 Error = (uint)ErrorCode.Unhandled
             };
         }
@@ -81,7 +82,7 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            if (string.IsNullOrEmpty(request.ListingId))
+            if (request.ListingId == 0)
                 throw new LogicException(ErrorCode.MarketplaceListingNotFound);
 
             var created = await _marketplaceService.AbortListAsync(
@@ -92,6 +93,7 @@ public class MarketplaceController : ControllerBase
                 request.Item.Count,
                 request.Item.Durability,
                 request.Item.CustomName,
+                request.Item.Uid,
                 request.Price);
 
             return new Response.AbortList
@@ -154,7 +156,7 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            if (string.IsNullOrEmpty(request.PurchaseId))
+            if (request.PurchaseId == 0)
                 throw new LogicException(ErrorCode.MarketplaceListingNotFound);
 
             var result = await _marketplaceService.PurchaseItemAsync(
@@ -173,7 +175,8 @@ public class MarketplaceController : ControllerBase
                     Model = result.Listing.ItemModel,
                     Count = result.ActualPurchaseCount,
                     Durability = result.Listing.ItemDurability,
-                    CustomName = result.Listing.ItemCustomName ?? string.Empty
+                    CustomName = result.Listing.ItemCustomName ?? string.Empty,
+                    Uid = result.Listing.ItemUid
                 },
                 ActualPurchaseCount = result.ActualPurchaseCount,
                 RefundAmount = result.RefundAmount,
@@ -223,7 +226,7 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            if (string.IsNullOrEmpty(request.PurchaseId))
+            if (request.PurchaseId == 0)
                 throw new LogicException(ErrorCode.MarketplaceListingNotFound);
 
             var purchased = await _marketplaceService.AbortPurchaseAsync(
@@ -285,7 +288,8 @@ public class MarketplaceController : ControllerBase
                     Model = l.ItemModel,
                     Count = l.RemainingCount,
                     Durability = l.ItemDurability,
-                    CustomName = l.ItemCustomName ?? string.Empty
+                    CustomName = l.ItemCustomName ?? string.Empty,
+                    Uid = l.ItemUid
                 },
                 Price = l.Price,
                 ExpireDate = l.ExpireDate.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -341,7 +345,7 @@ public class MarketplaceController : ControllerBase
         try
         {
             var results = await _marketplaceService.GetListingsByIdsAsync(
-                request.ListingIds ?? new List<string>(),
+                request.ListingIds ?? new List<ulong>(),
                 request.BuyerId);
 
             var protocolListings = results.Select(r => new Protocol.Listing
@@ -354,7 +358,8 @@ public class MarketplaceController : ControllerBase
                     Model = r.Listing.ItemModel,
                     Count = r.Listing.RemainingCount,
                     Durability = r.Listing.ItemDurability,
-                    CustomName = r.Listing.ItemCustomName ?? string.Empty
+                    CustomName = r.Listing.ItemCustomName ?? string.Empty,
+                    Uid = r.Listing.ItemUid
                 },
                 Price = r.Listing.Price,
                 State = (Protocol.ListingState)r.Listing.Status,

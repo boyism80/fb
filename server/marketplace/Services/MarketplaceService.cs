@@ -41,11 +41,12 @@ public class MarketplaceService : IMarketplaceService
     public async Task ListItemAsync(
         uint world,
         uint characterId,
-        string listingId,
+        ulong listingId,
         uint itemModel,
         ushort remainingCount,
         uint? itemDurability,
         string itemCustomName,
+        ulong? itemUid,
         ulong price,
         TimeSpan expireTime,
         DateTime deadline)
@@ -107,6 +108,7 @@ public class MarketplaceService : IMarketplaceService
             character_id = characterId,
             listing_id = listingId,
             item_model = itemModel,
+            item_uid = itemUid,
             remaining_count = remainingCount,
             price = price,
             expire_hours = expireTime.ToString()
@@ -134,6 +136,7 @@ public class MarketplaceService : IMarketplaceService
                 remainingCount,
                 itemDurability,
                 itemCustomName,
+                itemUid,
                 price,
                 DateTime.UtcNow + expireTime);
         }
@@ -159,11 +162,12 @@ public class MarketplaceService : IMarketplaceService
     public async Task<bool> AbortListAsync(
         uint world,
         uint characterId,
-        string listingId,
+        ulong listingId,
         uint itemModel,
         ushort remainingCount,
         uint? itemDurability,
         string itemCustomName,
+        ulong? itemUid,
         ulong price)
     {
         // A listing that is not found anywhere gets an ABORTED tombstone, so a late list request fails on the primary key.
@@ -202,6 +206,7 @@ public class MarketplaceService : IMarketplaceService
                     remainingCount,
                     itemDurability,
                     itemCustomName,
+                    itemUid,
                     price,
                     transaction);
                 await transaction.CommitAsync();
@@ -225,7 +230,7 @@ public class MarketplaceService : IMarketplaceService
         throw new LogicException(ErrorCode.Unhandled);
     }
 
-    public async Task CancelListingAsync(uint world, uint characterId, string listingId)
+    public async Task CancelListingAsync(uint world, uint characterId, ulong listingId)
     {
         // Log before cancel
         await _logService.WriteAsync("marketplace_cancel", new
@@ -335,7 +340,8 @@ public class MarketplaceService : IMarketplaceService
                     Count = lockedListing.RemainingCount,
                     Durability = lockedListing.ItemDurability,
                     CustomName = lockedListing.ItemCustomName,
-                    Percent = 100.0
+                    Percent = 100.0,
+                    Uid = lockedListing.ItemUid
                 }.ToDSL()
             ]
         };
@@ -356,9 +362,9 @@ public class MarketplaceService : IMarketplaceService
     public async Task<PurchaseItemResult> PurchaseItemAsync(
         uint world,
         uint buyerId,
-        string listingId,
+        ulong listingId,
         ushort purchaseCount,
-        string purchaseId,
+        ulong purchaseId,
         DateTime deadline)
     {
         // Check if purchase ID already exists
@@ -504,7 +510,8 @@ public class MarketplaceService : IMarketplaceService
                     Count = actualPurchaseCount,
                     Durability = listing.ItemDurability,
                     CustomName = listing.ItemCustomName,
-                    Percent = 100.0
+                    Percent = 100.0,
+                    Uid = listing.ItemUid
                 }.ToDSL()
             };
 
@@ -601,7 +608,7 @@ public class MarketplaceService : IMarketplaceService
         }
     }
 
-    public async Task<bool> AbortPurchaseAsync(uint world, uint buyerId, string listingId, string purchaseId)
+    public async Task<bool> AbortPurchaseAsync(uint world, uint buyerId, ulong listingId, ulong purchaseId)
     {
         // A purchase that is not found gets an aborted tombstone, so a late purchase request fails on the primary key.
         for (var attempt = 0; attempt < 2; attempt++)
@@ -707,13 +714,13 @@ public class MarketplaceService : IMarketplaceService
         }
     }
 
-    public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
+    public async Task<MarketplaceListing> GetListingByIdAsync(ulong listingId)
     {
         return await _dbContext.Marketplace.GetListingByIdAsync(listingId);
     }
 
     public async Task<List<ListingWithPurchase>> GetListingsByIdsAsync(
-        List<string> listingIds,
+        List<ulong> listingIds,
         uint? buyerId = null)
     {
         var listings = await _dbContext.Marketplace.GetListingsByIdsAsync(listingIds);

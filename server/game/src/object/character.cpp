@@ -2785,6 +2785,9 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
                 auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
                 weapon->custom_name(*params.custom_name);
             }
+
+            if (params.uid.has_value())
+                item->uid(params.uid.value());
             std::ignore = co_await this->items.add(item);
             break;
         }

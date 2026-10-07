@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using fb.protocol.marketplace;
 using Http.Extension;
 using Http.Service;
@@ -130,7 +130,7 @@ namespace Marketplace.Services
                     LIMIT {BatchSize}
                     FOR UPDATE";
 
-                var ids = (await conn.QueryAsync<string>(selectSql, null, transaction)).ToList();
+                var ids = (await conn.QueryAsync<ulong>(selectSql, null, transaction)).ToList();
                 if (ids.Count == 0)
                 {
                     await transaction.CommitAsync(cancellationToken);
@@ -146,6 +146,7 @@ namespace Marketplace.Services
                         `remaining_count`,
                         `item_durability`,
                         `item_custom_name`,
+                        `item_uid`,
                         `price`,
                         `status`,
                         `expire_date`,
@@ -161,6 +162,7 @@ namespace Marketplace.Services
                         `remaining_count`,
                         `item_durability`,
                         `item_custom_name`,
+                        `item_uid`,
                         `price`,
                         `status`,
                         `expire_date`,

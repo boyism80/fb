@@ -244,7 +244,8 @@ namespace fb.protocol._internal
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -1868,7 +1869,8 @@ namespace fb.protocol._internal
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -2330,6 +2332,12 @@ namespace fb.protocol._internal
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -2556,7 +2564,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -4180,7 +4189,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -4642,6 +4652,12 @@ namespace fb.protocol._internal.request
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -4899,7 +4915,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -6523,7 +6540,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -6985,6 +7003,12 @@ namespace fb.protocol._internal.response
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -7242,7 +7266,8 @@ namespace fb.protocol.marketplace
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -8866,7 +8891,8 @@ namespace fb.protocol.marketplace
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -9328,6 +9354,12 @@ namespace fb.protocol.marketplace
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -9528,7 +9560,8 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -11152,7 +11185,8 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -11614,6 +11648,12 @@ namespace fb.protocol.marketplace.request
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -11817,7 +11857,8 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -13441,7 +13482,8 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -13903,6 +13945,12 @@ namespace fb.protocol.marketplace.response
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -14106,7 +14154,8 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -15730,7 +15779,8 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -16192,6 +16242,12 @@ namespace fb.protocol.matchmaking
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -16392,7 +16448,8 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -18016,7 +18073,8 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -18478,6 +18536,12 @@ namespace fb.protocol.matchmaking.mq
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -18678,7 +18742,8 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -20302,7 +20367,8 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -20764,6 +20830,12 @@ namespace fb.protocol.matchmaking.request
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -20965,7 +21037,8 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.CustomName),
                 builder.Build(value.ExpireTime),
                 builder.Build(value.ListingId),
-                builder.Build(value.LockedMoney));
+                builder.Build(value.LockedMoney),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol._internal.Spell value)
         {
@@ -22589,7 +22662,8 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
-                builder.Build(value.CustomName));
+                builder.Build(value.CustomName),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.marketplace.raw.PurchaseInfo> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.PurchaseInfo value)
         {
@@ -23051,6 +23125,12 @@ namespace fb.protocol.matchmaking.response
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.marketplace.raw.Listing>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<ulong> value)
+        {
+            builder.StartVector(8, value.Count, 8);
+            builder.Add(value.ToArray());
+            return builder.EndVector();
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.matchmaking.TicketMember> value)
         {
@@ -23416,8 +23496,9 @@ namespace fb.protocol._internal
         public uint? Durability { get; set; } = null;
         public string CustomName { get; set; } = null;
         public string ExpireTime { get; set; } = null;
-        public string ListingId { get; set; } = null;
+        public ulong? ListingId { get; set; } = null;
         public ulong LockedMoney { get; set; } = 0L;
+        public ulong? Uid { get; set; } = null;
 
         public Item()
         { }
@@ -23433,8 +23514,9 @@ namespace fb.protocol._internal
             Durability = raw.Durability != null ? (uint?)raw.Durability.Value.Value : null;
             CustomName = raw.CustomName;
             ExpireTime = raw.ExpireTime;
-            ListingId = raw.ListingId;
+            ListingId = raw.ListingId != null ? (ulong?)raw.ListingId.Value.Value : null;
             LockedMoney = raw.LockedMoney;
+            Uid = raw.Uid != null ? (ulong?)raw.Uid.Value.Value : null;
         }
 
         public Item(byte[] bytes) : this(fb.protocol._internal.raw.Item.GetRootAsItem(new ByteBuffer(bytes)))
@@ -24244,10 +24326,10 @@ namespace fb.protocol._internal
     {
         public int ProtocolType => (int)FlatBufferProtocolType.MarketplacePending;
         public uint User { get; set; } = 0;
-        public string PendingKey { get; set; } = string.Empty;
+        public ulong PendingKey { get; set; } = 0L;
         public byte Type { get; set; } = 0;
-        public string PurchaseId { get; set; } = string.Empty;
-        public string ListingId { get; set; } = string.Empty;
+        public ulong PurchaseId { get; set; } = 0L;
+        public ulong ListingId { get; set; } = 0L;
         public string Attachments { get; set; } = string.Empty;
         public ushort ExpectedPurchaseCount { get; set; } = 0;
         public ulong ExpectedTotalPrice { get; set; } = 0L;
@@ -29831,6 +29913,7 @@ namespace fb.protocol.marketplace
         public ushort Count { get; set; } = 0;
         public uint? Durability { get; set; } = null;
         public string CustomName { get; set; } = null;
+        public ulong? Uid { get; set; } = null;
 
         public Item()
         { }
@@ -29842,6 +29925,7 @@ namespace fb.protocol.marketplace
             Count = raw.Count;
             Durability = raw.Durability != null ? (uint?)raw.Durability.Value.Value : null;
             CustomName = raw.CustomName;
+            Uid = raw.Uid != null ? (ulong?)raw.Uid.Value.Value : null;
         }
 
         public Item(byte[] bytes) : this(fb.protocol.marketplace.raw.Item.GetRootAsItem(new ByteBuffer(bytes)))
@@ -29910,7 +29994,7 @@ namespace fb.protocol.marketplace
     public class Listing : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Listing;
-        public string Id { get; set; } = string.Empty;
+        public ulong Id { get; set; } = 0L;
         public uint SellerId { get; set; } = 0;
         public fb.protocol.marketplace.Item Item { get; set; } = new fb.protocol.marketplace.Item();
         public ulong Price { get; set; } = 0L;
@@ -30021,7 +30105,7 @@ namespace fb.protocol.marketplace.request
         public int ProtocolType => (int)FlatBufferProtocolType.List;
         public uint World { get; set; } = 0;
         public uint CharacterId { get; set; } = 0;
-        public string ListingId { get; set; } = string.Empty;
+        public ulong ListingId { get; set; } = 0L;
         public fb.protocol.marketplace.Item Item { get; set; } = new fb.protocol.marketplace.Item();
         public ulong Price { get; set; } = 0L;
         public long Deadline { get; set; } = 0L;
@@ -30067,7 +30151,7 @@ namespace fb.protocol.marketplace.request
         public int ProtocolType => (int)FlatBufferProtocolType.AbortList;
         public uint World { get; set; } = 0;
         public uint CharacterId { get; set; } = 0;
-        public string ListingId { get; set; } = string.Empty;
+        public ulong ListingId { get; set; } = 0L;
         public fb.protocol.marketplace.Item Item { get; set; } = new fb.protocol.marketplace.Item();
         public ulong Price { get; set; } = 0L;
 
@@ -30111,7 +30195,7 @@ namespace fb.protocol.marketplace.request
         public int ProtocolType => (int)FlatBufferProtocolType.Cancel;
         public uint World { get; set; } = 0;
         public uint CharacterId { get; set; } = 0;
-        public string ListingId { get; set; } = string.Empty;
+        public ulong ListingId { get; set; } = 0L;
 
         public Cancel()
         { }
@@ -30151,9 +30235,9 @@ namespace fb.protocol.marketplace.request
         public int ProtocolType => (int)FlatBufferProtocolType.Purchase;
         public uint World { get; set; } = 0;
         public uint BuyerId { get; set; } = 0;
-        public string ListingId { get; set; } = string.Empty;
+        public ulong ListingId { get; set; } = 0L;
         public ushort PurchaseCount { get; set; } = 0;
-        public string PurchaseId { get; set; } = string.Empty;
+        public ulong PurchaseId { get; set; } = 0L;
         public long Deadline { get; set; } = 0L;
 
         public Purchase()
@@ -30197,8 +30281,8 @@ namespace fb.protocol.marketplace.request
         public int ProtocolType => (int)FlatBufferProtocolType.AbortPurchase;
         public uint World { get; set; } = 0;
         public uint BuyerId { get; set; } = 0;
-        public string ListingId { get; set; } = string.Empty;
-        public string PurchaseId { get; set; } = string.Empty;
+        public ulong ListingId { get; set; } = 0L;
+        public ulong PurchaseId { get; set; } = 0L;
 
         public AbortPurchase()
         { }
@@ -30283,7 +30367,7 @@ namespace fb.protocol.marketplace.request
     public class GetListings : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetListings;
-        public List<string> ListingIds { get; set; } = new List<string>();
+        public List<ulong> ListingIds { get; set; } = new List<ulong>();
         public uint? BuyerId { get; set; } = null;
 
         public GetListings()
@@ -30343,7 +30427,7 @@ namespace fb.protocol.marketplace.response
     public class List : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.List;
-        public string ListingId { get; set; } = string.Empty;
+        public ulong ListingId { get; set; } = 0L;
         public uint Error { get; set; } = 0;
 
         public List()

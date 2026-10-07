@@ -6386,7 +6386,8 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                     auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                     {
-                        auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);
+                        auto item_dsl =
+                            fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0, std::nullopt);
                         attachments.push_back(item_dsl.to_dsl());
                     }
                 }
@@ -6434,8 +6435,13 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success =
-            co_await server.system_storage.create(ch->world(), user_name, title, message, attachments, expire_date);
+        *success     = co_await server.system_storage.create(ch->world(),
+                                                         user_name,
+                                                         std::format("script:{}", server.ids.next()),
+                                                         title,
+                                                         message,
+                                                         attachments,
+                                                         expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
@@ -6497,7 +6503,8 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
                     auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                     {
-                        auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);
+                        auto item_dsl =
+                            fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0, std::nullopt);
                         attachments.push_back(item_dsl.to_dsl());
                     }
                 }
@@ -6545,7 +6552,12 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success = co_await server.system_storage.create_system(ch->world(), title, message, attachments, expire_date);
+        *success     = co_await server.system_storage.create_system(ch->world(),
+                                                                std::format("script:{}", server.ids.next()),
+                                                                title,
+                                                                message,
+                                                                attachments,
+                                                                expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
@@ -6759,8 +6771,8 @@ int builtin::character::builtin_marketplace_cancel(lua_State* L)
         return 1;
     }
 
-    auto listing_id = lua->tostring(2);
-    if (listing_id.empty())
+    auto listing_id = lua->touint64(2);
+    if (listing_id == 0)
     {
         lua->pushstring("Invalid listing_id");
         return 1;
@@ -6818,8 +6830,8 @@ int builtin::character::builtin_marketplace_purchase(lua_State* L)
         return 1;
     }
 
-    auto listing_id = lua->tostring(2);
-    if (listing_id.empty())
+    auto listing_id = lua->touint64(2);
+    if (listing_id == 0)
     {
         lua->pushstring("Invalid listing_id");
         return 1;
@@ -7008,15 +7020,15 @@ int builtin::character::builtin_marketplace_get_listings(lua_State* L)
         return 1;
     }
 
-    std::vector<std::string> listing_ids;
-    auto                     table_size = lua->rawlen(2);
+    std::vector<uint64_t> listing_ids;
+    auto                  table_size = lua->rawlen(2);
     listing_ids.reserve(table_size);
     for (int i = 1; i <= table_size; i++)
     {
         lua->rawgeti(2, i);
-        if (lua->is_string(-1))
+        if (lua->is_number(-1))
         {
-            listing_ids.push_back(lua->tostring(-1));
+            listing_ids.push_back(lua->touint64(-1));
         }
         lua->pop(1);
     }
@@ -7077,10 +7089,10 @@ int builtin::character::builtin_marketplace_pending_listings(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto buffer  = std::make_shared<std::vector<std::pair<std::string, fb::game::marketplace::pending_listing_info>>>();
-    auto builder = lua->new_co_builder();
-    builder.weak = weak;
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto buffer   = std::make_shared<std::vector<std::pair<uint64_t, fb::game::marketplace::pending_listing_info>>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         const auto& pending_listings = ch->marketplace.pending_listings();
         buffer->reserve(pending_listings.size());
@@ -7097,7 +7109,7 @@ int builtin::character::builtin_marketplace_pending_listings(lua_State* L)
             lua->new_table();
 
             lua_pushstring(*lua, "listing_id");
-            lua->pushstring(listing_id);
+            lua->pushinteger(listing_id);
             lua_settable(*lua, -3);
 
             lua_pushstring(*lua, "type");

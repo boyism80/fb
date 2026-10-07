@@ -68,8 +68,11 @@ void login<V>::init_items(const std::vector<internal::Item>& response, character
         if (x.durability.has_value())
             item->durability(x.durability.value());
 
+        if (x.uid.has_value())
+            item->uid(x.uid.value());
+
         if (x.stored == ESCROW_STORED)
-            std::ignore = ch.items.lock(x.index, item, x.locked_money, x.listing_id.value_or(std::string{}));
+            std::ignore = ch.items.lock(x.index, item, x.locked_money, x.listing_id.value_or(0));
         else if (x.stored != -1)
             std::ignore = ch.items.store(item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))

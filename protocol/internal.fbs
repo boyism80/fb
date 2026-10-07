@@ -102,8 +102,9 @@ table Item {
     durability: uint?;
     custom_name: string?;
     expire_time: string?;
-    listing_id: string?;
+    listing_id: ulong?;
     locked_money: ulong;
+    uid: ulong?;
 }
 
 table Spell {
@@ -266,10 +267,10 @@ table CollectionUnlock {
 
 table MarketplacePending {
     user: uint;
-    pending_key: string;
+    pending_key: ulong;
     type: ubyte;
-    purchase_id: string;
-    listing_id: string;
+    purchase_id: ulong;
+    listing_id: ulong;
     attachments: string;
     expected_purchase_count: ushort;
     expected_total_price: ulong;

@@ -9,6 +9,7 @@ struct item
 {
     static int builtin_model(lua_State* L);
     static int builtin_count(lua_State* L);
+    static int builtin_uid(lua_State* L);
     static int builtin_durability(lua_State* L);
     static int builtin_rename(lua_State* L);
 };

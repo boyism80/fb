@@ -1246,22 +1246,23 @@ public:
     std::optional<uint32_t> durability = std::nullopt;
     std::optional<std::string> custom_name = std::nullopt;
     std::optional<std::string> expire_time = std::nullopt;
-    std::optional<std::string> listing_id = std::nullopt;
+    std::optional<uint64_t> listing_id = std::nullopt;
     uint64_t locked_money = 0ULL;
+    std::optional<uint64_t> uid = std::nullopt;
 
 public:
     Item() = default;
 
     Item(const Item& x)
-        : user(x.user), index(x.index), parts(x.parts), stored(x.stored), model(x.model), count(x.count), durability(x.durability), custom_name(x.custom_name), expire_time(x.expire_time), listing_id(x.listing_id), locked_money(x.locked_money)
+        : user(x.user), index(x.index), parts(x.parts), stored(x.stored), model(x.model), count(x.count), durability(x.durability), custom_name(x.custom_name), expire_time(x.expire_time), listing_id(x.listing_id), locked_money(x.locked_money), uid(x.uid)
     { }
 
-    Item(uint32_t user, int16_t index, int16_t parts, int16_t stored, uint32_t model, uint16_t count, const std::optional<uint32_t>& durability, const std::optional<std::string>& custom_name, const std::optional<std::string>& expire_time, const std::optional<std::string>& listing_id, uint64_t locked_money)
-        : user(user), index(index), parts(parts), stored(stored), model(model), count(count), durability(durability), custom_name(custom_name), expire_time(expire_time), listing_id(listing_id), locked_money(locked_money)
+    Item(uint32_t user, int16_t index, int16_t parts, int16_t stored, uint32_t model, uint16_t count, const std::optional<uint32_t>& durability, const std::optional<std::string>& custom_name, const std::optional<std::string>& expire_time, const std::optional<uint64_t>& listing_id, uint64_t locked_money, const std::optional<uint64_t>& uid)
+        : user(user), index(index), parts(parts), stored(stored), model(model), count(count), durability(durability), custom_name(custom_name), expire_time(expire_time), listing_id(listing_id), locked_money(locked_money), uid(uid)
     { }
 
     Item(const fb::protocol::internal::raw::Item& raw)
-        : user(raw.user()), index(raw.index()), parts(raw.parts()), stored(raw.stored()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? flatbuffers::option::decode(raw.custom_name()->c_str()) : std::optional<std::string>()), expire_time(raw.expire_time() != nullptr ? flatbuffers::option::decode(raw.expire_time()->c_str()) : std::optional<std::string>()), listing_id(raw.listing_id() != nullptr ? flatbuffers::option::decode(raw.listing_id()->c_str()) : std::optional<std::string>()), locked_money(raw.locked_money())
+        : user(raw.user()), index(raw.index()), parts(raw.parts()), stored(raw.stored()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? flatbuffers::option::decode(raw.custom_name()->c_str()) : std::optional<std::string>()), expire_time(raw.expire_time() != nullptr ? flatbuffers::option::decode(raw.expire_time()->c_str()) : std::optional<std::string>()), listing_id(raw.listing_id() != nullptr ? raw.listing_id()->value() : std::optional<uint64_t>()), locked_money(raw.locked_money()), uid(raw.uid() != nullptr ? raw.uid()->value() : std::optional<uint64_t>())
     { }
 
 public:
@@ -2055,10 +2056,10 @@ public:
 
 public:
     uint32_t user = 0;
-    std::string pending_key;
+    uint64_t pending_key = 0ULL;
     uint8_t type = 0;
-    std::string purchase_id;
-    std::string listing_id;
+    uint64_t purchase_id = 0ULL;
+    uint64_t listing_id = 0ULL;
     std::string attachments;
     uint16_t expected_purchase_count = 0;
     uint64_t expected_total_price = 0ULL;
@@ -2071,12 +2072,12 @@ public:
         : user(x.user), pending_key(x.pending_key), type(x.type), purchase_id(x.purchase_id), listing_id(x.listing_id), attachments(x.attachments), expected_purchase_count(x.expected_purchase_count), expected_total_price(x.expected_total_price), character_id(x.character_id)
     { }
 
-    MarketplacePending(uint32_t user, std::string_view pending_key, uint8_t type, std::string_view purchase_id, std::string_view listing_id, std::string_view attachments, uint16_t expected_purchase_count, uint64_t expected_total_price, uint32_t character_id)
-        : user(user), pending_key(std::string(pending_key)), type(type), purchase_id(std::string(purchase_id)), listing_id(std::string(listing_id)), attachments(std::string(attachments)), expected_purchase_count(expected_purchase_count), expected_total_price(expected_total_price), character_id(character_id)
+    MarketplacePending(uint32_t user, uint64_t pending_key, uint8_t type, uint64_t purchase_id, uint64_t listing_id, std::string_view attachments, uint16_t expected_purchase_count, uint64_t expected_total_price, uint32_t character_id)
+        : user(user), pending_key(pending_key), type(type), purchase_id(purchase_id), listing_id(listing_id), attachments(std::string(attachments)), expected_purchase_count(expected_purchase_count), expected_total_price(expected_total_price), character_id(character_id)
     { }
 
     MarketplacePending(const fb::protocol::internal::raw::MarketplacePending& raw)
-        : user(raw.user()), pending_key(flatbuffers::option::decode(raw.pending_key()->c_str())), type(raw.type()), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str())), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), attachments(flatbuffers::option::decode(raw.attachments()->c_str())), expected_purchase_count(raw.expected_purchase_count()), expected_total_price(raw.expected_total_price()), character_id(raw.character_id())
+        : user(raw.user()), pending_key(raw.pending_key()), type(raw.type()), purchase_id(raw.purchase_id()), listing_id(raw.listing_id()), attachments(flatbuffers::option::decode(raw.attachments()->c_str())), expected_purchase_count(raw.expected_purchase_count()), expected_total_price(raw.expected_total_price()), character_id(raw.character_id())
     { }
 
 public:
@@ -7592,20 +7593,21 @@ public:
     uint16_t count = 0;
     std::optional<uint32_t> durability = std::nullopt;
     std::optional<std::string> custom_name = std::nullopt;
+    std::optional<uint64_t> uid = std::nullopt;
 
 public:
     Item() = default;
 
     Item(const Item& x)
-        : owner(x.owner), model(x.model), count(x.count), durability(x.durability), custom_name(x.custom_name)
+        : owner(x.owner), model(x.model), count(x.count), durability(x.durability), custom_name(x.custom_name), uid(x.uid)
     { }
 
-    Item(uint32_t owner, uint32_t model, uint16_t count, const std::optional<uint32_t>& durability, const std::optional<std::string>& custom_name)
-        : owner(owner), model(model), count(count), durability(durability), custom_name(custom_name)
+    Item(uint32_t owner, uint32_t model, uint16_t count, const std::optional<uint32_t>& durability, const std::optional<std::string>& custom_name, const std::optional<uint64_t>& uid)
+        : owner(owner), model(model), count(count), durability(durability), custom_name(custom_name), uid(uid)
     { }
 
     Item(const fb::protocol::marketplace::raw::Item& raw)
-        : owner(raw.owner()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? flatbuffers::option::decode(raw.custom_name()->c_str()) : std::optional<std::string>())
+        : owner(raw.owner()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? flatbuffers::option::decode(raw.custom_name()->c_str()) : std::optional<std::string>()), uid(raw.uid() != nullptr ? raw.uid()->value() : std::optional<uint64_t>())
     { }
 
 public:
@@ -7671,7 +7673,7 @@ public:
     static inline fb::protocol::marketplace::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::FlatBufferProtocolType::Listing;
 
 public:
-    std::string id;
+    uint64_t id = 0ULL;
     uint32_t seller_id = 0;
     fb::protocol::marketplace::Item item;
     uint64_t price = 0ULL;
@@ -7687,12 +7689,12 @@ public:
         : id(x.id), seller_id(x.seller_id), item(x.item), price(x.price), state(x.state), expire_date(x.expire_date), created_date(x.created_date), purchase_info(x.purchase_info)
     { }
 
-    Listing(std::string_view id, uint32_t seller_id, const fb::protocol::marketplace::Item& item, uint64_t price, fb::protocol::marketplace::ListingState state, std::string_view expire_date, std::string_view created_date, const std::optional<fb::protocol::marketplace::PurchaseInfo>& purchase_info)
-        : id(std::string(id)), seller_id(seller_id), item(item), price(price), state(state), expire_date(std::string(expire_date)), created_date(std::string(created_date)), purchase_info(purchase_info)
+    Listing(uint64_t id, uint32_t seller_id, const fb::protocol::marketplace::Item& item, uint64_t price, fb::protocol::marketplace::ListingState state, std::string_view expire_date, std::string_view created_date, const std::optional<fb::protocol::marketplace::PurchaseInfo>& purchase_info)
+        : id(id), seller_id(seller_id), item(item), price(price), state(state), expire_date(std::string(expire_date)), created_date(std::string(created_date)), purchase_info(purchase_info)
     { }
 
     Listing(const fb::protocol::marketplace::raw::Listing& raw)
-        : id(flatbuffers::option::decode(raw.id()->c_str())), seller_id(raw.seller_id()), item(*raw.item()), price(raw.price()), state((fb::protocol::marketplace::ListingState)raw.state()), expire_date(flatbuffers::option::decode(raw.expire_date()->c_str())), created_date(flatbuffers::option::decode(raw.created_date()->c_str())), purchase_info(raw.purchase_info() != nullptr ? *raw.purchase_info() : std::optional<fb::protocol::marketplace::PurchaseInfo>())
+        : id(raw.id()), seller_id(raw.seller_id()), item(*raw.item()), price(raw.price()), state((fb::protocol::marketplace::ListingState)raw.state()), expire_date(flatbuffers::option::decode(raw.expire_date()->c_str())), created_date(flatbuffers::option::decode(raw.created_date()->c_str())), purchase_info(raw.purchase_info() != nullptr ? *raw.purchase_info() : std::optional<fb::protocol::marketplace::PurchaseInfo>())
     { }
 
 public:
@@ -7776,7 +7778,7 @@ public:
 public:
     uint32_t world = 0;
     uint32_t character_id = 0;
-    std::string listing_id;
+    uint64_t listing_id = 0ULL;
     fb::protocol::marketplace::Item item;
     uint64_t price = 0ULL;
     int64_t deadline = 0LL;
@@ -7788,12 +7790,12 @@ public:
         : world(x.world), character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price), deadline(x.deadline)
     { }
 
-    List(uint32_t world, uint32_t character_id, std::string_view listing_id, const fb::protocol::marketplace::Item& item, uint64_t price, int64_t deadline)
-        : world(world), character_id(character_id), listing_id(std::string(listing_id)), item(item), price(price), deadline(deadline)
+    List(uint32_t world, uint32_t character_id, uint64_t listing_id, const fb::protocol::marketplace::Item& item, uint64_t price, int64_t deadline)
+        : world(world), character_id(character_id), listing_id(listing_id), item(item), price(price), deadline(deadline)
     { }
 
     List(const fb::protocol::marketplace::request::raw::List& raw)
-        : world(raw.world()), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price()), deadline(raw.deadline())
+        : world(raw.world()), character_id(raw.character_id()), listing_id(raw.listing_id()), item(*raw.item()), price(raw.price()), deadline(raw.deadline())
     { }
 
 public:
@@ -7820,7 +7822,7 @@ public:
 public:
     uint32_t world = 0;
     uint32_t character_id = 0;
-    std::string listing_id;
+    uint64_t listing_id = 0ULL;
     fb::protocol::marketplace::Item item;
     uint64_t price = 0ULL;
 
@@ -7831,12 +7833,12 @@ public:
         : world(x.world), character_id(x.character_id), listing_id(x.listing_id), item(x.item), price(x.price)
     { }
 
-    AbortList(uint32_t world, uint32_t character_id, std::string_view listing_id, const fb::protocol::marketplace::Item& item, uint64_t price)
-        : world(world), character_id(character_id), listing_id(std::string(listing_id)), item(item), price(price)
+    AbortList(uint32_t world, uint32_t character_id, uint64_t listing_id, const fb::protocol::marketplace::Item& item, uint64_t price)
+        : world(world), character_id(character_id), listing_id(listing_id), item(item), price(price)
     { }
 
     AbortList(const fb::protocol::marketplace::request::raw::AbortList& raw)
-        : world(raw.world()), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), item(*raw.item()), price(raw.price())
+        : world(raw.world()), character_id(raw.character_id()), listing_id(raw.listing_id()), item(*raw.item()), price(raw.price())
     { }
 
 public:
@@ -7863,7 +7865,7 @@ public:
 public:
     uint32_t world = 0;
     uint32_t character_id = 0;
-    std::string listing_id;
+    uint64_t listing_id = 0ULL;
 
 public:
     Cancel() = default;
@@ -7872,12 +7874,12 @@ public:
         : world(x.world), character_id(x.character_id), listing_id(x.listing_id)
     { }
 
-    Cancel(uint32_t world, uint32_t character_id, std::string_view listing_id)
-        : world(world), character_id(character_id), listing_id(std::string(listing_id))
+    Cancel(uint32_t world, uint32_t character_id, uint64_t listing_id)
+        : world(world), character_id(character_id), listing_id(listing_id)
     { }
 
     Cancel(const fb::protocol::marketplace::request::raw::Cancel& raw)
-        : world(raw.world()), character_id(raw.character_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str()))
+        : world(raw.world()), character_id(raw.character_id()), listing_id(raw.listing_id())
     { }
 
 public:
@@ -7904,9 +7906,9 @@ public:
 public:
     uint32_t world = 0;
     uint32_t buyer_id = 0;
-    std::string listing_id;
+    uint64_t listing_id = 0ULL;
     uint16_t purchase_count = 0;
-    std::string purchase_id;
+    uint64_t purchase_id = 0ULL;
     int64_t deadline = 0LL;
 
 public:
@@ -7916,12 +7918,12 @@ public:
         : world(x.world), buyer_id(x.buyer_id), listing_id(x.listing_id), purchase_count(x.purchase_count), purchase_id(x.purchase_id), deadline(x.deadline)
     { }
 
-    Purchase(uint32_t world, uint32_t buyer_id, std::string_view listing_id, uint16_t purchase_count, std::string_view purchase_id, int64_t deadline)
-        : world(world), buyer_id(buyer_id), listing_id(std::string(listing_id)), purchase_count(purchase_count), purchase_id(std::string(purchase_id)), deadline(deadline)
+    Purchase(uint32_t world, uint32_t buyer_id, uint64_t listing_id, uint16_t purchase_count, uint64_t purchase_id, int64_t deadline)
+        : world(world), buyer_id(buyer_id), listing_id(listing_id), purchase_count(purchase_count), purchase_id(purchase_id), deadline(deadline)
     { }
 
     Purchase(const fb::protocol::marketplace::request::raw::Purchase& raw)
-        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), purchase_count(raw.purchase_count()), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str())), deadline(raw.deadline())
+        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(raw.listing_id()), purchase_count(raw.purchase_count()), purchase_id(raw.purchase_id()), deadline(raw.deadline())
     { }
 
 public:
@@ -7948,8 +7950,8 @@ public:
 public:
     uint32_t world = 0;
     uint32_t buyer_id = 0;
-    std::string listing_id;
-    std::string purchase_id;
+    uint64_t listing_id = 0ULL;
+    uint64_t purchase_id = 0ULL;
 
 public:
     AbortPurchase() = default;
@@ -7958,12 +7960,12 @@ public:
         : world(x.world), buyer_id(x.buyer_id), listing_id(x.listing_id), purchase_id(x.purchase_id)
     { }
 
-    AbortPurchase(uint32_t world, uint32_t buyer_id, std::string_view listing_id, std::string_view purchase_id)
-        : world(world), buyer_id(buyer_id), listing_id(std::string(listing_id)), purchase_id(std::string(purchase_id))
+    AbortPurchase(uint32_t world, uint32_t buyer_id, uint64_t listing_id, uint64_t purchase_id)
+        : world(world), buyer_id(buyer_id), listing_id(listing_id), purchase_id(purchase_id)
     { }
 
     AbortPurchase(const fb::protocol::marketplace::request::raw::AbortPurchase& raw)
-        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), purchase_id(flatbuffers::option::decode(raw.purchase_id()->c_str()))
+        : world(raw.world()), buyer_id(raw.buyer_id()), listing_id(raw.listing_id()), purchase_id(raw.purchase_id())
     { }
 
 public:
@@ -8032,7 +8034,7 @@ public:
     static inline fb::protocol::marketplace::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::request::FlatBufferProtocolType::GetListings;
 
 public:
-    std::vector<std::string> listing_ids = {};
+    std::vector<uint64_t> listing_ids = {};
     std::optional<uint32_t> buyer_id = std::nullopt;
 
 public:
@@ -8042,12 +8044,12 @@ public:
         : listing_ids(x.listing_ids), buyer_id(x.buyer_id)
     { }
 
-    GetListings(std::vector<std::string> listing_ids, const std::optional<uint32_t>& buyer_id)
+    GetListings(std::vector<uint64_t> listing_ids, const std::optional<uint32_t>& buyer_id)
         : listing_ids(listing_ids), buyer_id(buyer_id)
     { }
 
     GetListings(const fb::protocol::marketplace::request::raw::GetListings& raw)
-        : listing_ids(unpack<std::string>(raw.listing_ids())), buyer_id(raw.buyer_id() != nullptr ? raw.buyer_id()->value() : std::optional<uint32_t>())
+        : listing_ids(unpack<uint64_t>(raw.listing_ids())), buyer_id(raw.buyer_id() != nullptr ? raw.buyer_id()->value() : std::optional<uint32_t>())
     { }
 
 public:
@@ -8088,7 +8090,7 @@ public:
     static inline fb::protocol::marketplace::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::marketplace::response::FlatBufferProtocolType::List;
 
 public:
-    std::string listing_id;
+    uint64_t listing_id = 0ULL;
     uint32_t error = 0;
 
 public:
@@ -8098,12 +8100,12 @@ public:
         : listing_id(x.listing_id), error(x.error)
     { }
 
-    List(std::string_view listing_id, uint32_t error)
-        : listing_id(std::string(listing_id)), error(error)
+    List(uint64_t listing_id, uint32_t error)
+        : listing_id(listing_id), error(error)
     { }
 
     List(const fb::protocol::marketplace::response::raw::List& raw)
-        : listing_id(flatbuffers::option::decode(raw.listing_id()->c_str())), error(raw.error())
+        : listing_id(raw.listing_id()), error(raw.error())
     { }
 
 public:
@@ -9316,8 +9318,9 @@ flatbuffers::Offset<fb::protocol::internal::raw::Item> build<fb::protocol::inter
             flatbuffers::build<std::optional<uint32_t>>(builder, value.durability),
             flatbuffers::build<std::optional<std::string>>(builder, value.custom_name),
             flatbuffers::build<std::optional<std::string>>(builder, value.expire_time),
-            flatbuffers::build<std::optional<std::string>>(builder, value.listing_id),
-            flatbuffers::build<uint64_t>(builder, value.locked_money));
+            flatbuffers::build<std::optional<uint64_t>>(builder, value.listing_id),
+            flatbuffers::build<uint64_t>(builder, value.locked_money),
+            flatbuffers::build<std::optional<uint64_t>>(builder, value.uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Spell> build<fb::protocol::internal::Spell>(FlatBufferBuilder& builder, const fb::protocol::internal::Spell& value)
@@ -9498,10 +9501,10 @@ flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending> build<fb::p
 {
     return fb::protocol::internal::raw::CreateMarketplacePending(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
-            flatbuffers::build<std::string>(builder, value.pending_key),
+            flatbuffers::build<uint64_t>(builder, value.pending_key),
             flatbuffers::build<uint8_t>(builder, value.type),
-            flatbuffers::build<std::string>(builder, value.purchase_id),
-            flatbuffers::build<std::string>(builder, value.listing_id),
+            flatbuffers::build<uint64_t>(builder, value.purchase_id),
+            flatbuffers::build<uint64_t>(builder, value.listing_id),
             flatbuffers::build<std::string>(builder, value.attachments),
             flatbuffers::build<uint16_t>(builder, value.expected_purchase_count),
             flatbuffers::build<uint64_t>(builder, value.expected_total_price),
@@ -10642,7 +10645,8 @@ flatbuffers::Offset<fb::protocol::marketplace::raw::Item> build<fb::protocol::ma
             flatbuffers::build<uint32_t>(builder, value.model),
             flatbuffers::build<uint16_t>(builder, value.count),
             flatbuffers::build<std::optional<uint32_t>>(builder, value.durability),
-            flatbuffers::build<std::optional<std::string>>(builder, value.custom_name));
+            flatbuffers::build<std::optional<std::string>>(builder, value.custom_name),
+            flatbuffers::build<std::optional<uint64_t>>(builder, value.uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> build<fb::protocol::marketplace::PurchaseInfo>(FlatBufferBuilder& builder, const fb::protocol::marketplace::PurchaseInfo& value)
@@ -10656,7 +10660,7 @@ template <>
 flatbuffers::Offset<fb::protocol::marketplace::raw::Listing> build<fb::protocol::marketplace::Listing>(FlatBufferBuilder& builder, const fb::protocol::marketplace::Listing& value)
 {
     return fb::protocol::marketplace::raw::CreateListing(builder,
-            flatbuffers::build<std::string>(builder, value.id),
+            flatbuffers::build<uint64_t>(builder, value.id),
             flatbuffers::build<uint32_t>(builder, value.seller_id),
             flatbuffers::build<fb::protocol::marketplace::Item>(builder, value.item),
             flatbuffers::build<uint64_t>(builder, value.price),
@@ -10679,7 +10683,7 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::List> build<fb::pro
     return fb::protocol::marketplace::request::raw::CreateList(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.character_id),
-            flatbuffers::build<std::string>(builder, value.listing_id),
+            flatbuffers::build<uint64_t>(builder, value.listing_id),
             flatbuffers::build<fb::protocol::marketplace::Item>(builder, value.item),
             flatbuffers::build<uint64_t>(builder, value.price),
             flatbuffers::build<int64_t>(builder, value.deadline));
@@ -10690,7 +10694,7 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::AbortList> build<fb
     return fb::protocol::marketplace::request::raw::CreateAbortList(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.character_id),
-            flatbuffers::build<std::string>(builder, value.listing_id),
+            flatbuffers::build<uint64_t>(builder, value.listing_id),
             flatbuffers::build<fb::protocol::marketplace::Item>(builder, value.item),
             flatbuffers::build<uint64_t>(builder, value.price));
 }
@@ -10700,7 +10704,7 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::Cancel> build<fb::p
     return fb::protocol::marketplace::request::raw::CreateCancel(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.character_id),
-            flatbuffers::build<std::string>(builder, value.listing_id));
+            flatbuffers::build<uint64_t>(builder, value.listing_id));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::Purchase> build<fb::protocol::marketplace::request::Purchase>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::Purchase& value)
@@ -10708,9 +10712,9 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::Purchase> build<fb:
     return fb::protocol::marketplace::request::raw::CreatePurchase(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.buyer_id),
-            flatbuffers::build<std::string>(builder, value.listing_id),
+            flatbuffers::build<uint64_t>(builder, value.listing_id),
             flatbuffers::build<uint16_t>(builder, value.purchase_count),
-            flatbuffers::build<std::string>(builder, value.purchase_id),
+            flatbuffers::build<uint64_t>(builder, value.purchase_id),
             flatbuffers::build<int64_t>(builder, value.deadline));
 }
 template <>
@@ -10719,8 +10723,8 @@ flatbuffers::Offset<fb::protocol::marketplace::request::raw::AbortPurchase> buil
     return fb::protocol::marketplace::request::raw::CreateAbortPurchase(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.buyer_id),
-            flatbuffers::build<std::string>(builder, value.listing_id),
-            flatbuffers::build<std::string>(builder, value.purchase_id));
+            flatbuffers::build<uint64_t>(builder, value.listing_id),
+            flatbuffers::build<uint64_t>(builder, value.purchase_id));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::Search> build<fb::protocol::marketplace::request::Search>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::Search& value)
@@ -10737,14 +10741,14 @@ template <>
 flatbuffers::Offset<fb::protocol::marketplace::request::raw::GetListings> build<fb::protocol::marketplace::request::GetListings>(FlatBufferBuilder& builder, const fb::protocol::marketplace::request::GetListings& value)
 {
     return fb::protocol::marketplace::request::raw::CreateGetListings(builder,
-            flatbuffers::build<std::vector<std::string>>(builder, value.listing_ids),
+            flatbuffers::build<std::vector<uint64_t>>(builder, value.listing_ids),
             flatbuffers::build<std::optional<uint32_t>>(builder, value.buyer_id));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::response::raw::List> build<fb::protocol::marketplace::response::List>(FlatBufferBuilder& builder, const fb::protocol::marketplace::response::List& value)
 {
     return fb::protocol::marketplace::response::raw::CreateList(builder,
-            flatbuffers::build<std::string>(builder, value.listing_id),
+            flatbuffers::build<uint64_t>(builder, value.listing_id),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>

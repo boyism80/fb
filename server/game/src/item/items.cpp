@@ -289,6 +289,8 @@ uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
             log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
             log_data["count"]          = static_cast<Json::Int64>(item->count());
             log_data["index"]          = index;
+            if (item->uid() != 0)
+                log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
             owner->server.log.write("item_gain", log_data);
         }
     }
@@ -346,6 +348,8 @@ bool items::store(std::shared_ptr<item> item)
     log_data["item_id"]        = static_cast<Json::Int64>(item_id);
     log_data["item_name"]      = UTF8(item_name, PLATFORM::WINDOWS);
     log_data["count"]          = static_cast<Json::Int64>(count);
+    if (item->uid() != 0)
+        log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
     owner->server.log.write("item_deposit", log_data);
 
     return true;
@@ -494,6 +498,8 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
         log_data["item_id"]        = static_cast<Json::Int64>(item_id);
         log_data["item_name"]      = UTF8(item_name, PLATFORM::WINDOWS);
         log_data["count"]          = static_cast<Json::Int64>(count);
+        if (item->uid() != 0)
+            log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
         owner->server.log.write("item_retrieve", log_data);
 
         co_return item;
@@ -1267,6 +1273,8 @@ std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_T
             log_data["count"]          = static_cast<Json::Int64>(count);
             log_data["index"]          = index;
             log_data["delete_type"]    = static_cast<int>(attr);
+            if (item->uid() != 0)
+                log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
             owner->server.log.write("item_remove", log_data);
         }
     }
@@ -1354,6 +1362,8 @@ async::task<void> items::remove_expired()
         log_data["item_id"]        = static_cast<Json::Int64>(model.id);
         log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
         log_data["count"]          = static_cast<Json::Int64>(expired->count());
+        if (expired->uid() != 0)
+            log_data["item_uid"] = static_cast<Json::UInt64>(expired->uid());
         owner->server.log.write("item_remove", log_data);
 
         expired->container(nullptr);
@@ -1634,7 +1644,8 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
             continue;
 
         selected.push_back(index);
-        dsl.push_back(fb::model::dsl::item(item->model().id, item->count(), std::nullopt, std::nullopt, 100.0));
+        dsl.push_back(
+            fb::model::dsl::item(item->model().id, item->count(), std::nullopt, std::nullopt, 100.0, std::nullopt));
     }
 
     auto found = table::recipe->find(dsl);
@@ -1841,7 +1852,7 @@ uint64_t items::locked_money() const
     return this->_locked_money;
 }
 
-bool items::lock(uint8_t index, uint16_t count, uint64_t money, std::string_view listing_id)
+bool items::lock(uint8_t index, uint16_t count, uint64_t money, uint64_t listing_id)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1864,7 +1875,7 @@ bool items::lock(uint8_t index, uint16_t count, uint64_t money, std::string_view
         std::ignore = inventory<fb::game::item>::remove(index);
     locked->container(this);
 
-    this->_escrows[index] = escrow_entry{.listing_id = std::string(listing_id), .item = locked, .money = money};
+    this->_escrows[index] = escrow_entry{.listing_id = listing_id, .item = locked, .money = money};
     this->_escrow_count++;
 
     // The display shows usable and locked money together, so the lock is counted before the usable money drops.
@@ -1873,7 +1884,7 @@ bool items::lock(uint8_t index, uint16_t count, uint64_t money, std::string_view
     return true;
 }
 
-bool items::lock(uint8_t index, std::shared_ptr<item> item, uint64_t money, std::string_view listing_id)
+bool items::lock(uint8_t index, std::shared_ptr<item> item, uint64_t money, uint64_t listing_id)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1888,14 +1899,14 @@ bool items::lock(uint8_t index, std::shared_ptr<item> item, uint64_t money, std:
         return false;
 
     item->container(this);
-    this->_escrows[index] = escrow_entry{.listing_id = std::string(listing_id), .item = item, .money = money};
+    this->_escrows[index] = escrow_entry{.listing_id = listing_id, .item = item, .money = money};
     this->_escrow_count++;
     this->_locked_money += money;
     owner->listener.on_item_update(*owner, index);
     return true;
 }
 
-void items::unlock(std::string_view listing_id)
+void items::unlock(uint64_t listing_id)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1931,7 +1942,7 @@ void items::unlock(std::string_view listing_id)
         std::ignore = owner->money_add(entry.money);
 }
 
-void items::deduct(std::string_view listing_id)
+void items::deduct(uint64_t listing_id)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)

@@ -5,7 +5,7 @@ namespace fb.protocol.marketplace.request;
 table List {
     world: uint;
     character_id: uint;
-    listing_id: string;
+    listing_id: ulong;
     item: fb.protocol.marketplace.Item;
     price: ulong;
     deadline: long;
@@ -14,7 +14,7 @@ table List {
 table AbortList {
     world: uint;
     character_id: uint;
-    listing_id: string;
+    listing_id: ulong;
     item: fb.protocol.marketplace.Item;
     price: ulong;
 }
@@ -22,23 +22,23 @@ table AbortList {
 table Cancel {
     world: uint;
     character_id: uint;
-    listing_id: string;
+    listing_id: ulong;
 }
 
 table Purchase {
     world: uint;
     buyer_id: uint;
-    listing_id: string;
+    listing_id: ulong;
     purchase_count: ushort;
-    purchase_id: string;
+    purchase_id: ulong;
     deadline: long;
 }
 
 table AbortPurchase {
     world: uint;
     buyer_id: uint;
-    listing_id: string;
-    purchase_id: string;
+    listing_id: ulong;
+    purchase_id: ulong;
 }
 
 table Search {
@@ -51,6 +51,6 @@ table Search {
 }
 
 table GetListings {
-    listing_ids: [string];
+    listing_ids: [ulong];
     buyer_id: uint?;
 }

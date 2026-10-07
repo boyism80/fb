@@ -28,6 +28,12 @@
             "type": "double",
             "desc": "drop percentage",
             "default": 100.0
+        },
+        {
+            "name": "uid",
+            "type": "uint64_t?",
+            "desc": "unique id of an existing non-bundle item; null issues a new one when granted",
+            "default": null
         }
     ],
     "money": [

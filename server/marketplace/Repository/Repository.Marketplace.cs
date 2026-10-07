@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using fb.protocol.marketplace;
 using Http.Extension;
 using Http.Reepository;
@@ -16,7 +16,7 @@ namespace Marketplace.Reepository
             _dbContext = dbContext;
         }
 
-        public async Task<MarketplaceListing> GetListingByIdAsync(string listingId)
+        public async Task<MarketplaceListing> GetListingByIdAsync(ulong listingId)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"
@@ -28,7 +28,7 @@ namespace Marketplace.Reepository
             return await conn.QueryFirstOrDefaultAsync<MarketplaceListing>(sql);
         }
 
-        public async Task<MarketplaceListing> GetAnyListingByIdForUpdateAsync(string listingId, System.Data.IDbTransaction transaction)
+        public async Task<MarketplaceListing> GetAnyListingByIdForUpdateAsync(ulong listingId, System.Data.IDbTransaction transaction)
         {
             var sql = $@"
                 SELECT * FROM `marketplace_listing`
@@ -38,7 +38,7 @@ namespace Marketplace.Reepository
             return await transaction.Connection.QueryFirstOrDefaultAsync<MarketplaceListing>(sql, null, transaction);
         }
 
-        public async Task<MarketplaceListing> GetArchivedListingByIdAsync(string listingId, System.Data.IDbTransaction transaction)
+        public async Task<MarketplaceListing> GetArchivedListingByIdAsync(ulong listingId, System.Data.IDbTransaction transaction)
         {
             var sql = $@"
                 SELECT * FROM `marketplace_listing_archive`
@@ -48,13 +48,14 @@ namespace Marketplace.Reepository
         }
 
         public async Task CreateAbortedListingAsync(
-            string listingId,
+            ulong listingId,
             uint world,
             uint sellerId,
             uint itemModel,
             ushort remainingCount,
             uint? itemDurability,
             string itemCustomName,
+            ulong? itemUid,
             ulong price,
             System.Data.IDbTransaction transaction)
         {
@@ -67,6 +68,7 @@ namespace Marketplace.Reepository
                     `remaining_count`,
                     `item_durability`,
                     `item_custom_name`,
+                    `item_uid`,
                     `price`,
                     `status`,
                     `expire_date`)
@@ -78,6 +80,7 @@ namespace Marketplace.Reepository
                     {remainingCount.Escape()},
                     {(itemDurability.HasValue ? itemDurability.Value.Escape() : "NULL")},
                     {(itemCustomName != null ? itemCustomName.Escape() : "NULL")},
+                    {itemUid.Escape()},
                     {price.Escape()},
                     {ListingState.ABORTED.Escape()},
                     NOW())
@@ -86,7 +89,7 @@ namespace Marketplace.Reepository
             await transaction.Connection.ExecuteAsync(sql, null, transaction);
         }
 
-        public async Task<MarketplaceListing> GetListingByIdForUpdateAsync(string listingId, System.Data.IDbTransaction transaction = null)
+        public async Task<MarketplaceListing> GetListingByIdForUpdateAsync(ulong listingId, System.Data.IDbTransaction transaction = null)
         {
             var sql = $@"
                 SELECT * FROM `marketplace_listing` 
@@ -104,7 +107,7 @@ namespace Marketplace.Reepository
             }
         }
 
-        public async Task<List<MarketplaceListing>> GetListingsByIdsAsync(List<string> listingIds)
+        public async Task<List<MarketplaceListing>> GetListingsByIdsAsync(List<ulong> listingIds)
         {
             if (listingIds == null || listingIds.Count == 0)
             {
@@ -122,13 +125,13 @@ namespace Marketplace.Reepository
             return (await conn.QueryAsync<MarketplaceListing>(sql, parameters)).ToList();
         }
 
-        public async Task<Dictionary<string, MarketplacePurchase>> GetPurchasesByListingIdsAndBuyerAsync(
-            List<string> listingIds,
+        public async Task<Dictionary<ulong, MarketplacePurchase>> GetPurchasesByListingIdsAndBuyerAsync(
+            List<ulong> listingIds,
             uint buyerId)
         {
             if (listingIds == null || listingIds.Count == 0)
             {
-                return new Dictionary<string, MarketplacePurchase>();
+                return new Dictionary<ulong, MarketplacePurchase>();
             }
 
             await using var conn = _dbContext.GetUnifiedConnection();
@@ -161,14 +164,15 @@ namespace Marketplace.Reepository
         }
 
 
-        public async Task<string> CreateListingAsync(
-            string listingId,
+        public async Task<ulong> CreateListingAsync(
+            ulong listingId,
             uint world,
             uint sellerId,
             uint itemModel,
             ushort remainingCount,
             uint? itemDurability,
             string itemCustomName,
+            ulong? itemUid,
             ulong price,
             DateTime expireDate)
         {
@@ -182,6 +186,7 @@ namespace Marketplace.Reepository
                     `remaining_count`,
                     `item_durability`,
                     `item_custom_name`,
+                    `item_uid`,
                     `price`,
                     `status`,
                     `expire_date`)
@@ -193,6 +198,7 @@ namespace Marketplace.Reepository
                     {remainingCount.Escape()},
                     {(itemDurability.HasValue ? itemDurability.Value.Escape() : "NULL")},
                     {(itemCustomName != null ? itemCustomName.Escape() : "NULL")},
+                    {itemUid.Escape()},
                     {price.Escape()},
                     {ListingState.ACTIVE.Escape()},
                     {expireDate.Escape()})
@@ -203,7 +209,7 @@ namespace Marketplace.Reepository
         }
 
         public async Task<bool> UpdateListingStatusAsync(
-            string listingId,
+            ulong listingId,
             ListingState status,
             System.Data.IDbTransaction transaction = null)
         {
@@ -229,7 +235,7 @@ namespace Marketplace.Reepository
         }
 
         public async Task<(bool Success, ushort NewRemainingCount, bool IsSold)> UpdateListingAsync(
-            string listingId,
+            ulong listingId,
             ushort purchaseCount,
             System.Data.IDbTransaction transaction = null)
         {
@@ -275,7 +281,7 @@ namespace Marketplace.Reepository
             return (rowsAffected > 0, newRemaining, isSold);
         }
 
-        public async Task<bool> CheckListingIdExistsAsync(string listingId)
+        public async Task<bool> CheckListingIdExistsAsync(ulong listingId)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"

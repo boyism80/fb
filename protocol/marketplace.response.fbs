@@ -3,7 +3,7 @@ include "marketplace.fbs";
 namespace fb.protocol.marketplace.response;
 
 table List {
-    listing_id: string;
+    listing_id: ulong;
     error: uint;
 }
 

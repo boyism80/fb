@@ -14,6 +14,7 @@ table Item {
     count: ushort;
     durability: uint?;
     custom_name: string?;
+    uid: ulong?;
 }
 
 table PurchaseInfo {
@@ -23,7 +24,7 @@ table PurchaseInfo {
 }
 
 table Listing {
-    id: string;
+    id: ulong;
     seller_id: uint;
     item: Item;
     price: ulong;

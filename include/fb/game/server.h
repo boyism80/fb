@@ -18,6 +18,7 @@
 #include <fb/game/service/system_mail.h>
 #include <fb/game/service/system_storage.h>
 #include <fb/game/service/weather.h>
+#include <fb/game/snowflake.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/game/thread_params.h>
@@ -169,6 +170,7 @@ public:
     service::weather                                       weather;
     fb::transfer_ticket::nonce_cache                       transfer_nonces;
     fb::synchronized<std::unordered_multiset<std::string>> pending_logins;
+    fb::game::snowflake                                    ids;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

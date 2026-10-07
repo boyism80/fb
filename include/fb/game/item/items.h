@@ -40,7 +40,7 @@ public:
     // The slot stays taken and the client sees the slot and money as if nothing was held.
     struct escrow_entry
     {
-        std::string                     listing_id;
+        uint64_t                        listing_id = 0;
         std::shared_ptr<fb::game::item> item;
         uint64_t                        money = 0;
     };
@@ -148,10 +148,10 @@ public:
     std::vector<uint8_t>                            escrow_indices() const;
     uint16_t                                        locked_count(const fb::game::item& item) const;
     uint64_t                                        locked_money() const;
-    bool                                            lock(uint8_t index, uint16_t count, uint64_t money, std::string_view listing_id);
-    bool                                            lock(uint8_t index, item_ptr item, uint64_t money, std::string_view listing_id);
-    void                                            unlock(std::string_view listing_id);
-    void                                            deduct(std::string_view listing_id);
+    bool                                            lock(uint8_t index, uint16_t count, uint64_t money, uint64_t listing_id);
+    bool                                            lock(uint8_t index, item_ptr item, uint64_t money, uint64_t listing_id);
+    void                                            unlock(uint64_t listing_id);
+    void                                            deduct(uint64_t listing_id);
     // clang-format on
 };
 

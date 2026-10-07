@@ -93,6 +93,7 @@ namespace Http.Reepository
                     `expire_time`,
                     `listing_id`,
                     `locked_money`,
+                    `uid`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -108,6 +109,7 @@ namespace Http.Reepository
                     {value.ExpireTime.Escape()},
                     {value.ListingId.Escape()},
                     {value.LockedMoney.Escape()},
+                    {value.Uid.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -119,6 +121,7 @@ namespace Http.Reepository
                     `expire_time`=VALUES(`expire_time`),
                     `listing_id`=VALUES(`listing_id`),
                     `locked_money`=VALUES(`locked_money`),
+                    `uid`=VALUES(`uid`),
                     `deleted`=0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
@@ -142,6 +145,7 @@ namespace Http.Reepository
                          {item.ExpireTime.Escape()},
                          {item.ListingId.Escape()},
                          {item.LockedMoney.Escape()},
+                         {item.Uid.Escape()},
                          0,
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
@@ -161,6 +165,7 @@ namespace Http.Reepository
                         `expire_time`,
                         `listing_id`,
                         `locked_money`,
+                        `uid`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
@@ -173,6 +178,7 @@ namespace Http.Reepository
                         `expire_time`=VALUES(`expire_time`),
                         `listing_id`=VALUES(`listing_id`),
                         `locked_money`=VALUES(`locked_money`),
+                        `uid`=VALUES(`uid`),
                         `deleted`=0,
                         `updated_date`=VALUES(`updated_date`);
                     """;
@@ -197,6 +203,7 @@ namespace Http.Reepository
                          {x.Item.ExpireTime.Escape()},
                          {x.Item.ListingId.Escape()},
                          {x.Item.LockedMoney.Escape()},
+                         {x.Item.Uid.Escape()},
                          {x.Deleted},
                          {x.Item.CreatedDate.Escape()},
                          {x.Item.UpdatedDate.Escape()})
@@ -215,6 +222,7 @@ namespace Http.Reepository
                         `expire_time`,
                         `listing_id`,
                         `locked_money`,
+                        `uid`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
@@ -227,6 +235,7 @@ namespace Http.Reepository
                         `expire_time`=VALUES(`expire_time`),
                         `listing_id`=VALUES(`listing_id`),
                         `locked_money`=VALUES(`locked_money`),
+                        `uid`=VALUES(`uid`),
                         `deleted`=VALUES(`deleted`),
                         `updated_date`=NOW();
                     """;

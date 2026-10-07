@@ -22,7 +22,8 @@ namespace Http.Model
         public required uint? Durability { get; set; }
         public required string CustomName { get; set; }
         public DateTime? ExpireTime { get; set; }
-        public string ListingId { get; set; }
+        public ulong? ListingId { get; set; }
         public ulong LockedMoney { get; set; }
+        public ulong? Uid { get; set; }
     }
 }

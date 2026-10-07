@@ -515,6 +515,8 @@ async::task<bool> trade::lock()
                 item_data["item_id"]   = static_cast<Json::Int64>(item->model().id);
                 item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
                 item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
+                if (item->uid() != 0)
+                    item_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
                 items1.push_back(item_data);
             }
         }
@@ -533,6 +535,8 @@ async::task<bool> trade::lock()
                 item_data["item_id"]   = static_cast<Json::Int64>(item->model().id);
                 item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
                 item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
+                if (item->uid() != 0)
+                    item_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
                 items2.push_back(item_data);
             }
         }

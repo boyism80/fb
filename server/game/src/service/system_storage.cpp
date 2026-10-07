@@ -248,115 +248,115 @@ async::task<bool> service::system_storage::create(uint32_t                      
                                                   const std::vector<fb::model::dsl>& attachments,
                                                   const std::optional<std::string>&  expire_date)
 {
-    const auto attachments_json = attachments_to_json(attachments);
+    const auto request = internal_reqs::WriteStorageBox{world,
+                                                        user_id,
+                                                        std::nullopt,
+                                                        std::string(title),
+                                                        std::string(message),
+                                                        attachments_to_json(attachments),
+                                                        expire_date,
+                                                        std::string(external_ref),
+                                                        fb::config<uint32_t>("id")};
 
-    try
+    // The external ref makes a resend return the box an earlier attempt already wrote.
+    for (auto attempt = 1; attempt <= write_attempts; attempt++)
     {
-        auto&& resp = co_await this->server.http.post(
-            "internal",
-            "/storage/write",
-            internal_reqs::WriteStorageBox{world,
-                                           user_id,
-                                           std::nullopt,
-                                           std::string(title),
-                                           std::string(message),
-                                           attachments_json,
-                                           expire_date,
-                                           external_ref.empty() ? std::nullopt
-                                                                : std::make_optional(std::string(external_ref)),
-                                           fb::config<uint32_t>("id")});
-
-        if (resp.error != 0)
+        try
         {
-            fb::logger::warn("WriteStorageBox failed for {}: error {}", external_ref, resp.error);
-            co_return false;
-        }
+            auto&& resp = co_await this->server.http.post("internal", "/storage/write", request);
+            if (resp.error == 0)
+                co_return true;
 
-        co_return true;
+            fb::logger::warn("WriteStorageBox failed for {} (attempt {}): error {}", external_ref, attempt, resp.error);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("WriteStorageBox request failed for {} (attempt {}): {}", external_ref, attempt, e.what());
+        }
     }
-    catch (const std::exception& e)
-    {
-        fb::logger::warn("WriteStorageBox request failed for {}: {}", external_ref, e.what());
-        co_return false;
-    }
+    co_return false;
 }
 
 async::task<bool> service::system_storage::create(uint32_t                           world,
                                                   std::string_view                   user_name,
+                                                  std::string_view                   external_ref,
                                                   std::string_view                   title,
                                                   std::string_view                   message,
                                                   const std::vector<fb::model::dsl>& attachments,
-                                                  const std::optional<std::string>&  expire_date,
-                                                  std::string_view                   external_ref)
+                                                  const std::optional<std::string>&  expire_date)
 {
-    const auto attachments_json = attachments_to_json(attachments);
+    const auto request = internal_reqs::WriteStorageBox{world,
+                                                        0,
+                                                        std::string(user_name),
+                                                        std::string(title),
+                                                        std::string(message),
+                                                        attachments_to_json(attachments),
+                                                        expire_date,
+                                                        std::string(external_ref),
+                                                        fb::config<uint32_t>("id")};
 
-    try
+    for (auto attempt = 1; attempt <= write_attempts; attempt++)
     {
-        auto&& resp = co_await this->server.http.post(
-            "internal",
-            "/storage/write",
-            internal_reqs::WriteStorageBox{world,
-                                           0,
-                                           std::make_optional(std::string(user_name)),
-                                           std::string(title),
-                                           std::string(message),
-                                           attachments_json,
-                                           expire_date,
-                                           external_ref.empty() ? std::nullopt
-                                                                : std::make_optional(std::string(external_ref)),
-                                           fb::config<uint32_t>("id")});
-
-        if (resp.error != 0)
+        try
         {
-            fb::logger::warn("WriteStorageBox failed for name {}: error {}", user_name, resp.error);
-            co_return false;
-        }
+            auto&& resp = co_await this->server.http.post("internal", "/storage/write", request);
+            if (resp.error == 0)
+                co_return true;
 
-        co_return true;
+            fb::logger::warn("WriteStorageBox failed for name {} ({}, attempt {}): error {}",
+                             user_name,
+                             external_ref,
+                             attempt,
+                             resp.error);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("WriteStorageBox request failed for name {} ({}, attempt {}): {}",
+                             user_name,
+                             external_ref,
+                             attempt,
+                             e.what());
+        }
     }
-    catch (const std::exception& e)
-    {
-        fb::logger::warn("WriteStorageBox request failed for name {}: {}", user_name, e.what());
-        co_return false;
-    }
+    co_return false;
 }
 
 async::task<bool> service::system_storage::create_system(uint32_t                           world,
+                                                         std::string_view                   external_ref,
                                                          std::string_view                   title,
                                                          std::string_view                   message,
                                                          const std::vector<fb::model::dsl>& attachments,
-                                                         const std::optional<std::string>&  expire_date,
-                                                         std::string_view                   external_ref)
+                                                         const std::optional<std::string>&  expire_date)
 {
-    const auto attachments_json = attachments_to_json(attachments);
+    const auto request = internal_reqs::WriteSystemStorageBox{world,
+                                                              std::string(title),
+                                                              std::string(message),
+                                                              attachments_to_json(attachments),
+                                                              expire_date,
+                                                              std::string(external_ref)};
 
-    try
+    for (auto attempt = 1; attempt <= write_attempts; attempt++)
     {
-        auto&& resp = co_await this->server.http.post(
-            "internal",
-            "/storage/system",
-            internal_reqs::WriteSystemStorageBox{world,
-                                                 std::string(title),
-                                                 std::string(message),
-                                                 attachments_json,
-                                                 expire_date,
-                                                 external_ref.empty() ? std::nullopt
-                                                                      : std::make_optional(std::string(external_ref))});
-
-        if (resp.error != 0)
+        try
         {
-            fb::logger::warn("WriteSystemStorageBox failed for {}: error {}", external_ref, resp.error);
-            co_return false;
-        }
+            auto&& resp = co_await this->server.http.post("internal", "/storage/system", request);
+            if (resp.error == 0)
+                co_return true;
 
-        co_return true;
+            fb::logger::warn("WriteSystemStorageBox failed for {} (attempt {}): error {}",
+                             external_ref,
+                             attempt,
+                             resp.error);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("WriteSystemStorageBox request failed for {} (attempt {}): {}",
+                             external_ref,
+                             attempt,
+                             e.what());
+        }
     }
-    catch (const std::exception& e)
-    {
-        fb::logger::warn("WriteSystemStorageBox request failed for {}: {}", external_ref, e.what());
-        co_return false;
-    }
+    co_return false;
 }
 
 async::task<void> service::system_storage::poll_and_deliver()

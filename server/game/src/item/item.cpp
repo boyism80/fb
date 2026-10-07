@@ -20,12 +20,14 @@ item::item(fb::game::server& server, const fb::model::item& model, const initial
     object(server, model, params),
     listener(server.listener),
     _count(std::clamp<uint16_t>(params.count, 1, model.capacity)),
+    _uid(model.attr(ITEM_ATTRIBUTE::BUNDLE) || model.attr(ITEM_ATTRIBUTE::CASH) ? 0 : server.ids.next()),
     expire_time(params.expire_time.has_value() ? params.expire_time : model.expire_time(server.now()))
 { }
 
 item::item(const item& right) :
     object(right.server, right.model(), initial_params{.count = right._count, .expire_time = right.expire_time}),
     listener(right.listener),
+    _uid(right._uid == 0 ? 0 : right.server.ids.next()),
     expire_time(right.expire_time)
 { }
 
@@ -170,6 +172,20 @@ std::optional<uint32_t> fb::game::item::death_uid() const
     return this->_death_uid;
 }
 
+uint64_t fb::game::item::uid() const
+{
+    return this->_uid;
+}
+
+void fb::game::item::uid(uint64_t value)
+{
+    // Bundle and cash items never carry a uid.
+    if (this->_uid == 0)
+        return;
+
+    this->_uid = value;
+}
+
 async::task<bool> item::active()
 {
     auto owner = this->owner();
@@ -301,6 +317,8 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
     result.custom_name = std::nullopt;
     if (this->expire_time.has_value())
         result.expire_time = this->expire_time.value().to_string();
+    if (this->_uid != 0)
+        result.uid = this->_uid;
     return result;
 }
 

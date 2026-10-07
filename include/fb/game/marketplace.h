@@ -45,7 +45,7 @@ public:
 
     struct listing
     {
-        std::string                        id;
+        uint64_t                           id        = 0;
         uint32_t                           seller_id = 0;
         item                               item_data;
         uint64_t                           price        = 0;
@@ -83,9 +83,9 @@ public:
 
     struct pending_listing_info
     {
-        pending_type type;        // LIST or PURCHASE
-        std::string  purchase_id; // For purchase: unique purchase ID (used as key), for list: same as listing_id
-        std::string  listing_id;  // Listing ID reference
+        pending_type type;            // LIST or PURCHASE
+        uint64_t     purchase_id = 0; // For purchase: unique purchase ID (used as key), for list: same as listing_id
+        uint64_t     listing_id  = 0; // Listing ID reference
         std::vector<fb::model::dsl> dsls;
         uint32_t                    character_id;                // For purchase: buyer_id, for list: seller_id
         uint16_t                    expected_purchase_count = 0; // For purchase: expected count, for list: 0
@@ -93,8 +93,7 @@ public:
     };
 
     // Type aliases for commonly used types
-    using pending_listings_t = std::unordered_map<std::string, pending_listing_info>;
-    using string_vector_t    = std::vector<std::string>;
+    using pending_listings_t = std::unordered_map<uint64_t, pending_listing_info>;
 
 private:
     using clock = std::chrono::steady_clock;
@@ -106,23 +105,20 @@ private:
     character&         _owner;
     pending_listings_t _pending_listings; // Key: purchase_id (for purchase) or listing_id (for list)
     // Earliest time restore may abort the escrow / purchase pending.
-    std::unordered_map<std::string, clock::time_point> _listing;
-    std::unordered_map<std::string, clock::time_point> _purchasing;
-    bool                                               _restoring = false;
+    std::unordered_map<uint64_t, clock::time_point> _listing;
+    std::unordered_map<uint64_t, clock::time_point> _purchasing;
+    bool                                            _restoring = false;
 
 public:
     explicit marketplace(character& owner);
 
-private:
-    static std::string generate_uuid();
-
 public:
     async::task<listing>
                       list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t price, uint16_t expire_hours = 72);
-    async::task<bool> cancel(std::string_view id);
-    async::task<listing>              purchase(std::string_view listing_id, uint16_t purchase_count);
+    async::task<bool> cancel(uint64_t id);
+    async::task<listing>              purchase(uint64_t listing_id, uint16_t purchase_count);
     async::task<search_result>        search(const search_option& option);
-    async::task<std::vector<listing>> get_listings(const string_vector_t& listing_ids, uint32_t buyer_id = 0);
+    async::task<std::vector<listing>> get_listings(const std::vector<uint64_t>& listing_ids, uint32_t buyer_id = 0);
     void                              set_pending_listings(pending_listings_t pending_listings);
     async::task<void>                 restore();
     const pending_listings_t&         pending_listings() const;

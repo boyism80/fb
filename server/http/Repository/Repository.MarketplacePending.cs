@@ -19,7 +19,7 @@ namespace Http.Reepository
             return base.GetAll(world, new MarketplacePendingKey
             {
                 User = user,
-                PendingKey = string.Empty
+                PendingKey = 0
             });
         }
 
@@ -55,7 +55,7 @@ namespace Http.Reepository
             if (ownerIds == null || ownerIds.Count == 0)
                 return new Dictionary<uint, IReadOnlyList<MarketplacePending>>();
 
-            var keys = ownerIds.Distinct().Select(uid => new MarketplacePendingKey { User = uid, PendingKey = string.Empty }).ToList();
+            var keys = ownerIds.Distinct().Select(uid => new MarketplacePendingKey { User = uid, PendingKey = 0 }).ToList();
             var list = await base.GetMany(world, keys);
             var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<MarketplacePending>)new List<MarketplacePending>());
             foreach (var row in list)
@@ -66,7 +66,7 @@ namespace Http.Reepository
             return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<MarketplacePending>)kv.Value);
         }
 
-        public void Delete(uint world, uint user, IReadOnlyList<string> pendingKeys)
+        public void Delete(uint world, uint user, IReadOnlyList<ulong> pendingKeys)
         {
             if (pendingKeys == null || pendingKeys.Count == 0)
                 return;

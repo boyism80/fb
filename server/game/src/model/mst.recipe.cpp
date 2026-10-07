@@ -8,7 +8,7 @@
 #include <vector>
 
 fb::model::recipe_node::recipe_node(uint32_t id, uint32_t count, const recipe_node* parent) :
-    _dsl(id, count, std::nullopt, std::nullopt, 100.0),
+    _dsl(id, count, std::nullopt, std::nullopt, 100.0, std::nullopt),
     fb::mst<const fb::model::dsl::item&>(_dsl, parent)
 { }
 
@@ -95,7 +95,7 @@ void fb::model::recipe_node::compact(const std::vector<fb::model::dsl::item>& so
     dest.clear();
     for (auto k : keys)
     {
-        dest.push_back(fb::model::dsl::item(k, buffer.at(k), std::nullopt, std::nullopt, 100.0));
+        dest.push_back(fb::model::dsl::item(k, buffer.at(k), std::nullopt, std::nullopt, 100.0, std::nullopt));
     }
 }
 
@@ -114,7 +114,7 @@ void fb::model::recipe_node::add(const fb::model::recipe& recipe)
     auto dsls = std::vector<fb::model::dsl::item>();
     for (auto& [id, count] : buffer)
     {
-        dsls.push_back(fb::model::dsl::item(id, count, std::nullopt, std::nullopt, 100.0));
+        dsls.push_back(fb::model::dsl::item(id, count, std::nullopt, std::nullopt, 100.0, std::nullopt));
     }
 
     auto ptrs = std::vector<fb::model::dsl::item*>();

@@ -6,7 +6,7 @@ namespace Http.Model
     public class MarketplacePendingKey : BaseModel, IRedisHashKey
     {
         public required uint User { get; set; }
-        public string PendingKey { get; set; } = string.Empty;
+        public ulong PendingKey { get; set; }
         public uint? GetHash() => User;
 
         public RedisKey GetRedisKey() => $"fb:cache:marketplace_pending:{User}";
@@ -17,8 +17,8 @@ namespace Http.Model
     public class MarketplacePending : MarketplacePendingKey, IModel
     {
         public byte Type { get; set; }
-        public string PurchaseId { get; set; } = string.Empty;
-        public string ListingId { get; set; } = string.Empty;
+        public ulong PurchaseId { get; set; }
+        public ulong ListingId { get; set; }
         public List<Dsl> Attachments { get; set; } = new List<Dsl>();
         public ushort ExpectedPurchaseCount { get; set; }
         public ulong ExpectedTotalPrice { get; set; }

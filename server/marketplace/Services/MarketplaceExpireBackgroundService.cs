@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using fb.protocol.marketplace;
 using Fb.Model;
 using Http.Extension;
@@ -208,7 +208,8 @@ namespace Marketplace.Services
                     Count = listing.RemainingCount,
                     Durability = listing.ItemDurability,
                     CustomName = listing.ItemCustomName,
-                    Percent = 100.0
+                    Percent = 100.0,
+                    Uid = listing.ItemUid
                 }.ToDSL()
             };
 

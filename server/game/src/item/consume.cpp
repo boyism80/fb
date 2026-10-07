@@ -51,6 +51,8 @@ async::task<bool> consume::active()
     log_data["item_id"]         = static_cast<Json::Int64>(this->model().id);
     log_data["item_name"]       = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["remaining_count"] = static_cast<Json::Int64>(this->_count);
+    if (this->_uid != 0)
+        log_data["item_uid"] = static_cast<Json::UInt64>(this->_uid);
     owner->server.log.write("item_consume", log_data);
 
     if (this->empty())

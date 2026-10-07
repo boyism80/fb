@@ -57,6 +57,7 @@ protected:
     items*                  _container    = nullptr;
     std::optional<uint32_t> _death_uid    = std::nullopt;
     nullable_time           _dropped_time = std::nullopt;
+    uint64_t                _uid          = 0;
 
 public:
     const std::optional<fb::model::datetime> expire_time = std::nullopt;
@@ -86,6 +87,8 @@ public:
     const nullable_time&                    dropped_time() const;
     void                                    death_uid(std::optional<uint32_t> cid);
     std::optional<uint32_t>                 death_uid() const;
+    uint64_t                                uid() const;
+    void                                    uid(uint64_t value);
     fb::thread*                             thread() const override final;
     void                                    assert_thread() const override;
     virtual std::string                     tip_message() const;

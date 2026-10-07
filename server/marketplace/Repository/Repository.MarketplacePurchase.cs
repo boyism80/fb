@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Http.Extension;
 using Http.Reepository;
 using Http.Service;
@@ -15,10 +15,10 @@ namespace Marketplace.Reepository
             _dbContext = dbContext;
         }
 
-        public async Task<string> CreatePurchaseAsync(
-            string purchaseId,
+        public async Task<ulong> CreatePurchaseAsync(
+            ulong purchaseId,
             uint world,
-            string listingId,
+            ulong listingId,
             uint buyerId,
             ushort purchaseCount,
             ulong purchasePrice,
@@ -56,7 +56,7 @@ namespace Marketplace.Reepository
             return purchaseId;
         }
 
-        public async Task<MarketplacePurchase> GetAnyPurchaseByIdForUpdateAsync(string purchaseId, System.Data.IDbTransaction transaction)
+        public async Task<MarketplacePurchase> GetAnyPurchaseByIdForUpdateAsync(ulong purchaseId, System.Data.IDbTransaction transaction)
         {
             var sql = $@"
                 SELECT * FROM `marketplace_purchase`
@@ -67,9 +67,9 @@ namespace Marketplace.Reepository
         }
 
         public async Task CreateAbortedPurchaseAsync(
-            string purchaseId,
+            ulong purchaseId,
             uint world,
-            string listingId,
+            ulong listingId,
             uint buyerId,
             System.Data.IDbTransaction transaction)
         {
@@ -97,7 +97,7 @@ namespace Marketplace.Reepository
             await transaction.Connection.ExecuteAsync(sql, null, transaction);
         }
 
-        public async Task<bool> CheckPurchaseIdExistsAsync(string purchaseId)
+        public async Task<bool> CheckPurchaseIdExistsAsync(ulong purchaseId)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $@"

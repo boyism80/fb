@@ -22,7 +22,7 @@ struct context
 
 inline std::string mint_transaction_id()
 {
-    static auto gen = boost::uuids::random_generator{};
+    thread_local auto gen = boost::uuids::random_generator{};
     return boost::uuids::to_string(gen());
 }
 

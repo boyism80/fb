@@ -1234,14 +1234,9 @@ public struct Item : IFlatbufferObject
   public ArraySegment<byte>? GetExpireTimeBytes() { return __p.__vector_as_arraysegment(20); }
 #endif
   public byte[] GetExpireTimeArray() { return __p.__vector_as_array<byte>(20); }
-  public string ListingId { get { int o = __p.__offset(22); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(22, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(22); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(22); }
+  public nullable.nullable_ulong? ListingId { get { int o = __p.__offset(22); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public ulong LockedMoney { get { int o = __p.__offset(24); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public nullable.nullable_ulong? Uid { get { int o = __p.__offset(26); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.raw.Item> CreateItem(FlatBufferBuilder builder,
       uint user = 0,
@@ -1253,10 +1248,12 @@ public struct Item : IFlatbufferObject
       Offset<nullable.nullable_uint> durabilityOffset = default(Offset<nullable.nullable_uint>),
       StringOffset custom_nameOffset = default(StringOffset),
       StringOffset expire_timeOffset = default(StringOffset),
-      StringOffset listing_idOffset = default(StringOffset),
-      ulong locked_money = 0) {
-    builder.StartTable(11);
+      Offset<nullable.nullable_ulong> listing_idOffset = default(Offset<nullable.nullable_ulong>),
+      ulong locked_money = 0,
+      Offset<nullable.nullable_ulong> uidOffset = default(Offset<nullable.nullable_ulong>)) {
+    builder.StartTable(12);
     Item.AddLockedMoney(builder, locked_money);
+    Item.AddUid(builder, uidOffset);
     Item.AddListingId(builder, listing_idOffset);
     Item.AddExpireTime(builder, expire_timeOffset);
     Item.AddCustomName(builder, custom_nameOffset);
@@ -1270,7 +1267,7 @@ public struct Item : IFlatbufferObject
     return Item.EndItem(builder);
   }
 
-  public static void StartItem(FlatBufferBuilder builder) { builder.StartTable(11); }
+  public static void StartItem(FlatBufferBuilder builder) { builder.StartTable(12); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddIndex(FlatBufferBuilder builder, short index) { builder.AddShort(1, index, 0); }
   public static void AddParts(FlatBufferBuilder builder, short parts) { builder.AddShort(2, parts, 0); }
@@ -1280,8 +1277,9 @@ public struct Item : IFlatbufferObject
   public static void AddDurability(FlatBufferBuilder builder, Offset<nullable.nullable_uint> durabilityOffset) { builder.AddOffset(6, durabilityOffset.Value, 0); }
   public static void AddCustomName(FlatBufferBuilder builder, StringOffset customNameOffset) { builder.AddOffset(7, customNameOffset.Value, 0); }
   public static void AddExpireTime(FlatBufferBuilder builder, StringOffset expireTimeOffset) { builder.AddOffset(8, expireTimeOffset.Value, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(9, listingIdOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> listingIdOffset) { builder.AddOffset(9, listingIdOffset.Value, 0); }
   public static void AddLockedMoney(FlatBufferBuilder builder, ulong lockedMoney) { builder.AddUlong(10, lockedMoney, 0); }
+  public static void AddUid(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> uidOffset) { builder.AddOffset(11, uidOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Item> EndItem(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Item>(o);
@@ -1303,8 +1301,9 @@ static public class ItemVerify
       && verifier.VerifyTable(tablePos, 16 /*Durability*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyString(tablePos, 18 /*CustomName*/, false)
       && verifier.VerifyString(tablePos, 20 /*ExpireTime*/, false)
-      && verifier.VerifyString(tablePos, 22 /*ListingId*/, false)
+      && verifier.VerifyTable(tablePos, 22 /*ListingId*/, nullable.nullable_ulongVerify.Verify, false)
       && verifier.VerifyField(tablePos, 24 /*LockedMoney*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyTable(tablePos, 26 /*Uid*/, nullable.nullable_ulongVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -1598,28 +1597,10 @@ public struct MarketplacePending : IFlatbufferObject
   public MarketplacePending __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string PendingKey { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetPendingKeyBytes() { return __p.__vector_as_span<byte>(6, 1); }
-#else
-  public ArraySegment<byte>? GetPendingKeyBytes() { return __p.__vector_as_arraysegment(6); }
-#endif
-  public byte[] GetPendingKeyArray() { return __p.__vector_as_array<byte>(6); }
+  public ulong PendingKey { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public byte Type { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public string PurchaseId { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetPurchaseIdBytes() { return __p.__vector_as_span<byte>(10, 1); }
-#else
-  public ArraySegment<byte>? GetPurchaseIdBytes() { return __p.__vector_as_arraysegment(10); }
-#endif
-  public byte[] GetPurchaseIdArray() { return __p.__vector_as_array<byte>(10); }
-  public string ListingId { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(12, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(12); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(12); }
+  public ulong PurchaseId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong ListingId { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string Attachments { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(14, 1); }
@@ -1633,21 +1614,21 @@ public struct MarketplacePending : IFlatbufferObject
 
   public static Offset<fb.protocol._internal.raw.MarketplacePending> CreateMarketplacePending(FlatBufferBuilder builder,
       uint user = 0,
-      StringOffset pending_keyOffset = default(StringOffset),
+      ulong pending_key = 0,
       byte type = 0,
-      StringOffset purchase_idOffset = default(StringOffset),
-      StringOffset listing_idOffset = default(StringOffset),
+      ulong purchase_id = 0,
+      ulong listing_id = 0,
       StringOffset attachmentsOffset = default(StringOffset),
       ushort expected_purchase_count = 0,
       ulong expected_total_price = 0,
       uint character_id = 0) {
     builder.StartTable(9);
     MarketplacePending.AddExpectedTotalPrice(builder, expected_total_price);
+    MarketplacePending.AddListingId(builder, listing_id);
+    MarketplacePending.AddPurchaseId(builder, purchase_id);
+    MarketplacePending.AddPendingKey(builder, pending_key);
     MarketplacePending.AddCharacterId(builder, character_id);
     MarketplacePending.AddAttachments(builder, attachmentsOffset);
-    MarketplacePending.AddListingId(builder, listing_idOffset);
-    MarketplacePending.AddPurchaseId(builder, purchase_idOffset);
-    MarketplacePending.AddPendingKey(builder, pending_keyOffset);
     MarketplacePending.AddUser(builder, user);
     MarketplacePending.AddExpectedPurchaseCount(builder, expected_purchase_count);
     MarketplacePending.AddType(builder, type);
@@ -1656,10 +1637,10 @@ public struct MarketplacePending : IFlatbufferObject
 
   public static void StartMarketplacePending(FlatBufferBuilder builder) { builder.StartTable(9); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
-  public static void AddPendingKey(FlatBufferBuilder builder, StringOffset pendingKeyOffset) { builder.AddOffset(1, pendingKeyOffset.Value, 0); }
+  public static void AddPendingKey(FlatBufferBuilder builder, ulong pendingKey) { builder.AddUlong(1, pendingKey, 0); }
   public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(2, type, 0); }
-  public static void AddPurchaseId(FlatBufferBuilder builder, StringOffset purchaseIdOffset) { builder.AddOffset(3, purchaseIdOffset.Value, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(4, listingIdOffset.Value, 0); }
+  public static void AddPurchaseId(FlatBufferBuilder builder, ulong purchaseId) { builder.AddUlong(3, purchaseId, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, ulong listingId) { builder.AddUlong(4, listingId, 0); }
   public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(5, attachmentsOffset.Value, 0); }
   public static void AddExpectedPurchaseCount(FlatBufferBuilder builder, ushort expectedPurchaseCount) { builder.AddUshort(6, expectedPurchaseCount, 0); }
   public static void AddExpectedTotalPrice(FlatBufferBuilder builder, ulong expectedTotalPrice) { builder.AddUlong(7, expectedTotalPrice, 0); }
@@ -1677,10 +1658,10 @@ static public class MarketplacePendingVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*PendingKey*/, false)
+      && verifier.VerifyField(tablePos, 6 /*PendingKey*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 8 /*Type*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyString(tablePos, 10 /*PurchaseId*/, false)
-      && verifier.VerifyString(tablePos, 12 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 10 /*PurchaseId*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 12 /*ListingId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 14 /*Attachments*/, false)
       && verifier.VerifyField(tablePos, 16 /*ExpectedPurchaseCount*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 18 /*ExpectedTotalPrice*/, 8 /*ulong*/, 8, false)
@@ -11609,14 +11590,17 @@ public struct Item : IFlatbufferObject
   public ArraySegment<byte>? GetCustomNameBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
   public byte[] GetCustomNameArray() { return __p.__vector_as_array<byte>(12); }
+  public nullable.nullable_ulong? Uid { get { int o = __p.__offset(14); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol.marketplace.raw.Item> CreateItem(FlatBufferBuilder builder,
       uint owner = 0,
       uint model = 0,
       ushort count = 0,
       Offset<nullable.nullable_uint> durabilityOffset = default(Offset<nullable.nullable_uint>),
-      StringOffset custom_nameOffset = default(StringOffset)) {
-    builder.StartTable(5);
+      StringOffset custom_nameOffset = default(StringOffset),
+      Offset<nullable.nullable_ulong> uidOffset = default(Offset<nullable.nullable_ulong>)) {
+    builder.StartTable(6);
+    Item.AddUid(builder, uidOffset);
     Item.AddCustomName(builder, custom_nameOffset);
     Item.AddDurability(builder, durabilityOffset);
     Item.AddModel(builder, model);
@@ -11625,12 +11609,13 @@ public struct Item : IFlatbufferObject
     return Item.EndItem(builder);
   }
 
-  public static void StartItem(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartItem(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddOwner(FlatBufferBuilder builder, uint owner) { builder.AddUint(0, owner, 0); }
   public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(1, model, 0); }
   public static void AddCount(FlatBufferBuilder builder, ushort count) { builder.AddUshort(2, count, 0); }
   public static void AddDurability(FlatBufferBuilder builder, Offset<nullable.nullable_uint> durabilityOffset) { builder.AddOffset(3, durabilityOffset.Value, 0); }
   public static void AddCustomName(FlatBufferBuilder builder, StringOffset customNameOffset) { builder.AddOffset(4, customNameOffset.Value, 0); }
+  public static void AddUid(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> uidOffset) { builder.AddOffset(5, uidOffset.Value, 0); }
   public static Offset<fb.protocol.marketplace.raw.Item> EndItem(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.raw.Item>(o);
@@ -11648,6 +11633,7 @@ static public class ItemVerify
       && verifier.VerifyField(tablePos, 8 /*Count*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTable(tablePos, 10 /*Durability*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyString(tablePos, 12 /*CustomName*/, false)
+      && verifier.VerifyTable(tablePos, 14 /*Uid*/, nullable.nullable_ulongVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11675,13 +11661,7 @@ public struct Listing : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Listing __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Id { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetIdBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetIdBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetIdArray() { return __p.__vector_as_array<byte>(4); }
+  public ulong Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public uint SellerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol.marketplace.raw.Item? Item { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol.marketplace.raw.Item?)(new fb.protocol.marketplace.raw.Item()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public ulong Price { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
@@ -11703,7 +11683,7 @@ public struct Listing : IFlatbufferObject
   public fb.protocol.marketplace.raw.PurchaseInfo? PurchaseInfo { get { int o = __p.__offset(18); return o != 0 ? (fb.protocol.marketplace.raw.PurchaseInfo?)(new fb.protocol.marketplace.raw.PurchaseInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol.marketplace.raw.Listing> CreateListing(FlatBufferBuilder builder,
-      StringOffset idOffset = default(StringOffset),
+      ulong id = 0,
       uint seller_id = 0,
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
       ulong price = 0,
@@ -11713,18 +11693,18 @@ public struct Listing : IFlatbufferObject
       Offset<fb.protocol.marketplace.raw.PurchaseInfo> purchase_infoOffset = default(Offset<fb.protocol.marketplace.raw.PurchaseInfo>)) {
     builder.StartTable(8);
     Listing.AddPrice(builder, price);
+    Listing.AddId(builder, id);
     Listing.AddPurchaseInfo(builder, purchase_infoOffset);
     Listing.AddCreatedDate(builder, created_dateOffset);
     Listing.AddExpireDate(builder, expire_dateOffset);
     Listing.AddItem(builder, itemOffset);
     Listing.AddSellerId(builder, seller_id);
-    Listing.AddId(builder, idOffset);
     Listing.AddState(builder, state);
     return Listing.EndListing(builder);
   }
 
   public static void StartListing(FlatBufferBuilder builder) { builder.StartTable(8); }
-  public static void AddId(FlatBufferBuilder builder, StringOffset idOffset) { builder.AddOffset(0, idOffset.Value, 0); }
+  public static void AddId(FlatBufferBuilder builder, ulong id) { builder.AddUlong(0, id, 0); }
   public static void AddSellerId(FlatBufferBuilder builder, uint sellerId) { builder.AddUint(1, sellerId, 0); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(2, itemOffset.Value, 0); }
   public static void AddPrice(FlatBufferBuilder builder, ulong price) { builder.AddUlong(3, price, 0); }
@@ -11744,7 +11724,7 @@ static public class ListingVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Id*/, false)
+      && verifier.VerifyField(tablePos, 4 /*Id*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 6 /*SellerId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTable(tablePos, 8 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)
       && verifier.VerifyField(tablePos, 10 /*Price*/, 8 /*ulong*/, 8, false)
@@ -11934,26 +11914,20 @@ public struct AbortList : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint CharacterId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(8); }
+  public ulong ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public fb.protocol.marketplace.raw.Item? Item { get { int o = __p.__offset(10); return o != 0 ? (fb.protocol.marketplace.raw.Item?)(new fb.protocol.marketplace.raw.Item()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public ulong Price { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.AbortList> CreateAbortList(FlatBufferBuilder builder,
       uint world = 0,
       uint character_id = 0,
-      StringOffset listing_idOffset = default(StringOffset),
+      ulong listing_id = 0,
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
       ulong price = 0) {
     builder.StartTable(5);
     AbortList.AddPrice(builder, price);
+    AbortList.AddListingId(builder, listing_id);
     AbortList.AddItem(builder, itemOffset);
-    AbortList.AddListingId(builder, listing_idOffset);
     AbortList.AddCharacterId(builder, character_id);
     AbortList.AddWorld(builder, world);
     return AbortList.EndAbortList(builder);
@@ -11962,7 +11936,7 @@ public struct AbortList : IFlatbufferObject
   public static void StartAbortList(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(1, characterId, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, ulong listingId) { builder.AddUlong(2, listingId, 0); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(3, itemOffset.Value, 0); }
   public static void AddPrice(FlatBufferBuilder builder, ulong price) { builder.AddUlong(4, price, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.AbortList> EndAbortList(FlatBufferBuilder builder) {
@@ -11979,7 +11953,7 @@ static public class AbortListVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*CharacterId*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 8 /*ListingId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTable(tablePos, 10 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*Price*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
@@ -12011,29 +11985,17 @@ public struct AbortPurchase : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint BuyerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(8); }
-  public string PurchaseId { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetPurchaseIdBytes() { return __p.__vector_as_span<byte>(10, 1); }
-#else
-  public ArraySegment<byte>? GetPurchaseIdBytes() { return __p.__vector_as_arraysegment(10); }
-#endif
-  public byte[] GetPurchaseIdArray() { return __p.__vector_as_array<byte>(10); }
+  public ulong ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong PurchaseId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> CreateAbortPurchase(FlatBufferBuilder builder,
       uint world = 0,
       uint buyer_id = 0,
-      StringOffset listing_idOffset = default(StringOffset),
-      StringOffset purchase_idOffset = default(StringOffset)) {
+      ulong listing_id = 0,
+      ulong purchase_id = 0) {
     builder.StartTable(4);
-    AbortPurchase.AddPurchaseId(builder, purchase_idOffset);
-    AbortPurchase.AddListingId(builder, listing_idOffset);
+    AbortPurchase.AddPurchaseId(builder, purchase_id);
+    AbortPurchase.AddListingId(builder, listing_id);
     AbortPurchase.AddBuyerId(builder, buyer_id);
     AbortPurchase.AddWorld(builder, world);
     return AbortPurchase.EndAbortPurchase(builder);
@@ -12042,8 +12004,8 @@ public struct AbortPurchase : IFlatbufferObject
   public static void StartAbortPurchase(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddBuyerId(FlatBufferBuilder builder, uint buyerId) { builder.AddUint(1, buyerId, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
-  public static void AddPurchaseId(FlatBufferBuilder builder, StringOffset purchaseIdOffset) { builder.AddOffset(3, purchaseIdOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, ulong listingId) { builder.AddUlong(2, listingId, 0); }
+  public static void AddPurchaseId(FlatBufferBuilder builder, ulong purchaseId) { builder.AddUlong(3, purchaseId, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.AbortPurchase> EndAbortPurchase(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.request.raw.AbortPurchase>(o);
@@ -12058,8 +12020,8 @@ static public class AbortPurchaseVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*BuyerId*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
-      && verifier.VerifyString(tablePos, 10 /*PurchaseId*/, false)
+      && verifier.VerifyField(tablePos, 8 /*ListingId*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 10 /*PurchaseId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -12089,20 +12051,14 @@ public struct Cancel : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint CharacterId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(8); }
+  public ulong ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.Cancel> CreateCancel(FlatBufferBuilder builder,
       uint world = 0,
       uint character_id = 0,
-      StringOffset listing_idOffset = default(StringOffset)) {
+      ulong listing_id = 0) {
     builder.StartTable(3);
-    Cancel.AddListingId(builder, listing_idOffset);
+    Cancel.AddListingId(builder, listing_id);
     Cancel.AddCharacterId(builder, character_id);
     Cancel.AddWorld(builder, world);
     return Cancel.EndCancel(builder);
@@ -12111,7 +12067,7 @@ public struct Cancel : IFlatbufferObject
   public static void StartCancel(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(1, characterId, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, ulong listingId) { builder.AddUlong(2, listingId, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.Cancel> EndCancel(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.request.raw.Cancel>(o);
@@ -12126,7 +12082,7 @@ static public class CancelVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*CharacterId*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 8 /*ListingId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -12154,8 +12110,14 @@ public struct GetListings : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public GetListings __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string ListingIds(int j) { int o = __p.__offset(4); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
+  public ulong ListingIds(int j) { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUlong(__p.__vector(o) + j * 8) : (ulong)0; }
   public int ListingIdsLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<ulong> GetListingIdsBytes() { return __p.__vector_as_span<ulong>(4, 8); }
+#else
+  public ArraySegment<byte>? GetListingIdsBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public ulong[] GetListingIdsArray() { return __p.__vector_as_array<ulong>(4); }
   public nullable.nullable_uint? BuyerId { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.GetListings> CreateGetListings(FlatBufferBuilder builder,
@@ -12169,11 +12131,11 @@ public struct GetListings : IFlatbufferObject
 
   public static void StartGetListings(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddListingIds(FlatBufferBuilder builder, VectorOffset listingIdsOffset) { builder.AddOffset(0, listingIdsOffset.Value, 0); }
-  public static VectorOffset CreateListingIdsVector(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<StringOffset> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<StringOffset>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartListingIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static VectorOffset CreateListingIdsVector(FlatBufferBuilder builder, ulong[] data) { builder.StartVector(8, data.Length, 8); for (int i = data.Length - 1; i >= 0; i--) builder.AddUlong(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, ulong[] data) { builder.StartVector(8, data.Length, 8); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<ulong> data) { builder.StartVector(8, data.Count, 8); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateListingIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<ulong>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartListingIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(8, numElems, 8); }
   public static void AddBuyerId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> buyerIdOffset) { builder.AddOffset(1, buyerIdOffset.Value, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.GetListings> EndGetListings(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -12187,7 +12149,7 @@ static public class GetListingsVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyVectorOfStrings(tablePos, 4 /*ListingIds*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 4 /*ListingIds*/, 8 /*ulong*/, false)
       && verifier.VerifyTable(tablePos, 6 /*BuyerId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
@@ -12218,13 +12180,7 @@ public struct List : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint CharacterId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(8); }
+  public ulong ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public fb.protocol.marketplace.raw.Item? Item { get { int o = __p.__offset(10); return o != 0 ? (fb.protocol.marketplace.raw.Item?)(new fb.protocol.marketplace.raw.Item()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public ulong Price { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public long Deadline { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetLong(o + __p.bb_pos) : (long)0; } }
@@ -12232,15 +12188,15 @@ public struct List : IFlatbufferObject
   public static Offset<fb.protocol.marketplace.request.raw.List> CreateList(FlatBufferBuilder builder,
       uint world = 0,
       uint character_id = 0,
-      StringOffset listing_idOffset = default(StringOffset),
+      ulong listing_id = 0,
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
       ulong price = 0,
       long deadline = 0) {
     builder.StartTable(6);
     List.AddDeadline(builder, deadline);
     List.AddPrice(builder, price);
+    List.AddListingId(builder, listing_id);
     List.AddItem(builder, itemOffset);
-    List.AddListingId(builder, listing_idOffset);
     List.AddCharacterId(builder, character_id);
     List.AddWorld(builder, world);
     return List.EndList(builder);
@@ -12249,7 +12205,7 @@ public struct List : IFlatbufferObject
   public static void StartList(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(1, characterId, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, ulong listingId) { builder.AddUlong(2, listingId, 0); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(3, itemOffset.Value, 0); }
   public static void AddPrice(FlatBufferBuilder builder, ulong price) { builder.AddUlong(4, price, 0); }
   public static void AddDeadline(FlatBufferBuilder builder, long deadline) { builder.AddLong(5, deadline, 0); }
@@ -12267,7 +12223,7 @@ static public class ListVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*CharacterId*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 8 /*ListingId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTable(tablePos, 10 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*Price*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 14 /*Deadline*/, 8 /*long*/, 8, false)
@@ -12300,34 +12256,22 @@ public struct Purchase : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint BuyerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(8); }
+  public ulong ListingId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public ushort PurchaseCount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public string PurchaseId { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetPurchaseIdBytes() { return __p.__vector_as_span<byte>(12, 1); }
-#else
-  public ArraySegment<byte>? GetPurchaseIdBytes() { return __p.__vector_as_arraysegment(12); }
-#endif
-  public byte[] GetPurchaseIdArray() { return __p.__vector_as_array<byte>(12); }
+  public ulong PurchaseId { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public long Deadline { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetLong(o + __p.bb_pos) : (long)0; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.Purchase> CreatePurchase(FlatBufferBuilder builder,
       uint world = 0,
       uint buyer_id = 0,
-      StringOffset listing_idOffset = default(StringOffset),
+      ulong listing_id = 0,
       ushort purchase_count = 0,
-      StringOffset purchase_idOffset = default(StringOffset),
+      ulong purchase_id = 0,
       long deadline = 0) {
     builder.StartTable(6);
     Purchase.AddDeadline(builder, deadline);
-    Purchase.AddPurchaseId(builder, purchase_idOffset);
-    Purchase.AddListingId(builder, listing_idOffset);
+    Purchase.AddPurchaseId(builder, purchase_id);
+    Purchase.AddListingId(builder, listing_id);
     Purchase.AddBuyerId(builder, buyer_id);
     Purchase.AddWorld(builder, world);
     Purchase.AddPurchaseCount(builder, purchase_count);
@@ -12337,9 +12281,9 @@ public struct Purchase : IFlatbufferObject
   public static void StartPurchase(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddBuyerId(FlatBufferBuilder builder, uint buyerId) { builder.AddUint(1, buyerId, 0); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, ulong listingId) { builder.AddUlong(2, listingId, 0); }
   public static void AddPurchaseCount(FlatBufferBuilder builder, ushort purchaseCount) { builder.AddUshort(3, purchaseCount, 0); }
-  public static void AddPurchaseId(FlatBufferBuilder builder, StringOffset purchaseIdOffset) { builder.AddOffset(4, purchaseIdOffset.Value, 0); }
+  public static void AddPurchaseId(FlatBufferBuilder builder, ulong purchaseId) { builder.AddUlong(4, purchaseId, 0); }
   public static void AddDeadline(FlatBufferBuilder builder, long deadline) { builder.AddLong(5, deadline, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.Purchase> EndPurchase(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -12355,9 +12299,9 @@ static public class PurchaseVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*BuyerId*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 8 /*ListingId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 10 /*PurchaseCount*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyString(tablePos, 12 /*PurchaseId*/, false)
+      && verifier.VerifyField(tablePos, 12 /*PurchaseId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 14 /*Deadline*/, 8 /*long*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
@@ -12699,26 +12643,20 @@ public struct List : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public List __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string ListingId { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetListingIdBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetListingIdBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(4); }
+  public ulong ListingId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public uint Error { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.marketplace.response.raw.List> CreateList(FlatBufferBuilder builder,
-      StringOffset listing_idOffset = default(StringOffset),
+      ulong listing_id = 0,
       uint error = 0) {
     builder.StartTable(2);
+    List.AddListingId(builder, listing_id);
     List.AddError(builder, error);
-    List.AddListingId(builder, listing_idOffset);
     return List.EndList(builder);
   }
 
   public static void StartList(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(0, listingIdOffset.Value, 0); }
+  public static void AddListingId(FlatBufferBuilder builder, ulong listingId) { builder.AddUlong(0, listingId, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(1, error, 0); }
   public static Offset<fb.protocol.marketplace.response.raw.List> EndList(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -12732,7 +12670,7 @@ static public class ListVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*ListingId*/, false)
+      && verifier.VerifyField(tablePos, 4 /*ListingId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 6 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

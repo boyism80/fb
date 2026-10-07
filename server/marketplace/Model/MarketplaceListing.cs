@@ -5,13 +5,14 @@ namespace Marketplace.Model;
 
 public class MarketplaceListing : BaseModel
 {
-    public string Id { get; set; }
+    public ulong Id { get; set; }
     public uint World { get; set; } // World identifier (e.g., 1, 2)
     public uint SellerId { get; set; }
     public uint ItemModel { get; set; }
     public ushort RemainingCount { get; set; }
     public uint? ItemDurability { get; set; }
     public string ItemCustomName { get; set; }
+    public ulong? ItemUid { get; set; }
     public ulong Price { get; set; } // Per unit price
     public ListingState Status { get; set; }
     public DateTime ExpireDate { get; set; }

@@ -431,6 +431,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     schedules(*this),
     script_timers(*this),
     weather(*this),
+    ids(fb::config<std::optional<uint32_t>>("world").value_or(0), fb::config<uint8_t>("id")),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),
