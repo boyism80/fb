@@ -13,7 +13,7 @@ fb::model::recipe_node::recipe_node(uint32_t id, uint32_t count, const recipe_no
 { }
 
 fb::model::recipe_node::recipe_node(const fb::model::dsl::item& data, const recipe_node* parent) :
-    _dsl(data.id, data.count, std::nullopt, std::nullopt, data.percent),
+    _dsl(data.id, data.count, std::nullopt, std::nullopt, data.percent, std::nullopt),
     fb::mst<const fb::model::dsl::item&>(_dsl, parent)
 { }
 
