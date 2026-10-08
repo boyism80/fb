@@ -170,6 +170,7 @@
                 <MenuItem Header="붙여넣기" InputGestureText="{Binding ShortcutMap[Paste].Text}" Command="{Binding PasteCommand}" />
                 <MenuItem Header="삭제 (선택한 스폰 + 현재 레이어)" InputGestureText="{Binding ShortcutMap[Delete].Text}" Command="{Binding DeleteSelectionCommand}" />
                 <MenuItem Header="블록 토글" InputGestureText="{Binding ShortcutMap[ToggleBlock].Text}" Command="{Binding ToggleBlockSelectionCommand}" />
+                <MenuItem Header="문 편집 (선택한 한 행)..." InputGestureText="{Binding ShortcutMap[EditDoor].Text}" Command="{Binding EditDoorCommand}" />
                 <Separator />
                 <MenuItem Header="전체 선택" InputGestureText="{Binding ShortcutMap[SelectAll].Text}" Command="{Binding SelectAllCommand}" />
                 <MenuItem Header="선택 해제" InputGestureText="{Binding ShortcutMap[ClearSelection].Text}" Command="{Binding ClearSelectionCommand}" />
@@ -235,7 +236,7 @@
                 <MenuItem Header="몹 스폰 추가 (맵 전체)..." Command="{Binding AddSpawnCommand}" CommandParameter="mob" />
                 <MenuItem Header="워프 추가..." Command="{Binding AddSpawnCommand}" CommandParameter="warp" />
                 <Separator />
-                <MenuItem Header="선택 영역으로 문 정의 만들기" Command="{Binding CreateDoorFromSelectionCommand}" />
+                <MenuItem Header="문 편집 (선택한 한 행)..." InputGestureText="{Binding ShortcutMap[EditDoor].Text}" Command="{Binding EditDoorCommand}" />
                 <MenuItem Header="문 정의 편집기 (door.xlsx)..." Click="OnDoorEditor" />
                 <Separator />
                 <MenuItem Header="문제 검사 창..." Click="OnIssues" />
@@ -528,8 +529,8 @@
                                     </DataGrid>
                                     <WrapPanel Grid.Row="5">
                                         <CheckBox Content="열린 상태로 배치" IsChecked="{Binding PlaceDoorOpened}" VerticalAlignment="Center" />
-                                        <Button Content="선택 영역으로 문 만들기" Command="{Binding CreateDoorFromSelectionCommand}"
-                                                ToolTip="한 행에서 가로로 이어진 칸을 선택하면 현재 오브젝트를 닫힘으로 하는 door_pair와 door를 만든다" />
+                                        <Button Content="선택한 칸으로 문 편집..." Command="{Binding EditDoorCommand}"
+                                                ToolTip="한 행에서 가로로 이어진 칸을 선택하고 각 칸의 열림/닫힘 짝을 고른다 (Ctrl+D)" />
                                         <Button Content="문 정의 편집기..." Click="OnDoorEditor" ToolTip="door / door_pair 표 편집, door.xlsx 저장" />
                                         <TextBlock Text="● door.xlsx 저장 안 됨" Foreground="Orange" VerticalAlignment="Center" Margin="6 0"
                                                    Visibility="{Binding DoorTableDirty, Converter={StaticResource BoolToVisibility}}" />

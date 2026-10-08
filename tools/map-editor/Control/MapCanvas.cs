@@ -1115,6 +1115,21 @@ namespace MapEditor.Control
                 menu.Items.Add(doorMenu);
             }
 
+            // The selected run when this cell is in it, otherwise this cell (widened to its door).
+            var editRange = editor.Selection.Contains((x, y)) ? editor.DoorEditRange() : null;
+            var doorEditLabel = editRange is (_, _, int width) ? $"문 편집 (선택한 {width}칸)..." : door != null ? $"문 {door.Model.Id} 편집..." : "문 편집 (이 칸)...";
+            var doorEdit = Item(doorEditLabel, () =>
+            {
+                if (editor.Selection.Contains((x, y)) == false)
+                {
+                    editor.ClearSelection();
+                    editor.ChangeSelection(new[] { (x, y) }, SelectMode.Replace);
+                }
+                editor.EditDoor();
+            }, editor.Selection.Contains((x, y)) == false || editRange != null);
+            doorEdit.InputGestureText = editor.ShortcutMap["EditDoor"].Text;
+            menu.Items.Add(doorEdit);
+
             var mobs = doc.Mobs.Where(m => m.Contains(x, y)).ToList();
             if (mobs.Count > 0)
             {
@@ -1123,8 +1138,7 @@ namespace MapEditor.Control
                     mobMenu.Items.Add(Item($"{mob.Mob} {mob.Name} ×{mob.Count} ({mob.Left}, {mob.Top})-({mob.Right}, {mob.Bottom})", () => editor.SelectEntity(mob, add: false)));
                 menu.Items.Add(mobMenu);
             }
-            if (npc != null || warp != null || door != null || mobs.Count > 0)
-                menu.Items.Add(new Separator());
+            menu.Items.Add(new Separator());
 
             menu.Items.Add(Item("NPC 추가...", () => editor.AddNpc(x, y)));
             menu.Items.Add(Item("워프 추가...", () => editor.AddWarp(x, y)));
@@ -1182,10 +1196,11 @@ namespace MapEditor.Control
                 editor.SelectRect(left, top, right, bottom, SelectMode.Replace);
                 editor.Copy();
             }));
-            menu.Items.Add(Item("문 정의 만들기 (한 행)", () =>
+            menu.Items.Add(Item("문 편집 (한 행)...", () =>
             {
+                editor.ClearSelection();
                 editor.ChangeSelection(cells, SelectMode.Replace);
-                editor.CreateDoorFromSelection();
+                editor.EditDoor();
             }, top == bottom));
             menu.Items.Add(new Separator());
 

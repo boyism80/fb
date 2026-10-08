@@ -136,6 +136,11 @@ namespace MapEditor.ViewModel
         /// </summary>
         public event Action<IssueTab> IssuesRequested;
 
+        /// <summary>
+        /// Open the door editor for width cells starting at (x, y).
+        /// </summary>
+        public event Action<int, int, int> DoorEditRequested;
+
         private readonly Dictionary<ClientVersion, ClientAssets> _assetCache = new Dictionary<ClientVersion, ClientAssets>();
         private SpawnTable _spawns;
         private (int X, int Y)? _hoverCell;
@@ -308,7 +313,7 @@ namespace MapEditor.ViewModel
         public RelayCommand ClearSelectionCommand { get; }
         public RelayCommand ToggleDoorCommand { get; }
         public RelayCommand DeleteDoorCommand { get; }
-        public RelayCommand CreateDoorFromSelectionCommand { get; }
+        public RelayCommand EditDoorCommand { get; }
         public RelayCommand AddDoorPairCommand { get; }
         public RelayCommand RemoveDoorPairCommand { get; }
         public RelayCommand AddDoorModelCommand { get; }
@@ -375,7 +380,7 @@ namespace MapEditor.ViewModel
             ClearSelectionCommand = new RelayCommand(_ => ClearSelection());
             ToggleDoorCommand = new RelayCommand(_ => ToggleDoor(SelectedMapDoor));
             DeleteDoorCommand = new RelayCommand(_ => DeleteDoor(SelectedMapDoor));
-            CreateDoorFromSelectionCommand = new RelayCommand(_ => CreateDoorFromSelection());
+            EditDoorCommand = new RelayCommand(_ => EditDoor());
             AddDoorPairCommand = new RelayCommand(_ => AddDoorPair());
             RemoveDoorPairCommand = new RelayCommand(_ =>
             {
@@ -459,6 +464,7 @@ namespace MapEditor.ViewModel
                 Shortcut("ToggleBlock", "편집", "블록 토글", "Ctrl+B", ToggleBlockSelection),
                 Shortcut("SelectAll", "편집", "전체 선택", "Ctrl+A", () => SelectAllCommand.Execute(null)),
                 Shortcut("ClearSelection", "편집", "선택 해제", "Escape", ClearSelection),
+                Shortcut("EditDoor", "편집", "문 편집 (한 행 선택)", "Ctrl+D", EditDoor),
                 Shortcut("NavigateBack", "이동", "뒤로 (이전에 보던 위치)", "Alt+Left, XButton1", () => NavigateBackCommand.Execute(null)),
                 Shortcut("NavigateForward", "이동", "앞으로", "Alt+Right, XButton2", () => NavigateForwardCommand.Execute(null)),
                 Shortcut("FindMap", "이동", "맵 검색", "Ctrl+P", () => MapSearchRequested?.Invoke()),
@@ -1778,39 +1784,122 @@ namespace MapEditor.ViewModel
         }
 
         /// <summary>
-        /// Makes a new door from a one-row selection: the current objects become the close objects.
-        /// Open objects start at 0 and are filled in the pair grid.
+        /// Cells the door editor works on: a one-row run of selected cells, widened to the whole doors it touches.
+        /// Null when the selection is not a single horizontal run (the server only finds doors along rows).
         /// </summary>
-        public void CreateDoorFromSelection()
+        public (int X, int Y, int Width)? DoorEditRange()
         {
             if (Document == null || Selection.Count == 0)
-                return;
+                return null;
 
             var y = Selection.First().Y;
             var xs = Selection.Select(c => c.X).OrderBy(x => x).ToList();
             if (Selection.Any(c => c.Y != y) || xs[^1] - xs[0] + 1 != xs.Count)
+                return null;
+
+            var left = xs[0];
+            var right = xs[^1];
+            foreach (var door in Document.Doors.Where(d => d.Y == y && d.X <= right && d.X + d.Width - 1 >= left))
             {
-                StatusText = "문 정의는 한 행에서 가로로 이어진 칸만 선택해야 합니다.";
-                return;
+                left = Math.Min(left, door.X);
+                right = Math.Max(right, door.X + door.Width - 1);
+            }
+            return (left, y, right - left + 1);
+        }
+
+        public void EditDoor()
+        {
+            if (DoorEditRange() is (int x, int y, int width))
+                DoorEditRequested?.Invoke(x, y, width);
+            else
+                StatusText = "문 편집: 한 행에서 가로로 이어진 칸(오브젝트)을 선택하세요.";
+        }
+
+        /// <summary>
+        /// Objects that door.xlsx already pairs with obj, most used first: the open objects when obj is a close
+        /// object (currentIsClosed), otherwise the close objects.
+        /// </summary>
+        public List<int> DoorPartners(int obj, bool currentIsClosed)
+        {
+            if (obj == 0)
+                return new List<int>();
+
+            return DoorTable.Pairs.Where(p => (currentIsClosed ? p.Close : p.Open) == obj)
+                            .Select(p => currentIsClosed ? p.Open : p.Close)
+                            .Where(o => o != obj)
+                            .GroupBy(o => o)
+                            .OrderByDescending(g => g.Count())
+                            .Select(g => g.Key)
+                            .Take(8)
+                            .ToList();
+        }
+
+        /// <summary>
+        /// Saves the door made of cells starting at (x, y). door_pair rows with the same open/close objects and a
+        /// door model with the same pairs are reused, so doors on other maps keep their definitions; missing ones
+        /// are added. With modify, that model's pairs are replaced instead (every map using it changes).
+        /// When the server rule would not find the model at (x, y), every change is rolled back (Saved = false) and
+        /// Found is the door that wins there instead, or null.
+        /// </summary>
+        public (DoorModel Model, MapDoor Found, bool Saved) ApplyDoorEdit(int x, int y, IReadOnlyList<(int Open, int Close)> cells, DoorModel modify)
+        {
+            var dirty = DoorTableDirty;
+            var selected = SelectedDoorModel;
+            var addedPairs = new List<DoorPair>();
+            var ids = new List<int>();
+            foreach (var (open, close) in cells)
+            {
+                var pair = DoorTable.Pairs.FirstOrDefault(p => p.Open == open && p.Close == close);
+                if (pair == null)
+                {
+                    pair = new DoorPair { Id = DoorTable.Pairs.Count == 0 ? 0 : DoorTable.Pairs.Max(p => p.Id) + 1, Open = open, Close = close };
+                    pair.PropertyChanged += (s, e) => DoorDefinitionsChanged();
+                    DoorTable.Pairs.Add(pair);
+                    addedPairs.Add(pair);
+                }
+                ids.Add(pair.Id);
             }
 
-            var model = new DoorModel { Id = DoorTable.Doors.Count == 0 ? 0 : DoorTable.Doors.Max(d => d.Id) + 1 };
-            foreach (var x in xs)
+            DoorModel model;
+            DoorModel addedModel = null;
+            var oldPairs = modify?.Pairs;
+            if (modify != null)
             {
-                var pair = new DoorPair
-                {
-                    Id = DoorTable.Pairs.Count == 0 ? 0 : DoorTable.Pairs.Max(p => p.Id) + 1,
-                    Close = Document.Get(x, y).Object,
-                };
-                pair.PropertyChanged += (s, e) => DoorDefinitionsChanged();
-                DoorTable.Pairs.Add(pair);
-                model.Pairs.Add(pair.Id);
+                modify.Pairs = ids;
+                model = modify;
             }
-            model.PropertyChanged += (s, e) => DoorDefinitionsChanged();
-            DoorTable.Doors.Add(model);
-            SelectedDoorModel = model;
+            else
+            {
+                model = DoorTable.Doors.FirstOrDefault(d => d.Pairs.SequenceEqual(ids));
+                if (model == null)
+                {
+                    model = new DoorModel { Id = DoorTable.Doors.Count == 0 ? 0 : DoorTable.Doors.Max(d => d.Id) + 1, Pairs = ids };
+                    model.PropertyChanged += (s, e) => DoorDefinitionsChanged();
+                    DoorTable.Doors.Add(model);
+                    addedModel = model;
+                }
+            }
             DoorDefinitionsChanged();
-            StatusText = $"문 {model.Id} 생성: 닫힘 오브젝트 {xs.Count}칸. door_pair 표에서 열림 오브젝트를 입력하세요.";
+
+            var found = Document?.Doors.FirstOrDefault(d => d.Y == y && d.X == x);
+            if (found?.Model == model)
+            {
+                SelectedDoorModel = model;
+                return (model, found, true);
+            }
+            else
+            {
+                if (modify != null)
+                    modify.Pairs = oldPairs;
+                if (addedModel != null)
+                    DoorTable.Doors.Remove(addedModel);
+                foreach (var pair in addedPairs)
+                    DoorTable.Pairs.Remove(pair);
+                DoorDefinitionsChanged();
+                DoorTableDirty = dirty;
+                SelectedDoorModel = selected;
+                return (model, found, false);
+            }
         }
 
         private void AddDoorPair()

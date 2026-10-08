@@ -22,12 +22,14 @@ namespace MapEditor
                     old.MapSearchRequested -= FocusMapSearch;
                     old.ShortcutEditorRequested -= EditShortcuts;
                     old.IssuesRequested -= ShowIssues;
+                    old.DoorEditRequested -= ShowDoorEdit;
                 }
                 if (e.NewValue is MainWindowViewModel editor)
                 {
                     editor.MapSearchRequested += FocusMapSearch;
                     editor.ShortcutEditorRequested += EditShortcuts;
                     editor.IssuesRequested += ShowIssues;
+                    editor.DoorEditRequested += ShowDoorEdit;
                 }
             };
         }
@@ -37,6 +39,19 @@ namespace MapEditor
         private IssuesWindow _issues;
         private DoorEditorWindow _doorEditor;
         private McpWindow _mcp;
+        private DoorEditWindow _doorEdit;
+
+        private void ShowDoorEdit(int x, int y, int width)
+        {
+            _doorEdit?.Close();
+            _doorEdit = new DoorEditWindow(this, Editor, x, y, width);
+            _doorEdit.Closed += (s, args) =>
+            {
+                if (ReferenceEquals(_doorEdit, s))
+                    _doorEdit = null;
+            };
+            _doorEdit.Show();
+        }
 
         private void ShowIssues(IssueTab tab)
         {

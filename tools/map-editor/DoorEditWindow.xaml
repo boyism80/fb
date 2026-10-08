@@ -1,0 +1,136 @@
+<Window x:Class="MapEditor.DoorEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="문 편집" SizeToContent="WidthAndHeight" MinWidth="460" MaxWidth="1400"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="CanMinimize"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <Window.Resources>
+        <Style x:Key="ColumnLabel" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{StaticResource SemiTextBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0 2" />
+        </Style>
+        <Style x:Key="RowLabel" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{StaticResource SemiTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Width" Value="76" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="10">
+        <TextBlock x:Name="Heading" FontWeight="Bold" FontSize="13" />
+        <TextBlock x:Name="CurrentInfo" Foreground="{StaticResource SemiTextBrush}" Margin="0 2 0 6" TextWrapping="Wrap" />
+
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+            <TextBlock Text="맵에 지금 놓인 오브젝트는" VerticalAlignment="Center" Margin="0 0 6 0" />
+            <RadioButton x:Name="CurrentClosed" Style="{StaticResource ToolButton}" GroupName="State" Content="닫힌 문" Checked="OnStateChanged" />
+            <RadioButton x:Name="CurrentOpened" Style="{StaticResource ToolButton}" GroupName="State" Content="열린 문" Checked="OnStateChanged" />
+            <TextBlock Text="← 아래 짝은 그 반대 상태" VerticalAlignment="Center" Margin="6 0" Foreground="{StaticResource SemiTextBrush}" />
+        </StackPanel>
+
+        <!-- One column per cell: the map's object on top, its partner below -->
+        <Border Background="{StaticResource PanelBrush}" Padding="6" CornerRadius="2">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource RowLabel}" Text="칸" Height="20" />
+                    <TextBlock Style="{StaticResource RowLabel}" x:Name="CurrentRowLabel" Text="현재 (닫힘)" Height="104" />
+                    <TextBlock Style="{StaticResource RowLabel}" Text="" Height="18" />
+                    <TextBlock Style="{StaticResource RowLabel}" x:Name="PartnerRowLabel" Text="짝 (열림)" Height="104" />
+                    <TextBlock Style="{StaticResource RowLabel}" Text="id" Height="28" />
+                </StackPanel>
+                <ItemsControl x:Name="Columns">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Width="88" Margin="2 0">
+                                <TextBlock Style="{StaticResource ColumnLabel}" Text="{Binding Header}" Height="20" />
+                                <Border Height="104" Background="{StaticResource InputBrush}" BorderBrush="{StaticResource ControlLightBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Image Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Bottom" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource ObjectThumbnail}">
+                                                    <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                    <Binding Path="Current" />
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
+                                        <TextBlock Text="{Binding Current, StringFormat=#{0}}" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2" Background="#a0000000" />
+                                    </Grid>
+                                </Border>
+                                <TextBlock Text="↕" HorizontalAlignment="Center" Height="18" Foreground="{StaticResource SemiTextBrush}" />
+                                <Button Height="104" Padding="0" Margin="0" Click="OnSlotClick" ToolTip="클릭: 추천 / 팔레트 선택값 / 인접 id 중에서 고르기">
+                                    <Button.Style>
+                                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                                            <Setter Property="Background" Value="{StaticResource InputBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Empty}" Value="True">
+                                                    <Setter Property="Background" Value="#4a2a10" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Fixed}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.45" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Grid Width="86" Height="102">
+                                        <Image Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Bottom" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource ObjectThumbnail}">
+                                                    <Binding Path="DataContext.Assets" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                    <Binding Path="Partner" />
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
+                                        <TextBlock Text="{Binding PartnerLabel}" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2" Background="#a0000000" />
+                                        <TextBlock Text="변하지 않음&#x0a;클릭해서 짝 선택" TextAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center" Background="#c0000000" Padding="2"
+                                                   Visibility="{Binding Fixed, Converter={StaticResource BoolToVisibility}}" />
+                                    </Grid>
+                                </Button>
+                                <TextBox Text="{Binding Partner, UpdateSourceTrigger=PropertyChanged}" Height="24" Margin="0 4 0 0" HorizontalContentAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- The two shapes the server toggles between, drawn in place like the map -->
+        <StackPanel Margin="0 8 0 0">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="미리보기" VerticalAlignment="Center" Margin="0 0 12 0" />
+                <CheckBox x:Name="PreviewOpened" Content="열린 상태로 보기" Checked="OnPreviewChanged" Unchecked="OnPreviewChanged" VerticalAlignment="Center" />
+                <TextBlock x:Name="PreviewState" Margin="12 0 0 0" VerticalAlignment="Center" />
+            </StackPanel>
+            <Border Background="{StaticResource InputBrush}" Margin="0 4 0 0" Padding="8" HorizontalAlignment="Left">
+                <Image x:Name="Preview" Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="110" MaxWidth="450"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor" HorizontalAlignment="Left">
+                    <Image.LayoutTransform>
+                        <ScaleTransform ScaleX="2" ScaleY="2" />
+                    </Image.LayoutTransform>
+                </Image>
+            </Border>
+        </StackPanel>
+
+        <CheckBox x:Name="ModifyExisting" Margin="0 8 0 0" Visibility="Collapsed" />
+        <TextBlock x:Name="Message" TextWrapping="Wrap" Margin="0 6 0 0" MaxWidth="900" HorizontalAlignment="Left" />
+
+        <DockPanel Margin="0 8 0 0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="적용" Click="OnApply" IsDefault="True" ToolTip="door_pair / door를 door.xlsx 표에 반영 (저장은 door.xlsx 저장)" />
+                <Button x:Name="ToggleButton" Content="맵에서 열고 닫아 보기" Click="OnToggle" IsEnabled="False" ToolTip="적용한 문을 맵에서 열림/닫힘 전환 (실행 취소 가능)" />
+                <Button Content="door.xlsx 저장" Command="{Binding SaveDoorTableCommand}" />
+                <Button Content="닫기" IsCancel="True" Click="OnClose" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="고정 칸을 추천값으로 채우기" Click="OnFillSuggestions" />
+                <Button Content="팔레트 선택값부터 차례로 채우기" Click="OnFillPalette" ToolTip="오른쪽 팔레트에서 고른 오브젝트부터 차례로 (id, id+1, ...)" />
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</Window>

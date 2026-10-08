@@ -67,6 +67,46 @@ namespace MapEditor.Asset
             return bitmap;
         }
 
+        /// <summary>
+        /// Objects placed side by side on one map row, drawn the way the map draws them (not cached).
+        /// </summary>
+        public static BitmapSource Row(ClientAssets assets, IReadOnlyList<int> ids)
+        {
+            var cell = assets.CellPixels;
+            var minX = 0;
+            var minY = 0;
+            var maxX = cell * ids.Count;
+            var maxY = cell;
+            for (int i = 0; i < ids.Count; i++)
+            {
+                var sobj = assets.Objects.Find(ids[i]);
+                if (sobj == null)
+                    continue;
+
+                for (int k = 0; k < sobj.Frames.Length; k++)
+                {
+                    var frame = assets.ObjectFrame(sobj.Frames[k]);
+                    if (frame == null)
+                        continue;
+
+                    minX = Math.Min(minX, i * cell + frame.Left);
+                    minY = Math.Min(minY, frame.Top - k * cell);
+                    maxX = Math.Max(maxX, i * cell + frame.Left + frame.Width);
+                    maxY = Math.Max(maxY, frame.Top - k * cell + frame.Height);
+                }
+            }
+
+            var width = maxX - minX;
+            var height = maxY - minY;
+            var pixels = new uint[width * height];
+            for (int i = 0; i < ids.Count; i++)
+            {
+                if (ids[i] != 0)
+                    assets.DrawObject(pixels, width, height, i * cell - minX, -minY, ids[i]);
+            }
+            return Create(assets, width, height, pixels);
+        }
+
         public static BitmapSource Monster(ClientAssets assets, int look, int color, int direction)
         {
             var cache = _monsters.GetOrCreateValue(assets);
