@@ -1,10 +1,19 @@
+using System.ComponentModel;
 using MapEditor.Format;
 using MapEditor.Table;
 
 namespace MapEditor.Edit
 {
-    public class WarpIssue
+    public class WarpIssue : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Checked for deletion in the issue list. Only issues of the open map can be checked (see InOpenMap).
+        /// </summary>
+        public bool Checked { get; set; }
+        public bool InOpenMap { get; set; }
+
         public int MapId { get; init; }
         public string MapName { get; init; } = "";
         public int X { get; init; }

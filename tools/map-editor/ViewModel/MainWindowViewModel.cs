@@ -60,6 +60,12 @@ namespace MapEditor.ViewModel
         public string Label => $"{Id:000000} {Name}";
     }
 
+    public enum IssueTab
+    {
+        Warps,
+        Validation,
+    }
+
     public class ValidationItem
     {
         public int X { get; init; }
@@ -124,6 +130,11 @@ namespace MapEditor.ViewModel
 
         public event Action MapSearchRequested;
         public event Action ShortcutEditorRequested;
+
+        /// <summary>
+        /// Show the issue window on a tab (validation or warp check started from the menu or a shortcut).
+        /// </summary>
+        public event Action<IssueTab> IssuesRequested;
 
         private readonly Dictionary<ClientVersion, ClientAssets> _assetCache = new Dictionary<ClientVersion, ClientAssets>();
         private SpawnTable _spawns;
@@ -233,6 +244,7 @@ namespace MapEditor.ViewModel
         public HashSet<(int X, int Y)> Selection { get; } = new HashSet<(int X, int Y)>();
         public HashSet<Entity> SelectedEntities { get; } = new HashSet<Entity>();
         public string SelectionText { get; private set; } = "선택 없음";
+        public bool HasSelection { get; private set; }
         public ClipboardContent Clipboard { get; private set; }
 
         public string HoverText { get; private set; } = "";
@@ -319,6 +331,7 @@ namespace MapEditor.ViewModel
         public RelayCommand NavigateForwardCommand { get; }
         public RelayCommand<string> CheckWarpsCommand { get; }
         public RelayCommand<WarpIssue> FocusWarpIssueCommand { get; }
+        public RelayCommand DeleteCheckedWarpsCommand { get; }
         public RelayCommand ShortcutEditorCommand { get; }
 
         public MainWindowViewModel(AppSettings settings, UserSettings user)
@@ -404,7 +417,11 @@ namespace MapEditor.ViewModel
             OpenWarpDestinationCommand = new RelayCommand(_ => _ = OpenWarpDestination(SelectedWarp));
             DeleteEntityCommand = new RelayCommand(_ => RemoveEntity(SelectedEntity));
             FocusEntityCommand = new RelayCommand(_ => FocusEntity(SelectedEntity));
-            ValidateCommand = new RelayCommand(_ => Validate());
+            ValidateCommand = new RelayCommand(_ =>
+            {
+                Validate();
+                IssuesRequested?.Invoke(IssueTab.Validation);
+            });
             FocusValidationCommand = new RelayCommand<ValidationItem>(item =>
             {
                 if (item != null)
@@ -418,8 +435,13 @@ namespace MapEditor.ViewModel
             ExitCommand = new RelayCommand(_ => Application.Current.MainWindow?.Close());
             NavigateBackCommand = new RelayCommand(_ => _ = Navigate(back: true));
             NavigateForwardCommand = new RelayCommand(_ => _ = Navigate(back: false));
-            CheckWarpsCommand = new RelayCommand<string>(scope => _ = CheckWarps(all: scope == "all"));
+            CheckWarpsCommand = new RelayCommand<string>(scope =>
+            {
+                IssuesRequested?.Invoke(IssueTab.Warps);
+                _ = CheckWarps(all: scope == "all");
+            });
             FocusWarpIssueCommand = new RelayCommand<WarpIssue>(issue => _ = FocusWarpIssue(issue));
+            DeleteCheckedWarpsCommand = new RelayCommand(_ => DeleteCheckedWarps());
             ShortcutEditorCommand = new RelayCommand(_ => ShortcutEditorRequested?.Invoke());
 
             ShortcutAction Shortcut(string id, string category, string label, string defaults, Action execute)
@@ -460,9 +482,9 @@ namespace MapEditor.ViewModel
                 Shortcut("LayerTile", "도구", "편집 레이어: 타일", "1", () => Layer = EditLayer.Tile),
                 Shortcut("LayerObject", "도구", "편집 레이어: 오브젝트", "2", () => Layer = EditLayer.Object),
                 Shortcut("LayerBlock", "도구", "편집 레이어: 블록", "3", () => Layer = EditLayer.Block),
-                Shortcut("Validate", "검사", "검증 실행", "F5", () => Validate()),
-                Shortcut("CheckWarps", "검사", "현재 맵 워프 검사", "F6", () => _ = CheckWarps(all: false)),
-                Shortcut("CheckAllWarps", "검사", "전체 맵 워프 검사", "Shift+F6", () => _ = CheckWarps(all: true)),
+                Shortcut("Validate", "검사", "검증 실행", "F5", () => ValidateCommand.Execute(null)),
+                Shortcut("CheckWarps", "검사", "현재 맵 워프 검사", "F6", () => CheckWarpsCommand.Execute("map")),
+                Shortcut("CheckAllWarps", "검사", "전체 맵 워프 검사", "Shift+F6", () => CheckWarpsCommand.Execute("all")),
                 Shortcut("ShortcutEditor", "설정", "단축키 설정", "Ctrl+OemComma", () => ShortcutEditorRequested?.Invoke()),
             };
             foreach (var shortcut in Shortcuts)
@@ -1334,6 +1356,7 @@ namespace MapEditor.ViewModel
 
         private void UpdateSelectionText()
         {
+            HasSelection = Document != null && (Selection.Count > 0 || SelectedEntities.Count > 0);
             if (Document == null || (Selection.Count == 0 && SelectedEntities.Count == 0))
             {
                 SelectionText = "선택 없음";
@@ -1982,13 +2005,10 @@ namespace MapEditor.ViewModel
             StatusText = "워프 검사: 시트 읽는 중...";
             try
             {
-                var warps = _spawns.ReadAllWarps();
-                var npcs = _spawns.ReadAllNpcs();
+                // The open map is checked with its unsaved edits, so copy it here on the UI thread.
                 WarpCheckMap current = null;
                 if (Document != null)
                 {
-                    warps[Document.Id] = Document.Warps.ToList();
-                    npcs[Document.Id] = Document.Npcs.ToList();
                     var copy = new ServerMap(Document.Width, Document.Height);
                     Array.Copy(Document.Map.Tiles, copy.Tiles, copy.Tiles.Length);
                     Array.Copy(Document.Map.Objects, copy.Objects, copy.Objects.Length);
@@ -2001,29 +2021,39 @@ namespace MapEditor.ViewModel
                         Objects = Assets.Objects,
                         DoorCells = Document.Doors.SelectMany(d => Enumerable.Range(d.X, d.Width).Select(x => (x, d.Y))).ToHashSet(),
                         NpcCells = Document.Npcs.Select(n => (n.X, n.Y)).ToHashSet(),
-                        Warps = warps[Document.Id],
+                        Warps = Document.Warps.ToList(),
                     };
                 }
 
-                var arrivals = new Dictionary<int, List<(int X, int Y)>>();
-                foreach (var warp in warps.Values.SelectMany(w => w))
-                {
-                    if (warp.DestMap is int id && warp.DestX is int x && warp.DestY is int y)
-                    {
-                        if (arrivals.TryGetValue(id, out var list) == false)
-                            arrivals[id] = list = new List<(int X, int Y)>();
-                        list.Add((x, y));
-                    }
-                }
-
-                var ids = all ? warps.Where(w => w.Value.Count > 0).Select(w => w.Key).OrderBy(id => id).ToList() : new List<int> { Document.Id };
+                var openNpcs = Document?.Npcs.ToList();
                 var directory = Settings.MapDirectory;
                 var objects = Assets.Objects;
                 var doors = DoorTable;
                 var names = _spawns.MapNames;
+                var spawns = _spawns;
                 var progress = new Progress<string>(text => StatusText = text);
-                var issues = await Task.Run(() =>
+                var (issues, checkedCount) = await Task.Run(() =>
                 {
+                    var warps = spawns.ReadAllWarps();
+                    var npcs = spawns.ReadAllNpcs();
+                    if (current != null)
+                    {
+                        warps[current.Id] = current.Warps;
+                        npcs[current.Id] = openNpcs;
+                    }
+
+                    var arrivals = new Dictionary<int, List<(int X, int Y)>>();
+                    foreach (var warp in warps.Values.SelectMany(w => w))
+                    {
+                        if (warp.DestMap is int id && warp.DestX is int x && warp.DestY is int y)
+                        {
+                            if (arrivals.TryGetValue(id, out var list) == false)
+                                arrivals[id] = list = new List<(int X, int Y)>();
+                            list.Add((x, y));
+                        }
+                    }
+
+                    var ids = all ? warps.Where(w => w.Value.Count > 0).Select(w => w.Key).OrderBy(id => id).ToList() : new List<int> { current.Id };
                     var loaded = new Dictionary<int, WarpCheckMap>();
                     WarpCheckMap Load(int id)
                     {
@@ -2067,12 +2097,16 @@ namespace MapEditor.ViewModel
                         var mapArrivals = arrivals.TryGetValue(map.Id, out var list) ? list : new List<(int X, int Y)>();
                         result.AddRange(map.Check(mapArrivals, Load, names.Find));
                     }
-                    return result;
+                    var sorted = result.OrderBy(i => i.Certain ? 0 : 1).ThenBy(i => i.MapId).ThenBy(i => i.Y).ThenBy(i => i.X).ToList();
+                    return (sorted, ids.Count);
                 });
 
-                foreach (var issue in issues.OrderBy(i => i.Certain ? 0 : 1).ThenBy(i => i.MapId).ThenBy(i => i.Y).ThenBy(i => i.X).Take(5000))
+                foreach (var issue in issues.Take(5000))
+                {
+                    issue.InOpenMap = issue.MapId == Document?.Id;
                     WarpIssues.Add(issue);
-                StatusText = $"워프 검사 ({(all ? $"맵 {ids.Count}개" : Document.Title)}): 확실 {issues.Count(i => i.Certain)}건, 의심 {issues.Count(i => i.Certain == false)}건";
+                }
+                StatusText = $"워프 검사 ({(all ? $"맵 {checkedCount}개" : current?.Name)}): 확실 {issues.Count(i => i.Certain)}건, 의심 {issues.Count(i => i.Certain == false)}건";
             }
             catch (Exception e)
             {
@@ -2113,6 +2147,51 @@ namespace MapEditor.ViewModel
             var warp = WarpAt(issue.X, issue.Y);
             if (warp != null)
                 SelectEntity(warp, add: false);
+        }
+
+        /// <summary>
+        /// Called by PropertyChanged.Fody: only issues of the open map can be checked for deletion.
+        /// </summary>
+        private void OnDocumentChanged()
+        {
+            foreach (var issue in WarpIssues)
+            {
+                issue.InOpenMap = issue.MapId == Document?.Id;
+                if (issue.InOpenMap == false)
+                    issue.Checked = false;
+            }
+        }
+
+        /// <summary>
+        /// Removes the warps of the checked issues from the open map as one undo step and drops those issues.
+        /// </summary>
+        public void DeleteCheckedWarps()
+        {
+            if (Document == null)
+                return;
+
+            var issues = WarpIssues.Where(i => i.Checked && i.MapId == Document.Id).ToList();
+            if (issues.Count == 0)
+            {
+                StatusText = "삭제할 워프를 체크하세요. 현재 열린 맵의 항목만 체크할 수 있습니다.";
+                return;
+            }
+
+            var warps = issues.SelectMany(i => Document.Warps.Where(w => w.X == i.X && w.Y == i.Y && w.Dest == i.Dest)).Distinct().ToList();
+            using (Document.Group())
+            {
+                foreach (var warp in warps)
+                    Document.Warps.Remove(warp);
+            }
+            foreach (var warp in warps)
+                SelectedEntities.Remove(warp);
+            if (SelectedEntity is WarpEntry selected && warps.Contains(selected))
+                SelectedEntity = null;
+            foreach (var issue in WarpIssues.Where(i => i.MapId == Document.Id && warps.Any(w => w.X == i.X && w.Y == i.Y && w.Dest == i.Dest)).ToList())
+                WarpIssues.Remove(issue);
+            UpdateSelectionText();
+            OverlayInvalidated?.Invoke();
+            StatusText = $"워프 {warps.Count}개 삭제 (실행 취소 가능)";
         }
 
         public List<ValidationItem> Validate()

@@ -1,0 +1,64 @@
+<Window x:Class="MapEditor.IssuesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="문제 검사" Width="760" Height="560" MinWidth="480" MinHeight="300"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <TabControl x:Name="Tabs" Margin="4">
+        <TabItem x:Name="WarpTab" Header="워프 검사">
+            <DockPanel Margin="4">
+                <StackPanel DockPanel.Dock="Top">
+                    <WrapPanel>
+                        <Button Content="현재 맵 검사" Command="{Binding CheckWarpsCommand}" CommandParameter="map" />
+                        <Button Content="전체 맵 검사" Command="{Binding CheckWarpsCommand}" CommandParameter="all" />
+                        <TextBlock Text="검사 중..." Foreground="Orange" VerticalAlignment="Center" Margin="6 0"
+                                   Visibility="{Binding CheckingWarps, Converter={StaticResource BoolToVisibility}}" />
+                        <CheckBox x:Name="OpenMapOnly" Content="현재 맵 항목만" VerticalAlignment="Center" Margin="12 0 0 0"
+                                  Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+                        <CheckBox x:Name="CertainOnly" Content="확실만" VerticalAlignment="Center"
+                                  Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+                    </WrapPanel>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SemiTextBrush}" Margin="4 2"
+                               Text="확실: 워프 칸이 막힘/NPC, 들어갈 인접 칸 없음, 목적지 맵·좌표 오류. 의심: 다른 맵에서 오는 도착 지점에서 걸어서 못 감, 목적지 칸이 막힘 (스크립트·로그인 위치는 모름). 행 클릭: 그 맵과 워프로 이동. 현재 열린 맵의 항목만 체크해서 삭제할 수 있습니다." />
+                </StackPanel>
+                <WrapPanel DockPanel.Dock="Bottom">
+                    <Button Content="현재 맵 항목 모두 체크" Click="OnCheckAll" />
+                    <Button Content="체크 해제" Click="OnUncheckAll" />
+                    <Button Content="체크한 워프 삭제" Command="{Binding DeleteCheckedWarpsCommand}" />
+                    <TextBlock x:Name="WarpCount" VerticalAlignment="Center" Margin="8 0" Foreground="{StaticResource SemiTextBrush}" />
+                </WrapPanel>
+                <DataGrid x:Name="WarpGrid" ItemsSource="{Binding WarpIssues}" VirtualizingPanel.IsVirtualizing="True"
+                          CanUserDeleteRows="False" PreviewMouseLeftButtonUp="OnWarpIssueClick">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Width="28">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding Checked, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding InOpenMap}"
+                                              Margin="4 0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="구분" Binding="{Binding Severity}" Width="36" IsReadOnly="True" />
+                        <DataGridTextColumn Header="맵" Binding="{Binding MapLabel}" Width="130" IsReadOnly="True" />
+                        <DataGridTextColumn Header="x" Binding="{Binding X}" Width="36" IsReadOnly="True" />
+                        <DataGridTextColumn Header="y" Binding="{Binding Y}" Width="36" IsReadOnly="True" />
+                        <DataGridTextColumn Header="목적지" Binding="{Binding DestLabel}" Width="160" IsReadOnly="True" />
+                        <DataGridTextColumn Header="문제" Binding="{Binding Message}" Width="*" IsReadOnly="True" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+        <TabItem x:Name="ValidationTab" Header="맵 검증">
+            <DockPanel Margin="4">
+                <WrapPanel DockPanel.Dock="Top">
+                    <Button Content="검증 실행" Command="{Binding ValidateCommand}" />
+                    <TextBlock Text="현재 맵의 NPC·몹·워프·블록 위치, 리소스 범위 밖 타일/오브젝트, 문 정의를 검사합니다. 더블클릭: 그 좌표로 이동."
+                               Foreground="{StaticResource SemiTextBrush}" VerticalAlignment="Center" Margin="6 0" TextWrapping="Wrap" />
+                </WrapPanel>
+                <ListBox ItemsSource="{Binding Validation}" DisplayMemberPath="Label" VirtualizingPanel.IsVirtualizing="True"
+                         MouseDoubleClick="OnValidationDoubleClick" />
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</Window>

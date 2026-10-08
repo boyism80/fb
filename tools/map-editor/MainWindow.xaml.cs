@@ -21,24 +21,72 @@ namespace MapEditor
                 {
                     old.MapSearchRequested -= FocusMapSearch;
                     old.ShortcutEditorRequested -= EditShortcuts;
-                    old.PropertyChanged -= OnEditorPropertyChanged;
+                    old.IssuesRequested -= ShowIssues;
                 }
                 if (e.NewValue is MainWindowViewModel editor)
                 {
                     editor.MapSearchRequested += FocusMapSearch;
                     editor.ShortcutEditorRequested += EditShortcuts;
-                    editor.PropertyChanged += OnEditorPropertyChanged;
+                    editor.IssuesRequested += ShowIssues;
                 }
             };
         }
 
-        private void OnEditorPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private MainWindowViewModel Editor => (MainWindowViewModel)DataContext;
+
+        private IssuesWindow _issues;
+        private DoorEditorWindow _doorEditor;
+        private McpWindow _mcp;
+
+        private void ShowIssues(IssueTab tab)
         {
-            if (e.PropertyName == nameof(MainWindowViewModel.CheckingWarps) && Editor.CheckingWarps)
-                WarpCheckTab.IsSelected = true;
+            if (_issues == null)
+            {
+                _issues = new IssuesWindow(this, Editor);
+                _issues.Closed += (s, e) => _issues = null;
+            }
+            _issues.ShowTab(tab);
         }
 
-        private MainWindowViewModel Editor => (MainWindowViewModel)DataContext;
+        private void OnIssues(object sender, RoutedEventArgs e)
+        {
+            ShowIssues(IssueTab.Warps);
+        }
+
+        private void OnDoorEditor(object sender, RoutedEventArgs e)
+        {
+            if (_doorEditor == null)
+            {
+                _doorEditor = new DoorEditorWindow(this, Editor);
+                _doorEditor.Closed += (s, args) => _doorEditor = null;
+                _doorEditor.Show();
+            }
+            _doorEditor.Activate();
+        }
+
+        private void OnMcp(object sender, RoutedEventArgs e)
+        {
+            if (_mcp == null)
+            {
+                _mcp = new McpWindow(this, Editor);
+                _mcp.Closed += (s, args) => _mcp = null;
+                _mcp.Show();
+            }
+            _mcp.Activate();
+        }
+
+        /// <summary>
+        /// Enter in a palette id box commits the id so the palette scrolls to it.
+        /// </summary>
+        private void OnIdBoxKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && sender is TextBox box)
+            {
+                box.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+                box.SelectAll();
+                e.Handled = true;
+            }
+        }
 
         /// <summary>
         /// Keys no control handled go to the user's shortcuts. Gestures without Ctrl/Alt are left to a focused text box.
@@ -121,12 +169,6 @@ namespace MapEditor
                 Editor.Jump(door.X, door.Y);
         }
 
-        private void OnWarpIssueClick(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is DataGrid grid && grid.SelectedItem is WarpIssue issue)
-                _ = Editor.FocusWarpIssue(issue);
-        }
-
         private void OnNpcDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Editor.FocusEntity(Editor.SelectedNpc);
@@ -142,27 +184,24 @@ namespace MapEditor
             Editor.FocusEntity(Editor.SelectedWarp);
         }
 
-        private void OnValidationDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is ListBox list && list.SelectedItem is ValidationItem item)
-                Editor.Jump(item.X, item.Y);
-        }
-
         private void OnHelp(object sender, RoutedEventArgs e)
         {
             var shortcuts = string.Join("\n", Editor.Shortcuts.Where(s => s.Text != "").Select(s => $"  {s.Label}: {s.Text}"));
             MessageBox.Show(
                 "선택 / 이동 도구\n" +
-                "  좌클릭 끌기: NPC, 워프, 오브젝트, 몹 영역 테두리, 선택 영역을 이동\n" +
+                "  클릭: NPC, 워프, 몹 영역 테두리를 선택. 그 밖에는 그 칸을 선택\n" +
+                "  선택한 것(칸, NPC, 워프, 몹 영역) 위에서 끌기: 이동\n" +
+                "  그 밖의 곳에서 끌기: 영역 선택 (안의 오브젝트, NPC, 워프, 몹 영역 포함). 오브젝트가 있어도 영역 선택\n" +
+                "  Alt + 끌기: 선택하지 않은 것도 바로 집어서 이동. 키 큰 오브젝트는 그림 위치로 잡힘 (밑동 칸)\n" +
                 "  선택한 몹 영역의 꼭짓점 끌기: 영역 크기 조절\n" +
-                "  빈 곳 끌기: 영역 선택 (안의 오브젝트, NPC, 워프, 몹 영역 포함)\n" +
                 "  Ctrl + 클릭: 그 항목을 선택에 추가 / 빼기\n" +
                 "  Shift 또는 Ctrl + 끌기: 영역 추가, Ctrl + Shift + 끌기: 영역 제외\n" +
                 "  더블클릭: 현재 레이어에서 같은 값 전체 선택\n" +
-                "  클릭은 항상 그 칸을 선택. Alt + 클릭: 위로 뻗은 키 큰 오브젝트를 그림 위치로 잡기 (밑동 칸 선택)\n" +
                 "  방향키: 선택을 한 칸 이동\n\n" +
                 "우클릭: 그 칸의 작업 메뉴 (NPC/워프/몹 추가, 블록, 스포이트, 문 등)\n" +
-                "우클릭 끌기: 영역 작업 메뉴 (몹 스폰 추가, 블록 설정/해제, 채우기 등)\n" +
+                "우클릭 끌기: 영역 작업 메뉴 (몹 스폰 추가, 블록 설정/해제, 채우기 등). 메뉴가 열린 동안 대상 영역 표시\n" +
+                "맵 → 문제 검사 창: 워프 검사(현재 맵 항목은 체크해서 삭제)와 맵 검증\n" +
+                "맵 → 문 정의 편집기: door / door_pair 표 편집과 door.xlsx 저장\n" +
                 "가운데 버튼 끌기 또는 Space + 끌기: 화면 이동\n" +
                 "Ctrl + 휠: 확대 / 축소, Shift + 휠: 가로 스크롤\n" +
                 "미니맵 클릭 / 끌기: 그 위치로 화면 이동\n" +

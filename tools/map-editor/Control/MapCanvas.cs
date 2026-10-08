@@ -54,6 +54,8 @@ namespace MapEditor.Control
         private (int X, int Y) _dragStart;
         private SelectMode _dragMode;
         private bool _toggleClick;
+        private Int32Rect? _contextArea;
+        private bool _altClicked;
         private MobSpawn _resizeMob;
         private (int X, int Y) _resizeCorner;
         private (int X, int Y) _lastStroke;
@@ -68,6 +70,8 @@ namespace MapEditor.Control
         private static readonly Brush CollisionBrush = Freeze(new SolidColorBrush(Color.FromArgb(90, 255, 160, 0)));
         private static readonly Brush EdgeBrush = Freeze(new SolidColorBrush(Color.FromArgb(230, 255, 160, 0)));
         private static readonly Brush SelectionBrush = Freeze(new SolidColorBrush(Color.FromArgb(90, 0, 155, 255)));
+        private static readonly Brush ContextAreaBrush = Freeze(new SolidColorBrush(Color.FromArgb(60, 0x00, 0x9b, 0xff)));
+        private static readonly Pen ContextAreaPen = Freeze(new Pen(new SolidColorBrush(Color.FromRgb(0x00, 0x9b, 0xff)), 2));
         private static readonly Brush GhostBrush = Freeze(new SolidColorBrush(Color.FromArgb(70, 255, 255, 255)));
         private static readonly Brush LabelBackBrush = Freeze(new SolidColorBrush(Color.FromArgb(160, 0, 0, 0)));
         private static readonly Pen MapBorderPen = Freeze(new Pen(new SolidColorBrush(Color.FromRgb(0x42, 0x45, 0x4e)), 1));
@@ -566,6 +570,10 @@ namespace MapEditor.Control
                 var (sx, sy) = _drag == DragKind.ResizeMob ? OppositeCorner(_resizeMob, _resizeCorner) : _dragStart;
                 dc.DrawRectangle(null, DragPen, CellRect(Math.Min(sx, ex), Math.Min(sy, ey), Math.Abs(ex - sx) + 1, Math.Abs(ey - sy) + 1));
             }
+
+            // The cells a context menu acts on stay marked until the menu closes.
+            if (_contextArea is Int32Rect area)
+                dc.DrawRectangle(ContextAreaBrush, ContextAreaPen, CellRect(area.X, area.Y, area.Width, area.Height));
         }
 
         /// <summary>
@@ -783,14 +791,18 @@ namespace MapEditor.Control
         }
 
         /// <summary>
-        /// Select tool press: grab what is under the cursor to move it, or start a rubber band.
+        /// Select tool press. Without modifiers, dragging something already selected moves it and any other drag is
+        /// a rubber band; a click without dragging selects what is under the cursor (see OnMouseUp).
+        /// Alt grabs what is under the cursor and moves it at once, tall objects by their picture.
         /// Shift/Ctrl start a rubber band that adds, Ctrl+Shift one that removes. A Ctrl click without dragging
-        /// toggles the thing under the cursor instead (see OnMouseUp).
+        /// toggles the thing under the cursor instead.
         /// </summary>
         private void BeginSelectDrag(MainWindowViewModel editor, int x, int y, (double X, double Y) point)
         {
-            _dragMode = ModifierMode();
-            _toggleClick = Keyboard.Modifiers == ModifierKeys.Control;
+            var modifiers = Keyboard.Modifiers;
+            _altClicked = modifiers == ModifierKeys.Alt;
+            _dragMode = modifiers == ModifierKeys.Alt ? SelectMode.Replace : ModifierMode();
+            _toggleClick = modifiers == ModifierKeys.Control;
             if (_dragMode != SelectMode.Replace)
             {
                 _drag = DragKind.RubberBand;
@@ -807,32 +819,34 @@ namespace MapEditor.Control
             }
 
             Entity entity = (editor.ShowNpcs ? editor.NpcAt(x, y) : null) ?? (Entity)(editor.ShowWarps ? editor.WarpAt(x, y) : null);
-            var objectCell = ClickedObjectCell(editor, x, y, point);
-            if (entity != null)
+            entity ??= editor.ShowMobs ? MobAt(editor, x, y) : null;
+            if (modifiers == ModifierKeys.Alt)
             {
-                if (editor.SelectedEntities.Contains(entity) == false)
-                    editor.SelectEntity(entity, add: false);
-                _drag = DragKind.Move;
-            }
-            else if (editor.Selection.Contains((x, y)) || (objectCell is (int ox, int oy) && editor.Selection.Contains((ox, oy))))
-            {
-                _drag = DragKind.Move;
-            }
-            else if (objectCell is (int cx, int cy))
-            {
-                editor.ClearSelection();
-                editor.ChangeSelection(new[] { (cx, cy) }, SelectMode.Replace);
-                _drag = DragKind.Move;
-            }
-            else if (editor.ShowMobs && MobAt(editor, x, y) is MobSpawn hit)
-            {
-                if (editor.SelectedEntities.Contains(hit) == false)
-                    editor.SelectEntity(hit, add: false);
-                _drag = DragKind.Move;
+                var objectCell = ClickedObjectCell(editor, x, y, point);
+                if (entity != null)
+                {
+                    if (editor.SelectedEntities.Contains(entity) == false)
+                        editor.SelectEntity(entity, add: false);
+                    _drag = DragKind.Move;
+                }
+                else if (objectCell is (int cx, int cy))
+                {
+                    if (editor.Selection.Contains((cx, cy)) == false)
+                    {
+                        editor.ClearSelection();
+                        editor.ChangeSelection(new[] { (cx, cy) }, SelectMode.Replace);
+                    }
+                    _drag = DragKind.Move;
+                }
+                else
+                {
+                    _drag = DragKind.RubberBand;
+                }
             }
             else
             {
-                _drag = DragKind.RubberBand;
+                var grabbed = (entity != null && editor.SelectedEntities.Contains(entity)) || editor.Selection.Contains((x, y));
+                _drag = grabbed ? DragKind.Move : DragKind.RubberBand;
             }
         }
 
@@ -925,6 +939,15 @@ namespace MapEditor.Control
                 else
                     editor.ToggleCell(objectCell ?? (x, y));
             }
+            else if (drag == DragKind.RubberBand && _dragMode == SelectMode.Replace && (sx, sy) == (x, y))
+            {
+                Entity entity = (editor.ShowNpcs ? editor.NpcAt(x, y) : null) ?? (Entity)(editor.ShowWarps ? editor.WarpAt(x, y) : null);
+                entity ??= editor.ShowMobs ? MobAt(editor, x, y) : null;
+                if (entity != null)
+                    editor.SelectEntity(entity, add: false);
+                else
+                    editor.SelectRect(sx, sy, x, y, _dragMode);
+            }
             else if (drag == DragKind.RubberBand)
             {
                 editor.SelectRect(sx, sy, x, y, _dragMode);
@@ -952,6 +975,12 @@ namespace MapEditor.Control
             else if (drag == DragKind.ContextArea)
             {
                 var menu = (sx, sy) == (x, y) ? PointMenu(editor, x, y) : AreaMenu(editor, sx, sy, x, y);
+                _contextArea = new Int32Rect(Math.Min(sx, x), Math.Min(sy, y), Math.Abs(x - sx) + 1, Math.Abs(y - sy) + 1);
+                menu.Closed += (_, _) =>
+                {
+                    _contextArea = null;
+                    InvalidateVisual();
+                };
                 menu.PlacementTarget = this;
                 menu.Placement = PlacementMode.MousePoint;
                 menu.IsOpen = true;
@@ -1006,6 +1035,12 @@ namespace MapEditor.Control
             {
                 _spaceDown = false;
                 Cursor = null;
+                e.Handled = true;
+            }
+            else if (_altClicked && e.Key == Key.System && (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt))
+            {
+                // Releasing Alt after an Alt+click would otherwise move focus to the menu bar.
+                _altClicked = false;
                 e.Handled = true;
             }
         }
