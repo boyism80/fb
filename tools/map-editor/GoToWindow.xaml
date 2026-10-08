@@ -1,0 +1,37 @@
+<Window x:Class="MapEditor.GoToWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="좌표로 이동" SizeToContent="WidthAndHeight" MinWidth="340" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="맵 (번호 또는 이름)" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <TextBox Grid.Row="0" Grid.Column="1" x:Name="MapBox" Margin="0 4" GotKeyboardFocus="OnSelectAll" />
+
+        <TextBlock Grid.Row="1" Text="좌표 (x, y)" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0 4">
+            <TextBox x:Name="XBox" Width="60" GotKeyboardFocus="OnSelectAll" />
+            <TextBlock Text=" , " VerticalAlignment="Center" />
+            <TextBox x:Name="YBox" Width="60" GotKeyboardFocus="OnSelectAll" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" x:Name="Message" Foreground="Orange" TextWrapping="Wrap" MaxWidth="320" Margin="0 4 0 0" />
+
+        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 10 0 0">
+            <Button Content="이동" IsDefault="True" Click="OnGo" />
+            <Button Content="취소" IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>

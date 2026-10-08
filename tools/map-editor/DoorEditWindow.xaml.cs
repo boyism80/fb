@@ -223,10 +223,28 @@ namespace MapEditor
             }
 
             var modify = ModifyExisting.IsChecked == true ? _existing : null;
-            var (model, found, saved) = _editor.ApplyDoorEdit(_x, _y, cells, modify);
+            var shadowing = _editor.Document.Doors.FirstOrDefault(d => d.Y == _y && d.X == _x)?.Model;
+            var before = modify?.Pairs.Select(id => _editor.DoorTable.FindPair(id)).Where(p => p != null).Select(p => (p.Open, p.Close)).ToList();
+            var others = modify == null
+                ? new List<DoorReference>()
+                : _editor.DoorReferences(modify.Id).Where(r => (r.Map == _editor.Document.Id && r.X == _x && r.Y == _y) == false).ToList();
+            var (model, found, saved, flipped) = _editor.ApplyDoorEdit(_x, _y, cells, modify);
             _applied = saved ? found : null;
             ToggleButton.IsEnabled = _applied != null;
-            if (saved)
+            if (saved && flipped)
+            {
+                _original = cells;
+                foreach (var cell in _cells)
+                    (cell.Current, cell.Partner) = (cell.Partner, cell.Current);
+                if (CurrentIsClosed)
+                    CurrentOpened.IsChecked = true;
+                else
+                    CurrentClosed.IsChecked = true;
+                Message.Foreground = Brushes.LimeGreen;
+                Message.Text = $"문 {model.Id} 적용: {(found.Opened ? "닫힌" : "열린")} 모양이 id가 더 작은 문 {shadowing?.Id}과 같아서, 맵에는 {(found.Opened ? "열린" : "닫힌")} 상태로 놓았습니다. "
+                             + $"맵을 반대 상태로 저장하면 서버가 문 {shadowing?.Id}로 인식하니 이 상태로 저장하세요. door.xlsx 저장도 눌러야 파일에 남습니다.";
+            }
+            else if (saved)
             {
                 _original = cells;
                 Message.Foreground = Brushes.LimeGreen;
@@ -242,6 +260,34 @@ namespace MapEditor
             {
                 Message.Foreground = Brushes.Orange;
                 Message.Text = "적용하지 않았습니다: 이 정의로는 서버가 이 위치에서 문을 찾지 못합니다. 지금 맵의 오브젝트가 위 행(현재)과 다르거나 왼쪽 칸이 다른 문에 먼저 잡힙니다.";
+            }
+
+            // Other places of a modified door still hold the old objects, which the new definition no longer matches.
+            if (saved && modify != null && before.SequenceEqual(cells) == false)
+            {
+                if (_editor.DoorReferencesReady == false)
+                {
+                    Message.Text += " 전체 맵 참조 목록을 아직 만드는 중이라 다른 위치는 바꾸지 않았습니다.";
+                }
+                else if (others.Count > 0)
+                {
+                    var maps = others.Select(r => r.Map).Distinct().Count();
+                    var answer = MessageBox.Show(this, $"문 {model.Id}을 쓰는 다른 곳 {others.Count}곳 (맵 {maps}개)도 새 정의의 같은 상태로 바꿀까요?\n\n"
+                                                     + "열린 탭의 맵은 편집 기록에 남고 탭을 저장해야 파일에 반영됩니다. 나머지 맵은 바로 저장합니다 (.bak 보관).\n"
+                                                     + "바꾸지 않으면 그 위치들은 예전 오브젝트로 남아 서버가 이 문으로 인식하지 못할 수 있습니다.",
+                                                 "문 정의 변경", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (answer == MessageBoxResult.Yes)
+                    {
+                        var (changed, changedMaps, skipped) = _editor.RewriteDoorReferences(before, cells, others);
+                        Message.Text += $" 다른 곳 {changed}곳 (맵 {changedMaps}개)도 바꿨습니다.";
+                        if (skipped.Count > 0)
+                            Message.Text += $" 건너뛴 {skipped.Count}곳: {string.Join(" / ", skipped.Take(3))}{(skipped.Count > 3 ? " ..." : "")}";
+                    }
+                    else
+                    {
+                        Message.Text += $" 다른 곳 {others.Count}곳은 그대로 두었습니다.";
+                    }
+                }
             }
         }
 

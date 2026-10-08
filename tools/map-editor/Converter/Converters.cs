@@ -28,6 +28,33 @@ namespace MapEditor.Converter
     }
 
     /// <summary>
+    /// MoveTiles / MoveBlocks → tooltip line; ConverterParameter is the layer name.
+    /// </summary>
+    public class MoveOptionConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return $"{(value is true ? "☑" : "☐")} 선택을 옮길 때 {parameter}도 함께 이동";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+    }
+
+    /// <summary>
+    /// MoveTiles, MoveBlocks → highlighted when either is on, so the option arrow shows that a move takes more layers.
+    /// </summary>
+    public class MoveOptionBrushConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var key = values.Any(v => v is true) ? "HighlightBrush" : "SemiTextBrush";
+            return Application.Current.TryFindResource(key) ?? Brushes.Gray;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => throw new NotSupportedException();
+    }
+
+    /// <summary>
     /// [ClientAssets, DoorTable, DoorModel, revision] → the door's close (or open with ConverterParameter "open")
     /// objects drawn side by side, so the joined shape is visible.
     /// </summary>
@@ -82,6 +109,25 @@ namespace MapEditor.Converter
     }
 
     /// <summary>
+    /// [ClientAssets, MapTemplate, revision] → the template drawn like the map.
+    /// </summary>
+    public class TemplateThumbnailConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length < 2 || values[0] is not ClientAssets assets || values[1] is not Edit.MapTemplate template)
+                return null;
+
+            return Thumbnail.Template(assets, template).Bitmap;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    /// <summary>
     /// [ClientAssets, npc/mob NameEntry, direction?] → idle sprite. Without a direction value the sprite faces BOTTOM.
     /// </summary>
     public class MonsterThumbnailConverter : IMultiValueConverter
@@ -108,10 +154,15 @@ namespace MapEditor.Converter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length < 2 || values[0] is not DoorModel model || values[1] is not List<MapDoor> doors)
+            if (values.Length < 2 || values[0] is not DoorModel model)
                 return "";
 
-            return string.Join(" ", doors.Where(d => d.Model == model).Select(d => $"({d.X}, {d.Y})"));
+            var here = values[1] is List<MapDoor> doors ? string.Join(" ", doors.Where(d => d.Model == model).Select(d => $"({d.X}, {d.Y})")) : "";
+            if (values.Length < 3 || values[2] is not Dictionary<int, int> counts)
+                return here;
+
+            var total = counts.TryGetValue(model.Id, out var count) ? count : 0;
+            return here.Length == 0 ? $"전체 {total}" : $"전체 {total}\n{here}";
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

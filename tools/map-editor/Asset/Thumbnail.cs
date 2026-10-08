@@ -107,6 +107,25 @@ namespace MapEditor.Asset
             return Create(assets, width, height, pixels);
         }
 
+        private static readonly ConditionalWeakTable<ClientAssets, ConditionalWeakTable<Edit.MapTemplate, Tuple<int, BitmapSource, int>>> _templates =
+            new ConditionalWeakTable<ClientAssets, ConditionalWeakTable<Edit.MapTemplate, Tuple<int, BitmapSource, int>>>();
+
+        /// <summary>
+        /// The template drawn like the map; Above is the number of rows its objects reach above the template.
+        /// Rebuilt when the template's Revision changes.
+        /// </summary>
+        public static (BitmapSource Bitmap, int Above) Template(ClientAssets assets, Edit.MapTemplate template)
+        {
+            var cache = _templates.GetOrCreateValue(assets);
+            if (cache.TryGetValue(template, out var cached) && cached.Item1 == template.Revision)
+                return (cached.Item2, cached.Item3);
+
+            var (pixels, width, height, above) = Edit.TemplateRender.Draw(assets, template);
+            var bitmap = Create(assets, width, height, pixels);
+            cache.AddOrUpdate(template, Tuple.Create(template.Revision, bitmap, above));
+            return (bitmap, above);
+        }
+
         public static BitmapSource Monster(ClientAssets assets, int look, int color, int direction)
         {
             var cache = _monsters.GetOrCreateValue(assets);

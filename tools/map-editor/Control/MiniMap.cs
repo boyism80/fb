@@ -18,7 +18,17 @@ namespace MapEditor.Control
     /// </summary>
     public class MiniMap : FrameworkElement
     {
-        private const double MaxSide = 200;
+        public static readonly DependencyProperty SideProperty = DependencyProperty.Register(
+            nameof(Side), typeof(double), typeof(MiniMap), new FrameworkPropertyMetadata(200.0, FrameworkPropertyMetadataOptions.AffectsMeasure, (d, e) => ((MiniMap)d)._dirty = true));
+
+        /// <summary>
+        /// Longer side of the minimap in pixels.
+        /// </summary>
+        public double Side
+        {
+            get => (double)GetValue(SideProperty);
+            set => SetValue(SideProperty, value);
+        }
 
         /// <summary>
         /// Largest detailed bitmap in pixels; bigger maps fall back to one pixel per cell.
@@ -132,7 +142,7 @@ namespace MapEditor.Control
         /// </summary>
         private int BakeCellPixels(MapDocument doc)
         {
-            if (_assets == null || Math.Max(doc.Width, doc.Height) >= MaxSide)
+            if (_assets == null || Math.Max(doc.Width, doc.Height) >= Side)
                 return 1;
 
             var cell = _assets.CellPixels;
@@ -144,7 +154,7 @@ namespace MapEditor.Control
             if (_document == null)
                 return new Size(0, 0);
 
-            var scale = MaxSide / Math.Max(_document.Width, _document.Height);
+            var scale = Side / Math.Max(_document.Width, _document.Height);
             if (scale > 1 && BakeCellPixels(_document) == 1)
                 scale = Math.Floor(scale);
             return new Size(Math.Round(_document.Width * scale), Math.Round(_document.Height * scale));

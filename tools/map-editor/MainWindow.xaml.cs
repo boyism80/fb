@@ -23,6 +23,11 @@ namespace MapEditor
                     old.ShortcutEditorRequested -= EditShortcuts;
                     old.IssuesRequested -= ShowIssues;
                     old.DoorEditRequested -= ShowDoorEdit;
+                    old.NewMapRequested -= ShowNewMap;
+                    old.SaveAsRequested -= ShowSaveAs;
+                    old.TemplateScanRequested -= ShowTemplateScan;
+                    old.TemplateWarpCheckRequested -= ShowTemplateWarpCheck;
+                    old.GoToRequested -= ShowGoTo;
                 }
                 if (e.NewValue is MainWindowViewModel editor)
                 {
@@ -30,8 +35,299 @@ namespace MapEditor
                     editor.ShortcutEditorRequested += EditShortcuts;
                     editor.IssuesRequested += ShowIssues;
                     editor.DoorEditRequested += ShowDoorEdit;
+                    editor.NewMapRequested += ShowNewMap;
+                    editor.SaveAsRequested += ShowSaveAs;
+                    editor.TemplateScanRequested += ShowTemplateScan;
+                    editor.TemplateWarpCheckRequested += ShowTemplateWarpCheck;
+                    editor.GoToRequested += ShowGoTo;
+                    MinimapImage.Side = Math.Clamp(editor.User.MinimapSide, 100, 800);
+                    PlaceMinimap();
                 }
             };
+            MapScroll.SizeChanged += (s, e) => PlaceMinimap();
+            Minimap.SizeChanged += (s, e) => PlaceMinimap();
+            MapScroll.ScrollChanged += (s, e) =>
+            {
+                if (e.ViewportWidthChange != 0 || e.ViewportHeightChange != 0)
+                    PlaceMinimap();
+            };
+        }
+
+        private TemplateWarpWindow _templateWarp;
+        private Point? _minimapDrag;
+        private Point _minimapStart;
+        private double _minimapSideStart;
+
+        private void ShowNewMap()
+        {
+            _ = NewMapWindow.Show(Editor);
+        }
+
+        private void ShowGoTo()
+        {
+            _ = GoToWindow.Show(this, Editor);
+        }
+
+        private void OnGoTo(object sender, RoutedEventArgs e)
+        {
+            ShowGoTo();
+        }
+
+        private void ShowTemplateScan()
+        {
+            new TemplateScanWindow(Editor) { Owner = this }.ShowDialog();
+        }
+
+        private void ShowTemplateWarpCheck()
+        {
+            if (_templateWarp == null)
+            {
+                _templateWarp = new TemplateWarpWindow(Editor) { Owner = this };
+                _templateWarp.Closed += (s, e) => _templateWarp = null;
+                _templateWarp.Show();
+            }
+            _templateWarp.Activate();
+        }
+
+        private void OnMapListKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                Editor.DeleteMapsCommand.Execute(MapList.SelectedItems);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter && MapList.SelectedItem is MapEntry entry)
+            {
+                _ = Editor.OpenMap(entry);
+                e.Handled = true;
+            }
+        }
+
+        private void OnMapTabChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MapTabs.SelectedItem is MapDocument document && document != Editor.Document)
+                Editor.Activate(document);
+            MapTabs.ScrollIntoView(Editor.Document);
+        }
+
+        private void OnMapTabMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle && (e.OriginalSource as FrameworkElement)?.DataContext is MapDocument document)
+            {
+                Editor.CloseDocument(document);
+                e.Handled = true;
+            }
+        }
+
+        private void OnCloseMapTab(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is MapDocument document)
+                Editor.CloseDocument(document);
+        }
+
+        private void OnMapTabMenu(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem item || item.DataContext is not MapDocument document)
+                return;
+
+            var tabs = Editor.OpenDocuments.ToList();
+            var index = tabs.IndexOf(document);
+            var path = System.IO.Path.Combine(Editor.Settings.MapDirectory, $"{document.Id:000000}.map");
+            switch (item.Tag as string)
+            {
+                case "save":
+                    Editor.Save(document);
+                    break;
+                case "saveAs":
+                    Editor.RequestSaveAs(document);
+                    break;
+                case "saveAll":
+                    Editor.SaveAll();
+                    break;
+                case "close":
+                    Editor.CloseDocument(document);
+                    break;
+                case "closeOthers":
+                    Editor.CloseDocuments(tabs.Where(d => d != document));
+                    break;
+                case "closeRight":
+                    Editor.CloseDocuments(tabs.Skip(index + 1));
+                    break;
+                case "closeLeft":
+                    Editor.CloseDocuments(tabs.Take(index));
+                    break;
+                case "closeSaved":
+                    Editor.CloseDocuments(tabs.Where(d => d.Dirty == false));
+                    break;
+                case "closeAll":
+                    Editor.CloseDocuments(tabs);
+                    break;
+                case "reveal":
+                    var entry = Editor.Maps.FirstOrDefault(m => m.Id == document.Id);
+                    if (entry == null)
+                        break;
+                    if (Editor.MapView.Contains(entry) == false)
+                        Editor.MapQuery = "";
+                    Editor.SelectedMap = entry;
+                    MapList.ScrollIntoView(entry);
+                    break;
+                case "copyPath":
+                    Clipboard.SetText(path);
+                    Editor.StatusText = $"복사: {path}";
+                    break;
+                case "explorer":
+                    System.Diagnostics.Process.Start("explorer.exe", System.IO.File.Exists(path) ? $"/select,\"{path}\"" : $"\"{Editor.Settings.MapDirectory}\"");
+                    break;
+            }
+        }
+
+        private void OnSelectOptions(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement button || (button.Parent as FrameworkElement)?.ContextMenu is not ContextMenu menu)
+                return;
+
+            menu.PlacementTarget = button;
+            menu.Placement = PlacementMode.Bottom;
+            menu.IsOpen = true;
+        }
+
+        private void ShowSaveAs(MapDocument document)
+        {
+            _ = NewMapWindow.ShowSaveAs(Editor, document);
+        }
+
+        private void OnTemplateDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Editor.PlaceTemplateCommand.Execute(null);
+        }
+
+        private void OnTemplateListKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                Editor.DeleteTemplatesCommand.Execute(TemplateList.SelectedItems);
+                e.Handled = true;
+            }
+        }
+
+        private void OnMinimapDragStart(object sender, MouseButtonEventArgs e)
+        {
+            _minimapDrag = e.GetPosition(MapScroll);
+            _minimapStart = Minimap.TranslatePoint(new Point(0, 0), MapScroll);
+            ((UIElement)sender).CaptureMouse();
+            e.Handled = true;
+        }
+
+        private void OnMinimapDrag(object sender, MouseEventArgs e)
+        {
+            if (_minimapDrag is not Point start)
+                return;
+
+            var delta = e.GetPosition(MapScroll) - start;
+            MoveMinimap(_minimapStart.X + delta.X, _minimapStart.Y + delta.Y, snap: true);
+        }
+
+        private void OnMinimapResizeStart(object sender, MouseButtonEventArgs e)
+        {
+            _minimapDrag = e.GetPosition(MapScroll);
+            _minimapStart = Minimap.TranslatePoint(new Point(0, 0), MapScroll);
+            _minimapSideStart = MinimapImage.Side;
+            ((UIElement)sender).CaptureMouse();
+            e.Handled = true;
+        }
+
+        private void OnMinimapResize(object sender, MouseEventArgs e)
+        {
+            if (_minimapDrag is not Point start)
+                return;
+
+            // The top-left corner stays where it is; the grip follows the mouse along the larger movement.
+            var delta = e.GetPosition(MapScroll) - start;
+            var grow = Math.Abs(delta.X) > Math.Abs(delta.Y) ? delta.X : delta.Y;
+            var (viewWidth, viewHeight) = MapViewport();
+            MinimapImage.Side = Math.Clamp(_minimapSideStart + grow, 100, Math.Max(100, Math.Min(800, Math.Min(viewWidth, viewHeight) - 40)));
+            Minimap.UpdateLayout();
+            MoveMinimap(_minimapStart.X, _minimapStart.Y, snap: false);
+        }
+
+        private void OnMinimapDragEnd(object sender, MouseButtonEventArgs e)
+        {
+            if (_minimapDrag == null)
+                return;
+
+            _minimapDrag = null;
+            ((UIElement)sender).ReleaseMouseCapture();
+            Editor.User.MinimapSide = MinimapImage.Side;
+            try
+            {
+                Editor.User.Save();
+            }
+            catch (Exception ex)
+            {
+                Editor.StatusText = $"미니맵 위치 저장 실패: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Visible part of the map view, without its scroll bars.
+        /// </summary>
+        private (double Width, double Height) MapViewport()
+        {
+            return (MapScroll.ViewportWidth > 0 ? MapScroll.ViewportWidth : MapScroll.ActualWidth,
+                    MapScroll.ViewportHeight > 0 ? MapScroll.ViewportHeight : MapScroll.ActualHeight);
+        }
+
+        /// <summary>
+        /// Puts the minimap's top-left corner at (left, top) of the map view, kept inside it. With snap, an edge
+        /// closer than MinimapSnap to a view edge docks onto it. The minimap is anchored to the nearest corner so it
+        /// stays docked when the view is resized.
+        /// </summary>
+        private void MoveMinimap(double left, double top, bool snap)
+        {
+            const double MinimapSnap = 20;
+            var (viewWidth, viewHeight) = MapViewport();
+            var width = Minimap.ActualWidth;
+            var height = Minimap.ActualHeight;
+            left = Math.Clamp(left, 0, Math.Max(0, viewWidth - width));
+            top = Math.Clamp(top, 0, Math.Max(0, viewHeight - height));
+            if (snap)
+            {
+                if (left < MinimapSnap)
+                    left = 0;
+                else if (viewWidth - width - left < MinimapSnap)
+                    left = Math.Max(0, viewWidth - width);
+
+                if (top < MinimapSnap)
+                    top = 0;
+                else if (viewHeight - height - top < MinimapSnap)
+                    top = Math.Max(0, viewHeight - height);
+            }
+
+            var user = Editor.User;
+            user.MinimapLeft = left + width / 2 < viewWidth / 2;
+            user.MinimapTop = top + height / 2 < viewHeight / 2;
+            user.MinimapOffsetX = user.MinimapLeft ? left : viewWidth - width - left;
+            user.MinimapOffsetY = user.MinimapTop ? top : viewHeight - height - top;
+            PlaceMinimap();
+        }
+
+        /// <summary>
+        /// Applies the saved corner and offsets, pulled in when the view became too small to hold the minimap there.
+        /// </summary>
+        private void PlaceMinimap()
+        {
+            if (DataContext is not MainWindowViewModel editor)
+                return;
+
+            var user = editor.User;
+            var (viewWidth, viewHeight) = MapViewport();
+            var x = Math.Clamp(user.MinimapOffsetX, 0, Math.Max(0, viewWidth - Minimap.ActualWidth));
+            var y = Math.Clamp(user.MinimapOffsetY, 0, Math.Max(0, viewHeight - Minimap.ActualHeight));
+            var scrollRight = MapScroll.ActualWidth - viewWidth;
+            var scrollBottom = MapScroll.ActualHeight - viewHeight;
+            Minimap.HorizontalAlignment = user.MinimapLeft ? HorizontalAlignment.Left : HorizontalAlignment.Right;
+            Minimap.VerticalAlignment = user.MinimapTop ? VerticalAlignment.Top : VerticalAlignment.Bottom;
+            Minimap.Margin = new Thickness(user.MinimapLeft ? x : 0, user.MinimapTop ? y : 0, user.MinimapLeft ? 0 : x + scrollRight, user.MinimapTop ? 0 : y + scrollBottom);
         }
 
         private MainWindowViewModel Editor => (MainWindowViewModel)DataContext;
@@ -180,8 +476,14 @@ namespace MapEditor
 
         private void OnDoorUsageClick(object sender, MouseButtonEventArgs e)
         {
-            if (sender is ListBox list && list.SelectedItem is MapDoor door)
-                Editor.Jump(door.X, door.Y);
+            if (sender is ListBox list && list.SelectedItem is DoorReference reference)
+                _ = Editor.GoToDoorReference(reference);
+        }
+
+        private void OnTemplatePlaceClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListBox list && list.SelectedItem is TemplatePlace place)
+                _ = Editor.GoToTemplatePlace(place);
         }
 
         private void OnNpcDoubleClick(object sender, MouseButtonEventArgs e)
@@ -231,18 +533,28 @@ namespace MapEditor
             if (DataContext is not MainWindowViewModel editor)
                 return;
 
-            var dirty = new List<string>();
-            if (editor.Document != null && editor.Document.Dirty)
-                dirty.Add(editor.Document.Title);
+            var dirty = editor.OpenDocuments.Where(d => d.Dirty).Select(d => d.Title).ToList();
             if (editor.DoorTableDirty)
                 dirty.Add("door.xlsx");
-            if (dirty.Count == 0)
-                return;
+            if (dirty.Count > 0)
+            {
+                var answer = MessageBox.Show($"저장하지 않은 변경 사항이 있습니다.\n{string.Join("\n", dirty)}\n\n저장하지 않고 닫을까요?",
+                                             "맵 에디터", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (answer != MessageBoxResult.Yes)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
 
-            var answer = MessageBox.Show($"저장하지 않은 변경 사항이 있습니다.\n{string.Join("\n", dirty)}\n\n저장하지 않고 닫을까요?",
-                                         "맵 에디터", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (answer != MessageBoxResult.Yes)
-                e.Cancel = true;
+            try
+            {
+                editor.SaveSession();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"열린 탭과 위치를 저장하지 못했습니다: {ex.Message}", "맵 에디터", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }

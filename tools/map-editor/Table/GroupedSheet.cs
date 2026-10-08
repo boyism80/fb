@@ -110,5 +110,25 @@ namespace MapEditor.Table
             }
             Index();
         }
+
+        /// <summary>
+        /// Removes the map's header and entries.
+        /// </summary>
+        public void Remove(int mapId)
+        {
+            if (_groups.TryGetValue(mapId, out var group) == false)
+                return;
+
+            for (int r = group.Header; r < group.End; r++)
+            {
+                var row = _sheet.GetRow(r);
+                if (row != null)
+                    _sheet.RemoveRow(row);
+            }
+            var last = _sheet.LastRowNum;
+            if (group.End <= last)
+                _sheet.ShiftRows(group.End, last, group.Header - group.End);
+            Index();
+        }
     }
 }

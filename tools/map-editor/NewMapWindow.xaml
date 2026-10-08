@@ -1,0 +1,62 @@
+<Window x:Class="MapEditor.NewMapWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="새 맵" SizeToContent="WidthAndHeight" MinWidth="380" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="맵 번호" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <TextBox Grid.Row="0" Grid.Column="1" x:Name="IdBox" Margin="0 4" />
+
+        <TextBlock Grid.Row="1" Text="이름" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <TextBox Grid.Row="1" Grid.Column="1" x:Name="NameBox" Margin="0 4" />
+
+        <TextBlock Grid.Row="2" x:Name="SizeLabel" Text="크기 (가로 × 세로)" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <StackPanel Grid.Row="2" Grid.Column="1" x:Name="SizePanel" Orientation="Horizontal" Margin="0 4">
+            <TextBox x:Name="WidthBox" Width="60" Text="60" />
+            <TextBlock Text=" × " VerticalAlignment="Center" />
+            <TextBox x:Name="HeightBox" Width="60" Text="60" />
+            <TextBlock Text="  (8 ~ 255)" VerticalAlignment="Center" Foreground="{StaticResource SemiTextBrush}" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="3" x:Name="TileLabel" Text="바닥 타일" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <StackPanel Grid.Row="3" Grid.Column="1" x:Name="TilePanel" Orientation="Horizontal" Margin="0 4">
+            <TextBox x:Name="TileBox" Width="80" TextChanged="OnTileChanged" />
+            <Border Width="28" Height="28" Margin="8 0 0 0" BorderBrush="{StaticResource ControlLightBrush}" BorderThickness="1">
+                <Image x:Name="TilePreview" Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+            </Border>
+        </StackPanel>
+
+        <TextBlock Grid.Row="4" Text="설정 복사할 맵" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <DockPanel Grid.Row="4" Grid.Column="1" Margin="0 4">
+            <Button DockPanel.Dock="Right" x:Name="PickTemplateButton" Content="찾기..." Click="OnPickTemplate" Margin="6 0 0 0" />
+            <TextBox x:Name="TemplateBox" TextChanged="OnTemplateChanged" />
+        </DockPanel>
+        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="TemplateName" Foreground="{StaticResource SemiTextBrush}" Margin="0 0 0 4"
+                   Text="bgm, effect, host, option 등 map.xlsx 설정을 이 맵에서 복사합니다." TextWrapping="Wrap" MaxWidth="320" HorizontalAlignment="Left" />
+
+        <TextBlock Grid.Row="6" Text="map.xlsx 시트" VerticalAlignment="Center" Margin="0 4 10 4" />
+        <ComboBox Grid.Row="6" Grid.Column="1" x:Name="SheetBox" Margin="0 4" />
+
+        <StackPanel Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
+            <Button x:Name="CreateButton" Content="만들기" IsDefault="True" Click="OnCreate" />
+            <Button Content="취소" IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>

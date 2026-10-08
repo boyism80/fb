@@ -23,8 +23,7 @@ namespace MapEditor.Table
         /// </summary>
         public static void Save(XSSFWorkbook workbook, string path)
         {
-            using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-            { }
+            EnsureWritable(path);
 
             var temp = path + ".tmp";
             using (var stream = new FileStream(temp, FileMode.Create, FileAccess.Write))
@@ -32,6 +31,15 @@ namespace MapEditor.Table
 
             File.Copy(temp, path, overwrite: true);
             File.Delete(temp);
+        }
+
+        /// <summary>
+        /// Throws IOException when another program (Excel) holds the file open.
+        /// </summary>
+        public static void EnsureWritable(string path)
+        {
+            using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            { }
         }
 
         public static string Text(IRow row, int column)

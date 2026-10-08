@@ -87,6 +87,9 @@ namespace MapEditor.Control
         private static readonly Brush MobLabelBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xe0, 0xb0, 0xff)));
         private static readonly Brush NpcBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xff, 0x40, 0xc0)));
         private static readonly Brush WarpBrush = Freeze(new SolidColorBrush(Color.FromArgb(160, 0x00, 0xe0, 0xe0)));
+        private static readonly Pen TemplatePen = Freeze(new Pen(new SolidColorBrush(Color.FromArgb(170, 0xff, 0xa5, 0x30)), 1) { DashStyle = DashStyles.Dot });
+        private static readonly Pen TemplateSelectedPen = Freeze(new Pen(new SolidColorBrush(Color.FromRgb(0xff, 0xa5, 0x30)), 2));
+        private static readonly Brush TemplateLabelBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xff, 0xc8, 0x80)));
         private static readonly Typeface LabelFace = new Typeface("Malgun Gothic");
 
         private static T Freeze<T>(T freezable) where T : Freezable
@@ -484,6 +487,21 @@ namespace MapEditor.Control
                 }
             }
 
+            if (editor.ShowTemplates)
+            {
+                foreach (var instance in editor.TemplateInstances)
+                {
+                    var template = instance.Template;
+                    if (instance.X > vx1 || instance.Y > vy1 || instance.X + template.Width < vx0 || instance.Y + template.Height < vy0)
+                        continue;
+
+                    var rect = CellRect(instance.X, instance.Y, template.Width, template.Height);
+                    dc.DrawRectangle(null, template == editor.SelectedTemplate ? TemplateSelectedPen : TemplatePen, rect);
+                    if (_zoom >= 0.5)
+                        DrawLabel(dc, template.Name, new Point(rect.X, rect.Y), TemplateLabelBrush);
+                }
+            }
+
             if (editor.ShowMobs)
             {
                 // Spawn rows with the same area share one outline and one label listing every mob.
@@ -559,7 +577,21 @@ namespace MapEditor.Control
             if (_hover is (int hx, int hy) && doc.Map.Contains(hx, hy) && _drag != DragKind.Move)
             {
                 if (editor.Tool == EditTool.Door && editor.SelectedDoorModel != null)
+                {
                     dc.DrawRectangle(null, editor.PlaceDoorOpened ? DoorOpenPen : DoorClosePen, CellRect(hx, hy, Math.Max(1, editor.SelectedDoorModel.Pairs.Count), 1));
+                }
+                else if (editor.Tool == EditTool.Template && editor.SelectedTemplate is MapTemplate template && editor.Assets != null)
+                {
+                    var (bitmap, above) = Thumbnail.Template(editor.Assets, template);
+                    var ghost = new DrawingGroup();
+                    RenderOptions.SetBitmapScalingMode(ghost, ScalingMode(editor.Assets));
+                    using (var context = ghost.Open())
+                        context.DrawImage(bitmap, CellRect(hx, hy - above, Math.Max(1, template.Width), Math.Max(1, template.Height) + above));
+                    dc.PushOpacity(0.65);
+                    dc.DrawDrawing(ghost);
+                    dc.Pop();
+                    dc.DrawRectangle(null, GhostPen, CellRect(hx, hy, template.Width, template.Height));
+                }
                 else
                     dc.DrawRectangle(null, HoverPen, CellRect(hx, hy));
             }
@@ -752,10 +784,17 @@ namespace MapEditor.Control
             CaptureMouse();
             if (editor.Tool == EditTool.Select)
             {
-                if (e.ClickCount == 2)
+                var warp = editor.ShowWarps ? editor.WarpAt(x, y) : null;
+                if (e.ClickCount == 2 && warp != null)
+                    _ = editor.OpenWarpDestination(warp);
+                else if (e.ClickCount == 2)
                     editor.SelectSame(x, y, ModifierMode());
                 else
                     BeginSelectDrag(editor, x, y, MapPoint(e.GetPosition(this)));
+            }
+            else if (editor.Tool == EditTool.Template)
+            {
+                editor.PlaceTemplate(editor.SelectedTemplate, x, y);
             }
             else if (editor.Tool == EditTool.Brush || editor.Tool == EditTool.Eraser)
             {
@@ -781,7 +820,7 @@ namespace MapEditor.Control
             }
             else if (editor.Tool == EditTool.Door)
             {
-                var door = editor.DoorAt(x, y);
+                var door = editor.DoorsAt(x, y).FirstOrDefault();
                 if (door != null && editor.SelectedDoorModel == null)
                     editor.SelectedMapDoor = door;
                 else
@@ -943,8 +982,11 @@ namespace MapEditor.Control
             {
                 Entity entity = (editor.ShowNpcs ? editor.NpcAt(x, y) : null) ?? (Entity)(editor.ShowWarps ? editor.WarpAt(x, y) : null);
                 entity ??= editor.ShowMobs ? MobAt(editor, x, y) : null;
+                var instance = editor.SelectByTemplate && editor.ShowObjects ? editor.TemplateAt(x, y) : null;
                 if (entity != null)
                     editor.SelectEntity(entity, add: false);
+                else if (instance != null)
+                    editor.SelectTemplateInstance(instance, SelectMode.Replace);
                 else
                     editor.SelectRect(sx, sy, x, y, _dragMode);
             }
@@ -1105,19 +1147,35 @@ namespace MapEditor.Control
                 menu.Items.Add(warpMenu);
             }
 
-            var door = editor.DoorAt(x, y);
-            if (door != null)
+            var doors = editor.DoorsAt(x, y);
+            for (int i = 0; i < doors.Count; i++)
             {
-                var doorMenu = new MenuItem { Header = $"문 {door.Model.Id} ({(door.Opened ? "열림" : "닫힘")})" };
+                var door = doors[i];
+                var doorMenu = new MenuItem { Header = MainWindowViewModel.DoorLabel(door, y, hidden: i > 0) };
                 doorMenu.Items.Add(Item(door.Opened ? "닫기" : "열기", () => editor.ToggleDoor(door)));
                 doorMenu.Items.Add(Item("선택", () => editor.SelectedMapDoor = door));
                 doorMenu.Items.Add(Item("삭제 (오브젝트 지우기)", () => editor.DeleteDoor(door)));
                 menu.Items.Add(doorMenu);
             }
 
+            var instance = editor.TemplateAt(x, y);
+            if (instance != null)
+            {
+                var templateMenu = new MenuItem { Header = $"템플릿: {instance.Template.Name}" };
+                templateMenu.Items.Add(Item("선택", () => editor.SelectTemplateInstance(instance, SelectMode.Replace)));
+                templateMenu.Items.Add(Item("템플릿 편집...", () => editor.EditTemplate(instance.Template)));
+                templateMenu.Items.Add(Item("이 템플릿으로 배치 도구", () =>
+                {
+                    editor.SelectedTemplate = instance.Template;
+                    editor.Tool = EditTool.Template;
+                }));
+                menu.Items.Add(templateMenu);
+            }
+
             // The selected run when this cell is in it, otherwise this cell (widened to its door).
             var editRange = editor.Selection.Contains((x, y)) ? editor.DoorEditRange() : null;
-            var doorEditLabel = editRange is (_, _, int width) ? $"문 편집 (선택한 {width}칸)..." : door != null ? $"문 {door.Model.Id} 편집..." : "문 편집 (이 칸)...";
+            var cellDoor = editor.DoorAt(x, y);
+            var doorEditLabel = editRange is (_, _, int width) ? $"문 편집 (선택한 {width}칸)..." : cellDoor != null ? $"문 {cellDoor.Model.Id} 편집..." : "문 편집 (이 칸)...";
             var doorEdit = Item(doorEditLabel, () =>
             {
                 if (editor.Selection.Contains((x, y)) == false)
@@ -1196,6 +1254,7 @@ namespace MapEditor.Control
                 editor.SelectRect(left, top, right, bottom, SelectMode.Replace);
                 editor.Copy();
             }));
+            menu.Items.Add(Item("템플릿으로 저장...", () => editor.SaveTemplateFrom(cells), editor.Assets != null));
             menu.Items.Add(Item("문 편집 (한 행)...", () =>
             {
                 editor.ClearSelection();

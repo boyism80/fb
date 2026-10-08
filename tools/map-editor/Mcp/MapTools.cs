@@ -6,6 +6,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MapEditor.Asset;
 using MapEditor.Edit;
+using MapEditor.Format;
+using MapEditor.Table;
 using MapEditor.ViewModel;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
@@ -27,7 +29,7 @@ namespace MapEditor.Mcp
     /// immediately and can undo them.
     /// </summary>
     [McpServerToolType]
-    public class MapTools
+    public partial class MapTools
     {
         private readonly MainWindowViewModel _editor;
 
@@ -83,7 +85,8 @@ namespace MapEditor.Mcp
                 .Select(m => new { m.Id, m.Name })));
         }
 
-        [McpServerTool(Name = "open_map"), Description("Open a map in the editor. Unsaved changes of the current map are kept only if saved first.")]
+        [McpServerTool(Name = "open_map"), Description("Open a map in a new editor tab, or switch to its tab when it is already open. " +
+                                                    "Other tabs keep their unsaved changes; every other tool works on the active tab.")]
         public async Task<string> OpenMap(int id)
         {
             var task = await OnUi("open_map", false, () =>
@@ -92,8 +95,6 @@ namespace MapEditor.Mcp
                     throw new InvalidOperationException("The editor is loading or no client version is enabled (set Client paths in appsettings.{MAPEDITOR_ENVIRONMENT}.json).");
 
                 var entry = _editor.Maps.FirstOrDefault(m => m.Id == id) ?? throw new InvalidOperationException($"map {id} not found");
-                if (_editor.Document != null && _editor.Document.Dirty)
-                    throw new InvalidOperationException("The current map has unsaved changes. Call save or ask the user.");
                 return _editor.OpenMap(entry);
             });
             await task;
@@ -279,23 +280,6 @@ namespace MapEditor.Mcp
             });
         }
 
-        [McpServerTool(Name = "list_spawns"), Description("Spawns of the open map: kind = 'npc', 'mob' or 'warp'.")]
-        public Task<string> ListSpawns(string kind)
-        {
-            return OnUi("list_spawns", false, () =>
-            {
-                var doc = RequireDocument();
-                if (kind == "npc")
-                    return Json(doc.Npcs);
-                else if (kind == "mob")
-                    return Json(doc.Mobs);
-                else if (kind == "warp")
-                    return Json(doc.Warps);
-                else
-                    throw new ArgumentException("kind must be npc, mob or warp");
-            });
-        }
-
         [McpServerTool(Name = "validate"), Description("Run map validation (blocked NPC cells, spawn areas, ids outside resources, broken door pairs).")]
         public Task<string> Validate()
         {
@@ -312,18 +296,199 @@ namespace MapEditor.Mcp
             });
         }
 
+        [McpServerTool(Name = "redo"), Description("Redo the last undone edit. Requires write permission.")]
+        public Task<string> Redo()
+        {
+            return OnUi("redo", true, () =>
+            {
+                var doc = RequireDocument();
+                if (doc.CanRedo == false)
+                    throw new InvalidOperationException("nothing to redo");
+                doc.Redo();
+                return "ok";
+            });
+        }
+
+        [McpServerTool(Name = "replace"), Description("Replace every value 'from' with 'to' on one layer ('tile', 'object' or 'block' 0/1) in one undo step. " +
+                                                   "width/height 0 = whole map. Requires write permission.")]
+        public Task<string> Replace(string layer, int from, int to, int x = 0, int y = 0, int width = 0, int height = 0)
+        {
+            return OnUi("replace", true, () =>
+            {
+                var doc = RequireDocument();
+                if (layer != "tile" && layer != "object" && layer != "block")
+                    throw new ArgumentException("layer must be tile, object or block");
+
+                var right = width > 0 ? x + width - 1 : doc.Width - 1;
+                var bottom = height > 0 ? y + height - 1 : doc.Height - 1;
+                var cells = new List<(int, int, CellValue)>();
+                foreach (var (cx, cy) in MainWindowViewModel.Rect(x, y, right, bottom).Where(c => doc.Map.Contains(c.X, c.Y)))
+                {
+                    var cell = doc.Get(cx, cy);
+                    if (layer == "tile" && cell.Tile == from)
+                        cell.Tile = (ushort)to;
+                    else if (layer == "object" && cell.Object == from)
+                        cell.Object = (ushort)to;
+                    else if (layer == "block" && cell.Block == (from != 0))
+                        cell.Block = to != 0;
+                    else
+                        continue;
+                    cells.Add((cx, cy, cell));
+                }
+                return Json(new { changed = cells.Count == 0 ? 0 : doc.Apply(cells) });
+            });
+        }
+
+        [McpServerTool(Name = "copy_region"), Description("Copy a rectangle into the editor clipboard (the same one as Ctrl+C), relative to its top-left. " +
+                                                       "layers: comma list of tile, object, block. spawns: also copy NPCs and warps inside and mob areas fully inside. " +
+                                                       "The clipboard survives open_map, so it can be pasted into another map.")]
+        public Task<string> CopyRegion(int x, int y, int width, int height, string layers = "tile,object,block", bool spawns = false)
+        {
+            return OnUi("copy_region", false, () =>
+            {
+                var doc = RequireDocument();
+                var kinds = new HashSet<CopyKind>();
+                foreach (var layer in layers.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    if (layer == "tile")
+                        kinds.Add(CopyKind.Tile);
+                    else if (layer == "object")
+                        kinds.Add(CopyKind.Object);
+                    else if (layer == "block")
+                        kinds.Add(CopyKind.Block);
+                    else
+                        throw new ArgumentException($"unknown layer '{layer}'");
+                }
+
+                var right = x + width - 1;
+                var bottom = y + height - 1;
+                bool Inside(int cx, int cy) => cx >= x && cx <= right && cy >= y && cy <= bottom;
+                var npcs = spawns ? doc.Npcs.Where(n => Inside(n.X, n.Y)).ToList() : new List<NpcSpawn>();
+                var warps = spawns ? doc.Warps.Where(w => Inside(w.X, w.Y)).ToList() : new List<WarpEntry>();
+                var mobs = spawns ? doc.Mobs.Where(m => Inside(m.Left, m.Top) && Inside(m.Right, m.Bottom)).ToList() : new List<MobSpawn>();
+                if (npcs.Count > 0)
+                    kinds.Add(CopyKind.Npc);
+                if (warps.Count > 0)
+                    kinds.Add(CopyKind.Warp);
+                if (mobs.Count > 0)
+                    kinds.Add(CopyKind.Mob);
+
+                var copyCells = kinds.Contains(CopyKind.Tile) || kinds.Contains(CopyKind.Object) || kinds.Contains(CopyKind.Block);
+                _editor.Clipboard = new ClipboardContent
+                {
+                    Width = width,
+                    Height = height,
+                    Kinds = kinds,
+                    Cells = copyCells
+                        ? MainWindowViewModel.Rect(x, y, right, bottom).Where(c => doc.Map.Contains(c.X, c.Y)).Select(c => (c.X - x, c.Y - y, doc.Get(c.X, c.Y))).ToList()
+                        : new List<(int, int, CellValue)>(),
+                    Npcs = npcs.Select(n => new NpcSpawn { Npc = n.Npc, Info = n.Info, X = n.X - x, Y = n.Y - y, Direction = n.Direction }).ToList(),
+                    Warps = warps.Select(w => new WarpEntry { X = w.X - x, Y = w.Y - y, Dest = w.Dest, Condition = w.Condition, DestName = w.DestName }).ToList(),
+                    Mobs = mobs.Select(m => new MobSpawn
+                    {
+                        Mob = m.Mob,
+                        Info = m.Info,
+                        BeginX = m.Left - x,
+                        BeginY = m.Top - y,
+                        EndX = m.Right - x,
+                        EndY = m.Bottom - y,
+                        Count = m.Count,
+                        Rezen = m.Rezen,
+                        Condition = m.Condition,
+                    }).ToList(),
+                };
+                return Json(new { width, height, layers = kinds.Select(k => k.ToString()), npcs = npcs.Count, warps = warps.Count, mobs = mobs.Count });
+            });
+        }
+
+        [McpServerTool(Name = "paste_region"), Description("Paste the editor clipboard with its top-left at (x, y) in one undo step; the pasted cells become the selection. " +
+                                                        "Requires write permission.")]
+        public Task<string> PasteRegion(int x, int y)
+        {
+            return OnUi("paste_region", true, () =>
+            {
+                RequireDocument();
+                if (_editor.Clipboard == null)
+                    throw new InvalidOperationException("the clipboard is empty; call copy_region first");
+                _editor.PasteAt(x, y);
+                return _editor.StatusText;
+            });
+        }
+
+        [McpServerTool(Name = "object_info"), Description("One object id: stacked height, collision bits (S=1,N=2,W=4,E=8) and blocked sides, " +
+                                                       "how many cells of the open map use it, and door.xlsx pairs that contain it.")]
+        public Task<string> ObjectInfo(int id)
+        {
+            return OnUi("object_info", false, () =>
+            {
+                var assets = _editor.Assets ?? throw new InvalidOperationException("no client resources loaded");
+                var sobj = assets.Objects.Find(id) ?? throw new ArgumentException($"object {id} not found (1..{assets.Objects.Count})");
+                var doc = _editor.Document;
+                var sides = new[] { (2, "north"), (8, "east"), (1, "south"), (4, "west") }.Where(s => (sobj.Collision & s.Item1) != 0).Select(s => s.Item2);
+                return Json(new
+                {
+                    id,
+                    height = sobj.Frames.Length,
+                    collision = sobj.Collision,
+                    blockedSides = sides,
+                    fullyBlocked = (sobj.Collision & 0x0F) == 0x0F,
+                    usedOnMap = doc == null ? 0 : doc.Map.Objects.Count(o => o == id),
+                    doorPairs = _editor.DoorTable.Pairs.Where(p => p.Open == id || p.Close == id).Select(p => new { pair = p.Id, open = p.Open, close = p.Close }),
+                });
+            });
+        }
+
+        [McpServerTool(Name = "render_objects"), Description("PNG of objects placed side by side on one row, drawn like the map (e.g. a door's closed or open objects). " +
+                                                          "scale 1-4, nearest neighbor.")]
+        public Task<ImageContentBlock> RenderObjects(int[] ids, int scale = 2)
+        {
+            return OnUi("render_objects", false, () =>
+            {
+                var assets = _editor.Assets ?? throw new InvalidOperationException("no client resources loaded");
+                if (ids == null || ids.Length == 0 || ids.Length > 64)
+                    throw new ArgumentException("ids must have 1..64 entries");
+                return Png(Thumbnail.Row(assets, ids), Math.Clamp(scale, 1, 4));
+            });
+        }
+
+        /// <summary>
+        /// PNG of the bitmap's pixels, enlarged by an integer factor without smoothing.
+        /// </summary>
+        private static ImageContentBlock Png(BitmapSource source, int scale)
+        {
+            var width = source.PixelWidth;
+            var height = source.PixelHeight;
+            var pixels = new uint[width * height];
+            source.CopyPixels(pixels, width * 4, 0);
+
+            var scaled = new uint[width * scale * height * scale];
+            for (int y = 0; y < height * scale; y++)
+            {
+                for (int x = 0; x < width * scale; x++)
+                    scaled[y * width * scale + x] = pixels[y / scale * width + x / scale];
+            }
+
+            var bitmap = BitmapSource.Create(width * scale, height * scale, 96, 96, PixelFormats.Pbgra32, null, scaled, width * scale * 4);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            using var stream = new MemoryStream();
+            encoder.Save(stream);
+            return ImageContentBlock.FromBytes(stream.ToArray(), "image/png");
+        }
+
         [McpServerTool(Name = "save"), Description("Save the open map (.map/.block) and changed spawn sheets. Requires write permission.")]
         public Task<string> Save()
         {
             return OnUi("save", true, () =>
             {
-                _editor.Save();
+                _editor.Save(_editor.Document);
                 return _editor.StatusText;
             });
         }
 
-        [McpServerTool(Name = "render_region"), Description("PNG of a map rectangle (cells, max 48x48) with tiles, objects and blocked cells in red.")]
-        public Task<ImageContentBlock> RenderRegion(int x, int y, int width, int height)
+        [McpServerTool(Name = "render_region"), Description("PNG of a map rectangle (cells, max 48x48) with tiles, objects and .block cells tinted red. " +
+                                                         "overlays: outline doors (yellow), NPCs (cyan), warps (magenta) and mob areas (green).")]
+        public Task<ImageContentBlock> RenderRegion(int x, int y, int width, int height, bool overlays = true)
         {
             return OnUi("render_region", false, () =>
             {
@@ -334,53 +499,95 @@ namespace MapEditor.Mcp
                 var cell = assets.CellPixels;
                 var pw = width * cell;
                 var ph = height * cell;
-                var pixels = new uint[pw * ph];
-                Array.Fill(pixels, 0xFF000000u);
-                for (int cy = y; cy < y + height; cy++)
-                {
-                    for (int cx = x; cx < x + width; cx++)
-                    {
-                        if (doc.Map.Contains(cx, cy))
-                            assets.DrawTile(pixels, pw, ph, (cx - x) * cell, (cy - y) * cell, doc.Get(cx, cy).Tile);
-                    }
-                }
-                for (int cy = y; cy < Math.Min(doc.Height, y + height + assets.Objects.MaxHeight); cy++)
-                {
-                    for (int cx = x - 1; cx <= x + width; cx++)
-                    {
-                        if (doc.Map.Contains(cx, cy))
-                            assets.DrawObject(pixels, pw, ph, (cx - x) * cell, (cy - y) * cell, doc.Get(cx, cy).Object);
-                    }
-                }
-                for (int cy = y; cy < y + height; cy++)
-                {
-                    for (int cx = x; cx < x + width; cx++)
-                    {
-                        if (doc.Map.Contains(cx, cy) == false || doc.Blocks.Contains(cx, cy) == false)
-                            continue;
+                var pixels = DrawArea(assets, doc.Map, doc.Blocks, x, y, width, height);
 
-                        for (int py = 0; py < cell; py++)
-                        {
-                            for (int px = 0; px < cell; px++)
-                            {
-                                var i = ((cy - y) * cell + py) * pw + (cx - x) * cell + px;
-                                var c = pixels[i];
-                                var r = (((c >> 16) & 0xFF) + 255) / 2;
-                                var g = ((c >> 8) & 0xFF) / 2;
-                                var b = (c & 0xFF) / 2;
-                                pixels[i] = 0xFF000000u | (r << 16) | (g << 8) | b;
-                            }
-                        }
+                if (overlays)
+                {
+                    // Cell rectangle in pixels relative to the image, clipped by Outline.
+                    void Box(int left, int top, int right, int bottom, uint color)
+                    {
+                        Outline(pixels, pw, ph, (left - x) * cell, (top - y) * cell, (right - x + 1) * cell - 1, (bottom - y + 1) * cell - 1, color);
                     }
+
+                    foreach (var mob in doc.Mobs)
+                        Box(mob.Left, mob.Top, mob.Right, mob.Bottom, 0xFF40E040);
+                    foreach (var door in doc.Doors)
+                        Box(door.X, door.Y, door.X + door.Width - 1, door.Y, 0xFFFFD700);
+                    foreach (var warp in doc.Warps)
+                        Box(warp.X, warp.Y, warp.X, warp.Y, 0xFFFF40FF);
+                    foreach (var npc in doc.Npcs)
+                        Box(npc.X, npc.Y, npc.X, npc.Y, 0xFF40E0FF);
                 }
 
                 var bitmap = BitmapSource.Create(pw, ph, 96, 96, PixelFormats.Pbgra32, null, pixels, pw * 4);
-                var encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(bitmap));
-                using var stream = new MemoryStream();
-                encoder.Save(stream);
-                return ImageContentBlock.FromBytes(stream.ToArray(), "image/png");
+                return Png(bitmap, 1);
             });
+        }
+
+        /// <summary>
+        /// Pixels of a map rectangle: tiles (tile 0 stays black), objects (also those based below the rectangle
+        /// that reach into it) and .block cells tinted red.
+        /// </summary>
+        private static uint[] DrawArea(ClientAssets assets, ServerMap map, BlockFile blocks, int x, int y, int width, int height)
+        {
+            var cell = assets.CellPixels;
+            var pw = width * cell;
+            var ph = height * cell;
+            var pixels = new uint[pw * ph];
+            Array.Fill(pixels, 0xFF000000u);
+            for (int cy = y; cy < y + height; cy++)
+            {
+                for (int cx = x; cx < x + width; cx++)
+                {
+                    if (map.Contains(cx, cy) && map.Tiles[cy * map.Width + cx] != 0)
+                        assets.DrawTile(pixels, pw, ph, (cx - x) * cell, (cy - y) * cell, map.Tiles[cy * map.Width + cx]);
+                }
+            }
+            for (int cy = y; cy < Math.Min(map.Height, y + height + assets.Objects.MaxHeight); cy++)
+            {
+                for (int cx = x - 1; cx <= x + width; cx++)
+                {
+                    if (map.Contains(cx, cy))
+                        assets.DrawObject(pixels, pw, ph, (cx - x) * cell, (cy - y) * cell, map.Objects[cy * map.Width + cx]);
+                }
+            }
+            for (int cy = y; cy < y + height; cy++)
+            {
+                for (int cx = x; cx < x + width; cx++)
+                {
+                    if (map.Contains(cx, cy) == false || blocks.Contains(cx, cy) == false)
+                        continue;
+
+                    for (int py = 0; py < cell; py++)
+                    {
+                        for (int px = 0; px < cell; px++)
+                        {
+                            var i = ((cy - y) * cell + py) * pw + (cx - x) * cell + px;
+                            var c = pixels[i];
+                            var r = (((c >> 16) & 0xFF) + 255) / 2;
+                            var g = ((c >> 8) & 0xFF) / 2;
+                            var b = (c & 0xFF) / 2;
+                            pixels[i] = 0xFF000000u | (r << 16) | (g << 8) | b;
+                        }
+                    }
+                }
+            }
+            return pixels;
+        }
+
+        /// <summary>
+        /// 2 px rectangle outline; parts outside the image are skipped.
+        /// </summary>
+        private static void Outline(uint[] pixels, int width, int height, int left, int top, int right, int bottom, uint color)
+        {
+            for (int py = Math.Max(0, top); py <= Math.Min(height - 1, bottom); py++)
+            {
+                for (int px = Math.Max(0, left); px <= Math.Min(width - 1, right); px++)
+                {
+                    if (px - left < 2 || right - px < 2 || py - top < 2 || bottom - py < 2)
+                        pixels[py * width + px] = color;
+                }
+            }
         }
     }
 }

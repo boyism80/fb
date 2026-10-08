@@ -9,11 +9,14 @@
                 <ResourceDictionary Source="Style/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converter:EnumBoolConverter x:Key="EnumBool" />
+            <converter:MoveOptionConverter x:Key="MoveOption" />
+            <converter:MoveOptionBrushConverter x:Key="MoveOptionBrush" />
             <converter:ObjectThumbnailConverter x:Key="ObjectThumbnail" />
             <converter:MonsterThumbnailConverter x:Key="MonsterThumbnail" />
             <converter:DoorStripConverter x:Key="DoorStrip" />
             <converter:BoolToVisibilityConverter x:Key="BoolToVisibility" />
             <converter:DoorUsageConverter x:Key="DoorUsage" />
+            <converter:TemplateThumbnailConverter x:Key="TemplateThumbnail" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

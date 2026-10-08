@@ -22,6 +22,7 @@ namespace MapEditor.ViewModel
         Eyedropper,
         Door,
         Mob,
+        Template,
     }
 
     public enum SelectMode
@@ -104,7 +105,7 @@ namespace MapEditor.ViewModel
         public List<MobSpawn> Mobs { get; init; } = new List<MobSpawn>();
     }
 
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public partial class MainWindowViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -122,6 +123,7 @@ namespace MapEditor.ViewModel
         /// Scroll the canvas so the cell is visible.
         /// </summary>
         public event Action<int, int> FocusRequested;
+        public event Action GoToRequested;
 
         /// <summary>
         /// Scroll the canvas so the map point (in cells) is at the middle; used by back/forward navigation.
@@ -144,6 +146,11 @@ namespace MapEditor.ViewModel
         private readonly Dictionary<ClientVersion, ClientAssets> _assetCache = new Dictionary<ClientVersion, ClientAssets>();
         private SpawnTable _spawns;
         private (int X, int Y)? _hoverCell;
+
+        /// <summary>
+        /// Cell under the mouse on the canvas, or null when the mouse is outside the map.
+        /// </summary>
+        public (int X, int Y)? HoverCell => _hoverCell;
 
         /// <summary>
         /// The paste that is still the selection and the newest edit. Moving it re-pastes at the new place instead of
@@ -199,7 +206,15 @@ namespace MapEditor.ViewModel
         public ICollectionView MapView { get; }
         public string MapQuery { get; set; } = "";
         public MapEntry SelectedMap { get; set; }
+        /// <summary>
+        /// The active tab; every edit, tool and MCP call works on it.
+        /// </summary>
         public MapDocument Document { get; private set; }
+
+        /// <summary>
+        /// Open map tabs in display order; each keeps its own unsaved changes and undo history.
+        /// </summary>
+        public ObservableCollection<MapDocument> OpenDocuments { get; } = new ObservableCollection<MapDocument>();
 
         public List<NameEntry> NpcChoices => _spawns?.NpcNames.Entries ?? new List<NameEntry>();
         public List<NameEntry> MobChoices => _spawns?.MobNames.Entries ?? new List<NameEntry>();
@@ -250,7 +265,7 @@ namespace MapEditor.ViewModel
         public HashSet<Entity> SelectedEntities { get; } = new HashSet<Entity>();
         public string SelectionText { get; private set; } = "선택 없음";
         public bool HasSelection { get; private set; }
-        public ClipboardContent Clipboard { get; private set; }
+        public ClipboardContent Clipboard { get; set; }
 
         public string HoverText { get; private set; } = "";
         public string StatusText { get; set; } = "";
@@ -265,12 +280,6 @@ namespace MapEditor.ViewModel
         public ListCollectionView DoorModelsView { get; private set; }
         public bool OnlyMapDoors { get; set; }
 
-        /// <summary>
-        /// Where the selected door definition is used on the open map.
-        /// </summary>
-        public List<MapDoor> SelectedDoorUsages => Document == null || SelectedDoorModel == null
-            ? new List<MapDoor>()
-            : Document.Doors.Where(d => d.Model == SelectedDoorModel).ToList();
         public DoorPair SelectedDoorPair { get; set; }
         public bool PlaceDoorOpened { get; set; }
         public bool DoorTableDirty { get; private set; }
@@ -352,7 +361,7 @@ namespace MapEditor.ViewModel
             MapView.Filter = FilterMap;
 
             OpenMapCommand = new RelayCommand<MapEntry>(entry => _ = OpenMap(entry ?? SelectedMap));
-            SaveCommand = new RelayCommand(_ => Save());
+            SaveCommand = new RelayCommand(_ => Save(Document));
             // Cell selections are not part of the history, so a moved selection would point at stale cells after replay.
             UndoCommand = new RelayCommand(_ =>
             {
@@ -448,6 +457,8 @@ namespace MapEditor.ViewModel
             FocusWarpIssueCommand = new RelayCommand<WarpIssue>(issue => _ = FocusWarpIssue(issue));
             DeleteCheckedWarpsCommand = new RelayCommand(_ => DeleteCheckedWarps());
             ShortcutEditorCommand = new RelayCommand(_ => ShortcutEditorRequested?.Invoke());
+            InitializeMapCommands();
+            InitializeTemplates();
 
             ShortcutAction Shortcut(string id, string category, string label, string defaults, Action execute)
             {
@@ -455,7 +466,13 @@ namespace MapEditor.ViewModel
             }
             Shortcuts = new List<ShortcutAction>
             {
-                Shortcut("Save", "파일", "저장", "Ctrl+S", Save),
+                Shortcut("Save", "파일", "저장", "Ctrl+S", () => Save(Document)),
+                Shortcut("SaveAs", "파일", "다른 이름으로 저장 (새 맵 번호)", "Ctrl+Shift+S", () => RequestSaveAs(Document)),
+                Shortcut("SaveAll", "파일", "모두 저장", "Ctrl+Alt+S", SaveAll),
+                Shortcut("NewMap", "파일", "새 맵", "Ctrl+N", () => NewMapRequested?.Invoke()),
+                Shortcut("CloseTab", "파일", "탭 닫기", "Ctrl+W, Ctrl+F4", () => CloseDocument(Document)),
+                Shortcut("NextTab", "이동", "다음 탭", "Ctrl+Tab, Ctrl+PageDown", () => ActivateNext(1)),
+                Shortcut("PreviousTab", "이동", "이전 탭", "Ctrl+Shift+Tab, Ctrl+PageUp", () => ActivateNext(-1)),
                 Shortcut("Undo", "편집", "실행 취소", "Ctrl+Z", () => UndoCommand.Execute(null)),
                 Shortcut("Redo", "편집", "다시 실행", "Ctrl+Y, Ctrl+Shift+Z", () => RedoCommand.Execute(null)),
                 Shortcut("Copy", "편집", "복사", "Ctrl+C", Copy),
@@ -465,26 +482,31 @@ namespace MapEditor.ViewModel
                 Shortcut("SelectAll", "편집", "전체 선택", "Ctrl+A", () => SelectAllCommand.Execute(null)),
                 Shortcut("ClearSelection", "편집", "선택 해제", "Escape", ClearSelection),
                 Shortcut("EditDoor", "편집", "문 편집 (한 행 선택)", "Ctrl+D", EditDoor),
+                Shortcut("ToggleDoor", "편집", "선택한 문 열기/닫기", "O", ToggleSelectedDoors),
                 Shortcut("NavigateBack", "이동", "뒤로 (이전에 보던 위치)", "Alt+Left, XButton1", () => NavigateBackCommand.Execute(null)),
                 Shortcut("NavigateForward", "이동", "앞으로", "Alt+Right, XButton2", () => NavigateForwardCommand.Execute(null)),
                 Shortcut("FindMap", "이동", "맵 검색", "Ctrl+P", () => MapSearchRequested?.Invoke()),
+                Shortcut("GoTo", "이동", "좌표로 이동 (맵, x, y)", "Ctrl+G", () => GoToRequested?.Invoke()),
                 Shortcut("OpenWarpDestination", "이동", "선택한 워프의 목적지 열기", "F12", () => _ = OpenWarpDestination(SelectedWarp)),
                 Shortcut("ZoomIn", "보기", "확대", "Ctrl+OemPlus, Ctrl+Add", () => ZoomCommand.Execute("in")),
                 Shortcut("ZoomOut", "보기", "축소", "Ctrl+OemMinus, Ctrl+Subtract", () => ZoomCommand.Execute("out")),
                 Shortcut("ZoomReset", "보기", "100%", "Ctrl+0", () => ZoomCommand.Execute("reset")),
-                Shortcut("ToggleGrid", "보기", "그리드 켜기/끄기", "Ctrl+G", () => ShowGrid = !ShowGrid),
+                Shortcut("ToggleGrid", "보기", "그리드 켜기/끄기", "Ctrl+Shift+G", () => ShowGrid = !ShowGrid),
                 Shortcut("ToggleBlocks", "보기", "블록 표시 켜기/끄기", "Ctrl+Shift+B", () => ShowBlocks = !ShowBlocks),
                 Shortcut("ToggleCollision", "보기", "유효 충돌 표시 켜기/끄기", "Ctrl+Shift+C", () => ShowCollision = !ShowCollision),
                 Shortcut("ToggleSprites", "보기", "NPC / 몹 그림 켜기/끄기", "Ctrl+Shift+N", () => ShowSprites = !ShowSprites),
                 Shortcut("ToggleMinimap", "보기", "미니맵 켜기/끄기", "Ctrl+M", () => ShowMinimap = !ShowMinimap),
-                Shortcut("ToolSelect", "도구", "선택 / 이동", "V", () => Tool = EditTool.Select),
-                Shortcut("ToolBrush", "도구", "브러시", "B", () => Tool = EditTool.Brush),
-                Shortcut("ToolRect", "도구", "사각형 채우기", "R", () => Tool = EditTool.Rect),
-                Shortcut("ToolFill", "도구", "영역 채우기", "G", () => Tool = EditTool.Fill),
-                Shortcut("ToolEraser", "도구", "지우개", "E", () => Tool = EditTool.Eraser),
-                Shortcut("ToolEyedropper", "도구", "스포이트", "I", () => Tool = EditTool.Eyedropper),
-                Shortcut("ToolDoor", "도구", "문 배치", "D", () => Tool = EditTool.Door),
-                Shortcut("ToolMob", "도구", "몹 영역 그리기", "M", () => Tool = EditTool.Mob),
+                Shortcut("ToolSelect", "도구", "선택 / 이동", "V, Ctrl+1", () => Tool = EditTool.Select),
+                Shortcut("ToolBrush", "도구", "브러시", "B, Ctrl+2", () => Tool = EditTool.Brush),
+                Shortcut("ToolRect", "도구", "사각형 채우기", "R, Ctrl+3", () => Tool = EditTool.Rect),
+                Shortcut("ToolFill", "도구", "영역 채우기", "G, Ctrl+4", () => Tool = EditTool.Fill),
+                Shortcut("ToolEraser", "도구", "지우개", "E, Ctrl+5", () => Tool = EditTool.Eraser),
+                Shortcut("ToolEyedropper", "도구", "스포이트", "I, Ctrl+6", () => Tool = EditTool.Eyedropper),
+                Shortcut("ToolDoor", "도구", "문 배치", "D, Ctrl+7", () => Tool = EditTool.Door),
+                Shortcut("ToolMob", "도구", "몹 영역 그리기", "M, Ctrl+8", () => Tool = EditTool.Mob),
+                Shortcut("ToolTemplate", "도구", "템플릿 배치 (선택한 템플릿)", "T, Ctrl+9", () => PlaceTemplateCommand.Execute(null)),
+                Shortcut("SaveTemplate", "편집", "선택 영역을 템플릿으로 저장", "Ctrl+Shift+T", () => SaveSelectionAsTemplateCommand.Execute(null)),
+                Shortcut("ToggleTemplates", "보기", "템플릿 표시 켜기/끄기", "Ctrl+Shift+M", () => ShowTemplates = !ShowTemplates),
                 Shortcut("LayerTile", "도구", "편집 레이어: 타일", "1", () => Layer = EditLayer.Tile),
                 Shortcut("LayerObject", "도구", "편집 레이어: 오브젝트", "2", () => Layer = EditLayer.Object),
                 Shortcut("LayerBlock", "도구", "편집 레이어: 블록", "3", () => Layer = EditLayer.Block),
@@ -719,9 +741,56 @@ namespace MapEditor.ViewModel
             EndLoading();
             Busy = false;
 
-            SelectedVersion = Versions.FirstOrDefault(v => v.Enabled);
+            SelectedVersion = Versions.FirstOrDefault(v => v.Enabled && v.Version.ToString() == User.LastVersion) ?? Versions.FirstOrDefault(v => v.Enabled);
             if (SelectedVersion == null)
+            {
                 StatusText = "Client.v550 / Client.v651 경로가 비어 있거나 TILE.DAT가 없어 편집할 수 없습니다. MAPEDITOR_ENVIRONMENT 환경변수와 appsettings.{환경}.json(예: appsettings.Local.json)을 확인하세요.";
+            }
+            else
+            {
+                foreach (var tab in User.LastTabs)
+                    await OpenMap(Maps.FirstOrDefault(m => m.Id == tab.Map), record: false);
+
+                // Opening a tab stores the view of the tab it leaves, so the saved views are assigned afterwards.
+                Activate(OpenDocuments.FirstOrDefault(d => d.Id == User.LastActive) ?? OpenDocuments.FirstOrDefault());
+                foreach (var tab in User.LastTabs)
+                {
+                    var document = OpenDocuments.FirstOrDefault(d => d.Id == tab.Map);
+                    if (document == null)
+                        continue;
+
+                    document.ViewCenter = (tab.X, tab.Y);
+                    document.Zoom = Math.Clamp(tab.Zoom, 0.25, 8);
+                }
+                if (Document?.ViewCenter is (double x, double y))
+                {
+                    Zoom = Document.Zoom;
+                    CenterRequested?.Invoke(x, y);
+                }
+            }
+            ScheduleDoorReferences();
+        }
+
+        /// <summary>
+        /// Remembers the version, open tabs with their views and the active tab for the next start (see Initialize).
+        /// </summary>
+        public void SaveSession()
+        {
+            if (Document != null)
+            {
+                Document.ViewCenter = ViewCenter;
+                Document.Zoom = Zoom;
+            }
+            User.LastVersion = SelectedVersion?.Version.ToString() ?? "";
+            User.LastTabs = OpenDocuments.Select(d => new SessionTab
+            {
+                Map = d.Id,
+                X = d.ViewCenter?.X ?? 0,
+                Y = d.ViewCenter?.Y ?? 0,
+                Zoom = d.Zoom,
+            }).ToList();
+            User.LastActive = Document?.Id ?? -1;
+            User.Save();
         }
 
         private bool FilterMap(object item)
@@ -827,7 +896,6 @@ namespace MapEditor.ViewModel
         /// </summary>
         private void RefreshDoorModels()
         {
-            OnPropertyChanged(nameof(SelectedDoorUsages));
             if (DoorModelsView == null || DoorModelsView.IsEditingItem || DoorModelsView.IsAddingNew)
                 return;
 
@@ -844,7 +912,12 @@ namespace MapEditor.ViewModel
         private void OnShowMobsChanged() => OverlayInvalidated?.Invoke();
         private void OnShowWarpsChanged() => OverlayInvalidated?.Invoke();
         private void OnShowSpritesChanged() => OverlayInvalidated?.Invoke();
-        private void OnSelectedMapDoorChanged() => OverlayInvalidated?.Invoke();
+        private void OnSelectedMapDoorChanged()
+        {
+            if (SelectedMapDoor != null)
+                SelectedDoorModel = SelectedMapDoor.Model;
+            OverlayInvalidated?.Invoke();
+        }
 
         // Picking a row in a spawn grid makes it the single selected entity.
         private void OnSelectedNpcChanged() => SelectFromGrid(SelectedNpc);
@@ -865,6 +938,7 @@ namespace MapEditor.ViewModel
         }
 
         /// <summary>
+        /// Switches to the map's tab, or reads the map into a new tab next to the active one.
         /// record: remember the current view for back navigation (false while navigating the history).
         /// </summary>
         public async Task OpenMap(MapEntry entry, bool record = true)
@@ -872,16 +946,15 @@ namespace MapEditor.ViewModel
             if (entry == null || CanOpen == false)
                 return;
 
-            if (Document != null && Document.Dirty)
-            {
-                var answer = MessageBox.Show($"{Document.Title} 변경 사항을 저장할까요?", "맵 에디터", MessageBoxButton.YesNoCancel);
-                if (answer == MessageBoxResult.Cancel)
-                    return;
-                else if (answer == MessageBoxResult.Yes)
-                    Save();
-            }
             if (record && Document != null && Document.Id != entry.Id)
                 RecordLocation();
+
+            var open = OpenDocuments.FirstOrDefault(d => d.Id == entry.Id);
+            if (open != null)
+            {
+                Activate(open);
+                return;
+            }
 
             Busy = true;
             StatusText = $"{entry.Label} 여는 중...";
@@ -892,26 +965,12 @@ namespace MapEditor.ViewModel
                 var (document, npcs, mobs, warps) = await Task.Run(() =>
                     (MapDocument.Open(directory, entry.Id, entry.Name), spawns.ReadNpc(entry.Id), spawns.ReadMob(entry.Id), spawns.ReadWarp(entry.Id)));
 
-                if (Document != null)
-                    Document.CellsChanged -= OnCellsChanged;
-
                 document.Attach(npcs, mobs, warps);
-                Selection.Clear();
-                SelectedEntities.Clear();
-                SelectedEntity = null;
-                SelectedNpc = null;
-                SelectedMob = null;
-                SelectedWarp = null;
-                Document = document;
-                Document.CellsChanged += OnCellsChanged;
-                WatchSpawns(Document.Npcs);
-                WatchSpawns(Document.Mobs);
-                WatchSpawns(Document.Warps);
-                Document.Doors = DoorTable.Find(Document.Width, Document.Height, Document.Map.Objects);
-                RefreshDoorModels();
-                Validation.Clear();
-                UpdateSelectionText();
-                StatusText = $"{entry.Label} {Document.Width}x{Document.Height}, 블록 {Document.Blocks.Count}, 문 {Document.Doors.Count}, NPC {Document.Npcs.Count}, 몹 {Document.Mobs.Count}, 워프 {Document.Warps.Count}";
+                WatchSpawns(document.Npcs);
+                WatchSpawns(document.Mobs);
+                WatchSpawns(document.Warps);
+                OpenDocuments.Insert(Document == null ? OpenDocuments.Count : OpenDocuments.IndexOf(Document) + 1, document);
+                Activate(document);
             }
             catch (Exception e)
             {
@@ -921,7 +980,117 @@ namespace MapEditor.ViewModel
             {
                 Busy = false;
             }
+        }
+
+        /// <summary>
+        /// Makes an open tab the edited map (null when the last tab closed). The leaving tab keeps its view so
+        /// coming back shows the same place; selections do not carry over.
+        /// </summary>
+        public void Activate(MapDocument document)
+        {
+            if (document == Document)
+                return;
+
+            if (Document != null)
+            {
+                Document.CellsChanged -= OnCellsChanged;
+                Document.ViewCenter = ViewCenter;
+                Document.Zoom = Zoom;
+            }
+            _floatingPaste = null;
+            Selection.Clear();
+            SelectedEntities.Clear();
+            SelectedEntity = null;
+            SelectedNpc = null;
+            SelectedMob = null;
+            SelectedWarp = null;
+            SelectedMapDoor = null;
+            Document = document;
+            if (Document != null)
+            {
+                Document.CellsChanged += OnCellsChanged;
+                // Door definitions may have changed while the tab was in the background.
+                Document.Doors = DoorTable.Find(Document.Width, Document.Height, Document.Map.Objects);
+                Zoom = Document.Zoom;
+                SelectedMap = Maps.FirstOrDefault(m => m.Id == Document.Id) ?? SelectedMap;
+                StatusText = $"{Document.Title} {Document.Width}x{Document.Height}, 블록 {Document.Blocks.Count}, 문 {Document.Doors.Count}, NPC {Document.Npcs.Count}, 몹 {Document.Mobs.Count}, 워프 {Document.Warps.Count}";
+            }
+            RefreshDoorModels();
+            Validation.Clear();
+            UpdateSelectionText();
             RenderInvalidated?.Invoke();
+            if (Document?.ViewCenter is (double x, double y))
+                CenterRequested?.Invoke(x, y);
+        }
+
+        /// <summary>
+        /// Closes a tab, asking to save its unsaved changes first; false when the user cancelled or saving failed.
+        /// </summary>
+        public bool CloseDocument(MapDocument document)
+        {
+            if (document == null || OpenDocuments.Contains(document) == false)
+                return true;
+
+            if (document.Dirty)
+            {
+                Activate(document);
+                var answer = MessageBox.Show($"{document.Title} 변경 사항을 저장할까요?", "맵 에디터", MessageBoxButton.YesNoCancel);
+                if (answer == MessageBoxResult.Cancel)
+                    return false;
+                else if (answer == MessageBoxResult.Yes)
+                {
+                    if (Save(document) == false || document.Dirty)
+                        return false;
+                }
+            }
+
+            var index = OpenDocuments.IndexOf(document);
+            OpenDocuments.Remove(document);
+            if (document == Document)
+                Activate(OpenDocuments.Count == 0 ? null : OpenDocuments[Math.Min(index, OpenDocuments.Count - 1)]);
+            if (document.Dirty)
+                ScheduleDoorReferences();
+            return true;
+        }
+
+        /// <summary>
+        /// Moves to the next (step 1) or previous (step -1) tab, wrapping around.
+        /// </summary>
+        public void ActivateNext(int step)
+        {
+            if (OpenDocuments.Count < 2 || Document == null)
+                return;
+
+            var index = (OpenDocuments.IndexOf(Document) + step + OpenDocuments.Count) % OpenDocuments.Count;
+            Activate(OpenDocuments[index]);
+        }
+
+        /// <summary>
+        /// Creates {id}.map filled with one tile and an empty {id}.block, adds the map.xlsx row (server settings
+        /// copied from template) and opens the new map.
+        /// </summary>
+        public async Task CreateMap(int id, string name, int width, int height, int tile, string sheet, int template)
+        {
+            if (_spawns == null || CanOpen == false)
+                throw new InvalidOperationException("the editor is still loading");
+
+            var mapPath = Path.Combine(Settings.MapDirectory, $"{id:000000}.map");
+            if (Maps.Any(m => m.Id == id) || File.Exists(mapPath))
+                throw new InvalidOperationException($"map {id} already exists");
+
+            _spawns.AddMap(id, name, sheet, template);
+            var map = new ServerMap(width, height);
+            Array.Fill(map.Tiles, (ushort)tile);
+            File.WriteAllBytes(mapPath, map.ToBytes());
+            File.WriteAllBytes(Path.Combine(Settings.MapDirectory, $"{id:000000}.block"), new BlockFile().ToBytes());
+            MapCorpus.Update(Settings.MapDirectory, id, map);
+
+            var entry = new MapEntry { Id = id, Name = name };
+            var index = Maps.TakeWhile(m => m.Id < id).Count();
+            Maps.Insert(index, entry);
+            OnPropertyChanged(nameof(MapChoices));
+            await OpenMap(entry);
+            SelectedMap = entry;
         }
 
         /// <summary>
@@ -971,10 +1140,13 @@ namespace MapEditor.ViewModel
         private void OnCellsChanged(IReadOnlyList<(int X, int Y)> cells)
         {
             Document.Doors = DoorTable.Find(Document.Width, Document.Height, Document.Map.Objects);
+            UpdateDoorReferences(Document);
             RefreshDoorModels();
             SelectedMapDoor = null;
             UpdateSelectionText();
             OnPropertyChanged(nameof(Document));
+            _templateTimer.Stop();
+            _templateTimer.Start();
         }
 
         private void OnPropertyChanged(string name)
@@ -982,48 +1154,136 @@ namespace MapEditor.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        public void Save()
+        /// <summary>
+        /// Writes the tab's changed parts (.map/.block, spawn sheets); false when writing failed.
+        /// </summary>
+        public bool Save(MapDocument document)
         {
-            if (Document == null)
-                return;
+            if (document == null)
+                return true;
 
+            var success = true;
             try
             {
                 var saved = new List<string>();
-                if (Document.MapDirty)
+                if (document.MapDirty)
                 {
-                    Document.SaveMap(Settings.MapDirectory);
+                    document.SaveMap(Settings.MapDirectory);
+                    var copy = new ServerMap(document.Width, document.Height);
+                    Array.Copy(document.Map.Tiles, copy.Tiles, copy.Tiles.Length);
+                    Array.Copy(document.Map.Objects, copy.Objects, copy.Objects.Length);
+                    MapCorpus.Update(Settings.MapDirectory, document.Id, copy);
                     saved.Add(".map/.block");
                 }
-                if (Document.NpcDirty)
+                if (document.NpcDirty)
                 {
-                    _spawns.SaveNpc(Document.Id, Document.Npcs);
-                    Document.NpcDirty = false;
+                    _spawns.SaveNpc(document.Id, document.Npcs);
+                    document.NpcDirty = false;
                     saved.Add("npc_spawn");
                 }
-                if (Document.MobDirty)
+                if (document.MobDirty)
                 {
-                    _spawns.SaveMob(Document.Id, Document.Mobs);
-                    Document.MobDirty = false;
+                    _spawns.SaveMob(document.Id, document.Mobs);
+                    document.MobDirty = false;
                     saved.Add("mob_spawn");
                 }
-                if (Document.WarpDirty)
+                if (document.WarpDirty)
                 {
-                    _spawns.SaveWarp(Document.Id, Document.Warps);
-                    Document.WarpDirty = false;
+                    _spawns.SaveWarp(document.Id, document.Warps);
+                    document.WarpDirty = false;
                     saved.Add("warp");
                 }
-                StatusText = saved.Count == 0 ? "변경 사항 없음" : $"저장: {string.Join(", ", saved)}";
+                StatusText = saved.Count == 0 ? $"{document.Title}: 변경 사항 없음" : $"{document.Title} 저장: {string.Join(", ", saved)}";
             }
             catch (IOException e)
             {
-                StatusText = $"저장 실패 (엑셀에서 파일을 열고 있는지 확인): {e.Message}";
+                StatusText = $"{document.Title} 저장 실패 (엑셀에서 파일을 열고 있는지 확인): {e.Message}";
+                success = false;
             }
             catch (Exception e)
             {
-                StatusText = $"저장 실패: {e.Message}";
+                StatusText = $"{document.Title} 저장 실패: {e.Message}";
+                success = false;
             }
             OnPropertyChanged(nameof(Document));
+            return success;
+        }
+
+        /// <summary>
+        /// Saves every tab with unsaved changes; stops at the first failure so its message stays in the status bar.
+        /// </summary>
+        public void SaveAll()
+        {
+            var dirty = OpenDocuments.Where(d => d.Dirty).ToList();
+            if (dirty.Count == 0)
+            {
+                StatusText = "저장할 변경 사항이 없습니다.";
+                return;
+            }
+
+            foreach (var document in dirty)
+            {
+                if (Save(document) == false)
+                    return;
+            }
+            StatusText = $"탭 {dirty.Count}개 저장: {string.Join(", ", dirty.Select(d => $"{d.Id:000000}"))}";
+        }
+
+        /// <summary>
+        /// Writes the tab's current cells, blocks and spawns as a new map (map.xlsx row with the settings of the
+        /// tab's map) and puts the new map in the tab's place. The original map stays as it was last saved.
+        /// </summary>
+        public async Task SaveMapAs(MapDocument source, int id, string name, string sheet)
+        {
+            if (_spawns == null || source == null || CanOpen == false)
+                throw new InvalidOperationException("the editor is still loading");
+
+            var mapPath = Path.Combine(Settings.MapDirectory, $"{id:000000}.map");
+            if (Maps.Any(m => m.Id == id) || File.Exists(mapPath))
+                throw new InvalidOperationException($"map {id} already exists");
+
+            _spawns.AddMap(id, name, sheet, source.Id);
+            File.WriteAllBytes(mapPath, source.Map.ToBytes());
+            File.WriteAllBytes(Path.Combine(Settings.MapDirectory, $"{id:000000}.block"), source.Blocks.ToBytes());
+            _spawns.SaveNpc(id, source.Npcs);
+            _spawns.SaveMob(id, source.Mobs);
+            _spawns.SaveWarp(id, source.Warps);
+            var copy = new ServerMap(source.Width, source.Height);
+            Array.Copy(source.Map.Tiles, copy.Tiles, copy.Tiles.Length);
+            Array.Copy(source.Map.Objects, copy.Objects, copy.Objects.Length);
+            MapCorpus.Update(Settings.MapDirectory, id, copy);
+
+            var entry = new MapEntry { Id = id, Name = name };
+            Maps.Insert(Maps.TakeWhile(m => m.Id < id).Count(), entry);
+            OnPropertyChanged(nameof(MapChoices));
+
+            if (source != Document)
+                Activate(source);
+            var view = ViewCenter;
+            var zoom = Zoom;
+            await OpenMap(entry, record: false);
+            if (Document?.Id != id)
+                return;
+
+            OpenDocuments.Remove(source);
+            SelectedMap = entry;
+            Zoom = zoom;
+            CenterRequested?.Invoke(view.X, view.Y);
+            ScheduleDoorReferences();
+            StatusText = $"{source.Id:000000} {source.Name}을(를) {id:000000} {name}(으)로 저장 (원본은 마지막 저장 상태 그대로)";
+        }
+
+        /// <summary>
+        /// Closes the tabs one by one, asking to save each with unsaved changes; stops when the user cancels.
+        /// </summary>
+        public bool CloseDocuments(IEnumerable<MapDocument> documents)
+        {
+            foreach (var document in documents.ToList())
+            {
+                if (CloseDocument(document) == false)
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -1064,9 +1324,13 @@ namespace MapEditor.ViewModel
             if (Limit550 is (int tiles, int objects) && (cell.Tile >= tiles || cell.Object > objects))
                 text += " | 5.50에 없음";
 
-            var door = DoorAt(x, y);
-            if (door != null)
-                text += $" | 문 {door.Model.Id} {(door.Opened ? "열림" : "닫힘")}";
+            var doors = DoorsAt(x, y);
+            for (int i = 0; i < doors.Count; i++)
+                text += " | " + DoorLabel(doors[i], y, hidden: i > 0);
+
+            var instance = TemplateAt(x, y);
+            if (instance != null)
+                text += $" | 템플릿 {instance.Template.Name} ({instance.X}, {instance.Y})";
 
             var npc = NpcAt(x, y);
             if (npc != null)
@@ -1086,6 +1350,47 @@ namespace MapEditor.ViewModel
         public NpcSpawn NpcAt(int x, int y) => Document?.Npcs.LastOrDefault(n => n.X == x && n.Y == y);
         public WarpEntry WarpAt(int x, int y) => Document?.Warps.LastOrDefault(w => w.X == x && w.Y == y);
         public MapDoor DoorAt(int x, int y) => Document?.Doors.FirstOrDefault(d => d.Y == y && x >= d.X && x < d.X + d.Width);
+
+        /// <summary>
+        /// Doors whose picture covers cell (x, y), front first. A door in a lower row whose tall object reaches up to
+        /// this cell is drawn over a door on the cell itself, which then cannot be seen.
+        /// </summary>
+        public List<MapDoor> DoorsAt(int x, int y)
+        {
+            var result = new List<MapDoor>();
+            if (Document == null)
+                return result;
+
+            var reach = Assets == null ? 1 : Math.Max(1, Assets.Objects.MaxHeight);
+            for (int k = reach - 1; k >= 0; k--)
+            {
+                var door = DoorAt(x, y + k);
+                if (door == null)
+                    continue;
+
+                if (k > 0)
+                {
+                    var sobj = Assets.Objects.Find(Document.Get(x, y + k).Object);
+                    if (sobj == null || k >= sobj.Frames.Length || Assets.ObjectFrame(sobj.Frames[k]) == null)
+                        continue;
+                }
+                result.Add(door);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Menu and status label of a door found by DoorsAt for cell row y.
+        /// </summary>
+        public static string DoorLabel(MapDoor door, int y, bool hidden)
+        {
+            var label = $"문 {door.Model.Id} {(door.Opened ? "열림" : "닫힘")}";
+            if (door.Y != y)
+                label += $" (아래 ({door.X}, {door.Y})의 문, 그림이 여기까지 올라옴)";
+            else if (hidden)
+                label += " (앞의 문 그림에 가려 안 보임)";
+            return label;
+        }
 
         /// <summary>
         /// The base cell of the object drawn at map point (mapX, mapY) in cells: the cell itself, or a cell below
@@ -1757,18 +2062,50 @@ namespace MapEditor.ViewModel
         /// </summary>
         public void ToggleDoor(MapDoor door)
         {
-            if (Document == null || door == null)
+            if (door != null)
+                ToggleDoors(new[] { door });
+        }
+
+        /// <summary>
+        /// Opens closed doors and closes open ones in one undo step; the selected door stays selected.
+        /// </summary>
+        public void ToggleDoors(IReadOnlyCollection<MapDoor> doors)
+        {
+            if (Document == null || doors.Count == 0)
                 return;
 
             var cells = new List<(int, int, CellValue)>();
-            for (int i = 0; i < door.Width; i++)
+            foreach (var door in doors)
             {
-                var pair = DoorTable.FindPair(door.Model.Pairs[i]);
-                var cell = Document.Get(door.X + i, door.Y);
-                cell.Object = (ushort)(door.Opened ? pair.Close : pair.Open);
-                cells.Add((door.X + i, door.Y, cell));
+                for (int i = 0; i < door.Width; i++)
+                {
+                    var pair = DoorTable.FindPair(door.Model.Pairs[i]);
+                    var cell = Document.Get(door.X + i, door.Y);
+                    cell.Object = (ushort)(door.Opened ? pair.Close : pair.Open);
+                    cells.Add((door.X + i, door.Y, cell));
+                }
             }
+            var selected = SelectedMapDoor;
             Document.Apply(cells);
+            if (selected != null)
+                SelectedMapDoor = Document.Doors.FirstOrDefault(d => d.X == selected.X && d.Y == selected.Y);
+        }
+
+        /// <summary>
+        /// O key: every door drawn over the selected cells, otherwise the door picked in the door list.
+        /// </summary>
+        private void ToggleSelectedDoors()
+        {
+            if (Document == null)
+                return;
+
+            var doors = Selection.Select(c => DoorsAt(c.X, c.Y).FirstOrDefault()).Where(d => d != null).Distinct().ToList();
+            if (doors.Count > 0)
+                ToggleDoors(doors);
+            else if (SelectedMapDoor != null)
+                ToggleDoors(new[] { SelectedMapDoor });
+            else
+                StatusText = "열고 닫을 문이 없습니다. 문 칸을 선택하거나 문 목록에서 문을 고르세요.";
         }
 
         public void DeleteDoor(MapDoor door)
@@ -1838,10 +2175,11 @@ namespace MapEditor.ViewModel
         /// Saves the door made of cells starting at (x, y). door_pair rows with the same open/close objects and a
         /// door model with the same pairs are reused, so doors on other maps keep their definitions; missing ones
         /// are added. With modify, that model's pairs are replaced instead (every map using it changes).
-        /// When the server rule would not find the model at (x, y), every change is rolled back (Saved = false) and
-        /// Found is the door that wins there instead, or null.
+        /// When a lower-id door wins at (x, y) only in the map's current state, the door is stored in its other state
+        /// on the map (Flipped = true). When the server rule still would not find the model there, every change is
+        /// rolled back (Saved = false) and Found is the door that wins there instead, or null.
         /// </summary>
-        public (DoorModel Model, MapDoor Found, bool Saved) ApplyDoorEdit(int x, int y, IReadOnlyList<(int Open, int Close)> cells, DoorModel modify)
+        public (DoorModel Model, MapDoor Found, bool Saved, bool Flipped) ApplyDoorEdit(int x, int y, IReadOnlyList<(int Open, int Close)> cells, DoorModel modify)
         {
             var dirty = DoorTableDirty;
             var selected = SelectedDoorModel;
@@ -1882,10 +2220,41 @@ namespace MapEditor.ViewModel
             DoorDefinitionsChanged();
 
             var found = Document?.Doors.FirstOrDefault(d => d.Y == y && d.X == x);
+            var flipped = false;
+            if (found != null && found.Model != model)
+            {
+                // A lower-id door with the same objects in the map's current state wins there, but the model can
+                // still be told apart in its other state (same open picture, different closed one). The server
+                // detects doors once when it loads the map, so storing the door in that state is enough.
+                var current = Enumerable.Range(0, cells.Count).Select(i => (int)Document.Get(x + i, y).Object).ToList();
+                var other = current.SequenceEqual(cells.Select(c => c.Open)) ? cells.Select(c => c.Close).ToList()
+                          : current.SequenceEqual(cells.Select(c => c.Close)) ? cells.Select(c => c.Open).ToList()
+                          : null;
+                if (other != null)
+                {
+                    var objects = (ushort[])Document.Map.Objects.Clone();
+                    for (int i = 0; i < other.Count; i++)
+                        objects[y * Document.Width + x + i] = (ushort)other[i];
+                    var test = DoorTable.Find(Document.Width, Document.Height, objects).FirstOrDefault(d => d.Y == y && d.X == x);
+                    if (test?.Model == model)
+                    {
+                        Document.Apply(other.Select((o, i) =>
+                        {
+                            var cell = Document.Get(x + i, y);
+                            cell.Object = (ushort)o;
+                            return (x + i, y, cell);
+                        }).ToList());
+                        found = Document.Doors.FirstOrDefault(d => d.Y == y && d.X == x);
+                        flipped = true;
+                    }
+                }
+            }
+
             if (found?.Model == model)
             {
+                DoorTableDirty = dirty || addedPairs.Count > 0 || addedModel != null || (modify != null && oldPairs.SequenceEqual(ids) == false);
                 SelectedDoorModel = model;
-                return (model, found, true);
+                return (model, found, true, flipped);
             }
             else
             {
@@ -1898,7 +2267,7 @@ namespace MapEditor.ViewModel
                 DoorDefinitionsChanged();
                 DoorTableDirty = dirty;
                 SelectedDoorModel = selected;
-                return (model, found, false);
+                return (model, found, false, false);
             }
         }
 
@@ -1924,6 +2293,9 @@ namespace MapEditor.ViewModel
         {
             DoorTableDirty = true;
             DoorRevision++;
+            ScheduleDoorReferences();
+            _templateTimer.Stop();
+            _templateTimer.Start();
             if (Document != null)
             {
                 Document.Doors = DoorTable.Find(Document.Width, Document.Height, Document.Map.Objects);
@@ -2249,6 +2621,13 @@ namespace MapEditor.ViewModel
                 if (issue.InOpenMap == false)
                     issue.Checked = false;
             }
+            foreach (var issue in TemplateWarpIssues)
+            {
+                issue.InOpenMap = issue.MapId == Document?.Id;
+                if (issue.InOpenMap == false)
+                    issue.Checked = false;
+            }
+            RefreshTemplateInstances();
         }
 
         /// <summary>

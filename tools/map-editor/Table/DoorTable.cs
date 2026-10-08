@@ -50,6 +50,20 @@ namespace MapEditor.Table
     }
 
     /// <summary>
+    /// A door found on any map, from the editor's reference index.
+    /// </summary>
+    public class DoorReference
+    {
+        public int Door { get; init; }
+        public int Map { get; init; }
+        public string MapName { get; init; } = "";
+        public int X { get; init; }
+        public int Y { get; init; }
+        public bool Opened { get; init; }
+        public string Label => $"{Map:000000} {MapName} ({X}, {Y}) {(Opened ? "열림" : "닫힘")}";
+    }
+
+    /// <summary>
     /// door.xlsx: door_pair (id, open, close) and door (id, pairs "a & b & c").
     /// </summary>
     public class DoorTable
@@ -93,6 +107,52 @@ namespace MapEditor.Table
                 table.Doors.Add(new DoorModel { Id = id, PairsText = XlsxFile.Text(row, 1) });
             }
             return table;
+        }
+
+        /// <summary>
+        /// Detached copy of the definitions, safe to read on another thread while the editor changes this table.
+        /// </summary>
+        public DoorTable Copy()
+        {
+            var copy = new DoorTable(_path);
+            foreach (var pair in Pairs)
+                copy.Pairs.Add(new DoorPair { Id = pair.Id, Open = pair.Open, Close = pair.Close });
+            foreach (var door in Doors)
+                copy.Doors.Add(new DoorModel { Id = door.Id, Pairs = door.Pairs.ToList() });
+            return copy;
+        }
+
+        /// <summary>
+        /// Object → the objects it swaps with when a door opens or closes (cells whose open == close are left out).
+        /// </summary>
+        public Dictionary<ushort, HashSet<ushort>> Partners()
+        {
+            var partners = new Dictionary<ushort, HashSet<ushort>>();
+            foreach (var pair in Pairs.Where(p => p.Open != p.Close && p.Open > 0 && p.Close > 0))
+            {
+                foreach (var (from, to) in new[] { (pair.Open, pair.Close), (pair.Close, pair.Open) })
+                {
+                    if (partners.TryGetValue((ushort)from, out var set) == false)
+                        partners[(ushort)from] = set = new HashSet<ushort>();
+                    set.Add((ushort)to);
+                }
+            }
+            return partners;
+        }
+
+        /// <summary>
+        /// Copy of the objects with every door the server rule finds written in its closed state, so the same
+        /// building compares equal whether its doors are open or closed.
+        /// </summary>
+        public ushort[] Closed(int width, int height, ushort[] objects)
+        {
+            var copy = (ushort[])objects.Clone();
+            foreach (var door in Find(width, height, objects).Where(d => d.Opened))
+            {
+                for (int i = 0; i < door.Width; i++)
+                    copy[door.Y * width + door.X + i] = (ushort)FindPair(door.Model.Pairs[i]).Close;
+            }
+            return copy;
         }
 
         public DoorPair FindPair(int id)

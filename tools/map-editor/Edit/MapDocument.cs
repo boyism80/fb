@@ -142,6 +142,14 @@ namespace MapEditor.Edit
         public bool CanRedo => _redo.Count > 0;
         public string Title => Dirty ? $"{Id:000000} {Name} *" : $"{Id:000000} {Name}";
 
+        /// <summary>
+        /// View of this tab while another tab is active: center in cells (null = never shown) and zoom.
+        /// </summary>
+        [PropertyChanged.DoNotNotify]
+        public (double X, double Y)? ViewCenter { get; set; }
+        [PropertyChanged.DoNotNotify]
+        public double Zoom { get; set; } = 1;
+
         public List<MapDoor> Doors { get; set; } = new List<MapDoor>();
         public ObservableCollection<NpcSpawn> Npcs { get; private set; } = new ObservableCollection<NpcSpawn>();
         public ObservableCollection<MobSpawn> Mobs { get; private set; } = new ObservableCollection<MobSpawn>();
@@ -358,7 +366,10 @@ namespace MapEditor.Edit
             MapDirty = false;
         }
 
-        private static void WriteAtomic(string path, byte[] bytes)
+        /// <summary>
+        /// Writes through a .tmp file and keeps the previous file as .bak.
+        /// </summary>
+        public static void WriteAtomic(string path, byte[] bytes)
         {
             var temp = path + ".tmp";
             File.WriteAllBytes(temp, bytes);

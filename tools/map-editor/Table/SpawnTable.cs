@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.RegularExpressions;
+using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using PropertyChanged;
 
@@ -242,6 +243,109 @@ namespace MapEditor.Table
             var rows = spawns.Select(s => new[] { "", $"{s.BeginX}, {s.BeginY}", $"{s.EndX}, {s.EndY}", s.Count.ToString(), s.Mob.ToString(), s.Rezen, s.Condition }).ToList();
             _mobSheet.Write(mapId, rows);
             XlsxFile.Save(_mobBook, MobPath);
+        }
+
+        /// <summary>
+        /// Appends a map row to the map.N sheet and saves map.xlsx. Server settings (bgm, effect, host, option, ...)
+        /// are copied from the template map's row; root is the new map itself.
+        /// </summary>
+        public void AddMap(int id, string name, string sheetName, int template)
+        {
+            if (MapNames.Entry(id) != null)
+                throw new InvalidOperationException($"map {id} is already in map.xlsx");
+
+            var sheet = _mapBook.GetSheet(sheetName) ?? throw new ArgumentException($"sheet {sheetName} not found in map.xlsx");
+            IRow source = null;
+            for (int i = 0; i < 26 && source == null; i++)
+            {
+                var candidate = _mapBook.GetSheet($"map.{i}");
+                for (int r = XlsxFile.FirstDataRow; candidate != null && r <= candidate.LastRowNum; r++)
+                {
+                    var row = candidate.GetRow(r);
+                    if (XlsxFile.Text(row, 0) == template.ToString())
+                    {
+                        source = row;
+                        break;
+                    }
+                }
+            }
+            if (source == null)
+                throw new ArgumentException($"template map {template} not found in map.xlsx");
+
+            var target = sheet.CreateRow(sheet.LastRowNum + 1);
+            for (int c = 0; c < source.LastCellNum; c++)
+            {
+                var value = c switch
+                {
+                    0 => id.ToString(),
+                    1 => name,
+                    2 => id.ToString(),
+                    _ => XlsxFile.Text(source, c),
+                };
+                XlsxFile.SetText(target, c, value, source.GetCell(c)?.CellType == CellType.Numeric);
+            }
+            XlsxFile.Save(_mapBook, MapPath);
+            MapNames.Add(new NameEntry { Id = id, Name = name });
+        }
+
+        /// <summary>
+        /// map.N sheets present in map.xlsx.
+        /// </summary>
+        public List<string> MapSheets => Enumerable.Range(0, 26).Select(i => $"map.{i}").Where(name => _mapBook.GetSheet(name) != null).ToList();
+
+        /// <summary>
+        /// The map.N sheet holding the map's row; null when the id is not in map.xlsx.
+        /// </summary>
+        public string MapSheet(int id)
+        {
+            foreach (var name in MapSheets)
+            {
+                var sheet = _mapBook.GetSheet(name);
+                for (int r = XlsxFile.FirstDataRow; r <= sheet.LastRowNum; r++)
+                {
+                    if (XlsxFile.Text(sheet.GetRow(r), 0) == id.ToString())
+                        return name;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Removes the maps' rows from map.N and their npc_spawn, mob_spawn and warp groups, then saves the three
+        /// workbooks. Warps of other maps that lead to them are left alone. Nothing changes when a workbook is open
+        /// in another program.
+        /// </summary>
+        public void RemoveMaps(IReadOnlyCollection<int> ids)
+        {
+            XlsxFile.EnsureWritable(MapPath);
+            XlsxFile.EnsureWritable(NpcPath);
+            XlsxFile.EnsureWritable(MobPath);
+            var keys = ids.Select(id => id.ToString()).ToHashSet();
+            foreach (var name in MapSheets)
+            {
+                var sheet = _mapBook.GetSheet(name);
+                for (int r = sheet.LastRowNum; r >= XlsxFile.FirstDataRow; r--)
+                {
+                    var row = sheet.GetRow(r);
+                    if (row == null || keys.Contains(XlsxFile.Text(row, 0)) == false)
+                        continue;
+
+                    sheet.RemoveRow(row);
+                    if (r < sheet.LastRowNum)
+                        sheet.ShiftRows(r + 1, sheet.LastRowNum, -1);
+                }
+            }
+            foreach (var id in ids)
+            {
+                _npcSheet.Remove(id);
+                _mobSheet.Remove(id);
+                _warpSheet.Remove(id);
+            }
+            XlsxFile.Save(_mapBook, MapPath);
+            XlsxFile.Save(_npcBook, NpcPath);
+            XlsxFile.Save(_mobBook, MobPath);
+            foreach (var id in ids)
+                MapNames.Remove(id);
         }
 
         public void SaveWarp(int mapId, IEnumerable<WarpEntry> warps)

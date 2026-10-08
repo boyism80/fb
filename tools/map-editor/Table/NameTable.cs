@@ -65,5 +65,18 @@ namespace MapEditor.Table
         {
             return _entries.TryGetValue(id, out var entry) ? entry : null;
         }
+
+        public void Add(NameEntry entry)
+        {
+            _entries[entry.Id] = entry;
+            var index = Entries.FindIndex(e => e.Id > entry.Id);
+            Entries.Insert(index < 0 ? Entries.Count : index, entry);
+        }
+
+        public void Remove(int id)
+        {
+            _entries.Remove(id);
+            Entries.RemoveAll(e => e.Id == id);
+        }
     }
 }

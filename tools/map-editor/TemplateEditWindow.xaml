@@ -1,0 +1,57 @@
+<Window x:Class="MapEditor.TemplateEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:control="clr-namespace:MapEditor.Control"
+        Title="템플릿" Width="900" Height="700" MinWidth="640" MinHeight="420"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource MainTextBrush}"
+        FontFamily="Malgun Gothic" FontSize="12">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top">
+            <DockPanel Margin="0 0 0 6">
+                <TextBlock Text="이름" VerticalAlignment="Center" Margin="0 0 8 0" />
+                <TextBox x:Name="NameBox" />
+            </DockPanel>
+            <WrapPanel Margin="0 0 0 6">
+                <TextBlock Text="크기" VerticalAlignment="Center" Margin="0 0 8 0" />
+                <TextBox x:Name="WidthBox" Width="50" />
+                <TextBlock Text=" × " VerticalAlignment="Center" />
+                <TextBox x:Name="HeightBox" Width="50" />
+                <Button Content="크기 적용" Click="OnResize" Margin="6 0 0 0" />
+                <Button Content="내용에 맞게 자르기" Click="OnTrim" />
+                <Button Content="오브젝트 없는 칸의 타일 지우기" Click="OnClearLooseTiles" />
+                <Button Content="타일 모두 지우기" Click="OnClearTiles" />
+            </WrapPanel>
+            <WrapPanel Margin="0 0 0 6">
+                <TextBlock Text="레이어" VerticalAlignment="Center" Margin="0 0 8 0" />
+                <RadioButton x:Name="TileLayer" GroupName="Layer" Content="타일" IsChecked="True" Style="{StaticResource ToolButton}" Checked="OnLayerChanged" />
+                <RadioButton x:Name="ObjectLayer" GroupName="Layer" Content="오브젝트" Style="{StaticResource ToolButton}" Checked="OnLayerChanged" />
+                <TextBlock Text="도구" VerticalAlignment="Center" Margin="16 0 8 0" />
+                <RadioButton x:Name="DrawBrush" GroupName="Brush" Content="그리기" IsChecked="True" Style="{StaticResource ToolButton}" Checked="OnBrushChanged" />
+                <RadioButton x:Name="EraseBrush" GroupName="Brush" Content="지우기" Style="{StaticResource ToolButton}" Checked="OnBrushChanged" />
+                <RadioButton x:Name="PickBrush" GroupName="Brush" Content="스포이트" Style="{StaticResource ToolButton}" Checked="OnBrushChanged" />
+                <TextBlock Text="번호" VerticalAlignment="Center" Margin="16 0 8 0" />
+                <TextBox x:Name="ValueBox" Width="70" TextChanged="OnValueChanged" />
+                <Border Width="40" Height="40" Margin="6 0 0 0" BorderBrush="{StaticResource ControlLightBrush}" BorderThickness="1">
+                    <Image x:Name="ValuePreview" Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                </Border>
+                <TextBlock Text="확대" VerticalAlignment="Center" Margin="16 0 8 0" />
+                <Slider x:Name="ZoomSlider" Width="120" Minimum="0.5" Maximum="4" Value="1.5" VerticalAlignment="Center" ValueChanged="OnZoomChanged" />
+            </WrapPanel>
+        </StackPanel>
+
+        <DockPanel DockPanel.Dock="Bottom" Margin="0 8 0 0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="확인" IsDefault="True" Click="OnOk" />
+                <Button Content="취소" IsCancel="True" />
+            </StackPanel>
+            <TextBlock x:Name="Info" VerticalAlignment="Center" Foreground="{StaticResource SemiTextBrush}" TextWrapping="Wrap" />
+        </DockPanel>
+
+        <Border BorderBrush="{StaticResource ControlLightBrush}" BorderThickness="1" Background="{StaticResource InputBrush}">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <control:TemplateCanvas x:Name="Canvas" Margin="8" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>
