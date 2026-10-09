@@ -73,6 +73,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"item_free_space",              builtin::character::builtin_item_free_space},
 {"exp",                          builtin::character::builtin_exp},
 {"item",                         builtin::character::builtin_item},
+{"item_by_uid",                  builtin::character::builtin_item_by_uid},
 {"items",                        builtin::character::builtin_items},
 {"has_items",                    builtin::character::builtin_has_items},
 {"equipments",                   builtin::character::builtin_equipments},
@@ -775,6 +776,24 @@ int builtin::character::builtin_item(lua_State* L)
         };
     }
     return builder.run();
+}
+
+int builtin::character::builtin_item_by_uid(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto item = ch->items.find(lua->touint64(2));
+    if (item == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(item);
+    return 1;
 }
 
 int builtin::character::builtin_items(lua_State* L)

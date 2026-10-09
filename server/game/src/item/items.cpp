@@ -1184,6 +1184,33 @@ std::shared_ptr<item> items::find(const fb::model::item& model) const
     return nullptr;
 }
 
+std::shared_ptr<item> items::find(uint64_t uid) const
+{
+    if (uid == 0)
+        return nullptr;
+
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto item = this->at(i);
+        if (item == nullptr)
+            continue;
+
+        if (item->uid() == uid)
+            return std::static_pointer_cast<fb::game::item>(item);
+    }
+
+    for (auto& [parts, equipment] : this->equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        if (equipment->uid() == uid)
+            return std::static_pointer_cast<fb::game::item>(equipment);
+    }
+
+    return nullptr;
+}
+
 uint16_t items::free_space(const fb::model::item& model) const
 {
     auto item = this->find(model);

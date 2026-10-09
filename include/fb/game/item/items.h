@@ -130,6 +130,7 @@ public:
     auxiliary_ptr                                   auxiliary(auxiliary_ptr auxiliary, EQUIPMENT_POSITION position);
     item_ptr                                        find(std::string_view name) const;
     item_ptr                                        find(const fb::model::item& model) const;
+    item_ptr                                        find(uint64_t uid) const;
     bool                                            has(const fb::model::item& model, uint16_t count) const;
     uint16_t                                        free_space(const fb::model::item& model) const;
     bool                                            has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& required) const;

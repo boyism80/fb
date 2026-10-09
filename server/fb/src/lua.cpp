@@ -409,8 +409,10 @@ lua_Integer context::tonumber(int offset, lua_Integer default_value)
         return default_value;
     else if (lua_type(*this, offset) != LUA_TNUMBER)
         return default_value;
+    else if (lua_isinteger(*this, offset))
+        return lua_tointeger(*this, offset);
     else
-        return lua_tonumber(*this, offset);
+        return static_cast<lua_Integer>(lua_tonumber(*this, offset));
 }
 
 uint64_t context::touint64(int offset, uint64_t default_value)
