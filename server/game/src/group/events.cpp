@@ -382,13 +382,7 @@ async::task<void> group::container::on_leave(std::string                target,
             if (map != nullptr && map->is_instance() &&
                 map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
             {
-                auto source = map->source();
-                if (source != nullptr)
-                {
-                    map_options opts;
-                    opts.skip_instance_rule = true;
-                    std::ignore             = co_await ptr->map(source, std::nullopt, opts);
-                }
+                std::ignore = co_await map->kick(*ptr);
             }
         }
 
@@ -460,13 +454,7 @@ async::task<void> group::container::on_kick(std::string                target,
             if (map != nullptr && map->is_instance() &&
                 map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
             {
-                auto source = map->source();
-                if (source != nullptr)
-                {
-                    map_options opts;
-                    opts.skip_instance_rule = true;
-                    std::ignore             = co_await ptr->map(source, std::nullopt, opts);
-                }
+                std::ignore = co_await map->kick(*ptr);
             }
         }
 
@@ -509,13 +497,7 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
                 if (map != nullptr && map->is_instance() &&
                     map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
                 {
-                    auto source = map->source();
-                    if (source != nullptr)
-                    {
-                        map_options opts;
-                        opts.skip_instance_rule = true;
-                        std::ignore             = co_await ch->map(source, std::nullopt, opts);
-                    }
+                    std::ignore = co_await map->kick(*ch);
                 }
                 co_return;
             },

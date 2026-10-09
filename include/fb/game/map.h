@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -133,6 +134,7 @@ public:
     virtual void                    on_character_leave();
     virtual bool                    begin_destroy();
     uint32_t                        character_count() const;
+    async::task<bool>               kick(character& ch) const;
     // clang-format on
 
 public:
@@ -167,14 +169,14 @@ private:
         std::unordered_map<uint32_t, std::shared_ptr<fb::game::map>> by_slot;
     };
 
-    fb::synchronized<registry>                                   _maps;
-    uint32_t                                                     _sequence = 1;
-    std::queue<uint32_t>                                         _available_seq;
-    std::unordered_map<uint32_t, slot_pool>                      _slot_pools;
-    std::unordered_map<uint32_t, std::shared_ptr<fb::game::map>> _group_instances;
-    std::mutex                                                   _load_mutex;
-    std::mutex                                                   _entry_mutex;
-    mutable std::atomic<std::shared_ptr<const snapshot_t>>       _snapshot{std::make_shared<snapshot_t>()};
+    fb::synchronized<registry>                                              _maps;
+    uint32_t                                                                _sequence = 1;
+    std::queue<uint32_t>                                                    _available_seq;
+    std::unordered_map<uint32_t, slot_pool>                                 _slot_pools;
+    std::map<std::pair<uint32_t, uint32_t>, std::shared_ptr<fb::game::map>> _group_instances;
+    std::mutex                                                              _load_mutex;
+    std::mutex                                                              _entry_mutex;
+    mutable std::atomic<std::shared_ptr<const snapshot_t>>                  _snapshot{std::make_shared<snapshot_t>()};
 
     fb::sharded_container<fb::game::map::cache_bytes, 1024, uint64_t> _update_cache;
     mutable std::shared_mutex                                         _update_cache_mutex;

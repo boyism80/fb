@@ -36,6 +36,7 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"slot",                builtin::map::builtin_slot},
 {"clone",               builtin::map::builtin_clone},
 {"destroy",             builtin::map::builtin_destroy},
+{"kick",                builtin::map::builtin_kick},
 {"set_timer",           builtin::map::builtin_set_timer},
 {"cancel_timer",        builtin::map::builtin_cancel_timer},
 {"timer",               builtin::map::builtin_timer},
@@ -746,6 +747,40 @@ int builtin::map::builtin_destroy(lua_State* L)
             *result = true;
         }
         co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_kick(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto source   = map->weak_from_this_as<fb::game::map>().lock();
+    auto result   = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = ch->weak_from_this_as<fb::game::character>();
+    builder.yield = [=]() -> async::task<void> {
+        if (ch->map() != source)
+            co_return;
+
+        *result = co_await source->kick(*ch);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);

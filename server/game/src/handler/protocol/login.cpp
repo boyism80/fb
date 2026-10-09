@@ -13,6 +13,7 @@
 
 #include <json/json.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <format>
@@ -299,15 +300,55 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     session.data(ch);
 
+    if (resp.group.has_value())
+        std::ignore = co_await this->server.groups.enter_write(resp.group.value());
+    if (resp.clan.has_value())
+        std::ignore = co_await this->server.clans.enter_write(resp.clan.value());
+
     // Others can reach the character as soon as it is on the map, so the slots are filled before that.
     this->init_items(resp.items, *ch);
 
     if (request.match.has_value() && request.match->id != 0)
         co_await this->server.matches.join(*ch, request.match->id, request.match->type, request.match->team);
 
+    if (resp.group.has_value())
+    {
+        auto guard = co_await this->server.groups.enter_write(resp.group.value());
+        if (auto& group = guard.value(); group != nullptr)
+        {
+            auto members = group->members();
+            if (std::find(members.begin(), members.end(), ch->name()) != members.end())
+                ch->group_id(group->id());
+        }
+    }
+
+    if (resp.clan.has_value())
+    {
+        auto guard = co_await this->server.clans.enter_write(resp.clan.value());
+        if (auto& clan = guard.value(); clan != nullptr && clan->contains(ch->name()))
+            ch->clan_id(clan->id());
+    }
+
     if (ch->map() == nullptr)
     {
-        if (co_await ch->map(target_map, fb::model::point16_t(position_x, position_y)) == false)
+        auto entry    = target_map;
+        auto position = std::make_optional(fb::model::point16_t(position_x, position_y));
+        if (entry->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP &&
+            ch->group_id().has_value() == false)
+        {
+            entry    = this->server.maps.find(0);
+            position = std::nullopt;
+            if (entry == nullptr)
+            {
+                fb::logger::fatal("Character {} login failed: no group for map {} and map 0 does not exist",
+                                  resp.character.name,
+                                  target_map->model().id);
+                this->server.matches.leave(*ch);
+                co_return nullptr;
+            }
+        }
+
+        if (co_await ch->map(entry, position) == false)
         {
             this->server.matches.leave(*ch);
             co_return nullptr;
@@ -321,26 +362,30 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         std::ignore        = co_await ch->buffs.push_back(model, buff.time);
     }
 
-    if (resp.group.has_value())
+    if (ch->group_id().has_value())
     {
-        auto guard = co_await this->server.groups.enter_write(resp.group.value());
+        auto gid   = ch->group_id().value();
+        auto guard = co_await this->server.groups.enter_write(gid);
         if (auto& group = guard.value(); group != nullptr)
         {
             group->enter(weak);
             group->add_member(ch->name());
-            ch->group_id(group->id());
             this->server.groups.update_portraits(*group);
+        }
+        else
+        {
+            ch->group_reset();
         }
     }
 
-    if (resp.clan.has_value())
+    if (ch->clan_id().has_value())
     {
-        auto guard = co_await this->server.clans.enter_write(resp.clan.value());
+        auto cid   = ch->clan_id().value();
+        auto guard = co_await this->server.clans.enter_write(cid);
         if (auto& clan = guard.value(); clan != nullptr)
-        {
             clan->attach(weak);
-            ch->clan_id(clan->id());
-        }
+        else
+            ch->clan_reset();
     }
 
     bool inserted = this->server.characters.insert(ch);

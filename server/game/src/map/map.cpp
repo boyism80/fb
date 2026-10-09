@@ -2,6 +2,7 @@
 
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
+#include <fb/logger.h>
 
 #include <algorithm>
 #include <atomic>
@@ -553,6 +554,26 @@ bool map::begin_destroy()
 uint32_t map::character_count() const
 {
     return this->_character_count.load(std::memory_order_relaxed);
+}
+
+async::task<bool> map::kick(character& ch) const
+{
+    auto& return_to = this->model().return_to;
+    if (return_to.has_value())
+    {
+        auto dest = this->server.maps.find(return_to.value());
+        if (dest != nullptr && co_await ch.map(dest))
+            co_return true;
+    }
+
+    auto virtual_world = this->server.maps.find(0);
+    if (virtual_world == nullptr)
+    {
+        fb::logger::fatal("Character {} cannot be kicked from map {}: map 0 does not exist", ch.name(), this->id);
+        co_return false;
+    }
+
+    co_return co_await ch.map(virtual_world);
 }
 
 map::tile* map::operator() (uint16_t x, uint16_t y) const

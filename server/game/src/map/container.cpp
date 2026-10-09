@@ -601,10 +601,10 @@ std::shared_ptr<fb::game::map> map::container::choice_by_group(character&       
     if (group_id.has_value() == false)
         return nullptr;
 
-    auto gid = group_id.value();
+    auto key = std::make_pair(group_id.value(), source->model().id);
     {
         auto lock = std::lock_guard(this->_entry_mutex);
-        auto it   = this->_group_instances.find(gid);
+        auto it   = this->_group_instances.find(key);
         if (it != this->_group_instances.end() && it->second != nullptr && it->second->closing() == false)
             return it->second;
     }
@@ -615,7 +615,7 @@ std::shared_ptr<fb::game::map> map::container::choice_by_group(character&       
 
     {
         auto lock = std::lock_guard(this->_entry_mutex);
-        auto it   = this->_group_instances.find(gid);
+        auto it   = this->_group_instances.find(key);
         if (it != this->_group_instances.end() && it->second != nullptr && it->second->closing() == false)
         {
             auto winner = it->second;
@@ -628,7 +628,7 @@ std::shared_ptr<fb::game::map> map::container::choice_by_group(character&       
             return winner;
         }
 
-        this->_group_instances[gid] = created;
+        this->_group_instances[key] = created;
     }
 
     return created;
@@ -706,15 +706,12 @@ async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& 
         co_await builder.dispatch();
     }
 
-    auto source = map->source();
     for (auto& character : *characters)
     {
         auto weak    = character->weak_from_this_as<fb::game::object>();
         auto builder = this->server.threads.new_builder(weak);
-        builder.func = [character, source](auto&) -> async::task<void> {
-            map_options opts;
-            opts.skip_instance_rule = true;
-            std::ignore             = co_await character->map(source, std::nullopt, opts);
+        builder.func = [character, map](auto&) -> async::task<void> {
+            std::ignore = co_await map->kick(*character);
         };
         co_await builder.dispatch();
     }

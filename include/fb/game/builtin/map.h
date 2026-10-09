@@ -27,6 +27,7 @@ struct map
     static int builtin_slot(lua_State* L);
     static int builtin_clone(lua_State* L);
     static int builtin_destroy(lua_State* L);
+    static int builtin_kick(lua_State* L);
     static int builtin_set_timer(lua_State* L);
     static int builtin_cancel_timer(lua_State* L);
     static int builtin_timer(lua_State* L);
