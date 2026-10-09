@@ -2,7 +2,7 @@ using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
 using StackExchange.Redis;
-using Protocol = fb.protocol._internal;
+using Protocol = fb.protocol.@internal;
 
 namespace Http.Service
 {

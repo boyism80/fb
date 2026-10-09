@@ -1,6 +1,6 @@
 using AutoMapper;
 using Newtonsoft.Json;
-using Protocol = fb.protocol._internal;
+using Protocol = fb.protocol.@internal;
 
 namespace Http.Mapping
 {

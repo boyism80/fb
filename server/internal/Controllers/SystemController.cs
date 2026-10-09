@@ -1,7 +1,7 @@
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
-using Request = fb.protocol._internal.request;
-using Response = fb.protocol._internal.response;
+using Request = fb.protocol.@internal.request;
+using Response = fb.protocol.@internal.response;
 
 namespace Internal.Controllers
 {

@@ -10,9 +10,9 @@ using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 using Option = Http.Model.Option;
-using Protocol = fb.protocol._internal;
-using Request = fb.protocol._internal.request;
-using Response = fb.protocol._internal.response;
+using Protocol = fb.protocol.@internal;
+using Request = fb.protocol.@internal.request;
+using Response = fb.protocol.@internal.response;
 
 namespace Internal.Controllers
 {

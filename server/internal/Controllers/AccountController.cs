@@ -10,8 +10,8 @@ using System.Buffers;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
-using Request = fb.protocol._internal.request;
-using Response = fb.protocol._internal.response;
+using Request = fb.protocol.@internal.request;
+using Response = fb.protocol.@internal.response;
 
 namespace Internal.Controllers
 {

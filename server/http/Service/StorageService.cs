@@ -2,8 +2,8 @@ using AutoMapper;
 using Fb.Model.EnumValue;
 using Http.Model;
 using Microsoft.Extensions.Logging;
-using Protocol = fb.protocol._internal;
-using Response = fb.protocol._internal.response;
+using Protocol = fb.protocol.@internal;
+using Response = fb.protocol.@internal.response;
 
 namespace Http.Service
 {

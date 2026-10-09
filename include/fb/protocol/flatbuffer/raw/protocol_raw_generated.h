@@ -24,17 +24,8 @@ struct nullable_ushortBuilder;
 struct nullable_uint;
 struct nullable_uintBuilder;
 
-struct nullable_fb_protocol_internal_mimicry;
-struct nullable_fb_protocol_internal_mimicryBuilder;
-
 struct nullable_ulong;
 struct nullable_ulongBuilder;
-
-struct nullable_fb_protocol_internal_characterref;
-struct nullable_fb_protocol_internal_characterrefBuilder;
-
-struct nullable_fb_protocol_marketplace_purchaseinfo;
-struct nullable_fb_protocol_marketplace_purchaseinfoBuilder;
 
 }  // namespace nullable
 
@@ -1022,48 +1013,6 @@ inline ::flatbuffers::Offset<nullable_uint> Createnullable_uint(
   return builder_.Finish();
 }
 
-struct nullable_fb_protocol_internal_mimicry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef nullable_fb_protocol_internal_mimicryBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUE = 4
-  };
-  const fb::protocol::internal::raw::Mimicry *value() const {
-    return GetPointer<const fb::protocol::internal::raw::Mimicry *>(VT_VALUE);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_VALUE) &&
-           verifier.VerifyTable(value()) &&
-           verifier.EndTable();
-  }
-};
-
-struct nullable_fb_protocol_internal_mimicryBuilder {
-  typedef nullable_fb_protocol_internal_mimicry Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_value(::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> value) {
-    fbb_.AddOffset(nullable_fb_protocol_internal_mimicry::VT_VALUE, value);
-  }
-  explicit nullable_fb_protocol_internal_mimicryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<nullable_fb_protocol_internal_mimicry> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<nullable_fb_protocol_internal_mimicry>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<nullable_fb_protocol_internal_mimicry> Createnullable_fb_protocol_internal_mimicry(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> value = 0) {
-  nullable_fb_protocol_internal_mimicryBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
-
 struct nullable_ulong FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef nullable_ulongBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -1101,90 +1050,6 @@ inline ::flatbuffers::Offset<nullable_ulong> Createnullable_ulong(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t value = 0) {
   nullable_ulongBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
-
-struct nullable_fb_protocol_internal_characterref FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef nullable_fb_protocol_internal_characterrefBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUE = 4
-  };
-  const fb::protocol::internal::raw::CharacterRef *value() const {
-    return GetPointer<const fb::protocol::internal::raw::CharacterRef *>(VT_VALUE);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_VALUE) &&
-           verifier.VerifyTable(value()) &&
-           verifier.EndTable();
-  }
-};
-
-struct nullable_fb_protocol_internal_characterrefBuilder {
-  typedef nullable_fb_protocol_internal_characterref Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_value(::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> value) {
-    fbb_.AddOffset(nullable_fb_protocol_internal_characterref::VT_VALUE, value);
-  }
-  explicit nullable_fb_protocol_internal_characterrefBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<nullable_fb_protocol_internal_characterref> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<nullable_fb_protocol_internal_characterref>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<nullable_fb_protocol_internal_characterref> Createnullable_fb_protocol_internal_characterref(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> value = 0) {
-  nullable_fb_protocol_internal_characterrefBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
-
-struct nullable_fb_protocol_marketplace_purchaseinfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef nullable_fb_protocol_marketplace_purchaseinfoBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUE = 4
-  };
-  const fb::protocol::marketplace::raw::PurchaseInfo *value() const {
-    return GetPointer<const fb::protocol::marketplace::raw::PurchaseInfo *>(VT_VALUE);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_VALUE) &&
-           verifier.VerifyTable(value()) &&
-           verifier.EndTable();
-  }
-};
-
-struct nullable_fb_protocol_marketplace_purchaseinfoBuilder {
-  typedef nullable_fb_protocol_marketplace_purchaseinfo Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_value(::flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> value) {
-    fbb_.AddOffset(nullable_fb_protocol_marketplace_purchaseinfo::VT_VALUE, value);
-  }
-  explicit nullable_fb_protocol_marketplace_purchaseinfoBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<nullable_fb_protocol_marketplace_purchaseinfo> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<nullable_fb_protocol_marketplace_purchaseinfo>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<nullable_fb_protocol_marketplace_purchaseinfo> Createnullable_fb_protocol_marketplace_purchaseinfo(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> value = 0) {
-  nullable_fb_protocol_marketplace_purchaseinfoBuilder builder_(_fbb);
   builder_.add_value(value);
   return builder_.Finish();
 }

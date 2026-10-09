@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Response = fb.protocol._internal.response;
+using Response = fb.protocol.@internal.response;
 
 namespace Http.Service.Amqp
 {

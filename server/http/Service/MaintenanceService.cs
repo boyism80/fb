@@ -206,7 +206,7 @@ namespace Http.Service
 
             var servers = await _serverStateService.GetRunningServers();
             var serverIds = servers
-                .Where(s => s.World == world && s.Service == fb.protocol._internal.Service.Game.ToString())
+                .Where(s => s.World == world && s.Service == fb.protocol.@internal.Service.Game.ToString())
                 .Select(s => s.Id)
                 .ToHashSet();
 
@@ -222,7 +222,7 @@ namespace Http.Service
             {
                 try
                 {
-                    await _rabbitMqService.PublishAsync(new fb.protocol._internal.response.StartMaintenance
+                    await _rabbitMqService.PublishAsync(new fb.protocol.@internal.response.StartMaintenance
                     {
                         Message = maintenanceInfo.Message,
                         EndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")

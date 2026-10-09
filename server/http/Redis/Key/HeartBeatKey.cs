@@ -6,7 +6,7 @@ namespace Http.Redis.Key
         public const string Prefix = "fb:heart-beat:";
 
         public uint? World { get; set; }
-        public fb.protocol._internal.Service Service { get; set; }
+        public fb.protocol.@internal.Service Service { get; set; }
         public byte Id { get; set; } = 0xFF;
 
         public string Member => World.HasValue

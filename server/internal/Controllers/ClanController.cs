@@ -6,9 +6,9 @@ using Http.Model;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
-using Protocol = fb.protocol._internal;
-using Request = fb.protocol._internal.request;
-using Response = fb.protocol._internal.response;
+using Protocol = fb.protocol.@internal;
+using Request = fb.protocol.@internal.request;
+using Response = fb.protocol.@internal.response;
 
 namespace Internal.Controllers
 {

@@ -24,7 +24,7 @@ namespace Http.Service
                 actor
             });
             await _discord.NotifyAsync("shutdown", source, actor, null, null, null);
-            await _rabbitMqService.PublishAsync(new fb.protocol._internal.response.Shutdown(), "amq.direct", "fb.global");
+            await _rabbitMqService.PublishAsync(new fb.protocol.@internal.response.Shutdown(), "amq.direct", "fb.global");
         }
     }
 }

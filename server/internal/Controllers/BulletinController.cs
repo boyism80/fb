@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
-using fb.protocol._internal;
+using fb.protocol.@internal;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
-using Request = fb.protocol._internal.request;
-using Response = fb.protocol._internal.response;
+using Request = fb.protocol.@internal.request;
+using Response = fb.protocol.@internal.response;
 
 namespace Internal.Controllers
 {
@@ -59,7 +59,7 @@ namespace Internal.Controllers
 
                 return new Response.GetArticle
                 {
-                    Article = _mapper.Map<fb.protocol._internal.Article>(article),
+                    Article = _mapper.Map<fb.protocol.@internal.Article>(article),
                     Next = next,
                     Success = true,
                 };
