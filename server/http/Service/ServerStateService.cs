@@ -1,12 +1,15 @@
 using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
+using StackExchange.Redis;
 using Protocol = fb.protocol._internal;
 
 namespace Http.Service
 {
     public class ServerStateService
     {
+        private static readonly TimeSpan HeartbeatTtl = TimeSpan.FromSeconds(5);
+
         private readonly RedisService _redisService;
 
         public ServerStateService(RedisService redisService)
@@ -37,22 +40,33 @@ namespace Http.Service
             if (redis == null)
                 return new List<ServerInfo>();
 
-            var keys = await redis.Connection.ScanKeysAsync("fb:heart-beat:*", 1000);
+            var expired = DateTimeOffset.UtcNow.Subtract(HeartbeatTtl).ToUnixTimeMilliseconds();
+            await redis.Connection.SortedSetRemoveRangeByScoreAsync(HeartBeatKey.Index, double.NegativeInfinity, expired, Exclude.Stop);
+
+            var members = await redis.Connection.SortedSetRangeByScoreAsync(HeartBeatKey.Index, expired, double.PositiveInfinity);
+            if (members.Length == 0)
+                return new List<ServerInfo>();
+
+            var keys = members.Select(member => new RedisKey(HeartBeatKey.Prefix + member)).ToArray();
+            var values = await redis.Connection.StringGetAsync(keys);
             var servers = new List<ServerInfo>();
 
-            foreach (var key in keys)
+            for (var i = 0; i < members.Length; i++)
             {
-                var keyStr = key.ToString();
-                var parts = keyStr.Split(':');
-                if (parts.Length != 5)
+                var value = values[i];
+                if (value.IsNull)
+                    continue;
+
+                var parts = members[i].ToString().Split(':');
+                if (parts.Length != 3)
                     continue;
 
                 uint? world;
-                if (parts[2] == "cross")
+                if (parts[0] == "cross")
                 {
                     world = null;
                 }
-                else if (uint.TryParse(parts[2], out var parsed))
+                else if (uint.TryParse(parts[0], out var parsed))
                 {
                     world = parsed;
                 }
@@ -61,12 +75,8 @@ namespace Http.Service
                     continue;
                 }
 
-                var service = parts[3];
-                if (!byte.TryParse(parts[4], out var id))
-                    continue;
-
-                var value = await redis.Connection.StringGetAsync(key);
-                if (value.IsNull)
+                var service = parts[1];
+                if (!byte.TryParse(parts[2], out var id))
                     continue;
 
                 try
@@ -102,12 +112,8 @@ namespace Http.Service
 
         public async Task<bool> HasRunningServers()
         {
-            var redis = _redisService.GetUnifiedConnection();
-            if (redis == null)
-                return false;
-
-            var keys = await redis.Connection.ScanKeysAsync("fb:heart-beat:*", 1000);
-            return keys.Count > 0;
+            var servers = await GetRunningServers();
+            return servers.Count > 0;
         }
 
         public async Task<bool> UpdateHeartbeat(uint? world, Protocol.Service service, byte id, string name, string ip, ushort port, uint online)
@@ -128,10 +134,10 @@ namespace Http.Service
                 var key = new HeartBeatKey { World = world, Service = service, Id = id };
                 var json = JsonConvert.SerializeObject(config);
 
-                await redis.Connection.StringSetAsync(key.Key, json);
-                await redis.Connection.KeyExpireAsync(key.Key, TimeSpan.FromSeconds(5));
-
-                return true;
+                var transaction = redis.Connection.CreateTransaction();
+                _ = transaction.StringSetAsync(key.Key, json, HeartbeatTtl);
+                _ = transaction.SortedSetAddAsync(HeartBeatKey.Index, key.Member, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+                return await transaction.ExecuteAsync();
             }
             catch
             {

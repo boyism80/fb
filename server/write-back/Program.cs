@@ -14,6 +14,7 @@ namespace WriteBack
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton<Http.Service.RedisService>();
+                    services.AddSingleton<Http.Service.ServerStateService>();
                     services.AddSingleton<Http.Service.DbContext>();
                     services.AddLogging(builder =>
                     {

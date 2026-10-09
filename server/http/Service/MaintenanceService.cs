@@ -204,38 +204,15 @@ namespace Http.Service
                 return 0;
             }
 
-            // Find all game servers for this world by scanning Redis heartbeat keys
-            var redis = _redisService.GetUnifiedConnection();
-            if (redis == null)
-            {
-                _logger.LogWarning("Redis unified connection not available for world {World}", world);
-                return 0;
-            }
-
-            var heartbeatPattern = $"fb:heart-beat:{world}:Game:*";
-            var keys = await redis.Connection.ScanKeysAsync(heartbeatPattern, 1000);
-
-            if (keys.Count == 0)
-            {
-                _logger.LogWarning("No running game servers found for world {World}", world);
-                return 0;
-            }
-
-            // Extract server IDs from heartbeat keys (format: fb:heart-beat:World:Service:Id)
-            var serverIds = new HashSet<byte>();
-            foreach (var key in keys)
-            {
-                var keyStr = key.ToString();
-                var parts = keyStr.Split(':');
-                if (parts.Length == 5 && byte.TryParse(parts[4], out var serverId))
-                {
-                    serverIds.Add(serverId);
-                }
-            }
+            var servers = await _serverStateService.GetRunningServers();
+            var serverIds = servers
+                .Where(s => s.World == world && s.Service == fb.protocol._internal.Service.Game.ToString())
+                .Select(s => s.Id)
+                .ToHashSet();
 
             if (serverIds.Count == 0)
             {
-                _logger.LogWarning("No valid game server IDs found for world {World}", world);
+                _logger.LogWarning("No running game servers found for world {World}", world);
                 return 0;
             }
 
