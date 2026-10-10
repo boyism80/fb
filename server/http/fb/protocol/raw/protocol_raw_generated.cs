@@ -480,6 +480,9 @@ public struct Character : IFlatbufferObject
   public ushort Evaluation { get { int o = __p.__offset(90); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public byte Face { get { int o = __p.__offset(92); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public ushort RidableId { get { int o = __p.__offset(94); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public uint EvaluationPlaytime { get { int o = __p.__offset(96); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public fb.protocol.@internal.raw.EvaluatedTarget? EvaluatedTargets(int j) { int o = __p.__offset(98); return o != 0 ? (fb.protocol.@internal.raw.EvaluatedTarget?)(new fb.protocol.@internal.raw.EvaluatedTarget()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int EvaluatedTargetsLength { get { int o = __p.__offset(98); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol.@internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -527,8 +530,10 @@ public struct Character : IFlatbufferObject
       short reputation = 0,
       ushort evaluation = 0,
       byte face = 0,
-      ushort ridable_id = 0) {
-    builder.StartTable(46);
+      ushort ridable_id = 0,
+      uint evaluation_playtime = 0,
+      VectorOffset evaluated_targetsOffset = default(VectorOffset)) {
+    builder.StartTable(48);
     Character.AddAdditionalMp(builder, additional_mp);
     Character.AddBaseMp(builder, base_mp);
     Character.AddMp(builder, mp);
@@ -538,6 +543,8 @@ public struct Character : IFlatbufferObject
     Character.AddDepositedMoney(builder, deposited_money);
     Character.AddMoney(builder, money);
     Character.AddExp(builder, exp);
+    Character.AddEvaluatedTargets(builder, evaluated_targetsOffset);
+    Character.AddEvaluationPlaytime(builder, evaluation_playtime);
     Character.AddFirstLoginDate(builder, first_login_dateOffset);
     Character.AddUpdatedDate(builder, updated_dateOffset);
     Character.AddCreatedDate(builder, created_dateOffset);
@@ -578,7 +585,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(46); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(48); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(1, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
@@ -630,6 +637,13 @@ public struct Character : IFlatbufferObject
   public static void AddEvaluation(FlatBufferBuilder builder, ushort evaluation) { builder.AddUshort(43, evaluation, 0); }
   public static void AddFace(FlatBufferBuilder builder, byte face) { builder.AddByte(44, face, 0); }
   public static void AddRidableId(FlatBufferBuilder builder, ushort ridableId) { builder.AddUshort(45, ridableId, 0); }
+  public static void AddEvaluationPlaytime(FlatBufferBuilder builder, uint evaluationPlaytime) { builder.AddUint(46, evaluationPlaytime, 0); }
+  public static void AddEvaluatedTargets(FlatBufferBuilder builder, VectorOffset evaluatedTargetsOffset) { builder.AddOffset(47, evaluatedTargetsOffset.Value, 0); }
+  public static VectorOffset CreateEvaluatedTargetsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.EvaluatedTarget>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateEvaluatedTargetsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.EvaluatedTarget>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateEvaluatedTargetsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.EvaluatedTarget>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateEvaluatedTargetsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.EvaluatedTarget>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartEvaluatedTargetsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol.@internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.Character>(o);
@@ -688,6 +702,8 @@ static public class CharacterVerify
       && verifier.VerifyField(tablePos, 90 /*Evaluation*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 92 /*Face*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 94 /*RidableId*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 96 /*EvaluationPlaytime*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyVectorOfTables(tablePos, 98 /*EvaluatedTargets*/, fb.protocol.@internal.raw.EvaluatedTargetVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -1013,6 +1029,68 @@ static public class CollectionUnlockVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*MobId*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
+public struct EvaluatedTarget : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static EvaluatedTarget GetRootAsEvaluatedTarget(ByteBuffer _bb) { return GetRootAsEvaluatedTarget(_bb, new EvaluatedTarget()); }
+  public static EvaluatedTarget GetRootAsEvaluatedTarget(ByteBuffer _bb, EvaluatedTarget obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public EvaluatedTarget __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public uint Target { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string EvaluatedAt { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetEvaluatedAtBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
+  public ArraySegment<byte>? GetEvaluatedAtBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetEvaluatedAtArray() { return __p.__vector_as_array<byte>(6); }
+
+  public static Offset<fb.protocol.@internal.raw.EvaluatedTarget> CreateEvaluatedTarget(FlatBufferBuilder builder,
+      uint target = 0,
+      StringOffset evaluated_atOffset = default(StringOffset)) {
+    builder.StartTable(2);
+    EvaluatedTarget.AddEvaluatedAt(builder, evaluated_atOffset);
+    EvaluatedTarget.AddTarget(builder, target);
+    return EvaluatedTarget.EndEvaluatedTarget(builder);
+  }
+
+  public static void StartEvaluatedTarget(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddTarget(FlatBufferBuilder builder, uint target) { builder.AddUint(0, target, 0); }
+  public static void AddEvaluatedAt(FlatBufferBuilder builder, StringOffset evaluatedAtOffset) { builder.AddOffset(1, evaluatedAtOffset.Value, 0); }
+  public static Offset<fb.protocol.@internal.raw.EvaluatedTarget> EndEvaluatedTarget(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.raw.EvaluatedTarget>(o);
+  }
+}
+
+
+static public class EvaluatedTargetVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*Target*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 6 /*EvaluatedAt*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

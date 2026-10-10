@@ -1057,6 +1057,13 @@ namespace Fb.Model.ConstValue
         public const uint Horse = 301;
     }
 
+    public static class Reputation
+    {
+        public static readonly TimeSpan EvaluationInterval = TimeSpan.Parse("12:00:00");
+        public static readonly TimeSpan EvaluationCooldown = TimeSpan.Parse("1.00:00:00");
+        public const ushort MaxEvaluation = 2;
+    }
+
     public static class Script
     {
         public const string F1EventScript = "scripts/server.lua";
@@ -1133,6 +1140,14 @@ namespace Fb.Model.ConstValue
         public const string MessageLoginElapsedSuffix = "만에 바람으로...";
         public const string MessageExpGained = "경험치가 {}({}%) 올랐습니다.";
         public const string MessageExpLost = "경험치를 {} 잃었습니다.";
+        public const string MessageReputationNoEvaluation = "인품 평가권이 없습니다.";
+        public const string MessageReputationAlreadyEvaluated = "같은 사람은 하루에 한 번만 평가할 수 있습니다.";
+        public const string MessageReputationSelf = "자기 자신은 평가할 수 없습니다.";
+        public const string MessageReputationRaised = "{}님의 인품을 올렸습니다.";
+        public const string MessageReputationLowered = "{}님의 인품을 내렸습니다.";
+        public const string MessageReputationRaisedByOther = "누군가 당신의 인품을 올렸습니다.";
+        public const string MessageReputationLoweredByOther = "누군가 당신의 인품을 내렸습니다.";
+        public const string MessageReputationEvaluationGained = "인품 평가권을 얻었습니다.";
         public const string MessageClanNameAlreadyExists = "클랜명이 이미 존재함";
         public const string MessageClanKicked = "문파에서 추방당했습니다.";
         public const string MessageClanLeft = "문파에서 탈퇴했습니다.";

@@ -770,8 +770,6 @@ namespace Internal.Controllers
 
             var ch = _mapper.Map<Character>(data.Character);
             ch.Pw = existingCharacter.Pw;
-            ch.Reputation = existingCharacter.Reputation;
-            ch.Evaluation = existingCharacter.Evaluation;
             ch.SnapshotTime = data.SnapshotTime;
             _dbContext.Character.Set(world, ch);
 

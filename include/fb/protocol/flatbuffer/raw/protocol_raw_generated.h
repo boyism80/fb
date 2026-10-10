@@ -58,6 +58,9 @@ struct MatchmakingSkillBuilder;
 struct Buff;
 struct BuffBuilder;
 
+struct EvaluatedTarget;
+struct EvaluatedTargetBuilder;
+
 struct Option;
 struct OptionBuilder;
 
@@ -1310,7 +1313,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_REPUTATION = 88,
     VT_EVALUATION = 90,
     VT_FACE = 92,
-    VT_RIDABLE_ID = 94
+    VT_RIDABLE_ID = 94,
+    VT_EVALUATION_PLAYTIME = 96,
+    VT_EVALUATED_TARGETS = 98
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -1450,6 +1455,12 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t ridable_id() const {
     return GetField<uint16_t>(VT_RIDABLE_ID, 0);
   }
+  uint32_t evaluation_playtime() const {
+    return GetField<uint32_t>(VT_EVALUATION_PLAYTIME, 0);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>> *evaluated_targets() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>> *>(VT_EVALUATED_TARGETS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -1517,6 +1528,10 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint16_t>(verifier, VT_EVALUATION, 2) &&
            VerifyField<uint8_t>(verifier, VT_FACE, 1) &&
            VerifyField<uint16_t>(verifier, VT_RIDABLE_ID, 2) &&
+           VerifyField<uint32_t>(verifier, VT_EVALUATION_PLAYTIME, 4) &&
+           VerifyOffset(verifier, VT_EVALUATED_TARGETS) &&
+           verifier.VerifyVector(evaluated_targets()) &&
+           verifier.VerifyVectorOfTables(evaluated_targets()) &&
            verifier.EndTable();
   }
 };
@@ -1663,6 +1678,12 @@ struct CharacterBuilder {
   void add_ridable_id(uint16_t ridable_id) {
     fbb_.AddElement<uint16_t>(Character::VT_RIDABLE_ID, ridable_id, 0);
   }
+  void add_evaluation_playtime(uint32_t evaluation_playtime) {
+    fbb_.AddElement<uint32_t>(Character::VT_EVALUATION_PLAYTIME, evaluation_playtime, 0);
+  }
+  void add_evaluated_targets(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>>> evaluated_targets) {
+    fbb_.AddOffset(Character::VT_EVALUATED_TARGETS, evaluated_targets);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1721,7 +1742,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     int16_t reputation = 0,
     uint16_t evaluation = 0,
     uint8_t face = 0,
-    uint16_t ridable_id = 0) {
+    uint16_t ridable_id = 0,
+    uint32_t evaluation_playtime = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>>> evaluated_targets = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_additional_mp(additional_mp);
   builder_.add_base_mp(base_mp);
@@ -1732,6 +1755,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_deposited_money(deposited_money);
   builder_.add_money(money);
   builder_.add_exp(exp);
+  builder_.add_evaluated_targets(evaluated_targets);
+  builder_.add_evaluation_playtime(evaluation_playtime);
   builder_.add_first_login_date(first_login_date);
   builder_.add_updated_date(updated_date);
   builder_.add_created_date(created_date);
@@ -1819,7 +1844,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     int16_t reputation = 0,
     uint16_t evaluation = 0,
     uint8_t face = 0,
-    uint16_t ridable_id = 0) {
+    uint16_t ridable_id = 0,
+    uint32_t evaluation_playtime = 0,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>> *evaluated_targets = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -1827,6 +1854,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
   auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
   auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   auto first_login_date__ = first_login_date ? _fbb.CreateString(first_login_date) : 0;
+  auto evaluated_targets__ = evaluated_targets ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>>(*evaluated_targets) : 0;
   return fb::protocol::internal::raw::CreateCharacter(
       _fbb,
       id,
@@ -1874,7 +1902,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       reputation,
       evaluation,
       face,
-      ridable_id);
+      ridable_id,
+      evaluation_playtime,
+      evaluated_targets__);
 }
 
 struct Marriage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -2362,6 +2392,69 @@ inline ::flatbuffers::Offset<Buff> CreateBuff(
   builder_.add_time(time);
   builder_.add_model(model);
   return builder_.Finish();
+}
+
+struct EvaluatedTarget FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef EvaluatedTargetBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TARGET = 4,
+    VT_EVALUATED_AT = 6
+  };
+  uint32_t target() const {
+    return GetField<uint32_t>(VT_TARGET, 0);
+  }
+  const ::flatbuffers::String *evaluated_at() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_EVALUATED_AT);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_TARGET, 4) &&
+           VerifyOffset(verifier, VT_EVALUATED_AT) &&
+           verifier.VerifyString(evaluated_at()) &&
+           verifier.EndTable();
+  }
+};
+
+struct EvaluatedTargetBuilder {
+  typedef EvaluatedTarget Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_target(uint32_t target) {
+    fbb_.AddElement<uint32_t>(EvaluatedTarget::VT_TARGET, target, 0);
+  }
+  void add_evaluated_at(::flatbuffers::Offset<::flatbuffers::String> evaluated_at) {
+    fbb_.AddOffset(EvaluatedTarget::VT_EVALUATED_AT, evaluated_at);
+  }
+  explicit EvaluatedTargetBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<EvaluatedTarget> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<EvaluatedTarget>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<EvaluatedTarget> CreateEvaluatedTarget(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t target = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> evaluated_at = 0) {
+  EvaluatedTargetBuilder builder_(_fbb);
+  builder_.add_evaluated_at(evaluated_at);
+  builder_.add_target(target);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<EvaluatedTarget> CreateEvaluatedTargetDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t target = 0,
+    const char *evaluated_at = nullptr) {
+  auto evaluated_at__ = evaluated_at ? _fbb.CreateString(evaluated_at) : 0;
+  return fb::protocol::internal::raw::CreateEvaluatedTarget(
+      _fbb,
+      target,
+      evaluated_at__);
 }
 
 struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

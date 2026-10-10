@@ -83,6 +83,8 @@ table Character {
     evaluation: ushort;
     face: ubyte;
     ridable_id: ushort = 1;
+    evaluation_playtime: uint;
+    evaluated_targets: [EvaluatedTarget];
 }
 
 table Marriage {
@@ -125,6 +127,11 @@ table Buff
 {
     model: uint;
     time: uint;
+}
+
+table EvaluatedTarget {
+    target: uint;
+    evaluated_at: string;
 }
 
 table Option {

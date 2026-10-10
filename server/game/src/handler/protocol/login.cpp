@@ -272,9 +272,20 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         params.mimicry = std::nullopt;
     }
-    params.nation         = static_cast<NATION>(resp.character.nation);
-    params.divine_beast   = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
-    params.super_hide     = resp.option.super_hide;
+    params.nation              = static_cast<NATION>(resp.character.nation);
+    params.divine_beast        = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
+    params.super_hide          = resp.option.super_hide;
+    params.reputation          = resp.character.reputation;
+    params.evaluation          = resp.character.evaluation;
+    params.evaluation_playtime = resp.character.evaluation_playtime;
+    for (auto& evaluated : resp.character.evaluated_targets)
+    {
+        auto evaluated_at = fb::model::datetime(evaluated.evaluated_at);
+        if (this->server.now() - evaluated_at >= fb::model::const_value::reputation::EVALUATION_COOLDOWN)
+            continue;
+
+        params.evaluated_targets.insert_or_assign(evaluated.target, evaluated_at);
+    }
     params.client_version = request.client_version;
     params.ui_mode        = request.ui_mode;
 

@@ -21,6 +21,7 @@
 #include <fb/socket.h>
 #include <fb/synchronized.h>
 
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -153,6 +154,9 @@ private:
     std::atomic<LOGIN_STATE>              _login_state   = LOGIN_STATE::LOADING; // raced by login and on_disconnected
     mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
     fb::model::datetime                              _last_afk_time;
+    fb::model::datetime                              _evaluation_tick;
+    std::chrono::milliseconds                        _evaluation_playtime = std::chrono::milliseconds(0);
+    std::map<uint32_t, fb::model::datetime>          _evaluated_targets;
     fb::game::marriage                               _marriage;
     mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
     std::weak_ptr<fb::socket<character>>             _socket;
@@ -188,37 +192,41 @@ public:
     struct initial_params : fb::game::life::initial_params
     {
     public:
-        std::shared_ptr<fb::socket<character>> socket;
-        uint32_t                               id    = 0;
-        uint32_t                               world = 0;
-        std::string                            name;
-        std::optional<uint32_t>                birthday = std::nullopt;
-        fb::model::datetime                    created_date;
-        fb::model::datetime                    updated_date;
-        std::optional<fb::model::datetime>     first_login_date = std::nullopt;
-        ROLE                                   role             = ROLE::USER;
-        CLASS                                  class_type       = CLASS::NONE;
-        uint8_t                                promotion        = 0;
-        uint16_t                               color            = 0;
-        DIRECTION                              direction        = DIRECTION::BOTTOM;
-        uint16_t                               hair             = 0;
-        uint8_t                                face             = 0;
-        uint16_t                               ridable_id       = 1;
-        uint64_t                               money            = 0;
-        GENDER                                 gender           = GENDER::MALE;
-        uint8_t                                level            = 1;
-        uint64_t                               exp              = 0;
-        STATE                                  state            = STATE::NORMAL;
-        std::string                            title;
-        std::optional<uint8_t>                 armor_color    = std::nullopt;
-        std::optional<uint8_t>                 weapon_color   = std::nullopt;
-        std::optional<uint8_t>                 shield_color   = std::nullopt;
-        std::optional<character_appearance<>>  mimicry        = std::nullopt;
-        NATION                                 nation         = NATION::GOGURYEO;
-        DIVINE_BEAST                           divine_beast   = DIVINE_BEAST::AZURE_DRAGON;
-        bool                                   super_hide     = false;
-        fb::protocol::CLIENT_VERSION           client_version = fb::protocol::CLIENT_VERSION::v550;
-        fb::protocol::CLIENT_UI_MODE           ui_mode        = fb::protocol::CLIENT_UI_MODE::OLD;
+        std::shared_ptr<fb::socket<character>>  socket;
+        uint32_t                                id    = 0;
+        uint32_t                                world = 0;
+        std::string                             name;
+        std::optional<uint32_t>                 birthday = std::nullopt;
+        fb::model::datetime                     created_date;
+        fb::model::datetime                     updated_date;
+        std::optional<fb::model::datetime>      first_login_date = std::nullopt;
+        ROLE                                    role             = ROLE::USER;
+        CLASS                                   class_type       = CLASS::NONE;
+        uint8_t                                 promotion        = 0;
+        uint16_t                                color            = 0;
+        DIRECTION                               direction        = DIRECTION::BOTTOM;
+        uint16_t                                hair             = 0;
+        uint8_t                                 face             = 0;
+        uint16_t                                ridable_id       = 1;
+        uint64_t                                money            = 0;
+        GENDER                                  gender           = GENDER::MALE;
+        uint8_t                                 level            = 1;
+        uint64_t                                exp              = 0;
+        STATE                                   state            = STATE::NORMAL;
+        std::string                             title;
+        std::optional<uint8_t>                  armor_color         = std::nullopt;
+        std::optional<uint8_t>                  weapon_color        = std::nullopt;
+        std::optional<uint8_t>                  shield_color        = std::nullopt;
+        std::optional<character_appearance<>>   mimicry             = std::nullopt;
+        NATION                                  nation              = NATION::GOGURYEO;
+        DIVINE_BEAST                            divine_beast        = DIVINE_BEAST::AZURE_DRAGON;
+        bool                                    super_hide          = false;
+        int16_t                                 reputation          = 0;
+        uint16_t                                evaluation          = 0;
+        uint32_t                                evaluation_playtime = 0;
+        std::map<uint32_t, fb::model::datetime> evaluated_targets;
+        fb::protocol::CLIENT_VERSION            client_version = fb::protocol::CLIENT_VERSION::v550;
+        fb::protocol::CLIENT_UI_MODE            ui_mode        = fb::protocol::CLIENT_UI_MODE::OLD;
     };
 
 public:
@@ -322,7 +330,11 @@ public:
     DIVINE_BEAST                                              divine_beast() const;
     bool                                                      divine_beast(DIVINE_BEAST value);
     int16_t                                                   reputation() const;
+    void                                                      reputation(int16_t value);
     uint16_t                                                  evaluation() const;
+    void                                                      evaluation(uint16_t value);
+    void                                                      accumulate_evaluation_playtime(const fb::model::datetime& now);
+    [[nodiscard]] async::task<void>                           evaluate(std::string target_name, bool raise);
     uint8_t                                                   level() const;
     void                                                      level(uint8_t value);
     GENDER                                                    gender() const;

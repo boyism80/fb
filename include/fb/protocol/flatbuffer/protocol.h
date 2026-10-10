@@ -43,6 +43,7 @@ namespace fb::protocol::internal
     class Spell;
     class MatchmakingSkill;
     class Buff;
+    class EvaluatedTarget;
     class Option;
     class ArticleSummary;
     class Article;
@@ -356,6 +357,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Item> { typedef flat
 template <> struct FlatBufferOffset<fb::protocol::internal::Spell> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Spell> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::MatchmakingSkill> { typedef flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Buff> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Buff> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::EvaluatedTarget> { typedef flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Option> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Option> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ArticleSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Article> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Article> type; };
@@ -567,6 +569,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill> build<fb::protocol::internal::MatchmakingSkill>(FlatBufferBuilder& builder, const fb::protocol::internal::MatchmakingSkill& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Buff> build<fb::protocol::internal::Buff>(FlatBufferBuilder& builder, const fb::protocol::internal::Buff& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget> build<fb::protocol::internal::EvaluatedTarget>(FlatBufferBuilder& builder, const fb::protocol::internal::EvaluatedTarget& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Option> build<fb::protocol::internal::Option>(FlatBufferBuilder& builder, const fb::protocol::internal::Option& value);
 template <>
@@ -997,6 +1001,7 @@ enum class FlatBufferProtocolType
     Spell,
     MatchmakingSkill,
     Buff,
+    EvaluatedTarget,
     Option,
     ArticleSummary,
     Article,
@@ -1150,6 +1155,46 @@ public:
         return Buff(*raw);
     }
 };
+class EvaluatedTarget
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::EvaluatedTarget;
+
+public:
+    uint32_t target = 0;
+    std::string evaluated_at;
+
+public:
+    EvaluatedTarget() = default;
+
+    EvaluatedTarget(const EvaluatedTarget& x)
+        : target(x.target), evaluated_at(x.evaluated_at)
+    { }
+
+    EvaluatedTarget(uint32_t target, std::string_view evaluated_at)
+        : target(target), evaluated_at(std::string(evaluated_at))
+    { }
+
+    EvaluatedTarget(const fb::protocol::internal::raw::EvaluatedTarget& raw)
+        : target(raw.target()), evaluated_at(flatbuffers::option::decode(raw.evaluated_at()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::EvaluatedTarget>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static EvaluatedTarget Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::raw::EvaluatedTarget>(bytes);
+        return EvaluatedTarget(*raw);
+    }
+};
 class Character
 {
 public:
@@ -1202,20 +1247,22 @@ public:
     uint16_t evaluation = 0;
     uint8_t face = 0;
     uint16_t ridable_id = 1;
+    uint32_t evaluation_playtime = 0;
+    std::vector<fb::protocol::internal::EvaluatedTarget> evaluated_targets = {};
 
 public:
     Character() = default;
 
     Character(const Character& x)
-        : id(x.id), world(x.world), name(x.name), pw(x.pw), birth(x.birth), role(x.role), hair(x.hair), color(x.color), gender(x.gender), nation(x.nation), divine_beast(x.divine_beast), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), mimicry(x.mimicry), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), buffs(x.buffs), title(x.title), created_date(x.created_date), updated_date(x.updated_date), first_login_date(x.first_login_date), speed(x.speed), reputation(x.reputation), evaluation(x.evaluation), face(x.face), ridable_id(x.ridable_id)
+        : id(x.id), world(x.world), name(x.name), pw(x.pw), birth(x.birth), role(x.role), hair(x.hair), color(x.color), gender(x.gender), nation(x.nation), divine_beast(x.divine_beast), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), mimicry(x.mimicry), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), buffs(x.buffs), title(x.title), created_date(x.created_date), updated_date(x.updated_date), first_login_date(x.first_login_date), speed(x.speed), reputation(x.reputation), evaluation(x.evaluation), face(x.face), ridable_id(x.ridable_id), evaluation_playtime(x.evaluation_playtime), evaluated_targets(x.evaluated_targets)
     { }
 
-    Character(uint32_t id, uint32_t world, std::string_view name, std::string_view pw, const std::optional<uint32_t>& birth, uint8_t role, uint16_t hair, uint16_t color, uint8_t gender, uint8_t nation, uint8_t divine_beast, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint64_t exp, uint64_t money, uint64_t deposited_money, const std::optional<fb::protocol::internal::Mimicry>& mimicry, uint64_t hp, uint64_t base_hp, uint64_t additional_hp, uint64_t mp, uint64_t base_mp, uint64_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, std::vector<fb::protocol::internal::Buff> buffs, std::string_view title, std::string_view created_date, std::string_view updated_date, const std::optional<std::string>& first_login_date, uint8_t speed, int16_t reputation, uint16_t evaluation, uint8_t face, uint16_t ridable_id)
-        : id(id), world(world), name(std::string(name)), pw(std::string(pw)), birth(birth), role(role), hair(hair), color(color), gender(gender), nation(nation), divine_beast(divine_beast), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), mimicry(mimicry), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), buffs(buffs), title(std::string(title)), created_date(std::string(created_date)), updated_date(std::string(updated_date)), first_login_date(first_login_date), speed(speed), reputation(reputation), evaluation(evaluation), face(face), ridable_id(ridable_id)
+    Character(uint32_t id, uint32_t world, std::string_view name, std::string_view pw, const std::optional<uint32_t>& birth, uint8_t role, uint16_t hair, uint16_t color, uint8_t gender, uint8_t nation, uint8_t divine_beast, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint64_t exp, uint64_t money, uint64_t deposited_money, const std::optional<fb::protocol::internal::Mimicry>& mimicry, uint64_t hp, uint64_t base_hp, uint64_t additional_hp, uint64_t mp, uint64_t base_mp, uint64_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, std::vector<fb::protocol::internal::Buff> buffs, std::string_view title, std::string_view created_date, std::string_view updated_date, const std::optional<std::string>& first_login_date, uint8_t speed, int16_t reputation, uint16_t evaluation, uint8_t face, uint16_t ridable_id, uint32_t evaluation_playtime, std::vector<fb::protocol::internal::EvaluatedTarget> evaluated_targets)
+        : id(id), world(world), name(std::string(name)), pw(std::string(pw)), birth(birth), role(role), hair(hair), color(color), gender(gender), nation(nation), divine_beast(divine_beast), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), mimicry(mimicry), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), buffs(buffs), title(std::string(title)), created_date(std::string(created_date)), updated_date(std::string(updated_date)), first_login_date(first_login_date), speed(speed), reputation(reputation), evaluation(evaluation), face(face), ridable_id(ridable_id), evaluation_playtime(evaluation_playtime), evaluated_targets(evaluated_targets)
     { }
 
     Character(const fb::protocol::internal::raw::Character& raw)
-        : id(raw.id()), world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), birth(raw.birth() != nullptr ? raw.birth()->value() : std::optional<uint32_t>()), role(raw.role()), hair(raw.hair()), color(raw.color()), gender(raw.gender()), nation(raw.nation()), divine_beast(raw.divine_beast()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), mimicry(raw.mimicry() != nullptr ? *raw.mimicry() : std::optional<fb::protocol::internal::Mimicry>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), buffs(unpack<fb::protocol::internal::Buff>(raw.buffs())), title(flatbuffers::option::decode(raw.title()->c_str())), created_date(flatbuffers::option::decode(raw.created_date()->c_str())), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str())), first_login_date(raw.first_login_date() != nullptr ? flatbuffers::option::decode(raw.first_login_date()->c_str()) : std::optional<std::string>()), speed(raw.speed()), reputation(raw.reputation()), evaluation(raw.evaluation()), face(raw.face()), ridable_id(raw.ridable_id())
+        : id(raw.id()), world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), birth(raw.birth() != nullptr ? raw.birth()->value() : std::optional<uint32_t>()), role(raw.role()), hair(raw.hair()), color(raw.color()), gender(raw.gender()), nation(raw.nation()), divine_beast(raw.divine_beast()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), mimicry(raw.mimicry() != nullptr ? *raw.mimicry() : std::optional<fb::protocol::internal::Mimicry>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), buffs(unpack<fb::protocol::internal::Buff>(raw.buffs())), title(flatbuffers::option::decode(raw.title()->c_str())), created_date(flatbuffers::option::decode(raw.created_date()->c_str())), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str())), first_login_date(raw.first_login_date() != nullptr ? flatbuffers::option::decode(raw.first_login_date()->c_str()) : std::optional<std::string>()), speed(raw.speed()), reputation(raw.reputation()), evaluation(raw.evaluation()), face(raw.face()), ridable_id(raw.ridable_id()), evaluation_playtime(raw.evaluation_playtime()), evaluated_targets(unpack<fb::protocol::internal::EvaluatedTarget>(raw.evaluated_targets()))
     { }
 
 public:
@@ -9308,7 +9355,9 @@ flatbuffers::Offset<fb::protocol::internal::raw::Character> build<fb::protocol::
             flatbuffers::build<int16_t>(builder, value.reputation),
             flatbuffers::build<uint16_t>(builder, value.evaluation),
             flatbuffers::build<uint8_t>(builder, value.face),
-            flatbuffers::build<uint16_t>(builder, value.ridable_id));
+            flatbuffers::build<uint16_t>(builder, value.ridable_id),
+            flatbuffers::build<uint32_t>(builder, value.evaluation_playtime),
+            flatbuffers::build<std::vector<fb::protocol::internal::EvaluatedTarget>>(builder, value.evaluated_targets));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Marriage> build<fb::protocol::internal::Marriage>(FlatBufferBuilder& builder, const fb::protocol::internal::Marriage& value)
@@ -9360,6 +9409,13 @@ flatbuffers::Offset<fb::protocol::internal::raw::Buff> build<fb::protocol::inter
     return fb::protocol::internal::raw::CreateBuff(builder,
             flatbuffers::build<uint32_t>(builder, value.model),
             flatbuffers::build<uint32_t>(builder, value.time));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget> build<fb::protocol::internal::EvaluatedTarget>(FlatBufferBuilder& builder, const fb::protocol::internal::EvaluatedTarget& value)
+{
+    return fb::protocol::internal::raw::CreateEvaluatedTarget(builder,
+            flatbuffers::build<uint32_t>(builder, value.target),
+            flatbuffers::build<std::string>(builder, value.evaluated_at));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Option> build<fb::protocol::internal::Option>(FlatBufferBuilder& builder, const fb::protocol::internal::Option& value)

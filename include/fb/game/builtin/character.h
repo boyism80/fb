@@ -88,6 +88,8 @@ struct character
     static int builtin_active(lua_State* L);
     static int builtin_super_hide(lua_State* L);
     static int builtin_divine_beast(lua_State* L);
+    static int builtin_reputation(lua_State* L);
+    static int builtin_evaluation(lua_State* L);
     static int builtin_teleport(lua_State* L);
     static int builtin_dialog(lua_State* L);
     static int builtin_list(lua_State* L);

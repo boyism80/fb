@@ -16,6 +16,7 @@ public class Program
         SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(Http.Model.EvaluationState), new JsonTypeHandler());
 
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);

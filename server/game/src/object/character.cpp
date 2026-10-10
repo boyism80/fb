@@ -61,8 +61,11 @@ character::character(fb::game::server& server, const initial_params& params) :
     _shield_color(params.shield_color), _experience(params.exp), _gender(params.gender), _state(params.state),
     _ridable_id(params.ridable_id), _level(params.level), _class(params.class_type), _promotion(params.promotion),
     _money(params.money), _mimicry(params.mimicry), _title(params.title), _nation(params.nation),
-    _divine_beast(params.divine_beast), _super_hide(params.super_hide), _last_afk_time(server.now()),
-    _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
+    _divine_beast(params.divine_beast), _reputation(params.reputation), _evaluation(params.evaluation),
+    _super_hide(params.super_hide), _last_afk_time(server.now()), _evaluation_tick(server.now()),
+    _evaluation_playtime(std::chrono::seconds(params.evaluation_playtime)),
+    _evaluated_targets(params.evaluated_targets), _marriage(server.now()), id(params.id),
+    client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now();
 }
@@ -777,10 +780,141 @@ int16_t character::reputation() const
     return this->_reputation;
 }
 
+void character::reputation(int16_t value)
+{
+    this->assert_thread();
+    this->_reputation = value;
+    this->update(UPDATE_STATE_LEVEL::BASED);
+}
+
 uint16_t character::evaluation() const
 {
     this->assert_thread();
     return this->_evaluation;
+}
+
+void character::evaluation(uint16_t value)
+{
+    this->assert_thread();
+    this->_evaluation = value;
+    if (this->_evaluation >= fb::model::const_value::reputation::MAX_EVALUATION)
+        this->_evaluation_playtime = std::chrono::milliseconds(0);
+    this->update(UPDATE_STATE_LEVEL::BASED);
+}
+
+void character::accumulate_evaluation_playtime(const fb::model::datetime& now)
+{
+    this->assert_thread();
+
+    auto elapsed           = std::chrono::milliseconds((now - this->_evaluation_tick).total_milliseconds());
+    this->_evaluation_tick = now;
+    if (this->_evaluation >= fb::model::const_value::reputation::MAX_EVALUATION)
+        return;
+
+    auto interval =
+        std::chrono::milliseconds(fb::model::const_value::reputation::EVALUATION_INTERVAL.total_milliseconds());
+    this->_evaluation_playtime += elapsed;
+    if (this->_evaluation_playtime < interval)
+        return;
+
+    this->_evaluation_playtime -= interval;
+    this->_evaluation++;
+    if (this->_evaluation >= fb::model::const_value::reputation::MAX_EVALUATION)
+        this->_evaluation_playtime = std::chrono::milliseconds(0);
+
+    this->message(_TEXT(MESSAGE_REPUTATION_EVALUATION_GAINED), MESSAGE_TYPE::STATE);
+    this->update(UPDATE_STATE_LEVEL::BASED);
+}
+
+async::task<void> character::evaluate(std::string target_name, bool raise)
+{
+    this->assert_thread();
+
+    if (this->_evaluation == 0)
+        throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_NO_EVALUATION));
+
+    auto target = this->server.characters.find(target_name);
+    if (target == nullptr || target->hidden(*this))
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name));
+
+    if (target->id == this->id)
+        throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_SELF));
+
+    auto now       = this->server.now();
+    auto target_id = target->id;
+    auto previous  = std::optional<fb::model::datetime>();
+    auto found     = this->_evaluated_targets.find(target_id);
+    if (found != this->_evaluated_targets.end())
+    {
+        if (now - found->second < fb::model::const_value::reputation::EVALUATION_COOLDOWN)
+            throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_ALREADY_EVALUATED));
+
+        previous = found->second;
+    }
+
+    // Spend the ticket before leaving this thread so a second request cannot reuse it.
+    this->_evaluation--;
+    this->_evaluated_targets.insert_or_assign(target_id, now);
+
+    auto self_weak   = this->weak_from_this_as<character>();
+    auto target_weak = target->weak_from_this_as<character>();
+    target_name      = target->name();
+    target           = nullptr;
+
+    auto target_reputation = std::optional<int16_t>();
+    try
+    {
+        co_await this->server.threads.switching(target_weak);
+        target = target_weak.lock();
+        if (target != nullptr && target->inited())
+        {
+            auto value          = std::clamp<int32_t>(target->_reputation + (raise ? 1 : -1),
+                                             std::numeric_limits<int16_t>::min(),
+                                             std::numeric_limits<int16_t>::max());
+            target->_reputation = static_cast<int16_t>(value);
+            target_reputation   = target->_reputation;
+            target->message(raise ? _TEXT(MESSAGE_REPUTATION_RAISED_BY_OTHER)
+                                  : _TEXT(MESSAGE_REPUTATION_LOWERED_BY_OTHER),
+                            MESSAGE_TYPE::STATE);
+            target->update(UPDATE_STATE_LEVEL::BASED);
+        }
+    }
+    catch (std::exception&)
+    { }
+    target = nullptr;
+
+    co_await this->server.threads.switching(self_weak);
+    auto self = self_weak.lock();
+    if (self == nullptr)
+        co_return;
+
+    if (target_reputation.has_value())
+    {
+        self->message(raise ? std::format(_TEXT(MESSAGE_REPUTATION_RAISED), target_name)
+                            : std::format(_TEXT(MESSAGE_REPUTATION_LOWERED), target_name),
+                      MESSAGE_TYPE::STATE);
+        self->update(UPDATE_STATE_LEVEL::BASED);
+
+        auto log_data           = Json::Value();
+        log_data["user_id"]     = static_cast<Json::Int64>(self->id);
+        log_data["user_name"]   = UTF8(self->name(), PLATFORM::WINDOWS);
+        log_data["target_id"]   = static_cast<Json::Int64>(target_id);
+        log_data["target_name"] = UTF8(target_name, PLATFORM::WINDOWS);
+        log_data["raise"]       = raise;
+        log_data["reputation"]  = static_cast<Json::Int>(target_reputation.value());
+        self->server.log.write("reputation", log_data);
+    }
+    else
+    {
+        self->_evaluation =
+            std::min(static_cast<uint16_t>(self->_evaluation + 1), fb::model::const_value::reputation::MAX_EVALUATION);
+        if (previous.has_value())
+            self->_evaluated_targets.insert_or_assign(target_id, previous.value());
+        else
+            self->_evaluated_targets.erase(target_id);
+        self->update(UPDATE_STATE_LEVEL::BASED);
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name));
+    }
 }
 
 uint8_t character::level() const
@@ -2375,6 +2509,17 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.aux_bot_color    = std::nullopt;
     dto.title            = this->_title;
     dto.speed            = this->stat.base_speed();
+    dto.reputation       = this->_reputation;
+    dto.evaluation       = this->_evaluation;
+    dto.evaluation_playtime =
+        static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(this->_evaluation_playtime).count());
+    for (auto& [target, evaluated_at] : this->_evaluated_targets)
+    {
+        if (this->server.now() - evaluated_at >= fb::model::const_value::reputation::EVALUATION_COOLDOWN)
+            continue;
+
+        dto.evaluated_targets.push_back(fb::protocol::internal::EvaluatedTarget(target, evaluated_at.to_string()));
+    }
 
     for (auto& [_, buff] : this->buffs)
     {

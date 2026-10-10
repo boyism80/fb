@@ -2225,6 +2225,39 @@ M.functions = {
                 return true
             end,
         },
+
+        ['인품설정'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<값> - 인품 설정 (-32768 ~ 32767)',
+            ['command'] = function (me, args)
+                local value = tonumber(table.unpack(args))
+                if value == nil or value ~= math.floor(value) or value < -32768 or value > 32767 then
+                    me:message("사용법: /인품설정 <값> (-32768 ~ 32767)")
+                    return true
+                end
+
+                me:reputation(value)
+                me:message(string.format("인품을 %d로 설정했습니다.", value), MESSAGE_TYPE.STATE)
+                return true
+            end,
+        },
+
+        ['평가권설정'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<개수> - 인품 평가권 설정',
+            ['command'] = function (me, args)
+                local max = CONST.REPUTATION.MAX_EVALUATION
+                local value = tonumber(table.unpack(args))
+                if value == nil or value ~= math.floor(value) or value < 0 or value > max then
+                    me:message(string.format("사용법: /평가권설정 <개수> (0 ~ %d)", max))
+                    return true
+                end
+
+                me:evaluation(value)
+                me:message(string.format("인품 평가권을 %d개로 설정했습니다.", value), MESSAGE_TYPE.STATE)
+                return true
+            end,
+        },
         
         ['서버종료'] = {
             ['privilege'] = ROLE.SUPERADMIN,

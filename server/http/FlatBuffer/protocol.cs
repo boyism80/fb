@@ -212,7 +212,9 @@ namespace Google.FlatBuffers
                 builder.Build(value.Reputation),
                 builder.Build(value.Evaluation),
                 builder.Build(value.Face),
-                builder.Build(value.RidableId));
+                builder.Build(value.RidableId),
+                builder.Build(value.EvaluationPlaytime),
+                builder.Build(value.EvaluatedTargets));
         }
         public static Offset<fb.protocol.@internal.raw.Marriage> Build(this FlatBufferBuilder builder, fb.protocol.@internal.Marriage value)
         {
@@ -274,6 +276,15 @@ namespace Google.FlatBuffers
             return fb.protocol.@internal.raw.Buff.CreateBuff(builder,
                 builder.Build(value.Model),
                 builder.Build(value.Time));
+        }
+        public static Offset<fb.protocol.@internal.raw.EvaluatedTarget> Build(this FlatBufferBuilder builder, fb.protocol.@internal.EvaluatedTarget value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.raw.EvaluatedTarget.CreateEvaluatedTarget(builder,
+                builder.Build(value.Target),
+                builder.Build(value.EvaluatedAt));
         }
         public static Offset<fb.protocol.@internal.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol.@internal.Option value)
         {
@@ -2230,6 +2241,10 @@ namespace Google.FlatBuffers
         {
             return builder.CreateVectorOfTables<fb.protocol.@internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.EvaluatedTarget> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.EvaluatedTarget>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<string> value)
         {
             var offsets = value.ConvertAll(x => builder.Build(x).Value);
@@ -2391,6 +2406,7 @@ namespace fb.protocol.@internal
         Spell,
         MatchmakingSkill,
         Buff,
+        EvaluatedTarget,
         Option,
         ArticleSummary,
         Article,
@@ -2594,6 +2610,8 @@ namespace fb.protocol.@internal
         public ushort Evaluation { get; set; } = 0;
         public byte Face { get; set; } = 0;
         public ushort RidableId { get; set; } = 1;
+        public uint EvaluationPlaytime { get; set; } = 0;
+        public List<fb.protocol.@internal.EvaluatedTarget> EvaluatedTargets { get; set; } = new List<fb.protocol.@internal.EvaluatedTarget>();
 
         public Character()
         { }
@@ -2646,6 +2664,8 @@ namespace fb.protocol.@internal
             Evaluation = raw.Evaluation;
             Face = raw.Face;
             RidableId = raw.RidableId;
+            EvaluationPlaytime = raw.EvaluationPlaytime;
+            EvaluatedTargets = Enumerable.Range(0, raw.EvaluatedTargetsLength).Select(i => raw.EvaluatedTargets(i)).Select(x => new fb.protocol.@internal.EvaluatedTarget(x.Value)).ToList();
         }
 
         public Character(byte[] bytes) : this(fb.protocol.@internal.raw.Character.GetRootAsCharacter(new ByteBuffer(bytes)))
@@ -2891,6 +2911,44 @@ namespace fb.protocol.@internal
         public static Buff Deserialize(byte[] bytes)
         {
             return new Buff(bytes);
+        }
+    }
+    public class EvaluatedTarget : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.EvaluatedTarget;
+        public uint Target { get; set; } = 0;
+        public string EvaluatedAt { get; set; } = string.Empty;
+
+        public EvaluatedTarget()
+        { }
+
+        public EvaluatedTarget(fb.protocol.@internal.raw.EvaluatedTarget raw)
+        {
+            Target = raw.Target;
+            EvaluatedAt = raw.EvaluatedAt;
+        }
+
+        public EvaluatedTarget(byte[] bytes) : this(fb.protocol.@internal.raw.EvaluatedTarget.GetRootAsEvaluatedTarget(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static EvaluatedTarget Deserialize(byte[] bytes)
+        {
+            return new EvaluatedTarget(bytes);
         }
     }
     public class Option : IFlatBufferEx
@@ -3892,6 +3950,7 @@ namespace fb.protocol.@internal
                 FlatBufferProtocolType.Spell => typeof(fb.protocol.@internal.Spell),
                 FlatBufferProtocolType.MatchmakingSkill => typeof(fb.protocol.@internal.MatchmakingSkill),
                 FlatBufferProtocolType.Buff => typeof(fb.protocol.@internal.Buff),
+                FlatBufferProtocolType.EvaluatedTarget => typeof(fb.protocol.@internal.EvaluatedTarget),
                 FlatBufferProtocolType.Option => typeof(fb.protocol.@internal.Option),
                 FlatBufferProtocolType.ArticleSummary => typeof(fb.protocol.@internal.ArticleSummary),
                 FlatBufferProtocolType.Article => typeof(fb.protocol.@internal.Article),

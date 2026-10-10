@@ -288,6 +288,7 @@ void fb::game::server::init_handlers()
     this->handler.protocol.bind<fb::game::handler::protocol::unknown_54>(); // 5.65+ 0x4F window round trip
     this->handler.protocol.bind<fb::game::handler::protocol::browser>();    // 6.51 in-game IE window
     this->handler.protocol.bind<fb::game::handler::protocol::web_map>();    // 6.51 web map
+    this->handler.protocol.bind<fb::game::handler::protocol::reputation>(); // 6.51 reputation evaluation
 }
 
 void fb::game::server::init_timers()
@@ -310,6 +311,7 @@ void fb::game::server::init_timers()
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
+    this->bind_thread_timer<fb::game::handler::timer::evaluation_timer>(1min);
 #if !defined(DEBUG) && !defined(_DEBUG)
     this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);

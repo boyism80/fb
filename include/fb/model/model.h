@@ -3086,6 +3086,20 @@ private:
 DECLARE_CONST_MOB_EXTENSION
 #endif
 }; // end of const 'mob'
+class reputation
+{
+public:
+    inline static const timespan& EVALUATION_INTERVAL = timespan("00.12:00:00");
+    inline static const timespan& EVALUATION_COOLDOWN = timespan("01.00:00:00");
+    inline static constexpr const uint16_t MAX_EVALUATION = 2;
+
+private:
+    reputation() = default;
+    ~reputation() = default;
+#ifdef DECLARE_CONST_REPUTATION_EXTENSION
+DECLARE_CONST_REPUTATION_EXTENSION
+#endif
+}; // end of const 'reputation'
 class script
 {
 public:
@@ -3170,6 +3184,14 @@ public:
     inline static constexpr const char* MESSAGE_LOGIN_ELAPSED_SUFFIX = "만에 바람으로...";
     inline static constexpr const char* MESSAGE_EXP_GAINED = "경험치가 {}({}%) 올랐습니다.";
     inline static constexpr const char* MESSAGE_EXP_LOST = "경험치를 {} 잃었습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_NO_EVALUATION = "인품 평가권이 없습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_ALREADY_EVALUATED = "같은 사람은 하루에 한 번만 평가할 수 있습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_SELF = "자기 자신은 평가할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_RAISED = "{}님의 인품을 올렸습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_LOWERED = "{}님의 인품을 내렸습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_RAISED_BY_OTHER = "누군가 당신의 인품을 올렸습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_LOWERED_BY_OTHER = "누군가 당신의 인품을 내렸습니다.";
+    inline static constexpr const char* MESSAGE_REPUTATION_EVALUATION_GAINED = "인품 평가권을 얻었습니다.";
     inline static constexpr const char* MESSAGE_CLAN_NAME_ALREADY_EXISTS = "클랜명이 이미 존재함";
     inline static constexpr const char* MESSAGE_CLAN_KICKED = "문파에서 추방당했습니다.";
     inline static constexpr const char* MESSAGE_CLAN_LEFT = "문파에서 탈퇴했습니다.";
@@ -4615,6 +4637,18 @@ inline void const_map<fb::model::const_value::mob>(lua_State* lua)
 }
 
 template <>
+inline void const_map<fb::model::const_value::reputation>(lua_State* lua)
+{
+    lua_newtable(lua);
+    lua_pushstring(lua, fb::model::const_value::reputation::EVALUATION_INTERVAL.to_string().c_str());
+    lua_setfield(lua, -2, "EVALUATION_INTERVAL");
+    lua_pushstring(lua, fb::model::const_value::reputation::EVALUATION_COOLDOWN.to_string().c_str());
+    lua_setfield(lua, -2, "EVALUATION_COOLDOWN");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::reputation::MAX_EVALUATION));
+    lua_setfield(lua, -2, "MAX_EVALUATION");
+}
+
+template <>
 inline void const_map<fb::model::const_value::script>(lua_State* lua)
 {
     lua_newtable(lua);
@@ -4764,6 +4798,22 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_EXP_GAINED");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_EXP_LOST).c_str());
     lua_setfield(lua, -2, "MESSAGE_EXP_LOST");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_NO_EVALUATION).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_NO_EVALUATION");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_ALREADY_EVALUATED).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_ALREADY_EVALUATED");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_SELF).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_SELF");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_RAISED).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_RAISED");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_LOWERED).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_LOWERED");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_RAISED_BY_OTHER).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_RAISED_BY_OTHER");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_LOWERED_BY_OTHER).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_LOWERED_BY_OTHER");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_REPUTATION_EVALUATION_GAINED).c_str());
+    lua_setfield(lua, -2, "MESSAGE_REPUTATION_EVALUATION_GAINED");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CLAN_NAME_ALREADY_EXISTS).c_str());
     lua_setfield(lua, -2, "MESSAGE_CLAN_NAME_ALREADY_EXISTS");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CLAN_KICKED).c_str());
@@ -5223,6 +5273,8 @@ inline static void map_const(lua_State* lua)
     lua_setfield(lua, -2, "MARKETPLACE");
     const_map<fb::model::const_value::mob>(lua);
     lua_setfield(lua, -2, "MOB");
+    const_map<fb::model::const_value::reputation>(lua);
+    lua_setfield(lua, -2, "REPUTATION");
     const_map<fb::model::const_value::script>(lua);
     lua_setfield(lua, -2, "SCRIPT");
     const_map<fb::model::const_value::string>(lua);

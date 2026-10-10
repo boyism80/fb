@@ -20,7 +20,11 @@ namespace Http.Mapping
                 .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
                 .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => u.FirstLoginDate.HasValue ? u.FirstLoginDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .ForMember(x => x.Position, x => x.MapFrom(u => new Protocol.Position { X = u.PositionX, Y = u.PositionY }))
-                .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role));
+                .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role))
+                .ForMember(x => x.EvaluationPlaytime, x => x.MapFrom(u => u.EvaluationState.Playtime))
+                .ForMember(x => x.EvaluatedTargets, x => x.MapFrom(u => u.EvaluationState.Targets
+                    .Select(kv => new Protocol.EvaluatedTarget { Target = kv.Key, EvaluatedAt = kv.Value })
+                    .ToList()));
 
             CreateMap<Protocol.Character, Http.Model.Character>()
                 .ForMember(x => x.World, x => x.MapFrom(u => u.World))
@@ -31,7 +35,13 @@ namespace Http.Mapping
                 .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => string.IsNullOrEmpty(u.FirstLoginDate) ? null : (DateTime?)DateTime.Parse(u.FirstLoginDate)))
                 .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
                 .ForMember(x => x.PositionY, x => x.MapFrom(u => u.Position.Y))
-                .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role));
+                .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role))
+                .ForMember(x => x.EvaluationState, x => x.MapFrom(u => new Http.Model.EvaluationState
+                {
+                    Playtime = u.EvaluationPlaytime,
+                    Targets = (u.EvaluatedTargets ?? new List<Protocol.EvaluatedTarget>())
+                        .ToDictionary(t => t.Target, t => t.EvaluatedAt)
+                }));
 
             CreateMap<Http.Model.MarketplacePending, Protocol.MarketplacePending>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.User))

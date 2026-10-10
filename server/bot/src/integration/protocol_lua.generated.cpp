@@ -2451,6 +2451,18 @@ int lua_builder_game_reqs__post(lua_State* L)
     return 1;
 }
 
+int lua_builder_game_reqs__reputation(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto name  = lua->tostring(1);
+    const auto raise = lua->toboolean(2);
+    lua_protocol::push_request(L, std::make_shared<game_reqs::reputation<BOT_CLIENT_VERSION>>(name, raise));
+    return 1;
+}
+
 int lua_builder_game_reqs__screen_refresh(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -2632,6 +2644,8 @@ void register_builders(lua_State* L)
     lua_setfield(L, -2, "popup_input_submit");
     lua_pushcfunction(L, lua_builder_game_reqs__post);
     lua_setfield(L, -2, "post");
+    lua_pushcfunction(L, lua_builder_game_reqs__reputation);
+    lua_setfield(L, -2, "reputation");
     lua_pushcfunction(L, lua_builder_game_reqs__screen_refresh);
     lua_setfield(L, -2, "screen_refresh");
     lua_pushcfunction(L, lua_builder_game_reqs__self_info);

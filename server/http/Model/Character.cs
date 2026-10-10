@@ -55,6 +55,7 @@ namespace Http.Model
         public byte Speed { get; set; }
         public short Reputation { get; set; }
         public ushort Evaluation { get; set; }
+        public EvaluationState EvaluationState { get; set; } = new EvaluationState();
         public DateTime? FirstLoginDate { get; set; }
         public long? SnapshotTime { get; set; }
         public static string SaveLockKey(uint id)

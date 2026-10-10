@@ -67,6 +67,7 @@
 #include <fb/game/handler/protocol/pong.h>
 #include <fb/game/handler/protocol/popup_input_submit.h>
 #include <fb/game/handler/protocol/post.h>
+#include <fb/game/handler/protocol/reputation.h>
 #include <fb/game/handler/protocol/screen_refresh.h>
 #include <fb/game/handler/protocol/self_info.h>
 #include <fb/game/handler/protocol/spell_cast.h>
@@ -82,6 +83,7 @@
 #include <fb/game/handler/timer/afk_timer.h>
 #include <fb/game/handler/timer/announce.h>
 #include <fb/game/handler/timer/buff_timer.h>
+#include <fb/game/handler/timer/evaluation_timer.h>
 #include <fb/game/handler/timer/expired_item_timer.h>
 #include <fb/game/handler/timer/gear_timer.h>
 #include <fb/game/handler/timer/heart_beat.h>

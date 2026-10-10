@@ -89,6 +89,7 @@
 #include <fb/game/protocol/popup_input_submit.h>
 #include <fb/game/protocol/popup_message.h>
 #include <fb/game/protocol/post.h>
+#include <fb/game/protocol/reputation.h>
 #include <fb/game/protocol/save.h>
 #include <fb/game/protocol/screen_refresh.h>
 #include <fb/game/protocol/screen_refresh_complete.h>

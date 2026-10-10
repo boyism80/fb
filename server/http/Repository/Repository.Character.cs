@@ -98,6 +98,7 @@ namespace Http.Reepository
                     `speed`,
                     `reputation`,
                     `evaluation`,
+                    `evaluation_state`,
                     `deleted`,
                     `created_date`,
                     `updated_date`,
@@ -148,6 +149,7 @@ namespace Http.Reepository
                     {value.Speed.Escape()},
                     {value.Reputation.Escape()},
                     {value.Evaluation.Escape()},
+                    {value.EvaluationState.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()},
@@ -195,6 +197,7 @@ namespace Http.Reepository
                     `speed`=VALUES(`speed`),
                     `reputation`=VALUES(`reputation`),
                     `evaluation`=VALUES(`evaluation`),
+                    `evaluation_state`=VALUES(`evaluation_state`),
                     `updated_date`=VALUES(`updated_date`),
                     `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`),
                     `snapshot_time`=COALESCE(VALUES(`snapshot_time`), `snapshot_time`);
