@@ -1735,9 +1735,28 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
-        auto     it       = simulated_bundle_remaining.find(id);
-        uint16_t existing = (it != simulated_bundle_remaining.end()) ? it->second : 0;
-        if (model.capacity < existing + count)
+        auto existing = std::optional<uint32_t>{};
+        if (cost_items.contains(id))
+        {
+            auto it = simulated_bundle_remaining.find(id);
+            if (it != simulated_bundle_remaining.end())
+                existing = it->second;
+        }
+        else
+        {
+            auto it = slots_by_id.find(id);
+            if (it != slots_by_id.end() && it->second.empty() == false)
+            {
+                auto slot = this->at(it->second[0]);
+                existing  = static_cast<uint32_t>(slot->count()) + this->locked_count(*slot);
+            }
+        }
+
+        // Without a stack to merge into, the bundle needs a free slot.
+        if (existing.has_value() == false)
+            continue;
+
+        if (model.capacity < existing.value() + count)
             co_return exchange_result::lack_capacity;
 
         available_slots++;
