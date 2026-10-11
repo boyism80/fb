@@ -106,8 +106,8 @@ local function run_bead_exchange(me, npc)
     if var == nil or var == "" then
         return
     end
-    local count = tonumber(var)
-    if not count or count < 1 then
+    local count = math.tointeger(tonumber(var))
+    if count == nil or count < 1 or count > 65535 then
         return
     end
     if not me:has_items(bead_item, count) then

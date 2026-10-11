@@ -863,24 +863,37 @@ int builtin::character::builtin_has_items(lua_State* L)
 
     if (lua->is_string(2) && lua->is_number(3))
     {
-        auto name = lua->tostring(2);
-        auto cnt  = static_cast<uint16_t>(lua->tointeger(3));
-        if (!name.empty() && cnt > 0)
-            required.push_back({name, cnt});
+        auto name      = lua->tostring(2);
+        auto raw_count = lua->tointeger(3);
+        if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+        if (!name.empty())
+            required.push_back({name, static_cast<uint16_t>(raw_count)});
     }
     else if (lua->is_table(2))
     {
+        auto invalid = false;
         lua->pushnil();
         while (lua->next(2))
         {
             if (lua->is_string(-2) && lua->is_number(-1))
             {
-                auto name = lua->tostring(-2);
-                auto cnt  = static_cast<uint16_t>(lua->tointeger(-1));
-                if (!name.empty() && cnt > 0)
-                    required.push_back({name, cnt});
+                auto name      = lua->tostring(-2);
+                auto raw_count = lua->tointeger(-1);
+                if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    invalid = true;
+                else if (!name.empty() && raw_count > 0)
+                    required.push_back({name, static_cast<uint16_t>(raw_count)});
             }
             lua->pop(1);
+        }
+        if (invalid)
+        {
+            lua->pushboolean(false);
+            return 1;
         }
     }
 
@@ -1044,24 +1057,38 @@ int builtin::character::builtin_mkitem(lua_State* L)
 
     if (lua->is_table(2))
     {
+        auto invalid = false;
         lua->pushnil();
         while (lua->next(2))
         {
             if (lua->is_string(-2) && lua->is_number(-1))
             {
-                auto name  = lua->tostring(-2);
-                auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                auto model = table::item->name2item(name);
-                if (model != nullptr && count > 0)
-                    id_to_count[model->id] += count;
+                auto name      = lua->tostring(-2);
+                auto raw_count = lua->tointeger(-1);
+                auto model     = table::item->name2item(name);
+                if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    invalid = true;
+                else if (model != nullptr && raw_count > 0)
+                    id_to_count[model->id] += static_cast<uint16_t>(raw_count);
             }
             lua->pop(1);
+        }
+        if (invalid)
+        {
+            lua->pushnil();
+            return 1;
         }
     }
     else
     {
-        auto name  = lua->tostring(2);
-        auto count = static_cast<uint16_t>(lua->tointeger(3, 1));
+        auto name      = lua->tostring(2);
+        auto raw_count = lua->tointeger(3, 1);
+        if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
+        {
+            lua->pushnil();
+            return 1;
+        }
+        auto count = static_cast<uint16_t>(raw_count);
         if (name.empty())
         {
             lua->pushnil();
@@ -1399,12 +1426,14 @@ int builtin::character::builtin_exchange(lua_State* L)
         return 1;
     }
 
-    auto cost_items   = std::unordered_map<uint32_t, uint16_t>();
-    auto cost_money   = uint64_t{0};
-    auto cost_exp     = uint64_t{0};
-    auto reward_items = std::unordered_map<uint32_t, uint16_t>();
-    auto reward_money = uint64_t{0};
-    auto reward_exp   = uint64_t{0};
+    auto cost_items     = std::unordered_map<uint32_t, uint16_t>();
+    auto cost_money     = uint64_t{0};
+    auto cost_exp       = uint64_t{0};
+    auto reward_items   = std::unordered_map<uint32_t, uint16_t>();
+    auto reward_money   = uint64_t{0};
+    auto reward_exp     = uint64_t{0};
+    auto invalid_cost   = false;
+    auto invalid_reward = false;
 
     if (lua->is_table(2))
     {
@@ -1417,11 +1446,13 @@ int builtin::character::builtin_exchange(lua_State* L)
             {
                 if (lua->is_string(-2) && lua->is_number(-1))
                 {
-                    auto name  = lua->tostring(-2);
-                    auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                    auto model = table::item->name2item(name);
-                    if (model != nullptr && count > 0)
-                        cost_items[model->id] += count;
+                    auto name      = lua->tostring(-2);
+                    auto raw_count = lua->tointeger(-1);
+                    auto model     = table::item->name2item(name);
+                    if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                        invalid_cost = true;
+                    else if (model != nullptr && raw_count > 0)
+                        cost_items[model->id] += static_cast<uint16_t>(raw_count);
                 }
                 lua->pop(1);
             }
@@ -1452,11 +1483,13 @@ int builtin::character::builtin_exchange(lua_State* L)
             {
                 if (lua->is_string(-2) && lua->is_number(-1))
                 {
-                    auto name  = lua->tostring(-2);
-                    auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                    auto model = table::item->name2item(name);
-                    if (model != nullptr && count > 0)
-                        reward_items[model->id] += count;
+                    auto name      = lua->tostring(-2);
+                    auto raw_count = lua->tointeger(-1);
+                    auto model     = table::item->name2item(name);
+                    if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                        invalid_reward = true;
+                    else if (model != nullptr && raw_count > 0)
+                        reward_items[model->id] += static_cast<uint16_t>(raw_count);
                 }
                 lua->pop(1);
             }
@@ -1482,9 +1515,13 @@ int builtin::character::builtin_exchange(lua_State* L)
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
-        if (cost_exp > 0 && ch->exp() < cost_exp)
+        if (invalid_cost || (cost_exp > 0 && ch->exp() < cost_exp))
         {
             *result = exchange_result::lack_cost;
+        }
+        else if (invalid_reward)
+        {
+            *result = exchange_result::lack_capacity;
         }
         else
         {
