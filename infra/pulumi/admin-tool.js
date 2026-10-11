@@ -343,6 +343,7 @@ module.exports = {
             metadata: { name: "admin-tool", namespace: namespace.metadata.name },
             spec: {
                 type: "NodePort",
+                externalTrafficPolicy: "Local",
                 ports: [{ 
                     name: "admin-tool",
                     port: adminToolConf.port.cluster,

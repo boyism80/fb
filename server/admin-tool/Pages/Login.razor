@@ -126,7 +126,7 @@
 
             await using var scope = ScopeFactory.CreateAsyncScope();
             var authService = scope.ServiceProvider.GetRequiredService<AuthService>();
-            var result = await authService.Authenticate(world, loginModel.Username, loginModel.Password);
+            var result = await authService.Authenticate(world, loginModel.Username, loginModel.Password, RemoteIp);
             if (result.Success && result.UserId.HasValue && result.Role.HasValue)
             {
                 if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
@@ -156,6 +156,9 @@
             isLoading = false;
         }
     }
+
+    [CascadingParameter(Name = "RemoteIp")]
+    public string RemoteIp { get; set; }
 
     private class LoginModel
     {

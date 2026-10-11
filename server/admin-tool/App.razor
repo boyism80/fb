@@ -1,4 +1,5 @@
 ﻿<CascadingAuthenticationState>
+<CascadingValue Name="RemoteIp" Value="RemoteIp">
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
@@ -25,4 +26,10 @@
             </LayoutView>
         </NotFound>
     </Router>
+</CascadingValue>
 </CascadingAuthenticationState>
+
+@code {
+    [Parameter]
+    public string RemoteIp { get; set; }
+}

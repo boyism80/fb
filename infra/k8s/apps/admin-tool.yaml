@@ -73,6 +73,7 @@ metadata:
   namespace: fb
 spec:
   type: NodePort
+  externalTrafficPolicy: Local
   selector:
     app: admin-tool
   ports:

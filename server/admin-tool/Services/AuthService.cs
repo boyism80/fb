@@ -12,15 +12,17 @@ namespace AdminTool.Services
         private readonly DbContext _dbContext;
         private readonly ILogger<AuthService> _logger;
         private readonly LogService _logService;
+        private readonly PasswordAttemptService _passwordAttempts;
 
         // Object pool for SHA256 instances to reduce GC pressure
         private static readonly ObjectPool<SHA256> _sha256Pool = new DefaultObjectPool<SHA256>(new Sha256PooledObjectPolicy(), 64);
 
-        public AuthService(DbContext dbContext, ILogger<AuthService> logger, LogService logService)
+        public AuthService(DbContext dbContext, ILogger<AuthService> logger, LogService logService, PasswordAttemptService passwordAttempts)
         {
             _dbContext = dbContext;
             _logger = logger;
             _logService = logService;
+            _passwordAttempts = passwordAttempts;
         }
 
         private static string SHA256Hash(string value)
@@ -60,48 +62,28 @@ namespace AdminTool.Services
             }
         }
 
-        public async Task<AuthResult> Authenticate(uint world, string name, string password)
+        private const string LoginFailedError = "캐릭터명 또는 비밀번호가 올바르지 않습니다. 실패가 반복되면 잠시 후 다시 시도해 주세요.";
+
+        public async Task<AuthResult> Authenticate(uint world, string name, string password, string ip)
         {
-            // Get character by name
             var userId = await _dbContext.Character.GetCharacterId(world, name);
             if (!userId.HasValue)
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Error = "Character not found"
-                };
-            }
+                return new AuthResult { Error = LoginFailedError };
 
             var character = await _dbContext.Character.Get(world, userId.Value);
             if (character == null)
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Error = "Character not found"
-                };
-            }
+                return new AuthResult { Error = LoginFailedError };
 
-            // Verify password
-            if (character.Pw != SHA256Hash(password))
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Error = "Invalid password"
-                };
-            }
-
-            // Check role (must be Admin or higher)
             if (character.Role < Role.Admin)
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Error = "Insufficient privileges. Admin role or higher required."
-                };
-            }
+                return new AuthResult { Error = LoginFailedError };
+
+            if (await _passwordAttempts.Begin(world, userId.Value, ip) == false)
+                return new AuthResult { Error = LoginFailedError };
+
+            if (character.Pw != SHA256Hash(password))
+                return new AuthResult { Error = LoginFailedError };
+
+            await _passwordAttempts.Succeed(world, userId.Value, ip);
 
             // Log admin login event
             await _logService.WriteAsync("admin_login", new
