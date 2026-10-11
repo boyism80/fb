@@ -54,6 +54,7 @@ private:
 
     std::unordered_map<uint32_t, matchmaking_skill> _skills;
     std::optional<uint64_t>                         _pending_match_id;
+    std::optional<uint64_t>                         _ready_match_id;
     std::optional<ticket_state>                     _ticket;
     bool                                            _enqueuing = false;
 
@@ -68,6 +69,7 @@ public:
     void                                     set_pending_match_id(uint64_t match_id);
     void                                     clear_pending_match_id();
     bool                                     clear_pending_match_id_if(uint64_t match_id);
+    bool                                     mark_ready(uint64_t match_id);
     bool                                     queued() const;
     bool                                     enqueuing() const;
     std::optional<uint64_t>                  ticket_id() const;

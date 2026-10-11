@@ -115,6 +115,15 @@ bool matchmaker::clear_pending_match_id_if(uint64_t match_id)
     return true;
 }
 
+bool matchmaker::mark_ready(uint64_t match_id)
+{
+    if (this->_ready_match_id == match_id)
+        return false;
+
+    this->_ready_match_id = match_id;
+    return true;
+}
+
 bool matchmaker::queued() const
 {
     this->owner.assert_thread();

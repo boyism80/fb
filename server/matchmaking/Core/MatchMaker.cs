@@ -17,6 +17,7 @@ public class MatchMaker<TMember>
     private readonly Dictionary<uint, TicketQueue<TMember>> _ticketQueues = new();
     private readonly Dictionary<ulong, Match<TMember>> _pendingMatches = new();
     private readonly Dictionary<string, TicketRef> _memberTickets = new();
+    private readonly Dictionary<ulong, ReadyDelivery<TMember>> _readyOutbox = new();
     private readonly SnowflakeId _ids = new();
     private readonly object _lock = new();
 
@@ -204,7 +205,7 @@ public class MatchMaker<TMember>
 
     public async Task<bool> ConfirmAsync(ulong matchId, string memberId, CancellationToken cancellationToken = default)
     {
-        Match<TMember> readyMatch;
+        ReadyDelivery<TMember> delivery;
 
         lock (_lock)
         {
@@ -241,10 +242,15 @@ public class MatchMaker<TMember>
                 return false;
             }
 
-            readyMatch = MarkReady(match);
+            delivery = new ReadyDelivery<TMember>
+            {
+                Match = MarkReady(match),
+                Delivering = true
+            };
+            _readyOutbox[match.Id] = delivery;
         }
 
-        await RaiseMatchReadyAsync(readyMatch, cancellationToken);
+        await DeliverReadyAsync(delivery, cancellationToken);
         return true;
     }
 
@@ -357,12 +363,14 @@ public class MatchMaker<TMember>
     public async Task TickConfirmationAsync(CancellationToken cancellationToken = default)
     {
         List<DissolvedMatchResult<TMember>> dissolved;
+        List<ReadyDelivery<TMember>> retries;
 
         lock (_lock)
         {
+            var now = DateTime.UtcNow;
             dissolved = new List<DissolvedMatchResult<TMember>>();
             var expiredMatches = _pendingMatches.Values
-                .Where(match => IsExpired(match, DateTime.UtcNow))
+                .Where(match => IsExpired(match, now))
                 .ToList();
 
             foreach (var match in expiredMatches)
@@ -374,12 +382,26 @@ public class MatchMaker<TMember>
 
                 dissolved.Add(Dissolve(match, DissolveReason.Timeout));
             }
+
+            retries = _readyOutbox.Values
+                .Where(delivery => !delivery.Delivering && delivery.NextAttemptAt <= now)
+                .ToList();
+            foreach (var delivery in retries)
+            {
+                delivery.Delivering = true;
+            }
         }
 
         foreach (var item in dissolved)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await RaiseMatchDissolvedAsync(item, cancellationToken);
+        }
+
+        foreach (var delivery in retries)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await DeliverReadyAsync(delivery, cancellationToken);
         }
     }
 
@@ -392,11 +414,12 @@ public class MatchMaker<TMember>
                 _ticketQueues.Select(pair => $"{pair.Key}:{pair.Value.Describe()}"));
 
             _logger.LogInformation(
-                "Matchmaking state after {Reason}: queues [{Queues}], pending matches {PendingMatches}, members {Members}",
+                "Matchmaking state after {Reason}: queues [{Queues}], pending matches {PendingMatches}, members {Members}, ready outbox {ReadyOutbox}",
                 reason,
                 queues,
                 _pendingMatches.Count,
-                _memberTickets.Count);
+                _memberTickets.Count,
+                _readyOutbox.Count);
         }
     }
 
@@ -426,6 +449,47 @@ public class MatchMaker<TMember>
         var handlers = handler.GetInvocationList()
             .Cast<Func<Match<TMember>, CancellationToken, Task>>();
         await Task.WhenAll(handlers.Select(h => h(match, cancellationToken)));
+    }
+
+    private async Task DeliverReadyAsync(ReadyDelivery<TMember> delivery, CancellationToken cancellationToken)
+    {
+        var match = delivery.Match;
+        try
+        {
+            await RaiseMatchReadyAsync(match, cancellationToken);
+            lock (_lock)
+            {
+                _readyOutbox.Remove(match.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            lock (_lock)
+            {
+                delivery.Attempts++;
+                delivery.Delivering = false;
+                if (delivery.Attempts >= Math.Max(1, _options.ReadyMaxAttempts))
+                {
+                    _readyOutbox.Remove(match.Id);
+                    _logger.LogError(
+                        ex,
+                        "Match {MatchId} ready publish abandoned after {Attempts} attempts, members {Members}",
+                        match.Id,
+                        delivery.Attempts,
+                        string.Join(",", match.AllMemberIds));
+                }
+                else
+                {
+                    delivery.NextAttemptAt = DateTime.UtcNow.AddSeconds(Math.Max(1, _options.ReadyRetryIntervalSeconds));
+                    _logger.LogWarning(
+                        ex,
+                        "Match {MatchId} ready publish failed (attempt {Attempts}), retrying at {NextAttemptAt}",
+                        match.Id,
+                        delivery.Attempts,
+                        delivery.NextAttemptAt);
+                }
+            }
+        }
     }
 
     private async Task RaiseMatchDissolvedAsync(

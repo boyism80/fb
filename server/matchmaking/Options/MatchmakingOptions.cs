@@ -21,4 +21,10 @@ public class MatchmakingOptions
 
     /// <summary>Seconds for all ticket members to confirm after match creation.</summary>
     public int ConfirmTimeoutSeconds { get; set; } = 30;
+
+    /// <summary>Seconds between MatchReady publish retries after a broker failure.</summary>
+    public int ReadyRetryIntervalSeconds { get; set; } = 2;
+
+    /// <summary>MatchReady publish attempts before the match is abandoned.</summary>
+    public int ReadyMaxAttempts { get; set; } = 10;
 }

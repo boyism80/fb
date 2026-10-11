@@ -73,7 +73,10 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
             Teams = BuildTeams(match)
         };
 
-        await PublishToWorldsAsync(match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken);
+        if (!await PublishToWorldsAsync(match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken))
+        {
+            throw new InvalidOperationException($"Failed to publish MatchReady for match {match.Id}");
+        }
     }
 
     private async Task OnMatchDissolvedAsync(
@@ -128,7 +131,7 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
         await PublishToWorldsAsync(ticket.Members, message, cancellationToken);
     }
 
-    private async Task PublishToWorldsAsync(
+    private async Task<bool> PublishToWorldsAsync(
         IEnumerable<CharacterTicketMember> members,
         IFlatBufferEx message,
         CancellationToken cancellationToken)
@@ -137,6 +140,7 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
             .Select(member => member.World)
             .Distinct();
 
+        var published = true;
         foreach (var world in worlds)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -151,12 +155,15 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
             }
             catch (Exception ex)
             {
+                published = false;
                 _logger.LogError(
                     ex,
                     "Failed to publish matchmaking message for world {World}",
                     world);
             }
         }
+
+        return published;
     }
 
     private List<fb.protocol.matchmaking.MatchTeam> BuildTeams(Match<CharacterTicketMember> match)

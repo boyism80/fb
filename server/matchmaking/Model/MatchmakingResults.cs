@@ -17,3 +17,15 @@ public sealed class DissolvedMatchResult<TMember>
 
     public IReadOnlyList<TicketOutcome<TMember>> Outcomes { get; init; }
 }
+
+public sealed class ReadyDelivery<TMember>
+    where TMember : ITicketMember
+{
+    public Match<TMember> Match { get; init; }
+
+    public int Attempts { get; set; }
+
+    public DateTime NextAttemptAt { get; set; }
+
+    public bool Delivering { get; set; }
+}
