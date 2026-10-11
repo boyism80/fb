@@ -144,7 +144,9 @@ local function run_turn_in(me, npc)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:rmitem(ITEM_OLD_LETTER, 1, ITEM_DELETE_TYPE.GIVE)
+            if not me:rmitem(ITEM_OLD_LETTER, 1, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
             me:buff('금고주인의저주', CURSE_BUFF_SEC)
             local dr = me:damage_derate()
             me:damage_derate(dr + CURSE_AC_PENALTY)

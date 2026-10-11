@@ -25,7 +25,9 @@ return {
             goto NPC_73_1
         end
 
-        me:rmitem("방송쿠폰", 1, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem("방송쿠폰", 1, ITEM_DELETE_TYPE.GIVE) then
+            return
+        end
         broadcast(string.format("###[%s]>>%s", me:name(), message), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.GLOBAL)
     end
 }

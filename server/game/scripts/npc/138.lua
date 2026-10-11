@@ -117,7 +117,9 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:rmitem(ITEM_FABRIC, 1, ITEM_DELETE_TYPE.GIVE)
+            if not me:rmitem(ITEM_FABRIC, 1, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
             q:step(3)
             me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의바늘을 구해 마석주에게 가져다주자.', 7, 25)
             return

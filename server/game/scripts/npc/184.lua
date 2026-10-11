@@ -71,7 +71,9 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
+            if not me:rmitem(materials, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
             q:step(2)
             me:push_achievement(31, '돈유합의달인의 부탁을 들어주자. [2/2]', 7, 1)
             return

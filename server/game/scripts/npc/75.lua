@@ -91,6 +91,9 @@ local function run_puffer_general_complete(me, npc)
     if gift_sel == nil or gift_sel < 1 or gift_sel > 3 then
         return
     end
+    if not me:rmitem(item_document, 1, ITEM_DELETE_TYPE.GIVE) then
+        return
+    end
     if gift_sel == 1 then
         me:base_str(me:base_str() + 1)
     elseif gift_sel == 2 then
@@ -98,7 +101,6 @@ local function run_puffer_general_complete(me, npc)
     else
         me:base_dex(me:base_dex() + 1)
     end
-    me:rmitem(item_document, 1, ITEM_DELETE_TYPE.GIVE)
     local q = me:quest(quest.QUEST_DRAGON_KING)
     if q ~= nil then
         q:step(2)
@@ -877,7 +879,9 @@ local function run_crown_prince_turnin_orb(me, npc)
     if q == nil then
         return
     end
-    me:rmitem(ITEM_ORB, 1, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem(ITEM_ORB, 1, ITEM_DELETE_TYPE.GIVE) then
+        return
+    end
     q:step(19)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "청의태자 생포 임무를 받다. [1/2]", 7, 1)
 end
@@ -1004,7 +1008,9 @@ local function run_cidequest_yongwang(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:rmitem("용궁의보물", 1, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem("용궁의보물", 1, ITEM_DELETE_TYPE.GIVE) then
+            return
+        end
         q:step(3)
         return
     end

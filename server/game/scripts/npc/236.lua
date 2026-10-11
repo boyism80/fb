@@ -77,8 +77,10 @@ return {
             if sel == nil or sel ~= 1 then
                 return
             end
+            if not me:rmitem('후의뼈', BONE_COUNT, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
             q:step(2)
-            me:rmitem('후의뼈', BONE_COUNT, ITEM_DELETE_TYPE.GIVE)
             me:push_achievement(38, '마계천신의뼈를 구하자.', 7, 1)
             ::NPC_236_0007::
             btn = me:dialog(npc, '오, 고맙네. 그럼 자네가 가지고온 후의뼈는 가져가도록 하겠네.', { prev = true, next = true })

@@ -1,5 +1,4 @@
 -- npc: 북천황신수
-local REQUIRED_ITEMS = { '현철', '오독산' }
 local MOB_NAME = '북천황'
 local SPAWN_X, SPAWN_Y = 10, 9
 
@@ -54,10 +53,11 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:spawn_mob(MOB_NAME, SPAWN_X, SPAWN_Y, false)
-        for _, name in ipairs(REQUIRED_ITEMS) do
-            me:rmitem(name, 1, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem(required_table, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '자네에겐 현철과 오독산이 없군.', { prev = false, next = false })
+            return
         end
+        me:spawn_mob(MOB_NAME, SPAWN_X, SPAWN_Y, false)
         me:dialog(npc, '지금 북천황이 나왔네! 빠른시간내에 처리해주게!', { prev = false, next = false })
     end
 }

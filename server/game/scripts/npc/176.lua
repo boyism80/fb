@@ -144,8 +144,10 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if not me:rmitem('고구려비단', 1, ITEM_DELETE_TYPE.GIVE) then
+            return
+        end
         me:mkspell('백열장')
-        me:rmitem('고구려비단', 1, ITEM_DELETE_TYPE.GIVE)
         q:step(3)
         me:push_achievement(26, '소림사의 비기를 배웠다.', 7, 1)
     end

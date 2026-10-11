@@ -89,8 +89,10 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
+            if not me:rmitem('정화비서', 1, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
             q:step(4)
-            me:rmitem('정화비서', 1, ITEM_DELETE_TYPE.GIVE)
             me:push_achievement(ACHIEVEMENT_CLEAR, '우선녀의 부탁을 들어주자.', 7, 1)
             return
         end

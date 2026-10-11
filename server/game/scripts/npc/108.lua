@@ -134,8 +134,10 @@ return {
             if sel ~= 1 then
                 return
             end
+            if not me:rmitem('인어의방울', 1, ITEM_DELETE_TYPE.GIVE) then
+                return
+            end
             q:step(4)
-            me:rmitem('인어의방울', 1, ITEM_DELETE_TYPE.GIVE)
             btn = me:dialog(npc, '정말 고맙소. 인어의거울은.. 도삭산이쁘니인어가 가지고 있으려나? 하하하', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
