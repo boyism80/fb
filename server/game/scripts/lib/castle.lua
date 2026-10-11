@@ -293,8 +293,8 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
             end
 
             me:money(me:money() - ENTRANCE_FEE)
-            local _, err = owner_clan:money(ENTRANCE_FEE_TO_OWNER)
-            if err ~= nil then
+            local _, err, pending = owner_clan:money(ENTRANCE_FEE_TO_OWNER)
+            if err ~= nil and not pending then
                 me:money(me:money() + ENTRANCE_FEE)
                 me:dialog(npc_obj, '문파자금 적립에 실패하여 입장할 수 없습니다.')
                 return true

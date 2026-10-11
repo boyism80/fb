@@ -246,7 +246,11 @@ local function clan_vault(me, npc_obj)
             return
         end
         me:money(me:money() - amount)
-        local _, err = clan:money(amount)
+        local _, err, pending = clan:money(amount)
+        if pending then
+            me:dialog(npc_obj, '문파자금 입금 결과를 확인하지 못했습니다. 잠시 후 문파자금을 확인해 주세요.', { prev = false, next = false })
+            return
+        end
         if err ~= nil then
             me:money(me:money() + amount)
             me:dialog(npc_obj, '문파자금 입금에 실패했습니다.', { prev = false, next = false })
@@ -285,7 +289,11 @@ local function clan_vault(me, npc_obj)
             me:dialog(npc_obj, '그렇게 많이 찾을 수는 없다네.', { prev = false, next = false })
             return
         end
-        local _, err = clan:money(-amount)
+        local _, err, pending = clan:money(-amount)
+        if pending then
+            me:dialog(npc_obj, '문파자금 출금 결과를 확인하지 못했습니다. 잠시 후 문파자금을 확인해 주세요.', { prev = false, next = false })
+            return
+        end
         if err ~= nil then
             me:dialog(npc_obj, '문파자금 출금에 실패했습니다.', { prev = false, next = false })
             return

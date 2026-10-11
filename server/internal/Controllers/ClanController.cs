@@ -43,6 +43,12 @@ namespace Internal.Controllers
             _logger = logger;
         }
 
+        private const string ClanMoneyApplied = "applied";
+        private const string ClanMoneyAborted = "aborted";
+        private static readonly TimeSpan ClanMoneyRequestTtl = TimeSpan.FromDays(1);
+
+        private static string ClanMoneyRequestKey(ulong requestId) => $"fb:clan:money-request:{requestId}";
+
         // The change is already saved and the requesting game server applies the HTTP response; other servers reload
         // the clan on login or /clan/id. Failing the request here would make the caller undo a change that persisted.
         private async Task PublishSavedAsync(Google.FlatBuffers.IFlatBufferEx response, uint world)
@@ -1223,6 +1229,28 @@ namespace Internal.Controllers
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
 
+                var requestKey = ClanMoneyRequestKey(request.RequestId);
+                var requestRedis = request.RequestId != 0 ? _redisService.GetShardConnection(world, requestKey) : null;
+                if (requestRedis != null)
+                {
+                    var state = await requestRedis.Connection.StringGetAsync(requestKey);
+                    if (state == ClanMoneyApplied)
+                    {
+                        return new Response.UpdatedClan
+                        {
+                            Host = request.Host,
+                            Action = Protocol.ClanActionType.SetMoney,
+                            ClanId = clan.Id,
+                            ClanName = clan.Name,
+                            Money = clan.Money,
+                            Error = (uint)ErrorCode.None
+                        };
+                    }
+
+                    if (state == ClanMoneyAborted)
+                        throw new LogicException(ErrorCode.Unhandled);
+                }
+
                 if (request.Delta > 0)
                 {
                     var next = clan.Money + (ulong)request.Delta;
@@ -1240,6 +1268,8 @@ namespace Internal.Controllers
 
                 _dbContext.Clan.Set(world, clan);
                 await _dbContext.SaveChangesAsync();
+                if (requestRedis != null)
+                    await requestRedis.Connection.StringSetAsync(requestKey, ClanMoneyApplied, ClanMoneyRequestTtl);
 
                 var response = new Response.UpdatedClan
                 {
@@ -1268,6 +1298,51 @@ namespace Internal.Controllers
                 {
                     Host = request.Host,
                     Action = Protocol.ClanActionType.SetMoney,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+        [HttpPost("money/abort")]
+        public async Task<Response.AbortClanMoney> AbortMoney(Request.AbortClanMoney request)
+        {
+            try
+            {
+                var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
+                await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var requestKey = ClanMoneyRequestKey(request.RequestId);
+                var requestRedis = _redisService.GetShardConnection(world, requestKey);
+                var state = await requestRedis.Connection.StringGetAsync(requestKey);
+                if (state == ClanMoneyApplied)
+                {
+                    var clan = await _dbContext.Clan.Get(world, request.Clan) ??
+                        throw new LogicException(ErrorCode.NotFoundClan);
+                    return new Response.AbortClanMoney
+                    {
+                        Applied = true,
+                        Money = clan.Money,
+                        Error = (uint)ErrorCode.None
+                    };
+                }
+
+                await requestRedis.Connection.StringSetAsync(requestKey, ClanMoneyAborted, ClanMoneyRequestTtl);
+                return new Response.AbortClanMoney
+                {
+                    Applied = false,
+                    Error = (uint)ErrorCode.None
+                };
+            }
+            catch (LogicException e)
+            {
+                return new Response.AbortClanMoney
+                {
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.AbortClanMoney
+                {
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

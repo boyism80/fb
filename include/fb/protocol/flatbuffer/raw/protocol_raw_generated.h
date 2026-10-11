@@ -312,6 +312,9 @@ struct SetCastleOwnerBuilder;
 struct SetClanMoney;
 struct SetClanMoneyBuilder;
 
+struct AbortClanMoney;
+struct AbortClanMoneyBuilder;
+
 struct OpsNotify;
 struct OpsNotifyBuilder;
 
@@ -434,6 +437,9 @@ struct ClanDetailsBuilder;
 
 struct UpdatedClan;
 struct UpdatedClanBuilder;
+
+struct AbortClanMoney;
+struct AbortClanMoneyBuilder;
 
 struct BroadcastClan;
 struct BroadcastClanBuilder;
@@ -9824,7 +9830,8 @@ struct SetClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 4,
     VT_HOST = 6,
     VT_CLAN = 8,
-    VT_DELTA = 10
+    VT_DELTA = 10,
+    VT_REQUEST_ID = 12
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -9838,12 +9845,16 @@ struct SetClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   int64_t delta() const {
     return GetField<int64_t>(VT_DELTA, 0);
   }
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
            VerifyField<int64_t>(verifier, VT_DELTA, 8) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -9864,6 +9875,9 @@ struct SetClanMoneyBuilder {
   void add_delta(int64_t delta) {
     fbb_.AddElement<int64_t>(SetClanMoney::VT_DELTA, delta, 0);
   }
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(SetClanMoney::VT_REQUEST_ID, request_id, 0);
+  }
   explicit SetClanMoneyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -9880,11 +9894,74 @@ inline ::flatbuffers::Offset<SetClanMoney> CreateSetClanMoney(
     uint32_t world = 0,
     uint32_t host = 0,
     uint32_t clan = 0,
-    int64_t delta = 0) {
+    int64_t delta = 0,
+    uint64_t request_id = 0) {
   SetClanMoneyBuilder builder_(_fbb);
+  builder_.add_request_id(request_id);
   builder_.add_delta(delta);
   builder_.add_clan(clan);
   builder_.add_host(host);
+  builder_.add_world(world);
+  return builder_.Finish();
+}
+
+struct AbortClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AbortClanMoneyBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_WORLD = 4,
+    VT_CLAN = 6,
+    VT_REQUEST_ID = 8
+  };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
+  uint32_t clan() const {
+    return GetField<uint32_t>(VT_CLAN, 0);
+  }
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct AbortClanMoneyBuilder {
+  typedef AbortClanMoney Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(AbortClanMoney::VT_WORLD, world, 0);
+  }
+  void add_clan(uint32_t clan) {
+    fbb_.AddElement<uint32_t>(AbortClanMoney::VT_CLAN, clan, 0);
+  }
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(AbortClanMoney::VT_REQUEST_ID, request_id, 0);
+  }
+  explicit AbortClanMoneyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AbortClanMoney> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AbortClanMoney>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AbortClanMoney> CreateAbortClanMoney(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t clan = 0,
+    uint64_t request_id = 0) {
+  AbortClanMoneyBuilder builder_(_fbb);
+  builder_.add_request_id(request_id);
+  builder_.add_clan(clan);
   builder_.add_world(world);
   return builder_.Finish();
 }
@@ -12961,6 +13038,67 @@ inline ::flatbuffers::Offset<UpdatedClan> CreateUpdatedClanDirect(
       related_clan_id,
       money,
       error);
+}
+
+struct AbortClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AbortClanMoneyBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_APPLIED = 4,
+    VT_MONEY = 6,
+    VT_ERROR = 8
+  };
+  bool applied() const {
+    return GetField<uint8_t>(VT_APPLIED, 0) != 0;
+  }
+  uint64_t money() const {
+    return GetField<uint64_t>(VT_MONEY, 0);
+  }
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_APPLIED, 1) &&
+           VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct AbortClanMoneyBuilder {
+  typedef AbortClanMoney Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_applied(bool applied) {
+    fbb_.AddElement<uint8_t>(AbortClanMoney::VT_APPLIED, static_cast<uint8_t>(applied), 0);
+  }
+  void add_money(uint64_t money) {
+    fbb_.AddElement<uint64_t>(AbortClanMoney::VT_MONEY, money, 0);
+  }
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(AbortClanMoney::VT_ERROR, error, 0);
+  }
+  explicit AbortClanMoneyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AbortClanMoney> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AbortClanMoney>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AbortClanMoney> CreateAbortClanMoney(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool applied = false,
+    uint64_t money = 0,
+    uint32_t error = 0) {
+  AbortClanMoneyBuilder builder_(_fbb);
+  builder_.add_money(money);
+  builder_.add_error(error);
+  builder_.add_applied(applied);
+  return builder_.Finish();
 }
 
 struct BroadcastClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

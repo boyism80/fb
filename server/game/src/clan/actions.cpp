@@ -8,6 +8,8 @@
 #include <macro.h>
 
 #include <cstdint>
+#include <format>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -16,6 +18,7 @@
 
 using namespace fb::game;
 namespace internal_reqs = fb::protocol::internal::request;
+namespace internal_resp = fb::protocol::internal::response;
 
 async::task<void> clan::container::create(character& me, std::string_view name)
 {
@@ -442,17 +445,67 @@ clan::container::broadcast(uint32_t world, uint32_t clan_id, std::string_view me
     co_await this->on_broadcast(resp.clan, std::move(resp.message), resp.type);
 }
 
-async::task<void> clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta)
+async::task<bool> clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta)
 {
     if (delta == 0)
-        co_return;
+        co_return true;
 
-    auto*  before = this->_server.threads.current();
-    auto&& resp   = co_await this->_server.http.post(
-        "internal",
-        "/clan/money",
-        internal_reqs::SetClanMoney{world, fb::config<uint32_t>("id"), clan_id, delta});
+    auto* before     = this->_server.threads.current();
+    auto  host       = fb::config<uint32_t>("id");
+    auto  request_id = this->_server.ids.next();
+
+    auto updated = std::optional<internal_resp::UpdatedClan>{};
+    for (auto attempt = 0; attempt < 2 && updated.has_value() == false; attempt++)
+    {
+        try
+        {
+            auto&& resp =
+                co_await this->_server.http.post("internal",
+                                                 "/clan/money",
+                                                 internal_reqs::SetClanMoney{world, host, clan_id, delta, request_id});
+            auto error = static_cast<ERROR_CODE>(resp.error);
+            if (error == ERROR_CODE::NONE || error == ERROR_CODE::NOT_FOUND_CLAN)
+                updated = std::move(resp);
+        }
+        catch (std::exception&)
+        { }
+    }
+
+    auto aborted = std::optional<internal_resp::AbortClanMoney>{};
+    if (updated.has_value() == false)
+    {
+        try
+        {
+            auto&& resp = co_await this->_server.http.post("internal",
+                                                           "/clan/money/abort",
+                                                           internal_reqs::AbortClanMoney{world, clan_id, request_id});
+            if (static_cast<ERROR_CODE>(resp.error) == ERROR_CODE::NONE)
+                aborted = std::move(resp);
+        }
+        catch (std::exception&)
+        { }
+    }
+
     if (before != nullptr)
         co_await before->switching();
-    co_await this->on_updated(resp);
+
+    if (updated.has_value())
+    {
+        co_await this->on_updated(updated.value());
+        co_return true;
+    }
+    else if (aborted.has_value() == false)
+    {
+        co_return false;
+    }
+    else if (aborted.value().applied)
+    {
+        co_await this->on_set_money(clan_id, aborted.value().money);
+        co_return true;
+    }
+    else
+    {
+        throw std::runtime_error(
+            std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), static_cast<uint32_t>(ERROR_CODE::UNHANDLED)));
+    }
 }

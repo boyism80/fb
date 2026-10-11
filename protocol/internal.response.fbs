@@ -272,6 +272,12 @@ table UpdatedClan {
   error: uint;
 }
 
+table AbortClanMoney {
+  applied: bool;
+  money: ulong = 0;
+  error: uint;
+}
+
 table BroadcastClan {
   host: uint;
   clan: uint;

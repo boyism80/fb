@@ -449,6 +449,13 @@ table SetClanMoney {
   host: uint;
   clan: uint;
   delta: long;
+  request_id: ulong;
+}
+
+table AbortClanMoney {
+  world: uint;
+  clan: uint;
+  request_id: ulong;
 }
 
 table OpsNotify {
