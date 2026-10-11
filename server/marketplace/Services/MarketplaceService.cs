@@ -87,6 +87,20 @@ public class MarketplaceService : IMarketplaceService
             throw new LogicException(ErrorCode.MarketplaceItemNotTradeable);
         }
 
+        if (remainingCount > 0 && price > ulong.MaxValue / remainingCount)
+        {
+            await _logService.WriteAsync("marketplace_list_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                item_model = itemModel,
+                remaining_count = remainingCount,
+                price,
+                error = "invalid_price"
+            });
+            throw new LogicException(ErrorCode.MarketplaceInvalidPrice);
+        }
+
         // Check listing limit for seller
         var activeListingCount = await _dbContext.Marketplace.CountActiveListingsBySellerAsync(characterId);
         if (activeListingCount >= Fb.Model.ConstValue.Marketplace.ListingLimit)
@@ -427,6 +441,20 @@ public class MarketplaceService : IMarketplaceService
                     error = "insufficient_stock"
                 });
                 throw new LogicException(ErrorCode.MarketplaceInsufficientStock);
+            }
+
+            if (listing.Price > 0 && purchaseCount > ulong.MaxValue / listing.Price)
+            {
+                await transaction.RollbackAsync();
+                finished = true;
+                await _logService.WriteAsync("marketplace_purchase_failed", new
+                {
+                    buyer_id = buyerId,
+                    listing_id = listingId,
+                    purchase_id = purchaseId,
+                    error = "invalid_price"
+                });
+                throw new LogicException(ErrorCode.MarketplaceInvalidPrice);
             }
 
             // Calculate prices

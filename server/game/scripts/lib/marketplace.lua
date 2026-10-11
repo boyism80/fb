@@ -385,7 +385,7 @@ function M.list(me, npc)
     end
 
     local price = math.tointeger(tonumber(price_input))
-    if price == nil or price <= 0 then
+    if price == nil or price <= 0 or price > math.maxinteger // count then
         local button = me:dialog(npc, '올바른 가격을 입력해주세요.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false

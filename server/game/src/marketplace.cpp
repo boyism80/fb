@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <exception>
 #include <format>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -69,6 +70,9 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
         if (weapon != nullptr && weapon->custom_name().has_value())
             custom_name = weapon->custom_name().value();
     }
+
+    if (count > 0 && price > std::numeric_limits<uint64_t>::max() / count)
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR), "price"));
 
     auto total_sale_amount = static_cast<uint64_t>(count) * price;
     auto listing_fee = static_cast<uint64_t>(total_sale_amount * fb::model::const_value::marketplace::listing_fee);
@@ -275,6 +279,9 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
     auto& listing = listings[0];
     if (listing.state != static_cast<uint8_t>(mp::ListingState::ACTIVE))
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_LISTING_NOT_AVAILABLE_FOR_PURCHASE));
+
+    if (listing.price > 0 && purchase_count > std::numeric_limits<uint64_t>::max() / listing.price)
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY));
 
     // Calculate expected price (per unit price * purchase_count)
     auto expected_price = listing.price * purchase_count;
