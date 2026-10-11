@@ -3133,22 +3133,32 @@ public struct Authenticate : IFlatbufferObject
   public ArraySegment<byte>? GetPwBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
   public byte[] GetPwArray() { return __p.__vector_as_array<byte>(8); }
+  public string Ip { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetIpBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetIpBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetIpArray() { return __p.__vector_as_array<byte>(10); }
 
   public static Offset<fb.protocol.@internal.request.raw.Authenticate> CreateAuthenticate(FlatBufferBuilder builder,
       uint world = 0,
       uint uid = 0,
-      StringOffset pwOffset = default(StringOffset)) {
-    builder.StartTable(3);
+      StringOffset pwOffset = default(StringOffset),
+      StringOffset ipOffset = default(StringOffset)) {
+    builder.StartTable(4);
+    Authenticate.AddIp(builder, ipOffset);
     Authenticate.AddPw(builder, pwOffset);
     Authenticate.AddUid(builder, uid);
     Authenticate.AddWorld(builder, world);
     return Authenticate.EndAuthenticate(builder);
   }
 
-  public static void StartAuthenticate(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartAuthenticate(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
+  public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(3, ipOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.request.raw.Authenticate> EndAuthenticate(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.Authenticate>(o);
@@ -3164,6 +3174,7 @@ static public class AuthenticateVerify
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*Pw*/, false)
+      && verifier.VerifyString(tablePos, 10 /*Ip*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -3605,14 +3616,23 @@ public struct ChangePw : IFlatbufferObject
 #endif
   public byte[] GetAfterArray() { return __p.__vector_as_array<byte>(10); }
   public uint Birthday { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Ip { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetIpBytes() { return __p.__vector_as_span<byte>(14, 1); }
+#else
+  public ArraySegment<byte>? GetIpBytes() { return __p.__vector_as_arraysegment(14); }
+#endif
+  public byte[] GetIpArray() { return __p.__vector_as_array<byte>(14); }
 
   public static Offset<fb.protocol.@internal.request.raw.ChangePw> CreateChangePw(FlatBufferBuilder builder,
       uint world = 0,
       uint uid = 0,
       StringOffset beforeOffset = default(StringOffset),
       StringOffset afterOffset = default(StringOffset),
-      uint birthday = 0) {
-    builder.StartTable(5);
+      uint birthday = 0,
+      StringOffset ipOffset = default(StringOffset)) {
+    builder.StartTable(6);
+    ChangePw.AddIp(builder, ipOffset);
     ChangePw.AddBirthday(builder, birthday);
     ChangePw.AddAfter(builder, afterOffset);
     ChangePw.AddBefore(builder, beforeOffset);
@@ -3621,12 +3641,13 @@ public struct ChangePw : IFlatbufferObject
     return ChangePw.EndChangePw(builder);
   }
 
-  public static void StartChangePw(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartChangePw(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
   public static void AddBefore(FlatBufferBuilder builder, StringOffset beforeOffset) { builder.AddOffset(2, beforeOffset.Value, 0); }
   public static void AddAfter(FlatBufferBuilder builder, StringOffset afterOffset) { builder.AddOffset(3, afterOffset.Value, 0); }
   public static void AddBirthday(FlatBufferBuilder builder, uint birthday) { builder.AddUint(4, birthday, 0); }
+  public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(5, ipOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.request.raw.ChangePw> EndChangePw(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.ChangePw>(o);
@@ -3644,6 +3665,7 @@ static public class ChangePwVerify
       && verifier.VerifyString(tablePos, 8 /*Before*/, false)
       && verifier.VerifyString(tablePos, 10 /*After*/, false)
       && verifier.VerifyField(tablePos, 12 /*Birthday*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 14 /*Ip*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

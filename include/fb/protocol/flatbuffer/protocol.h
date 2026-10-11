@@ -2829,20 +2829,21 @@ public:
     std::string before;
     std::string after;
     uint32_t birthday = 0;
+    std::string ip;
 
 public:
     ChangePw() = default;
 
     ChangePw(const ChangePw& x)
-        : world(x.world), uid(x.uid), before(x.before), after(x.after), birthday(x.birthday)
+        : world(x.world), uid(x.uid), before(x.before), after(x.after), birthday(x.birthday), ip(x.ip)
     { }
 
-    ChangePw(uint32_t world, uint32_t uid, std::string_view before, std::string_view after, uint32_t birthday)
-        : world(world), uid(uid), before(std::string(before)), after(std::string(after)), birthday(birthday)
+    ChangePw(uint32_t world, uint32_t uid, std::string_view before, std::string_view after, uint32_t birthday, std::string_view ip)
+        : world(world), uid(uid), before(std::string(before)), after(std::string(after)), birthday(birthday), ip(std::string(ip))
     { }
 
     ChangePw(const fb::protocol::internal::request::raw::ChangePw& raw)
-        : world(raw.world()), uid(raw.uid()), before(flatbuffers::option::decode(raw.before()->c_str())), after(flatbuffers::option::decode(raw.after()->c_str())), birthday(raw.birthday())
+        : world(raw.world()), uid(raw.uid()), before(flatbuffers::option::decode(raw.before()->c_str())), after(flatbuffers::option::decode(raw.after()->c_str())), birthday(raw.birthday()), ip(flatbuffers::option::decode(raw.ip()->c_str()))
     { }
 
 public:
@@ -2918,20 +2919,21 @@ public:
     uint32_t world = 0;
     uint32_t uid = 0;
     std::string pw;
+    std::string ip;
 
 public:
     Authenticate() = default;
 
     Authenticate(const Authenticate& x)
-        : world(x.world), uid(x.uid), pw(x.pw)
+        : world(x.world), uid(x.uid), pw(x.pw), ip(x.ip)
     { }
 
-    Authenticate(uint32_t world, uint32_t uid, std::string_view pw)
-        : world(world), uid(uid), pw(std::string(pw))
+    Authenticate(uint32_t world, uint32_t uid, std::string_view pw, std::string_view ip)
+        : world(world), uid(uid), pw(std::string(pw)), ip(std::string(ip))
     { }
 
     Authenticate(const fb::protocol::internal::request::raw::Authenticate& raw)
-        : world(raw.world()), uid(raw.uid()), pw(flatbuffers::option::decode(raw.pw()->c_str()))
+        : world(raw.world()), uid(raw.uid()), pw(flatbuffers::option::decode(raw.pw()->c_str())), ip(flatbuffers::option::decode(raw.ip()->c_str()))
     { }
 
 public:
@@ -9812,7 +9814,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::ChangePw> build<fb::pr
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.before),
             flatbuffers::build<std::string>(builder, value.after),
-            flatbuffers::build<uint32_t>(builder, value.birthday));
+            flatbuffers::build<uint32_t>(builder, value.birthday),
+            flatbuffers::build<std::string>(builder, value.ip));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::InitCharacter> build<fb::protocol::internal::request::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::request::InitCharacter& value)
@@ -9835,7 +9838,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Authenticate> build<fb
     return fb::protocol::internal::request::raw::CreateAuthenticate(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.uid),
-            flatbuffers::build<std::string>(builder, value.pw));
+            flatbuffers::build<std::string>(builder, value.pw),
+            flatbuffers::build<std::string>(builder, value.ip));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Init> build<fb::protocol::internal::request::Init>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Init& value)

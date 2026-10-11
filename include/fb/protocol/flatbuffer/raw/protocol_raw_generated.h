@@ -5298,7 +5298,8 @@ struct ChangePw FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_UID = 6,
     VT_BEFORE = 8,
     VT_AFTER = 10,
-    VT_BIRTHDAY = 12
+    VT_BIRTHDAY = 12,
+    VT_IP = 14
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -5315,6 +5316,9 @@ struct ChangePw FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t birthday() const {
     return GetField<uint32_t>(VT_BIRTHDAY, 0);
   }
+  const ::flatbuffers::String *ip() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_IP);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -5324,6 +5328,8 @@ struct ChangePw FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_AFTER) &&
            verifier.VerifyString(after()) &&
            VerifyField<uint32_t>(verifier, VT_BIRTHDAY, 4) &&
+           VerifyOffset(verifier, VT_IP) &&
+           verifier.VerifyString(ip()) &&
            verifier.EndTable();
   }
 };
@@ -5347,6 +5353,9 @@ struct ChangePwBuilder {
   void add_birthday(uint32_t birthday) {
     fbb_.AddElement<uint32_t>(ChangePw::VT_BIRTHDAY, birthday, 0);
   }
+  void add_ip(::flatbuffers::Offset<::flatbuffers::String> ip) {
+    fbb_.AddOffset(ChangePw::VT_IP, ip);
+  }
   explicit ChangePwBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -5364,8 +5373,10 @@ inline ::flatbuffers::Offset<ChangePw> CreateChangePw(
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> before = 0,
     ::flatbuffers::Offset<::flatbuffers::String> after = 0,
-    uint32_t birthday = 0) {
+    uint32_t birthday = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> ip = 0) {
   ChangePwBuilder builder_(_fbb);
+  builder_.add_ip(ip);
   builder_.add_birthday(birthday);
   builder_.add_after(after);
   builder_.add_before(before);
@@ -5380,16 +5391,19 @@ inline ::flatbuffers::Offset<ChangePw> CreateChangePwDirect(
     uint32_t uid = 0,
     const char *before = nullptr,
     const char *after = nullptr,
-    uint32_t birthday = 0) {
+    uint32_t birthday = 0,
+    const char *ip = nullptr) {
   auto before__ = before ? _fbb.CreateString(before) : 0;
   auto after__ = after ? _fbb.CreateString(after) : 0;
+  auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::request::raw::CreateChangePw(
       _fbb,
       world,
       uid,
       before__,
       after__,
-      birthday);
+      birthday,
+      ip__);
 }
 
 struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -5558,7 +5572,8 @@ struct Authenticate FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_UID = 6,
-    VT_PW = 8
+    VT_PW = 8,
+    VT_IP = 10
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -5569,12 +5584,17 @@ struct Authenticate FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *pw() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PW);
   }
+  const ::flatbuffers::String *ip() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_IP);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            VerifyOffset(verifier, VT_PW) &&
            verifier.VerifyString(pw()) &&
+           VerifyOffset(verifier, VT_IP) &&
+           verifier.VerifyString(ip()) &&
            verifier.EndTable();
   }
 };
@@ -5592,6 +5612,9 @@ struct AuthenticateBuilder {
   void add_pw(::flatbuffers::Offset<::flatbuffers::String> pw) {
     fbb_.AddOffset(Authenticate::VT_PW, pw);
   }
+  void add_ip(::flatbuffers::Offset<::flatbuffers::String> ip) {
+    fbb_.AddOffset(Authenticate::VT_IP, ip);
+  }
   explicit AuthenticateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -5607,8 +5630,10 @@ inline ::flatbuffers::Offset<Authenticate> CreateAuthenticate(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t uid = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> pw = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> ip = 0) {
   AuthenticateBuilder builder_(_fbb);
+  builder_.add_ip(ip);
   builder_.add_pw(pw);
   builder_.add_uid(uid);
   builder_.add_world(world);
@@ -5619,13 +5644,16 @@ inline ::flatbuffers::Offset<Authenticate> CreateAuthenticateDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t uid = 0,
-    const char *pw = nullptr) {
+    const char *pw = nullptr,
+    const char *ip = nullptr) {
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
+  auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::request::raw::CreateAuthenticate(
       _fbb,
       world,
       uid,
-      pw__);
+      pw__,
+      ip__);
 }
 
 struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

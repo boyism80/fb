@@ -75,7 +75,7 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
         auto&& resp2 = co_await this->server.http.post(
             "internal",
             "/account/change-pw",
-            internal_reqs::ChangePw{world, uid, request.pw, request.new_pw, request.birthday});
+            internal_reqs::ChangePw{world, uid, request.pw, request.new_pw, request.birthday, session.ip()});
 
         co_await this->server.threads.switching(weak);
 

@@ -61,6 +61,7 @@ table ChangePw {
   before: string;
   after: string;
   birthday: uint;
+  ip: string;
 }
 
 
@@ -81,6 +82,7 @@ table Authenticate {
   world: uint;
   uid: uint;
   pw: string;
+  ip: string;
 }
 
 

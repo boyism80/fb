@@ -648,7 +648,8 @@ namespace Google.FlatBuffers
                 builder.Build(value.Uid),
                 builder.Build(value.Before),
                 builder.Build(value.After),
-                builder.Build(value.Birthday));
+                builder.Build(value.Birthday),
+                builder.Build(value.Ip));
         }
         public static Offset<fb.protocol.@internal.request.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.InitCharacter value)
         {
@@ -675,7 +676,8 @@ namespace Google.FlatBuffers
             return fb.protocol.@internal.request.raw.Authenticate.CreateAuthenticate(builder,
                 builder.Build(value.World),
                 builder.Build(value.Uid),
-                builder.Build(value.Pw));
+                builder.Build(value.Pw),
+                builder.Build(value.Ip));
         }
         public static Offset<fb.protocol.@internal.request.raw.Init> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.Init value)
         {
@@ -4398,6 +4400,7 @@ namespace fb.protocol.@internal.request
         public string Before { get; set; } = string.Empty;
         public string After { get; set; } = string.Empty;
         public uint Birthday { get; set; } = 0;
+        public string Ip { get; set; } = string.Empty;
 
         public ChangePw()
         { }
@@ -4409,6 +4412,7 @@ namespace fb.protocol.@internal.request
             Before = raw.Before;
             After = raw.After;
             Birthday = raw.Birthday;
+            Ip = raw.Ip;
         }
 
         public ChangePw(byte[] bytes) : this(fb.protocol.@internal.request.raw.ChangePw.GetRootAsChangePw(new ByteBuffer(bytes)))
@@ -4494,6 +4498,7 @@ namespace fb.protocol.@internal.request
         public uint World { get; set; } = 0;
         public uint Uid { get; set; } = 0;
         public string Pw { get; set; } = string.Empty;
+        public string Ip { get; set; } = string.Empty;
 
         public Authenticate()
         { }
@@ -4503,6 +4508,7 @@ namespace fb.protocol.@internal.request
             World = raw.World;
             Uid = raw.Uid;
             Pw = raw.Pw;
+            Ip = raw.Ip;
         }
 
         public Authenticate(byte[] bytes) : this(fb.protocol.@internal.request.raw.Authenticate.GetRootAsAuthenticate(new ByteBuffer(bytes)))

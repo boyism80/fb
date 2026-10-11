@@ -55,7 +55,7 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
         auto   uid   = resp1.uid;
         auto&& resp2 = co_await this->server.http.post("internal",
                                                        "/account/authenticate",
-                                                       internal_reqs::Authenticate{world, uid, pw});
+                                                       internal_reqs::Authenticate{world, uid, pw, session.ip()});
         co_await this->server.threads.switching(weak);
 
         switch (resp2.error_code)
