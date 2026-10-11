@@ -1618,11 +1618,13 @@ function M.promotion(me, npc, class)
     if selected ~= 1 then
         return
     end
+    local cost = {}
     for _, it in ipairs(items) do
-        if not me:rmitem(it.name, it.count, ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, name_with(it.name, '이', '가') .. ' 없습니다.', { prev = false, next = true })
-            return
-        end
+        cost[it.name] = (cost[it.name] or 0) + it.count
+    end
+    if not me:rmitem(cost, ITEM_DELETE_TYPE.GIVE) then
+        me:dialog(npc, '승급에 필요한 물건이 모자랍니다.', { prev = false, next = true })
+        return
     end
     me:promotion(from_promotion + 1)
     broadcast(string.format('(( [%s]님이 %s 승급하였습니다. 축하합니다! ))', me:name(), name_with(next_name, '으로', '로')), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
