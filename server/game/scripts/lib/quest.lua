@@ -1,3 +1,5 @@
+local enum = require('lib.enum')
+
 local M = {}
 
 M.QUEST_NAKRANG_HUNT = 1
@@ -816,8 +818,10 @@ function M.mountain_treasure_fabric_on_move(me)
         return
     end
 
-    me:rmitem('산신의보물지도', 1)
-    me:mkitem('산신의비단', 1)
+    local code = me:exchange({ ['item'] = { ['산신의보물지도'] = 1 } }, { ['item'] = { ['산신의비단'] = 1 } })
+    if code ~= enum.exchange_result.OK then
+        return
+    end
 
     quest:param('got')
     me:dialog(nil, '산신의비단을 발견했다!', { prev = false, next = true })

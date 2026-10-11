@@ -1,6 +1,5 @@
 -- npc: 백나연
 local quest = require('lib.quest')
-local enum = require('lib.enum')
 local festival = require('lib.festival')
 
 -- Achievement title from yeondailyy screenshot: 김장철에 김치를 담가보자
@@ -238,8 +237,7 @@ local function run_deposit(me, npc, q)
         return
     end
 
-    local code = me:exchange({ ['item'] = kimchi.materials }, nil)
-    if code == enum.exchange_result.LACK_COST then
+    if not me:rmitem(kimchi.materials, ITEM_DELETE_TYPE.GIVE) then
         return
     end
 

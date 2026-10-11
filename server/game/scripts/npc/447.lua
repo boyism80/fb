@@ -98,10 +98,11 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
+                if not me:reward({ ['exp'] = 600, ['item'] = { ["노란비서"] = 21, ["직업의길비서"] = 1 } }) then
+                    me:dialog(npc, "소지품이 가득 차서 드릴 수가 없네요. 소지품을 비우고 다시 찾아와 주세요.", { prev = false, next = false })
+                    return
+                end
                 q:step(10)
-                me:exp(me:exp() + 600)
-                me:mkitem("노란비서", 21)
-                me:mkitem("직업의길비서", 1)
                 local map = name2map("직업의길")
                 if map then
                     me:map(map, math.random(14, 16), math.random(14, 16))

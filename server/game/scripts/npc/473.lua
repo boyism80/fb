@@ -1,4 +1,5 @@
 -- npc: 봉쇄장군
+local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
@@ -55,12 +56,15 @@ return {
         if sel == 2 then
             return
         end
-        if me:money() < 10000 then
+        local code = me:exchange({ ['money'] = 10000 }, { ['item'] = { ["마른갈대"] = 10 } })
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "돈이 없군.", { prev = false, next = false })
             return
         end
-        me:money(me:money() - 10000)
-        me:mkitem("마른갈대", 10)
+        if code == enum.exchange_result.LACK_CAPACITY then
+            me:dialog(npc, "소지품이 가득 차서 마른 갈대를 줄 수 없군.", { prev = false, next = false })
+            return
+        end
         me:dialog(npc, "여기 마른 갈대 10개요.", { prev = false, next = false })
     end
 }

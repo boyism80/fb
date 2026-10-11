@@ -1,5 +1,6 @@
 -- npc: 배전
 local quest = require('lib.quest')
+local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
@@ -52,12 +53,15 @@ return {
         if sel ~= 1 then
             return
         end
-        if me:money() < 20000 then
+        local code = me:exchange({ ['money'] = 20000 }, { ['item'] = { ["창힐독본"] = 2 } })
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "물어줄 돈이 없구만. 썩 물러나게.", { prev = false, next = false })
             return
         end
-        me:money(me:money() - 20000)
-        me:mkitem("창힐독본", 2)
+        if code == enum.exchange_result.LACK_CAPACITY then
+            me:dialog(npc, "소지품이 가득 차서 창힐독본을 받을 수 없네.", { prev = false, next = false })
+            return
+        end
         main_q:step(11)
         me:dialog(npc, "수고했네.", { prev = false, next = false })
     end

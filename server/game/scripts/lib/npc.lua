@@ -1283,35 +1283,20 @@ function M.basic_class(me, npc, class, spells)
                 goto NPC_BASIC_CLASS_000
             end
 
-            local enough = true
+            local cost = { ['item'] = {}, ['money'] = 0 }
             for _, m in pairs(spell.material) do
                 if m.name == '금전' then
-                    if me:money() < m.count then
-                        enough = false
-                        break
-                    end
+                    cost['money'] = cost['money'] + m.count
                 else
-                    local item = me:item(m.name)
-                    if item == nil or item:count() < m.count then
-                        enough = false
-                        break
-                    end
+                    cost['item'][m.name] = (cost['item'][m.name] or 0) + m.count
                 end
             end
 
-            if not enough then
+            if not me:consume(cost) then
                 if me:dialog(npc, '필요한 것들을 구해보도록 하게. 자네라면 할 수 있겠지?', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
                 goto NPC_BASIC_CLASS_000
-            end
-
-            for _, m in pairs(spell.material) do
-                if m.name == '금전' then
-                    me:money(me:money() - m.count)
-                else
-                    me:rmitem(m.name, m.count)
-                end
             end
             me:mkspell(name)
             me:menu(npc, SPELL_DONE_MSG, {})
@@ -1543,16 +1528,14 @@ function M.promotion_skills(me, npc, class)
     if me:dialog(npc, name_with(spell_name, '을', '를') .. ' 배우기 위해선 5000만의 경험치가 필요합니다.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
         return
     end
-    local exp_now = me:exp()
-    if exp_now < PROMOTION_SKILL_EXP then
-        me:dialog(npc, '경험치가 모자랍니다.', { prev = false, next = true })
-        return
-    end
     if promotion_has_spell(me, spell_name) then
         me:dialog(npc, '이미 배운 마법입니다.', { prev = false, next = true })
         return
     end
-    me:exp(exp_now - PROMOTION_SKILL_EXP)
+    if not me:consume({ ['exp'] = PROMOTION_SKILL_EXP }) then
+        me:dialog(npc, '경험치가 모자랍니다.', { prev = false, next = true })
+        return
+    end
     me:mkspell(spell_name)
     me:dialog(npc, name_with(spell_name, '을', '를') .. ' 드렸습니다.', { prev = false, next = true })
 end

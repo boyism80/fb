@@ -1,4 +1,5 @@
 -- Shared helpers for 삼짇날 butterfly catching jars (채집통 [0..10 마리]).
+local enum = require('lib.enum')
 
 local JAR_NAMES = {}
 for i = 0, 10 do
@@ -31,14 +32,7 @@ function M.upgrade(me)
 
     local from_name = JAR_NAMES[count]
     local to_name = JAR_NAMES[count + 1]
-    if not me:rmitem(from_name, 1, ITEM_DELETE_TYPE.REDUCE) then
-        return false
-    end
-    if me:mkitem(to_name, 1) == nil then
-        me:mkitem(from_name, 1)
-        return false
-    end
-    return true
+    return me:exchange({ ['item'] = { [from_name] = 1 } }, { ['item'] = { [to_name] = 1 } }, ITEM_DELETE_TYPE.REDUCE) == enum.exchange_result.OK
 end
 
 -- Called from butterfly mob on_mob_damaged (before the mob is removed on lethal hit).

@@ -145,12 +145,7 @@ return {
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
-                if not me:rmitem("철도", 3, ITEM_DELETE_TYPE.GIVE) then
-                    me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
-                    return
-                end
-                if not me:rmitem("사각방패", 3, ITEM_DELETE_TYPE.GIVE) then
-                    me:mkitem("철도", 3)
+                if not me:rmitem({ ["철도"] = 3, ["사각방패"] = 3 }, ITEM_DELETE_TYPE.GIVE) then
                     me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
                     return
                 end

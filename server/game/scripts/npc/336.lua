@@ -67,8 +67,15 @@ return {
                     return
                 end
             end
-            me:money(me:money() - DOTOL_PRICE)
-            me:mkitem(item_name, 1)
+            local code = me:exchange({ ['money'] = DOTOL_PRICE }, { ['item'] = { [item_name] = 1 } })
+            if code == enum.exchange_result.LACK_COST then
+                me:dialog(npc, "금전 천전이 없으시군요!", { prev = false, next = false })
+                return
+            end
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, "소지품이 가득 차서 " .. name_with(item_name, '을', '를') .. " 드릴 수 없어요.", { prev = false, next = false })
+                return
+            end
             if q then
                 q:param(tostring(day))
             end

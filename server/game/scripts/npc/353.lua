@@ -86,7 +86,7 @@ local function run_hand_in(me, npc)
             me:dialog(npc, "실패는 칠석집의 주연이에게 받아오시면 된답니다.", { prev = false, next = false })
             return
         end
-        if not me:rmitem("연", 1, ITEM_DELETE_TYPE.GIVE) or not me:rmitem("실패", 1, ITEM_DELETE_TYPE.GIVE) then
+        if not me:rmitem({ ["연"] = 1, ["실패"] = 1 }, ITEM_DELETE_TYPE.GIVE) then
             return
         end
         -- Items already taken: dialogs must not abort the holiday screen.
@@ -105,7 +105,7 @@ local function run_hand_in(me, npc)
             me:dialog(npc, "깨진김장독은 김장집의 나연이에게 받아오시면 된답니다.", { prev = false, next = false })
             return
         end
-        if not me:rmitem("제기", 1, ITEM_DELETE_TYPE.GIVE) or not me:rmitem("깨진김장독", 1, ITEM_DELETE_TYPE.GIVE) then
+        if not me:rmitem({ ["제기"] = 1, ["깨진김장독"] = 1 }, ITEM_DELETE_TYPE.GIVE) then
             return
         end
         -- Items already taken: dialogs must not abort the holiday screen.
@@ -124,7 +124,7 @@ local function run_hand_in(me, npc)
             me:dialog(npc, "찌그러진냄비는 추석집의 세인이에게 받아오시면 된답니다.", { prev = false, next = false })
             return
         end
-        if not me:rmitem("널", 1, ITEM_DELETE_TYPE.GIVE) or not me:rmitem("찌그러진냄비", 1, ITEM_DELETE_TYPE.GIVE) then
+        if not me:rmitem({ ["널"] = 1, ["찌그러진냄비"] = 1 }, ITEM_DELETE_TYPE.GIVE) then
             return
         end
         -- Items already taken: dialog must not abort the holiday screen.

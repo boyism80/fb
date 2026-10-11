@@ -25,12 +25,15 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         if buy_sel == 1 then
-            if me:money() < 2000000 then
+            local code = me:exchange({ ['money'] = 2000000 }, { ['item'] = { ["웨딩드레스14"] = 1 } })
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "돈이 부족하시네요.", { prev = false, next = false })
                 return
             end
-            me:money(me:money() - 2000000)
-            me:mkitem("웨딩드레스14", 1)
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, "소지품이 가득 차서 드레스를 드릴 수 없네요.", { prev = false, next = false })
+                return
+            end
             local btn = me:dialog(npc, "여기 웨딩드레스14입니다. 감사합니다.", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -50,12 +53,15 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         if buy_sel == 1 then
-            if me:money() < 50000000 then
+            local code = me:exchange({ ['money'] = 50000000 }, { ['item'] = { ["웨딩드레스12"] = 1 } })
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "돈이 부족하시네요.", { prev = false, next = false })
                 return
             end
-            me:money(me:money() - 50000000)
-            me:mkitem("웨딩드레스12", 1)
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, "소지품이 가득 차서 드레스를 드릴 수 없네요.", { prev = false, next = false })
+                return
+            end
             local btn = me:dialog(npc, "여기 웨딩드레스12입니다. 감사합니다.", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -75,12 +81,15 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         if buy_sel == 1 then
-            if me:money() < 100000000 then
+            local code = me:exchange({ ['money'] = 100000000 }, { ['item'] = { ["웨딩드레스18"] = 1 } })
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "돈이 부족하시네요.", { prev = false, next = false })
                 return
             end
-            me:money(me:money() - 100000000)
-            me:mkitem("웨딩드레스18", 1)
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, "소지품이 가득 차서 드레스를 드릴 수 없네요.", { prev = false, next = false })
+                return
+            end
             local btn = me:dialog(npc, "여기 웨딩드레스18입니다. 감사합니다.", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return

@@ -213,33 +213,14 @@ return {
         end
 
         if q:step() == 1 then
-            local has_all = true
+            local cost = { ['여신의이슬'] = 1 }
             for _, name in ipairs(totem_names) do
-                if count_slots(me:items(name)) < 3 then
-                    has_all = false
-                    break
-                end
+                cost[name] = 3
             end
-            if not me:has_items('여신의이슬', 1) then
-                has_all = false
-            end
-            if not has_all then
+            if not me:rmitem(cost, ITEM_DELETE_TYPE.GIVE) then
                 me:dialog(npc, '아직 그대는 재료를 모두 구하지 못했다. 화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 하며 여신의이슬이 필요하다. 이슬은 폭염도 북쪽에서 구할 수 있을 것이다...', { prev = false, next = false })
                 return
             end
-
-            for _, name in ipairs(totem_names) do
-                local items = me:items(name)
-                local removed = 0
-                for slot, _ in pairs(items or {}) do
-                    if removed >= 3 then
-                        break
-                    end
-                    me:rmitem(slot, 1, ITEM_DELETE_TYPE.GIVE)
-                    removed = removed + 1
-                end
-            end
-            me:rmitem('여신의이슬', 1, ITEM_DELETE_TYPE.GIVE)
             q:step(2)
             me:push_achievement(42, '자연의인장을 구하자.', 7, 16)
 

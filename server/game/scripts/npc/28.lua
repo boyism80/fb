@@ -129,15 +129,13 @@ local function run_buy_stat(me, npc, stat_key, stat_name)
         end
         return true
     end
-    local my_exp = me:exp()
-    if my_exp < STAT_EXP_COST then
+    if not me:consume({ ['exp'] = STAT_EXP_COST }) then
         if me:dialog(npc, '경험치가 부족하네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
             return false
         end
         return true
     end
     setter(me, current + 1)
-    me:exp(my_exp - STAT_EXP_COST)
     if me:dialog(npc, string.format('정상적으로 %s 1 올려주었네.', stat_name), { prev = false, next = false }) == DIALOG_RESULT.QUIT then
         return false
     end
