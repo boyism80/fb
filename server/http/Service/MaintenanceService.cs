@@ -12,6 +12,8 @@ namespace Http.Service
 
         private static readonly double RecurringScheduleScore = ((DateTimeOffset)new DateTime(2099, 12, 31, 23, 59, 59, DateTimeKind.Utc)).ToUnixTimeSeconds();
 
+        private static readonly TimeSpan CancelledScheduleRetention = TimeSpan.FromDays(7);
+
         private readonly RedisService _redisService;
         private readonly SessionService _sessionService;
         private readonly RabbitMqService _rabbitMqService;
@@ -52,8 +54,7 @@ namespace Http.Service
             var members = await redis.Connection.SortedSetRangeByScoreAsync(
                 key,
                 start: currentTimestamp,
-                stop: double.PositiveInfinity,
-                take: 10);
+                stop: double.PositiveInfinity);
 
             foreach (var member in members)
             {
@@ -304,12 +305,15 @@ namespace Http.Service
             foreach (var member in members)
             {
                 var schedule = DeserializeSchedule(member.ToString());
-                if (schedule != null &&
-                    schedule.RepeatType == MaintenanceRepeatType.None &&
-                    schedule.EndTime < cutoff)
-                {
+                if (schedule == null)
+                    continue;
+
+                var expired = schedule.RepeatType == MaintenanceRepeatType.None && schedule.EndTime < cutoff;
+                var cancelledLongAgo = !schedule.IsActive &&
+                    schedule.CancelledAt.HasValue &&
+                    schedule.CancelledAt.Value < cutoff - CancelledScheduleRetention;
+                if (expired || cancelledLongAgo)
                     toRemove.Add(member);
-                }
             }
 
             foreach (var member in toRemove)
@@ -319,7 +323,7 @@ namespace Http.Service
 
             if (toRemove.Count > 0)
             {
-                _logger.LogInformation("Removed {Count} expired one-time maintenance schedule(s) for world {World}", toRemove.Count, world);
+                _logger.LogInformation("Removed {Count} expired or cancelled maintenance schedule(s) for world {World}", toRemove.Count, world);
             }
 
             return toRemove.Count;
