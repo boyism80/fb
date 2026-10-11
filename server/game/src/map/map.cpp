@@ -57,26 +57,13 @@ uint8_t enter_mask(DIRECTION direction)
 
 } // namespace
 
-map::map(fb::game::server&     server,
-         uint32_t              id,
-         const fb::model::map& model,
-         bool                  active,
-         const void*           data,
-         size_t                size) :
+map::map(fb::game::server& server, uint32_t id, const fb::model::map& model, bool active) :
     id(id),
     server(server),
     _model_id(model.id),
     active(active),
     doors(*this)
-{
-    if (this->active == false)
-        return;
-
-    if (data == nullptr || size == 0)
-        return;
-
-    this->load_tiles(data, size);
-}
+{ }
 
 const fb::model::map& map::model() const
 {
@@ -93,7 +80,7 @@ void map::config_flag(MAP_CONFIG_FLAG value)
     this->_config_flag = value;
 }
 
-void map::load_tiles(const void* data, size_t size)
+void map::load_tiles(const void* data, size_t size, const std::vector<fb::model::point16_t>& blocks)
 {
     if (this->loaded())
         return;
@@ -120,8 +107,14 @@ void map::load_tiles(const void* data, size_t size)
         this->_tiles[i].object = reader.read<uint16_t>();
     }
 
+    for (const auto& block : blocks)
+    {
+        this->block(block.x, block.y, true);
+    }
+
     this->sectors.load(this->_size, fb::model::size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
     this->update_door();
+    this->_loaded.store(true, std::memory_order_release);
 }
 
 void map::copy_tiles(const fb::game::map& source)
@@ -142,6 +135,7 @@ void map::copy_tiles(const fb::game::map& source)
 
     this->sectors.load(this->_size, fb::model::size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
     this->update_door();
+    this->_loaded.store(true, std::memory_order_release);
 }
 
 map::~map()
@@ -261,7 +255,7 @@ fb::model::size16_t map::size() const
 
 bool map::loaded() const
 {
-    return this->_size.width > 0 && this->_size.height > 0;
+    return this->_loaded.load(std::memory_order_acquire);
 }
 
 bool map::in_ground(const fb::model::point16_t position) const

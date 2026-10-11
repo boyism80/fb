@@ -75,6 +75,7 @@ private:
     fb::model::size16_t   _size     = fb::model::size16_t(0, 0);
     unique_tiles          _tiles    = nullptr;
     uint32_t              _model_id = 0;
+    std::atomic<bool>     _loaded{false};
     std::atomic<bool>     _init_script_invoked{false};
     std::atomic<uint32_t> _character_count{0};
     MAP_CONFIG_FLAG       _config_flag = MAP_CONFIG_FLAG::NONE;
@@ -88,7 +89,7 @@ public:
     const bool              active;
 
 public:
-    map(fb::game::server& server, uint32_t id, const fb::model::map& model, bool active, const void* data, size_t size);
+    map(fb::game::server& server, uint32_t id, const fb::model::map& model, bool active);
     map(const fb::game::map&) = delete;
     virtual ~map();
 
@@ -97,7 +98,7 @@ protected:
 
 private:
     // clang-format off
-    void load_tiles(const void* data, size_t size);
+    void load_tiles(const void* data, size_t size, const std::vector<fb::model::point16_t>& blocks);
     void update_door();
     // clang-format on
 

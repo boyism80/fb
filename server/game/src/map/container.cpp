@@ -233,16 +233,9 @@ void map::container::load(const fb::model::map& model)
             fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), model.name);
     }
 
-    auto map = std::make_shared<fb::game::map>(this->server,
-                                               model.id,
-                                               model,
-                                               active,
-                                               binary.empty() ? nullptr : binary.data(),
-                                               binary.size());
-    for (const auto& block : blocks)
-    {
-        map->block(block.x, block.y, true);
-    }
+    auto map = std::make_shared<fb::game::map>(this->server, model.id, model, active);
+    if (binary.empty() == false)
+        map->load_tiles(binary.data(), binary.size(), blocks);
 
     this->insert(map);
 }
@@ -273,12 +266,7 @@ bool map::container::load_tiles(const std::shared_ptr<fb::game::map>& map)
         if (load_block(map->model().id, blocks) == false)
             fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), map->model().name);
 
-        map->load_tiles(binary.data(), binary.size());
-        for (const auto& block : blocks)
-        {
-            map->block(block.x, block.y, true);
-        }
-
+        map->load_tiles(binary.data(), binary.size(), blocks);
         loaded_now = true;
     }
 
