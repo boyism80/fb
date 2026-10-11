@@ -93,7 +93,7 @@ async::task<void> click<V>::handle_object_click(character* ch, game_reqs::click<
         co_return;
 
     auto you = map->objects[request.oid];
-    if (you == nullptr)
+    if (you == nullptr || you->hidden(*ch))
         co_return;
 
     switch (you->what())

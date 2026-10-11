@@ -29,7 +29,7 @@ async::task<bool> trade<V>::handle(fb::socket<character>& session, game_reqs::tr
     case fb::game::trade::state::REQUEST:
     {
         auto you = map->objects[request.oid];
-        if (you == nullptr || you->is(OBJECT_TYPE::CHARACTER) == false)
+        if (you == nullptr || you->is(OBJECT_TYPE::CHARACTER) == false || you->hidden(*me))
             break;
 
         std::ignore = me->trade.begin(you->template shared_from_this_as<character>());

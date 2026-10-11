@@ -53,6 +53,9 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
         if (owner->id == you->id)
             return false;
 
+        if (you->hidden(*owner))
+            return false;
+
         // The owner has refused the trade
         if (owner->option(OPTION::TRADE) == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_REFUSED_BY_ME));

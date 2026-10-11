@@ -436,7 +436,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (to.map() != this->map())
         return false;
 
-    if (this->sight(to) == false)
+    if (this->sight(to) == false || to.hidden(*this))
         return true;
 
     lua->pushobject(this);
