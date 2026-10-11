@@ -181,7 +181,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
     }
 
-    if (it->second.received)
+    if (it->second.received || it->second.claiming)
         co_return false;
 
     auto now = this->_owner.server.now();
@@ -194,15 +194,20 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     auto weak     = this->_owner.weak_from_this_as<character>();
     auto world    = this->_owner.world();
     auto owner_id = this->_owner.id;
+    auto claim_id =
+        it->second.pending_claim.has_value() ? it->second.pending_claim.value() : this->_owner.server.ids.next();
+    it->second.pending_claim = claim_id;
+    it->second.claiming      = true;
 
     fb::protocol::internal::response::ClaimStorageBox claim_resp{};
+    auto                                              claim_lost = false;
     try
     {
         claim_resp = co_await this->_owner.server.http.post(
             weak,
             "internal",
             "/storage/claim",
-            fb::protocol::internal::request::ClaimStorageBox{world, owner_id, entry_id});
+            fb::protocol::internal::request::ClaimStorageBox{world, owner_id, entry_id, claim_id});
     }
     catch (const std::exception& e)
     {
@@ -210,7 +215,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                          owner_id,
                          entry_id,
                          e.what());
-        co_return false;
+        claim_lost = true;
     }
 
     auto ptr = weak.lock();
@@ -220,19 +225,27 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
     }
 
-    if (claim_resp.error != 0)
+    it = ptr->storage_box._entries.find(entry_id);
+    if (it == ptr->storage_box._entries.end())
+    {
+        fb::logger::warn("storage_box.receive_reward entry missing after claim user={} entry={}", ptr->id, entry_id);
+        co_return false;
+    }
+    it->second.claiming = false;
+
+    // An exception or an unhandled server error leaves the claim unknown, so pending_claim is kept for the retry.
+    if (claim_lost)
+        co_return false;
+
+    auto claim_error = static_cast<fb::model::enum_value::ERROR_CODE>(claim_resp.error);
+    if (claim_error != fb::model::enum_value::ERROR_CODE::NONE)
     {
         fb::logger::warn("storage_box.receive_reward claim failed user={} entry={} error={}",
                          ptr->id,
                          entry_id,
                          claim_resp.error);
-        co_return false;
-    }
-
-    it = ptr->storage_box._entries.find(entry_id);
-    if (it == ptr->storage_box._entries.end())
-    {
-        fb::logger::warn("storage_box.receive_reward entry missing after claim user={} entry={}", ptr->id, entry_id);
+        if (claim_error != fb::model::enum_value::ERROR_CODE::UNHANDLED)
+            it->second.pending_claim.reset();
         co_return false;
     }
 
@@ -254,14 +267,18 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
 
     if (granted == false)
     {
+        it->second.claiming = true;
+
         fb::protocol::internal::response::UnclaimStorageBox unclaim_resp{};
+        auto                                                unclaimed = false;
         try
         {
             unclaim_resp = co_await ptr->server.http.post(
                 weak,
                 "internal",
                 "/storage/unclaim",
-                fb::protocol::internal::request::UnclaimStorageBox{world, ptr->id, entry_id});
+                fb::protocol::internal::request::UnclaimStorageBox{world, ptr->id, entry_id, claim_id});
+            unclaimed = unclaim_resp.error == 0;
         }
         catch (const std::exception& e)
         {
@@ -271,22 +288,31 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                              e.what());
         }
 
+        if (unclaimed == false)
+            fb::logger::warn("UnclaimStorageBox failed for user {} entry {}: error {}",
+                             owner_id,
+                             entry_id,
+                             unclaim_resp.error);
+
+        // When the unclaim fails the box stays claimed under claim_id, and the next attempt resends that claim
+        // to grant the reward again.
         ptr = weak.lock();
         if (ptr != nullptr)
         {
             auto fail_it = ptr->storage_box._entries.find(entry_id);
             if (fail_it != ptr->storage_box._entries.end())
+            {
                 fail_it->second.received = false;
+                fail_it->second.claiming = false;
+                if (unclaimed)
+                    fail_it->second.pending_claim.reset();
+            }
         }
-
-        if (unclaim_resp.error != 0)
-            fb::logger::warn("UnclaimStorageBox failed for user {} entry {}: error {}",
-                             this->_owner.id,
-                             entry_id,
-                             unclaim_resp.error);
 
         co_return false;
     }
+
+    it->second.pending_claim.reset();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);

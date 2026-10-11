@@ -3613,22 +3613,26 @@ public struct ClaimStorageBox : IFlatbufferObject
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong ClaimId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.request.raw.ClaimStorageBox> CreateClaimStorageBox(FlatBufferBuilder builder,
       uint world = 0,
       uint user = 0,
-      uint id = 0) {
-    builder.StartTable(3);
+      uint id = 0,
+      ulong claim_id = 0) {
+    builder.StartTable(4);
+    ClaimStorageBox.AddClaimId(builder, claim_id);
     ClaimStorageBox.AddId(builder, id);
     ClaimStorageBox.AddUser(builder, user);
     ClaimStorageBox.AddWorld(builder, world);
     return ClaimStorageBox.EndClaimStorageBox(builder);
   }
 
-  public static void StartClaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartClaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(2, id, 0); }
+  public static void AddClaimId(FlatBufferBuilder builder, ulong claimId) { builder.AddUlong(3, claimId, 0); }
   public static Offset<fb.protocol.@internal.request.raw.ClaimStorageBox> EndClaimStorageBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.ClaimStorageBox>(o);
@@ -3644,6 +3648,7 @@ static public class ClaimStorageBoxVerify
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*ClaimId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -6711,22 +6716,26 @@ public struct UnclaimStorageBox : IFlatbufferObject
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong ClaimId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.request.raw.UnclaimStorageBox> CreateUnclaimStorageBox(FlatBufferBuilder builder,
       uint world = 0,
       uint user = 0,
-      uint id = 0) {
-    builder.StartTable(3);
+      uint id = 0,
+      ulong claim_id = 0) {
+    builder.StartTable(4);
+    UnclaimStorageBox.AddClaimId(builder, claim_id);
     UnclaimStorageBox.AddId(builder, id);
     UnclaimStorageBox.AddUser(builder, user);
     UnclaimStorageBox.AddWorld(builder, world);
     return UnclaimStorageBox.EndUnclaimStorageBox(builder);
   }
 
-  public static void StartUnclaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartUnclaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(2, id, 0); }
+  public static void AddClaimId(FlatBufferBuilder builder, ulong claimId) { builder.AddUlong(3, claimId, 0); }
   public static Offset<fb.protocol.@internal.request.raw.UnclaimStorageBox> EndUnclaimStorageBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.UnclaimStorageBox>(o);
@@ -6742,6 +6751,7 @@ static public class UnclaimStorageBoxVerify
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*ClaimId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

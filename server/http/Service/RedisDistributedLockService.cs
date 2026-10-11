@@ -13,12 +13,12 @@ namespace Http.Service
             _redisService = redisService;
         }
 
-        public async Task<RedisDistributedLockHandle> Lock(uint world, string key, CancellationToken cancellationToken = default)
+        public async Task<RedisDistributedLockHandle> Lock(uint world, string key, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         {
             var redis = _redisService.GetShardConnection(world, key) ??
                 throw new Exception($"Redis instance not found for world {world} and key {key}");
 
-            return await new RedisDistributedLock(key, redis.Connection).AcquireAsync(DefaultTimeout, cancellationToken);
+            return await new RedisDistributedLock(key, redis.Connection).AcquireAsync(timeout ?? DefaultTimeout, cancellationToken);
         }
     }
 }

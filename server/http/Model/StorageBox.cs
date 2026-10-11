@@ -22,6 +22,7 @@ namespace Http.Model
         public string Message { get; set; } = string.Empty;
         public List<Dsl> Attachments { get; set; } = new List<Dsl>();
         public bool Received { get; set; }
+        public ulong? ClaimId { get; set; }
         public DateTime? ExpiredDate { get; set; }
     }
 }

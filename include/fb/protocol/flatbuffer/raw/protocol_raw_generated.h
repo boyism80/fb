@@ -8742,7 +8742,8 @@ struct ClaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_USER = 6,
-    VT_ID = 8
+    VT_ID = 8,
+    VT_CLAIM_ID = 10
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -8753,11 +8754,15 @@ struct ClaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
   }
+  uint64_t claim_id() const {
+    return GetField<uint64_t>(VT_CLAIM_ID, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint64_t>(verifier, VT_CLAIM_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -8775,6 +8780,9 @@ struct ClaimStorageBoxBuilder {
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(ClaimStorageBox::VT_ID, id, 0);
   }
+  void add_claim_id(uint64_t claim_id) {
+    fbb_.AddElement<uint64_t>(ClaimStorageBox::VT_CLAIM_ID, claim_id, 0);
+  }
   explicit ClaimStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -8790,8 +8798,10 @@ inline ::flatbuffers::Offset<ClaimStorageBox> CreateClaimStorageBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t user = 0,
-    uint32_t id = 0) {
+    uint32_t id = 0,
+    uint64_t claim_id = 0) {
   ClaimStorageBoxBuilder builder_(_fbb);
+  builder_.add_claim_id(claim_id);
   builder_.add_id(id);
   builder_.add_user(user);
   builder_.add_world(world);
@@ -8803,7 +8813,8 @@ struct UnclaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_USER = 6,
-    VT_ID = 8
+    VT_ID = 8,
+    VT_CLAIM_ID = 10
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -8814,11 +8825,15 @@ struct UnclaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
   }
+  uint64_t claim_id() const {
+    return GetField<uint64_t>(VT_CLAIM_ID, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint64_t>(verifier, VT_CLAIM_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -8836,6 +8851,9 @@ struct UnclaimStorageBoxBuilder {
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(UnclaimStorageBox::VT_ID, id, 0);
   }
+  void add_claim_id(uint64_t claim_id) {
+    fbb_.AddElement<uint64_t>(UnclaimStorageBox::VT_CLAIM_ID, claim_id, 0);
+  }
   explicit UnclaimStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -8851,8 +8869,10 @@ inline ::flatbuffers::Offset<UnclaimStorageBox> CreateUnclaimStorageBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t user = 0,
-    uint32_t id = 0) {
+    uint32_t id = 0,
+    uint64_t claim_id = 0) {
   UnclaimStorageBoxBuilder builder_(_fbb);
+  builder_.add_claim_id(claim_id);
   builder_.add_id(id);
   builder_.add_user(user);
   builder_.add_world(world);

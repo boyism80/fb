@@ -358,12 +358,14 @@ table ClaimStorageBox {
   world: uint;
   user: uint;
   id: uint;
+  claim_id: ulong;
 }
 
 table UnclaimStorageBox {
   world: uint;
   user: uint;
   id: uint;
+  claim_id: ulong;
 }
 
 table WriteSystemStorageBox {

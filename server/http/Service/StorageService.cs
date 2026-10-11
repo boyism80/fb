@@ -33,6 +33,10 @@ namespace Http.Service
 
         private static string OpsLockKey(uint user) => $"fb:lock:storage:box:ops:{user}";
 
+        // Shorter than the game's 5 second POST timeout, so a claim that waits on the lock fails before the game
+        // gives up on the response.
+        private static readonly TimeSpan ClaimLockTimeout = TimeSpan.FromSeconds(3);
+
         /// <summary>
         /// Personal storage box: allocate id, Set (Redis first + write-back), MQ notify.
         /// Caller must resolve name to uid before calling.
@@ -59,35 +63,37 @@ namespace Http.Service
             if (attachmentsList.Count == 0)
                 throw new ArgumentException("At least one attachment is required (item, money, or exp)", nameof(attachments));
 
-            await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId));
-
-            // A retried delivery with the same external ref returns the box it already created.
-            if (externalRef != null)
+            StorageBox box;
+            await using (await _distributedLock.Lock(world, OpsLockKey(userId)))
             {
-                var existing = (await _dbContext.StorageBox.Get(world, userId)).FirstOrDefault(b => b.ExternalRef == externalRef);
-                if (existing != null)
-                    return existing;
+                // A retried delivery with the same external ref returns the box it already created.
+                if (externalRef != null)
+                {
+                    var existing = (await _dbContext.StorageBox.Get(world, userId)).FirstOrDefault(b => b.ExternalRef == externalRef);
+                    if (existing != null)
+                        return existing;
+                }
+
+                var now = DateTime.Now;
+                var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
+                box = new StorageBox
+                {
+                    User               = userId,
+                    Id                 = id,
+                    SystemStorageBoxId = null,
+                    ExternalRef        = externalRef,
+                    Title              = title.Trim(),
+                    Message            = message.Trim(),
+                    Attachments        = attachmentsList,
+                    Received           = false,
+                    ExpiredDate        = expiredDate,
+                    CreatedDate        = now,
+                    UpdatedDate        = now
+                };
+
+                _dbContext.StorageBox.Set(world, box);
+                await _dbContext.StorageBox.SaveChangesAsync();
             }
-
-            var now = DateTime.Now;
-            var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
-            var box = new StorageBox
-            {
-                User               = userId,
-                Id                 = id,
-                SystemStorageBoxId = null,
-                ExternalRef        = externalRef,
-                Title              = title.Trim(),
-                Message            = message.Trim(),
-                Attachments        = attachmentsList,
-                Received           = false,
-                ExpiredDate        = expiredDate,
-                CreatedDate        = now,
-                UpdatedDate        = now
-            };
-
-            _dbContext.StorageBox.Set(world, box);
-            await _dbContext.StorageBox.SaveChangesAsync();
 
             await _logService.WriteAsync("storage_box_create", new
             {
@@ -188,40 +194,47 @@ namespace Http.Service
             return written;
         }
 
-        public async Task<bool> ClaimAsync(uint world, uint userId, uint id)
+        // The game retries with the same claim id when a response is lost, so a repeat of the claim that already
+        // holds the box succeeds instead of reporting the box as taken.
+        public async Task<bool> ClaimAsync(uint world, uint userId, uint id, ulong claimId)
         {
-            await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId));
+            await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId), ClaimLockTimeout);
 
             var box = await _dbContext.StorageBox.Get(world, userId, id);
             if (box == null)
                 return false;
 
-            var now = DateTime.Now;
             if (box.Received)
-                return false;
+                return claimId != 0 && box.ClaimId == claimId;
 
+            var now = DateTime.Now;
             if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= now)
                 return false;
 
             box.Received = true;
+            box.ClaimId = claimId;
             box.UpdatedDate = now;
             _dbContext.StorageBox.Set(world, box);
             await _dbContext.StorageBox.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> UnclaimAsync(uint world, uint userId, uint id)
+        public async Task<bool> UnclaimAsync(uint world, uint userId, uint id, ulong claimId)
         {
-            await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId));
+            await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId), ClaimLockTimeout);
 
             var box = await _dbContext.StorageBox.Get(world, userId, id);
             if (box == null)
                 return false;
 
             if (!box.Received)
+                return true;
+
+            if (box.ClaimId != claimId)
                 return false;
 
             box.Received = false;
+            box.ClaimId = null;
             box.UpdatedDate = DateTime.Now;
             _dbContext.StorageBox.Set(world, box);
             await _dbContext.StorageBox.SaveChangesAsync();

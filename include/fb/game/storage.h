@@ -31,6 +31,9 @@ public:
         std::vector<fb::model::dsl>        attachments;
         bool                               received    = false;
         std::optional<fb::model::datetime> expire_date = std::nullopt;
+        // Claim whose outcome on the internal server is unknown; the next attempt resends it.
+        std::optional<uint64_t> pending_claim = std::nullopt;
+        bool                    claiming      = false;
     };
     using entry_map = std::map<uint32_t, entry>;
 
