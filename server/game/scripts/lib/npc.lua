@@ -1149,7 +1149,9 @@ function M.show_rename_weapon_menu(me, npc)
                 return me:dialog(npc, '돈이 부족합니다.', { prev = false, next = true })
             end
 
-            me:money(money - price)
+            if not me:consume({ ['money'] = price }) then
+                return me:dialog(npc, '돈이 부족합니다.', { prev = false, next = true })
+            end
         else
             return DIALOG_RESULT.NEXT
         end

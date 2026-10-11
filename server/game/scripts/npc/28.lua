@@ -507,7 +507,10 @@ local function run_change_gender(me, npc)
         return false
     end
 
-    me:money(money - price)
+    if not me:consume({ ['money'] = price }) then
+        me:dialog(npc, '돈이 모자람')
+        return false
+    end
     if gender == GENDER.MALE then
         me:gender(GENDER.FEMALE)
     else

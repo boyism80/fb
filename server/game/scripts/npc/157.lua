@@ -95,6 +95,10 @@ local function do_armor_infinite(me, npc)
     if team_sel == nil then
         return
     end
+    if not me:consume({ ['money'] = price }) then
+        me:dialog(npc, '돈이 모자랍니다.')
+        return
+    end
     if team_sel == 1 then
         me:armor_color(10)
     elseif team_sel == 2 then
@@ -104,7 +108,6 @@ local function do_armor_infinite(me, npc)
     elseif team_sel == 4 then
         me:armor_color(11)
     end
-    me:money(money - price)
     ::NPC_157_0002::
     if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = false }) == DIALOG_RESULT.QUIT then
         return
