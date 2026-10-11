@@ -36,6 +36,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<RedisService>();
+        builder.Services.AddSingleton<PasswordAttemptService>();
         builder.Services.AddSingleton<RedisDistributedLockService>();
         builder.Services.AddHttpAutoMapper();
         builder.Services.AddSingleton<RabbitMqService>();

@@ -24,7 +24,7 @@ namespace Internal.Controllers
         private readonly ILogger<AccountController> _logger;
         private readonly LogService _logService;
         private readonly RedisDistributedLockService _distributedLock;
-        private readonly RedisService _redisService;
+        private readonly PasswordAttemptService _passwordAttempts;
 
         // Object pool for SHA256 instances to reduce GC pressure
         // Limit pool size to 64 instances (reasonable for most scenarios)
@@ -98,56 +98,16 @@ namespace Internal.Controllers
             ILogger<AccountController> logger,
             LogService logService,
             RedisDistributedLockService distributedLock,
-            RedisService redisService)
+            PasswordAttemptService passwordAttempts)
         {
             _mapper = mapper;
             _dbContext = dbContext;
             _logger = logger;
             _logService = logService;
             _distributedLock = distributedLock;
-            _redisService = redisService;
+            _passwordAttempts = passwordAttempts;
         }
 
-        private const int MaxPasswordFailuresPerIp = 5;
-        private static readonly TimeSpan PasswordIpLockDuration = TimeSpan.FromMinutes(10);
-        private const int MaxPasswordFailuresPerAccount = 50;
-        private static readonly TimeSpan PasswordAccountLockDuration = TimeSpan.FromHours(1);
-
-        private static string PasswordFailureKey(uint world, uint uid) => $"fb:account:pw-fail:{world}:{uid}";
-        private static string PasswordFailureKey(uint world, uint uid, string ip) => $"fb:account:pw-fail:{world}:{uid}:{ip}";
-
-        private async Task<bool> CountPasswordAttempt(uint world, uint uid, string ip)
-        {
-            var ipKey = PasswordFailureKey(world, uid, ip);
-            var accountKey = PasswordFailureKey(world, uid);
-            var ipRedis = _redisService.GetShardConnection(world, ipKey);
-            var accountRedis = _redisService.GetShardConnection(world, accountKey);
-            if (ipRedis == null || accountRedis == null)
-                return false;
-
-            var ipCount = await ipRedis.Connection.StringIncrementAsync(ipKey);
-            if (ipCount == 1 || ipCount == MaxPasswordFailuresPerIp)
-                await ipRedis.Connection.KeyExpireAsync(ipKey, PasswordIpLockDuration);
-
-            var accountCount = await accountRedis.Connection.StringIncrementAsync(accountKey);
-            if (accountCount == 1 || accountCount == MaxPasswordFailuresPerAccount)
-                await accountRedis.Connection.KeyExpireAsync(accountKey, PasswordAccountLockDuration);
-
-            return ipCount > MaxPasswordFailuresPerIp || accountCount > MaxPasswordFailuresPerAccount;
-        }
-
-        private async Task ClearPasswordFailures(uint world, uint uid, string ip)
-        {
-            var ipKey = PasswordFailureKey(world, uid, ip);
-            var accountKey = PasswordFailureKey(world, uid);
-            var ipRedis = _redisService.GetShardConnection(world, ipKey);
-            var accountRedis = _redisService.GetShardConnection(world, accountKey);
-            if (ipRedis == null || accountRedis == null)
-                return;
-
-            await ipRedis.Connection.KeyDeleteAsync(ipKey);
-            await accountRedis.Connection.KeyDeleteAsync(accountKey);
-        }
         [HttpGet("{world}/uid/{name}")]
         public async Task<Response.GetUid> Uid(uint world, string name)
         {
@@ -185,7 +145,7 @@ namespace Internal.Controllers
                 };
             }
 
-            if (await CountPasswordAttempt(world, request.Uid, request.Ip))
+            if (await _passwordAttempts.Begin(world, request.Uid, request.Ip) == false)
             {
                 return new Response.Authenticate
                 {
@@ -201,7 +161,7 @@ namespace Internal.Controllers
                 };
             }
 
-            await ClearPasswordFailures(world, request.Uid, request.Ip);
+            await _passwordAttempts.Succeed(world, request.Uid, request.Ip);
             return new Response.Authenticate
             {
                 ErrorCode = 0,
@@ -345,7 +305,7 @@ namespace Internal.Controllers
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                if (await CountPasswordAttempt(world, request.Uid, request.Ip))
+                if (await _passwordAttempts.Begin(world, request.Uid, request.Ip) == false)
                     throw new LogicException(ErrorCode.AccountLocked);
 
                 if (ch.Pw != SHA256Hash(request.Before))
@@ -354,7 +314,7 @@ namespace Internal.Controllers
                 if (ch.Birth != request.Birthday)
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
 
-                await ClearPasswordFailures(world, request.Uid, request.Ip);
+                await _passwordAttempts.Succeed(world, request.Uid, request.Ip);
                 ch.Pw = SHA256Hash(request.After);
                 _dbContext.Character.Set(world, ch);
 
