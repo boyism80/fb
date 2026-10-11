@@ -15,16 +15,19 @@ namespace Internal.Services
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly ILogger<FriendService> _logger;
 
         public FriendService(DbContext dbContext,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
-            RedisDistributedLockService distributedLock)
+            RedisDistributedLockService distributedLock,
+            ILogger<FriendService> logger)
         {
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
             _sessionService = sessionService;
             _distributedLock = distributedLock;
+            _logger = logger;
         }
 
         public async Task<List<Protocol.FriendEntry>> GetEntries(uint world, uint user)
@@ -220,21 +223,29 @@ namespace Internal.Services
 
             foreach (var update in distinct)
             {
-                var peerName = await _dbContext.Character.GetName(world, update.PeerUid);
-                if (string.IsNullOrEmpty(peerName))
-                    continue;
-
-                var peerSession = await _sessionService.Get(world, peerName);
-                if (peerSession == null)
-                    continue;
-
-                await _rabbitMqService.PublishAsync(new Response.FriendRelation
+                try
                 {
-                    User = update.PeerUid,
-                    FriendUid = update.FriendUid,
-                    FriendName = update.FriendName,
-                    Mutual = update.Mutual
-                }, AmqpRoute.Exchange, AmqpRoute.Unicast(peerSession));
+                    var peerName = await _dbContext.Character.GetName(world, update.PeerUid);
+                    if (string.IsNullOrEmpty(peerName))
+                        continue;
+
+                    var peerSession = await _sessionService.Get(world, peerName);
+                    if (peerSession == null)
+                        continue;
+
+                    await _rabbitMqService.PublishAsync(new Response.FriendRelation
+                    {
+                        User = update.PeerUid,
+                        FriendUid = update.FriendUid,
+                        FriendName = update.FriendName,
+                        Mutual = update.Mutual
+                    }, AmqpRoute.Exchange, AmqpRoute.Unicast(peerSession));
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Friend relation notify failed world={World} peer={Peer} friend={Friend} mutual={Mutual}",
+                        world, update.PeerUid, update.FriendUid, update.Mutual);
+                }
             }
         }
 
