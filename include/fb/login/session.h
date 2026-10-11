@@ -12,7 +12,11 @@ namespace fb::login {
 class session
 {
 public:
-    uint32_t                           pk = -1;
+    static constexpr uint32_t MAX_PASSWORD_FAILURES = 5;
+
+public:
+    uint32_t                           pk                = -1;
+    uint32_t                           password_failures = 0;
     std::string                        name;
     std::string                        pending_name;
     const fb::protocol::CLIENT_VERSION client_version;

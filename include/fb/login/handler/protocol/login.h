@@ -13,7 +13,7 @@ namespace fb::login::handler::protocol {
 namespace login_reqs = fb::protocol::login::request;
 
 template <fb::protocol::CLIENT_VERSION V>
-class login : public fb::handler::protocol<fb::login::server, login_reqs::login<V>>
+class login : public fb::handler::protocol<fb::login::server, login_reqs::login<V>, 1000, 2, true>
 {
 public:
     login(fb::login::server& server);

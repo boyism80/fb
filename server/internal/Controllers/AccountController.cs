@@ -24,6 +24,7 @@ namespace Internal.Controllers
         private readonly ILogger<AccountController> _logger;
         private readonly LogService _logService;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly RedisService _redisService;
 
         // Object pool for SHA256 instances to reduce GC pressure
         // Limit pool size to 64 instances (reasonable for most scenarios)
@@ -96,13 +97,53 @@ namespace Internal.Controllers
             DbContext dbContext,
             ILogger<AccountController> logger,
             LogService logService,
-            RedisDistributedLockService distributedLock)
+            RedisDistributedLockService distributedLock,
+            RedisService redisService)
         {
             _mapper = mapper;
             _dbContext = dbContext;
             _logger = logger;
             _logService = logService;
             _distributedLock = distributedLock;
+            _redisService = redisService;
+        }
+
+        private const int MaxPasswordFailures = 5;
+        private static readonly TimeSpan PasswordLockDuration = TimeSpan.FromMinutes(10);
+
+        private static string PasswordFailureKey(uint world, uint uid) => $"fb:account:pw-fail:{world}:{uid}";
+
+        private async Task<bool> IsPasswordLocked(uint world, uint uid)
+        {
+            var key = PasswordFailureKey(world, uid);
+            var redis = _redisService.GetShardConnection(world, key);
+            if (redis == null)
+                return false;
+
+            var count = await redis.Connection.StringGetAsync(key);
+            return count.HasValue && (long)count >= MaxPasswordFailures;
+        }
+
+        private async Task CountPasswordFailure(uint world, uint uid)
+        {
+            var key = PasswordFailureKey(world, uid);
+            var redis = _redisService.GetShardConnection(world, key);
+            if (redis == null)
+                return;
+
+            var count = await redis.Connection.StringIncrementAsync(key);
+            if (count == 1 || count == MaxPasswordFailures)
+                await redis.Connection.KeyExpireAsync(key, PasswordLockDuration);
+        }
+
+        private async Task ClearPasswordFailures(uint world, uint uid)
+        {
+            var key = PasswordFailureKey(world, uid);
+            var redis = _redisService.GetShardConnection(world, key);
+            if (redis == null)
+                return;
+
+            await redis.Connection.KeyDeleteAsync(key);
         }
         [HttpGet("{world}/uid/{name}")]
         public async Task<Response.GetUid> Uid(uint world, string name)
@@ -141,14 +182,24 @@ namespace Internal.Controllers
                 };
             }
 
+            if (await IsPasswordLocked(world, request.Uid))
+            {
+                return new Response.Authenticate
+                {
+                    ErrorCode = (uint)ErrorCode.AccountLocked
+                };
+            }
+
             if (ch.Pw != SHA256Hash(request.Pw))
             {
+                await CountPasswordFailure(world, request.Uid);
                 return new Response.Authenticate
                 {
                     ErrorCode = 2
                 };
             }
 
+            await ClearPasswordFailures(world, request.Uid);
             return new Response.Authenticate
             {
                 ErrorCode = 0,
@@ -292,12 +343,22 @@ namespace Internal.Controllers
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
+                if (await IsPasswordLocked(world, request.Uid))
+                    throw new LogicException(ErrorCode.AccountLocked);
+
                 if (ch.Pw != SHA256Hash(request.Before))
+                {
+                    await CountPasswordFailure(world, request.Uid);
                     throw new LogicException(ErrorCode.PasswordNotMatched);
+                }
 
                 if (ch.Birth != request.Birthday)
+                {
+                    await CountPasswordFailure(world, request.Uid);
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
+                }
 
+                await ClearPasswordFailures(world, request.Uid);
                 ch.Pw = SHA256Hash(request.After);
                 _dbContext.Character.Set(world, ch);
 

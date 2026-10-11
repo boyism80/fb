@@ -23,12 +23,15 @@ namespace internal_reqs = fb::protocol::internal::request;
 
 template <fb::protocol::CLIENT_VERSION V>
 login<V>::login(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, login_reqs::login<V>>(server)
+    fb::handler::protocol<fb::login::server, login_reqs::login<V>, 1000, 2, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, login_reqs::login<V>& request)
 {
+    if (session.data() == nullptr)
+        co_return true;
+
     auto weak  = session.weak_from_this_as<fb::socket<fb::login::session>>();
     auto delay = fb::config<uint32_t>("transfer delay");
     auto name  = std::string(request.id);
@@ -61,8 +64,14 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         case 2:
+            session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
+
+        case static_cast<uint32_t>(ERROR_CODE::ACCOUNT_LOCKED):
+            session.data()->password_failures++;
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_LOCKED));
         }
+        session.data()->password_failures = 0;
 
         auto map = resp2.map;
         if (table::map->contains(map) && table::map[map].return_to.has_value())
@@ -140,7 +149,15 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
     catch (login_exception& e)
     {
         if (weak.expired() == false)
+        {
+            if (session.data()->password_failures >= fb::login::session::MAX_PASSWORD_FAILURES)
+            {
+                co_await session.send(response::message(e.what(), e.type()));
+                co_return false;
+            }
+
             session.send(response::message(e.what(), e.type()));
+        }
     }
     catch (boost::system::error_code& e)
     {

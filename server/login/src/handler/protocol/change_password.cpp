@@ -16,12 +16,15 @@ namespace internal_reqs = fb::protocol::internal::request;
 
 template <fb::protocol::CLIENT_VERSION V>
 change_password<V>::change_password(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, login_reqs::update_pw<V>>(server)
+    fb::handler::protocol<fb::login::server, login_reqs::update_pw<V>, 1000, 2, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& session, login_reqs::update_pw<V>& request)
 {
+    if (session.data() == nullptr)
+        co_return true;
+
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
     try
     {
@@ -82,11 +85,18 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         case ERROR_CODE::PASSWORD_NOT_MATCHED: // pw wrong
+            session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
 
         case ERROR_CODE::BIRTHDAY_NOT_MATCHED: // birthday wrong
+            session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY));
+
+        case ERROR_CODE::ACCOUNT_LOCKED:
+            session.data()->password_failures++;
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_LOCKED));
         }
+        session.data()->password_failures = 0;
 
         // Log password change event
         auto log_data            = Json::Value();
@@ -100,7 +110,15 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
     catch (login_exception& e)
     {
         if (weak.expired() == false)
+        {
+            if (session.data()->password_failures >= fb::login::session::MAX_PASSWORD_FAILURES)
+            {
+                co_await session.send(response::message(e.what(), e.type()));
+                co_return false;
+            }
+
             session.send(response::message(e.what(), e.type()));
+        }
     }
     catch (std::exception& e)
     {

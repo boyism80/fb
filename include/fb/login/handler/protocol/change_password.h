@@ -9,7 +9,7 @@ namespace fb::login::handler::protocol {
 namespace login_reqs = fb::protocol::login::request;
 
 template <fb::protocol::CLIENT_VERSION V>
-class change_password : public fb::handler::protocol<fb::login::server, login_reqs::update_pw<V>>
+class change_password : public fb::handler::protocol<fb::login::server, login_reqs::update_pw<V>, 1000, 2, true>
 {
 public:
     change_password(fb::login::server& server);
