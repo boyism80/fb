@@ -29,6 +29,7 @@ struct character
     static int builtin_mkitem(lua_State* L);
     static int builtin_rmitem(lua_State* L);
     static int builtin_exchange(lua_State* L);
+    static int builtin_consume(lua_State* L);
     static int builtin_state(lua_State* L);
     static int builtin_mimic(lua_State* L);
     static int builtin_class(lua_State* L);
@@ -139,6 +140,9 @@ struct character
     static int builtin_popup_message(lua_State* L);
     static int builtin_popup_input(lua_State* L);
     static int builtin_holyday_screen(lua_State* L);
+
+private:
+    static int exchange(lua_State* L, int cost_index, int reward_index, int delete_type_index, bool boolean_result);
 };
 
 } // namespace fb::game::builtin

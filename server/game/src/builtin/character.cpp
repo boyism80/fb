@@ -83,6 +83,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"mkitem",                       builtin::character::builtin_mkitem},
 {"rmitem",                       builtin::character::builtin_rmitem},
 {"exchange",                     builtin::character::builtin_exchange},
+{"consume",                      builtin::character::builtin_consume},
 {"state",                        builtin::character::builtin_state},
 {"mimic",                        builtin::character::builtin_mimic},
 {"class",                        builtin::character::builtin_class},
@@ -1184,21 +1185,24 @@ int builtin::character::builtin_rmitem(lua_State* L)
     if (lua->is_table(2))
     {
         auto delete_attr = lua->toenum(3, ITEM_DELETE_TYPE::REMOVED);
-        auto to_remove   = std::vector<std::pair<const fb::model::item*, uint16_t>>();
+        auto to_remove   = std::unordered_map<uint32_t, uint16_t>();
+        auto invalid     = false;
         lua->pushnil();
         while (lua->next(2))
         {
             if (lua->is_string(-2) && lua->is_number(-1))
             {
-                auto name  = lua->tostring(-2);
-                auto cnt   = static_cast<uint16_t>(lua->tointeger(-1));
-                auto model = table::item->name2item(name);
-                if (model != nullptr && cnt > 0)
-                    to_remove.push_back({model, cnt});
+                auto name      = lua->tostring(-2);
+                auto raw_count = lua->tointeger(-1);
+                auto model     = table::item->name2item(name);
+                if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    invalid = true;
+                else if (model != nullptr && raw_count > 0)
+                    to_remove[model->id] += static_cast<uint16_t>(raw_count);
             }
             lua->pop(1);
         }
-        if (to_remove.empty())
+        if (invalid || to_remove.empty())
         {
             lua->pushboolean(false);
             return 1;
@@ -1211,17 +1215,8 @@ int builtin::character::builtin_rmitem(lua_State* L)
         builder.yield = [=]() -> async::task<void> {
             try
             {
-                if (ch->items.has(to_remove))
-                {
-                    for (const auto& [model, cnt] : to_remove)
-                    {
-                        auto index   = ch->items.index(*model);
-                        auto dropped = ch->items.remove(index, cnt, delete_attr);
-                        if (dropped != nullptr)
-                            co_await dropped->destroy();
-                    }
-                    *success = true;
-                }
+                auto result = co_await ch->items.exchange(to_remove, 0, {}, 0, delete_attr);
+                *success    = result == exchange_result::ok;
             }
             catch (...)
             { }
@@ -1298,17 +1293,15 @@ int builtin::character::builtin_rmitem(lua_State* L)
         builder.yield = [=]() -> async::task<void> {
             try
             {
-                auto found = ch->items.find(*model);
-                if (found != nullptr && found->count() >= count)
-                {
-                    auto index   = ch->items.index(*model);
-                    auto dropped = ch->items.remove(index, count, delete_attr);
-                    if (dropped != nullptr)
+                auto result = co_await ch->items.exchange(
                     {
-                        co_await dropped->destroy();
-                        *success = true;
-                    }
-                }
+                        {model->id, count}
+                },
+                    0,
+                    {},
+                    0,
+                    delete_attr);
+                *success = result == exchange_result::ok;
             }
             catch (...)
             { }
@@ -1373,17 +1366,15 @@ int builtin::character::builtin_rmitem(lua_State* L)
                 if (model == nullptr)
                     co_return;
 
-                auto found = ch->items.find(name);
-                if (found != nullptr && found->count() >= count)
-                {
-                    auto index   = ch->items.index(*model);
-                    auto dropped = ch->items.remove(index, count, delete_attr);
-                    if (dropped != nullptr)
+                auto result = co_await ch->items.exchange(
                     {
-                        co_await dropped->destroy();
-                        *success = true;
-                    }
-                }
+                        {model->id, count}
+                },
+                    0,
+                    {},
+                    0,
+                    delete_attr);
+                *success = result == exchange_result::ok;
             }
             catch (...)
             { }
@@ -1404,6 +1395,21 @@ int builtin::character::builtin_rmitem(lua_State* L)
 
 int builtin::character::builtin_exchange(lua_State* L)
 {
+    return exchange(L, 2, 3, 4, false);
+}
+
+int builtin::character::builtin_consume(lua_State* L)
+{
+    return exchange(L, 2, 0, 3, true);
+}
+
+// Index 0 means the argument is absent. boolean_result pushes ok as true instead of the exchange_result code.
+int builtin::character::exchange(lua_State* L,
+                                 int        cost_index,
+                                 int        reward_index,
+                                 int        delete_type_index,
+                                 bool       boolean_result)
+{
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
@@ -1415,12 +1421,12 @@ int builtin::character::builtin_exchange(lua_State* L)
         return 1;
     }
 
-    if (lua->is_nil(2) == false && lua->is_table(2) == false)
+    if (cost_index != 0 && lua->is_nil(cost_index) == false && lua->is_table(cost_index) == false)
     {
         lua->pushboolean(false);
         return 1;
     }
-    if (lua->is_nil(3) == false && lua->is_table(3) == false)
+    if (reward_index != 0 && lua->is_nil(reward_index) == false && lua->is_table(reward_index) == false)
     {
         lua->pushboolean(false);
         return 1;
@@ -1435,10 +1441,10 @@ int builtin::character::builtin_exchange(lua_State* L)
     auto invalid_cost   = false;
     auto invalid_reward = false;
 
-    if (lua->is_table(2))
+    if (cost_index != 0 && lua->is_table(cost_index))
     {
         lua->pushstring("item");
-        lua->rawget(2);
+        lua->rawget(cost_index);
         if (lua->is_table(-1))
         {
             lua->pushnil();
@@ -1460,22 +1466,22 @@ int builtin::character::builtin_exchange(lua_State* L)
         lua->pop(1);
 
         lua->pushstring("money");
-        lua->rawget(2);
+        lua->rawget(cost_index);
         if (lua->is_number(-1))
             cost_money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
 
         lua->pushstring("exp");
-        lua->rawget(2);
+        lua->rawget(cost_index);
         if (lua->is_number(-1))
             cost_exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
     }
 
-    if (lua->is_table(3))
+    if (reward_index != 0 && lua->is_table(reward_index))
     {
         lua->pushstring("item");
-        lua->rawget(3);
+        lua->rawget(reward_index);
         if (lua->is_table(-1))
         {
             lua->pushnil();
@@ -1497,24 +1503,25 @@ int builtin::character::builtin_exchange(lua_State* L)
         lua->pop(1);
 
         lua->pushstring("money");
-        lua->rawget(3);
+        lua->rawget(reward_index);
         if (lua->is_number(-1))
             reward_money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
 
         lua->pushstring("exp");
-        lua->rawget(3);
+        lua->rawget(reward_index);
         if (lua->is_number(-1))
             reward_exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
     }
 
-    auto delete_type = lua->toenum(4, ITEM_DELETE_TYPE::GIVE);
-    auto weak        = ch->weak_from_this_as<fb::game::character>();
-    auto result      = std::make_shared<exchange_result>(exchange_result::ok);
-    auto builder     = lua->new_co_builder();
-    builder.weak     = weak;
-    builder.yield    = [=]() -> async::task<void> {
+    auto delete_type =
+        delete_type_index != 0 ? lua->toenum(delete_type_index, ITEM_DELETE_TYPE::GIVE) : ITEM_DELETE_TYPE::GIVE;
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<exchange_result>(exchange_result::ok);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         if (invalid_cost || (cost_exp > 0 && ch->exp() < cost_exp))
         {
             *result = exchange_result::lack_cost;
@@ -1537,7 +1544,10 @@ int builtin::character::builtin_exchange(lua_State* L)
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushinteger(static_cast<int>(*result));
+        if (boolean_result)
+            lua->pushboolean(*result == exchange_result::ok);
+        else
+            lua->pushinteger(static_cast<int>(*result));
         co_return 1;
     };
     return builder.run();
@@ -6392,6 +6402,9 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
+    if (lua->is_table(2))
+        return exchange(L, 0, 2, 0, true);
 
     if (lua->is_string(2) == false)
     {
