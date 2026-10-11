@@ -8,25 +8,25 @@ local DRAGON_WEAPON_LINES = {
         type_name = '용마',
         options = { '용마제육검', '용마제칠검', '용마제팔검' },
         success = { '용마제칠검', '용마제팔검', '용마제구검' },
-        failed   = { nil, '용마제칠검(손상)', '용마제팔검(손상)' },
+        failed   = { nil, '[손상]용마제칠검', '[손상]용마제팔검' },
     },
     {
         type_name = '용천',
         options = { '용천제육검', '용천제칠검', '용천제팔검' },
         success = { '용천제칠검', '용천제팔검', '용천제구검' },
-        failed   = { nil, '용천제칠검(손상)', '용천제팔검(손상)' },
+        failed   = { nil, '[손상]용천제칠검', '[손상]용천제팔검' },
     },
     {
         type_name = '용랑',
         options = { '용랑제육봉', '용랑제칠봉', '용랑제팔봉' },
         success = { '용랑제칠봉', '용랑제팔봉', '용랑제구봉' },
-        failed   = { nil, '용랑제칠봉(손상)', '용랑제팔봉(손상)' },
+        failed   = { nil, '[손상]용랑제칠봉', '[손상]용랑제팔봉' },
     },
     {
         type_name = '용겸',
         options = { '용겸제육봉', '용겸제칠봉', '용겸제팔봉' },
         success = { '용겸제칠봉', '용겸제팔봉', '용겸제구봉' },
-        failed   = { nil, '용겸제칠봉(손상)', '용겸제팔봉(손상)' },
+        failed   = { nil, '[손상]용겸제칠봉', '[손상]용겸제팔봉' },
     },
 }
 
@@ -123,19 +123,25 @@ local function run_dragon_weapon_awaken(me, npc)
         return true
     end
     local roll = math.random(1, 100)
-    me:rmitem({ ['얼음'] = 1, ['은나무가지'] = 1, [check_item] = 1 }, ITEM_DELETE_TYPE.GIVE)
+    local reward_item = (roll <= rate) and success_item or failed_item
+    local reward = reward_item and { ['item'] = { [reward_item] = 1 } } or nil
+    local code = me:exchange({ ['item'] = { ['얼음'] = 1, ['은나무가지'] = 1, [check_item] = 1 } }, reward)
+    if code == enum.exchange_result.LACK_COST then
+        me:dialog(npc, '자네는 아직 용무기를 각성시킬 준비가 모자라군.', { prev = false, next = false })
+        return true
+    end
+    if code == enum.exchange_result.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_item, '을', '를') .. ' 받을 수 없군.', { prev = false, next = false })
+        return true
+    end
     me:base_hp(me:base_hp() - 1000, false)
     me:hp(me:maxhp(), false)
     me:update()
     if roll <= rate then
         broadcast(string.format('%s님이 %s 강화에 성공하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
-        me:mkitem(success_item, 1)
         me:dialog(npc, '축하하네. 하늘이 자네를 ' .. success_item .. '의 주인으로 인정하는군', { prev = false, next = false })
     else
         broadcast(string.format('%s님이 %s 강화에 실패하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
-        if failed_item then
-            me:mkitem(failed_item, 1)
-        end
         me:dialog(npc, '이런.. 용무기가 온도를 이기지 못하고 부숴저 버렸군..', { prev = false, next = false })
     end
     return true
