@@ -374,32 +374,57 @@ void trade::assert_exchange(const trade& trade) const
     if (std::numeric_limits<uint64_t>::max() - trade.money() < owner->money())
         throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));
 
-    auto buffer = std::unordered_map<uint32_t, uint16_t>{};
+    auto incoming = std::unordered_map<uint32_t, uint32_t>{};
     for (const auto& item : trade.items())
     {
-        auto& model       = item->model();
-        buffer[model.id] += item->trade_count();
+        auto& model         = item->model();
+        incoming[model.id] += item->trade_count();
     }
 
-    for (auto& item : owner->items)
+    // Capacity is checked against the inventory as it will be after this side's offer leaves.
+    auto free_slots     = static_cast<int>(owner->items.free_size());
+    auto bundle_remains = std::unordered_map<uint32_t, uint32_t>{};
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        if (item == nullptr)
+        auto item   = owner->items.at(static_cast<uint8_t>(i));
+        auto escrow = owner->items.escrow(static_cast<uint8_t>(i));
+        auto shown  = item != nullptr ? item : (escrow != nullptr ? escrow->item : nullptr);
+        if (shown == nullptr)
             continue;
 
-        if (item->trade_count() == 0)
+        auto remains = static_cast<uint32_t>(item != nullptr ? item->count() - item->trade_count() : 0) +
+                       static_cast<uint32_t>(escrow != nullptr ? escrow->item->count() : 0);
+        if (remains == 0)
+        {
+            free_slots++;
             continue;
+        }
 
-        auto& model = item->model();
-        if (buffer.contains(model.id) == false)
-            continue;
-
-        if (buffer[model.id] > item->trade_count())
-            buffer[model.id] -= item->trade_count();
-        else
-            buffer.erase(model.id);
+        auto& model = shown->model();
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+            bundle_remains.try_emplace(model.id, remains);
     }
 
-    if (!owner->items.is_rewardable(buffer))
+    auto required_slots = 0;
+    for (auto& [id, count] : incoming)
+    {
+        auto& model = fb::model::table::item[id];
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+        {
+            required_slots += count;
+        }
+        else if (bundle_remains.contains(id))
+        {
+            if (model.capacity < bundle_remains[id] + count)
+                throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
+        }
+        else
+        {
+            required_slots++;
+        }
+    }
+
+    if (free_slots < required_slots)
         throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
