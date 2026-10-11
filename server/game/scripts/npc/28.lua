@@ -224,15 +224,20 @@ local function run_buy_hp(me, npc)
     if step == nil then
         return false
     end
-    local step_num = tonumber(step) or 0
-    local my_exp = me:exp()
-    local exp_cost = step_num * tier.exp
-    if my_exp < exp_cost then
+    local step_num = math.tointeger(tonumber(step))
+    if step_num == nil or step_num <= 0 then
+        me:dialog(npc, '올바른 단계를 입력하게.', { prev = false, next = false })
+        return true
+    end
+    if step_num > me:exp() // tier.exp then
+        me:dialog(npc, '경험치가 부족하네', { prev = false, next = false })
+        return true
+    end
+    if not me:consume({ ['exp'] = step_num * tier.exp }) then
         me:dialog(npc, '경험치가 부족하네', { prev = false, next = false })
         return true
     end
 
-    me:exp(my_exp - exp_cost)
     me:base_hp(me:base_hp() + (step_num * tier.hp))
 
     button = me:dialog(npc, string.format('자네의 경험치로 체력을 %d단계 올렸으니 그리 알고 돌아가도록 해.', step_num), { prev = false, next = true })
@@ -304,15 +309,20 @@ local function run_buy_mp(me, npc)
     if step == nil then
         return false
     end
-    local step_num = tonumber(step) or 0
-    local my_exp = me:exp()
-    local exp_cost = step_num * tier.exp
-    if my_exp < exp_cost then
+    local step_num = math.tointeger(tonumber(step))
+    if step_num == nil or step_num <= 0 then
+        me:dialog(npc, '올바른 단계를 입력하게.', { prev = false, next = false })
+        return true
+    end
+    if step_num > me:exp() // tier.exp then
+        me:dialog(npc, '경험치가 부족하네', { prev = false, next = false })
+        return true
+    end
+    if not me:consume({ ['exp'] = step_num * tier.exp }) then
         me:dialog(npc, '경험치가 부족하네', { prev = false, next = false })
         return true
     end
 
-    me:exp(my_exp - exp_cost)
     me:base_mp(me:base_mp() + (step_num * tier.mp))
 
     button = me:dialog(npc, string.format('자네의 경험치로 마력을 %d단계 올렸으니 그리 알고 돌아가도록 해.', step_num), { prev = false, next = true })
