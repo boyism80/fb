@@ -1023,17 +1023,17 @@ function M.show_return_money_menu(me, npc)
         return me:dialog(npc, '금액이 올바르지 않습니다.', { prev = false, next = true })
     end
 
+    deposited_money = me:deposited_money()
     if count > deposited_money then
         return me:dialog(npc, '그만큼 보관하고 있지 않습니다.', { prev = false, next = true })
     end
 
-    local current_money = me:money()
     if count > me:money_free_space() then
        return me:dialog(npc, '가진 돈이 너무 많습니다.', { prev = false, next = true })
     end
 
     me:deposited_money(deposited_money - count)
-    me:money(current_money + count)
+    me:money(me:money() + count)
     return me:dialog(npc, string.format('금전 %d전을 돌려드렸습니다.', count), { prev = false, next = true })
 end
 
