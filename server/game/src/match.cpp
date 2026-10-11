@@ -29,12 +29,13 @@ using namespace fb::game;
 using namespace std::chrono_literals;
 using table = fb::model::table;
 
-match::match(server& server, uint64_t id, uint32_t type, uint32_t slot, uint32_t expected) :
+match::match(server& server, uint64_t id, uint32_t type, uint32_t slot, uint32_t expected, uint32_t team_count) :
     _server(server),
     _id(id),
     _type(type),
     _slot(slot),
-    _expected(expected)
+    _expected(expected),
+    _team_count(team_count)
 { }
 
 uint64_t match::id() const
@@ -173,8 +174,9 @@ async::task<void> match::invoke(std::string_view func, character& ch, std::share
 
 async::task<void> match::join(character& ch, uint32_t team)
 {
-    auto already = false;
-    auto full    = false;
+    auto already    = false;
+    auto full       = false;
+    auto start_wait = false;
     {
         auto lock = std::lock_guard(this->_mutex);
         if (this->_state == MATCH_STATE::ending || this->_state == MATCH_STATE::closed)
@@ -198,9 +200,13 @@ async::task<void> match::join(character& ch, uint32_t team)
                 slot = std::make_shared<match::team>(*this, team);
             slot->enter(ch);
         }
+        start_wait = already == false && this->_state == MATCH_STATE::waiting && this->_timer == nullptr;
     }
     if (already)
         co_return;
+
+    if (start_wait)
+        this->wait(DEFAULT_WAIT_SECONDS);
 
     ch.match(this->shared_from_this_as<match>());
     co_await this->invoke("on_join", ch);
@@ -278,8 +284,23 @@ void match::wait(uint32_t seconds)
                 auto inner = std::lock_guard(self->_mutex);
                 waiting    = self->_state == MATCH_STATE::waiting;
             }
-            if (waiting)
+            if (waiting == false)
+                co_return;
+
+            // Every team needs someone who arrived; otherwise the arrivals are sent home.
+            auto teams      = self->teams();
+            auto live_teams = uint32_t{0};
+            for (auto& team : teams)
+            {
+                if (team->members().empty() == false)
+                    live_teams++;
+            }
+
+            auto playable = teams.empty() ? self->member_count() > 0 : live_teams >= self->_team_count;
+            if (playable)
                 self->enqueue_play();
+            else
+                self->finish(0);
             co_return;
         },
         fb::model::timespan(std::chrono::seconds(seconds)),
@@ -693,12 +714,14 @@ async::task<void> match::container::join(character& ch, uint64_t match_id, uint3
         }
         else
         {
-            auto expected  = uint32_t{1};
-            auto type_enum = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
+            auto expected   = uint32_t{1};
+            auto team_count = uint32_t{1};
+            auto type_enum  = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
             if (table::matchmaking->contains(type_enum))
             {
-                auto& row = table::matchmaking[type_enum];
-                expected  = row.member_count * row.team_count;
+                auto& row  = table::matchmaking[type_enum];
+                expected   = row.member_count * row.team_count;
+                team_count = row.team_count;
                 if (expected == 0)
                     expected = 1;
             }
@@ -707,7 +730,7 @@ async::task<void> match::container::join(character& ch, uint64_t match_id, uint3
             if (slot == 0)
                 slot = this->_next_slot++;
 
-            session = std::make_shared<match>(this->_server, match_id, match_type, slot, expected);
+            session = std::make_shared<match>(this->_server, match_id, match_type, slot, expected, team_count);
             this->_sessions.emplace(match_id, session);
         }
     }

@@ -36,6 +36,9 @@ public:
     // Must match Http.Util.SnowflakeId.HostShift; bits above it carry the cross host chosen by matchmaking.
     static constexpr uint32_t ID_HOST_SHIFT = 14;
 
+    // Upper bound for the waiting state; a script can replace it with match:wait.
+    static constexpr uint32_t DEFAULT_WAIT_SECONDS = 60;
+
 public:
     class team;
     class container;
@@ -46,6 +49,7 @@ private:
     const uint32_t                                      _type;
     const uint32_t                                      _slot;
     const uint32_t                                      _expected;
+    const uint32_t                                      _team_count;
     MATCH_STATE                                         _state = MATCH_STATE::waiting;
     mutable std::mutex                                  _mutex;
     std::vector<std::weak_ptr<character>>               _members;
@@ -53,7 +57,7 @@ private:
     std::shared_ptr<fb::timer>                          _timer;
 
 public:
-    match(server& server, uint64_t id, uint32_t type, uint32_t slot, uint32_t expected);
+    match(server& server, uint64_t id, uint32_t type, uint32_t slot, uint32_t expected, uint32_t team_count);
     match(const match&) = delete;
     match(match&&)      = delete;
     ~match()            = default;
