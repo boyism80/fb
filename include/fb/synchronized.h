@@ -104,6 +104,12 @@ private:
         scheduler_type*                                      scheduler;
     };
 
+    int                 _reader_count    = 0;
+    int                 _writers_waiting = 0;
+    bool                _writer          = false;
+    mutable std::mutex  _mutex;
+    std::vector<waiter> _waiters;
+
 public:
     // Every state check and waiter registration happens under _mutex in one step.
     // Checking outside it let an unlock slip in between and leave the new waiter without a wakeup.
@@ -217,13 +223,6 @@ private:
             }
         }
     }
-
-private:
-    int                 _reader_count    = 0;
-    int                 _writers_waiting = 0;
-    bool                _writer          = false;
-    mutable std::mutex  _mutex;
-    std::vector<waiter> _waiters;
 };
 
 template <typename ValueType>

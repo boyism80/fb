@@ -229,7 +229,9 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                     {
                         fb::logger::warn("DeliverSystemMail failed for system mail {}: error {}", mail.id, resp.error);
                         for (auto user_id : chunk_users_to_mark)
+                        {
                             this->join(user_id);
+                        }
                     }
                     else
                     {
@@ -256,7 +258,9 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                 {
                     fb::logger::warn("DeliverSystemMail request failed for system mail {}: {}", mail.id, e.what());
                     for (auto user_id : chunk_users_to_mark)
+                    {
                         this->join(user_id);
+                    }
                 }
 
                 co_await fb::async_suspend{};
