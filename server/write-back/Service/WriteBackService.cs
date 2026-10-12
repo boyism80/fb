@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Redis;
@@ -240,7 +240,7 @@ namespace WriteBack.Service
                             await using var conn = _dbContext.GetGlobalConnection(_world);
                             for (var i = 0; i < entryList.Count; i++)
                             {
-                                await ProcessWriteBackEntryAsync(
+                                if (await ProcessWriteBackEntryAsync(
                                     channel,
                                     conn,
                                     conn,
@@ -248,7 +248,8 @@ namespace WriteBack.Service
                                     shardSize,
                                     entryList[i],
                                     messagesToAck[i],
-                                    stoppingToken);
+                                    stoppingToken) == false)
+                                    break;
                             }
                         }
                         else
@@ -257,7 +258,7 @@ namespace WriteBack.Service
                             await using var execConn = _dbContext.GetDataConnection(_world, db);
                             for (var i = 0; i < entryList.Count; i++)
                             {
-                                await ProcessWriteBackEntryAsync(
+                                if (await ProcessWriteBackEntryAsync(
                                     channel,
                                     execConn,
                                     logConn,
@@ -265,7 +266,8 @@ namespace WriteBack.Service
                                     shardSize,
                                     entryList[i],
                                     messagesToAck[i],
-                                    stoppingToken);
+                                    stoppingToken) == false)
+                                    break;
                             }
                         }
                     }
@@ -305,7 +307,19 @@ namespace WriteBack.Service
             }
         }
 
-        private async Task ProcessWriteBackEntryAsync(
+        private static bool IsTransient(Exception ex)
+        {
+            for (var e = ex; e != null; e = e.InnerException)
+            {
+                if (e is MySqlException mx)
+                    return mx.IsTransient;
+                if (e is IOException || e is System.Net.Sockets.SocketException || e is TimeoutException)
+                    return true;
+            }
+            return false;
+        }
+
+        private async Task<bool> ProcessWriteBackEntryAsync(
             IChannel channel,
             MySqlConnection execConn,
             MySqlConnection logConn,
@@ -315,35 +329,45 @@ namespace WriteBack.Service
             ulong deliveryTag,
             CancellationToken stoppingToken)
         {
-            try
+            // Entries of one queue are full-row upserts in write order, so a transient failure is retried in place:
+            // skipping ahead or requeueing would let an older row land after a newer one.
+            var retryDelay = TimeSpan.FromSeconds(1);
+            Exception failure = null;
+            while (true)
             {
-                await execConn.ExecuteAsync(entry.SQL);
-                _logger.LogInformation(entry.SQL);
-
-                var mod = entry.Hash != null ? (int)(entry.Hash % shardSize) : -1;
-                var values = new List<RedisValue>
-                {
-                    (int)Http.Redis.Const.CacheTimeToLive.TotalSeconds,
-                    1,
-                    entry.RedisKey,
-                    1,
-                };
-
-                var redisRefConn = mod == -1 ? _redisService.GetGlobalConnection(_world) : _redisService.GetDataConnection(_world, mod);
-                if (redisRefConn != null)
-                {
-                    await redisRefConn.EvalAsync(
-                        EndOfRefScript,
-                        [new RedisKey(Const.ReferenceCountKey)],
-                        [.. values]);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Write-back entry failed for world {World} db {Db}", _world, db);
                 try
                 {
-                    await WriteBackFailureRecorder.RecordAsync(logConn, _world, db, entry, ex, stoppingToken);
+                    await execConn.ExecuteAsync(entry.SQL);
+                    _logger.LogInformation(entry.SQL);
+                    failure = null;
+                    break;
+                }
+                catch (Exception ex) when (IsTransient(ex) && stoppingToken.IsCancellationRequested == false)
+                {
+                    _logger.LogWarning(ex, "Write-back entry failed transiently for world {World} db {Db}; retrying in {Delay}", _world, db, retryDelay);
+                    try
+                    {
+                        await Task.Delay(retryDelay, stoppingToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return false;
+                    }
+                    retryDelay = TimeSpan.FromSeconds(Math.Min(retryDelay.TotalSeconds * 2, 30));
+                }
+                catch (Exception ex)
+                {
+                    failure = ex;
+                    break;
+                }
+            }
+
+            if (failure != null)
+            {
+                _logger.LogError(failure, "Write-back entry failed for world {World} db {Db}", _world, db);
+                try
+                {
+                    await WriteBackFailureRecorder.RecordAsync(logConn, _world, db, entry, failure, stoppingToken);
                 }
                 catch (Exception logEx)
                 {
@@ -353,17 +377,43 @@ namespace WriteBack.Service
                         db);
                 }
             }
-            finally
+            else
             {
                 try
                 {
-                    await channel.BasicAckAsync(deliveryTag, false, stoppingToken);
+                    var mod = entry.Hash != null ? (int)(entry.Hash % shardSize) : -1;
+                    var values = new List<RedisValue>
+                    {
+                        (int)Http.Redis.Const.CacheTimeToLive.TotalSeconds,
+                        1,
+                        entry.RedisKey,
+                        1,
+                    };
+
+                    var redisRefConn = mod == -1 ? _redisService.GetGlobalConnection(_world) : _redisService.GetDataConnection(_world, mod);
+                    if (redisRefConn != null)
+                    {
+                        await redisRefConn.EvalAsync(
+                            EndOfRefScript,
+                            [new RedisKey(Const.ReferenceCountKey)],
+                            [.. values]);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to ack delivery tag {Tag}", deliveryTag);
+                    _logger.LogWarning(ex, "Write-back reference release failed for key {Key}", entry.RedisKey);
                 }
             }
+
+            try
+            {
+                await channel.BasicAckAsync(deliveryTag, false, stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to ack delivery tag {Tag}", deliveryTag);
+            }
+            return true;
         }
     }
 }

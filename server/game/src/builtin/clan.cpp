@@ -731,64 +731,6 @@ int builtin::clan::builtin_money(lua_State* L)
     if (clan == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    if (argc < 2)
-    {
-        lua->pushinteger(clan->money());
-        return 1;
-    }
-
-    auto delta   = static_cast<int64_t>(lua->tointeger(2));
-    auto clan_id = clan->id();
-    auto world   = uint32_t{0};
-    for (auto& [_, weak] : clan->characters())
-    {
-        auto member = weak.lock();
-        if (member == nullptr)
-            continue;
-
-        world = member->world();
-        break;
-    }
-
-    auto error    = std::make_shared<std::optional<std::string>>();
-    auto pending  = std::make_shared<bool>(false);
-    auto money    = std::make_shared<uint64_t>(0);
-    auto builder  = lua->new_co_builder();
-    builder.yield = [=]() -> async::task<void> {
-        auto& server = static_cast<fb::game::server&>(lua->executor);
-        try
-        {
-            if (world == 0)
-                throw std::runtime_error("no online clan member");
-
-            if (co_await server.clans.add_money(world, clan_id, delta) == false)
-            {
-                *pending = true;
-                throw std::runtime_error("clan money outcome unknown");
-            }
-
-            auto guard = co_await server.clans.enter_write(clan_id);
-            if (guard.value() != nullptr)
-                *money = guard.value()->money();
-        }
-        catch (std::exception& e)
-        {
-            *error = e.what();
-        }
-    };
-    builder.resume = [=]() -> async::task<int> {
-        if (error->has_value())
-        {
-            lua->pushnil();
-            lua->pushstring(error->value().c_str());
-            lua->pushboolean(*pending);
-            co_return 3;
-        }
-
-        lua->pushinteger(*money);
-        lua->pushnil();
-        co_return 2;
-    };
-    return builder.run();
+    lua->pushinteger(clan->money());
+    return 1;
 }

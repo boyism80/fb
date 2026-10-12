@@ -109,6 +109,12 @@ struct CollectionUnlockBuilder;
 struct MarketplacePending;
 struct MarketplacePendingBuilder;
 
+struct ClanMoneyPending;
+struct ClanMoneyPendingBuilder;
+
+struct StorageClaimPending;
+struct StorageClaimPendingBuilder;
+
 struct SystemMail;
 struct SystemMailBuilder;
 
@@ -315,6 +321,9 @@ struct SetClanMoneyBuilder;
 struct AbortClanMoney;
 struct AbortClanMoneyBuilder;
 
+struct ReleaseClanMoney;
+struct ReleaseClanMoneyBuilder;
+
 struct OpsNotify;
 struct OpsNotifyBuilder;
 
@@ -440,6 +449,9 @@ struct UpdatedClanBuilder;
 
 struct AbortClanMoney;
 struct AbortClanMoneyBuilder;
+
+struct ReleaseClanMoney;
+struct ReleaseClanMoneyBuilder;
 
 struct BroadcastClan;
 struct BroadcastClanBuilder;
@@ -4040,6 +4052,148 @@ inline ::flatbuffers::Offset<MarketplacePending> CreateMarketplacePendingDirect(
       character_id);
 }
 
+struct ClanMoneyPending FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ClanMoneyPendingBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_USER = 4,
+    VT_REQUEST_ID = 6,
+    VT_CLAN = 8,
+    VT_CLAN_DELTA = 10,
+    VT_MONEY_DELTA = 12
+  };
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  uint32_t clan() const {
+    return GetField<uint32_t>(VT_CLAN, 0);
+  }
+  int64_t clan_delta() const {
+    return GetField<int64_t>(VT_CLAN_DELTA, 0);
+  }
+  int64_t money_delta() const {
+    return GetField<int64_t>(VT_MONEY_DELTA, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
+           VerifyField<int64_t>(verifier, VT_CLAN_DELTA, 8) &&
+           VerifyField<int64_t>(verifier, VT_MONEY_DELTA, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct ClanMoneyPendingBuilder {
+  typedef ClanMoneyPending Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(ClanMoneyPending::VT_USER, user, 0);
+  }
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(ClanMoneyPending::VT_REQUEST_ID, request_id, 0);
+  }
+  void add_clan(uint32_t clan) {
+    fbb_.AddElement<uint32_t>(ClanMoneyPending::VT_CLAN, clan, 0);
+  }
+  void add_clan_delta(int64_t clan_delta) {
+    fbb_.AddElement<int64_t>(ClanMoneyPending::VT_CLAN_DELTA, clan_delta, 0);
+  }
+  void add_money_delta(int64_t money_delta) {
+    fbb_.AddElement<int64_t>(ClanMoneyPending::VT_MONEY_DELTA, money_delta, 0);
+  }
+  explicit ClanMoneyPendingBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ClanMoneyPending> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ClanMoneyPending>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ClanMoneyPending> CreateClanMoneyPending(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t user = 0,
+    uint64_t request_id = 0,
+    uint32_t clan = 0,
+    int64_t clan_delta = 0,
+    int64_t money_delta = 0) {
+  ClanMoneyPendingBuilder builder_(_fbb);
+  builder_.add_money_delta(money_delta);
+  builder_.add_clan_delta(clan_delta);
+  builder_.add_request_id(request_id);
+  builder_.add_clan(clan);
+  builder_.add_user(user);
+  return builder_.Finish();
+}
+
+struct StorageClaimPending FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef StorageClaimPendingBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_USER = 4,
+    VT_BOX = 6,
+    VT_CLAIM_ID = 8
+  };
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  uint32_t box() const {
+    return GetField<uint32_t>(VT_BOX, 0);
+  }
+  uint64_t claim_id() const {
+    return GetField<uint64_t>(VT_CLAIM_ID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<uint32_t>(verifier, VT_BOX, 4) &&
+           VerifyField<uint64_t>(verifier, VT_CLAIM_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct StorageClaimPendingBuilder {
+  typedef StorageClaimPending Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(StorageClaimPending::VT_USER, user, 0);
+  }
+  void add_box(uint32_t box) {
+    fbb_.AddElement<uint32_t>(StorageClaimPending::VT_BOX, box, 0);
+  }
+  void add_claim_id(uint64_t claim_id) {
+    fbb_.AddElement<uint64_t>(StorageClaimPending::VT_CLAIM_ID, claim_id, 0);
+  }
+  explicit StorageClaimPendingBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<StorageClaimPending> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<StorageClaimPending>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<StorageClaimPending> CreateStorageClaimPending(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t user = 0,
+    uint32_t box = 0,
+    uint64_t claim_id = 0) {
+  StorageClaimPendingBuilder builder_(_fbb);
+  builder_.add_claim_id(claim_id);
+  builder_.add_box(box);
+  builder_.add_user(user);
+  return builder_.Finish();
+}
+
 struct SystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SystemMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -4495,7 +4649,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_QUESTS = 16,
     VT_MARKETPLACE_PENDINGS = 18,
     VT_COLLECTION_UNLOCKS = 20,
-    VT_SNAPSHOT_TIME = 22
+    VT_SNAPSHOT_TIME = 22,
+    VT_CLAN_MONEY_PENDINGS = 24,
+    VT_STORAGE_CLAIM_PENDINGS = 26
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -4527,6 +4683,12 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   int64_t snapshot_time() const {
     return GetField<int64_t>(VT_SNAPSHOT_TIME, 0);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>> *clan_money_pendings() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>> *>(VT_CLAN_MONEY_PENDINGS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>> *storage_claim_pendings() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>> *>(VT_STORAGE_CLAIM_PENDINGS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -4555,6 +4717,12 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(collection_unlocks()) &&
            verifier.VerifyVectorOfTables(collection_unlocks()) &&
            VerifyField<int64_t>(verifier, VT_SNAPSHOT_TIME, 8) &&
+           VerifyOffset(verifier, VT_CLAN_MONEY_PENDINGS) &&
+           verifier.VerifyVector(clan_money_pendings()) &&
+           verifier.VerifyVectorOfTables(clan_money_pendings()) &&
+           VerifyOffset(verifier, VT_STORAGE_CLAIM_PENDINGS) &&
+           verifier.VerifyVector(storage_claim_pendings()) &&
+           verifier.VerifyVectorOfTables(storage_claim_pendings()) &&
            verifier.EndTable();
   }
 };
@@ -4593,6 +4761,12 @@ struct SavePayloadBuilder {
   void add_snapshot_time(int64_t snapshot_time) {
     fbb_.AddElement<int64_t>(SavePayload::VT_SNAPSHOT_TIME, snapshot_time, 0);
   }
+  void add_clan_money_pendings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>>> clan_money_pendings) {
+    fbb_.AddOffset(SavePayload::VT_CLAN_MONEY_PENDINGS, clan_money_pendings);
+  }
+  void add_storage_claim_pendings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>>> storage_claim_pendings) {
+    fbb_.AddOffset(SavePayload::VT_STORAGE_CLAIM_PENDINGS, storage_claim_pendings);
+  }
   explicit SavePayloadBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4615,9 +4789,13 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
-    int64_t snapshot_time = 0) {
+    int64_t snapshot_time = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>>> clan_money_pendings = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>>> storage_claim_pendings = 0) {
   SavePayloadBuilder builder_(_fbb);
   builder_.add_snapshot_time(snapshot_time);
+  builder_.add_storage_claim_pendings(storage_claim_pendings);
+  builder_.add_clan_money_pendings(clan_money_pendings);
   builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_marketplace_pendings(marketplace_pendings);
   builder_.add_quests(quests);
@@ -4641,7 +4819,9 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
-    int64_t snapshot_time = 0) {
+    int64_t snapshot_time = 0,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>> *clan_money_pendings = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>> *storage_claim_pendings = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -4649,6 +4829,8 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
   auto marketplace_pendings__ = marketplace_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>(*marketplace_pendings) : 0;
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
+  auto clan_money_pendings__ = clan_money_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>>(*clan_money_pendings) : 0;
+  auto storage_claim_pendings__ = storage_claim_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>>(*storage_claim_pendings) : 0;
   return fb::protocol::internal::raw::CreateSavePayload(
       _fbb,
       character,
@@ -4660,7 +4842,9 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
       quests__,
       marketplace_pendings__,
       collection_unlocks__,
-      snapshot_time);
+      snapshot_time,
+      clan_money_pendings__,
+      storage_claim_pendings__);
 }
 
 struct OptionChange FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -9994,6 +10178,67 @@ inline ::flatbuffers::Offset<AbortClanMoney> CreateAbortClanMoney(
   return builder_.Finish();
 }
 
+struct ReleaseClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ReleaseClanMoneyBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_WORLD = 4,
+    VT_CLAN = 6,
+    VT_REQUEST_ID = 8
+  };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
+  uint32_t clan() const {
+    return GetField<uint32_t>(VT_CLAN, 0);
+  }
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct ReleaseClanMoneyBuilder {
+  typedef ReleaseClanMoney Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(ReleaseClanMoney::VT_WORLD, world, 0);
+  }
+  void add_clan(uint32_t clan) {
+    fbb_.AddElement<uint32_t>(ReleaseClanMoney::VT_CLAN, clan, 0);
+  }
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(ReleaseClanMoney::VT_REQUEST_ID, request_id, 0);
+  }
+  explicit ReleaseClanMoneyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ReleaseClanMoney> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ReleaseClanMoney>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ReleaseClanMoney> CreateReleaseClanMoney(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t clan = 0,
+    uint64_t request_id = 0) {
+  ReleaseClanMoneyBuilder builder_(_fbb);
+  builder_.add_request_id(request_id);
+  builder_.add_clan(clan);
+  builder_.add_world(world);
+  return builder_.Finish();
+}
+
 struct OpsNotify FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef OpsNotifyBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -11769,7 +12014,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_FRIENDS = 28,
     VT_MAIL = 30,
     VT_SYSTEM_MAIL_IDS = 32,
-    VT_COLLECTION_UNLOCKS = 34
+    VT_COLLECTION_UNLOCKS = 34,
+    VT_CLAN_MONEY_PENDINGS = 36,
+    VT_STORAGE_CLAIM_PENDINGS = 38
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -11819,6 +12066,12 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *>(VT_COLLECTION_UNLOCKS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>> *clan_money_pendings() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>> *>(VT_CLAN_MONEY_PENDINGS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>> *storage_claim_pendings() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>> *>(VT_STORAGE_CLAIM_PENDINGS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -11861,6 +12114,12 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_COLLECTION_UNLOCKS) &&
            verifier.VerifyVector(collection_unlocks()) &&
            verifier.VerifyVectorOfTables(collection_unlocks()) &&
+           VerifyOffset(verifier, VT_CLAN_MONEY_PENDINGS) &&
+           verifier.VerifyVector(clan_money_pendings()) &&
+           verifier.VerifyVectorOfTables(clan_money_pendings()) &&
+           VerifyOffset(verifier, VT_STORAGE_CLAIM_PENDINGS) &&
+           verifier.VerifyVector(storage_claim_pendings()) &&
+           verifier.VerifyVectorOfTables(storage_claim_pendings()) &&
            verifier.EndTable();
   }
 };
@@ -11917,6 +12176,12 @@ struct InitBuilder {
   void add_collection_unlocks(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks) {
     fbb_.AddOffset(Init::VT_COLLECTION_UNLOCKS, collection_unlocks);
   }
+  void add_clan_money_pendings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>>> clan_money_pendings) {
+    fbb_.AddOffset(Init::VT_CLAN_MONEY_PENDINGS, clan_money_pendings);
+  }
+  void add_storage_claim_pendings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>>> storage_claim_pendings) {
+    fbb_.AddOffset(Init::VT_STORAGE_CLAIM_PENDINGS, storage_claim_pendings);
+  }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -11945,8 +12210,12 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends = 0,
     uint32_t mail = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> system_mail_ids = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>>> clan_money_pendings = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>>> storage_claim_pendings = 0) {
   InitBuilder builder_(_fbb);
+  builder_.add_storage_claim_pendings(storage_claim_pendings);
+  builder_.add_clan_money_pendings(clan_money_pendings);
   builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_system_mail_ids(system_mail_ids);
   builder_.add_mail(mail);
@@ -11983,7 +12252,9 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends = nullptr,
     uint32_t mail = 0,
     const std::vector<uint32_t> *system_mail_ids = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>> *clan_money_pendings = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>> *storage_claim_pendings = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -11994,6 +12265,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
   auto friends__ = friends ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>(*friends) : 0;
   auto system_mail_ids__ = system_mail_ids ? _fbb.CreateVector<uint32_t>(*system_mail_ids) : 0;
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
+  auto clan_money_pendings__ = clan_money_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending>>(*clan_money_pendings) : 0;
+  auto storage_claim_pendings__ = storage_claim_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending>>(*storage_claim_pendings) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -12011,7 +12284,9 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       friends__,
       mail,
       system_mail_ids__,
-      collection_unlocks__);
+      collection_unlocks__,
+      clan_money_pendings__,
+      storage_claim_pendings__);
 }
 
 struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -13126,6 +13401,47 @@ inline ::flatbuffers::Offset<AbortClanMoney> CreateAbortClanMoney(
   builder_.add_money(money);
   builder_.add_error(error);
   builder_.add_applied(applied);
+  return builder_.Finish();
+}
+
+struct ReleaseClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ReleaseClanMoneyBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ERROR = 4
+  };
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct ReleaseClanMoneyBuilder {
+  typedef ReleaseClanMoney Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(ReleaseClanMoney::VT_ERROR, error, 0);
+  }
+  explicit ReleaseClanMoneyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ReleaseClanMoney> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ReleaseClanMoney>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ReleaseClanMoney> CreateReleaseClanMoney(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t error = 0) {
+  ReleaseClanMoneyBuilder builder_(_fbb);
+  builder_.add_error(error);
   return builder_.Finish();
 }
 

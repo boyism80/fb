@@ -168,6 +168,16 @@ private:
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
+    bool _clan_money_restoring = false;
+
+public:
+    struct clan_money_pending
+    {
+        uint32_t clan        = 0;
+        int64_t  clan_delta  = 0;
+        int64_t  money_delta = 0;
+        bool     sending     = false;
+    };
 
 public:
     const uint32_t                                id;
@@ -184,6 +194,7 @@ public:
     fb::game::matchmaker                          matchmaker;
     fb::lua::context*                             dialog = nullptr;
     achievement_map_t                             achievements;
+    std::map<uint64_t, clan_money_pending>        clan_money_pendings;
     listener_t&                                   listener;
     character_stat                                stat;
     const std::shared_ptr<fb::async_shared_mutex> save_lock = std::make_shared<fb::async_shared_mutex>();
@@ -420,6 +431,9 @@ public:
     const std::vector<std::shared_ptr<fb::game::mob>>&        spawned_mobs() const;
     bool                                                      detach_spawned_mob(fb::game::mob& mob);
     [[nodiscard]] async::task<bool>                           reward(const std::vector<fb::model::dsl>& reward);
+    [[nodiscard]] async::task<std::optional<bool>>            transfer_clan_money(uint32_t clan_id, int64_t clan_delta, int64_t money_delta);
+    async::task<void>                                         restore_clan_money();
+    void                                                      complete_clan_money(uint64_t request_id, bool applied);
     fb::protocol::internal::Character                         to_protocol() const;
     const fb::game::marriage&                                 marriage() const;
     void                                                      marriage(const fb::game::marriage& value);

@@ -53,6 +53,10 @@ namespace Http.Service
 
         public MarketplacePendingRepository MarketplacePending => Bind<MarketplacePendingRepository>();
 
+        public ClanMoneyPendingRepository ClanMoneyPending => Bind<ClanMoneyPendingRepository>();
+        public ClanMoneyRequestArchiveRepository ClanMoneyRequestArchive => Bind<ClanMoneyRequestArchiveRepository>();
+        public StorageClaimPendingRepository StorageClaimPending => Bind<StorageClaimPendingRepository>();
+
         public MatchmakingSkillRepository MatchmakingSkill => Bind<MatchmakingSkillRepository>();
 
 

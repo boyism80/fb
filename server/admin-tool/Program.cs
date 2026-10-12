@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
+SqlMapper.AddTypeHandler(typeof(List<Http.Model.ClanMoneyRequest>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Http.Model.Buff>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());

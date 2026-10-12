@@ -13,13 +13,15 @@ namespace Http.Service
             consumerDispatchConcurrency: null);
 
         private readonly IConfiguration _configuration;
+        private readonly ILogger<RabbitMqService> _logger;
         private readonly SemaphoreSlim _channelLock = new(1, 1);
         private IConnection _connection;
         private IChannel _channel;
 
-        public RabbitMqService(IConfiguration configuration)
+        public RabbitMqService(IConfiguration configuration, ILogger<RabbitMqService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
@@ -87,6 +89,32 @@ namespace Http.Service
         {
             foreach (var key in AmqpRoute.Fanout(topic, homeWorld))
                 await PublishAsync(protocol, AmqpRoute.Exchange, key, cancellationToken);
+        }
+
+        // The change is already saved, so a failed notification must not turn the response into an error:
+        // the caller would undo a change that persisted.
+        public async Task NotifySavedAsync(IFlatBufferEx protocol, string topic, uint homeWorld)
+        {
+            try
+            {
+                await PublishFanoutAsync(protocol, topic, homeWorld);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Saved change notification failed on topic {Topic}", topic);
+            }
+        }
+
+        public async Task NotifySavedAsync(IFlatBufferEx protocol, string exchangeName, string routeKey)
+        {
+            try
+            {
+                await PublishAsync(protocol, exchangeName, routeKey);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Saved change notification failed on route {Route}", routeKey);
+            }
         }
 
         public async Task PublishAsync(string exchangeName, string routingKey, byte[] body, bool persistent = true, CancellationToken cancellationToken = default)

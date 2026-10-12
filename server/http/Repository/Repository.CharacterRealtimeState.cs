@@ -18,6 +18,30 @@ namespace Http.Reepository
             return await base.Get(world, new CharacterRealtimeStateKey { Uid = uid });
         }
 
+        // The caller must hold the character's state lock.
+        public async Task ClearStaleMembership(uint world, CharacterRealtimeState sync)
+        {
+            var stale = false;
+            if (sync.Clan != null && await _dbContext.ClanMember.Get(world, sync.Clan.Value, sync.Uid) == null)
+            {
+                sync.Clan = null;
+                stale = true;
+            }
+
+            if (sync.Group != null)
+            {
+                var group = await _dbContext.Group.Get(world, sync.Group.Value);
+                if (group == null || (group.Master != sync.Uid && group.Members.Contains(sync.Uid) == false))
+                {
+                    sync.Group = null;
+                    stale = true;
+                }
+            }
+
+            if (stale)
+                Set(world, sync);
+        }
+
         protected override string OnSelect(CharacterRealtimeStateKey key)
         {
             return $"""

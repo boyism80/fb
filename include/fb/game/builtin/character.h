@@ -108,6 +108,7 @@ struct character
     static int builtin_start_quest(lua_State* L);
     static int builtin_remove_quest(lua_State* L);
     static int builtin_reward(lua_State* L);
+    static int builtin_transfer_clan_money(lua_State* L);
     static int builtin_send_system_mail(lua_State* L);
     static int builtin_send_storage_box(lua_State* L);
     static int builtin_send_system_storage_box(lua_State* L);

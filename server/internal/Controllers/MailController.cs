@@ -145,7 +145,7 @@ namespace Internal.Controllers
                     Error   = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "mail", request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "mail", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -211,7 +211,7 @@ namespace Internal.Controllers
                     Error   = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "mail", request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "mail", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -252,7 +252,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "mail", request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "mail", request.World);
                 return response;
             }
             catch (LogicException e)

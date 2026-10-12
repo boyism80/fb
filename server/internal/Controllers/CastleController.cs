@@ -66,6 +66,7 @@ namespace Internal.Controllers
             {
                 var world = request.World;
 
+                await using var clanLock = request.OwnerClanId.HasValue ? await _distributedLock.Lock(world, Clan.DistributedLockKey(request.OwnerClanId.Value)) : null;
                 if (request.OwnerClanId.HasValue)
                 {
                     if (await _dbContext.Clan.Get(world, request.OwnerClanId.Value) == null)
@@ -90,7 +91,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
+                await _rabbitMqService.NotifySavedAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
                 return response;
             }
             catch (LogicException e)

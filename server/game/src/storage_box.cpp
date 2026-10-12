@@ -18,9 +18,12 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <vector>
 
 using namespace fb::game;
+namespace internal_resp = fb::protocol::internal::response;
+namespace internal_reqs = fb::protocol::internal::request;
 
 storage_box::storage_box(character& owner) :
     _owner(owner)
@@ -46,10 +49,10 @@ std::string storage_box::attachments_to_json(const std::vector<fb::model::dsl>& 
     return stream.str();
 }
 
-fb::protocol::internal::StorageBox storage_box::to_save_dto(uint32_t user_id, const entry& box)
+storage_box::box_dto storage_box::to_save_dto(uint32_t user_id, const entry& box)
 {
     const auto system_storage_id = box.system_storage_box_id.has_value() ? box.system_storage_box_id.value() : 0u;
-    return fb::protocol::internal::StorageBox{
+    return box_dto{
         user_id,
         box.id,
         system_storage_id,
@@ -61,12 +64,11 @@ fb::protocol::internal::StorageBox storage_box::to_save_dto(uint32_t user_id, co
     };
 }
 
-std::vector<fb::protocol::internal::StorageBox> storage_box::to_save_dtos(uint32_t                   user_id,
-                                                                          const fb::model::datetime& now) const
+std::vector<storage_box::box_dto> storage_box::to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const
 {
     this->_owner.assert_thread();
 
-    auto dtos = std::vector<fb::protocol::internal::StorageBox>{};
+    auto dtos = std::vector<box_dto>{};
     dtos.reserve(this->_entries.size());
     for (const auto& [id, box] : this->_entries)
     {
@@ -77,6 +79,67 @@ std::vector<fb::protocol::internal::StorageBox> storage_box::to_save_dtos(uint32
     }
 
     return dtos;
+}
+
+void storage_box::init_claims(const std::vector<claim_dto>& pendings)
+{
+    this->_owner.assert_thread();
+
+    for (const auto& pending : pendings)
+    {
+        auto it = this->_entries.find(pending.box);
+        if (it == this->_entries.end())
+        {
+            fb::logger::warn("storage_box.init_claims box missing user={} box={} claim={}",
+                             this->_owner.id,
+                             pending.box,
+                             pending.claim_id);
+            continue;
+        }
+
+        it->second.received      = false;
+        it->second.pending_claim = pending.claim_id;
+    }
+}
+
+std::vector<storage_box::claim_dto> storage_box::to_claim_dtos(uint32_t user_id) const
+{
+    this->_owner.assert_thread();
+
+    auto dtos = std::vector<claim_dto>{};
+    for (const auto& [id, box] : this->_entries)
+    {
+        if (box.pending_claim.has_value())
+            dtos.push_back(claim_dto{user_id, id, box.pending_claim.value()});
+    }
+    return dtos;
+}
+
+async::task<void> storage_box::restore_claims()
+{
+    this->_owner.assert_thread();
+
+    if (this->_restoring)
+        co_return;
+
+    auto targets = std::vector<uint32_t>{};
+    for (const auto& [id, box] : this->_entries)
+    {
+        if (box.pending_claim.has_value() && box.claiming == false)
+            targets.push_back(id);
+    }
+    if (targets.empty())
+        co_return;
+
+    auto weak        = this->_owner.weak_from_this_as<character>();
+    this->_restoring = true;
+    for (auto entry_id : targets)
+    {
+        std::ignore = co_await this->receive_reward(entry_id);
+        if (weak.expired())
+            co_return;
+    }
+    this->_restoring = false;
 }
 
 void storage_box::init(const std::vector<entry>& entries)
@@ -185,7 +248,8 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
 
     auto now = this->_owner.server.now();
-    if (it->second.expire_date.has_value() && it->second.expire_date.value() < now)
+    if (it->second.pending_claim.has_value() == false && it->second.expire_date.has_value() &&
+        it->second.expire_date.value() < now)
         co_return false;
 
     if (this->_owner.items.is_rewardable(it->second.attachments) == false)
@@ -199,15 +263,15 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     it->second.pending_claim = claim_id;
     it->second.claiming      = true;
 
-    fb::protocol::internal::response::ClaimStorageBox claim_resp{};
-    auto                                              claim_lost = false;
+    internal_resp::ClaimStorageBox claim_resp{};
+    auto                           claim_lost = false;
     try
     {
-        claim_resp = co_await this->_owner.server.http.post(
-            weak,
-            "internal",
-            "/storage/claim",
-            fb::protocol::internal::request::ClaimStorageBox{world, owner_id, entry_id, claim_id});
+        claim_resp =
+            co_await this->_owner.server.http.post(weak,
+                                                   "internal",
+                                                   "/storage/claim",
+                                                   internal_reqs::ClaimStorageBox{world, owner_id, entry_id, claim_id});
     }
     catch (const std::exception& e)
     {
@@ -258,26 +322,35 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     }
     catch (const std::exception& e)
     {
-        fb::logger::warn("storage_box.receive_reward grant exception user={} entry={}: {}",
-                         ptr->id,
-                         entry_id,
-                         e.what());
-        granted = false;
+        // Part of the reward may already be granted, so the claim is kept instead of reopening the box.
+        fb::logger::fatal("storage_box.receive_reward grant exception user={} entry={} claim={}: {}",
+                          owner_id,
+                          entry_id,
+                          claim_id,
+                          e.what());
+        ptr = weak.lock();
+        if (ptr != nullptr)
+        {
+            auto thrown_it = ptr->storage_box._entries.find(entry_id);
+            if (thrown_it != ptr->storage_box._entries.end())
+                thrown_it->second.pending_claim.reset();
+        }
+        co_return false;
     }
 
     if (granted == false)
     {
         it->second.claiming = true;
 
-        fb::protocol::internal::response::UnclaimStorageBox unclaim_resp{};
-        auto                                                unclaimed = false;
+        internal_resp::UnclaimStorageBox unclaim_resp{};
+        auto                             unclaimed = false;
         try
         {
-            unclaim_resp = co_await ptr->server.http.post(
-                weak,
-                "internal",
-                "/storage/unclaim",
-                fb::protocol::internal::request::UnclaimStorageBox{world, ptr->id, entry_id, claim_id});
+            unclaim_resp =
+                co_await ptr->server.http.post(weak,
+                                               "internal",
+                                               "/storage/unclaim",
+                                               internal_reqs::UnclaimStorageBox{world, ptr->id, entry_id, claim_id});
             unclaimed = unclaim_resp.error == 0;
         }
         catch (const std::exception& e)

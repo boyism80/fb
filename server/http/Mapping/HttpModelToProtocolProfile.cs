@@ -51,6 +51,12 @@ namespace Http.Mapping
                     dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
                 });
 
+            CreateMap<Http.Model.ClanMoneyPending, Protocol.ClanMoneyPending>()
+                .ReverseMap();
+
+            CreateMap<Http.Model.StorageClaimPending, Protocol.StorageClaimPending>()
+                .ReverseMap();
+
             CreateMap<Protocol.MarketplacePending, Http.Model.MarketplacePending>()
                 .ForMember(x => x.Attachments, x => x.Ignore())
                 .AfterMap((src, dest) =>

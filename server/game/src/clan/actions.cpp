@@ -4,6 +4,7 @@
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
+#include <fb/logger.h>
 #include <fb/model/model.h>
 #include <macro.h>
 
@@ -445,17 +446,18 @@ clan::container::broadcast(uint32_t world, uint32_t clan_id, std::string_view me
     co_await this->on_broadcast(resp.clan, std::move(resp.message), resp.type);
 }
 
-async::task<bool> clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta)
+async::task<std::optional<bool>>
+clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta, uint64_t request_id)
 {
     if (delta == 0)
         co_return true;
 
-    auto* before     = this->_server.threads.current();
-    auto  host       = fb::config<uint32_t>("id");
-    auto  request_id = this->_server.ids.next();
+    auto* before = this->_server.threads.current();
+    auto  host   = fb::config<uint32_t>("id");
 
     auto updated = std::optional<internal_resp::UpdatedClan>{};
-    for (auto attempt = 0; attempt < 2 && updated.has_value() == false; attempt++)
+    auto missing = false;
+    for (auto attempt = 0; attempt < 2 && updated.has_value() == false && missing == false; attempt++)
     {
         try
         {
@@ -464,23 +466,10 @@ async::task<bool> clan::container::add_money(uint32_t world, uint32_t clan_id, i
                                                  "/clan/money",
                                                  internal_reqs::SetClanMoney{world, host, clan_id, delta, request_id});
             auto error = static_cast<ERROR_CODE>(resp.error);
-            if (error == ERROR_CODE::NONE || error == ERROR_CODE::NOT_FOUND_CLAN)
+            if (error == ERROR_CODE::NONE)
                 updated = std::move(resp);
-        }
-        catch (std::exception&)
-        { }
-    }
-
-    auto aborted = std::optional<internal_resp::AbortClanMoney>{};
-    if (updated.has_value() == false)
-    {
-        try
-        {
-            auto&& resp = co_await this->_server.http.post("internal",
-                                                           "/clan/money/abort",
-                                                           internal_reqs::AbortClanMoney{world, clan_id, request_id});
-            if (static_cast<ERROR_CODE>(resp.error) == ERROR_CODE::NONE)
-                aborted = std::move(resp);
+            else if (error == ERROR_CODE::NOT_FOUND_CLAN)
+                missing = true;
         }
         catch (std::exception&)
         { }
@@ -494,9 +483,50 @@ async::task<bool> clan::container::add_money(uint32_t world, uint32_t clan_id, i
         co_await this->on_updated(updated.value());
         co_return true;
     }
-    else if (aborted.has_value() == false)
+    else
     {
-        co_return false;
+        co_return co_await this->abort_money(world, clan_id, request_id);
+    }
+}
+
+async::task<void> clan::container::release_money(uint32_t world, uint32_t clan_id, uint64_t request_id)
+{
+    try
+    {
+        auto&& resp = co_await this->_server.http.post("internal",
+                                                       "/clan/money/release",
+                                                       internal_reqs::ReleaseClanMoney{world, clan_id, request_id});
+        if (static_cast<ERROR_CODE>(resp.error) != ERROR_CODE::NONE)
+            fb::logger::warn("release clan money failed: clan={} request={} error={}", clan_id, request_id, resp.error);
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::warn("release clan money failed: clan={} request={}: {}", clan_id, request_id, e.what());
+    }
+}
+
+async::task<std::optional<bool>> clan::container::abort_money(uint32_t world, uint32_t clan_id, uint64_t request_id)
+{
+    auto* before = this->_server.threads.current();
+
+    auto aborted = std::optional<internal_resp::AbortClanMoney>{};
+    try
+    {
+        auto&& resp = co_await this->_server.http.post("internal",
+                                                       "/clan/money/abort",
+                                                       internal_reqs::AbortClanMoney{world, clan_id, request_id});
+        if (static_cast<ERROR_CODE>(resp.error) == ERROR_CODE::NONE)
+            aborted = std::move(resp);
+    }
+    catch (std::exception&)
+    { }
+
+    if (before != nullptr)
+        co_await before->switching();
+
+    if (aborted.has_value() == false)
+    {
+        co_return std::nullopt;
     }
     else if (aborted.value().applied)
     {
@@ -505,7 +535,6 @@ async::task<bool> clan::container::add_money(uint32_t world, uint32_t clan_id, i
     }
     else
     {
-        throw std::runtime_error(
-            std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), static_cast<uint32_t>(ERROR_CODE::UNHANDLED)));
+        co_return false;
     }
 }

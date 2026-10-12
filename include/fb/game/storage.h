@@ -13,7 +13,8 @@
 
 namespace fb::protocol::internal {
 class StorageBox;
-}
+class StorageClaimPending;
+} // namespace fb::protocol::internal
 
 namespace fb::game {
 
@@ -29,36 +30,41 @@ public:
         std::string                        title;
         std::string                        message;
         std::vector<fb::model::dsl>        attachments;
-        bool                               received    = false;
-        std::optional<fb::model::datetime> expire_date = std::nullopt;
-        // Claim whose outcome on the internal server is unknown; the next attempt resends it.
-        std::optional<uint64_t> pending_claim = std::nullopt;
-        bool                    claiming      = false;
+        bool                               received      = false;
+        std::optional<fb::model::datetime> expire_date   = std::nullopt;
+        std::optional<uint64_t>            pending_claim = std::nullopt;
+        bool                               claiming      = false;
     };
     using entry_map = std::map<uint32_t, entry>;
+    using box_dto   = fb::protocol::internal::StorageBox;
+    using claim_dto = fb::protocol::internal::StorageClaimPending;
 
 private:
     character& _owner;
     entry_map  _entries;
-    uint32_t   _sequence = 1;
+    uint32_t   _sequence  = 1;
+    bool       _restoring = false;
 
     // clang-format off
-    static std::string                        attachments_to_json(const std::vector<fb::model::dsl>& attachments);
-    static fb::protocol::internal::StorageBox to_save_dto(uint32_t user_id, const entry& box);
+    static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
+    static box_dto     to_save_dto(uint32_t user_id, const entry& box);
     // clang-format on
 
 public:
     // clang-format off
-    explicit                                        storage_box(character& owner);
-    void                                            init(const std::vector<entry>& entries);
-    void                                            add(const std::vector<entry>& entries);
-    bool                                            contains_system_box(uint32_t system_storage_box_id) const;
-    [[nodiscard]] async::task<bool>                 receive_reward(uint32_t entry_id);
-    void                                            set_received(uint32_t entry_id, bool received);
-    const entry_map&                                entries() const;
-    uint32_t                                        next_sequence() const;
-    void                                            set_sequence(uint32_t value);
-    std::vector<fb::protocol::internal::StorageBox> to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const;
+    explicit                        storage_box(character& owner);
+    void                            init(const std::vector<entry>& entries);
+    void                            add(const std::vector<entry>& entries);
+    bool                            contains_system_box(uint32_t system_storage_box_id) const;
+    [[nodiscard]] async::task<bool> receive_reward(uint32_t entry_id);
+    void                            set_received(uint32_t entry_id, bool received);
+    const entry_map&                entries() const;
+    uint32_t                        next_sequence() const;
+    void                            set_sequence(uint32_t value);
+    std::vector<box_dto>            to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const;
+    void                            init_claims(const std::vector<claim_dto>& pendings);
+    std::vector<claim_dto>          to_claim_dtos(uint32_t user_id) const;
+    async::task<void>               restore_claims();
     // clang-format on
 };
 } // namespace fb::game

@@ -160,7 +160,8 @@ namespace Internal.Services
                 var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                // Create group - actor must not be in a group
+                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, actorSync);
+                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, targetSync);
                 if (actorSync.Group != null)
                     throw new LogicException(ErrorCode.GroupAlreadyJoined);
 
@@ -188,7 +189,10 @@ namespace Internal.Services
                 targetSync.Group = group.Master;
                 _dbContext.CharacterRealtimeState.Set(world, actorSync);
                 _dbContext.CharacterRealtimeState.Set(world, targetSync);
+                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
+
                 _dbContext.Group.Set(world, group);
+                await _dbContext.Group.SaveChangesAsync();
 
                 var members = new List<Protocol.CharacterRef>
                 {
@@ -203,8 +207,6 @@ namespace Internal.Services
                         Name = target.Name
                     }
                 };
-
-                await _dbContext.SaveChangesAsync();
 
                 var response = new Response.GroupDetails
                 {
@@ -222,7 +224,7 @@ namespace Internal.Services
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "group", world);
+                await _rabbitMqService.NotifySavedAsync(response, "group", world);
                 return response;
             }
             catch (LogicException e)
@@ -295,6 +297,7 @@ namespace Internal.Services
                 if (actorSync.Group.Value != actor.Id)
                     throw new LogicException(ErrorCode.NotGroupMaster);
 
+                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, targetSync);
                 if (targetSync.Group != null)
                     throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 
@@ -363,16 +366,16 @@ namespace Internal.Services
                 if (!group.Members.Contains(character.Id))
                     throw new LogicException(ErrorCode.GroupNotJoined);
 
-                group.Members.Remove(character.Id);
-                _dbContext.Group.Set(world, group);
-
-                sync.Group = null;
-                _dbContext.CharacterRealtimeState.Set(world, sync);
-
                 var master = await _dbContext.Character.Get(world, group.Master) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                await _dbContext.SaveChangesAsync();
+                group.Members.Remove(character.Id);
+                _dbContext.Group.Set(world, group);
+                await _dbContext.Group.SaveChangesAsync();
+
+                sync.Group = null;
+                _dbContext.CharacterRealtimeState.Set(world, sync);
+                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
                 var response = new Response.UpdatedGroup
                 {
@@ -393,7 +396,7 @@ namespace Internal.Services
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishFanoutAsync(response, "group", world);
+                await _rabbitMqService.NotifySavedAsync(response, "group", world);
                 return response;
             }
             catch (LogicException e)
@@ -541,7 +544,9 @@ namespace Internal.Services
                         lockUids = required;
                     }
 
-                    // Remove all members from group
+                    _dbContext.Group.Delete(world, group.Master);
+                    await _dbContext.Group.SaveChangesAsync();
+
                     var memberNames = new List<string>();
                     foreach (var uid in group.Members)
                     {
@@ -551,17 +556,17 @@ namespace Internal.Services
                         var memberSync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        memberSync.Group = null;
-                        _dbContext.CharacterRealtimeState.Set(world, memberSync);
+                        if (memberSync.Group == group.Master)
+                        {
+                            memberSync.Group = null;
+                            _dbContext.CharacterRealtimeState.Set(world, memberSync);
+                        }
                         memberNames.Add(member.Name);
                     }
 
                     sync.Group = null;
                     _dbContext.CharacterRealtimeState.Set(world, sync);
-
-                    _dbContext.Group.Delete(world, group.Master);
-
-                    await _dbContext.SaveChangesAsync();
+                    await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
                     var response = new Response.DestroyGroup
                     {
@@ -576,7 +581,7 @@ namespace Internal.Services
                         Error = (uint)ErrorCode.None
                     };
 
-                    await _rabbitMqService.PublishFanoutAsync(response, "group", world);
+                    await _rabbitMqService.NotifySavedAsync(response, "group", world);
                     return response;
                 }
                 finally
@@ -686,7 +691,7 @@ namespace Internal.Services
 
                 await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id));
 
-                // Check if target is in the same group
+                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, targetSync);
                 if (targetSync.Group == actorSync.Group)
                 {
                     // Kick the member
@@ -748,12 +753,13 @@ namespace Internal.Services
             if (group.Members.Contains(target.Id))
                 throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 
-            group.Members.Add(target.Id);
             targetSync.Group = group.Master;
-            _dbContext.Group.Set(world, group);
             _dbContext.CharacterRealtimeState.Set(world, targetSync);
+            await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
-            await _dbContext.SaveChangesAsync();
+            group.Members.Add(target.Id);
+            _dbContext.Group.Set(world, group);
+            await _dbContext.Group.SaveChangesAsync();
 
             var response = new Response.UpdatedGroup
             {
@@ -774,7 +780,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishFanoutAsync(response, "group", world);
+            await _rabbitMqService.NotifySavedAsync(response, "group", world);
             return response;
         }
 
@@ -791,14 +797,13 @@ namespace Internal.Services
             if (!group.Members.Contains(target.Id))
                 throw new LogicException(ErrorCode.GroupNotJoined);
 
-            // Remove target from group
             group.Members.Remove(target.Id);
             _dbContext.Group.Set(world, group);
+            await _dbContext.Group.SaveChangesAsync();
 
             targetSync.Group = null;
             _dbContext.CharacterRealtimeState.Set(world, targetSync);
-
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
             var response = new Response.UpdatedGroup
             {
@@ -819,7 +824,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishFanoutAsync(response, "group", world);
+            await _rabbitMqService.NotifySavedAsync(response, "group", world);
             return response;
         }
     }

@@ -460,6 +460,12 @@ table AbortClanMoney {
   request_id: ulong;
 }
 
+table ReleaseClanMoney {
+  world: uint;
+  clan: uint;
+  request_id: ulong;
+}
+
 table OpsNotify {
   action: string;
   source: string;

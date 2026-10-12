@@ -2934,6 +2934,8 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
             if (params.uid.has_value())
                 item->uid(params.uid.value());
             std::ignore = co_await this->items.add(item);
+            if (item->empty() == false && this->items.index(item) == 0xFF)
+                std::ignore = co_await item->map(this->map(), this->position());
             break;
         }
         case fb::model::enum_value::DSL::money:
@@ -2960,6 +2962,94 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
         this->money_add(money);
 
     co_return true;
+}
+
+async::task<std::optional<bool>> character::transfer_clan_money(uint32_t clan_id,
+                                                                int64_t  clan_delta,
+                                                                int64_t  money_delta)
+{
+    this->assert_thread();
+
+    auto hold = money_delta < 0 ? static_cast<uint64_t>(-money_delta) : uint64_t{0};
+    if (this->_money < hold)
+        co_return false;
+
+    auto weak       = this->weak_from_this_as<character>();
+    auto world      = this->world();
+    auto request_id = this->server.ids.next();
+
+    this->money_reduce(hold);
+    this->clan_money_pendings[request_id] = clan_money_pending{clan_id, clan_delta, money_delta, true};
+
+    auto applied = co_await this->server.clans.add_money(world, clan_id, clan_delta, request_id);
+    co_await this->server.threads.switching(weak);
+    if (weak.expired())
+        co_return applied;
+
+    if (applied.has_value())
+    {
+        this->complete_clan_money(request_id, applied.value());
+    }
+    else
+    {
+        auto found = this->clan_money_pendings.find(request_id);
+        if (found != this->clan_money_pendings.end())
+            found->second.sending = false;
+    }
+    co_return applied;
+}
+
+async::task<void> character::restore_clan_money()
+{
+    this->assert_thread();
+
+    if (this->_clan_money_restoring)
+        co_return;
+
+    auto targets = std::vector<std::pair<uint64_t, uint32_t>>{};
+    for (const auto& [request_id, pending] : this->clan_money_pendings)
+    {
+        if (pending.sending == false)
+            targets.emplace_back(request_id, pending.clan);
+    }
+    if (targets.empty())
+        co_return;
+
+    auto weak  = this->weak_from_this_as<character>();
+    auto world = this->world();
+
+    this->_clan_money_restoring = true;
+    for (const auto& [request_id, clan_id] : targets)
+    {
+        auto applied = co_await this->server.clans.abort_money(world, clan_id, request_id);
+        co_await this->server.threads.switching(weak);
+        if (weak.expired())
+            co_return;
+
+        if (applied.has_value())
+            this->complete_clan_money(request_id, applied.value());
+    }
+    this->_clan_money_restoring = false;
+}
+
+void character::complete_clan_money(uint64_t request_id, bool applied)
+{
+    this->assert_thread();
+
+    auto found = this->clan_money_pendings.find(request_id);
+    if (found == this->clan_money_pendings.end())
+        return;
+
+    auto clan_id     = found->second.clan;
+    auto money_delta = found->second.money_delta;
+    this->clan_money_pendings.erase(found);
+
+    if (applied && money_delta > 0)
+        this->money_add(static_cast<uint64_t>(money_delta));
+    else if (applied == false && money_delta < 0)
+        this->money_add(static_cast<uint64_t>(-money_delta));
+
+    std::ignore = this->server.clans.release_money(this->world(), clan_id, request_id);
 }
 
 std::shared_ptr<fb::socket<character>> character::socket_ptr() const

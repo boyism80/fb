@@ -241,7 +241,6 @@ namespace Http.Service
             return true;
         }
 
-        // The box is already stored and the game loads it on the next login, so a failed notification must not fail the caller.
         private async Task PublishWriteAsync(uint world, StorageBox box, uint host)
         {
             var response = new Response.WriteStorageBox
@@ -250,14 +249,7 @@ namespace Http.Service
                 Host  = host,
                 Error = (uint)ErrorCode.None
             };
-            try
-            {
-                await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Storage box {Id} of user {User} saved but the notification failed", box.Id, box.User);
-            }
+            await _rabbitMqService.NotifySavedAsync(response, "storage", world);
         }
 
         private async Task PublishDeliverAsync(uint world, List<StorageBox> boxes, uint host)
@@ -274,14 +266,7 @@ namespace Http.Service
                 Host    = host,
                 Error   = (uint)ErrorCode.None
             };
-            try
-            {
-                await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "{Count} system storage boxes saved but the notification failed", boxes.Count);
-            }
+            await _rabbitMqService.NotifySavedAsync(response, "storage", world);
         }
     }
 }

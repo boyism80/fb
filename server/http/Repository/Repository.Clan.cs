@@ -2,6 +2,7 @@ using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using Newtonsoft.Json;
 
 namespace Http.Reepository
 {
@@ -41,6 +42,7 @@ namespace Http.Reepository
                     `name`,
                     `title`,
                     `money`,
+                    `money_requests`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -49,6 +51,7 @@ namespace Http.Reepository
                     {value.Name.Escape()},
                     {value.Title.Escape()},
                     {value.Money.Escape()},
+                    {JsonConvert.SerializeObject(value.MoneyRequests).Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -56,6 +59,7 @@ namespace Http.Reepository
                     `name`=VALUES(`name`),
                     `title`=VALUES(`title`),
                     `money`=VALUES(`money`),
+                    `money_requests`=VALUES(`money_requests`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

@@ -39,8 +39,7 @@ namespace Internal.Controllers
                     Error = (uint)result.Error
                 };
 
-                // Publish notification via RabbitMQ
-                await _rabbitMqService.PublishFanoutAsync(response, "ban", request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "ban", request.World);
 
                 return response;
             }
@@ -79,8 +78,7 @@ namespace Internal.Controllers
                     Error = (uint)result.Error
                 };
 
-                // Publish notification via RabbitMQ
-                await _rabbitMqService.PublishFanoutAsync(response, "ban", request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "ban", request.World);
 
                 return response;
             }

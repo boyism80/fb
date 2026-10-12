@@ -12,6 +12,7 @@ public class Program
     {
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<Model.ClanMoneyRequest>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());

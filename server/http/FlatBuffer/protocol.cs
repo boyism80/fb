@@ -481,6 +481,28 @@ namespace Google.FlatBuffers
                 builder.Build(value.ExpectedTotalPrice),
                 builder.Build(value.CharacterId));
         }
+        public static Offset<fb.protocol.@internal.raw.ClanMoneyPending> Build(this FlatBufferBuilder builder, fb.protocol.@internal.ClanMoneyPending value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.raw.ClanMoneyPending.CreateClanMoneyPending(builder,
+                builder.Build(value.User),
+                builder.Build(value.RequestId),
+                builder.Build(value.Clan),
+                builder.Build(value.ClanDelta),
+                builder.Build(value.MoneyDelta));
+        }
+        public static Offset<fb.protocol.@internal.raw.StorageClaimPending> Build(this FlatBufferBuilder builder, fb.protocol.@internal.StorageClaimPending value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.raw.StorageClaimPending.CreateStorageClaimPending(builder,
+                builder.Build(value.User),
+                builder.Build(value.Box),
+                builder.Build(value.ClaimId));
+        }
         public static Offset<fb.protocol.@internal.raw.SystemMail> Build(this FlatBufferBuilder builder, fb.protocol.@internal.SystemMail value)
         {
             if (value == null)
@@ -547,7 +569,9 @@ namespace Google.FlatBuffers
                 builder.Build(value.Quests),
                 builder.Build(value.MarketplacePendings),
                 builder.Build(value.CollectionUnlocks),
-                builder.Build(value.SnapshotTime));
+                builder.Build(value.SnapshotTime),
+                builder.Build(value.ClanMoneyPendings),
+                builder.Build(value.StorageClaimPendings));
         }
         public static Offset<fb.protocol.@internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol.@internal.OptionChange value)
         {
@@ -1244,6 +1268,16 @@ namespace Google.FlatBuffers
                 builder.Build(value.Clan),
                 builder.Build(value.RequestId));
         }
+        public static Offset<fb.protocol.@internal.request.raw.ReleaseClanMoney> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.ReleaseClanMoney value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.request.raw.ReleaseClanMoney.CreateReleaseClanMoney(builder,
+                builder.Build(value.World),
+                builder.Build(value.Clan),
+                builder.Build(value.RequestId));
+        }
         public static Offset<fb.protocol.@internal.request.raw.OpsNotify> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.OpsNotify value)
         {
             if (value == null)
@@ -1520,7 +1554,9 @@ namespace Google.FlatBuffers
                 builder.Build(value.Friends),
                 builder.Build(value.Mail),
                 builder.Build(value.SystemMailIds),
-                builder.Build(value.CollectionUnlocks));
+                builder.Build(value.CollectionUnlocks),
+                builder.Build(value.ClanMoneyPendings),
+                builder.Build(value.StorageClaimPendings));
         }
         public static Offset<fb.protocol.@internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.MakeCharacter value)
         {
@@ -1667,6 +1703,14 @@ namespace Google.FlatBuffers
             return fb.protocol.@internal.response.raw.AbortClanMoney.CreateAbortClanMoney(builder,
                 builder.Build(value.Applied),
                 builder.Build(value.Money),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol.@internal.response.raw.ReleaseClanMoney> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.ReleaseClanMoney value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.response.raw.ReleaseClanMoney.CreateReleaseClanMoney(builder,
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.@internal.response.raw.BroadcastClan> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.BroadcastClan value)
@@ -2314,6 +2358,14 @@ namespace Google.FlatBuffers
         {
             return builder.CreateVectorOfTables<fb.protocol.@internal.raw.CollectionUnlock>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.ClanMoneyPending> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.ClanMoneyPending>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.StorageClaimPending> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.StorageClaimPending>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.SavePayload> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.@internal.raw.SavePayload>(value.Select(x => Build(builder, x)).ToArray());
@@ -2448,6 +2500,8 @@ namespace fb.protocol.@internal
         Quest,
         CollectionUnlock,
         MarketplacePending,
+        ClanMoneyPending,
+        StorageClaimPending,
         SystemMail,
         StorageBox,
         StorageWriteEntry,
@@ -3686,6 +3740,90 @@ namespace fb.protocol.@internal
             return new MarketplacePending(bytes);
         }
     }
+    public class ClanMoneyPending : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.ClanMoneyPending;
+        public uint User { get; set; } = 0;
+        public ulong RequestId { get; set; } = 0L;
+        public uint Clan { get; set; } = 0;
+        public long ClanDelta { get; set; } = 0L;
+        public long MoneyDelta { get; set; } = 0L;
+
+        public ClanMoneyPending()
+        { }
+
+        public ClanMoneyPending(fb.protocol.@internal.raw.ClanMoneyPending raw)
+        {
+            User = raw.User;
+            RequestId = raw.RequestId;
+            Clan = raw.Clan;
+            ClanDelta = raw.ClanDelta;
+            MoneyDelta = raw.MoneyDelta;
+        }
+
+        public ClanMoneyPending(byte[] bytes) : this(fb.protocol.@internal.raw.ClanMoneyPending.GetRootAsClanMoneyPending(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static ClanMoneyPending Deserialize(byte[] bytes)
+        {
+            return new ClanMoneyPending(bytes);
+        }
+    }
+    public class StorageClaimPending : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.StorageClaimPending;
+        public uint User { get; set; } = 0;
+        public uint Box { get; set; } = 0;
+        public ulong ClaimId { get; set; } = 0L;
+
+        public StorageClaimPending()
+        { }
+
+        public StorageClaimPending(fb.protocol.@internal.raw.StorageClaimPending raw)
+        {
+            User = raw.User;
+            Box = raw.Box;
+            ClaimId = raw.ClaimId;
+        }
+
+        public StorageClaimPending(byte[] bytes) : this(fb.protocol.@internal.raw.StorageClaimPending.GetRootAsStorageClaimPending(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static StorageClaimPending Deserialize(byte[] bytes)
+        {
+            return new StorageClaimPending(bytes);
+        }
+    }
     public class SystemMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SystemMail;
@@ -3881,6 +4019,8 @@ namespace fb.protocol.@internal
         public List<fb.protocol.@internal.MarketplacePending> MarketplacePendings { get; set; } = new List<fb.protocol.@internal.MarketplacePending>();
         public List<fb.protocol.@internal.CollectionUnlock> CollectionUnlocks { get; set; } = new List<fb.protocol.@internal.CollectionUnlock>();
         public long SnapshotTime { get; set; } = 0L;
+        public List<fb.protocol.@internal.ClanMoneyPending> ClanMoneyPendings { get; set; } = new List<fb.protocol.@internal.ClanMoneyPending>();
+        public List<fb.protocol.@internal.StorageClaimPending> StorageClaimPendings { get; set; } = new List<fb.protocol.@internal.StorageClaimPending>();
 
         public SavePayload()
         { }
@@ -3897,6 +4037,8 @@ namespace fb.protocol.@internal
             MarketplacePendings = Enumerable.Range(0, raw.MarketplacePendingsLength).Select(i => raw.MarketplacePendings(i)).Select(x => new fb.protocol.@internal.MarketplacePending(x.Value)).ToList();
             CollectionUnlocks = Enumerable.Range(0, raw.CollectionUnlocksLength).Select(i => raw.CollectionUnlocks(i)).Select(x => new fb.protocol.@internal.CollectionUnlock(x.Value)).ToList();
             SnapshotTime = raw.SnapshotTime;
+            ClanMoneyPendings = Enumerable.Range(0, raw.ClanMoneyPendingsLength).Select(i => raw.ClanMoneyPendings(i)).Select(x => new fb.protocol.@internal.ClanMoneyPending(x.Value)).ToList();
+            StorageClaimPendings = Enumerable.Range(0, raw.StorageClaimPendingsLength).Select(i => raw.StorageClaimPendings(i)).Select(x => new fb.protocol.@internal.StorageClaimPending(x.Value)).ToList();
         }
 
         public SavePayload(byte[] bytes) : this(fb.protocol.@internal.raw.SavePayload.GetRootAsSavePayload(new ByteBuffer(bytes)))
@@ -3992,6 +4134,8 @@ namespace fb.protocol.@internal
                 FlatBufferProtocolType.Quest => typeof(fb.protocol.@internal.Quest),
                 FlatBufferProtocolType.CollectionUnlock => typeof(fb.protocol.@internal.CollectionUnlock),
                 FlatBufferProtocolType.MarketplacePending => typeof(fb.protocol.@internal.MarketplacePending),
+                FlatBufferProtocolType.ClanMoneyPending => typeof(fb.protocol.@internal.ClanMoneyPending),
+                FlatBufferProtocolType.StorageClaimPending => typeof(fb.protocol.@internal.StorageClaimPending),
                 FlatBufferProtocolType.SystemMail => typeof(fb.protocol.@internal.SystemMail),
                 FlatBufferProtocolType.StorageBox => typeof(fb.protocol.@internal.StorageBox),
                 FlatBufferProtocolType.StorageWriteEntry => typeof(fb.protocol.@internal.StorageWriteEntry),
@@ -4068,6 +4212,7 @@ namespace fb.protocol.@internal.request
         SetCastleOwner,
         SetClanMoney,
         AbortClanMoney,
+        ReleaseClanMoney,
         OpsNotify
     }
 
@@ -6664,6 +6809,46 @@ namespace fb.protocol.@internal.request
             return new AbortClanMoney(bytes);
         }
     }
+    public class ReleaseClanMoney : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.ReleaseClanMoney;
+        public uint World { get; set; } = 0;
+        public uint Clan { get; set; } = 0;
+        public ulong RequestId { get; set; } = 0L;
+
+        public ReleaseClanMoney()
+        { }
+
+        public ReleaseClanMoney(fb.protocol.@internal.request.raw.ReleaseClanMoney raw)
+        {
+            World = raw.World;
+            Clan = raw.Clan;
+            RequestId = raw.RequestId;
+        }
+
+        public ReleaseClanMoney(byte[] bytes) : this(fb.protocol.@internal.request.raw.ReleaseClanMoney.GetRootAsReleaseClanMoney(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static ReleaseClanMoney Deserialize(byte[] bytes)
+        {
+            return new ReleaseClanMoney(bytes);
+        }
+    }
     public class OpsNotify : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.OpsNotify;
@@ -6778,6 +6963,7 @@ namespace fb.protocol.@internal.request
                 FlatBufferProtocolType.SetCastleOwner => typeof(fb.protocol.@internal.request.SetCastleOwner),
                 FlatBufferProtocolType.SetClanMoney => typeof(fb.protocol.@internal.request.SetClanMoney),
                 FlatBufferProtocolType.AbortClanMoney => typeof(fb.protocol.@internal.request.AbortClanMoney),
+                FlatBufferProtocolType.ReleaseClanMoney => typeof(fb.protocol.@internal.request.ReleaseClanMoney),
                 FlatBufferProtocolType.OpsNotify => typeof(fb.protocol.@internal.request.OpsNotify),
                 _ => throw new ArgumentException(),
             };
@@ -6827,6 +7013,7 @@ namespace fb.protocol.@internal.response
         ClanDetails,
         UpdatedClan,
         AbortClanMoney,
+        ReleaseClanMoney,
         BroadcastClan,
         DestroyClan,
         Broadcast,
@@ -7854,6 +8041,8 @@ namespace fb.protocol.@internal.response
         public uint Mail { get; set; } = 0;
         public List<uint> SystemMailIds { get; set; } = new List<uint>();
         public List<fb.protocol.@internal.CollectionUnlock> CollectionUnlocks { get; set; } = new List<fb.protocol.@internal.CollectionUnlock>();
+        public List<fb.protocol.@internal.ClanMoneyPending> ClanMoneyPendings { get; set; } = new List<fb.protocol.@internal.ClanMoneyPending>();
+        public List<fb.protocol.@internal.StorageClaimPending> StorageClaimPendings { get; set; } = new List<fb.protocol.@internal.StorageClaimPending>();
 
         public Init()
         { }
@@ -7876,6 +8065,8 @@ namespace fb.protocol.@internal.response
             Mail = raw.Mail;
             SystemMailIds = Enumerable.Range(0, raw.SystemMailIdsLength).Select(i => raw.SystemMailIds(i)).Select(x => x).ToList();
             CollectionUnlocks = Enumerable.Range(0, raw.CollectionUnlocksLength).Select(i => raw.CollectionUnlocks(i)).Select(x => new fb.protocol.@internal.CollectionUnlock(x.Value)).ToList();
+            ClanMoneyPendings = Enumerable.Range(0, raw.ClanMoneyPendingsLength).Select(i => raw.ClanMoneyPendings(i)).Select(x => new fb.protocol.@internal.ClanMoneyPending(x.Value)).ToList();
+            StorageClaimPendings = Enumerable.Range(0, raw.StorageClaimPendingsLength).Select(i => raw.StorageClaimPendings(i)).Select(x => new fb.protocol.@internal.StorageClaimPending(x.Value)).ToList();
         }
 
         public Init(byte[] bytes) : this(fb.protocol.@internal.response.raw.Init.GetRootAsInit(new ByteBuffer(bytes)))
@@ -8451,6 +8642,42 @@ namespace fb.protocol.@internal.response
         public static AbortClanMoney Deserialize(byte[] bytes)
         {
             return new AbortClanMoney(bytes);
+        }
+    }
+    public class ReleaseClanMoney : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.ReleaseClanMoney;
+        public uint Error { get; set; } = 0;
+
+        public ReleaseClanMoney()
+        { }
+
+        public ReleaseClanMoney(fb.protocol.@internal.response.raw.ReleaseClanMoney raw)
+        {
+            Error = raw.Error;
+        }
+
+        public ReleaseClanMoney(byte[] bytes) : this(fb.protocol.@internal.response.raw.ReleaseClanMoney.GetRootAsReleaseClanMoney(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static ReleaseClanMoney Deserialize(byte[] bytes)
+        {
+            return new ReleaseClanMoney(bytes);
         }
     }
     public class BroadcastClan : IFlatBufferEx
@@ -9403,6 +9630,7 @@ namespace fb.protocol.@internal.response
                 FlatBufferProtocolType.ClanDetails => typeof(fb.protocol.@internal.response.ClanDetails),
                 FlatBufferProtocolType.UpdatedClan => typeof(fb.protocol.@internal.response.UpdatedClan),
                 FlatBufferProtocolType.AbortClanMoney => typeof(fb.protocol.@internal.response.AbortClanMoney),
+                FlatBufferProtocolType.ReleaseClanMoney => typeof(fb.protocol.@internal.response.ReleaseClanMoney),
                 FlatBufferProtocolType.BroadcastClan => typeof(fb.protocol.@internal.response.BroadcastClan),
                 FlatBufferProtocolType.DestroyClan => typeof(fb.protocol.@internal.response.DestroyClan),
                 FlatBufferProtocolType.Broadcast => typeof(fb.protocol.@internal.response.Broadcast),

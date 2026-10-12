@@ -284,6 +284,20 @@ table MarketplacePending {
     character_id: uint;
 }
 
+table ClanMoneyPending {
+    user: uint;
+    request_id: ulong;
+    clan: uint;
+    clan_delta: long;
+    money_delta: long;
+}
+
+table StorageClaimPending {
+    user: uint;
+    box: uint;
+    claim_id: ulong;
+}
+
 table SystemMail {
     id: uint;
     sender: uint;
@@ -331,6 +345,8 @@ table SavePayload {
     marketplace_pendings: [MarketplacePending];
     collection_unlocks: [CollectionUnlock];
     snapshot_time: long;
+    clan_money_pendings: [ClanMoneyPending];
+    storage_claim_pendings: [StorageClaimPending];
 }
 
 table OptionChange {

@@ -418,7 +418,12 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     this->init_quests(resp.quests, *ch);
     ch->collections.load(resp.collection_unlocks);
     this->init_marketplace(resp.marketplace_pendings, *ch);
+    for (const auto& row : resp.clan_money_pendings)
+    {
+        ch->clan_money_pendings[row.request_id] = {row.clan, row.clan_delta, row.money_delta, false};
+    }
     this->server.system_storage.init_from_login(*ch, resp.storage_boxes);
+    ch->storage_box.init_claims(resp.storage_claim_pendings);
     this->init_option(resp.option, *ch);
     {
         auto entries = std::vector<friend_entry>{};
@@ -463,6 +468,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     co_await this->server.system_storage.sync(*ch);
     std::ignore = ch->marketplace.restore();
+    std::ignore = ch->restore_clan_money();
+    std::ignore = ch->storage_box.restore_claims();
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();

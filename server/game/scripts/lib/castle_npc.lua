@@ -245,18 +245,14 @@ local function clan_vault(me, npc_obj)
             me:dialog(npc_obj, '보유 금전이 부족합니다.', { prev = false, next = false })
             return
         end
-        me:money(me:money() - amount)
-        local _, err, pending = clan:money(amount)
-        if pending then
+        local applied = me:transfer_clan_money(clan, amount, -amount)
+        if applied == nil then
             me:dialog(npc_obj, '문파자금 입금 결과를 확인하지 못했습니다. 잠시 후 문파자금을 확인해 주세요.', { prev = false, next = false })
-            return
-        end
-        if err ~= nil then
-            me:money(me:money() + amount)
+        elseif applied == false then
             me:dialog(npc_obj, '문파자금 입금에 실패했습니다.', { prev = false, next = false })
-            return
+        else
+            me:dialog(npc_obj, string.format('%d전을 문파자금에 입금했습니다.', amount), { prev = false, next = false })
         end
-        me:dialog(npc_obj, string.format('%d전을 문파자금에 입금했습니다.', amount), { prev = false, next = false })
         return
     end
 
@@ -289,19 +285,16 @@ local function clan_vault(me, npc_obj)
             me:dialog(npc_obj, '그렇게 많이 찾을 수는 없다네.', { prev = false, next = false })
             return
         end
-        local _, err, pending = clan:money(-amount)
-        if pending then
+        local applied = me:transfer_clan_money(clan, -amount, amount)
+        if applied == nil then
             me:dialog(npc_obj, '문파자금 출금 결과를 확인하지 못했습니다. 잠시 후 문파자금을 확인해 주세요.', { prev = false, next = false })
-            return
-        end
-        if err ~= nil then
+        elseif applied == false then
             me:dialog(npc_obj, '문파자금 출금에 실패했습니다.', { prev = false, next = false })
-            return
+        else
+            me:message(string.format('문파자금 %d전 찾았습니다.', amount), MESSAGE_TYPE.NOTIFY)
+            me:message(string.format('금전 %d전 받았습니다.', amount), MESSAGE_TYPE.NOTIFY)
+            me:dialog(npc_obj, string.format('자, 여기있네. 자네에게 문파자금 [%d]전을 줄테니 잘 쓰시게나.', amount), { prev = false, next = false })
         end
-        me:money(me:money() + amount)
-        me:message(string.format('문파자금 %d전 찾았습니다.', amount), MESSAGE_TYPE.NOTIFY)
-        me:message(string.format('금전 %d전 받았습니다.', amount), MESSAGE_TYPE.NOTIFY)
-        me:dialog(npc_obj, string.format('자, 여기있네. 자네에게 문파자금 [%d]전을 줄테니 잘 쓰시게나.', amount), { prev = false, next = false })
     end
 end
 

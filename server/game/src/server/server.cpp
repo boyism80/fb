@@ -351,6 +351,13 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
             internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
+    auto clan_money_pendings = std::vector<internal::ClanMoneyPending>();
+    for (auto& [request_id, pending] : ch.clan_money_pendings)
+    {
+        clan_money_pendings.push_back(
+            internal::ClanMoneyPending{ch.id, request_id, pending.clan, pending.clan_delta, pending.money_delta});
+    }
+
     auto marketplace_pendings = ch.marketplace.to_save_dtos();
     auto matchmaking_skills   = ch.matchmaker.to_protocol();
     auto collection_unlocks   = ch.collections.to_protocol(ch.id);
@@ -367,7 +374,9 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  quests,
                                  marketplace_pendings,
                                  collection_unlocks,
-                                 snapshot_time);
+                                 snapshot_time,
+                                 clan_money_pendings,
+                                 ch.storage_box.to_claim_dtos(ch.id));
 }
 
 async::task<void> fb::game::server::save(fb::thread& thread)

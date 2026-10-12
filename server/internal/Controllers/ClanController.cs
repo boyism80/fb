@@ -4,6 +4,7 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
+using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 using Protocol = fb.protocol.@internal;
@@ -18,7 +19,6 @@ namespace Internal.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly DbContext _dbContext;
-        private readonly RedisService _redisService;
         private readonly RabbitMqService _rabbitMqService;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
@@ -26,7 +26,6 @@ namespace Internal.Controllers
         private readonly ILogger<ClanController> _logger;
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
-            RedisService redisService,
             RabbitMqService rabbitMqService,
             IMapper mapper,
             RedisDistributedLockService distributedLock,
@@ -35,7 +34,6 @@ namespace Internal.Controllers
         {
             _configuration = configuration;
             _dbContext = dbContext;
-            _redisService = redisService;
             _rabbitMqService = rabbitMqService;
             _mapper = mapper;
             _distributedLock = distributedLock;
@@ -43,25 +41,6 @@ namespace Internal.Controllers
             _logger = logger;
         }
 
-        private const string ClanMoneyApplied = "applied";
-        private const string ClanMoneyAborted = "aborted";
-        private static readonly TimeSpan ClanMoneyRequestTtl = TimeSpan.FromDays(1);
-
-        private static string ClanMoneyRequestKey(ulong requestId) => $"fb:clan:money-request:{requestId}";
-
-        // The change is already saved and the requesting game server applies the HTTP response; other servers reload
-        // the clan on login or /clan/id. Failing the request here would make the caller undo a change that persisted.
-        private async Task PublishSavedAsync(Google.FlatBuffers.IFlatBufferEx response, uint world)
-        {
-            try
-            {
-                await _rabbitMqService.PublishFanoutAsync(response, "clan", world);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Clan change saved but the notification failed");
-            }
-        }
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint world, uint id)
         {
             var members = await _dbContext.ClanMember.Get(world, id);
@@ -189,6 +168,7 @@ namespace Internal.Controllers
                 var sync = await _dbContext.CharacterRealtimeState.Get(world, ch.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
+                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, sync);
                 if (sync.Clan != null)
                     throw new LogicException(ErrorCode.ClanAlreadyJoined);
 
@@ -198,6 +178,11 @@ namespace Internal.Controllers
                     Name = request.Name,
                     Title = null,
                 });
+                await _dbContext.Clan.SaveChangesAsync();
+
+                sync.Clan = clan.Id;
+                _dbContext.CharacterRealtimeState.Set(world, sync);
+                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
                 _dbContext.ClanMember.Set(world, new ClanMember
                 {
@@ -205,11 +190,7 @@ namespace Internal.Controllers
                     User = request.Master,
                     Role = (uint)ClanRole.Master
                 });
-
-                sync.Clan = clan.Id;
-                _dbContext.CharacterRealtimeState.Set(world, sync);
-
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.ClanMember.SaveChangesAsync();
                 await trans.CommitAsync();
                 committed = true;
 
@@ -222,7 +203,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -259,6 +240,7 @@ namespace Internal.Controllers
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             var committed = false;
+            var castleLocks = new List<RedisDistributedLockHandle>();
             try
             {
                 await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(request.Master));
@@ -290,16 +272,13 @@ namespace Internal.Controllers
 
                 _dbContext.ClanMember.Delete(world, master);
 
-                sync.Clan = null;
-                _dbContext.CharacterRealtimeState.Set(world, sync);
-
                 var oldTitle = clan.Title;
                 _dbContext.Clan.Delete(world, clan.Id);
 
                 var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
+                await using var _3 = alliance != null ? await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliance.AlliedClan)) : null;
                 if (alliance != null)
                 {
-                    await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliance.AlliedClan));
                     _dbContext.ClanAlliance.Delete(world, clan.Id);
                     _dbContext.ClanAlliance.Delete(world, alliance.AlliedClan);
                 }
@@ -316,10 +295,10 @@ namespace Internal.Controllers
                 var clearedCastles = new List<byte>();
                 for (byte divineBeast = 0; divineBeast <= 3; divineBeast++)
                 {
+                    castleLocks.Add(await _distributedLock.Lock(world, Castle.DistributedLockKey(divineBeast)));
                     var castleRecord = await _dbContext.Castle.Get(world, divineBeast);
                     if (castleRecord?.OwnerClan == clan.Id)
                     {
-                        await using var _ = await _distributedLock.Lock(world, Castle.DistributedLockKey(divineBeast));
                         _dbContext.Castle.Set(world, new Castle { DivineBeast = divineBeast, OwnerClan = null });
                         clearedCastles.Add(divineBeast);
                     }
@@ -330,7 +309,22 @@ namespace Internal.Controllers
                     id = clan.Id
                 }, transaction: trans, commandType: System.Data.CommandType.StoredProcedure);
 
+                var unreleased = clan.MoneyRequests
+                    .Where(x => x.Released == false)
+                    .Select(x => new ClanMoneyRequestArchive { Clan = clan.Id, RequestId = x.Id, Applied = x.Applied })
+                    .ToArray();
+                if (unreleased.Length > 0)
+                {
+                    _dbContext.ClanMoneyRequestArchive.Set(world, unreleased);
+                    await _dbContext.ClanMoneyRequestArchive.SaveChangesAsync();
+                }
+
+                await _dbContext.ClanMember.SaveChangesAsync();
                 await _dbContext.SaveChangesAsync();
+
+                sync.Clan = null;
+                _dbContext.CharacterRealtimeState.Set(world, sync);
+                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
                 await trans.CommitAsync();
                 committed = true;
 
@@ -351,23 +345,16 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 foreach (var divineBeast in clearedCastles)
                 {
-                    try
+                    await _rabbitMqService.NotifySavedAsync(new Response.UpdatedCastle
                     {
-                        await _rabbitMqService.PublishAsync(new Response.UpdatedCastle
-                        {
-                            Host = request.Host,
-                            DivineBeast = divineBeast,
-                            OwnerClanId = null,
-                            Error = (uint)ErrorCode.None
-                        }, AmqpRoute.Exchange, AmqpRoute.Home("castle", request.World));
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "Castle {DivineBeast} cleared but the notification failed", divineBeast);
-                    }
+                        Host = request.Host,
+                        DivineBeast = divineBeast,
+                        OwnerClanId = null,
+                        Error = (uint)ErrorCode.None
+                    }, AmqpRoute.Exchange, AmqpRoute.Home("castle", request.World));
                 }
                 return response;
             }
@@ -392,6 +379,8 @@ namespace Internal.Controllers
             }
             finally
             {
+                foreach (var handle in castleLocks)
+                    await handle.DisposeAsync();
                 await db.CloseAsync();
             }
         }
@@ -453,7 +442,7 @@ namespace Internal.Controllers
                     NewTitle = request.Title,
                     Error = (uint)ErrorCode.None
                 };
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -501,8 +490,8 @@ namespace Internal.Controllers
                 if (inviter.Id == invitee.Id)
                     throw new LogicException(ErrorCode.CannotInviteSelf);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(inviter.Id));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(invitee.Id));
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(inviter.Id, invitee.Id)));
+                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(inviter.Id, invitee.Id)));
 
                 var inviterSync = await _dbContext.CharacterRealtimeState.Get(world, inviter.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -514,7 +503,7 @@ namespace Internal.Controllers
                 if (inviterSync.Clan == null)
                     throw new LogicException(ErrorCode.ClanNotJoined);
 
-                // Check if invitee is already in a clan
+                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, inviteeSync);
                 if (inviteeSync.Clan != null)
                     throw new LogicException(ErrorCode.ClanAlreadyJoined);
 
@@ -531,18 +520,17 @@ namespace Internal.Controllers
                 if (inviterMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumInvitePrivilege)
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                // Add invitee to clan
-                var cm = _dbContext.ClanMember.Set(world, new ClanMember
+                inviteeSync.Clan = clan.Id;
+                _dbContext.CharacterRealtimeState.Set(world, inviteeSync);
+                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
+
+                _dbContext.ClanMember.Set(world, new ClanMember
                 {
                     Clan = clan.Id,
                     Role = (uint)ClanRole.Mate,
                     User = invitee.Id,
                 });
-
-                inviteeSync.Clan = clan.Id;
-                _dbContext.CharacterRealtimeState.Set(world, inviteeSync);
-
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.ClanMember.SaveChangesAsync();
 
                 var response = new Response.UpdatedClan
                 {
@@ -568,7 +556,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -625,11 +613,11 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
                 _dbContext.ClanMember.Delete(world, member);
+                await _dbContext.ClanMember.SaveChangesAsync();
 
                 sync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, sync);
-
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
                 var response = new Response.UpdatedClan
                 {
@@ -655,7 +643,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -701,8 +689,8 @@ namespace Internal.Controllers
                 if (kicker.Name == target.Name)
                     throw new LogicException(ErrorCode.CannotKickSelf);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(kicker.Id));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id));
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(kicker.Id, target.Id)));
+                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(kicker.Id, target.Id)));
 
                 var kickerSync = await _dbContext.CharacterRealtimeState.Get(world, kicker.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -743,13 +731,12 @@ namespace Internal.Controllers
                 if (targetMember.Role == (uint)ClanRole.Master)
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
-                // Remove target from clan
                 _dbContext.ClanMember.Delete(world, targetMember);
+                await _dbContext.ClanMember.SaveChangesAsync();
 
                 targetSync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, targetSync);
-
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
                 var response = new Response.UpdatedClan
                 {
@@ -775,7 +762,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -856,8 +843,8 @@ namespace Internal.Controllers
                 if (changer.Id == target.Id)
                     throw new LogicException(ErrorCode.CannotChangeClanRoleSelf);
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(changer.Id));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id));
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(changer.Id, target.Id)));
+                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(changer.Id, target.Id)));
 
                 var changerSync = await _dbContext.CharacterRealtimeState.Get(world, changer.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -938,7 +925,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -997,8 +984,8 @@ namespace Internal.Controllers
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan) ??
                     throw new LogicException(ErrorCode.ClanTargetNotFound);
 
-                await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(request.Clan));
-                await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(request.TargetClan));
+                await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(Math.Min(request.Clan, request.TargetClan)));
+                await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(Math.Max(request.Clan, request.TargetClan)));
 
                 if (await _dbContext.ClanAlliance.Get(world, request.Clan) != null)
                     throw new LogicException(ErrorCode.ClanAlreadyAllied);
@@ -1029,7 +1016,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1110,7 +1097,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1196,7 +1183,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1229,26 +1216,24 @@ namespace Internal.Controllers
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
 
-                var requestKey = ClanMoneyRequestKey(request.RequestId);
-                var requestRedis = request.RequestId != 0 ? _redisService.GetShardConnection(world, requestKey) : null;
-                if (requestRedis != null)
-                {
-                    var state = await requestRedis.Connection.StringGetAsync(requestKey);
-                    if (state == ClanMoneyApplied)
-                    {
-                        return new Response.UpdatedClan
-                        {
-                            Host = request.Host,
-                            Action = Protocol.ClanActionType.SetMoney,
-                            ClanId = clan.Id,
-                            ClanName = clan.Name,
-                            Money = clan.Money,
-                            Error = (uint)ErrorCode.None
-                        };
-                    }
+                if (request.RequestId == 0)
+                    throw new LogicException(ErrorCode.Unhandled);
 
-                    if (state == ClanMoneyAborted)
+                var previous = clan.MoneyRequests.Find(x => x.Id == request.RequestId);
+                if (previous != null)
+                {
+                    if (previous.Applied == false)
                         throw new LogicException(ErrorCode.Unhandled);
+
+                    return new Response.UpdatedClan
+                    {
+                        Host = request.Host,
+                        Action = Protocol.ClanActionType.SetMoney,
+                        ClanId = clan.Id,
+                        ClanName = clan.Name,
+                        Money = clan.Money,
+                        Error = (uint)ErrorCode.None
+                    };
                 }
 
                 if (request.Delta > 0)
@@ -1266,10 +1251,9 @@ namespace Internal.Controllers
                     clan.Money -= abs;
                 }
 
+                clan.AddMoneyRequest(request.RequestId, true, DateTime.Now);
                 _dbContext.Clan.Set(world, clan);
                 await _dbContext.SaveChangesAsync();
-                if (requestRedis != null)
-                    await requestRedis.Connection.StringSetAsync(requestKey, ClanMoneyApplied, ClanMoneyRequestTtl);
 
                 var response = new Response.UpdatedClan
                 {
@@ -1280,7 +1264,7 @@ namespace Internal.Controllers
                     Money = clan.Money,
                     Error = (uint)ErrorCode.None
                 };
-                await PublishSavedAsync(response, world);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", world);
                 return response;
             }
             catch (LogicException e)
@@ -1310,13 +1294,20 @@ namespace Internal.Controllers
                 var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
                 await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
 
-                var requestKey = ClanMoneyRequestKey(request.RequestId);
-                var requestRedis = _redisService.GetShardConnection(world, requestKey);
-                var state = await requestRedis.Connection.StringGetAsync(requestKey);
-                if (state == ClanMoneyApplied)
+                var clan = await _dbContext.Clan.Get(world, request.Clan);
+                if (clan == null)
                 {
-                    var clan = await _dbContext.Clan.Get(world, request.Clan) ??
-                        throw new LogicException(ErrorCode.NotFoundClan);
+                    var archived = await _dbContext.ClanMoneyRequestArchive.Get(world, request.Clan, request.RequestId);
+                    return new Response.AbortClanMoney
+                    {
+                        Applied = archived?.Applied ?? false,
+                        Error = (uint)ErrorCode.None
+                    };
+                }
+
+                var previous = clan.MoneyRequests.Find(x => x.Id == request.RequestId);
+                if (previous?.Applied == true)
+                {
                     return new Response.AbortClanMoney
                     {
                         Applied = true,
@@ -1325,7 +1316,12 @@ namespace Internal.Controllers
                     };
                 }
 
-                await requestRedis.Connection.StringSetAsync(requestKey, ClanMoneyAborted, ClanMoneyRequestTtl);
+                if (previous == null)
+                {
+                    clan.AddMoneyRequest(request.RequestId, false, DateTime.Now);
+                    _dbContext.Clan.Set(world, clan);
+                    await _dbContext.SaveChangesAsync();
+                }
                 return new Response.AbortClanMoney
                 {
                     Applied = false,
@@ -1342,6 +1338,40 @@ namespace Internal.Controllers
             catch (Exception)
             {
                 return new Response.AbortClanMoney
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+        [HttpPost("money/release")]
+        public async Task<Response.ReleaseClanMoney> ReleaseMoney(Request.ReleaseClanMoney request)
+        {
+            try
+            {
+                var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
+                await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var clan = await _dbContext.Clan.Get(world, request.Clan);
+                var released = clan?.MoneyRequests.Find(x => x.Id == request.RequestId);
+                if (released != null && released.Released == false)
+                {
+                    released.Released = true;
+                    released.Date = DateTime.Now;
+                    _dbContext.Clan.Set(world, clan);
+                }
+
+                if (clan == null)
+                    _dbContext.ClanMoneyRequestArchive.Delete(world, new ClanMoneyRequestArchiveKey { Clan = request.Clan, RequestId = request.RequestId });
+
+                await _dbContext.SaveChangesAsync();
+                return new Response.ReleaseClanMoney
+                {
+                    Error = (uint)ErrorCode.None
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.ReleaseClanMoney
                 {
                     Error = (uint)ErrorCode.Unhandled
                 };
@@ -1404,7 +1434,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await PublishSavedAsync(response, request.World);
+                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)

@@ -60,6 +60,8 @@ namespace fb::protocol::internal
     class Quest;
     class CollectionUnlock;
     class MarketplacePending;
+    class ClanMoneyPending;
+    class StorageClaimPending;
     class SystemMail;
     class StorageBox;
     class StorageWriteEntry;
@@ -135,6 +137,7 @@ namespace fb::protocol::internal::request
     class SetCastleOwner;
     class SetClanMoney;
     class AbortClanMoney;
+    class ReleaseClanMoney;
     class OpsNotify;
 } // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
@@ -178,6 +181,7 @@ namespace fb::protocol::internal::response
     class ClanDetails;
     class UpdatedClan;
     class AbortClanMoney;
+    class ReleaseClanMoney;
     class BroadcastClan;
     class DestroyClan;
     class Broadcast;
@@ -376,6 +380,8 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Castle> { typedef fl
 template <> struct FlatBufferOffset<fb::protocol::internal::Quest> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Quest> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::CollectionUnlock> { typedef flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::MarketplacePending> { typedef flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::ClanMoneyPending> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::StorageClaimPending> { typedef flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::SystemMail> { typedef flatbuffers::Offset<fb::protocol::internal::raw::SystemMail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::StorageBox> { typedef flatbuffers::Offset<fb::protocol::internal::raw::StorageBox> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::StorageWriteEntry> { typedef flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry> type; };
@@ -443,6 +449,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::SetDateTime
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetCastleOwner> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetCastleOwner> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetClanMoney> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanMoney> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::AbortClanMoney> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::AbortClanMoney> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::ReleaseClanMoney> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ReleaseClanMoney> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::OpsNotify> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::OpsNotify> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
@@ -483,6 +490,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::BroadcastG
 template <> struct FlatBufferOffset<fb::protocol::internal::response::ClanDetails> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ClanDetails> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::UpdatedClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::AbortClanMoney> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::AbortClanMoney> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::ReleaseClanMoney> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ReleaseClanMoney> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::BroadcastClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::DestroyClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::DestroyClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Broadcast> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Broadcast> type; };
@@ -607,6 +615,10 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock> build<fb::protocol::internal::CollectionUnlock>(FlatBufferBuilder& builder, const fb::protocol::internal::CollectionUnlock& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending> build<fb::protocol::internal::MarketplacePending>(FlatBufferBuilder& builder, const fb::protocol::internal::MarketplacePending& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending> build<fb::protocol::internal::ClanMoneyPending>(FlatBufferBuilder& builder, const fb::protocol::internal::ClanMoneyPending& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending> build<fb::protocol::internal::StorageClaimPending>(FlatBufferBuilder& builder, const fb::protocol::internal::StorageClaimPending& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::SystemMail> build<fb::protocol::internal::SystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::SystemMail& value);
 template <>
@@ -742,6 +754,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanMoney> build<fb
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::AbortClanMoney> build<fb::protocol::internal::request::AbortClanMoney>(FlatBufferBuilder& builder, const fb::protocol::internal::request::AbortClanMoney& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::ReleaseClanMoney> build<fb::protocol::internal::request::ReleaseClanMoney>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReleaseClanMoney& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::OpsNotify> build<fb::protocol::internal::request::OpsNotify>(FlatBufferBuilder& builder, const fb::protocol::internal::request::OpsNotify& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> build<fb::protocol::internal::response::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Shutdown& value);
@@ -821,6 +835,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedClan> build<fb::protocol::internal::response::UpdatedClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::UpdatedClan& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::AbortClanMoney> build<fb::protocol::internal::response::AbortClanMoney>(FlatBufferBuilder& builder, const fb::protocol::internal::response::AbortClanMoney& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::ReleaseClanMoney> build<fb::protocol::internal::response::ReleaseClanMoney>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ReleaseClanMoney& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> build<fb::protocol::internal::response::BroadcastClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::BroadcastClan& value);
 template <>
@@ -1026,6 +1042,8 @@ enum class FlatBufferProtocolType
     Quest,
     CollectionUnlock,
     MarketplacePending,
+    ClanMoneyPending,
+    StorageClaimPending,
     SystemMail,
     StorageBox,
     StorageWriteEntry,
@@ -2156,6 +2174,90 @@ public:
         return MarketplacePending(*raw);
     }
 };
+class ClanMoneyPending
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::ClanMoneyPending;
+
+public:
+    uint32_t user = 0;
+    uint64_t request_id = 0ULL;
+    uint32_t clan = 0;
+    int64_t clan_delta = 0LL;
+    int64_t money_delta = 0LL;
+
+public:
+    ClanMoneyPending() = default;
+
+    ClanMoneyPending(const ClanMoneyPending& x)
+        : user(x.user), request_id(x.request_id), clan(x.clan), clan_delta(x.clan_delta), money_delta(x.money_delta)
+    { }
+
+    ClanMoneyPending(uint32_t user, uint64_t request_id, uint32_t clan, int64_t clan_delta, int64_t money_delta)
+        : user(user), request_id(request_id), clan(clan), clan_delta(clan_delta), money_delta(money_delta)
+    { }
+
+    ClanMoneyPending(const fb::protocol::internal::raw::ClanMoneyPending& raw)
+        : user(raw.user()), request_id(raw.request_id()), clan(raw.clan()), clan_delta(raw.clan_delta()), money_delta(raw.money_delta())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::ClanMoneyPending>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static ClanMoneyPending Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::raw::ClanMoneyPending>(bytes);
+        return ClanMoneyPending(*raw);
+    }
+};
+class StorageClaimPending
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::StorageClaimPending;
+
+public:
+    uint32_t user = 0;
+    uint32_t box = 0;
+    uint64_t claim_id = 0ULL;
+
+public:
+    StorageClaimPending() = default;
+
+    StorageClaimPending(const StorageClaimPending& x)
+        : user(x.user), box(x.box), claim_id(x.claim_id)
+    { }
+
+    StorageClaimPending(uint32_t user, uint32_t box, uint64_t claim_id)
+        : user(user), box(box), claim_id(claim_id)
+    { }
+
+    StorageClaimPending(const fb::protocol::internal::raw::StorageClaimPending& raw)
+        : user(raw.user()), box(raw.box()), claim_id(raw.claim_id())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::StorageClaimPending>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static StorageClaimPending Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::raw::StorageClaimPending>(bytes);
+        return StorageClaimPending(*raw);
+    }
+};
 class SystemMail
 {
 public:
@@ -2347,20 +2449,22 @@ public:
     std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings = {};
     std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks = {};
     int64_t snapshot_time = 0LL;
+    std::vector<fb::protocol::internal::ClanMoneyPending> clan_money_pendings = {};
+    std::vector<fb::protocol::internal::StorageClaimPending> storage_claim_pendings = {};
 
 public:
     SavePayload() = default;
 
     SavePayload(const SavePayload& x)
-        : character(x.character), marriage(x.marriage), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), achievements(x.achievements), quests(x.quests), marketplace_pendings(x.marketplace_pendings), collection_unlocks(x.collection_unlocks), snapshot_time(x.snapshot_time)
+        : character(x.character), marriage(x.marriage), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), achievements(x.achievements), quests(x.quests), marketplace_pendings(x.marketplace_pendings), collection_unlocks(x.collection_unlocks), snapshot_time(x.snapshot_time), clan_money_pendings(x.clan_money_pendings), storage_claim_pendings(x.storage_claim_pendings)
     { }
 
-    SavePayload(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, int64_t snapshot_time)
-        : character(character), marriage(marriage), items(items), spells(spells), matchmaking_skills(matchmaking_skills), achievements(achievements), quests(quests), marketplace_pendings(marketplace_pendings), collection_unlocks(collection_unlocks), snapshot_time(snapshot_time)
+    SavePayload(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, int64_t snapshot_time, std::vector<fb::protocol::internal::ClanMoneyPending> clan_money_pendings, std::vector<fb::protocol::internal::StorageClaimPending> storage_claim_pendings)
+        : character(character), marriage(marriage), items(items), spells(spells), matchmaking_skills(matchmaking_skills), achievements(achievements), quests(quests), marketplace_pendings(marketplace_pendings), collection_unlocks(collection_unlocks), snapshot_time(snapshot_time), clan_money_pendings(clan_money_pendings), storage_claim_pendings(storage_claim_pendings)
     { }
 
     SavePayload(const fb::protocol::internal::raw::SavePayload& raw)
-        : character(*raw.character()), marriage(*raw.marriage()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), marketplace_pendings(unpack<fb::protocol::internal::MarketplacePending>(raw.marketplace_pendings())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), snapshot_time(raw.snapshot_time())
+        : character(*raw.character()), marriage(*raw.marriage()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), marketplace_pendings(unpack<fb::protocol::internal::MarketplacePending>(raw.marketplace_pendings())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), snapshot_time(raw.snapshot_time()), clan_money_pendings(unpack<fb::protocol::internal::ClanMoneyPending>(raw.clan_money_pendings())), storage_claim_pendings(unpack<fb::protocol::internal::StorageClaimPending>(raw.storage_claim_pendings()))
     { }
 
 public:
@@ -2487,6 +2591,7 @@ enum class FlatBufferProtocolType
     SetCastleOwner,
     SetClanMoney,
     AbortClanMoney,
+    ReleaseClanMoney,
     OpsNotify,
 };
 
@@ -5067,6 +5172,47 @@ public:
         return AbortClanMoney(*raw);
     }
 };
+class ReleaseClanMoney
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ReleaseClanMoney;
+
+public:
+    uint32_t world = 0;
+    uint32_t clan = 0;
+    uint64_t request_id = 0ULL;
+
+public:
+    ReleaseClanMoney() = default;
+
+    ReleaseClanMoney(const ReleaseClanMoney& x)
+        : world(x.world), clan(x.clan), request_id(x.request_id)
+    { }
+
+    ReleaseClanMoney(uint32_t world, uint32_t clan, uint64_t request_id)
+        : world(world), clan(clan), request_id(request_id)
+    { }
+
+    ReleaseClanMoney(const fb::protocol::internal::request::raw::ReleaseClanMoney& raw)
+        : world(raw.world()), clan(raw.clan()), request_id(raw.request_id())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::ReleaseClanMoney>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static ReleaseClanMoney Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::request::raw::ReleaseClanMoney>(bytes);
+        return ReleaseClanMoney(*raw);
+    }
+};
 class OpsNotify
 {
 public:
@@ -5157,6 +5303,7 @@ enum class FlatBufferProtocolType
     ClanDetails,
     UpdatedClan,
     AbortClanMoney,
+    ReleaseClanMoney,
     BroadcastClan,
     DestroyClan,
     Broadcast,
@@ -6214,20 +6361,22 @@ public:
     uint32_t mail = 0;
     std::vector<uint32_t> system_mail_ids = {};
     std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks = {};
+    std::vector<fb::protocol::internal::ClanMoneyPending> clan_money_pendings = {};
+    std::vector<fb::protocol::internal::StorageClaimPending> storage_claim_pendings = {};
 
 public:
     Init() = default;
 
     Init(const Init& x)
-        : character(x.character), marriage(x.marriage), group(x.group), clan(x.clan), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), option(x.option), achievements(x.achievements), quests(x.quests), storage_boxes(x.storage_boxes), marketplace_pendings(x.marketplace_pendings), friends(x.friends), mail(x.mail), system_mail_ids(x.system_mail_ids), collection_unlocks(x.collection_unlocks)
+        : character(x.character), marriage(x.marriage), group(x.group), clan(x.clan), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), option(x.option), achievements(x.achievements), quests(x.quests), storage_boxes(x.storage_boxes), marketplace_pendings(x.marketplace_pendings), friends(x.friends), mail(x.mail), system_mail_ids(x.system_mail_ids), collection_unlocks(x.collection_unlocks), clan_money_pendings(x.clan_money_pendings), storage_claim_pendings(x.storage_claim_pendings)
     { }
 
-    Init(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::StorageBox> storage_boxes, std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings, std::vector<fb::protocol::internal::FriendEntry> friends, uint32_t mail, std::vector<uint32_t> system_mail_ids, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks)
-        : character(character), marriage(marriage), group(group), clan(clan), items(items), spells(spells), matchmaking_skills(matchmaking_skills), option(option), achievements(achievements), quests(quests), storage_boxes(storage_boxes), marketplace_pendings(marketplace_pendings), friends(friends), mail(mail), system_mail_ids(system_mail_ids), collection_unlocks(collection_unlocks)
+    Init(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::StorageBox> storage_boxes, std::vector<fb::protocol::internal::MarketplacePending> marketplace_pendings, std::vector<fb::protocol::internal::FriendEntry> friends, uint32_t mail, std::vector<uint32_t> system_mail_ids, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, std::vector<fb::protocol::internal::ClanMoneyPending> clan_money_pendings, std::vector<fb::protocol::internal::StorageClaimPending> storage_claim_pendings)
+        : character(character), marriage(marriage), group(group), clan(clan), items(items), spells(spells), matchmaking_skills(matchmaking_skills), option(option), achievements(achievements), quests(quests), storage_boxes(storage_boxes), marketplace_pendings(marketplace_pendings), friends(friends), mail(mail), system_mail_ids(system_mail_ids), collection_unlocks(collection_unlocks), clan_money_pendings(clan_money_pendings), storage_claim_pendings(storage_claim_pendings)
     { }
 
     Init(const fb::protocol::internal::response::raw::Init& raw)
-        : character(*raw.character()), marriage(*raw.marriage()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), option(*raw.option()), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), storage_boxes(unpack<fb::protocol::internal::StorageBox>(raw.storage_boxes())), marketplace_pendings(unpack<fb::protocol::internal::MarketplacePending>(raw.marketplace_pendings())), friends(unpack<fb::protocol::internal::FriendEntry>(raw.friends())), mail(raw.mail()), system_mail_ids(unpack<uint32_t>(raw.system_mail_ids())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks()))
+        : character(*raw.character()), marriage(*raw.marriage()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), option(*raw.option()), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), storage_boxes(unpack<fb::protocol::internal::StorageBox>(raw.storage_boxes())), marketplace_pendings(unpack<fb::protocol::internal::MarketplacePending>(raw.marketplace_pendings())), friends(unpack<fb::protocol::internal::FriendEntry>(raw.friends())), mail(raw.mail()), system_mail_ids(unpack<uint32_t>(raw.system_mail_ids())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), clan_money_pendings(unpack<fb::protocol::internal::ClanMoneyPending>(raw.clan_money_pendings())), storage_claim_pendings(unpack<fb::protocol::internal::StorageClaimPending>(raw.storage_claim_pendings()))
     { }
 
 public:
@@ -6787,6 +6936,45 @@ public:
     {
         auto raw = flatbuffers::GetRoot<fb::protocol::internal::response::raw::AbortClanMoney>(bytes);
         return AbortClanMoney(*raw);
+    }
+};
+class ReleaseClanMoney
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::ReleaseClanMoney;
+
+public:
+    uint32_t error = 0;
+
+public:
+    ReleaseClanMoney() = default;
+
+    ReleaseClanMoney(const ReleaseClanMoney& x)
+        : error(x.error)
+    { }
+
+    ReleaseClanMoney(uint32_t error)
+        : error(error)
+    { }
+
+    ReleaseClanMoney(const fb::protocol::internal::response::raw::ReleaseClanMoney& raw)
+        : error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::ReleaseClanMoney>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static ReleaseClanMoney Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::response::raw::ReleaseClanMoney>(bytes);
+        return ReleaseClanMoney(*raw);
     }
 };
 class BroadcastClan
@@ -9678,6 +9866,24 @@ flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending> build<fb::p
             flatbuffers::build<uint32_t>(builder, value.character_id));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::raw::ClanMoneyPending> build<fb::protocol::internal::ClanMoneyPending>(FlatBufferBuilder& builder, const fb::protocol::internal::ClanMoneyPending& value)
+{
+    return fb::protocol::internal::raw::CreateClanMoneyPending(builder,
+            flatbuffers::build<uint32_t>(builder, value.user),
+            flatbuffers::build<uint64_t>(builder, value.request_id),
+            flatbuffers::build<uint32_t>(builder, value.clan),
+            flatbuffers::build<int64_t>(builder, value.clan_delta),
+            flatbuffers::build<int64_t>(builder, value.money_delta));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::StorageClaimPending> build<fb::protocol::internal::StorageClaimPending>(FlatBufferBuilder& builder, const fb::protocol::internal::StorageClaimPending& value)
+{
+    return fb::protocol::internal::raw::CreateStorageClaimPending(builder,
+            flatbuffers::build<uint32_t>(builder, value.user),
+            flatbuffers::build<uint32_t>(builder, value.box),
+            flatbuffers::build<uint64_t>(builder, value.claim_id));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::raw::SystemMail> build<fb::protocol::internal::SystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::SystemMail& value)
 {
     return fb::protocol::internal::raw::CreateSystemMail(builder,
@@ -9733,7 +9939,9 @@ flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> build<fb::protocol
             flatbuffers::build<std::vector<fb::protocol::internal::Quest>>(builder, value.quests),
             flatbuffers::build<std::vector<fb::protocol::internal::MarketplacePending>>(builder, value.marketplace_pendings),
             flatbuffers::build<std::vector<fb::protocol::internal::CollectionUnlock>>(builder, value.collection_unlocks),
-            flatbuffers::build<int64_t>(builder, value.snapshot_time));
+            flatbuffers::build<int64_t>(builder, value.snapshot_time),
+            flatbuffers::build<std::vector<fb::protocol::internal::ClanMoneyPending>>(builder, value.clan_money_pendings),
+            flatbuffers::build<std::vector<fb::protocol::internal::StorageClaimPending>>(builder, value.storage_claim_pendings));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::OptionChange> build<fb::protocol::internal::OptionChange>(FlatBufferBuilder& builder, const fb::protocol::internal::OptionChange& value)
@@ -10307,6 +10515,14 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::AbortClanMoney> build<
             flatbuffers::build<uint64_t>(builder, value.request_id));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::ReleaseClanMoney> build<fb::protocol::internal::request::ReleaseClanMoney>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReleaseClanMoney& value)
+{
+    return fb::protocol::internal::request::raw::CreateReleaseClanMoney(builder,
+            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<uint32_t>(builder, value.clan),
+            flatbuffers::build<uint64_t>(builder, value.request_id));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::OpsNotify> build<fb::protocol::internal::request::OpsNotify>(FlatBufferBuilder& builder, const fb::protocol::internal::request::OpsNotify& value)
 {
     return fb::protocol::internal::request::raw::CreateOpsNotify(builder,
@@ -10527,7 +10743,9 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Init> build<fb::proto
             flatbuffers::build<std::vector<fb::protocol::internal::FriendEntry>>(builder, value.friends),
             flatbuffers::build<uint32_t>(builder, value.mail),
             flatbuffers::build<std::vector<uint32_t>>(builder, value.system_mail_ids),
-            flatbuffers::build<std::vector<fb::protocol::internal::CollectionUnlock>>(builder, value.collection_unlocks));
+            flatbuffers::build<std::vector<fb::protocol::internal::CollectionUnlock>>(builder, value.collection_unlocks),
+            flatbuffers::build<std::vector<fb::protocol::internal::ClanMoneyPending>>(builder, value.clan_money_pendings),
+            flatbuffers::build<std::vector<fb::protocol::internal::StorageClaimPending>>(builder, value.storage_claim_pendings));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::MakeCharacter> build<fb::protocol::internal::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::response::MakeCharacter& value)
@@ -10647,6 +10865,12 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::AbortClanMoney> build
     return fb::protocol::internal::response::raw::CreateAbortClanMoney(builder,
             flatbuffers::build<bool>(builder, value.applied),
             flatbuffers::build<uint64_t>(builder, value.money),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::ReleaseClanMoney> build<fb::protocol::internal::response::ReleaseClanMoney>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ReleaseClanMoney& value)
+{
+    return fb::protocol::internal::response::raw::CreateReleaseClanMoney(builder,
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
