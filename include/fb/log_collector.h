@@ -24,6 +24,8 @@ class log_collector
 {
 private:
     static constexpr size_t MAX_BUFFERED_LOGS  = 100000;
+    static constexpr size_t MAX_BATCH_LOGS     = 1000;
+    static constexpr size_t MAX_BATCH_BYTES    = 1024 * 1024;
     static constexpr auto   RECONNECT_INTERVAL = std::chrono::seconds(5);
 
 private:
@@ -69,8 +71,7 @@ public:
 
 private:
     void        worker_run();
-    bool        publish(const std::vector<Json::Value>& batch);
-    std::string serialize_log_array(const std::vector<Json::Value>& entries) const;
+    size_t      publish(const std::vector<Json::Value>& batch);
     std::string get_routing_key() const;
 };
 

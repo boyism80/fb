@@ -1273,9 +1273,6 @@ void root::release(context& ctx)
         ctx.clear_script_path();
         ctx.clear_dialog_slot();
 
-        // Force garbage collection before moving to idle pool
-        lua_gc(ctx, LUA_GCCOLLECT, 0);
-
         auto key = (lua_State*)ctx;
         this->idle.insert({key, std::move(this->busy[key])});
         this->busy.erase(key);

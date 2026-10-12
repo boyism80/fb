@@ -27,6 +27,7 @@ private:
     amqp_socket_t*                      _socket = nullptr; ///< Low-level AMQP socket handle
     amqp_connection_state_t             _conn   = nullptr; ///< AMQP connection state
     std::vector<std::unique_ptr<queue>> _queues;           ///< Collection of declared queues
+    bool                                _confirm = false;
 
 public:
     socket();
@@ -42,6 +43,7 @@ public:
                    uint16_t         heartbeat = 0);
     queue& declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum, fb::thread_container& threads);
     bool   select(const timeval* timeout = nullptr);
+    bool   confirm_select();
     bool   publish(std::string_view               exchange,
                    std::string_view               routing_key,
                    const std::vector<uint8_t>&    message,

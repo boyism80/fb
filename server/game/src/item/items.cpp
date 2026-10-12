@@ -486,6 +486,9 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
         if (this->free() == false)
             co_return nullptr;
 
+        if (count > model.capacity)
+            co_return nullptr;
+
         auto item = stored->split(count);
         if (item == stored)
             this->_stored.erase(this->_stored.begin() + index);
@@ -818,6 +821,9 @@ void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item&
     }
     else if (row.stored != -1)
     {
+        // Storage stacks may exceed the model capacity, which the item constructor clamps to.
+        if (row.count > item->count())
+            item->count(row.count);
         this->_stored.push_back(item);
     }
     else if (row.parts == static_cast<int16_t>(EQUIPMENT_PARTS::UNKNOWN))
@@ -1719,12 +1725,10 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     int required_size = 0;
     for (auto& [id, count] : reward_items)
     {
-        auto  item_table3 = table::item;
-        auto& model       = item_table3[id];
-        if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-            required_size += count;
-        else
-            required_size++;
+        auto  item_table3  = table::item;
+        auto& model        = item_table3[id];
+        auto  capacity     = std::max<uint32_t>(model.capacity, 1);
+        required_size     += static_cast<int>((count + capacity - 1) / capacity);
     }
 
     int available_slots = effective_free_slots;
@@ -1806,9 +1810,18 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     {
         auto  item_table5 = table::item;
         auto& model       = item_table5[id];
-        auto  made        = model.make(owner->server, count);
-        if (made != nullptr)
+        auto  capacity    = std::max<uint32_t>(model.capacity, 1);
+        auto  remaining   = static_cast<uint32_t>(count);
+        // The item constructor clamps the count to capacity, so a larger reward is made in pieces.
+        while (remaining > 0)
         {
+            auto piece  = std::min(remaining, capacity);
+            remaining  -= piece;
+
+            auto made = model.make(owner->server, piece);
+            if (made == nullptr)
+                continue;
+
             auto idx = co_await this->add(made);
             if (idx == 0xFF)
                 co_await made->destroy();

@@ -8,6 +8,7 @@
 #include <json/json.h>
 #include <json/writer.h>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -95,8 +96,9 @@ void log_collector::worker_run()
             this->_buffer_cv.wait_for(lock, batch_interval, [this] {
                 return this->_stop_requested.load(std::memory_order_relaxed) || !this->_buffer.empty();
             });
-            batch.reserve(this->_buffer.size());
-            while (!this->_buffer.empty())
+            auto count = std::min(this->_buffer.size(), MAX_BATCH_LOGS);
+            batch.reserve(count);
+            for (size_t i = 0; i < count; i++)
             {
                 batch.push_back(std::move(this->_buffer.front()));
                 this->_buffer.pop_front();
@@ -106,11 +108,12 @@ void log_collector::worker_run()
         if (batch.empty())
             continue;
 
-        if (this->publish(batch) == false)
+        auto sent = this->publish(batch);
+        if (sent < batch.size())
         {
             std::unique_lock<std::mutex> lock(this->_buffer_mutex);
             this->_buffer.insert(this->_buffer.begin(),
-                                 std::make_move_iterator(batch.begin()),
+                                 std::make_move_iterator(batch.begin() + static_cast<std::ptrdiff_t>(sent)),
                                  std::make_move_iterator(batch.end()));
             if (this->_buffer.size() > MAX_BUFFERED_LOGS)
             {
@@ -134,68 +137,93 @@ void log_collector::worker_run()
             std::lock_guard<std::mutex> lock(this->_buffer_mutex);
             if (this->_buffer.empty())
                 break;
-            batch.reserve(this->_buffer.size());
-            while (!this->_buffer.empty())
+            auto count = std::min(this->_buffer.size(), MAX_BATCH_LOGS);
+            batch.reserve(count);
+            for (size_t i = 0; i < count; i++)
             {
                 batch.push_back(std::move(this->_buffer.front()));
                 this->_buffer.pop_front();
             }
         }
 
-        if (this->publish(batch) == false)
+        auto sent = this->publish(batch);
+        if (sent < batch.size())
         {
-            fb::logger::warn("Dropped final log batch ({} entries) on shutdown", batch.size());
+            std::lock_guard<std::mutex> lock(this->_buffer_mutex);
+            fb::logger::warn("Dropped final {} log entries on shutdown", batch.size() - sent + this->_buffer.size());
             break;
         }
     }
 }
 
-bool log_collector::publish(const std::vector<Json::Value>& batch)
+size_t log_collector::publish(const std::vector<Json::Value>& batch)
 {
     if (this->_amqp == nullptr)
     {
         auto now = std::chrono::steady_clock::now();
         if (now < this->_next_connect)
-            return false;
+            return 0;
 
         this->_next_connect = now + RECONNECT_INTERVAL;
         auto amqp           = std::make_unique<fb::amqp::socket>();
-        if (amqp->connect(this->_hostname, this->_port, this->_uid, this->_pwd, "/") == false)
+        if (amqp->connect(this->_hostname, this->_port, this->_uid, this->_pwd, "/") == false ||
+            amqp->confirm_select() == false)
         {
             fb::logger::warn("Failed to connect to log RabbitMQ at {}:{}", this->_hostname, this->_port);
-            return false;
+            return 0;
         }
         this->_amqp = std::move(amqp);
-    }
-
-    auto body        = this->serialize_log_array(batch);
-    auto message     = std::vector<uint8_t>(body.begin(), body.end());
-    auto routing_key = this->get_routing_key();
-    if (this->_amqp->publish("amq.direct", routing_key, message) == false)
-    {
-        fb::logger::warn("Failed to publish log batch ({} entries) with routing key: {}", batch.size(), routing_key);
-        this->_amqp.reset();
-        return false;
-    }
-    return true;
-}
-
-std::string log_collector::serialize_log_array(const std::vector<Json::Value>& entries) const
-{
-    Json::Value root(Json::arrayValue);
-    for (const auto& e : entries)
-    {
-        root.append(e);
     }
 
     Json::StreamWriterBuilder builder;
     builder["emitUTF8"]    = true;
     builder["indentation"] = "";
+    auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+    auto routing_key       = this->get_routing_key();
 
-    auto               writer = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
-    std::ostringstream stream;
-    writer->write(root, &stream);
-    return stream.str();
+    size_t sent = 0;
+    while (sent < batch.size())
+    {
+        auto   body  = std::string("[");
+        size_t count = 0;
+        while (sent + count < batch.size())
+        {
+            std::ostringstream stream;
+            writer->write(batch[sent + count], &stream);
+            auto entry = stream.str();
+            if (entry.size() + 2 > MAX_BATCH_BYTES)
+            {
+                if (count > 0)
+                    break;
+
+                fb::logger::warn("Dropped log entry ({} bytes) larger than the batch limit", entry.size());
+                sent++;
+                continue;
+            }
+
+            if (body.size() + entry.size() + 2 > MAX_BATCH_BYTES)
+                break;
+
+            if (count > 0)
+                body += ',';
+            body += entry;
+            count++;
+        }
+
+        if (count == 0)
+            continue;
+
+        body         += ']';
+        auto message  = std::vector<uint8_t>(body.begin(), body.end());
+        if (this->_amqp->publish("amq.direct", routing_key, message) == false)
+        {
+            fb::logger::warn("Failed to publish log batch ({} entries) with routing key: {}", count, routing_key);
+            this->_amqp.reset();
+            return sent;
+        }
+        sent += count;
+    }
+    return sent;
 }
 
 std::string log_collector::get_routing_key() const

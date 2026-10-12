@@ -192,9 +192,35 @@ bool socket::publish(std::string_view               exchange,
     if (result != 0)
         return false;
 
-    // Check for publish errors
-    amqp_rpc_reply_t reply = amqp_get_rpc_reply(this->_conn);
-    return reply.reply_type == AMQP_RESPONSE_NORMAL;
+    if (this->_confirm == false)
+        return true;
+
+    // Without confirms a rejected publish (e.g. over max_message_size) closes the channel silently.
+    auto timeout = timeval{.tv_sec = 5, .tv_usec = 0};
+    while (true)
+    {
+        amqp_frame_t frame;
+        if (amqp_simple_wait_frame_noblock(this->_conn, &frame, &timeout) != AMQP_STATUS_OK)
+            return false;
+
+        if (frame.frame_type != AMQP_FRAME_METHOD)
+            continue;
+
+        return frame.payload.method.id == AMQP_BASIC_ACK_METHOD;
+    }
+}
+
+bool socket::confirm_select()
+{
+    if (this->_conn == nullptr)
+        return false;
+
+    amqp_confirm_select(this->_conn, 1);
+    if (amqp_get_rpc_reply(this->_conn).reply_type != AMQP_RESPONSE_NORMAL)
+        return false;
+
+    this->_confirm = true;
+    return true;
 }
 
 socket::operator amqp_connection_state_t ()

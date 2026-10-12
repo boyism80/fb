@@ -758,6 +758,58 @@ return {
         end
     end,
 
+    store_item = function(me, step, name, count)
+        local _, item = next(me:items(name) or {})
+        if item == nil then
+            return report(me, false, step, 'no held ' .. tostring(name))
+        end
+        if me:store_item(item, tonumber(count)) ~= true then
+            return report(me, false, step, string.format('cannot store %s=%s', name, tostring(count)))
+        end
+        report(me, true, step)
+    end,
+
+    -- expected: 'ok' when the retrieve must succeed, 'fail' when it must be rejected.
+    retrieve_item = function(me, step, name, count, expected)
+        local stored = me:stored_item(name)
+        if stored == nil then
+            return report(me, false, step, 'no stored ' .. tostring(name))
+        end
+        local actual = me:retrieve_item(stored, tonumber(count)) ~= nil and 'ok' or 'fail'
+        if actual == expected then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('retrieve %s=%s is %s, expected %s', name, tostring(count), actual, tostring(expected)))
+        end
+    end,
+
+    drain_stored = function(me, step, name, piece)
+        piece = tonumber(piece)
+        local stored = me:stored_item(name)
+        while stored ~= nil do
+            local count = math.min(stored:count(), piece)
+            if me:retrieve_item(stored, count) == nil or me:rmitem({ [name] = count }) ~= true then
+                return report(me, false, step, 'cannot drain stored ' .. tostring(name))
+            end
+            stored = me:stored_item(name)
+        end
+        report(me, true, step)
+    end,
+
+    verify_stored = function(me, step, name, expected)
+        local actual = 0
+        for _, item in pairs(me:stored_item() or {}) do
+            if item:model():name() == name then
+                actual = actual + item:count()
+            end
+        end
+        if actual == tonumber(expected) then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('stored %s=%d(expected %s)', name, actual, tostring(expected)))
+        end
+    end,
+
     -- Reports 'q=<id>:<state>,...;m=<money>;map=<id>;i=<name>=<count>,...' for the NPC explorer.
     -- Quest state is 'none', '<step>' or '<step>!' when completed. Items are summed by name and sorted.
     snapshot = function(me, step, quest_ids)
