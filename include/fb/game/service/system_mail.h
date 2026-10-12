@@ -7,9 +7,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
 namespace fb::protocol::internal {
@@ -32,6 +34,8 @@ private:
 
     uint32_t                           _poll_offset = 0;
     std::vector<fb::game::system_mail> _pending_mails;
+    std::mutex                         _joined_mutex;
+    std::unordered_set<uint32_t>       _joined;
     fb::async_generator<void>          _delivery;
 
 private:
@@ -48,6 +52,7 @@ public:
     // clang-format off
     async::task<bool> create(uint32_t world, uint32_t sender, std::string_view title, std::string_view contents, const std::optional<std::string>& expire_date);
     async::task<void> poll_and_deliver();
+    void              join(uint32_t user);
     // clang-format on
 };
 

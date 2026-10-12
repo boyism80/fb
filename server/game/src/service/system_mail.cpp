@@ -19,6 +19,8 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -87,6 +89,12 @@ async::task<void> service::system_mail::poll_and_deliver()
     co_return;
 }
 
+void service::system_mail::join(uint32_t user)
+{
+    auto _ = std::lock_guard(this->_joined_mutex);
+    this->_joined.insert(user);
+}
+
 fb::async_generator<void> service::system_mail::delivery_coroutine()
 {
     while (true)
@@ -107,8 +115,9 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
             continue;
         }
 
-        auto        max_mail_id = uint32_t{0};
-        const auto& fetch_url   = std::format("/mail/system/{}?offset={}", *world, this->_poll_offset);
+        auto        max_mail_id   = uint32_t{0};
+        auto        new_mail_seen = false;
+        const auto& fetch_url     = std::format("/mail/system/{}?offset={}", *world, this->_poll_offset);
 
         try
         {
@@ -129,7 +138,10 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                                                                  return existing.id == mail.id;
                                                              });
                     if (!already_tracked)
+                    {
                         this->_pending_mails.push_back(std::move(mail));
+                        new_mail_seen = true;
+                    }
                 }
             }
         }
@@ -141,33 +153,63 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
         if (max_mail_id > 0)
             this->_poll_offset = max_mail_id + 1;
 
+        auto joined = std::unordered_set<uint32_t>{};
+        {
+            auto _ = std::lock_guard(this->_joined_mutex);
+            joined = std::exchange(this->_joined, {});
+        }
+
+        auto pending_mails = std::make_shared<std::vector<fb::game::system_mail>>(this->_pending_mails);
+        auto recipients    = std::make_shared<std::unordered_map<uint32_t, std::vector<uint32_t>>>();
+        auto mutex         = std::make_shared<std::mutex>();
+        auto collect       = [pending_mails, recipients, mutex](auto& ch) -> async::task<void> {
+            for (const auto& mail : *pending_mails)
+            {
+                if (ch->created_date() < mail.created_date && !ch->mail_box.contains_system_mail(mail.id))
+                {
+                    auto _ = std::lock_guard(*mutex);
+                    (*recipients)[mail.id].push_back(ch->id);
+                }
+            }
+            co_return;
+        };
+
+        // Old mails are only rechecked for characters in _joined, so every path that can leave an
+        // online character without a pending mail (login, failed delivery) must call join().
+        if (new_mail_seen)
+        {
+            co_await this->server.characters.foreach_async(collect);
+        }
+        else if (joined.empty() == false)
+        {
+            auto targets = std::vector<std::shared_ptr<character>>{};
+            for (auto user : joined)
+            {
+                auto ch = this->server.characters.find(user);
+                if (ch != nullptr)
+                    targets.push_back(ch);
+            }
+            co_await this->server.characters.foreach_async(collect, targets);
+        }
+
         for (const auto& mail : this->_pending_mails)
         {
             if (expired(mail, now))
                 continue;
 
-            auto eligible = std::make_shared<std::vector<uint32_t>>();
-            auto mutex    = std::make_shared<std::mutex>();
-            co_await this->server.characters.foreach_async(
-                [eligible, mutex, mail_id = mail.id, created = mail.created_date](auto& ch) -> async::task<void> {
-                    if (ch->created_date() < created && !ch->mail_box.contains_system_mail(mail_id))
-                    {
-                        auto _ = std::lock_guard(*mutex);
-                        eligible->push_back(ch->id);
-                    }
-                    co_return;
-                });
-
-            if (eligible->empty())
+            auto found = recipients->find(mail.id);
+            if (found == recipients->end())
                 continue;
 
-            for (std::size_t i = 0; i < eligible->size(); i += chunk_limit)
+            const auto& eligible = found->second;
+
+            for (std::size_t i = 0; i < eligible.size(); i += chunk_limit)
             {
-                const auto end = std::min(i + chunk_limit, eligible->size());
+                const auto end = std::min(i + chunk_limit, eligible.size());
 
                 auto chunk_users = std::vector<uint32_t>{};
-                chunk_users.assign(eligible->begin() + static_cast<std::ptrdiff_t>(i),
-                                   eligible->begin() + static_cast<std::ptrdiff_t>(end));
+                chunk_users.assign(eligible.begin() + static_cast<std::ptrdiff_t>(i),
+                                   eligible.begin() + static_cast<std::ptrdiff_t>(end));
                 const auto chunk_users_to_mark = chunk_users;
 
                 try
@@ -186,6 +228,8 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                     if (resp.error != 0)
                     {
                         fb::logger::warn("DeliverSystemMail failed for system mail {}: error {}", mail.id, resp.error);
+                        for (auto user_id : chunk_users_to_mark)
+                            this->join(user_id);
                     }
                     else
                     {
@@ -211,6 +255,8 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                 catch (const std::exception& e)
                 {
                     fb::logger::warn("DeliverSystemMail request failed for system mail {}: {}", mail.id, e.what());
+                    for (auto user_id : chunk_users_to_mark)
+                        this->join(user_id);
                 }
 
                 co_await fb::async_suspend{};
