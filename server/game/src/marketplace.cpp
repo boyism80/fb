@@ -77,10 +77,10 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     if (this->_owner.money() < listing_fee)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY_FOR_LISTING_FEE));
 
-    auto id = this->_owner.receipts.issue(RECEIPT_TYPE::MARKET_LIST, 0);
+    auto id = this->_owner.unsettled.add(UNSETTLED_TYPE::MARKET_LIST, 0);
     if (this->_owner.items.lock(slot, count, listing_fee, id) == false)
     {
-        this->_owner.receipts.erase(id);
+        this->_owner.unsettled.erase(id);
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR), "lock"));
     }
 
@@ -145,7 +145,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
 
     if (unknown)
     {
-        this->_owner.receipts.find(id)->in_flight = false;
+        this->_owner.unsettled.find(id)->in_flight = false;
 
         auto log_data            = Json::Value();
         log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -156,7 +156,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     }
     else if (error_code != fb::model::enum_value::ERROR_CODE::NONE)
     {
-        this->_owner.receipts.erase(id);
+        this->_owner.unsettled.erase(id);
         this->_owner.items.unlock(id);
 
         auto log_data            = Json::Value();
@@ -169,7 +169,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     }
     else
     {
-        this->_owner.receipts.erase(id);
+        this->_owner.unsettled.erase(id);
         this->_owner.items.deduct(id);
 
         auto log_data_success            = Json::Value();
@@ -259,7 +259,7 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
     detail["price"] = static_cast<Json::UInt64>(expected_price);
 
     this->_owner.money_reduce(expected_price);
-    auto purchase_id = this->_owner.receipts.issue(RECEIPT_TYPE::MARKET_PURCHASE, listing_id, detail);
+    auto purchase_id = this->_owner.unsettled.add(UNSETTLED_TYPE::MARKET_PURCHASE, listing_id, detail);
 
     // Log before API call (after deduction)
     auto log_data_before              = Json::Value();
@@ -331,7 +331,7 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
 
     if (unknown)
     {
-        this->_owner.receipts.find(purchase_id)->in_flight = false;
+        this->_owner.unsettled.find(purchase_id)->in_flight = false;
 
         auto log_data            = Json::Value();
         log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -343,7 +343,7 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
     }
     else if (error_code != fb::model::enum_value::ERROR_CODE::NONE)
     {
-        this->_owner.receipts.erase(purchase_id);
+        this->_owner.unsettled.erase(purchase_id);
         std::ignore = this->_owner.money_add(expected_price);
 
         auto log_data            = Json::Value();
@@ -357,7 +357,7 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
     }
     else
     {
-        this->_owner.receipts.erase(purchase_id);
+        this->_owner.unsettled.erase(purchase_id);
 
         auto log_data_success             = Json::Value();
         log_data_success["character_id"]  = static_cast<Json::Int64>(this->_owner.id);
@@ -497,8 +497,8 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
 {
     this->_owner.assert_thread();
 
-    auto receipt = this->_owner.receipts.find(listing_id);
-    if (receipt == nullptr)
+    auto request = this->_owner.unsettled.find(listing_id);
+    if (request == nullptr)
         co_return;
 
     auto weak     = this->_owner.weak_from_this_as<fb::game::character>();
@@ -526,11 +526,11 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
         break;
     }
 
-    // Listings created before item escrow removed the item and kept it in the receipt detail.
+    // Listings created before item escrow removed the item and kept it in the unsettled request detail.
     auto returns = std::vector<fb::model::dsl>{};
     if (escrowed == false)
     {
-        for (const auto& dsl_json : receipt->detail["attachments"])
+        for (const auto& dsl_json : request->detail["attachments"])
         {
             auto dsl = fb::model::dsl(dsl_json);
             returns.push_back(dsl);
@@ -548,7 +548,7 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
         if (returns.empty())
         {
             fb::logger::warn("marketplace.settle_list nothing held user={} listing={}", this->_owner.id, listing_id);
-            this->_owner.receipts.erase(listing_id);
+            this->_owner.unsettled.erase(listing_id);
             co_return;
         }
     }
@@ -594,7 +594,7 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
         if (weak.expired() || returned == false)
             co_return;
     }
-    this->_owner.receipts.erase(listing_id);
+    this->_owner.unsettled.erase(listing_id);
 
     auto log_data            = Json::Value();
     log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -608,14 +608,14 @@ async::task<void> marketplace::settle_purchase(uint64_t purchase_id)
 {
     this->_owner.assert_thread();
 
-    auto receipt = this->_owner.receipts.find(purchase_id);
-    if (receipt == nullptr)
+    auto request = this->_owner.unsettled.find(purchase_id);
+    if (request == nullptr)
         co_return;
 
     auto weak       = this->_owner.weak_from_this_as<fb::game::character>();
     auto world      = this->_owner.world();
-    auto listing_id = receipt->target;
-    auto price      = receipt->detail["price"].asUInt64();
+    auto listing_id = request->target;
+    auto price      = request->detail["price"].asUInt64();
 
     auto purchased = std::optional<bool>{};
     try
@@ -651,7 +651,7 @@ async::task<void> marketplace::settle_purchase(uint64_t purchase_id)
         if (weak.expired() || refunded == false)
             co_return;
     }
-    this->_owner.receipts.erase(purchase_id);
+    this->_owner.unsettled.erase(purchase_id);
 
     auto log_data            = Json::Value();
     log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);

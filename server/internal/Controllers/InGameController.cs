@@ -482,7 +482,7 @@ namespace Internal.Controllers
             var quests = await _dbContext.Quest.Get(world, uid);
             var collectionUnlocks = await _dbContext.CollectionUnlock.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
-            var receipts = (await _dbContext.Receipt.Get(world, uid)).ToList();
+            var unsettledRequests = (await _dbContext.UnsettledRequest.Get(world, uid)).ToList();
             var friends = await _friendService.GetEntries(world, uid);
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
@@ -512,8 +512,8 @@ namespace Internal.Controllers
 
             await _dbContext.SaveChangesAsync();
             var now = DateTime.Now;
-            var claimingBoxes = receipts
-                .Where(x => x.Type == (byte)ReceiptType.StorageClaim)
+            var claimingBoxes = unsettledRequests
+                .Where(x => x.Type == (byte)UnsettledType.StorageClaim)
                 .Select(x => (uint)x.Target)
                 .ToHashSet();
             var character = _mapper.Map<Protocol.Character>(ch);
@@ -532,7 +532,7 @@ namespace Internal.Controllers
                     .Where(box => box.ExpiredDate == null || box.ExpiredDate > now || claimingBoxes.Contains(box.Id))
                     .Select(_mapper.Map<Protocol.StorageBox>)
                     .ToList(),
-                Receipts = receipts.Select(_mapper.Map<Protocol.Receipt>).ToList(),
+                UnsettledRequests = unsettledRequests.Select(_mapper.Map<Protocol.UnsettledRequest>).ToList(),
                 Friends = friends,
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
@@ -716,10 +716,10 @@ namespace Internal.Controllers
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
             var collectionUnlocksTask = _dbContext.CollectionUnlock.GetMany(world, characterIds);
-            var receiptsTask = _dbContext.Receipt.GetMany(world, characterIds);
+            var unsettledTask = _dbContext.UnsettledRequest.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                collectionUnlocksTask, receiptsTask);
+                collectionUnlocksTask, unsettledTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -727,7 +727,7 @@ namespace Internal.Controllers
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
             var collectionUnlocksByOwner = await collectionUnlocksTask;
-            var receiptsByOwner = await receiptsTask;
+            var unsettledByOwner = await unsettledTask;
 
             foreach (var data in payloads)
             {
@@ -741,7 +741,7 @@ namespace Internal.Controllers
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
                     collectionUnlocksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<CollectionUnlock>(),
-                    receiptsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Receipt>());
+                    unsettledByOwner.GetValueOrDefault(characterId) ?? Array.Empty<UnsettledRequest>());
             }
         }
 
@@ -754,7 +754,7 @@ namespace Internal.Controllers
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
             IReadOnlyList<CollectionUnlock> existingCollectionUnlocks,
-            IReadOnlyList<Receipt> existingReceipts)
+            IReadOnlyList<UnsettledRequest> existingUnsettledRequests)
         {
             var characterId = data.Character.Id;
 
@@ -810,13 +810,13 @@ namespace Internal.Controllers
                 removed => _dbContext.CollectionUnlock.Delete(world, removed),
                 alive => _dbContext.CollectionUnlock.Set(world, alive));
 
-            var receipts = _mapper.Map<Protocol.Receipt[], Receipt[]>(
-                data.Receipts?.ToArray() ?? Array.Empty<Protocol.Receipt>());
+            var unsettledRequests = _mapper.Map<Protocol.UnsettledRequest[], UnsettledRequest[]>(
+                data.UnsettledRequests?.ToArray() ?? Array.Empty<Protocol.UnsettledRequest>());
             ReplaceHashEntities(
-                receipts,
-                existingReceipts,
-                removed => _dbContext.Receipt.Delete(world, removed),
-                alive => _dbContext.Receipt.Set(world, alive));
+                unsettledRequests,
+                existingUnsettledRequests,
+                removed => _dbContext.UnsettledRequest.Delete(world, removed),
+                alive => _dbContext.UnsettledRequest.Set(world, alive));
         }
 
         [HttpPost("option")]

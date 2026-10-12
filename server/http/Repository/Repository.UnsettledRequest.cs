@@ -4,93 +4,93 @@ using Http.Service;
 
 namespace Http.Reepository
 {
-    public class ReceiptRepository : RedisHashRepository<Receipt, ReceiptKey>
+    public class UnsettledRequestRepository : RedisHashRepository<UnsettledRequest, UnsettledRequestKey>
     {
-        public ReceiptRepository(DbContext dbContext,
+        public UnsettledRequestRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
             WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
         }
 
-        public Task<IEnumerable<Receipt>> Get(uint world, uint user)
+        public Task<IEnumerable<UnsettledRequest>> Get(uint world, uint user)
         {
-            return base.GetAll(world, new ReceiptKey
+            return base.GetAll(world, new UnsettledRequestKey
             {
                 User = user,
                 Id = 0
             });
         }
 
-        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<Receipt>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<UnsettledRequest>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
         {
             if (ownerIds == null || ownerIds.Count == 0)
-                return new Dictionary<uint, IReadOnlyList<Receipt>>();
+                return new Dictionary<uint, IReadOnlyList<UnsettledRequest>>();
 
-            var keys = ownerIds.Distinct().Select(uid => new ReceiptKey { User = uid, Id = 0 }).ToList();
+            var keys = ownerIds.Distinct().Select(uid => new UnsettledRequestKey { User = uid, Id = 0 }).ToList();
             var list = await base.GetMany(world, keys);
-            var dict = keys.ToDictionary(k => k.User, _ => (IList<Receipt>)new List<Receipt>());
+            var dict = keys.ToDictionary(k => k.User, _ => (IList<UnsettledRequest>)new List<UnsettledRequest>());
             foreach (var row in list)
             {
                 dict[row.User].Add(row);
             }
 
-            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Receipt>)kv.Value);
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<UnsettledRequest>)kv.Value);
         }
 
-        protected override string OnSelect(ReceiptKey key)
+        protected override string OnSelect(UnsettledRequestKey key)
         {
             return $"""
-                SELECT * FROM `receipt`
+                SELECT * FROM `unsettled_request`
                 WHERE `user` = {key.User} AND `id` = {key.Id.Escape()}
                 LIMIT 1;
                 """;
         }
 
-        protected override string OnSelectBulk(ReceiptKey key)
+        protected override string OnSelectBulk(UnsettledRequestKey key)
         {
             return $"""
-                SELECT * FROM `receipt`
+                SELECT * FROM `unsettled_request`
                 WHERE `user` = {key.User};
                 """;
         }
 
-        protected override string OnSelectMany(IReadOnlyList<ReceiptKey> keys)
+        protected override string OnSelectMany(IReadOnlyList<UnsettledRequestKey> keys)
         {
-            return $"SELECT * FROM `receipt` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+            return $"SELECT * FROM `unsettled_request` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
         }
 
-        protected override ReceiptKey GetKeyFromRow(Receipt row)
+        protected override UnsettledRequestKey GetKeyFromRow(UnsettledRequest row)
         {
-            return new ReceiptKey { User = row.User, Id = row.Id };
+            return new UnsettledRequestKey { User = row.User, Id = row.Id };
         }
 
-        protected override string OnDelete(ReceiptKey key)
+        protected override string OnDelete(UnsettledRequestKey key)
         {
             return $"""
-                DELETE FROM `receipt`
+                DELETE FROM `unsettled_request`
                 WHERE `user` = {key.User.Escape()} AND `id` = {key.Id.Escape()};
                 """;
         }
 
-        protected override string OnDeleteMany(IReadOnlyList<ReceiptKey> keys)
+        protected override string OnDeleteMany(IReadOnlyList<UnsettledRequestKey> keys)
         {
             if (keys.Count == 0)
                 return string.Empty;
 
             var user = keys[0].User;
             return $"""
-                DELETE FROM `receipt`
+                DELETE FROM `unsettled_request`
                 WHERE `user` = {user.Escape()} AND `id` IN ({string.Join(",", keys.Select(k => k.Id.Escape()))});
                 """;
         }
 
-        protected override string OnUpsert(Receipt value)
+        protected override string OnUpsert(UnsettledRequest value)
         {
             return OnUpsert(new[] { value });
         }
 
-        protected override string OnUpsert(Receipt[] values)
+        protected override string OnUpsert(UnsettledRequest[] values)
         {
             if (values.Length == 0)
                 return string.Empty;
@@ -106,7 +106,7 @@ namespace Http.Reepository
                 """);
 
             return $"""
-                INSERT INTO `receipt` (
+                INSERT INTO `unsettled_request` (
                     `user`,
                     `id`,
                     `type`,

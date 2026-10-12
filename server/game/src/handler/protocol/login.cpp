@@ -384,7 +384,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
     ch->collections.load(resp.collection_unlocks);
-    ch->receipts.load(resp.receipts);
+    ch->unsettled.load(resp.unsettled_requests);
     this->server.system_storage.init_from_login(*ch, resp.storage_boxes);
     ch->storage_box.init_claims();
     this->init_option(resp.option, *ch);
@@ -430,7 +430,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     }
 
     co_await this->server.system_storage.sync(*ch);
-    std::ignore = ch->receipts.settle();
+    std::ignore = ch->unsettled.settle();
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();

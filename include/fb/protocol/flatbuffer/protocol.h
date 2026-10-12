@@ -59,7 +59,7 @@ namespace fb::protocol::internal
     class Castle;
     class Quest;
     class CollectionUnlock;
-    class Receipt;
+    class UnsettledRequest;
     class SystemMail;
     class StorageBox;
     class StorageWriteEntry;
@@ -377,7 +377,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::CharacterRef> { type
 template <> struct FlatBufferOffset<fb::protocol::internal::Castle> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Castle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Quest> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Quest> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::CollectionUnlock> { typedef flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::Receipt> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Receipt> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::UnsettledRequest> { typedef flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::SystemMail> { typedef flatbuffers::Offset<fb::protocol::internal::raw::SystemMail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::StorageBox> { typedef flatbuffers::Offset<fb::protocol::internal::raw::StorageBox> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::StorageWriteEntry> { typedef flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry> type; };
@@ -610,7 +610,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::Quest> build<fb::protocol::inte
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock> build<fb::protocol::internal::CollectionUnlock>(FlatBufferBuilder& builder, const fb::protocol::internal::CollectionUnlock& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::raw::Receipt> build<fb::protocol::internal::Receipt>(FlatBufferBuilder& builder, const fb::protocol::internal::Receipt& value);
+flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest> build<fb::protocol::internal::UnsettledRequest>(FlatBufferBuilder& builder, const fb::protocol::internal::UnsettledRequest& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::SystemMail> build<fb::protocol::internal::SystemMail>(FlatBufferBuilder& builder, const fb::protocol::internal::SystemMail& value);
 template <>
@@ -1033,7 +1033,7 @@ enum class FlatBufferProtocolType
     Castle,
     Quest,
     CollectionUnlock,
-    Receipt,
+    UnsettledRequest,
     SystemMail,
     StorageBox,
     StorageWriteEntry,
@@ -2117,10 +2117,10 @@ public:
         return CollectionUnlock(*raw);
     }
 };
-class Receipt
+class UnsettledRequest
 {
 public:
-    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Receipt;
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::UnsettledRequest;
 
 public:
     uint32_t user = 0;
@@ -2130,17 +2130,17 @@ public:
     std::string detail;
 
 public:
-    Receipt() = default;
+    UnsettledRequest() = default;
 
-    Receipt(const Receipt& x)
+    UnsettledRequest(const UnsettledRequest& x)
         : user(x.user), id(x.id), type(x.type), target(x.target), detail(x.detail)
     { }
 
-    Receipt(uint32_t user, uint64_t id, uint8_t type, uint64_t target, std::string_view detail)
+    UnsettledRequest(uint32_t user, uint64_t id, uint8_t type, uint64_t target, std::string_view detail)
         : user(user), id(id), type(type), target(target), detail(std::string(detail))
     { }
 
-    Receipt(const fb::protocol::internal::raw::Receipt& raw)
+    UnsettledRequest(const fb::protocol::internal::raw::UnsettledRequest& raw)
         : user(raw.user()), id(raw.id()), type(raw.type()), target(raw.target()), detail(flatbuffers::option::decode(raw.detail()->c_str()))
     { }
 
@@ -2148,16 +2148,16 @@ public:
     std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::Receipt>(builder, *this));
+        builder.Finish(build<fb::protocol::internal::UnsettledRequest>(builder, *this));
         auto buffer = std::vector<uint8_t>(builder.GetSize());
         std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
         return buffer;
     }
 
-    static Receipt Deserialize(const uint8_t* bytes)
+    static UnsettledRequest Deserialize(const uint8_t* bytes)
     {
-        auto raw = flatbuffers::GetRoot<fb::protocol::internal::raw::Receipt>(bytes);
-        return Receipt(*raw);
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::raw::UnsettledRequest>(bytes);
+        return UnsettledRequest(*raw);
     }
 };
 class SystemMail
@@ -2350,21 +2350,21 @@ public:
     std::vector<fb::protocol::internal::Quest> quests = {};
     std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks = {};
     int64_t snapshot_time = 0LL;
-    std::vector<fb::protocol::internal::Receipt> receipts = {};
+    std::vector<fb::protocol::internal::UnsettledRequest> unsettled_requests = {};
 
 public:
     SavePayload() = default;
 
     SavePayload(const SavePayload& x)
-        : character(x.character), marriage(x.marriage), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), achievements(x.achievements), quests(x.quests), collection_unlocks(x.collection_unlocks), snapshot_time(x.snapshot_time), receipts(x.receipts)
+        : character(x.character), marriage(x.marriage), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), achievements(x.achievements), quests(x.quests), collection_unlocks(x.collection_unlocks), snapshot_time(x.snapshot_time), unsettled_requests(x.unsettled_requests)
     { }
 
-    SavePayload(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, int64_t snapshot_time, std::vector<fb::protocol::internal::Receipt> receipts)
-        : character(character), marriage(marriage), items(items), spells(spells), matchmaking_skills(matchmaking_skills), achievements(achievements), quests(quests), collection_unlocks(collection_unlocks), snapshot_time(snapshot_time), receipts(receipts)
+    SavePayload(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, int64_t snapshot_time, std::vector<fb::protocol::internal::UnsettledRequest> unsettled_requests)
+        : character(character), marriage(marriage), items(items), spells(spells), matchmaking_skills(matchmaking_skills), achievements(achievements), quests(quests), collection_unlocks(collection_unlocks), snapshot_time(snapshot_time), unsettled_requests(unsettled_requests)
     { }
 
     SavePayload(const fb::protocol::internal::raw::SavePayload& raw)
-        : character(*raw.character()), marriage(*raw.marriage()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), snapshot_time(raw.snapshot_time()), receipts(unpack<fb::protocol::internal::Receipt>(raw.receipts()))
+        : character(*raw.character()), marriage(*raw.marriage()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), snapshot_time(raw.snapshot_time()), unsettled_requests(unpack<fb::protocol::internal::UnsettledRequest>(raw.unsettled_requests()))
     { }
 
 public:
@@ -6260,21 +6260,21 @@ public:
     uint32_t mail = 0;
     std::vector<uint32_t> system_mail_ids = {};
     std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks = {};
-    std::vector<fb::protocol::internal::Receipt> receipts = {};
+    std::vector<fb::protocol::internal::UnsettledRequest> unsettled_requests = {};
 
 public:
     Init() = default;
 
     Init(const Init& x)
-        : character(x.character), marriage(x.marriage), group(x.group), clan(x.clan), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), option(x.option), achievements(x.achievements), quests(x.quests), storage_boxes(x.storage_boxes), friends(x.friends), mail(x.mail), system_mail_ids(x.system_mail_ids), collection_unlocks(x.collection_unlocks), receipts(x.receipts)
+        : character(x.character), marriage(x.marriage), group(x.group), clan(x.clan), items(x.items), spells(x.spells), matchmaking_skills(x.matchmaking_skills), option(x.option), achievements(x.achievements), quests(x.quests), storage_boxes(x.storage_boxes), friends(x.friends), mail(x.mail), system_mail_ids(x.system_mail_ids), collection_unlocks(x.collection_unlocks), unsettled_requests(x.unsettled_requests)
     { }
 
-    Init(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::StorageBox> storage_boxes, std::vector<fb::protocol::internal::FriendEntry> friends, uint32_t mail, std::vector<uint32_t> system_mail_ids, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, std::vector<fb::protocol::internal::Receipt> receipts)
-        : character(character), marriage(marriage), group(group), clan(clan), items(items), spells(spells), matchmaking_skills(matchmaking_skills), option(option), achievements(achievements), quests(quests), storage_boxes(storage_boxes), friends(friends), mail(mail), system_mail_ids(system_mail_ids), collection_unlocks(collection_unlocks), receipts(receipts)
+    Init(const fb::protocol::internal::Character& character, const fb::protocol::internal::Marriage& marriage, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::MatchmakingSkill> matchmaking_skills, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Achievement> achievements, std::vector<fb::protocol::internal::Quest> quests, std::vector<fb::protocol::internal::StorageBox> storage_boxes, std::vector<fb::protocol::internal::FriendEntry> friends, uint32_t mail, std::vector<uint32_t> system_mail_ids, std::vector<fb::protocol::internal::CollectionUnlock> collection_unlocks, std::vector<fb::protocol::internal::UnsettledRequest> unsettled_requests)
+        : character(character), marriage(marriage), group(group), clan(clan), items(items), spells(spells), matchmaking_skills(matchmaking_skills), option(option), achievements(achievements), quests(quests), storage_boxes(storage_boxes), friends(friends), mail(mail), system_mail_ids(system_mail_ids), collection_unlocks(collection_unlocks), unsettled_requests(unsettled_requests)
     { }
 
     Init(const fb::protocol::internal::response::raw::Init& raw)
-        : character(*raw.character()), marriage(*raw.marriage()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), option(*raw.option()), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), storage_boxes(unpack<fb::protocol::internal::StorageBox>(raw.storage_boxes())), friends(unpack<fb::protocol::internal::FriendEntry>(raw.friends())), mail(raw.mail()), system_mail_ids(unpack<uint32_t>(raw.system_mail_ids())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), receipts(unpack<fb::protocol::internal::Receipt>(raw.receipts()))
+        : character(*raw.character()), marriage(*raw.marriage()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), matchmaking_skills(unpack<fb::protocol::internal::MatchmakingSkill>(raw.matchmaking_skills())), option(*raw.option()), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), quests(unpack<fb::protocol::internal::Quest>(raw.quests())), storage_boxes(unpack<fb::protocol::internal::StorageBox>(raw.storage_boxes())), friends(unpack<fb::protocol::internal::FriendEntry>(raw.friends())), mail(raw.mail()), system_mail_ids(unpack<uint32_t>(raw.system_mail_ids())), collection_unlocks(unpack<fb::protocol::internal::CollectionUnlock>(raw.collection_unlocks())), unsettled_requests(unpack<fb::protocol::internal::UnsettledRequest>(raw.unsettled_requests()))
     { }
 
 public:
@@ -9750,9 +9750,9 @@ flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock> build<fb::pro
             flatbuffers::build<uint32_t>(builder, value.mob_id));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::raw::Receipt> build<fb::protocol::internal::Receipt>(FlatBufferBuilder& builder, const fb::protocol::internal::Receipt& value)
+flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest> build<fb::protocol::internal::UnsettledRequest>(FlatBufferBuilder& builder, const fb::protocol::internal::UnsettledRequest& value)
 {
-    return fb::protocol::internal::raw::CreateReceipt(builder,
+    return fb::protocol::internal::raw::CreateUnsettledRequest(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint64_t>(builder, value.id),
             flatbuffers::build<uint8_t>(builder, value.type),
@@ -9815,7 +9815,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> build<fb::protocol
             flatbuffers::build<std::vector<fb::protocol::internal::Quest>>(builder, value.quests),
             flatbuffers::build<std::vector<fb::protocol::internal::CollectionUnlock>>(builder, value.collection_unlocks),
             flatbuffers::build<int64_t>(builder, value.snapshot_time),
-            flatbuffers::build<std::vector<fb::protocol::internal::Receipt>>(builder, value.receipts));
+            flatbuffers::build<std::vector<fb::protocol::internal::UnsettledRequest>>(builder, value.unsettled_requests));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::OptionChange> build<fb::protocol::internal::OptionChange>(FlatBufferBuilder& builder, const fb::protocol::internal::OptionChange& value)
@@ -10617,7 +10617,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Init> build<fb::proto
             flatbuffers::build<uint32_t>(builder, value.mail),
             flatbuffers::build<std::vector<uint32_t>>(builder, value.system_mail_ids),
             flatbuffers::build<std::vector<fb::protocol::internal::CollectionUnlock>>(builder, value.collection_unlocks),
-            flatbuffers::build<std::vector<fb::protocol::internal::Receipt>>(builder, value.receipts));
+            flatbuffers::build<std::vector<fb::protocol::internal::UnsettledRequest>>(builder, value.unsettled_requests));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::MakeCharacter> build<fb::protocol::internal::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::response::MakeCharacter& value)

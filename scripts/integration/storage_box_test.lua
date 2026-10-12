@@ -21,7 +21,7 @@ local FILL_ITEM_NAME    = "목도"
 local MQ_WAIT_MS        = 2000
 local HTTP_DELAY_MS     = 3000
 local C2_FILL_WAIT_MS   = 1000
--- receipt_settle_timer runs every 30s.
+-- unsettled_settle_timer runs every 30s.
 local SETTLE_FIRST_WAIT_MS = 30000
 local SETTLE_POLL_MS       = 5000
 local SETTLE_POLL_COUNT    = 8
@@ -354,7 +354,7 @@ local function assert_entry_gone(bot, title)
     return true, nil
 end
 
--- Grants a fresh box and fails its first receive under the given fault, leaving the claim receipt unsettled.
+-- Grants a fresh box and fails its first receive under the given fault, leaving the claim unsettled.
 local function receive_under_fault(ctx, a, b, title, fault_command)
     b:clear_inventory()
     local ok, msg = grant_flow(a, b:name(), title, MESSAGE, REWARD_ITEM_NAME, REWARD_ITEM_COUNT)
@@ -687,7 +687,7 @@ test_suite {
             return true
         end,
 
-        -- R2: the receipt of a lost claim survives relogin and is settled on login
+        -- R2: the unsettled request of a lost claim survives relogin and is settled on login
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
@@ -745,7 +745,7 @@ test_suite {
                 return false
             end
 
-            -- The receipt must outlive a tick that still cannot reach internal.
+            -- The unsettled request must outlive a tick that still cannot reach internal.
             ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
             if b:item_count(REWARD_ITEM_NAME) ~= 0 then
                 b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")

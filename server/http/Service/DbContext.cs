@@ -51,7 +51,7 @@ namespace Http.Service
 
         public MarriageRepository Marriage => Bind<MarriageRepository>();
 
-        public ReceiptRepository Receipt => Bind<ReceiptRepository>();
+        public UnsettledRequestRepository UnsettledRequest => Bind<UnsettledRequestRepository>();
 
         public ClanMoneyRequestArchiveRepository ClanMoneyRequestArchive => Bind<ClanMoneyRequestArchiveRepository>();
 

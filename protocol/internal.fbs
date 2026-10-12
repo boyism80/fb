@@ -272,7 +272,7 @@ table CollectionUnlock {
     mob_id: uint;
 }
 
-table Receipt {
+table UnsettledRequest {
     user: uint;
     id: ulong;
     type: ubyte;
@@ -326,7 +326,7 @@ table SavePayload {
     quests: [Quest];
     collection_unlocks: [CollectionUnlock];
     snapshot_time: long;
-    receipts: [Receipt];
+    unsettled_requests: [UnsettledRequest];
 }
 
 table OptionChange {

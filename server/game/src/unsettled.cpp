@@ -1,4 +1,4 @@
-#include <fb/game/receipt.h>
+#include <fb/game/unsettled.h>
 
 #include <fb/game/character.h>
 #include <fb/game/server.h>
@@ -11,11 +11,11 @@
 
 using namespace fb::game;
 
-receipts::receipts(character& owner) :
+unsettled_requests::unsettled_requests(character& owner) :
     _owner(owner)
 { }
 
-uint64_t receipts::issue(RECEIPT_TYPE type, uint64_t target, Json::Value detail)
+uint64_t unsettled_requests::add(UNSETTLED_TYPE type, uint64_t target, Json::Value detail)
 {
     this->_owner.assert_thread();
 
@@ -24,7 +24,7 @@ uint64_t receipts::issue(RECEIPT_TYPE type, uint64_t target, Json::Value detail)
     return id;
 }
 
-receipts::entry* receipts::find(uint64_t id)
+unsettled_requests::entry* unsettled_requests::find(uint64_t id)
 {
     this->_owner.assert_thread();
 
@@ -35,31 +35,31 @@ receipts::entry* receipts::find(uint64_t id)
     return &found->second;
 }
 
-std::optional<uint64_t> receipts::find(RECEIPT_TYPE type, uint64_t target) const
+std::optional<uint64_t> unsettled_requests::find(UNSETTLED_TYPE type, uint64_t target) const
 {
     this->_owner.assert_thread();
 
-    for (const auto& [id, receipt] : this->_entries)
+    for (const auto& [id, request] : this->_entries)
     {
-        if (receipt.type == type && receipt.target == target)
+        if (request.type == type && request.target == target)
             return id;
     }
     return std::nullopt;
 }
 
-void receipts::erase(uint64_t id)
+void unsettled_requests::erase(uint64_t id)
 {
     this->_owner.assert_thread();
     this->_entries.erase(id);
 }
 
-const receipts::entry_map& receipts::entries() const
+const unsettled_requests::entry_map& unsettled_requests::entries() const
 {
     this->_owner.assert_thread();
     return this->_entries;
 }
 
-void receipts::load(const std::vector<dto>& rows)
+void unsettled_requests::load(const std::vector<dto>& rows)
 {
     this->_owner.assert_thread();
 
@@ -69,15 +69,15 @@ void receipts::load(const std::vector<dto>& rows)
         auto detail = Json::Value{};
         if (reader.parse(row.detail, detail) == false || detail.isObject() == false)
         {
-            fb::logger::warn("receipts.load bad detail user={} receipt={}", this->_owner.id, row.id);
+            fb::logger::warn("unsettled.load bad detail user={} request={}", this->_owner.id, row.id);
             detail = Json::Value{Json::objectValue};
         }
 
-        this->_entries[row.id] = entry{static_cast<RECEIPT_TYPE>(row.type), row.target, std::move(detail), false};
+        this->_entries[row.id] = entry{static_cast<UNSETTLED_TYPE>(row.type), row.target, std::move(detail), false};
     }
 }
 
-std::vector<receipts::dto> receipts::to_protocol() const
+std::vector<unsettled_requests::dto> unsettled_requests::to_protocol() const
 {
     this->_owner.assert_thread();
 
@@ -87,18 +87,18 @@ std::vector<receipts::dto> receipts::to_protocol() const
 
     auto dtos = std::vector<dto>{};
     dtos.reserve(this->_entries.size());
-    for (const auto& [id, receipt] : this->_entries)
+    for (const auto& [id, request] : this->_entries)
     {
         dtos.push_back(dto{this->_owner.id,
                            id,
-                           static_cast<uint8_t>(receipt.type),
-                           receipt.target,
-                           Json::writeString(builder, receipt.detail)});
+                           static_cast<uint8_t>(request.type),
+                           request.target,
+                           Json::writeString(builder, request.detail)});
     }
     return dtos;
 }
 
-async::task<void> receipts::settle()
+async::task<void> unsettled_requests::settle()
 {
     this->_owner.assert_thread();
 
@@ -106,9 +106,9 @@ async::task<void> receipts::settle()
         co_return;
 
     auto targets = std::vector<uint64_t>{};
-    for (const auto& [id, receipt] : this->_entries)
+    for (const auto& [id, request] : this->_entries)
     {
-        if (receipt.in_flight == false)
+        if (request.in_flight == false)
             targets.push_back(id);
     }
     if (targets.empty())
@@ -129,24 +129,24 @@ async::task<void> receipts::settle()
         {
             switch (type)
             {
-            case RECEIPT_TYPE::CLAN_MONEY:
+            case UNSETTLED_TYPE::CLAN_MONEY:
                 co_await this->_owner.settle_clan_money(id);
                 break;
 
-            case RECEIPT_TYPE::STORAGE_CLAIM:
+            case UNSETTLED_TYPE::STORAGE_CLAIM:
                 std::ignore = co_await this->_owner.storage_box.receive_reward(static_cast<uint32_t>(target));
                 break;
 
-            case RECEIPT_TYPE::MARKET_LIST:
+            case UNSETTLED_TYPE::MARKET_LIST:
                 co_await this->_owner.marketplace.settle_list(id);
                 break;
 
-            case RECEIPT_TYPE::MARKET_PURCHASE:
+            case UNSETTLED_TYPE::MARKET_PURCHASE:
                 co_await this->_owner.marketplace.settle_purchase(id);
                 break;
 
             default:
-                fb::logger::warn("receipts.settle unknown type user={} receipt={} type={}",
+                fb::logger::warn("unsettled.settle unknown type user={} request={} type={}",
                                  owner_id,
                                  id,
                                  static_cast<int>(type));
@@ -155,7 +155,7 @@ async::task<void> receipts::settle()
         }
         catch (const std::exception& e)
         {
-            fb::logger::warn("receipts.settle failed user={} receipt={}: {}", owner_id, id, e.what());
+            fb::logger::warn("unsettled.settle failed user={} request={}: {}", owner_id, id, e.what());
         }
 
         if (weak.expired())

@@ -2,7 +2,7 @@ using StackExchange.Redis;
 
 namespace Http.Model
 {
-    public enum ReceiptType : byte
+    public enum UnsettledType : byte
     {
         ClanMoney = 0,
         StorageClaim = 1,
@@ -10,18 +10,18 @@ namespace Http.Model
         MarketPurchase = 3,
     }
 
-    public class ReceiptKey : BaseModel, IRedisHashKey
+    public class UnsettledRequestKey : BaseModel, IRedisHashKey
     {
         public required uint User { get; set; }
         public ulong Id { get; set; }
         public uint? GetHash() => User;
 
-        public RedisKey GetRedisKey() => $"fb:cache:receipt:{User}";
+        public RedisKey GetRedisKey() => $"fb:cache:unsettled_request:{User}";
 
         public RedisValue GetRedisField() => Id;
     }
 
-    public class Receipt : ReceiptKey, IModel
+    public class UnsettledRequest : UnsettledRequestKey, IModel
     {
         public byte Type { get; set; }
         public ulong Target { get; set; }

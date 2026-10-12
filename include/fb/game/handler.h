@@ -90,12 +90,12 @@
 #include <fb/game/handler/timer/mob_action_timer.h>
 #include <fb/game/handler/timer/mob_respawn_timer.h>
 #include <fb/game/handler/timer/ping_timer.h>
-#include <fb/game/handler/timer/receipt_settle_timer.h>
 #include <fb/game/handler/timer/save_timer.h>
 #include <fb/game/handler/timer/schedule_timer.h>
 #include <fb/game/handler/timer/soliloquy_timer.h>
 #include <fb/game/handler/timer/system_mail_timer.h>
 #include <fb/game/handler/timer/system_storage_box_timer.h>
+#include <fb/game/handler/timer/unsettled_settle_timer.h>
 #include <fb/game/handler/timer/update_time.h>
 
 #endif // FB_GAME_HANDLER_H

@@ -1,5 +1,5 @@
-#ifndef FB_GAME_RECEIPT_H
-#define FB_GAME_RECEIPT_H
+#ifndef FB_GAME_UNSETTLED_H
+#define FB_GAME_UNSETTLED_H
 
 #include <async/task.h>
 #include <json/json.h>
@@ -10,14 +10,14 @@
 #include <vector>
 
 namespace fb::protocol::internal {
-class Receipt;
+class UnsettledRequest;
 }
 
 namespace fb::game {
 
 class character;
 
-enum class RECEIPT_TYPE : uint8_t
+enum class UNSETTLED_TYPE : uint8_t
 {
     CLAN_MONEY      = 0,
     STORAGE_CLAIM   = 1,
@@ -25,18 +25,18 @@ enum class RECEIPT_TYPE : uint8_t
     MARKET_PURCHASE = 3,
 };
 
-class receipts
+class unsettled_requests
 {
 public:
     struct entry
     {
-        RECEIPT_TYPE type      = RECEIPT_TYPE::CLAN_MONEY;
-        uint64_t     target    = 0;
-        Json::Value  detail    = Json::Value{Json::objectValue};
-        bool         in_flight = false;
+        UNSETTLED_TYPE type      = UNSETTLED_TYPE::CLAN_MONEY;
+        uint64_t       target    = 0;
+        Json::Value    detail    = Json::Value{Json::objectValue};
+        bool           in_flight = false;
     };
     using entry_map = std::map<uint64_t, entry>;
-    using dto       = fb::protocol::internal::Receipt;
+    using dto       = fb::protocol::internal::UnsettledRequest;
 
 private:
     character& _owner;
@@ -44,12 +44,12 @@ private:
     bool       _settling = false;
 
 public:
-    explicit receipts(character& owner);
+    explicit unsettled_requests(character& owner);
 
 public:
-    uint64_t issue(RECEIPT_TYPE type, uint64_t target, Json::Value detail = Json::Value{Json::objectValue});
+    uint64_t add(UNSETTLED_TYPE type, uint64_t target, Json::Value detail = Json::Value{Json::objectValue});
     entry*   find(uint64_t id);
-    std::optional<uint64_t> find(RECEIPT_TYPE type, uint64_t target) const;
+    std::optional<uint64_t> find(UNSETTLED_TYPE type, uint64_t target) const;
     void                    erase(uint64_t id);
     const entry_map&        entries() const;
     void                    load(const std::vector<dto>& rows);
@@ -59,4 +59,4 @@ public:
 
 } // namespace fb::game
 
-#endif // FB_GAME_RECEIPT_H
+#endif // FB_GAME_UNSETTLED_H

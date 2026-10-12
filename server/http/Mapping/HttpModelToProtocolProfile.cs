@@ -43,7 +43,7 @@ namespace Http.Mapping
                         .ToDictionary(t => t.Target, t => t.EvaluatedAt)
                 }));
 
-            CreateMap<Http.Model.Receipt, Protocol.Receipt>()
+            CreateMap<Http.Model.UnsettledRequest, Protocol.UnsettledRequest>()
                 .ReverseMap();
 
             CreateMap<Http.Model.Spell, Protocol.Spell>()

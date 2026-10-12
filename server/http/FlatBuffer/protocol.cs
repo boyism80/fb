@@ -465,12 +465,12 @@ namespace Google.FlatBuffers
                 builder.Build(value.User),
                 builder.Build(value.MobId));
         }
-        public static Offset<fb.protocol.@internal.raw.Receipt> Build(this FlatBufferBuilder builder, fb.protocol.@internal.Receipt value)
+        public static Offset<fb.protocol.@internal.raw.UnsettledRequest> Build(this FlatBufferBuilder builder, fb.protocol.@internal.UnsettledRequest value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol.@internal.raw.Receipt.CreateReceipt(builder,
+            return fb.protocol.@internal.raw.UnsettledRequest.CreateUnsettledRequest(builder,
                 builder.Build(value.User),
                 builder.Build(value.Id),
                 builder.Build(value.Type),
@@ -543,7 +543,7 @@ namespace Google.FlatBuffers
                 builder.Build(value.Quests),
                 builder.Build(value.CollectionUnlocks),
                 builder.Build(value.SnapshotTime),
-                builder.Build(value.Receipts));
+                builder.Build(value.UnsettledRequests));
         }
         public static Offset<fb.protocol.@internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol.@internal.OptionChange value)
         {
@@ -1526,7 +1526,7 @@ namespace Google.FlatBuffers
                 builder.Build(value.Mail),
                 builder.Build(value.SystemMailIds),
                 builder.Build(value.CollectionUnlocks),
-                builder.Build(value.Receipts));
+                builder.Build(value.UnsettledRequests));
         }
         public static Offset<fb.protocol.@internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.MakeCharacter value)
         {
@@ -2324,9 +2324,9 @@ namespace Google.FlatBuffers
         {
             return builder.CreateVectorOfTables<fb.protocol.@internal.raw.CollectionUnlock>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.Receipt> value)
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.UnsettledRequest> value)
         {
-            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.Receipt>(value.Select(x => Build(builder, x)).ToArray());
+            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.UnsettledRequest>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.SavePayload> value)
         {
@@ -2461,7 +2461,7 @@ namespace fb.protocol.@internal
         Castle,
         Quest,
         CollectionUnlock,
-        Receipt,
+        UnsettledRequest,
         SystemMail,
         StorageBox,
         StorageWriteEntry,
@@ -3648,19 +3648,19 @@ namespace fb.protocol.@internal
             return new CollectionUnlock(bytes);
         }
     }
-    public class Receipt : IFlatBufferEx
+    public class UnsettledRequest : IFlatBufferEx
     {
-        public int ProtocolType => (int)FlatBufferProtocolType.Receipt;
+        public int ProtocolType => (int)FlatBufferProtocolType.UnsettledRequest;
         public uint User { get; set; } = 0;
         public ulong Id { get; set; } = 0L;
         public byte Type { get; set; } = 0;
         public ulong Target { get; set; } = 0L;
         public string Detail { get; set; } = string.Empty;
 
-        public Receipt()
+        public UnsettledRequest()
         { }
 
-        public Receipt(fb.protocol.@internal.raw.Receipt raw)
+        public UnsettledRequest(fb.protocol.@internal.raw.UnsettledRequest raw)
         {
             User = raw.User;
             Id = raw.Id;
@@ -3669,7 +3669,7 @@ namespace fb.protocol.@internal
             Detail = raw.Detail;
         }
 
-        public Receipt(byte[] bytes) : this(fb.protocol.@internal.raw.Receipt.GetRootAsReceipt(new ByteBuffer(bytes)))
+        public UnsettledRequest(byte[] bytes) : this(fb.protocol.@internal.raw.UnsettledRequest.GetRootAsUnsettledRequest(new ByteBuffer(bytes)))
         { }
 
         public byte[] Serialize()
@@ -3687,9 +3687,9 @@ namespace fb.protocol.@internal
             }
         }
 
-        public static Receipt Deserialize(byte[] bytes)
+        public static UnsettledRequest Deserialize(byte[] bytes)
         {
-            return new Receipt(bytes);
+            return new UnsettledRequest(bytes);
         }
     }
     public class SystemMail : IFlatBufferEx
@@ -3886,7 +3886,7 @@ namespace fb.protocol.@internal
         public List<fb.protocol.@internal.Quest> Quests { get; set; } = new List<fb.protocol.@internal.Quest>();
         public List<fb.protocol.@internal.CollectionUnlock> CollectionUnlocks { get; set; } = new List<fb.protocol.@internal.CollectionUnlock>();
         public long SnapshotTime { get; set; } = 0L;
-        public List<fb.protocol.@internal.Receipt> Receipts { get; set; } = new List<fb.protocol.@internal.Receipt>();
+        public List<fb.protocol.@internal.UnsettledRequest> UnsettledRequests { get; set; } = new List<fb.protocol.@internal.UnsettledRequest>();
 
         public SavePayload()
         { }
@@ -3902,7 +3902,7 @@ namespace fb.protocol.@internal
             Quests = Enumerable.Range(0, raw.QuestsLength).Select(i => raw.Quests(i)).Select(x => new fb.protocol.@internal.Quest(x.Value)).ToList();
             CollectionUnlocks = Enumerable.Range(0, raw.CollectionUnlocksLength).Select(i => raw.CollectionUnlocks(i)).Select(x => new fb.protocol.@internal.CollectionUnlock(x.Value)).ToList();
             SnapshotTime = raw.SnapshotTime;
-            Receipts = Enumerable.Range(0, raw.ReceiptsLength).Select(i => raw.Receipts(i)).Select(x => new fb.protocol.@internal.Receipt(x.Value)).ToList();
+            UnsettledRequests = Enumerable.Range(0, raw.UnsettledRequestsLength).Select(i => raw.UnsettledRequests(i)).Select(x => new fb.protocol.@internal.UnsettledRequest(x.Value)).ToList();
         }
 
         public SavePayload(byte[] bytes) : this(fb.protocol.@internal.raw.SavePayload.GetRootAsSavePayload(new ByteBuffer(bytes)))
@@ -3997,7 +3997,7 @@ namespace fb.protocol.@internal
                 FlatBufferProtocolType.Castle => typeof(fb.protocol.@internal.Castle),
                 FlatBufferProtocolType.Quest => typeof(fb.protocol.@internal.Quest),
                 FlatBufferProtocolType.CollectionUnlock => typeof(fb.protocol.@internal.CollectionUnlock),
-                FlatBufferProtocolType.Receipt => typeof(fb.protocol.@internal.Receipt),
+                FlatBufferProtocolType.UnsettledRequest => typeof(fb.protocol.@internal.UnsettledRequest),
                 FlatBufferProtocolType.SystemMail => typeof(fb.protocol.@internal.SystemMail),
                 FlatBufferProtocolType.StorageBox => typeof(fb.protocol.@internal.StorageBox),
                 FlatBufferProtocolType.StorageWriteEntry => typeof(fb.protocol.@internal.StorageWriteEntry),
@@ -7902,7 +7902,7 @@ namespace fb.protocol.@internal.response
         public uint Mail { get; set; } = 0;
         public List<uint> SystemMailIds { get; set; } = new List<uint>();
         public List<fb.protocol.@internal.CollectionUnlock> CollectionUnlocks { get; set; } = new List<fb.protocol.@internal.CollectionUnlock>();
-        public List<fb.protocol.@internal.Receipt> Receipts { get; set; } = new List<fb.protocol.@internal.Receipt>();
+        public List<fb.protocol.@internal.UnsettledRequest> UnsettledRequests { get; set; } = new List<fb.protocol.@internal.UnsettledRequest>();
 
         public Init()
         { }
@@ -7924,7 +7924,7 @@ namespace fb.protocol.@internal.response
             Mail = raw.Mail;
             SystemMailIds = Enumerable.Range(0, raw.SystemMailIdsLength).Select(i => raw.SystemMailIds(i)).Select(x => x).ToList();
             CollectionUnlocks = Enumerable.Range(0, raw.CollectionUnlocksLength).Select(i => raw.CollectionUnlocks(i)).Select(x => new fb.protocol.@internal.CollectionUnlock(x.Value)).ToList();
-            Receipts = Enumerable.Range(0, raw.ReceiptsLength).Select(i => raw.Receipts(i)).Select(x => new fb.protocol.@internal.Receipt(x.Value)).ToList();
+            UnsettledRequests = Enumerable.Range(0, raw.UnsettledRequestsLength).Select(i => raw.UnsettledRequests(i)).Select(x => new fb.protocol.@internal.UnsettledRequest(x.Value)).ToList();
         }
 
         public Init(byte[] bytes) : this(fb.protocol.@internal.response.raw.Init.GetRootAsInit(new ByteBuffer(bytes)))

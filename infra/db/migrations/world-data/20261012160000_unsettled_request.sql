@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `receipt` (
+CREATE TABLE IF NOT EXISTS `unsettled_request` (
   `user` int unsigned NOT NULL,
   `id` bigint unsigned NOT NULL,
   `type` tinyint unsigned NOT NULL COMMENT '0: clan money, 1: storage claim, 2: marketplace list, 3: marketplace purchase',
@@ -9,26 +9,26 @@ CREATE TABLE IF NOT EXISTS `receipt` (
   PRIMARY KEY (`user`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
-INSERT IGNORE INTO `receipt` (`user`, `id`, `type`, `target`, `detail`)
+INSERT IGNORE INTO `unsettled_request` (`user`, `id`, `type`, `target`, `detail`)
 SELECT `user`, `request_id`, 0, `clan`, JSON_OBJECT('clan_delta', `clan_delta`, 'money_delta', `money_delta`)
 FROM `clan_money_pending`;
 
-INSERT IGNORE INTO `receipt` (`user`, `id`, `type`, `target`, `detail`)
+INSERT IGNORE INTO `unsettled_request` (`user`, `id`, `type`, `target`, `detail`)
 SELECT `user`, `claim_id`, 1, `box`, JSON_OBJECT()
 FROM `storage_claim_pending`;
 
-INSERT IGNORE INTO `receipt` (`user`, `id`, `type`, `target`, `detail`)
+INSERT IGNORE INTO `unsettled_request` (`user`, `id`, `type`, `target`, `detail`)
 SELECT `owner`, `listing_id`, 2, 0, JSON_OBJECT()
 FROM `item`
 WHERE `stored` = -2 AND `listing_id` IS NOT NULL AND `deleted` = 0
 GROUP BY `owner`, `listing_id`;
 
-INSERT IGNORE INTO `receipt` (`user`, `id`, `type`, `target`, `detail`)
+INSERT IGNORE INTO `unsettled_request` (`user`, `id`, `type`, `target`, `detail`)
 SELECT `user`, `pending_key`, 2, 0, JSON_OBJECT('attachments', `attachments`)
 FROM `marketplace_pending`
 WHERE `type` = 0;
 
-INSERT IGNORE INTO `receipt` (`user`, `id`, `type`, `target`, `detail`)
+INSERT IGNORE INTO `unsettled_request` (`user`, `id`, `type`, `target`, `detail`)
 SELECT `user`, `pending_key`, 3, `listing_id`, JSON_OBJECT('count', `expected_purchase_count`, 'price', `expected_total_price`)
 FROM `marketplace_pending`
 WHERE `type` = 1;

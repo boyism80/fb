@@ -177,7 +177,7 @@ table Init {
   mail: uint;
   system_mail_ids: [uint];
   collection_unlocks: [fb.protocol.internal.CollectionUnlock];
-  receipts: [fb.protocol.internal.Receipt];
+  unsettled_requests: [fb.protocol.internal.UnsettledRequest];
 }
 
 

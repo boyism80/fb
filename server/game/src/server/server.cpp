@@ -366,7 +366,7 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  quests,
                                  collection_unlocks,
                                  snapshot_time,
-                                 ch.receipts.to_protocol());
+                                 ch.unsettled.to_protocol());
 }
 
 async::task<void> fb::game::server::save(fb::thread& thread)

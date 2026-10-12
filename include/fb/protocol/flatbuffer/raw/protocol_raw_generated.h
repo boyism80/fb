@@ -106,8 +106,8 @@ struct QuestBuilder;
 struct CollectionUnlock;
 struct CollectionUnlockBuilder;
 
-struct Receipt;
-struct ReceiptBuilder;
+struct UnsettledRequest;
+struct UnsettledRequestBuilder;
 
 struct SystemMail;
 struct SystemMailBuilder;
@@ -3899,8 +3899,8 @@ inline ::flatbuffers::Offset<CollectionUnlock> CreateCollectionUnlock(
   return builder_.Finish();
 }
 
-struct Receipt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef ReceiptBuilder Builder;
+struct UnsettledRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef UnsettledRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_USER = 4,
     VT_ID = 6,
@@ -3935,44 +3935,44 @@ struct Receipt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
 };
 
-struct ReceiptBuilder {
-  typedef Receipt Table;
+struct UnsettledRequestBuilder {
+  typedef UnsettledRequest Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_user(uint32_t user) {
-    fbb_.AddElement<uint32_t>(Receipt::VT_USER, user, 0);
+    fbb_.AddElement<uint32_t>(UnsettledRequest::VT_USER, user, 0);
   }
   void add_id(uint64_t id) {
-    fbb_.AddElement<uint64_t>(Receipt::VT_ID, id, 0);
+    fbb_.AddElement<uint64_t>(UnsettledRequest::VT_ID, id, 0);
   }
   void add_type(uint8_t type) {
-    fbb_.AddElement<uint8_t>(Receipt::VT_TYPE, type, 0);
+    fbb_.AddElement<uint8_t>(UnsettledRequest::VT_TYPE, type, 0);
   }
   void add_target(uint64_t target) {
-    fbb_.AddElement<uint64_t>(Receipt::VT_TARGET, target, 0);
+    fbb_.AddElement<uint64_t>(UnsettledRequest::VT_TARGET, target, 0);
   }
   void add_detail(::flatbuffers::Offset<::flatbuffers::String> detail) {
-    fbb_.AddOffset(Receipt::VT_DETAIL, detail);
+    fbb_.AddOffset(UnsettledRequest::VT_DETAIL, detail);
   }
-  explicit ReceiptBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit UnsettledRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<Receipt> Finish() {
+  ::flatbuffers::Offset<UnsettledRequest> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<Receipt>(end);
+    auto o = ::flatbuffers::Offset<UnsettledRequest>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<Receipt> CreateReceipt(
+inline ::flatbuffers::Offset<UnsettledRequest> CreateUnsettledRequest(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint64_t id = 0,
     uint8_t type = 0,
     uint64_t target = 0,
     ::flatbuffers::Offset<::flatbuffers::String> detail = 0) {
-  ReceiptBuilder builder_(_fbb);
+  UnsettledRequestBuilder builder_(_fbb);
   builder_.add_target(target);
   builder_.add_id(id);
   builder_.add_detail(detail);
@@ -3981,7 +3981,7 @@ inline ::flatbuffers::Offset<Receipt> CreateReceipt(
   return builder_.Finish();
 }
 
-inline ::flatbuffers::Offset<Receipt> CreateReceiptDirect(
+inline ::flatbuffers::Offset<UnsettledRequest> CreateUnsettledRequestDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint64_t id = 0,
@@ -3989,7 +3989,7 @@ inline ::flatbuffers::Offset<Receipt> CreateReceiptDirect(
     uint64_t target = 0,
     const char *detail = nullptr) {
   auto detail__ = detail ? _fbb.CreateString(detail) : 0;
-  return fb::protocol::internal::raw::CreateReceipt(
+  return fb::protocol::internal::raw::CreateUnsettledRequest(
       _fbb,
       user,
       id,
@@ -4453,7 +4453,7 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_QUESTS = 16,
     VT_COLLECTION_UNLOCKS = 18,
     VT_SNAPSHOT_TIME = 20,
-    VT_RECEIPTS = 22
+    VT_UNSETTLED_REQUESTS = 22
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -4482,8 +4482,8 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   int64_t snapshot_time() const {
     return GetField<int64_t>(VT_SNAPSHOT_TIME, 0);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>> *receipts() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>> *>(VT_RECEIPTS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *>(VT_UNSETTLED_REQUESTS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4510,9 +4510,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(collection_unlocks()) &&
            verifier.VerifyVectorOfTables(collection_unlocks()) &&
            VerifyField<int64_t>(verifier, VT_SNAPSHOT_TIME, 8) &&
-           VerifyOffset(verifier, VT_RECEIPTS) &&
-           verifier.VerifyVector(receipts()) &&
-           verifier.VerifyVectorOfTables(receipts()) &&
+           VerifyOffset(verifier, VT_UNSETTLED_REQUESTS) &&
+           verifier.VerifyVector(unsettled_requests()) &&
+           verifier.VerifyVectorOfTables(unsettled_requests()) &&
            verifier.EndTable();
   }
 };
@@ -4548,8 +4548,8 @@ struct SavePayloadBuilder {
   void add_snapshot_time(int64_t snapshot_time) {
     fbb_.AddElement<int64_t>(SavePayload::VT_SNAPSHOT_TIME, snapshot_time, 0);
   }
-  void add_receipts(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>>> receipts) {
-    fbb_.AddOffset(SavePayload::VT_RECEIPTS, receipts);
+  void add_unsettled_requests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests) {
+    fbb_.AddOffset(SavePayload::VT_UNSETTLED_REQUESTS, unsettled_requests);
   }
   explicit SavePayloadBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -4573,10 +4573,10 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
     int64_t snapshot_time = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>>> receipts = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0) {
   SavePayloadBuilder builder_(_fbb);
   builder_.add_snapshot_time(snapshot_time);
-  builder_.add_receipts(receipts);
+  builder_.add_unsettled_requests(unsettled_requests);
   builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_quests(quests);
   builder_.add_achievements(achievements);
@@ -4599,14 +4599,14 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
     int64_t snapshot_time = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>> *receipts = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
-  auto receipts__ = receipts ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>>(*receipts) : 0;
+  auto unsettled_requests__ = unsettled_requests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>(*unsettled_requests) : 0;
   return fb::protocol::internal::raw::CreateSavePayload(
       _fbb,
       character,
@@ -4618,7 +4618,7 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
       quests__,
       collection_unlocks__,
       snapshot_time,
-      receipts__);
+      unsettled_requests__);
 }
 
 struct OptionChange FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -11788,7 +11788,7 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MAIL = 28,
     VT_SYSTEM_MAIL_IDS = 30,
     VT_COLLECTION_UNLOCKS = 32,
-    VT_RECEIPTS = 34
+    VT_UNSETTLED_REQUESTS = 34
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -11835,8 +11835,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *>(VT_COLLECTION_UNLOCKS);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>> *receipts() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>> *>(VT_RECEIPTS);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *>(VT_UNSETTLED_REQUESTS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -11877,9 +11877,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_COLLECTION_UNLOCKS) &&
            verifier.VerifyVector(collection_unlocks()) &&
            verifier.VerifyVectorOfTables(collection_unlocks()) &&
-           VerifyOffset(verifier, VT_RECEIPTS) &&
-           verifier.VerifyVector(receipts()) &&
-           verifier.VerifyVectorOfTables(receipts()) &&
+           VerifyOffset(verifier, VT_UNSETTLED_REQUESTS) &&
+           verifier.VerifyVector(unsettled_requests()) &&
+           verifier.VerifyVectorOfTables(unsettled_requests()) &&
            verifier.EndTable();
   }
 };
@@ -11933,8 +11933,8 @@ struct InitBuilder {
   void add_collection_unlocks(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks) {
     fbb_.AddOffset(Init::VT_COLLECTION_UNLOCKS, collection_unlocks);
   }
-  void add_receipts(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>>> receipts) {
-    fbb_.AddOffset(Init::VT_RECEIPTS, receipts);
+  void add_unsettled_requests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests) {
+    fbb_.AddOffset(Init::VT_UNSETTLED_REQUESTS, unsettled_requests);
   }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -11964,9 +11964,9 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     uint32_t mail = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> system_mail_ids = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>>> receipts = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0) {
   InitBuilder builder_(_fbb);
-  builder_.add_receipts(receipts);
+  builder_.add_unsettled_requests(unsettled_requests);
   builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_system_mail_ids(system_mail_ids);
   builder_.add_mail(mail);
@@ -12002,7 +12002,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     uint32_t mail = 0,
     const std::vector<uint32_t> *system_mail_ids = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>> *receipts = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -12012,7 +12012,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
   auto friends__ = friends ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>(*friends) : 0;
   auto system_mail_ids__ = system_mail_ids ? _fbb.CreateVector<uint32_t>(*system_mail_ids) : 0;
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
-  auto receipts__ = receipts ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Receipt>>(*receipts) : 0;
+  auto unsettled_requests__ = unsettled_requests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>(*unsettled_requests) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -12030,7 +12030,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       mail,
       system_mail_ids__,
       collection_unlocks__,
-      receipts__);
+      unsettled_requests__);
 }
 
 struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -14,10 +14,10 @@
 #include <fb/game/mob.h>
 #include <fb/game/protocol/group_portrait.h>
 #include <fb/game/quest.h>
-#include <fb/game/receipt.h>
 #include <fb/game/stat.h>
 #include <fb/game/storage.h>
 #include <fb/game/trade.h>
+#include <fb/game/unsettled.h>
 #include <fb/protocol/client_version.h>
 #include <fb/socket.h>
 #include <fb/synchronized.h>
@@ -182,7 +182,7 @@ public:
     fb::game::mail_box                            mail_box = fb::game::mail_box(*this);
     fb::game::storage_box                         storage_box;
     fb::game::marketplace                         marketplace;
-    fb::game::receipts                            receipts;
+    fb::game::unsettled_requests                  unsettled;
     fb::game::matchmaker                          matchmaker;
     fb::lua::context*                             dialog = nullptr;
     achievement_map_t                             achievements;

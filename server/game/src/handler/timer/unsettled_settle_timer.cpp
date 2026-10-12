@@ -1,4 +1,4 @@
-#include <fb/game/handler/timer/receipt_settle_timer.h>
+#include <fb/game/handler/timer/unsettled_settle_timer.h>
 
 #include <fb/game/thread_params.h>
 
@@ -7,17 +7,17 @@
 
 using namespace fb::game::handler::timer;
 
-receipt_settle_timer::receipt_settle_timer(fb::game::server& server) :
+unsettled_settle_timer::unsettled_settle_timer(fb::game::server& server) :
     fb::handler::timer<fb::game::server>(server)
 { }
 
-async::task<void> receipt_settle_timer::handle(const fb::model::datetime& now, std::thread::id id)
+async::task<void> unsettled_settle_timer::handle(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
     co_await params->characters.foreach ([](auto& character) {
-        std::ignore = character->receipts.settle();
+        std::ignore = character->unsettled.settle();
     });
 
     co_return;

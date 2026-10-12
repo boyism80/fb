@@ -30,7 +30,7 @@ local START_MONEY = 1000
 local AMOUNT      = 100
 
 local MQ_WAIT_MS = 2000
--- receipt_settle_timer runs every 30s.
+-- unsettled_settle_timer runs every 30s.
 local SETTLE_FIRST_WAIT_MS = 30000
 local SETTLE_POLL_MS       = 5000
 local SETTLE_POLL_COUNT    = 8
@@ -219,7 +219,7 @@ local function wait_money(ctx, bot, expected, first_wait_ms)
     return false
 end
 
--- Checks both balances after a later tick, so a settled receipt cannot pay or refund twice.
+-- Checks both balances after a later tick, so a settled request cannot pay or refund twice.
 local function assert_stable(ctx, bot, money, clan)
     ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
     if bot:money() ~= money then

@@ -84,17 +84,17 @@ void storage_box::init_claims()
 {
     this->_owner.assert_thread();
 
-    for (const auto& [id, receipt] : this->_owner.receipts.entries())
+    for (const auto& [id, request] : this->_owner.unsettled.entries())
     {
-        if (receipt.type != RECEIPT_TYPE::STORAGE_CLAIM)
+        if (request.type != UNSETTLED_TYPE::STORAGE_CLAIM)
             continue;
 
-        auto it = this->_entries.find(static_cast<uint32_t>(receipt.target));
+        auto it = this->_entries.find(static_cast<uint32_t>(request.target));
         if (it == this->_entries.end())
         {
             fb::logger::warn("storage_box.init_claims box missing user={} box={} claim={}",
                              this->_owner.id,
-                             receipt.target,
+                             request.target,
                              id);
             continue;
         }
@@ -205,8 +205,8 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
     }
 
-    auto pending = this->_owner.receipts.find(RECEIPT_TYPE::STORAGE_CLAIM, entry_id);
-    if (pending.has_value() && this->_owner.receipts.find(pending.value())->in_flight)
+    auto pending = this->_owner.unsettled.find(UNSETTLED_TYPE::STORAGE_CLAIM, entry_id);
+    if (pending.has_value() && this->_owner.unsettled.find(pending.value())->in_flight)
         co_return false;
 
     if (it->second.received)
@@ -223,8 +223,8 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     auto world    = this->_owner.world();
     auto owner_id = this->_owner.id;
     auto claim_id =
-        pending.has_value() ? pending.value() : this->_owner.receipts.issue(RECEIPT_TYPE::STORAGE_CLAIM, entry_id);
-    this->_owner.receipts.find(claim_id)->in_flight = true;
+        pending.has_value() ? pending.value() : this->_owner.unsettled.add(UNSETTLED_TYPE::STORAGE_CLAIM, entry_id);
+    this->_owner.unsettled.find(claim_id)->in_flight = true;
 
     internal_resp::ClaimStorageBox claim_resp{};
     auto                           claim_lost = false;
@@ -252,8 +252,8 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
     }
 
-    if (auto receipt = ptr->receipts.find(claim_id); receipt != nullptr)
-        receipt->in_flight = false;
+    if (auto request = ptr->unsettled.find(claim_id); request != nullptr)
+        request->in_flight = false;
 
     it = ptr->storage_box._entries.find(entry_id);
     if (it == ptr->storage_box._entries.end())
@@ -262,7 +262,8 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
     }
 
-    // An exception or an unhandled server error leaves the claim unknown, so the receipt is kept for the retry.
+    // An exception or an unhandled server error leaves the claim unknown, so the unsettled request is kept for the
+    // retry.
     if (claim_lost)
         co_return false;
 
@@ -274,7 +275,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                          entry_id,
                          claim_resp.error);
         if (claim_error != fb::model::enum_value::ERROR_CODE::UNHANDLED)
-            ptr->receipts.erase(claim_id);
+            ptr->unsettled.erase(claim_id);
         co_return false;
     }
 
@@ -295,14 +296,14 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                           e.what());
         ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->receipts.erase(claim_id);
+            ptr->unsettled.erase(claim_id);
         co_return false;
     }
 
     if (granted == false)
     {
-        if (auto receipt = ptr->receipts.find(claim_id); receipt != nullptr)
-            receipt->in_flight = true;
+        if (auto request = ptr->unsettled.find(claim_id); request != nullptr)
+            request->in_flight = true;
 
         internal_resp::UnclaimStorageBox unclaim_resp{};
         auto                             unclaimed = false;
@@ -340,18 +341,18 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
 
             if (unclaimed)
             {
-                ptr->receipts.erase(claim_id);
+                ptr->unsettled.erase(claim_id);
             }
-            else if (auto receipt = ptr->receipts.find(claim_id); receipt != nullptr)
+            else if (auto request = ptr->unsettled.find(claim_id); request != nullptr)
             {
-                receipt->in_flight = false;
+                request->in_flight = false;
             }
         }
 
         co_return false;
     }
 
-    ptr->receipts.erase(claim_id);
+    ptr->unsettled.erase(claim_id);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);

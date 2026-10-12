@@ -31,7 +31,7 @@ local DIALOG_TIMEOUT_MS = 30000
 local LIST_DELAY_MS   = 5000
 local LOCK_SETTLE_MS  = 500
 local LOCK_PROBE_MS   = 3000
--- receipt_settle_timer runs every 30s.
+-- unsettled_settle_timer runs every 30s.
 local RESTORE_FIRST_WAIT_MS = 30000
 local RESTORE_POLL_MS       = 5000
 local RESTORE_POLL_COUNT    = 8
@@ -2007,7 +2007,7 @@ test_suite {
             return true
         end,
 
-        -- R2: a refund that fails to reach storage keeps the receipt and is retried exactly once
+        -- R2: a refund that fails to reach storage keeps the unsettled request and is retried exactly once
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
@@ -2144,7 +2144,7 @@ test_suite {
             return true
         end,
 
-        -- R4: the receipt of a purchase that never arrived survives relogin and is refunded on login
+        -- R4: the unsettled request of a purchase that never arrived survives relogin and is refunded on login
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
