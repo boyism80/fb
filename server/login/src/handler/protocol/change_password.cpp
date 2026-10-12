@@ -9,6 +9,9 @@
 #include <cstdint>
 #include <exception>
 #include <format>
+#include <optional>
+#include <string>
+#include <utility>
 
 using namespace fb::login::handler::protocol;
 
@@ -25,7 +28,8 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
     if (session.data() == nullptr)
         co_return true;
 
-    auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
+    auto weak         = session.weak_from_this_as<fb::socket<fb::login::session>>();
+    auto lock_message = std::optional<std::pair<std::string, uint8_t>>{};
     try
     {
         // co_await this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
@@ -112,18 +116,22 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
         if (weak.expired() == false)
         {
             if (session.data()->password_failures >= fb::login::session::MAX_PASSWORD_FAILURES)
-            {
-                co_await session.send(response::message(e.what(), e.type()));
-                co_return false;
-            }
-
-            session.send(response::message(e.what(), e.type()));
+                lock_message = std::make_pair(std::string(e.what()), static_cast<uint8_t>(e.type()));
+            else
+                session.send(response::message(e.what(), e.type()));
         }
     }
     catch (std::exception& e)
     {
         if (weak.expired() == false)
             session.send(response::message(e.what(), 0x0E));
+    }
+
+    // co_await is not allowed inside a catch block.
+    if (lock_message.has_value())
+    {
+        co_await session.send(response::message(lock_message->first, lock_message->second));
+        co_return false;
     }
 
     co_return true;

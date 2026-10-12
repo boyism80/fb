@@ -15,6 +15,7 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <utility>
 
 using namespace fb::login::handler::protocol;
 using table = fb::model::table;
@@ -38,7 +39,8 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
     auto pw    = std::string(request.pw);
     co_await this->server.sleep(std::chrono::seconds(delay));
 
-    auto fd = session.fd();
+    auto fd           = session.fd();
+    auto lock_message = std::optional<std::pair<std::string, uint8_t>>{};
     try
     {
         this->server.assert_account(name, pw);
@@ -151,12 +153,9 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
         if (weak.expired() == false)
         {
             if (session.data()->password_failures >= fb::login::session::MAX_PASSWORD_FAILURES)
-            {
-                co_await session.send(response::message(e.what(), e.type()));
-                co_return false;
-            }
-
-            session.send(response::message(e.what(), e.type()));
+                lock_message = std::make_pair(std::string(e.what()), static_cast<uint8_t>(e.type()));
+            else
+                session.send(response::message(e.what(), e.type()));
         }
     }
     catch (boost::system::error_code& e)
@@ -168,6 +167,13 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
     {
         if (weak.expired() == false)
             session.send(response::message(e.what(), 0x0E));
+    }
+
+    // co_await is not allowed inside a catch block.
+    if (lock_message.has_value())
+    {
+        co_await session.send(response::message(lock_message->first, lock_message->second));
+        co_return false;
     }
 
     co_return true;
