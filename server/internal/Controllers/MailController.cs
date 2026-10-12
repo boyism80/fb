@@ -181,7 +181,7 @@ namespace Internal.Controllers
                     };
                 }
 
-                var written = await _dbContext.Mail.DeliverSystemMany(request.World,
+                var (written, failed) = await _dbContext.Mail.DeliverSystemMany(request.World,
                     request.SystemMailId,
                     request.Sender,
                     users,
@@ -212,6 +212,16 @@ namespace Internal.Controllers
                 };
 
                 await _rabbitMqService.NotifySavedAsync(response, "mail", request.World);
+
+                // Shards that committed are notified above; the error makes the game retry the rest.
+                if (failed)
+                {
+                    return new Response.DeliverSystemMail
+                    {
+                        Host  = request.Host,
+                        Error = (uint)ErrorCode.Unhandled
+                    };
+                }
                 return response;
             }
             catch (LogicException e)

@@ -484,6 +484,7 @@ namespace Internal.Controllers
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
             var unsettledRequests = (await _dbContext.UnsettledRequest.Get(world, uid)).ToList();
             var friends = await _friendService.GetEntries(world, uid);
+            var activeSystemMailIds = (await _dbContext.SystemMail.GetAll(world)).Select(x => x.Id).ToHashSet();
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
                 {
@@ -538,7 +539,9 @@ namespace Internal.Controllers
                 Clan = sync.Clan,
                 Group = sync.Group,
                 Mail = await _dbContext.Mail.Unread(world, uid),
-                SystemMailIds = await _dbContext.Mail.GetSystemMailIds(world, uid)
+                SystemMailIds = (await _dbContext.Mail.GetSystemMailIds(world, uid))
+                    .Where(activeSystemMailIds.Contains)
+                    .ToList()
             };
         }
 

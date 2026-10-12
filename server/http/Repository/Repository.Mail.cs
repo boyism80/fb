@@ -192,7 +192,7 @@ namespace Http.Reepository
             return results;
         }
 
-        public async Task<List<MailWriteResult>> DeliverSystemMany(uint world,
+        public async Task<(List<MailWriteResult> Written, bool Failed)> DeliverSystemMany(uint world,
             uint systemMailId,
             uint sender,
             IReadOnlyList<uint> users,
@@ -200,13 +200,14 @@ namespace Http.Reepository
             string contents)
         {
             if (users == null || users.Count == 0)
-                return new List<MailWriteResult>();
+                return (new List<MailWriteResult>(), false);
 
             var distinctUsers = users.Where(u => u != 0).Distinct().ToArray();
             if (distinctUsers.Length == 0)
-                return new List<MailWriteResult>();
+                return (new List<MailWriteResult>(), false);
 
             var results = new List<MailWriteResult>();
+            var failed  = false;
 
             foreach (var (connection, userIds) in _dbContext.GetShardConnections(world, distinctUsers))
             {
@@ -241,7 +242,10 @@ namespace Http.Reepository
 
                     var success = await reader.ReadFirstAsync<bool>();
                     if (!success)
+                    {
+                        failed = true;
                         continue;
+                    }
 
                     var mails = (await reader.ReadAsync<Mail>()).ToList();
                     var unreadByUser = (await reader.ReadAsync<MailUnreadCount>())
@@ -258,7 +262,7 @@ namespace Http.Reepository
                 }
             }
 
-            return results;
+            return (results, failed);
         }
 
         public async Task<Mail> Write(uint world, string user, uint sender, string title, string contents)
@@ -304,7 +308,7 @@ namespace Http.Reepository
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
             var ids = await conn.QueryAsync<uint>(
-                "SELECT DISTINCT `system_mail_id` FROM `mail` WHERE `user` = @user AND `deleted` = 0 AND `system_mail_id` IS NOT NULL",
+                "SELECT DISTINCT `system_mail_id` FROM `mail` WHERE `user` = @user AND `system_mail_id` IS NOT NULL",
                 new { user });
             return ids.ToList();
         }
