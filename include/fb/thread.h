@@ -70,6 +70,7 @@ private:
 
 private:
     fb::synchronized<std::queue<std::function<void()>>> _queue;
+    fb::async_shared_mutex::scheduler_type              _scheduler;
 
 public:
     thread(uint8_t index);

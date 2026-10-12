@@ -18,7 +18,11 @@
 #include <utility>
 
 fb::thread::thread(uint8_t index) :
-    _index(index)
+    _index(index),
+    _scheduler([this](std::function<void()> fn) {
+        auto guard = this->_queue.enter_write();
+        guard.value().push(std::move(fn));
+    })
 {
     this->_thread = std::thread(std::bind(&fb::thread::on_thread, this, std::placeholders::_1), index);
 }
@@ -31,6 +35,8 @@ fb::thread::~thread()
 void fb::thread::on_thread(uint8_t index)
 {
     constexpr auto term = 100ms;
+
+    async_shared_mutex::thread_scheduler = &this->_scheduler;
 
     while (!this->_exit)
     {

@@ -91,101 +91,97 @@ private:
 class async_shared_mutex
 {
 public:
-    // Every state check and waiter registration happens under _mutex in one step.
-    // Checking outside it let an unlock slip in between and leave the new waiter without a wakeup.
-    async::task<void> lock_shared()
+    using scheduler_type = std::function<void(std::function<void()>)>;
+
+    // Each logic thread installs its scheduler here. A waiter resumes through the scheduler of the
+    // thread it waited on, never inline on the releasing thread.
+    static inline thread_local scheduler_type* thread_scheduler = nullptr;
+
+private:
+    struct waiter
     {
         std::shared_ptr<async::task_completion_source<void>> tcs;
-        {
-            std::lock_guard lk(this->_mutex);
-            if (this->_writer == false && this->_writer_waiters.empty())
-            {
-                this->_reader_count++;
-                co_return;
-            }
+        scheduler_type*                                      scheduler;
+    };
 
-            tcs = std::make_shared<async::task_completion_source<void>>();
-            this->_reader_waiters.push(tcs);
+public:
+    // Every state check and waiter registration happens under _mutex in one step.
+    // Checking outside it let an unlock slip in between and leave the new waiter without a wakeup.
+    //
+    // Release never hands the lock to a waiter; it only wakes waiters, which retry on their own thread.
+    // A waiter therefore holds nothing while it waits for its thread, so a thread blocking on the
+    // same lock synchronously cannot deadlock with it.
+    async::task<void> lock_shared()
+    {
+        while (true)
+        {
+            auto tcs = std::make_shared<async::task_completion_source<void>>();
+            {
+                std::lock_guard lk(this->_mutex);
+                if (this->_writer == false && this->_writers_waiting == 0)
+                {
+                    this->_reader_count++;
+                    co_return;
+                }
+
+                this->_waiters.push_back(waiter{tcs, thread_scheduler});
+            }
+            co_await tcs->task();
         }
-        co_await tcs->task();
     }
 
     void unlock_shared()
     {
-        std::shared_ptr<async::task_completion_source<void>> writer;
+        auto waiters = std::vector<waiter>{};
         {
             std::lock_guard lk(this->_mutex);
             this->_reader_count--;
-            if (this->_reader_count == 0 && this->_writer_waiters.empty() == false)
-            {
-                writer = this->_writer_waiters.front();
-                this->_writer_waiters.pop();
-                this->_writer = true;
-            }
+            if (this->_reader_count == 0)
+                waiters = std::exchange(this->_waiters, {});
         }
-
-        if (writer)
-            writer->set_value();
+        wake(waiters);
     }
 
     async::task<void> lock()
     {
-        std::shared_ptr<async::task_completion_source<void>> tcs;
         {
             std::lock_guard lk(this->_mutex);
-            if (this->_reader_count == 0 && this->_writer == false)
-            {
-                this->_writer = true;
-                co_return;
-            }
-
-            tcs = std::make_shared<async::task_completion_source<void>>();
-            this->_writer_waiters.push(tcs);
+            this->_writers_waiting++;
         }
-        co_await tcs->task();
+
+        while (true)
+        {
+            auto tcs = std::make_shared<async::task_completion_source<void>>();
+            {
+                std::lock_guard lk(this->_mutex);
+                if (this->_reader_count == 0 && this->_writer == false)
+                {
+                    this->_writer = true;
+                    this->_writers_waiting--;
+                    co_return;
+                }
+
+                this->_waiters.push_back(waiter{tcs, thread_scheduler});
+            }
+            co_await tcs->task();
+        }
     }
 
     void unlock()
     {
-        std::shared_ptr<async::task_completion_source<void>>              next_writer;
-        std::vector<std::shared_ptr<async::task_completion_source<void>>> readers;
+        auto waiters = std::vector<waiter>{};
         {
             std::lock_guard lk(this->_mutex);
             this->_writer = false;
-
-            if (!this->_writer_waiters.empty())
-            {
-                next_writer = this->_writer_waiters.front();
-                this->_writer_waiters.pop();
-                this->_writer = true;
-            }
-            else
-            {
-                while (!this->_reader_waiters.empty())
-                {
-                    readers.push_back(this->_reader_waiters.front());
-                    this->_reader_waiters.pop();
-                    this->_reader_count++;
-                }
-            }
+            waiters       = std::exchange(this->_waiters, {});
         }
-
-        // Resume waiters outside the mutex. set_value() may run completions on this
-        // thread, and those completions can re-enter lock/unlock_shared.
-        if (next_writer)
-        {
-            next_writer->set_value();
-            return;
-        }
-
-        for (auto& reader : readers)
-            reader->set_value();
+        wake(waiters);
     }
 
     bool try_lock_shared()
     {
         std::lock_guard lk(this->_mutex);
-        if (this->_writer == false && this->_writer_waiters.empty())
+        if (this->_writer == false && this->_writers_waiting == 0)
         {
             this->_reader_count++;
             return true;
@@ -205,11 +201,29 @@ public:
     }
 
 private:
-    int                                                              _reader_count = 0;
-    bool                                                             _writer       = false;
-    mutable std::mutex                                               _mutex;
-    std::queue<std::shared_ptr<async::task_completion_source<void>>> _reader_waiters;
-    std::queue<std::shared_ptr<async::task_completion_source<void>>> _writer_waiters;
+    static void wake(std::vector<waiter>& waiters)
+    {
+        for (auto& entry : waiters)
+        {
+            if (entry.scheduler != nullptr)
+            {
+                (*entry.scheduler)([tcs = entry.tcs]() {
+                    tcs->set_value();
+                });
+            }
+            else
+            {
+                entry.tcs->set_value();
+            }
+        }
+    }
+
+private:
+    int                 _reader_count    = 0;
+    int                 _writers_waiting = 0;
+    bool                _writer          = false;
+    mutable std::mutex  _mutex;
+    std::vector<waiter> _waiters;
 };
 
 template <typename ValueType>
