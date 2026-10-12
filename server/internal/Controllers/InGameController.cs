@@ -482,9 +482,7 @@ namespace Internal.Controllers
             var quests = await _dbContext.Quest.Get(world, uid);
             var collectionUnlocks = await _dbContext.CollectionUnlock.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
-            var marketplacePendings = await _dbContext.MarketplacePending.Get(world, uid);
-            var clanMoneyPendings = await _dbContext.ClanMoneyPending.Get(world, uid);
-            var storageClaimPendings = (await _dbContext.StorageClaimPending.Get(world, uid)).ToList();
+            var receipts = (await _dbContext.Receipt.Get(world, uid)).ToList();
             var friends = await _friendService.GetEntries(world, uid);
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
@@ -514,7 +512,10 @@ namespace Internal.Controllers
 
             await _dbContext.SaveChangesAsync();
             var now = DateTime.Now;
-            var claimingBoxes = storageClaimPendings.Select(x => x.Box).ToHashSet();
+            var claimingBoxes = receipts
+                .Where(x => x.Type == (byte)ReceiptType.StorageClaim)
+                .Select(x => (uint)x.Target)
+                .ToHashSet();
             var character = _mapper.Map<Protocol.Character>(ch);
             character.Pw = string.Empty;
             return new Response.Init
@@ -531,9 +532,7 @@ namespace Internal.Controllers
                     .Where(box => box.ExpiredDate == null || box.ExpiredDate > now || claimingBoxes.Contains(box.Id))
                     .Select(_mapper.Map<Protocol.StorageBox>)
                     .ToList(),
-                MarketplacePendings = marketplacePendings.Select(_mapper.Map<Protocol.MarketplacePending>).ToList(),
-                ClanMoneyPendings = clanMoneyPendings.Select(_mapper.Map<Protocol.ClanMoneyPending>).ToList(),
-                StorageClaimPendings = storageClaimPendings.Select(_mapper.Map<Protocol.StorageClaimPending>).ToList(),
+                Receipts = receipts.Select(_mapper.Map<Protocol.Receipt>).ToList(),
                 Friends = friends,
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
@@ -561,23 +560,6 @@ namespace Internal.Controllers
 
             if (request.Length > 0)
                 setMany(request);
-        }
-
-        private void ReplaceMarketplacePendings(
-            uint world,
-            uint userId,
-            MarketplacePending[] request,
-            IReadOnlyList<MarketplacePending> existing)
-        {
-            var src = request.ToDictionary(x => x.PendingKey);
-            var existingByKey = existing.ToDictionary(x => x.PendingKey);
-
-            var removedKeys = existingByKey.Keys.Except(src.Keys).ToArray();
-            if (removedKeys.Length > 0)
-                _dbContext.MarketplacePending.Delete(world, userId, removedKeys);
-
-            if (src.Count > 0)
-                _dbContext.MarketplacePending.Set(world, src.Values.ToArray());
         }
 
         [HttpPost("save")]
@@ -734,12 +716,10 @@ namespace Internal.Controllers
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
             var collectionUnlocksTask = _dbContext.CollectionUnlock.GetMany(world, characterIds);
-            var marketplacePendingsTask = _dbContext.MarketplacePending.GetMany(world, characterIds);
-            var clanMoneyPendingsTask = _dbContext.ClanMoneyPending.GetMany(world, characterIds);
-            var storageClaimPendingsTask = _dbContext.StorageClaimPending.GetMany(world, characterIds);
+            var receiptsTask = _dbContext.Receipt.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                collectionUnlocksTask, marketplacePendingsTask, clanMoneyPendingsTask, storageClaimPendingsTask);
+                collectionUnlocksTask, receiptsTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -747,9 +727,7 @@ namespace Internal.Controllers
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
             var collectionUnlocksByOwner = await collectionUnlocksTask;
-            var marketplacePendingsByOwner = await marketplacePendingsTask;
-            var clanMoneyPendingsByOwner = await clanMoneyPendingsTask;
-            var storageClaimPendingsByOwner = await storageClaimPendingsTask;
+            var receiptsByOwner = await receiptsTask;
 
             foreach (var data in payloads)
             {
@@ -763,9 +741,7 @@ namespace Internal.Controllers
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
                     collectionUnlocksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<CollectionUnlock>(),
-                    marketplacePendingsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<MarketplacePending>(),
-                    clanMoneyPendingsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<ClanMoneyPending>(),
-                    storageClaimPendingsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageClaimPending>());
+                    receiptsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Receipt>());
             }
         }
 
@@ -778,9 +754,7 @@ namespace Internal.Controllers
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
             IReadOnlyList<CollectionUnlock> existingCollectionUnlocks,
-            IReadOnlyList<MarketplacePending> existingMarketplacePendings,
-            IReadOnlyList<ClanMoneyPending> existingClanMoneyPendings,
-            IReadOnlyList<StorageClaimPending> existingStorageClaimPendings)
+            IReadOnlyList<Receipt> existingReceipts)
         {
             var characterId = data.Character.Id;
 
@@ -836,25 +810,13 @@ namespace Internal.Controllers
                 removed => _dbContext.CollectionUnlock.Delete(world, removed),
                 alive => _dbContext.CollectionUnlock.Set(world, alive));
 
-            var marketplacePendings = _mapper.Map<Protocol.MarketplacePending[], MarketplacePending[]>(
-                data.MarketplacePendings?.ToArray() ?? Array.Empty<Protocol.MarketplacePending>());
-            ReplaceMarketplacePendings(world, characterId, marketplacePendings, existingMarketplacePendings);
-
-            var clanMoneyPendings = _mapper.Map<Protocol.ClanMoneyPending[], ClanMoneyPending[]>(
-                data.ClanMoneyPendings?.ToArray() ?? Array.Empty<Protocol.ClanMoneyPending>());
+            var receipts = _mapper.Map<Protocol.Receipt[], Receipt[]>(
+                data.Receipts?.ToArray() ?? Array.Empty<Protocol.Receipt>());
             ReplaceHashEntities(
-                clanMoneyPendings,
-                existingClanMoneyPendings,
-                removed => _dbContext.ClanMoneyPending.Delete(world, removed),
-                alive => _dbContext.ClanMoneyPending.Set(world, alive));
-
-            var storageClaimPendings = _mapper.Map<Protocol.StorageClaimPending[], StorageClaimPending[]>(
-                data.StorageClaimPendings?.ToArray() ?? Array.Empty<Protocol.StorageClaimPending>());
-            ReplaceHashEntities(
-                storageClaimPendings,
-                existingStorageClaimPendings,
-                removed => _dbContext.StorageClaimPending.Delete(world, removed),
-                alive => _dbContext.StorageClaimPending.Set(world, alive));
+                receipts,
+                existingReceipts,
+                removed => _dbContext.Receipt.Delete(world, removed),
+                alive => _dbContext.Receipt.Set(world, alive));
         }
 
         [HttpPost("option")]

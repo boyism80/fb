@@ -21,6 +21,11 @@ local FILL_ITEM_NAME    = "목도"
 local MQ_WAIT_MS        = 2000
 local HTTP_DELAY_MS     = 3000
 local C2_FILL_WAIT_MS   = 1000
+-- receipt_settle_timer runs every 30s.
+local SETTLE_FIRST_WAIT_MS = 30000
+local SETTLE_POLL_MS       = 5000
+local SETTLE_POLL_COUNT    = 8
+local CLAIM_PATH           = "/storage/claim"
 
 local MSG_GRANT_NEED_REWARD = "보상이 하나 이상 필요합니다."
 local MSG_GRANT_OK          = "지급이 완료되었습니다."
@@ -46,6 +51,8 @@ local function cleanup_bot(bot)
     bot:chat("/아이템삭제")
     bot:money(0)
     bot:chat("/HTTP지연 0")
+    bot:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+    bot:chat("/HTTP보류 off")
 end
 
 local function find_menu_option(packet, text)
@@ -321,6 +328,65 @@ local function prepare_one_slot_free(bot)
     bot:drop_item(0, false)
 end
 
+local function wait_item_count(ctx, bot, item_name, expected, first_wait_ms)
+    ctx:sleep(first_wait_ms)
+    for attempt = 1, SETTLE_POLL_COUNT do
+        if bot:item_count(item_name) == expected then
+            return true
+        end
+        progress(bot, string.format("reward not settled yet attempt=%d count=%d expected=%d",
+            attempt, bot:item_count(item_name), expected))
+        ctx:sleep(SETTLE_POLL_MS)
+    end
+    return false
+end
+
+-- The anchor box keeps the storage list non-empty, so a missing title means the box is no longer listed.
+local function assert_entry_gone(bot, title)
+    local detail, err = open_storage_entry_detail(bot, title)
+    if detail ~= nil then
+        close_detail_with_prev(bot)
+        return false, "entry still listed: " .. title
+    end
+    if err ~= "entry not found: " .. title then
+        return false, err
+    end
+    return true, nil
+end
+
+-- Grants a fresh box and fails its first receive under the given fault, leaving the claim receipt unsettled.
+local function receive_under_fault(ctx, a, b, title, fault_command)
+    b:clear_inventory()
+    local ok, msg = grant_flow(a, b:name(), title, MESSAGE, REWARD_ITEM_NAME, REWARD_ITEM_COUNT)
+    if ok == false or msg == nil or msg:find(MSG_GRANT_OK, 1, true) == nil then
+        return false, "grant " .. tostring(msg)
+    end
+    ctx:sleep(MQ_WAIT_MS)
+
+    b:chat(fault_command)
+    local detail, err = open_storage_entry_detail(b, title)
+    if detail == nil then
+        return false, err
+    end
+    local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_FAIL)
+    if matched == false then
+        return false, "expected receive fail, got=" .. tostring(result_msg)
+    end
+    if b:item_count(REWARD_ITEM_NAME) ~= 0 then
+        return false, "reward granted while the claim was unknown"
+    end
+    return true, nil
+end
+
+-- A later tick must not grant the same box again.
+local function assert_granted_once(ctx, bot, title)
+    ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+    if bot:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
+        return false, string.format("reward duplicated count=%d", bot:item_count(REWARD_ITEM_NAME))
+    end
+    return assert_entry_gone(bot, title)
+end
+
 test_suite {
     name      = "Storage Box Test",
     bot_count = 2,
@@ -573,6 +639,176 @@ test_suite {
             end
 
             progress(b, "S5 PASSED")
+            return true
+        end,
+
+        -- R0: anchor box that stays unreceived until R4 so the storage list is never empty
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            progress(b, "R0: ANCHOR BOX")
+
+            local ok, msg = grant_flow(a, b:name(), TITLE .. "_ANCHOR", MESSAGE, REWARD_ITEM_NAME, REWARD_ITEM_COUNT)
+            if ok == false or msg == nil or msg:find(MSG_GRANT_OK, 1, true) == nil then
+                progress(a, "FAILED: anchor grant " .. tostring(msg))
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+
+            progress(b, "R0 PASSED")
+            return true
+        end,
+
+        -- R1: the claim applied but its response was lost, so the settle timer grants the reward exactly once
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            local title = TITLE .. "_R1"
+            progress(b, "R1: CLAIM RESPONSE LOST, TIMER SETTLES")
+
+            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP장애 " .. CLAIM_PATH .. " lost")
+            b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+            if ok == false then
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT, SETTLE_FIRST_WAIT_MS) == false then
+                progress(b, "FAILED: reward not granted by the settle timer")
+                return false
+            end
+            ok, err = assert_granted_once(ctx, b, title)
+            if ok == false then
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            progress(b, "R1 PASSED")
+            return true
+        end,
+
+        -- R2: the receipt of a lost claim survives relogin and is settled on login
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            local title = TITLE .. "_R2"
+            progress(b, "R2: CLAIM RESPONSE LOST, RELOGIN SETTLES")
+
+            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP장애 " .. CLAIM_PATH .. " lost")
+            if ok == false then
+                b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            if b:logout() == false then
+                a:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+                progress(b, "FAILED: logout")
+                return false
+            end
+            a:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+            if b:login() == false then
+                progress(b, "FAILED: relogin")
+                return false
+            end
+            b = ctx:bot(1)
+
+            -- Checked well inside one timer period, so the grant comes from the login settle.
+            ctx:sleep(MQ_WAIT_MS * 2)
+            if b:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
+                progress(b, string.format("FAILED: reward not granted after relogin count=%d",
+                    b:item_count(REWARD_ITEM_NAME)))
+                return false
+            end
+            ok, err = assert_granted_once(ctx, b, title)
+            if ok == false then
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            lib.formation.arrange_in_line(ctx)
+            progress(b, "R2 PASSED")
+            return true
+        end,
+
+        -- R3: the claim never reached internal, so the settle resends the same claim id and grants once
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            local title = TITLE .. "_R3"
+            progress(b, "R3: CLAIM UNREACHABLE, RESEND GRANTS")
+
+            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP장애 " .. CLAIM_PATH .. " on")
+            if ok == false then
+                b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            -- The receipt must outlive a tick that still cannot reach internal.
+            ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+            if b:item_count(REWARD_ITEM_NAME) ~= 0 then
+                b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+                progress(b, "FAILED: reward granted while internal was unreachable")
+                return false
+            end
+
+            b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT, SETTLE_FIRST_WAIT_MS) == false then
+                progress(b, "FAILED: reward not granted after internal came back")
+                return false
+            end
+            ok, err = assert_granted_once(ctx, b, title)
+            if ok == false then
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            progress(b, "R3 PASSED")
+            return true
+        end,
+
+        -- R4: claims delivered late, after the settle already resent the same id, never grant twice
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            local title = TITLE .. "_R4"
+            progress(b, "R4: LATE DUPLICATE CLAIMS")
+
+            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP보류 on " .. CLAIM_PATH)
+            if ok == false then
+                b:chat("/HTTP보류 off")
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            -- The settle resend is held too, then both copies arrive together.
+            ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+            b:chat("/HTTP보류 send")
+
+            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT, SETTLE_FIRST_WAIT_MS) == false then
+                progress(b, "FAILED: reward not granted after late claims")
+                return false
+            end
+            ok, err = assert_granted_once(ctx, b, title)
+            if ok == false then
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+
+            b:clear_inventory()
+            local detail, detail_err = open_storage_entry_detail(b, TITLE .. "_ANCHOR")
+            if detail == nil then
+                progress(b, "FAILED: anchor " .. tostring(detail_err))
+                return false
+            end
+            local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_OK)
+            if matched == false then
+                progress(b, "FAILED: anchor receive " .. tostring(result_msg))
+                return false
+            end
+
+            progress(b, "R4 PASSED")
             return true
         end,
     },

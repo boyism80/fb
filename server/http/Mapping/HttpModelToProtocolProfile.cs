@@ -43,28 +43,8 @@ namespace Http.Mapping
                         .ToDictionary(t => t.Target, t => t.EvaluatedAt)
                 }));
 
-            CreateMap<Http.Model.MarketplacePending, Protocol.MarketplacePending>()
-                .ForMember(x => x.User, x => x.MapFrom(u => u.User))
-                .ForMember(x => x.Attachments, x => x.Ignore())
-                .AfterMap((src, dest) =>
-                {
-                    dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
-                });
-
-            CreateMap<Http.Model.ClanMoneyPending, Protocol.ClanMoneyPending>()
+            CreateMap<Http.Model.Receipt, Protocol.Receipt>()
                 .ReverseMap();
-
-            CreateMap<Http.Model.StorageClaimPending, Protocol.StorageClaimPending>()
-                .ReverseMap();
-
-            CreateMap<Protocol.MarketplacePending, Http.Model.MarketplacePending>()
-                .ForMember(x => x.Attachments, x => x.Ignore())
-                .AfterMap((src, dest) =>
-                {
-                    dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
-                        ? new List<Fb.Model.Dsl>()
-                        : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
-                });
 
             CreateMap<Http.Model.Spell, Protocol.Spell>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))

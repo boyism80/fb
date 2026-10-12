@@ -2415,7 +2415,7 @@ M.functions = {
 
         ['HTTP장애'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '<서비스> [on|lost|off] - on: 요청 미전송(접속 불가), lost: 요청 처리 후 응답 유실. 둘 다 HTTP 지연 후 실패 (테스트용)',
+            ['usage'] = '<서비스|POST 경로> [on|lost|off] - on: 요청 미전송(접속 불가), lost: 요청 처리 후 응답 유실. 둘 다 HTTP 지연 후 실패. 경로 지정이 서비스 지정보다 우선 (테스트용)',
             ['command'] = function (me, args)
                 if #args == 0 then
                     me:message("사용법: /HTTP장애 <서비스> [on|lost|off]")

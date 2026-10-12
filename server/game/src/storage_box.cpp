@@ -18,7 +18,6 @@
 #include <optional>
 #include <sstream>
 #include <string>
-#include <tuple>
 #include <vector>
 
 using namespace fb::game;
@@ -81,65 +80,27 @@ std::vector<storage_box::box_dto> storage_box::to_save_dtos(uint32_t user_id, co
     return dtos;
 }
 
-void storage_box::init_claims(const std::vector<claim_dto>& pendings)
+void storage_box::init_claims()
 {
     this->_owner.assert_thread();
 
-    for (const auto& pending : pendings)
+    for (const auto& [id, receipt] : this->_owner.receipts.entries())
     {
-        auto it = this->_entries.find(pending.box);
+        if (receipt.type != RECEIPT_TYPE::STORAGE_CLAIM)
+            continue;
+
+        auto it = this->_entries.find(static_cast<uint32_t>(receipt.target));
         if (it == this->_entries.end())
         {
             fb::logger::warn("storage_box.init_claims box missing user={} box={} claim={}",
                              this->_owner.id,
-                             pending.box,
-                             pending.claim_id);
+                             receipt.target,
+                             id);
             continue;
         }
 
-        it->second.received      = false;
-        it->second.pending_claim = pending.claim_id;
+        it->second.received = false;
     }
-}
-
-std::vector<storage_box::claim_dto> storage_box::to_claim_dtos(uint32_t user_id) const
-{
-    this->_owner.assert_thread();
-
-    auto dtos = std::vector<claim_dto>{};
-    for (const auto& [id, box] : this->_entries)
-    {
-        if (box.pending_claim.has_value())
-            dtos.push_back(claim_dto{user_id, id, box.pending_claim.value()});
-    }
-    return dtos;
-}
-
-async::task<void> storage_box::restore_claims()
-{
-    this->_owner.assert_thread();
-
-    if (this->_restoring)
-        co_return;
-
-    auto targets = std::vector<uint32_t>{};
-    for (const auto& [id, box] : this->_entries)
-    {
-        if (box.pending_claim.has_value() && box.claiming == false)
-            targets.push_back(id);
-    }
-    if (targets.empty())
-        co_return;
-
-    auto weak        = this->_owner.weak_from_this_as<character>();
-    this->_restoring = true;
-    for (auto entry_id : targets)
-    {
-        std::ignore = co_await this->receive_reward(entry_id);
-        if (weak.expired())
-            co_return;
-    }
-    this->_restoring = false;
 }
 
 void storage_box::init(const std::vector<entry>& entries)
@@ -244,12 +205,15 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
     }
 
-    if (it->second.received || it->second.claiming)
+    auto pending = this->_owner.receipts.find(RECEIPT_TYPE::STORAGE_CLAIM, entry_id);
+    if (pending.has_value() && this->_owner.receipts.find(pending.value())->in_flight)
+        co_return false;
+
+    if (it->second.received)
         co_return false;
 
     auto now = this->_owner.server.now();
-    if (it->second.pending_claim.has_value() == false && it->second.expire_date.has_value() &&
-        it->second.expire_date.value() < now)
+    if (pending.has_value() == false && it->second.expire_date.has_value() && it->second.expire_date.value() < now)
         co_return false;
 
     if (this->_owner.items.is_rewardable(it->second.attachments) == false)
@@ -259,9 +223,8 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     auto world    = this->_owner.world();
     auto owner_id = this->_owner.id;
     auto claim_id =
-        it->second.pending_claim.has_value() ? it->second.pending_claim.value() : this->_owner.server.ids.next();
-    it->second.pending_claim = claim_id;
-    it->second.claiming      = true;
+        pending.has_value() ? pending.value() : this->_owner.receipts.issue(RECEIPT_TYPE::STORAGE_CLAIM, entry_id);
+    this->_owner.receipts.find(claim_id)->in_flight = true;
 
     internal_resp::ClaimStorageBox claim_resp{};
     auto                           claim_lost = false;
@@ -289,15 +252,17 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         co_return false;
     }
 
+    if (auto receipt = ptr->receipts.find(claim_id); receipt != nullptr)
+        receipt->in_flight = false;
+
     it = ptr->storage_box._entries.find(entry_id);
     if (it == ptr->storage_box._entries.end())
     {
         fb::logger::warn("storage_box.receive_reward entry missing after claim user={} entry={}", ptr->id, entry_id);
         co_return false;
     }
-    it->second.claiming = false;
 
-    // An exception or an unhandled server error leaves the claim unknown, so pending_claim is kept for the retry.
+    // An exception or an unhandled server error leaves the claim unknown, so the receipt is kept for the retry.
     if (claim_lost)
         co_return false;
 
@@ -309,7 +274,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                          entry_id,
                          claim_resp.error);
         if (claim_error != fb::model::enum_value::ERROR_CODE::UNHANDLED)
-            it->second.pending_claim.reset();
+            ptr->receipts.erase(claim_id);
         co_return false;
     }
 
@@ -330,17 +295,14 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                           e.what());
         ptr = weak.lock();
         if (ptr != nullptr)
-        {
-            auto thrown_it = ptr->storage_box._entries.find(entry_id);
-            if (thrown_it != ptr->storage_box._entries.end())
-                thrown_it->second.pending_claim.reset();
-        }
+            ptr->receipts.erase(claim_id);
         co_return false;
     }
 
     if (granted == false)
     {
-        it->second.claiming = true;
+        if (auto receipt = ptr->receipts.find(claim_id); receipt != nullptr)
+            receipt->in_flight = true;
 
         internal_resp::UnclaimStorageBox unclaim_resp{};
         auto                             unclaimed = false;
@@ -374,18 +336,22 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         {
             auto fail_it = ptr->storage_box._entries.find(entry_id);
             if (fail_it != ptr->storage_box._entries.end())
-            {
                 fail_it->second.received = false;
-                fail_it->second.claiming = false;
-                if (unclaimed)
-                    fail_it->second.pending_claim.reset();
+
+            if (unclaimed)
+            {
+                ptr->receipts.erase(claim_id);
+            }
+            else if (auto receipt = ptr->receipts.find(claim_id); receipt != nullptr)
+            {
+                receipt->in_flight = false;
             }
         }
 
         co_return false;
     }
 
-    it->second.pending_claim.reset();
+    ptr->receipts.erase(claim_id);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);

@@ -109,39 +109,6 @@ void login<V>::init_quests(const std::vector<fb::protocol::internal::Quest>& res
 }
 
 template <fb::protocol::CLIENT_VERSION V>
-void login<V>::init_marketplace(const std::vector<fb::protocol::internal::MarketplacePending>& response,
-                                fb::game::character&                                           ch)
-{
-    auto pending_listings = fb::game::marketplace::pending_listings_t{};
-    for (const auto& row : response)
-    {
-        fb::game::marketplace::pending_listing_info info{};
-        info.type                    = static_cast<fb::game::marketplace::pending_type>(row.type);
-        info.purchase_id             = row.purchase_id;
-        info.listing_id              = row.listing_id;
-        info.character_id            = row.character_id;
-        info.expected_purchase_count = row.expected_purchase_count;
-        info.expected_total_price    = row.expected_total_price;
-
-        auto reader = Json::Reader{};
-        auto json   = Json::Value{};
-        if (reader.parse(row.attachments, json) && json.isArray())
-        {
-            for (const auto& dsl_json : json)
-            {
-                info.dsls.push_back(fb::model::dsl(dsl_json));
-            }
-        }
-
-        if (!info.dsls.empty())
-            pending_listings[row.pending_key] = std::move(info);
-    }
-
-    if (!pending_listings.empty())
-        ch.marketplace.set_pending_listings(std::move(pending_listings));
-}
-
-template <fb::protocol::CLIENT_VERSION V>
 void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
                                  fb::game::character&                                    ch)
 {
@@ -417,13 +384,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
     ch->collections.load(resp.collection_unlocks);
-    this->init_marketplace(resp.marketplace_pendings, *ch);
-    for (const auto& row : resp.clan_money_pendings)
-    {
-        ch->clan_money_pendings[row.request_id] = {row.clan, row.clan_delta, row.money_delta, false};
-    }
+    ch->receipts.load(resp.receipts);
     this->server.system_storage.init_from_login(*ch, resp.storage_boxes);
-    ch->storage_box.init_claims(resp.storage_claim_pendings);
+    ch->storage_box.init_claims();
     this->init_option(resp.option, *ch);
     {
         auto entries = std::vector<friend_entry>{};
@@ -467,9 +430,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     }
 
     co_await this->server.system_storage.sync(*ch);
-    std::ignore = ch->marketplace.restore();
-    std::ignore = ch->restore_clan_money();
-    std::ignore = ch->storage_box.restore_claims();
+    std::ignore = ch->receipts.settle();
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();

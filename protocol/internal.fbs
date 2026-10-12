@@ -272,30 +272,12 @@ table CollectionUnlock {
     mob_id: uint;
 }
 
-table MarketplacePending {
+table Receipt {
     user: uint;
-    pending_key: ulong;
+    id: ulong;
     type: ubyte;
-    purchase_id: ulong;
-    listing_id: ulong;
-    attachments: string;
-    expected_purchase_count: ushort;
-    expected_total_price: ulong;
-    character_id: uint;
-}
-
-table ClanMoneyPending {
-    user: uint;
-    request_id: ulong;
-    clan: uint;
-    clan_delta: long;
-    money_delta: long;
-}
-
-table StorageClaimPending {
-    user: uint;
-    box: uint;
-    claim_id: ulong;
+    target: ulong;
+    detail: string;
 }
 
 table SystemMail {
@@ -342,11 +324,9 @@ table SavePayload {
     matchmaking_skills: [MatchmakingSkill];
     achievements: [Achievement];
     quests: [Quest];
-    marketplace_pendings: [MarketplacePending];
     collection_unlocks: [CollectionUnlock];
     snapshot_time: long;
-    clan_money_pendings: [ClanMoneyPending];
-    storage_claim_pendings: [StorageClaimPending];
+    receipts: [Receipt];
 }
 
 table OptionChange {

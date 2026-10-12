@@ -13,7 +13,6 @@
 
 namespace fb::protocol::internal {
 class StorageBox;
-class StorageClaimPending;
 } // namespace fb::protocol::internal
 
 namespace fb::game {
@@ -30,20 +29,16 @@ public:
         std::string                        title;
         std::string                        message;
         std::vector<fb::model::dsl>        attachments;
-        bool                               received      = false;
-        std::optional<fb::model::datetime> expire_date   = std::nullopt;
-        std::optional<uint64_t>            pending_claim = std::nullopt;
-        bool                               claiming      = false;
+        bool                               received    = false;
+        std::optional<fb::model::datetime> expire_date = std::nullopt;
     };
     using entry_map = std::map<uint32_t, entry>;
     using box_dto   = fb::protocol::internal::StorageBox;
-    using claim_dto = fb::protocol::internal::StorageClaimPending;
 
 private:
     character& _owner;
     entry_map  _entries;
-    uint32_t   _sequence  = 1;
-    bool       _restoring = false;
+    uint32_t   _sequence = 1;
 
     // clang-format off
     static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
@@ -62,9 +57,7 @@ public:
     uint32_t                        next_sequence() const;
     void                            set_sequence(uint32_t value);
     std::vector<box_dto>            to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const;
-    void                            init_claims(const std::vector<claim_dto>& pendings);
-    std::vector<claim_dto>          to_claim_dtos(uint32_t user_id) const;
-    async::task<void>               restore_claims();
+    void                            init_claims();
     // clang-format on
 };
 } // namespace fb::game

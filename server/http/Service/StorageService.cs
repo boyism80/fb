@@ -1,6 +1,7 @@
 using AutoMapper;
 using Fb.Model.EnumValue;
 using Http.Model;
+using Http.Util;
 using Microsoft.Extensions.Logging;
 using Protocol = fb.protocol.@internal;
 using Response = fb.protocol.@internal.response;
@@ -207,10 +208,11 @@ namespace Http.Service
             if (box.Received)
                 return claimId != 0 && box.ClaimId == claimId;
 
-            var now = DateTime.Now;
-            if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= now)
+            // A claim resent after an outage is judged by when the game issued it, not by when it arrived.
+            if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= SnowflakeId.Time(claimId).ToLocalTime())
                 return false;
 
+            var now = DateTime.Now;
             box.Received = true;
             box.ClaimId = claimId;
             box.UpdatedDate = now;

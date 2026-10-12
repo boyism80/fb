@@ -310,9 +310,7 @@ void fb::game::server::init_timers()
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
-    this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
-    this->bind_thread_timer<fb::game::handler::timer::clan_money_restore_timer>(30s);
-    this->bind_thread_timer<fb::game::handler::timer::storage_claim_restore_timer>(30s);
+    this->bind_thread_timer<fb::game::handler::timer::receipt_settle_timer>(30s);
     this->bind_thread_timer<fb::game::handler::timer::evaluation_timer>(1min);
 #if !defined(DEBUG) && !defined(_DEBUG)
     this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);

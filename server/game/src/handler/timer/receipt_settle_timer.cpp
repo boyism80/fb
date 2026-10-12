@@ -1,4 +1,4 @@
-#include <fb/game/handler/timer/storage_claim_restore_timer.h>
+#include <fb/game/handler/timer/receipt_settle_timer.h>
 
 #include <fb/game/thread_params.h>
 
@@ -7,17 +7,17 @@
 
 using namespace fb::game::handler::timer;
 
-storage_claim_restore_timer::storage_claim_restore_timer(fb::game::server& server) :
+receipt_settle_timer::receipt_settle_timer(fb::game::server& server) :
     fb::handler::timer<fb::game::server>(server)
 { }
 
-async::task<void> storage_claim_restore_timer::handle(const fb::model::datetime& now, std::thread::id id)
+async::task<void> receipt_settle_timer::handle(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
     co_await params->characters.foreach ([](auto& character) {
-        std::ignore = character->storage_box.restore_claims();
+        std::ignore = character->receipts.settle();
     });
 
     co_return;

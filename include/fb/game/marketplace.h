@@ -11,12 +11,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
-
-namespace fb::protocol::internal {
-class MarketplacePending;
-}
 
 namespace fb::game {
 class character;
@@ -75,39 +70,11 @@ public:
         uint32_t             page        = 1;
     };
 
-    enum class pending_type : uint8_t
-    {
-        LIST     = 0, // Listing creation (seller)
-        PURCHASE = 1  // Purchase transaction (buyer)
-    };
-
-    struct pending_listing_info
-    {
-        pending_type type;            // LIST or PURCHASE
-        uint64_t     purchase_id = 0; // For purchase: unique purchase ID (used as key), for list: same as listing_id
-        uint64_t     listing_id  = 0; // Listing ID reference
-        std::vector<fb::model::dsl> dsls;
-        uint32_t                    character_id;                // For purchase: buyer_id, for list: seller_id
-        uint16_t                    expected_purchase_count = 0; // For purchase: expected count, for list: 0
-        uint64_t                    expected_total_price    = 0; // For purchase: expected total price, for list: 0
-    };
-
-    // Type aliases for commonly used types
-    using pending_listings_t = std::unordered_map<uint64_t, pending_listing_info>;
-
 private:
-    using clock = std::chrono::steady_clock;
+    // The marketplace rejects a request that arrives after sent + REQUEST_TTL.
+    inline static constexpr auto REQUEST_TTL = std::chrono::seconds(10);
 
-    // The marketplace rejects requests past sent + REQUEST_TTL; the extra margin covers clock skew.
-    inline static constexpr auto REQUEST_TTL   = std::chrono::seconds(10);
-    inline static constexpr auto RESTORE_GRACE = REQUEST_TTL + std::chrono::seconds(5);
-
-    character&         _owner;
-    pending_listings_t _pending_listings; // Key: purchase_id (for purchase) or listing_id (for list)
-    // Earliest time restore may abort the escrow / purchase pending.
-    std::unordered_map<uint64_t, clock::time_point> _listing;
-    std::unordered_map<uint64_t, clock::time_point> _purchasing;
-    bool                                            _restoring = false;
+    character& _owner;
 
 public:
     explicit marketplace(character& owner);
@@ -119,14 +86,8 @@ public:
     async::task<listing>              purchase(uint64_t listing_id, uint16_t purchase_count);
     async::task<search_result>        search(const search_option& option);
     async::task<std::vector<listing>> get_listings(const std::vector<uint64_t>& listing_ids, uint32_t buyer_id = 0);
-    void                              set_pending_listings(pending_listings_t pending_listings);
-    async::task<void>                 restore();
-    const pending_listings_t&         pending_listings() const;
-
-    std::vector<fb::protocol::internal::MarketplacePending> to_save_dtos() const;
-
-private:
-    static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
+    async::task<void>                 settle_list(uint64_t listing_id);
+    async::task<void>                 settle_purchase(uint64_t purchase_id);
 };
 
 } // namespace fb::game

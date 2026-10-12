@@ -388,6 +388,7 @@ public:
 
     // Test hook: both faults wait for the response delay before throwing.
     // UNREACHABLE never sends the request; RESPONSE_LOST sends it and drops the response.
+    // The key is a service name or a POST path; a path fault takes precedence over its service fault.
     void fault(std::string_view service, FAULT value)
     {
         auto lock = std::lock_guard(this->_hook_mutex);
@@ -552,7 +553,9 @@ public:
     post(std::string_view service, std::string_view path, const Request& request)
     {
         auto thread = this->_executor.threads.current();
-        auto fault  = this->fault(service);
+        auto fault  = this->fault(path);
+        if (fault == FAULT::NONE)
+            fault = this->fault(service);
         if (fault == FAULT::UNREACHABLE)
         {
             co_await this->sleep(thread, service);

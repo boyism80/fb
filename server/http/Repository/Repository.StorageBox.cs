@@ -59,23 +59,23 @@ namespace Http.Reepository
             return newId;
         }
 
+        // Expired boxes are returned too: they still hold claim ids and external refs that retried requests are
+        // matched against. Callers that show boxes filter expiry themselves.
         public async Task<StorageBox> Get(uint world, uint user, uint id)
         {
-            var box = await base.Get(world, new StorageBoxKey
+            return await base.Get(world, new StorageBoxKey
             {
                 User = user,
                 Id = id
             });
-            return IsExpired(box) ? null : box;
         }
 
         public async Task<IEnumerable<StorageBox>> Get(uint world, uint user)
         {
-            var boxes = await base.GetAll(world, new StorageBoxKey
+            return await base.GetAll(world, new StorageBoxKey
             {
                 User = user
             });
-            return boxes.Where(b => !IsExpired(b));
         }
 
         protected override string OnSelect(StorageBoxKey key)
@@ -83,7 +83,6 @@ namespace Http.Reepository
             return $"""
                 SELECT * FROM `storage_box`
                 WHERE `user` = {key.User} AND `id` = {key.Id} AND `deleted` = 0
-                  AND (`expired_date` IS NULL OR `expired_date` > NOW())
                 LIMIT 1;
                 """;
         }
@@ -92,8 +91,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_box`
-                WHERE `user` = {key.User} AND `deleted` = 0
-                  AND (`expired_date` IS NULL OR `expired_date` > NOW());
+                WHERE `user` = {key.User} AND `deleted` = 0;
                 """;
         }
 
@@ -102,8 +100,7 @@ namespace Http.Reepository
             return $"""
                 SELECT * FROM `storage_box`
                 WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))})
-                  AND `deleted` = 0
-                  AND (`expired_date` IS NULL OR `expired_date` > NOW());
+                  AND `deleted` = 0;
                 """;
         }
 
@@ -120,19 +117,11 @@ namespace Http.Reepository
             var keys = ownerIds.Distinct().Select(uid => new StorageBoxKey { User = uid }).ToList();
             var list = await base.GetMany(world, keys);
             var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<StorageBox>)new List<StorageBox>());
-            foreach (var b in list.Where(b => !IsExpired(b)))
+            foreach (var b in list)
             {
                 dict[b.User].Add(b);
             }
             return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<StorageBox>)kv.Value);
-        }
-
-        private static bool IsExpired(StorageBox box)
-        {
-            if (box == null)
-                return true;
-
-            return box.ExpiredDate.HasValue && box.ExpiredDate.Value <= DateTime.Now;
         }
 
         protected override string OnUpsert(StorageBox value)

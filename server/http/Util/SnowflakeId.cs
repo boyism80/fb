@@ -42,5 +42,11 @@ namespace Http.Util
         {
             return (byte)((id >> HostShift) & 0xFF);
         }
+
+        // Game server ids (fb::game::snowflake) use the same Epoch and timestamp shift.
+        public static System.DateTime Time(ulong id)
+        {
+            return Epoch.AddMilliseconds(id >> TimestampShift);
+        }
     }
 }

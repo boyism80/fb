@@ -31,7 +31,7 @@ local DIALOG_TIMEOUT_MS = 30000
 local LIST_DELAY_MS   = 5000
 local LOCK_SETTLE_MS  = 500
 local LOCK_PROBE_MS   = 3000
--- marketplace_restore_timer runs every 30s.
+-- receipt_settle_timer runs every 30s.
 local RESTORE_FIRST_WAIT_MS = 30000
 local RESTORE_POLL_MS       = 5000
 local RESTORE_POLL_COUNT    = 8
@@ -2007,7 +2007,7 @@ test_suite {
             return true
         end,
 
-        -- R2: a refund that fails to reach storage keeps the pending entry and is retried exactly once
+        -- R2: a refund that fails to reach storage keeps the receipt and is retried exactly once
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
@@ -2141,6 +2141,86 @@ test_suite {
             cleanup_bot(a)
             cleanup_bot(b)
             progress(b, "R3 PASSED")
+            return true
+        end,
+
+        -- R4: the receipt of a purchase that never arrived survives relogin and is refunded on login
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            progress(b, "R4: UNSENT PURCHASE, RELOGIN REFUNDS")
+
+            local prepared, prep_err = prepare_purchase_listing(a, b)
+            if prepared == false then
+                progress(a, "FAILED: " .. tostring(prep_err))
+                return false
+            end
+
+            b:chat("/HTTP보류 on " .. PURCHASE_PATH)
+            local msg = select(1, purchase_item_flow(b, WEAPON_ITEM, 1))
+            b:chat("/HTTP보류 off")
+            if msg == nil or msg:find(MSG_PURCHASE_PENDING, 1, true) == nil then
+                progress(b, "FAILED: held purchase msg=" .. tostring(msg))
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            if b:money() ~= 1000 then
+                progress(b, string.format("FAILED: pending purchase money=%d expected=1000", b:money()))
+                return false
+            end
+
+            if b:logout() == false then
+                progress(b, "FAILED: logout")
+                return false
+            end
+            if b:login() == false then
+                progress(b, "FAILED: relogin")
+                return false
+            end
+            b = ctx:bot(1)
+            lib.formation.arrange_in_line(ctx)
+
+            -- Checked well inside one timer period, so the refund comes from the login settle.
+            ctx:sleep(MQ_WAIT_MS * 2)
+            local titles, titles_err = storage_titles(ctx, b)
+            if titles == nil or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
+                progress(b, "FAILED: no refund after relogin " .. tostring(titles_err))
+                return false
+            end
+
+            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+            titles, titles_err = storage_titles(ctx, b)
+            if titles == nil then
+                progress(b, "FAILED: " .. tostring(titles_err))
+                return false
+            end
+            if count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
+                progress(b, string.format("FAILED: refund storage=[%s]", table.concat(titles, "|")))
+                return false
+            end
+
+            if receive_storage(b, STORAGE_PURCHASE_RECOVERY_TITLE) == false then
+                progress(b, "FAILED: recovery storage receive")
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            if b:money() ~= WEAPON_LIST_PRICE + 1000 then
+                progress(b, string.format("FAILED: refund money=%d expected=%d", b:money(), WEAPON_LIST_PRICE + 1000))
+                return false
+            end
+
+            msg = select(1, cancel_item_flow(a, WEAPON_ITEM))
+            if msg == nil or msg:find(MSG_CANCEL_OK, 1, true) == nil then
+                progress(a, "FAILED: cleanup cancel " .. tostring(msg))
+                return false
+            end
+            ctx:sleep(MQ_WAIT_MS)
+            receive_storage(a, STORAGE_CANCEL_TITLE)
+
+            cleanup_bot(a)
+            cleanup_bot(b)
+            progress(b, "R4 PASSED")
             return true
         end,
     },

@@ -119,7 +119,6 @@ struct character
     static int builtin_marketplace_purchase(lua_State* L);
     static int builtin_marketplace_search(lua_State* L);
     static int builtin_marketplace_get_listings(lua_State* L);
-    static int builtin_marketplace_pending_listings(lua_State* L);
     static int builtin_marriage(lua_State* L);
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);

@@ -465,43 +465,17 @@ namespace Google.FlatBuffers
                 builder.Build(value.User),
                 builder.Build(value.MobId));
         }
-        public static Offset<fb.protocol.@internal.raw.MarketplacePending> Build(this FlatBufferBuilder builder, fb.protocol.@internal.MarketplacePending value)
+        public static Offset<fb.protocol.@internal.raw.Receipt> Build(this FlatBufferBuilder builder, fb.protocol.@internal.Receipt value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol.@internal.raw.MarketplacePending.CreateMarketplacePending(builder,
+            return fb.protocol.@internal.raw.Receipt.CreateReceipt(builder,
                 builder.Build(value.User),
-                builder.Build(value.PendingKey),
+                builder.Build(value.Id),
                 builder.Build(value.Type),
-                builder.Build(value.PurchaseId),
-                builder.Build(value.ListingId),
-                builder.Build(value.Attachments),
-                builder.Build(value.ExpectedPurchaseCount),
-                builder.Build(value.ExpectedTotalPrice),
-                builder.Build(value.CharacterId));
-        }
-        public static Offset<fb.protocol.@internal.raw.ClanMoneyPending> Build(this FlatBufferBuilder builder, fb.protocol.@internal.ClanMoneyPending value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.@internal.raw.ClanMoneyPending.CreateClanMoneyPending(builder,
-                builder.Build(value.User),
-                builder.Build(value.RequestId),
-                builder.Build(value.Clan),
-                builder.Build(value.ClanDelta),
-                builder.Build(value.MoneyDelta));
-        }
-        public static Offset<fb.protocol.@internal.raw.StorageClaimPending> Build(this FlatBufferBuilder builder, fb.protocol.@internal.StorageClaimPending value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol.@internal.raw.StorageClaimPending.CreateStorageClaimPending(builder,
-                builder.Build(value.User),
-                builder.Build(value.Box),
-                builder.Build(value.ClaimId));
+                builder.Build(value.Target),
+                builder.Build(value.Detail));
         }
         public static Offset<fb.protocol.@internal.raw.SystemMail> Build(this FlatBufferBuilder builder, fb.protocol.@internal.SystemMail value)
         {
@@ -567,11 +541,9 @@ namespace Google.FlatBuffers
                 builder.Build(value.MatchmakingSkills),
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
-                builder.Build(value.MarketplacePendings),
                 builder.Build(value.CollectionUnlocks),
                 builder.Build(value.SnapshotTime),
-                builder.Build(value.ClanMoneyPendings),
-                builder.Build(value.StorageClaimPendings));
+                builder.Build(value.Receipts));
         }
         public static Offset<fb.protocol.@internal.raw.OptionChange> Build(this FlatBufferBuilder builder, fb.protocol.@internal.OptionChange value)
         {
@@ -1550,13 +1522,11 @@ namespace Google.FlatBuffers
                 builder.Build(value.Achievements),
                 builder.Build(value.Quests),
                 builder.Build(value.StorageBoxes),
-                builder.Build(value.MarketplacePendings),
                 builder.Build(value.Friends),
                 builder.Build(value.Mail),
                 builder.Build(value.SystemMailIds),
                 builder.Build(value.CollectionUnlocks),
-                builder.Build(value.ClanMoneyPendings),
-                builder.Build(value.StorageClaimPendings));
+                builder.Build(value.Receipts));
         }
         public static Offset<fb.protocol.@internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.MakeCharacter value)
         {
@@ -2350,21 +2320,13 @@ namespace Google.FlatBuffers
         {
             return builder.CreateVectorOfTables<fb.protocol.@internal.raw.Quest>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.MarketplacePending> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.MarketplacePending>(value.Select(x => Build(builder, x)).ToArray());
-        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.CollectionUnlock> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.@internal.raw.CollectionUnlock>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.ClanMoneyPending> value)
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.Receipt> value)
         {
-            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.ClanMoneyPending>(value.Select(x => Build(builder, x)).ToArray());
-        }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.StorageClaimPending> value)
-        {
-            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.StorageClaimPending>(value.Select(x => Build(builder, x)).ToArray());
+            return builder.CreateVectorOfTables<fb.protocol.@internal.raw.Receipt>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.SavePayload> value)
         {
@@ -2499,9 +2461,7 @@ namespace fb.protocol.@internal
         Castle,
         Quest,
         CollectionUnlock,
-        MarketplacePending,
-        ClanMoneyPending,
-        StorageClaimPending,
+        Receipt,
         SystemMail,
         StorageBox,
         StorageWriteEntry,
@@ -3688,36 +3648,28 @@ namespace fb.protocol.@internal
             return new CollectionUnlock(bytes);
         }
     }
-    public class MarketplacePending : IFlatBufferEx
+    public class Receipt : IFlatBufferEx
     {
-        public int ProtocolType => (int)FlatBufferProtocolType.MarketplacePending;
+        public int ProtocolType => (int)FlatBufferProtocolType.Receipt;
         public uint User { get; set; } = 0;
-        public ulong PendingKey { get; set; } = 0L;
+        public ulong Id { get; set; } = 0L;
         public byte Type { get; set; } = 0;
-        public ulong PurchaseId { get; set; } = 0L;
-        public ulong ListingId { get; set; } = 0L;
-        public string Attachments { get; set; } = string.Empty;
-        public ushort ExpectedPurchaseCount { get; set; } = 0;
-        public ulong ExpectedTotalPrice { get; set; } = 0L;
-        public uint CharacterId { get; set; } = 0;
+        public ulong Target { get; set; } = 0L;
+        public string Detail { get; set; } = string.Empty;
 
-        public MarketplacePending()
+        public Receipt()
         { }
 
-        public MarketplacePending(fb.protocol.@internal.raw.MarketplacePending raw)
+        public Receipt(fb.protocol.@internal.raw.Receipt raw)
         {
             User = raw.User;
-            PendingKey = raw.PendingKey;
+            Id = raw.Id;
             Type = raw.Type;
-            PurchaseId = raw.PurchaseId;
-            ListingId = raw.ListingId;
-            Attachments = raw.Attachments;
-            ExpectedPurchaseCount = raw.ExpectedPurchaseCount;
-            ExpectedTotalPrice = raw.ExpectedTotalPrice;
-            CharacterId = raw.CharacterId;
+            Target = raw.Target;
+            Detail = raw.Detail;
         }
 
-        public MarketplacePending(byte[] bytes) : this(fb.protocol.@internal.raw.MarketplacePending.GetRootAsMarketplacePending(new ByteBuffer(bytes)))
+        public Receipt(byte[] bytes) : this(fb.protocol.@internal.raw.Receipt.GetRootAsReceipt(new ByteBuffer(bytes)))
         { }
 
         public byte[] Serialize()
@@ -3735,93 +3687,9 @@ namespace fb.protocol.@internal
             }
         }
 
-        public static MarketplacePending Deserialize(byte[] bytes)
+        public static Receipt Deserialize(byte[] bytes)
         {
-            return new MarketplacePending(bytes);
-        }
-    }
-    public class ClanMoneyPending : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.ClanMoneyPending;
-        public uint User { get; set; } = 0;
-        public ulong RequestId { get; set; } = 0L;
-        public uint Clan { get; set; } = 0;
-        public long ClanDelta { get; set; } = 0L;
-        public long MoneyDelta { get; set; } = 0L;
-
-        public ClanMoneyPending()
-        { }
-
-        public ClanMoneyPending(fb.protocol.@internal.raw.ClanMoneyPending raw)
-        {
-            User = raw.User;
-            RequestId = raw.RequestId;
-            Clan = raw.Clan;
-            ClanDelta = raw.ClanDelta;
-            MoneyDelta = raw.MoneyDelta;
-        }
-
-        public ClanMoneyPending(byte[] bytes) : this(fb.protocol.@internal.raw.ClanMoneyPending.GetRootAsClanMoneyPending(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static ClanMoneyPending Deserialize(byte[] bytes)
-        {
-            return new ClanMoneyPending(bytes);
-        }
-    }
-    public class StorageClaimPending : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.StorageClaimPending;
-        public uint User { get; set; } = 0;
-        public uint Box { get; set; } = 0;
-        public ulong ClaimId { get; set; } = 0L;
-
-        public StorageClaimPending()
-        { }
-
-        public StorageClaimPending(fb.protocol.@internal.raw.StorageClaimPending raw)
-        {
-            User = raw.User;
-            Box = raw.Box;
-            ClaimId = raw.ClaimId;
-        }
-
-        public StorageClaimPending(byte[] bytes) : this(fb.protocol.@internal.raw.StorageClaimPending.GetRootAsStorageClaimPending(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = FlatBufferBuilderPool.Get();
-            try
-            {
-                var offset = builder.Build(this);
-                builder.Finish(offset.Value);
-                return builder.SizedByteArray();
-            }
-            finally
-            {
-                FlatBufferBuilderPool.Return(builder);
-            }
-        }
-
-        public static StorageClaimPending Deserialize(byte[] bytes)
-        {
-            return new StorageClaimPending(bytes);
+            return new Receipt(bytes);
         }
     }
     public class SystemMail : IFlatBufferEx
@@ -4016,11 +3884,9 @@ namespace fb.protocol.@internal
         public List<fb.protocol.@internal.MatchmakingSkill> MatchmakingSkills { get; set; } = new List<fb.protocol.@internal.MatchmakingSkill>();
         public List<fb.protocol.@internal.Achievement> Achievements { get; set; } = new List<fb.protocol.@internal.Achievement>();
         public List<fb.protocol.@internal.Quest> Quests { get; set; } = new List<fb.protocol.@internal.Quest>();
-        public List<fb.protocol.@internal.MarketplacePending> MarketplacePendings { get; set; } = new List<fb.protocol.@internal.MarketplacePending>();
         public List<fb.protocol.@internal.CollectionUnlock> CollectionUnlocks { get; set; } = new List<fb.protocol.@internal.CollectionUnlock>();
         public long SnapshotTime { get; set; } = 0L;
-        public List<fb.protocol.@internal.ClanMoneyPending> ClanMoneyPendings { get; set; } = new List<fb.protocol.@internal.ClanMoneyPending>();
-        public List<fb.protocol.@internal.StorageClaimPending> StorageClaimPendings { get; set; } = new List<fb.protocol.@internal.StorageClaimPending>();
+        public List<fb.protocol.@internal.Receipt> Receipts { get; set; } = new List<fb.protocol.@internal.Receipt>();
 
         public SavePayload()
         { }
@@ -4034,11 +3900,9 @@ namespace fb.protocol.@internal
             MatchmakingSkills = Enumerable.Range(0, raw.MatchmakingSkillsLength).Select(i => raw.MatchmakingSkills(i)).Select(x => new fb.protocol.@internal.MatchmakingSkill(x.Value)).ToList();
             Achievements = Enumerable.Range(0, raw.AchievementsLength).Select(i => raw.Achievements(i)).Select(x => new fb.protocol.@internal.Achievement(x.Value)).ToList();
             Quests = Enumerable.Range(0, raw.QuestsLength).Select(i => raw.Quests(i)).Select(x => new fb.protocol.@internal.Quest(x.Value)).ToList();
-            MarketplacePendings = Enumerable.Range(0, raw.MarketplacePendingsLength).Select(i => raw.MarketplacePendings(i)).Select(x => new fb.protocol.@internal.MarketplacePending(x.Value)).ToList();
             CollectionUnlocks = Enumerable.Range(0, raw.CollectionUnlocksLength).Select(i => raw.CollectionUnlocks(i)).Select(x => new fb.protocol.@internal.CollectionUnlock(x.Value)).ToList();
             SnapshotTime = raw.SnapshotTime;
-            ClanMoneyPendings = Enumerable.Range(0, raw.ClanMoneyPendingsLength).Select(i => raw.ClanMoneyPendings(i)).Select(x => new fb.protocol.@internal.ClanMoneyPending(x.Value)).ToList();
-            StorageClaimPendings = Enumerable.Range(0, raw.StorageClaimPendingsLength).Select(i => raw.StorageClaimPendings(i)).Select(x => new fb.protocol.@internal.StorageClaimPending(x.Value)).ToList();
+            Receipts = Enumerable.Range(0, raw.ReceiptsLength).Select(i => raw.Receipts(i)).Select(x => new fb.protocol.@internal.Receipt(x.Value)).ToList();
         }
 
         public SavePayload(byte[] bytes) : this(fb.protocol.@internal.raw.SavePayload.GetRootAsSavePayload(new ByteBuffer(bytes)))
@@ -4133,9 +3997,7 @@ namespace fb.protocol.@internal
                 FlatBufferProtocolType.Castle => typeof(fb.protocol.@internal.Castle),
                 FlatBufferProtocolType.Quest => typeof(fb.protocol.@internal.Quest),
                 FlatBufferProtocolType.CollectionUnlock => typeof(fb.protocol.@internal.CollectionUnlock),
-                FlatBufferProtocolType.MarketplacePending => typeof(fb.protocol.@internal.MarketplacePending),
-                FlatBufferProtocolType.ClanMoneyPending => typeof(fb.protocol.@internal.ClanMoneyPending),
-                FlatBufferProtocolType.StorageClaimPending => typeof(fb.protocol.@internal.StorageClaimPending),
+                FlatBufferProtocolType.Receipt => typeof(fb.protocol.@internal.Receipt),
                 FlatBufferProtocolType.SystemMail => typeof(fb.protocol.@internal.SystemMail),
                 FlatBufferProtocolType.StorageBox => typeof(fb.protocol.@internal.StorageBox),
                 FlatBufferProtocolType.StorageWriteEntry => typeof(fb.protocol.@internal.StorageWriteEntry),
@@ -8036,13 +7898,11 @@ namespace fb.protocol.@internal.response
         public List<fb.protocol.@internal.Achievement> Achievements { get; set; } = new List<fb.protocol.@internal.Achievement>();
         public List<fb.protocol.@internal.Quest> Quests { get; set; } = new List<fb.protocol.@internal.Quest>();
         public List<fb.protocol.@internal.StorageBox> StorageBoxes { get; set; } = new List<fb.protocol.@internal.StorageBox>();
-        public List<fb.protocol.@internal.MarketplacePending> MarketplacePendings { get; set; } = new List<fb.protocol.@internal.MarketplacePending>();
         public List<fb.protocol.@internal.FriendEntry> Friends { get; set; } = new List<fb.protocol.@internal.FriendEntry>();
         public uint Mail { get; set; } = 0;
         public List<uint> SystemMailIds { get; set; } = new List<uint>();
         public List<fb.protocol.@internal.CollectionUnlock> CollectionUnlocks { get; set; } = new List<fb.protocol.@internal.CollectionUnlock>();
-        public List<fb.protocol.@internal.ClanMoneyPending> ClanMoneyPendings { get; set; } = new List<fb.protocol.@internal.ClanMoneyPending>();
-        public List<fb.protocol.@internal.StorageClaimPending> StorageClaimPendings { get; set; } = new List<fb.protocol.@internal.StorageClaimPending>();
+        public List<fb.protocol.@internal.Receipt> Receipts { get; set; } = new List<fb.protocol.@internal.Receipt>();
 
         public Init()
         { }
@@ -8060,13 +7920,11 @@ namespace fb.protocol.@internal.response
             Achievements = Enumerable.Range(0, raw.AchievementsLength).Select(i => raw.Achievements(i)).Select(x => new fb.protocol.@internal.Achievement(x.Value)).ToList();
             Quests = Enumerable.Range(0, raw.QuestsLength).Select(i => raw.Quests(i)).Select(x => new fb.protocol.@internal.Quest(x.Value)).ToList();
             StorageBoxes = Enumerable.Range(0, raw.StorageBoxesLength).Select(i => raw.StorageBoxes(i)).Select(x => new fb.protocol.@internal.StorageBox(x.Value)).ToList();
-            MarketplacePendings = Enumerable.Range(0, raw.MarketplacePendingsLength).Select(i => raw.MarketplacePendings(i)).Select(x => new fb.protocol.@internal.MarketplacePending(x.Value)).ToList();
             Friends = Enumerable.Range(0, raw.FriendsLength).Select(i => raw.Friends(i)).Select(x => new fb.protocol.@internal.FriendEntry(x.Value)).ToList();
             Mail = raw.Mail;
             SystemMailIds = Enumerable.Range(0, raw.SystemMailIdsLength).Select(i => raw.SystemMailIds(i)).Select(x => x).ToList();
             CollectionUnlocks = Enumerable.Range(0, raw.CollectionUnlocksLength).Select(i => raw.CollectionUnlocks(i)).Select(x => new fb.protocol.@internal.CollectionUnlock(x.Value)).ToList();
-            ClanMoneyPendings = Enumerable.Range(0, raw.ClanMoneyPendingsLength).Select(i => raw.ClanMoneyPendings(i)).Select(x => new fb.protocol.@internal.ClanMoneyPending(x.Value)).ToList();
-            StorageClaimPendings = Enumerable.Range(0, raw.StorageClaimPendingsLength).Select(i => raw.StorageClaimPendings(i)).Select(x => new fb.protocol.@internal.StorageClaimPending(x.Value)).ToList();
+            Receipts = Enumerable.Range(0, raw.ReceiptsLength).Select(i => raw.Receipts(i)).Select(x => new fb.protocol.@internal.Receipt(x.Value)).ToList();
         }
 
         public Init(byte[] bytes) : this(fb.protocol.@internal.response.raw.Init.GetRootAsInit(new ByteBuffer(bytes)))

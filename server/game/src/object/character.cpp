@@ -43,6 +43,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     stat(*this),
     storage_box(*this),
     marketplace(*this),
+    receipts(*this),
     matchmaker(*this),
     life(server,
          table::life[0],
@@ -2974,12 +2975,14 @@ async::task<std::optional<bool>> character::transfer_clan_money(uint32_t clan_id
     if (this->_money < hold)
         co_return false;
 
-    auto weak       = this->weak_from_this_as<character>();
-    auto world      = this->world();
-    auto request_id = this->server.ids.next();
+    auto weak             = this->weak_from_this_as<character>();
+    auto world            = this->world();
+    auto detail           = Json::Value{Json::objectValue};
+    detail["clan_delta"]  = static_cast<Json::Int64>(clan_delta);
+    detail["money_delta"] = static_cast<Json::Int64>(money_delta);
 
     this->money_reduce(hold);
-    this->clan_money_pendings[request_id] = clan_money_pending{clan_id, clan_delta, money_delta, true};
+    auto request_id = this->receipts.issue(RECEIPT_TYPE::CLAN_MONEY, clan_id, detail);
 
     auto applied = co_await this->server.clans.add_money(world, clan_id, clan_delta, request_id);
     co_await this->server.threads.switching(weak);
@@ -2992,57 +2995,45 @@ async::task<std::optional<bool>> character::transfer_clan_money(uint32_t clan_id
     }
     else
     {
-        auto found = this->clan_money_pendings.find(request_id);
-        if (found != this->clan_money_pendings.end())
-            found->second.sending = false;
+        auto receipt = this->receipts.find(request_id);
+        if (receipt != nullptr)
+            receipt->in_flight = false;
     }
     co_return applied;
 }
 
-async::task<void> character::restore_clan_money()
+async::task<void> character::settle_clan_money(uint64_t request_id)
 {
     this->assert_thread();
 
-    if (this->_clan_money_restoring)
+    auto receipt = this->receipts.find(request_id);
+    if (receipt == nullptr)
         co_return;
 
-    auto targets = std::vector<std::pair<uint64_t, uint32_t>>{};
-    for (const auto& [request_id, pending] : this->clan_money_pendings)
-    {
-        if (pending.sending == false)
-            targets.emplace_back(request_id, pending.clan);
-    }
-    if (targets.empty())
+    auto weak    = this->weak_from_this_as<character>();
+    auto world   = this->world();
+    auto clan_id = static_cast<uint32_t>(receipt->target);
+
+    auto applied = co_await this->server.clans.abort_money(world, clan_id, request_id);
+    co_await this->server.threads.switching(weak);
+    if (weak.expired())
         co_return;
 
-    auto weak  = this->weak_from_this_as<character>();
-    auto world = this->world();
-
-    this->_clan_money_restoring = true;
-    for (const auto& [request_id, clan_id] : targets)
-    {
-        auto applied = co_await this->server.clans.abort_money(world, clan_id, request_id);
-        co_await this->server.threads.switching(weak);
-        if (weak.expired())
-            co_return;
-
-        if (applied.has_value())
-            this->complete_clan_money(request_id, applied.value());
-    }
-    this->_clan_money_restoring = false;
+    if (applied.has_value())
+        this->complete_clan_money(request_id, applied.value());
 }
 
 void character::complete_clan_money(uint64_t request_id, bool applied)
 {
     this->assert_thread();
 
-    auto found = this->clan_money_pendings.find(request_id);
-    if (found == this->clan_money_pendings.end())
+    auto receipt = this->receipts.find(request_id);
+    if (receipt == nullptr)
         return;
 
-    auto clan_id     = found->second.clan;
-    auto money_delta = found->second.money_delta;
-    this->clan_money_pendings.erase(found);
+    auto clan_id     = static_cast<uint32_t>(receipt->target);
+    auto money_delta = receipt->detail["money_delta"].asInt64();
+    this->receipts.erase(request_id);
 
     if (applied && money_delta > 0)
         this->money_add(static_cast<uint64_t>(money_delta));

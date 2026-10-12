@@ -172,7 +172,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marketplace_purchase",         builtin::character::builtin_marketplace_purchase},
 {"marketplace_search",           builtin::character::builtin_marketplace_search},
 {"marketplace_get_listings",     builtin::character::builtin_marketplace_get_listings},
-{"marketplace_pending_listings", builtin::character::builtin_marketplace_pending_listings},
 {"marriage",                     builtin::character::builtin_marriage},
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
@@ -7259,68 +7258,6 @@ int builtin::character::builtin_marketplace_get_listings(lua_State* L)
             lua_settable(*lua, -3);
         }
         co_return 2;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_marketplace_pending_listings(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto buffer   = std::make_shared<std::vector<std::pair<uint64_t, fb::game::marketplace::pending_listing_info>>>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        const auto& pending_listings = ch->marketplace.pending_listings();
-        buffer->reserve(pending_listings.size());
-        for (const auto& [listing_id, pending_info] : pending_listings)
-            buffer->push_back({listing_id, pending_info});
-        co_return;
-    };
-    builder.resume = [=]() -> async::task<int> {
-        lua->new_table();
-        auto i = 0;
-        for (const auto& [listing_id, pending_info] : *buffer)
-        {
-            lua->pushinteger(i + 1);
-            lua->new_table();
-
-            lua_pushstring(*lua, "listing_id");
-            lua->pushinteger(listing_id);
-            lua_settable(*lua, -3);
-
-            lua_pushstring(*lua, "type");
-            lua->pushinteger(static_cast<int>(pending_info.type));
-            lua_settable(*lua, -3);
-
-            lua_pushstring(*lua, "character_id");
-            lua->pushinteger(pending_info.character_id);
-            lua_settable(*lua, -3);
-
-            lua_pushstring(*lua, "dsls");
-            lua->new_table();
-            auto j = 0;
-            for (const auto& dsl : pending_info.dsls)
-            {
-                lua->pushinteger(j + 1);
-                auto json = dsl.to_json();
-                lua->pushjson(json);
-                lua_settable(*lua, -3);
-                j++;
-            }
-            lua_settable(*lua, -3);
-
-            lua_settable(*lua, -3);
-            i++;
-        }
-        co_return 1;
     };
     return builder.run();
 }
