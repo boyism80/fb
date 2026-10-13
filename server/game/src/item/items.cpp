@@ -454,7 +454,7 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
     auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
     if (exists != nullptr)
     {
-        if (exists->count() + count > model.capacity)
+        if (count > exists->free_space())
             co_return nullptr;
 
         stored->count(stored_count - count);
@@ -480,10 +480,12 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
     }
     else
     {
-        if (this->free() == false)
+        // A bundle whose whole stack is listed joins the listed slot instead of taking a new one.
+        auto space = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->free_space(model) : model.capacity;
+        if (space == model.capacity && this->free() == false)
             co_return nullptr;
 
-        if (count > model.capacity)
+        if (count > space)
             co_return nullptr;
 
         auto item = stored->split(count);
@@ -1745,12 +1747,9 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         }
         else
         {
-            auto it = slots_by_id.find(id);
-            if (it != slots_by_id.end() && it->second.empty() == false)
-            {
-                auto slot = this->at(it->second[0]);
-                existing  = static_cast<uint32_t>(slot->count()) + this->locked_count(*slot);
-            }
+            auto space = this->free_space(model);
+            if (space < model.capacity)
+                existing = static_cast<uint32_t>(model.capacity - space);
         }
 
         // Without a stack to merge into, the bundle needs a free slot.
@@ -1889,7 +1888,8 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
     }
 
     // items::add merges a bundle into its existing stack and drops what does not fit, so a bundle result must fit
-    // in one stack: the remaining material stack of the same model, or a new slot.
+    // in one stack: the remaining material stack of the same model, the slot whose whole stack is listed, or a new
+    // slot.
     auto fits = [&](const auto& results) {
         auto totals = std::map<uint32_t, uint32_t>();
         for (auto& x : results)
@@ -1916,6 +1916,10 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
                 auto index = this->index(existing);
                 left =
                     existing->count() - (consume.contains(index) ? consume[index] : 0) + this->locked_count(*existing);
+            }
+            else
+            {
+                left = model.capacity - this->free_space(model);
             }
 
             if (left + total > model.capacity)

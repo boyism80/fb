@@ -1,6 +1,7 @@
-local lib      = require("integration.lib")
-local protocol = require("integration.protocol")
-local resp     = require("integration.response")
+local lib         = require("integration.lib")
+local protocol    = require("integration.protocol")
+local resp        = require("integration.response")
+local script_step = require("integration.lib.script_step")
 
 local F1_OID          = 0xFFFFFFFF
 local DIALOG_CLOSE_OID = 0xFFFFFFFD
@@ -23,6 +24,15 @@ local BUNDLE_LIST_COUNT = 100
 local BUNDLE_PREP_COUNT = 200
 local LISTING_FEE_RATE  = 0.05
 local WEAPON_DURABILITY = 50
+-- 도토리 capacity is 201.
+local BUNDLE_CAPACITY   = 201
+local EXCHANGE_COST     = 100
+
+-- 초보도시락 + 다랑어살코기 makes 1차도시락 or 끔찍한요리; both have capacity 200.
+local RECIPE_SOURCES  = { "초보도시락", "다랑어살코기" }
+local RECIPE_SUCCESS  = "1차도시락"
+local RECIPE_FAILED   = "끔찍한요리"
+local RECIPE_CAPACITY = 200
 
 local MQ_WAIT_MS     = 2000
 local HTTP_DELAY_MS  = 3000
@@ -53,6 +63,9 @@ local MSG_SEARCH_EMPTY = "검색 결과가 없습니다"
 local MSG_CANCEL_EMPTY = "등록한 물품이 없습니다"
 local MSG_MARKET_CLEAR      = "거래소 초기화"
 local MSG_MARKET_CLEAR_FAIL = "거래소 초기화 실패"
+local MSG_MIX_SUCCESS        = "성공하였습니다"
+local MSG_MIX_FAILED         = "실패하였습니다"
+local MSG_INVENTORY_OVERFLOW = "소지품이 꽉 찼습니다"
 
 local STORAGE_CANCEL_TITLE   = "거래소 등록 취소"
 local STORAGE_PURCHASE_TITLE = "거래소 구매"
@@ -952,6 +965,53 @@ local function wait_item_deducted(ctx, bot, item_name, expected_money, first_wai
     end
     return false, string.format("escrow not deducted has_item=%s money=%d expected=%d",
         tostring(bot:has_item_by_name(item_name)), bot:money(), expected_money)
+end
+
+-- Lists every given item as a whole stack while the marketplace is unreachable, so each stays escrowed.
+local function list_unreachable(bot, item_names, count)
+    bot:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " on")
+    for _, name in ipairs(item_names) do
+        local msg, err = list_item_flow(bot, name, count, BUNDLE_UNIT_PRICE)
+        if msg == nil or msg:gsub("%s+", " "):find(MSG_LIST_PENDING, 1, true) == nil then
+            bot:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+            return false, string.format("list %s msg=%s", name, tostring(msg or err))
+        end
+    end
+    return true, nil
+end
+
+-- Unlock sends nothing to the client, so poll the server-side counts until the escrow is back in its slot.
+local function wait_escrow_returned(ctx, bot, spec)
+    bot:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+    ctx:sleep(RESTORE_FIRST_WAIT_MS)
+    for attempt = 1, RESTORE_POLL_COUNT do
+        if script_step.run_script(bot, "test/integration", "verify_items", "ESCROW_RETURNED", spec) then
+            return true
+        end
+        progress(bot, string.format("escrow not returned yet attempt=%d", attempt))
+        ctx:sleep(RESTORE_POLL_MS)
+    end
+    return false
+end
+
+local function combine_sources(bot)
+    local slots = {}
+    for _, name in ipairs(RECIPE_SOURCES) do
+        table.insert(slots, bot:item_slot(name))
+    end
+    local packet = bot:request(
+        resp.message,
+        protocol.item_combine(slots),
+        function(p)
+            return p.text ~= nil
+                and (p.text:find(MSG_MIX_SUCCESS, 1, true) ~= nil
+                    or p.text:find(MSG_MIX_FAILED, 1, true) ~= nil
+                    or p.text:find(MSG_INVENTORY_OVERFLOW, 1, true) ~= nil)
+        end)
+    if packet == nil or packet == false then
+        return nil
+    end
+    return packet.text
 end
 
 -- An empty storage answers with a normal dialog instead of the entry menu, so watch either kind.
@@ -2209,6 +2269,145 @@ test_suite {
             cleanup_bot(a)
             cleanup_bot(b)
             progress(b, "R4 PASSED")
+            return true
+        end,
+
+        -- X1/X2: an exchange reward joins the escrowed whole stack of the same bundle, so it must fit there
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "X1: EXCHANGE INTO ESCROWED BUNDLE")
+
+            cleanup_bot(a)
+            if prepare_bundle(a) == false then
+                progress(a, "FAILED: prepare bundle")
+                return false
+            end
+            a:money(listing_fee(BUNDLE_PREP_COUNT, BUNDLE_UNIT_PRICE) + EXCHANGE_COST)
+            local listed, list_err = list_unreachable(a, { BUNDLE_ITEM }, BUNDLE_PREP_COUNT)
+            if listed == false then
+                progress(a, "FAILED: " .. tostring(list_err))
+                return false
+            end
+
+            local cost = "money=" .. EXCHANGE_COST
+            local overflow = BUNDLE_CAPACITY - BUNDLE_PREP_COUNT + 9
+            local ok, detail = script_step.run_script(a, "test/integration", "exchange_items", "X1",
+                cost, string.format("%s=%d", BUNDLE_ITEM, overflow), "LACK_CAPACITY")
+            if ok == false then
+                progress(a, "FAILED: X1 " .. tostring(detail))
+                return false
+            end
+            ok, detail = script_step.run_script(a, "test/integration", "verify_items", "X1_KEPT",
+                string.format("%s=0,money=%d", BUNDLE_ITEM, EXCHANGE_COST))
+            if ok == false then
+                progress(a, "FAILED: X1 cost or reward changed " .. tostring(detail))
+                return false
+            end
+            progress(a, "X1 PASSED")
+
+            local fit = BUNDLE_CAPACITY - BUNDLE_PREP_COUNT
+            ok, detail = script_step.run_script(a, "test/integration", "exchange_items", "X2",
+                cost, string.format("%s=%d", BUNDLE_ITEM, fit), "OK")
+            if ok == false then
+                progress(a, "FAILED: X2 " .. tostring(detail))
+                return false
+            end
+            ok, detail = script_step.run_script(a, "test/integration", "verify_items", "X2_GRANTED",
+                string.format("%s=%d,money=0", BUNDLE_ITEM, fit))
+            if ok == false then
+                progress(a, "FAILED: X2 reward not granted in full " .. tostring(detail))
+                return false
+            end
+
+            if wait_escrow_returned(ctx, a, string.format("%s=%d", BUNDLE_ITEM, BUNDLE_CAPACITY)) == false then
+                progress(a, "FAILED: escrow not returned after X2")
+                return false
+            end
+            cleanup_bot(a)
+            progress(a, "X2 PASSED")
+            return true
+        end,
+
+        -- C1: a combine result whose escrowed whole stack is full must be refused before the materials are used
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "C1: COMBINE INTO FULL ESCROWED BUNDLE")
+
+            cleanup_bot(a)
+            a:create_item(RECIPE_SUCCESS, RECIPE_CAPACITY)
+            a:money(listing_fee(RECIPE_CAPACITY, BUNDLE_UNIT_PRICE))
+            local listed, list_err = list_unreachable(a, { RECIPE_SUCCESS }, RECIPE_CAPACITY)
+            if listed == false then
+                progress(a, "FAILED: " .. tostring(list_err))
+                return false
+            end
+            for _, name in ipairs(RECIPE_SOURCES) do
+                a:create_item(name, 1)
+            end
+
+            local text = combine_sources(a)
+            if text == nil or text:find(MSG_INVENTORY_OVERFLOW, 1, true) == nil then
+                progress(a, "FAILED: C1 combine not refused msg=" .. tostring(text))
+                return false
+            end
+            local ok, detail = script_step.run_script(a, "test/integration", "verify_items", "C1_KEPT",
+                string.format("%s=1,%s=1,%s=0,%s=0", RECIPE_SOURCES[1], RECIPE_SOURCES[2], RECIPE_SUCCESS, RECIPE_FAILED))
+            if ok == false then
+                progress(a, "FAILED: C1 materials or results changed " .. tostring(detail))
+                return false
+            end
+
+            if wait_escrow_returned(ctx, a, string.format("%s=%d", RECIPE_SUCCESS, RECIPE_CAPACITY)) == false then
+                progress(a, "FAILED: escrow not returned after C1")
+                return false
+            end
+            cleanup_bot(a)
+            progress(a, "C1 PASSED")
+            return true
+        end,
+
+        -- C2: a combine result that fits in its escrowed whole stack is granted in full
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "C2: COMBINE INTO ESCROWED BUNDLES WITH ROOM")
+
+            cleanup_bot(a)
+            local count = RECIPE_CAPACITY - 1
+            a:create_item(RECIPE_SUCCESS, count)
+            a:create_item(RECIPE_FAILED, count)
+            a:money(listing_fee(count, BUNDLE_UNIT_PRICE) * 2)
+            local listed, list_err = list_unreachable(a, { RECIPE_SUCCESS, RECIPE_FAILED }, count)
+            if listed == false then
+                progress(a, "FAILED: " .. tostring(list_err))
+                return false
+            end
+            for _, name in ipairs(RECIPE_SOURCES) do
+                a:create_item(name, 1)
+            end
+
+            local text = combine_sources(a)
+            local made, other = nil, nil
+            if text ~= nil and text:find(MSG_MIX_SUCCESS, 1, true) ~= nil then
+                made, other = RECIPE_SUCCESS, RECIPE_FAILED
+            elseif text ~= nil and text:find(MSG_MIX_FAILED, 1, true) ~= nil then
+                made, other = RECIPE_FAILED, RECIPE_SUCCESS
+            else
+                progress(a, "FAILED: C2 combine refused msg=" .. tostring(text))
+                return false
+            end
+            local ok, detail = script_step.run_script(a, "test/integration", "verify_items", "C2_GRANTED",
+                string.format("%s=0,%s=0,%s=1,%s=0", RECIPE_SOURCES[1], RECIPE_SOURCES[2], made, other))
+            if ok == false then
+                progress(a, "FAILED: C2 result not granted " .. tostring(detail))
+                return false
+            end
+
+            if wait_escrow_returned(ctx, a, string.format("%s=%d,%s=%d", made, RECIPE_CAPACITY, other, count)) == false then
+                progress(a, "FAILED: escrow not returned after C2")
+                return false
+            end
+            cleanup_bot(a)
+            progress(a, "C2 PASSED")
             return true
         end,
     },

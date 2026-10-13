@@ -758,6 +758,36 @@ return {
         end
     end,
 
+    -- cost, reward: comma-separated 'name=count' pairs, 'money=n' for money, '-' for nothing.
+    -- expected: an exchange_result name, e.g. 'OK' or 'LACK_CAPACITY'.
+    exchange_items = function(me, step, cost, reward, expected)
+        local specs = {}
+        for i, spec in ipairs({ cost, reward }) do
+            specs[i] = { ['item'] = {} }
+            for name, count in tostring(spec):gmatch('([^,=]+)=(%d+)') do
+                if name == 'money' then
+                    specs[i]['money'] = tonumber(count)
+                else
+                    specs[i]['item'][name] = tonumber(count)
+                end
+            end
+        end
+
+        local code = me:exchange(specs[1], specs[2])
+        local actual = 'UNKNOWN'
+        for name, value in pairs(require('lib.enum').exchange_result) do
+            if value == code then
+                actual = name
+            end
+        end
+
+        if actual == expected then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('exchange is %s, expected %s', actual, tostring(expected)))
+        end
+    end,
+
     store_item = function(me, step, name, count)
         local _, item = next(me:items(name) or {})
         if item == nil then
