@@ -753,6 +753,10 @@ namespace Internal.Services
             if (group.Members.Contains(target.Id))
                 throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
 
+            // Members excludes the master.
+            if (group.Members.Count + 1 >= Fb.Model.ConstValue.Group.MaxMember)
+                throw new LogicException(ErrorCode.GroupFullMember);
+
             targetSync.Group = group.Master;
             _dbContext.CharacterRealtimeState.Set(world, targetSync);
             await _dbContext.CharacterRealtimeState.SaveChangesAsync();

@@ -689,16 +689,18 @@ async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t    
         co_return;
 
     for (auto& hook : cmd_it->second)
-        co_await hook(bot, header);
+        co_await hook.fn(bot, header);
 }
 
-void game_bot_controller::hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn)
+uint32_t game_bot_controller::hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn)
 {
     auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
-    this->_test_hooks[test][opcode].push_back(std::move(fn));
+    auto id          = ++this->_hook_sequence;
+    this->_test_hooks[test][opcode].push_back(hook_entry{id, std::move(fn)});
+    return id;
 }
 
-void game_bot_controller::unhook_opcode(bot_integration_test* test, uint8_t opcode)
+void game_bot_controller::unhook_opcode(bot_integration_test* test, uint8_t opcode, uint32_t hook_id)
 {
     auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
 
@@ -706,7 +708,15 @@ void game_bot_controller::unhook_opcode(bot_integration_test* test, uint8_t opco
     if (test_it == this->_test_hooks.end())
         return;
 
-    test_it->second.erase(opcode);
+    auto cmd_it = test_it->second.find(opcode);
+    if (cmd_it == test_it->second.end())
+        return;
+
+    std::erase_if(cmd_it->second, [hook_id](const hook_entry& hook) {
+        return hook.id == hook_id;
+    });
+    if (cmd_it->second.empty())
+        test_it->second.erase(cmd_it);
     if (test_it->second.empty())
         this->_test_hooks.erase(test_it);
 }

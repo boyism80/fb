@@ -37,3 +37,8 @@ table GetListings {
     listings: [fb.protocol.marketplace.Listing];
     error: uint;
 }
+
+table ClearListings {
+    count: uint;
+    error: uint;
+}

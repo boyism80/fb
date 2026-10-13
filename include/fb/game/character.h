@@ -166,6 +166,7 @@ private:
     std::optional<fb::model::point16_t>              _match_return_position = std::nullopt;
     uint32_t                                         _match_return_map      = 0;
     std::weak_ptr<fb::game::match>                   _match;
+    std::optional<std::pair<uint32_t, uint16_t>>     _world_map = std::nullopt;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
@@ -401,6 +402,7 @@ public:
     void                                                      item_tooltip(const item& iteem, uint16_t position);
     async::task<void>                                         show_user_list();
     void                                                      show_world_map(uint32_t id, uint16_t index);
+    std::optional<std::pair<uint32_t, uint16_t>>              close_world_map();
     void                                                      timer(uint32_t time, TIMER_TYPE type);
     void                                                      weather(WEATHER_TYPE weather);
     void                                                      bright(uint8_t value);

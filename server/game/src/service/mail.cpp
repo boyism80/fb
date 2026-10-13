@@ -36,6 +36,9 @@ void service::mail::on_error(uint32_t error) const
     case ERROR_CODE::NOT_FOUND_MAIL:
         throw std::runtime_error(_TEXT(MESSAGE_NOT_FOUND_MAIL));
 
+    case ERROR_CODE::MAIL_BOX_FULL:
+        throw std::runtime_error(_TEXT(MESSAGE_MAIL_BOX_FULL));
+
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }

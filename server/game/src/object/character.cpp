@@ -244,6 +244,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     {
         if (this->trade.trading())
             this->trade.cancel();
+        this->_world_map = std::nullopt;
     }
 
     auto switch_process = (map != nullptr && map->active == false);
@@ -288,6 +289,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             if (options.before && co_await options.before() == false)
                 co_return false;
 
+            this->cancel_dialog("transfer");
             std::ignore = co_await this->map(nullptr);
             co_await this->server.save(*this);
 
@@ -2567,7 +2569,13 @@ async::task<void> character::show_user_list()
 
 void character::show_world_map(uint32_t id, uint16_t index)
 {
+    this->_world_map = std::make_pair(id, index);
     this->listener.on_show_world_map(*this, id, index);
+}
+
+std::optional<std::pair<uint32_t, uint16_t>> character::close_world_map()
+{
+    return std::exchange(this->_world_map, std::nullopt);
 }
 
 void character::timer(uint32_t time, TIMER_TYPE type)
@@ -3031,7 +3039,6 @@ void character::complete_clan_money(uint64_t request_id, bool applied)
     if (request == nullptr)
         return;
 
-    auto clan_id     = static_cast<uint32_t>(request->target);
     auto money_delta = request->detail["money_delta"].asInt64();
     this->unsettled.erase(request_id);
 
@@ -3039,8 +3046,6 @@ void character::complete_clan_money(uint64_t request_id, bool applied)
         this->money_add(static_cast<uint64_t>(money_delta));
     else if (applied == false && money_delta < 0)
         this->money_add(static_cast<uint64_t>(-money_delta));
-
-    std::ignore = this->server.clans.release_money(this->world(), clan_id, request_id);
 }
 
 std::shared_ptr<fb::socket<character>> character::socket_ptr() const

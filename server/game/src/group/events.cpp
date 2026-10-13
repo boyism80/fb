@@ -176,6 +176,9 @@ async::task<void> group::container::on_error(uint32_t error, std::string_view ac
     case ERROR_CODE::NOT_GROUP_MASTER:
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_OWNER));
 
+    case ERROR_CODE::GROUP_FULL_MEMBER:
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_FULL_MEMBER));
+
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }

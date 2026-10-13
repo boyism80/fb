@@ -164,6 +164,7 @@ namespace Http.Reepository
                     dynamicParams.Add("sender", sender);
                     dynamicParams.Add("title", title);
                     dynamicParams.Add("contents", contents);
+                    dynamicParams.Add("max_count", Fb.Model.ConstValue.Mail.MaxCount);
 
                     await using var reader = await connection.QueryMultipleAsync(
                         "USP_MAIL_WRITE_MANY",
@@ -216,48 +217,57 @@ namespace Http.Reepository
                     if (userIds.Length == 0)
                         continue;
 
-                    var characters = await _dbContext.Character.GetMany(world, userIds);
-                    var rendered = new Dictionary<uint, (string Title, string Contents)>(userIds.Length);
-                    foreach (var userId in userIds)
+                    // Shards commit one by one, so an exception here must not drop the results of earlier shards.
+                    try
                     {
-                        characters.TryGetValue(userId, out var character);
-                        var context = new SystemMailRecipientContext(
-                            userId,
-                            character?.Name ?? string.Empty,
-                            character?.Level ?? 0);
-                        rendered[userId] = SystemMailTemplate.Render(title, contents, context);
+                        var characters = await _dbContext.Character.GetMany(world, userIds);
+                        var rendered = new Dictionary<uint, (string Title, string Contents)>(userIds.Length);
+                        foreach (var userId in userIds)
+                        {
+                            characters.TryGetValue(userId, out var character);
+                            var context = new SystemMailRecipientContext(
+                                userId,
+                                character?.Name ?? string.Empty,
+                                character?.Level ?? 0);
+                            rendered[userId] = SystemMailTemplate.Render(title, contents, context);
+                        }
+
+                        await PopulateTempMailWriteUsersAsync(connection, userIds);
+                        await PopulateTempMailDeliverContentAsync(connection, rendered);
+
+                        var dynamicParams = new DynamicParameters();
+                        dynamicParams.Add("system_mail_id", systemMailId);
+                        dynamicParams.Add("sender", sender);
+                        dynamicParams.Add("max_count", Fb.Model.ConstValue.Mail.MaxCount);
+
+                        await using var reader = await connection.QueryMultipleAsync(
+                            "USP_MAIL_DELIVER_SYSTEM_MANY",
+                            dynamicParams,
+                            commandType: System.Data.CommandType.StoredProcedure);
+
+                        var success = await reader.ReadFirstAsync<bool>();
+                        if (!success)
+                        {
+                            failed = true;
+                            continue;
+                        }
+
+                        var mails = (await reader.ReadAsync<Mail>()).ToList();
+                        var unreadByUser = (await reader.ReadAsync<MailUnreadCount>())
+                            .ToDictionary(x => x.User, x => x.Unread);
+
+                        foreach (var mail in mails)
+                        {
+                            results.Add(new MailWriteResult
+                            {
+                                Mail   = mail,
+                                Unread = unreadByUser.GetValueOrDefault(mail.User, (ushort)0)
+                            });
+                        }
                     }
-
-                    await PopulateTempMailWriteUsersAsync(connection, userIds);
-                    await PopulateTempMailDeliverContentAsync(connection, rendered);
-
-                    var dynamicParams = new DynamicParameters();
-                    dynamicParams.Add("system_mail_id", systemMailId);
-                    dynamicParams.Add("sender", sender);
-
-                    await using var reader = await connection.QueryMultipleAsync(
-                        "USP_MAIL_DELIVER_SYSTEM_MANY",
-                        dynamicParams,
-                        commandType: System.Data.CommandType.StoredProcedure);
-
-                    var success = await reader.ReadFirstAsync<bool>();
-                    if (!success)
+                    catch (Exception)
                     {
                         failed = true;
-                        continue;
-                    }
-
-                    var mails = (await reader.ReadAsync<Mail>()).ToList();
-                    var unreadByUser = (await reader.ReadAsync<MailUnreadCount>())
-                        .ToDictionary(x => x.User, x => x.Unread);
-
-                    foreach (var mail in mails)
-                    {
-                        results.Add(new MailWriteResult
-                        {
-                            Mail   = mail,
-                            Unread = unreadByUser.GetValueOrDefault(mail.User, (ushort)0)
-                        });
                     }
                 }
             }
@@ -286,10 +296,13 @@ namespace Http.Reepository
             dynamicParams.Add("sender", sender);
             dynamicParams.Add("title", title);
             dynamicParams.Add("contents", contents);
+            dynamicParams.Add("max_count", Fb.Model.ConstValue.Mail.MaxCount);
 
             await using var reader = await conn.QueryMultipleAsync($"USP_MAIL_WRITE", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
-            var success = await reader.ReadFirstAsync<bool>();
-            if (!success)
+            var result = await reader.ReadFirstAsync<int>();
+            if (result == 2)
+                throw new LogicException(ErrorCode.MailBoxFull);
+            if (result != 1)
                 throw new LogicException(ErrorCode.Unhandled);
 
             var mail = await reader.ReadFirstOrDefaultAsync<Http.Model.Mail>() ??
@@ -308,7 +321,8 @@ namespace Http.Reepository
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
             var ids = await conn.QueryAsync<uint>(
-                "SELECT DISTINCT `system_mail_id` FROM `mail` WHERE `user` = @user AND `system_mail_id` IS NOT NULL",
+                "SELECT `system_mail_id` FROM `mail` WHERE `user` = @user AND `system_mail_id` IS NOT NULL " +
+                "UNION SELECT `system_mail_id` FROM `mail_system_delivered` WHERE `user` = @user",
                 new { user });
             return ids.ToList();
         }

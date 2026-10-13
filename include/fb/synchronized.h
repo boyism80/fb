@@ -198,7 +198,7 @@ public:
     bool try_lock()
     {
         std::lock_guard lk(this->_mutex);
-        if (this->_reader_count == 0 && this->_writer == false)
+        if (this->_reader_count == 0 && this->_writer == false && this->_writers_waiting == 0)
         {
             this->_writer = true;
             return true;

@@ -61,6 +61,7 @@ private:
     {
         int               lua_ref{LUA_NOREF};
         fb::lua::context* lua_ctx{nullptr};
+        uint32_t          hook_id{0};
     };
 
     std::unique_ptr<fb::lua::root>                         _lua_root;

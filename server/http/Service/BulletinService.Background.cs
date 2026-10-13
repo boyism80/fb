@@ -91,6 +91,7 @@ namespace Http.Service
                             transaction);
 
                         uint startId;
+                        uint renumbered = 0;
                         if (currentSequence == null)
                         {
                             // First articles for this bulletin section
@@ -102,8 +103,52 @@ namespace Http.Service
                         }
                         else
                         {
-                            // Increment sequence by request count
-                            startId = currentSequence.Value + 1;
+                            var sequence = currentSequence.Value;
+
+                            // The client addresses articles with uint16 ids and asks for its first page at MaxId, so
+                            // the section is renumbered before an id would pass MaxId. RetainCount leaves room for
+                            // many batches, otherwise every batch would renumber the whole section.
+                            if (sequence + requests.Count > Fb.Model.ConstValue.Bulletin.MaxId)
+                            {
+                                await conn.ExecuteAsync(
+                                    "DELETE FROM bulletin WHERE `section` = @section AND deleted = 1",
+                                    new { section = bulletinSection },
+                                    transaction);
+                                await conn.ExecuteAsync(
+                                    """
+                                    DELETE b FROM bulletin b
+                                    INNER JOIN (
+                                        SELECT id FROM bulletin WHERE `section` = @section
+                                        ORDER BY id DESC
+                                        LIMIT 18446744073709551615 OFFSET @retain
+                                    ) old ON b.`section` = @section AND b.id = old.id
+                                    """,
+                                    new { section = bulletinSection, retain = (int)Fb.Model.ConstValue.Bulletin.RetainCount },
+                                    transaction);
+
+                                // Moving every id above the range first keeps the renumbering from colliding on the primary key.
+                                await conn.ExecuteAsync(
+                                    "UPDATE bulletin SET id = id + 1000000 WHERE `section` = @section",
+                                    new { section = bulletinSection },
+                                    transaction);
+                                var kept = await conn.ExecuteAsync(
+                                    """
+                                    UPDATE bulletin b
+                                    INNER JOIN (
+                                        SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rn
+                                        FROM bulletin WHERE `section` = @section
+                                    ) r ON b.`section` = @section AND b.id = r.id
+                                    SET b.id = r.rn
+                                    """,
+                                    new { section = bulletinSection },
+                                    transaction);
+
+                                renumbered = sequence;
+                                sequence = (uint)kept;
+                                _logger.LogWarning("Renumbered bulletin section {Section} of world {World}: {Count} articles kept", bulletinSection, world, sequence);
+                            }
+
+                            startId = sequence + 1;
                             await conn.ExecuteAsync(
                                 "UPDATE bulletin_sequence SET id = @id WHERE `section` = @section",
                                 new { section = bulletinSection, id = (uint)(startId + requests.Count - 1) },
@@ -116,6 +161,12 @@ namespace Http.Service
 
                         // Commit transaction
                         await transaction.CommitAsync(cancellationToken);
+
+                        if (renumbered > 0)
+                        {
+                            await _bulletinCacheService.DeleteArticlesBatchAsync(world,
+                                Enumerable.Range(1, (int)renumbered).Select(id => (bulletinSection, (uint)id)));
+                        }
 
                         // Cache articles in Redis after successful DB insert
                         var cacheItems = new Dictionary<(uint section, uint id), Http.Model.Bulletin>();

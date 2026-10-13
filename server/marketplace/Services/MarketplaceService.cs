@@ -1,7 +1,9 @@
+using Dapper;
 using fb.protocol.marketplace;
 using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
+using Http.Extension;
 using Http.Service;
 using Marketplace.Extension;
 using Marketplace.Model;
@@ -371,6 +373,87 @@ public class MarketplaceService : IMarketplaceService
             character_id = characterId,
             listing_id = listingId
         });
+    }
+
+    public async Task<uint> ClearListingsAsync(uint adminId)
+    {
+        await _logService.WriteAsync("marketplace_clear", new
+        {
+            admin_id = adminId
+        });
+
+        var cleared = 0u;
+        while (true)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+
+            // Rows held by a purchase in progress are skipped; that purchase settles them on its own.
+            var listings = (await conn.QueryAsync<MarketplaceListing>($@"
+                SELECT * FROM `marketplace_listing`
+                WHERE `status` = {ListingState.ACTIVE.Escape()}
+                ORDER BY `id`
+                LIMIT 100
+                FOR UPDATE SKIP LOCKED", null, transaction)).ToList();
+            if (listings.Count == 0)
+            {
+                await transaction.CommitAsync();
+                break;
+            }
+
+            var parameters = new DynamicParameters();
+            parameters.Add("ListingIds", listings.Select(x => x.Id).ToList());
+            await conn.ExecuteAsync($@"
+                UPDATE `marketplace_listing`
+                SET `status` = {ListingState.CANCELLED.Escape()},
+                    `updated_date` = NOW()
+                WHERE `id` IN @ListingIds
+                  AND `status` = {ListingState.ACTIVE.Escape()}", parameters, transaction);
+
+            var deliveries = new List<MarketplaceDelivery>(listings.Count);
+            foreach (var listing in listings)
+            {
+                var delivery = new MarketplaceDelivery
+                {
+                    ExternalRef = $"marketplace:cancel:{listing.Id}",
+                    World = listing.World,
+                    User = listing.SellerId,
+                    Title = Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
+                    Message = Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
+                    Attachments =
+                    [
+                        new Fb.Model.Dsl.Item
+                        {
+                            Id = listing.ItemModel,
+                            Count = listing.RemainingCount,
+                            Durability = listing.ItemDurability,
+                            CustomName = listing.ItemCustomName,
+                            Percent = 100.0,
+                            Uid = listing.ItemUid
+                        }.ToDSL()
+                    ]
+                };
+                await _dbContext.MarketplaceDelivery.CreateAsync(delivery, transaction);
+                deliveries.Add(delivery);
+            }
+
+            await transaction.CommitAsync();
+
+            foreach (var delivery in deliveries)
+            {
+                await _deliveryService.DeliverAsync(delivery);
+            }
+
+            cleared += (uint)listings.Count;
+        }
+
+        await _logService.WriteAsync("marketplace_clear_success", new
+        {
+            admin_id = adminId,
+            count = cleared
+        });
+        return cleared;
     }
 
     public async Task<PurchaseItemResult> PurchaseItemAsync(

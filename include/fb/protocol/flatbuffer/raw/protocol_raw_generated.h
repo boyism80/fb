@@ -561,6 +561,9 @@ struct SearchBuilder;
 struct GetListings;
 struct GetListingsBuilder;
 
+struct ClearListings;
+struct ClearListingsBuilder;
+
 }  // namespace raw
 }  // namespace request
 
@@ -587,6 +590,9 @@ struct SearchBuilder;
 
 struct GetListings;
 struct GetListingsBuilder;
+
+struct ClearListings;
+struct ClearListingsBuilder;
 
 }  // namespace raw
 }  // namespace response
@@ -15736,6 +15742,47 @@ inline ::flatbuffers::Offset<GetListings> CreateGetListingsDirect(
       buyer_id);
 }
 
+struct ClearListings FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ClearListingsBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ADMIN_ID = 4
+  };
+  uint32_t admin_id() const {
+    return GetField<uint32_t>(VT_ADMIN_ID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ADMIN_ID, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct ClearListingsBuilder {
+  typedef ClearListings Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_admin_id(uint32_t admin_id) {
+    fbb_.AddElement<uint32_t>(ClearListings::VT_ADMIN_ID, admin_id, 0);
+  }
+  explicit ClearListingsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ClearListings> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ClearListings>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ClearListings> CreateClearListings(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t admin_id = 0) {
+  ClearListingsBuilder builder_(_fbb);
+  builder_.add_admin_id(admin_id);
+  return builder_.Finish();
+}
+
 }  // namespace raw
 }  // namespace request
 
@@ -16122,6 +16169,57 @@ inline ::flatbuffers::Offset<GetListings> CreateGetListingsDirect(
       _fbb,
       listings__,
       error);
+}
+
+struct ClearListings FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ClearListingsBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COUNT = 4,
+    VT_ERROR = 6
+  };
+  uint32_t count() const {
+    return GetField<uint32_t>(VT_COUNT, 0);
+  }
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_COUNT, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct ClearListingsBuilder {
+  typedef ClearListings Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_count(uint32_t count) {
+    fbb_.AddElement<uint32_t>(ClearListings::VT_COUNT, count, 0);
+  }
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(ClearListings::VT_ERROR, error, 0);
+  }
+  explicit ClearListingsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ClearListings> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ClearListings>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ClearListings> CreateClearListings(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t count = 0,
+    uint32_t error = 0) {
+  ClearListingsBuilder builder_(_fbb);
+  builder_.add_error(error);
+  builder_.add_count(count);
+  return builder_.Finish();
 }
 
 }  // namespace raw

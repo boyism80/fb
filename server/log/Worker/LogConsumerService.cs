@@ -51,7 +51,8 @@ namespace Log.Worker
                     await ConnectToRabbitMQAsync(stoppingToken);
                     _logger.LogInformation("Log Consumer Service started");
 
-                    while (!stoppingToken.IsCancellationRequested)
+                    // A channel closed by the broker is not recovered by the client, so reconnect instead of reusing it.
+                    while (!stoppingToken.IsCancellationRequested && _channel.IsOpen)
                     {
                         try
                         {
@@ -65,7 +66,13 @@ namespace Log.Worker
                         await Task.Delay(ProcessInterval, stoppingToken);
                     }
 
-                    break;
+                    if (stoppingToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    _logger.LogWarning("Log channel closed, reconnecting");
+                    await DisconnectFromRabbitMQAsync();
                 }
                 catch (Exception ex)
                 {

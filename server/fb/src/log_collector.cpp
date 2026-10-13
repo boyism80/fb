@@ -201,7 +201,8 @@ size_t log_collector::publish(const std::vector<Json::Value>& batch)
                 continue;
             }
 
-            if (body.size() + entry.size() + 2 > MAX_BATCH_BYTES)
+            auto separator = count > 0 ? size_t{1} : size_t{0};
+            if (body.size() + separator + entry.size() + 1 > MAX_BATCH_BYTES)
                 break;
 
             if (count > 0)

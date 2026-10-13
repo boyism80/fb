@@ -489,22 +489,6 @@ clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta, uint
     }
 }
 
-async::task<void> clan::container::release_money(uint32_t world, uint32_t clan_id, uint64_t request_id)
-{
-    try
-    {
-        auto&& resp = co_await this->_server.http.post("internal",
-                                                       "/clan/money/release",
-                                                       internal_reqs::ReleaseClanMoney{world, clan_id, request_id});
-        if (static_cast<ERROR_CODE>(resp.error) != ERROR_CODE::NONE)
-            fb::logger::warn("release clan money failed: clan={} request={} error={}", clan_id, request_id, resp.error);
-    }
-    catch (std::exception& e)
-    {
-        fb::logger::warn("release clan money failed: clan={} request={}: {}", clan_id, request_id, e.what());
-    }
-}
-
 async::task<std::optional<bool>> clan::container::abort_money(uint32_t world, uint32_t clan_id, uint64_t request_id)
 {
     auto* before = this->_server.threads.current();

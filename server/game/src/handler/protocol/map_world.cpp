@@ -2,6 +2,7 @@
 
 #include <fb/game/server.h>
 
+#include <algorithm>
 #include <tuple>
 
 using table = fb::model::table;
@@ -22,19 +23,31 @@ async::task<bool> map_world<V>::handle(fb::socket<character>& session, game_reqs
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto  world_table = table::world;
-    auto& world       = world_table[request.value];
-    auto& before      = world[request.before];
-    auto& after       = world[request.after];
+    auto opened = ch->close_world_map();
+    if (opened.has_value() == false || opened->first != request.value || opened->second != request.before)
+        co_return true;
 
-    if (ch->map() == this->server.maps[after.map])
+    auto world_table = table::world;
+    auto world       = world_table->find(request.value);
+    if (world == nullptr)
+        co_return true;
+
+    auto before = world->find(request.before);
+    auto after  = world->find(request.after);
+    if (before == nullptr || after == nullptr)
+        co_return true;
+
+    if (request.after != request.before && std::ranges::find(before->links, request.after) == before->links.end())
+        co_return true;
+
+    if (ch->map() == this->server.maps[after->map])
     {
         ch->update_map();
         ch->show();
     }
     else
     {
-        std::ignore = co_await ch->map(this->server.maps[after.map], after.position);
+        std::ignore = co_await ch->map(this->server.maps[after->map], after->position);
     }
     co_return true;
 }

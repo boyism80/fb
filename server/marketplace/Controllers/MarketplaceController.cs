@@ -151,6 +151,29 @@ public class MarketplaceController : ControllerBase
         }
     }
 
+    [HttpPost("clear-listings")]
+    public async Task<Response.ClearListings> ClearListings(Request.ClearListings request)
+    {
+        try
+        {
+            var count = await _marketplaceService.ClearListingsAsync(request.AdminId);
+
+            return new Response.ClearListings
+            {
+                Count = count,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to clear listings by admin {AdminId}", request.AdminId);
+            return new Response.ClearListings
+            {
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
     [HttpPost("purchase")]
     public async Task<Response.Purchase> PurchaseItem(Request.Purchase request)
     {

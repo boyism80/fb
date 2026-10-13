@@ -309,13 +309,12 @@ namespace Internal.Controllers
                     id = clan.Id
                 }, transaction: trans, commandType: System.Data.CommandType.StoredProcedure);
 
-                var unreleased = clan.MoneyRequests
-                    .Where(x => x.Released == false)
+                var archived = clan.MoneyRequests
                     .Select(x => new ClanMoneyRequestArchive { Clan = clan.Id, RequestId = x.Id, Applied = x.Applied })
                     .ToArray();
-                if (unreleased.Length > 0)
+                if (archived.Length > 0)
                 {
-                    _dbContext.ClanMoneyRequestArchive.Set(world, unreleased);
+                    _dbContext.ClanMoneyRequestArchive.Set(world, archived);
                     await _dbContext.ClanMoneyRequestArchive.SaveChangesAsync();
                 }
 
@@ -1219,10 +1218,10 @@ namespace Internal.Controllers
                 if (request.RequestId == 0)
                     throw new LogicException(ErrorCode.Unhandled);
 
-                var previous = clan.MoneyRequests.Find(x => x.Id == request.RequestId);
-                if (previous != null)
+                var previous = await FindMoneyRequest(world, clan, request.RequestId);
+                if (previous.HasValue)
                 {
-                    if (previous.Applied == false)
+                    if (previous.Value == false)
                         throw new LogicException(ErrorCode.Unhandled);
 
                     return new Response.UpdatedClan
@@ -1251,7 +1250,8 @@ namespace Internal.Controllers
                     clan.Money -= abs;
                 }
 
-                clan.AddMoneyRequest(request.RequestId, true, DateTime.Now);
+                await ArchiveMoneyRequests(world, clan, DateTime.Now);
+                clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = true, Date = DateTime.Now });
                 _dbContext.Clan.Set(world, clan);
                 await _dbContext.SaveChangesAsync();
 
@@ -1305,8 +1305,8 @@ namespace Internal.Controllers
                     };
                 }
 
-                var previous = clan.MoneyRequests.Find(x => x.Id == request.RequestId);
-                if (previous?.Applied == true)
+                var previous = await FindMoneyRequest(world, clan, request.RequestId);
+                if (previous == true)
                 {
                     return new Response.AbortClanMoney
                     {
@@ -1318,7 +1318,8 @@ namespace Internal.Controllers
 
                 if (previous == null)
                 {
-                    clan.AddMoneyRequest(request.RequestId, false, DateTime.Now);
+                    await ArchiveMoneyRequests(world, clan, DateTime.Now);
+                    clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = false, Date = DateTime.Now });
                     _dbContext.Clan.Set(world, clan);
                     await _dbContext.SaveChangesAsync();
                 }
@@ -1343,40 +1344,30 @@ namespace Internal.Controllers
                 };
             }
         }
-        [HttpPost("money/release")]
-        public async Task<Response.ReleaseClanMoney> ReleaseMoney(Request.ReleaseClanMoney request)
+        // The caller must hold the clan lock.
+        private async Task<bool?> FindMoneyRequest(uint world, Clan clan, ulong requestId)
         {
-            try
-            {
-                var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
-                await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+            var recent = clan.MoneyRequests.Find(x => x.Id == requestId);
+            if (recent != null)
+                return recent.Applied;
 
-                var clan = await _dbContext.Clan.Get(world, request.Clan);
-                var released = clan?.MoneyRequests.Find(x => x.Id == request.RequestId);
-                if (released != null && released.Released == false)
-                {
-                    released.Released = true;
-                    released.Date = DateTime.Now;
-                    _dbContext.Clan.Set(world, clan);
-                }
-
-                if (clan == null)
-                    _dbContext.ClanMoneyRequestArchive.Delete(world, new ClanMoneyRequestArchiveKey { Clan = request.Clan, RequestId = request.RequestId });
-
-                await _dbContext.SaveChangesAsync();
-                return new Response.ReleaseClanMoney
-                {
-                    Error = (uint)ErrorCode.None
-                };
-            }
-            catch (Exception)
-            {
-                return new Response.ReleaseClanMoney
-                {
-                    Error = (uint)ErrorCode.Unhandled
-                };
-            }
+            var archived = await _dbContext.ClanMoneyRequestArchive.Get(world, clan.Id, requestId);
+            return archived?.Applied;
         }
+
+        // The caller must hold the clan lock. The archive is saved before the clan record drops the requests, so a
+        // failure in between leaves them in both places instead of losing them.
+        private async Task ArchiveMoneyRequests(uint world, Clan clan, DateTime now)
+        {
+            var expired = clan.MoneyRequests.Where(x => now - x.Date > Clan.MoneyRequestRetention).ToList();
+            if (expired.Count == 0)
+                return;
+
+            _dbContext.ClanMoneyRequestArchive.Set(world, expired.Select(x => new ClanMoneyRequestArchive { Clan = clan.Id, RequestId = x.Id, Applied = x.Applied }).ToArray());
+            await _dbContext.ClanMoneyRequestArchive.SaveChangesAsync();
+            clan.MoneyRequests.RemoveAll(expired.Contains);
+        }
+
         [HttpPost("unenemy")]
         public async Task<Response.UpdatedClan> Unenemy(Request.EndClanEnemy request)
         {

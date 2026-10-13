@@ -30,7 +30,11 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
 
                 auto weak    = ch->weak_from_this_as<character>();
                 auto builder = this->server.threads.new_builder(weak);
-                builder.func = [ch, match_id, match_type, confirm_deadline](auto&) -> async::task<void> {
+                builder.func = [weak, match_id, match_type, confirm_deadline](auto&) -> async::task<void> {
+                    auto ch = weak.lock();
+                    if (ch == nullptr)
+                        co_return;
+
                     if (ch->matchmaker.queued() == false)
                     {
                         co_await ch->matchmaker.decline(match_id, fb::game::matchmaker::initiator::SERVER);
@@ -46,6 +50,7 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                         lua->pushinteger(static_cast<lua_Integer>(match_id));
                         lua->pushinteger(match_type);
                         lua->pushstring(confirm_deadline.c_str());
+                        ch.reset();
                         std::ignore = co_await lua->call(4);
                     }
                     co_return;

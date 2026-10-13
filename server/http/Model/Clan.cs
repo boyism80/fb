@@ -14,7 +14,6 @@ namespace Http.Model
     {
         public ulong Id { get; set; }
         public bool Applied { get; set; }
-        public bool Released { get; set; }
         public DateTime Date { get; set; }
     }
 
@@ -27,14 +26,8 @@ namespace Http.Model
         // Kept in the clan record so a money change and its request state are written by the same SET.
         public List<ClanMoneyRequest> MoneyRequests { get; set; } = new List<ClanMoneyRequest>();
 
-        // A request is dropped only after the game releases it, so a late request still finds its outcome.
+        // Older requests move to clan_money_request_archive, which is never pruned, so the clan record stays small.
         public static readonly TimeSpan MoneyRequestRetention = TimeSpan.FromDays(1);
-
-        public void AddMoneyRequest(ulong id, bool applied, DateTime now)
-        {
-            MoneyRequests.RemoveAll(x => x.Released && now - x.Date > MoneyRequestRetention);
-            MoneyRequests.Add(new ClanMoneyRequest { Id = id, Applied = applied, Date = now });
-        }
 
         public static string DistributedLockKey(uint id)
         {

@@ -145,54 +145,47 @@ namespace WriteBack.Service
 
         private async Task OnWorkAsync(int db, CancellationToken stoppingToken)
         {
-            if (_rabbitMqConnection == null || !_rabbitMqConnection.IsOpen)
-            {
-                _logger.LogError("RabbitMQ connection not available for world {World} DB {Db}", _world, db);
-                return;
-            }
-
-            string queueName = null;
-            IChannel channel = null;
-            try
-            {
-                channel = await _rabbitMqConnection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), stoppingToken);
-                await channel.ExchangeDeclareAsync(Http.Service.WriteBackService.WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, stoppingToken);
-                queueName = Http.Service.WriteBackService.GetWriteBackQueueName(_world, db);
-                await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: Http.Service.WriteBackService.QueueArguments, passive: false, noWait: false, cancellationToken: stoppingToken);
-                await channel.QueueBindAsync(queueName, Http.Service.WriteBackService.WriteBackExchangeName, queueName, arguments: null, noWait: false, stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to declare RabbitMQ queue for world {World} DB {Db}", _world, db);
-                if (channel != null)
-                {
-                    try
-                    {
-                        await channel.CloseAsync(cancellationToken: CancellationToken.None);
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
-
-                    await channel.DisposeAsync();
-                }
-
-                return;
-            }
-
-            if (queueName == null)
-            {
-                return;
-            }
-
+            var queueName = Http.Service.WriteBackService.GetWriteBackQueueName(_world, db);
             var shardSize = _redisService.GetShardSize(_world);
             var continuous = true;
+            IChannel channel = null;
 
             try
             {
                 while (continuous || !stoppingToken.IsCancellationRequested)
                 {
+                    // The broker closes a channel that holds unacked deliveries past consumer_timeout, and a channel
+                    // closed by the broker is not recovered by the client.
+                    if (channel == null || channel.IsOpen == false)
+                    {
+                        if (channel != null)
+                        {
+                            _logger.LogWarning("Write-back channel closed for world {World} DB {Db}; recreating", _world, db);
+                            await CloseChannelAsync(channel);
+                            channel = null;
+                        }
+
+                        try
+                        {
+                            channel = await _rabbitMqConnection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), stoppingToken);
+                            await channel.ExchangeDeclareAsync(Http.Service.WriteBackService.WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, stoppingToken);
+                            await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: Http.Service.WriteBackService.QueueArguments, passive: false, noWait: false, cancellationToken: stoppingToken);
+                            await channel.QueueBindAsync(queueName, Http.Service.WriteBackService.WriteBackExchangeName, queueName, arguments: null, noWait: false, stoppingToken);
+                        }
+                        catch (Exception ex) when (stoppingToken.IsCancellationRequested == false)
+                        {
+                            _logger.LogError(ex, "Failed to declare RabbitMQ queue for world {World} DB {Db}", _world, db);
+                            if (channel != null)
+                            {
+                                await CloseChannelAsync(channel);
+                                channel = null;
+                            }
+
+                            await Task.Delay(_delay, stoppingToken);
+                            continue;
+                        }
+                    }
+
                     try
                     {
                         var messagesToAck = new List<ulong>();
@@ -293,17 +286,29 @@ namespace WriteBack.Service
             {
                 if (channel != null)
                 {
-                    try
-                    {
-                        await channel.CloseAsync(cancellationToken: CancellationToken.None);
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
-
-                    await channel.DisposeAsync();
+                    await CloseChannelAsync(channel);
                 }
+            }
+        }
+
+        private static async Task CloseChannelAsync(IChannel channel)
+        {
+            try
+            {
+                await channel.CloseAsync(cancellationToken: CancellationToken.None);
+            }
+            catch
+            {
+                // Ignore
+            }
+
+            try
+            {
+                await channel.DisposeAsync();
+            }
+            catch
+            {
+                // Ignore
             }
         }
 
@@ -331,10 +336,15 @@ namespace WriteBack.Service
         {
             // Entries of one queue are full-row upserts in write order, so a transient failure is retried in place:
             // skipping ahead or requeueing would let an older row land after a newer one.
+            // Once the channel is closed the broker has requeued every unacked delivery of the batch, so running,
+            // recording or releasing this entry here would repeat it when the delivery comes back.
             var retryDelay = TimeSpan.FromSeconds(1);
             Exception failure = null;
             while (true)
             {
+                if (channel.IsOpen == false)
+                    return false;
+
                 try
                 {
                     await execConn.ExecuteAsync(entry.SQL);
@@ -361,6 +371,9 @@ namespace WriteBack.Service
                     break;
                 }
             }
+
+            if (channel.IsOpen == false)
+                return false;
 
             if (failure != null)
             {

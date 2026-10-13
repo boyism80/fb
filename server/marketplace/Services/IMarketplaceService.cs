@@ -30,6 +30,8 @@ public interface IMarketplaceService
 
     Task CancelListingAsync(uint world, uint characterId, ulong listingId);
 
+    Task<uint> ClearListingsAsync(uint adminId);
+
     Task<PurchaseItemResult> PurchaseItemAsync(
         uint world,
         uint buyerId,

@@ -169,6 +169,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"receive_storage_reward",       builtin::character::builtin_receive_storage_reward},
 {"marketplace_list",             builtin::character::builtin_marketplace_list},
 {"marketplace_cancel",           builtin::character::builtin_marketplace_cancel},
+{"marketplace_clear",            builtin::character::builtin_marketplace_clear},
 {"marketplace_purchase",         builtin::character::builtin_marketplace_purchase},
 {"marketplace_search",           builtin::character::builtin_marketplace_search},
 {"marketplace_get_listings",     builtin::character::builtin_marketplace_get_listings},
@@ -6990,6 +6991,58 @@ int builtin::character::builtin_marketplace_cancel(lua_State* L)
         {
             lua->pushnil();
             lua->pushboolean(success->value_or(false));
+        }
+        co_return 2;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_marketplace_clear(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (ch->role() < ROLE::ADMIN)
+    {
+        lua->pushstring("Permission denied");
+        lua->pushnil();
+        return 2;
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto count    = std::make_shared<uint32_t>(0);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        try
+        {
+            auto shared = weak.lock();
+            if (shared == nullptr)
+                throw std::runtime_error("Character is not alive");
+
+            *count = co_await shared->marketplace.clear();
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+        {
+            lua->pushstring(error->value().c_str());
+            lua->pushnil();
+        }
+        else
+        {
+            lua->pushnil();
+            lua->pushinteger(*count);
         }
         co_return 2;
     };

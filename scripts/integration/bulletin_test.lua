@@ -6,6 +6,8 @@ local BOT2_TITLE    = "Bot2 Article Title"
 local BOT2_CONTENTS = "Bot2's test article contents."
 local MAIL_TITLE    = "Mail Test Title"
 local MAIL_CONTENTS = "This is a mail test."
+-- Must match mail.REQUIRED_LEVEL in const.xlsx.
+local MAIL_REQUIRED_LEVEL = 20
 
 local function progress(bot, message)
     local level = "debug"
@@ -177,6 +179,13 @@ test_suite {
             local bot2 = ctx:bot(1)
 
             progress(bot1, "TESTING MAIL FUNCTIONALITY")
+            bot1:level(MAIL_REQUIRED_LEVEL - 1)
+            if bot1:bulletin_send_mail(bot2:name(), MAIL_TITLE, MAIL_CONTENTS) then
+                progress(bot1, "FAILED: MAIL SENT BELOW REQUIRED LEVEL")
+                return false
+            end
+            bot1:level(MAIL_REQUIRED_LEVEL)
+
             progress(bot1, "SENDING MAIL FROM " .. bot1:name() .. " TO " .. bot2:name())
             if bot1:bulletin_send_mail(bot2:name(), MAIL_TITLE, MAIL_CONTENTS) == false then
                 progress(bot1, "FAILED TO SEND MAIL")

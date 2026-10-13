@@ -19,9 +19,9 @@ namespace MapEditor.Table
 
         /// <summary>
         /// Writes through a temp file so a failed write never truncates the table.
-        /// Throws IOException when Excel holds the file open.
+        /// Throws IOException when Excel holds the file open. Returns the file's new write time.
         /// </summary>
-        public static void Save(XSSFWorkbook workbook, string path)
+        public static DateTime Save(XSSFWorkbook workbook, string path)
         {
             EnsureWritable(path);
 
@@ -31,6 +31,7 @@ namespace MapEditor.Table
 
             File.Copy(temp, path, overwrite: true);
             File.Delete(temp);
+            return File.GetLastWriteTimeUtc(path);
         }
 
         /// <summary>

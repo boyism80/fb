@@ -2443,6 +2443,20 @@ M.functions = {
             end,
         },
 
+        ['거래소초기화'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- 거래소에 등록된 모든 물품을 등록 취소하고 판매자의 통합보관함으로 돌려보냅니다.',
+            ['command'] = function (me, args)
+                local err, count = me:marketplace_clear()
+                if err ~= nil then
+                    me:message("거래소 초기화 실패: " .. tostring(err), MESSAGE_TYPE.BROWN)
+                else
+                    me:message(string.format("거래소 초기화: 물품 %d개를 등록 취소했습니다.", count), MESSAGE_TYPE.BROWN)
+                end
+                return true
+            end,
+        },
+
         ['HTTP보류'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[on <경로>|send|off] - on: 해당 경로 POST를 보내지 않고 실패 처리한 뒤 보관, send: 보관한 요청을 늦게 전송, off: 보관한 요청 폐기 (테스트용)',

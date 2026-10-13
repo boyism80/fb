@@ -57,8 +57,14 @@ private:
     std::chrono::steady_clock::time_point _suite_start{};
 
     using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
-    std::unordered_map<bot_integration_test*, std::unordered_map<uint8_t, std::vector<hook_function>>> _test_hooks;
-    std::shared_mutex                                                                                  _hook_mutex;
+    struct hook_entry
+    {
+        uint32_t      id;
+        hook_function fn;
+    };
+    std::unordered_map<bot_integration_test*, std::unordered_map<uint8_t, std::vector<hook_entry>>> _test_hooks;
+    std::shared_mutex                                                                               _hook_mutex;
+    uint32_t                                                                                        _hook_sequence{0};
 
 public:
     game_bot_controller(bot_container& container);
@@ -116,7 +122,7 @@ public:
         };
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
-        this->_test_hooks[test][ResponseType::header].push_back(hook_func);
+        this->_test_hooks[test][ResponseType::header].push_back(hook_entry{++this->_hook_sequence, hook_func});
     }
 
     template <typename Class, typename ResponseType> void
@@ -128,11 +134,11 @@ public:
         };
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
-        this->_test_hooks[test][ResponseType::opcode].push_back(hook_func);
+        this->_test_hooks[test][ResponseType::opcode].push_back(hook_entry{++this->_hook_sequence, hook_func});
     }
 
-    void hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn);
-    void unhook_opcode(bot_integration_test* test, uint8_t opcode);
+    uint32_t hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn);
+    void     unhook_opcode(bot_integration_test* test, uint8_t opcode, uint32_t hook_id);
 };
 
 } // namespace fb::bot::integration

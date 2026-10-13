@@ -328,15 +328,16 @@ test_suite {
                 return false
             end
 
+            -- This server's clan balance stays stale until the abort settles the request.
             local money = START_MONEY - AMOUNT * 2
-            local ok, check_err = check_balances(ctx, a, money, AMOUNT * 2)
+            ctx:sleep(MQ_WAIT_MS)
             a:chat("/HTTP장애 " .. ABORT_PATH .. " off")
-            if ok == false then
-                progress(a, "FAILED: held deposit " .. tostring(check_err))
+            if a:money() ~= money then
+                progress(a, string.format("FAILED: held deposit money=%d expected=%d", a:money(), money))
                 return false
             end
 
-            ok, check_err = assert_stable(ctx, a, money, AMOUNT * 2)
+            local ok, check_err = assert_stable(ctx, a, money, AMOUNT * 2)
             if ok == false then
                 progress(a, "FAILED: " .. tostring(check_err))
                 return false
@@ -425,10 +426,10 @@ test_suite {
                 return false
             end
 
-            local ok, check_err = check_balances(ctx, a, before, AMOUNT)
-            if ok == false then
+            ctx:sleep(MQ_WAIT_MS)
+            if a:money() ~= before then
                 clear_faults(a)
-                progress(a, "FAILED: unpaid withdraw " .. tostring(check_err))
+                progress(a, string.format("FAILED: unpaid withdraw money=%d expected=%d", a:money(), before))
                 return false
             end
 
@@ -454,7 +455,7 @@ test_suite {
                 progress(a, string.format("FAILED: withdraw not paid after relogin money=%d", a:money()))
                 return false
             end
-            ok, check_err = assert_stable(ctx, a, before + AMOUNT, AMOUNT)
+            local ok, check_err = assert_stable(ctx, a, before + AMOUNT, AMOUNT)
             if ok == false then
                 progress(a, "FAILED: " .. tostring(check_err))
                 return false

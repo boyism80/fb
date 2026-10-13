@@ -54,3 +54,7 @@ table GetListings {
     listing_ids: [ulong];
     buyer_id: uint?;
 }
+
+table ClearListings {
+    admin_id: uint;
+}

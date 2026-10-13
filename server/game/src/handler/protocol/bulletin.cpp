@@ -332,6 +332,12 @@ async::task<void> bulletin<V>::handle_send_mail(character*               ch,
                                                 std::weak_ptr<character> weak,
                                                 game_reqs::bulletin<V>&  request)
 {
+    if (ch->level() < fb::model::const_value::mail::REQUIRED_LEVEL)
+    {
+        ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_NOT_AUTH), false, BULLETIN_MESSAGE_TYPE::WRITE);
+        co_return;
+    }
+
     auto error = std::optional<std::string>{};
     try
     {

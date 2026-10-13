@@ -228,6 +228,19 @@ async::task<bool> marketplace::cancel(uint64_t id)
     co_return true;
 }
 
+async::task<uint32_t> marketplace::clear()
+{
+    this->_owner.assert_thread();
+
+    auto   weak = this->_owner.weak_from_this_as<fb::game::character>();
+    auto   req  = mp_reqs::ClearListings{this->_owner.id};
+    auto&& resp = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/clear-listings", req);
+    if (resp.error != 0)
+        throw std::runtime_error(std::format("error code {}", resp.error));
+
+    co_return resp.count;
+}
+
 async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uint16_t purchase_count)
 {
     this->_owner.assert_thread();

@@ -51,6 +51,8 @@ local MSG_CANCEL_CONFIRM = "정말 취소하시겠습니까"
 local MSG_WARNING        = "정말 구매하시겠습니까"
 local MSG_SEARCH_EMPTY = "검색 결과가 없습니다"
 local MSG_CANCEL_EMPTY = "등록한 물품이 없습니다"
+local MSG_MARKET_CLEAR      = "거래소 초기화"
+local MSG_MARKET_CLEAR_FAIL = "거래소 초기화 실패"
 
 local STORAGE_CANCEL_TITLE   = "거래소 등록 취소"
 local STORAGE_PURCHASE_TITLE = "거래소 구매"
@@ -1028,22 +1030,6 @@ local function wait_held_request(ctx, bot, first_wait_ms, min_count)
     return false
 end
 
-local function cancel_leftover_listings(bot)
-    for _ = 1, 5 do
-        if assert_cancel_list_empty(bot) then
-            return true
-        end
-        local packet = open_cancel_list_expect_present(bot)
-        local first = packet and packet.item_items and packet.item_items[1]
-        close_marketplace_menu(bot)
-        if first == nil then
-            return false
-        end
-        cancel_item_flow(bot, first.name)
-    end
-    return assert_cancel_list_empty(bot)
-end
-
 local function prepare_purchase_listing(a, b)
     cleanup_bot(a)
     cleanup_bot(b)
@@ -1159,13 +1145,15 @@ test_suite {
         -- HTTP faults and holds are server-wide and outlive an aborted run.
         cleanup_bot(ctx:bot(0))
         cleanup_bot(ctx:bot(1))
-        if cancel_leftover_listings(ctx:bot(0)) == false then
-            progress(ctx:bot(0), "FAILED: precondition own listings not empty")
-            error("precondition failed: bot0 own listings not empty")
-        end
-        if cancel_leftover_listings(ctx:bot(1)) == false then
-            progress(ctx:bot(1), "FAILED: precondition own listings not empty")
-            error("precondition failed: bot1 own listings not empty")
+        local cleared = ctx:bot(0):request(
+            resp.message,
+            protocol.chat(false, "/거래소초기화"),
+            function(p)
+                return p.text ~= nil and p.text:find(MSG_MARKET_CLEAR, 1, true) ~= nil
+            end)
+        if cleared == false or cleared == nil or cleared.text:find(MSG_MARKET_CLEAR_FAIL, 1, true) ~= nil then
+            progress(ctx:bot(0), "FAILED: precondition clear listings " .. tostring(cleared and cleared.text))
+            error("precondition failed: clear listings")
         end
         local ok, err = assert_search_has_item(ctx:bot(0), WEAPON_ITEM, false)
         if ok == false then

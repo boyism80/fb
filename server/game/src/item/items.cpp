@@ -442,9 +442,6 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
     if (index > this->_stored.size() - 1)
         co_return nullptr;
 
-    if (this->free() == false)
-        co_return nullptr;
-
     auto stored       = this->_stored.at(index);
     auto stored_count = stored->count();
     if (stored_count < count)

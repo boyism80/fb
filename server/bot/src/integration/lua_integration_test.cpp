@@ -543,13 +543,12 @@ void lua_integration_test::clear_all_hooks()
     {
         for (auto& binding : bindings)
         {
+            this->controller.unhook_opcode(this, opcode, binding.hook_id);
             if (binding.lua_ref == LUA_NOREF)
                 continue;
 
             luaL_unref(L, LUA_REGISTRYINDEX, binding.lua_ref);
         }
-
-        this->controller.unhook_opcode(this, opcode);
     }
     this->_hook_refs.clear();
 }
@@ -579,37 +578,30 @@ void lua_integration_test::register_opcode_hook(uint8_t               opcode,
                                                 const protocol_entry* entry,
                                                 fb::lua::context*     lua_ctx)
 {
-    this->_hook_refs[opcode].push_back({lua_ref, lua_ctx});
-
-    this->controller.hook_opcode(
+    auto hook_id = this->controller.hook_opcode(
         this,
         opcode,
         [this, lua_ref, entry](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
             co_await this->invoke_lua_hook(lua_ref, bot, header, entry);
         });
+    this->_hook_refs[opcode].push_back({lua_ref, lua_ctx, hook_id});
 }
 
 void lua_integration_test::unhook_opcode(uint8_t opcode)
 {
     auto it = this->_hook_refs.find(opcode);
-    if (it != this->_hook_refs.end())
+    if (it == this->_hook_refs.end())
+        return;
+
+    for (auto& binding : it->second)
     {
-        if (this->_lua_root != nullptr)
-        {
-            auto* L = (lua_State*)*this->_lua_root;
-            for (auto& binding : it->second)
-            {
-                if (binding.lua_ref == LUA_NOREF)
-                    continue;
+        this->controller.unhook_opcode(this, opcode, binding.hook_id);
+        if (binding.lua_ref == LUA_NOREF || this->_lua_root == nullptr)
+            continue;
 
-                luaL_unref(L, LUA_REGISTRYINDEX, binding.lua_ref);
-            }
-        }
-
-        this->_hook_refs.erase(it);
+        luaL_unref((lua_State*)*this->_lua_root, LUA_REGISTRYINDEX, binding.lua_ref);
     }
-
-    this->controller.unhook_opcode(this, opcode);
+    this->_hook_refs.erase(it);
 }
 
 async::task<void> lua_integration_test::invoke_lua_hook(int                         lua_ref,

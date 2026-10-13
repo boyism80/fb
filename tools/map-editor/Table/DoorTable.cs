@@ -69,6 +69,7 @@ namespace MapEditor.Table
     public class DoorTable
     {
         private readonly string _path;
+        private DateTime _written;
 
         public ObservableCollection<DoorPair> Pairs { get; } = new ObservableCollection<DoorPair>();
         public ObservableCollection<DoorModel> Doors { get; } = new ObservableCollection<DoorModel>();
@@ -84,6 +85,7 @@ namespace MapEditor.Table
             if (File.Exists(path) == false)
                 return table;
 
+            table._written = File.GetLastWriteTimeUtc(path);
             var workbook = XlsxFile.Open(path);
             var pairs = workbook.GetSheet("door_pair");
             for (int r = XlsxFile.FirstDataRow; r <= pairs.LastRowNum; r++)
@@ -209,12 +211,18 @@ namespace MapEditor.Table
             return result;
         }
 
+        /// <summary>
+        /// Rewrites both sheets from memory, so it refuses when door.xlsx changed on disk since it was read or saved.
+        /// </summary>
         public void Save()
         {
+            if (File.GetLastWriteTimeUtc(_path) != _written)
+                throw new InvalidOperationException("door.xlsx changed outside the editor; restart the editor to load it before saving");
+
             var workbook = XlsxFile.Open(_path);
             WriteRows(workbook.GetSheet("door_pair"), Pairs.Select(p => new[] { p.Id.ToString(), p.Open.ToString(), p.Close.ToString() }).ToList(), 3);
             WriteRows(workbook.GetSheet("door"), Doors.Select(d => new[] { d.Id.ToString(), d.PairsText }).ToList(), 2);
-            XlsxFile.Save(workbook, _path);
+            _written = XlsxFile.Save(workbook, _path);
         }
 
         private static void WriteRows(ISheet sheet, List<string[]> rows, int columns)

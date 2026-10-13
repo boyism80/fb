@@ -115,12 +115,15 @@ namespace MapEditor.Table
     public class SpawnTable
     {
         private readonly string _directory;
-        private readonly XSSFWorkbook _npcBook;
-        private readonly XSSFWorkbook _mobBook;
-        private readonly XSSFWorkbook _mapBook;
-        private readonly GroupedSheet _npcSheet;
-        private readonly GroupedSheet _mobSheet;
-        private readonly GroupedSheet _warpSheet;
+        private XSSFWorkbook _npcBook;
+        private XSSFWorkbook _mobBook;
+        private XSSFWorkbook _mapBook;
+        private GroupedSheet _npcSheet;
+        private GroupedSheet _mobSheet;
+        private GroupedSheet _warpSheet;
+        private DateTime _npcWritten;
+        private DateTime _mobWritten;
+        private DateTime _mapWritten;
 
         public NameTable NpcNames { get; }
         public NameTable MobNames { get; }
@@ -146,11 +149,45 @@ namespace MapEditor.Table
             NpcNames = NameTable.Read(_npcBook, new[] { "npc" }, appearance: true);
             MobNames = NameTable.Read(_mobBook, new[] { "mob" }, appearance: true);
             MapNames = NameTable.Read(_mapBook, Enumerable.Range(0, 26).Select(i => $"map.{i}"));
+            _npcWritten = File.GetLastWriteTimeUtc(NpcPath);
+            _mobWritten = File.GetLastWriteTimeUtc(MobPath);
+            _mapWritten = File.GetLastWriteTimeUtc(MapPath);
         }
 
         private string NpcPath => Path.Combine(_directory, NpcFile);
         private string MobPath => Path.Combine(_directory, MobFile);
         private string MapPath => Path.Combine(_directory, MapFile);
+
+        /// <summary>
+        /// Saves write the whole workbook, so one changed on disk since this table read or saved it is opened again
+        /// first; otherwise the save would put back old copies of the sheets the editor does not touch.
+        /// </summary>
+        private static bool Reopen(string path, ref XSSFWorkbook book, DateTime written)
+        {
+            if (File.GetLastWriteTimeUtc(path) == written)
+                return false;
+
+            book = XlsxFile.Open(path);
+            return true;
+        }
+
+        private void ReopenNpc()
+        {
+            if (Reopen(NpcPath, ref _npcBook, _npcWritten))
+                _npcSheet = new GroupedSheet(_npcBook, "npc_spawn", 4);
+        }
+
+        private void ReopenMob()
+        {
+            if (Reopen(MobPath, ref _mobBook, _mobWritten))
+                _mobSheet = new GroupedSheet(_mobBook, "mob_spawn", 7);
+        }
+
+        private void ReopenMap()
+        {
+            if (Reopen(MapPath, ref _mapBook, _mapWritten))
+                _warpSheet = new GroupedSheet(_mapBook, "warp", 4);
+        }
 
         public static (int X, int Y) ParsePoint(string text)
         {
@@ -234,15 +271,17 @@ namespace MapEditor.Table
         public void SaveNpc(int mapId, IEnumerable<NpcSpawn> spawns)
         {
             var rows = spawns.Select(s => new[] { "", s.Npc.ToString(), $"{s.X}, {s.Y}", s.Direction }).ToList();
+            ReopenNpc();
             _npcSheet.Write(mapId, rows);
-            XlsxFile.Save(_npcBook, NpcPath);
+            _npcWritten = XlsxFile.Save(_npcBook, NpcPath);
         }
 
         public void SaveMob(int mapId, IEnumerable<MobSpawn> spawns)
         {
             var rows = spawns.Select(s => new[] { "", $"{s.BeginX}, {s.BeginY}", $"{s.EndX}, {s.EndY}", s.Count.ToString(), s.Mob.ToString(), s.Rezen, s.Condition }).ToList();
+            ReopenMob();
             _mobSheet.Write(mapId, rows);
-            XlsxFile.Save(_mobBook, MobPath);
+            _mobWritten = XlsxFile.Save(_mobBook, MobPath);
         }
 
         /// <summary>
@@ -254,6 +293,7 @@ namespace MapEditor.Table
             if (MapNames.Entry(id) != null)
                 throw new InvalidOperationException($"map {id} is already in map.xlsx");
 
+            ReopenMap();
             var sheet = _mapBook.GetSheet(sheetName) ?? throw new ArgumentException($"sheet {sheetName} not found in map.xlsx");
             IRow source = null;
             for (int i = 0; i < 26 && source == null; i++)
@@ -284,7 +324,7 @@ namespace MapEditor.Table
                 };
                 XlsxFile.SetText(target, c, value, source.GetCell(c)?.CellType == CellType.Numeric);
             }
-            XlsxFile.Save(_mapBook, MapPath);
+            _mapWritten = XlsxFile.Save(_mapBook, MapPath);
             MapNames.Add(new NameEntry { Id = id, Name = name });
         }
 
@@ -320,6 +360,9 @@ namespace MapEditor.Table
             XlsxFile.EnsureWritable(MapPath);
             XlsxFile.EnsureWritable(NpcPath);
             XlsxFile.EnsureWritable(MobPath);
+            ReopenMap();
+            ReopenNpc();
+            ReopenMob();
             var keys = ids.Select(id => id.ToString()).ToHashSet();
             foreach (var name in MapSheets)
             {
@@ -341,9 +384,9 @@ namespace MapEditor.Table
                 _mobSheet.Remove(id);
                 _warpSheet.Remove(id);
             }
-            XlsxFile.Save(_mapBook, MapPath);
-            XlsxFile.Save(_npcBook, NpcPath);
-            XlsxFile.Save(_mobBook, MobPath);
+            _mapWritten = XlsxFile.Save(_mapBook, MapPath);
+            _npcWritten = XlsxFile.Save(_npcBook, NpcPath);
+            _mobWritten = XlsxFile.Save(_mobBook, MobPath);
             foreach (var id in ids)
                 MapNames.Remove(id);
         }
@@ -351,8 +394,9 @@ namespace MapEditor.Table
         public void SaveWarp(int mapId, IEnumerable<WarpEntry> warps)
         {
             var rows = warps.Select(w => new[] { "", $"{w.X}, {w.Y}", w.Dest, w.Condition }).ToList();
+            ReopenMap();
             _warpSheet.Write(mapId, rows);
-            XlsxFile.Save(_mapBook, MapPath);
+            _mapWritten = XlsxFile.Save(_mapBook, MapPath);
         }
     }
 }

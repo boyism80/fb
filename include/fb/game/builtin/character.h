@@ -116,6 +116,7 @@ struct character
     static int builtin_receive_storage_reward(lua_State* L);
     static int builtin_marketplace_list(lua_State* L);
     static int builtin_marketplace_cancel(lua_State* L);
+    static int builtin_marketplace_clear(lua_State* L);
     static int builtin_marketplace_purchase(lua_State* L);
     static int builtin_marketplace_search(lua_State* L);
     static int builtin_marketplace_get_listings(lua_State* L);
