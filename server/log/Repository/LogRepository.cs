@@ -3,12 +3,16 @@ using Http.Extension;
 using Http.Service;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text;
 using System.Text.Json;
 
 namespace Log.Repository
 {
     public class LogRepository
     {
+        private const int MaxInsertRows = 5000;
+        private const int MaxInsertBytes = 4 * 1024 * 1024;
+        private const string InsertPrefix = "INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `transaction_id`, `data`) VALUES ";
         private readonly DbContext _dbContext;
         private readonly ILogger<LogRepository> _logger;
         private readonly IConfiguration _configuration;
@@ -60,9 +64,33 @@ namespace Log.Repository
             {
                 await using var conn = _dbContext.GetDataConnection(_world, (int)shard);
                 await conn.OpenAsync();
+                await using var transaction = await conn.BeginTransactionAsync();
+                var values = new List<string>();
+                var prefixBytes = Encoding.UTF8.GetByteCount(InsertPrefix);
+                var bytes = prefixBytes;
 
-                var sql = BuildBulkInsertQuery(entries);
-                await conn.ExecuteAsync(sql);
+                foreach (var entry in entries)
+                {
+                    var value = BuildInsertValue(entry);
+                    var valueBytes = Encoding.UTF8.GetByteCount(value);
+                    if (prefixBytes + valueBytes > MaxInsertBytes)
+                        throw new InvalidOperationException("A single log entry exceeds the INSERT size limit");
+
+                    if (values.Count > 0 && (values.Count >= MaxInsertRows || bytes + 2 + valueBytes > MaxInsertBytes))
+                    {
+                        await conn.ExecuteAsync(InsertPrefix + string.Join(", ", values), transaction: transaction);
+                        values.Clear();
+                        bytes = prefixBytes;
+                    }
+
+                    values.Add(value);
+                    bytes += valueBytes + (values.Count > 1 ? 2 : 0);
+                }
+
+                if (values.Count > 0)
+                    await conn.ExecuteAsync(InsertPrefix + string.Join(", ", values), transaction: transaction);
+
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
@@ -109,12 +137,9 @@ namespace Log.Repository
         }
 
 
-        private static string BuildBulkInsertQuery(List<LogEntry> entries)
+        private static string BuildInsertValue(LogEntry e)
         {
-            var values = string.Join(", ", entries.Select(e =>
-                $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.TransactionId.Escape()}, {e.Data.Escape()})"));
-
-            return $"INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `transaction_id`, `data`) VALUES {values}";
+            return $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.TransactionId.Escape()}, {e.Data.Escape()})";
         }
 
         private class LogEntry

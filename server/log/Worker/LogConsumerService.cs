@@ -18,7 +18,7 @@ namespace Log.Worker
         private IChannel _channel;
         private readonly List<string> _queueNames = new();
         private static readonly TimeSpan ProcessInterval = TimeSpan.FromSeconds(10);
-        private const int BatchSize = 1000;
+        private const int BatchSize = 8;
         private const string ExchangeName = "amq.direct";
         private readonly uint _world;
         private readonly bool _crossLog;
@@ -56,7 +56,9 @@ namespace Log.Worker
                     {
                         try
                         {
-                            await ProcessLogsAsync(stoppingToken);
+                            var batchFull = await ProcessLogsAsync(stoppingToken);
+                            if (batchFull)
+                                continue;
                         }
                         catch (Exception ex)
                         {
@@ -74,19 +76,42 @@ namespace Log.Worker
                     _logger.LogWarning("Log channel closed, reconnecting");
                     await DisconnectFromRabbitMQAsync();
                 }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to connect to RabbitMQ, retrying in 5 seconds...");
                     await DisconnectFromRabbitMQAsync();
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    try
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
                 }
             }
 
             _logger.LogInformation("Graceful shutdown initiated, processing remaining messages...");
-            await ProcessRemainingMessagesAsync(stoppingToken);
+            using var drain = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            try
+            {
+                await ProcessRemainingMessagesAsync(drain.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Log drain timed out; unacknowledged messages remain in RabbitMQ");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Log drain stopped; unacknowledged messages remain in RabbitMQ");
+            }
 
             await DisconnectFromRabbitMQAsync();
-            _logger.LogInformation("Log Consumer Service stopped, all messages processed");
+            _logger.LogInformation("Log Consumer Service stopped");
         }
 
         private async Task ProcessRemainingMessagesAsync(CancellationToken cancellationToken)
@@ -101,11 +126,12 @@ namespace Log.Worker
             {
                 var processedCount = 0;
                 var allLogs = new List<JsonElement>();
-                var messagesToAck = new List<(string QueueName, ulong DeliveryTag, bool Redelivered, string Body)>();
+                var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
 
                 foreach (var queueName in _queueNames)
                 {
-                    while (true)
+                    var messageCount = 0;
+                    while (messageCount < BatchSize)
                     {
                         var result = await _channel.BasicGetAsync(queueName, autoAck: false, cancellationToken);
                         if (result == null)
@@ -119,8 +145,9 @@ namespace Log.Worker
                             var jsonString = Encoding.UTF8.GetString(body);
                             using var doc = JsonDocument.Parse(jsonString);
                             ParseLogMessage(doc.RootElement, allLogs);
-                            messagesToAck.Add((queueName, result.DeliveryTag, result.Redelivered, jsonString));
+                            messagesToAck.Add((queueName, result.DeliveryTag));
                             processedCount++;
+                            messageCount++;
                         }
                         catch (Exception ex)
                         {
@@ -134,8 +161,6 @@ namespace Log.Worker
                 {
                     break;
                 }
-
-                totalProcessed += processedCount;
 
                 var inserted = true;
                 if (allLogs.Count > 0)
@@ -154,8 +179,7 @@ namespace Log.Worker
                     }
                 }
 
-                // Requeue a failed batch once; a redelivered message that fails again is dropped after logging.
-                foreach (var (queueName, deliveryTag, redelivered, body) in messagesToAck)
+                foreach (var (queueName, deliveryTag) in messagesToAck)
                 {
                     try
                     {
@@ -163,14 +187,9 @@ namespace Log.Worker
                         {
                             await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
                         }
-                        else if (redelivered == false)
-                        {
-                            await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
-                        }
                         else
                         {
-                            _logger.LogCritical("Dropping redelivered log message from queue {QueueName} after insert failure: {Body}", queueName, body);
-                            await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
+                            await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
                         }
                     }
                     catch (Exception ex)
@@ -178,6 +197,12 @@ namespace Log.Worker
                         _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
                     }
                 }
+                if (!inserted)
+                {
+                    _logger.LogWarning("Log drain stopped after insert failure; messages were requeued");
+                    break;
+                }
+                totalProcessed += processedCount;
             }
 
             _logger.LogInformation($"Graceful shutdown complete, processed {totalProcessed} remaining messages");
@@ -258,15 +283,16 @@ namespace Log.Worker
             }
         }
 
-        private async Task ProcessLogsAsync(CancellationToken cancellationToken)
+        private async Task<bool> ProcessLogsAsync(CancellationToken cancellationToken)
         {
             if (_channel == null)
             {
-                return;
+                return false;
             }
 
             var allLogs = new List<JsonElement>();
-            var messagesToAck = new List<(string QueueName, ulong DeliveryTag, bool Redelivered, string Body)>();
+            var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
+            var batchFull = false;
 
             foreach (var queueName in _queueNames)
             {
@@ -286,7 +312,7 @@ namespace Log.Worker
                         var jsonString = Encoding.UTF8.GetString(body);
                         using var doc = JsonDocument.Parse(jsonString);
                         ParseLogMessage(doc.RootElement, allLogs);
-                        messagesToAck.Add((queueName, result.DeliveryTag, result.Redelivered, jsonString));
+                        messagesToAck.Add((queueName, result.DeliveryTag));
                         messageCount++;
                     }
                     catch (Exception ex)
@@ -295,6 +321,7 @@ namespace Log.Worker
                         await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
                     }
                 }
+                batchFull |= messageCount == BatchSize;
             }
 
             var inserted = true;
@@ -314,8 +341,7 @@ namespace Log.Worker
                 }
             }
 
-            // Requeue a failed batch once; a redelivered message that fails again is dropped after logging.
-            foreach (var (queueName, deliveryTag, redelivered, body) in messagesToAck)
+            foreach (var (queueName, deliveryTag) in messagesToAck)
             {
                 try
                 {
@@ -323,14 +349,9 @@ namespace Log.Worker
                     {
                         await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
                     }
-                    else if (redelivered == false)
-                    {
-                        await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
-                    }
                     else
                     {
-                        _logger.LogCritical("Dropping redelivered log message from queue {QueueName} after insert failure: {Body}", queueName, body);
-                        await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
+                        await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
                     }
                 }
                 catch (Exception ex)
@@ -338,6 +359,7 @@ namespace Log.Worker
                     _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
                 }
             }
+            return inserted && batchFull;
         }
 
         private async Task DisconnectFromRabbitMQAsync()
