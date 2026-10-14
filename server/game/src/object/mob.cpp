@@ -468,9 +468,12 @@ uint64_t mob::normal_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 
-    auto& model      = this->model();
-    auto  difference = model.damage.max - model.damage.min;
-    return model.damage.min + (std::rand() % difference);
+    auto& model = this->model();
+    if (model.damage.max <= model.damage.min)
+        return model.damage.max;
+
+    auto difference = model.damage.max - model.damage.min;
+    return model.damage.min + (std::rand() % (difference + 1));
 }
 
 void mob::kill(DESTROY_TYPE destroy_type)
