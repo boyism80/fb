@@ -107,6 +107,7 @@ public:
     const fb::model::map&           model() const;
     MAP_CONFIG_FLAG                 config_flag() const;
     void                            config_flag(MAP_CONFIG_FLAG value);
+    bool                            pk_enabled() const;
     uint64_t                        index(const fb::model::point16_t& p) const;
     fb::model::point16_t            point(uint64_t i) const;
     bool                            blocked(uint16_t x, uint16_t y) const;

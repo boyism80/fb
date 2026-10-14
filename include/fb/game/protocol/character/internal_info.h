@@ -6,6 +6,7 @@
 #include <fb/protocol/header.h>
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -20,6 +21,9 @@ using namespace fb::model::enum_value;
 template <CLIENT_VERSION V>
 class internal_info : public fb::protocol::header
 {
+private:
+    using equipment_ptr = std::shared_ptr<fb::game::equipment>;
+
 public:
     static constexpr uint8_t opcode = 0x39;
     FB_PROTOCOL_VERSION_TAGS(V);
@@ -72,6 +76,13 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
     void deserialize(fb::stream_reader<big_endian>& reader);
+#endif
+
+#ifndef BOT
+
+private:
+    void serialize_header(fb::stream_writer<big_endian>& writer) const;
+    void serialize_equipment_v651(fb::stream_writer<big_endian>& writer, const equipment_ptr& eq) const;
 #endif
 };
 

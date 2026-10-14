@@ -11,115 +11,6 @@
 
 #include <croncpp.h>
 
-namespace {
-
-std::tm to_tm(const fb::model::datetime& value)
-{
-    std::tm tm{};
-    tm.tm_year  = static_cast<int>(value.year()) - 1900;
-    tm.tm_mon   = static_cast<int>(value.month()) - 1;
-    tm.tm_mday  = static_cast<int>(value.day());
-    tm.tm_hour  = static_cast<int>(value.hours());
-    tm.tm_min   = static_cast<int>(value.minutes());
-    tm.tm_sec   = static_cast<int>(value.seconds());
-    tm.tm_isdst = -1;
-    return tm;
-}
-
-fb::model::datetime from_tm(const std::tm& tm)
-{
-    return fb::model::datetime(std::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
-                                           tm.tm_year + 1900,
-                                           tm.tm_mon + 1,
-                                           tm.tm_mday,
-                                           tm.tm_hour,
-                                           tm.tm_min,
-                                           tm.tm_sec));
-}
-
-std::optional<fb::model::datetime> cron_next(const std::string& expression, const fb::model::datetime& after)
-{
-    try
-    {
-        auto cron = cron::make_cron(expression);
-        auto next = cron::cron_next(cron, to_tm(after));
-        if (next.tm_year == 0 && next.tm_mday == 0)
-            return std::nullopt;
-        return from_tm(next);
-    }
-    catch (const cron::bad_cronexpr&)
-    {
-        return std::nullopt;
-    }
-}
-
-fb::model::datetime with_ymd(const fb::model::datetime& base, int year, int month, int day)
-{
-    const auto last = boost::gregorian::gregorian_calendar::end_of_month_day(year, month);
-    if (day > last)
-        day = last;
-
-    return fb::model::datetime(std::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
-                                           year,
-                                           month,
-                                           day,
-                                           base.hours(),
-                                           base.minutes(),
-                                           base.seconds()));
-}
-
-fb::model::datetime add_solar_months(const fb::model::datetime& base, int months)
-{
-    auto y = static_cast<int>(base.year());
-    auto m = static_cast<int>(base.month()) + months;
-    while (m > 12)
-    {
-        ++y;
-        m -= 12;
-    }
-    while (m < 1)
-    {
-        --y;
-        m += 12;
-    }
-    return with_ymd(base, y, m, static_cast<int>(base.day()));
-}
-
-fb::model::datetime add_solar_years(const fb::model::datetime& base, int years)
-{
-    return with_ymd(base,
-                    static_cast<int>(base.year()) + years,
-                    static_cast<int>(base.month()),
-                    static_cast<int>(base.day()));
-}
-
-bool in_window(const fb::model::datetime& now, const fb::model::datetime& occ, const fb::model::timespan& duration)
-{
-    if (now < occ)
-        return false;
-    return now < (occ + duration);
-}
-
-std::optional<fb::model::datetime>
-lunar_occurrence(uint16_t year, uint16_t month, uint16_t day, uint16_t hours, uint16_t minutes, uint16_t seconds)
-{
-    try
-    {
-        fb::model::lunar_date lunar{};
-        lunar.year  = year;
-        lunar.month = month;
-        lunar.day   = day;
-        lunar.leap  = false;
-        return fb::model::datetime::from_lunar(lunar, hours, minutes, seconds);
-    }
-    catch (const std::exception&)
-    {
-        return std::nullopt;
-    }
-}
-
-} // namespace
-
 std::optional<fb::model::datetime> fb::model::schedule::next_execution(const fb::model::datetime& now) const
 {
     if (this->script.empty() || this->func.empty())
@@ -152,7 +43,33 @@ std::optional<fb::model::datetime> fb::model::schedule::next_execution(const fb:
             }
         }
 
-        auto next = ::cron_next(this->cron.value(), from);
+        auto next = std::optional<fb::model::datetime>{};
+        try
+        {
+            auto after     = std::tm{};
+            after.tm_year  = static_cast<int>(from.year()) - 1900;
+            after.tm_mon   = static_cast<int>(from.month()) - 1;
+            after.tm_mday  = static_cast<int>(from.day());
+            after.tm_hour  = static_cast<int>(from.hours());
+            after.tm_min   = static_cast<int>(from.minutes());
+            after.tm_sec   = static_cast<int>(from.seconds());
+            after.tm_isdst = -1;
+
+            auto found = ::cron::cron_next(::cron::make_cron(this->cron.value()), after);
+            if (found.tm_year != 0 || found.tm_mday != 0)
+            {
+                next = fb::model::datetime(std::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
+                                                       found.tm_year + 1900,
+                                                       found.tm_mon + 1,
+                                                       found.tm_mday,
+                                                       found.tm_hour,
+                                                       found.tm_min,
+                                                       found.tm_sec));
+            }
+        }
+        catch (const ::cron::bad_cronexpr&)
+        { }
+
         if (!next.has_value())
             return std::nullopt;
 
@@ -161,6 +78,52 @@ std::optional<fb::model::datetime> fb::model::schedule::next_execution(const fb:
 
         return next;
     }
+}
+
+bool fb::model::event::in_window(const fb::model::datetime& now,
+                                 const fb::model::datetime& occurrence,
+                                 const fb::model::timespan& duration)
+{
+    if (now < occurrence)
+        return false;
+    return now < (occurrence + duration);
+}
+
+std::optional<fb::model::datetime> fb::model::event::lunar_occurrence(uint16_t year,
+                                                                      uint16_t month,
+                                                                      uint16_t day,
+                                                                      uint16_t hours,
+                                                                      uint16_t minutes,
+                                                                      uint16_t seconds)
+{
+    try
+    {
+        fb::model::lunar_date date{};
+        date.year  = year;
+        date.month = month;
+        date.day   = day;
+        date.leap  = false;
+        return fb::model::datetime::from_lunar(date, hours, minutes, seconds);
+    }
+    catch (const std::exception&)
+    {
+        return std::nullopt;
+    }
+}
+
+fb::model::datetime fb::model::event::solar_occurrence(const fb::model::datetime& start, int year, int month, int day)
+{
+    const auto last = boost::gregorian::gregorian_calendar::end_of_month_day(year, month);
+    if (day > last)
+        day = last;
+
+    return fb::model::datetime(std::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
+                                           year,
+                                           month,
+                                           day,
+                                           start.hours(),
+                                           start.minutes(),
+                                           start.seconds()));
 }
 
 bool fb::model::event::is_active(const fb::model::datetime& now) const
@@ -305,7 +268,19 @@ bool fb::model::event::is_active(const fb::model::datetime& now) const
             const auto n = base_n + delta;
             if (n < 0)
                 continue;
-            auto occ = add_solar_months(this->start, n * static_cast<int>(every));
+            auto year  = static_cast<int>(this->start.year());
+            auto month = static_cast<int>(this->start.month()) + n * static_cast<int>(every);
+            while (month > 12)
+            {
+                ++year;
+                month -= 12;
+            }
+            while (month < 1)
+            {
+                --year;
+                month += 12;
+            }
+            auto occ = solar_occurrence(this->start, year, month, static_cast<int>(this->start.day()));
             if (in_window(now, occ, this->duration))
                 return true;
         }
@@ -320,7 +295,10 @@ bool fb::model::event::is_active(const fb::model::datetime& now) const
             const auto n = base_n / static_cast<int>(every) + delta;
             if (n < 0)
                 continue;
-            auto occ = add_solar_years(this->start, n * static_cast<int>(every));
+            auto occ = solar_occurrence(this->start,
+                                        static_cast<int>(this->start.year()) + n * static_cast<int>(every),
+                                        static_cast<int>(this->start.month()),
+                                        static_cast<int>(this->start.day()));
             if (in_window(now, occ, this->duration))
                 return true;
         }

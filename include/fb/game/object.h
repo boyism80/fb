@@ -176,6 +176,7 @@ public:
     void                                    sound(SOUND sound, uint8_t volume = 100);
     void                                    effect(uint8_t value);
     virtual appearance_ptr                  appearance() const = 0;
+    virtual bool                            portrait() const = 0;
     // clang-format on
 
 public:

@@ -10,29 +10,15 @@
 using namespace fb::game;
 using weather_type = fb::model::enum_value::WEATHER_TYPE;
 
-namespace {
-
-struct weather_weights
-{
-    uint32_t normal = 0;
-    uint32_t rain   = 0;
-    uint32_t snow   = 0;
-};
+service::weather::weather(fb::game::server& server) :
+    server(server)
+{ }
 
 // Approximate Seoul / central Korea climate:
 // - Wet-day rates from monthly normals (most rain in late Jun-Jul jangma, then Aug)
 // - Snow almost only Dec-Feb; none in spring through autumn lowlands
 // - Jangma roughly Jun 25 - Jul 26 (KMA central-region normal)
-bool in_jangma(int month, int day)
-{
-    if (month == 6 && day >= 25)
-        return true;
-    if (month == 7 && day <= 26)
-        return true;
-    return false;
-}
-
-weather_weights weights_for(int month, int day)
+service::weather::weights service::weather::weights_for(int month, int day)
 {
     switch (month)
     {
@@ -69,26 +55,6 @@ weather_weights weights_for(int month, int day)
     }
 }
 
-// Fewer shifts in dry seasons; more shower-like changes in wet months / jangma.
-uint32_t segment_count(int month, int day, auto& rng)
-{
-    uint32_t max_extra = 1;
-    if (in_jangma(month, day) || month == 8)
-        max_extra = 3;
-    else if (month >= 5 && month <= 9)
-        max_extra = 2;
-    else if (month >= 3 && month <= 4)
-        max_extra = 2;
-
-    return 1u + (rng() % (max_extra + 1u));
-}
-
-} // namespace
-
-service::weather::weather(fb::game::server& server) :
-    server(server)
-{ }
-
 void service::weather::rebuild_segments(uint32_t seed, int month, int day)
 {
     this->_segments.clear();
@@ -99,7 +65,17 @@ void service::weather::rebuild_segments(uint32_t seed, int month, int day)
     };
 
     auto w = weights_for(month, day);
-    auto n = segment_count(month, day, rng);
+
+    // Fewer shifts in dry seasons; more shower-like changes in wet months / jangma.
+    auto jangma    = (month == 6 && day >= 25) || (month == 7 && day <= 26);
+    auto max_extra = uint32_t{1};
+    if (jangma || month == 8)
+        max_extra = 3;
+    else if (month >= 5 && month <= 9)
+        max_extra = 2;
+    else if (month >= 3 && month <= 4)
+        max_extra = 2;
+    auto n = 1u + (rng() % (max_extra + 1u));
 
     uint8_t hours[4]    = {};
     uint8_t hour_count  = 0;

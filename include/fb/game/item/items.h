@@ -138,6 +138,7 @@ public:
     [[nodiscard]] async::task<void>                 loot(bool boost);
     [[nodiscard]] async::task<bool>                 throws(uint8_t index, bool all);
     equipment_map_t                                 equipments() const;
+    equipment_ptr                                   equipment(EQUIPMENT_PARTS parts) const;
     bool                                            swap(uint8_t src, uint8_t dst) override;
     item_ptr                                        remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     item_ptr                                        remove(item_ptr item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);

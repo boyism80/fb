@@ -71,6 +71,9 @@ public:
     stat& operator= (const stat& other) = delete;
     stat& operator= (stat&& other)      = delete;
 
+private:
+    static uint64_t percent_pool(int64_t base, int64_t buff, float percent);
+
 public:
     // clang-format off
     virtual uint64_t base_hp() const = 0;
@@ -157,6 +160,12 @@ public:
 public:
     character_stat(character& owner);
     ~character_stat() = default;
+
+private:
+    // clang-format off
+    uint8_t          speed_cap() const;
+    void             update_speed();
+    // clang-format on
 
 public:
     // clang-format off

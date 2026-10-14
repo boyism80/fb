@@ -19,48 +19,6 @@
 
 using namespace fb::game;
 
-namespace {
-
-uint8_t character_speed_cap(const character& ch)
-{
-    if (ch.client_version == fb::protocol::CLIENT_VERSION::v651 && ch.role() >= ROLE::ADMIN)
-        return 10;
-    return 5;
-}
-
-void notify_walk_speed(character& ch)
-{
-    if (ch.client_version == fb::protocol::CLIENT_VERSION::v651)
-        ch.update_external();
-    else
-        ch.update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
-}
-
-uint64_t apply_percent_pool(int64_t base, int64_t buff, float percent)
-{
-    constexpr auto max_signed = std::numeric_limits<int64_t>::max();
-    if (buff > 0 && base > max_signed - buff)
-        return static_cast<uint64_t>(max_signed);
-
-    auto sum = base + buff;
-    if (sum < 1)
-        return 1;
-
-    if (percent == 0.0f)
-        return static_cast<uint64_t>(sum);
-
-    auto pct_bonus = static_cast<int64_t>(static_cast<double>(sum) * percent / 100.0);
-    if (pct_bonus > 0 && sum > max_signed - pct_bonus)
-        return static_cast<uint64_t>(max_signed);
-
-    auto total = sum + pct_bonus;
-    if (total < 1)
-        return 1;
-    return static_cast<uint64_t>(total);
-}
-
-} // namespace
-
 fb::game::stat::stat(life& owner) :
     owner(owner)
 { }
@@ -104,6 +62,29 @@ fb::game::stat::stat(stat&& other) :
     _buff_regenerative(other._buff_regenerative),
     _buff_resist(std::move(other._buff_resist))
 { }
+
+uint64_t fb::game::stat::percent_pool(int64_t base, int64_t buff, float percent)
+{
+    constexpr auto max_signed = std::numeric_limits<int64_t>::max();
+    if (buff > 0 && base > max_signed - buff)
+        return static_cast<uint64_t>(max_signed);
+
+    auto sum = base + buff;
+    if (sum < 1)
+        return 1;
+
+    if (percent == 0.0f)
+        return static_cast<uint64_t>(sum);
+
+    auto pct_bonus = static_cast<int64_t>(static_cast<double>(sum) * percent / 100.0);
+    if (pct_bonus > 0 && sum > max_signed - pct_bonus)
+        return static_cast<uint64_t>(max_signed);
+
+    auto total = sum + pct_bonus;
+    if (total < 1)
+        return 1;
+    return static_cast<uint64_t>(total);
+}
 
 int64_t fb::game::stat::buff_hp() const
 {
@@ -400,7 +381,7 @@ uint64_t fb::game::stat::maxhp() const
     this->owner.assert_thread();
     auto base =
         static_cast<int64_t>(std::min(this->base_hp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
-    return apply_percent_pool(base, this->buff_hp(), this->buff_hp_percent());
+    return percent_pool(base, this->buff_hp(), this->buff_hp_percent());
 }
 
 uint64_t fb::game::stat::maxmp() const
@@ -408,7 +389,7 @@ uint64_t fb::game::stat::maxmp() const
     this->owner.assert_thread();
     auto base =
         static_cast<int64_t>(std::min(this->base_mp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
-    return apply_percent_pool(base, this->buff_mp(), this->buff_mp_percent());
+    return percent_pool(base, this->buff_mp(), this->buff_mp_percent());
 }
 
 uint8_t fb::game::stat::str() const
@@ -517,6 +498,21 @@ character_stat::character_stat(character& owner) :
     owner(owner)
 { }
 
+uint8_t character_stat::speed_cap() const
+{
+    if (this->owner.client_version == fb::protocol::CLIENT_VERSION::v651 && this->owner.role() >= ROLE::ADMIN)
+        return 10;
+    return 5;
+}
+
+void character_stat::update_speed()
+{
+    if (this->owner.client_version == fb::protocol::CLIENT_VERSION::v651)
+        this->owner.update_external();
+    else
+        this->owner.update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
+}
+
 void character_stat::base_hp(uint64_t value, bool notify)
 {
     this->owner.assert_thread();
@@ -613,7 +609,7 @@ void character_stat::base_speed(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
 
-    auto cap = character_speed_cap(this->owner);
+    auto cap = this->speed_cap();
     if (value > cap)
         value = cap;
 
@@ -622,7 +618,7 @@ void character_stat::base_speed(uint8_t value, bool notify)
 
     this->_speed = value;
     if (notify)
-        notify_walk_speed(this->owner);
+        this->update_speed();
 }
 
 void character_stat::base_regenerative(uint64_t value, bool notify)
@@ -695,7 +691,7 @@ uint8_t character_stat::speed() const
 {
     this->owner.assert_thread();
     auto sum = static_cast<int>(this->base_speed()) + static_cast<int>(fb::game::stat::buff_speed());
-    auto cap = character_speed_cap(this->owner);
+    auto cap = this->speed_cap();
     if (sum < 0)
         return 0;
     if (sum > cap)
@@ -710,7 +706,7 @@ void character_stat::buff_speed(int8_t value)
     auto before = this->speed();
     fb::game::stat::buff_speed(value);
     if (before != this->speed())
-        notify_walk_speed(this->owner);
+        this->update_speed();
 }
 
 uint64_t character_stat::base_regenerative() const

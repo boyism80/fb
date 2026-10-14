@@ -739,6 +739,11 @@ std::shared_ptr<fb::game::appearance> mob::appearance() const
     return this->model().create_appearance();
 }
 
+bool mob::portrait() const
+{
+    return this->model().appearance.has_value();
+}
+
 bool mob::add_part(const std::shared_ptr<mob>& part)
 {
     this->assert_thread();

@@ -750,7 +750,7 @@ bool items::update(uint8_t index) const
     return true;
 }
 
-std::shared_ptr<equipment> items::wear(EQUIPMENT_PARTS parts, std::shared_ptr<equipment> item)
+std::shared_ptr<equipment> items::wear(EQUIPMENT_PARTS parts, equipment_ptr item)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1995,7 +1995,7 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
 
 std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> items::equipments() const
 {
-    return std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>>{
+    return equipment_map_t{
         {EQUIPMENT_PARTS::WEAPON,     _weapon                                                  },
         {EQUIPMENT_PARTS::ARMOR,      _armor                                                   },
         {EQUIPMENT_PARTS::SHIELD,     _shield                                                  },
@@ -2005,6 +2005,31 @@ std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> items::equipments() const
         {EQUIPMENT_PARTS::LEFT_AUX,   _auxiliaries[static_cast<int>(EQUIPMENT_POSITION::LEFT)] },
         {EQUIPMENT_PARTS::RIGHT_AUX,  _auxiliaries[static_cast<int>(EQUIPMENT_POSITION::RIGHT)]}
     };
+}
+
+std::shared_ptr<equipment> items::equipment(EQUIPMENT_PARTS parts) const
+{
+    switch (parts)
+    {
+    case EQUIPMENT_PARTS::WEAPON:
+        return this->weapon();
+    case EQUIPMENT_PARTS::ARMOR:
+        return this->armor();
+    case EQUIPMENT_PARTS::SHIELD:
+        return this->shield();
+    case EQUIPMENT_PARTS::HELMET:
+        return this->helmet();
+    case EQUIPMENT_PARTS::LEFT_HAND:
+        return this->ring(EQUIPMENT_POSITION::LEFT);
+    case EQUIPMENT_PARTS::RIGHT_HAND:
+        return this->ring(EQUIPMENT_POSITION::RIGHT);
+    case EQUIPMENT_PARTS::LEFT_AUX:
+        return this->auxiliary(EQUIPMENT_POSITION::LEFT);
+    case EQUIPMENT_PARTS::RIGHT_AUX:
+        return this->auxiliary(EQUIPMENT_POSITION::RIGHT);
+    default:
+        return nullptr;
+    }
 }
 
 bool items::reserved(uint8_t index) const

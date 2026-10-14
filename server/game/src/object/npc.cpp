@@ -55,3 +55,8 @@ std::shared_ptr<fb::game::appearance> npc::appearance() const
 {
     return this->model().create_appearance();
 }
+
+bool npc::portrait() const
+{
+    return this->model().appearance.has_value();
+}

@@ -19,44 +19,6 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-namespace {
-
-uint8_t leave_mask(DIRECTION direction)
-{
-    switch (direction)
-    {
-    case DIRECTION::TOP:
-        return fb::sobj_tbl_file::NORTH;
-    case DIRECTION::RIGHT:
-        return fb::sobj_tbl_file::EAST;
-    case DIRECTION::BOTTOM:
-        return fb::sobj_tbl_file::SOUTH;
-    case DIRECTION::LEFT:
-        return fb::sobj_tbl_file::WEST;
-    default:
-        return 0;
-    }
-}
-
-uint8_t enter_mask(DIRECTION direction)
-{
-    switch (direction)
-    {
-    case DIRECTION::TOP:
-        return fb::sobj_tbl_file::SOUTH;
-    case DIRECTION::RIGHT:
-        return fb::sobj_tbl_file::WEST;
-    case DIRECTION::BOTTOM:
-        return fb::sobj_tbl_file::NORTH;
-    case DIRECTION::LEFT:
-        return fb::sobj_tbl_file::EAST;
-    default:
-        return 0;
-    }
-}
-
-} // namespace
-
 map::map(fb::game::server& server, uint32_t id, const fb::model::map& model, bool active) :
     id(id),
     server(server),
@@ -78,6 +40,23 @@ MAP_CONFIG_FLAG map::config_flag() const
 void map::config_flag(MAP_CONFIG_FLAG value)
 {
     this->_config_flag = value;
+}
+
+bool map::pk_enabled() const
+{
+    auto option = this->model().option;
+    if (ENUM_IN(option, MAP_OPTION::ENABLE_PK))
+        return true;
+
+    if (ENUM_IN(option, MAP_OPTION::SIEGE_CASTLE) == false || this->model().siege_castle.has_value() == false)
+        return false;
+
+    auto divine = static_cast<uint32_t>(this->model().siege_castle.value());
+    auto guard  = this->server.castles.try_enter_read(divine);
+    if (guard.has_value() == false || guard->value() == nullptr)
+        return false;
+
+    return guard->value()->siege_active();
 }
 
 void map::load_tiles(const void* data, size_t size, const std::vector<fb::model::point16_t>& blocks)
@@ -321,24 +300,34 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
 
 bool map::movable(const object& object, DIRECTION direction) const
 {
-    auto from = object.position();
-    auto to   = from;
+    auto from       = object.position();
+    auto to         = from;
+    auto leave_mask = uint8_t{0};
+    auto enter_mask = uint8_t{0};
     switch (direction)
     {
     case DIRECTION::BOTTOM:
         to.y++;
+        leave_mask = fb::sobj_tbl_file::SOUTH;
+        enter_mask = fb::sobj_tbl_file::NORTH;
         break;
 
     case DIRECTION::TOP:
         to.y--;
+        leave_mask = fb::sobj_tbl_file::NORTH;
+        enter_mask = fb::sobj_tbl_file::SOUTH;
         break;
 
     case DIRECTION::LEFT:
         to.x--;
+        leave_mask = fb::sobj_tbl_file::WEST;
+        enter_mask = fb::sobj_tbl_file::EAST;
         break;
 
     case DIRECTION::RIGHT:
         to.x++;
+        leave_mask = fb::sobj_tbl_file::EAST;
+        enter_mask = fb::sobj_tbl_file::WEST;
         break;
 
     default:
@@ -356,10 +345,10 @@ bool map::movable(const object& object, DIRECTION direction) const
     if (from_tile == nullptr || to_tile == nullptr)
         return false;
 
-    if ((this->server.sobj.collision(from_tile->object) & leave_mask(direction)) != 0)
+    if ((this->server.sobj.collision(from_tile->object) & leave_mask) != 0)
         return false;
 
-    if ((this->server.sobj.collision(to_tile->object) & enter_mask(direction)) != 0)
+    if ((this->server.sobj.collision(to_tile->object) & enter_mask) != 0)
         return false;
 
     return this->movable(object, to);

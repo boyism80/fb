@@ -38,6 +38,7 @@ public:
     void           soliloquy();
     void           assert_thread() const override final;
     appearance_ptr appearance() const override;
+    bool           portrait() const override;
     // clang-format on
 };
 

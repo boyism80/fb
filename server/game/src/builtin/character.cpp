@@ -38,26 +38,6 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-namespace {
-
-bool uses_portrait_appearance(const fb::game::object& obj)
-{
-    if (obj.is(OBJECT_TYPE::CHARACTER))
-        return true;
-    if (obj.is(OBJECT_TYPE::NPC) == false)
-        return false;
-    return static_cast<const fb::model::npc&>(obj.model()).appearance.has_value();
-}
-
-bool uses_portrait_appearance(const fb::model::object& model)
-{
-    if (model.what() != OBJECT_TYPE::NPC)
-        return false;
-    return static_cast<const fb::model::npc&>(model).appearance.has_value();
-}
-
-} // namespace
-
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"__eq",                         builtin::object::builtin_eq},
@@ -5276,7 +5256,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     else if (lua->is_userdata<fb::game::object>(2))
     {
         obj = lua->touserdata<fb::game::object>(2);
-        if (uses_portrait_appearance(*obj))
+        if (obj->portrait())
         {
             appearance = appearance_factory::create(*obj, *ch).release();
             obj        = nullptr;
@@ -5290,7 +5270,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     else if (lua->is_userdata<fb::model::object>(2))
     {
         model = lua->touserdata<fb::model::object>(2);
-        if (uses_portrait_appearance(*model))
+        if (model->what() == OBJECT_TYPE::NPC && static_cast<const fb::model::npc*>(model)->appearance.has_value())
         {
             appearance = appearance_factory::create(*model, *ch).release();
             model      = nullptr;
@@ -5386,7 +5366,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     else if (lua->is_userdata<fb::game::object>(2))
     {
         obj = lua->touserdata<fb::game::object>(2);
-        if (uses_portrait_appearance(*obj))
+        if (obj->portrait())
         {
             appearance = appearance_factory::create(*obj, *ch).release();
             obj        = nullptr;
@@ -5400,7 +5380,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     else if (lua->is_userdata<fb::model::object>(2))
     {
         model = lua->touserdata<fb::model::object>(2);
-        if (uses_portrait_appearance(*model))
+        if (model->what() == OBJECT_TYPE::NPC && static_cast<const fb::model::npc*>(model)->appearance.has_value())
         {
             appearance = appearance_factory::create(*model, *ch).release();
             model      = nullptr;

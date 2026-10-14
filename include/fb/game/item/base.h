@@ -102,6 +102,7 @@ public:
     virtual void                            merge(std::shared_ptr<fb::game::item> item);
     virtual async::task<bool>               map(map_ptr_t map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override;
     std::shared_ptr<fb::game::appearance>   appearance() const override;
+    bool                                    portrait() const override;
     bool                                    expired() const;
     // clang-format on
 

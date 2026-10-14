@@ -75,9 +75,6 @@ struct transfer_option
 
 class character : public life
 {
-    friend class group;
-    friend class character_stat;
-    friend class server;
     friend class mob;
 
 public:
@@ -295,6 +292,7 @@ public:
     bool                                     super_hide() const override final;
     bool                                     hidden(const fb::game::object& target) const override final;
     std::shared_ptr<fb::game::appearance>    appearance() const override;
+    bool                                     portrait() const override;
     // clang-format on
 
 public:

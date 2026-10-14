@@ -562,10 +562,22 @@ public:                         \
 public:                            \
     std::optional<fb::model::datetime> next_execution(const fb::model::datetime& now) const;
 
-#define DECLARE_EVENT_EXTENSION \
-                                \
-public:                         \
-    bool is_active(const fb::model::datetime& now) const;
+#define DECLARE_EVENT_EXTENSION                                                                \
+                                                                                               \
+public:                                                                                        \
+    bool is_active(const fb::model::datetime& now) const;                                      \
+                                                                                               \
+private:                                                                                       \
+    static bool                               in_window(const fb::model::datetime& now,        \
+                                                        const fb::model::datetime& occurrence, \
+                                                        const fb::model::timespan& duration);  \
+    static std::optional<fb::model::datetime> lunar_occurrence(uint16_t year,                  \
+                                                               uint16_t month,                 \
+                                                               uint16_t day,                   \
+                                                               uint16_t hours,                 \
+                                                               uint16_t minutes,               \
+                                                               uint16_t seconds);              \
+    static fb::model::datetime solar_occurrence(const fb::model::datetime& start, int year, int month, int day);
 
 #define DECLARE_MOB_SPAWN_EXTENSION \
                                     \

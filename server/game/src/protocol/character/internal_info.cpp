@@ -26,19 +26,17 @@ internal_info<V>::internal_info(fb::game::character& ch) :
 #endif
 
 #ifndef BOT
-namespace {
-
-template <fb::protocol::CLIENT_VERSION V, typename Writer>
-void write_internal_info_header(Writer& writer, fb::game::character& ch)
+template <CLIENT_VERSION V>
+void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) const
 {
-    writer.template write<int8_t>(ch.stat.phydef());
-    writer.template write<int8_t>(ch.stat.dam());
-    writer.template write<int8_t>(ch.stat.hit());
+    writer.template write<int8_t>(this->ch.stat.phydef());
+    writer.template write<int8_t>(this->ch.stat.dam());
+    writer.template write<int8_t>(this->ch.stat.hit());
 
-    auto& clan_id = ch.clan_id();
+    auto& clan_id = this->ch.clan_id();
     if (clan_id.has_value())
     {
-        auto guard = ch.server.clans.enter_read(clan_id.value());
+        auto guard = this->ch.server.clans.enter_read(clan_id.value());
         writer.template write<std::string>(guard.value()->name());
         writer.template write<std::string>(guard.value()->title().value_or(""));
     }
@@ -47,9 +45,9 @@ void write_internal_info_header(Writer& writer, fb::game::character& ch)
         writer.template write<std::string>("");
         writer.template write<std::string>("");
     }
-    writer.template write<std::string>(ch.title());
+    writer.template write<std::string>(this->ch.title());
 
-    auto& marriage = ch.marriage();
+    auto& marriage = this->ch.marriage();
     if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
     {
         if (marriage.spouse_id.has_value())
@@ -63,10 +61,10 @@ void write_internal_info_header(Writer& writer, fb::game::character& ch)
         if (marriage.spouse_id.has_value())
             sstream << "배우자: " << marriage.spouse_name << std::endl;
 
-        auto& group_id = ch.group_id();
+        auto& group_id = this->ch.group_id();
         if (group_id.has_value())
         {
-            auto  guard = ch.server.groups.enter_read(group_id.value());
+            auto  guard = this->ch.server.groups.enter_read(group_id.value());
             auto& group = guard.value();
             sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
             auto master_name = group->master();
@@ -83,22 +81,23 @@ void write_internal_info_header(Writer& writer, fb::game::character& ch)
         writer.template write<std::string>(sstream.str());
     }
 
-    writer.template write<uint8_t>(ch.option(OPTION::GROUP));
+    writer.template write<uint8_t>(this->ch.option(OPTION::GROUP));
 
-    auto     cls      = ch.cls();
-    auto     level    = ch.level();
+    auto     cls      = this->ch.cls();
+    auto     level    = this->ch.level();
     uint64_t remained = 0;
     if (table::ability->contains(cls) && table::ability[cls].contains(level) &&
         table::ability[cls].contains(static_cast<uint8_t>(level + 1)))
     {
-        remained = table::ability->stacked_exp(cls, level) - ch.exp();
+        remained = table::ability->stacked_exp(cls, level) - this->ch.exp();
     }
     writer.template write<uint32_t>(fb::game::encode_client_amount(remained));
-    writer.template write<std::string>(table::promotion[ch.cls()][ch.promotion()].name);
+    writer.template write<std::string>(table::promotion[this->ch.cls()][this->ch.promotion()].name);
 }
 
-template <typename Writer>
-void write_equip_slot_v651(Writer& writer, const std::shared_ptr<fb::game::equipment>& eq)
+template <CLIENT_VERSION V>
+void internal_info<V>::serialize_equipment_v651(fb::stream_writer<big_endian>&              writer,
+                                                const std::shared_ptr<fb::game::equipment>& eq)
 {
     if (eq == nullptr)
     {
@@ -118,14 +117,12 @@ void write_equip_slot_v651(Writer& writer, const std::shared_ptr<fb::game::equip
     }
 }
 
-} // namespace
-
 template <CLIENT_VERSION V>
 void internal_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.template write<uint8_t>(opcode);
-    write_internal_info_header<V>(writer, this->ch);
+    this->serialize_header(writer);
 
     auto equipments =
         std::array<std::shared_ptr<fb::game::equipment>, 5>{this->ch.items.helmet(),
@@ -166,18 +163,18 @@ void internal_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
 {
     header::serialize(writer);
     writer.template write<uint8_t>(opcode);
-    write_internal_info_header<CLIENT_VERSION::v651>(writer, this->ch);
+    this->serialize_header(writer);
 
     // parts 1,2,3,4,7,8,20,21,22
-    write_equip_slot_v651(writer, this->ch.items.weapon());
-    write_equip_slot_v651(writer, this->ch.items.armor());
-    write_equip_slot_v651(writer, this->ch.items.shield());
-    write_equip_slot_v651(writer, this->ch.items.helmet());
-    write_equip_slot_v651(writer, this->ch.items.ring(EQUIPMENT_POSITION::LEFT));
-    write_equip_slot_v651(writer, this->ch.items.ring(EQUIPMENT_POSITION::RIGHT));
-    write_equip_slot_v651(writer, this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT));
-    write_equip_slot_v651(writer, this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT));
-    write_equip_slot_v651(writer, nullptr); // parts 22 unknown
+    serialize_equipment_v651(writer, this->ch.items.weapon());
+    serialize_equipment_v651(writer, this->ch.items.armor());
+    serialize_equipment_v651(writer, this->ch.items.shield());
+    serialize_equipment_v651(writer, this->ch.items.helmet());
+    serialize_equipment_v651(writer, this->ch.items.ring(EQUIPMENT_POSITION::LEFT));
+    serialize_equipment_v651(writer, this->ch.items.ring(EQUIPMENT_POSITION::RIGHT));
+    serialize_equipment_v651(writer, this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT));
+    serialize_equipment_v651(writer, this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT));
+    serialize_equipment_v651(writer, nullptr); // parts 22 unknown
 
     // no fixed 0x00
     writer.template write<uint8_t>(this->ch.option(OPTION::TRADE));

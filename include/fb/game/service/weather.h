@@ -24,10 +24,18 @@ private:
         fb::model::enum_value::WEATHER_TYPE type       = fb::model::enum_value::WEATHER_TYPE::NORMAL;
     };
 
+    struct weights
+    {
+        uint32_t normal = 0;
+        uint32_t rain   = 0;
+        uint32_t snow   = 0;
+    };
+
     fb::model::enum_value::WEATHER_TYPE _current = fb::model::enum_value::WEATHER_TYPE::NORMAL;
     int                                 _day_key = -1;
     std::vector<segment>                _segments;
 
+    static weights                      weights_for(int month, int day);
     void                                rebuild_segments(uint32_t seed, int month, int day);
     fb::model::enum_value::WEATHER_TYPE type_at_hour(uint8_t hour) const;
     void                                broadcast_outdoor(fb::model::enum_value::WEATHER_TYPE type);

@@ -9,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -129,6 +130,19 @@ void clan::change_role(std::string_view member_name, CLAN_ROLE new_role)
 const std::unordered_map<uint32_t, std::weak_ptr<fb::game::character>>& clan::characters() const
 {
     return this->_characters;
+}
+
+std::vector<std::shared_ptr<fb::game::character>> clan::online_characters() const
+{
+    auto result = std::vector<std::shared_ptr<fb::game::character>>{};
+    for (auto& [uid, weak] : this->_characters)
+    {
+        std::ignore = uid;
+        auto shared = weak.lock();
+        if (shared != nullptr)
+            result.push_back(shared);
+    }
+    return result;
 }
 
 void clan::attach(std::weak_ptr<character> ch)

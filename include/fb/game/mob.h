@@ -160,6 +160,7 @@ public:
     bool                            hidden(const fb::game::object& target) const override final;
     void                            hidden(bool enabled);
     appearance_ptr                  appearance() const override;
+    bool                            portrait() const override;
 
     bool                            add_part(const std::shared_ptr<mob>& part);
     parts_vector_t                  parts() const;

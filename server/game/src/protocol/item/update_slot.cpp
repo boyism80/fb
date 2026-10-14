@@ -13,39 +13,10 @@ item_update_slot<V>::item_update_slot(const fb::game::character& me, EQUIPMENT_P
     parts(parts)
 { }
 
-namespace {
-
-std::shared_ptr<fb::game::item> resolve_equipment(const fb::game::character& me, EQUIPMENT_PARTS parts)
-{
-    switch (parts)
-    {
-    case EQUIPMENT_PARTS::WEAPON:
-        return me.items.weapon();
-    case EQUIPMENT_PARTS::ARMOR:
-        return me.items.armor();
-    case EQUIPMENT_PARTS::SHIELD:
-        return me.items.shield();
-    case EQUIPMENT_PARTS::HELMET:
-        return me.items.helmet();
-    case EQUIPMENT_PARTS::LEFT_HAND:
-        return me.items.ring(EQUIPMENT_POSITION::LEFT);
-    case EQUIPMENT_PARTS::RIGHT_HAND:
-        return me.items.ring(EQUIPMENT_POSITION::RIGHT);
-    case EQUIPMENT_PARTS::LEFT_AUX:
-        return me.items.auxiliary(EQUIPMENT_POSITION::LEFT);
-    case EQUIPMENT_PARTS::RIGHT_AUX:
-        return me.items.auxiliary(EQUIPMENT_POSITION::RIGHT);
-    default:
-        return nullptr;
-    }
-}
-
-} // namespace
-
 template <CLIENT_VERSION V>
 void item_update_slot<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    auto item = resolve_equipment(this->me, this->parts);
+    auto item = this->me.items.equipment(this->parts);
     if (item == nullptr)
         return;
 
@@ -59,7 +30,7 @@ void item_update_slot<V>::serialize(fb::stream_writer<big_endian>& writer) const
 template <>
 void item_update_slot<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    auto item = resolve_equipment(this->me, this->parts);
+    auto item = this->me.items.equipment(this->parts);
     if (item == nullptr)
         return;
 

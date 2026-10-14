@@ -1387,7 +1387,15 @@ void character::option(OPTION key, bool value, bool notify)
     this->update_option();
 
     if (notify)
+    {
         this->listener.on_option_changed(*this, key, value);
+        if (key == OPTION::VISIBLE_HELMET && this->client_version == fb::protocol::CLIENT_VERSION::v651)
+        {
+            this->update_external();
+            if (this->items.helmet() != nullptr)
+                this->refresh_group_portrait();
+        }
+    }
 }
 
 bool character::option_toggle(OPTION key, bool notify)
@@ -3069,4 +3077,9 @@ std::shared_ptr<fb::game::appearance> character::appearance() const
     }
 
     return std::make_shared<character_appearance<>>(character_appearance<>::from(*this));
+}
+
+bool character::portrait() const
+{
+    return true;
 }

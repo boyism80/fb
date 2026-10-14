@@ -20,16 +20,14 @@ listener_impl::listener_impl(fb::game::server& server) :
     server(server)
 { }
 
-namespace {
-
-bool client_version_is(object& o, fb::protocol::CLIENT_VERSION ver)
+bool listener_impl::client_version_is(object& o, fb::protocol::CLIENT_VERSION ver)
 {
     if (o.is(OBJECT_TYPE::CHARACTER) == false)
         return false;
     return static_cast<character&>(o).client_version == ver;
 }
 
-bool client_match(object& o, fb::protocol::CLIENT_VERSION ver, fb::protocol::CLIENT_UI_MODE ui_mode)
+bool listener_impl::client_match(object& o, fb::protocol::CLIENT_VERSION ver, fb::protocol::CLIENT_UI_MODE ui_mode)
 {
     if (o.is(OBJECT_TYPE::CHARACTER) == false)
         return false;
@@ -43,49 +41,46 @@ bool client_match(object& o, fb::protocol::CLIENT_VERSION ver, fb::protocol::CLI
 }
 
 template <fb::protocol::CLIENT_VERSION Ver>
-void send_appearance_pivot(server&                       srv,
-                           object&                       obj,
-                           const character_appearance<>& app,
-                           fb::protocol::CLIENT_UI_MODE  ui_mode)
+void listener_impl::send_appearance_pivot(object&                       obj,
+                                          const character_appearance<>& app,
+                                          fb::protocol::CLIENT_UI_MODE  ui_mode)
 {
-    srv.send(obj,
-             game_resp::show<Ver>(obj.oid(),
-                                  obj.position(),
-                                  obj.direction(),
-                                  HEAD_MARKER::NONE,
-                                  obj.name(),
-                                  fb::game::character_appearance<Ver>(app),
-                                  ui_mode),
-             scope::PIVOT,
-             {.with_me = client_match(obj, Ver, ui_mode), .condition = [ui_mode](object& o) {
-                  return client_match(o, Ver, ui_mode);
-              }});
+    this->server.send(obj,
+                      game_resp::show<Ver>(obj.oid(),
+                                           obj.position(),
+                                           obj.direction(),
+                                           HEAD_MARKER::NONE,
+                                           obj.name(),
+                                           fb::game::character_appearance<Ver>(app),
+                                           ui_mode),
+                      scope::PIVOT,
+                      {.with_me = client_match(obj, Ver, ui_mode), .condition = [ui_mode](object& o) {
+                           return client_match(o, Ver, ui_mode);
+                       }});
 }
 
-void send_object_update_pivot(server& srv, object& me)
+void listener_impl::send_object_update_pivot(object& me)
 {
     using cv = fb::protocol::CLIENT_VERSION;
-    srv.send(me,
-             game_resp::update_v550(me),
-             scope::PIVOT,
-             {.with_me = client_version_is(me, cv::v550), .condition = [](object& o) {
-                  return client_version_is(o, cv::v550);
-              }});
-    srv.send(me,
-             game_resp::update_v565(me),
-             scope::PIVOT,
-             {.with_me = client_version_is(me, cv::v565), .condition = [](object& o) {
-                  return client_version_is(o, cv::v565);
-              }});
-    srv.send(me,
-             game_resp::update_v651(me),
-             scope::PIVOT,
-             {.with_me = client_version_is(me, cv::v651), .condition = [](object& o) {
-                  return client_version_is(o, cv::v651);
-              }});
+    this->server.send(me,
+                      game_resp::update_v550(me),
+                      scope::PIVOT,
+                      {.with_me = client_version_is(me, cv::v550), .condition = [](object& o) {
+                           return client_version_is(o, cv::v550);
+                       }});
+    this->server.send(me,
+                      game_resp::update_v565(me),
+                      scope::PIVOT,
+                      {.with_me = client_version_is(me, cv::v565), .condition = [](object& o) {
+                           return client_version_is(o, cv::v565);
+                       }});
+    this->server.send(me,
+                      game_resp::update_v651(me),
+                      scope::PIVOT,
+                      {.with_me = client_version_is(me, cv::v651), .condition = [](object& o) {
+                           return client_version_is(o, cv::v651);
+                       }});
 }
-
-} // namespace
 
 void listener_impl::send_update_appearance(object& obj, const fb::model::appearance& appearance)
 {
@@ -103,10 +98,10 @@ void listener_impl::send_update_appearance(object& obj, const fb::model::appeara
 
     using cv = fb::protocol::CLIENT_VERSION;
     using um = fb::protocol::CLIENT_UI_MODE;
-    send_appearance_pivot<cv::v550>(this->server, obj, app, um::OLD);
-    send_appearance_pivot<cv::v565>(this->server, obj, app, um::OLD);
-    send_appearance_pivot<cv::v651>(this->server, obj, app, um::OLD);
-    send_appearance_pivot<cv::v651>(this->server, obj, app, um::NEW);
+    this->send_appearance_pivot<cv::v550>(obj, app, um::OLD);
+    this->send_appearance_pivot<cv::v565>(obj, app, um::OLD);
+    this->send_appearance_pivot<cv::v651>(obj, app, um::OLD);
+    this->send_appearance_pivot<cv::v651>(obj, app, um::NEW);
 }
 
 void listener_impl::send_update_appearance(object& obj, character& to, const fb::model::appearance& appearance)
@@ -189,7 +184,7 @@ void listener_impl::send_non_character_external(object& me)
         }
         else
         {
-            send_object_update_pivot(this->server, me);
+            this->send_object_update_pivot(me);
         }
     }
     break;
@@ -206,14 +201,14 @@ void listener_impl::send_non_character_external(object& me)
         }
         else
         {
-            send_object_update_pivot(this->server, me);
+            this->send_object_update_pivot(me);
         }
     }
     break;
 
     default:
     {
-        send_object_update_pivot(this->server, me);
+        this->send_object_update_pivot(me);
     }
     break;
     }

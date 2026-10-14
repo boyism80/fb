@@ -8,34 +8,6 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-namespace {
-
-uint32_t pack_v651_option_bits(const fb::game::character& ch)
-{
-    auto bits = 0u;
-    if (ch.option(OPTION::WHISPER))
-        bits |= 1u << 0;
-    if (ch.option(OPTION::ROAR))
-        bits |= 1u << 2;
-    if (ch.option(OPTION::NEWS))
-        bits |= 1u << 3;
-    if (ch.option(OPTION::MAGIC_EFFECT))
-        bits |= 1u << 4;
-    if (ch.option(OPTION::WEATHER_EFFECT))
-        bits |= 1u << 5;
-    if (ch.option(OPTION::FIXED_MOVE))
-        bits |= 1u << 6;
-    if (ch.option(OPTION::FAST_MOVE))
-        bits |= 1u << 8;
-    if (ch.option(OPTION::EFFECT_SOUND))
-        bits |= 1u << 12;
-    if (ch.option(OPTION::VISIBLE_HELMET))
-        bits |= 1u << 13;
-    return bits;
-}
-
-} // namespace
-
 template <CLIENT_VERSION V>
 update_internal<V>::update_internal(const fb::game::character& ch, UPDATE_STATE_LEVEL level) :
     ch(ch),
@@ -168,7 +140,27 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
 
     writer.write<uint8_t>(this->ch.mail_box.unread_count());
     writer.write<bool>(this->ch.option(OPTION::FAST_MOVE));
-    writer.write<uint32_t>(pack_v651_option_bits(this->ch));
+
+    auto bits = 0u;
+    if (this->ch.option(OPTION::WHISPER))
+        bits |= 1u << 0;
+    if (this->ch.option(OPTION::ROAR))
+        bits |= 1u << 2;
+    if (this->ch.option(OPTION::NEWS))
+        bits |= 1u << 3;
+    if (this->ch.option(OPTION::MAGIC_EFFECT))
+        bits |= 1u << 4;
+    if (this->ch.option(OPTION::WEATHER_EFFECT))
+        bits |= 1u << 5;
+    if (this->ch.option(OPTION::FIXED_MOVE))
+        bits |= 1u << 6;
+    if (this->ch.option(OPTION::FAST_MOVE))
+        bits |= 1u << 8;
+    if (this->ch.option(OPTION::EFFECT_SOUND))
+        bits |= 1u << 12;
+    if (this->ch.option(OPTION::VISIBLE_HELMET))
+        bits |= 1u << 13;
+    writer.write<uint32_t>(bits);
 }
 
 template void update_internal<CLIENT_VERSION::v550>::serialize(fb::stream_writer<big_endian>&) const;

@@ -327,6 +327,11 @@ std::shared_ptr<fb::game::appearance> item::appearance() const
     throw std::runtime_error("appearance() not implemented");
 }
 
+bool item::portrait() const
+{
+    return false;
+}
+
 bool item::expired() const
 {
     if (this->expire_time.has_value() == false)

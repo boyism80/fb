@@ -91,13 +91,6 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
 
     sstream << ": " << (enabled ? "ON" : "OFF");
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
-
-    if (option == OPTION::VISIBLE_HELMET && me.client_version == fb::protocol::CLIENT_VERSION::v651)
-    {
-        me.update_external();
-        if (me.items.helmet() != nullptr)
-            me.refresh_group_portrait();
-    }
 }
 
 void listener_impl::on_update_option(character& ch)

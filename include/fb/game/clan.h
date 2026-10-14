@@ -68,6 +68,7 @@ public:
     void                                leave(std::string_view member);
     void                                change_role(std::string_view member_name, CLAN_ROLE new_role);
     const character_map&                characters() const;
+    std::vector<character_ptr_t>        online_characters() const;
     void                                attach(character_weak_ptr ch);
     void                                detach(character_weak_ptr ch);
     std::vector<character_ptr_t>        nears(const fb::game::map& map, const fb::model::point16_t& position) const;
