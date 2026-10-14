@@ -31,7 +31,10 @@ local function do_sub4_start(me, npc)
     if b == DIALOG_RESULT.PREV then
         goto NPC_466_0001
     end
-    me:mkitem("아기원숭이", 1)
+    if me:mkitem("아기원숭이", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+        return false
+    end
     local q = me:quest(quest.QUEST_SKULL_NECKLACE_4)
     if q == nil then
         q = me:start_quest(quest.QUEST_SKULL_NECKLACE_4)
@@ -59,7 +62,10 @@ local function do_sub4_complete(me, npc)
     if b == DIALOG_RESULT.PREV then
         goto NPC_466_0003
     end
-    me:mkitem("진원창", 1)
+    if me:mkitem("진원창", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+        return false
+    end
     local q = me:quest(quest.QUEST_SKULL_NECKLACE_4)
     if q then
         q:step(3)

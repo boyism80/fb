@@ -103,13 +103,17 @@ local function run_intro_and_accept(me, npc)
         return
     end
 
+    if me:mkitem(ITEM_OLD_SAFE, 1) == nil then
+        me:dialog(npc, '소지품이 가득 차서 낡은금고를 받을 수 없습니다. 자리 좀 비우고 다시 오세요.', { prev = false, next = false })
+        return
+    end
+
     local q = me:start_quest(quest.QUEST_STRONGBOX)
     if q == nil then
         return
     end
     q:step(1)
     me:push_achievement(ACHIEVEMENT_ACCEPT, '금고주인의 부탁을 들어주자.', 7, 1)
-    me:mkitem(ITEM_OLD_SAFE, 1)
 end
 
 local function run_turn_in(me, npc)
@@ -156,6 +160,14 @@ local function run_turn_in(me, npc)
             end
         elseif sel == 2 then
             me:dialog(npc, '그런가? 그럼 서둘러주게.', { prev = false, next = false })
+        end
+        return
+    end
+    if me:has_items(ITEM_OLD_SAFE, 1) == false then
+        if me:mkitem(ITEM_OLD_SAFE, 1) == nil then
+            me:dialog(npc, '소지품이 가득 차서 낡은금고를 받을 수 없습니다. 자리 좀 비우고 다시 오세요.', { prev = false, next = false })
+        else
+            me:dialog(npc, '금고를 잃어버렸나? 여기 다시 주지. 이번엔 잘 챙기게.', { prev = false, next = false })
         end
         return
     end
@@ -206,8 +218,11 @@ local function run_cursed_forgiveness(me, npc)
         return
     end
 
+    if me:mkitem(ITEM_BLACK_DAGGER, 1) == nil then
+        me:dialog(npc, '소지품이 가득 차서 흑장단검을 받을 수 없습니다. 자리 좀 비우고 다시 오세요.', { prev = false, next = false })
+        return
+    end
     q:complete()
-    me:mkitem(ITEM_BLACK_DAGGER, 1)
     me:push_achievement(ACHIEVEMENT_DONE, '금고주인의 부탁을 들어주었다.', 6, 1)
     ::NPC_172_0019::
     btn = me:dialog(npc, '좋아. 그럼 자네가 노력한 것을 봐서 보수를 주지. 여기 흑장단검을 가져가게. 중국에서 가져온 귀한 물건이야.', { prev = false, next = true })

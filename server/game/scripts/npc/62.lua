@@ -19,13 +19,15 @@ return {
             if sel == nil or sel ~= 1 then
                 return
             end
+            if me:mkitem(VOUCHER_NAME, 1) == nil then
+                me:dialog(npc, '소지품이 가득 차서 물병보관증을 받을 수 없습니다.', { prev = false, next = false })
+                return
+            end
             q = me:start_quest(quest.QUEST_WATER_BOTTLE)
             if q == nil then
                 me:dialog(npc, '퀘스트를 시작할 수 없습니다.', { prev = false, next = false })
                 return
             end
-            -- Grant voucher atomically with quest start; dialog is notification only.
-            me:mkitem(VOUCHER_NAME, 1)
             me:dialog(npc, '물병을 빚는데는 시간이 걸립니다. 여기 보관증을 드릴테니 며칠후 오세요.', { prev = false, next = false })
             return
         end

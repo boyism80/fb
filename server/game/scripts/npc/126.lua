@@ -248,12 +248,15 @@ return {
                 return
             end
             if sel == 1 then
+                if me:mkitem("고균의영검", 1) == nil then
+                    me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+                    return
+                end
                 local q = (not q_hwahwa) and me:start_quest(quest.QUEST_HWAHWA) or me:quest(quest.QUEST_HWAHWA)
                 if q == nil then
                     return
                 end
                 q:step(1)
-                me:mkitem("고균의영검", 1)
                 me:dialog(npc, "선물 하나 줄게!\n\n가지고 있는게 이것뿐이라...\n닳지않도록 조심히 써야 되~", { prev = false, next = false })
                 return
             end

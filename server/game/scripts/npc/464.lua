@@ -22,7 +22,10 @@ local function do_sub2_start(me, npc)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    me:mkitem("원숭이편지", 1)
+    if me:mkitem("원숭이편지", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+        return false
+    end
     local q = me:quest(quest.QUEST_SKULL_NECKLACE_2)
     if q == nil then
         q = me:start_quest(quest.QUEST_SKULL_NECKLACE_2)
@@ -50,7 +53,10 @@ local function do_sub2_complete(me, npc)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    me:mkitem("비철단도", 1)
+    if me:mkitem("비철단도", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+        return false
+    end
     local q = me:quest(quest.QUEST_SKULL_NECKLACE_2)
     if q then
         q:step(3)

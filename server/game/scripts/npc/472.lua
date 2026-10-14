@@ -14,7 +14,10 @@ local function do_sub3_give_medicine(me, npc)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    me:mkitem("좌황활력환", 1)
+    if me:mkitem("좌황활력환", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+        return false
+    end
     local q = me:quest(quest.QUEST_SKULL_NECKLACE_3)
     if q then
         q:step(2)

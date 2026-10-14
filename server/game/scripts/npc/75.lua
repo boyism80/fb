@@ -151,9 +151,12 @@ local function run_crab_general_complete(me, npc)
         me:dialog(npc, "아직 게장군을 잡아오지 못한 모양이군..", { prev = false, next = false })
         return
     end
+    if me:mkitem("산해진미", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없겠군. 자리를 비우고 다시 오게나.", { prev = false, next = false })
+        return
+    end
     q:step(4)
     q:progress(0)
-    me:mkitem("산해진미", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "게장군 생포 임무 완료.", 7, 1)
     local btn
     ::NPC_75_013::
@@ -224,9 +227,12 @@ local function run_octopus_general_complete(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
+    if me:mkitem("다문창", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없겠군. 자리를 비우고 다시 오게나.", { prev = false, next = false })
+        return
+    end
     q:step(6)
     q:progress(0)
-    me:mkitem("다문창", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "문어장군 생포 임무 완료.", 7, 1)
 end
 
@@ -304,10 +310,13 @@ local function run_seahorse_complete(me, npc)
         me:dialog(npc, "결국 해마장군을 쓰러트렸군. 고맙네. 이제 그의 주력부대를 소탕해주게.", { prev = false, next = false })
         return
     end
+    if me:mkitem("진주반지", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없겠군. 자리를 비우고 다시 오게나.", { prev = false, next = false })
+        return
+    end
     q:step(8)
     q:progress(0)
     q:param("")
-    me:mkitem("진주반지", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해마장군 생포 임무 완료.", 7, 1)
     local btn
     ::NPC_75_030::
@@ -944,10 +953,13 @@ local function run_crown_prince_complete(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_75_090
     end
+    if me:mkitem(ITEM_DRAGON_KING_HELM, 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없겠군. 자리를 비우고 다시 오게나.", { prev = false, next = false })
+        return
+    end
     q:step(20)
     q:progress(0)
     q:complete()
-    me:mkitem(ITEM_DRAGON_KING_HELM, 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "용궁 8대 반란 임무를 완수하다.", 6, 1)
     me:dialog(npc, "언제든지 용궁의 은인으로 반갑게 맞이할 테니 종종 놀러 오게나.", { prev = false, next = false })
 end

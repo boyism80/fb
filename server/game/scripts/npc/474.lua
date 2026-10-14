@@ -136,7 +136,10 @@ return {
             if b == DIALOG_RESULT.QUIT then
                 return
             end
-            me:mkitem("원숭이의편지", 1)
+            if me:mkitem("원숭이의편지", 1) == nil then
+                me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+                return
+            end
             main:step(6)
             return
         end
@@ -381,8 +384,11 @@ return {
             if b == DIALOG_RESULT.QUIT then
                 return
             end
+            if me:mkitem("해골목걸이", 1) == nil then
+                me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+                return
+            end
             main:step(36)
-            me:mkitem("해골목걸이", 1)
             me:push_achievement(63, "모든 원숭이들의 영웅이 되었다.", 7, 1)
             me:dialog(npc, "일전엔 고마웠네.", { prev = false, next = false })
             return

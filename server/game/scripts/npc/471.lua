@@ -39,7 +39,10 @@ local function do_sub9_start(me, npc)
     if b == DIALOG_RESULT.PREV then
         goto NPC_471_0002
     end
-    me:mkitem("특제원숭이술", 1)
+    if me:mkitem("특제원숭이술", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+        return false
+    end
     local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
     if q9 == nil then
         q9 = me:start_quest(quest.QUEST_SKULL_NECKLACE_9)
@@ -67,7 +70,10 @@ local function do_sub9_complete(me, npc)
     if b == DIALOG_RESULT.PREV then
         goto NPC_471_0004
     end
-    me:mkitem("거울방패", 1)
+    if me:mkitem("거울방패", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+        return false
+    end
     local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
     if q9 then
         q9:step(3)
