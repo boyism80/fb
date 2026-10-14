@@ -4,21 +4,19 @@
 #include <async/task.h>
 #include <fb/stream.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <unordered_map>
 #include <vector>
-
-namespace fb::model {
-class item;
-}
 
 namespace fb::game {
 
 class character;
 class item;
 
-class trade
+// One session is shared by both characters; each character holds it in character::trade while trading.
+class trade : public std::enable_shared_from_this<trade>
 {
 public:
     enum class state : uint8_t;
@@ -27,53 +25,40 @@ public:
     struct listener_t;
 
 private:
-    // Type aliases for internal use
-    using character_ptr      = std::shared_ptr<character>;
-    using character_weak_ptr = std::weak_ptr<character>;
-    using item_ptr           = std::shared_ptr<fb::game::item>;
-    using item_vector        = std::vector<item_ptr>;
+    using item_ptr = std::shared_ptr<fb::game::item>;
 
-    character_weak_ptr                   _owner;
-    character_weak_ptr                   _you;
-    std::unordered_map<uint8_t, uint8_t> _items;
-    uint8_t                              _selected = 0xFF;
-    uint64_t                             _money    = 0;
-    bool                                 _locked   = false;
+    struct side
+    {
+        std::weak_ptr<character>             owner;
+        std::unordered_map<uint8_t, uint8_t> items;
+        uint8_t                              selected = 0xFF;
+        uint64_t                             money    = 0;
+        bool                                 locked   = false;
+    };
+
+    std::array<side, 2> _sides;
 
 public:
-    // clang-format off
-   trade();
-   ~trade();
-    // clang-format on
+    trade(character& me, character& you);
+    ~trade();
 
 private:
-    // clang-format off
-    uint8_t  add(uint8_t index);
-    void     restore();
-    item_ptr find(const fb::model::item& item) const;
-    void     assert_exchange(const fb::game::trade& trade) const;
-    void     end();
-    // clang-format on
-
-    static async::task<void> exchange(trade& trade1, trade& trade2);
+    size_t            index(const character& ch) const;
+    bool              locked() const;
+    uint8_t           add(side& side, uint8_t index);
+    void              restore();
+    void              end();
+    void              assert_exchange(const side& me, const side& you) const;
+    async::task<void> exchange();
 
 public:
-    void owner(character_ptr owner);
-
-    // clang-format off
-    character_ptr                   owner() const;
-    character_ptr                   you() const;
-    bool                            begin(character_ptr you);
-    bool                            trading() const;
-    bool                            up_item(uint8_t index);
-    bool                            up_money(uint64_t money);
-    uint64_t                        money() const;
-    bool                            count(uint16_t count);
-    bool                            cancel();
-    [[nodiscard]] async::task<bool> lock();
-    const item_vector               items() const;
-    const item_ptr                  item(uint8_t index) const;
-    // clang-format on
+    static bool                     begin(character& me, character& you);
+    bool                            up_item(character& ch, uint8_t index);
+    bool                            up_money(character& ch, uint64_t money);
+    uint64_t                        money(const character& ch) const;
+    bool                            count(character& ch, uint16_t count);
+    bool                            cancel(character& ch);
+    [[nodiscard]] async::task<bool> lock(character& ch);
 };
 
 enum class trade::state : uint8_t

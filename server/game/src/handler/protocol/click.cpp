@@ -109,7 +109,7 @@ async::task<void> click<V>::handle_object_click(character* ch, game_reqs::click<
     case OBJECT_TYPE::NPC:
     {
         // NPC dialogs sell, buy, store and list items through Lua.
-        if (ch->trade.trading())
+        if (ch->trade != nullptr)
         {
             ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
             break;

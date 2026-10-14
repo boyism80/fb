@@ -29,7 +29,7 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
     if (me == nullptr || me->inited() == false)
         co_return true;
 
-    if (me->trade.trading())
+    if (me->trade != nullptr)
     {
         me->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
         co_return true;

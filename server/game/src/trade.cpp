@@ -20,140 +20,129 @@
 
 using namespace fb::game;
 
-trade::trade()
+trade::trade(character& me, character& you) :
+    _sides{side{.owner = me.weak_from_this_as<character>()}, side{.owner = you.weak_from_this_as<character>()}}
 { }
 
 trade::~trade()
 { }
 
-void trade::owner(std::shared_ptr<character> owner)
+size_t trade::index(const character& ch) const
 {
-    this->_owner = owner->weak_from_this_as<character>();
+    return this->_sides[0].owner.lock().get() == &ch ? 0 : 1;
 }
 
-std::shared_ptr<fb::game::character> trade::owner() const
+bool trade::locked() const
 {
-    return this->_owner.lock();
+    return this->_sides[0].locked || this->_sides[1].locked;
 }
 
-std::shared_ptr<fb::game::character> trade::you() const
+bool trade::begin(character& me, character& you)
 {
-    return this->_you.lock();
-}
-
-bool trade::begin(std::shared_ptr<fb::game::character> you)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return false;
-
     try
     {
         // Try to trade with yourself
-        if (owner->id == you->id)
+        if (me.id == you.id)
             return false;
 
-        if (you->hidden(*owner))
+        if (you.hidden(me))
             return false;
 
         // The owner has refused the trade
-        if (owner->option(OPTION::TRADE) == false)
+        if (me.option(OPTION::TRADE) == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_REFUSED_BY_ME));
 
         // The partner has refused the trade
-        if (you->option(OPTION::TRADE) == false)
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER), you->name()));
+        if (you.option(OPTION::TRADE) == false)
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER), you.name()));
 
         // The trade is already in progress
-        if (this->trading())
+        if (me.trade != nullptr)
             return false;
 
         // The partner is already trading
-        if (you->trade.trading())
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING), you->name()));
+        if (you.trade != nullptr)
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING), you.name()));
 
         // The partner is not in sight
-        if (owner->sight(*you) == false)
+        if (me.sight(you) == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_PARTNER_INVISIBLE));
 
         // The distance to the partner is too far
-        if (owner->distance_sqrt(*you) > 16)
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR), you->name()));
+        if (me.distance_sqrt(you) > 16)
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR), you.name()));
 
-        this->_you      = you->weak_from_this_as<character>();
-        you->trade._you = owner->weak_from_this_as<character>();
-        owner->listener.on_trade_begin(*owner, *you);
-        you->listener.on_trade_begin(*you, *owner);
+        auto session = std::make_shared<trade>(me, you);
+        me.trade     = session;
+        you.trade    = session;
+        me.listener.on_trade_begin(me, you);
+        you.listener.on_trade_begin(you, me);
 
         return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::STATE);
+        me.message(e.what(), MESSAGE_TYPE::STATE);
     }
     return false;
 }
 
-void trade::end()
+void trade::restore()
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return;
-
-    auto you = this->_you.lock();
-    if (you != nullptr)
+    for (auto& side : this->_sides)
     {
-        auto& trade = you->trade;
-        trade._you.reset();
-        trade.end();
-        this->_you.reset();
-    }
-
-    // The offered money never left the owner's balance, so there is nothing to refund.
-    this->_locked   = false;
-    this->_money    = 0;
-    this->_selected = 0xFF;
-
-    for (auto& [index, order] : this->_items)
-    {
-        auto item = owner->items[index];
-        if (item == nullptr)
+        auto owner = side.owner.lock();
+        if (owner == nullptr)
             continue;
 
-        item->trade_count(0);
-        owner->items.update(index);
+        for (auto& [index, order] : side.items)
+        {
+            auto item = owner->items[index];
+            if (item == nullptr)
+                continue;
+
+            item->trade_count(0);
+            owner->items.update(index);
+        }
+        side.items.clear();
+
+        // The offered money never left the owner's balance, so there is nothing to refund.
+        side.money    = 0;
+        side.selected = 0xFF;
+        side.locked   = false;
+        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
     }
-    this->_items.clear();
 }
 
-bool trade::trading() const
+void trade::end()
 {
-    auto you = this->_you.lock();
-    return you != nullptr;
+    // Releasing the last character reference destroys this session.
+    auto self = this->shared_from_this();
+    for (auto& side : this->_sides)
+    {
+        auto owner = side.owner.lock();
+        if (owner != nullptr && owner->trade == self)
+            owner->trade.reset();
+    }
 }
 
-bool trade::up_item(uint8_t index)
+bool trade::up_item(character& ch, uint8_t index)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return false;
-
-    auto you = this->_you.lock();
+    auto  i   = this->index(ch);
+    auto& me  = this->_sides[i];
+    auto  you = this->_sides[1 - i].owner.lock();
     if (you == nullptr)
         return false;
 
     try
     {
-        auto item = owner->items[index];
+        auto item = ch.items[index];
         if (item == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_NOT_FOUND_ITEM));
 
         auto& model = item->model();
 
-        if (this->trading() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
-
-        if (this->_locked || you->trade._locked)
+        if (this->locked())
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_ALREADY_LOCKED));
 
         if (model.trade == false)
@@ -162,87 +151,75 @@ bool trade::up_item(uint8_t index)
         if (ENUM_IN(model.attr(), ITEM_ATTRIBUTE::BUNDLE) && item->count() > 1)
         {
             // Attempt to trade bundle-type item
-            this->_selected = index;
-            owner->listener.on_trade_bundle(*owner);
+            me.selected = index;
+            ch.listener.on_trade_bundle(ch);
             return true;
         }
 
         // Attempt to trade single item
         item->trade_count(1);
-        auto order = this->add(index);
-        if (order == 0xFF)
-            return false;
-
-        owner->items.update(index);
-        owner->listener.on_trade_item(*owner, *you, order, *this->item(index));
+        auto order = this->add(me, index);
+        ch.items.update(index);
+        ch.listener.on_trade_item(ch, *you, order, *item);
         return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
+        ch.message(e.what(), MESSAGE_TYPE::POPUP);
     }
     return false;
 }
 
-bool trade::up_money(uint64_t money)
+bool trade::up_money(character& ch, uint64_t money)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return false;
-
-    auto you = this->_you.lock();
+    auto  i   = this->index(ch);
+    auto& me  = this->_sides[i];
+    auto  you = this->_sides[1 - i].owner.lock();
     if (you == nullptr)
         return false;
 
     try
     {
-        if (this->_locked || you->trade._locked)
+        if (this->locked())
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_ALREADY_LOCKED));
 
-        this->_money = std::min<uint64_t>(owner->money(), money);
-        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-        owner->listener.on_trade_money(*owner, *you, this->_money);
-
+        me.money = std::min<uint64_t>(ch.money(), money);
+        ch.update(UPDATE_STATE_LEVEL::EXP_MONEY);
+        ch.listener.on_trade_money(ch, *you, me.money);
         return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        ch.message(e.what(), MESSAGE_TYPE::POPUP);
     }
     return false;
 }
 
-uint64_t trade::money() const
+uint64_t trade::money(const character& ch) const
 {
-    return this->_money;
+    return this->_sides[this->index(ch)].money;
 }
 
-bool trade::count(uint16_t count)
+bool trade::count(character& ch, uint16_t count)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return false;
-
-    auto you = this->_you.lock();
+    auto  i   = this->index(ch);
+    auto& me  = this->_sides[i];
+    auto  you = this->_sides[1 - i].owner.lock();
     if (you == nullptr)
         return false;
 
     try
     {
-        if (this->trading() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
-
-        if (this->_locked || you->trade._locked)
+        if (this->locked())
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_ALREADY_LOCKED));
 
-        if (this->_selected == 0xFF)
+        if (me.selected == 0xFF)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_SELECTED));
 
-        auto item = owner->items[this->_selected];
+        auto item = ch.items[me.selected];
         if (item == nullptr)
         {
-            this->_selected = 0xFF;
+            me.selected = 0xFF;
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_SELECTED));
         }
 
@@ -255,133 +232,74 @@ bool trade::count(uint16_t count)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_INVALID_COUNT));
 
         item->trade_count(item->trade_count() + count);
-        owner->items.update(this->_selected);
+        ch.items.update(me.selected);
 
-        auto order = this->add(this->_selected);
-        owner->listener.on_trade_item(*owner, *you, order, *this->item(this->_selected));
+        auto order = this->add(me, me.selected);
+        ch.listener.on_trade_item(ch, *you, order, *item);
 
-        this->_selected = 0xFF;
+        me.selected = 0xFF;
         return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
+        ch.message(e.what(), MESSAGE_TYPE::POPUP);
     }
     return false;
 }
 
-bool trade::cancel()
+bool trade::cancel(character& ch)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return false;
+    auto you = this->_sides[1 - this->index(ch)].owner.lock();
 
-    auto you = this->_you.lock();
-    if (you == nullptr)
-        return false;
-
-    try
-    {
-        if (this->trading() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
-
-        this->restore();
-        you->trade.restore();
-
-        owner->listener.on_trade_cancel(*owner, *you);
-
-        this->end();
-        return true;
-    }
-    catch (std::exception& e)
-    {
-        this->end();
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
-        return false;
-    }
+    this->restore();
+    if (you != nullptr)
+        ch.listener.on_trade_cancel(ch, *you);
+    this->end();
+    return true;
 }
 
-uint8_t trade::add(uint8_t index)
+uint8_t trade::add(side& side, uint8_t index)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return 0xFF;
+    if (side.items.contains(index))
+        return side.items.at(index);
 
-    if (this->_items.contains(index))
-        return this->_items.at(index);
-
-    auto order = static_cast<uint8_t>(this->_items.size());
-    this->_items.insert({index, order});
+    auto order = static_cast<uint8_t>(side.items.size());
+    side.items.insert({index, order});
     return order;
 }
 
-void trade::restore()
+void trade::assert_exchange(const side& me, const side& you) const
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return;
-
-    for (auto& [index, order] : this->_items)
-    {
-        auto item = owner->items[index];
-        if (item == nullptr)
-            continue;
-
-        item->trade_count(0);
-        owner->items.update(index);
-    }
-    this->_items.clear();
-
-    this->_money    = 0;
-    this->_selected = 0xFF;
-    owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-}
-
-std::shared_ptr<fb::game::item> trade::find(const fb::model::item& item) const
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    for (auto& [index, order] : this->_items)
-    {
-        auto x = owner->items[index];
-        if (x == nullptr)
-            continue;
-
-        auto& model = x->model();
-        if (&model == &item)
-            return std::static_pointer_cast<fb::game::item>(x);
-    }
-
-    return nullptr;
-}
-
-void trade::assert_exchange(const trade& trade) const
-{
-    auto owner = this->_owner.lock();
+    auto owner = me.owner.lock();
     if (owner == nullptr)
         throw std::runtime_error("owner is nullptr");
 
+    auto partner = you.owner.lock();
+    if (partner == nullptr)
+        throw std::runtime_error("partner is nullptr");
+
     // The offer is not escrowed; it must still be fully covered at exchange time.
-    if (owner->money() < this->_money)
+    if (owner->money() < me.money)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_ENOUGH_MONEY));
 
-    for (auto& [index, order] : this->_items)
+    for (auto& [index, order] : me.items)
     {
         auto item = owner->items[index];
         if (item == nullptr || item->trade_count() == 0 || item->count() < item->trade_count())
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_FAILED));
     }
 
-    if (std::numeric_limits<uint64_t>::max() - trade.money() < owner->money())
+    if (std::numeric_limits<uint64_t>::max() - you.money < owner->money())
         throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));
 
     auto incoming = std::unordered_map<uint32_t, uint32_t>{};
-    for (const auto& item : trade.items())
+    for (auto& [index, order] : you.items)
     {
-        auto& model         = item->model();
-        incoming[model.id] += item->trade_count();
+        auto item = partner->items[index];
+        if (item == nullptr)
+            continue;
+
+        incoming[item->model().id] += item->trade_count();
     }
 
     // Capacity is checked against the inventory as it will be after this side's offer leaves.
@@ -431,14 +349,14 @@ void trade::assert_exchange(const trade& trade) const
         throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
-async::task<void> trade::exchange(trade& trade1, trade& trade2)
+async::task<void> trade::exchange()
 {
-    static auto push_buffer = [](trade& trade, std::vector<std::shared_ptr<fb::game::item>>& buffer) -> uint32_t {
-        auto owner = trade._owner.lock();
+    static auto push_buffer = [](side& side, std::vector<std::shared_ptr<fb::game::item>>& buffer) -> uint64_t {
+        auto owner = side.owner.lock();
         if (owner == nullptr)
             return 0;
 
-        for (auto& [index, order] : trade._items)
+        for (auto& [index, order] : side.items)
         {
             auto item = owner->items[index];
             if (item == nullptr)
@@ -454,26 +372,26 @@ async::task<void> trade::exchange(trade& trade1, trade& trade2)
             buffer.push_back(split);
         }
 
-        auto money   = trade._money;
-        trade._money = 0;
+        auto money = side.money;
+        side.money = 0;
         owner->money_reduce(money);
         return money;
     };
 
-    trade1.assert_exchange(trade2);
-    trade2.assert_exchange(trade1);
+    this->assert_exchange(this->_sides[0], this->_sides[1]);
+    this->assert_exchange(this->_sides[1], this->_sides[0]);
 
     auto buffer1 = std::vector<std::shared_ptr<fb::game::item>>();
-    auto money1  = push_buffer(trade1, buffer1);
+    auto money1  = push_buffer(this->_sides[0], buffer1);
 
     auto buffer2 = std::vector<std::shared_ptr<fb::game::item>>();
-    auto money2  = push_buffer(trade2, buffer2);
+    auto money2  = push_buffer(this->_sides[1], buffer2);
 
-    auto owner1 = trade1._owner.lock();
+    auto owner1 = this->_sides[0].owner.lock();
     if (owner1 == nullptr)
         co_return;
 
-    auto owner2 = trade2._owner.lock();
+    auto owner2 = this->_sides[1].owner.lock();
     if (owner2 == nullptr)
         co_return;
 
@@ -527,77 +445,36 @@ async::task<void> trade::exchange(trade& trade1, trade& trade2)
     owner1->server.log.write("trade_complete", log_data);
 }
 
-async::task<bool> trade::lock()
+async::task<bool> trade::lock(character& ch)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        co_return false;
-
-    auto you = this->_you.lock();
+    // end() releases both character references while this coroutine still runs.
+    auto self = this->shared_from_this();
+    auto i    = this->index(ch);
+    auto you  = this->_sides[1 - i].owner.lock();
     if (you == nullptr)
         co_return false;
 
+    this->_sides[i].locked = true;
+    if (this->_sides[1 - i].locked == false) // Peer has not confirmed yet
+    {
+        ch.listener.on_trade_lock(ch, *you);
+        co_return true;
+    }
+
     try
     {
-        if (this->trading() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
+        co_await this->exchange();
 
-        this->_locked = true;
-        if (you->trade._locked == false) // Peer has not confirmed yet
-        {
-            owner->listener.on_trade_lock(*owner, *you);
-            co_return true;
-        }
-
-        co_await this->exchange(*this, you->trade);
-
-        // Call listener for packet response
-        owner->listener.on_trade_success(*owner, *you);
-
-        // Update state after successful trade
-        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-        you->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-
+        ch.listener.on_trade_success(ch, *you);
+        this->restore();
         this->end();
         co_return true;
     }
     catch (std::exception& e)
     {
         this->restore();
-        you->trade.restore();
-        owner->listener.on_trade_failed(*owner, *you);
-
+        ch.listener.on_trade_failed(ch, *you);
         this->end();
         co_return false;
     }
-}
-
-const std::vector<std::shared_ptr<fb::game::item>> trade::items() const
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return std::vector<std::shared_ptr<fb::game::item>>();
-
-    auto result = std::vector<std::shared_ptr<fb::game::item>>();
-    for (auto& [index, order] : this->_items)
-    {
-        auto item = owner->items[index];
-        if (item == nullptr)
-            continue;
-
-        result.push_back(item);
-    }
-    return result;
-}
-
-const std::shared_ptr<fb::game::item> trade::item(uint8_t index) const
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    if (this->_items.contains(index) == false)
-        return nullptr;
-
-    return owner->items[index];
 }

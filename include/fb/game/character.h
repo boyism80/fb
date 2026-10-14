@@ -172,7 +172,7 @@ public:
     const uint32_t                                id;
     const fb::protocol::CLIENT_VERSION            client_version;
     const fb::protocol::CLIENT_UI_MODE            ui_mode;
-    fb::game::trade                               trade;
+    std::shared_ptr<fb::game::trade>              trade;
     fb::game::items                               items;
     fb::game::quests                              quests;
     fb::game::character_collections               collections;

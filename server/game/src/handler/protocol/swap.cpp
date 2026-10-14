@@ -30,7 +30,7 @@ async::task<bool> swap<V>::handle(fb::socket<character>& session, game_reqs::swa
 
     case SWAP_TYPE::ITEM:
     {
-        if (ch->trade.trading())
+        if (ch->trade != nullptr)
         {
             ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
             break;

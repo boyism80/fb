@@ -24,37 +24,44 @@ async::task<bool> trade<V>::handle(fb::socket<character>& session, game_reqs::tr
     if (map == nullptr)
         co_return true;
 
-    switch (request.action)
-    {
-    case fb::game::trade::state::REQUEST:
+    if (request.action == fb::game::trade::state::REQUEST)
     {
         auto you = map->objects[request.oid];
-        if (you == nullptr || you->is(OBJECT_TYPE::CHARACTER) == false || you->hidden(*me))
+        if (you != nullptr && you->is(OBJECT_TYPE::CHARACTER) && you->hidden(*me) == false)
+            std::ignore = fb::game::trade::begin(*me, *you->template shared_from_this_as<character>());
+    }
+    else
+    {
+        // Ending the trade releases the character's reference, so the session is held here until the action returns.
+        auto trade = me->trade;
+        if (trade == nullptr)
+            co_return true;
+
+        switch (request.action)
+        {
+        case fb::game::trade::state::UP_ITEM:
+            std::ignore = trade->up_item(*me, request.parameter.index - 1);
             break;
 
-        std::ignore = me->trade.begin(you->template shared_from_this_as<character>());
-        break;
-    }
+        case fb::game::trade::state::ITEM_COUNT:
+            std::ignore = trade->count(*me, request.parameter.count);
+            break;
 
-    case fb::game::trade::state::UP_ITEM:
-        std::ignore = me->trade.up_item(request.parameter.index - 1);
-        break;
+        case fb::game::trade::state::UP_MONEY:
+            std::ignore = trade->up_money(*me, request.parameter.money);
+            break;
 
-    case fb::game::trade::state::ITEM_COUNT:
-        std::ignore = me->trade.count(request.parameter.count);
-        break;
+        case fb::game::trade::state::CANCEL:
+            std::ignore = trade->cancel(*me);
+            break;
 
-    case fb::game::trade::state::UP_MONEY:
-        std::ignore = me->trade.up_money(request.parameter.money);
-        break;
+        case fb::game::trade::state::LOCK:
+            std::ignore = co_await trade->lock(*me);
+            break;
 
-    case fb::game::trade::state::CANCEL:
-        std::ignore = me->trade.cancel();
-        break;
-
-    case fb::game::trade::state::LOCK:
-        std::ignore = co_await me->trade.lock();
-        break;
+        default:
+            break;
+        }
     }
 
     co_return true;

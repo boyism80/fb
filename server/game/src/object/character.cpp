@@ -126,7 +126,6 @@ void character::on_init()
 {
     life::on_init();
     this->items.owner(this->shared_from_this_as<character>());
-    this->trade.owner(this->shared_from_this_as<character>());
     this->quests.owner(this->shared_from_this_as<character>());
     this->collections.owner(this->shared_from_this_as<character>());
 }
@@ -242,8 +241,8 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
     if (this->_map != map)
     {
-        if (this->trade.trading())
-            this->trade.cancel();
+        if (this->trade != nullptr)
+            this->trade->cancel(*this);
         this->_world_map = std::nullopt;
     }
 
