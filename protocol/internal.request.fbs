@@ -158,8 +158,8 @@ table WriteMails {
   host: uint;
 }
 
-/// Idempotent system mail delivery to multiple users (skips if already received).
-table DeliverSystemMail {
+/// Idempotent system mail send to multiple users (skips if already received).
+table SendSystemMail {
   world: uint;
   system_mail_id: uint;
   sender: uint;
@@ -337,7 +337,7 @@ table FriendBroadcast {
   process_world: uint?;
 }
 
-table DeliverSystemStorage {
+table DistributeSystemStorage {
   world: uint;
   system_storage_box_id: uint;
   users: [uint];

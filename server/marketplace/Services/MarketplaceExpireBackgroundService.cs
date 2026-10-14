@@ -62,11 +62,11 @@ namespace Marketplace.Services
                             // Create scope for service resolution
                             using var scope = _scopeFactory.CreateScope();
                             var dbContext = scope.ServiceProvider.GetRequiredService<Marketplace.Service.DbContext>();
-                            var deliveryService = scope.ServiceProvider.GetRequiredService<MarketplaceDeliveryService>();
+                            var parcelService = scope.ServiceProvider.GetRequiredService<MarketplaceParcelService>();
                             var logService = scope.ServiceProvider.GetRequiredService<LogService>();
 
                             // Process expired listings
-                            await ProcessExpiredListingsAsync(dbContext, deliveryService, logService, stoppingToken);
+                            await ProcessExpiredListingsAsync(dbContext, parcelService, logService, stoppingToken);
                         }
                         catch (Exception e)
                         {
@@ -95,7 +95,7 @@ namespace Marketplace.Services
 
         private async Task ProcessExpiredListingsAsync(
             Marketplace.Service.DbContext dbContext,
-            MarketplaceDeliveryService deliveryService,
+            MarketplaceParcelService parcelService,
             LogService logService,
             CancellationToken cancellationToken)
         {
@@ -136,11 +136,11 @@ namespace Marketplace.Services
 
                 await conn.ExecuteAsync(updateSql, parameters, transaction);
 
-                // Return items with registration fee; the delivery rows commit together with the EXPIRED status
-                var deliveries = new List<MarketplaceDelivery>(expiredListings.Count);
+                // Return items with registration fee; the parcel rows commit together with the EXPIRED status
+                var parcels = new List<MarketplaceParcel>(expiredListings.Count);
                 foreach (var listing in expiredListings)
                 {
-                    deliveries.Add(await CreateExpiredDeliveryAsync(listing, dbContext, transaction));
+                    parcels.Add(await CreateExpiredParcelAsync(listing, dbContext, transaction));
                 }
 
                 await transaction.CommitAsync(cancellationToken);
@@ -149,7 +149,7 @@ namespace Marketplace.Services
                 for (var i = 0; i < expiredListings.Count; i++)
                 {
                     var listing = expiredListings[i];
-                    var delivered = await deliveryService.DeliverAsync(deliveries[i]);
+                    var sent = await parcelService.SendAsync(parcels[i]);
                     var totalPrice = listing.Price * listing.RemainingCount;
                     await logService.WriteAsync("marketplace_expired_listing_processed", new
                     {
@@ -159,7 +159,7 @@ namespace Marketplace.Services
                         remaining_count = listing.RemainingCount,
                         total_price = totalPrice,
                         registration_fee = (ulong)(totalPrice * Fb.Model.ConstValue.Marketplace.ListingFee),
-                        delivered
+                        sent
                     });
                 }
 
@@ -183,7 +183,7 @@ namespace Marketplace.Services
             }
         }
 
-        private async Task<MarketplaceDelivery> CreateExpiredDeliveryAsync(
+        private async Task<MarketplaceParcel> CreateExpiredParcelAsync(
             MarketplaceListing listing,
             Marketplace.Service.DbContext dbContext,
             System.Data.IDbTransaction transaction)
@@ -223,7 +223,7 @@ namespace Marketplace.Services
                 ? string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessageWithFee.ToCSharpFormat(), itemName, listing.RemainingCount, registrationFee)
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
-            var delivery = new MarketplaceDelivery
+            var parcel = new MarketplaceParcel
             {
                 ExternalRef = $"marketplace:expire:{listing.Id}",
                 World = listing.World,
@@ -232,8 +232,8 @@ namespace Marketplace.Services
                 Message = message,
                 Attachments = attachments
             };
-            await dbContext.MarketplaceDelivery.CreateAsync(delivery, transaction);
-            return delivery;
+            await dbContext.MarketplaceParcel.CreateAsync(parcel, transaction);
+            return parcel;
         }
     }
 }

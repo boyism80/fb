@@ -341,9 +341,9 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_group>(fb::amqp_key("group", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(fb::amqp_key("mail", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(fb::amqp_key("mail", scope));
-    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(fb::amqp_key("mail", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::send_system_mail>(fb::amqp_key("mail", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::write_storage_box>(fb::amqp_key("storage", scope));
-    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(fb::amqp_key("storage", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::distribute_system_storage>(fb::amqp_key("storage", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(fb::amqp_key("ban", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(fb::amqp_key("system", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(fb::amqp_key("matchmaking", scope));

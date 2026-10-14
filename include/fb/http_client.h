@@ -407,7 +407,7 @@ public:
         return found->second;
     }
 
-    // Test hook: a POST to a held path fails but is kept, so send_held() can deliver it after the caller gave up.
+    // Test hook: a POST to a held path fails but is kept, so send_held() can send it after the caller gave up.
     void hold(std::string_view path)
     {
         auto lock = std::lock_guard(this->_hook_mutex);

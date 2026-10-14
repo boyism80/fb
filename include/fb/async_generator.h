@@ -480,7 +480,7 @@ private:
 
 namespace std {
 
-/// Member-function coroutines returning fb::async_generator<void> (e.g. timer::delivery_coroutine).
+/// Member-function coroutines returning fb::async_generator<void> (e.g. service::system_mail::send_coroutine).
 template <typename... Args>
 struct coroutine_traits<fb::async_generator<void>, Args...>
 {

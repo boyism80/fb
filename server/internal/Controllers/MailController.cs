@@ -166,22 +166,22 @@ namespace Internal.Controllers
             }
         }
 
-        [HttpPost("deliver-system-mail")]
-        public async Task<Response.DeliverSystemMail> DeliverSystemMail(Request.DeliverSystemMail request)
+        [HttpPost("send-system-mail")]
+        public async Task<Response.SendSystemMail> SendSystemMail(Request.SendSystemMail request)
         {
             try
             {
                 var users = request.Users ?? new List<uint>();
                 if (users.Count == 0)
                 {
-                    return new Response.DeliverSystemMail
+                    return new Response.SendSystemMail
                     {
                         Host  = request.Host,
                         Error = (uint)ErrorCode.None
                     };
                 }
 
-                var (written, failed) = await _dbContext.Mail.DeliverSystemMany(request.World,
+                var (written, failed) = await _dbContext.Mail.SendSystemMany(request.World,
                     request.SystemMailId,
                     request.Sender,
                     users,
@@ -204,7 +204,7 @@ namespace Internal.Controllers
                     });
                 }
 
-                var response = new Response.DeliverSystemMail
+                var response = new Response.SendSystemMail
                 {
                     Entries = entries,
                     Host    = request.Host,
@@ -216,7 +216,7 @@ namespace Internal.Controllers
                 // Shards that committed are notified above; the error makes the game retry the rest.
                 if (failed)
                 {
-                    return new Response.DeliverSystemMail
+                    return new Response.SendSystemMail
                     {
                         Host  = request.Host,
                         Error = (uint)ErrorCode.Unhandled
@@ -226,7 +226,7 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.DeliverSystemMail
+                return new Response.SendSystemMail
                 {
                     Host  = request.Host,
                     Error = (uint)e.Error
@@ -234,7 +234,7 @@ namespace Internal.Controllers
             }
             catch (Exception)
             {
-                return new Response.DeliverSystemMail
+                return new Response.SendSystemMail
                 {
                     Host  = request.Host,
                     Error = (uint)ErrorCode.Unhandled

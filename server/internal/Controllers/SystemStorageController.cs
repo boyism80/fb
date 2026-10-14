@@ -86,13 +86,13 @@ namespace Internal.Controllers
             }
         }
 
-        [HttpPost("deliver")]
-        public async Task<Response.DeliverSystemStorage> DeliverSystemStorage(Request.DeliverSystemStorage request)
+        [HttpPost("distribute")]
+        public async Task<Response.DistributeSystemStorage> DistributeSystemStorage(Request.DistributeSystemStorage request)
         {
             try
             {
                 var users = request.Users ?? new List<uint>();
-                var written = await _storageService.DeliverSystemStorageAsync(request.World,
+                var written = await _storageService.DistributeSystemStorageAsync(request.World,
                     request.SystemStorageBoxId,
                     users,
                     request.Host);
@@ -103,7 +103,7 @@ namespace Internal.Controllers
                     Box  = _mapper.Map<Protocol.StorageBox>(box)
                 }).ToList();
 
-                return new Response.DeliverSystemStorage
+                return new Response.DistributeSystemStorage
                 {
                     Entries = entries,
                     Host    = request.Host,
@@ -112,7 +112,7 @@ namespace Internal.Controllers
             }
             catch (Exception)
             {
-                return new Response.DeliverSystemStorage
+                return new Response.DistributeSystemStorage
                 {
                     Host  = request.Host,
                     Error = (uint)ErrorCode.Unhandled

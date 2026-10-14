@@ -444,7 +444,7 @@ test_suite {
                 return false
             end
 
-            progress(b, "S2: WAIT MQ DELIVER")
+            progress(b, "S2: WAIT MQ DISTRIBUTE")
             ctx:sleep(MQ_WAIT_MS)
 
             local detail, err = open_storage_entry_detail(b, TITLE)
@@ -768,7 +768,7 @@ test_suite {
             return true
         end,
 
-        -- R4: claims delivered late, after the settle already resent the same id, never grant twice
+        -- R4: claims arriving late, after the settle already resent the same id, never grant twice
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)

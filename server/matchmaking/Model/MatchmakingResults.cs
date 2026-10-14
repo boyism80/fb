@@ -18,7 +18,7 @@ public sealed class DissolvedMatchResult<TMember>
     public IReadOnlyList<TicketOutcome<TMember>> Outcomes { get; init; }
 }
 
-public sealed class ReadyDelivery<TMember>
+public sealed class ReadyNotice<TMember>
     where TMember : ITicketMember
 {
     public Match<TMember> Match { get; init; }
@@ -27,5 +27,5 @@ public sealed class ReadyDelivery<TMember>
 
     public DateTime NextAttemptAt { get; set; }
 
-    public bool Delivering { get; set; }
+    public bool Sending { get; set; }
 }

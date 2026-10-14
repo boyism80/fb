@@ -192,8 +192,8 @@ struct WriteMailBuilder;
 struct WriteMails;
 struct WriteMailsBuilder;
 
-struct DeliverSystemMail;
-struct DeliverSystemMailBuilder;
+struct SendSystemMail;
+struct SendSystemMailBuilder;
 
 struct DeleteMail;
 struct DeleteMailBuilder;
@@ -264,8 +264,8 @@ struct UpdateFriendsBuilder;
 struct FriendBroadcast;
 struct FriendBroadcastBuilder;
 
-struct DeliverSystemStorage;
-struct DeliverSystemStorageBuilder;
+struct DistributeSystemStorage;
+struct DistributeSystemStorageBuilder;
 
 struct WriteStorageBox;
 struct WriteStorageBoxBuilder;
@@ -372,11 +372,11 @@ struct WriteMailBuilder;
 struct WriteMails;
 struct WriteMailsBuilder;
 
-struct DeliverSystemMail;
-struct DeliverSystemMailBuilder;
+struct SendSystemMail;
+struct SendSystemMailBuilder;
 
-struct DeliverSystemStorage;
-struct DeliverSystemStorageBuilder;
+struct DistributeSystemStorage;
+struct DistributeSystemStorageBuilder;
 
 struct WriteStorageBox;
 struct WriteStorageBoxBuilder;
@@ -6377,8 +6377,8 @@ inline ::flatbuffers::Offset<WriteMails> CreateWriteMailsDirect(
       host);
 }
 
-struct DeliverSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef DeliverSystemMailBuilder Builder;
+struct SendSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef SendSystemMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_SYSTEM_MAIL_ID = 6,
@@ -6425,43 +6425,43 @@ struct DeliverSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   }
 };
 
-struct DeliverSystemMailBuilder {
-  typedef DeliverSystemMail Table;
+struct SendSystemMailBuilder {
+  typedef SendSystemMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(DeliverSystemMail::VT_WORLD, world, 0);
+    fbb_.AddElement<uint32_t>(SendSystemMail::VT_WORLD, world, 0);
   }
   void add_system_mail_id(uint32_t system_mail_id) {
-    fbb_.AddElement<uint32_t>(DeliverSystemMail::VT_SYSTEM_MAIL_ID, system_mail_id, 0);
+    fbb_.AddElement<uint32_t>(SendSystemMail::VT_SYSTEM_MAIL_ID, system_mail_id, 0);
   }
   void add_sender(uint32_t sender) {
-    fbb_.AddElement<uint32_t>(DeliverSystemMail::VT_SENDER, sender, 0);
+    fbb_.AddElement<uint32_t>(SendSystemMail::VT_SENDER, sender, 0);
   }
   void add_users(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> users) {
-    fbb_.AddOffset(DeliverSystemMail::VT_USERS, users);
+    fbb_.AddOffset(SendSystemMail::VT_USERS, users);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
-    fbb_.AddOffset(DeliverSystemMail::VT_TITLE, title);
+    fbb_.AddOffset(SendSystemMail::VT_TITLE, title);
   }
   void add_contents(::flatbuffers::Offset<::flatbuffers::String> contents) {
-    fbb_.AddOffset(DeliverSystemMail::VT_CONTENTS, contents);
+    fbb_.AddOffset(SendSystemMail::VT_CONTENTS, contents);
   }
   void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(DeliverSystemMail::VT_HOST, host, 0);
+    fbb_.AddElement<uint32_t>(SendSystemMail::VT_HOST, host, 0);
   }
-  explicit DeliverSystemMailBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit SendSystemMailBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<DeliverSystemMail> Finish() {
+  ::flatbuffers::Offset<SendSystemMail> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<DeliverSystemMail>(end);
+    auto o = ::flatbuffers::Offset<SendSystemMail>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<DeliverSystemMail> CreateDeliverSystemMail(
+inline ::flatbuffers::Offset<SendSystemMail> CreateSendSystemMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t system_mail_id = 0,
@@ -6470,7 +6470,7 @@ inline ::flatbuffers::Offset<DeliverSystemMail> CreateDeliverSystemMail(
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
     uint32_t host = 0) {
-  DeliverSystemMailBuilder builder_(_fbb);
+  SendSystemMailBuilder builder_(_fbb);
   builder_.add_host(host);
   builder_.add_contents(contents);
   builder_.add_title(title);
@@ -6481,7 +6481,7 @@ inline ::flatbuffers::Offset<DeliverSystemMail> CreateDeliverSystemMail(
   return builder_.Finish();
 }
 
-inline ::flatbuffers::Offset<DeliverSystemMail> CreateDeliverSystemMailDirect(
+inline ::flatbuffers::Offset<SendSystemMail> CreateSendSystemMailDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t system_mail_id = 0,
@@ -6493,7 +6493,7 @@ inline ::flatbuffers::Offset<DeliverSystemMail> CreateDeliverSystemMailDirect(
   auto users__ = users ? _fbb.CreateVector<uint32_t>(*users) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
-  return fb::protocol::internal::request::raw::CreateDeliverSystemMail(
+  return fb::protocol::internal::request::raw::CreateSendSystemMail(
       _fbb,
       world,
       system_mail_id,
@@ -8491,8 +8491,8 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcastDirect(
       process_world);
 }
 
-struct DeliverSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef DeliverSystemStorageBuilder Builder;
+struct DistributeSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef DistributeSystemStorageBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_SYSTEM_STORAGE_BOX_ID = 6,
@@ -8522,40 +8522,40 @@ struct DeliverSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tab
   }
 };
 
-struct DeliverSystemStorageBuilder {
-  typedef DeliverSystemStorage Table;
+struct DistributeSystemStorageBuilder {
+  typedef DistributeSystemStorage Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(DeliverSystemStorage::VT_WORLD, world, 0);
+    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_WORLD, world, 0);
   }
   void add_system_storage_box_id(uint32_t system_storage_box_id) {
-    fbb_.AddElement<uint32_t>(DeliverSystemStorage::VT_SYSTEM_STORAGE_BOX_ID, system_storage_box_id, 0);
+    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_SYSTEM_STORAGE_BOX_ID, system_storage_box_id, 0);
   }
   void add_users(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> users) {
-    fbb_.AddOffset(DeliverSystemStorage::VT_USERS, users);
+    fbb_.AddOffset(DistributeSystemStorage::VT_USERS, users);
   }
   void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(DeliverSystemStorage::VT_HOST, host, 0);
+    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_HOST, host, 0);
   }
-  explicit DeliverSystemStorageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit DistributeSystemStorageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<DeliverSystemStorage> Finish() {
+  ::flatbuffers::Offset<DistributeSystemStorage> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<DeliverSystemStorage>(end);
+    auto o = ::flatbuffers::Offset<DistributeSystemStorage>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<DeliverSystemStorage> CreateDeliverSystemStorage(
+inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorage(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t system_storage_box_id = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> users = 0,
     uint32_t host = 0) {
-  DeliverSystemStorageBuilder builder_(_fbb);
+  DistributeSystemStorageBuilder builder_(_fbb);
   builder_.add_host(host);
   builder_.add_users(users);
   builder_.add_system_storage_box_id(system_storage_box_id);
@@ -8563,14 +8563,14 @@ inline ::flatbuffers::Offset<DeliverSystemStorage> CreateDeliverSystemStorage(
   return builder_.Finish();
 }
 
-inline ::flatbuffers::Offset<DeliverSystemStorage> CreateDeliverSystemStorageDirect(
+inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorageDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t system_storage_box_id = 0,
     const std::vector<uint32_t> *users = nullptr,
     uint32_t host = 0) {
   auto users__ = users ? _fbb.CreateVector<uint32_t>(*users) : 0;
-  return fb::protocol::internal::request::raw::CreateDeliverSystemStorage(
+  return fb::protocol::internal::request::raw::CreateDistributeSystemStorage(
       _fbb,
       world,
       system_storage_box_id,
@@ -11245,8 +11245,8 @@ inline ::flatbuffers::Offset<WriteMails> CreateWriteMailsDirect(
       error);
 }
 
-struct DeliverSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef DeliverSystemMailBuilder Builder;
+struct SendSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef SendSystemMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ENTRIES = 4,
     VT_HOST = 6,
@@ -11272,57 +11272,57 @@ struct DeliverSystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   }
 };
 
-struct DeliverSystemMailBuilder {
-  typedef DeliverSystemMail Table;
+struct SendSystemMailBuilder {
+  typedef SendSystemMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_entries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MailWriteEntry>>> entries) {
-    fbb_.AddOffset(DeliverSystemMail::VT_ENTRIES, entries);
+    fbb_.AddOffset(SendSystemMail::VT_ENTRIES, entries);
   }
   void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(DeliverSystemMail::VT_HOST, host, 0);
+    fbb_.AddElement<uint32_t>(SendSystemMail::VT_HOST, host, 0);
   }
   void add_error(uint32_t error) {
-    fbb_.AddElement<uint32_t>(DeliverSystemMail::VT_ERROR, error, 0);
+    fbb_.AddElement<uint32_t>(SendSystemMail::VT_ERROR, error, 0);
   }
-  explicit DeliverSystemMailBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit SendSystemMailBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<DeliverSystemMail> Finish() {
+  ::flatbuffers::Offset<SendSystemMail> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<DeliverSystemMail>(end);
+    auto o = ::flatbuffers::Offset<SendSystemMail>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<DeliverSystemMail> CreateDeliverSystemMail(
+inline ::flatbuffers::Offset<SendSystemMail> CreateSendSystemMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MailWriteEntry>>> entries = 0,
     uint32_t host = 0,
     uint32_t error = 0) {
-  DeliverSystemMailBuilder builder_(_fbb);
+  SendSystemMailBuilder builder_(_fbb);
   builder_.add_error(error);
   builder_.add_host(host);
   builder_.add_entries(entries);
   return builder_.Finish();
 }
 
-inline ::flatbuffers::Offset<DeliverSystemMail> CreateDeliverSystemMailDirect(
+inline ::flatbuffers::Offset<SendSystemMail> CreateSendSystemMailDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MailWriteEntry>> *entries = nullptr,
     uint32_t host = 0,
     uint32_t error = 0) {
   auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MailWriteEntry>>(*entries) : 0;
-  return fb::protocol::internal::response::raw::CreateDeliverSystemMail(
+  return fb::protocol::internal::response::raw::CreateSendSystemMail(
       _fbb,
       entries__,
       host,
       error);
 }
 
-struct DeliverSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef DeliverSystemStorageBuilder Builder;
+struct DistributeSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef DistributeSystemStorageBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ENTRIES = 4,
     VT_HOST = 6,
@@ -11348,49 +11348,49 @@ struct DeliverSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tab
   }
 };
 
-struct DeliverSystemStorageBuilder {
-  typedef DeliverSystemStorage Table;
+struct DistributeSystemStorageBuilder {
+  typedef DistributeSystemStorage Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_entries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>>> entries) {
-    fbb_.AddOffset(DeliverSystemStorage::VT_ENTRIES, entries);
+    fbb_.AddOffset(DistributeSystemStorage::VT_ENTRIES, entries);
   }
   void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(DeliverSystemStorage::VT_HOST, host, 0);
+    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_HOST, host, 0);
   }
   void add_error(uint32_t error) {
-    fbb_.AddElement<uint32_t>(DeliverSystemStorage::VT_ERROR, error, 0);
+    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_ERROR, error, 0);
   }
-  explicit DeliverSystemStorageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit DistributeSystemStorageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<DeliverSystemStorage> Finish() {
+  ::flatbuffers::Offset<DistributeSystemStorage> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<DeliverSystemStorage>(end);
+    auto o = ::flatbuffers::Offset<DistributeSystemStorage>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<DeliverSystemStorage> CreateDeliverSystemStorage(
+inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorage(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>>> entries = 0,
     uint32_t host = 0,
     uint32_t error = 0) {
-  DeliverSystemStorageBuilder builder_(_fbb);
+  DistributeSystemStorageBuilder builder_(_fbb);
   builder_.add_error(error);
   builder_.add_host(host);
   builder_.add_entries(entries);
   return builder_.Finish();
 }
 
-inline ::flatbuffers::Offset<DeliverSystemStorage> CreateDeliverSystemStorageDirect(
+inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorageDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>> *entries = nullptr,
     uint32_t host = 0,
     uint32_t error = 0) {
   auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>>(*entries) : 0;
-  return fb::protocol::internal::response::raw::CreateDeliverSystemStorage(
+  return fb::protocol::internal::response::raw::CreateDistributeSystemStorage(
       _fbb,
       entries__,
       host,

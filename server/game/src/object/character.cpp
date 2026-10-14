@@ -1706,7 +1706,7 @@ async::task<void> character::broadcast_friends(std::string_view message, MESSAGE
             locals.push_back(ch);
     }
 
-    // Deliver on each friend's owning thread (same pattern as AMQP friend_message).
+    // Send on each friend's owning thread (same pattern as AMQP friend_message).
     if (locals.empty() == false)
     {
         this->server.characters.foreach_enqueue(
@@ -2122,7 +2122,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
 
     character::container::assert_whisper(resp.error, resp.to);
 
-    // A receiver on this host is skipped by the AMQP whisper handler (same host id), so deliver it here
+    // A receiver on this host is skipped by the AMQP whisper handler (same host id), so send it here
     auto receiver = this->server.characters.find(resp.to);
     if (receiver != nullptr)
     {

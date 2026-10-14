@@ -6,19 +6,19 @@ using Marketplace.Service;
 
 namespace Marketplace.Reepository
 {
-    public class MarketplaceDeliveryRepository : IRepository
+    public class MarketplaceParcelRepository : IRepository
     {
         private readonly DbContext _dbContext;
 
-        public MarketplaceDeliveryRepository(DbContext dbContext)
+        public MarketplaceParcelRepository(DbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task CreateAsync(MarketplaceDelivery delivery, System.Data.IDbTransaction transaction)
+        public async Task CreateAsync(MarketplaceParcel parcel, System.Data.IDbTransaction transaction)
         {
             var sql = $"""
-                INSERT INTO `marketplace_delivery` (
+                INSERT INTO `marketplace_parcel` (
                     `external_ref`,
                     `world`,
                     `user`,
@@ -27,39 +27,39 @@ namespace Marketplace.Reepository
                     `attachments`,
                     `created_date`)
                 VALUES (
-                    {delivery.ExternalRef.Escape()},
-                    {delivery.World.Escape()},
-                    {delivery.User.Escape()},
-                    {delivery.Title.Escape()},
-                    {delivery.Message.Escape()},
-                    {delivery.Attachments.Escape()},
+                    {parcel.ExternalRef.Escape()},
+                    {parcel.World.Escape()},
+                    {parcel.User.Escape()},
+                    {parcel.Title.Escape()},
+                    {parcel.Message.Escape()},
+                    {parcel.Attachments.Escape()},
                     NOW())
                 """;
 
             await transaction.Connection.ExecuteAsync(sql, null, transaction);
         }
 
-        public async Task<List<MarketplaceDelivery>> GetPendingAsync(TimeSpan minAge, int limit)
+        public async Task<List<MarketplaceParcel>> GetPendingAsync(TimeSpan minAge, int limit)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $"""
-                SELECT * FROM `marketplace_delivery`
-                WHERE `delivered_date` IS NULL
+                SELECT * FROM `marketplace_parcel`
+                WHERE `sent_date` IS NULL
                   AND `created_date` < NOW() - INTERVAL {(int)minAge.TotalSeconds} SECOND
                 ORDER BY `id`
                 LIMIT {limit}
                 """;
 
-            return (await conn.QueryAsync<MarketplaceDelivery>(sql)).ToList();
+            return (await conn.QueryAsync<MarketplaceParcel>(sql)).ToList();
         }
 
-        public async Task MarkDeliveredAsync(string externalRef)
+        public async Task MarkSentAsync(string externalRef)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
             await conn.ExecuteAsync($"""
-                UPDATE `marketplace_delivery`
-                SET `delivered_date` = NOW()
-                WHERE `external_ref` = {externalRef.Escape()} AND `delivered_date` IS NULL
+                UPDATE `marketplace_parcel`
+                SET `sent_date` = NOW()
+                WHERE `external_ref` = {externalRef.Escape()} AND `sent_date` IS NULL
                 """);
         }
 
@@ -68,9 +68,9 @@ namespace Marketplace.Reepository
             var truncated = error?.Length > 512 ? error[..512] : error;
             await using var conn = _dbContext.GetUnifiedConnection();
             await conn.ExecuteAsync($"""
-                UPDATE `marketplace_delivery`
+                UPDATE `marketplace_parcel`
                 SET `attempts` = `attempts` + 1, `last_error` = {truncated.Escape()}
-                WHERE `external_ref` = {externalRef.Escape()} AND `delivered_date` IS NULL
+                WHERE `external_ref` = {externalRef.Escape()} AND `sent_date` IS NULL
                 """);
         }
 

@@ -108,11 +108,10 @@ std::string service::system_storage::attachments_to_json(const std::vector<fb::m
 
 service::system_storage::system_storage(fb::game::server& server) :
     server(server),
-    _delivery(delivery_coroutine())
+    _distribution(distribute_coroutine())
 { }
 
-void service::system_storage::deliver(const std::vector<storage_box::entry>& entries,
-                                      const std::vector<uint32_t>&           user_ids)
+void service::system_storage::add(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids)
 {
     if (entries.empty() || entries.size() != user_ids.size())
         return;
@@ -149,10 +148,10 @@ void service::system_storage::on_write_box(const fb::protocol::internal::Storage
     if (user == 0)
         return;
 
-    this->deliver({entry}, {user});
+    this->add({entry}, {user});
 }
 
-void service::system_storage::on_deliver(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries)
+void service::system_storage::on_distributed(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries)
 {
     auto converted = std::vector<storage_box::entry>{};
     auto user_ids  = std::vector<uint32_t>{};
@@ -167,7 +166,7 @@ void service::system_storage::on_deliver(const std::vector<fb::protocol::interna
         converted.push_back(from_storage_box_dto(box));
     }
 
-    this->deliver(converted, user_ids);
+    this->add(converted, user_ids);
 }
 
 void service::system_storage::init_from_login(character&                                             ch,
@@ -217,18 +216,18 @@ async::task<void> service::system_storage::sync(character& ch)
 
             try
             {
-                auto&& deliver_resp = co_await this->server.http.post(
+                auto&& distribute_resp = co_await this->server.http.post(
                     "internal",
-                    "/storage/system/deliver",
-                    internal_reqs::DeliverSystemStorage{world, box.id, {ptr->id}, fb::config<uint32_t>("id")});
-                if (deliver_resp.error != 0)
-                    fb::logger::warn("DeliverSystemStorage sync failed for box {}: error {}",
+                    "/storage/system/distribute",
+                    internal_reqs::DistributeSystemStorage{world, box.id, {ptr->id}, fb::config<uint32_t>("id")});
+                if (distribute_resp.error != 0)
+                    fb::logger::warn("DistributeSystemStorage sync failed for box {}: error {}",
                                      box.id,
-                                     deliver_resp.error);
+                                     distribute_resp.error);
             }
             catch (const std::exception& e)
             {
-                fb::logger::warn("DeliverSystemStorage sync request failed for box {}: {}", box.id, e.what());
+                fb::logger::warn("DistributeSystemStorage sync request failed for box {}: {}", box.id, e.what());
             }
         }
     }
@@ -359,13 +358,13 @@ async::task<bool> service::system_storage::create_system(uint32_t               
     co_return false;
 }
 
-async::task<void> service::system_storage::poll_and_deliver()
+async::task<void> service::system_storage::distribute()
 {
-    std::ignore = this->_delivery.next();
+    std::ignore = this->_distribution.next();
     co_return;
 }
 
-fb::async_generator<void> service::system_storage::delivery_coroutine()
+fb::async_generator<void> service::system_storage::distribute_coroutine()
 {
     while (true)
     {
@@ -450,17 +449,17 @@ fb::async_generator<void> service::system_storage::delivery_coroutine()
                 {
                     auto&& resp = co_await this->server.http.post(
                         "internal",
-                        "/storage/system/deliver",
-                        internal_reqs::DeliverSystemStorage{*world,
-                                                            box.id,
-                                                            std::move(chunk_users),
-                                                            fb::config<uint32_t>("id")});
+                        "/storage/system/distribute",
+                        internal_reqs::DistributeSystemStorage{*world,
+                                                               box.id,
+                                                               std::move(chunk_users),
+                                                               fb::config<uint32_t>("id")});
                     if (resp.error != 0)
-                        fb::logger::warn("DeliverSystemStorage failed for box {}: error {}", box.id, resp.error);
+                        fb::logger::warn("DistributeSystemStorage failed for box {}: error {}", box.id, resp.error);
                 }
                 catch (const std::exception& e)
                 {
-                    fb::logger::warn("DeliverSystemStorage request failed for box {}: {}", box.id, e.what());
+                    fb::logger::warn("DistributeSystemStorage request failed for box {}: {}", box.id, e.what());
                 }
             }
         }

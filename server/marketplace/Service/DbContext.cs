@@ -14,7 +14,7 @@ namespace Marketplace.Service
 
         public MarketplacePurchaseRepository MarketplacePurchase => Bind<MarketplacePurchaseRepository>();
 
-        public MarketplaceDeliveryRepository MarketplaceDelivery => Bind<MarketplaceDeliveryRepository>();
+        public MarketplaceParcelRepository MarketplaceParcel => Bind<MarketplaceParcelRepository>();
 
         public DbContext(IConfiguration configuration, IServiceProvider serviceProvider)
         {

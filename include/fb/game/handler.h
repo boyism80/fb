@@ -8,10 +8,9 @@
 #include <fb/game/handler/amqp/broadcast_save.h>
 #include <fb/game/handler/amqp/create_clan.h>
 #include <fb/game/handler/amqp/create_group.h>
-#include <fb/game/handler/amqp/deliver_system_mail.h>
-#include <fb/game/handler/amqp/deliver_system_storage.h>
 #include <fb/game/handler/amqp/destroy_clan.h>
 #include <fb/game/handler/amqp/destroy_group.h>
+#include <fb/game/handler/amqp/distribute_system_storage.h>
 #include <fb/game/handler/amqp/friend_message.h>
 #include <fb/game/handler/amqp/friend_relation.h>
 #include <fb/game/handler/amqp/kick_out.h>
@@ -21,6 +20,7 @@
 #include <fb/game/handler/amqp/matchmaking_ticket_removed.h>
 #include <fb/game/handler/amqp/reload_scripts.h>
 #include <fb/game/handler/amqp/reload_tables.h>
+#include <fb/game/handler/amqp/send_system_mail.h>
 #include <fb/game/handler/amqp/set_datetime.h>
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>

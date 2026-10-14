@@ -8,8 +8,8 @@ namespace Http.Reepository
 {
     public class MailRepository : IRepository
     {
-        private const string TempMailWriteUsersTable    = "tmp_mail_write_users";
-        private const string TempMailDeliverContentTable = "tmp_mail_deliver_content";
+        private const string TempMailWriteUsersTable  = "tmp_mail_write_users";
+        private const string TempMailSendContentTable = "tmp_mail_send_content";
 
         private readonly DbContext _dbContext;
 
@@ -37,19 +37,19 @@ namespace Http.Reepository
         }
 
         /// <summary>
-        /// Populates per-recipient rendered title/contents for system mail delivery.
+        /// Populates per-recipient rendered title/contents for a system mail send.
         /// Must stay on the same connection as <see cref="PopulateTempMailWriteUsersAsync"/>.
         /// </summary>
-        private static async Task PopulateTempMailDeliverContentAsync(
+        private static async Task PopulateTempMailSendContentAsync(
             MySqlConnection connection,
             IReadOnlyDictionary<uint, (string Title, string Contents)> rendered)
         {
             if (connection.State != System.Data.ConnectionState.Open)
                 await connection.OpenAsync();
 
-            await connection.ExecuteAsync($"DROP TEMPORARY TABLE IF EXISTS {TempMailDeliverContentTable}");
+            await connection.ExecuteAsync($"DROP TEMPORARY TABLE IF EXISTS {TempMailSendContentTable}");
             await connection.ExecuteAsync(
-                $"CREATE TEMPORARY TABLE {TempMailDeliverContentTable} (" +
+                $"CREATE TEMPORARY TABLE {TempMailSendContentTable} (" +
                 "`user_id` INT UNSIGNED NOT NULL, " +
                 "`title` NVARCHAR(64) NOT NULL, " +
                 "`contents` NVARCHAR(256) NOT NULL, " +
@@ -59,7 +59,7 @@ namespace Http.Reepository
             foreach (var (userId, content) in rendered)
             {
                 await connection.ExecuteAsync(
-                    $"INSERT INTO {TempMailDeliverContentTable} (`user_id`, `title`, `contents`) " +
+                    $"INSERT INTO {TempMailSendContentTable} (`user_id`, `title`, `contents`) " +
                     "VALUES (@userId, @title, @contents)",
                     new { userId, title = content.Title, contents = content.Contents });
             }
@@ -193,7 +193,7 @@ namespace Http.Reepository
             return results;
         }
 
-        public async Task<(List<MailWriteResult> Written, bool Failed)> DeliverSystemMany(uint world,
+        public async Task<(List<MailWriteResult> Written, bool Failed)> SendSystemMany(uint world,
             uint systemMailId,
             uint sender,
             IReadOnlyList<uint> users,
@@ -233,7 +233,7 @@ namespace Http.Reepository
                         }
 
                         await PopulateTempMailWriteUsersAsync(connection, userIds);
-                        await PopulateTempMailDeliverContentAsync(connection, rendered);
+                        await PopulateTempMailSendContentAsync(connection, rendered);
 
                         var dynamicParams = new DynamicParameters();
                         dynamicParams.Add("system_mail_id", systemMailId);
@@ -241,7 +241,7 @@ namespace Http.Reepository
                         dynamicParams.Add("max_count", Fb.Model.ConstValue.Mail.MaxCount);
 
                         await using var reader = await connection.QueryMultipleAsync(
-                            "USP_MAIL_DELIVER_SYSTEM_MANY",
+                            "USP_MAIL_SEND_SYSTEM_MANY",
                             dynamicParams,
                             commandType: System.Data.CommandType.StoredProcedure);
 
@@ -322,7 +322,7 @@ namespace Http.Reepository
             await using var conn = _dbContext.GetShardConnection(world, user);
             var ids = await conn.QueryAsync<uint>(
                 "SELECT `system_mail_id` FROM `mail` WHERE `user` = @user AND `system_mail_id` IS NOT NULL " +
-                "UNION SELECT `system_mail_id` FROM `mail_system_delivered` WHERE `user` = @user",
+                "UNION SELECT `system_mail_id` FROM `mail_system_received` WHERE `user` = @user",
                 new { user });
             return ids.ToList();
         }

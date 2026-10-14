@@ -62,7 +62,7 @@ void service::system_mail::prune_expired_mails(std::vector<fb::game::system_mail
 
 service::system_mail::system_mail(fb::game::server& server) :
     server(server),
-    _delivery(delivery_coroutine())
+    _sending(send_coroutine())
 { }
 
 async::task<bool> service::system_mail::create(uint32_t                          world,
@@ -83,9 +83,9 @@ async::task<bool> service::system_mail::create(uint32_t                         
     co_return resp.error == 0;
 }
 
-async::task<void> service::system_mail::poll_and_deliver()
+async::task<void> service::system_mail::send()
 {
-    std::ignore = this->_delivery.next();
+    std::ignore = this->_sending.next();
     co_return;
 }
 
@@ -95,7 +95,7 @@ void service::system_mail::join(uint32_t user)
     this->_joined.insert(user);
 }
 
-fb::async_generator<void> service::system_mail::delivery_coroutine()
+fb::async_generator<void> service::system_mail::send_coroutine()
 {
     while (true)
     {
@@ -175,7 +175,7 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
         };
 
         // Old mails are only rechecked for characters in _joined, so every path that can leave an
-        // online character without a pending mail (login, failed delivery) must call join().
+        // online character without a pending mail (login, failed send) must call join().
         if (new_mail_seen)
         {
             co_await this->server.characters.foreach_async(collect);
@@ -216,18 +216,18 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                 {
                     auto&& resp =
                         co_await this->server.http.post("internal",
-                                                        "/mail/deliver-system-mail",
-                                                        internal_reqs::DeliverSystemMail{*world,
-                                                                                         mail.id,
-                                                                                         mail.sender,
-                                                                                         std::move(chunk_users),
-                                                                                         mail.title,
-                                                                                         mail.contents,
-                                                                                         fb::config<uint32_t>("id")});
+                                                        "/mail/send-system-mail",
+                                                        internal_reqs::SendSystemMail{*world,
+                                                                                      mail.id,
+                                                                                      mail.sender,
+                                                                                      std::move(chunk_users),
+                                                                                      mail.title,
+                                                                                      mail.contents,
+                                                                                      fb::config<uint32_t>("id")});
 
                     if (resp.error != 0)
                     {
-                        fb::logger::warn("DeliverSystemMail failed for system mail {}: error {}", mail.id, resp.error);
+                        fb::logger::warn("SendSystemMail failed for system mail {}: error {}", mail.id, resp.error);
                         for (auto user_id : chunk_users_to_mark)
                         {
                             this->join(user_id);
@@ -256,7 +256,7 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                 }
                 catch (const std::exception& e)
                 {
-                    fb::logger::warn("DeliverSystemMail request failed for system mail {}: {}", mail.id, e.what());
+                    fb::logger::warn("SendSystemMail request failed for system mail {}: {}", mail.id, e.what());
                     for (auto user_id : chunk_users_to_mark)
                     {
                         this->join(user_id);

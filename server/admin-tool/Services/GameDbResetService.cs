@@ -132,7 +132,7 @@ namespace AdminTool.Services
             await connection.OpenAsync();
 
             var deleted = 0;
-            foreach (var table in new[] { "name_registry", "clan_name", "marketplace_listing", "marketplace_listing_archive", "marketplace_purchase", "marketplace_delivery" })
+            foreach (var table in new[] { "name_registry", "clan_name", "marketplace_listing", "marketplace_listing_archive", "marketplace_purchase", "marketplace_parcel" })
             {
                 deleted += await connection.ExecuteAsync($"DELETE FROM `{table}` WHERE `world` = @world;", new { world });
             }

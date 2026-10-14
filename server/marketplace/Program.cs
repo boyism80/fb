@@ -44,7 +44,7 @@ public class Program
         builder.Services.AddScoped<Marketplace.Service.DbContext>();
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddScoped<StorageService>();
-        builder.Services.AddScoped<Marketplace.Services.MarketplaceDeliveryService>();
+        builder.Services.AddScoped<Marketplace.Services.MarketplaceParcelService>();
 
         // Register marketplace service implementation based on configuration
         var useSharding = builder.Configuration.GetValue<bool>("Marketplace:UseSharding", false);
@@ -62,7 +62,7 @@ public class Program
 
         // Marketplace expire services
         builder.Services.AddHostedService<Marketplace.Services.MarketplaceExpireBackgroundService>();
-        builder.Services.AddHostedService<Marketplace.Services.MarketplaceDeliveryBackgroundService>();
+        builder.Services.AddHostedService<Marketplace.Services.MarketplaceParcelBackgroundService>();
         builder.Services.AddAmqpListener<ReloadTablesHandler>();
 
         builder.Services.AddHealthChecks();

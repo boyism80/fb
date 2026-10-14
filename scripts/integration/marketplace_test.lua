@@ -2022,7 +2022,7 @@ test_suite {
             end
             if count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
                 or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
-                progress(b, string.format("FAILED: late purchase delivered storage=[%s]", table.concat(titles, "|")))
+                progress(b, string.format("FAILED: late purchase granted storage=[%s]", table.concat(titles, "|")))
                 return false
             end
             local ok, search_err = assert_search_has_item(a, WEAPON_ITEM, true)

@@ -385,7 +385,7 @@ test_suite {
             return true
         end,
 
-        -- C4: requests delivered after the abort wrote its tombstone must not apply
+        -- C4: requests arriving after the abort wrote its tombstone must not apply
         function(ctx)
             local a = ctx:bot(0)
             progress(a, "C4: LATE DEPOSIT AFTER ABORT")

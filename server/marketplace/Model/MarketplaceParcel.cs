@@ -1,6 +1,6 @@
 namespace Marketplace.Model;
 
-public class MarketplaceDelivery
+public class MarketplaceParcel
 {
     public ulong Id { get; set; }
     public string ExternalRef { get; set; }
@@ -12,5 +12,5 @@ public class MarketplaceDelivery
     public uint Attempts { get; set; }
     public string LastError { get; set; }
     public DateTime CreatedDate { get; set; }
-    public DateTime? DeliveredDate { get; set; }
+    public DateTime? SentDate { get; set; }
 }

@@ -115,7 +115,7 @@ void storage_box::init(const std::vector<entry>& entries)
         if (e.id >= this->_sequence)
             this->_sequence = e.id + 1;
 
-        // Copies of one system box may exist from older duplicate deliveries; keep a single one, the received one if
+        // Copies of one system box may exist from older duplicate distributions; keep a single one, the received one if
         // any.
         if (e.system_storage_box_id.has_value())
         {

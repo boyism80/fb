@@ -48,7 +48,7 @@ local function accept_jinbaekrang(bot)
     return true
 end
 
-local function deliver_totem(bot, totem)
+local function hand_in_totem(bot, totem)
     local dlg = open_pursuit(bot, "준준", "문화재보호공무원", is_list)
     dlg = dlg and select_option(bot, dlg, "토템을 하나 찾아왔습니다", is_list)
     dlg = dlg and select_option(bot, dlg, totem, contains("수고했네. 계속 힘내주게."))
@@ -183,7 +183,7 @@ test_suite {
                 return fail("진진 trade did not give 선장의일기1 and step 2")
             end
 
-            -- 퉁퉁대감: refuse, accept, short delivery, then 10 호박.
+            -- 퉁퉁대감: refuse, accept, short hand-in, then 10 호박.
             dlg = click(bot, "퉁퉁대감", is_list)
             if dlg == nil or choose(bot, dlg, "아니오, 바빠서..") == false then
                 return fail("퉁퉁대감 refusal flow broke")
@@ -306,21 +306,21 @@ test_suite {
             for i = 1, 15 do
                 bot:create_item(totems[((i - 1) % #totems) + 1], 1)
             end
-            local delivered = 0
-            local function deliver(count)
+            local handed_in = 0
+            local function hand_in(count)
                 for _ = 1, count do
-                    local totem = totems[(delivered % #totems) + 1]
-                    if deliver_totem(bot, totem) == false then
+                    local totem = totems[(handed_in % #totems) + 1]
+                    if hand_in_totem(bot, totem) == false then
                         return false
                     end
-                    delivered = delivered + 1
+                    handed_in = handed_in + 1
                 end
                 return true
             end
 
             -- 5 totems: 선장의일기5, sub-quest step 1. A second claim gives nothing.
-            if deliver(5) == false then
-                return fail("totem delivery flow broke")
+            if hand_in(5) == false then
+                return fail("totem hand-in flow broke")
             end
             if claim_totem_reward(bot, contains("수고했네. 계속 힘내주게.")) == false then
                 return fail("준준 did not reward 5 totems")
@@ -335,14 +335,14 @@ test_suite {
             end
 
             -- 10 totems: 반룡곤. 15 totems: 가시나무봉, completion and chain step 6.
-            if deliver(5) == false or claim_totem_reward(bot, contains("수고했네. 계속 힘내주게.")) == false then
+            if hand_in(5) == false or claim_totem_reward(bot, contains("수고했네. 계속 힘내주게.")) == false then
                 return fail("10 totem flow broke")
             end
             if check(bot, "verify_quest", "junjun_2", QUEST_JUNJUN, "2") == false
                 or check(bot, "verify_items", "junjun_2_items", "반룡곤=1") == false then
                 return fail("10 totems did not give 반룡곤")
             end
-            if deliver(5) == false or claim_totem_reward(bot, contains("수고했네. 계속 힘내주게.")) == false then
+            if hand_in(5) == false or claim_totem_reward(bot, contains("수고했네. 계속 힘내주게.")) == false then
                 return fail("15 totem flow broke")
             end
             if check(bot, "verify_quest", "junjun_done", QUEST_JUNJUN, "3:done") == false

@@ -1,18 +1,18 @@
 namespace Marketplace.Services
 {
-    public class MarketplaceDeliveryBackgroundService : BackgroundService
+    public class MarketplaceParcelBackgroundService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<MarketplaceDeliveryBackgroundService> _logger;
+        private readonly ILogger<MarketplaceParcelBackgroundService> _logger;
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(30);
-        // Rows younger than this are still being delivered by the request that inserted them.
+        // Rows younger than this are still being sent by the request that inserted them.
         private static readonly TimeSpan PendingMinAge = TimeSpan.FromSeconds(30);
         private const int BatchSize = 100;
 
-        public MarketplaceDeliveryBackgroundService(
+        public MarketplaceParcelBackgroundService(
             IServiceScopeFactory scopeFactory,
-            ILogger<MarketplaceDeliveryBackgroundService> logger)
+            ILogger<MarketplaceParcelBackgroundService> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
@@ -26,20 +26,20 @@ namespace Marketplace.Services
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<Marketplace.Service.DbContext>();
-                    var deliveryService = scope.ServiceProvider.GetRequiredService<MarketplaceDeliveryService>();
+                    var parcelService = scope.ServiceProvider.GetRequiredService<MarketplaceParcelService>();
 
-                    var pending = await dbContext.MarketplaceDelivery.GetPendingAsync(PendingMinAge, BatchSize);
-                    foreach (var delivery in pending)
+                    var pending = await dbContext.MarketplaceParcel.GetPendingAsync(PendingMinAge, BatchSize);
+                    foreach (var parcel in pending)
                     {
                         if (stoppingToken.IsCancellationRequested)
                             break;
 
-                        await deliveryService.DeliverAsync(delivery);
+                        await parcelService.SendAsync(parcel);
                     }
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Error retrying marketplace deliveries");
+                    _logger.LogError(e, "Error retrying marketplace parcels");
                 }
 
                 await Task.Delay(ProcessingInterval, stoppingToken);

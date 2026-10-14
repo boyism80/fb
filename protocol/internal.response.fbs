@@ -107,13 +107,13 @@ table WriteMails {
   error: uint;
 }
 
-table DeliverSystemMail {
+table SendSystemMail {
   entries: [fb.protocol.internal.MailWriteEntry];
   host: uint;
   error: uint;
 }
 
-table DeliverSystemStorage {
+table DistributeSystemStorage {
   entries: [fb.protocol.internal.StorageWriteEntry];
   host: uint;
   error: uint;

@@ -1,4 +1,4 @@
-#include <fb/game/handler/amqp/deliver_system_mail.h>
+#include <fb/game/handler/amqp/send_system_mail.h>
 
 #include <fb/game/mail_box.h>
 #include <fb/game/server.h>
@@ -7,11 +7,11 @@
 
 using namespace fb::game::handler::amqp;
 
-deliver_system_mail::deliver_system_mail(fb::game::server& server) :
-    fb::handler::amqp<fb::game::server, internal_resp::DeliverSystemMail>(server)
+send_system_mail::send_system_mail(fb::game::server& server) :
+    fb::handler::amqp<fb::game::server, internal_resp::SendSystemMail>(server)
 { }
 
-async::task<void> deliver_system_mail::handle(const internal_resp::DeliverSystemMail& message)
+async::task<void> send_system_mail::handle(const internal_resp::SendSystemMail& message)
 {
     if (message.error != 0)
         co_return;

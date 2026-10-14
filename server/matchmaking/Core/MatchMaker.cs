@@ -17,7 +17,7 @@ public class MatchMaker<TMember>
     private readonly Dictionary<uint, TicketQueue<TMember>> _ticketQueues = new();
     private readonly Dictionary<ulong, Match<TMember>> _pendingMatches = new();
     private readonly Dictionary<string, TicketRef> _memberTickets = new();
-    private readonly Dictionary<ulong, ReadyDelivery<TMember>> _readyOutbox = new();
+    private readonly Dictionary<ulong, ReadyNotice<TMember>> _readyOutbox = new();
     private readonly SnowflakeId _ids = new();
     private readonly object _lock = new();
 
@@ -205,7 +205,7 @@ public class MatchMaker<TMember>
 
     public async Task<bool> ConfirmAsync(ulong matchId, string memberId, CancellationToken cancellationToken = default)
     {
-        ReadyDelivery<TMember> delivery;
+        ReadyNotice<TMember> notice;
 
         lock (_lock)
         {
@@ -242,15 +242,15 @@ public class MatchMaker<TMember>
                 return false;
             }
 
-            delivery = new ReadyDelivery<TMember>
+            notice = new ReadyNotice<TMember>
             {
                 Match = MarkReady(match),
-                Delivering = true
+                Sending = true
             };
-            _readyOutbox[match.Id] = delivery;
+            _readyOutbox[match.Id] = notice;
         }
 
-        await DeliverReadyAsync(delivery, cancellationToken);
+        await SendReadyAsync(notice, cancellationToken);
         return true;
     }
 
@@ -363,7 +363,7 @@ public class MatchMaker<TMember>
     public async Task TickConfirmationAsync(CancellationToken cancellationToken = default)
     {
         List<DissolvedMatchResult<TMember>> dissolved;
-        List<ReadyDelivery<TMember>> retries;
+        List<ReadyNotice<TMember>> retries;
 
         lock (_lock)
         {
@@ -384,11 +384,11 @@ public class MatchMaker<TMember>
             }
 
             retries = _readyOutbox.Values
-                .Where(delivery => !delivery.Delivering && delivery.NextAttemptAt <= now)
+                .Where(notice => !notice.Sending && notice.NextAttemptAt <= now)
                 .ToList();
-            foreach (var delivery in retries)
+            foreach (var notice in retries)
             {
-                delivery.Delivering = true;
+                notice.Sending = true;
             }
         }
 
@@ -398,10 +398,10 @@ public class MatchMaker<TMember>
             await RaiseMatchDissolvedAsync(item, cancellationToken);
         }
 
-        foreach (var delivery in retries)
+        foreach (var notice in retries)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await DeliverReadyAsync(delivery, cancellationToken);
+            await SendReadyAsync(notice, cancellationToken);
         }
     }
 
@@ -451,9 +451,9 @@ public class MatchMaker<TMember>
         await Task.WhenAll(handlers.Select(h => h(match, cancellationToken)));
     }
 
-    private async Task DeliverReadyAsync(ReadyDelivery<TMember> delivery, CancellationToken cancellationToken)
+    private async Task SendReadyAsync(ReadyNotice<TMember> notice, CancellationToken cancellationToken)
     {
-        var match = delivery.Match;
+        var match = notice.Match;
         try
         {
             await RaiseMatchReadyAsync(match, cancellationToken);
@@ -466,27 +466,27 @@ public class MatchMaker<TMember>
         {
             lock (_lock)
             {
-                delivery.Attempts++;
-                delivery.Delivering = false;
-                if (delivery.Attempts >= Math.Max(1, _options.ReadyMaxAttempts))
+                notice.Attempts++;
+                notice.Sending = false;
+                if (notice.Attempts >= Math.Max(1, _options.ReadyMaxAttempts))
                 {
                     _readyOutbox.Remove(match.Id);
                     _logger.LogError(
                         ex,
                         "Match {MatchId} ready publish abandoned after {Attempts} attempts, members {Members}",
                         match.Id,
-                        delivery.Attempts,
+                        notice.Attempts,
                         string.Join(",", match.AllMemberIds));
                 }
                 else
                 {
-                    delivery.NextAttemptAt = DateTime.UtcNow.AddSeconds(Math.Max(1, _options.ReadyRetryIntervalSeconds));
+                    notice.NextAttemptAt = DateTime.UtcNow.AddSeconds(Math.Max(1, _options.ReadyRetryIntervalSeconds));
                     _logger.LogWarning(
                         ex,
                         "Match {MatchId} ready publish failed (attempt {Attempts}), retrying at {NextAttemptAt}",
                         match.Id,
-                        delivery.Attempts,
-                        delivery.NextAttemptAt);
+                        notice.Attempts,
+                        notice.NextAttemptAt);
                 }
             }
         }

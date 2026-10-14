@@ -67,7 +67,7 @@ namespace Http.Service
             StorageBox box;
             await using (await _distributedLock.Lock(world, OpsLockKey(userId)))
             {
-                // A retried delivery with the same external ref returns the box it already created.
+                // A retried write with the same external ref returns the box it already created.
                 if (externalRef != null)
                 {
                     var existing = (await _dbContext.StorageBox.Get(world, userId)).FirstOrDefault(b => b.ExternalRef == externalRef);
@@ -145,7 +145,7 @@ namespace Http.Service
             return box;
         }
 
-        public async Task<List<StorageBox>> DeliverSystemStorageAsync(uint world,
+        public async Task<List<StorageBox>> DistributeSystemStorageAsync(uint world,
             uint systemStorageBoxId,
             IReadOnlyList<uint> users,
             uint host = 0)
@@ -190,7 +190,7 @@ namespace Http.Service
             }
 
             if (written.Count > 0)
-                await PublishDeliverAsync(world, written, host);
+                await PublishDistributedAsync(world, written, host);
 
             return written;
         }
@@ -254,7 +254,7 @@ namespace Http.Service
             await _rabbitMqService.NotifySavedAsync(response, "storage", world);
         }
 
-        private async Task PublishDeliverAsync(uint world, List<StorageBox> boxes, uint host)
+        private async Task PublishDistributedAsync(uint world, List<StorageBox> boxes, uint host)
         {
             var entries = boxes.Select(box => new Protocol.StorageWriteEntry
             {
@@ -262,7 +262,7 @@ namespace Http.Service
                 Box  = _mapper.Map<Protocol.StorageBox>(box)
             }).ToList();
 
-            var response = new Response.DeliverSystemStorage
+            var response = new Response.DistributeSystemStorage
             {
                 Entries = entries,
                 Host    = host,
