@@ -157,7 +157,8 @@ void storage_box::add(const std::vector<entry>& entries)
             this->_sequence = e.id + 1;
         }
 
-        this->_entries.emplace(e.id, e);
+        if (this->_entries.emplace(e.id, e).second == false)
+            continue;
 
         auto log_data              = Json::Value();
         log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id);

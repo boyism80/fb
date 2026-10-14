@@ -8,9 +8,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
 namespace fb::protocol::internal {
@@ -40,6 +42,8 @@ private:
 
     uint32_t                        _poll_offset = 0;
     std::vector<system_storage_box> _pending_boxes;
+    std::mutex                      _joined_mutex;
+    std::unordered_set<uint32_t>    _joined;
 
 public:
     fb::game::server& server;
@@ -57,6 +61,7 @@ public:
     async::task<bool> create_system(uint32_t world, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
     async::task<void> sync(character& ch);
     async::task<void> distribute();
+    void              join(uint32_t user);
     void              add(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids);
     void              on_write_box(const fb::protocol::internal::StorageBox& dto);
     void              on_distributed(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries);

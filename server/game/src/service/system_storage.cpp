@@ -21,6 +21,8 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -185,6 +187,7 @@ void service::system_storage::init_from_login(character&                        
 async::task<void> service::system_storage::sync(character& ch)
 {
     const auto  world = ch.world();
+    const auto  user  = ch.id;
     const auto& url   = std::format("/storage/system/{}?offset=0", world);
 
     auto weak = ch.weak_from_this_as<character>();
@@ -197,7 +200,10 @@ async::task<void> service::system_storage::sync(character& ch)
             co_return;
 
         if (resp.error != 0)
+        {
+            this->join(user);
             co_return;
+        }
 
         const auto now = this->server.now();
         auto       ids = std::vector<uint32_t>{};
@@ -221,19 +227,28 @@ async::task<void> service::system_storage::sync(character& ch)
                     "/storage/system/distribute",
                     internal_reqs::DistributeSystemStorage{world, box.id, {ptr->id}, fb::config<uint32_t>("id")});
                 if (distribute_resp.error != 0)
+                {
                     fb::logger::warn("DistributeSystemStorage sync failed for box {}: error {}",
                                      box.id,
                                      distribute_resp.error);
+                    this->join(ptr->id);
+                }
+                else
+                {
+                    this->on_distributed(distribute_resp.entries);
+                }
             }
             catch (const std::exception& e)
             {
                 fb::logger::warn("DistributeSystemStorage sync request failed for box {}: {}", box.id, e.what());
+                this->join(ptr->id);
             }
         }
     }
     catch (const std::exception& e)
     {
-        fb::logger::warn("sync system storage failed for user {}: {}", ch.id, e.what());
+        fb::logger::warn("sync system storage failed for user {}: {}", user, e.what());
+        this->join(user);
     }
 
     co_return;
@@ -364,6 +379,12 @@ async::task<void> service::system_storage::distribute()
     co_return;
 }
 
+void service::system_storage::join(uint32_t user)
+{
+    auto _ = std::lock_guard(this->_joined_mutex);
+    this->_joined.insert(user);
+}
+
 fb::async_generator<void> service::system_storage::distribute_coroutine()
 {
     while (true)
@@ -384,8 +405,9 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
             continue;
         }
 
-        auto        max_box_id = uint32_t{0};
-        const auto& fetch_url  = std::format("/storage/system/{}?offset={}", *world, this->_poll_offset);
+        auto        max_box_id   = uint32_t{0};
+        auto        new_box_seen = false;
+        const auto& fetch_url    = std::format("/storage/system/{}?offset={}", *world, this->_poll_offset);
 
         try
         {
@@ -406,7 +428,10 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
                                                                  return existing.id == box.id;
                                                              });
                     if (!already_tracked)
+                    {
                         this->_pending_boxes.push_back(std::move(box));
+                        new_box_seen = true;
+                    }
                 }
             }
         }
@@ -418,32 +443,63 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
         if (max_box_id > 0)
             this->_poll_offset = max_box_id + 1;
 
+        auto joined = std::unordered_set<uint32_t>{};
+        {
+            auto _ = std::lock_guard(this->_joined_mutex);
+            joined = std::exchange(this->_joined, {});
+        }
+
+        auto pending_boxes = std::make_shared<std::vector<system_storage_box>>(this->_pending_boxes);
+        auto recipients    = std::make_shared<std::unordered_map<uint32_t, std::vector<uint32_t>>>();
+        auto mutex         = std::make_shared<std::mutex>();
+        auto collect       = [pending_boxes, recipients, mutex](auto& ch) -> async::task<void> {
+            for (const auto& box : *pending_boxes)
+            {
+                if (box.eligible_for(*ch) && !ch->storage_box.contains_system_box(box.id))
+                {
+                    auto _ = std::lock_guard(*mutex);
+                    (*recipients)[box.id].push_back(ch->id);
+                }
+            }
+            co_return;
+        };
+
+        // Old boxes are only rechecked for characters in _joined, so every path that can leave an
+        // online character without a pending box (failed login sync, failed distribute) must call join().
+        if (new_box_seen)
+        {
+            co_await this->server.characters.foreach_async(collect);
+        }
+        else if (joined.empty() == false)
+        {
+            auto targets = std::vector<std::shared_ptr<character>>{};
+            for (auto user : joined)
+            {
+                auto ch = this->server.characters.find(user);
+                if (ch != nullptr)
+                    targets.push_back(ch);
+            }
+            co_await this->server.characters.foreach_async(collect, targets);
+        }
+
         for (const auto& box : this->_pending_boxes)
         {
             if (box.expired(now))
                 continue;
 
-            auto eligible = std::make_shared<std::vector<uint32_t>>();
-            auto mutex    = std::make_shared<std::mutex>();
-            co_await this->server.characters.foreach_async(
-                [eligible, mutex, box_id = box.id, created = box.created_date](auto& ch) -> async::task<void> {
-                    if (ch->created_date() < created && !ch->storage_box.contains_system_box(box_id))
-                    {
-                        auto _ = std::lock_guard(*mutex);
-                        eligible->push_back(ch->id);
-                    }
-                    co_return;
-                });
-
-            if (eligible->empty())
+            auto found = recipients->find(box.id);
+            if (found == recipients->end())
                 continue;
 
-            for (std::size_t i = 0; i < eligible->size(); i += chunk_limit)
+            const auto& eligible = found->second;
+
+            for (std::size_t i = 0; i < eligible.size(); i += chunk_limit)
             {
-                const auto end         = std::min(i + chunk_limit, eligible->size());
+                const auto end         = std::min(i + chunk_limit, eligible.size());
                 auto       chunk_users = std::vector<uint32_t>{};
-                chunk_users.assign(eligible->begin() + static_cast<std::ptrdiff_t>(i),
-                                   eligible->begin() + static_cast<std::ptrdiff_t>(end));
+                chunk_users.assign(eligible.begin() + static_cast<std::ptrdiff_t>(i),
+                                   eligible.begin() + static_cast<std::ptrdiff_t>(end));
+                const auto chunk_users_to_join = chunk_users;
 
                 try
                 {
@@ -455,11 +511,25 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
                                                                std::move(chunk_users),
                                                                fb::config<uint32_t>("id")});
                     if (resp.error != 0)
+                    {
                         fb::logger::warn("DistributeSystemStorage failed for box {}: error {}", box.id, resp.error);
+                        for (auto user_id : chunk_users_to_join)
+                        {
+                            this->join(user_id);
+                        }
+                    }
+                    else
+                    {
+                        this->on_distributed(resp.entries);
+                    }
                 }
                 catch (const std::exception& e)
                 {
                     fb::logger::warn("DistributeSystemStorage request failed for box {}: {}", box.id, e.what());
+                    for (auto user_id : chunk_users_to_join)
+                    {
+                        this->join(user_id);
+                    }
                 }
             }
         }

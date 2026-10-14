@@ -67,12 +67,17 @@ namespace Http.Service
             StorageBox box;
             await using (await _distributedLock.Lock(world, OpsLockKey(userId)))
             {
-                // A retried write with the same external ref returns the box it already created.
+                // A retried write with the same external ref returns the box it already created. The first
+                // attempt's notice may have been lost, so an unreceived box is published again.
                 if (externalRef != null)
                 {
                     var existing = (await _dbContext.StorageBox.Get(world, userId)).FirstOrDefault(b => b.ExternalRef == externalRef);
                     if (existing != null)
+                    {
+                        if (existing.Received == false)
+                            await PublishWriteAsync(world, existing, host);
                         return existing;
+                    }
                 }
 
                 var now = DateTime.Now;
@@ -161,36 +166,46 @@ namespace Http.Service
             var distinctUsers = (users ?? Array.Empty<uint>()).Where(u => u != 0).Distinct().ToArray();
             var written = new List<StorageBox>();
 
-            foreach (var userId in distinctUsers)
+            // Copies committed before a later user fails must still be published.
+            try
             {
-                await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId));
-
-                var existing = await _dbContext.StorageBox.Get(world, userId);
-                if (existing.Any(b => b.SystemStorageBoxId == systemStorageBoxId))
-                    continue;
-
-                var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
-                var box = new StorageBox
+                foreach (var userId in distinctUsers)
                 {
-                    User               = userId,
-                    Id                 = id,
-                    SystemStorageBoxId = systemStorageBoxId,
-                    Title              = systemBox.Title,
-                    Message            = systemBox.Message,
-                    Attachments        = systemBox.Attachments ?? new List<Fb.Model.Dsl>(),
-                    Received           = false,
-                    ExpiredDate        = systemBox.ExpiredDate,
-                    CreatedDate        = now,
-                    UpdatedDate        = now
-                };
+                    await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId));
 
-                _dbContext.StorageBox.Set(world, box);
-                await _dbContext.StorageBox.SaveChangesAsync();
-                written.Add(box);
+                    var existing = (await _dbContext.StorageBox.Get(world, userId)).FirstOrDefault(b => b.SystemStorageBoxId == systemStorageBoxId);
+                    if (existing != null)
+                    {
+                        if (existing.Received == false)
+                            written.Add(existing);
+                        continue;
+                    }
+
+                    var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
+                    var box = new StorageBox
+                    {
+                        User               = userId,
+                        Id                 = id,
+                        SystemStorageBoxId = systemStorageBoxId,
+                        Title              = systemBox.Title,
+                        Message            = systemBox.Message,
+                        Attachments        = systemBox.Attachments ?? new List<Fb.Model.Dsl>(),
+                        Received           = false,
+                        ExpiredDate        = systemBox.ExpiredDate,
+                        CreatedDate        = now,
+                        UpdatedDate        = now
+                    };
+
+                    _dbContext.StorageBox.Set(world, box);
+                    await _dbContext.StorageBox.SaveChangesAsync();
+                    written.Add(box);
+                }
             }
-
-            if (written.Count > 0)
-                await PublishDistributedAsync(world, written, host);
+            finally
+            {
+                if (written.Count > 0)
+                    await PublishDistributedAsync(world, written, host);
+            }
 
             return written;
         }
