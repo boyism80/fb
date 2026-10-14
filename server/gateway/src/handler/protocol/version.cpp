@@ -12,24 +12,6 @@ using namespace fb::gateway::handler::protocol;
 
 namespace gateway_resp = fb::protocol::gateway::response;
 
-namespace {
-
-bool is_version_allowed(uint16_t packed)
-{
-    const auto& node = fb::config_node("client:versions");
-    if (node.isArray() == false || node.size() == 0)
-        return false;
-
-    for (const auto& item : node)
-    {
-        if (static_cast<uint16_t>(item.asUInt()) == packed)
-            return true;
-    }
-    return false;
-}
-
-} // namespace
-
 template <fb::protocol::CLIENT_VERSION V>
 version<V>::version(fb::gateway::server& server) :
     fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>, 1000, 10, true>(server)
@@ -43,7 +25,20 @@ async::task<bool> version<V>::handle(fb::socket<fb::gateway::session>& session, 
         if (session.data() != nullptr)
             co_return false;
 
-        if (is_version_allowed(request.v) == false)
+        const auto& versions = fb::config_node("client:versions");
+        auto        allowed  = false;
+        if (versions.isArray())
+        {
+            for (const auto& item : versions)
+            {
+                if (static_cast<uint16_t>(item.asUInt()) == request.v)
+                {
+                    allowed = true;
+                    break;
+                }
+            }
+        }
+        if (allowed == false)
             throw std::runtime_error(_TEXT(MESSAGE_CLIENT_VERSION_MISMATCH));
 
         if (request.nation != fb::config<uint8_t>("client:nation"))

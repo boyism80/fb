@@ -91,9 +91,9 @@ const std::string& group::master() const
     return this->_master;
 }
 
-std::unordered_set<std::shared_ptr<character>> group::characters() const
+std::vector<std::shared_ptr<character>> group::characters() const
 {
-    return this->_active_members;
+    return std::vector<std::shared_ptr<character>>(this->_active_members.begin(), this->_active_members.end());
 }
 
 std::vector<std::string> group::members() const

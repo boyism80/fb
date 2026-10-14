@@ -16,11 +16,10 @@ using namespace fb::model::enum_value;
 using fb::big_endian;
 using table = fb::model::table;
 
-namespace {
-
-template <typename App>
-void fill_appearance_from_character(App& app, const character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+character_appearance<V> character_appearance<V>::from(const character& ch)
 {
+    auto app        = character_appearance<V>{};
     app.gender      = ch.gender();
     app.state       = ch.state();
     app.hair        = ch.hair();
@@ -48,23 +47,13 @@ void fill_appearance_from_character(App& app, const character& ch)
     }
 
     app.speed = ch.stat.speed();
-}
-
-} // namespace
-
-template <fb::protocol::CLIENT_VERSION V>
-character_appearance<V> character_appearance<V>::from(const character& ch)
-{
-    auto app = character_appearance<V>{};
-    fill_appearance_from_character(app, ch);
     return app;
 }
 
 character_appearance<fb::protocol::CLIENT_VERSION::v651>
 character_appearance<fb::protocol::CLIENT_VERSION::v651>::from(const character& ch)
 {
-    auto app = character_appearance<fb::protocol::CLIENT_VERSION::v651>{};
-    fill_appearance_from_character(app, ch);
+    auto app       = character_appearance<fb::protocol::CLIENT_VERSION::v651>{character_appearance<>::from(ch)};
     app.face       = ch.face();
     app.ridable_id = ch.state() == STATE::RIDING ? ch.ridable_id() : uint16_t{0};
     auto helmet    = ch.items.helmet();
