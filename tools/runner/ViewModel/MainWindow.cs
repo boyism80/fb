@@ -1280,15 +1280,15 @@ namespace Runner.ViewModel
                         ip = ExternalIP,
                         port = MatchmakingPort
                     });
-                    var login = JObject.FromObject(new
+                    var loginConf = JObject.FromObject(new
                     {
                         ip = ExternalIP,
                         port = Login[0].Port
                     });
                     if (role == "cross")
-                        conf["logins"] = new JObject { ["1"] = login };
+                        conf["logins"] = new JObject { ["1"] = loginConf };
                     else
-                        conf["login"] = login;
+                        conf["login"] = loginConf;
                     var gameAmqp = new JObject();
                     gameAmqp["internal"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
                     gameAmqp["log"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
