@@ -15,6 +15,11 @@ module.exports = function () {
             const firstWorldName = worldNames[0]
             const firstWorld = firstWorldName ? conf.worlds[firstWorldName] : null
             const downloadUrls = downloadBaseUrls()
+            const logins = {}
+            for (const worldConf of Object.values(conf.worlds || {})) {
+                if (worldConf.login)
+                    logins[worldConf.id] = { ip: conf.host, port: worldConf.login.port }
+            }
 
             for (const [worldName, worldConf] of Object.entries(conf.worlds || {})) {
                 if (!worldConf.game || !worldConf.game.containers) continue
@@ -40,7 +45,6 @@ module.exports = function () {
                         name: `game-cross-${i}`,
                         world: null,
                         port: container.port,
-                        loginPort: firstWorld.login.port,
                         logHost: `log-${firstWorldName}`,
                         logPort: firstWorld.log.port.cluster,
                     })
@@ -73,7 +77,7 @@ module.exports = function () {
                         ip: "matchmaking",
                         port: conf.matchmaking.port.cluster
                     },
-                    login: { ip: conf.host, port: game.loginPort },
+                    ...(game.world == null ? { logins } : { login: { ip: conf.host, port: game.loginPort } }),
                     amqp: {
                         internal: {
                             ip: "rabbitmq-internal",

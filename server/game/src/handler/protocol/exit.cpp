@@ -4,6 +4,9 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <format>
+#include <optional>
+#include <string>
 #include <string_view>
 
 namespace game_reqs = fb::protocol::game::request;
@@ -22,10 +25,27 @@ async::task<bool> exit<V>::handle(fb::socket<character>& session, game_reqs::exi
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    co_await this->server.transfer(session,
-                                   fb::config<std::string_view>("login:ip"),
-                                   fb::config<uint16_t>("login:port"),
-                                   internal::Service::Game);
+    if (fb::config<std::optional<uint32_t>>("world").has_value())
+    {
+        co_await this->server.transfer(session,
+                                       fb::config<std::string_view>("login:ip"),
+                                       fb::config<uint16_t>("login:port"),
+                                       internal::Service::Game);
+    }
+    else
+    {
+        auto ip   = fb::config<std::string>(std::format("logins:{}:ip", ch->world()), "");
+        auto port = fb::config<uint16_t>(std::format("logins:{}:port", ch->world()), 0);
+        if (ip.empty() || port == 0)
+        {
+            fb::logger::warn("Character {} exit: no login server for world {}", ch->name(), ch->world());
+            session.close();
+        }
+        else
+        {
+            co_await this->server.transfer(session, ip, port, internal::Service::Game);
+        }
+    }
     co_return true;
 }
 

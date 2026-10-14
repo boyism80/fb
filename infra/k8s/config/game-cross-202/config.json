@@ -23,9 +23,11 @@
         "ip": "matchmaking",
         "port": 80
     },
-    "login": {
-        "ip": "127.0.0.1",
-        "port": 30010
+    "logins": {
+        "1": {
+            "ip": "127.0.0.1",
+            "port": 30010
+        }
     },
     "amqp": {
         "internal": {
