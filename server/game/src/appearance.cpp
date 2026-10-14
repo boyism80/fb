@@ -402,34 +402,32 @@ void object_appearance<V>::to_lua(fb::lua::context* lua) const
 template <fb::protocol::CLIENT_VERSION V>
 std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& obj)
 {
-    switch (obj.what())
-    {
-    case fb::model::enum_value::OBJECT_TYPE::NPC:
-    {
-        auto& npc_model = static_cast<const fb::model::npc&>(obj);
-        if (npc_model.appearance.has_value())
-        {
-            auto  appearance_table = table::appearance;
-            auto& app              = appearance_table[npc_model.appearance.value()];
-            auto  ptr              = std::make_unique<character_appearance<V>>();
-            ptr->gender            = app.gender;
-            ptr->state             = app.state;
-            ptr->hair              = app.hair;
-            ptr->hair_color        = app.hair_color;
-            ptr->weapon            = app.weapon;
-            ptr->weapon_color      = app.weapon_color;
-            ptr->armor =
-                app.armor.has_value() ? std::optional<uint8_t>{static_cast<uint8_t>(app.armor.value())} : std::nullopt;
-            ptr->armor_color  = app.armor_color;
-            ptr->shield       = app.shield;
-            ptr->shield_color = app.shield_color;
-            return ptr;
-        }
+    auto preset = std::optional<uint32_t>{};
+    if (obj.what() == OBJECT_TYPE::NPC)
+        preset = static_cast<const fb::model::npc&>(obj).appearance;
+    else if (obj.what() == OBJECT_TYPE::MOB)
+        preset = static_cast<const fb::model::mob&>(obj).appearance;
 
-        return std::make_unique<object_appearance<V>>(obj.look, obj.color);
+    if (preset.has_value())
+    {
+        auto  appearance_table = table::appearance;
+        auto& app              = appearance_table[preset.value()];
+        auto  ptr              = std::make_unique<character_appearance<V>>();
+        ptr->gender            = app.gender;
+        ptr->state             = app.state;
+        ptr->hair              = app.hair;
+        ptr->hair_color        = app.hair_color;
+        ptr->weapon            = app.weapon;
+        ptr->weapon_color      = app.weapon_color;
+        ptr->armor =
+            app.armor.has_value() ? std::optional<uint8_t>{static_cast<uint8_t>(app.armor.value())} : std::nullopt;
+        ptr->armor_color  = app.armor_color;
+        ptr->shield       = app.shield;
+        ptr->shield_color = app.shield_color;
+        return ptr;
     }
-
-    default:
+    else
+    {
         return std::make_unique<object_appearance<V>>(obj.look, obj.color);
     }
 }
@@ -458,27 +456,16 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& o
 
 std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& obj, const character& viewer)
 {
+    auto preset = std::optional<uint32_t>{};
     if (obj.what() == OBJECT_TYPE::NPC)
+        preset = static_cast<const fb::model::npc&>(obj).appearance;
+    else if (obj.what() == OBJECT_TYPE::MOB)
+        preset = static_cast<const fb::model::mob&>(obj).appearance;
+
+    if (preset.has_value())
     {
-        auto& npc_model = static_cast<const fb::model::npc&>(obj);
-        if (npc_model.appearance.has_value() == false)
-        {
-            if (viewer.client_version == fb::protocol::CLIENT_VERSION::v651)
-            {
-                auto ptr   = std::make_unique<object_appearance<fb::protocol::CLIENT_VERSION::v651>>();
-                ptr->look  = npc_model.look;
-                ptr->color = npc_model.color;
-                return ptr;
-            }
-
-            auto ptr   = std::make_unique<object_appearance<>>();
-            ptr->look  = npc_model.look;
-            ptr->color = npc_model.color;
-            return ptr;
-        }
-
         auto  appearance_table = table::appearance;
-        auto& src              = appearance_table[npc_model.appearance.value()];
+        auto& src              = appearance_table[preset.value()];
         if (viewer.client_version == fb::protocol::CLIENT_VERSION::v651)
         {
             auto ptr          = std::make_unique<character_appearance<fb::protocol::CLIENT_VERSION::v651>>();
@@ -511,19 +498,21 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& 
         ptr->shield_color = src.shield_color;
         return ptr;
     }
-
-    if (viewer.client_version == fb::protocol::CLIENT_VERSION::v651)
+    else
     {
-        auto ptr   = std::make_unique<object_appearance<fb::protocol::CLIENT_VERSION::v651>>();
+        if (viewer.client_version == fb::protocol::CLIENT_VERSION::v651)
+        {
+            auto ptr   = std::make_unique<object_appearance<fb::protocol::CLIENT_VERSION::v651>>();
+            ptr->look  = obj.look;
+            ptr->color = obj.color;
+            return ptr;
+        }
+
+        auto ptr   = std::make_unique<object_appearance<>>();
         ptr->look  = obj.look;
         ptr->color = obj.color;
         return ptr;
     }
-
-    auto ptr   = std::make_unique<object_appearance<>>();
-    ptr->look  = obj.look;
-    ptr->color = obj.color;
-    return ptr;
 }
 
 std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& obj, const character& viewer)
@@ -554,12 +543,12 @@ std::shared_ptr<fb::game::appearance> fb::model::object::create_appearance() con
 
 std::shared_ptr<fb::game::appearance> fb::model::npc::create_appearance() const
 {
-    return std::make_shared<object_appearance<>>(this->look, this->color);
+    return appearance_factory::create(*this);
 }
 
 std::shared_ptr<fb::game::appearance> fb::model::mob::create_appearance() const
 {
-    return std::make_shared<object_appearance<>>(this->look, this->color);
+    return appearance_factory::create(*this);
 }
 
 template class character_appearance<fb::protocol::CLIENT_VERSION::v550>;
