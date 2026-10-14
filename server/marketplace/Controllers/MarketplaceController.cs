@@ -13,11 +13,11 @@ namespace Marketplace.Controllers;
 public class MarketplaceController : ControllerBase
 {
     private readonly ILogger<MarketplaceController> _logger;
-    private readonly IMarketplaceService _marketplaceService;
+    private readonly MarketplaceService _marketplaceService;
 
     public MarketplaceController(
         ILogger<MarketplaceController> logger,
-        IMarketplaceService marketplaceService)
+        MarketplaceService marketplaceService)
     {
         _logger = logger;
         _marketplaceService = marketplaceService;

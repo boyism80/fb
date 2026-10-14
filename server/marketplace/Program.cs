@@ -46,16 +46,7 @@ public class Program
         builder.Services.AddScoped<StorageService>();
         builder.Services.AddScoped<Marketplace.Services.MarketplaceParcelService>();
 
-        // Register marketplace service implementation based on configuration
-        var useSharding = builder.Configuration.GetValue<bool>("Marketplace:UseSharding", false);
-        if (useSharding)
-        {
-            builder.Services.AddScoped<Marketplace.Services.IMarketplaceService, Marketplace.Services.ShardedMarketplaceService>();
-        }
-        else
-        {
-            builder.Services.AddScoped<Marketplace.Services.IMarketplaceService, Marketplace.Services.MarketplaceService>();
-        }
+        builder.Services.AddScoped<Marketplace.Services.MarketplaceService>();
 
         // Marketplace archive services
         builder.Services.AddHostedService<Marketplace.Services.MarketplaceArchiveBackgroundService>();

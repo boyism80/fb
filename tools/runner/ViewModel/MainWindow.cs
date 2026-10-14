@@ -1464,7 +1464,6 @@ namespace Runner.ViewModel
                 marketplaceConf["Redis"] = internalRedis.DeepClone();
                 marketplaceConf["RabbitMQ"] = internalRabbit.DeepClone();
                 marketplaceConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "marketplace" });
-                marketplaceConf["Marketplace"] = JObject.FromObject(new { UseSharding = false });
                 marketplaceConf["Urls"] = $"http://127.0.0.1:{MarketplacePort}";
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "marketplace", "appsettings.marketplace.json"]), marketplaceConf.ToString(Formatting.Indented));
 

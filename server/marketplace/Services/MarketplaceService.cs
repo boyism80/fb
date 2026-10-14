@@ -24,7 +24,7 @@ public class ListingWithPurchase
     public MarketplacePurchase Purchase { get; set; }
 }
 
-public class MarketplaceService : IMarketplaceService
+public class MarketplaceService
 {
     private readonly MarketplaceParcelService _parcelService;
     private readonly Marketplace.Service.DbContext _dbContext;
@@ -823,11 +823,6 @@ public class MarketplaceService : IMarketplaceService
             await transaction.RollbackAsync();
             throw;
         }
-    }
-
-    public async Task<MarketplaceListing> GetListingByIdAsync(ulong listingId)
-    {
-        return await _dbContext.Marketplace.GetListingByIdAsync(listingId);
     }
 
     public async Task<List<ListingWithPurchase>> GetListingsByIdsAsync(

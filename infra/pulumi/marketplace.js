@@ -29,9 +29,6 @@ module.exports = {
                 "Enabled": true,
                 "ServerId": "0",
                 "ServerName": "marketplace"
-            },
-            "Marketplace": {
-                "UseSharding": false
             }
         }
 
