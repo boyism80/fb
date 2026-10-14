@@ -25,20 +25,7 @@ async::task<bool> version<V>::handle(fb::socket<fb::gateway::session>& session, 
         if (session.data() != nullptr)
             co_return false;
 
-        const auto& versions = fb::config_node("client:versions");
-        auto        allowed  = false;
-        if (versions.isArray())
-        {
-            for (const auto& item : versions)
-            {
-                if (static_cast<uint16_t>(item.asUInt()) == request.v)
-                {
-                    allowed = true;
-                    break;
-                }
-            }
-        }
-        if (allowed == false)
+        if (this->is_allowed(request.v) == false)
             throw std::runtime_error(_TEXT(MESSAGE_CLIENT_VERSION_MISMATCH));
 
         if (request.nation != fb::config<uint8_t>("client:nation"))
@@ -57,6 +44,20 @@ async::task<bool> version<V>::handle(fb::socket<fb::gateway::session>& session, 
     {
         co_return false;
     }
+}
+
+template <fb::protocol::CLIENT_VERSION V>
+bool version<V>::is_allowed(uint16_t v)
+{
+    const auto& versions = fb::config_node("client:versions");
+    if (versions.isArray() == false)
+        return false;
+
+    for (const auto& item : versions)
+        if (static_cast<uint16_t>(item.asUInt()) == v)
+            return true;
+
+    return false;
 }
 
 template class version<fb::protocol::CLIENT_VERSION::v550>;

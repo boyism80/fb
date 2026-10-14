@@ -18,6 +18,10 @@ public:
     version& operator= (const version&) = delete;
     version& operator= (version&&)      = delete;
 
+private:
+    static bool is_allowed(uint16_t v);
+
+public:
     async::task<bool> handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version<V>& request) override;
 };
 

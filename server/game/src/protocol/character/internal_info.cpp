@@ -96,8 +96,7 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
 }
 
 template <CLIENT_VERSION V>
-void internal_info<V>::serialize_equipment_v651(fb::stream_writer<big_endian>&              writer,
-                                                const std::shared_ptr<fb::game::equipment>& eq)
+void internal_info<V>::serialize_equipment_v651(fb::stream_writer<big_endian>& writer, const equipment_ptr& eq) const
 {
     if (eq == nullptr)
     {

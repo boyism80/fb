@@ -21,8 +21,11 @@ using namespace fb::model::enum_value;
 template <CLIENT_VERSION V>
 class internal_info : public fb::protocol::header
 {
+#ifndef BOT
+
 private:
     using equipment_ptr = std::shared_ptr<fb::game::equipment>;
+#endif
 
 public:
     static constexpr uint8_t opcode = 0x39;
