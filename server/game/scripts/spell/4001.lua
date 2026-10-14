@@ -28,9 +28,8 @@ return {
             return
         end
 
-        local spawned_mobs = me:spawned_mobs()
-        if #spawned_mobs >= 8 then
-            return me:message('더 이상 소환할 수 없습니다.')
+        if not map:can_spawn_summon() then
+            return me:message('이 지역에는 더 이상 소환할 수 없습니다.')
         end
 
         local mp = 30
@@ -55,7 +54,10 @@ return {
             y = y + 1
             direction = DIRECTION.TOP
         end
-        local mob = me:spawn_mob(message, x, y)
+        local mob = me:spawn_mob(message, x, y, true, true, 'SUMMONED')
+        if mob == nil then
+            return me:message('이 지역에는 더 이상 소환할 수 없습니다.')
+        end
         mob:direction(direction)
     end,
 

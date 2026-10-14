@@ -65,6 +65,12 @@ public:
 class mob : public life
 {
 public:
+    enum class spawn_type : uint8_t
+    {
+        NATURAL,
+        SUMMONED
+    };
+
     using model_type     = fb::model::mob;
     using item_vector_t  = std::vector<std::shared_ptr<fb::game::item>>;
     using appearance_ptr = std::shared_ptr<fb::game::appearance>;
@@ -85,6 +91,7 @@ public:
         const bool                     alive = false;
         std::weak_ptr<fb::game::rezen> rezen;
         character*                     owner = nullptr;
+        spawn_type                     type  = spawn_type::NATURAL;
     };
 
 private:
@@ -101,6 +108,8 @@ private:
     MOB_PARTS_MODE                  _parts_mode        = MOB_PARTS_MODE::PARTS;
     bool                            _forwarding_damage = false;
     bool                            _destroying        = false;
+    const spawn_type                _spawn_type;
+    std::shared_ptr<fb::game::map>  _summon_reservation;
 
 public:
     const std::weak_ptr<character> owner;
@@ -115,6 +124,8 @@ public:
 
 public:
     const fb::model::mob& model() const override;
+    spawn_type            type() const;
+    void                  detach_owner();
 
 private:
     // clang-format off
@@ -138,6 +149,8 @@ public:
 public:
     // clang-format off
     [[nodiscard]] async::task<void> action(fb::model::datetime now);
+    using object::map;
+    [[nodiscard]] async::task<bool> map(map_ptr map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override;
     async::task<void>               attack(DURATION duration = DURATION::ATTACK) override final;
     const fb::model::datetime&      action_time() const;
     void                            action_time(const fb::model::datetime& dt);

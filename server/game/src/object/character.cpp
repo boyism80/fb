@@ -2315,6 +2315,13 @@ async::task<void> character::settle_kills(mob_vector dead)
     {
         if (m == nullptr)
             continue;
+        if (m->type() == mob::spawn_type::SUMMONED)
+        {
+            m->detach_owner();
+            m->kill(DESTROY_TYPE::DEAD);
+            co_await m->destroy(DESTROY_TYPE::DEAD);
+            continue;
+        }
         groups[m->model().id].push_back(m);
     }
 
@@ -2352,15 +2359,6 @@ async::task<void> character::settle_kills(mob_vector dead)
 
         for (auto& m : mobs)
         {
-            auto owner = m->owner.lock();
-            if (owner != nullptr)
-            {
-                owner->detach_spawned_mob(*m);
-                m->kill(DESTROY_TYPE::DEAD);
-                co_await m->destroy(DESTROY_TYPE::DEAD);
-                continue;
-            }
-
             this->listener.on_dead(*m, self);
             co_await m->drop_items();
             this->award_exp(*m);
@@ -2695,18 +2693,22 @@ bool character::detect() const
     return this->_detect;
 }
 
-async::task<std::shared_ptr<fb::game::mob>>
-character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
+async::task<std::shared_ptr<fb::game::mob>> character::spawn_mob(const fb::model::mob&       model,
+                                                                 const fb::model::point16_t& position,
+                                                                 bool                        owned,
+                                                                 bool                        notify,
+                                                                 mob::spawn_type             type)
 {
     this->assert_thread();
     auto map = this->_map;
     if (map == nullptr)
         co_return nullptr;
 
-    auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
+    auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr, .type = type};
     auto& mob_model = static_cast<const fb::model::mob&>(model);
     auto  mob       = std::make_shared<fb::game::mob>(this->server, mob_model, params);
-    std::ignore     = co_await mob->map(map, position, {.notify = notify});
+    if (co_await mob->map(map, position, {.notify = notify}) == false)
+        co_return nullptr;
 
     if (owned)
         this->_spawned_mobs.push_back(mob);

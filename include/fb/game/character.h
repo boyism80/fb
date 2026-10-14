@@ -418,7 +418,7 @@ public:
     uint16_t                                                  weapon_damage() const;
     void                                                      detect(bool value);
     bool                                                      detect() const;
-    [[nodiscard]] async::task<std::shared_ptr<fb::game::mob>> spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true, bool notify = true);
+    [[nodiscard]] async::task<std::shared_ptr<fb::game::mob>> spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify, mob::spawn_type type);
     const std::vector<std::shared_ptr<fb::game::mob>>&        spawned_mobs() const;
     bool                                                      detach_spawned_mob(fb::game::mob& mob);
     [[nodiscard]] async::task<bool>                           reward(const std::vector<fb::model::dsl>& reward);

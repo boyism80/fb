@@ -219,6 +219,7 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     life(server, model, stat, params),
     listener(server.listener),
     _rezen(params.rezen),
+    _spawn_type(params.type),
     owner(params.owner != nullptr ? params.owner->weak_from_this_as<character>() : std::weak_ptr<character>())
 {
     // Initialize AI strategy based on mob's attack type
@@ -239,6 +240,8 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
 
 mob::~mob()
 {
+    if (this->_summon_reservation != nullptr)
+        this->_summon_reservation->release_summon();
     if (auto rezen = this->_rezen.lock(); rezen != nullptr)
         rezen->decrease();
 }
@@ -253,10 +256,91 @@ const fb::model::mob& mob::model() const
     return fb::model::table::mob[this->_model_id];
 }
 
+mob::spawn_type mob::type() const
+{
+    return this->_spawn_type;
+}
+
+void mob::detach_owner()
+{
+    auto current_owner = this->owner.lock();
+    if (current_owner == nullptr)
+        return;
+
+    auto weak_owner = current_owner->weak_from_this_as<character>();
+    auto weak_mob   = this->weak_from_this_as<mob>();
+    auto builder    = this->server.threads.new_builder(weak_owner);
+    builder.func    = [weak_owner, weak_mob](auto&) -> async::task<void> {
+        auto owner = weak_owner.lock();
+        auto mob   = weak_mob.lock();
+        if (owner != nullptr && mob != nullptr)
+            owner->detach_spawned_mob(*mob);
+        co_return;
+    };
+    builder.enqueue();
+}
+
+async::task<bool> mob::map(map_ptr next_map, std::optional<fb::model::point16_t> position, map_options options)
+{
+    if (this->_spawn_type != spawn_type::SUMMONED)
+        co_return co_await object::map(next_map, position, options);
+
+    auto previous = object::map();
+    if (previous == next_map)
+        co_return co_await object::map(next_map, position, options);
+
+    if (next_map != nullptr && !next_map->try_reserve_summon())
+        co_return false;
+
+    auto moved = false;
+    try
+    {
+        moved = co_await object::map(next_map, position, options);
+    }
+    catch (...)
+    {
+        if (next_map != nullptr)
+            next_map->release_summon();
+        throw;
+    }
+
+    auto actual = object::map();
+    if (this->_summon_reservation != nullptr && this->_summon_reservation != actual)
+    {
+        this->_summon_reservation->release_summon();
+        this->_summon_reservation.reset();
+    }
+
+    if (next_map != nullptr && actual != next_map)
+        next_map->release_summon();
+
+    if (actual != nullptr && this->_summon_reservation == nullptr)
+    {
+        if (actual != next_map && !actual->try_reserve_summon())
+        {
+            std::ignore = co_await object::map(nullptr);
+            co_return false;
+        }
+        this->_summon_reservation = actual;
+    }
+
+    co_return moved&& actual == next_map;
+}
+
 async::task<void> mob::action(fb::model::datetime now)
 {
     if (this->_action_busy)
         co_return;
+
+    if (this->_spawn_type == spawn_type::SUMMONED)
+    {
+        auto current_owner = this->owner.lock();
+        if (current_owner == nullptr || current_owner->map() != this->map() || !this->sight(*current_owner))
+        {
+            this->target(nullptr);
+            co_return;
+        }
+    }
 
     if (ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT))
         co_return;
@@ -500,7 +584,7 @@ async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& 
         co_return;
 
     auto owner = this->owner.lock();
-    if (owner != nullptr)
+    if (this->_spawn_type == spawn_type::SUMMONED && owner != nullptr)
     {
         co_await owner->settle_kills(std::move(settle.dead_mobs));
         co_return;
@@ -544,6 +628,8 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
 async::task<void> mob::drop_items()
 {
     this->assert_thread();
+    if (this->_spawn_type == spawn_type::SUMMONED)
+        co_return;
 
     auto& model    = this->model();
     auto  oids     = std::vector<uint32_t>{};

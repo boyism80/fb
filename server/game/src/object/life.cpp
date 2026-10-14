@@ -163,6 +163,13 @@ async::task<void> life::settle_deaths(mob_vector dead)
     {
         if (m == nullptr)
             continue;
+        if (m->type() == mob::spawn_type::SUMMONED)
+        {
+            m->detach_owner();
+            m->kill(DESTROY_TYPE::DEAD);
+            co_await m->destroy(DESTROY_TYPE::DEAD);
+            continue;
+        }
         groups[m->model().id].push_back(m);
     }
 
@@ -190,15 +197,6 @@ async::task<void> life::settle_deaths(mob_vector dead)
 
         for (auto& m : mobs)
         {
-            auto owner = m->owner.lock();
-            if (owner != nullptr)
-            {
-                owner->detach_spawned_mob(*m);
-                m->kill(DESTROY_TYPE::DEAD);
-                co_await m->destroy(DESTROY_TYPE::DEAD);
-                continue;
-            }
-
             this->listener.on_dead(*m, nullptr);
             co_await m->drop_items();
             m->kill(DESTROY_TYPE::DEAD);

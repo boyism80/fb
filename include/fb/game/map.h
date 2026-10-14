@@ -62,6 +62,7 @@ public:
     // Client requests the visible tile rect with a one-tile margin on every side.
     static constexpr uint32_t MAX_UPDATE_WIDTH  = MAX_SCREEN_WIDTH + 2;
     static constexpr uint32_t MAX_UPDATE_HEIGHT = MAX_SCREEN_HEIGHT + 2;
+    static constexpr uint32_t MAX_SUMMONED_MOBS = 8;
 
 public:
     struct tile;
@@ -78,6 +79,7 @@ private:
     std::atomic<bool>     _loaded{false};
     std::atomic<bool>     _init_script_invoked{false};
     std::atomic<uint32_t> _character_count{0};
+    std::atomic<uint32_t> _summoned_count{0};
     MAP_CONFIG_FLAG       _config_flag = MAP_CONFIG_FLAG::NONE;
 
 public:
@@ -136,6 +138,9 @@ public:
     virtual void                    on_character_leave();
     virtual bool                    begin_destroy();
     uint32_t                        character_count() const;
+    bool                            can_spawn_summon() const;
+    bool                            try_reserve_summon();
+    void                            release_summon();
     async::task<bool>               kick(character& ch) const;
     // clang-format on
 

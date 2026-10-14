@@ -47,9 +47,15 @@ std::unique_ptr<ai> ai::create(MOB_ATTACK_TYPE attack_type)
 
 async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
 {
-    auto owner = mob_obj.owner.lock();
-    if (owner == nullptr || owner->map() != mob_obj.map())
+    if (mob_obj.type() != mob::spawn_type::SUMMONED)
         co_return false;
+
+    auto owner = mob_obj.owner.lock();
+    if (owner == nullptr || owner->map() != mob_obj.map() || !mob_obj.sight(*owner))
+    {
+        mob_obj.target(nullptr);
+        co_return true;
+    }
 
     auto target = mob_obj.target();
     if (target != nullptr)
@@ -80,7 +86,7 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
         }
     }
 
-    co_return owner != nullptr;
+    co_return true;
 }
 
 void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now)
@@ -105,9 +111,7 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
     if (map == nullptr)
         return nullptr;
 
-    // Skip targeting if mob has an owner
-    auto owner = mob_obj.owner.lock();
-    if (owner != nullptr)
+    if (mob_obj.type() == mob::spawn_type::SUMMONED)
         return nullptr;
 
     std::shared_ptr<life> best_target = nullptr;
@@ -157,9 +161,7 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
     if (map == nullptr)
         return nullptr;
 
-    // Skip targeting if mob has an owner
-    auto owner = mob_obj.owner.lock();
-    if (owner != nullptr)
+    if (mob_obj.type() == mob::spawn_type::SUMMONED)
         return nullptr;
 
     std::shared_ptr<life> best_target = nullptr;

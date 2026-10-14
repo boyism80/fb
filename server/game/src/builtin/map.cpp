@@ -41,8 +41,23 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"cancel_timer",        builtin::map::builtin_cancel_timer},
 {"timer",               builtin::map::builtin_timer},
 {"spawn_mob",           builtin::map::builtin_spawn_mob},
+{"can_spawn_summon",    builtin::map::builtin_can_spawn_summon},
 {"mkitem",              builtin::map::builtin_mkitem},
 END_LUA_EXTENSION; // clang-format on
+
+int builtin::map::builtin_can_spawn_summon(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    lua->pushboolean(map->can_spawn_summon());
+    return 1;
+}
 
 int builtin::map::builtin_model(lua_State* L)
 {

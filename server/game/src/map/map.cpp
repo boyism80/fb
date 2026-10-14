@@ -539,6 +539,27 @@ uint32_t map::character_count() const
     return this->_character_count.load(std::memory_order_relaxed);
 }
 
+bool map::can_spawn_summon() const
+{
+    return this->_summoned_count.load(std::memory_order_relaxed) < MAX_SUMMONED_MOBS;
+}
+
+bool map::try_reserve_summon()
+{
+    auto count = this->_summoned_count.load(std::memory_order_relaxed);
+    while (count < MAX_SUMMONED_MOBS)
+    {
+        if (this->_summoned_count.compare_exchange_weak(count, count + 1, std::memory_order_relaxed))
+            return true;
+    }
+    return false;
+}
+
+void map::release_summon()
+{
+    this->_summoned_count.fetch_sub(1, std::memory_order_relaxed);
+}
+
 async::task<bool> map::kick(character& ch) const
 {
     auto& return_to = this->model().return_to;

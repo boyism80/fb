@@ -320,6 +320,8 @@ uint64_t fb::game::stat::damage(uint64_t                          value,
         {
             if (mob.get() == &this->owner)
                 continue;
+            if (mob->map() != ch->map())
+                continue;
 
             mob->target(std::static_pointer_cast<fb::game::life>(this->owner.shared_from_this_as<fb::game::life>()));
         }
@@ -770,6 +772,8 @@ uint64_t character_stat::damage(uint64_t                          value,
 
     for (const auto& mob : this->owner.spawned_mobs())
     {
+        if (mob->map() != this->owner.map())
+            continue;
         if (mob->target() != nullptr)
             continue;
 

@@ -3179,7 +3179,19 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
         }
     }
 
-    auto notify   = lua->toboolean(offset, true);
+    auto notify = lua->toboolean(offset, true);
+    auto type   = owned ? fb::game::mob::spawn_type::SUMMONED : fb::game::mob::spawn_type::NATURAL;
+    if (argc > offset && lua->is_string(offset + 1))
+    {
+        auto value = lua->tostring(offset + 1);
+        if (value == "SUMMONED")
+            type = fb::game::mob::spawn_type::SUMMONED;
+        else if (value != "NATURAL")
+        {
+            lua->pushnil();
+            return 1;
+        }
+    }
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto coords   = std::make_shared<std::pair<uint16_t, uint16_t>>(x, y);
     auto mob_ptr  = std::make_shared<std::shared_ptr<fb::game::mob>>();
@@ -3191,7 +3203,8 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
             coords->first  = ch->x();
             coords->second = ch->y();
         }
-        *mob_ptr = co_await ch->spawn_mob(*model, fb::model::point16_t(coords->first, coords->second), owned, notify);
+        *mob_ptr =
+            co_await ch->spawn_mob(*model, fb::model::point16_t(coords->first, coords->second), owned, notify, type);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
