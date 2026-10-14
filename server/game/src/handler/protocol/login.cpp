@@ -84,9 +84,6 @@ void login<V>::init_spells(const std::vector<internal::Spell>& response, charact
 {
     for (auto& x : response)
     {
-        if (table::spell->contains(x.model) == false)
-            continue;
-
         auto  spell_table = table::spell;
         auto& model       = spell_table[x.model];
         auto  delay       = fb::model::datetime(x.next) - this->server.now();
@@ -188,6 +185,32 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         fb::logger::fatal("Character {} login failed: map {} does not exist on this server", resp.character.name, map);
         co_return nullptr;
+    }
+
+    // A row whose model this host does not know would be dropped and then deleted by the next save.
+    for (auto& x : resp.items)
+    {
+        if (table::item->contains(x.model) == false)
+        {
+            fb::logger::fatal("Character {} login failed: item model {} does not exist", resp.character.name, x.model);
+            co_return nullptr;
+        }
+    }
+    for (auto& x : resp.spells)
+    {
+        if (table::spell->contains(x.model) == false)
+        {
+            fb::logger::fatal("Character {} login failed: spell model {} does not exist", resp.character.name, x.model);
+            co_return nullptr;
+        }
+    }
+    for (auto& x : resp.character.buffs)
+    {
+        if (table::spell->contains(x.model) == false)
+        {
+            fb::logger::fatal("Character {} login failed: buff model {} does not exist", resp.character.name, x.model);
+            co_return nullptr;
+        }
     }
 
     auto socket_ptr     = session.shared_from_this_as<fb::socket<character>>();
