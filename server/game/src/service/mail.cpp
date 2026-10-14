@@ -193,5 +193,6 @@ async::task<void> service::mail::remove(character& ch, uint16_t id)
 
     this->on_error(resp.error);
     ptr->mail_box.unread_count(resp.unread);
+    this->server.system_mail.join(ptr->id);
     co_return;
 }

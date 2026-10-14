@@ -174,8 +174,8 @@ fb::async_generator<void> service::system_mail::send_coroutine()
             co_return;
         };
 
-        // Old mails are only rechecked for characters in _joined, so every path that can leave an
-        // online character without a pending mail (login, failed send) must call join().
+        // Old mails are only rechecked for characters in _joined, so login, failed sends,
+        // and successful mail deletion must call join().
         if (new_mail_seen)
         {
             co_await this->server.characters.foreach_async(collect);
@@ -235,9 +235,11 @@ fb::async_generator<void> service::system_mail::send_coroutine()
                     }
                     else
                     {
-                        for (auto user_id : chunk_users_to_mark)
+                        // A successful batch can still skip recipients whose mailboxes are full.
+                        for (const auto& entry : resp.entries)
                         {
-                            auto ch = this->server.characters.find(user_id);
+                            auto user_id = entry.mail.user != 0 ? entry.mail.user : entry.user;
+                            auto ch      = this->server.characters.find(user_id);
                             if (ch == nullptr)
                                 continue;
 
