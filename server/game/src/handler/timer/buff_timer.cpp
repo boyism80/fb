@@ -105,7 +105,8 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                 try
                 {
                     co_await this->server.threads.switching(weak);
-                    std::ignore = co_await obj->buffs.remove(buff->model());
+                    if (obj->buffs.find(spell_id) == buff && buff->remaining() <= 0ms)
+                        std::ignore = co_await obj->buffs.remove(spell_id);
                 }
                 catch (std::exception& e)
                 {

@@ -759,6 +759,13 @@ function M.run(ctx, caster_index, target_index)
         return fail("무형술: buff stat was not restored")
     end
 
+    if run_step(caster, "verify_buff_recast", "recast_power", "파력무참진", "rates") ~= true then
+        return fail("파력무참진: recast after expiry stacked the buff")
+    end
+    if run_step(caster, "verify_buff_recast", "recast_spirit", "신령지익진", "derate") ~= true then
+        return fail("신령지익진: recast after expiry stacked the buff")
+    end
+
     -- 견우직녀의집 is hosted by another game server. Locally that server is not running, so the
     -- warp is refused; remotely the caster moves there first so the warp stays on one server.
     local reunion_ok = false

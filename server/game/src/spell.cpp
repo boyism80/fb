@@ -332,6 +332,7 @@ void buffs::discard_expired(uint32_t id)
     if (buff == nullptr || buff->remaining() > 0ms)
         return;
 
+    fb::logger::warn("buffs: discarded expired buff {} without on_unbuff", buff->model().name);
     this->_owner.listener.on_unbuff(this->_owner, *buff);
     this->erase(id);
 }
@@ -356,10 +357,8 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     this->_owner.assert_thread();
 
     auto& model = buff->model();
-    if (this->contains(model.id))
+    if (this->find(model.id) != nullptr)
         return false;
-
-    this->discard_expired(model.id);
 
     this->insert({model.id, buff});
 
@@ -387,14 +386,17 @@ async::task<std::shared_ptr<buff>> buffs::push_back(const fb::model::spell&     
 {
     this->_owner.assert_thread();
 
-    if (this->contains(model.id))
+    // An expired buff the timer has not removed yet still holds its on_buff effects,
+    // so it is renewed instead of being replaced.
+    auto existing = this->find(model.id);
+    if (existing != nullptr)
     {
-        auto buff = this->find(model.id);
-        buff->remaining(std::chrono::seconds(seconds));
-        co_return buff;
+        auto expired = existing->remaining() <= 0ms;
+        existing->remaining(std::chrono::seconds(seconds));
+        if (expired)
+            this->_owner.listener.on_buff(this->_owner, *existing);
+        co_return existing;
     }
-
-    this->discard_expired(model.id);
 
     auto& server  = this->_owner.server;
     auto  created = server.make<buff>(model, this->_owner.weak_from_this_as<fb::game::object>(), caster, seconds);

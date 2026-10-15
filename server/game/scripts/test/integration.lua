@@ -606,7 +606,47 @@ return {
         report(me, true, step)
     end,
 
-    verify_derate = function(me, step, expected)
+    -- Recasts right after the buff expires and before the buff timer removes it.
+    verify_buff_recast = function(me, step, spell_name, kind)
+        local function read_stat()
+            if kind == 'phydef' then
+                return me:buff_phydef()
+            elseif kind == 'derate' then
+                return me:damage_derate()
+            elseif kind == 'rates' then
+                return me:damage_rate() + me:skill_damage_rate()
+            end
+            return nil
+        end
+
+        if name2spell(spell_name) == nil then
+            return report(me, false, step, 'no spell')
+        end
+
+        local before = read_stat()
+        if before == nil then
+            return report(me, false, step, 'unknown kind')
+        end
+
+        local buff = me:buff(spell_name, 30)
+        if buff == nil then
+            return report(me, false, step, 'buff failed')
+        end
+        local once = read_stat()
+        buff:time(0)
+        me:buff(spell_name, 30)
+        local recast = read_stat()
+        me:unbuff(spell_name)
+        local after = read_stat()
+
+        if recast ~= once then
+            return report(me, false, step, string.format('once=%s recast=%s', once, recast))
+        end
+        if after ~= before then
+            return report(me, false, step, string.format('before=%s after=%s', before, after))
+        end
+        report(me, true, step)
+    end,    verify_derate = function(me, step, expected)
         local now  = me:damage_derate()
         local want = tonumber(expected)
         if now ~= want then
