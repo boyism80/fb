@@ -512,6 +512,23 @@ return {
         report(me, true, step)
     end,
 
+    verify_weapon_damage = function(me, step, expected)
+        local want = tonumber(expected)
+        local now  = me:weapon_damage()
+        if now ~= want then
+            return report(me, false, step, string.format('weapon_damage=%s expected=%s', tostring(now), tostring(want)))
+        end
+        if want > 0 then
+            for _ = 1, 20 do
+                local damage = me:normal_attack_damage(MOB_SIZE.SMALL)
+                if damage <= want then
+                    return report(me, false, step, string.format('damage=%s bonus=%s', tostring(damage), tostring(want)))
+                end
+            end
+        end
+        report(me, true, step)
+    end,
+
     verify_map_instance = function(me, step, expected)
         local map = me:map()
         if map == nil then

@@ -363,7 +363,9 @@ uint64_t character::normal_attack_damage(MOB_SIZE size) const
 
     auto& model = weapon->model();
     auto& range = size == MOB_SIZE::SMALL ? model.damage_small : model.damage_large;
-    return std::max<uint64_t>(1, range.min) + std::rand() % std::max<uint64_t>(1, range.max);
+    auto  min   = std::max<uint64_t>(1, range.min);
+    auto  max   = std::max<uint64_t>(min, range.max);
+    return min + std::rand() % (max - min + 1) + this->_weapon_damage;
 }
 
 bool character::inited() const

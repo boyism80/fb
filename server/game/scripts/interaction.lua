@@ -654,11 +654,16 @@ return {
     end,
 
     on_equipment_active = function(me, parts, equipment)
+        if parts == EQUIPMENT_PARTS.WEAPON and me:weapon_damage() > 0 then
+            me:message('무기의 푸른빛이 사라집니다.')
+            me:weapon_damage(0)
+        end
+
         lib.any_action(me)
     end,
 
     on_equipment_inactive = function(me, parts, equipment)
-        if me:weapon_damage() > 0 then
+        if parts == EQUIPMENT_PARTS.WEAPON and me:weapon_damage() > 0 then
             me:message('무기의 푸른빛이 사라집니다.')
             me:weapon_damage(0)
         end

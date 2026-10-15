@@ -305,6 +305,9 @@ local SPECIAL_SPELLS = {
             caster:equip(0)
         end,
         condition = weapon_enchant_condition,
+        post = function(caster)
+            return script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_30", "30") == true
+        end,
     },
     {
         name = "검신검귀",
@@ -312,6 +315,9 @@ local SPECIAL_SPELLS = {
         cast_type = "INPUT",
         message = WEAPON_NAME,
         condition = weapon_enchant_condition,
+        post = function(caster)
+            return script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_20", "20") == true
+        end,
     },
     {
         name = "신검합일",
@@ -320,9 +326,13 @@ local SPECIAL_SPELLS = {
         message = WEAPON_NAME,
         condition = weapon_enchant_condition,
         post = function(caster)
+            if script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_10", "10") ~= true then
+                return false
+            end
             caster:unequip("WEAPON")
+            local cleared = script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_OFF", "0") == true
             caster:clear_inventory()
-            return true
+            return cleared
         end,
     },
     {

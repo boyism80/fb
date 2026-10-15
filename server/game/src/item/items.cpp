@@ -110,6 +110,15 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
         fb::lua::run_async(std::move(lua), 3);
     }
 
+    auto inactive = owner->server.lua.open("scripts/interaction.lua", "on_equipment_inactive");
+    if (inactive)
+    {
+        inactive->pushobject(*owner);
+        inactive->pushinteger(parts);
+        inactive->pushobject(*equipment);
+        fb::lua::run_async(std::move(inactive), 3);
+    }
+
     owner->show();
     return equipment;
 }
