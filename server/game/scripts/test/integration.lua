@@ -554,6 +554,28 @@ return {
         report(me, true, step)
     end,
 
+    verify_demoted = function(me, step, name)
+        local you = name2ch(name)
+        if you == nil then
+            return report(me, false, step, 'missing')
+        end
+        if you:super_hide() == true or you:state() == STATE.CLOACK then
+            return report(me, false, step, 'still hidden')
+        end
+        report(me, true, step)
+    end,
+
+    grant_spell = function(me, step, name, spell_name)
+        local you = name2ch(name)
+        if you == nil then
+            return report(me, false, step, 'missing')
+        end
+        if you:mkspell(spell_name) == nil then
+            return report(me, false, step, 'mkspell failed')
+        end
+        report(me, true, step)
+    end,
+
     verify_no_buff = function(me, step, name, spell_name)
         local you = name2ch(name)
         if you == nil then
@@ -646,7 +668,9 @@ return {
             return report(me, false, step, string.format('before=%s after=%s', before, after))
         end
         report(me, true, step)
-    end,    verify_derate = function(me, step, expected)
+    end,
+
+    verify_derate = function(me, step, expected)
         local now  = me:damage_derate()
         local want = tonumber(expected)
         if now ~= want then

@@ -262,9 +262,15 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         params.mimicry = std::nullopt;
     }
-    params.nation              = static_cast<NATION>(resp.character.nation);
-    params.divine_beast        = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
-    params.super_hide          = resp.option.super_hide;
+    params.nation       = static_cast<NATION>(resp.character.nation);
+    params.divine_beast = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
+    params.super_hide   = resp.option.super_hide;
+    if (params.super_hide && params.role == ROLE::USER)
+    {
+        params.super_hide = false;
+        if (params.state == STATE::CLOACK)
+            params.state = STATE::NORMAL;
+    }
     params.reputation          = resp.character.reputation;
     params.evaluation          = resp.character.evaluation;
     params.evaluation_playtime = resp.character.evaluation_playtime;

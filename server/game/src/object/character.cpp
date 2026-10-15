@@ -515,6 +515,20 @@ void character::role(ROLE value)
     auto old    = this->_role;
     this->_role = value;
 
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto spell = this->spells[i];
+        if (spell != nullptr && spell->model().role > value)
+            this->spells.remove(i);
+    }
+
+    if (value == ROLE::USER && this->_super_hide)
+    {
+        this->super_hide(false);
+        if (this->_state == STATE::CLOACK)
+            this->state(STATE::NORMAL);
+    }
+
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
@@ -2786,7 +2800,7 @@ bool character::hidden(const fb::game::object& target) const
         return false;
 
     if (target.is(OBJECT_TYPE::CHARACTER) == false)
-        return true;
+        return this->role() > ROLE::USER;
 
     auto& ch = static_cast<const fb::game::character&>(target);
     return this->role() > ch.role();

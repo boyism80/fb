@@ -37,6 +37,9 @@ async::task<bool> spell_cast<V>::handle(fb::socket<character>& session, game_req
     if (spell == nullptr)
         co_return false;
 
+    if (ch->role() < spell->model().role)
+        co_return true;
+
     auto delay = spell->delay();
     if (delay > 0)
     {

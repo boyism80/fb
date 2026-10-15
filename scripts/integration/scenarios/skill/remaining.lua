@@ -194,6 +194,54 @@ local function hide_case()
     }
 end
 
+-- The demoted caster cannot run admin scripts, so the target checks and restores it.
+local function demote_admin(caster, target)
+    local slot = caster:learn_spell("잠복근무")
+    if slot == 0xFF then
+        return fail("demote: failed to learn 잠복근무")
+    end
+    caster:send(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+    caster:sleep(200)
+    if run_step(caster, "verify_super_hide", "demote_hide_on", "1") ~= true then
+        return fail("demote: 잠복근무 did not hide")
+    end
+
+    if run_step(target, "set_role", "demote_user", caster:name(), "0") ~= true then
+        return fail("demote: failed to lower caster role")
+    end
+    caster:sleep(200)
+    local removed = caster:spell_slot("잠복근무") == 0xFF
+    local cleared = run_step(target, "verify_demoted", "demote_cleared", caster:name()) == true
+
+    local blocked = false
+    if run_step(target, "grant_spell", "demote_grant", caster:name(), "잠복근무") == true then
+        caster:sleep(200)
+        local granted = caster:spell_slot("잠복근무")
+        if granted ~= 0xFF then
+            caster:send(protocol.spell_cast("NORMAL", granted, "", 0, {0, 0}))
+            caster:sleep(200)
+            blocked = run_step(target, "verify_demoted", "demote_blocked", caster:name()) == true
+        end
+    end
+
+    local restored = run_step(target, "set_role", "demote_admin", caster:name(), "2") == true
+    caster:clear_all_spells()
+
+    if removed == false then
+        return fail("demote: admin spell was not removed")
+    end
+    if cleared == false then
+        return fail("demote: super_hide was not cleared")
+    end
+    if blocked == false then
+        return fail("demote: admin spell cast was not blocked")
+    end
+    if restored == false then
+        return fail("demote: failed to restore caster role")
+    end
+    return true
+end
+
 local function info_popup_case(name, cast_type, place_front)
     return {
         name = name,
@@ -610,6 +658,10 @@ function M.run(ctx, caster_index, target_index)
     if spell_runner.run_cases({ map_id_case(), hide_case() }, caster, nil) == false then
         return false
     end
+    caster:clear_all_spells()
+    if demote_admin(caster, target) == false then
+        return false
+    end
 
     local nuri = info_popup_case("누리의빛", "NORMAL", true)
     local bada = info_popup_case("바다의빛", "TARGET", false)
@@ -758,7 +810,6 @@ function M.run(ctx, caster_index, target_index)
     if run_step(caster, "verify_buff_roundtrip", "formless", "무형술", "phydef") ~= true then
         return fail("무형술: buff stat was not restored")
     end
-
     if run_step(caster, "verify_buff_recast", "recast_power", "파력무참진", "rates") ~= true then
         return fail("파력무참진: recast after expiry stacked the buff")
     end
