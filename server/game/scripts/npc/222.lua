@@ -13,7 +13,7 @@ local function marriage_npc(me, npc)
             me:dialog(npc, '이미 결혼을 하셨습니다.')
             return
         end
-        if not m.can_remarry then
+        if not m.remarryable then
             me:dialog(npc, '재혼 대기 시간이 지나지 않았습니다. 잠시 후에 다시 시도해 주세요.')
             return
         end
@@ -60,7 +60,7 @@ local function marriage_npc(me, npc)
             me:dialog(npc, '이미 결혼한 상대와는 결혼을 할 수 없습니다.')
             return
         end
-        if not target_m.can_remarry then
+        if not target_m.remarryable then
             me:dialog(npc, '상대방은 아직 재혼할 수 없습니다.')
             return
         end

@@ -32,7 +32,7 @@ struct map
     static int builtin_cancel_timer(lua_State* L);
     static int builtin_timer(lua_State* L);
     static int builtin_spawn_mob(lua_State* L);
-    static int builtin_can_spawn_summon(lua_State* L);
+    static int builtin_spawnable_summon(lua_State* L);
     static int builtin_mkitem(lua_State* L);
 };
 

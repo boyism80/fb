@@ -539,7 +539,7 @@ uint32_t map::character_count() const
     return this->_character_count.load(std::memory_order_relaxed);
 }
 
-bool map::can_spawn_summon() const
+bool map::spawnable_summon() const
 {
     return this->_summoned_count.load(std::memory_order_relaxed) < MAX_SUMMONED_MOBS;
 }

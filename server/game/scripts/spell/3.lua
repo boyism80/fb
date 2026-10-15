@@ -20,7 +20,7 @@ return {
             return me:message('이동할 수 없는 공간입니다.')
         end
         local castle_lib = require('lib.castle')
-        if not castle_lib.can_occupy(me, map) then
+        if not castle_lib.occupyable(me, map) then
             return me:message('그곳으로는 출두할 수 없습니다.')
         end
 

@@ -7321,7 +7321,7 @@ int builtin::character::builtin_marriage(lua_State* L)
     struct marriage_snapshot
     {
         bool                    married     = false;
-        bool                    can_remarry = false;
+        bool                    remarryable = false;
         std::optional<uint32_t> spouse_id;
         std::string             spouse_name;
         uint32_t                divorce_count = 0;
@@ -7335,7 +7335,7 @@ int builtin::character::builtin_marriage(lua_State* L)
         auto&       server      = static_cast<fb::game::server&>(lua->executor);
         const auto& m           = ch->marriage();
         snapshot->married       = m.spouse_id.has_value();
-        snapshot->can_remarry   = !snapshot->married && (ch->server.now() >= m.remarriage_after);
+        snapshot->remarryable   = !snapshot->married && (ch->server.now() >= m.remarriage_after);
         snapshot->spouse_id     = m.spouse_id;
         snapshot->spouse_name   = m.spouse_name;
         snapshot->divorce_count = m.divorce_count;
@@ -7358,8 +7358,8 @@ int builtin::character::builtin_marriage(lua_State* L)
         lua_pushstring(*lua, "divorce_count");
         lua->pushinteger(static_cast<int64_t>(snapshot->divorce_count));
         lua_settable(*lua, -3);
-        lua_pushstring(*lua, "can_remarry");
-        lua->pushboolean(snapshot->can_remarry);
+        lua_pushstring(*lua, "remarryable");
+        lua->pushboolean(snapshot->remarryable);
         lua_settable(*lua, -3);
         co_return 1;
     };

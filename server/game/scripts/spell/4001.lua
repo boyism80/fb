@@ -28,7 +28,7 @@ return {
             return
         end
 
-        if not map:can_spawn_summon() then
+        if not map:spawnable_summon() then
             return me:message('이 지역에는 더 이상 소환할 수 없습니다.')
         end
 

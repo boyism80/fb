@@ -255,7 +255,7 @@ function M.attacker_blocks_pvp(me)
     return me ~= nil and me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)
 end
 
-function M.can_harm_character(me, you, pk, blocks_pvp)
+function M.harmable_character(me, you, pk, blocks_pvp)
     if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
         return false
     end
@@ -286,7 +286,7 @@ function M.can_harm_character(me, you, pk, blocks_pvp)
     return true
 end
 
-function M.can_damage_life(me, you, pk, blocks_pvp)
+function M.damageable_life(me, you, pk, blocks_pvp)
     if you == nil or not you:is(OBJECT_TYPE.LIFE) then
         return false
     end
@@ -295,7 +295,7 @@ function M.can_damage_life(me, you, pk, blocks_pvp)
         return true
     end
 
-    return M.can_harm_character(me, you, pk, blocks_pvp)
+    return M.harmable_character(me, you, pk, blocks_pvp)
 end
 
 function M.assert_map_debuff(me, you)
@@ -593,7 +593,7 @@ function M.attack_cast(me, you, spell, opts)
     local targets = {}
     
     for _, obj in pairs(you) do
-        if M.can_damage_life(me, obj, pk, blocks_pvp) then
+        if M.damageable_life(me, obj, pk, blocks_pvp) then
             if effect then
                 obj:effect(effect)
             end
@@ -687,7 +687,7 @@ function M.damage_near(me, spell, opts)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, you in pairs(M.near(me, OBJECT_TYPE.LIFE)) do
-        if M.can_damage_life(me, you, pk, blocks_pvp) then
+        if M.damageable_life(me, you, pk, blocks_pvp) then
             if effect then you:effect(effect) end
             if you:is(OBJECT_TYPE.CHARACTER) then
                 you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
@@ -737,7 +737,7 @@ function M.damage_near_target(me, you, spell, opts)
         if target == me then 
             goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET 
         end
-        if not M.can_damage_life(me, target, pk, blocks_pvp) then
+        if not M.damageable_life(me, target, pk, blocks_pvp) then
             goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET
         end
         if effect then target:effect(effect) end
@@ -786,7 +786,7 @@ function M.damage_area(me, you, spell, opts)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, obj in pairs(you) do
-        if M.can_damage_life(me, obj, pk, blocks_pvp) then
+        if M.damageable_life(me, obj, pk, blocks_pvp) then
             if obj:is(OBJECT_TYPE.CHARACTER) then
                 obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
             end

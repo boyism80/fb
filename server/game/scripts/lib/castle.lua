@@ -139,7 +139,7 @@ local function is_owner_or_ally(me, owner_clan_id)
     return is_owner, is_ally
 end
 
-function M.can_occupy(me, map)
+function M.occupyable(me, map)
     if me == nil or map == nil then
         return false
     end
@@ -197,7 +197,7 @@ function M.evict(me)
     if map == nil then
         return
     end
-    if M.can_occupy(me, map) then
+    if M.occupyable(me, map) then
         return
     end
 

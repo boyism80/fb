@@ -16,7 +16,7 @@ local function push_back(me)
     me:map(map, x, y + 1)
 end
 
-local function can_enter_now()
+local function enterable()
     local t = datetime()
     if t == nil then
         return false
@@ -30,7 +30,7 @@ local function enter_chilsung(me)
 end
 
 local function try_offerings(me, offerings, intro)
-    if not can_enter_now() then
+    if not enterable() then
         me:dialog(nil, '지금은 칠성당을 청소하는 중이니 잠시후에 오십시오.', { prev = false, next = false })
         push_back(me)
         return

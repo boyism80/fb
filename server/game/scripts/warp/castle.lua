@@ -196,7 +196,7 @@ return {
         if dest == nil then
             return
         end
-        if not castle_lib.can_occupy(me, dest) then
+        if not castle_lib.occupyable(me, dest) then
             me:message('성주나 동맹만 팔괘방에 들어갈 수 있습니다.', MESSAGE_TYPE.NOTIFY)
             local x, y = me:position()
             me:map(map, x, y + 2)

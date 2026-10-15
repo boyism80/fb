@@ -27,7 +27,7 @@ return {
             return
         end
         local castle_lib = require('lib.castle')
-        if not castle_lib.can_occupy(ch, map) then
+        if not castle_lib.occupyable(ch, map) then
             me:message('그곳으로 소환할 수 없습니다.')
             return
         end
