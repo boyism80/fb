@@ -46,7 +46,7 @@ return {
             -- Preserve instance slot across cardinal warps. dest:name() alone
             -- resolves to the source map and drops the caller's instance.
             local target = dest
-            if map:is_instance() then
+            if map:instance() then
                 target = dest:instance(map:slot())
                 if target == nil then
                     return

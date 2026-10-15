@@ -6,6 +6,7 @@ local M = {}
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 local skill    = require("integration.lib.skill")
+local script_step = require("integration.lib.script_step")
 
 local function slog(fmt, ...)
     log("debug", string.format("special: " .. fmt, ...))
@@ -249,7 +250,10 @@ local SPECIAL_SPELLS = {
             end
             
             if localhost() then
-                return skill.positions_equal(caster:position(), state.before)
+                if skill.positions_equal(caster:position(), state.before) == false then
+                    return false
+                end
+                return script_step.run_script(caster, "test/integration", "verify_map_instance", "MAP_INSTANCE", "1") == true
             end
             
             if skill.positions_equal(caster:position(), state.before) then

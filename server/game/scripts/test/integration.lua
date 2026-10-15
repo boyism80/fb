@@ -512,6 +512,18 @@ return {
         report(me, true, step)
     end,
 
+    verify_map_instance = function(me, step, expected)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+        local now = map:instance()
+        if now ~= (expected == '1') then
+            return report(me, false, step, string.format('instance=%s slot=%s', tostring(now), tostring(map:slot())))
+        end
+        report(me, true, step)
+    end,
+
     set_role = function(me, step, name, role)
         local you = name2ch(name)
         if you == nil then
