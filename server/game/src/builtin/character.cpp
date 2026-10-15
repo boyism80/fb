@@ -958,25 +958,27 @@ int builtin::character::builtin_equipment_off(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto parts = static_cast<fb::model::enum_value::EQUIPMENT_PARTS>(lua->tointeger(2, 0));
+    auto parts        = static_cast<fb::model::enum_value::EQUIPMENT_PARTS>(lua->tointeger(2, 0));
+    auto to_inventory = lua->toboolean(3, true);
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto slot     = std::make_shared<uint8_t>(0xFF);
     auto item     = std::make_shared<std::shared_ptr<fb::game::item>>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *slot = co_await ch->items.inactive(parts);
-        if (*slot != 0xFF)
-            *item = ch->items.at(*slot);
+        if (to_inventory)
+        {
+            auto slot = co_await ch->items.inactive(parts);
+            if (slot != 0xFF)
+                *item = ch->items.at(slot);
+        }
+        else
+        {
+            *item = ch->items.equipment_off(parts);
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        if (*slot == 0xFF)
-        {
-            lua->pushnil();
-            co_return 1;
-        }
         if (*item != nullptr)
             lua->pushobject(*item);
         else
@@ -2290,7 +2292,8 @@ int builtin::character::builtin_retrieve_item(lua_State* L)
         return 1;
     }
 
-    auto count = static_cast<uint16_t>(raw_count);
+    auto count        = static_cast<uint16_t>(raw_count);
+    auto to_inventory = lua->toboolean(4, true);
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto returned = std::make_shared<std::shared_ptr<fb::game::item>>();
@@ -2302,7 +2305,7 @@ int builtin::character::builtin_retrieve_item(lua_State* L)
         {
             if (stored_items[i] == item)
             {
-                *returned = co_await ch->items.retrieve(static_cast<uint8_t>(i), count);
+                *returned = co_await ch->items.retrieve(static_cast<uint8_t>(i), count, to_inventory);
                 break;
             }
         }

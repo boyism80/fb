@@ -760,9 +760,16 @@ return {
         castle_lib.strip_all(me)
     end,
 
-    on_login = function(me, first_login)
+    on_castle_lost = function(me, divine_beast)
+        castle_lib.strip(me, divine_beast)
+    end,
+
+    on_login = function(me, first_login, transfer)
         castle_lib.strip_all(me)
         castle_lib.evict(me)
+        if transfer then
+            return
+        end
 
         local clan = me:clan()
         if clan ~= nil and me:role() <= ROLE.USER then

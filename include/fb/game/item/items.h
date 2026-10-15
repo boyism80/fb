@@ -92,7 +92,7 @@ public:
     [[nodiscard]] async::task<bool>                 store(std::string_view name, uint16_t count);
     item_ptr                                        stored(const fb::model::item& item) const;
     const std::vector<item_ptr>&                    stored() const;
-    [[nodiscard]] async::task<item_ptr>             retrieve(uint8_t index, uint16_t count);
+    [[nodiscard]] async::task<item_ptr>             retrieve(uint8_t index, uint16_t count, bool to_inventory = true);
     [[nodiscard]] async::task<item_ptr>             retrieve(std::string_view name, uint16_t count);
     [[nodiscard]] async::task<item_ptr>             retrieve(const fb::model::item& item, uint16_t count);
     uint64_t                                        deposited() const;

@@ -437,7 +437,7 @@ const std::vector<std::shared_ptr<item>>& items::stored() const
     return this->_stored;
 }
 
-async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
+async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count, bool to_inventory)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -460,7 +460,7 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
     auto  item_id   = model.id;
     auto  item_name = model.name;
 
-    auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
+    auto exists = to_inventory && model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
     if (exists != nullptr)
     {
         if (count > exists->free_space())
@@ -489,19 +489,23 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
     }
     else
     {
-        // A bundle whose whole stack is listed joins the listed slot instead of taking a new one.
-        auto space = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->free_space(model) : model.capacity;
-        if (space == model.capacity && this->free() == false)
-            co_return nullptr;
+        if (to_inventory)
+        {
+            // A bundle whose whole stack is listed joins the listed slot instead of taking a new one.
+            auto space = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->free_space(model) : model.capacity;
+            if (space == model.capacity && this->free() == false)
+                co_return nullptr;
 
-        if (count > space)
-            co_return nullptr;
+            if (count > space)
+                co_return nullptr;
+        }
 
         auto item = stored->split(count);
         if (item == stored)
             this->_stored.erase(this->_stored.begin() + index);
 
-        std::ignore = co_await this->add(item);
+        if (to_inventory)
+            std::ignore = co_await this->add(item);
 
         // Log item retrieve event
         auto log_data              = Json::Value();

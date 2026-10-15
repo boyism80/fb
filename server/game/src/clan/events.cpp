@@ -171,10 +171,16 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
         auto members = clan->online_characters();
         auto message = std::format(_TEXT(MESSAGE_CLAN_DISBANDED), clan_name);
         this->_server.characters.foreach_enqueue(
-            [message](auto& ch) -> async::task<void> {
+            [this, message](auto& ch) -> async::task<void> {
                 ch->clan_reset();
                 ch->message(message, MESSAGE_TYPE::NOTIFY);
-                co_return;
+
+                auto lua = this->_server.lua.open("scripts/interaction.lua", "on_clan_left");
+                if (lua)
+                {
+                    lua->pushobject(ch);
+                    std::ignore = co_await lua->call(1);
+                }
             },
             members);
     });

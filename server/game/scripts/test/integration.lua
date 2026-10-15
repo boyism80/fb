@@ -933,6 +933,86 @@ return {
         end
     end,
 
+    -- Wears, holds and stores the clan sword of a castle the character does not own, fills the
+    -- inventory, then strips it. Every copy must be gone even though the inventory has no room.
+    verify_castle_strip = function(me, step)
+        local castle_lib = require('lib.castle')
+        local clan = me:clan()
+        local divine_beast = nil
+        for beast, _ in pairs(castle_lib.WEAPON_NAME_BY_DIVINE_BEAST) do
+            local entity = castle(beast)
+            if clan == nil or entity == nil or entity:owner_clan() ~= clan:id() then
+                divine_beast = beast
+                break
+            end
+        end
+        if divine_beast == nil then
+            return report(me, false, step, 'every castle is owned by the clan')
+        end
+        local name = castle_lib.WEAPON_NAME_BY_DIVINE_BEAST[divine_beast]
+
+        local level = me:level()
+        if level < 30 then
+            me:level(30)
+        end
+
+        local worn = me:mkitem(name, 1)
+        if worn ~= nil then
+            me:active(worn)
+        end
+        local weapon = me:weapon()
+        if weapon == nil or weapon:model():name() ~= name then
+            me:level(level)
+            return report(me, false, step, 'cannot wear ' .. name)
+        end
+
+        local stored = me:mkitem(name, 1)
+        if stored == nil or me:store_item(stored, 1) ~= true then
+            me:level(level)
+            return report(me, false, step, 'cannot store ' .. name)
+        end
+        if me:mkitem(name, 1) == nil then
+            me:level(level)
+            return report(me, false, step, 'cannot hold ' .. name)
+        end
+
+        local filled = 0
+        for _ = 1, 52 do
+            if me:mkitem('목도', 1) == nil then
+                break
+            end
+            filled = filled + 1
+        end
+
+        castle_lib.strip(me, divine_beast)
+
+        local left = {}
+        for _, item in pairs(me:equipments()) do
+            if item:model():name() == name then
+                table.insert(left, 'worn')
+            end
+        end
+        if #me:items(name) > 0 then
+            table.insert(left, 'held')
+        end
+        for _, item in pairs(me:stored_item()) do
+            if item:model():name() == name then
+                table.insert(left, 'stored')
+            end
+        end
+
+        if filled > 0 then
+            me:rmitem({ ['목도'] = filled })
+        end
+        me:level(level)
+
+        if #left == 0 then
+            report(me, true, step)
+        else
+            report(me, false, step, 'left ' .. table.concat(left, ','))
+        end
+    end,
+
     -- Reports 'q=<id>:<state>,...;m=<money>;map=<id>;i=<name>=<count>,...' for the NPC explorer.
     -- Quest state is 'none', '<step>' or '<step>!' when completed. Items are summed by name and sorted.
     snapshot = function(me, step, quest_ids)

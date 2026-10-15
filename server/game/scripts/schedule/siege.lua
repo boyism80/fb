@@ -90,18 +90,6 @@ local function end_siege(divine_beast)
     castle:end_siege(winner_clan and winner_clan:id() or nil)
 
     if winner_clan ~= nil and winner_clan:id() ~= previous_owner_id then
-        if previous_owner_id ~= nil then
-            local previous_owner = id2clan(previous_owner_id)
-            if previous_owner ~= nil then
-                for _, member in pairs(previous_owner:members()) do
-                    local online = name2ch(member:name())
-                    if online ~= nil then
-                        castle_lib.strip(online, divine_beast)
-                    end
-                end
-            end
-        end
-
         broadcast(string.format('[정보] %s 문파가 %s의성을 탈환합니다.', winner_clan:name(), info.name), MESSAGE_TYPE.WORLD)
     elseif previous_owner_id ~= nil then
         local owner_clan = id2clan(previous_owner_id)

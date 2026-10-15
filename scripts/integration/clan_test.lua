@@ -955,9 +955,28 @@ test_suite {
                 return false
             end
 
+            if lib.script_step.run_script(master, "test/integration", "set_state", "CLAN_SWORD_GIVE", "i=주작의검=1") ~= true then
+                progress(master, "FAILED: give clan sword")
+                return false
+            end
+
             msg, err = destroy_clan(master)
             if msg == nil or msg:find(MSG_DESTROY_OK, 1, true) == nil then
                 progress(master, "FAILED: destroy " .. tostring(msg or err))
+                return false
+            end
+
+            -- The strip runs on the member's thread after the destroy response.
+            local stripped = false
+            for _ = 1, 10 do
+                if lib.script_step.run_script(master, "test/integration", "verify_items", "CLAN_SWORD_STRIP", "주작의검=0") == true then
+                    stripped = true
+                    break
+                end
+                master:sleep(200)
+            end
+            if stripped == false then
+                progress(master, "FAILED: clan sword kept after destroy")
                 return false
             end
 

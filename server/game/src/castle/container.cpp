@@ -6,8 +6,10 @@
 
 #include <cstdint>
 #include <format>
+#include <memory>
 #include <optional>
 #include <tuple>
+#include <vector>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
@@ -68,9 +70,46 @@ async::task<void> castle::container::on_updated(const internal_resp::UpdatedCast
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
         co_return;
 
-    auto guard = co_await this->enter_write(resp.divine_beast);
-    if (guard.value() != nullptr)
+    auto previous = std::optional<uint32_t>{};
+    {
+        auto guard = co_await this->enter_write(resp.divine_beast);
+        if (guard.value() == nullptr)
+            co_return;
+
+        previous = guard.value()->owner_clan_id();
         guard.value()->owner_clan_id(resp.owner_clan_id);
+    }
+
+    if (previous != resp.owner_clan_id)
+        this->on_owner_changed(static_cast<fb::model::enum_value::DIVINE_BEAST>(resp.divine_beast), previous);
+}
+
+void castle::container::on_owner_changed(fb::model::enum_value::DIVINE_BEAST divine_beast,
+                                         const std::optional<uint32_t>&      previous)
+{
+    if (previous.has_value() == false)
+        return;
+
+    auto members = std::vector<std::shared_ptr<character>>{};
+    {
+        auto guard = this->_server.clans.try_enter_read(previous.value());
+        if (guard.has_value() == false || guard->value() == nullptr)
+            return;
+
+        members = guard->value()->online_characters();
+    }
+
+    this->_server.characters.foreach_enqueue(
+        [this, divine_beast](auto& ch) -> async::task<void> {
+            auto lua = this->_server.lua.open("scripts/interaction.lua", "on_castle_lost");
+            if (lua)
+            {
+                lua->pushobject(ch);
+                lua->pushinteger(static_cast<int>(divine_beast));
+                std::ignore = co_await lua->call(2);
+            }
+        },
+        members);
 }
 
 async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
@@ -111,7 +150,14 @@ async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEA
         co_return;
     }
 
-    auto guard = co_await this->enter_write(id);
-    if (guard.value() != nullptr)
+    {
+        auto guard = co_await this->enter_write(id);
+        if (guard.value() == nullptr)
+            co_return;
+
         guard.value()->owner_clan_id(resp.owner_clan_id);
+    }
+
+    if (previous_owner != resp.owner_clan_id)
+        this->on_owner_changed(divine_beast, previous_owner);
 }

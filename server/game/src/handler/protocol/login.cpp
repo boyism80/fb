@@ -436,20 +436,25 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     ch->collections.sync();
     ch->update_time(static_cast<uint8_t>(this->server.time().hours()),
                     static_cast<uint8_t>(this->server.time().minutes()));
-    if (request.from == internal::Service::Login)
+    auto transfer = request.from != internal::Service::Login;
+    if (transfer == false)
     {
         auto msg = this->elapsed_message(resp.character.updated_date);
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
+    }
 
-        auto lua = this->server.lua.open("scripts/interaction.lua", "on_login");
-        if (lua)
-        {
-            lua->pushobject(ch);
-            lua->pushboolean(ch->is_first_login());
-            fb::lua::run_async(std::move(lua), 2);
-        }
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_login");
+    if (lua)
+    {
+        lua->pushobject(ch);
+        lua->pushboolean(ch->is_first_login());
+        lua->pushboolean(transfer);
+        fb::lua::run_async(std::move(lua), 3);
+    }
 
+    if (transfer == false)
+    {
         ch->friends_sync(1);
         // Notify from Init mutual flags. Client may later replace the list;
         // accept that race rather than deferring behind a pending flag.

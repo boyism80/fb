@@ -311,8 +311,10 @@ local function remove_all_by_name(ch, item_name)
 
     for parts, item in pairs(ch:equipments()) do
         if item:model():name() == item_name then
-            if ch:equipment_off(parts) == nil then
-                return removed
+            local taken = ch:equipment_off(parts, false)
+            if taken ~= nil then
+                taken:destroy()
+                removed = true
             end
         end
     end
@@ -320,6 +322,16 @@ local function remove_all_by_name(ch, item_name)
     for _, item in pairs(ch:items(item_name)) do
         if ch:rmitem(item, item:count(), ITEM_DELETE_TYPE.REMOVED) then
             removed = true
+        end
+    end
+
+    for _, item in pairs(ch:stored_item()) do
+        if item:model():name() == item_name then
+            local taken = ch:retrieve_item(item, item:count(), false)
+            if taken ~= nil then
+                taken:destroy()
+                removed = true
+            end
         end
     end
 
