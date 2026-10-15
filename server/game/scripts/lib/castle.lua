@@ -351,8 +351,13 @@ function M.has_item_named(ch, item_name)
 end
 
 function M.strip(ch, divine_beast)
+    -- The owner is unknown here (cross server, or the castle failed to load), and a strip cannot be undone.
     local castle_obj = castle(divine_beast)
-    local owner_clan_id = castle_obj and castle_obj:owner_clan()
+    if castle_obj == nil then
+        return
+    end
+
+    local owner_clan_id = castle_obj:owner_clan()
     local clan = ch:clan()
     local clan_id = clan and clan:id() or nil
     local owns_castle = owner_clan_id ~= nil and clan_id == owner_clan_id

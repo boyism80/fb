@@ -385,6 +385,11 @@ test_suite {
             local d = ctx:bot(3)
             local e = ctx:bot(4)
 
+            progress(e, "STEP 0: GIVE E A CLAN SWORD")
+            if lib.script_step.run_script(e, "test/integration", "set_state", "CLAN_SWORD_GIVE", "i=주작의검=1") ~= true then
+                return abort_remaining(e, "FAILED: GIVE CLAN SWORD")
+            end
+
             progress(a, "STEP 1-2: FORM GROUPS AB AND CD")
             if a:invite_group(b) == false then
                 return abort_remaining(a, "FAILED TO FORM GROUP AB")
@@ -456,9 +461,38 @@ test_suite {
                 indices[#indices + 1] = i
             end
 
+            local e = ctx:bot(4)
+            local e_on_cross = poll_until(ctx, function()
+                local model = id2map(e:map())
+                return model ~= nil and model:name() ~= HOME_MAP
+            end, TRANSFER_WAIT_MS)
+            if e_on_cross == false then
+                return abort_remaining(e, "FAILED: E DID NOT REACH THE MATCH MAP")
+            end
+
+            -- The cross server has no castle ownership, so its transfer login must keep the sword.
+            progress(e, "STEP 6-1: E KEEPS THE CLAN SWORD ON THE CROSS SERVER")
+            if lib.script_step.run_script(e, "test/integration", "verify_items", "CLAN_SWORD_KEPT", "주작의검=1") ~= true then
+                return abort_remaining(e, "FAILED: CLAN SWORD STRIPPED ON THE CROSS SERVER")
+            end
+
             progress(ctx:bot(0), "STEP 7: FINISH MATCH 2 AND RETURN HOME")
             if finish_match(ctx, indices, #indices) == false then
                 return abort_remaining(ctx:bot(0), "FAILED: MATCH 2 FINISH")
+            end
+
+            -- E owns no castle, so the transfer login back home strips the sword after it lands.
+            progress(e, "STEP 7-1: E LOSES THE CLAN SWORD BACK HOME")
+            local stripped = false
+            for _ = 1, 10 do
+                if lib.script_step.run_script(e, "test/integration", "verify_items", "CLAN_SWORD_STRIP", "주작의검=0") == true then
+                    stripped = true
+                    break
+                end
+                ctx:sleep(POLL_INTERVAL_MS)
+            end
+            if stripped == false then
+                return abort_remaining(e, "FAILED: CLAN SWORD KEPT BACK HOME")
             end
 
             progress(ctx:bot(0), "STEP 7 PASSED: MATCH 2 ENDED AND RETURNED HOME")

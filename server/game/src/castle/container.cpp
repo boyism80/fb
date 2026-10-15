@@ -8,6 +8,7 @@
 #include <format>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <tuple>
 #include <vector>
 
@@ -20,20 +21,18 @@ castle::container::container(server& server) :
 
 async::task<castle::container::entity_ptr> castle::container::fetch(uint32_t id)
 {
+    // A process without a world (cross server) has no castle ownership, so no castle exists here rather than an
+    // ownerless one.
     auto world = fb::config<std::optional<uint32_t>>("world");
     if (!world)
-        co_return this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(id),
-                                                       std::nullopt);
+        co_return nullptr;
 
     auto&& resp =
         co_await this->_server.http.get<internal_resp::CastleList>("internal", std::format("/castle/{}", *world));
 
+    // An unknown owner must not be cached as no owner; a failed fetch is not cached and is retried.
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
-    {
-        fb::logger::warn("castle: failed to load castle list (error : {})", resp.error);
-        co_return this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(id),
-                                                       std::nullopt);
-    }
+        throw std::runtime_error(std::format("castle: failed to load castle list (error : {})", resp.error));
 
     for (auto& entry : resp.castles)
     {

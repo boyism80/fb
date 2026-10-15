@@ -941,13 +941,13 @@ return {
         local divine_beast = nil
         for beast, _ in pairs(castle_lib.WEAPON_NAME_BY_DIVINE_BEAST) do
             local entity = castle(beast)
-            if clan == nil or entity == nil or entity:owner_clan() ~= clan:id() then
+            if entity ~= nil and (clan == nil or entity:owner_clan() ~= clan:id()) then
                 divine_beast = beast
                 break
             end
         end
         if divine_beast == nil then
-            return report(me, false, step, 'every castle is owned by the clan')
+            return report(me, false, step, 'no loaded castle the clan does not own')
         end
         local name = castle_lib.WEAPON_NAME_BY_DIVINE_BEAST[divine_beast]
 
