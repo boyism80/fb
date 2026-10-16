@@ -9,10 +9,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <mutex>
 #include <optional>
 #include <string_view>
-#include <unordered_map>
 
 namespace fb::game {
 
@@ -73,34 +71,10 @@ public:
     };
 
 protected:
-    server&                                           _server;
-    mutable std::mutex                                _as_of_lock;
-    std::unordered_map<uint32_t, fb::model::datetime> _as_of;
+    server& _server;
 
 protected:
     virtual async::task<fetched> fetch(uint32_t id) = 0;
-
-    bool recorded(uint32_t id, const fb::model::datetime& at) const
-    {
-        auto _  = std::lock_guard(this->_as_of_lock);
-        auto it = this->_as_of.find(id);
-        return it != this->_as_of.end() && it->second >= at;
-    }
-
-    bool accept(uint32_t id, const fb::model::datetime& at) const
-    {
-        return this->recorded(id, at) == false;
-    }
-
-    void note(uint32_t id, const fb::model::datetime& at)
-    {
-        auto _  = std::lock_guard(this->_as_of_lock);
-        auto it = this->_as_of.find(id);
-        if (it == this->_as_of.end())
-            this->_as_of.emplace(id, at);
-        else if (at > it->second)
-            it->second = at;
-    }
 
     virtual entity_ptr merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming)
     {
@@ -111,7 +85,6 @@ protected:
     }
 
     async::task<guard> enter_write_impl(uint32_t id, fb::thread& thread_ref);
-    async::task<guard> open(uint32_t id, const fb::model::datetime& at);
 
 public:
     explicit lazy_container(server& server);

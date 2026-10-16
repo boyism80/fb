@@ -118,24 +118,6 @@ lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& th
 
 template <typename Entity, size_t NumBuckets>
 async::task<typename lazy_container<Entity, NumBuckets>::guard>
-lazy_container<Entity, NumBuckets>::open(uint32_t id, const fb::model::datetime& at)
-{
-    {
-        auto held = co_await this->enter_write(id);
-        if (held.holds_lock() == false)
-            co_return guard{};
-        if (held.value() != nullptr)
-            co_return std::move(held);
-        if (this->accept(id, at) == false)
-            co_return guard{};
-    }
-
-    this->erase(id);
-    co_return co_await this->enter_write(id);
-}
-
-template <typename Entity, size_t NumBuckets>
-async::task<typename lazy_container<Entity, NumBuckets>::guard>
 lazy_container<Entity, NumBuckets>::enter_write(uint32_t id)
 {
     auto* thread = this->_server.threads.current();
@@ -171,10 +153,6 @@ template async::task<lazy_container<castle>::guard> lazy_container<castle>::ente
 template async::task<lazy_container<clan>::guard>   lazy_container<clan>::enter_write(uint32_t);
 template async::task<lazy_container<group>::guard>  lazy_container<group>::enter_write(uint32_t);
 template async::task<lazy_container<castle>::guard> lazy_container<castle>::enter_write(uint32_t);
-
-template async::task<lazy_container<clan>::guard>   lazy_container<clan>::open(uint32_t, const fb::model::datetime&);
-template async::task<lazy_container<group>::guard>  lazy_container<group>::open(uint32_t, const fb::model::datetime&);
-template async::task<lazy_container<castle>::guard> lazy_container<castle>::open(uint32_t, const fb::model::datetime&);
 
 template bool lazy_container<clan>::contains(hash_type) const;
 template bool lazy_container<group>::contains(hash_type) const;

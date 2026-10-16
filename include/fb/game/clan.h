@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -89,44 +90,56 @@ public:
 
 class clan::container : public lazy_container<clan>
 {
+private:
+    mutable std::mutex                                _updated_lock;
+    std::unordered_map<uint32_t, fb::model::datetime> _updated_at;
+
+private:
+    bool recorded(uint32_t id, const fb::model::datetime& at) const;
+    void note(uint32_t id, const fb::model::datetime& at);
+
 protected:
+    // clang-format off
     async::task<fetched> fetch(uint32_t id) override;
-    entity_ptr merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming) override;
+    bool                 accept(uint32_t id, const fb::model::datetime& at) const;
+    async::task<guard>   open(uint32_t id, const fb::model::datetime& at);
+    entity_ptr           merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming) override;
+    // clang-format on
 
 public:
     explicit container(server& server);
 
 public:
     // clang-format off
-    async::task<void> on_updated(const fb::protocol::internal::response::UpdatedClan& resp);
-    async::task<void> create(character& me, std::string_view name);
-    async::task<void> destroy(character& me);
-    async::task<void> join_member(character& inviter, std::string_view target_name);
-    async::task<void> leave_member(character& leaver);
-    async::task<void> kick_member(character& kicker, std::string_view target_name);
-    async::task<void> change_role(character& changer, std::string_view target_name, CLAN_ROLE role);
-    async::task<void> set_title(character& changer, std::string_view title);
-    async::task<void> broadcast(uint32_t world, uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
-    async::task<void> request_ally(character& requester, uint32_t target_clan_id);
-    async::task<void> break_ally(character& requester);
-    async::task<void> declare_enemy(character& requester, uint32_t target_clan_id);
-    async::task<void> end_enemy(character& requester, uint32_t target_clan_id);
-    async::task<void> on_error(uint32_t error);
-    async::task<void> on_create(uint32_t clan_id, std::string name, std::string title, std::unordered_map<std::string, clan_member> members, const fb::model::datetime& updated_date);
-    async::task<void> on_destroyed(uint32_t clan_id, std::string clan_name, const fb::model::datetime& updated_date);
-    async::task<void> on_broadcast(uint32_t clan_id, std::string message, uint8_t type);
-    async::task<void> on_set_title(uint32_t clan_id, std::optional<std::string> new_title, const fb::model::datetime& updated_date);
-    async::task<void> on_join(uint32_t clan_id, std::optional<std::string> new_member, CLAN_ROLE role, const fb::model::datetime& updated_date);
-    async::task<void> on_leave(uint32_t clan_id, std::optional<std::string> deleted_member, const fb::model::datetime& updated_date);
-    async::task<void> on_kick(uint32_t clan_id, std::optional<std::string> deleted_member, const fb::model::datetime& updated_date);
-    async::task<void> on_change_role(uint32_t clan_id, std::optional<uint32_t> target_uid, std::optional<std::string> target_name, std::optional<uint32_t> old_role, std::optional<uint32_t> new_role, const fb::model::datetime& updated_date);
-    async::task<void> on_ally(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
-    async::task<void> on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
-    async::task<void> on_enemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
-    async::task<void> on_unenemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
+    async::task<void>                on_updated(const fb::protocol::internal::response::UpdatedClan& resp);
+    async::task<void>                create(character& me, std::string_view name);
+    async::task<void>                destroy(character& me);
+    async::task<void>                join_member(character& inviter, std::string_view target_name);
+    async::task<void>                leave_member(character& leaver);
+    async::task<void>                kick_member(character& kicker, std::string_view target_name);
+    async::task<void>                change_role(character& changer, std::string_view target_name, CLAN_ROLE role);
+    async::task<void>                set_title(character& changer, std::string_view title);
+    async::task<void>                broadcast(uint32_t world, uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
+    async::task<void>                request_ally(character& requester, uint32_t target_clan_id);
+    async::task<void>                break_ally(character& requester);
+    async::task<void>                declare_enemy(character& requester, uint32_t target_clan_id);
+    async::task<void>                end_enemy(character& requester, uint32_t target_clan_id);
+    async::task<void>                on_error(uint32_t error);
+    async::task<void>                on_create(uint32_t clan_id, std::string name, std::string title, std::unordered_map<std::string, clan_member> members, const fb::model::datetime& updated_date);
+    async::task<void>                on_destroyed(uint32_t clan_id, std::string clan_name, const fb::model::datetime& updated_date);
+    async::task<void>                on_broadcast(uint32_t clan_id, std::string message, uint8_t type);
+    async::task<void>                on_set_title(uint32_t clan_id, std::optional<std::string> new_title, const fb::model::datetime& updated_date);
+    async::task<void>                on_join(uint32_t clan_id, std::optional<std::string> new_member, CLAN_ROLE role, const fb::model::datetime& updated_date);
+    async::task<void>                on_leave(uint32_t clan_id, std::optional<std::string> deleted_member, const fb::model::datetime& updated_date);
+    async::task<void>                on_kick(uint32_t clan_id, std::optional<std::string> deleted_member, const fb::model::datetime& updated_date);
+    async::task<void>                on_change_role(uint32_t clan_id, std::optional<uint32_t> target_uid, std::optional<std::string> target_name, std::optional<uint32_t> old_role, std::optional<uint32_t> new_role, const fb::model::datetime& updated_date);
+    async::task<void>                on_ally(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
+    async::task<void>                on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
+    async::task<void>                on_enemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
+    async::task<void>                on_unenemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id, const fb::model::datetime& updated_date);
     async::task<std::optional<bool>> add_money(uint32_t world, uint32_t clan_id, int64_t delta, uint64_t request_id);
     async::task<std::optional<bool>> abort_money(uint32_t world, uint32_t clan_id, uint64_t request_id);
-    async::task<void> on_set_money(uint32_t clan_id, uint64_t money, const fb::model::datetime& updated_date);
+    async::task<void>                on_set_money(uint32_t clan_id, uint64_t money, const fb::model::datetime& updated_date);
     // clang-format on
 };
 

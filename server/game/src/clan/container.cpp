@@ -75,3 +75,41 @@ clan::container::entity_ptr clan::container::merge_fetched(uint32_t             
     this->note(id, incoming.at);
     return incoming.entity;
 }
+
+bool clan::container::recorded(uint32_t id, const fb::model::datetime& at) const
+{
+    auto _  = std::lock_guard(this->_updated_lock);
+    auto it = this->_updated_at.find(id);
+    return it != this->_updated_at.end() && it->second >= at;
+}
+
+bool clan::container::accept(uint32_t id, const fb::model::datetime& at) const
+{
+    return this->recorded(id, at) == false;
+}
+
+void clan::container::note(uint32_t id, const fb::model::datetime& at)
+{
+    auto _  = std::lock_guard(this->_updated_lock);
+    auto it = this->_updated_at.find(id);
+    if (it == this->_updated_at.end())
+        this->_updated_at.emplace(id, at);
+    else if (at > it->second)
+        it->second = at;
+}
+
+async::task<clan::container::guard> clan::container::open(uint32_t id, const fb::model::datetime& at)
+{
+    {
+        auto held = co_await this->enter_write(id);
+        if (held.holds_lock() == false)
+            co_return guard{};
+        if (held.value() != nullptr)
+            co_return std::move(held);
+        if (this->accept(id, at) == false)
+            co_return guard{};
+    }
+
+    this->erase(id);
+    co_return co_await this->enter_write(id);
+}

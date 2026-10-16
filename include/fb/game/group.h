@@ -8,9 +8,11 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -65,9 +67,21 @@ public:
 
 class group::container : public lazy_container<group>
 {
+private:
+    mutable std::mutex                                _updated_lock;
+    std::unordered_map<uint32_t, fb::model::datetime> _updated_at;
+
+private:
+    bool recorded(uint32_t id, const fb::model::datetime& at) const;
+    void note(uint32_t id, const fb::model::datetime& at);
+
 protected:
+    // clang-format off
     async::task<fetched> fetch(uint32_t id) override;
-    entity_ptr merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming) override;
+    bool                 accept(uint32_t id, const fb::model::datetime& at) const;
+    async::task<guard>   open(uint32_t id, const fb::model::datetime& at);
+    entity_ptr           merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming) override;
+    // clang-format on
 
 public:
     explicit container(server& server);
@@ -96,9 +110,9 @@ public:
 
 private:
     // clang-format off
-    async::task<void> remove_member(uint32_t group_id, std::string name, std::string message, std::string others_message, std::string log_name, const fb::model::datetime& updated_date);
-    async::task<void> reset_member(character& ch, std::string message);
-    async::task<void> send_portraits(std::vector<std::string> names, std::string master, std::vector<std::shared_ptr<character>> online, std::vector<std::shared_ptr<character>> recipients);
+    async::task<void>                                         remove_member(uint32_t group_id, std::string name, std::string message, std::string others_message, std::string log_name, const fb::model::datetime& updated_date);
+    async::task<void>                                         reset_member(character& ch, std::string message);
+    async::task<void>                                         send_portraits(std::vector<std::string> names, std::string master, std::vector<std::shared_ptr<character>> online, std::vector<std::shared_ptr<character>> recipients);
     static fb::protocol::game::response::group_portrait_entry portrait_entry(const character& ch, bool leader);
     // clang-format on
 };
