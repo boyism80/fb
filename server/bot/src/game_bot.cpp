@@ -37,7 +37,7 @@ constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
 game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id) :
     bot<game_bot>(bot_controller, id)
 {
-    this->_next_action_time = fb::model::datetime();
+    this->_next_action_time = fb::model::datetime::utc_now();
 
     this->pattern(&game_bot::pattern_chat, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_attack, 250ms, 1000ms);

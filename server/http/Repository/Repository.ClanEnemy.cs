@@ -109,7 +109,7 @@ namespace Http.Reepository
         protected override string OnDelete(ClanEnemyKey key)
         {
             return $"""
-                UPDATE `clan_enemy` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `clan_enemy` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE `clan` = {key.Clan.Escape()} AND `enemy_clan` = {key.EnemyClan.Escape()} AND `deleted` = 0;
                 """;
         }
@@ -123,7 +123,7 @@ namespace Http.Reepository
                 $"(`clan` = {k.Clan.Escape()} AND `enemy_clan` = {k.EnemyClan.Escape()})");
 
             return $"""
-                UPDATE `clan_enemy` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `clan_enemy` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }

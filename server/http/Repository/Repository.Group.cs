@@ -60,7 +60,7 @@ namespace Http.Reepository
         protected override string OnDelete(GroupKey key)
         {
             return $"""
-                UPDATE `group` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `group` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE `master` = {key.Master.Escape()} AND `deleted` = 0;
                 """;
         }

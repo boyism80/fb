@@ -512,7 +512,7 @@ namespace Internal.Controllers
             await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, sync);
 
             await _dbContext.SaveChangesAsync();
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var claimingBoxes = unsettledRequests
                 .Where(x => x.Type == (byte)UnsettledType.StorageClaim)
                 .Select(x => (uint)x.Target)
@@ -720,9 +720,10 @@ namespace Internal.Controllers
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
             var collectionUnlocksTask = _dbContext.CollectionUnlock.GetMany(world, characterIds);
             var unsettledTask = _dbContext.UnsettledRequest.GetMany(world, characterIds);
+            var marriageCreatedTask = _dbContext.Marriage.GetCreatedDates(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                collectionUnlocksTask, unsettledTask);
+                collectionUnlocksTask, unsettledTask, marriageCreatedTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -731,6 +732,7 @@ namespace Internal.Controllers
             var questsByOwner = await questsTask;
             var collectionUnlocksByOwner = await collectionUnlocksTask;
             var unsettledByOwner = await unsettledTask;
+            var marriageCreated = await marriageCreatedTask;
 
             foreach (var data in payloads)
             {
@@ -738,7 +740,10 @@ namespace Internal.Controllers
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
                     throw new Exception($"Character not found: {characterId}");
 
-                ReplaceSnapshot(world, data, existingCharacter,
+                DateTime? createdDate = marriageCreated.TryGetValue(characterId, out var existingMarriageCreated)
+                    ? existingMarriageCreated
+                    : null;
+                ReplaceSnapshot(world, data, existingCharacter, createdDate,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
@@ -752,6 +757,7 @@ namespace Internal.Controllers
             uint world,
             Protocol.SavePayload data,
             Character existingCharacter,
+            DateTime? marriageCreatedDate,
             IReadOnlyList<Item> existingItems,
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
@@ -768,7 +774,9 @@ namespace Internal.Controllers
 
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
             marriage.CharacterId = characterId;
-            marriage.UpdatedDate = DateTime.Now;
+            if (marriageCreatedDate.HasValue)
+                marriage.CreatedDate = marriageCreatedDate.Value;
+            marriage.UpdatedDate = DateTime.UtcNow;
             _dbContext.Marriage.Set(world, marriage);
 
             var items = _mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>());

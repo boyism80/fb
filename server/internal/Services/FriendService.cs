@@ -40,7 +40,7 @@ namespace Internal.Services
         {
             var world = request.World;
             var user = request.User;
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
             var friends = await FindFriends(world, user, request.Names);
             var lockUids = new SortedSet<uint> { user };

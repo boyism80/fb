@@ -1,4 +1,5 @@
-﻿using Http.Extension;
+﻿using Dapper;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -18,13 +19,38 @@ namespace Http.Reepository
             return await base.Get(world, new MarriageKey { CharacterId = characterId });
         }
 
+        public async Task<IReadOnlyDictionary<uint, DateTime>> GetCreatedDates(uint world, IReadOnlyList<uint> characterIds)
+        {
+            if (characterIds == null || characterIds.Count == 0)
+                return new Dictionary<uint, DateTime>();
+
+            var created = new Dictionary<uint, DateTime>();
+            foreach (var (connection, idBatch) in _dbContext.GetShardConnections(world, characterIds.Distinct()))
+            {
+                await using (connection)
+                {
+                    var rows = await connection.QueryAsync<Marriage>($"""
+                        SELECT
+                            character_id AS CharacterId,
+                            created_date AS CreatedDate
+                        FROM `marriage`
+                        WHERE `character_id` IN ({string.Join(",", idBatch)});
+                        """);
+                    foreach (var row in rows)
+                        created[row.CharacterId] = row.CreatedDate;
+                }
+            }
+
+            return created;
+        }
+
         protected override string OnSelect(MarriageKey key)
         {
             return $"""
                 SELECT
                     character_id AS CharacterId,
                     spouse_id AS SpouseId,
-                    COALESCE(remarriage_after, NOW()) AS RemarriageAfter,
+                    COALESCE(remarriage_after, UTC_TIMESTAMP()) AS RemarriageAfter,
                     divorce_count AS DivorceCount,
                     created_date AS CreatedDate,
                     updated_date AS UpdatedDate

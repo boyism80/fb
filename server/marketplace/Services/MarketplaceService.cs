@@ -407,7 +407,7 @@ public class MarketplaceService
             await conn.ExecuteAsync($@"
                 UPDATE `marketplace_listing`
                 SET `status` = {ListingState.CANCELLED.Escape()},
-                    `updated_date` = NOW()
+                    `updated_date` = UTC_TIMESTAMP()
                 WHERE `id` IN @ListingIds
                   AND `status` = {ListingState.ACTIVE.Escape()}", parameters, transaction);
 

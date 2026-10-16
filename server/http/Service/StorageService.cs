@@ -80,7 +80,7 @@ namespace Http.Service
                     }
                 }
 
-                var now = DateTime.Now;
+                var now = DateTime.UtcNow;
                 var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
                 box = new StorageBox
                 {
@@ -159,7 +159,7 @@ namespace Http.Service
             if (systemBox == null)
                 throw new KeyNotFoundException($"System storage box {systemStorageBoxId} not found");
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if (systemBox.ExpiredDate.HasValue && systemBox.ExpiredDate.Value <= now)
                 return new List<StorageBox>();
 
@@ -227,7 +227,7 @@ namespace Http.Service
             if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= SnowflakeId.Time(claimId).ToLocalTime())
                 return false;
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             box.Received = true;
             box.ClaimId = claimId;
             box.UpdatedDate = now;
@@ -252,7 +252,7 @@ namespace Http.Service
 
             box.Received = false;
             box.ClaimId = null;
-            box.UpdatedDate = DateTime.Now;
+            box.UpdatedDate = DateTime.UtcNow;
             _dbContext.StorageBox.Set(world, box);
             await _dbContext.StorageBox.SaveChangesAsync();
             return true;

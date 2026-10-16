@@ -33,8 +33,8 @@ namespace Http.Model
                 MatchType = matchType,
                 Mu = DefaultMu,
                 Sigma = DefaultSigma,
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
         }
     }

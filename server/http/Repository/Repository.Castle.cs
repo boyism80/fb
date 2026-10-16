@@ -56,7 +56,7 @@ namespace Http.Reepository
         protected override string OnDelete(CastleKey key)
         {
             return $"""
-                UPDATE `castle` SET `owner_clan` = NULL, `updated_date` = NOW()
+                UPDATE `castle` SET `owner_clan` = NULL, `updated_date` = UTC_TIMESTAMP()
                 WHERE `divine_beast` = {key.DivineBeast.Escape()};
                 """;
         }

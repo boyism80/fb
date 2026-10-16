@@ -40,7 +40,7 @@ namespace Marketplace.Reepository
                     {buyerId.Escape()},
                     {purchaseCount.Escape()},
                     {purchasePrice.Escape()},
-                    NOW())
+                    UTC_TIMESTAMP())
                 """;
 
             if (transaction != null)
@@ -91,7 +91,7 @@ namespace Marketplace.Reepository
                     0,
                     0,
                     1,
-                    NOW())
+                    UTC_TIMESTAMP())
                 """;
 
             await transaction.Connection.ExecuteAsync(sql, null, transaction);

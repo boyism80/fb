@@ -42,7 +42,7 @@ namespace Http.Service
 
         public async Task<MaintenanceInfo> GetMaintenanceInfo(uint world, DateTime? checkTime = null)
         {
-            var now = checkTime ?? DateTime.Now;
+            var now = checkTime ?? DateTime.UtcNow;
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
                 return null;
@@ -83,7 +83,7 @@ namespace Http.Service
             if (string.IsNullOrEmpty(schedule.Id))
                 schedule.Id = Guid.NewGuid().ToString();
 
-            schedule.CreatedAt = DateTime.Now;
+            schedule.CreatedAt = DateTime.UtcNow;
             schedule.IsActive = true;
 
             var redis = _redisService.GetUnifiedConnection();
@@ -124,7 +124,7 @@ namespace Http.Service
                 return false;
 
             schedule.IsActive = false;
-            schedule.CancelledAt = DateTime.Now;
+            schedule.CancelledAt = DateTime.UtcNow;
 
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)

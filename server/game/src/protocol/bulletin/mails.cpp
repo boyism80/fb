@@ -28,7 +28,7 @@ void bulletin_mails::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint16_t>(mail.id);
         writer.write<std::string>(mail.sender);
 
-        auto dt = fb::model::datetime(mail.created_date);
+        auto dt = fb::model::datetime(mail.created_date).to_kst();
         writer.write<uint8_t>(static_cast<uint8_t>(dt.month()));
         writer.write<uint8_t>(static_cast<uint8_t>(dt.day()));
         writer.write<std::string>(mail.title);

@@ -44,7 +44,7 @@ namespace Http.Reepository
         public async Task<List<SystemStorageBox>> GetAll(uint world, uint offset = 0)
         {
             var all = await base.GetAll(world, new SystemStorageBoxKey { Id = 0 });
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             return all
                 .Where(b => b.Id >= offset
                             && (b.ExpiredDate == null || b.ExpiredDate > now))
@@ -126,7 +126,7 @@ namespace Http.Reepository
 
             var query = """
                 INSERT INTO system_storage_box (title, message, attachments, expired_date, external_ref, deleted, created_date, updated_date)
-                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @expireDate, @externalRef, 0, NOW(), NOW());
+                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @expireDate, @externalRef, 0, UTC_TIMESTAMP(), UTC_TIMESTAMP());
                 SELECT LAST_INSERT_ID();
                 """;
 
@@ -148,8 +148,8 @@ namespace Http.Reepository
                 Attachments  = attachments ?? new List<Fb.Model.Dsl>(),
                 ExpiredDate  = expireDate,
                 ExternalRef  = externalRef,
-                CreatedDate  = DateTime.Now,
-                UpdatedDate  = DateTime.Now
+                CreatedDate  = DateTime.UtcNow,
+                UpdatedDate  = DateTime.UtcNow
             };
 
             Set(world, box);

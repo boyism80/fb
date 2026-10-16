@@ -174,7 +174,7 @@ namespace Http.Reepository
         {
             _buffer.Enqueue(async () =>
             {
-                value.UpdatedDate = DateTime.Now;
+                value.UpdatedDate = DateTime.UtcNow;
 
                 var redisKey = value.GetRedisKey();
                 var redis = _redis.GetConnection(world, value.GetHash());
@@ -208,7 +208,7 @@ namespace Http.Reepository
             {
                 foreach (var value in values)
                 {
-                    value.UpdatedDate = DateTime.Now;
+                    value.UpdatedDate = DateTime.UtcNow;
                 }
 
                 foreach (var hashGroup in values.GroupBy(x => x.GetHash()))
@@ -264,7 +264,7 @@ namespace Http.Reepository
             {
                 foreach (var value in values)
                 {
-                    value.UpdatedDate = DateTime.Now;
+                    value.UpdatedDate = DateTime.UtcNow;
                 }
 
                 var groups = removed.Select(x => (Row: x, Removed: true))

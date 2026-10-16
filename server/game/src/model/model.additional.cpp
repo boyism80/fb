@@ -21,19 +21,21 @@ std::optional<fb::model::datetime> fb::model::schedule::next_execution(const fb:
     if (has_at == has_cron) // require exactly one of at / cron
         return std::nullopt;
 
+    // cron, at, and active bounds are Korean civil times. `now` is UTC.
+    const auto now_kst = now.to_kst();
     if (has_at)
     {
-        if (now < this->at.value())
-            return this->at.value();
+        if (now_kst < this->at.value())
+            return this->at.value().kst_to_utc();
         return std::nullopt;
     }
     else
     {
-        auto from = now;
+        auto from = now_kst;
         if (this->active.has_value())
         {
             const auto& active = this->active.value();
-            if (active.end.has_value() && now > active.end.value())
+            if (active.end.has_value() && now_kst > active.end.value())
                 return std::nullopt;
 
             if (active.begin.has_value() && from < active.begin.value())
@@ -76,7 +78,7 @@ std::optional<fb::model::datetime> fb::model::schedule::next_execution(const fb:
         if (this->active.has_value() && this->active->end.has_value() && next.value() > this->active->end.value())
             return std::nullopt;
 
-        return next;
+        return next.value().kst_to_utc();
     }
 }
 
@@ -126,8 +128,9 @@ fb::model::datetime fb::model::event::solar_occurrence(const fb::model::datetime
                                            start.seconds()));
 }
 
-bool fb::model::event::is_active(const fb::model::datetime& now) const
+bool fb::model::event::is_active(const fb::model::datetime& now_utc) const
 {
+    const auto now = now_utc.to_kst();
     using period_t = fb::model::enum_value::EVENT_PERIOD;
 
     const auto period = this->period.value_or(period_t::NONE);

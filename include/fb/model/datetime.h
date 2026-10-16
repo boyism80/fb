@@ -610,20 +610,39 @@ inline lunar_date solar_to_lunar(int32_t year, int32_t month, int32_t day)
  *             This class wraps boost::posix_time::ptime to provide a convenient interface
  *             for date and time manipulation. It supports construction from strings,
  *             arithmetic operations with timespans, component access (year, month, day, etc.),
- *             and comparison operations. The class uses local time by default and provides
- *             methods for adding various time units.
+ *             and comparison operations. The stored value is a wall-clock number with no
+ *             time zone. now() is the process local clock. utc_now() is UTC. Callers that
+ *             persist a time use utc_now().
  */
 class datetime
 {
 private:
     boost::posix_time::ptime _ptime; ///< Internal boost posix time representation
 
+    explicit datetime(boost::posix_time::ptime ptime) : _ptime(std::move(ptime))
+    { }
+
 public:
-    /**
-     * @brief      Default constructor that creates a datetime with the current local time.
-     */
-    datetime() : _ptime(boost::posix_time::microsec_clock::local_time())
-    {}
+    static datetime now()
+    {
+        return datetime(boost::posix_time::microsec_clock::local_time());
+    }
+
+    static datetime utc_now()
+    {
+        return datetime(boost::posix_time::microsec_clock::universal_time());
+    }
+
+    // Korea civil time is UTC+9 and does not observe daylight saving.
+    datetime to_kst() const
+    {
+        return *this + timespan(0, 9, 0, 0, 0);
+    }
+
+    datetime kst_to_utc() const
+    {
+        return *this - timespan(0, 9, 0, 0, 0);
+    }
 
     /**
      * @brief      Constructs a datetime from a string representation.

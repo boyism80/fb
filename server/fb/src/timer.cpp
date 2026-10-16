@@ -11,5 +11,6 @@ timer::timer(const handle_callback_type& fn,
     fn(fn),
     duration(duration),
     repeat(repeat),
-    context(std::move(context))
+    context(std::move(context)),
+    begin(fb::model::datetime::utc_now())
 { }

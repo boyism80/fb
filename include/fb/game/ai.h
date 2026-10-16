@@ -32,7 +32,7 @@ private:
 
 private:
     damage_map _recent_damage;
-    datetime   _target_lock_time;
+    datetime   _target_lock_time = datetime::utc_now();
 
 public:
     virtual ~ai() = default;

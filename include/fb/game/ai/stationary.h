@@ -12,7 +12,7 @@ private:
     using datetime = fb::model::datetime;
 
 private:
-    datetime _target_lock_time;
+    datetime _target_lock_time = datetime::utc_now();
 
 public:
     // clang-format off

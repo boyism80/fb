@@ -30,7 +30,7 @@ namespace AdminTool.Services
 
     public class AdminActivityEntry
     {
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public string Category { get; set; } = string.Empty;
         public string Summary { get; set; } = string.Empty;
         public string Detail { get; set; }

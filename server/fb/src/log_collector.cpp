@@ -55,7 +55,7 @@ void log_collector::write(std::string_view event_type, const Json::Value& data)
     try
     {
         Json::Value entry;
-        entry["timestamp"]   = fb::model::datetime().to_string();
+        entry["timestamp"]   = fb::model::datetime::utc_now().to_string();
         entry["event"]       = std::string(event_type);
         entry["server_id"]   = this->_server_id;
         entry["server_name"] = this->_server_name;

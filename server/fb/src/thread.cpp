@@ -58,9 +58,9 @@ void fb::thread::on_thread(uint8_t index)
         }
         else
         {
-            auto begin = fb::model::datetime();
+            auto begin = fb::model::datetime::utc_now();
             this->on_idle();
-            auto elapsed = fb::model::datetime() - begin;
+            auto elapsed = fb::model::datetime::utc_now() - begin;
 
             if (elapsed < term)
                 std::this_thread::sleep_for(std::chrono::milliseconds((term - elapsed).total_milliseconds()));
@@ -70,7 +70,7 @@ void fb::thread::on_thread(uint8_t index)
 
 void fb::thread::on_idle()
 {
-    auto now = fb::model::datetime();
+    auto now = fb::model::datetime::utc_now();
     for (int i = static_cast<int>(this->_timers.size()) - 1; i >= 0; i--)
     {
         auto timer = this->_timers[i];
@@ -169,7 +169,7 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
             auto callback = fn;
             try
             {
-                co_await callback(fb::model::datetime(), this->_thread.get_id());
+                co_await callback(fb::model::datetime::utc_now(), this->_thread.get_id());
             }
             catch (std::exception& e)
             {

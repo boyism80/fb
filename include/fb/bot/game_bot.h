@@ -101,7 +101,7 @@ private:
     // clang-format off
     bool                            _inited = false;
     std::vector<pattern_params>     _pattern_params;
-    datetime                        _next_action_time;
+    datetime                        _next_action_time = datetime::utc_now();
     uint16_t                        _map = 0xFFFF;
     std::optional<uint32_t>         _instance_slot;
     uint32_t                        _oid = 0;

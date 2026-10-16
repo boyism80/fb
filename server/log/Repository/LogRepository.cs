@@ -12,7 +12,7 @@ namespace Log.Repository
     {
         private const int MaxInsertRows = 5000;
         private const int MaxInsertBytes = 4 * 1024 * 1024;
-        private const string InsertPrefix = "INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `transaction_id`, `data`) VALUES ";
+        private const string InsertPrefix = "INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `transaction_id`, `data`, `created_date`) VALUES ";
         private readonly DbContext _dbContext;
         private readonly ILogger<LogRepository> _logger;
         private readonly IConfiguration _configuration;
@@ -139,7 +139,7 @@ namespace Log.Repository
 
         private static string BuildInsertValue(LogEntry e)
         {
-            return $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.TransactionId.Escape()}, {e.Data.Escape()})";
+            return $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.TransactionId.Escape()}, {e.Data.Escape()}, UTC_TIMESTAMP())";
         }
 
         private class LogEntry

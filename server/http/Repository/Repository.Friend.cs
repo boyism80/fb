@@ -122,7 +122,7 @@ namespace Http.Reepository
         protected override string OnDelete(FriendKey key)
         {
             return $"""
-                UPDATE `friend` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `friend` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE `user` = {key.User.Escape()} AND `friend_uid` = {key.FriendUid.Escape()} AND `deleted` = 0;
                 """;
         }
@@ -136,7 +136,7 @@ namespace Http.Reepository
                 $"(`user` = {k.User.Escape()} AND `friend_uid` = {k.FriendUid.Escape()})");
 
             return $"""
-                UPDATE `friend` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `friend` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }

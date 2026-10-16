@@ -108,10 +108,10 @@ public:
      */
     struct ping_state_t
     {
-        fb::model::datetime last_ping_time;
-        uint32_t            token         = 0;
-        bool                pong_received = true;
-        bool                enabled       = false;
+        fb::model::datetime last_ping_time = fb::model::datetime::utc_now();
+        uint32_t            token          = 0;
+        bool                pong_received  = true;
+        bool                enabled        = false;
     };
 
     struct match_state_t
@@ -204,9 +204,9 @@ public:
         uint32_t                                id    = 0;
         uint32_t                                world = 0;
         std::string                             name;
-        std::optional<uint32_t>                 birthday = std::nullopt;
-        fb::model::datetime                     created_date;
-        fb::model::datetime                     updated_date;
+        std::optional<uint32_t>                 birthday         = std::nullopt;
+        fb::model::datetime                     created_date     = fb::model::datetime::utc_now();
+        fb::model::datetime                     updated_date     = fb::model::datetime::utc_now();
         std::optional<fb::model::datetime>      first_login_date = std::nullopt;
         ROLE                                    role             = ROLE::USER;
         CLASS                                   class_type       = CLASS::NONE;

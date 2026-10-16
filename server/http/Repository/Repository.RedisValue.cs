@@ -146,7 +146,7 @@ namespace Http.Reepository
         {
             _buffer.Enqueue(async () =>
             {
-                value.UpdatedDate = DateTime.Now;
+                value.UpdatedDate = DateTime.UtcNow;
 
                 var redis = _redis.GetConnection(world, value.GetHash());
                 if (redis == null)

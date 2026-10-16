@@ -1,3 +1,4 @@
+using System.Globalization;
 using AutoMapper;
 using Newtonsoft.Json;
 using Protocol = fb.protocol.@internal;
@@ -6,6 +7,11 @@ namespace Http.Mapping
 {
     public class HttpModelToProtocolProfile : Profile
     {
+        private static DateTime ParseUtc(string value)
+        {
+            return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+        }
+
         public HttpModelToProtocolProfile()
         {
             CreateMap<Http.Model.Mimicry, Protocol.Mimicry>();
@@ -31,8 +37,8 @@ namespace Http.Mapping
                 .ForMember(x => x.Mimicry, x => x.MapFrom(u => u.Mimicry))
                 .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
                 .ForMember(x => x.Class, x => x.MapFrom(u => u.ClassType))
-                .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => DateTime.Parse(u.UpdatedDate)))
-                .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => string.IsNullOrEmpty(u.FirstLoginDate) ? null : (DateTime?)DateTime.Parse(u.FirstLoginDate)))
+                .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => ParseUtc(u.UpdatedDate)))
+                .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => string.IsNullOrEmpty(u.FirstLoginDate) ? null : (DateTime?)ParseUtc(u.FirstLoginDate)))
                 .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
                 .ForMember(x => x.PositionY, x => x.MapFrom(u => u.Position.Y))
                 .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role))
@@ -62,7 +68,7 @@ namespace Http.Mapping
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
                 .ForMember(x => x.ExpireTime, x => x.MapFrom(u => u.ExpireTime.HasValue ? u.ExpireTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .ReverseMap()
-                .ForMember(x => x.ExpireTime, x => x.MapFrom(u => string.IsNullOrEmpty(u.ExpireTime) ? null : (DateTime?)DateTime.Parse(u.ExpireTime)));
+                .ForMember(x => x.ExpireTime, x => x.MapFrom(u => string.IsNullOrEmpty(u.ExpireTime) ? null : (DateTime?)ParseUtc(u.ExpireTime)));
 
             CreateMap<Http.Model.Achievement, Protocol.Achievement>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Uid))
@@ -81,7 +87,9 @@ namespace Http.Mapping
                 .ForMember(x => x.CharacterId, x => x.Ignore())
                 .ForMember(x => x.CreatedDate, x => x.Ignore())
                 .ForMember(x => x.UpdatedDate, x => x.Ignore())
-                .ForMember(x => x.RemarriageAfter, x => x.MapFrom(src => string.IsNullOrWhiteSpace(src.RemarriageAfter) ? DateTime.UtcNow : DateTime.Parse(src.RemarriageAfter)));
+                .ForMember(x => x.RemarriageAfter, x => x.MapFrom(src => string.IsNullOrWhiteSpace(src.RemarriageAfter)
+                    ? DateTime.UtcNow
+                    : ParseUtc(src.RemarriageAfter)));
 
             CreateMap<Http.Model.Bulletin, Protocol.Article>()
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
@@ -132,7 +140,7 @@ namespace Http.Mapping
                     dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
                         ? new List<Fb.Model.Dsl>()
                         : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
-                    dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
+                    dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : ParseUtc(src.ExpiredDate);
                 });
 
             CreateMap<Http.Model.SystemStorageBox, Protocol.SystemStorageBox>()

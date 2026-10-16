@@ -14,7 +14,7 @@ bulletin_mail::bulletin_mail(const Mail& mail, MAIL_BUTTON_ENABLE flag) :
 void bulletin_mail::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
-    auto dt = fb::model::datetime(mail.created_date);
+    auto dt = fb::model::datetime(mail.created_date).to_kst();
 
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x05);

@@ -53,8 +53,8 @@ public:
     private:
         struct tracker
         {
-            fb::model::datetime last        = fb::model::datetime(); ///< Last reset time for rate limiting window
-            uint32_t            transitions = 0;                     ///< Current number of transitions in the window
+            fb::model::datetime last = fb::model::datetime::utc_now(); ///< Last reset time for rate limiting window
+            uint32_t            transitions = 0;                       ///< Current number of transitions in the window
         };
 
         tracker                              _global;   ///< Global TPS tracker for all requests
@@ -75,10 +75,10 @@ public:
 
         bool update(uint32_t limit)
         {
-            auto elapsed_time = fb::model::datetime() - this->_global.last;
+            auto elapsed_time = fb::model::datetime::utc_now() - this->_global.last;
             if (elapsed_time > 1s)
             {
-                this->_global.last        = fb::model::datetime();
+                this->_global.last        = fb::model::datetime::utc_now();
                 this->_global.transitions = 0;
             }
 
@@ -95,10 +95,10 @@ public:
 
             auto& tracker = this->_commands[opcode];
 
-            auto elapsed_time = fb::model::datetime() - tracker.last;
+            auto elapsed_time = fb::model::datetime::utc_now() - tracker.last;
             if (elapsed_time > duration)
             {
-                tracker.last        = fb::model::datetime();
+                tracker.last        = fb::model::datetime::utc_now();
                 tracker.transitions = 0;
             }
 
@@ -135,7 +135,7 @@ public:
         _executor(executor),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
-        _last_packet_time(fb::model::datetime())
+        _last_packet_time(fb::model::datetime::utc_now())
     { }
 
 public:
@@ -148,7 +148,7 @@ public:
         _handle_received(handle_received),
         _handle_closed(handle_closed),
         _encryption(encryption),
-        _last_packet_time(fb::model::datetime())
+        _last_packet_time(fb::model::datetime::utc_now())
     { }
 
 public:
@@ -375,7 +375,7 @@ public:
 public:
     void update_last_packet_time()
     {
-        this->_last_packet_time = fb::model::datetime();
+        this->_last_packet_time = fb::model::datetime::utc_now();
     }
 
 public:

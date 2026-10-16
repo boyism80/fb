@@ -7464,15 +7464,22 @@ int builtin::character::builtin_marry(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        auto&       server = static_cast<fb::game::server&>(lua->executor);
-        const auto& my_m   = me->marriage();
-        const auto& tar_m  = target->marriage();
+        auto& server = static_cast<fb::game::server&>(lua->executor);
 
         if (me->world() != target->world())
         {
             *error = "different world";
             co_return;
         }
+        auto my_map = me->map();
+        if (me->thread() != target->thread() || my_map == nullptr || my_map != target->map())
+        {
+            *error = "상대와 같은 곳에 있어야 결혼할 수 있습니다.";
+            co_return;
+        }
+
+        const auto& my_m  = me->marriage();
+        const auto& tar_m = target->marriage();
         if (my_m.spouse_id.has_value())
         {
             *error = "already married";
@@ -7544,6 +7551,12 @@ int builtin::character::builtin_divorce(lua_State* L)
             *error = "spouse not online";
             co_return;
         }
+        auto my_map = me->map();
+        if (spouse->thread() != me->thread() || my_map == nullptr || my_map != spouse->map())
+        {
+            *error = "배우자와 같은 곳에 있어야 이혼할 수 있습니다.";
+            co_return;
+        }
 
         auto now = server.now();
         now.add_days(7);
@@ -7552,22 +7565,7 @@ int builtin::character::builtin_divorce(lua_State* L)
         fb::game::marriage new_tar(now, std::nullopt, "", spouse->marriage().divorce_count + 1);
 
         me->marriage(new_me);
-        if (spouse->thread() == me->thread())
-        {
-            spouse->marriage(new_tar);
-        }
-        else
-        {
-            auto spouse_weak = spouse->weak_from_this_as<fb::game::character>();
-            auto cross       = server.threads.new_builder(spouse_weak);
-            cross.func       = [spouse_weak, new_tar](auto&) -> async::task<void> {
-                auto spouse_shared = spouse_weak.lock();
-                if (spouse_shared != nullptr)
-                    spouse_shared->marriage(new_tar);
-                co_return;
-            };
-            cross.enqueue();
-        }
+        spouse->marriage(new_tar);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

@@ -745,13 +745,13 @@ public:
     fb::model::datetime now() const
     {
         auto lock = std::lock_guard<std::mutex>(this->_now_mutex);
-        return fb::model::datetime() + this->_now_offset;
+        return fb::model::datetime::utc_now() + this->_now_offset;
     }
 
 public:
     void now(const fb::model::datetime& value)
     {
-        auto current      = fb::model::datetime();
+        auto current      = fb::model::datetime::utc_now();
         auto lock         = std::lock_guard<std::mutex>(this->_now_mutex);
         this->_now_offset = value - current;
     }

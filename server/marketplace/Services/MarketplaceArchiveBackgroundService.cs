@@ -125,7 +125,7 @@ namespace Marketplace.Services
                 var selectSql = $@"
                     SELECT `id` FROM `marketplace_listing`
                     WHERE `status` != {ListingState.ACTIVE.Escape()}
-                        AND `updated_date` < NOW() - INTERVAL {(long)Retention.TotalSeconds} SECOND
+                        AND `updated_date` < UTC_TIMESTAMP() - INTERVAL {(long)Retention.TotalSeconds} SECOND
                     ORDER BY `updated_date`
                     LIMIT {BatchSize}
                     FOR UPDATE";
@@ -169,7 +169,7 @@ namespace Marketplace.Services
                         `created_date`,
                         `sold_date`,
                         `updated_date`,
-                        NOW() AS `archived_date`
+                        UTC_TIMESTAMP() AS `archived_date`
                     FROM `marketplace_listing`
                     WHERE `id` IN @Ids";
 

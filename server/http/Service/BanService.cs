@@ -34,7 +34,7 @@ namespace Http.Service
             DateTime? expireDate = null;
             if (days.HasValue)
             {
-                expireDate = DateTime.Now.AddDays(days.Value);
+                expireDate = DateTime.UtcNow.AddDays(days.Value);
             }
 
             // Create or update ban
@@ -43,8 +43,8 @@ namespace Http.Service
                 User = userId,
                 Reason = reason,
                 ExpireDate = expireDate,
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
 
             _dbContext.Ban.Set(world, ban);
@@ -128,7 +128,7 @@ namespace Http.Service
                 return null;
 
             // Check if ban is expired
-            if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
+            if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.UtcNow)
             {
                 _dbContext.Ban.Delete(world, userId.Value);
                 await _dbContext.SaveChangesAsync();

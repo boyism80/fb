@@ -110,7 +110,7 @@ namespace Marketplace.Services
                 var sql = $@"
                     SELECT * FROM `marketplace_listing`
                     WHERE `status` = {ListingState.ACTIVE.Escape()}
-                      AND `expire_date` < NOW()
+                      AND `expire_date` < UTC_TIMESTAMP()
                     ORDER BY `expire_date`
                     LIMIT {ExpireBatchSize}
                     FOR UPDATE SKIP LOCKED";
@@ -130,7 +130,7 @@ namespace Marketplace.Services
                 var updateSql = $@"
                     UPDATE `marketplace_listing`
                     SET `status` = {ListingState.EXPIRED.Escape()},
-                        `updated_date` = NOW()
+                        `updated_date` = UTC_TIMESTAMP()
                     WHERE `id` IN @ListingIds
                       AND `status` = {ListingState.ACTIVE.Escape()}";
 

@@ -184,8 +184,8 @@ namespace Http.Service
                                 UserName = names.GetValueOrDefault(request.User, string.Empty),
                                 Title = request.Title,
                                 Contents = request.Contents,
-                                CreatedDate = DateTime.Now,
-                                UpdatedDate = DateTime.Now,
+                                CreatedDate = DateTime.UtcNow,
+                                UpdatedDate = DateTime.UtcNow,
                             };
 
                             cacheItems[(bulletinSection, articleId)] = article;
@@ -240,9 +240,9 @@ namespace Http.Service
             // Use MySql.Escape for SQL injection prevention
             // Assign sequential IDs starting from startId
             var values = string.Join(", ", requests.Select((r, index) =>
-                $"({startId + index}, {section}, {r.User}, {r.Title.Escape()}, {r.Contents.Escape()})"));
+                $"({startId + index}, {section}, {r.User}, {r.Title.Escape()}, {r.Contents.Escape()}, UTC_TIMESTAMP(), UTC_TIMESTAMP())"));
 
-            return $"INSERT INTO bulletin (`id`, `section`, `user`, title, contents) VALUES {values}";
+            return $"INSERT INTO bulletin (`id`, `section`, `user`, title, contents, created_date, updated_date) VALUES {values}";
         }
 
     }

@@ -157,7 +157,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
 
                 var newClanId = await db.QuerySingleAsync<uint>(
-                    @"INSERT INTO clan_name (name, world) VALUES (@Name, @World);SELECT LAST_INSERT_ID();",
+                    @"INSERT INTO clan_name (name, world, created_date, updated_date) VALUES (@Name, @World, UTC_TIMESTAMP(), UTC_TIMESTAMP());SELECT LAST_INSERT_ID();",
                     new { Name = request.Name, World = world },
                     transaction: trans
                 );
@@ -1250,8 +1250,8 @@ namespace Internal.Controllers
                     clan.Money -= abs;
                 }
 
-                await ArchiveMoneyRequests(world, clan, DateTime.Now);
-                clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = true, Date = DateTime.Now });
+                await ArchiveMoneyRequests(world, clan, DateTime.UtcNow);
+                clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = true, Date = DateTime.UtcNow });
                 _dbContext.Clan.Set(world, clan);
                 await _dbContext.SaveChangesAsync();
 
@@ -1318,8 +1318,8 @@ namespace Internal.Controllers
 
                 if (previous == null)
                 {
-                    await ArchiveMoneyRequests(world, clan, DateTime.Now);
-                    clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = false, Date = DateTime.Now });
+                    await ArchiveMoneyRequests(world, clan, DateTime.UtcNow);
+                    clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = false, Date = DateTime.UtcNow });
                     _dbContext.Clan.Set(world, clan);
                     await _dbContext.SaveChangesAsync();
                 }

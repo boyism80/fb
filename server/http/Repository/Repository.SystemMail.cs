@@ -24,7 +24,7 @@ namespace Http.Reepository
         {
             // Use a dummy key to get all system mails from the same hash
             var allMails = await base.GetAll(world, new SystemMailKey { Id = 0 });
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             return allMails
                 .Where(m => m.Id >= offset && (m.ExpireDate == null || m.ExpireDate > now))
                 .OrderByDescending(m => m.Id)
@@ -88,7 +88,7 @@ namespace Http.Reepository
         {
             var query = @"
                 INSERT INTO system_mail (sender, title, contents, expire_date, deleted, created_date, updated_date)
-                VALUES (@sender, @title, @contents, @expireDate, 0, NOW(), NOW());
+                VALUES (@sender, @title, @contents, @expireDate, 0, UTC_TIMESTAMP(), UTC_TIMESTAMP());
                 SELECT LAST_INSERT_ID();";
 
             // SystemMail uses world-global database
@@ -102,8 +102,8 @@ namespace Http.Reepository
                 Title = title,
                 Contents = contents,
                 ExpireDate = expireDate,
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
 
             // Update Redis cache using the caching system

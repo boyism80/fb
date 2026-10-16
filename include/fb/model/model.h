@@ -9365,7 +9365,7 @@ template <> datetime build<datetime>(const Json::Value& json)
     }
     catch (std::exception&)
     {
-        return datetime();
+        throw std::runtime_error("invalid datetime");
     }
 }
 

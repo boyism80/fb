@@ -218,6 +218,7 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     stat(*this),
     life(server, model, stat, params),
     listener(server.listener),
+    _action_time(server.now()),
     _rezen(params.rezen),
     _spawn_type(params.type),
     owner(params.owner != nullptr ? params.owner->weak_from_this_as<character>() : std::weak_ptr<character>())

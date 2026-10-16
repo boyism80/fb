@@ -33,8 +33,8 @@ public static class WriteBackFailureRecorder
         }
 
         const string insert = """
-            INSERT INTO write_back_failure (world, db_shard, hash, redis_key, sql_text, error_code, sql_state, error_message)
-            VALUES (@world, @dbShard, @hash, @redisKey, @sqlText, @errorCode, @sqlState, @errorMessage)
+            INSERT INTO write_back_failure (world, db_shard, hash, redis_key, sql_text, error_code, sql_state, error_message, created_date)
+            VALUES (@world, @dbShard, @hash, @redisKey, @sqlText, @errorCode, @sqlState, @errorMessage, UTC_TIMESTAMP())
             """;
 
         await logConnection.ExecuteAsync(new CommandDefinition(

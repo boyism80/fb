@@ -113,7 +113,7 @@ namespace Internal.Services
             if (worlds.Count == 0)
                 return;
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var lastMaintenanceState = new Dictionary<uint, bool>();
 
             foreach (var world in worlds)

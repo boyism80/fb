@@ -125,7 +125,7 @@ namespace Http.Reepository
         protected override string OnDelete(CollectionUnlockKey key)
         {
             return $"""
-                UPDATE `collection_unlock` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `collection_unlock` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE `user` = {key.User.Escape()} AND `mob_id` = {key.MobId.Escape()} AND `deleted` = 0;
                 """;
         }
@@ -139,7 +139,7 @@ namespace Http.Reepository
                 $"(`user` = {k.User.Escape()} AND `mob_id` = {k.MobId.Escape()})");
 
             return $"""
-                UPDATE `collection_unlock` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `collection_unlock` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }

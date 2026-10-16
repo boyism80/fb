@@ -36,7 +36,7 @@ fb::logger::~logger()
 
 std::string fb::logger::daily_path(std::string_view service)
 {
-    auto dt = fb::model::datetime();
+    auto dt = fb::model::datetime::utc_now();
     if (service.empty())
         return std::format("logs/{:04}-{:02}-{:02}.log", dt.year(), dt.month(), dt.day());
 
@@ -46,9 +46,9 @@ std::string fb::logger::daily_path(std::string_view service)
 std::string fb::logger::format_line(std::string_view tag, std::string_view name, std::string_view message)
 {
     if (name.empty())
-        return std::format("{:<7} {} {}", tag, fb::model::datetime().to_string(), message);
+        return std::format("{:<7} {} {}", tag, fb::model::datetime::utc_now().to_string(), message);
 
-    return std::format("{:<7} {} [{}] {}", tag, fb::model::datetime().to_string(), name, message);
+    return std::format("{:<7} {} [{}] {}", tag, fb::model::datetime::utc_now().to_string(), name, message);
 }
 
 bool fb::logger::has_flag(fb::logger::level level) const

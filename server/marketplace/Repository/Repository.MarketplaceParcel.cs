@@ -33,7 +33,7 @@ namespace Marketplace.Reepository
                     {parcel.Title.Escape()},
                     {parcel.Message.Escape()},
                     {parcel.Attachments.Escape()},
-                    NOW())
+                    UTC_TIMESTAMP())
                 """;
 
             await transaction.Connection.ExecuteAsync(sql, null, transaction);
@@ -45,7 +45,7 @@ namespace Marketplace.Reepository
             var sql = $"""
                 SELECT * FROM `marketplace_parcel`
                 WHERE `sent_date` IS NULL
-                  AND `created_date` < NOW() - INTERVAL {(int)minAge.TotalSeconds} SECOND
+                  AND `created_date` < UTC_TIMESTAMP() - INTERVAL {(int)minAge.TotalSeconds} SECOND
                 ORDER BY `id`
                 LIMIT {limit}
                 """;
@@ -58,7 +58,7 @@ namespace Marketplace.Reepository
             await using var conn = _dbContext.GetUnifiedConnection();
             await conn.ExecuteAsync($"""
                 UPDATE `marketplace_parcel`
-                SET `sent_date` = NOW()
+                SET `sent_date` = UTC_TIMESTAMP()
                 WHERE `external_ref` = {externalRef.Escape()} AND `sent_date` IS NULL
                 """);
         }

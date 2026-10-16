@@ -59,7 +59,7 @@ namespace Http.Reepository
         protected override string OnDelete(ClanAllianceKey key)
         {
             return $"""
-                UPDATE `clan_alliance` SET `deleted` = 1, `updated_date` = NOW()
+                UPDATE `clan_alliance` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
                 WHERE `clan` = {key.Clan.Escape()} AND `deleted` = 0;
                 """;
         }
