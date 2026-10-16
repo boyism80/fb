@@ -41,9 +41,11 @@ public class Program
         builder.Services.AddSingleton<RedisDistributedLockService>();
         builder.Services.AddHttpAutoMapper();
         builder.Services.AddSingleton<RabbitMqService>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<RabbitMqService>());
         builder.Services.AddSingleton<LogService>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<LogService>());
         builder.Services.AddSingleton<DiscordNotifier>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<DiscordNotifier>());
         builder.Services.AddSingleton<OpsNotifyService>();
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddSingleton<ServerStateService>();

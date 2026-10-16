@@ -17,6 +17,7 @@ RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
 RUN cmake --build . --config ${BUILD_TYPE} --parallel "$(fb-cmake-jobs)"
 
 FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE}
+ENV TZ=Asia/Seoul
 WORKDIR /app
 COPY --from=build /app/gateway/build/app ./gateway
 

@@ -23,6 +23,7 @@ RUN cmake --build . --config ${BUILD_TYPE} --parallel "$(fb-cmake-jobs)"
 FROM ${DATA_IMAGE} AS data
 
 FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE}
+ENV TZ=Asia/Seoul
 WORKDIR /app
 COPY --from=build /app/bot/build/app ./bot
 COPY --from=data /fb/data/json/server/ /app/json/

@@ -15,6 +15,7 @@ FROM ${DATA_IMAGE} AS data
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0
 ARG SERVICE
 ENV SERVICE=$SERVICE
+ENV TZ=Asia/Seoul
 COPY --from=build /app/dist/${SERVICE} /app
 COPY --from=data /fb/data/json/server/ /app/json/
 COPY infra/db/migrations /app/migrations

@@ -24,6 +24,7 @@ RUN cmake --build . --config ${BUILD_TYPE} --parallel "$(fb-cmake-jobs)"
 FROM ${DATA_IMAGE} AS data
 
 FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE}
+ENV TZ=Asia/Seoul
 
 WORKDIR /app
 COPY --from=build /app/game/build/app ./game

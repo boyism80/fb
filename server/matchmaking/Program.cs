@@ -36,6 +36,7 @@ public class Program
             return new Mapper(config);
         });
         builder.Services.AddSingleton<RabbitMqService>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<RabbitMqService>());
         builder.Services.AddSingleton<RedisService>();
         builder.Services.AddSingleton<ServerStateService>();
         builder.Services.AddSingleton<CharacterMatchMaker>();

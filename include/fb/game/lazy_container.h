@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string_view>
 #include <unordered_map>
@@ -73,21 +74,27 @@ public:
 
 protected:
     server&                                           _server;
+    mutable std::mutex                                _as_of_lock;
     std::unordered_map<uint32_t, fb::model::datetime> _as_of;
 
 protected:
     virtual async::task<fetched> fetch(uint32_t id) = 0;
 
+    bool recorded(uint32_t id, const fb::model::datetime& at) const
+    {
+        auto _  = std::lock_guard(this->_as_of_lock);
+        auto it = this->_as_of.find(id);
+        return it != this->_as_of.end() && it->second >= at;
+    }
+
     bool accept(uint32_t id, const fb::model::datetime& at) const
     {
-        auto it = this->_as_of.find(id);
-        if (it == this->_as_of.end())
-            return true;
-        return at > it->second;
+        return this->recorded(id, at) == false;
     }
 
     void note(uint32_t id, const fb::model::datetime& at)
     {
+        auto _  = std::lock_guard(this->_as_of_lock);
         auto it = this->_as_of.find(id);
         if (it == this->_as_of.end())
             this->_as_of.emplace(id, at);

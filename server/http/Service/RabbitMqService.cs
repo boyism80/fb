@@ -1,10 +1,11 @@
 using Google.FlatBuffers;
 using Http.Util;
 using RabbitMQ.Client;
+using System.Threading.Channels;
 
 namespace Http.Service
 {
-    public class RabbitMqService : IAsyncDisposable
+    public class RabbitMqService : IHostedService, IAsyncDisposable
     {
         internal static readonly CreateChannelOptions PublishChannelOptions = new CreateChannelOptions(
             publisherConfirmationsEnabled: true,
@@ -12,11 +13,21 @@ namespace Http.Service
             outstandingPublisherConfirmationsRateLimiter: null,
             consumerDispatchConcurrency: null);
 
+        private const int QueueCapacity = 10000;
+        private static readonly TimeSpan PublishTimeout = TimeSpan.FromSeconds(2);
+
         private readonly IConfiguration _configuration;
         private readonly ILogger<RabbitMqService> _logger;
-        private readonly SemaphoreSlim _channelLock = new(1, 1);
+        private readonly Channel<PublishJob> _pending = Channel.CreateBounded<PublishJob>(new BoundedChannelOptions(QueueCapacity)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = true,
+            SingleWriter = false
+        });
+        private readonly CancellationTokenSource _stopping = new();
         private IConnection _connection;
         private IChannel _channel;
+        private Task _run = Task.CompletedTask;
 
         public RabbitMqService(IConfiguration configuration, ILogger<RabbitMqService> logger)
         {
@@ -24,65 +35,31 @@ namespace Http.Service
             _logger = logger;
         }
 
-        private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            if (_connection != null && _connection.IsOpen && _channel != null && _channel.IsOpen)
-            {
-                return;
-            }
-
-            if (_channel != null)
-            {
-                try
-                {
-                    await _channel.CloseAsync(cancellationToken: cancellationToken);
-                }
-                catch
-                {
-                    // Ignore close errors on stale channel
-                }
-
-                await _channel.DisposeAsync();
-                _channel = null;
-            }
-
-            if (_connection != null)
-            {
-                try
-                {
-                    await _connection.CloseAsync(cancellationToken: cancellationToken);
-                }
-                catch
-                {
-                    // Ignore close errors on stale connection
-                }
-
-                await _connection.DisposeAsync();
-                _connection = null;
-            }
-
-            var rabbitMqSection = _configuration.GetSection("RabbitMQ:Internal");
-            if (rabbitMqSection == null || !rabbitMqSection.Exists())
-            {
-                throw new Exception("RabbitMQ configuration not found for unified-global");
-            }
-
-            var factory = new ConnectionFactory
-            {
-                HostName = rabbitMqSection.GetValue<string>("Host"),
-                Port = rabbitMqSection.GetValue<int>("Port"),
-                UserName = rabbitMqSection.GetValue<string>("Uid"),
-                Password = rabbitMqSection.GetValue<string>("Pwd")
-            };
-
-            _connection = await factory.CreateConnectionAsync(cancellationToken);
-            _channel = await _connection.CreateChannelAsync(PublishChannelOptions, cancellationToken);
+            _run = Task.Run(() => PublishLoop(_stopping.Token));
+            return Task.CompletedTask;
         }
 
-        public async Task PublishAsync(IFlatBufferEx protocol, string exchangeName, string routeKey, CancellationToken cancellationToken = default)
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            _stopping.Cancel();
+            _pending.Writer.TryComplete();
+            try
+            {
+                await _run.WaitAsync(PublishTimeout, cancellationToken);
+            }
+            catch (Exception)
+            {
+            }
+
+            await CloseAsync();
+        }
+
+        public Task PublishAsync(IFlatBufferEx protocol, string exchangeName, string routeKey, CancellationToken cancellationToken = default)
         {
             var bytes = protocol.ToBytes();
-            await PublishAsync(exchangeName, routeKey, bytes, persistent: false, cancellationToken);
+            return PublishAsync(exchangeName, routeKey, bytes, persistent: false, cancellationToken);
         }
 
         public async Task PublishFanoutAsync(IFlatBufferEx protocol, string topic, uint homeWorld, CancellationToken cancellationToken = default)
@@ -117,88 +94,149 @@ namespace Http.Service
             }
         }
 
-        public async Task PublishAsync(string exchangeName, string routingKey, byte[] body, bool persistent = true, CancellationToken cancellationToken = default)
+        public async Task PublishAsync(
+            string exchangeName,
+            string routingKey,
+            byte[] body,
+            bool persistent = true,
+            CancellationToken cancellationToken = default,
+            Func<IChannel, CancellationToken, Task> prepare = null,
+            Func<Exception, Task> onFailure = null)
         {
             if (body == null || body.Length == 0)
-            {
                 return;
-            }
 
-            await _channelLock.WaitAsync(cancellationToken);
+            await _pending.Writer.WriteAsync(new PublishJob(exchangeName, routingKey, body, persistent, prepare, onFailure), cancellationToken);
+        }
+
+        private async Task PublishLoop(CancellationToken stoppingToken)
+        {
             try
             {
-                await EnsureConnectedAsync(cancellationToken);
-                if (persistent)
+                await foreach (var job in _pending.Reader.ReadAllAsync(stoppingToken))
                 {
-                    var props = new BasicProperties { Persistent = true };
-                    await _channel.BasicPublishAsync(exchangeName, routingKey, mandatory: true, basicProperties: props, body: body, cancellationToken: cancellationToken);
-                }
-                else
-                {
-                    await _channel.BasicPublishAsync(exchangeName, routingKey, body, cancellationToken);
+                    try
+                    {
+                        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                        timeout.CancelAfter(PublishTimeout);
+                        await PublishJobAsync(job, timeout.Token);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (job.OnFailure != null)
+                        {
+                            try
+                            {
+                                await job.OnFailure(ex);
+                            }
+                            catch (Exception callbackEx)
+                            {
+                                _logger.LogError(callbackEx, "Publish failure callback failed for {RoutingKey}", job.RoutingKey);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogError(ex, "Failed to publish {Exchange}/{RoutingKey}", job.Exchange, job.RoutingKey);
+                        }
+                    }
                 }
             }
-            finally
+            catch (OperationCanceledException)
             {
-                _channelLock.Release();
             }
         }
 
-        public async Task WithChannelAsync(Func<IChannel, Task> action, CancellationToken cancellationToken = default)
+        private async Task PublishJobAsync(PublishJob job, CancellationToken cancellationToken)
         {
-            await _channelLock.WaitAsync(cancellationToken);
-            try
+            await EnsureConnectedAsync(cancellationToken);
+            if (_channel == null)
+                throw new InvalidOperationException("internal RabbitMQ channel is not open");
+
+            if (job.Prepare != null)
+                await job.Prepare(_channel, cancellationToken);
+
+            if (job.Persistent)
             {
-                await EnsureConnectedAsync(cancellationToken);
-                await action(_channel);
+                var props = new BasicProperties { Persistent = true };
+                await _channel.BasicPublishAsync(job.Exchange, job.RoutingKey, mandatory: true, basicProperties: props, body: job.Body, cancellationToken: cancellationToken);
             }
-            finally
+            else
             {
-                _channelLock.Release();
+                await _channel.BasicPublishAsync(job.Exchange, job.RoutingKey, job.Body, cancellationToken);
+            }
+        }
+
+        private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
+        {
+            if (_connection != null && _connection.IsOpen && _channel != null && _channel.IsOpen)
+                return;
+
+            await CloseAsync();
+
+            var rabbitMqSection = _configuration.GetSection("RabbitMQ:Internal");
+            if (rabbitMqSection == null || !rabbitMqSection.Exists())
+                throw new Exception("RabbitMQ configuration not found for unified-global");
+
+            var factory = new ConnectionFactory
+            {
+                HostName = rabbitMqSection.GetValue<string>("Host"),
+                Port = rabbitMqSection.GetValue<int>("Port"),
+                UserName = rabbitMqSection.GetValue<string>("Uid"),
+                Password = rabbitMqSection.GetValue<string>("Pwd"),
+                RequestedConnectionTimeout = PublishTimeout
+            };
+
+            _connection = await factory.CreateConnectionAsync(cancellationToken);
+            _channel = await _connection.CreateChannelAsync(PublishChannelOptions, cancellationToken);
+        }
+
+        private async Task CloseAsync()
+        {
+            if (_channel != null)
+            {
+                try
+                {
+                    await _channel.CloseAsync(cancellationToken: CancellationToken.None);
+                }
+                catch
+                {
+                }
+
+                await _channel.DisposeAsync();
+                _channel = null;
+            }
+
+            if (_connection != null)
+            {
+                try
+                {
+                    await _connection.CloseAsync(cancellationToken: CancellationToken.None);
+                }
+                catch
+                {
+                }
+
+                await _connection.DisposeAsync();
+                _connection = null;
             }
         }
 
         public async ValueTask DisposeAsync()
         {
-            await _channelLock.WaitAsync();
-            try
-            {
-                if (_channel != null)
-                {
-                    try
-                    {
-                        await _channel.CloseAsync(cancellationToken: CancellationToken.None);
-                    }
-                    catch
-                    {
-                        // Ignore on shutdown
-                    }
-
-                    await _channel.DisposeAsync();
-                    _channel = null;
-                }
-
-                if (_connection != null)
-                {
-                    try
-                    {
-                        await _connection.CloseAsync(cancellationToken: CancellationToken.None);
-                    }
-                    catch
-                    {
-                        // Ignore on shutdown
-                    }
-
-                    await _connection.DisposeAsync();
-                    _connection = null;
-                }
-            }
-            finally
-            {
-                _channelLock.Release();
-            }
-
-            _channelLock.Dispose();
+            await StopAsync(CancellationToken.None);
+            _stopping.Dispose();
         }
+
+        private readonly record struct PublishJob(
+            string Exchange,
+            string RoutingKey,
+            byte[] Body,
+            bool Persistent,
+            Func<IChannel, CancellationToken, Task> Prepare,
+            Func<Exception, Task> OnFailure);
     }
 }

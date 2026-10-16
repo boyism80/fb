@@ -68,8 +68,7 @@ clan::container::entity_ptr clan::container::merge_fetched(uint32_t             
     }
     else
     {
-        auto it = this->_as_of.find(id);
-        if (it != this->_as_of.end() && it->second >= incoming.at)
+        if (this->recorded(id, incoming.at))
             return current.has_value() ? *current : nullptr;
     }
 

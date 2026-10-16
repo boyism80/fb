@@ -47,61 +47,56 @@ namespace Http.Service
                 Hash = hash
             };
 
+            var queueName = GetWriteBackQueueName(world, db);
+            var json = JsonConvert.SerializeObject(entry);
+            var body = Encoding.UTF8.GetBytes(json);
+            await _rabbitMqService.PublishAsync(
+                WriteBackExchangeName,
+                queueName,
+                body,
+                persistent: true,
+                cancellationToken: CancellationToken.None,
+                prepare: (channel, token) => EnsureExchangeReadyAsync(channel, queueName, token),
+                onFailure: ex => RecordFailureAsync(world, db, queueName, entry, ex));
+        }
+
+        private async Task RecordFailureAsync(uint world, int db, string queueName, BackgroundCommitEntry entry, Exception ex)
+        {
+            _declaredQueues.TryRemove(queueName, out _);
+
+            // Redis is already written and the cref stays incremented, so the Redis value remains
+            // pinned until the write_back_failure row is replayed. Callers cannot roll back Redis.
+            _logger.LogError(ex, "Failed to publish write-back message for world {World} db {Db} key {Key}: {Sql}", world, db, entry.RedisKey, entry.SQL);
             try
             {
-                var queueName = GetWriteBackQueueName(world, db);
-                await EnsureExchangeReadyAsync(queueName, cancellationToken);
-
-                var json = JsonConvert.SerializeObject(entry);
-                var body = Encoding.UTF8.GetBytes(json);
-                await _rabbitMqService.PublishAsync(WriteBackExchangeName, queueName, body, persistent: true, cancellationToken);
+                await using var logConn = _dbContext.GetGlobalConnection(world);
+                await WriteBackFailureRecorder.RecordAsync(logConn, world, db, entry, ex, CancellationToken.None);
             }
-            catch (Exception ex)
+            catch (Exception logEx)
             {
-                _declaredQueues.TryRemove(GetWriteBackQueueName(world, db), out _);
-
-                // Redis is already written and the cref stays incremented, so the Redis value remains
-                // pinned until the write_back_failure row is replayed. Callers cannot roll back Redis.
-                _logger.LogError(ex, "Failed to publish write-back message for world {World} db {Db} key {Key}: {Sql}", world, db, key, sql);
-                try
-                {
-                    await using var logConn = _dbContext.GetGlobalConnection(world);
-                    await WriteBackFailureRecorder.RecordAsync(logConn, world, db, entry, ex, CancellationToken.None);
-                }
-                catch (Exception logEx)
-                {
-                    _logger.LogCritical(logEx,
-                        "Failed to insert write_back_failure for world {World} db {Db} key {Key}. Unrecorded SQL: {Sql}",
-                        world,
-                        db,
-                        key,
-                        sql);
-                }
+                _logger.LogCritical(logEx,
+                    "Failed to insert write_back_failure for world {World} db {Db} key {Key}. Unrecorded SQL: {Sql}",
+                    world,
+                    db,
+                    entry.RedisKey,
+                    entry.SQL);
             }
         }
 
-        private async Task EnsureExchangeReadyAsync(string queueName, CancellationToken cancellationToken)
+        private async Task EnsureExchangeReadyAsync(IChannel channel, string queueName, CancellationToken cancellationToken)
         {
             if (_declaredQueues.ContainsKey(queueName))
-            {
                 return;
-            }
 
             await _declareLock.WaitAsync(cancellationToken);
             try
             {
                 if (_declaredQueues.ContainsKey(queueName))
-                {
                     return;
-                }
 
-                await _rabbitMqService.WithChannelAsync(async channel =>
-                {
-                    await channel.ExchangeDeclareAsync(WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
-                    await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: QueueArguments, passive: false, noWait: false, cancellationToken);
-                    await channel.QueueBindAsync(queueName, WriteBackExchangeName, queueName, arguments: null, noWait: false, cancellationToken);
-                }, cancellationToken);
-
+                await channel.ExchangeDeclareAsync(WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
+                await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: QueueArguments, passive: false, noWait: false, cancellationToken);
+                await channel.QueueBindAsync(queueName, WriteBackExchangeName, queueName, arguments: null, noWait: false, cancellationToken);
                 _declaredQueues.TryAdd(queueName, 0);
             }
             finally

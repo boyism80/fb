@@ -11,6 +11,7 @@ RUN dotnet publish -c ${BUILD_TYPE} -o /app/dist/matchmaking ./matchmaking
 FROM ${DATA_IMAGE} AS data
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0
+ENV TZ=Asia/Seoul
 COPY --from=build /app/dist/matchmaking /app
 COPY --from=data /fb/data/json/server/ /app/json/
 WORKDIR /app
