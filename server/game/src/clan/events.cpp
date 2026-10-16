@@ -111,9 +111,6 @@ async::task<void> clan::container::on_create(uint32_t                           
                                              std::unordered_map<std::string, clan_member> members,
                                              const fb::model::datetime&                   updated_date)
 {
-    if (this->accept(clan_id, updated_date) == false)
-        co_return;
-
     auto clan_title = title.empty() ? std::optional<std::string>{} : std::optional<std::string>{title};
 
     auto master_name = std::optional<std::string>{};
@@ -131,6 +128,7 @@ async::task<void> clan::container::on_create(uint32_t                           
     auto weak      = std::weak_ptr<character>();
     auto ch_id     = uint32_t{0};
     auto clan_name = std::string{};
+    auto drop      = false;
     {
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false)
@@ -138,33 +136,38 @@ async::task<void> clan::container::on_create(uint32_t                           
 
         if (guard.value() == nullptr)
         {
-            if (this->accept(clan_id, updated_date) == false)
-                co_return;
-            guard.value() = this->_server.make<fb::game::clan>(clan_id, name, clan_title, members, updated_date);
-            this->note(clan_id, updated_date);
+            drop = true;
         }
         else if (guard.value()->updated_date() > updated_date)
         {
             co_return;
         }
-        else if (guard.value()->updated_date() < updated_date)
+        else
         {
-            guard.value()->update(name, clan_title, members);
-            guard.value()->updated_date(updated_date);
-            this->note(clan_id, updated_date);
+            if (guard.value()->updated_date() < updated_date)
+            {
+                guard.value()->update(name, clan_title, members);
+                guard.value()->updated_date(updated_date);
+            }
+
+            clan_name = guard.value()->name();
+            if (master_name.has_value() == false)
+                co_return;
+
+            auto ch = this->_server.characters.find(master_name.value());
+            if (ch == nullptr)
+                co_return;
+
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            guard.value()->attach(weak);
         }
+    }
 
-        clan_name = guard.value()->name();
-        if (master_name.has_value() == false)
-            co_return;
-
-        auto ch = this->_server.characters.find(master_name.value());
-        if (ch == nullptr)
-            co_return;
-
-        weak  = ch->template weak_from_this_as<character>();
-        ch_id = ch->id;
-        guard.value()->attach(weak);
+    if (drop)
+    {
+        this->erase(clan_id);
+        co_return;
     }
 
     if (weak.expired())
@@ -192,23 +195,29 @@ async::task<void> clan::container::on_destroyed(uint32_t                   clan_
                                                 std::string                clan_name,
                                                 const fb::model::datetime& updated_date)
 {
-    if (this->accept(clan_id, updated_date) == false)
-        co_return;
-
     auto members = std::vector<std::shared_ptr<character>>{};
+    auto drop    = false;
     {
         auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false)
             co_return;
-        if (guard.value() != nullptr && guard.value()->updated_date() > updated_date)
+        if (guard.value() == nullptr)
+        {
+            drop = true;
+        }
+        else if (guard.value()->updated_date() > updated_date)
+        {
             co_return;
-        if (guard.value() == nullptr && this->accept(clan_id, updated_date) == false)
-            co_return;
-        if (guard.value() != nullptr)
+        }
+        else
+        {
             members = guard.value()->online_characters();
-        guard.value() = nullptr;
-        this->note(clan_id, updated_date);
+            drop    = true;
+        }
     }
+
+    if (drop)
+        this->erase(clan_id);
 
     if (members.empty() == false)
     {
@@ -239,7 +248,7 @@ async::task<void> clan::container::on_destroyed(uint32_t                   clan_
 
 async::task<void> clan::container::on_broadcast(uint32_t clan_id, std::string message, uint8_t type)
 {
-    auto guard = co_await this->open(clan_id, fb::model::datetime::utc_now());
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.holds_lock() == false || guard.value() == nullptr)
         co_return;
     auto members = guard.value()->online_characters();
@@ -255,7 +264,7 @@ async::task<void> clan::container::on_set_title(uint32_t                   clan_
                                                 std::optional<std::string> new_title,
                                                 const fb::model::datetime& updated_date)
 {
-    auto guard = co_await this->open(clan_id, updated_date);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.holds_lock() == false || guard.value() == nullptr)
         co_return;
     if (guard.value()->updated_date() > updated_date)
@@ -267,7 +276,6 @@ async::task<void> clan::container::on_set_title(uint32_t                   clan_
     {
         clan->title(new_title);
         clan->updated_date(updated_date);
-        this->note(clan_id, updated_date);
     }
 
     auto log_data         = Json::Value();
@@ -294,7 +302,7 @@ async::task<void> clan::container::on_join(uint32_t                   clan_id,
     auto clan_name          = std::string{};
     auto members            = std::vector<std::shared_ptr<character>>{};
     {
-        auto guard = co_await this->open(clan_id, updated_date);
+        auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
         if (guard.value()->updated_date() > updated_date)
@@ -305,7 +313,6 @@ async::task<void> clan::container::on_join(uint32_t                   clan_id,
         {
             clan->join(clan_member{joined_member_name, role});
             clan->updated_date(updated_date);
-            this->note(clan_id, updated_date);
         }
 
         auto ch = this->_server.characters.find(joined_member_name);
@@ -368,7 +375,7 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
     auto clan_name           = std::string{};
     auto members             = std::vector<std::shared_ptr<character>>{};
     {
-        auto guard = co_await this->open(clan_id, updated_date);
+        auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
         if (guard.value()->updated_date() > updated_date)
@@ -387,7 +394,6 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
         {
             clan->leave(deleted_member_name);
             clan->updated_date(updated_date);
-            this->note(clan_id, updated_date);
         }
         clan_name = clan->name();
         members   = clan->online_characters();
@@ -446,7 +452,7 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
     auto clan_name           = std::string{};
     auto members             = std::vector<std::shared_ptr<character>>{};
     {
-        auto guard = co_await this->open(clan_id, updated_date);
+        auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() == false || guard.value() == nullptr)
             co_return;
         if (guard.value()->updated_date() > updated_date)
@@ -465,7 +471,6 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
         {
             clan->leave(deleted_member_name);
             clan->updated_date(updated_date);
-            this->note(clan_id, updated_date);
         }
         clan_name = clan->name();
         members   = clan->online_characters();
@@ -523,21 +528,20 @@ async::task<void> clan::container::on_ally(uint32_t                   clan_id,
     // Bucket locks are not reentrant; never hold two clan guards at once.
     auto members = std::vector<std::shared_ptr<character>>{};
     {
-        auto guard = co_await this->open(clan_id, updated_date);
+        auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() && guard.value() != nullptr && guard.value()->updated_date() <= updated_date)
         {
             if (guard.value()->updated_date() < updated_date)
             {
                 guard.value()->allied_clan_id(other_id);
                 guard.value()->updated_date(updated_date);
-                this->note(clan_id, updated_date);
             }
             members = guard.value()->online_characters();
         }
     }
 
     {
-        auto other_guard = co_await this->open(other_id, updated_date);
+        auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr &&
             other_guard.value()->updated_date() <= updated_date)
         {
@@ -545,7 +549,6 @@ async::task<void> clan::container::on_ally(uint32_t                   clan_id,
             {
                 other_guard.value()->allied_clan_id(clan_id);
                 other_guard.value()->updated_date(updated_date);
-                this->note(other_id, updated_date);
             }
             auto others = other_guard.value()->online_characters();
             members.insert(members.end(), others.begin(), others.end());
@@ -566,14 +569,13 @@ async::task<void> clan::container::on_unally(uint32_t                   clan_id,
 {
     auto members = std::vector<std::shared_ptr<character>>{};
     {
-        auto guard = co_await this->open(clan_id, updated_date);
+        auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() && guard.value() != nullptr && guard.value()->updated_date() <= updated_date)
         {
             if (guard.value()->updated_date() < updated_date)
             {
                 guard.value()->allied_clan_id(std::nullopt);
                 guard.value()->updated_date(updated_date);
-                this->note(clan_id, updated_date);
             }
             members = guard.value()->online_characters();
         }
@@ -582,7 +584,7 @@ async::task<void> clan::container::on_unally(uint32_t                   clan_id,
     if (related_clan_id.has_value())
     {
         auto other_id    = related_clan_id.value();
-        auto other_guard = co_await this->open(other_id, updated_date);
+        auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr &&
             other_guard.value()->updated_date() <= updated_date)
         {
@@ -590,7 +592,6 @@ async::task<void> clan::container::on_unally(uint32_t                   clan_id,
             {
                 other_guard.value()->allied_clan_id(std::nullopt);
                 other_guard.value()->updated_date(updated_date);
-                this->note(other_id, updated_date);
             }
             auto others = other_guard.value()->online_characters();
             members.insert(members.end(), others.begin(), others.end());
@@ -616,21 +617,20 @@ async::task<void> clan::container::on_enemy(uint32_t                   clan_id,
 
     auto members = std::vector<std::shared_ptr<character>>{};
     {
-        auto guard = co_await this->open(clan_id, updated_date);
+        auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() && guard.value() != nullptr && guard.value()->updated_date() <= updated_date)
         {
             if (guard.value()->updated_date() < updated_date)
             {
                 guard.value()->add_enemy_clan(other_id);
                 guard.value()->updated_date(updated_date);
-                this->note(clan_id, updated_date);
             }
             members = guard.value()->online_characters();
         }
     }
 
     {
-        auto other_guard = co_await this->open(other_id, updated_date);
+        auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr &&
             other_guard.value()->updated_date() <= updated_date)
         {
@@ -638,7 +638,6 @@ async::task<void> clan::container::on_enemy(uint32_t                   clan_id,
             {
                 other_guard.value()->add_enemy_clan(clan_id);
                 other_guard.value()->updated_date(updated_date);
-                this->note(other_id, updated_date);
             }
             auto others = other_guard.value()->online_characters();
             members.insert(members.end(), others.begin(), others.end());
@@ -664,21 +663,20 @@ async::task<void> clan::container::on_unenemy(uint32_t                   clan_id
 
     auto members = std::vector<std::shared_ptr<character>>{};
     {
-        auto guard = co_await this->open(clan_id, updated_date);
+        auto guard = co_await this->enter_write(clan_id);
         if (guard.holds_lock() && guard.value() != nullptr && guard.value()->updated_date() <= updated_date)
         {
             if (guard.value()->updated_date() < updated_date)
             {
                 guard.value()->remove_enemy_clan(other_id);
                 guard.value()->updated_date(updated_date);
-                this->note(clan_id, updated_date);
             }
             members = guard.value()->online_characters();
         }
     }
 
     {
-        auto other_guard = co_await this->open(other_id, updated_date);
+        auto other_guard = co_await this->enter_write(other_id);
         if (other_guard.holds_lock() && other_guard.value() != nullptr &&
             other_guard.value()->updated_date() <= updated_date)
         {
@@ -686,7 +684,6 @@ async::task<void> clan::container::on_unenemy(uint32_t                   clan_id
             {
                 other_guard.value()->remove_enemy_clan(clan_id);
                 other_guard.value()->updated_date(updated_date);
-                this->note(other_id, updated_date);
             }
             auto others = other_guard.value()->online_characters();
             members.insert(members.end(), others.begin(), others.end());
@@ -711,7 +708,7 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
     if (target_name.has_value() == false)
         co_return;
 
-    auto guard = co_await this->open(clan_id, updated_date);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.holds_lock() == false || guard.value() == nullptr)
         co_return;
     if (guard.value()->updated_date() > updated_date)
@@ -724,7 +721,6 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
         if (member != nullptr && new_role.has_value())
             member->role = static_cast<CLAN_ROLE>(new_role.value());
         clan->updated_date(updated_date);
-        this->note(clan_id, updated_date);
     }
 
     if (target_uid.has_value() && old_role.has_value() && new_role.has_value())
@@ -774,7 +770,7 @@ async::task<void> clan::container::on_set_money(uint32_t                   clan_
                                                 uint64_t                   money,
                                                 const fb::model::datetime& updated_date)
 {
-    auto guard = co_await this->open(clan_id, updated_date);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.holds_lock() == false || guard.value() == nullptr)
         co_return;
     if (guard.value()->updated_date() > updated_date)
@@ -783,6 +779,5 @@ async::task<void> clan::container::on_set_money(uint32_t                   clan_
     {
         guard.value()->money(money);
         guard.value()->updated_date(updated_date);
-        this->note(clan_id, updated_date);
     }
 }

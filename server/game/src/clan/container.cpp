@@ -17,7 +17,7 @@ clan::container::container(server& server) :
     lazy_container<clan>(server)
 { }
 
-async::task<clan::container::fetched> clan::container::fetch(uint32_t id)
+async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
 {
     auto&& resp =
         co_await this->_server.http.get<internal_resp::ClanDetails>("internal", std::format("/clan/id/{}", id));
@@ -38,78 +38,20 @@ async::task<clan::container::fetched> clan::container::fetch(uint32_t id)
         auto enemy_clan_ids =
             std::unordered_set<uint32_t>(resp.clan.enemy_clan_ids.begin(), resp.clan.enemy_clan_ids.end());
         auto row_at = resp.clan.updated_date.empty() ? at : version_time(resp.clan.updated_date);
-        co_return fetched{this->_server.make<fb::game::clan>(id,
-                                                             resp.clan.name,
-                                                             resp.clan.title,
-                                                             members,
-                                                             row_at,
-                                                             resp.clan.allied_clan_id,
-                                                             enemy_clan_ids,
-                                                             resp.clan.money),
-                          at};
+        co_return this->_server.make<fb::game::clan>(id,
+                                                     resp.clan.name,
+                                                     resp.clan.title,
+                                                     members,
+                                                     row_at,
+                                                     resp.clan.allied_clan_id,
+                                                     enemy_clan_ids,
+                                                     resp.clan.money);
     }
 
     case fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN:
-        co_return fetched{nullptr, at};
+        co_return nullptr;
 
     default:
         throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
     }
-}
-
-clan::container::entity_ptr clan::container::merge_fetched(uint32_t                         id,
-                                                           const std::optional<entity_ptr>& current,
-                                                           const fetched&                   incoming)
-{
-    if (current.has_value() && *current != nullptr)
-    {
-        if ((*current)->updated_date() >= incoming.at)
-            return *current;
-    }
-    else
-    {
-        if (this->recorded(id, incoming.at))
-            return current.has_value() ? *current : nullptr;
-    }
-
-    this->note(id, incoming.at);
-    return incoming.entity;
-}
-
-bool clan::container::recorded(uint32_t id, const fb::model::datetime& at) const
-{
-    auto _  = std::lock_guard(this->_updated_lock);
-    auto it = this->_updated_at.find(id);
-    return it != this->_updated_at.end() && it->second >= at;
-}
-
-bool clan::container::accept(uint32_t id, const fb::model::datetime& at) const
-{
-    return this->recorded(id, at) == false;
-}
-
-void clan::container::note(uint32_t id, const fb::model::datetime& at)
-{
-    auto _  = std::lock_guard(this->_updated_lock);
-    auto it = this->_updated_at.find(id);
-    if (it == this->_updated_at.end())
-        this->_updated_at.emplace(id, at);
-    else if (at > it->second)
-        it->second = at;
-}
-
-async::task<clan::container::guard> clan::container::open(uint32_t id, const fb::model::datetime& at)
-{
-    {
-        auto held = co_await this->enter_write(id);
-        if (held.holds_lock() == false)
-            co_return guard{};
-        if (held.value() != nullptr)
-            co_return std::move(held);
-        if (this->accept(id, at) == false)
-            co_return guard{};
-    }
-
-    this->erase(id);
-    co_return co_await this->enter_write(id);
 }

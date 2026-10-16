@@ -19,13 +19,13 @@ castle::container::container(server& server) :
     lazy_container<castle>(server)
 { }
 
-async::task<castle::container::fetched> castle::container::fetch(uint32_t id)
+async::task<castle::container::entity_ptr> castle::container::fetch(uint32_t id)
 {
     // A process without a world (cross server) has no castle ownership, so no castle exists here rather than an
     // ownerless one.
     auto world = fb::config<std::optional<uint32_t>>("world");
     if (!world)
-        co_return fetched{nullptr, fb::model::datetime::utc_now()};
+        co_return nullptr;
 
     auto&& resp =
         co_await this->_server.http.get<internal_resp::CastleList>("internal", std::format("/castle/{}", *world));
@@ -39,15 +39,12 @@ async::task<castle::container::fetched> castle::container::fetch(uint32_t id)
         if (entry.divine_beast != id)
             continue;
 
-        co_return fetched{
-            this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(entry.divine_beast),
-                                                 entry.owner_clan_id),
-            fb::model::datetime::utc_now()};
+        co_return this->_server.make<fb::game::castle>(
+            static_cast<fb::model::enum_value::DIVINE_BEAST>(entry.divine_beast),
+            entry.owner_clan_id);
     }
 
-    co_return fetched{
-        this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(id), std::nullopt),
-        fb::model::datetime::utc_now()};
+    co_return this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(id), std::nullopt);
 }
 
 async::task<void> castle::container::load_all()

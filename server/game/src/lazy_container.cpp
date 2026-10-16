@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <chrono>
 #include <exception>
 #include <format>
 #include <stdexcept>
@@ -58,15 +59,37 @@ lazy_container<Entity, NumBuckets>::lazy_container(server& server) :
 { }
 
 template <typename Entity, size_t NumBuckets>
+bool lazy_container<Entity, NumBuckets>::begin_fetch(uint32_t id)
+{
+    auto _ = std::lock_guard(this->_fetch_lock);
+    return this->_fetching.insert(id).second;
+}
+
+template <typename Entity, size_t NumBuckets>
+void lazy_container<Entity, NumBuckets>::end_fetch(uint32_t id)
+{
+    auto _ = std::lock_guard(this->_fetch_lock);
+    this->_fetching.erase(id);
+}
+
+template <typename Entity, size_t NumBuckets>
 async::task<typename lazy_container<Entity, NumBuckets>::guard>
 lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& thread_ref)
 {
     // A busy bucket lock is not a cache miss. retry_exception yields this coroutine before the next attempt.
+    // A second fetch for the same id waits until the first one finishes, then reads that result.
+    while (true)
     {
         auto missing = false;
         for (auto attempt = 0; attempt < 4; ++attempt)
         {
             auto looked = co_await this->lookup_write_async(id);
+            if (looked.guard.has_value() && looked.guard->value() == nullptr)
+            {
+                looked.guard.reset();
+                this->erase(id);
+                continue;
+            }
             if (looked.guard.has_value())
                 co_return guard(std::move(*looked.guard));
             if (looked.missing)
@@ -77,31 +100,51 @@ lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& th
         }
         if (missing == false)
             throw fb::thread::retry_exception{};
+        if (this->begin_fetch(id))
+            break;
+
+        co_await thread_ref.sleep(fb::model::timespan(std::chrono::milliseconds(10)));
     }
 
-    fetched loaded{nullptr, fb::model::datetime("1970-01-01 00:00:00")};
+    entity_ptr loaded;
     try
     {
         loaded = co_await this->fetch(id);
     }
     catch (const std::exception& e)
     {
+        this->end_fetch(id);
         fb::logger::warn("lazy_container fetch failed (id: {}): {}", id, e.what());
         co_return guard{};
+    }
+    catch (...)
+    {
+        this->end_fetch(id);
+        throw;
     }
 
     co_await thread_ref.switching();
 
-    // A nullptr slot is a tombstone, not an empty key. Assign through merge so an older fetch cannot replace it.
+    // A missing row is not stored. The next lookup fetches again.
+    if (loaded == nullptr)
+    {
+        this->end_fetch(id);
+        co_return guard{};
+    }
+
     {
         const auto inserted =
-            co_await this->try_merge_slot(id,
-                                          [this, id, loaded](const std::optional<entity_ptr>& current) -> entity_ptr {
-                                              return this->merge_fetched(id, current, loaded);
-                                          });
+            co_await this->try_merge_slot(id, [loaded](const std::optional<entity_ptr>&) -> entity_ptr {
+                return loaded;
+            });
         if (inserted == false)
+        {
+            this->end_fetch(id);
             throw fb::thread::retry_exception{};
+        }
     }
+
+    this->end_fetch(id);
 
     // The bucket lock is released after the insert. An erase in that gap removes the key, and taking the
     // guard must retry instead of treating the key as permanently missing.

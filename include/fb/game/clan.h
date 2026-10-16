@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -90,21 +89,8 @@ public:
 
 class clan::container : public lazy_container<clan>
 {
-private:
-    mutable std::mutex                                _updated_lock;
-    std::unordered_map<uint32_t, fb::model::datetime> _updated_at;
-
-private:
-    bool recorded(uint32_t id, const fb::model::datetime& at) const;
-    void note(uint32_t id, const fb::model::datetime& at);
-
 protected:
-    // clang-format off
-    async::task<fetched> fetch(uint32_t id) override;
-    bool                 accept(uint32_t id, const fb::model::datetime& at) const;
-    async::task<guard>   open(uint32_t id, const fb::model::datetime& at);
-    entity_ptr           merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming) override;
-    // clang-format on
+    async::task<entity_ptr> fetch(uint32_t id) override;
 
 public:
     explicit container(server& server);

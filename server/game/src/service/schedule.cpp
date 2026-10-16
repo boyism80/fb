@@ -26,7 +26,7 @@ void service::schedule::init()
     {
         auto next = entry.next_execution(now);
         if (next.has_value())
-            this->_tasks[index] = next.value();
+            this->_tasks.emplace(index, next.value());
         ++index;
     }
 }

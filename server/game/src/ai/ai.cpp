@@ -262,9 +262,15 @@ bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
 
 void ai::record_damage(std::shared_ptr<life> attacker, const datetime& now)
 {
-    auto& record   = this->_recent_damage[attacker];
-    record.first  += 1; // Could be enhanced to track actual damage amount
-    record.second  = now;
+    auto found = this->_recent_damage.find(attacker);
+    if (found == this->_recent_damage.end())
+    {
+        this->_recent_damage.emplace(attacker, damage_record{1, now});
+        return;
+    }
+
+    found->second.first  += 1;
+    found->second.second  = now;
 }
 
 async::task<void> ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)

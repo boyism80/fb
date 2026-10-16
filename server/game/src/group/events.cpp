@@ -71,8 +71,6 @@ async::task<void> group::container::on_create(std::string                     ta
                                               std::map<uint32_t, std::string> members,
                                               const fb::model::datetime&      updated_date)
 {
-    if (this->accept(group_id, updated_date) == false)
-        co_return;
     auto member_names = std::vector<std::string>{};
     auto master_uid   = uint32_t{0};
     member_names.reserve(members.size());
@@ -84,6 +82,7 @@ async::task<void> group::container::on_create(std::string                     ta
     }
 
     auto online = std::vector<std::shared_ptr<character>>();
+    auto drop   = false;
     {
         auto guard = co_await this->enter_write(group_id);
         if (guard.holds_lock() == false)
@@ -91,52 +90,57 @@ async::task<void> group::container::on_create(std::string                     ta
 
         if (guard.value() == nullptr)
         {
-            if (this->accept(group_id, updated_date) == false)
-                co_return;
-            guard.value() = this->_server.make<fb::game::group>(group_id, master, member_names, updated_date);
-            this->note(group_id, updated_date);
+            drop = true;
         }
         else if (guard.value()->updated_date() > updated_date)
         {
             co_return;
         }
-        else if (guard.value()->updated_date() < updated_date)
+        else
         {
-            guard.value() = this->_server.make<fb::game::group>(group_id, master, member_names, updated_date);
-            this->note(group_id, updated_date);
+            if (guard.value()->updated_date() < updated_date)
+            {
+                guard.value() = this->_server.make<fb::game::group>(group_id, master, member_names, updated_date);
+            }
+
+            if (master_uid == 0)
+                co_return;
+
+            auto& group     = guard.value();
+            auto  master_ch = this->_server.characters.find(master_uid);
+            if (master_ch != nullptr)
+            {
+                group->enter(master_ch->template weak_from_this_as<character>());
+                online.push_back(master_ch);
+
+                auto log_data              = Json::Value();
+                log_data["character_id"]   = static_cast<Json::Int64>(master_ch->id);
+                log_data["character_name"] = UTF8(master_ch->name(), PLATFORM::WINDOWS);
+                log_data["group_id"]       = static_cast<Json::Int64>(group_id);
+                this->_server.log.write("group_create", log_data);
+            }
+
+            for (const auto& name : member_names)
+            {
+                if (name == master)
+                    continue;
+
+                auto ch = this->_server.characters.find(name);
+                if (ch == nullptr)
+                    continue;
+
+                group->enter(ch->template weak_from_this_as<character>());
+                online.push_back(ch);
+            }
+
+            this->update_portraits(*group, online);
         }
+    }
 
-        if (master_uid == 0)
-            co_return;
-
-        auto& group     = guard.value();
-        auto  master_ch = this->_server.characters.find(master_uid);
-        if (master_ch != nullptr)
-        {
-            group->enter(master_ch->template weak_from_this_as<character>());
-            online.push_back(master_ch);
-
-            auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(master_ch->id);
-            log_data["character_name"] = UTF8(master_ch->name(), PLATFORM::WINDOWS);
-            log_data["group_id"]       = static_cast<Json::Int64>(group_id);
-            this->_server.log.write("group_create", log_data);
-        }
-
-        for (const auto& name : member_names)
-        {
-            if (name == master)
-                continue;
-
-            auto ch = this->_server.characters.find(name);
-            if (ch == nullptr)
-                continue;
-
-            group->enter(ch->template weak_from_this_as<character>());
-            online.push_back(ch);
-        }
-
-        this->update_portraits(*group, online);
+    if (drop)
+    {
+        this->erase(group_id);
+        co_return;
     }
 
     this->_server.characters.foreach_enqueue(
@@ -166,7 +170,7 @@ async::task<void> group::container::on_enter(std::string                target,
     auto ch_id   = uint32_t{0};
     auto members = std::vector<std::shared_ptr<character>>();
     {
-        auto  guard = co_await this->open(group_id, updated_date);
+        auto  guard = co_await this->enter_write(group_id);
         auto& group = guard.value();
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
@@ -177,7 +181,6 @@ async::task<void> group::container::on_enter(std::string                target,
         {
             group->add_member(name);
             group->updated_date(updated_date);
-            this->note(group_id, updated_date);
         }
 
         auto ch = this->_server.characters.find(name);
@@ -267,7 +270,7 @@ async::task<void> group::container::remove_member(uint32_t                   gro
     auto ch_id   = uint32_t{0};
     auto members = std::vector<std::shared_ptr<character>>();
     {
-        auto  guard = co_await this->open(group_id, updated_date);
+        auto  guard = co_await this->enter_write(group_id);
         auto& group = guard.value();
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
@@ -278,7 +281,6 @@ async::task<void> group::container::remove_member(uint32_t                   gro
         {
             group->remove_member(name);
             group->updated_date(updated_date);
-            this->note(group_id, updated_date);
         }
 
         auto ch = this->_server.characters.find(name);
@@ -341,23 +343,30 @@ async::task<void> group::container::on_destroyed(std::string                acto
                                                  const fb::model::datetime& updated_date)
 {
     std::ignore = actor;
-    if (this->accept(group_id, updated_date) == false)
-        co_return;
 
     auto members = std::vector<std::shared_ptr<character>>{};
+    auto drop    = false;
     {
         auto guard = co_await this->enter_write(group_id);
         if (guard.holds_lock() == false)
             co_return;
-        if (guard.value() != nullptr && guard.value()->updated_date() > updated_date)
+        if (guard.value() == nullptr)
+        {
+            drop = true;
+        }
+        else if (guard.value()->updated_date() > updated_date)
+        {
             co_return;
-        if (guard.value() == nullptr && this->accept(group_id, updated_date) == false)
-            co_return;
-        if (guard.value() != nullptr)
+        }
+        else
+        {
             members = guard.value()->characters();
-        guard.value() = nullptr;
-        this->note(group_id, updated_date);
+            drop    = true;
+        }
     }
+
+    if (drop)
+        this->erase(group_id);
 
     this->_server.characters.foreach_enqueue(
         [this](auto& ch) -> async::task<void> {
@@ -369,7 +378,7 @@ async::task<void> group::container::on_destroyed(std::string                acto
 
 async::task<void> group::container::on_broadcast(uint32_t group_id, std::string message, uint8_t type)
 {
-    auto  guard = co_await this->open(group_id, fb::model::datetime::utc_now());
+    auto  guard = co_await this->enter_write(group_id);
     auto& group = guard.value();
     if (guard.holds_lock() == false || group == nullptr)
         co_return;

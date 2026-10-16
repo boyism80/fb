@@ -9,8 +9,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string_view>
+#include <unordered_set>
 
 namespace fb::game {
 
@@ -64,25 +66,19 @@ public:
     using super::try_enter_read;
     using super::write;
 
-    struct fetched
-    {
-        entity_ptr          entity;
-        fb::model::datetime at;
-    };
-
 protected:
     server& _server;
 
-protected:
-    virtual async::task<fetched> fetch(uint32_t id) = 0;
+private:
+    std::mutex                   _fetch_lock;
+    std::unordered_set<uint32_t> _fetching;
 
-    virtual entity_ptr merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming)
-    {
-        static_cast<void>(id);
-        if (current.has_value() && *current != nullptr)
-            return *current;
-        return incoming.entity;
-    }
+private:
+    bool begin_fetch(uint32_t id);
+    void end_fetch(uint32_t id);
+
+protected:
+    virtual async::task<entity_ptr> fetch(uint32_t id) = 0;
 
     async::task<guard> enter_write_impl(uint32_t id, fb::thread& thread_ref);
 
