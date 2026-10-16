@@ -36,7 +36,9 @@ void user_info_submit<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_end
     writer.write<uint8_t>(this->sub);
     auto size = uint16_t(8);
     for (size_t i = 0; i < this->strings.size(); ++i)
+    {
         size += static_cast<uint16_t>(this->strings[i].size());
+    }
     writer.write<uint16_t>(size);
     for (size_t i = 0; i < this->strings.size(); ++i)
     {

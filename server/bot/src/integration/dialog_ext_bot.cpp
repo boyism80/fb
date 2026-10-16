@@ -61,7 +61,9 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
         uint8_t list_count = reader.read<uint8_t>();
         this->list_lists.clear();
         for (uint8_t i = 0; i < list_count; i++)
+        {
             this->list_lists.push_back(reader.read<std::string, uint8_t>());
+        }
     }
     break;
 

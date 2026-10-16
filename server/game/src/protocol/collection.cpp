@@ -145,7 +145,9 @@ void collection<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& 
         writer.write<uint8_t>(this->group_id);
         writer.write<uint8_t>(static_cast<uint8_t>(this->bitmask.size()));
         for (auto byte : this->bitmask)
+        {
             writer.write<uint8_t>(byte);
+        }
     }
     else
     {
@@ -190,7 +192,9 @@ void collection<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>
         this->group_id = reader.read<uint8_t>();
         auto count     = reader.read<uint8_t>();
         for (uint8_t i = 0; i < count; i++)
+        {
             this->bitmask.push_back(reader.read<uint8_t>());
+        }
     }
     else
     {

@@ -436,7 +436,9 @@ void map::bulk_update(const std::vector<uint32_t>& oids)
             continue;
 
         for (const sector* sector : this->sectors.nears(obj->position()))
+        {
             affected.insert(sector);
+        }
     }
 
     // Collect all characters in affected sectors

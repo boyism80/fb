@@ -395,7 +395,9 @@ async::task<std::optional<std::vector<fb::lua::value>>> object::script(std::stri
 
     lua->pushobject(*this);
     for (const auto& arg : args)
+    {
         arg.push(*lua);
+    }
 
     auto retc   = 0;
     std::ignore = co_await lua->call(static_cast<int>(args.size()) + 1, &retc);
@@ -403,7 +405,9 @@ async::task<std::optional<std::vector<fb::lua::value>>> object::script(std::stri
     auto results = std::vector<fb::lua::value>{};
     auto top     = lua_gettop(*lua);
     for (auto i = top - retc + 1; i <= top; i++)
+    {
         results.push_back(fb::lua::value::copy(*lua, i));
+    }
     co_return results;
 }
 

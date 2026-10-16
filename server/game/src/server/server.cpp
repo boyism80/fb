@@ -427,7 +427,9 @@ async::task<void> fb::game::server::save(fb::thread& thread)
             }
 
             for (auto& entry : saving)
+            {
                 entry.second->unlock();
+            }
 
             if (failed)
             {

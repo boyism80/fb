@@ -83,7 +83,9 @@ std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_v
         {
             sorted_items.clear();
             for (auto& [k, v] : *this)
+            {
                 sorted_items[v.name] = &v;
+            }
             cache_owner = this;
         }
     }
@@ -96,7 +98,9 @@ std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_v
         if (prefix.empty())
         {
             for (auto& [name, item] : sorted_items)
+            {
                 result.push_back(item);
+            }
             return result;
         }
 

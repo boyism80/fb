@@ -98,10 +98,14 @@ public:
                     auto outputs = std::vector<R>{};
                     auto gen     = this->on_work(work->item);
                     while (gen.next())
+                    {
                         outputs.push_back(gen.value());
+                    }
 
                     for (auto& output : outputs)
+                    {
                         report_progress(work->item, output);
+                    }
 
                     outputs_buffer[work->index] = std::move(outputs);
                 }
@@ -136,13 +140,17 @@ public:
             }
 
             for (auto& task : tasks)
+            {
                 co_await task;
+            }
         }
 
         for (auto& outputs : outputs_buffer)
         {
             for (auto& output : outputs)
+            {
                 result.push_back(std::move(output));
+            }
         }
 
         this->on_finish(result);
@@ -253,7 +261,9 @@ public:
             }
 
             for (auto& task : tasks)
+            {
                 co_await task;
+            }
         }
 
         this->on_finish();

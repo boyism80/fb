@@ -773,13 +773,17 @@ async::task<void> map::container::rebuild_rezens()
                            before.mob == after.mob && before.rezen == after.rezen &&
                            before.condition.size() == after.condition.size();
                     for (size_t j = 0; same && j < before.condition.size(); j++)
+                    {
                         same = before.condition[j].to_json() == after.condition[j].to_json();
+                    }
                 }
 
                 if (same)
                 {
                     for (auto& rezen : current)
+                    {
                         rezen->table(spawn_table);
+                    }
                 }
                 else
                 {
@@ -801,7 +805,9 @@ async::task<void> map::container::rebuild_rezens()
             }
 
             for (auto& rezen : removed)
+            {
                 co_await rezen->despawn_all();
+            }
 
             if (rebuilt > 0)
                 fb::logger::info("rezen rebuilt for {} map(s) after table reload", rebuilt);
@@ -811,7 +817,9 @@ async::task<void> map::container::rebuild_rezens()
     }
 
     for (auto& task : tasks)
+    {
         co_await task;
+    }
     co_return;
 }
 

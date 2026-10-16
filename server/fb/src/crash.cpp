@@ -207,7 +207,9 @@ void fb::crash::write_dump()
             text[0]   = '0';
             text[1]   = 'x';
             for (int j = 0; j < len; j++)
+            {
                 text[2 + j] = digits[len - 1 - j];
+            }
             text[2 + len] = '\0';
             argv[argc++]  = text;
         }

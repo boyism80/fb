@@ -422,7 +422,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         auto entries = std::vector<friend_entry>{};
         entries.reserve(resp.friends.size());
         for (auto& entry : resp.friends)
+        {
             entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
+        }
         ch->friends(std::move(entries));
     }
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()

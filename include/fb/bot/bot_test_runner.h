@@ -74,7 +74,9 @@ int run_bot_test(std::string_view config_path)
     // Release work_guard when the container exits so io_context::run / join can finish.
     auto watcher = std::thread([container, &work_guard, &io_context]() {
         while (container->running())
+        {
             std::this_thread::sleep_for(100ms);
+        }
 
         work_guard.reset();
         io_context.stop();

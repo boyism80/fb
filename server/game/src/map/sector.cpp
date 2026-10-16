@@ -101,7 +101,9 @@ void sector::container::load(const fb::model::size16_t& map_size, const fb::mode
     this->_pool.reserve(count);
 
     for (uint32_t i = 0; i < count; i++)
+    {
         this->_pool.emplace_back(i);
+    }
 }
 
 bool sector::container::activated(uint32_t index) const

@@ -165,7 +165,9 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
             current->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
 
         for (auto& [option, next] : applied)
+        {
             current->option(option, next);
+        }
     }
     co_return true;
 }

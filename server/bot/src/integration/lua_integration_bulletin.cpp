@@ -143,7 +143,9 @@ int builtin::game_bot::builtin_bulletin_get_sections(lua_State* L)
             INTEGRATION_DEFAULT_TIMEOUT);
 
         for (auto& section : resp.bulletins)
+        {
             result->items.emplace_back(section.id, section.title);
+        }
     };
     builder.resume = [lua, result]() -> async::task<int> {
         lua->new_table();

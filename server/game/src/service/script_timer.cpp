@@ -97,7 +97,9 @@ void service::script_timer::cancel_all(uint32_t map_id)
             to_erase.push_back(id);
         }
         for (auto id : to_erase)
+        {
             this->erase_unlocked(id);
+        }
     }
 
     for (auto& timer : timers)

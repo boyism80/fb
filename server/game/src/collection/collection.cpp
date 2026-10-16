@@ -42,7 +42,9 @@ void character_collections::load(const std::vector<fb::protocol::internal::Colle
 {
     this->_unlocked_mob_ids.clear();
     for (const auto& row : rows)
+    {
         this->_unlocked_mob_ids.insert(row.mob_id);
+    }
 }
 
 void character_collections::sync()
@@ -73,7 +75,9 @@ std::vector<fb::protocol::internal::CollectionUnlock> character_collections::to_
     auto rows = std::vector<fb::protocol::internal::CollectionUnlock>{};
     rows.reserve(this->_unlocked_mob_ids.size());
     for (auto mob_id : this->_unlocked_mob_ids)
+    {
         rows.emplace_back(user, mob_id);
+    }
     return rows;
 }
 

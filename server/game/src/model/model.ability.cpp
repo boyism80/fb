@@ -26,7 +26,9 @@ void fb::model::___ability::build_stacked_exp()
         std::vector<uint8_t> sorted;
         sorted.reserve(levels.size());
         for (auto& [level, ability] : levels)
+        {
             sorted.push_back(level);
+        }
 
         std::sort(sorted.begin(), sorted.end());
 
@@ -68,7 +70,9 @@ void fb::model::___ability::build_stacked_exp()
         }
 
         for (auto& [level, value] : class_intra)
+        {
             map[level] = none_base + value;
+        }
     }
 }
 

@@ -27,7 +27,9 @@ void attack<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& re
         this->oids.clear();
         this->oids.reserve(count);
         for (uint8_t i = 0; i < count; ++i)
+        {
             this->oids.push_back(reader.read<uint32_t>());
+        }
     }
 }
 #else

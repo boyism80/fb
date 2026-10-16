@@ -79,7 +79,9 @@ std::vector<tree_node> parse_tree(std::vector<uint8_t>& data)
         auto children    = std::vector<std::string>{};
         children.reserve(child_count);
         for (uint16_t c = 0; c < child_count; ++c)
+        {
             children.push_back(reader.read<std::string, uint16_t>());
+        }
         nodes.push_back({std::move(name), std::move(children)});
     }
     return nodes;
@@ -134,7 +136,9 @@ void meta_dat_file::load(std::string_view path, META_DAT_PARSE parse)
         auto nlen = le.read<uint16_t>();
         auto wide = std::wstring(nlen, L'\0');
         for (uint16_t w = 0; w < nlen; ++w)
+        {
             wide[w] = static_cast<wchar_t>(le.read<uint16_t>());
+        }
 
         be.seek(le.seek());
         auto compressed_size = be.read<uint32_t>();
@@ -226,7 +230,9 @@ std::vector<std::pair<std::string, uint32_t>> meta_dat_file::crc_list() const
     auto list = std::vector<std::pair<std::string, uint32_t>>{};
     list.reserve(this->_entries.size());
     for (const auto& entry : this->_entries)
+    {
         list.emplace_back(entry.name, entry.crc);
+    }
     return list;
 }
 

@@ -105,7 +105,9 @@ void spell_cast<CLIENT_VERSION::v651>::parse(SPELL_TYPE type)
 
         auto n = this->buffer.size();
         while (n > 0 && this->buffer[n - 1] == 0)
+        {
             --n;
+        }
 #ifdef _WIN32
         this->message = std::string(reinterpret_cast<const char*>(this->buffer.data()), n);
 #else

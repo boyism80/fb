@@ -106,7 +106,9 @@ void game_bot_controller::initialize()
     // Instance slots must be >= 1 (see scripts/lib/command.lua 맵이동). Seats are 1..K;
     // tests that need a second instance use extra_slot = K+1.
     for (uint32_t i = 1; i <= this->_logic_seats; i++)
+    {
         this->_free_seats.insert(i);
+    }
 
     for (auto& discovered : lua_integration_test::discover_scripts())
     {
@@ -274,7 +276,9 @@ void game_bot_controller::try_schedule_parallel()
     }
 
     for (auto* test : to_start)
+    {
         this->detach_run_one(test);
+    }
 }
 
 void game_bot_controller::detach_run_one(bot_integration_test* test)
@@ -689,7 +693,9 @@ async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t    
         co_return;
 
     for (auto& hook : cmd_it->second)
+    {
         co_await hook.fn(bot, header);
+    }
 }
 
 uint32_t game_bot_controller::hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn)

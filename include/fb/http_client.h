@@ -264,7 +264,9 @@ private:
             req.set(boost::beast::http::field::host, endpoint.host);
             req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
             for (const auto& [name, value] : headers)
+            {
                 req.set(name, value);
+            }
 
             auto executor = co_await boost::asio::this_coro::executor;
             auto resolver = boost::asio::ip::tcp::resolver{executor};
@@ -323,7 +325,9 @@ private:
             req.set(boost::beast::http::field::host, endpoint.host);
             req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
             for (const auto& [name, value] : headers)
+            {
                 req.set(name, value);
+            }
 
             req.body() = std::move(body);
             req.prepare_payload();
@@ -424,7 +428,9 @@ public:
         }
 
         for (auto& request : requests)
+        {
             request();
+        }
     }
 
     void clear_held()

@@ -34,10 +34,14 @@ void connection_ack<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_end
         reader.read(buf, n);
     size_t len = 0;
     while (len < n && buf[len] != '\0')
+    {
         ++len;
+    }
     this->client_name.assign(buf, len);
     while (reader.readable_size() > 0)
+    {
         reader.read<uint8_t>();
+    }
 }
 #else
 template <CLIENT_VERSION V>

@@ -37,7 +37,9 @@ void click<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& rea
     this->flag = reader.read<uint8_t>();
     this->oid  = reader.read<uint32_t>();
     while (reader.readable_size() > 0)
+    {
         reader.read<uint8_t>();
+    }
 }
 #endif
 

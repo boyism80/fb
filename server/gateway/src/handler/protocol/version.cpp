@@ -54,8 +54,10 @@ bool version<V>::is_allowed(uint16_t v)
         return false;
 
     for (const auto& item : versions)
+    {
         if (static_cast<uint16_t>(item.asUInt()) == v)
             return true;
+    }
 
     return false;
 }

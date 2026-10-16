@@ -129,7 +129,9 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
         uint8_t slot_count = reader.read<uint8_t>();
         this->slot_slots.clear();
         for (uint8_t i = 0; i < slot_count; i++)
+        {
             this->slot_slots.push_back(reader.read<uint8_t>());
+        }
     }
     break;
 

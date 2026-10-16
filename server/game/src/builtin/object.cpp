@@ -914,7 +914,9 @@ int builtin::object::builtin_sight_in(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (const auto& entry : obj->sight_in(filter))
+        {
             objects->push_back(entry);
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -1177,7 +1179,9 @@ int builtin::object::builtin_buffs(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (auto& [_, buff] : obj->buffs)
+        {
             buffs->push_back(buff);
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -1241,7 +1245,9 @@ int builtin::object::builtin_script(lua_State* L)
     // instead of moved: two roots are independent lua_States.
     auto args = std::make_shared<std::vector<fb::lua::value>>();
     for (auto i = 4; i <= argc; i++)
+    {
         args->push_back(fb::lua::value::copy(*lua, i));
+    }
     auto results = std::make_shared<std::vector<fb::lua::value>>();
 
     auto builder  = lua->new_co_builder();
@@ -1257,7 +1263,9 @@ int builtin::object::builtin_script(lua_State* L)
     };
     builder.resume = [=]() -> async::task<int> {
         for (const auto& result : *results)
+        {
             result.push(*lua);
+        }
         co_return static_cast<int>(results->size());
     };
     return builder.run();

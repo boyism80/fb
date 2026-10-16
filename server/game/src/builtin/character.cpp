@@ -1126,7 +1126,9 @@ int builtin::character::builtin_mkitem(lua_State* L)
         }
         auto slots = co_await ch->items.add(items, true);
         for (auto slot : slots)
+        {
             result_items->push_back(ch->items[slot]);
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -2107,7 +2109,9 @@ int builtin::character::builtin_stored_item(lua_State* L)
             const auto& stored_items = ch->items.stored();
             buffer->reserve(stored_items.size());
             for (const auto& stored_item : stored_items)
+            {
                 buffer->push_back(stored_item);
+            }
             co_return;
         };
         builder.resume = [=]() -> async::task<int> {
@@ -2666,7 +2670,9 @@ int builtin::character::builtin_achievements(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (auto& [id, achievement] : ch->achievements)
+        {
             buffer->push_back(achievement.get());
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -3244,7 +3250,9 @@ int builtin::character::builtin_spawned_mobs(lua_State* L)
         auto& spawned_mobs = ch->spawned_mobs();
         buffer->reserve(spawned_mobs.size());
         for (const auto& mob : spawned_mobs)
+        {
             buffer->push_back(mob);
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -6622,7 +6630,9 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
             const auto& src = table::reward[reward_id].dsl;
             attachments.reserve(src.size());
             for (const auto& item : src)
+            {
                 attachments.push_back(item);
+            }
         }
     }
     else if (lua->is_table(5))
@@ -6739,7 +6749,9 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
             const auto& src = table::reward[reward_id].dsl;
             attachments.reserve(src.size());
             for (const auto& item : src)
+            {
                 attachments.push_back(item);
+            }
         }
     }
     else if (lua->is_table(4))

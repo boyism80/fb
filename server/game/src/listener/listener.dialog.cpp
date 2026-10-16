@@ -306,7 +306,9 @@ void listener_impl::on_dialog_buy(character&                 me,
                 auto options = std::vector<std::string>{};
                 options.reserve(entries.size());
                 for (const auto& entry : entries)
+                {
                     options.push_back(entry.model.name);
+                }
                 me.send(
                     game_resp::dialog_pursuit<V>(appearance_factory::create(obj, me), options, message, oid, pursuit));
             }
@@ -337,7 +339,9 @@ void listener_impl::on_dialog_buy(character&                 me,
                 auto options = std::vector<std::string>{};
                 options.reserve(entries.size());
                 for (const auto& entry : entries)
+                {
                     options.push_back(entry.model.name);
+                }
                 me.send(
                     game_resp::dialog_pursuit<V>(appearance_factory::create(obj, me), options, message, oid, pursuit));
             }

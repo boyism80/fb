@@ -299,7 +299,9 @@ void release_suite_refs(lua_State* L, lua_integration_test::suite_def& suite)
         if (scenario.is_parallel())
         {
             for (auto& item : scenario.parallel)
+            {
                 unref(item.function_ref);
+            }
         }
         else
         {

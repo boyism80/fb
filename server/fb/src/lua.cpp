@@ -1191,7 +1191,9 @@ context* root::pop(context* parent, call_options options)
 
         auto detail = std::string{};
         for (auto& [path, count] : holders)
+        {
             detail += std::format(" {}={}", path, count);
+        }
 
         fb::logger::warn("lua pool exhausted: idle={} busy={} max={} holders:{}",
                          this->idle.size(),
@@ -1297,7 +1299,9 @@ fb::lua::context_pool::context_pool(fb::async_executor& executor) :
     _executor(executor)
 {
     for (auto& [id, thread] : executor.threads)
+    {
         this->_roots.insert({id, std::make_unique<root>(executor, *thread)});
+    }
 }
 
 fb::lua::context_pool::~context_pool()
@@ -1408,7 +1412,9 @@ std::string script_disk_path(std::string_view relative)
 {
     auto path = std::string(relative);
     while (!path.empty() && (path.front() == '/' || path.front() == '\\'))
+    {
         path.erase(path.begin());
+    }
     return std::format("scripts/{}", path);
 }
 
@@ -1488,7 +1494,9 @@ void root::capture_loaded_libs()
 void root::unload_remembered_libs()
 {
     for (const auto& name : this->_lib_modules)
+    {
         this->unload_package(name);
+    }
 }
 
 async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::string>& relative_paths)
@@ -1508,9 +1516,13 @@ async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::s
     {
         co_await root->switching();
         for (const auto& disk : disk_paths)
+        {
             root->invalidate(disk);
+        }
         for (const auto& module : lib_modules)
+        {
             root->unload_package(module);
+        }
         for (const auto& disk : disk_paths)
         {
             if (root->dump(disk) == false)

@@ -499,7 +499,9 @@ void listener_impl::on_collection_list(character& ch)
 
     auto entries = std::vector<game_resp::collection_entry>{};
     for (const auto& group : this->server.meta.groups())
+    {
         entries.push_back({group.id, ch.collections.unlocked_count(group.id)});
+    }
 
     ch.send(game_resp::collection<fb::protocol::CLIENT_VERSION::v651>(std::move(entries)));
 }

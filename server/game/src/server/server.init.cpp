@@ -55,7 +55,9 @@ void fb::game::server::bind_script_error(fb::lua::context& ctx, int argc)
         {
             text.resize(180);
             while (text.empty() == false && (static_cast<unsigned char>(text.back()) & 0xC0) == 0x80)
+            {
                 text.pop_back();
+            }
         }
 
         auto line    = std::format("LUAERR: {}", text);

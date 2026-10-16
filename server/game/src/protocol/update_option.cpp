@@ -34,7 +34,9 @@ void update_option<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->options.size()));
     for (auto option : this->options)
+    {
         writer.write<uint8_t>(static_cast<uint8_t>(option));
+    }
     if (this->options.size() == 1 && this->options.front() == OPTION::EXTENSION)
         writer.write<bool>(this->ride);
 }
@@ -60,14 +62,18 @@ void update_option<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endi
 
     this->options.reserve(count);
     for (uint8_t i = 0; i < count; ++i)
+    {
         this->options.push_back(static_cast<OPTION>(reader.read<uint8_t>()));
+    }
 
     if (this->options.size() == 1 && this->options.front() == OPTION::EXTENSION && reader.readable_size() >= 1)
         this->ride = reader.read<bool>();
     else
     {
         while (reader.readable_size() > 0)
+        {
             reader.read<uint8_t>();
+        }
     }
 }
 #endif

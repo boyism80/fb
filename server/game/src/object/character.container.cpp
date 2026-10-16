@@ -91,7 +91,9 @@ std::vector<uint32_t> character::container::collect_ids(character_predicate_t pr
     auto ids     = std::vector<uint32_t>{};
     ids.reserve(targets.size());
     for (auto& ch : targets)
+    {
         ids.push_back(ch->id);
+    }
     return ids;
 }
 

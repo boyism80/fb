@@ -36,7 +36,9 @@ async::task<bool> friends<V>::handle(fb::socket<character>& session, game_reqs::
     auto entries = std::vector<friend_entry>{};
     entries.reserve(resp.friends.size());
     for (auto& entry : resp.friends)
+    {
         entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
+    }
     ptr->friends(std::move(entries));
 
     co_return true;

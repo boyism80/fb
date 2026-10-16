@@ -380,7 +380,9 @@ int builtin::map::builtin_doors(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (const auto& entry : map->doors)
+        {
             doors->push_back(&entry.second);
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -450,7 +452,9 @@ int builtin::map::builtin_belows(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (const auto& below : map->belows(fb::model::point16_t(x, y), type))
+        {
             belows->push_back(below);
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

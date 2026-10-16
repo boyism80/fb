@@ -84,7 +84,9 @@ async::task<void> service::schedule::poll()
     }
 
     for (auto schedule_index : to_remove)
+    {
         this->_tasks.erase(schedule_index);
+    }
 
     co_return;
 }

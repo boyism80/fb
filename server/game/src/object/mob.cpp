@@ -206,7 +206,9 @@ async::task<void> rezen::despawn_all()
     }
 
     for (auto& mob : victims)
+    {
         co_await mob->destroy(DESTROY_TYPE::DEFAULT);
+    }
 }
 
 void rezen::force_spawn(std::thread::id thread_id)
@@ -812,12 +814,16 @@ void mob::hidden(bool enabled)
     if (enabled)
     {
         for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+        {
             this->object::hide(*obj);
+        }
     }
     else
     {
         for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+        {
             this->show(*obj);
+        }
     }
 }
 
