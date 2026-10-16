@@ -33,7 +33,7 @@ public:
 public:
     // clang-format off
     spell(const fb::game::server& server, const fb::game::life& owner, const fb::model::spell& model, uint16_t delay = 0);
-   ~spell();
+    ~spell();
     // clang-format on
 
 public:
@@ -56,10 +56,8 @@ private:
     std::weak_ptr<fb::game::life> _owner;
 
 public:
-    // clang-format off
-   spells();
-   ~spells();
-    // clang-format on
+    spells();
+    ~spells();
 
 public:
     // clang-format off
@@ -107,7 +105,7 @@ public:
 public:
     // clang-format off
     buff(const fb::game::server& server, const fb::model::spell& model, const std::weak_ptr<fb::game::object>& owner, const std::weak_ptr<fb::game::object>& caster, uint32_t seconds);
-   ~buff();
+    ~buff();
     // clang-format on
 
 public:
@@ -138,14 +136,14 @@ public:
     using super::size;
 
 public:
-    // clang-format off
     buffs(fb::game::object& owner);
     buffs(const buffs& other);
-   ~buffs();
-    // clang-format on
+    ~buffs();
 
 private:
-    bool                  push_back(const std::shared_ptr<buff>& buff);
+    bool push_back(const std::shared_ptr<buff>& buff);
+
+public:
     std::shared_ptr<buff> find(uint32_t id) const;
 
 public:
