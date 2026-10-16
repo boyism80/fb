@@ -704,10 +704,9 @@ int builtin::character::builtin_item(lua_State* L)
             }
             lua->pop(1);
 
-            if (item == nullptr)
-                continue;
+            if (item != nullptr)
+                items.push_back({*item, price});
 
-            items.push_back({*item, price});
             lua->pop(1);
         }
     }
