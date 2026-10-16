@@ -6882,7 +6882,7 @@ int builtin::character::builtin_storage_entries(lua_State* L)
 
             lua->pushstring("expired_date");
             if (entry.expire_date.has_value())
-                lua->pushstring(entry.expire_date.value().to_string());
+                lua->pushstring(entry.expire_date.value().to_local().to_string());
             else
                 lua->pushnil();
             lua_settable(L, -3);

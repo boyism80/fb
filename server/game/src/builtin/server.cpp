@@ -125,7 +125,7 @@ int builtin::server::builtin_now(lua_State* L)
             auto  world  = fb::config<std::optional<uint32_t>>("world");
             auto  posted = value;
             if (reset == false)
-                posted = fb::model::datetime(value).kst_to_utc().to_string();
+                posted = fb::model::datetime(value).local_to_utc().to_string();
             auto&& resp = co_await server.http.post("internal",
                                                     "/in-game/set-datetime",
                                                     internal_reqs::SetDateTime{world, posted, reset});
@@ -289,7 +289,7 @@ void builtin::server::push_datetime_table(lua_State* L, const fb::model::datetim
 }
 
 /**
- * @brief      Returns current Korean civil time as a table for calendar-style logic.
+ * @brief      Returns the current process-local civil time as a table for calendar-style logic.
  *
  *             Takes no arguments. Pushes a single table with fields: year, month, day,
  *             hour, minute, second. Use for 선원/뱃사공 time windows (e.g. datetime().hour, datetime().minute).
@@ -304,7 +304,7 @@ int builtin::server::builtin_datetime(lua_State* L)
         return 0;
 
     auto& srv = static_cast<fb::game::server&>(lua->executor);
-    push_datetime_table(L, srv.now().to_kst());
+    push_datetime_table(L, srv.now().to_local());
     return 1;
 }
 

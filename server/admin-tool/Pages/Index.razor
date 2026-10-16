@@ -246,8 +246,8 @@
                                 <tr>
                                     <td>@schedule.Title</td>
                                     <td>@(schedule.World == 0 ? "전체" : $"World {schedule.World}")</td>
-                                    <td class="meta">@schedule.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
-                                    <td class="meta">@schedule.EndTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="meta">@ToLocal(schedule.StartTime).ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="meta">@ToLocal(schedule.EndTime).ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>@FormatRepeat(schedule.RepeatType)</td>
                                     <td><span class="dash-status-chip">@GetScheduleStatus(schedule)</span></td>
                                 </tr>
@@ -424,6 +424,12 @@
         }
     }
 
+    private static DateTime ToLocal(DateTime value)
+    {
+        var utc = value.Kind == DateTimeKind.Utc ? value : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        return utc.ToLocalTime();
+    }
+
     private static string FormatCount(int value) => value.ToString("N0");
 
     private static string FormatRepeat(MaintenanceRepeatType type) => type switch
@@ -440,7 +446,7 @@
     {
         if (!schedule.IsActive)
             return "취소";
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         if (now >= schedule.StartTime && now <= schedule.EndTime)
             return "진행 중";
         if (now < schedule.StartTime)

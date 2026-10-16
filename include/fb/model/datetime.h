@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <cmath>
+#include <ctime>
 #include <vector>
 #include <limits>
 #include <boost/xpressive/xpressive.hpp>
@@ -611,8 +612,9 @@ inline lunar_date solar_to_lunar(int32_t year, int32_t month, int32_t day)
  *             for date and time manipulation. It supports construction from strings,
  *             arithmetic operations with timespans, component access (year, month, day, etc.),
  *             and comparison operations. The stored value is a wall-clock number with no
- *             time zone. now() is the process local clock. utc_now() is UTC. Callers that
- *             persist a time use utc_now().
+ *             time zone. now() is the process local clock. utc_now() is UTC.
+ *             to_local() and local_to_utc() convert with the process time zone.
+ *             Callers that persist a time use utc_now().
  */
 class datetime
 {
@@ -633,15 +635,28 @@ public:
         return datetime(boost::posix_time::microsec_clock::universal_time());
     }
 
-    // Korea civil time is UTC+9 and does not observe daylight saving.
-    datetime to_kst() const
+    datetime to_local() const
     {
-        return *this + timespan(0, 9, 0, 0, 0);
+        const auto epoch = boost::posix_time::to_time_t(this->_ptime);
+        std::tm    local{};
+#if defined(_WIN32)
+        if (localtime_s(&local, &epoch) != 0)
+            throw std::runtime_error("failed to convert utc datetime to local");
+#else
+        if (localtime_r(&epoch, &local) == nullptr)
+            throw std::runtime_error("failed to convert utc datetime to local");
+#endif
+        return datetime(boost::posix_time::ptime_from_tm(local));
     }
 
-    datetime kst_to_utc() const
+    datetime local_to_utc() const
     {
-        return *this - timespan(0, 9, 0, 0, 0);
+        auto       tm    = boost::posix_time::to_tm(this->_ptime);
+        tm.tm_isdst      = -1;
+        const auto epoch = std::mktime(&tm);
+        if (epoch == static_cast<std::time_t>(-1))
+            throw std::runtime_error("failed to convert local datetime to utc");
+        return datetime(boost::posix_time::from_time_t(epoch));
     }
 
     /**

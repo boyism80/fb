@@ -511,7 +511,7 @@
                     selectedWorld.Value,
                     model.Title.Trim(),
                     model.Message.Trim(),
-                    model.ExpiredDate,
+                    model.ExpiredDate?.ToUniversalTime(),
                     model.Attachments);
 
                 var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
@@ -543,7 +543,7 @@
                     model.Title.Trim(),
                     model.Message.Trim(),
                     model.Attachments,
-                    model.ExpiredDate);
+                    model.ExpiredDate?.ToUniversalTime());
 
                 var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
                 ActivityLog.Add(new AdminActivityEntry

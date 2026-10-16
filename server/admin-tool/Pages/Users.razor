@@ -126,7 +126,7 @@
                                         }
                                     </div>
                                 </td>
-                                <td class="table-meta">@user.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td class="table-meta">@DateTime.SpecifyKind(user.UpdatedDate, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>
                                     <div class="table-actions">
                                         <a href="/users/@user.Id" class="text-link">상세</a>
@@ -690,7 +690,7 @@
 
             var oldRole = character.Role;
             character.Role = newRole;
-            character.UpdatedDate = DateTime.Now;
+            character.UpdatedDate = DateTime.UtcNow;
             dbContext.Character.Set(selectedWorld.Value, character);
             await dbContext.SaveChangesAsync();
 

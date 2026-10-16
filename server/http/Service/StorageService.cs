@@ -224,7 +224,7 @@ namespace Http.Service
                 return claimId != 0 && box.ClaimId == claimId;
 
             // A claim resent after an outage is judged by when the game issued it, not by when it arrived.
-            if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= SnowflakeId.Time(claimId).ToLocalTime())
+            if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= SnowflakeId.Time(claimId))
                 return false;
 
             var now = DateTime.UtcNow;

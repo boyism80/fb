@@ -147,7 +147,7 @@ public:
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
 
 private:
-    fb::model::datetime _time = fb::model::datetime::utc_now().to_kst();
+    fb::model::datetime _time = fb::model::datetime::utc_now().to_local();
     double              _exp_multiplier;
     double              _drop_rate_multiplier;
 

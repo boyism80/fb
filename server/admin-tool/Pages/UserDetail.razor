@@ -736,7 +736,7 @@
 
             var oldRole = character.Role;
             character.Role = newRole;
-            character.UpdatedDate = DateTime.Now;
+            character.UpdatedDate = DateTime.UtcNow;
             dbContext.Character.Set(selectedWorld.Value, character);
             await dbContext.SaveChangesAsync();
 

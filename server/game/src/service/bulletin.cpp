@@ -54,7 +54,7 @@ void service::bulletin::on_delete_error(int32_t result) const
 fb::game::bulletin::article service::bulletin::to_article(const fb::protocol::internal::ArticleSummary& summary,
                                                           uint16_t                                      section)
 {
-    auto dt = fb::model::datetime(summary.created_date).to_kst();
+    auto dt = fb::model::datetime(summary.created_date).to_local();
     return fb::game::bulletin::article{.id      = summary.id,
                                        .section = section,
                                        .user    = summary.user,
@@ -68,7 +68,7 @@ fb::game::bulletin::article service::bulletin::to_article(const fb::protocol::in
                                                           uint16_t                               section,
                                                           bool                                   next)
 {
-    auto dt = fb::model::datetime(article.created_date).to_kst();
+    auto dt = fb::model::datetime(article.created_date).to_local();
     return fb::game::bulletin::article{.id       = article.id,
                                        .section  = section,
                                        .user     = article.user,

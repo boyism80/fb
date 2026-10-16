@@ -42,6 +42,7 @@ public class Program
         builder.Services.AddHttpAutoMapper();
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<LogService>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<LogService>());
         builder.Services.AddSingleton<DiscordNotifier>();
         builder.Services.AddSingleton<OpsNotifyService>();
         builder.Services.AddSingleton<SessionService>();

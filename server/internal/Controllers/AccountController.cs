@@ -5,11 +5,7 @@ using Http;
 using Http.Model;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.ObjectPool;
-using System.Buffers;
 using System.Data;
-using System.Security.Cryptography;
-using System.Text;
 using Request = fb.protocol.@internal.request;
 using Response = fb.protocol.@internal.response;
 
@@ -26,73 +22,6 @@ namespace Internal.Controllers
         private readonly RedisDistributedLockService _distributedLock;
         private readonly PasswordAttemptService _passwordAttempts;
 
-        // Object pool for SHA256 instances to reduce GC pressure
-        // Limit pool size to 64 instances (reasonable for most scenarios)
-        private static readonly ObjectPool<SHA256> _sha256Pool = new DefaultObjectPool<SHA256>(new Sha256PooledObjectPolicy(), 64);
-        private static string SHA256Hash(string value)
-        {
-            var sha256 = _sha256Pool.Get();
-            try
-            {
-                var hash = sha256.ComputeHash(Encoding.ASCII.GetBytes(value));
-
-                // Use ArrayPool to reduce allocations for StringBuilder buffer
-                var buffer = ArrayPool<char>.Shared.Rent(hash.Length * 2);
-                try
-                {
-                    var span = buffer.AsSpan(0, hash.Length * 2);
-
-                    // Clear the buffer to ensure no leftover data from previous uses
-                    span.Clear();
-
-                    for (int i = 0; i < hash.Length; i++)
-                    {
-                        // Check if TryFormat succeeds and handle failure
-                        if (!hash[i].TryFormat(span.Slice(i * 2, 2), out _, "x2"))
-                        {
-                            throw new InvalidOperationException($"Failed to format byte {hash[i]} at index {i}");
-                        }
-                    }
-                    return new string(span);
-                }
-                finally
-                {
-                    ArrayPool<char>.Shared.Return(buffer);
-                }
-            }
-            finally
-            {
-                _sha256Pool.Return(sha256);
-            }
-        }
-        private class Sha256PooledObjectPolicy : PooledObjectPolicy<SHA256>
-        {
-            public override SHA256 Create()
-            {
-                return SHA256.Create();
-            }
-
-            public override bool Return(SHA256 obj)
-            {
-                if (obj == null)
-                    return false;
-
-                // Reset the SHA256 instance state for reuse
-                // SHA256 doesn't have a Reset method, but we can ensure it's in a clean state
-                // by creating a small dummy computation to clear any internal state
-                try
-                {
-                    obj.ComputeHash(Array.Empty<byte>());
-                    return true;
-                }
-                catch
-                {
-                    // If there's any issue with the instance, don't return it to the pool
-                    obj.Dispose();
-                    return false;
-                }
-            }
-        }
         public AccountController(IMapper mapper,
             DbContext dbContext,
             ILogger<AccountController> logger,
@@ -153,7 +82,7 @@ namespace Internal.Controllers
                 };
             }
 
-            if (ch.Pw != SHA256Hash(request.Pw))
+            if (PasswordHash.Matches(ch.Pw, request.Pw, out var updatedPw) == false)
             {
                 return new Response.Authenticate
                 {
@@ -162,6 +91,17 @@ namespace Internal.Controllers
             }
 
             await _passwordAttempts.Succeed(world, request.Uid, request.Ip);
+            if (updatedPw != null)
+            {
+                await using var _ = await _distributedLock.Lock(world, Character.SaveLockKey(request.Uid));
+                var current = await _dbContext.Character.Get(world, request.Uid);
+                if (current != null && current.Pw == ch.Pw)
+                {
+                    current.Pw = updatedPw;
+                    _dbContext.Character.Set(world, current);
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
             return new Response.Authenticate
             {
                 ErrorCode = 0,
@@ -208,7 +148,7 @@ namespace Internal.Controllers
                 Id = request.Uid,
                 World = world,
                 Name = request.Name,
-                Pw = SHA256Hash(request.Pw),
+                Pw = PasswordHash.Compute(request.Pw),
                 Level = 1,
                 Hp = request.Hp,
                 BaseHp = request.Hp,
@@ -301,21 +241,21 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
-                await using var _ = await _distributedLock.Lock(world, Character.SaveLockKey(request.Uid));
+                await using var saveLock = await _distributedLock.Lock(world, Character.SaveLockKey(request.Uid));
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 if (await _passwordAttempts.Begin(world, request.Uid, request.Ip) == false)
                     throw new LogicException(ErrorCode.AccountLocked);
 
-                if (ch.Pw != SHA256Hash(request.Before))
+                if (PasswordHash.Matches(ch.Pw, request.Before, out _) == false)
                     throw new LogicException(ErrorCode.PasswordNotMatched);
 
                 if (ch.Birth != request.Birthday)
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
 
                 await _passwordAttempts.Succeed(world, request.Uid, request.Ip);
-                ch.Pw = SHA256Hash(request.After);
+                ch.Pw = PasswordHash.Compute(request.After);
                 _dbContext.Character.Set(world, ch);
 
                 await _dbContext.SaveChangesAsync();

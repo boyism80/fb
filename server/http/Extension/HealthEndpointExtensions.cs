@@ -8,7 +8,7 @@ namespace Http.Extension
     {
         public static IServiceCollection AddFbHealthChecks(this IServiceCollection services)
         {
-            services.AddSingleton<HealthCheckService>();
+            services.AddSingleton<Http.Service.HealthCheckService>();
             services.AddHealthChecks()
                 .AddCheck<AliveHealthCheck>("alive", tags: new[] { "live" })
                 .AddCheck<ReadyHealthCheck>("ready", tags: new[] { "ready" });

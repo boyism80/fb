@@ -201,7 +201,8 @@ namespace AdminTool.Services
             if (!value.HasValue)
                 return "-";
 
-            return value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+            var utc = value.Value.Kind == DateTimeKind.Utc ? value.Value : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+            return utc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
         }
 
         public static string FormatMoney(ulong value) => value.ToString("N0");

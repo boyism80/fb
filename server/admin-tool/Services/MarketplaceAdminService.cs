@@ -110,7 +110,7 @@ namespace AdminTool.Services
             }
 
             var whereClause = string.Join(" AND ", where);
-            var todayStart = DateTime.UtcNow.AddHours(9).Date.AddHours(-9);
+            var todayStart = DateTime.Today.ToUniversalTime();
 
             try
             {

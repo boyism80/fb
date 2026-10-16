@@ -39,6 +39,7 @@ public class Program
         builder.Services.AddSingleton<RedisDistributedLockService>();
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<LogService>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<LogService>());
         builder.Services.AddHttpAutoMapper();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddScoped<Marketplace.Service.DbContext>();

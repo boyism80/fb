@@ -55,7 +55,7 @@
                 {
                     <div style="font-size:0.875rem;color:var(--text-primary);">정상 운영 중</div>
                     <div class="text-muted mt-1" style="font-size:0.8125rem;">
-                        Last Checked @lastCheckedAt.ToString("yyyy-MM-dd HH:mm:ss") KST
+                        Last Checked @lastCheckedAt.ToString("yyyy-MM-dd HH:mm:ss")
                     </div>
                 }
             </div>
@@ -274,11 +274,11 @@
                 World = scheduleModel.World,
                 Title = scheduleModel.Title,
                 Message = scheduleModel.Message,
-                StartTime = scheduleModel.StartTime,
-                EndTime = scheduleModel.EndTime,
+                StartTime = scheduleModel.StartTime.ToUniversalTime(),
+                EndTime = scheduleModel.EndTime.ToUniversalTime(),
                 RepeatType = scheduleModel.RepeatType,
                 IsActive = true,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             bool success;
             if (schedule.World == 0)
@@ -378,7 +378,7 @@
     {
         if (!schedule.IsActive)
             return "취소";
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         if (now >= schedule.StartTime && now <= schedule.EndTime)
             return "진행 중";
         if (now < schedule.StartTime)
@@ -399,7 +399,8 @@
 
     private string FormatDateTime(DateTime dateTime)
     {
-        return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+        var utc = dateTime.Kind == DateTimeKind.Utc ? dateTime : DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+        return utc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
     }
 
     private string GetRepeatTypeName(MaintenanceRepeatType repeatType)

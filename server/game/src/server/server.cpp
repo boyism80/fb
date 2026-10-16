@@ -145,7 +145,7 @@ void fb::game::server::send(object&                     object,
 
 void fb::game::server::sync_time()
 {
-    auto updated = this->now().to_kst();
+    auto updated = this->now().to_local();
     if (this->_time.hours() != updated.hours() || this->_time.minutes() != updated.minutes())
     {
         this->characters.update_time(static_cast<uint8_t>(updated.hours()), static_cast<uint8_t>(updated.minutes()));
