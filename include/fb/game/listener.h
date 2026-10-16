@@ -38,13 +38,13 @@ private:
     static bool client_version_is(fb::game::object& o, fb::protocol::CLIENT_VERSION ver);
     static bool client_match(fb::game::object& o, fb::protocol::CLIENT_VERSION ver, fb::protocol::CLIENT_UI_MODE ui_mode);
     template <fb::protocol::CLIENT_VERSION Ver>
-    void send_appearance_pivot(fb::game::object& obj, const fb::game::character_appearance<>& app, fb::protocol::CLIENT_UI_MODE ui_mode);
-    void send_object_update_pivot(fb::game::object& me);
-    void send_update_appearance(fb::game::object& obj, const fb::model::appearance& appearance);
-    void send_update_appearance(fb::game::object& obj, fb::game::character& to, const fb::model::appearance& appearance);
-    void send_non_character_external(fb::game::object& me);
-    void send_non_character_external(fb::game::object& me, fb::game::character& you);
-    void send_equipment_on(character& me, const item& item, EQUIPMENT_PARTS parts);
+    void        send_appearance_pivot(fb::game::object& obj, const fb::game::character_appearance<>& app, fb::protocol::CLIENT_UI_MODE ui_mode);
+    void        send_object_update_pivot(fb::game::object& me);
+    void        send_update_appearance(fb::game::object& obj, const fb::model::appearance& appearance);
+    void        send_update_appearance(fb::game::object& obj, fb::game::character& to, const fb::model::appearance& appearance);
+    void        send_non_character_external(fb::game::object& me);
+    void        send_non_character_external(fb::game::object& me, fb::game::character& you);
+    void        send_equipment_on(character& me, const item& item, EQUIPMENT_PARTS parts);
     // clang-format on
 
 public:
