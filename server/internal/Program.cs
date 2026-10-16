@@ -61,6 +61,7 @@ public class Program
         builder.Services.AddHostedService<Http.Service.SessionTtlRefreshService>();
         builder.Services.AddSingleton<Http.Service.MaintenanceService>();
         builder.Services.AddHostedService<Internal.Services.MaintenanceBackgroundService>();
+        builder.Services.AddHostedService<Internal.Services.ClanMoneyArchiveCacheService>();
         builder.Services.AddFbHealthChecks();
         builder.Services.AddScoped<StorageService>();
         builder.Services.AddScoped<Internal.Services.GroupService>();
