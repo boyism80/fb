@@ -40,7 +40,9 @@ encryption::encryption(uint8_t pattern, const uint8_t* iv) :
 
 encryption::encryption(const encryption& other) :
     encryption(other._pattern, other._iv.get())
-{ }
+{
+    this->_sequence = other._sequence;
+}
 
 void encryption::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const uint8_t* key, uint32_t ksize)
 {
@@ -247,6 +249,7 @@ encryption& encryption::operator= (const encryption& other)
     {
         std::memcpy(this->_iv.get() + KEY_SIZE * i, other._iv.get() + KEY_SIZE * i, KEY_SIZE);
     }
+    this->_sequence = other._sequence;
     return *this;
 }
 

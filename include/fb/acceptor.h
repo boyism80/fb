@@ -8,7 +8,6 @@
 #include <fb/execution_context.h>
 #include <fb/http_client.h>
 #include <fb/lua.h>
-#include <fb/mutex.h>
 #include <fb/protocol/client_version.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/transfer.h>

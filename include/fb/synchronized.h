@@ -5,7 +5,9 @@
 #include <async/task.h>
 #include <async/task_completion_source.h>
 
+#include <algorithm>
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -102,11 +104,14 @@ private:
     {
         std::shared_ptr<async::task_completion_source<void>> tcs;
         scheduler_type*                                      scheduler;
+        std::optional<uint64_t>                              ticket;
     };
 
     int                 _reader_count    = 0;
     int                 _writers_waiting = 0;
     bool                _writer          = false;
+    uint64_t            _next            = 0;
+    uint64_t            _serve           = 0;
     mutable std::mutex  _mutex;
     std::vector<waiter> _waiters;
 
@@ -130,7 +135,7 @@ public:
                     co_return;
                 }
 
-                this->_waiters.push_back(waiter{tcs, thread_scheduler});
+                this->_waiters.push_back(waiter{tcs, thread_scheduler, std::nullopt});
             }
             co_await tcs->task();
         }
@@ -143,15 +148,17 @@ public:
             std::lock_guard lk(this->_mutex);
             this->_reader_count--;
             if (this->_reader_count == 0)
-                waiters = std::exchange(this->_waiters, {});
+                waiters = this->ready_waiters();
         }
         wake(waiters);
     }
 
     async::task<void> lock()
     {
+        uint64_t ticket = 0;
         {
             std::lock_guard lk(this->_mutex);
+            ticket = this->_next++;
             this->_writers_waiting++;
         }
 
@@ -160,14 +167,15 @@ public:
             auto tcs = std::make_shared<async::task_completion_source<void>>();
             {
                 std::lock_guard lk(this->_mutex);
-                if (this->_reader_count == 0 && this->_writer == false)
+                if (this->_reader_count == 0 && this->_writer == false && ticket == this->_serve)
                 {
                     this->_writer = true;
                     this->_writers_waiting--;
+                    this->_serve++;
                     co_return;
                 }
 
-                this->_waiters.push_back(waiter{tcs, thread_scheduler});
+                this->_waiters.push_back(waiter{tcs, thread_scheduler, ticket});
             }
             co_await tcs->task();
         }
@@ -179,7 +187,7 @@ public:
         {
             std::lock_guard lk(this->_mutex);
             this->_writer = false;
-            waiters       = std::exchange(this->_waiters, {});
+            waiters       = this->ready_waiters();
         }
         wake(waiters);
     }
@@ -207,6 +215,28 @@ public:
     }
 
 private:
+    // The next writer may already be awake and absent from _waiters. Waking anyone else would pass it.
+    std::vector<waiter> ready_waiters()
+    {
+        if (this->_writers_waiting > 0)
+        {
+            auto ready = std::vector<waiter>{};
+            auto found = std::find_if(this->_waiters.begin(), this->_waiters.end(), [&](const waiter& entry) {
+                return entry.ticket.has_value() && entry.ticket.value() == this->_serve;
+            });
+            if (found != this->_waiters.end())
+            {
+                ready.push_back(std::move(*found));
+                this->_waiters.erase(found);
+            }
+            return ready;
+        }
+        else
+        {
+            return std::exchange(this->_waiters, {});
+        }
+    }
+
     static void wake(std::vector<waiter>& waiters)
     {
         for (auto& entry : waiters)

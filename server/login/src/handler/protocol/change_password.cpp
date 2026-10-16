@@ -130,7 +130,18 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
     // co_await is not allowed inside a catch block.
     if (lock_message.has_value())
     {
-        co_await session.send(response::message(lock_message->first, lock_message->second));
+        if (weak.expired() == false)
+        {
+            try
+            {
+                co_await session.send(response::message(lock_message->first, lock_message->second));
+            }
+            catch (std::exception&)
+            {
+                auto ec = boost::system::error_code();
+                session.close(ec);
+            }
+        }
         co_return false;
     }
 

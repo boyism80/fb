@@ -37,13 +37,27 @@ void outbound_buffer::append(std::shared_ptr<fb::tcp_socket> endpoint, fb::strea
     if (endpoint->is_open() == false)
         return;
 
-    std::lock_guard lock(this->_state->mutex);
+    auto overflow = false;
+    {
+        std::lock_guard lock(this->_state->mutex);
 
-    auto& slot = this->_state->pending[endpoint.get()];
-    if (slot.endpoint == nullptr)
-        slot.endpoint = std::move(endpoint);
+        auto& slot = this->_state->pending[endpoint.get()];
+        if (slot.endpoint == nullptr)
+            slot.endpoint = endpoint;
 
-    slot.wire.insert(slot.wire.end(), wire.begin(), wire.end());
+        if (slot.wire.size() + wire.size() > fb::tcp_socket::MAX_PENDING_WRITE_BYTES)
+            overflow = true;
+        else
+            slot.wire.insert(slot.wire.end(), wire.begin(), wire.end());
+    }
+
+    if (overflow)
+    {
+        boost::asio::post(endpoint->get_executor(), [endpoint]() {
+            auto ec = boost::system::error_code();
+            endpoint->close(ec);
+        });
+    }
 }
 
 void outbound_buffer::flush()

@@ -8,8 +8,9 @@
 
 using namespace fb;
 
+// thread:io runs this context on several threads. Read, write, and close share one strand.
 tcp_socket::tcp_socket(boost::asio::io_context& context) :
-    boost::asio::ip::tcp::socket(context)
+    boost::asio::ip::tcp::socket(boost::asio::make_strand(context))
 { }
 
 void tcp_socket::write(const std::shared_ptr<tcp_socket>& socket, fb::stream wire, write_handler handler)
@@ -70,9 +71,6 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
                                      if (ec)
                                      {
                                          // A partial write leaves the peer mid-frame; later writes would corrupt it.
-                                         auto close_ec = boost::system::error_code();
-                                         socket->close(close_ec);
-
                                          for (auto& pending : socket->_writes)
                                          {
                                              dropped.push_back(std::move(pending.handler));
@@ -84,6 +82,14 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
                                      {
                                          tcp_socket::write_front(socket);
                                      }
+                                 }
+
+                                 if (ec)
+                                 {
+                                     boost::asio::post(socket->get_executor(), [socket]() {
+                                         auto close_ec = boost::system::error_code();
+                                         socket->close(close_ec);
+                                     });
                                  }
 
                                  // Handlers run outside the lock because they may call write() again.

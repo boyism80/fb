@@ -79,7 +79,6 @@ lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& th
             throw fb::thread::retry_exception{};
     }
 
-    // Phase 2 — resolve outside container lock (HTTP fetch, thread switch)
     fetched loaded{nullptr, fb::model::datetime("1970-01-01 00:00:00")};
     try
     {
@@ -104,8 +103,17 @@ lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& th
             throw fb::thread::retry_exception{};
     }
 
-    // Phase 4 — return write guard to caller (lock held until guard is destroyed)
-    co_return guard(co_await this->enter_write_async(id));
+    // The bucket lock is released after the insert. An erase in that gap removes the key, and taking the
+    // guard must retry instead of treating the key as permanently missing.
+    for (auto attempt = 0; attempt < 4; ++attempt)
+    {
+        auto looked = co_await this->lookup_write_async(id);
+        if (looked.guard.has_value())
+            co_return guard(std::move(*looked.guard));
+        if (looked.missing)
+            throw fb::thread::retry_exception{};
+    }
+    throw fb::thread::retry_exception{};
 }
 
 template <typename Entity, size_t NumBuckets>

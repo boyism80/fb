@@ -88,16 +88,40 @@ void fb::thread::on_thread(uint8_t index)
                 next_idle = after + term;
         }
     }
+
+    // exit() leaves the queue behind. Callbacks still in it, including lock wakeups, run before join.
+    while (true)
+    {
+        std::function<void()> func;
+        {
+            std::lock_guard<std::mutex> wake(this->_wake_mutex);
+            auto                        guard = this->_queue.enter_write();
+            auto&                       queue = guard.value();
+            if (queue.empty())
+                break;
+
+            func = std::move(queue.front());
+            queue.pop();
+        }
+        func();
+    }
 }
 
 void fb::thread::push(std::function<void()> fn)
 {
-    std::lock_guard<std::mutex> wake(this->_wake_mutex);
     {
-        auto guard = this->_queue.enter_write();
-        guard.value().push(std::move(fn));
+        std::lock_guard<std::mutex> wake(this->_wake_mutex);
+        if (this->_exit == false)
+        {
+            auto guard = this->_queue.enter_write();
+            guard.value().push(std::move(fn));
+            this->_wake.notify_one();
+            return;
+        }
     }
-    this->_wake.notify_one();
+
+    // on_thread has left its loop. Run the callback here so a lock waiter still resumes.
+    fn();
 }
 
 void fb::thread::on_idle()

@@ -110,7 +110,16 @@ protected:
     void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,
                            const std::chrono::steady_clock::duration&                                      duration)
     {
-        this->threads.settimer(std::move(fn), duration);
+        auto weak_this = this->weak_from_this();
+        this->threads.settimer(
+            [weak_this, fn = std::move(fn)](const fb::model::datetime& now, std::thread::id id) -> async::task<void> {
+                auto shared_this = weak_this.lock();
+                if (shared_this == nullptr || shared_this->_running == false)
+                    co_return;
+
+                co_await fn(now, id);
+            },
+            duration);
     }
 
     template <typename HandlerType>
@@ -122,7 +131,7 @@ protected:
         this->threads.settimer(
             [weak_this](const fb::model::datetime& now, std::thread::id id) -> async::task<void> {
                 auto shared_this = weak_this.lock();
-                if (!shared_this)
+                if (!shared_this || shared_this->_running == false)
                     co_return;
 
                 auto handler = std::make_shared<HandlerType>(*std::static_pointer_cast<server_type>(shared_this));
