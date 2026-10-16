@@ -153,7 +153,7 @@ namespace Http.Reepository
         protected override string OnDelete(QuestKey key)
         {
             return $"""
-                UPDATE `quest` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `quest` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE `user` = {key.User.Escape()} AND `id` = {key.Id.Escape()} AND `deleted` = 0;
                 """;
         }
@@ -167,7 +167,7 @@ namespace Http.Reepository
                 $"(`user` = {k.User.Escape()} AND `id` = {k.Id.Escape()})");
 
             return $"""
-                UPDATE `quest` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `quest` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }

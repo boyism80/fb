@@ -198,6 +198,7 @@ table Group {
     id: uint;
     master: string;
     members: [string];
+    updated_date: string;
 }
 
 table Achievement {
@@ -221,6 +222,7 @@ table Clan {
     allied_clan_id: uint?;
     enemy_clan_ids: [uint];
     money: ulong = 0;
+    updated_date: string;
 }
 
 table ClanMember {

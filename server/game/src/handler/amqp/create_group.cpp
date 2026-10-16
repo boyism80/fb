@@ -28,5 +28,9 @@ async::task<void> create_group::handle(const internal_resp::GroupDetails& messag
     }
 
     co_await this->server.groups.on_error(message.error, message.target);
-    co_await this->server.groups.on_create(message.target, message.group.id, message.group.master, std::move(members));
+    co_await this->server.groups.on_create(message.target,
+                                           message.group.id,
+                                           message.group.master,
+                                           std::move(members),
+                                           fb::game::version_time(message.updated_date));
 }

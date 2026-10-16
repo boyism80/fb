@@ -1,6 +1,7 @@
 using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 using Medallion.Threading.Redis;
@@ -40,6 +41,7 @@ namespace Internal.Services
             if (!world.HasValue)
                 return new Response.GroupDetails
                 {
+                    UpdatedDate = DateTime.UtcNow.ToVersion(),
                     Error = (uint)ErrorCode.GroupNotFound
                 };
 
@@ -89,11 +91,13 @@ namespace Internal.Services
                     {
                         Id = group.Master,
                         Master = master.Name,
-                        Members = new List<string>() // Empty for GroupDetails, members are in CharacterRef array
+                        Members = new List<string>(),
+                        UpdatedDate = group.UpdatedDate.ToVersion()
                     },
                     Members = members,
                     Actor = string.Empty,
                     Target = string.Empty,
+                    UpdatedDate = group.UpdatedDate.ToVersion(),
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -105,6 +109,7 @@ namespace Internal.Services
                     Action = Protocol.GroupDetailsAction.Query,
                     Actor = string.Empty,
                     Target = string.Empty,
+                    UpdatedDate = DateTime.UtcNow.ToVersion(),
                     Error = (uint)e.Error
                 };
             }
@@ -191,6 +196,7 @@ namespace Internal.Services
                 _dbContext.CharacterRealtimeState.Set(world, targetSync);
                 await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
+                group.UpdatedDate = DateTime.UtcNow;
                 _dbContext.Group.Set(world, group);
                 await _dbContext.Group.SaveChangesAsync();
 
@@ -216,11 +222,13 @@ namespace Internal.Services
                     {
                         Id = group.Master,
                         Master = actor.Name,
-                        Members = new List<string>()
+                        Members = new List<string>(),
+                        UpdatedDate = group.UpdatedDate.ToVersion()
                     },
                     Actor = actor.Name,
                     Target = target.Name,
                     Members = members,
+                    UpdatedDate = group.UpdatedDate.ToVersion(),
                     Error = (uint)ErrorCode.None
                 };
 
@@ -370,6 +378,7 @@ namespace Internal.Services
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 group.Members.Remove(character.Id);
+                group.UpdatedDate = DateTime.UtcNow;
                 _dbContext.Group.Set(world, group);
                 await _dbContext.Group.SaveChangesAsync();
 
@@ -393,6 +402,7 @@ namespace Internal.Services
                         Uid = character.Id,
                         Name = character.Name
                     },
+                    UpdatedDate = group.UpdatedDate.ToVersion(),
                     Error = (uint)ErrorCode.None
                 };
 
@@ -544,6 +554,7 @@ namespace Internal.Services
                         lockUids = required;
                     }
 
+                    var destroyedAt = DateTime.UtcNow;
                     _dbContext.Group.Delete(world, group.Master);
                     await _dbContext.Group.SaveChangesAsync();
 
@@ -578,6 +589,7 @@ namespace Internal.Services
                             Uid = character.Id,
                             Name = character.Name
                         },
+                        UpdatedDate = destroyedAt.ToVersion(),
                         Error = (uint)ErrorCode.None
                     };
 
@@ -762,6 +774,7 @@ namespace Internal.Services
             await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
             group.Members.Add(target.Id);
+            group.UpdatedDate = DateTime.UtcNow;
             _dbContext.Group.Set(world, group);
             await _dbContext.Group.SaveChangesAsync();
 
@@ -781,6 +794,7 @@ namespace Internal.Services
                     Uid = target.Id,
                     Name = target.Name
                 },
+                UpdatedDate = group.UpdatedDate.ToVersion(),
                 Error = (uint)ErrorCode.None
             };
 
@@ -802,6 +816,7 @@ namespace Internal.Services
                 throw new LogicException(ErrorCode.GroupNotJoined);
 
             group.Members.Remove(target.Id);
+            group.UpdatedDate = DateTime.UtcNow;
             _dbContext.Group.Set(world, group);
             await _dbContext.Group.SaveChangesAsync();
 
@@ -825,6 +840,7 @@ namespace Internal.Services
                     Uid = target.Id,
                     Name = target.Name
                 },
+                UpdatedDate = group.UpdatedDate.ToVersion(),
                 Error = (uint)ErrorCode.None
             };
 

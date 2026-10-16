@@ -152,7 +152,7 @@ namespace Http.Reepository
         protected override string OnDelete(AchievementKey key)
         {
             return $"""
-                UPDATE `achievement` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `achievement` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE `uid` = {key.Uid.Escape()} AND `id` = {key.Id.Escape()} AND `deleted` = 0;
                 """;
         }
@@ -166,7 +166,7 @@ namespace Http.Reepository
                 $"(`uid` = {k.Uid.Escape()} AND `id` = {k.Id.Escape()})");
 
             return $"""
-                UPDATE `achievement` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `achievement` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }

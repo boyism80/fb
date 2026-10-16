@@ -126,7 +126,7 @@ namespace Http.Reepository
 
             var query = """
                 INSERT INTO system_storage_box (title, message, attachments, expired_date, external_ref, deleted, created_date, updated_date)
-                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @expireDate, @externalRef, 0, UTC_TIMESTAMP(), UTC_TIMESTAMP());
+                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @expireDate, @externalRef, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
                 SELECT LAST_INSERT_ID();
                 """;
 

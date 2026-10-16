@@ -215,6 +215,7 @@ table GroupDetails {
   actor: string;
   target: string;
   error: uint;
+  updated_date: string;
 }
 
 table UpdatedGroup {
@@ -227,6 +228,7 @@ table UpdatedGroup {
   new_member: fb.protocol.internal.CharacterRef?;
   deleted_member: fb.protocol.internal.CharacterRef?;
   error: uint;
+  updated_date: string;
 }
 
 table DestroyGroup {
@@ -235,6 +237,7 @@ table DestroyGroup {
   group_master: string;
   actor: fb.protocol.internal.CharacterRef;
   error: uint;
+  updated_date: string;
 }
 
 table BroadcastGroup {
@@ -251,6 +254,7 @@ table ClanDetails {
   clan: fb.protocol.internal.Clan;
   members: [fb.protocol.internal.ClanMember];
   error: uint;
+  updated_date: string;
 }
 
 table UpdatedClan {
@@ -270,12 +274,14 @@ table UpdatedClan {
   related_clan_id: uint?;
   money: ulong = 0;
   error: uint;
+  updated_date: string;
 }
 
 table AbortClanMoney {
   applied: bool;
   money: ulong = 0;
   error: uint;
+  updated_date: string;
 }
 
 table ReleaseClanMoney {
@@ -296,6 +302,7 @@ table DestroyClan {
   clan_name: string;
   actor: fb.protocol.internal.CharacterRef;
   error: uint;
+  updated_date: string;
 }
 
 table Broadcast {

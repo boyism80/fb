@@ -32,5 +32,9 @@ async::task<void> create_clan::handle(const internal_resp::ClanDetails& message)
 
     co_await this->server.clans.on_error(message.error);
     auto title = message.clan.title.has_value() ? message.clan.title.value() : std::string{};
-    co_await this->server.clans.on_create(message.clan.id, message.clan.name, title, std::move(members));
+    co_await this->server.clans.on_create(message.clan.id,
+                                          message.clan.name,
+                                          title,
+                                          std::move(members),
+                                          fb::game::version_time(message.updated_date));
 }

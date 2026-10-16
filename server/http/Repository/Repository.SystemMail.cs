@@ -88,7 +88,7 @@ namespace Http.Reepository
         {
             var query = @"
                 INSERT INTO system_mail (sender, title, contents, expire_date, deleted, created_date, updated_date)
-                VALUES (@sender, @title, @contents, @expireDate, 0, UTC_TIMESTAMP(), UTC_TIMESTAMP());
+                VALUES (@sender, @title, @contents, @expireDate, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
                 SELECT LAST_INSERT_ID();";
 
             // SystemMail uses world-global database

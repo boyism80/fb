@@ -83,7 +83,7 @@ namespace Marketplace.Reepository
                     {itemUid.Escape()},
                     {price.Escape()},
                     {ListingState.ABORTED.Escape()},
-                    UTC_TIMESTAMP())
+                    UTC_TIMESTAMP(3))
                 """;
 
             await transaction.Connection.ExecuteAsync(sql, null, transaction);
@@ -93,7 +93,7 @@ namespace Marketplace.Reepository
         {
             var sql = $@"
                 SELECT * FROM `marketplace_listing` 
-                WHERE `id` = {listingId.Escape()} AND `status` = {ListingState.ACTIVE.Escape()} AND `expire_date` > UTC_TIMESTAMP()
+                WHERE `id` = {listingId.Escape()} AND `status` = {ListingState.ACTIVE.Escape()} AND `expire_date` > UTC_TIMESTAMP(3)
                 FOR UPDATE";
 
             if (transaction != null)
@@ -216,7 +216,7 @@ namespace Marketplace.Reepository
             var sql = $@"
                 UPDATE `marketplace_listing` 
                 SET `status` = {status.Escape()},
-                    `updated_date` = UTC_TIMESTAMP()
+                    `updated_date` = UTC_TIMESTAMP(3)
                 WHERE `id` = {listingId.Escape()}
                     AND `status` = {ListingState.ACTIVE.Escape()}";
 
@@ -261,8 +261,8 @@ namespace Marketplace.Reepository
                 UPDATE `marketplace_listing` 
                 SET `remaining_count` = {newRemaining.Escape()},
                     `status` = {newStatus.Escape()},
-                    `sold_date` = {(isSold ? "UTC_TIMESTAMP()" : "NULL")},
-                    `updated_date` = UTC_TIMESTAMP()
+                    `sold_date` = {(isSold ? "UTC_TIMESTAMP(3)" : "NULL")},
+                    `updated_date` = UTC_TIMESTAMP(3)
                 WHERE `id` = {listingId.Escape()} 
                     AND `status` = {ListingState.ACTIVE.Escape()} 
                     AND `remaining_count` >= {purchaseCount.Escape()}";
@@ -303,7 +303,7 @@ namespace Marketplace.Reepository
             System.Data.IDbTransaction transaction = null)
         {
             // Build WHERE conditions
-            var whereConditions = new List<string> { $"`status` = {ListingState.ACTIVE.Escape()}", "`expire_date` > UTC_TIMESTAMP()" };
+            var whereConditions = new List<string> { $"`status` = {ListingState.ACTIVE.Escape()}", "`expire_date` > UTC_TIMESTAMP(3)" };
             var parameters = new DynamicParameters();
 
             if (itemModelIds != null && itemModelIds.Count > 0)
@@ -368,7 +368,7 @@ namespace Marketplace.Reepository
             System.Data.IDbTransaction transaction = null)
         {
             // Build WHERE conditions
-            var whereConditions = new List<string> { $"`status` = {ListingState.ACTIVE.Escape()}", "`expire_date` > UTC_TIMESTAMP()" };
+            var whereConditions = new List<string> { $"`status` = {ListingState.ACTIVE.Escape()}", "`expire_date` > UTC_TIMESTAMP(3)" };
             var parameters = new DynamicParameters();
 
             if (itemModelIds != null && itemModelIds.Count > 0)
@@ -418,7 +418,7 @@ namespace Marketplace.Reepository
                 SELECT COUNT(*) FROM `marketplace_listing` 
                 WHERE `seller_id` = {sellerId.Escape()} 
                     AND `status` = {ListingState.ACTIVE.Escape()} 
-                    AND `expire_date` > UTC_TIMESTAMP()";
+                    AND `expire_date` > UTC_TIMESTAMP(3)";
 
             return await conn.QuerySingleAsync<int>(sql);
         }

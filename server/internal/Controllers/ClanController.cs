@@ -2,6 +2,7 @@ using AutoMapper;
 using Dapper;
 using Fb.Model.EnumValue;
 using Http;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 using Medallion.Threading.Redis;
@@ -59,9 +60,20 @@ namespace Internal.Controllers
             }).ToList();
         }
 
+        private void Touch(uint world, params Clan[] clans)
+        {
+            var at = DateTime.UtcNow;
+            foreach (var clan in clans)
+            {
+                clan.UpdatedDate = at;
+                _dbContext.Clan.Set(world, clan);
+            }
+        }
+
         private async Task<Protocol.Clan> GetClanResponse(uint world, Clan clan)
         {
             var protocolClan = _mapper.Map<Protocol.Clan>(clan);
+            protocolClan.UpdatedDate = clan.UpdatedDate.ToVersion();
             var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
             protocolClan.AlliedClanId = alliance?.AlliedClan;
             var enemies = await _dbContext.ClanEnemy.Get(world, clan.Id);
@@ -85,6 +97,7 @@ namespace Internal.Controllers
                 return new Response.ClanDetails
                 {
                     Action = Protocol.ClanDetailsAction.Query,
+                    UpdatedDate = DateTime.UtcNow.ToVersion(),
                     Error = (uint)e.Error
                 };
             }
@@ -113,6 +126,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanDetailsAction.Query,
                     Clan = await GetClanResponse(world, clan),
                     Members = await GetClanMemberResponse(world, id),
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -121,6 +135,7 @@ namespace Internal.Controllers
                 return new Response.ClanDetails
                 {
                     Action = Protocol.ClanDetailsAction.Query,
+                    UpdatedDate = DateTime.UtcNow.ToVersion(),
                     Error = (uint)e.Error
                 };
             }
@@ -157,7 +172,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
 
                 var newClanId = await db.QuerySingleAsync<uint>(
-                    @"INSERT INTO clan_name (name, world, created_date, updated_date) VALUES (@Name, @World, UTC_TIMESTAMP(), UTC_TIMESTAMP());SELECT LAST_INSERT_ID();",
+                    @"INSERT INTO clan_name (name, world, created_date, updated_date) VALUES (@Name, @World, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));SELECT LAST_INSERT_ID();",
                     new { Name = request.Name, World = world },
                     transaction: trans
                 );
@@ -191,6 +206,8 @@ namespace Internal.Controllers
                     Role = (uint)ClanRole.Master
                 });
                 await _dbContext.ClanMember.SaveChangesAsync();
+                Touch(world, clan);
+                await _dbContext.Clan.SaveChangesAsync();
                 await trans.CommitAsync();
                 committed = true;
 
@@ -200,6 +217,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanDetailsAction.Create,
                     Clan = await GetClanResponse(world, clan),
                     Members = await GetClanMemberResponse(world, clan.Id),
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Error = (uint)ErrorCode.None
                 };
 
@@ -273,6 +291,7 @@ namespace Internal.Controllers
                 _dbContext.ClanMember.Delete(world, master);
 
                 var oldTitle = clan.Title;
+                var destroyedAt = DateTime.UtcNow;
                 _dbContext.Clan.Delete(world, clan.Id);
 
                 var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
@@ -341,6 +360,7 @@ namespace Internal.Controllers
                         Uid = ch.Id,
                         Name = masterName ?? ch.Name
                     },
+                    UpdatedDate = destroyedAt.ToVersion(),
                     Error = (uint)ErrorCode.None
                 };
 
@@ -422,7 +442,7 @@ namespace Internal.Controllers
 
                 var oldTitle = clan.Title;
                 clan.Title = request.Title;
-                _dbContext.Clan.Set(world, clan);
+                Touch(world, clan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -432,6 +452,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.SetTitle,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = changer.Id,
@@ -523,6 +544,7 @@ namespace Internal.Controllers
                 _dbContext.CharacterRealtimeState.Set(world, inviteeSync);
                 await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
+                Touch(world, clan);
                 _dbContext.ClanMember.Set(world, new ClanMember
                 {
                     Clan = clan.Id,
@@ -530,6 +552,7 @@ namespace Internal.Controllers
                     User = invitee.Id,
                 });
                 await _dbContext.ClanMember.SaveChangesAsync();
+                await _dbContext.Clan.SaveChangesAsync();
 
                 var response = new Response.UpdatedClan
                 {
@@ -537,6 +560,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Join,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = inviter.Id,
@@ -611,8 +635,10 @@ namespace Internal.Controllers
                 if (member.Role == (uint)ClanRole.Master)
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
+                Touch(world, clan);
                 _dbContext.ClanMember.Delete(world, member);
                 await _dbContext.ClanMember.SaveChangesAsync();
+                await _dbContext.Clan.SaveChangesAsync();
 
                 sync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, sync);
@@ -624,6 +650,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Leave,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = ch.Id,
@@ -730,8 +757,10 @@ namespace Internal.Controllers
                 if (targetMember.Role == (uint)ClanRole.Master)
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
+                Touch(world, clan);
                 _dbContext.ClanMember.Delete(world, targetMember);
                 await _dbContext.ClanMember.SaveChangesAsync();
+                await _dbContext.Clan.SaveChangesAsync();
 
                 targetSync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, targetSync);
@@ -743,6 +772,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Kick,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = kicker.Id,
@@ -899,6 +929,7 @@ namespace Internal.Controllers
 
                 // Update target's role
                 targetMember.Role = request.NewRole;
+                Touch(world, clan);
                 _dbContext.ClanMember.Set(world, targetMember);
 
                 await _dbContext.SaveChangesAsync();
@@ -909,6 +940,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.ChangeRole,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = changer.Id,
@@ -997,6 +1029,7 @@ namespace Internal.Controllers
 
                 _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.Clan, AlliedClan = request.TargetClan });
                 _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.TargetClan, AlliedClan = request.Clan });
+                Touch(world, clan, targetClan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -1006,6 +1039,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Ally,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,
@@ -1078,6 +1112,11 @@ namespace Internal.Controllers
 
                 _dbContext.ClanAlliance.Delete(world, request.Clan);
                 _dbContext.ClanAlliance.Delete(world, alliedClanId);
+                var alliedClan = await _dbContext.Clan.Get(world, alliedClanId);
+                if (alliedClan != null)
+                    Touch(world, clan, alliedClan);
+                else
+                    Touch(world, clan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -1087,6 +1126,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Unally,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,
@@ -1164,6 +1204,7 @@ namespace Internal.Controllers
 
                 _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.Clan, EnemyClan = request.TargetClan });
                 _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.TargetClan, EnemyClan = request.Clan });
+                Touch(world, clan, targetClan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -1173,6 +1214,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Enemy,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,
@@ -1230,6 +1272,7 @@ namespace Internal.Controllers
                         Action = Protocol.ClanActionType.SetMoney,
                         ClanId = clan.Id,
                         ClanName = clan.Name,
+                        UpdatedDate = clan.UpdatedDate.ToVersion(),
                         Money = clan.Money,
                         Error = (uint)ErrorCode.None
                     };
@@ -1252,7 +1295,7 @@ namespace Internal.Controllers
 
                 await ArchiveMoneyRequests(world, clan, DateTime.UtcNow);
                 clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = true, Date = DateTime.UtcNow });
-                _dbContext.Clan.Set(world, clan);
+                Touch(world, clan);
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.UpdatedClan
@@ -1261,6 +1304,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.SetMoney,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Money = clan.Money,
                     Error = (uint)ErrorCode.None
                 };
@@ -1312,6 +1356,7 @@ namespace Internal.Controllers
                     {
                         Applied = true,
                         Money = clan.Money,
+                        UpdatedDate = clan.UpdatedDate.ToVersion(),
                         Error = (uint)ErrorCode.None
                     };
                 }
@@ -1320,12 +1365,13 @@ namespace Internal.Controllers
                 {
                     await ArchiveMoneyRequests(world, clan, DateTime.UtcNow);
                     clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = false, Date = DateTime.UtcNow });
-                    _dbContext.Clan.Set(world, clan);
+                    Touch(world, clan);
                     await _dbContext.SaveChangesAsync();
                 }
                 return new Response.AbortClanMoney
                 {
                     Applied = false,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -1407,6 +1453,11 @@ namespace Internal.Controllers
                 _dbContext.ClanEnemy.Delete(world, enemy);
                 if (reverseEnemy != null)
                     _dbContext.ClanEnemy.Delete(world, reverseEnemy);
+                var targetClan = await _dbContext.Clan.Get(world, request.TargetClan);
+                if (targetClan != null)
+                    Touch(world, clan, targetClan);
+                else
+                    Touch(world, clan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -1416,6 +1467,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Unenemy,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
+                    UpdatedDate = clan.UpdatedDate.ToVersion(),
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,

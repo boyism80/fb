@@ -61,18 +61,29 @@ template <typename Entity, size_t NumBuckets>
 async::task<typename lazy_container<Entity, NumBuckets>::guard>
 lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& thread_ref)
 {
-    // Phase 1 — cache lookup (non-blocking write lock attempt; released when hit guard is moved or destroyed)
+    // A busy bucket lock is not a cache miss. retry_exception yields this coroutine before the next attempt.
     {
-        auto hit = co_await this->try_enter_write_async(id);
-        if (hit.has_value())
-            co_return guard(std::move(*hit));
+        auto missing = false;
+        for (auto attempt = 0; attempt < 4; ++attempt)
+        {
+            auto looked = co_await this->lookup_write_async(id);
+            if (looked.guard.has_value())
+                co_return guard(std::move(*looked.guard));
+            if (looked.missing)
+            {
+                missing = true;
+                break;
+            }
+        }
+        if (missing == false)
+            throw fb::thread::retry_exception{};
     }
 
     // Phase 2 — resolve outside container lock (HTTP fetch, thread switch)
-    entity_ptr entity;
+    fetched loaded{nullptr, fb::model::datetime("1970-01-01 00:00:00")};
     try
     {
-        entity = co_await this->fetch(id);
+        loaded = co_await this->fetch(id);
     }
     catch (const std::exception& e)
     {
@@ -82,23 +93,37 @@ lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& th
 
     co_await thread_ref.switching();
 
-    // Phase 3 — insert resolved value, including nullptr tombstone (write lock released when try_async_write
-    // completes)
+    // A nullptr slot is a tombstone, not an empty key. Assign through merge so an older fetch cannot replace it.
     {
-        const auto inserted = co_await this->try_async_write(
-            id,
-            [](auto&) -> async::task<void> {
-                co_return;
-            },
-            [entity]() -> entity_ptr {
-                return entity;
-            });
+        const auto inserted =
+            co_await this->try_merge_slot(id,
+                                          [this, id, loaded](const std::optional<entity_ptr>& current) -> entity_ptr {
+                                              return this->merge_fetched(id, current, loaded);
+                                          });
         if (inserted == false)
             throw fb::thread::retry_exception{};
     }
 
     // Phase 4 — return write guard to caller (lock held until guard is destroyed)
     co_return guard(co_await this->enter_write_async(id));
+}
+
+template <typename Entity, size_t NumBuckets>
+async::task<typename lazy_container<Entity, NumBuckets>::guard>
+lazy_container<Entity, NumBuckets>::open(uint32_t id, const fb::model::datetime& at)
+{
+    {
+        auto held = co_await this->enter_write(id);
+        if (held.holds_lock() == false)
+            co_return guard{};
+        if (held.value() != nullptr)
+            co_return std::move(held);
+        if (this->accept(id, at) == false)
+            co_return guard{};
+    }
+
+    this->erase(id);
+    co_return co_await this->enter_write(id);
 }
 
 template <typename Entity, size_t NumBuckets>
@@ -138,6 +163,10 @@ template async::task<lazy_container<castle>::guard> lazy_container<castle>::ente
 template async::task<lazy_container<clan>::guard>   lazy_container<clan>::enter_write(uint32_t);
 template async::task<lazy_container<group>::guard>  lazy_container<group>::enter_write(uint32_t);
 template async::task<lazy_container<castle>::guard> lazy_container<castle>::enter_write(uint32_t);
+
+template async::task<lazy_container<clan>::guard>   lazy_container<clan>::open(uint32_t, const fb::model::datetime&);
+template async::task<lazy_container<group>::guard>  lazy_container<group>::open(uint32_t, const fb::model::datetime&);
+template async::task<lazy_container<castle>::guard> lazy_container<castle>::open(uint32_t, const fb::model::datetime&);
 
 template bool lazy_container<clan>::contains(hash_type) const;
 template bool lazy_container<group>::contains(hash_type) const;

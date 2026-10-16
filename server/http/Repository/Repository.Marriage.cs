@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -50,7 +50,7 @@ namespace Http.Reepository
                 SELECT
                     character_id AS CharacterId,
                     spouse_id AS SpouseId,
-                    COALESCE(remarriage_after, UTC_TIMESTAMP()) AS RemarriageAfter,
+                    COALESCE(remarriage_after, UTC_TIMESTAMP(3)) AS RemarriageAfter,
                     divorce_count AS DivorceCount,
                     created_date AS CreatedDate,
                     updated_date AS UpdatedDate

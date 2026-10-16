@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Http.Extension;
 using Http.Service;
 using Microsoft.Extensions.Configuration;
@@ -139,7 +139,7 @@ namespace Log.Repository
 
         private static string BuildInsertValue(LogEntry e)
         {
-            return $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.TransactionId.Escape()}, {e.Data.Escape()}, UTC_TIMESTAMP())";
+            return $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.TransactionId.Escape()}, {e.Data.Escape()}, UTC_TIMESTAMP(3))";
         }
 
         private class LogEntry

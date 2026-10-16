@@ -17,11 +17,16 @@
 using namespace fb::game;
 using namespace fb::protocol::internal::request;
 
-group::group(server& server, uint32_t id, std::string_view master, const std::vector<std::string>& members) :
+group::group(server&                         server,
+             uint32_t                        id,
+             std::string_view                master,
+             const std::vector<std::string>& members,
+             const fb::model::datetime&      updated_date) :
     _server(server),
     _id(id),
     _master(std::string(master)),
-    _members(members)
+    _members(members),
+    _updated_date(updated_date)
 { }
 
 group::group(group&& g) :
@@ -29,7 +34,8 @@ group::group(group&& g) :
     _id(g._id),
     _master(g._master),
     _members(std::move(g._members)),
-    _active_members(std::move(g._active_members))
+    _active_members(std::move(g._active_members)),
+    _updated_date(g._updated_date)
 { }
 
 void group::enter(std::weak_ptr<character> ch)
@@ -99,6 +105,16 @@ std::vector<std::shared_ptr<character>> group::characters() const
 std::vector<std::string> group::members() const
 {
     return std::vector<std::string>(this->_members);
+}
+
+const fb::model::datetime& group::updated_date() const
+{
+    return this->_updated_date;
+}
+
+void group::updated_date(const fb::model::datetime& value)
+{
+    this->_updated_date = value;
 }
 
 std::vector<std::weak_ptr<character>> group::nears(const fb::game::map& map, const fb::model::point16_t& position) const

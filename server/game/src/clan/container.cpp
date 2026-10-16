@@ -17,10 +17,11 @@ clan::container::container(server& server) :
     lazy_container<clan>(server)
 { }
 
-async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
+async::task<clan::container::fetched> clan::container::fetch(uint32_t id)
 {
     auto&& resp =
         co_await this->_server.http.get<internal_resp::ClanDetails>("internal", std::format("/clan/id/{}", id));
+    auto at = version_time(resp.updated_date);
 
     switch (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error))
     {
@@ -36,19 +37,42 @@ async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
         }
         auto enemy_clan_ids =
             std::unordered_set<uint32_t>(resp.clan.enemy_clan_ids.begin(), resp.clan.enemy_clan_ids.end());
-        co_return this->_server.make<fb::game::clan>(id,
-                                                     resp.clan.name,
-                                                     resp.clan.title,
-                                                     members,
-                                                     resp.clan.allied_clan_id,
-                                                     enemy_clan_ids,
-                                                     resp.clan.money);
+        auto row_at = resp.clan.updated_date.empty() ? at : version_time(resp.clan.updated_date);
+        co_return fetched{this->_server.make<fb::game::clan>(id,
+                                                             resp.clan.name,
+                                                             resp.clan.title,
+                                                             members,
+                                                             row_at,
+                                                             resp.clan.allied_clan_id,
+                                                             enemy_clan_ids,
+                                                             resp.clan.money),
+                          at};
     }
 
     case fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN:
-        co_return nullptr;
+        co_return fetched{nullptr, at};
 
     default:
         throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
     }
+}
+
+clan::container::entity_ptr clan::container::merge_fetched(uint32_t                         id,
+                                                           const std::optional<entity_ptr>& current,
+                                                           const fetched&                   incoming)
+{
+    if (current.has_value() && *current != nullptr)
+    {
+        if ((*current)->updated_date() >= incoming.at)
+            return *current;
+    }
+    else
+    {
+        auto it = this->_as_of.find(id);
+        if (it != this->_as_of.end() && it->second >= incoming.at)
+            return current.has_value() ? *current : nullptr;
+    }
+
+    this->note(id, incoming.at);
+    return incoming.entity;
 }

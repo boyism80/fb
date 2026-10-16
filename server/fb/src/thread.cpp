@@ -20,8 +20,7 @@
 fb::thread::thread(uint8_t index) :
     _index(index),
     _scheduler([this](std::function<void()> fn) {
-        auto guard = this->_queue.enter_write();
-        guard.value().push(std::move(fn));
+        this->push(std::move(fn));
     })
 {
     this->_thread = std::thread(std::bind(&fb::thread::on_thread, this, std::placeholders::_1), index);
@@ -38,34 +37,67 @@ void fb::thread::on_thread(uint8_t index)
 
     async_shared_mutex::thread_scheduler = &this->_scheduler;
 
-    while (!this->_exit)
+    auto next_idle = fb::model::datetime::utc_now() + term;
+    while (this->_exit == false)
     {
         std::function<void()> func;
 
         {
+            std::unique_lock<std::mutex> wake(this->_wake_mutex);
+            auto                         ready = [this]() {
+                auto guard = this->_queue.enter_read();
+                return guard.value().empty() == false || this->_exit.load();
+            };
+
+            auto now = fb::model::datetime::utc_now();
+            if (ready() == false && now < next_idle)
+            {
+                auto remaining = next_idle - now;
+                this->_wake.wait_for(wake, std::chrono::milliseconds(remaining.total_milliseconds()), ready);
+            }
+
+            if (this->_exit)
+                break;
+
             auto  guard = this->_queue.enter_write();
             auto& queue = guard.value();
             if (queue.empty() == false)
             {
-                func = queue.front();
+                func = std::move(queue.front());
                 queue.pop();
             }
         }
 
-        if (func != nullptr)
+        auto now = fb::model::datetime::utc_now();
+        if (func != nullptr && now < next_idle)
         {
+            func();
+        }
+        else if (func != nullptr)
+        {
+            this->on_idle();
+            next_idle = fb::model::datetime::utc_now() + term;
             func();
         }
         else
         {
-            auto begin = fb::model::datetime::utc_now();
             this->on_idle();
-            auto elapsed = fb::model::datetime::utc_now() - begin;
-
-            if (elapsed < term)
-                std::this_thread::sleep_for(std::chrono::milliseconds((term - elapsed).total_milliseconds()));
+            next_idle  += term;
+            auto after  = fb::model::datetime::utc_now();
+            if (next_idle <= after)
+                next_idle = after + term;
         }
     }
+}
+
+void fb::thread::push(std::function<void()> fn)
+{
+    std::lock_guard<std::mutex> wake(this->_wake_mutex);
+    {
+        auto guard = this->_queue.enter_write();
+        guard.value().push(std::move(fn));
+    }
+    this->_wake.notify_one();
 }
 
 void fb::thread::on_idle()
@@ -146,10 +178,12 @@ void fb::thread::join()
 
 void fb::thread::exit()
 {
+    std::lock_guard<std::mutex> wake(this->_wake_mutex);
     if (this->_exit)
         return;
 
     this->_exit = true;
+    this->_wake.notify_one();
 }
 
 std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&& fn,
@@ -212,10 +246,8 @@ void fb::thread::enqueue(handle_func_type<void>&&  fn,
                          std::function<void()>&&   callback,
                          async::propagation::token context)
 {
-    auto  fn_holder = std::make_shared<handle_func_type<void>>(std::move(fn));
-    auto  guard     = this->_queue.enter_write();
-    auto& queue     = guard.value();
-    queue.push([fn_holder = std::move(fn_holder),
+    auto fn_holder = std::make_shared<handle_func_type<void>>(std::move(fn));
+    this->push([fn_holder = std::move(fn_holder),
                 error     = std::move(error),
                 callback  = std::move(callback),
                 context   = std::move(context),

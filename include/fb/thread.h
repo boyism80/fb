@@ -15,12 +15,14 @@
 #include <boost/stacktrace.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <exception>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <stdexcept>
 #include <string>
@@ -69,6 +71,9 @@ private:
     std::unique_ptr<void, std::function<void(void*)>> _data;
 
 private:
+    // Held across a queue push and the empty-queue wait, so a notify cannot land before the wait starts.
+    std::mutex                                          _wake_mutex;
+    std::condition_variable                             _wake;
     fb::synchronized<std::queue<std::function<void()>>> _queue;
     fb::async_shared_mutex::scheduler_type              _scheduler;
 
@@ -83,6 +88,7 @@ private:
     void on_thread(uint8_t index);
     void on_idle();
     void assert_exec() const;
+    void push(std::function<void()> fn);
 
     template <typename T>
     async::task<T> dispatch_with_retry(handle_func_type<T>&&     fn,
@@ -198,10 +204,8 @@ public:
                                                 std::function<void(ReturnType&&)>&& callback,
                                                 async::propagation::token           context = {})
     {
-        auto  fn_holder = std::make_shared<handle_func_type<ReturnType>>(std::move(fn));
-        auto  guard     = this->_queue.enter_write();
-        auto& queue     = guard.value();
-        queue.push([fn_holder = std::move(fn_holder),
+        auto fn_holder = std::make_shared<handle_func_type<ReturnType>>(std::move(fn));
+        this->push([fn_holder = std::move(fn_holder),
                     error     = std::move(error),
                     callback  = std::move(callback),
                     context   = std::move(context),

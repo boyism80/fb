@@ -104,7 +104,8 @@ namespace Http.Mapping
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
                 .ForMember(x => x.SystemMailId, x => x.MapFrom(u => u.SystemMailId));
 
-            CreateMap<Http.Model.Clan, Protocol.Clan>();
+            CreateMap<Http.Model.Clan, Protocol.Clan>()
+                .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore());
 
             CreateMap<Http.Model.Buff, Protocol.Buff>()
                 .ReverseMap();

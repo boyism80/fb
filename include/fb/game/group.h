@@ -35,9 +35,14 @@ private:
     std::string              _master;
     std::vector<std::string> _members;
     character_set            _active_members;
+    fb::model::datetime      _updated_date;
 
 public:
-    group(server& server, uint32_t id, std::string_view master, const std::vector<std::string>& members);
+    group(server&                         server,
+          uint32_t                        id,
+          std::string_view                master,
+          const std::vector<std::string>& members,
+          const fb::model::datetime&      updated_date);
     group(const group&) = delete;
     group(group&& g);
     ~group() = default;
@@ -52,6 +57,8 @@ public:
     const std::string&         master() const;
     std::vector<character_ptr> characters() const;
     std::vector<std::string>   members() const;
+    const fb::model::datetime& updated_date() const;
+    void                       updated_date(const fb::model::datetime& value);
     character_vector           nears(const fb::game::map& map, const fb::model::point16_t& position) const;
     // clang-format on
 };
@@ -59,7 +66,8 @@ public:
 class group::container : public lazy_container<group>
 {
 protected:
-    async::task<entity_ptr> fetch(uint32_t id) override;
+    async::task<fetched> fetch(uint32_t id) override;
+    entity_ptr merge_fetched(uint32_t id, const std::optional<entity_ptr>& current, const fetched& incoming) override;
 
 public:
     explicit container(server& server);
@@ -73,11 +81,11 @@ public:
     async::task<void> leave_member(character& leaver);
     async::task<void> broadcast(uint32_t world, uint32_t group_id, std::string_view message, MESSAGE_TYPE type);
     async::task<void> on_error(uint32_t error, std::string_view actor);
-    async::task<void> on_create(std::string target, uint32_t group_id, std::string master, std::map<uint32_t, std::string> members);
-    async::task<void> on_destroyed(std::string actor, uint32_t group_id);
-    async::task<void> on_enter(std::string target, uint32_t group_id, std::optional<std::string> new_member);
-    async::task<void> on_leave(std::string target, uint32_t group_id, std::optional<std::string> deleted_member);
-    async::task<void> on_kick(std::string target, uint32_t group_id, std::optional<std::string> deleted_member);
+    async::task<void> on_create(std::string target, uint32_t group_id, std::string master, std::map<uint32_t, std::string> members, const fb::model::datetime& updated_date);
+    async::task<void> on_destroyed(std::string actor, uint32_t group_id, const fb::model::datetime& updated_date);
+    async::task<void> on_enter(std::string target, uint32_t group_id, std::optional<std::string> new_member, const fb::model::datetime& updated_date);
+    async::task<void> on_leave(std::string target, uint32_t group_id, std::optional<std::string> deleted_member, const fb::model::datetime& updated_date);
+    async::task<void> on_kick(std::string target, uint32_t group_id, std::optional<std::string> deleted_member, const fb::model::datetime& updated_date);
     async::task<void> on_broadcast(uint32_t group_id, std::string message, uint8_t type);
     void              update_portraits(const group& g, std::vector<std::shared_ptr<character>> recipients = {});
     void              update_portraits(uint32_t group_id);
@@ -88,7 +96,7 @@ public:
 
 private:
     // clang-format off
-    async::task<void> remove_member(uint32_t group_id, std::string name, std::string message, std::string others_message, std::string log_name);
+    async::task<void> remove_member(uint32_t group_id, std::string name, std::string message, std::string others_message, std::string log_name, const fb::model::datetime& updated_date);
     async::task<void> reset_member(character& ch, std::string message);
     async::task<void> send_portraits(std::vector<std::string> names, std::string master, std::vector<std::shared_ptr<character>> online, std::vector<std::shared_ptr<character>> recipients);
     static fb::protocol::game::response::group_portrait_entry portrait_entry(const character& ch, bool leader);

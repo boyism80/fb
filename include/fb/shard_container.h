@@ -261,6 +261,12 @@ public:
         { }
     };
 
+    struct write_lookup
+    {
+        std::optional<async_write_guard> guard;
+        bool                             missing = false;
+    };
+
 private:
     fb::synchronized<map_type> _data;
 
@@ -466,17 +472,27 @@ public:
         co_return async_read_guard(std::move(*map_guard), hash);
     }
 
-    async::task<std::optional<async_write_guard>> try_enter_write_async(HashType hash)
+    async::task<write_lookup> lookup_write_async(HashType hash)
     {
         auto map_guard = co_await this->_data.try_enter_write_async();
         if (map_guard.has_value() == false)
-            co_return std::nullopt;
+            co_return write_lookup{};
 
         auto& data = map_guard->value();
         if (data.contains(hash) == false)
+            co_return write_lookup{.missing = true};
+
+        auto held = async_write_guard(std::move(*map_guard), hash);
+        co_return write_lookup{std::optional<async_write_guard>(std::move(held)), false};
+    }
+
+    async::task<std::optional<async_write_guard>> try_enter_write_async(HashType hash)
+    {
+        auto looked = co_await this->lookup_write_async(hash);
+        if (looked.guard.has_value() == false)
             co_return std::nullopt;
 
-        co_return async_write_guard(std::move(*map_guard), hash);
+        co_return std::move(*looked.guard);
     }
 
     template <typename Func>
@@ -711,6 +727,19 @@ public:
             });
         }
     }
+
+    template <typename Func>
+    auto try_merge_slot(HashType hash, Func&& func) -> async::task<bool>
+    {
+        auto holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
+        return this->_data.try_async_write([hash, holder](map_type& data) -> async::task<void> {
+            auto current = std::optional<T>{};
+            if (data.contains(hash))
+                current = data.at(hash);
+            data[hash] = (*holder)(static_cast<const std::optional<T>&>(current));
+            co_return;
+        });
+    }
 };
 
 template <typename T, size_t NumBuckets, typename HashType = uint32_t>
@@ -789,6 +818,11 @@ public:
         co_return co_await this->bucket(hash)->try_enter_read_async(hash);
     }
 
+    async::task<typename sub_container_type::write_lookup> lookup_write_async(HashType hash)
+    {
+        co_return co_await this->bucket(hash)->lookup_write_async(hash);
+    }
+
     async::task<std::optional<typename sub_container_type::async_write_guard>> try_enter_write_async(HashType hash)
     {
         co_return co_await this->bucket(hash)->try_enter_write_async(hash);
@@ -852,6 +886,12 @@ public:
     auto try_async_write(HashType hash, Func&& func, Factory&& factory) -> async::task<bool>
     {
         return this->bucket(hash)->try_async_write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
+    }
+
+    template <typename Func>
+    auto try_merge_slot(HashType hash, Func&& func) -> async::task<bool>
+    {
+        return this->bucket(hash)->try_merge_slot(hash, std::forward<Func>(func));
     }
 
     std::vector<HashType> keys() const

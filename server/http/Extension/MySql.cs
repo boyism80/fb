@@ -74,6 +74,11 @@ namespace Http.Extension
                 _ => EscapeNonNull(JsonConvert.SerializeObject(obj)),
             };
         }
+
+        public static string ToVersion(this DateTime value)
+        {
+            return value.ToString("yyyy-MM-dd HH:mm:ss.fff");
+        }
     }
 
     public class JsonTypeHandler : SqlMapper.ITypeHandler

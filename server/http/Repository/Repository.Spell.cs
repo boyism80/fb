@@ -146,7 +146,7 @@ namespace Http.Reepository
         protected override string OnDelete(SpellKey key)
         {
             return $"""
-                UPDATE `spell` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `spell` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE `owner` = {key.Owner.Escape()} AND `slot` = {key.Slot.Escape()} AND `deleted` = 0;
                 """;
         }
@@ -160,7 +160,7 @@ namespace Http.Reepository
                 $"(`owner` = {k.Owner.Escape()} AND `slot` = {k.Slot.Escape()})");
 
             return $"""
-                UPDATE `spell` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `spell` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }

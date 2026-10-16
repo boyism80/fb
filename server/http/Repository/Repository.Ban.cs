@@ -1,4 +1,4 @@
-﻿using Http.Extension;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -59,7 +59,7 @@ namespace Http.Reepository
         protected override string OnDelete(BanKey key)
         {
             return $"""
-                UPDATE `ban` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `ban` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE `user` = {key.User.Escape()} AND `deleted` = 0;
                 """;
         }

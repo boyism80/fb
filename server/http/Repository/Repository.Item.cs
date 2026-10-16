@@ -237,14 +237,14 @@ namespace Http.Reepository
                         `locked_money`=VALUES(`locked_money`),
                         `uid`=VALUES(`uid`),
                         `deleted`=VALUES(`deleted`),
-                        `updated_date`=UTC_TIMESTAMP();
+                        `updated_date`=UTC_TIMESTAMP(3);
                     """;
         }
 
         protected override string OnDelete(ItemKey key)
         {
             return $"""
-                UPDATE `item` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `item` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE `owner` = {key.Owner.Escape()} AND `index` = {key.Index.Escape()} AND `parts` = {key.Parts.Escape()} AND `stored` = {key.Stored.Escape()} AND `deleted` = 0;
                 """;
         }
@@ -258,7 +258,7 @@ namespace Http.Reepository
                 $"(`owner` = {k.Owner.Escape()} AND `index` = {k.Index.Escape()} AND `parts` = {k.Parts.Escape()} AND `stored` = {k.Stored.Escape()})");
 
             return $"""
-                UPDATE `item` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP()
+                UPDATE `item` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
                 WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }
