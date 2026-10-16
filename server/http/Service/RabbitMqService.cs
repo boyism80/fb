@@ -28,6 +28,8 @@ namespace Http.Service
         private IConnection _connection;
         private IChannel _channel;
         private Task _run = Task.CompletedTask;
+        private int _stopOnce;
+        private int _disposed;
 
         public RabbitMqService(IConfiguration configuration, ILogger<RabbitMqService> logger)
         {
@@ -43,14 +45,21 @@ namespace Http.Service
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _stopping.Cancel();
+            if (Interlocked.Exchange(ref _stopOnce, 1) != 0)
+            {
+                await _run.WaitAsync(cancellationToken);
+                return;
+            }
+
             _pending.Writer.TryComplete();
             try
             {
-                await _run.WaitAsync(PublishTimeout, cancellationToken);
+                await _run.WaitAsync(cancellationToken);
             }
-            catch (Exception)
+            catch (OperationCanceledException)
             {
+                _stopping.Cancel();
+                await _run;
             }
 
             await CloseAsync();
@@ -106,7 +115,17 @@ namespace Http.Service
             if (body == null || body.Length == 0)
                 return;
 
-            await _pending.Writer.WriteAsync(new PublishJob(exchangeName, routingKey, body, persistent, prepare, onFailure), cancellationToken);
+            try
+            {
+                await _pending.Writer.WriteAsync(new PublishJob(exchangeName, routingKey, body, persistent, prepare, onFailure), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                if (onFailure == null)
+                    throw;
+
+                await onFailure(ex);
+            }
         }
 
         private async Task PublishLoop(CancellationToken stoppingToken)
@@ -121,32 +140,37 @@ namespace Http.Service
                         timeout.CancelAfter(PublishTimeout);
                         await PublishJobAsync(job, timeout.Token);
                     }
-                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                    {
-                        break;
-                    }
                     catch (Exception ex)
                     {
-                        if (job.OnFailure != null)
-                        {
-                            try
-                            {
-                                await job.OnFailure(ex);
-                            }
-                            catch (Exception callbackEx)
-                            {
-                                _logger.LogError(callbackEx, "Publish failure callback failed for {RoutingKey}", job.RoutingKey);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogError(ex, "Failed to publish {Exchange}/{RoutingKey}", job.Exchange, job.RoutingKey);
-                        }
+                        await InvokeFailure(job, ex);
+                        if (stoppingToken.IsCancellationRequested)
+                            break;
                     }
                 }
             }
             catch (OperationCanceledException)
             {
+            }
+
+            while (_pending.Reader.TryRead(out var leftover))
+                await InvokeFailure(leftover, new OperationCanceledException("publish stopped before send"));
+        }
+
+        private async Task InvokeFailure(PublishJob job, Exception ex)
+        {
+            if (job.OnFailure == null)
+            {
+                _logger.LogError(ex, "Failed to publish {Exchange}/{RoutingKey}", job.Exchange, job.RoutingKey);
+                return;
+            }
+
+            try
+            {
+                await job.OnFailure(ex);
+            }
+            catch (Exception callbackEx)
+            {
+                _logger.LogError(callbackEx, "Publish failure callback failed for {RoutingKey}", job.RoutingKey);
             }
         }
 
@@ -227,6 +251,9 @@ namespace Http.Service
 
         public async ValueTask DisposeAsync()
         {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+
             await StopAsync(CancellationToken.None);
             _stopping.Dispose();
         }
