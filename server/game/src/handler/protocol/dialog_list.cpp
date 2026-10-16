@@ -18,37 +18,12 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto response = fb::game::dialog::response::TEXT;
-    switch (request.type)
-    {
-    case fb::game::dialog::list_type::TEXT:
-    case fb::game::dialog::list_type::TEXT_NO_MSG:
-        response = fb::game::dialog::response::TEXT;
-        break;
-
-    case fb::game::dialog::list_type::INPUT:
-    case fb::game::dialog::list_type::INPUT_NO_MSG:
-    case fb::game::dialog::list_type::INPUT_PASSWORD:
-    case fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG:
-    case fb::game::dialog::list_type::EMAIL:
-        response = fb::game::dialog::response::LIST_INPUT;
-        break;
-
-    case fb::game::dialog::list_type::LIST:
-    case fb::game::dialog::list_type::LIST_NO_MSG:
-        response = fb::game::dialog::response::LIST;
-        break;
-
-    default:
-        co_return true;
-    }
-
-    auto lua = ch->take_dialog(response);
+    auto lua   = ch->dialog;
+    ch->dialog = nullptr;
     if (lua == nullptr)
         co_return true;
 
-    auto choices = ch->dialog_choices();
-    auto reply   = request;
+    auto reply = request;
     co_await lua->switching();
 
     switch (reply.type)
@@ -74,7 +49,7 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
 
     case fb::game::dialog::list_type::LIST:
     case fb::game::dialog::list_type::LIST_NO_MSG:
-        if (reply.button == DIALOG_RESULT::NEXT && reply.index >= 1 && reply.index <= choices)
+        if (reply.button == DIALOG_RESULT::NEXT)
             lua->pushinteger(reply.index);
         else
             lua->pushnil();
@@ -84,6 +59,7 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
         break;
 
     default:
+        lua->reject("unsupported dialog list type");
         break;
     }
 

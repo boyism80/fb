@@ -58,17 +58,12 @@ public class Program
         builder.Services.AddHostedService<Http.Service.SessionTtlRefreshService>();
         builder.Services.AddSingleton<Http.Service.MaintenanceService>();
         builder.Services.AddHostedService<Internal.Services.MaintenanceBackgroundService>();
-        builder.Services.AddHealthChecks();
+        builder.Services.AddFbHealthChecks();
         builder.Services.AddScoped<StorageService>();
         builder.Services.AddScoped<Internal.Services.GroupService>();
         builder.Services.AddScoped<Internal.Services.FriendService>();
 
         var app = builder.Build();
-        await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Internal);
-        app.MapHealthChecks("/health");
-        var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
-        var dataTableLoader = new DataTableLoader(logger);
-        dataTableLoader.Run();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -78,11 +73,23 @@ public class Program
         }
 
         app.UseAuthorization();
-
-
+        app.MapFbHealthChecks();
         app.MapControllers();
 
-        await app.RunAsync();
+        await app.StartAsync();
+        try
+        {
+            await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Internal);
+            var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
+            var dataTableLoader = new DataTableLoader(logger);
+            dataTableLoader.Run();
+            app.Services.GetRequiredService<HealthCheckService>().MarkReady();
+            await app.WaitForShutdownAsync();
+        }
+        finally
+        {
+            await app.StopAsync();
+        }
     }
 
 }

@@ -2,25 +2,21 @@
 {
     public class HealthCheckService
     {
-        private volatile bool _isProcessing = true;
-        private volatile bool _isShuttingDown = false;
+        private volatile bool _ready;
+        private volatile bool _shuttingDown;
 
-        public bool IsProcessing => _isProcessing;
+        public bool IsAlive => true;
 
-        public bool IsShuttingDown => _isShuttingDown;
+        public bool IsReady => _ready && !_shuttingDown;
 
-        public void SetProcessing(bool isProcessing)
+        public void MarkReady()
         {
-            _isProcessing = isProcessing;
+            _ready = true;
         }
 
         public void BeginShutdown()
         {
-            _isShuttingDown = true;
+            _shuttingDown = true;
         }
-
-        public bool IsReady => !_isShuttingDown;
-
-        public bool IsAlive => true;
     }
 }

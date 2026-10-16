@@ -62,64 +62,35 @@ character::character(fb::game::server& server, const initial_params& params) :
     _shield_color(params.shield_color), _experience(params.exp), _gender(params.gender), _state(params.state),
     _ridable_id(params.ridable_id), _level(params.level), _class(params.class_type), _promotion(params.promotion),
     _money(params.money), _mimicry(params.mimicry), _title(params.title), _nation(params.nation),
-    _divine_beast(params.divine_beast), _reputation(params.reputation), _evaluation(params.evaluation),
-    _super_hide(params.super_hide), _last_afk_time(server.now()), _evaluation_tick(server.now()),
-    _evaluation_playtime(std::chrono::seconds(params.evaluation_playtime)),
-    _evaluated_targets(params.evaluated_targets), _marriage(server.now()), id(params.id),
-    client_version(params.client_version), ui_mode(params.ui_mode)
+    _divine_beast(params.divine_beast), _reputation(params.reputation), _super_hide(params.super_hide),
+    _last_afk_time(server.now()),
+    _evaluation{.score    = params.evaluation,
+                .tick     = server.now(),
+                .playtime = std::chrono::seconds(params.evaluation_playtime),
+                .targets  = params.evaluated_targets},
+    _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now();
 }
 
 std::shared_ptr<fb::game::match> character::match() const
 {
-    return this->_match.lock();
+    return this->_match.session.lock();
 }
 
 void character::match(std::shared_ptr<fb::game::match> value)
 {
-    this->_match = value;
+    this->_match.session = value;
 }
 
 character::~character()
 {
-    this->cancel_dialog("character destroyed");
-}
-
-void character::cancel_dialog(std::string_view message)
-{
-    if (this->dialog == nullptr)
-        return;
-
-    this->dialog->reject(message);
-}
-
-fb::lua::context* character::take_dialog(fb::game::dialog::response response)
-{
-    auto* ctx = this->dialog;
-    if (ctx == nullptr)
-        return nullptr;
-
-    if (this->_dialog_response != response)
-        return nullptr;
-
-    ctx->clear_dialog_slot();
-    return ctx;
-}
-
-void character::set_dialog(fb::lua::context* ctx, fb::game::dialog::response response, size_t choices)
-{
-    if (ctx == nullptr)
-        throw std::runtime_error("set_dialog requires a context");
-
-    ctx->bind_dialog_slot(this->dialog);
-    this->_dialog_response = response;
-    this->_dialog_choices  = choices;
-}
-
-size_t character::dialog_choices() const
-{
-    return this->_dialog_choices;
+    if (this->dialog != nullptr)
+    {
+        auto* ctx    = this->dialog;
+        this->dialog = nullptr;
+        ctx->reject("character destroyed");
+    }
 }
 
 void character::on_init()
@@ -288,7 +259,12 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             if (options.before && co_await options.before() == false)
                 co_return false;
 
-            this->cancel_dialog("transfer");
+            if (this->dialog != nullptr)
+            {
+                auto* ctx    = this->dialog;
+                this->dialog = nullptr;
+                ctx->reject("transfer");
+            }
             std::ignore = co_await this->map(nullptr);
             co_await this->server.save(*this);
 
@@ -409,46 +385,43 @@ void character::save_return_point()
     if (this->_map == nullptr)
         return;
 
-    this->_match_return_map      = this->_map->model().id;
-    this->_match_return_position = this->_position;
+    this->_match.return_map      = this->_map->model().id;
+    this->_match.return_position = this->_position;
 }
 
 void character::restore_return_point(uint32_t map, const fb::model::point16_t& position)
 {
     this->assert_thread();
-    if (map == 0)
-        return;
-
-    this->_match_return_map      = map;
-    this->_match_return_position = position;
+    this->_match.return_map      = map;
+    this->_match.return_position = position;
 }
 
 bool character::has_return_point() const
 {
-    return this->_match_return_position.has_value();
+    return this->_match.return_map.has_value() && this->_match.return_position.has_value();
 }
 
 uint32_t character::return_map() const
 {
-    return this->_match_return_map;
+    return this->_match.return_map.value_or(0);
 }
 
 fb::model::point16_t character::return_position() const
 {
-    return this->_match_return_position.value_or(fb::model::point16_t{0, 0});
+    return this->_match.return_position.value_or(fb::model::point16_t{0, 0});
 }
 
 async::task<bool> character::transfer_home()
 {
     this->assert_thread();
-    if (this->has_return_point() == false || this->_match_return_map == 0)
+    if (this->has_return_point() == false)
         co_return false;
 
-    auto dest = this->server.maps.find(this->_match_return_map);
+    auto dest = this->server.maps.find(this->_match.return_map.value());
     if (dest == nullptr)
         co_return false;
 
-    auto position = this->_match_return_position.value();
+    auto position = this->_match.return_position.value();
     if (fb::config<std::optional<uint32_t>>("world"))
     {
         co_return co_await this->map(dest, position);
@@ -808,15 +781,15 @@ void character::reputation(int16_t value)
 uint16_t character::evaluation() const
 {
     this->assert_thread();
-    return this->_evaluation;
+    return this->_evaluation.score;
 }
 
 void character::evaluation(uint16_t value)
 {
     this->assert_thread();
-    this->_evaluation = value;
-    if (this->_evaluation >= fb::model::const_value::reputation::MAX_EVALUATION)
-        this->_evaluation_playtime = std::chrono::milliseconds(0);
+    this->_evaluation.score = value;
+    if (this->_evaluation.score >= fb::model::const_value::reputation::MAX_EVALUATION)
+        this->_evaluation.playtime = std::chrono::milliseconds(0);
     this->update(UPDATE_STATE_LEVEL::BASED);
 }
 
@@ -824,21 +797,21 @@ void character::accumulate_evaluation_playtime(const fb::model::datetime& now)
 {
     this->assert_thread();
 
-    auto elapsed           = std::chrono::milliseconds((now - this->_evaluation_tick).total_milliseconds());
-    this->_evaluation_tick = now;
-    if (this->_evaluation >= fb::model::const_value::reputation::MAX_EVALUATION)
+    auto elapsed           = std::chrono::milliseconds((now - this->_evaluation.tick).total_milliseconds());
+    this->_evaluation.tick = now;
+    if (this->_evaluation.score >= fb::model::const_value::reputation::MAX_EVALUATION)
         return;
 
     auto interval =
         std::chrono::milliseconds(fb::model::const_value::reputation::EVALUATION_INTERVAL.total_milliseconds());
-    this->_evaluation_playtime += elapsed;
-    if (this->_evaluation_playtime < interval)
+    this->_evaluation.playtime += elapsed;
+    if (this->_evaluation.playtime < interval)
         return;
 
-    this->_evaluation_playtime -= interval;
-    this->_evaluation++;
-    if (this->_evaluation >= fb::model::const_value::reputation::MAX_EVALUATION)
-        this->_evaluation_playtime = std::chrono::milliseconds(0);
+    this->_evaluation.playtime -= interval;
+    this->_evaluation.score++;
+    if (this->_evaluation.score >= fb::model::const_value::reputation::MAX_EVALUATION)
+        this->_evaluation.playtime = std::chrono::milliseconds(0);
 
     this->message(_TEXT(MESSAGE_REPUTATION_EVALUATION_GAINED), MESSAGE_TYPE::STATE);
     this->update(UPDATE_STATE_LEVEL::BASED);
@@ -848,7 +821,7 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
 {
     this->assert_thread();
 
-    if (this->_evaluation == 0)
+    if (this->_evaluation.score == 0)
         throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_NO_EVALUATION));
 
     auto target = this->server.characters.find(target_name);
@@ -861,8 +834,8 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
     auto now       = this->server.now();
     auto target_id = target->id;
     auto previous  = std::optional<fb::model::datetime>();
-    auto found     = this->_evaluated_targets.find(target_id);
-    if (found != this->_evaluated_targets.end())
+    auto found     = this->_evaluation.targets.find(target_id);
+    if (found != this->_evaluation.targets.end())
     {
         if (now - found->second < fb::model::const_value::reputation::EVALUATION_COOLDOWN)
             throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_ALREADY_EVALUATED));
@@ -871,8 +844,8 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
     }
 
     // Spend the ticket before leaving this thread so a second request cannot reuse it.
-    this->_evaluation--;
-    this->_evaluated_targets.insert_or_assign(target_id, now);
+    this->_evaluation.score--;
+    this->_evaluation.targets.insert_or_assign(target_id, now);
 
     auto self_weak   = this->weak_from_this_as<character>();
     auto target_weak = target->weak_from_this_as<character>();
@@ -924,12 +897,12 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
     }
     else
     {
-        self->_evaluation =
-            std::min(static_cast<uint16_t>(self->_evaluation + 1), fb::model::const_value::reputation::MAX_EVALUATION);
+        self->_evaluation.score = std::min(static_cast<uint16_t>(self->_evaluation.score + 1),
+                                           fb::model::const_value::reputation::MAX_EVALUATION);
         if (previous.has_value())
-            self->_evaluated_targets.insert_or_assign(target_id, previous.value());
+            self->_evaluation.targets.insert_or_assign(target_id, previous.value());
         else
-            self->_evaluated_targets.erase(target_id);
+            self->_evaluation.targets.erase(target_id);
         self->update(UPDATE_STATE_LEVEL::BASED);
         throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name));
     }
@@ -2457,11 +2430,11 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.divine_beast     = static_cast<uint8_t>(this->_divine_beast);
-    if (this->_match_return_position.has_value() && this->_match_return_map != 0)
+    if (this->_match.return_map.has_value() && this->_match.return_position.has_value())
     {
-        dto.map = this->_match_return_map;
+        dto.map = this->_match.return_map.value();
         dto.position =
-            fb::protocol::internal::Position{this->_match_return_position->x, this->_match_return_position->y};
+            fb::protocol::internal::Position{this->_match.return_position->x, this->_match.return_position->y};
     }
     else if (!fb::config<std::optional<uint32_t>>("world"))
     {
@@ -2534,10 +2507,10 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.title            = this->_title;
     dto.speed            = this->stat.base_speed();
     dto.reputation       = this->_reputation;
-    dto.evaluation       = this->_evaluation;
+    dto.evaluation       = this->_evaluation.score;
     dto.evaluation_playtime =
-        static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(this->_evaluation_playtime).count());
-    for (auto& [target, evaluated_at] : this->_evaluated_targets)
+        static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(this->_evaluation.playtime).count());
+    for (auto& [target, evaluated_at] : this->_evaluation.targets)
     {
         if (this->server.now() - evaluated_at >= fb::model::const_value::reputation::EVALUATION_COOLDOWN)
             continue;

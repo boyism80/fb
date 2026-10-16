@@ -53,7 +53,12 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         std::ignore = ch->trade->cancel(*ch);
 
     // A script waiting on a dialog keeps the character alive, so it must not outlive the session.
-    ch->cancel_dialog("disconnected");
+    if (ch->dialog != nullptr)
+    {
+        auto* ctx  = ch->dialog;
+        ch->dialog = nullptr;
+        ctx->reject("disconnected");
+    }
 
     fb::logger::info("{} has disconnected.", ch->name());
 

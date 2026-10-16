@@ -28,6 +28,63 @@ namespace Http.Migration
             return !string.Equals(firstLine, TransactionOffDirective, StringComparison.OrdinalIgnoreCase);
         }
 
+        public static bool ContainsDdl(string sql)
+        {
+            foreach (var statement in SplitStatements(sql))
+            {
+                var start = SkipLeadingTrivia(statement);
+                if (DdlStartPattern().IsMatch(start))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static string SkipLeadingTrivia(string statement)
+        {
+            var normalized = statement.Replace("\r\n", "\n").Replace("\r", "\n");
+            var index = 0;
+            while (index < normalized.Length)
+            {
+                while (index < normalized.Length && char.IsWhiteSpace(normalized[index]))
+                    index++;
+
+                if (index + 1 < normalized.Length && normalized[index] == '-' && normalized[index + 1] == '-')
+                {
+                    var newline = normalized.IndexOf('\n', index);
+                    if (newline < 0)
+                        return string.Empty;
+                    index = newline + 1;
+                    continue;
+                }
+
+                if (index < normalized.Length && normalized[index] == '#')
+                {
+                    var newline = normalized.IndexOf('\n', index);
+                    if (newline < 0)
+                        return string.Empty;
+                    index = newline + 1;
+                    continue;
+                }
+
+                if (index + 1 < normalized.Length && normalized[index] == '/' && normalized[index + 1] == '*')
+                {
+                    var end = normalized.IndexOf("*/", index + 2, StringComparison.Ordinal);
+                    if (end < 0)
+                        return string.Empty;
+                    index = end + 2;
+                    continue;
+                }
+
+                break;
+            }
+
+            return normalized[index..];
+        }
+
+        [GeneratedRegex(@"^(CREATE|ALTER|DROP|RENAME|TRUNCATE)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex DdlStartPattern();
+
         public static IReadOnlyList<string> SplitStatements(string sql)
         {
             var statements = new List<string>();

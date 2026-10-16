@@ -31,16 +31,17 @@ spec:
               subPath: appsettings.k8s.json
           startupProbe:
             httpGet:
-              path: /health
+              path: /health/live
               port: 80
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 30
           readinessProbe:
             httpGet:
-              path: /health
+              path: /health/ready
               port: 80
             periodSeconds: 5
+            failureThreshold: 3
       volumes:
         - name: config-volume
           configMap:

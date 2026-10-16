@@ -161,12 +161,20 @@ module.exports = {
                                 ports: [{ containerPort: 80, name: `internal` }],
                                 startupProbe: {
                                     httpGet: {
-                                        path: "/health",
+                                        path: "/health/live",
                                         port: 80,
                                     },
                                     initialDelaySeconds: 10,
                                     periodSeconds: 5,
                                     failureThreshold: 30
+                                },
+                                readinessProbe: {
+                                    httpGet: {
+                                        path: "/health/ready",
+                                        port: 80,
+                                    },
+                                    periodSeconds: 5,
+                                    failureThreshold: 3
                                 },
                                 resources: {
                                     requests: {

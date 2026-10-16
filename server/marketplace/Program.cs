@@ -56,16 +56,9 @@ public class Program
         builder.Services.AddHostedService<Marketplace.Services.MarketplaceParcelBackgroundService>();
         builder.Services.AddAmqpListener<ReloadTablesHandler>();
 
-        builder.Services.AddHealthChecks();
+        builder.Services.AddFbHealthChecks();
 
         var app = builder.Build();
-        await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Marketplace);
-        app.MapHealthChecks("/health");
-
-        // Load data tables
-        var logger = app.Services.GetRequiredService<ILogger<Http.Worker.DataTableLoader>>();
-        var dataTableLoader = new Http.Worker.DataTableLoader(logger);
-        dataTableLoader.Run();
 
         // Configure the HTTP request pipeline
         if (app.Environment.IsDevelopment())
@@ -75,9 +68,23 @@ public class Program
         }
 
         app.UseAuthorization();
+        app.MapFbHealthChecks();
         app.MapControllers();
 
-        await app.RunAsync();
+        await app.StartAsync();
+        try
+        {
+            await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Marketplace);
+            var logger = app.Services.GetRequiredService<ILogger<Http.Worker.DataTableLoader>>();
+            var dataTableLoader = new Http.Worker.DataTableLoader(logger);
+            dataTableLoader.Run();
+            app.Services.GetRequiredService<HealthCheckService>().MarkReady();
+            await app.WaitForShutdownAsync();
+        }
+        finally
+        {
+            await app.StopAsync();
+        }
     }
 }
 

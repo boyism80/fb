@@ -298,7 +298,6 @@ private:
     context*                              _parent = nullptr;
     promise_type                          _promise;
     call_options                          _options;
-    context**                             _dialog_slot     = nullptr; // &character::dialog while parked
     int                                   _running         = 0;
     bool                                  _release_pending = false;
     std::string                           _script_path;
@@ -483,9 +482,6 @@ public:
     void                on_error(std::function<void(std::string_view)> handler);
     void                clear_on_error();
     void                report_error(std::string_view message);
-    bool                has_dialog_slot() const;
-    void                bind_dialog_slot(context*& slot);
-    void                clear_dialog_slot();
     std::string_view    script_path() const;
 
 public:

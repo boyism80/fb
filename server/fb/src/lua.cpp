@@ -599,33 +599,6 @@ std::string_view fb::lua::context::script_path() const
     return this->_script_path;
 }
 
-bool fb::lua::context::has_dialog_slot() const
-{
-    return this->_dialog_slot != nullptr;
-}
-
-void fb::lua::context::clear_dialog_slot()
-{
-    if (this->_dialog_slot == nullptr)
-        return;
-
-    *this->_dialog_slot = nullptr;
-    this->_dialog_slot  = nullptr;
-}
-
-void fb::lua::context::bind_dialog_slot(context*& slot)
-{
-    if (slot == this && this->_dialog_slot == &slot)
-        return;
-
-    // Callers must cancel_dialog before send so this only attaches to an empty slot.
-    if (slot != nullptr || this->_dialog_slot != nullptr)
-        throw std::runtime_error("dialog slot already bound");
-
-    slot               = this;
-    this->_dialog_slot = &slot;
-}
-
 void fb::lua::context::finish_resume()
 {
     this->_running--;
@@ -703,8 +676,6 @@ void fb::lua::context::resume(int argc, int* n)
         auto parent             = this->_parent;
         auto auto_resume_parent = this->_options.auto_resume_parent;
 
-        this->clear_dialog_slot();
-
         if (parent != nullptr && lua_status(*parent) == LUA_YIELD && auto_resume_parent)
         {
             auto context = fb::execution_context::token();
@@ -738,8 +709,6 @@ void fb::lua::context::resume(int argc, int* n)
         auto retc               = this->argc();
         if (n != nullptr)
             *n = retc;
-
-        this->clear_dialog_slot();
 
         if (parent != nullptr)
         {
@@ -807,8 +776,6 @@ void context::release()
 
 void context::reject(std::string_view message)
 {
-    this->clear_dialog_slot();
-
     if (this->_promise == nullptr)
         return;
 
@@ -981,15 +948,7 @@ int fb::lua::context::co_builder::run()
         });
 
     if (has_resume == false)
-    {
-        if (immediate && rejected == false && lua_ptr->has_dialog_slot() == false)
-        {
-            fb::logger::fatal("lua script yielded without a waiter: {}", lua_ptr->script_path());
-            return 0;
-        }
-
         return lua_ptr->yield(0);
-    }
 
     // A rejected pipeline must not resume the script with the default 0 results; the pool revokes the yielded context.
     if (immediate && rejected == false)
@@ -1271,7 +1230,6 @@ void root::release(context& ctx)
         ctx.options(call_options{});
         ctx.clear_on_error();
         ctx.clear_script_path();
-        ctx.clear_dialog_slot();
 
         auto key = (lua_State*)ctx;
         this->idle.insert({key, std::move(this->busy[key])});
@@ -1307,7 +1265,6 @@ void root::revoke(context& ctx)
         }
 
         ctx.clear_on_error();
-        ctx.clear_dialog_slot();
         this->busy.erase(it);
     };
 

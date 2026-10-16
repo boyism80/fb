@@ -123,40 +123,12 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto response = fb::game::dialog::response::MENU;
-    switch (request.type)
-    {
-    case fb::game::dialog::type::INPUT:
-    case fb::game::dialog::type::INPUT_NO_EXT:
-        response = fb::game::dialog::response::INPUT;
-        break;
-
-    case fb::game::dialog::type::MENU:
-    case fb::game::dialog::type::MENU_NO_EXT:
-        response = fb::game::dialog::response::MENU;
-        break;
-
-    case fb::game::dialog::type::SLOT:
-    case fb::game::dialog::type::SPELL:
-        response = fb::game::dialog::response::SLOT;
-        break;
-
-    case fb::game::dialog::type::ITEM:
-    case fb::game::dialog::type::PURSUIT:
-    case fb::game::dialog::type::BUY:
-        response = fb::game::dialog::response::SELECT;
-        break;
-
-    default:
-        co_return true;
-    }
-
-    auto lua = ch->take_dialog(response);
+    auto lua   = ch->dialog;
+    ch->dialog = nullptr;
     if (lua == nullptr)
         co_return true;
 
-    auto choices = ch->dialog_choices();
-    auto reply   = request;
+    auto reply = request;
     co_await lua->switching();
 
     switch (reply.type)
@@ -169,10 +141,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
 
     case fb::game::dialog::type::MENU:
     case fb::game::dialog::type::MENU_NO_EXT:
-        if (reply.index >= 1 && reply.index <= choices)
-            lua->pushinteger(reply.index);
-        else
-            lua->pushnil();
+        lua->pushinteger(reply.index);
         lua->resume(1);
         break;
 
@@ -216,6 +185,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     }
 
     default:
+        lua->reject("unsupported dialog type");
         break;
     }
 

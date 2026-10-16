@@ -114,59 +114,67 @@ public:
         bool                enabled       = false;
     };
 
+    struct match_state_t
+    {
+        std::weak_ptr<fb::game::match>      session;
+        std::optional<uint32_t>             return_map;
+        std::optional<fb::model::point16_t> return_position;
+    };
+
+    struct evaluation_state_t
+    {
+        uint16_t                                score = 0;
+        fb::model::datetime                     tick;
+        std::chrono::milliseconds               playtime{0};
+        std::map<uint32_t, fb::model::datetime> targets;
+    };
+
 private:
-    fb::game::dialog::response            _dialog_response = fb::game::dialog::response::MENU;
-    size_t                                _dialog_choices  = 0;
-    const fb::model::datetime             _created_date;
-    const fb::model::datetime             _updated_date;
-    const std::string                     _name;
-    uint32_t                              _world = 0;
-    ROLE                                  _role;
-    std::optional<uint32_t>               _birthday;
-    uint16_t                              _hair          = 0;
-    uint8_t                               _face          = 0;
-    uint8_t                               _color         = 0;
-    std::optional<uint8_t>                _armor_color   = 0;
-    std::optional<uint8_t>                _weapon_color  = std::nullopt;
-    std::optional<uint8_t>                _shield_color  = std::nullopt;
-    uint64_t                              _experience    = 0;
-    NATION                                _nation        = NATION::GOGURYEO;
-    DIVINE_BEAST                          _divine_beast  = DIVINE_BEAST::AZURE_DRAGON;
-    int16_t                               _reputation    = 0;
-    uint16_t                              _evaluation    = 0;
-    GENDER                                _gender        = GENDER::MALE;
-    STATE                                 _state         = STATE::NORMAL;
-    uint16_t                              _ridable_id    = 1;
-    uint8_t                               _level         = 1;
-    CLASS                                 _class         = CLASS::NONE;
-    uint8_t                               _promotion     = 0;
-    uint64_t                              _money         = 0;
-    std::optional<character_appearance<>> _mimicry       = std::nullopt;
-    std::string                           _title         = "";
-    std::optional<uint32_t>               _group_id      = std::nullopt;
-    std::optional<uint32_t>               _clan_id       = std::nullopt;
-    uint16_t                              _weapon_damage = 0;
-    bool                                  _detect        = false;
-    mob_vector_t                          _spawned_mobs  = {};
-    bool                                  _super_hide    = false;
-    std::atomic<LOGIN_STATE>              _login_state   = LOGIN_STATE::LOADING; // raced by login and on_disconnected
+    // clang-format off
+    const fb::model::datetime                        _created_date;
+    const fb::model::datetime                        _updated_date;
+    const std::string                                _name;
+    uint32_t                                         _world = 0;
+    ROLE                                             _role;
+    std::optional<uint32_t>                          _birthday;
+    uint16_t                                         _hair = 0;
+    uint8_t                                          _face = 0;
+    uint8_t                                          _color = 0;
+    std::optional<uint8_t>                           _armor_color = 0;
+    std::optional<uint8_t>                           _weapon_color = std::nullopt;
+    std::optional<uint8_t>                           _shield_color = std::nullopt;
+    uint64_t                                         _experience = 0;
+    NATION                                           _nation = NATION::GOGURYEO;
+    DIVINE_BEAST                                     _divine_beast = DIVINE_BEAST::AZURE_DRAGON;
+    int16_t                                          _reputation = 0;
+    GENDER                                           _gender = GENDER::MALE;
+    STATE                                            _state = STATE::NORMAL;
+    uint16_t                                         _ridable_id = 1;
+    uint8_t                                          _level = 1;
+    CLASS                                            _class = CLASS::NONE;
+    uint8_t                                          _promotion = 0;
+    uint64_t                                         _money = 0;
+    std::optional<character_appearance<>>            _mimicry = std::nullopt;
+    std::string                                      _title = "";
+    std::optional<uint32_t>                          _group_id = std::nullopt;
+    std::optional<uint32_t>                          _clan_id = std::nullopt;
+    uint16_t                                         _weapon_damage = 0;
+    bool                                             _detect = false;
+    mob_vector_t                                     _spawned_mobs = {};
+    bool                                             _super_hide = false;
+    std::atomic<LOGIN_STATE>                         _login_state = LOGIN_STATE::LOADING; // raced by login and on_disconnected
     mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
     fb::model::datetime                              _last_afk_time;
-    fb::model::datetime                              _evaluation_tick;
-    std::chrono::milliseconds                        _evaluation_playtime = std::chrono::milliseconds(0);
-    std::map<uint32_t, fb::model::datetime>          _evaluated_targets;
+    evaluation_state_t                               _evaluation;
     fb::game::marriage                               _marriage;
     mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;
     std::vector<friend_entry>                        _friends;
-    std::optional<fb::model::point16_t>              _match_return_position = std::nullopt;
-    uint32_t                                         _match_return_map      = 0;
-    std::weak_ptr<fb::game::match>                   _match;
+    match_state_t                                    _match;
     std::optional<std::pair<uint32_t, uint16_t>>     _world_map = std::nullopt;
-    bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
-        1,
-    };
+    bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {1,};
+    // clang-format on
 
 public:
     const uint32_t                                id;
@@ -230,13 +238,10 @@ public:
     };
 
 public:
-    // clang-format off
     character(fb::game::server& server, const initial_params& params);
-   ~character();
-    // clang-format on
+    ~character();
 
 private:
-    // clang-format off
     uint64_t                        limited_exp(uint64_t exp) const;
     fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
     void                            camera_pivot() const;
@@ -251,7 +256,6 @@ private:
     async::task<void>               settle_kills(mob_vector dead);
     void                            enqueue_death_warp();
     [[nodiscard]] async::task<void> ride(mob& horse, uint16_t ridable_id = 1);
-    // clang-format on
 
 public:
     // clang-format off
@@ -390,10 +394,6 @@ public:
     [[nodiscard]] async::task<void>                           unride();
     bool                                                      alive() const;
     void                                                      message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
-    void                                                      cancel_dialog(std::string_view message);
-    fb::lua::context*                                         take_dialog(fb::game::dialog::response response);
-    void                                                      set_dialog(fb::lua::context* ctx, fb::game::dialog::response response, size_t choices = 0);
-    size_t                                                    dialog_choices() const;
     async::task<void>                                         whisper(std::string receiver_name, std::string message);
     void                                                      thread(fb::thread* value);
     void                                                      browse_ch(const character& ch);
@@ -482,10 +482,7 @@ public:
     async::task<void>     invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr) const;
     async::task<void>     invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr) const;
     void                  broadcast(std::string_view message, MESSAGE_TYPE type, bool respect_roar = false);
-    async::task<void>     broadcast(std::string_view message,
-                                    MESSAGE_TYPE     type,
-                                    BROADCAST_TYPE   broadcast_type,
-                                    bool             respect_roar = false);
+    async::task<void>     broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type, bool respect_roar = false);
     async::task<void>     on_broadcast(const fb::protocol::internal::response::Broadcast& resp);
     void                  update_time(uint8_t hours, uint8_t minutes);
     void                  send(const fb::stream& stream, bool encrypt);

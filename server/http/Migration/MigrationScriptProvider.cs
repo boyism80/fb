@@ -26,12 +26,14 @@ namespace Http.Migration
                 var sql = File.ReadAllText(filePath);
                 var version = SqlScriptExecutor.ParseVersion(fileName);
                 var name = SqlScriptExecutor.ParseName(fileName);
+                // MySQL commits DDL implicitly, so a transaction cannot roll the script back.
+                var useTransaction = SqlScriptExecutor.UsesTransaction(sql) && !SqlScriptExecutor.ContainsDdl(sql);
                 scripts.Add(new MigrationScript(
                     version,
                     name,
                     MigrationChecksum.Compute(sql),
                     sql,
-                    SqlScriptExecutor.UsesTransaction(sql)));
+                    useTransaction));
             }
 
             return scripts;
