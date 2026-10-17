@@ -2,6 +2,13 @@ using StackExchange.Redis;
 
 namespace Http.Service
 {
+    public enum PasswordAttempt
+    {
+        Locked,
+        Allowed,
+        Counted,
+    }
+
     public class PasswordAttemptService
     {
         private const int MaxFailuresPerIp = 5;
@@ -11,30 +18,33 @@ namespace Http.Service
         private static readonly TimeSpan TrustedIpDuration = TimeSpan.FromDays(30);
         private const string UnknownIp = "unknown";
 
+        // Returns 0 when locked, 1 when allowed without counting the account, 2 when the account was counted.
         private const string BeginScript = @"
+if tonumber(redis.call('GET', KEYS[1]) or '0') >= tonumber(ARGV[1]) then
+    return 0
+end
 local ip = redis.call('INCR', KEYS[1])
 if ip == 1 or ip == tonumber(ARGV[1]) then
     redis.call('PEXPIRE', KEYS[1], ARGV[2])
 end
-if ip > tonumber(ARGV[1]) then
-    return 0
-end
 if redis.call('EXISTS', KEYS[3]) == 1 then
     return 1
 end
-local account = redis.call('INCR', KEYS[2])
-if account == 1 then
-    redis.call('PEXPIRE', KEYS[2], ARGV[4])
-end
-if account > tonumber(ARGV[3]) then
+if tonumber(redis.call('GET', KEYS[2]) or '0') >= tonumber(ARGV[3]) then
     return 0
 end
-return 1";
+if redis.call('INCR', KEYS[2]) == 1 then
+    redis.call('PEXPIRE', KEYS[2], ARGV[4])
+end
+return 2";
 
+        // Undoes the account count only when Begin made it: the trust key can appear or expire in between.
         private const string SucceedScript = @"
 redis.call('DEL', KEYS[1])
-if redis.call('EXISTS', KEYS[3]) == 0 and redis.call('EXISTS', KEYS[2]) == 1 then
-    redis.call('DECR', KEYS[2])
+if ARGV[3] == '1' and redis.call('EXISTS', KEYS[2]) == 1 then
+    if redis.call('DECR', KEYS[2]) <= 0 then
+        redis.call('DEL', KEYS[2])
+    end
 end
 if ARGV[2] == '1' then
     redis.call('SET', KEYS[3], '1', 'PX', ARGV[1])
@@ -55,13 +65,13 @@ return 1";
             $"fb:account:pw-trust:{world}:{uid}:{ip}"
         ];
 
-        public async Task<bool> Begin(uint world, uint uid, string ip)
+        public async Task<PasswordAttempt> Begin(uint world, uint uid, string ip)
         {
             ip = string.IsNullOrEmpty(ip) ? UnknownIp : ip;
             var keys = Keys(world, uid, ip);
             var redis = _redisService.GetShardConnection(world, keys[1].ToString());
             if (redis == null)
-                return true;
+                return PasswordAttempt.Allowed;
 
             var result = await redis.EvalAsync(BeginScript, keys,
             [
@@ -70,10 +80,15 @@ return 1";
                 MaxUntrustedFailuresPerAccount,
                 (long)AccountWindow.TotalMilliseconds
             ]);
-            return (long)result == 1;
+            return (long)result switch
+            {
+                0 => PasswordAttempt.Locked,
+                2 => PasswordAttempt.Counted,
+                _ => PasswordAttempt.Allowed,
+            };
         }
 
-        public async Task Succeed(uint world, uint uid, string ip)
+        public async Task Succeed(uint world, uint uid, string ip, PasswordAttempt attempt)
         {
             var trusted = string.IsNullOrEmpty(ip) == false;
             ip = trusted ? ip : UnknownIp;
@@ -85,7 +100,8 @@ return 1";
             await redis.EvalAsync(SucceedScript, keys,
             [
                 (long)TrustedIpDuration.TotalMilliseconds,
-                trusted ? "1" : "0"
+                trusted ? "1" : "0",
+                attempt == PasswordAttempt.Counted ? "1" : "0"
             ]);
         }
     }

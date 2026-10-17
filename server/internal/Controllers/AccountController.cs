@@ -74,7 +74,8 @@ namespace Internal.Controllers
                 };
             }
 
-            if (await _passwordAttempts.Begin(world, request.Uid, request.Ip) == false)
+            var attempt = await _passwordAttempts.Begin(world, request.Uid, request.Ip);
+            if (attempt == PasswordAttempt.Locked)
             {
                 return new Response.Authenticate
                 {
@@ -90,7 +91,7 @@ namespace Internal.Controllers
                 };
             }
 
-            await _passwordAttempts.Succeed(world, request.Uid, request.Ip);
+            await _passwordAttempts.Succeed(world, request.Uid, request.Ip, attempt);
             if (updatedPw != null)
             {
                 await using var _ = await _distributedLock.Lock(world, Character.SaveLockKey(request.Uid));
@@ -245,7 +246,8 @@ namespace Internal.Controllers
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                if (await _passwordAttempts.Begin(world, request.Uid, request.Ip) == false)
+                var attempt = await _passwordAttempts.Begin(world, request.Uid, request.Ip);
+                if (attempt == PasswordAttempt.Locked)
                     throw new LogicException(ErrorCode.AccountLocked);
 
                 if (PasswordHash.Matches(ch.Pw, request.Before, out _) == false)
@@ -254,7 +256,7 @@ namespace Internal.Controllers
                 if (ch.Birth != request.Birthday)
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
 
-                await _passwordAttempts.Succeed(world, request.Uid, request.Ip);
+                await _passwordAttempts.Succeed(world, request.Uid, request.Ip, attempt);
                 ch.Pw = PasswordHash.Compute(request.After);
                 _dbContext.Character.Set(world, ch);
 

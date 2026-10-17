@@ -36,13 +36,14 @@ namespace AdminTool.Services
             if (character.Role < Role.Admin)
                 return new AuthResult { Error = LoginFailedError };
 
-            if (await _passwordAttempts.Begin(world, userId.Value, ip) == false)
+            var attempt = await _passwordAttempts.Begin(world, userId.Value, ip);
+            if (attempt == PasswordAttempt.Locked)
                 return new AuthResult { Error = LoginFailedError };
 
             if (PasswordHash.Matches(character.Pw, password, out var updatedPw) == false)
                 return new AuthResult { Error = LoginFailedError };
 
-            await _passwordAttempts.Succeed(world, userId.Value, ip);
+            await _passwordAttempts.Succeed(world, userId.Value, ip, attempt);
             if (updatedPw != null)
             {
                 await using var _ = await _distributedLock.Lock(world, Character.SaveLockKey(userId.Value));
