@@ -330,8 +330,24 @@ namespace Http.Reepository
         public async Task<bool> Delete(uint world, uint user, uint id)
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
-            var affectedRows = await conn.ExecuteAsync($"UPDATE `mail` SET deleted = 1 WHERE `user` = {user} AND `id` = {id} AND `deleted` = 0");
-            return affectedRows == 1;
+            var systemMailId = await conn.QueryFirstOrDefaultAsync<uint?>(
+                "SELECT `system_mail_id` FROM `mail` WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
+                new { user, id });
+
+            // An archived system mail is never sent again, so its row needs no deleted marker to block a resend.
+            // A marker would let USP_MAIL_NEXT_ID turn it into a received record that nothing purges.
+            if (systemMailId.HasValue && await _dbContext.SystemMail.Get(world, systemMailId.Value) == null)
+            {
+                return await conn.ExecuteAsync(
+                    "DELETE FROM `mail` WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
+                    new { user, id }) == 1;
+            }
+            else
+            {
+                return await conn.ExecuteAsync(
+                    "UPDATE `mail` SET deleted = 1 WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
+                    new { user, id }) == 1;
+            }
         }
 
         public Task SaveChangesAsync()
