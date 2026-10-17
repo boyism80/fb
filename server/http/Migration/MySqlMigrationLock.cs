@@ -25,7 +25,11 @@ namespace Http.Migration
         {
             await EnsureDatabaseExistsAsync(connectionString, cancellationToken);
 
-            var connection = new MySqlConnection(connectionString);
+            var builder = new MySqlConnectionStringBuilder(connectionString)
+            {
+                AllowUserVariables = true,
+            };
+            var connection = new MySqlConnection(builder.ConnectionString);
             await connection.OpenAsync(cancellationToken);
 
             var lockName = BuildLockName(connectionString, scope);

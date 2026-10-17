@@ -47,7 +47,9 @@ namespace Http.Migration
             while (index < normalized.Length)
             {
                 while (index < normalized.Length && char.IsWhiteSpace(normalized[index]))
+                {
                     index++;
+                }
 
                 if (index + 1 < normalized.Length && normalized[index] == '-' && normalized[index + 1] == '-')
                 {
@@ -100,7 +102,7 @@ namespace Http.Migration
                 var current = normalized[i];
 
                 // DELIMITER directive must be detected at the beginning of a line.
-                if (atLineStart && IsBlank(builder)
+                if (atLineStart && IsTrivia(builder)
                     && TryReadDelimiterDirective(normalized, i, out var newDelimiter, out var nextIndex))
                 {
                     delimiter = newDelimiter;
@@ -178,14 +180,44 @@ namespace Http.Migration
             return statements;
         }
 
-        private static bool IsBlank(StringBuilder builder)
+        private static bool IsTrivia(StringBuilder builder)
         {
-            for (var i = 0; i < builder.Length; i++)
+            var text = builder.ToString();
+            var index = 0;
+            while (index < text.Length)
             {
-                if (!char.IsWhiteSpace(builder[i]))
+                while (index < text.Length && char.IsWhiteSpace(text[index]))
                 {
-                    return false;
+                    index++;
                 }
+
+                if (index >= text.Length)
+                    return true;
+
+                if (index + 1 < text.Length && text[index] == '-' && text[index + 1] == '-')
+                {
+                    var newline = text.IndexOf('\n', index);
+                    index = newline < 0 ? text.Length : newline + 1;
+                    continue;
+                }
+
+                if (text[index] == '#')
+                {
+                    var newline = text.IndexOf('\n', index);
+                    index = newline < 0 ? text.Length : newline + 1;
+                    continue;
+                }
+
+                if (index + 1 < text.Length && text[index] == '/' && text[index + 1] == '*')
+                {
+                    var end = text.IndexOf("*/", index + 2, StringComparison.Ordinal);
+                    if (end < 0)
+                        return false;
+                    index = end + 2;
+                    continue;
+                }
+
+                return false;
             }
 
             return true;
