@@ -1372,7 +1372,8 @@ enum class ERROR_CODE
     MARKETPLACE_REQUEST_EXPIRED = 78, 
     ACCOUNT_LOCKED = 79, 
     GROUP_FULL_MEMBER = 80, 
-    MAIL_BOX_FULL = 81
+    MAIL_BOX_FULL = 81, 
+    CLAN_FULL_MEMBER = 82
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1461,7 +1462,8 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(std::string_view k)
         { "MARKETPLACE_REQUEST_EXPIRED", ERROR_CODE::MARKETPLACE_REQUEST_EXPIRED }, 
         { "ACCOUNT_LOCKED", ERROR_CODE::ACCOUNT_LOCKED }, 
         { "GROUP_FULL_MEMBER", ERROR_CODE::GROUP_FULL_MEMBER }, 
-        { "MAIL_BOX_FULL", ERROR_CODE::MAIL_BOX_FULL }
+        { "MAIL_BOX_FULL", ERROR_CODE::MAIL_BOX_FULL }, 
+        { "CLAN_FULL_MEMBER", ERROR_CODE::CLAN_FULL_MEMBER }
     };
 
     auto k_str = std::string(k);
@@ -1558,7 +1560,8 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::MARKETPLACE_REQUEST_EXPIRED, "MARKETPLACE_REQUEST_EXPIRED" }, 
         { ERROR_CODE::ACCOUNT_LOCKED, "ACCOUNT_LOCKED" }, 
         { ERROR_CODE::GROUP_FULL_MEMBER, "GROUP_FULL_MEMBER" }, 
-        { ERROR_CODE::MAIL_BOX_FULL, "MAIL_BOX_FULL" }
+        { ERROR_CODE::MAIL_BOX_FULL, "MAIL_BOX_FULL" }, 
+        { ERROR_CODE::CLAN_FULL_MEMBER, "CLAN_FULL_MEMBER" }
     };
 
     auto i = enums.find(k);
@@ -3029,6 +3032,7 @@ public:
     inline static const fb::model::enum_value::CLAN_ROLE& MINIMUM_KICK_PRIVILEGE = fb::model::enum_value::CLAN_ROLE::DEPUTY;
     inline static const fb::model::enum_value::CLAN_ROLE& MINIMUM_CHANGE_ROLE_PRIVILEGE = fb::model::enum_value::CLAN_ROLE::DEPUTY;
     inline static const fb::model::enum_value::CLAN_ROLE& MINIMUM_CHANGE_TITLE_PRIVILEGE = fb::model::enum_value::CLAN_ROLE::MASTER;
+    inline static constexpr const uint8_t MAX_MEMBER = 100;
 
 private:
     clan() = default;
@@ -3253,6 +3257,7 @@ public:
     inline static constexpr const char* MESSAGE_CLAN_NOT_ENEMY = "적대 관계가 아닌 문파입니다.";
     inline static constexpr const char* MESSAGE_CLAN_TARGET_NOT_FOUND = "대상 문파를 찾을 수 없습니다.";
     inline static constexpr const char* MESSAGE_CLAN_NOT_JOINED = "문파에 가입하지 않았습니다.";
+    inline static constexpr const char* MESSAGE_CLAN_FULL_MEMBER = "문파 인원이 가득 찼습니다.";
     inline static constexpr const char* MESSAGE_WHISPER_DISABLED_MINE = "당신은 귓속말 거부 상태입니다.";
     inline static constexpr const char* MESSAGE_WHISPER_DISABLED_TARGET = "{}님은 귓속말 거부 상태입니다.";
     inline static constexpr const char* MESSAGE_WHISPER_DISABLED_AREA = "귓속말을 할 수 없는 지역입니다.";
@@ -3993,6 +3998,8 @@ inline void enum_map<fb::model::enum_value::ERROR_CODE>(lua_State* lua)
     lua_setfield(lua, -2, "GROUP_FULL_MEMBER");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::MAIL_BOX_FULL));
     lua_setfield(lua, -2, "MAIL_BOX_FULL");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::CLAN_FULL_MEMBER));
+    lua_setfield(lua, -2, "CLAN_FULL_MEMBER");
     lua_setglobal(lua, "ERROR_CODE");
 }
 
@@ -4625,6 +4632,8 @@ inline void const_map<fb::model::const_value::clan>(lua_State* lua)
     lua_getfield(lua, -1, "MASTER");
     lua_remove(lua, -2);
     lua_setfield(lua, -2, "MINIMUM_CHANGE_TITLE_PRIVILEGE");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::clan::MAX_MEMBER));
+    lua_setfield(lua, -2, "MAX_MEMBER");
 }
 
 template <>
@@ -4929,6 +4938,8 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_CLAN_TARGET_NOT_FOUND");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CLAN_NOT_JOINED).c_str());
     lua_setfield(lua, -2, "MESSAGE_CLAN_NOT_JOINED");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CLAN_FULL_MEMBER).c_str());
+    lua_setfield(lua, -2, "MESSAGE_CLAN_FULL_MEMBER");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_WHISPER_DISABLED_MINE).c_str());
     lua_setfield(lua, -2, "MESSAGE_WHISPER_DISABLED_MINE");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_WHISPER_DISABLED_TARGET).c_str());

@@ -100,6 +100,9 @@ async::task<void> clan::container::on_error(uint32_t error)
     case ERROR_CODE::CLAN_NAME_ALREADY_EXISTS:
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_NAME_ALREADY_EXISTS));
 
+    case ERROR_CODE::CLAN_FULL_MEMBER:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_FULL_MEMBER));
+
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }

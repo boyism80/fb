@@ -534,7 +534,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "GROUP_FULL_MEMBER")]
         GroupFullMember = 80, 
         [EnumMember(Value = "MAIL_BOX_FULL")]
-        MailBoxFull = 81
+        MailBoxFull = 81, 
+        [EnumMember(Value = "CLAN_FULL_MEMBER")]
+        ClanFullMember = 82
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1031,6 +1033,7 @@ namespace Fb.Model.ConstValue
         public static readonly Fb.Model.EnumValue.ClanRole MinimumKickPrivilege = ClanRole.Deputy;
         public static readonly Fb.Model.EnumValue.ClanRole MinimumChangeRolePrivilege = ClanRole.Deputy;
         public static readonly Fb.Model.EnumValue.ClanRole MinimumChangeTitlePrivilege = ClanRole.Master;
+        public const byte MaxMember = 100;
     }
 
     public static class DeathPenalty
@@ -1192,6 +1195,7 @@ namespace Fb.Model.ConstValue
         public const string MessageClanNotEnemy = "적대 관계가 아닌 문파입니다.";
         public const string MessageClanTargetNotFound = "대상 문파를 찾을 수 없습니다.";
         public const string MessageClanNotJoined = "문파에 가입하지 않았습니다.";
+        public const string MessageClanFullMember = "문파 인원이 가득 찼습니다.";
         public const string MessageWhisperDisabledMine = "당신은 귓속말 거부 상태입니다.";
         public const string MessageWhisperDisabledTarget = "{}님은 귓속말 거부 상태입니다.";
         public const string MessageWhisperDisabledArea = "귓속말을 할 수 없는 지역입니다.";

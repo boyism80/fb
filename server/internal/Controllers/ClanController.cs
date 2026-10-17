@@ -540,6 +540,10 @@ namespace Internal.Controllers
                 if (inviterMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumInvitePrivilege)
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
 
+                var members = await _dbContext.ClanMember.Get(world, clan.Id);
+                if (members.Count() >= Fb.Model.ConstValue.Clan.MaxMember)
+                    throw new LogicException(ErrorCode.ClanFullMember);
+
                 inviteeSync.Clan = clan.Id;
                 _dbContext.CharacterRealtimeState.Set(world, inviteeSync);
                 await _dbContext.CharacterRealtimeState.SaveChangesAsync();
