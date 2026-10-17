@@ -44,7 +44,9 @@ namespace MapEditor.Mcp
             {
                 _editor.McpLog.Insert(0, $"{DateTime.Now:HH:mm:ss} {name}");
                 while (_editor.McpLog.Count > 200)
+                {
                     _editor.McpLog.RemoveAt(_editor.McpLog.Count - 1);
+                }
 
                 if (write && _editor.McpAllowWrite == false)
                     throw new McpException("Write tools are disabled. Enable 'MCP 쓰기 허용' in the editor.");

@@ -146,7 +146,9 @@ namespace AdminTool.Services
 
             var normalized = path.Trim().Replace('\\', '/');
             while (normalized.StartsWith('/'))
+            {
                 normalized = normalized[1..];
+            }
             if (normalized.StartsWith("scripts/", StringComparison.OrdinalIgnoreCase))
                 normalized = normalized["scripts/".Length..];
             return normalized;

@@ -2016,12 +2016,16 @@ namespace Runner.ViewModel
             var usedIds = Game.Select(g => g.ID).ToHashSet();
             var id = 200;
             while (usedIds.Contains(id))
+            {
                 id++;
+            }
 
             var usedPorts = Game.Select(g => g.Port).ToHashSet();
             var port = (ushort)3100;
             while (usedPorts.Contains(port))
+            {
                 port++;
+            }
 
             Game.Add(new GameSetting(new Model.GameSetting
             {

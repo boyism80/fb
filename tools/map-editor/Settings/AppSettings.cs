@@ -62,7 +62,9 @@ namespace MapEditor.Settings
             {
                 var dir = new DirectoryInfo(AppContext.BaseDirectory);
                 while (dir != null && File.Exists(Path.Combine(dir.FullName, "fb.sln")) == false)
+                {
                     dir = dir.Parent;
+                }
                 settings.Root = dir?.FullName ?? AppContext.BaseDirectory;
             }
             else
