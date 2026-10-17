@@ -28,6 +28,7 @@ local MSG_MARRY_OK            = "님과 결혼했습니다."
 local MSG_REJECTED            = "님이 거절하셨습니다."
 local MSG_DIVORCE_ONLY        = "결혼을 한 사람만이 이혼을 할 수 있습니다."
 local MSG_DIVORCE_OK          = "이혼이 완료되었습니다. 7일 후 재혼이 가능합니다."
+local MSG_DIVORCE_AWAY        = "배우자와 같은 곳에 있어야 이혼할 수 있습니다."
 local MSG_CALLER_NOT_MARRIED  = "결혼하지 않아 사용할 수 없습니다."
 local MSG_SPOUSE_PREFIX       = "배우자: "
 local MSG_ASKING              = "에게 의사를 묻고 있습니다."
@@ -659,6 +660,76 @@ test_suite {
                 return false
             end
             progress(c, "D1 PASSED")
+            return true
+        end,
+
+        -- D1b: divorce is refused while the spouse is on another map
+        function(ctx)
+            local b = ctx:bot(1)
+            progress(b, "D1b: SPOUSE MOVES AWAY")
+            b:map_move(OFF_MAP, 5, 5, g_suite_slot)
+            return true
+        end,
+
+        {
+            parallel = {
+                [0] = {
+                    function(ctx)
+                        local a = ctx:bot(0)
+                        progress(a, "D1b: DIVORCE SPOUSE AWAY (requester)")
+                        g_parallel_msg = nil
+                        local ok, err = divorce_select(a)
+                        if ok == false then
+                            progress(a, "FAILED: " .. tostring(err))
+                            return false
+                        end
+                        local packet = divorce_wait_result(a)
+                        g_parallel_msg = packet and packet.message or nil
+                        if packet ~= nil then
+                            dismiss_normal(a)
+                        end
+                        return true
+                    end,
+                },
+                [1] = {
+                    function(ctx)
+                        local b = ctx:bot(1)
+                        progress(b, "D1b: DIVORCE SPOUSE AWAY (spouse)")
+                        g_partner_msg = nil
+                        local packet = wait_menu(b)
+                        if packet == nil then
+                            progress(b, "FAILED: menu missing")
+                            return false
+                        end
+                        packet = reply_menu_expect_normal(b, CONFIRM_YES)
+                        g_partner_msg = packet and packet.message or nil
+                        if packet ~= nil then
+                            dismiss_normal(b)
+                        end
+                        return true
+                    end,
+                },
+            },
+        },
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+            restore_home(b, 1)
+            if g_parallel_msg == nil or g_parallel_msg:find(MSG_DIVORCE_AWAY, 1, true) == nil then
+                progress(a, "FAILED: D1b requester msg=" .. tostring(g_parallel_msg))
+                return false
+            end
+            if g_partner_msg == nil or g_partner_msg:find(MSG_DIVORCE_AWAY, 1, true) == nil then
+                progress(b, "FAILED: D1b spouse msg=" .. tostring(g_partner_msg))
+                return false
+            end
+            local ok, err = assert_spouse_info(a, b:name())
+            if ok == false then
+                progress(a, "FAILED: D1b still married " .. tostring(err))
+                return false
+            end
+            progress(a, "D1b PASSED")
             return true
         end,
 

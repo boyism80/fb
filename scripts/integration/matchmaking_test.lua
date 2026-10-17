@@ -481,6 +481,9 @@ test_suite {
                 return abort_remaining(ctx:bot(0), "FAILED: MATCH 2 FINISH")
             end
 
+            -- The return home reconnects E as a new bot, so the earlier handle is stale.
+            e = ctx:bot(4)
+
             -- E owns no castle, so the transfer login back home strips the sword after it lands.
             progress(e, "STEP 7-1: E LOSES THE CLAN SWORD BACK HOME")
             local stripped = false
