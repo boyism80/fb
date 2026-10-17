@@ -108,6 +108,7 @@ lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& th
     }
 
     entity_ptr loaded;
+    auto       failed = false;
     try
     {
         loaded = co_await this->fetch(id);
@@ -116,7 +117,7 @@ lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& th
     {
         this->end_fetch(id);
         fb::logger::warn("lazy_container fetch failed (id: {}): {}", id, e.what());
-        co_return guard{};
+        failed = true;
     }
     catch (...)
     {
@@ -125,6 +126,8 @@ lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& th
     }
 
     co_await thread_ref.switching();
+    if (failed)
+        co_return guard{};
 
     // A missing row is not stored. The next lookup fetches again.
     if (loaded == nullptr)

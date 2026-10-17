@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <coroutine>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -35,6 +36,10 @@
 namespace fb {
 
 class thread_container;
+class thread_switch_awaiter;
+
+template <typename PivotT>
+class pivot_switch_awaiter;
 
 class thread : public fb::lua::luable
 {
@@ -42,6 +47,10 @@ public:
     LUA_PROTOTYPE
 
     friend class thread_container;
+    friend class thread_switch_awaiter;
+
+    template <typename PivotT>
+    friend class pivot_switch_awaiter;
 
     struct retry_exception : std::exception
     {
@@ -257,10 +266,10 @@ public:
         return promise->task();
     }
 
-    [[nodiscard]] async::task<void> dispatch(handle_func_type<void>&& fn, async::propagation::token context = {});
-    [[nodiscard]] async::task<void> switching();
-    size_t                          queue_size() const;
-    std::string                     to_string() const;
+    [[nodiscard]] async::task<void>     dispatch(handle_func_type<void>&& fn, async::propagation::token context = {});
+    [[nodiscard]] thread_switch_awaiter switching();
+    size_t                              queue_size() const;
+    std::string                         to_string() const;
 };
 
 template <typename T>
@@ -333,6 +342,23 @@ public:
     explicit builder(thread& owner) :
         _thread(owner)
     { }
+};
+
+// An awaiter, not a task: a task wrapper can finish on the target thread before the caller awaits it,
+// and then the caller continues on its own thread.
+class thread_switch_awaiter
+{
+private:
+    fb::thread& _target;
+
+public:
+    explicit thread_switch_awaiter(fb::thread& target) noexcept :
+        _target(target)
+    { }
+
+    bool await_ready() const noexcept;
+    bool await_suspend(std::coroutine_handle<> handle);
+    void await_resume() const noexcept;
 };
 
 } // namespace fb

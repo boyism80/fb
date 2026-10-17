@@ -1285,9 +1285,9 @@ void root::revoke(context& ctx)
     }
 }
 
-async::task<void> fb::lua::context::switching()
+fb::thread_switch_awaiter fb::lua::context::switching()
 {
-    co_await this->_initial_thread.switching();
+    return this->_initial_thread.switching();
 }
 
 fb::thread& fb::lua::root::initial_thread()

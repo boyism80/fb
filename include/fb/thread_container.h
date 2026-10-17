@@ -9,6 +9,7 @@
 
 #include <boost/asio.hpp>
 
+#include <coroutine>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -24,6 +25,83 @@
 namespace fb {
 
 class server;
+
+// Resumes on the pivot's thread, following the pivot if it moves while the hop is queued.
+template <typename PivotT>
+class pivot_switch_awaiter
+{
+    static_assert(std::is_base_of_v<thread_switchable, PivotT>, "PivotT must be a thread_switchable");
+
+private:
+    // A pivot that keeps changing threads would otherwise chain hops forever.
+    static constexpr size_t MAX_PIVOT_HOPS = 8;
+
+    std::weak_ptr<PivotT> _pivot;
+    const char*           _error = nullptr;
+
+public:
+    explicit pivot_switch_awaiter(std::weak_ptr<PivotT> pivot) :
+        _pivot(std::move(pivot))
+    { }
+
+    bool await_ready() const
+    {
+        return this->target()->id() == std::this_thread::get_id();
+    }
+
+    void await_suspend(std::coroutine_handle<> handle)
+    {
+        this->hop(handle, this->target(), 0);
+    }
+
+    void await_resume() const
+    {
+        if (this->_error != nullptr)
+            throw std::runtime_error(this->_error);
+    }
+
+private:
+    fb::thread* target() const
+    {
+        auto shared = this->_pivot.lock();
+        if (shared == nullptr)
+            throw std::runtime_error("pivot object is expired");
+
+        auto thread = shared->thread();
+        if (thread == nullptr)
+            throw std::runtime_error("no matched thread");
+
+        return thread;
+    }
+
+    void hop(std::coroutine_handle<> handle, fb::thread* target, size_t hops)
+    {
+        target->push([this, handle, target, hops]() {
+            auto shared = this->_pivot.lock();
+            auto moved  = shared != nullptr ? shared->thread() : nullptr;
+            if (shared == nullptr)
+            {
+                this->_error = "pivot object is expired";
+            }
+            else if (moved == nullptr)
+            {
+                this->_error = "no matched thread";
+            }
+            else if (moved != target)
+            {
+                if (hops < MAX_PIVOT_HOPS)
+                {
+                    this->hop(handle, moved, hops + 1);
+                    return;
+                }
+
+                this->_error = "pivot moved too many times";
+            }
+
+            handle.resume();
+        });
+    }
+};
 
 class thread_container
 {
@@ -72,16 +150,9 @@ public:
         return builder<T, PivotT>(*this, std::move(pivot));
     }
 
-    template <typename PivotT> [[nodiscard]] async::task<void> switching(std::weak_ptr<PivotT> pivot)
+    template <typename PivotT> [[nodiscard]] pivot_switch_awaiter<PivotT> switching(std::weak_ptr<PivotT> pivot)
     {
-        static_assert(std::is_base_of_v<thread_switchable, PivotT>, "PivotT must be a thread_switchable");
-
-        auto builder = this->template new_builder<void, PivotT>(std::move(pivot));
-        builder.func = [](auto&) -> async::task<void> {
-            co_return;
-        };
-        builder.context = execution_context::token();
-        co_return co_await builder.dispatch();
+        return pivot_switch_awaiter<PivotT>(std::move(pivot));
     }
 
     void        settimer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,

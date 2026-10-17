@@ -347,32 +347,26 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propa
     return promise->task();
 }
 
-async::task<void> fb::thread::switching()
+fb::thread_switch_awaiter fb::thread::switching()
 {
-    struct awaiter
-    {
-        fb::thread& target;
-
-        bool await_ready() const noexcept
-        {
-            return target.id() == std::this_thread::get_id();
-        }
-
-        // The resume is queued only after this coroutine has suspended, so the target thread cannot finish first.
-        bool await_suspend(std::coroutine_handle<> handle)
-        {
-            auto fn = std::function<void()>([handle]() {
-                handle.resume();
-            });
-            return target.try_push(fn);
-        }
-
-        void await_resume() const noexcept
-        { }
-    };
-
-    co_await awaiter{*this};
+    return fb::thread_switch_awaiter(*this);
 }
+
+bool fb::thread_switch_awaiter::await_ready() const noexcept
+{
+    return this->_target.id() == std::this_thread::get_id();
+}
+
+bool fb::thread_switch_awaiter::await_suspend(std::coroutine_handle<> handle)
+{
+    auto fn = std::function<void()>([handle]() {
+        handle.resume();
+    });
+    return this->_target.try_push(fn);
+}
+
+void fb::thread_switch_awaiter::await_resume() const noexcept
+{ }
 
 std::thread::id fb::thread::id() const
 {

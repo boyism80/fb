@@ -52,6 +52,7 @@ extern "C"
 namespace fb {
 
 class thread;
+class thread_switch_awaiter;
 class thread_switchable;
 class async_executor;
 
@@ -378,15 +379,15 @@ public:
         return this->pushinteger(static_cast<lua_Integer>(value));
     }
 
-    std::string       get_type(int offset);
-    std::string       metatable(int offset);
-    std::string       basetable(std::string_view metaname);
-    std::string       tostring(int offset, std::string_view default_value = "");
-    async::task<void> switching();
-    int               tointeger(int offset, int default_value = 0);
-    lua_Integer       tonumber(int offset, lua_Integer default_value = 0);
-    uint64_t          touint64(int offset, uint64_t default_value = 0);
-    int64_t           toint64(int offset, int64_t default_value = 0);
+    std::string               get_type(int offset);
+    std::string               metatable(int offset);
+    std::string               basetable(std::string_view metaname);
+    std::string               tostring(int offset, std::string_view default_value = "");
+    fb::thread_switch_awaiter switching();
+    int                       tointeger(int offset, int default_value = 0);
+    lua_Integer               tonumber(int offset, lua_Integer default_value = 0);
+    uint64_t                  touint64(int offset, uint64_t default_value = 0);
+    int64_t                   toint64(int offset, int64_t default_value = 0);
 
     template <typename T>
     T toenum(int offset, T default_value = (T)0)
