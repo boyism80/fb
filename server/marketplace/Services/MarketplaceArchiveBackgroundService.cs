@@ -10,6 +10,7 @@ namespace Marketplace.Services
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
+        private readonly HealthCheckService _health;
         private readonly ILogger<MarketplaceArchiveBackgroundService> _logger;
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(10);
@@ -31,15 +32,22 @@ namespace Marketplace.Services
         public MarketplaceArchiveBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
+            HealthCheckService health,
             ILogger<MarketplaceArchiveBackgroundService> logger)
         {
             _scopeFactory = scopeFactory;
             _redisService = redisService;
+            _health = health;
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            while (_health.IsReady == false && stoppingToken.IsCancellationRequested == false)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+            }
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try

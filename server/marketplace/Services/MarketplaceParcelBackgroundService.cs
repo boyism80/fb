@@ -1,8 +1,11 @@
+using Http.Service;
+
 namespace Marketplace.Services
 {
     public class MarketplaceParcelBackgroundService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly HealthCheckService _health;
         private readonly ILogger<MarketplaceParcelBackgroundService> _logger;
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(30);
@@ -12,14 +15,21 @@ namespace Marketplace.Services
 
         public MarketplaceParcelBackgroundService(
             IServiceScopeFactory scopeFactory,
+            HealthCheckService health,
             ILogger<MarketplaceParcelBackgroundService> logger)
         {
             _scopeFactory = scopeFactory;
+            _health = health;
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            while (_health.IsReady == false && stoppingToken.IsCancellationRequested == false)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+            }
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
