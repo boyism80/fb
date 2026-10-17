@@ -23,7 +23,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `group`
-                WHERE `id` = {key.Id} AND `deleted` = 0
+                WHERE `id` = {key.Id}
                 LIMIT 1;
                 """;
         }
@@ -35,13 +35,13 @@ namespace Http.Reepository
 
         protected override string OnUpsert(Group value)
         {
+            // `revision` must be assigned last: each assignment sees the columns already updated before it.
             var sql = $"""
                 INSERT INTO `group` (
                     `id`,
                     `master`,
                     `members`,
                     `revision`,
-                    `deleted`,
                     `created_date`,
                     `updated_date`)
                 VALUES (
@@ -49,14 +49,12 @@ namespace Http.Reepository
                     {value.Master.Escape()},
                     {JsonConvert.SerializeObject(value.Members).Escape()},
                     {value.Revision.Escape()},
-                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
-                ON DUPLICATE KEY UPDATE 
-                    `members`=VALUES(`members`),
-                    `revision`=VALUES(`revision`),
-                    `deleted` = 0,
-                    `updated_date`=VALUES(`updated_date`);
+                ON DUPLICATE KEY UPDATE
+                    `members` = IF(VALUES(`revision`) > `revision`, VALUES(`members`), `members`),
+                    `updated_date` = IF(VALUES(`revision`) > `revision`, VALUES(`updated_date`), `updated_date`),
+                    `revision` = GREATEST(`revision`, VALUES(`revision`));
                 """;
 
             return sql;
@@ -65,8 +63,8 @@ namespace Http.Reepository
         protected override string OnDelete(GroupKey key)
         {
             return $"""
-                UPDATE `group` SET `deleted` = 1, `updated_date` = UTC_TIMESTAMP(3)
-                WHERE `id` = {key.Id.Escape()} AND `deleted` = 0;
+                DELETE FROM `group`
+                WHERE `id` = {key.Id.Escape()};
                 """;
         }
 

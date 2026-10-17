@@ -1957,7 +1957,6 @@
         }
     },
     "matchmaking": {
-        "replicas": 1,
         "port": {
             "cluster": 80
         }

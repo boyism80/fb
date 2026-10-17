@@ -124,6 +124,8 @@ module.exports = {
                 spec: {
                     selector: { matchLabels: appLabels },
                     replicas: 1,
+                    // Two consumers on one write-back queue run full-row upserts out of order.
+                    strategy: { type: "Recreate" },
                     template: {
                         metadata: { labels: appLabels },
                         spec: {

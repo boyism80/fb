@@ -56,7 +56,9 @@ module.exports = {
             metadata: { name: "matchmaking", namespace: namespace.metadata.name },
             spec: {
                 selector: { matchLabels: appLabels },
-                replicas: matchmakingConf.replicas,
+                // Queues and pending matches live in process memory, so two pods must never run at once.
+                replicas: 1,
+                strategy: { type: "Recreate" },
                 template: {
                     metadata: { labels: appLabels },
                     spec: {

@@ -5,6 +5,9 @@ metadata:
   namespace: fb
 spec:
   replicas: 1
+  # Queues and pending matches live in process memory, so two pods must never run at once.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: matchmaking
