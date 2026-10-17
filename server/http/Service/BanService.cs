@@ -71,6 +71,7 @@ namespace Http.Service
                 Success = true,
                 Error = ErrorCode.None,
                 UserId = userId,
+                World = world,
                 ExpireDate = expireDate
             };
         }
@@ -112,7 +113,8 @@ namespace Http.Service
             {
                 Success = true,
                 Error = ErrorCode.None,
-                UserId = userId
+                UserId = userId,
+                World = world
             };
         }
 

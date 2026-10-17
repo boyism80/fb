@@ -2,6 +2,7 @@
 #include <fb/encoding.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <fb/model/datetime.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <macro.h>
 
@@ -109,7 +110,8 @@ std::string character::container::build_ban_message(std::string_view            
 
     ban_message += '\n';
     if (expire_date.has_value())
-        ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_EXPIRE_DATE), expire_date.value());
+        ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_EXPIRE_DATE),
+                                   fb::model::datetime(expire_date.value()).to_local().to_string());
     else
         ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
 

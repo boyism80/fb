@@ -3,6 +3,7 @@
 #include <fb/encoding.h>
 #include <fb/logger.h>
 #include <fb/login/exception.h>
+#include <fb/model/datetime.h>
 
 #include <json/json.h>
 
@@ -202,7 +203,8 @@ std::string login<V>::build_ban_message(std::string_view reason, const std::opti
 
     ban_message += '\n';
     if (expire_date.has_value())
-        ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_EXPIRE_DATE), expire_date.value());
+        ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_EXPIRE_DATE),
+                                   fb::model::datetime(expire_date.value()).to_local().to_string());
     else
         ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
 
