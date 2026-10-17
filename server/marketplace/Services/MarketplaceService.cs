@@ -389,7 +389,7 @@ public class MarketplaceService
             await conn.OpenAsync();
             await using var transaction = await conn.BeginTransactionAsync();
 
-            // Rows held by a purchase in progress are skipped; that purchase settles them on its own.
+            // A purchase holds its row. Wait and retry so a rolled-back purchase is still cleared.
             var listings = (await conn.QueryAsync<MarketplaceListing>($@"
                 SELECT * FROM `marketplace_listing`
                 WHERE `status` = {ListingState.ACTIVE.Escape()}
@@ -398,8 +398,15 @@ public class MarketplaceService
                 FOR UPDATE SKIP LOCKED", null, transaction)).ToList();
             if (listings.Count == 0)
             {
+                var remaining = await conn.ExecuteScalarAsync<long>($@"
+                    SELECT COUNT(*) FROM `marketplace_listing`
+                    WHERE `status` = {ListingState.ACTIVE.Escape()}", null, transaction);
                 await transaction.CommitAsync();
-                break;
+                if (remaining == 0)
+                    break;
+
+                await Task.Delay(TimeSpan.FromMilliseconds(200));
+                continue;
             }
 
             var parameters = new DynamicParameters();
@@ -592,15 +599,10 @@ public class MarketplaceService
                 throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
             }
 
-            // Get item name for sale message
             var itemName = "unknown item name";
-            if (Table.Item.TryGetValue(listing.ItemModel, out var model))
-            {
-                var itemModel = Table.Item[listing.ItemModel];
+            if (Table.Item.TryGetValue(listing.ItemModel, out var itemModel))
                 itemName = itemModel.Name;
-            }
 
-            // Send seller revenue via storage_box (full price, no fees deducted)
             var saleParcel = new MarketplaceParcel
             {
                 ExternalRef = $"marketplace:sale:{purchaseId}",
@@ -612,7 +614,6 @@ public class MarketplaceService
             };
             await _dbContext.MarketplaceParcel.CreateAsync(saleParcel, transaction);
 
-            // Prepare buyer attachments (item + refund if any) - all in one storage box
             var buyerAttachments = new List<Fb.Model.Dsl>
             {
                 new Fb.Model.Dsl.Item
@@ -626,15 +627,11 @@ public class MarketplaceService
                 }.ToDSL()
             };
 
-            // Add refund amount if there's a discrepancy
             if (refundAmount > 0)
             {
                 buyerAttachments.Add(new Fb.Model.Dsl.Money { Value = refundAmount }.ToDSL());
             }
 
-            // Get item name for purchase message (reuse from sale message)
-            // Send purchased item and refund (if any) to buyer via storage_box
-            // Use different message if refund is included
             string buyerTitle;
             string buyerMessage;
             if (refundAmount > 0)
