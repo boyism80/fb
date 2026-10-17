@@ -59,10 +59,12 @@ namespace Internal.Services
                 // These mails are expired or canceled and never sent again, so their received records no longer
                 // guard anything. They are purged before archiving: a failed purge leaves the mails in Redis to
                 // retry, while archiving first would drop them from the next run.
+                // Deleted mail rows go first: USP_MAIL_NEXT_ID turns them into received records when it renumbers.
                 var ids = mails.Select(m => m.Id).ToArray();
                 for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
                 {
                     await using var conn = dbContext.GetDataConnection(world, db);
+                    await conn.ExecuteAsync("DELETE FROM `mail` WHERE `system_mail_id` IN @ids AND `deleted` = 1", new { ids });
                     await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @ids", new { ids });
                 }
 
