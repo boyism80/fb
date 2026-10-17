@@ -140,12 +140,10 @@ async::task<void> clan::container::on_create(uint32_t                           
         {
             drop = true;
         }
-        else if (guard.value()->revision() > revision)
-        {
-            co_return;
-        }
         else
         {
+            // A later message may have loaded a newer clan first. Its state stays, but the master still
+            // has to be attached, which no later message does.
             if (guard.value()->revision() < revision)
             {
                 guard.value()->update(name, clan_title, members);
@@ -153,7 +151,7 @@ async::task<void> clan::container::on_create(uint32_t                           
             }
 
             clan_name = guard.value()->name();
-            if (master_name.has_value() == false)
+            if (master_name.has_value() == false || guard.value()->contains(master_name.value()) == false)
                 co_return;
 
             auto ch = this->_server.characters.find(master_name.value());

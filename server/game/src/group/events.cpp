@@ -92,12 +92,10 @@ async::task<void> group::container::on_create(std::string                     ta
         {
             drop = true;
         }
-        else if (guard.value()->revision() > revision)
-        {
-            co_return;
-        }
         else
         {
+            // A later message may have loaded a newer group first. Its state stays, but the members still
+            // in it have to be entered, which no later message does.
             if (guard.value()->revision() < revision)
             {
                 guard.value() = this->_server.make<fb::game::group>(group_id, master, member_names, revision);
@@ -106,8 +104,19 @@ async::task<void> group::container::on_create(std::string                     ta
             if (master_uid == 0)
                 co_return;
 
-            auto& group     = guard.value();
-            auto  master_ch = this->_server.characters.find(master_uid);
+            auto& group   = guard.value();
+            auto  current = group->members();
+            member_names.erase(std::remove_if(member_names.begin(),
+                                              member_names.end(),
+                                              [&current](const std::string& name) {
+                                                  return std::find(current.begin(), current.end(), name) ==
+                                                         current.end();
+                                              }),
+                               member_names.end());
+
+            auto master_ch = std::find(member_names.begin(), member_names.end(), master) != member_names.end()
+                                 ? this->_server.characters.find(master_uid)
+                                 : nullptr;
             if (master_ch != nullptr)
             {
                 group->enter(master_ch->template weak_from_this_as<character>());
