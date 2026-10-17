@@ -289,6 +289,8 @@ table SystemMail {
     contents: string;
     expire_date: string?;
     created_date: string;
+    /// Only characters created before this time receive the mail; empty means every character.
+    created_before: string?;
 }
 
 table StorageBox {
@@ -315,6 +317,8 @@ table SystemStorageBox {
     expired_date: string?;
     external_ref: string?;
     created_date: string;
+    /// Only characters created before this time receive the box; empty means every character.
+    created_before: string?;
 }
 
 /// Full save payload for a single character (world is supplied by the request).

@@ -21,6 +21,7 @@ struct system_storage_box
     std::optional<fb::model::datetime> expire_date;
     std::optional<std::string>         external_ref;
     fb::model::datetime                created_date;
+    std::optional<fb::model::datetime> created_before;
 
     [[nodiscard]] bool               expired(const fb::model::datetime& now) const;
     [[nodiscard]] bool               eligible_for(const character& ch) const;

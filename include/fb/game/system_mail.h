@@ -17,6 +17,7 @@ struct system_mail
     std::string                        contents;
     std::optional<fb::model::datetime> expire_date;
     fb::model::datetime                created_date;
+    std::optional<fb::model::datetime> created_before;
 };
 
 } // namespace fb::game

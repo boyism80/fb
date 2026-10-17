@@ -18,7 +18,14 @@ namespace Http.Model
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public List<Dsl> Attachments { get; set; } = new List<Dsl>();
+        public DateTime? ReserveDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
+        public bool IncludeNewCharacters { get; set; }
+        public bool Canceled { get; set; }
         public string ExternalRef { get; set; }
+
+        public DateTime SendDate => ReserveDate ?? CreatedDate;
+
+        public bool Active(DateTime now) => Canceled == false && SendDate <= now && (ExpiredDate == null || ExpiredDate > now);
     }
 }

@@ -65,15 +65,28 @@
                     </div>
                     <div class="system-mail-field">
                         <div class="system-mail-expire-row">
+                            <label for="reserveDate" class="system-mail-label">예약 발송 (선택)</label>
+                            <span class="system-mail-hint">비워두면 즉시 발송 · 예약 시각 10초 전까지 수정·취소 가능</span>
+                        </div>
+                        <InputDate Type="InputDateType.DateTimeLocal" id="reserveDate" class="form-control system-mail-input" @bind-Value="reserveDateValue" />
+                    </div>
+                    <div class="system-mail-field">
+                        <div class="system-mail-expire-row">
                             <label for="expireDate" class="system-mail-label">만료일 (선택)</label>
                             <span class="system-mail-hint">비워두면 만료 없음</span>
                         </div>
                         <InputDate id="expireDate" class="form-control system-mail-input" @bind-Value="expireDateValue" />
                     </div>
+                    <div class="system-mail-field">
+                        <label class="system-mail-label">
+                            <InputCheckbox @bind-Value="includeNewCharacters" />
+                            발송 이후 생성된 캐릭터도 받음
+                        </label>
+                    </div>
                 </div>
                 <div class="system-mail-actions">
                     <button type="button" class="system-mail-reset-btn" @onclick="ResetForm" disabled="@isProcessing">
-                        초기화
+                        @(editingMailId.HasValue ? "수정 취소" : "초기화")
                     </button>
                     <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
                         @if (isProcessing)
@@ -81,7 +94,7 @@
                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         }
                         <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
-                        전체 유저에게 발송
+                        @(editingMailId.HasValue ? $"M-{editingMailId} 수정 저장" : "전체 유저에게 발송")
                     </button>
                 </div>
             </EditForm>
@@ -116,6 +129,72 @@
             </div>
         </aside>
     </div>
+
+    <section class="system-mail-history">
+        <div class="system-mail-history-header">
+            <h2 class="system-mail-history-title">예약·발송 중 메일</h2>
+            <button type="button" class="system-mail-refresh-btn" @onclick="LoadStoredMails" aria-label="새로고침">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
+        </div>
+        @if (storedMails.Any())
+        {
+            <div class="system-mail-table-wrap">
+                <table class="system-mail-table">
+                    <thead>
+                        <tr>
+                            <th class="col-id">ID</th>
+                            <th>제목</th>
+                            <th class="col-date">발송 시각</th>
+                            <th class="col-date">만료일</th>
+                            <th class="col-target">신규 캐릭터</th>
+                            <th class="col-status">상태</th>
+                            <th class="col-status">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var mail in storedMails)
+                        {
+                            <tr>
+                                <td>M-@mail.Id</td>
+                                <td class="col-title">@mail.Title</td>
+                                <td>@FormatLocal(mail.SendDate)</td>
+                                <td>@(mail.ExpireDate.HasValue ? FormatLocal(mail.ExpireDate.Value) : "없음")</td>
+                                <td>@(mail.IncludeNewCharacters ? "포함" : "제외")</td>
+                                <td>
+                                    @if (mail.ReserveDate > DateTime.UtcNow)
+                                    {
+                                        <span class="system-mail-status-badge">예약</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="system-mail-status-badge">발송 중</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (Editable(mail))
+                                    {
+                                        <button type="button" class="system-mail-reset-btn" @onclick="() => BeginEdit(mail)" disabled="@isProcessing">수정</button>
+                                        <button type="button" class="system-mail-reset-btn" @onclick="() => CancelReservation(mail)" disabled="@isProcessing">예약 취소</button>
+                                    }
+                                    else
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="system-mail-table-wrap system-mail-empty">
+                예약되었거나 발송 중인 메일이 없습니다.
+            </div>
+        }
+    </section>
 
     <section class="system-mail-history">
         <div class="system-mail-history-header">
@@ -182,6 +261,11 @@
     private uint currentUserId = 0;
     private string currentUserName = string.Empty;
     private DateTime? expireDateValue = null;
+    private DateTime? reserveDateValue = null;
+    private bool includeNewCharacters = false;
+    private uint? editingMailId = null;
+    private uint? loadedWorld = null;
+    private List<Http.Model.SystemMail> storedMails = new();
     private List<AdminActivityEntry> mailHistory = new();
 
     protected override async Task OnInitializedAsync()
@@ -203,9 +287,106 @@
         await Task.CompletedTask;
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        if (selectedWorld == loadedWorld)
+            return;
+
+        loadedWorld = selectedWorld;
+        ResetForm();
+        await LoadStoredMails();
+    }
+
     private void LoadHistory()
     {
         mailHistory = ActivityLog.GetRecent("system_mail", 50).ToList();
+    }
+
+    private async Task LoadStoredMails()
+    {
+        if (!selectedWorld.HasValue)
+        {
+            storedMails = new();
+            return;
+        }
+
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        storedMails = await dbContext.SystemMail.GetAll(selectedWorld.Value);
+    }
+
+    private static string FormatLocal(DateTime utc)
+    {
+        return DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+    }
+
+    private static bool Editable(Http.Model.SystemMail mail)
+    {
+        return mail.ReserveDate > DateTime.UtcNow + Http.Reepository.SystemMailRepository.EditLeadTime;
+    }
+
+    private void BeginEdit(Http.Model.SystemMail mail)
+    {
+        editingMailId = mail.Id;
+        mailModel = new SystemMailModel { Title = mail.Title, Contents = mail.Contents };
+        reserveDateValue = mail.ReserveDate.HasValue ? DateTime.SpecifyKind(mail.ReserveDate.Value, DateTimeKind.Utc).ToLocalTime() : null;
+        expireDateValue = mail.ExpireDate.HasValue ? DateTime.SpecifyKind(mail.ExpireDate.Value, DateTimeKind.Utc).ToLocalTime() : null;
+        includeNewCharacters = mail.IncludeNewCharacters;
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private async Task CancelReservation(Http.Model.SystemMail mail)
+    {
+        if (!selectedWorld.HasValue)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            if (await dbContext.SystemMail.Cancel(selectedWorld.Value, mail.Id) == false)
+            {
+                errorMessage = "예약 시각 10초 전까지만 취소할 수 있습니다.";
+                return;
+            }
+
+            await LogService.WriteAsync("system_mail_cancel", new
+            {
+                action = "system_mail_cancel",
+                source = "admin",
+                actor = currentUserName,
+                world = selectedWorld.Value,
+                mail_id = mail.Id
+            });
+
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "system_mail",
+                Summary = $"예약 취소: {mail.Title}",
+                Detail = $"#{mail.Id}",
+                Actor = currentUserName,
+                Target = "전체",
+                Success = true
+            });
+            LoadHistory();
+
+            if (editingMailId == mail.Id)
+                ResetForm();
+            successMessage = $"예약 발송이 취소되었습니다. (Mail ID: {mail.Id})";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"예약 취소 중 오류: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            await LoadStoredMails();
+        }
     }
 
     private static string FormatMailId(string detail)
@@ -237,14 +418,74 @@
                 return;
             }
 
+            var reserveUtc = reserveDateValue?.ToUniversalTime();
+            var expireUtc = expireDateValue?.ToUniversalTime();
+            if (reserveUtc.HasValue && reserveUtc <= DateTime.UtcNow + Http.Reepository.SystemMailRepository.EditLeadTime)
+            {
+                errorMessage = "예약 시각은 지금부터 10초 이후여야 합니다.";
+                return;
+            }
+
+            if (expireUtc.HasValue && expireUtc <= (reserveUtc ?? DateTime.UtcNow))
+            {
+                errorMessage = "만료일은 발송 시각 이후여야 합니다.";
+                return;
+            }
+
             await using var scope = ScopeFactory.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+            if (editingMailId.HasValue)
+            {
+                var mailId = editingMailId.Value;
+                if (reserveUtc.HasValue == false)
+                {
+                    errorMessage = "예약 메일은 예약 시각을 비울 수 없습니다. 즉시 보내려면 예약을 취소하고 새로 작성하세요.";
+                    return;
+                }
+
+                if (await dbContext.SystemMail.Edit(selectedWorld.Value, mailId, mailModel.Title, mailModel.Contents, reserveUtc.Value, expireUtc, includeNewCharacters) == false)
+                {
+                    errorMessage = "예약 시각 10초 전까지만 수정할 수 있습니다.";
+                    return;
+                }
+
+                await LogService.WriteAsync("system_mail_edit", new
+                {
+                    action = "system_mail_edit",
+                    source = "admin",
+                    actor = currentUserName,
+                    world = selectedWorld.Value,
+                    mail_id = mailId,
+                    reserve_date = reserveUtc.Value.ToString("yyyy-MM-dd HH:mm:ss"),
+                    expire_date = expireUtc?.ToString("yyyy-MM-dd HH:mm:ss")
+                });
+
+                ActivityLog.Add(new AdminActivityEntry
+                {
+                    Category = "system_mail",
+                    Summary = $"수정: {mailModel.Title.Trim()}",
+                    Detail = $"#{mailId}",
+                    Actor = currentUserName,
+                    Target = "전체",
+                    Success = true
+                });
+                LoadHistory();
+
+                successMessage = $"예약 메일이 수정되었습니다. (Mail ID: {mailId})";
+                ResetForm();
+                await LoadStoredMails();
+                return;
+            }
+
             var systemMail = await dbContext.SystemMail.Write(
                 selectedWorld.Value,
                 currentUserId,
                 mailModel.Title,
                 mailModel.Contents,
-                expireDateValue);
+                reserveUtc,
+                expireUtc,
+                includeNewCharacters);
             await dbContext.SaveChangesAsync();
 
             await LogService.WriteAsync("system_mail_create", new
@@ -255,6 +496,7 @@
                 world = selectedWorld.Value,
                 mail_id = systemMail.Id,
                 sender_id = systemMail.Sender,
+                reserve_date = systemMail.ReserveDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 expire_date = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
             });
 
@@ -269,8 +511,11 @@
             });
             LoadHistory();
 
-            successMessage = $"시스템 메일이 발송되었습니다. (Mail ID: {systemMail.Id})";
+            successMessage = reserveUtc.HasValue
+                ? $"시스템 메일이 예약되었습니다. (Mail ID: {systemMail.Id})"
+                : $"시스템 메일이 발송되었습니다. (Mail ID: {systemMail.Id})";
             ResetForm();
+            await LoadStoredMails();
         }
         catch (Exception ex)
         {
@@ -296,6 +541,9 @@
     {
         mailModel = new SystemMailModel();
         expireDateValue = null;
+        reserveDateValue = null;
+        includeNewCharacters = false;
+        editingMailId = null;
     }
 
     private class SystemMailModel

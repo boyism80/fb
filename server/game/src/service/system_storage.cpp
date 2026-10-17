@@ -46,6 +46,9 @@ system_storage_box service::system_storage::from_system_storage_dto(const fb::pr
     if (dto.external_ref.has_value() && !dto.external_ref.value().empty())
         box.external_ref = dto.external_ref.value();
 
+    if (dto.created_before.has_value() && !dto.created_before.value().empty())
+        box.created_before = fb::model::datetime(dto.created_before.value());
+
     return box;
 }
 
@@ -188,7 +191,7 @@ async::task<void> service::system_storage::sync(character& ch)
 {
     const auto  world = ch.world();
     const auto  user  = ch.id;
-    const auto& url   = std::format("/storage/system/{}?offset=0", world);
+    const auto& url   = std::format("/storage/system/{}", world);
 
     auto weak = ch.weak_from_this_as<character>();
     try
@@ -405,22 +408,22 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
             continue;
         }
 
-        auto        max_box_id   = uint32_t{0};
         auto        new_box_seen = false;
-        const auto& fetch_url    = std::format("/storage/system/{}?offset={}", *world, this->_poll_offset);
+        const auto& fetch_url    = std::format("/storage/system/{}", *world);
 
+        // Internal returns every box that is sendable now. A reserved box becomes sendable later with an id
+        // lower than boxes already seen, so the list is replaced instead of read from an offset.
         try
         {
             auto&& resp = co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>("internal", fetch_url);
             if (resp.error == 0)
             {
+                auto fetched = std::vector<system_storage_box>{};
                 for (const auto& dto : resp.boxes)
                 {
                     auto box = from_system_storage_dto(dto);
                     if (box.expired(now))
                         continue;
-
-                    max_box_id = std::max(max_box_id, box.id);
 
                     const auto already_tracked = std::any_of(this->_pending_boxes.cbegin(),
                                                              this->_pending_boxes.cend(),
@@ -428,20 +431,17 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
                                                                  return existing.id == box.id;
                                                              });
                     if (!already_tracked)
-                    {
-                        this->_pending_boxes.push_back(std::move(box));
                         new_box_seen = true;
-                    }
+
+                    fetched.push_back(std::move(box));
                 }
+                this->_pending_boxes = std::move(fetched);
             }
         }
         catch (const std::exception& e)
         {
             fb::logger::warn("Failed to fetch system storage boxes: {}", e.what());
         }
-
-        if (max_box_id > 0)
-            this->_poll_offset = max_box_id + 1;
 
         auto joined = std::unordered_set<uint32_t>{};
         {

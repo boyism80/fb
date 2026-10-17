@@ -36,18 +36,33 @@ namespace Http.Reepository
                 new { externalRef });
 
             if (row != null)
+            {
                 Set(world, row);
+                return row;
+            }
 
-            return row;
+            // A resend after the box was archived must not create a second box.
+            return await conn.QueryFirstOrDefaultAsync<SystemStorageBox>(
+                """
+                SELECT * FROM `system_storage_box_archive`
+                WHERE `external_ref` = @externalRef
+                LIMIT 1;
+                """,
+                new { externalRef });
         }
 
-        public async Task<List<SystemStorageBox>> GetAll(uint world, uint offset = 0)
+        // Every box that is not archived yet, including reserved and canceled ones.
+        public async Task<List<SystemStorageBox>> GetAll(uint world)
         {
             var all = await base.GetAll(world, new SystemStorageBoxKey { Id = 0 });
+            return all.OrderByDescending(b => b.Id).ToList();
+        }
+
+        public async Task<List<SystemStorageBox>> GetActive(uint world)
+        {
             var now = DateTime.UtcNow;
-            return all
-                .Where(b => b.Id >= offset
-                            && (b.ExpiredDate == null || b.ExpiredDate > now))
+            var all = await base.GetAll(world, new SystemStorageBoxKey { Id = 0 });
+            return all.Where(b => b.Active(now))
                 .OrderByDescending(b => b.Id)
                 .ToList();
         }
@@ -83,7 +98,10 @@ namespace Http.Reepository
                     `title`,
                     `message`,
                     `attachments`,
+                    `reserve_date`,
                     `expired_date`,
+                    `include_new_characters`,
+                    `canceled`,
                     `external_ref`,
                     `deleted`,
                     `created_date`,
@@ -93,7 +111,10 @@ namespace Http.Reepository
                     {value.Title.Escape()},
                     {value.Message.Escape()},
                     {attachmentsJson.Escape()},
+                    {value.ReserveDate.Escape()},
                     {value.ExpiredDate.Escape()},
+                    {value.IncludeNewCharacters.Escape()},
+                    {value.Canceled.Escape()},
                     {value.ExternalRef.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
@@ -102,17 +123,83 @@ namespace Http.Reepository
                     `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
+                    `reserve_date`=VALUES(`reserve_date`),
                     `expired_date`=VALUES(`expired_date`),
+                    `include_new_characters`=VALUES(`include_new_characters`),
+                    `canceled`=VALUES(`canceled`),
                     `external_ref`=VALUES(`external_ref`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
+        }
+
+        protected override string OnDelete(SystemStorageBoxKey key)
+        {
+            return OnDeleteMany(new[] { key });
+        }
+
+        // Rows move to the archive through the write-back queue, after any upsert queued before them.
+        protected override string OnDeleteMany(IReadOnlyList<SystemStorageBoxKey> keys)
+        {
+            var ids = string.Join(", ", keys.Select(k => k.Id));
+            return $"""
+                INSERT IGNORE INTO `system_storage_box_archive` (
+                    `id`, `title`, `message`, `attachments`, `reserve_date`, `expired_date`,
+                    `include_new_characters`, `canceled`, `external_ref`, `created_date`, `updated_date`)
+                SELECT `id`, `title`, `message`, `attachments`, `reserve_date`, `expired_date`,
+                    `include_new_characters`, `canceled`, `external_ref`, `created_date`, `updated_date`
+                FROM `system_storage_box` WHERE `id` IN ({ids});
+                DELETE FROM `system_storage_box` WHERE `id` IN ({ids});
+                """;
+        }
+
+        // Returns false when the box is gone or its reservation is too close to edit.
+        public async Task<bool> Edit(uint world, uint id, string title, string message, List<Fb.Model.Dsl> attachments, DateTime reserveDate, DateTime? expireDate, bool includeNewCharacters)
+        {
+            var box = await Get(world, id);
+            var deadline = DateTime.UtcNow + SystemMailRepository.EditLeadTime;
+            if (box == null || box.Canceled || box.ReserveDate == null || box.ReserveDate <= deadline || reserveDate <= deadline)
+                return false;
+
+            box.Title = title;
+            box.Message = message;
+            box.Attachments = attachments;
+            box.ReserveDate = reserveDate;
+            box.ExpiredDate = expireDate;
+            box.IncludeNewCharacters = includeNewCharacters;
+            Set(world, box);
+            await SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> Cancel(uint world, uint id)
+        {
+            var box = await Get(world, id);
+            if (box == null || box.Canceled || box.ReserveDate == null || box.ReserveDate <= DateTime.UtcNow + SystemMailRepository.EditLeadTime)
+                return false;
+
+            box.Canceled = true;
+            Set(world, box);
+            Delete(world, (SystemStorageBoxKey)box);
+            await SaveChangesAsync();
+            return true;
+        }
+
+        public async Task Archive(uint world, IReadOnlyList<SystemStorageBox> boxes)
+        {
+            if (boxes.Count == 0)
+                return;
+
+            Delete(world, boxes);
+            await SaveChangesAsync();
         }
 
         public async Task<SystemStorageBox> Write(uint world,
             string title,
             string message,
             List<Fb.Model.Dsl> attachments,
+            DateTime? reserveDate,
             DateTime? expireDate,
+            bool includeNewCharacters,
             string externalRef)
         {
             if (!string.IsNullOrWhiteSpace(externalRef))
@@ -125,8 +212,8 @@ namespace Http.Reepository
             var attachmentsJson = JsonConvert.SerializeObject(attachments ?? new List<Fb.Model.Dsl>());
 
             var query = """
-                INSERT INTO system_storage_box (title, message, attachments, expired_date, external_ref, deleted, created_date, updated_date)
-                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @expireDate, @externalRef, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
+                INSERT INTO system_storage_box (title, message, attachments, reserve_date, expired_date, include_new_characters, canceled, external_ref, deleted, created_date, updated_date)
+                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @reserveDate, @expireDate, @includeNewCharacters, 0, @externalRef, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
                 SELECT LAST_INSERT_ID();
                 """;
 
@@ -136,20 +223,24 @@ namespace Http.Reepository
                 title,
                 message,
                 attachmentsJson,
+                reserveDate,
                 expireDate,
+                includeNewCharacters,
                 externalRef
             });
 
             var box = new SystemStorageBox
             {
-                Id           = id,
-                Title        = title,
-                Message      = message,
-                Attachments  = attachments ?? new List<Fb.Model.Dsl>(),
-                ExpiredDate  = expireDate,
-                ExternalRef  = externalRef,
-                CreatedDate  = DateTime.UtcNow,
-                UpdatedDate  = DateTime.UtcNow
+                Id                   = id,
+                Title                = title,
+                Message              = message,
+                Attachments          = attachments ?? new List<Fb.Model.Dsl>(),
+                ReserveDate          = reserveDate,
+                ExpiredDate          = expireDate,
+                IncludeNewCharacters = includeNewCharacters,
+                ExternalRef          = externalRef,
+                CreatedDate          = DateTime.UtcNow,
+                UpdatedDate          = DateTime.UtcNow
             };
 
             Set(world, box);

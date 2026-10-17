@@ -4036,7 +4036,8 @@ struct SystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TITLE = 8,
     VT_CONTENTS = 10,
     VT_EXPIRE_DATE = 12,
-    VT_CREATED_DATE = 14
+    VT_CREATED_DATE = 14,
+    VT_CREATED_BEFORE = 16
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -4056,6 +4057,9 @@ struct SystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *created_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CREATED_DATE);
   }
+  const ::flatbuffers::String *created_before() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CREATED_BEFORE);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -4068,6 +4072,8 @@ struct SystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(expire_date()) &&
            VerifyOffset(verifier, VT_CREATED_DATE) &&
            verifier.VerifyString(created_date()) &&
+           VerifyOffset(verifier, VT_CREATED_BEFORE) &&
+           verifier.VerifyString(created_before()) &&
            verifier.EndTable();
   }
 };
@@ -4094,6 +4100,9 @@ struct SystemMailBuilder {
   void add_created_date(::flatbuffers::Offset<::flatbuffers::String> created_date) {
     fbb_.AddOffset(SystemMail::VT_CREATED_DATE, created_date);
   }
+  void add_created_before(::flatbuffers::Offset<::flatbuffers::String> created_before) {
+    fbb_.AddOffset(SystemMail::VT_CREATED_BEFORE, created_before);
+  }
   explicit SystemMailBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4112,8 +4121,10 @@ inline ::flatbuffers::Offset<SystemMail> CreateSystemMail(
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expire_date = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> created_before = 0) {
   SystemMailBuilder builder_(_fbb);
+  builder_.add_created_before(created_before);
   builder_.add_created_date(created_date);
   builder_.add_expire_date(expire_date);
   builder_.add_contents(contents);
@@ -4130,11 +4141,13 @@ inline ::flatbuffers::Offset<SystemMail> CreateSystemMailDirect(
     const char *title = nullptr,
     const char *contents = nullptr,
     const char *expire_date = nullptr,
-    const char *created_date = nullptr) {
+    const char *created_date = nullptr,
+    const char *created_before = nullptr) {
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
   auto expire_date__ = expire_date ? _fbb.CreateString(expire_date) : 0;
   auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
+  auto created_before__ = created_before ? _fbb.CreateString(created_before) : 0;
   return fb::protocol::internal::raw::CreateSystemMail(
       _fbb,
       id,
@@ -4142,7 +4155,8 @@ inline ::flatbuffers::Offset<SystemMail> CreateSystemMailDirect(
       title__,
       contents__,
       expire_date__,
-      created_date__);
+      created_date__,
+      created_before__);
 }
 
 struct StorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -4347,7 +4361,8 @@ struct SystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ATTACHMENTS = 10,
     VT_EXPIRED_DATE = 12,
     VT_EXTERNAL_REF = 14,
-    VT_CREATED_DATE = 16
+    VT_CREATED_DATE = 16,
+    VT_CREATED_BEFORE = 18
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -4370,6 +4385,9 @@ struct SystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *created_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CREATED_DATE);
   }
+  const ::flatbuffers::String *created_before() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CREATED_BEFORE);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -4385,6 +4403,8 @@ struct SystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(external_ref()) &&
            VerifyOffset(verifier, VT_CREATED_DATE) &&
            verifier.VerifyString(created_date()) &&
+           VerifyOffset(verifier, VT_CREATED_BEFORE) &&
+           verifier.VerifyString(created_before()) &&
            verifier.EndTable();
   }
 };
@@ -4414,6 +4434,9 @@ struct SystemStorageBoxBuilder {
   void add_created_date(::flatbuffers::Offset<::flatbuffers::String> created_date) {
     fbb_.AddOffset(SystemStorageBox::VT_CREATED_DATE, created_date);
   }
+  void add_created_before(::flatbuffers::Offset<::flatbuffers::String> created_before) {
+    fbb_.AddOffset(SystemStorageBox::VT_CREATED_BEFORE, created_before);
+  }
   explicit SystemStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4433,8 +4456,10 @@ inline ::flatbuffers::Offset<SystemStorageBox> CreateSystemStorageBox(
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expired_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> external_ref = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> created_before = 0) {
   SystemStorageBoxBuilder builder_(_fbb);
+  builder_.add_created_before(created_before);
   builder_.add_created_date(created_date);
   builder_.add_external_ref(external_ref);
   builder_.add_expired_date(expired_date);
@@ -4453,13 +4478,15 @@ inline ::flatbuffers::Offset<SystemStorageBox> CreateSystemStorageBoxDirect(
     const char *attachments = nullptr,
     const char *expired_date = nullptr,
     const char *external_ref = nullptr,
-    const char *created_date = nullptr) {
+    const char *created_date = nullptr,
+    const char *created_before = nullptr) {
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto attachments__ = attachments ? _fbb.CreateString(attachments) : 0;
   auto expired_date__ = expired_date ? _fbb.CreateString(expired_date) : 0;
   auto external_ref__ = external_ref ? _fbb.CreateString(external_ref) : 0;
   auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
+  auto created_before__ = created_before ? _fbb.CreateString(created_before) : 0;
   return fb::protocol::internal::raw::CreateSystemStorageBox(
       _fbb,
       id,
@@ -4468,7 +4495,8 @@ inline ::flatbuffers::Offset<SystemStorageBox> CreateSystemStorageBoxDirect(
       attachments__,
       expired_date__,
       external_ref__,
-      created_date__);
+      created_date__,
+      created_before__);
 }
 
 struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

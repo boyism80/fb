@@ -78,6 +78,20 @@
                     <InputTextArea id="message" class="form-control items-textarea" rows="3" @bind-Value="model.Message" placeholder="유저에게 보낼 메시지" />
                     <ValidationMessage For="@(() => model.Message)" />
                 </div>
+                @if (model.IsGlobal)
+                {
+                    <div class="items-field items-col-4">
+                        <label for="reserveDate" class="items-label">예약 지급 (선택)</label>
+                        <InputDate Type="InputDateType.DateTimeLocal" id="reserveDate" class="form-control items-input" @bind-Value="model.ReserveDate" />
+                        <span class="items-field-hint">비워두면 즉시 지급 · 예약 시각 10초 전까지 수정·취소 가능</span>
+                    </div>
+                    <div class="items-field items-col-8">
+                        <label class="items-label">
+                            <InputCheckbox @bind-Value="model.IncludeNewCharacters" />
+                            지급 이후 생성된 캐릭터도 받음
+                        </label>
+                    </div>
+                }
                 <div class="items-field items-col-4">
                     <label for="expiredDate" class="items-label">만료일</label>
                     <InputDate id="expiredDate" class="form-control items-input" @bind-Value="model.ExpiredDate" />
@@ -161,7 +175,7 @@
             </div>
             <div class="items-form-actions">
                 <button type="button" class="items-reset-btn" @onclick="ResetForm" disabled="@isProcessing">
-                    초기화
+                    @(editingBoxId.HasValue ? "수정 취소" : "초기화")
                 </button>
                 <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
                     @if (isProcessing)
@@ -169,11 +183,69 @@
                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                     }
                     <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
-                    지급하기
+                    @(editingBoxId.HasValue ? $"#{editingBoxId} 수정 저장" : "지급하기")
                 </button>
             </div>
         </EditForm>
     </div>
+
+    <section class="items-log-card">
+        <div class="items-log-header">
+            <h2 class="items-log-title">예약·지급 중 전체 지급</h2>
+            <button type="button" class="items-log-refresh" @onclick="LoadStoredBoxes">
+                <span class="material-symbols-outlined">refresh</span>
+                <span>새로고침</span>
+            </button>
+        </div>
+        @if (storedBoxes.Any())
+        {
+            <div class="items-log-table-wrap">
+                <table class="items-log-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th class="col-detail">제목</th>
+                            <th class="col-date">지급 시각</th>
+                            <th class="col-date">만료일</th>
+                            <th>신규 캐릭터</th>
+                            <th class="col-status">상태</th>
+                            <th class="col-status">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var box in storedBoxes)
+                        {
+                            <tr>
+                                <td>#@box.Id</td>
+                                <td class="col-detail" title="@box.Title">@box.Title · 첨부 @(box.Attachments.Count)건</td>
+                                <td>@FormatLocal(box.SendDate)</td>
+                                <td>@(box.ExpiredDate.HasValue ? FormatLocal(box.ExpiredDate.Value) : "없음")</td>
+                                <td>@(box.IncludeNewCharacters ? "포함" : "제외")</td>
+                                <td>
+                                    <span class="items-status-badge">@(box.ReserveDate > DateTime.UtcNow ? "예약" : "지급 중")</span>
+                                </td>
+                                <td>
+                                    @if (Editable(box))
+                                    {
+                                        <button type="button" class="items-add-btn" @onclick="() => BeginEdit(box)" disabled="@isProcessing">수정</button>
+                                        <button type="button" class="items-add-btn" @onclick="() => CancelReservation(box)" disabled="@isProcessing">예약 취소</button>
+                                    }
+                                    else
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="items-log-empty">예약되었거나 지급 중인 전체 지급이 없습니다.</div>
+        }
+    </section>
 
     <section class="items-log-card">
         <div class="items-log-header">
@@ -244,12 +316,107 @@
     private long? moneyValue = null;
     private long? expValue = null;
 
+    private uint? editingBoxId = null;
+    private uint? loadedWorld = null;
+    private List<Http.Model.SystemStorageBox> storedBoxes = new();
+
     protected override void OnInitialized()
     {
         allItems = Table.Item.Values.ToList();
         model.ExpiredDate = DateTime.Today.AddDays(30);
         ApplyQueryParameters();
         LoadGrantHistory();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (selectedWorld == loadedWorld)
+            return;
+
+        loadedWorld = selectedWorld;
+        editingBoxId = null;
+        await LoadStoredBoxes();
+    }
+
+    private async Task LoadStoredBoxes()
+    {
+        if (!selectedWorld.HasValue)
+        {
+            storedBoxes = new();
+            return;
+        }
+
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        storedBoxes = await dbContext.SystemStorageBox.GetAll(selectedWorld.Value);
+    }
+
+    private static string FormatLocal(DateTime utc)
+    {
+        return DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+    }
+
+    private static bool Editable(Http.Model.SystemStorageBox box)
+    {
+        return box.ReserveDate > DateTime.UtcNow + Http.Reepository.SystemMailRepository.EditLeadTime;
+    }
+
+    private void BeginEdit(Http.Model.SystemStorageBox box)
+    {
+        ResetForm();
+        editingBoxId = box.Id;
+        model.IsGlobal = true;
+        model.Title = box.Title;
+        model.Message = box.Message;
+        model.Attachments = box.Attachments.ToList();
+        model.ReserveDate = box.ReserveDate.HasValue ? DateTime.SpecifyKind(box.ReserveDate.Value, DateTimeKind.Utc).ToLocalTime() : null;
+        model.ExpiredDate = box.ExpiredDate.HasValue ? DateTime.SpecifyKind(box.ExpiredDate.Value, DateTimeKind.Utc).ToLocalTime() : null;
+        model.IncludeNewCharacters = box.IncludeNewCharacters;
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private async Task CancelReservation(Http.Model.SystemStorageBox box)
+    {
+        if (!selectedWorld.HasValue)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            if (await dbContext.SystemStorageBox.Cancel(selectedWorld.Value, box.Id) == false)
+            {
+                errorMessage = "예약 시각 10초 전까지만 취소할 수 있습니다.";
+                return;
+            }
+
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "item_grant",
+                Summary = "전체 지급 예약 취소",
+                Detail = $"#{box.Id} · {box.Title}",
+                Target = "전체",
+                Success = true
+            });
+            LoadGrantHistory();
+
+            if (editingBoxId == box.Id)
+                ResetForm();
+            successMessage = $"예약 지급이 취소되었습니다. (System Storage ID: #{box.Id})";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"예약 취소 중 오류: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            await LoadStoredBoxes();
+        }
     }
 
     private void ApplyQueryParameters()
@@ -268,7 +435,15 @@
     {
         model.IsGlobal = isGlobal;
         if (isGlobal)
+        {
             model.UserName = null;
+        }
+        else
+        {
+            editingBoxId = null;
+            model.ReserveDate = null;
+            model.IncludeNewCharacters = false;
+        }
     }
 
     private void LoadGrantHistory()
@@ -507,25 +682,83 @@
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
             if (model.IsGlobal)
             {
-                var result = await storageService.CreateSystemStorageAsync(
-                    selectedWorld.Value,
-                    model.Title.Trim(),
-                    model.Message.Trim(),
-                    model.ExpiredDate?.ToUniversalTime(),
-                    model.Attachments);
-
-                var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
-                ActivityLog.Add(new AdminActivityEntry
+                var reserveUtc = model.ReserveDate?.ToUniversalTime();
+                var expireUtc = model.ExpiredDate?.ToUniversalTime();
+                if (reserveUtc.HasValue && reserveUtc <= DateTime.UtcNow + Http.Reepository.SystemMailRepository.EditLeadTime)
                 {
-                    Category = "item_grant",
-                    Summary = "전체 지급",
-                    Detail = detail,
-                    Target = "전체",
-                    Success = true
-                });
-                LoadGrantHistory();
+                    errorMessage = "예약 시각은 지금부터 10초 이후여야 합니다.";
+                    return;
+                }
 
-                successMessage = $"아이템 지급이 완료되었습니다. (System Storage ID: #{result.Id}, 전체 유저)";
+                if (expireUtc.HasValue && expireUtc <= (reserveUtc ?? DateTime.UtcNow))
+                {
+                    errorMessage = "만료일은 지급 시각 이후여야 합니다.";
+                    return;
+                }
+
+                if (editingBoxId.HasValue)
+                {
+                    var boxId = editingBoxId.Value;
+                    if (reserveUtc.HasValue == false)
+                    {
+                        errorMessage = "예약 지급은 예약 시각을 비울 수 없습니다. 즉시 지급하려면 예약을 취소하고 새로 지급하세요.";
+                        return;
+                    }
+
+                    var edited = await dbContext.SystemStorageBox.Edit(selectedWorld.Value,
+                        boxId,
+                        model.Title.Trim(),
+                        model.Message.Trim(),
+                        model.Attachments,
+                        reserveUtc.Value,
+                        expireUtc,
+                        model.IncludeNewCharacters);
+                    if (edited == false)
+                    {
+                        errorMessage = "예약 시각 10초 전까지만 수정할 수 있습니다.";
+                        return;
+                    }
+
+                    ActivityLog.Add(new AdminActivityEntry
+                    {
+                        Category = "item_grant",
+                        Summary = "전체 지급 예약 수정",
+                        Detail = $"#{boxId} · {model.Title} · 첨부 {model.Attachments.Count}건",
+                        Target = "전체",
+                        Success = true
+                    });
+                    LoadGrantHistory();
+
+                    successMessage = $"예약 지급이 수정되었습니다. (System Storage ID: #{boxId})";
+                }
+                else
+                {
+                    var result = await storageService.CreateSystemStorageAsync(
+                        selectedWorld.Value,
+                        model.Title.Trim(),
+                        model.Message.Trim(),
+                        expireUtc,
+                        model.Attachments,
+                        reserveDate: reserveUtc,
+                        includeNewCharacters: model.IncludeNewCharacters);
+
+                    var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
+                    ActivityLog.Add(new AdminActivityEntry
+                    {
+                        Category = "item_grant",
+                        Summary = reserveUtc.HasValue ? "전체 지급 예약" : "전체 지급",
+                        Detail = detail,
+                        Target = "전체",
+                        Success = true
+                    });
+                    LoadGrantHistory();
+
+                    successMessage = reserveUtc.HasValue
+                        ? $"아이템 지급이 예약되었습니다. (System Storage ID: #{result.Id}, 전체 유저)"
+                        : $"아이템 지급이 완료되었습니다. (System Storage ID: #{result.Id}, 전체 유저)";
+                }
+
+                await LoadStoredBoxes();
             }
             else
             {
@@ -583,6 +816,7 @@
     {
         model = new StoragePendingForm();
         model.ExpiredDate = DateTime.Today.AddDays(30);
+        editingBoxId = null;
         ClearItemSelection();
         moneyValue = null;
         expValue = null;
@@ -604,6 +838,10 @@
         public string UserName { get; set; }
 
         public DateTime? ExpiredDate { get; set; }
+
+        public DateTime? ReserveDate { get; set; }
+
+        public bool IncludeNewCharacters { get; set; }
 
         public List<Fb.Model.Dsl> Attachments { get; set; } = new();
     }

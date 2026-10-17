@@ -484,7 +484,7 @@ namespace Internal.Controllers
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
             var unsettledRequests = (await _dbContext.UnsettledRequest.Get(world, uid)).ToList();
             var friends = await _friendService.GetEntries(world, uid);
-            var activeSystemMailIds = (await _dbContext.SystemMail.GetAll(world)).Select(x => x.Id).ToHashSet();
+            var activeSystemMailIds = (await _dbContext.SystemMail.GetActive(world)).Select(x => x.Id).ToHashSet();
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
                 {

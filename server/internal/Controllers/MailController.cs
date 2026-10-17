@@ -181,6 +181,16 @@ namespace Internal.Controllers
                     };
                 }
 
+                var systemMail = await _dbContext.SystemMail.Get(request.World, request.SystemMailId);
+                if (systemMail == null || systemMail.Active(DateTime.UtcNow) == false)
+                {
+                    return new Response.SendSystemMail
+                    {
+                        Host  = request.Host,
+                        Error = (uint)ErrorCode.Unhandled
+                    };
+                }
+
                 var (written, failed) = await _dbContext.Mail.SendSystemMany(request.World,
                     request.SystemMailId,
                     request.Sender,

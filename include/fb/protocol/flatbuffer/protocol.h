@@ -2182,20 +2182,21 @@ public:
     std::string contents;
     std::optional<std::string> expire_date = std::nullopt;
     std::string created_date;
+    std::optional<std::string> created_before = std::nullopt;
 
 public:
     SystemMail() = default;
 
     SystemMail(const SystemMail& x)
-        : id(x.id), sender(x.sender), title(x.title), contents(x.contents), expire_date(x.expire_date), created_date(x.created_date)
+        : id(x.id), sender(x.sender), title(x.title), contents(x.contents), expire_date(x.expire_date), created_date(x.created_date), created_before(x.created_before)
     { }
 
-    SystemMail(uint32_t id, uint32_t sender, std::string_view title, std::string_view contents, const std::optional<std::string>& expire_date, std::string_view created_date)
-        : id(id), sender(sender), title(std::string(title)), contents(std::string(contents)), expire_date(expire_date), created_date(std::string(created_date))
+    SystemMail(uint32_t id, uint32_t sender, std::string_view title, std::string_view contents, const std::optional<std::string>& expire_date, std::string_view created_date, const std::optional<std::string>& created_before)
+        : id(id), sender(sender), title(std::string(title)), contents(std::string(contents)), expire_date(expire_date), created_date(std::string(created_date)), created_before(created_before)
     { }
 
     SystemMail(const fb::protocol::internal::raw::SystemMail& raw)
-        : id(raw.id()), sender(raw.sender()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), expire_date(raw.expire_date() != nullptr ? flatbuffers::option::decode(raw.expire_date()->c_str()) : std::optional<std::string>()), created_date(flatbuffers::option::decode(raw.created_date()->c_str()))
+        : id(raw.id()), sender(raw.sender()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), expire_date(raw.expire_date() != nullptr ? flatbuffers::option::decode(raw.expire_date()->c_str()) : std::optional<std::string>()), created_date(flatbuffers::option::decode(raw.created_date()->c_str())), created_before(raw.created_before() != nullptr ? flatbuffers::option::decode(raw.created_before()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -2313,20 +2314,21 @@ public:
     std::optional<std::string> expired_date = std::nullopt;
     std::optional<std::string> external_ref = std::nullopt;
     std::string created_date;
+    std::optional<std::string> created_before = std::nullopt;
 
 public:
     SystemStorageBox() = default;
 
     SystemStorageBox(const SystemStorageBox& x)
-        : id(x.id), title(x.title), message(x.message), attachments(x.attachments), expired_date(x.expired_date), external_ref(x.external_ref), created_date(x.created_date)
+        : id(x.id), title(x.title), message(x.message), attachments(x.attachments), expired_date(x.expired_date), external_ref(x.external_ref), created_date(x.created_date), created_before(x.created_before)
     { }
 
-    SystemStorageBox(uint32_t id, std::string_view title, std::string_view message, std::string_view attachments, const std::optional<std::string>& expired_date, const std::optional<std::string>& external_ref, std::string_view created_date)
-        : id(id), title(std::string(title)), message(std::string(message)), attachments(std::string(attachments)), expired_date(expired_date), external_ref(external_ref), created_date(std::string(created_date))
+    SystemStorageBox(uint32_t id, std::string_view title, std::string_view message, std::string_view attachments, const std::optional<std::string>& expired_date, const std::optional<std::string>& external_ref, std::string_view created_date, const std::optional<std::string>& created_before)
+        : id(id), title(std::string(title)), message(std::string(message)), attachments(std::string(attachments)), expired_date(expired_date), external_ref(external_ref), created_date(std::string(created_date)), created_before(created_before)
     { }
 
     SystemStorageBox(const fb::protocol::internal::raw::SystemStorageBox& raw)
-        : id(raw.id()), title(flatbuffers::option::decode(raw.title()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str())), attachments(flatbuffers::option::decode(raw.attachments()->c_str())), expired_date(raw.expired_date() != nullptr ? flatbuffers::option::decode(raw.expired_date()->c_str()) : std::optional<std::string>()), external_ref(raw.external_ref() != nullptr ? flatbuffers::option::decode(raw.external_ref()->c_str()) : std::optional<std::string>()), created_date(flatbuffers::option::decode(raw.created_date()->c_str()))
+        : id(raw.id()), title(flatbuffers::option::decode(raw.title()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str())), attachments(flatbuffers::option::decode(raw.attachments()->c_str())), expired_date(raw.expired_date() != nullptr ? flatbuffers::option::decode(raw.expired_date()->c_str()) : std::optional<std::string>()), external_ref(raw.external_ref() != nullptr ? flatbuffers::option::decode(raw.external_ref()->c_str()) : std::optional<std::string>()), created_date(flatbuffers::option::decode(raw.created_date()->c_str())), created_before(raw.created_before() != nullptr ? flatbuffers::option::decode(raw.created_before()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -9870,7 +9872,8 @@ flatbuffers::Offset<fb::protocol::internal::raw::SystemMail> build<fb::protocol:
             flatbuffers::build<std::string>(builder, value.title),
             flatbuffers::build<std::string>(builder, value.contents),
             flatbuffers::build<std::optional<std::string>>(builder, value.expire_date),
-            flatbuffers::build<std::string>(builder, value.created_date));
+            flatbuffers::build<std::string>(builder, value.created_date),
+            flatbuffers::build<std::optional<std::string>>(builder, value.created_before));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::StorageBox> build<fb::protocol::internal::StorageBox>(FlatBufferBuilder& builder, const fb::protocol::internal::StorageBox& value)
@@ -9902,7 +9905,8 @@ flatbuffers::Offset<fb::protocol::internal::raw::SystemStorageBox> build<fb::pro
             flatbuffers::build<std::string>(builder, value.attachments),
             flatbuffers::build<std::optional<std::string>>(builder, value.expired_date),
             flatbuffers::build<std::optional<std::string>>(builder, value.external_ref),
-            flatbuffers::build<std::string>(builder, value.created_date));
+            flatbuffers::build<std::string>(builder, value.created_date),
+            flatbuffers::build<std::optional<std::string>>(builder, value.created_before));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> build<fb::protocol::internal::SavePayload>(FlatBufferBuilder& builder, const fb::protocol::internal::SavePayload& value)

@@ -121,7 +121,9 @@ namespace Http.Service
             string message,
             DateTime? expiredDate = null,
             List<Fb.Model.Dsl> attachments = null,
-            string externalRef = null)
+            string externalRef = null,
+            DateTime? reserveDate = null,
+            bool includeNewCharacters = false)
         {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title is required", nameof(title));
@@ -137,13 +139,16 @@ namespace Http.Service
                 title.Trim(),
                 message.Trim(),
                 attachmentsList,
+                reserveDate,
                 expiredDate,
+                includeNewCharacters,
                 externalRef);
 
             await _logService.WriteAsync("system_storage_box_create", new
             {
                 box_id       = box.Id,
                 external_ref = box.ExternalRef,
+                reserve_date = reserveDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss")
             });
 
@@ -160,7 +165,7 @@ namespace Http.Service
                 throw new KeyNotFoundException($"System storage box {systemStorageBoxId} not found");
 
             var now = DateTime.UtcNow;
-            if (systemBox.ExpiredDate.HasValue && systemBox.ExpiredDate.Value <= now)
+            if (systemBox.Active(now) == false)
                 return new List<StorageBox>();
 
             var distinctUsers = (users ?? Array.Empty<uint>()).Where(u => u != 0).Distinct().ToArray();

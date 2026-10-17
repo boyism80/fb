@@ -2662,6 +2662,13 @@ public struct SystemMail : IFlatbufferObject
   public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
   public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(14); }
+  public string CreatedBefore { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetCreatedBeforeBytes() { return __p.__vector_as_span<byte>(16, 1); }
+#else
+  public ArraySegment<byte>? GetCreatedBeforeBytes() { return __p.__vector_as_arraysegment(16); }
+#endif
+  public byte[] GetCreatedBeforeArray() { return __p.__vector_as_array<byte>(16); }
 
   public static Offset<fb.protocol.@internal.raw.SystemMail> CreateSystemMail(FlatBufferBuilder builder,
       uint id = 0,
@@ -2669,8 +2676,10 @@ public struct SystemMail : IFlatbufferObject
       StringOffset titleOffset = default(StringOffset),
       StringOffset contentsOffset = default(StringOffset),
       StringOffset expire_dateOffset = default(StringOffset),
-      StringOffset created_dateOffset = default(StringOffset)) {
-    builder.StartTable(6);
+      StringOffset created_dateOffset = default(StringOffset),
+      StringOffset created_beforeOffset = default(StringOffset)) {
+    builder.StartTable(7);
+    SystemMail.AddCreatedBefore(builder, created_beforeOffset);
     SystemMail.AddCreatedDate(builder, created_dateOffset);
     SystemMail.AddExpireDate(builder, expire_dateOffset);
     SystemMail.AddContents(builder, contentsOffset);
@@ -2680,13 +2689,14 @@ public struct SystemMail : IFlatbufferObject
     return SystemMail.EndSystemMail(builder);
   }
 
-  public static void StartSystemMail(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartSystemMail(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddSender(FlatBufferBuilder builder, uint sender) { builder.AddUint(1, sender, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
   public static void AddContents(FlatBufferBuilder builder, StringOffset contentsOffset) { builder.AddOffset(3, contentsOffset.Value, 0); }
   public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(4, expireDateOffset.Value, 0); }
   public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(5, createdDateOffset.Value, 0); }
+  public static void AddCreatedBefore(FlatBufferBuilder builder, StringOffset createdBeforeOffset) { builder.AddOffset(6, createdBeforeOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.raw.SystemMail> EndSystemMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.SystemMail>(o);
@@ -2705,6 +2715,7 @@ static public class SystemMailVerify
       && verifier.VerifyString(tablePos, 10 /*Contents*/, false)
       && verifier.VerifyString(tablePos, 12 /*ExpireDate*/, false)
       && verifier.VerifyString(tablePos, 14 /*CreatedDate*/, false)
+      && verifier.VerifyString(tablePos, 16 /*CreatedBefore*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -2775,6 +2786,13 @@ public struct SystemStorageBox : IFlatbufferObject
   public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(16); }
 #endif
   public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(16); }
+  public string CreatedBefore { get { int o = __p.__offset(18); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetCreatedBeforeBytes() { return __p.__vector_as_span<byte>(18, 1); }
+#else
+  public ArraySegment<byte>? GetCreatedBeforeBytes() { return __p.__vector_as_arraysegment(18); }
+#endif
+  public byte[] GetCreatedBeforeArray() { return __p.__vector_as_array<byte>(18); }
 
   public static Offset<fb.protocol.@internal.raw.SystemStorageBox> CreateSystemStorageBox(FlatBufferBuilder builder,
       uint id = 0,
@@ -2783,8 +2801,10 @@ public struct SystemStorageBox : IFlatbufferObject
       StringOffset attachmentsOffset = default(StringOffset),
       StringOffset expired_dateOffset = default(StringOffset),
       StringOffset external_refOffset = default(StringOffset),
-      StringOffset created_dateOffset = default(StringOffset)) {
-    builder.StartTable(7);
+      StringOffset created_dateOffset = default(StringOffset),
+      StringOffset created_beforeOffset = default(StringOffset)) {
+    builder.StartTable(8);
+    SystemStorageBox.AddCreatedBefore(builder, created_beforeOffset);
     SystemStorageBox.AddCreatedDate(builder, created_dateOffset);
     SystemStorageBox.AddExternalRef(builder, external_refOffset);
     SystemStorageBox.AddExpiredDate(builder, expired_dateOffset);
@@ -2795,7 +2815,7 @@ public struct SystemStorageBox : IFlatbufferObject
     return SystemStorageBox.EndSystemStorageBox(builder);
   }
 
-  public static void StartSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(1, titleOffset.Value, 0); }
   public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
@@ -2803,6 +2823,7 @@ public struct SystemStorageBox : IFlatbufferObject
   public static void AddExpiredDate(FlatBufferBuilder builder, StringOffset expiredDateOffset) { builder.AddOffset(4, expiredDateOffset.Value, 0); }
   public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(5, externalRefOffset.Value, 0); }
   public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(6, createdDateOffset.Value, 0); }
+  public static void AddCreatedBefore(FlatBufferBuilder builder, StringOffset createdBeforeOffset) { builder.AddOffset(7, createdBeforeOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.raw.SystemStorageBox> EndSystemStorageBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.SystemStorageBox>(o);
@@ -2822,6 +2843,7 @@ static public class SystemStorageBoxVerify
       && verifier.VerifyString(tablePos, 12 /*ExpiredDate*/, false)
       && verifier.VerifyString(tablePos, 14 /*ExternalRef*/, false)
       && verifier.VerifyString(tablePos, 16 /*CreatedDate*/, false)
+      && verifier.VerifyString(tablePos, 18 /*CreatedBefore*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

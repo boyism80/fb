@@ -23,11 +23,11 @@ namespace Internal.Controllers
 
         [HttpGet("{world}")]
         [SuppressRequestLog]
-        public async Task<Response.GetSystemMails> GetSystemMails(uint world, [FromQuery(Name = "offset")] uint offset = 0)
+        public async Task<Response.GetSystemMails> GetSystemMails(uint world)
         {
             try
             {
-                var systemMails = await _dbContext.SystemMail.GetAll(world, offset);
+                var systemMails = await _dbContext.SystemMail.GetActive(world);
                 var protocolMails = systemMails.Select(m => new Protocol.SystemMail
                 {
                     Id = m.Id,
@@ -35,7 +35,8 @@ namespace Internal.Controllers
                     Title = m.Title,
                     Contents = m.Contents,
                     ExpireDate = m.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
-                    CreatedDate = m.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                    CreatedDate = m.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                    CreatedBefore = m.IncludeNewCharacters ? null : m.SendDate.ToString("yyyy-MM-dd HH:mm:ss")
                 }).ToList();
 
                 return new Response.GetSystemMails
@@ -71,7 +72,7 @@ namespace Internal.Controllers
                     expireDate = parsedDate;
                 }
 
-                var systemMail = await _dbContext.SystemMail.Write(request.World, request.Sender, request.Title, request.Contents, expireDate);
+                var systemMail = await _dbContext.SystemMail.Write(request.World, request.Sender, request.Title, request.Contents, null, expireDate, false);
                 var protocolMail = new Protocol.SystemMail
                 {
                     Id = systemMail.Id,
@@ -79,7 +80,8 @@ namespace Internal.Controllers
                     Title = systemMail.Title,
                     Contents = systemMail.Contents,
                     ExpireDate = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
-                    CreatedDate = systemMail.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                    CreatedDate = systemMail.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                    CreatedBefore = systemMail.SendDate.ToString("yyyy-MM-dd HH:mm:ss")
                 };
 
                 var response = new Response.WriteSystemMail

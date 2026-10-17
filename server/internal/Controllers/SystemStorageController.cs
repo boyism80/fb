@@ -27,11 +27,11 @@ namespace Internal.Controllers
 
         [HttpGet("{world}")]
         [SuppressRequestLog]
-        public async Task<Response.GetSystemStorageBoxes> GetSystemStorageBoxes(uint world, [FromQuery(Name = "offset")] uint offset = 0)
+        public async Task<Response.GetSystemStorageBoxes> GetSystemStorageBoxes(uint world)
         {
             try
             {
-                var boxes = await _dbContext.SystemStorageBox.GetAll(world, offset);
+                var boxes = await _dbContext.SystemStorageBox.GetActive(world);
                 var protocolBoxes = boxes.Select(_mapper.Map<Protocol.SystemStorageBox>).ToList();
 
                 return new Response.GetSystemStorageBoxes

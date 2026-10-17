@@ -490,7 +490,8 @@ namespace Google.FlatBuffers
                 builder.Build(value.Title),
                 builder.Build(value.Contents),
                 builder.Build(value.ExpireDate),
-                builder.Build(value.CreatedDate));
+                builder.Build(value.CreatedDate),
+                builder.Build(value.CreatedBefore));
         }
         public static Offset<fb.protocol.@internal.raw.StorageBox> Build(this FlatBufferBuilder builder, fb.protocol.@internal.StorageBox value)
         {
@@ -528,7 +529,8 @@ namespace Google.FlatBuffers
                 builder.Build(value.Attachments),
                 builder.Build(value.ExpiredDate),
                 builder.Build(value.ExternalRef),
-                builder.Build(value.CreatedDate));
+                builder.Build(value.CreatedDate),
+                builder.Build(value.CreatedBefore));
         }
         public static Offset<fb.protocol.@internal.raw.SavePayload> Build(this FlatBufferBuilder builder, fb.protocol.@internal.SavePayload value)
         {
@@ -3733,6 +3735,7 @@ namespace fb.protocol.@internal
         public string Contents { get; set; } = string.Empty;
         public string ExpireDate { get; set; } = null;
         public string CreatedDate { get; set; } = string.Empty;
+        public string CreatedBefore { get; set; } = null;
 
         public SystemMail()
         { }
@@ -3745,6 +3748,7 @@ namespace fb.protocol.@internal
             Contents = raw.Contents;
             ExpireDate = raw.ExpireDate;
             CreatedDate = raw.CreatedDate;
+            CreatedBefore = raw.CreatedBefore;
         }
 
         public SystemMail(byte[] bytes) : this(fb.protocol.@internal.raw.SystemMail.GetRootAsSystemMail(new ByteBuffer(bytes)))
@@ -3868,6 +3872,7 @@ namespace fb.protocol.@internal
         public string ExpiredDate { get; set; } = null;
         public string ExternalRef { get; set; } = null;
         public string CreatedDate { get; set; } = string.Empty;
+        public string CreatedBefore { get; set; } = null;
 
         public SystemStorageBox()
         { }
@@ -3881,6 +3886,7 @@ namespace fb.protocol.@internal
             ExpiredDate = raw.ExpiredDate;
             ExternalRef = raw.ExternalRef;
             CreatedDate = raw.CreatedDate;
+            CreatedBefore = raw.CreatedBefore;
         }
 
         public SystemStorageBox(byte[] bytes) : this(fb.protocol.@internal.raw.SystemStorageBox.GetRootAsSystemStorageBox(new ByteBuffer(bytes)))

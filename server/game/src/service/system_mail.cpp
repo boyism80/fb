@@ -41,6 +41,9 @@ fb::game::system_mail service::system_mail::from_system_mail_dto(const fb::proto
     if (dto.expire_date.has_value() && !dto.expire_date.value().empty())
         mail.expire_date = fb::model::datetime(dto.expire_date.value());
 
+    if (dto.created_before.has_value() && !dto.created_before.value().empty())
+        mail.created_before = fb::model::datetime(dto.created_before.value());
+
     return mail;
 }
 
@@ -115,22 +118,22 @@ fb::async_generator<void> service::system_mail::send_coroutine()
             continue;
         }
 
-        auto        max_mail_id   = uint32_t{0};
         auto        new_mail_seen = false;
-        const auto& fetch_url     = std::format("/mail/system/{}?offset={}", *world, this->_poll_offset);
+        const auto& fetch_url     = std::format("/mail/system/{}", *world);
 
+        // Internal returns every mail that is sendable now. A reserved mail becomes sendable later with an id
+        // lower than mails already seen, so the list is replaced instead of read from an offset.
         try
         {
             auto&& resp = co_await this->server.http.get<internal_resp::GetSystemMails>("internal", fetch_url);
             if (resp.error == 0)
             {
+                auto fetched = std::vector<fb::game::system_mail>{};
                 for (const auto& dto : resp.mails)
                 {
                     auto mail = from_system_mail_dto(dto);
                     if (expired(mail, now))
                         continue;
-
-                    max_mail_id = std::max(max_mail_id, mail.id);
 
                     const auto already_tracked = std::any_of(this->_pending_mails.cbegin(),
                                                              this->_pending_mails.cend(),
@@ -138,20 +141,17 @@ fb::async_generator<void> service::system_mail::send_coroutine()
                                                                  return existing.id == mail.id;
                                                              });
                     if (!already_tracked)
-                    {
-                        this->_pending_mails.push_back(std::move(mail));
                         new_mail_seen = true;
-                    }
+
+                    fetched.push_back(std::move(mail));
                 }
+                this->_pending_mails = std::move(fetched);
             }
         }
         catch (const std::exception& e)
         {
             fb::logger::warn("Failed to fetch system mails: {}", e.what());
         }
-
-        if (max_mail_id > 0)
-            this->_poll_offset = max_mail_id + 1;
 
         auto joined = std::unordered_set<uint32_t>{};
         {
@@ -165,7 +165,9 @@ fb::async_generator<void> service::system_mail::send_coroutine()
         auto collect       = [pending_mails, recipients, mutex](auto& ch) -> async::task<void> {
             for (const auto& mail : *pending_mails)
             {
-                if (ch->created_date() < mail.created_date && !ch->mail_box.contains_system_mail(mail.id))
+                auto eligible =
+                    mail.created_before.has_value() == false || ch->created_date() < mail.created_before.value();
+                if (eligible && !ch->mail_box.contains_system_mail(mail.id))
                 {
                     auto _ = std::lock_guard(*mutex);
                     (*recipients)[mail.id].push_back(ch->id);

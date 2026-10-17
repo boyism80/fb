@@ -40,7 +40,6 @@ private:
     static constexpr std::size_t chunk_limit    = 100;
     static constexpr int         write_attempts = 3;
 
-    uint32_t                        _poll_offset = 0;
     std::vector<system_storage_box> _pending_boxes;
     std::mutex                      _joined_mutex;
     std::unordered_set<uint32_t>    _joined;

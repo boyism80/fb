@@ -148,6 +148,7 @@ namespace Http.Mapping
                 .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
                 .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
+                .ForMember(x => x.CreatedBefore, x => x.MapFrom(u => u.IncludeNewCharacters ? null : u.SendDate.ToString("yyyy-MM-dd HH:mm:ss")))
                 .AfterMap((src, dest) =>
                 {
                     dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
