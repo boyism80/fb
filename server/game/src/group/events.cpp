@@ -66,10 +66,10 @@ async::task<void> group::container::on_error(uint32_t error, std::string_view ac
 }
 
 async::task<void> group::container::on_create(std::string                     target,
-                                              uint32_t                        group_id,
+                                              uint64_t                        group_id,
                                               std::string                     master,
                                               std::map<uint32_t, std::string> members,
-                                              const fb::model::datetime&      updated_date)
+                                              uint64_t                        revision)
 {
     auto member_names = std::vector<std::string>{};
     auto master_uid   = uint32_t{0};
@@ -92,15 +92,15 @@ async::task<void> group::container::on_create(std::string                     ta
         {
             drop = true;
         }
-        else if (guard.value()->updated_date() > updated_date)
+        else if (guard.value()->revision() > revision)
         {
             co_return;
         }
         else
         {
-            if (guard.value()->updated_date() < updated_date)
+            if (guard.value()->revision() < revision)
             {
-                guard.value() = this->_server.make<fb::game::group>(group_id, master, member_names, updated_date);
+                guard.value() = this->_server.make<fb::game::group>(group_id, master, member_names, revision);
             }
 
             if (master_uid == 0)
@@ -158,9 +158,9 @@ async::task<void> group::container::on_create(std::string                     ta
 }
 
 async::task<void> group::container::on_enter(std::string                target,
-                                             uint32_t                   group_id,
+                                             uint64_t                   group_id,
                                              std::optional<std::string> new_member,
-                                             const fb::model::datetime& updated_date)
+                                             uint64_t                   revision)
 {
     if (new_member.has_value() == false)
         co_return;
@@ -169,18 +169,23 @@ async::task<void> group::container::on_enter(std::string                target,
     auto weak    = std::weak_ptr<character>();
     auto ch_id   = uint32_t{0};
     auto members = std::vector<std::shared_ptr<character>>();
+    auto reload  = false;
     {
         auto  guard = co_await this->enter_write(group_id);
         auto& group = guard.value();
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
-        if (group->updated_date() > updated_date)
+        if (group->revision() > revision)
             co_return;
 
-        if (group->updated_date() < updated_date)
+        if (group->revision() + 1 == revision)
         {
             group->add_member(name);
-            group->updated_date(updated_date);
+            group->revision(revision);
+        }
+        else if (group->revision() < revision)
+        {
+            reload = true;
         }
 
         auto ch = this->_server.characters.find(name);
@@ -192,6 +197,9 @@ async::task<void> group::container::on_enter(std::string                target,
             group->enter(weak);
         }
     }
+
+    if (reload)
+        co_await this->reload(group_id);
 
     if (weak.expired() == false)
     {
@@ -226,9 +234,9 @@ async::task<void> group::container::on_enter(std::string                target,
 }
 
 async::task<void> group::container::on_leave(std::string                target,
-                                             uint32_t                   group_id,
+                                             uint64_t                   group_id,
                                              std::optional<std::string> deleted_member,
-                                             const fb::model::datetime& updated_date)
+                                             uint64_t                   revision)
 {
     if (deleted_member.has_value() == false)
         co_return;
@@ -239,13 +247,13 @@ async::task<void> group::container::on_leave(std::string                target,
                                  _TEXT(MESSAGE_GROUP_LEFT_SUCCESS),
                                  std::format(_TEXT(MESSAGE_GROUP_MEMBER_LEFT), name),
                                  "group_leave",
-                                 updated_date);
+                                 revision);
 }
 
 async::task<void> group::container::on_kick(std::string                target,
-                                            uint32_t                   group_id,
+                                            uint64_t                   group_id,
                                             std::optional<std::string> deleted_member,
-                                            const fb::model::datetime& updated_date)
+                                            uint64_t                   revision)
 {
     if (deleted_member.has_value() == false)
         co_return;
@@ -256,31 +264,36 @@ async::task<void> group::container::on_kick(std::string                target,
                                  _TEXT(MESSAGE_GROUP_KICKED),
                                  std::format(_TEXT(MESSAGE_GROUP_MEMBER_KICKED), name),
                                  "group_kick",
-                                 updated_date);
+                                 revision);
 }
 
-async::task<void> group::container::remove_member(uint32_t                   group_id,
-                                                  std::string                name,
-                                                  std::string                message,
-                                                  std::string                others_message,
-                                                  std::string                log_name,
-                                                  const fb::model::datetime& updated_date)
+async::task<void> group::container::remove_member(uint64_t    group_id,
+                                                  std::string name,
+                                                  std::string message,
+                                                  std::string others_message,
+                                                  std::string log_name,
+                                                  uint64_t    revision)
 {
     auto weak    = std::weak_ptr<character>();
     auto ch_id   = uint32_t{0};
     auto members = std::vector<std::shared_ptr<character>>();
+    auto reload  = false;
     {
         auto  guard = co_await this->enter_write(group_id);
         auto& group = guard.value();
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
-        if (group->updated_date() > updated_date)
+        if (group->revision() > revision)
             co_return;
 
-        if (group->updated_date() < updated_date)
+        if (group->revision() + 1 == revision)
         {
             group->remove_member(name);
-            group->updated_date(updated_date);
+            group->revision(revision);
+        }
+        else if (group->revision() < revision)
+        {
+            reload = true;
         }
 
         auto ch = this->_server.characters.find(name);
@@ -292,6 +305,9 @@ async::task<void> group::container::remove_member(uint32_t                   gro
         }
         members = group->characters();
     }
+
+    if (reload)
+        co_await this->reload(group_id);
 
     if (weak.expired() == false)
     {
@@ -338,9 +354,7 @@ async::task<void> group::container::reset_member(character& ch, std::string mess
     }
 }
 
-async::task<void> group::container::on_destroyed(std::string                actor,
-                                                 uint32_t                   group_id,
-                                                 const fb::model::datetime& updated_date)
+async::task<void> group::container::on_destroyed(std::string actor, uint64_t group_id, uint64_t revision)
 {
     std::ignore = actor;
 
@@ -354,7 +368,7 @@ async::task<void> group::container::on_destroyed(std::string                acto
         {
             drop = true;
         }
-        else if (guard.value()->updated_date() > updated_date)
+        else if (guard.value()->revision() > revision)
         {
             co_return;
         }
@@ -376,7 +390,7 @@ async::task<void> group::container::on_destroyed(std::string                acto
     co_return;
 }
 
-async::task<void> group::container::on_broadcast(uint32_t group_id, std::string message, uint8_t type)
+async::task<void> group::container::on_broadcast(uint64_t group_id, std::string message, uint8_t type)
 {
     auto  guard = co_await this->enter_write(group_id);
     auto& group = guard.value();
@@ -485,7 +499,7 @@ void group::container::update_portraits(const group& g, std::vector<std::shared_
         });
 }
 
-void group::container::update_portraits(uint32_t group_id)
+void group::container::update_portraits(uint64_t group_id)
 {
     auto guard = this->try_enter_read(group_id);
     if (guard.has_value() == false)

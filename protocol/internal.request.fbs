@@ -187,6 +187,7 @@ table CreateGroup {
   host: uint;
   master: uint;
   member: string;
+  id: ulong;
 }
 
 table EnterGroup {
@@ -199,7 +200,7 @@ table EnterGroup {
 table BroadcastGroup {
   world: uint;
   host: uint;
-  group: uint;
+  group: ulong;
   message: string;
   type: ubyte;
 }

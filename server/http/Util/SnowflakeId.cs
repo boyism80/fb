@@ -48,5 +48,11 @@ namespace Http.Util
         {
             return Epoch.AddMilliseconds(id >> TimestampShift);
         }
+
+        // Must match fb::game::snowflake: world (6 bits) sits above server id (8) and sequence (8).
+        public static uint GameWorld(ulong id)
+        {
+            return (uint)((id >> 16) & 0x3F);
+        }
     }
 }

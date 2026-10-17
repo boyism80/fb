@@ -22,6 +22,7 @@ namespace Http.Model
         public string Name { get; set; }
         public string Title { get; set; }
         public ulong Money { get; set; }
+        public ulong Revision { get; set; }
 
         // Kept in the clan record so a money change and its request state are written by the same SET.
         public List<ClanMoneyRequest> MoneyRequests { get; set; } = new List<ClanMoneyRequest>();

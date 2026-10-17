@@ -36,5 +36,5 @@ async::task<void> create_clan::handle(const internal_resp::ClanDetails& message)
                                           message.clan.name,
                                           title,
                                           std::move(members),
-                                          fb::game::version_time(message.updated_date));
+                                          message.revision);
 }

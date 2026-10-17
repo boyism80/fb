@@ -4,6 +4,7 @@ using Http;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using Http.Util;
 using Medallion.Threading.Redis;
 using Protocol = fb.protocol.@internal;
 using Request = fb.protocol.@internal.request;
@@ -35,27 +36,15 @@ namespace Internal.Services
             _distributedLock = distributedLock;
         }
 
-        public async Task<Response.GroupDetails> GetById(uint id)
+        public async Task<Response.GroupDetails> GetById(ulong id)
         {
-            var world = await _dbContext.Character.GetWorld(id);
-            if (!world.HasValue)
-                return new Response.GroupDetails
-                {
-                    UpdatedDate = DateTime.UtcNow.ToVersion(),
-                    Error = (uint)ErrorCode.GroupNotFound
-                };
-
-            return await Get(world.Value, id);
+            return await Get(SnowflakeId.GameWorld(id), id);
         }
 
-        public async Task<Response.GroupDetails> Get(uint world, uint id)
+        public async Task<Response.GroupDetails> Get(uint world, ulong id)
         {
             try
             {
-                var redis = _redisService.GetShardConnection(world, id);
-                if (redis == null)
-                    throw new LogicException(ErrorCode.Unhandled);
-
                 await using var _ = await _distributedLock.Lock(world, Group.DistributedLockKey(id));
 
                 var group = await _dbContext.Group.Get(world, id) ??
@@ -89,15 +78,15 @@ namespace Internal.Services
                     Action = Protocol.GroupDetailsAction.Query,
                     Group = new Protocol.Group
                     {
-                        Id = group.Master,
+                        Id = group.Id,
                         Master = master.Name,
                         Members = new List<string>(),
-                        UpdatedDate = group.UpdatedDate.ToVersion()
+                        Revision = group.Revision
                     },
                     Members = members,
                     Actor = string.Empty,
                     Target = string.Empty,
-                    UpdatedDate = group.UpdatedDate.ToVersion(),
+                    Revision = group.Revision,
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -109,7 +98,6 @@ namespace Internal.Services
                     Action = Protocol.GroupDetailsAction.Query,
                     Actor = string.Empty,
                     Target = string.Empty,
-                    UpdatedDate = DateTime.UtcNow.ToVersion(),
                     Error = (uint)e.Error
                 };
             }
@@ -182,21 +170,26 @@ namespace Internal.Services
                 if (memberSetting.Group == false)
                     throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id));
+                if (request.Id == 0 || SnowflakeId.GameWorld(request.Id) != world)
+                    throw new LogicException(ErrorCode.Unhandled);
+
+                await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(request.Id));
 
                 var group = new Group
                 {
+                    Id = request.Id,
                     Master = actor.Id,
                 };
                 group.Members.Add(target.Id);
 
-                actorSync.Group = group.Master;
-                targetSync.Group = group.Master;
+                actorSync.Group = group.Id;
+                targetSync.Group = group.Id;
                 _dbContext.CharacterRealtimeState.Set(world, actorSync);
                 _dbContext.CharacterRealtimeState.Set(world, targetSync);
                 await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
                 group.UpdatedDate = DateTime.UtcNow;
+                group.Revision++;
                 _dbContext.Group.Set(world, group);
                 await _dbContext.Group.SaveChangesAsync();
 
@@ -220,15 +213,15 @@ namespace Internal.Services
                     Action = Protocol.GroupDetailsAction.Create,
                     Group = new Protocol.Group
                     {
-                        Id = group.Master,
+                        Id = group.Id,
                         Master = actor.Name,
                         Members = new List<string>(),
-                        UpdatedDate = group.UpdatedDate.ToVersion()
+                        Revision = group.Revision
                     },
                     Actor = actor.Name,
                     Target = target.Name,
                     Members = members,
-                    UpdatedDate = group.UpdatedDate.ToVersion(),
+                    Revision = group.Revision,
                     Error = (uint)ErrorCode.None
                 };
 
@@ -298,12 +291,8 @@ namespace Internal.Services
                 var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                // Enter group - actor must be group master
                 if (actorSync.Group == null)
                     throw new LogicException(ErrorCode.GroupNotJoined);
-
-                if (actorSync.Group.Value != actor.Id)
-                    throw new LogicException(ErrorCode.NotGroupMaster);
 
                 await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, targetSync);
                 if (targetSync.Group != null)
@@ -318,7 +307,7 @@ namespace Internal.Services
                 if (memberSetting.Group == false)
                     throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id));
+                await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actorSync.Group.Value));
 
                 return await EnterInternal(world, actor, target, actorSync, targetSync, request.Host);
             }
@@ -379,6 +368,7 @@ namespace Internal.Services
 
                 group.Members.Remove(character.Id);
                 group.UpdatedDate = DateTime.UtcNow;
+                group.Revision++;
                 _dbContext.Group.Set(world, group);
                 await _dbContext.Group.SaveChangesAsync();
 
@@ -390,7 +380,7 @@ namespace Internal.Services
                 {
                     Host = request.Host,
                     Action = Protocol.GroupActionType.Leave,
-                    GroupId = group.Master,
+                    GroupId = group.Id,
                     GroupMaster = master.Name,
                     Actor = new Protocol.CharacterRef
                     {
@@ -402,7 +392,7 @@ namespace Internal.Services
                         Uid = character.Id,
                         Name = character.Name
                     },
-                    UpdatedDate = group.UpdatedDate.ToVersion(),
+                    Revision = group.Revision,
                     Error = (uint)ErrorCode.None
                 };
 
@@ -554,8 +544,7 @@ namespace Internal.Services
                         lockUids = required;
                     }
 
-                    var destroyedAt = DateTime.UtcNow;
-                    _dbContext.Group.Delete(world, group.Master);
+                    _dbContext.Group.Delete(world, group.Id);
                     await _dbContext.Group.SaveChangesAsync();
 
                     var memberNames = new List<string>();
@@ -567,7 +556,7 @@ namespace Internal.Services
                         var memberSync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        if (memberSync.Group == group.Master)
+                        if (memberSync.Group == group.Id)
                         {
                             memberSync.Group = null;
                             _dbContext.CharacterRealtimeState.Set(world, memberSync);
@@ -582,14 +571,14 @@ namespace Internal.Services
                     var response = new Response.DestroyGroup
                     {
                         Host = request.Host,
-                        GroupId = group.Master,
+                        GroupId = group.Id,
                         GroupMaster = character.Name,
                         Actor = new Protocol.CharacterRef
                         {
                             Uid = character.Id,
                             Name = character.Name
                         },
-                        UpdatedDate = destroyedAt.ToVersion(),
+                        Revision = group.Revision + 1,
                         Error = (uint)ErrorCode.None
                     };
 
@@ -626,7 +615,7 @@ namespace Internal.Services
         {
             try
             {
-                var world = await _dbContext.Character.GetWorld(request.Group) ?? request.World;
+                var world = SnowflakeId.GameWorld(request.Group);
                 await using var _ = await _distributedLock.Lock(world, Group.DistributedLockKey(request.Group));
 
                 var group = await _dbContext.Group.Get(world, request.Group) ??
@@ -694,14 +683,10 @@ namespace Internal.Services
                 var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                // Toggle requires actor to be group master
                 if (actorSync.Group == null)
                     throw new LogicException(ErrorCode.GroupNotJoined);
 
-                if (actorSync.Group.Value != actor.Id)
-                    throw new LogicException(ErrorCode.NotGroupMaster);
-
-                await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actor.Id));
+                await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actorSync.Group.Value));
 
                 await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, targetSync);
                 if (targetSync.Group == actorSync.Group)
@@ -759,8 +744,11 @@ namespace Internal.Services
 
         private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, uint host)
         {
-            var group = await _dbContext.Group.Get(world, actor.Id) ??
+            var group = await _dbContext.Group.Get(world, actorSync.Group.Value) ??
                 throw new LogicException(ErrorCode.GroupNotFound);
+
+            if (group.Master != actor.Id)
+                throw new LogicException(ErrorCode.NotGroupMaster);
 
             if (group.Members.Contains(target.Id))
                 throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
@@ -769,12 +757,13 @@ namespace Internal.Services
             if (group.Members.Count + 1 >= Fb.Model.ConstValue.Group.MaxMember)
                 throw new LogicException(ErrorCode.GroupFullMember);
 
-            targetSync.Group = group.Master;
+            targetSync.Group = group.Id;
             _dbContext.CharacterRealtimeState.Set(world, targetSync);
             await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
             group.Members.Add(target.Id);
             group.UpdatedDate = DateTime.UtcNow;
+            group.Revision++;
             _dbContext.Group.Set(world, group);
             await _dbContext.Group.SaveChangesAsync();
 
@@ -782,7 +771,7 @@ namespace Internal.Services
             {
                 Host = host,
                 Action = Protocol.GroupActionType.Enter,
-                GroupId = group.Master,
+                GroupId = group.Id,
                 GroupMaster = actor.Name,
                 Actor = new Protocol.CharacterRef
                 {
@@ -794,7 +783,7 @@ namespace Internal.Services
                     Uid = target.Id,
                     Name = target.Name
                 },
-                UpdatedDate = group.UpdatedDate.ToVersion(),
+                Revision = group.Revision,
                 Error = (uint)ErrorCode.None
             };
 
@@ -817,6 +806,7 @@ namespace Internal.Services
 
             group.Members.Remove(target.Id);
             group.UpdatedDate = DateTime.UtcNow;
+            group.Revision++;
             _dbContext.Group.Set(world, group);
             await _dbContext.Group.SaveChangesAsync();
 
@@ -828,7 +818,7 @@ namespace Internal.Services
             {
                 Host = host,
                 Action = Protocol.GroupActionType.Kick,
-                GroupId = group.Master,
+                GroupId = group.Id,
                 GroupMaster = actor.Name,
                 Actor = new Protocol.CharacterRef
                 {
@@ -840,7 +830,7 @@ namespace Internal.Services
                     Uid = target.Id,
                     Name = target.Name
                 },
-                UpdatedDate = group.UpdatedDate.ToVersion(),
+                Revision = group.Revision,
                 Error = (uint)ErrorCode.None
             };
 

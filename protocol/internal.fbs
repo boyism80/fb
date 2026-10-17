@@ -195,10 +195,10 @@ table MailWriteEntry {
 }
 
 table Group {
-    id: uint;
+    id: ulong;
     master: string;
     members: [string];
-    updated_date: string;
+    revision: ulong;
 }
 
 table Achievement {
@@ -222,7 +222,7 @@ table Clan {
     allied_clan_id: uint?;
     enemy_clan_ids: [uint];
     money: ulong = 0;
-    updated_date: string;
+    revision: ulong;
 }
 
 table ClanMember {

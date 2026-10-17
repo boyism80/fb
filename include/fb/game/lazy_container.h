@@ -18,20 +18,13 @@ namespace fb::game {
 
 class server;
 
-inline fb::model::datetime version_time(std::string_view text)
-{
-    if (text.empty())
-        return fb::model::datetime("1970-01-01 00:00:00");
-    return fb::model::datetime(text);
-}
-
-template <typename Entity, size_t NumBuckets = 16>
-class lazy_container : protected fb::sharded_container<std::shared_ptr<Entity>, NumBuckets>
+template <typename Entity, size_t NumBuckets = 16, typename Key = uint32_t>
+class lazy_container : protected fb::sharded_container<std::shared_ptr<Entity>, NumBuckets, Key>
 {
 public:
     using entity_ptr  = std::shared_ptr<Entity>;
-    using hash_type   = uint32_t;
-    using super       = fb::sharded_container<entity_ptr, NumBuckets>;
+    using hash_type   = Key;
+    using super       = fb::sharded_container<entity_ptr, NumBuckets, Key>;
     using write_guard = typename super::sub_container_type::async_write_guard;
     using read_guard  = typename super::sub_container_type::read_guard;
 
@@ -70,17 +63,17 @@ protected:
     server& _server;
 
 private:
-    std::mutex                   _fetch_lock;
-    std::unordered_set<uint32_t> _fetching;
+    std::mutex              _fetch_lock;
+    std::unordered_set<Key> _fetching;
 
 private:
-    bool begin_fetch(uint32_t id);
-    void end_fetch(uint32_t id);
+    bool begin_fetch(Key id);
+    void end_fetch(Key id);
 
 protected:
-    virtual async::task<entity_ptr> fetch(uint32_t id) = 0;
+    virtual async::task<entity_ptr> fetch(Key id) = 0;
 
-    async::task<guard> enter_write_impl(uint32_t id, fb::thread& thread_ref);
+    async::task<guard> enter_write_impl(Key id, fb::thread& thread_ref);
 
 public:
     explicit lazy_container(server& server);
@@ -89,7 +82,7 @@ public:
     lazy_container(lazy_container&&)      = delete;
     virtual ~lazy_container()             = default;
 
-    async::task<guard> enter_write(uint32_t id);
+    async::task<guard> enter_write(Key id);
     bool               contains(hash_type id) const;
 };
 

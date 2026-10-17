@@ -1,9 +1,11 @@
 #include <fb/config.h>
 #include <fb/game/group.h>
 #include <fb/game/server.h>
+#include <fb/logger.h>
 #include <fb/model/model.h>
 
 #include <cstdint>
+#include <exception>
 #include <format>
 #include <stdexcept>
 #include <string>
@@ -13,14 +15,13 @@ using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 
 group::container::container(server& server) :
-    lazy_container<group>(server)
+    lazy_container<group, 16, uint64_t>(server)
 { }
 
-async::task<group::container::entity_ptr> group::container::fetch(uint32_t id)
+async::task<group::container::entity_ptr> group::container::fetch(uint64_t id)
 {
     auto&& resp =
         co_await this->_server.http.get<internal_resp::GroupDetails>("internal", std::format("/group/id/{}", id));
-    auto at = version_time(resp.updated_date);
 
     switch (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error))
     {
@@ -32,8 +33,7 @@ async::task<group::container::entity_ptr> group::container::fetch(uint32_t id)
         {
             members.push_back(member.name);
         }
-        auto row_at = resp.group.updated_date.empty() ? at : version_time(resp.group.updated_date);
-        co_return this->_server.make<fb::game::group>(id, resp.group.master, members, row_at);
+        co_return this->_server.make<fb::game::group>(id, resp.group.master, members, resp.group.revision);
     }
 
     case fb::model::enum_value::ERROR_CODE::GROUP_NOT_FOUND:
@@ -42,4 +42,31 @@ async::task<group::container::entity_ptr> group::container::fetch(uint32_t id)
     default:
         throw std::runtime_error(std::format("cannot get group (error : {})", resp.error));
     }
+}
+
+async::task<void> group::container::reload(uint64_t id)
+{
+    auto* thread = this->_server.threads.current();
+    auto  fresh  = entity_ptr{};
+    try
+    {
+        fresh = co_await this->fetch(id);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("group reload failed (id: {}): {}", id, e.what());
+    }
+
+    if (thread != nullptr)
+        co_await thread->switching();
+
+    if (fresh == nullptr)
+        co_return;
+
+    auto guard = co_await this->enter_write(id);
+    if (guard.holds_lock() == false || guard.value() == nullptr)
+        co_return;
+
+    if (guard.value()->revision() < fresh->revision())
+        guard.value()->reload(*fresh);
 }

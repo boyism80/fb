@@ -24,7 +24,7 @@ clan::clan(server&                                             server,
            std::string_view                                    name,
            const std::optional<std::string>&                   title,
            const std::unordered_map<std::string, clan_member>& members,
-           const fb::model::datetime&                          updated_date,
+           uint64_t                                            revision,
            const std::optional<uint32_t>&                      allied_clan_id,
            const std::unordered_set<uint32_t>&                 enemy_clan_ids,
            uint64_t                                            money) :
@@ -36,7 +36,7 @@ clan::clan(server&                                             server,
     _allied_clan_id(allied_clan_id),
     _enemy_clan_ids(enemy_clan_ids),
     _money(money),
-    _updated_date(updated_date)
+    _revision(revision)
 { }
 
 clan::clan(clan&& r) :
@@ -48,7 +48,7 @@ clan::clan(clan&& r) :
     _allied_clan_id(r._allied_clan_id),
     _enemy_clan_ids(std::move(r._enemy_clan_ids)),
     _money(r._money),
-    _updated_date(r._updated_date)
+    _revision(r._revision)
 { }
 
 void clan::update(std::string_view name, const std::optional<std::string>& title, const member_map& members)
@@ -56,6 +56,17 @@ void clan::update(std::string_view name, const std::optional<std::string>& title
     this->_name    = std::string(name);
     this->_title   = title;
     this->_members = members;
+}
+
+void clan::reload(const clan& fresh)
+{
+    this->_name           = fresh._name;
+    this->_title          = fresh._title;
+    this->_members        = fresh._members;
+    this->_allied_clan_id = fresh._allied_clan_id;
+    this->_enemy_clan_ids = fresh._enemy_clan_ids;
+    this->_money          = fresh._money;
+    this->_revision       = fresh._revision;
 }
 
 uint32_t clan::id() const
@@ -219,14 +230,14 @@ void clan::money(uint64_t value)
     this->_money = value;
 }
 
-const fb::model::datetime& clan::updated_date() const
+uint64_t clan::revision() const
 {
-    return this->_updated_date;
+    return this->_revision;
 }
 
-void clan::updated_date(const fb::model::datetime& value)
+void clan::revision(uint64_t value)
 {
-    this->_updated_date = value;
+    this->_revision = value;
 }
 
 std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::map& map, const point16_t& position) const

@@ -16,65 +16,66 @@
 
 namespace fb::game {
 
-template <typename Entity, size_t NumBuckets>
-lazy_container<Entity, NumBuckets>::guard::guard() :
+template <typename Entity, size_t NumBuckets, typename Key>
+lazy_container<Entity, NumBuckets, Key>::guard::guard() :
     _empty(nullptr)
 { }
 
-template <typename Entity, size_t NumBuckets>
-lazy_container<Entity, NumBuckets>::guard::guard(write_guard&& guard) :
+template <typename Entity, size_t NumBuckets, typename Key>
+lazy_container<Entity, NumBuckets, Key>::guard::guard(write_guard&& guard) :
     _write_guard(std::move(guard)),
     _empty(nullptr)
 { }
 
-template <typename Entity, size_t NumBuckets>
-typename lazy_container<Entity, NumBuckets>::entity_ptr& lazy_container<Entity, NumBuckets>::guard::value() noexcept
+template <typename Entity, size_t NumBuckets, typename Key>
+typename lazy_container<Entity, NumBuckets, Key>::entity_ptr&
+lazy_container<Entity, NumBuckets, Key>::guard::value() noexcept
 {
     if (this->_write_guard.has_value())
         return this->_write_guard->value();
     return this->_empty;
 }
 
-template <typename Entity, size_t NumBuckets>
-const typename lazy_container<Entity, NumBuckets>::entity_ptr&
-lazy_container<Entity, NumBuckets>::guard::value() const noexcept
+template <typename Entity, size_t NumBuckets, typename Key>
+const typename lazy_container<Entity, NumBuckets, Key>::entity_ptr&
+lazy_container<Entity, NumBuckets, Key>::guard::value() const noexcept
 {
     if (this->_write_guard.has_value())
         return this->_write_guard->value();
     return this->_empty;
 }
 
-template <typename Entity, size_t NumBuckets>
-bool lazy_container<Entity, NumBuckets>::guard::holds_lock() const noexcept
+template <typename Entity, size_t NumBuckets, typename Key>
+bool lazy_container<Entity, NumBuckets, Key>::guard::holds_lock() const noexcept
 {
     return this->_write_guard.has_value();
 }
 
-template <typename Entity, size_t NumBuckets>
-lazy_container<Entity, NumBuckets>::lazy_container(server& server) :
-    super([](const entity_ptr& entity) -> uint32_t {
+template <typename Entity, size_t NumBuckets, typename Key>
+lazy_container<Entity, NumBuckets, Key>::lazy_container(server& server) :
+    super([](const entity_ptr& entity) -> Key {
         return entity->id();
     }),
     _server(server)
 { }
 
-template <typename Entity, size_t NumBuckets>
-bool lazy_container<Entity, NumBuckets>::begin_fetch(uint32_t id)
+template <typename Entity, size_t NumBuckets, typename Key>
+bool lazy_container<Entity, NumBuckets, Key>::begin_fetch(Key id)
 {
     auto _ = std::lock_guard(this->_fetch_lock);
     return this->_fetching.insert(id).second;
 }
 
-template <typename Entity, size_t NumBuckets>
-void lazy_container<Entity, NumBuckets>::end_fetch(uint32_t id)
+template <typename Entity, size_t NumBuckets, typename Key>
+void lazy_container<Entity, NumBuckets, Key>::end_fetch(Key id)
 {
     auto _ = std::lock_guard(this->_fetch_lock);
     this->_fetching.erase(id);
 }
 
-template <typename Entity, size_t NumBuckets>
-async::task<typename lazy_container<Entity, NumBuckets>::guard>
-lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& thread_ref)
+template <typename Entity, size_t NumBuckets, typename Key>
+async::task<typename lazy_container<Entity, NumBuckets, Key>::guard>
+lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& thread_ref)
 {
     // A busy bucket lock is not a cache miss. retry_exception yields this coroutine before the next attempt.
     // A second fetch for the same id waits until the first one finishes, then reads that result.
@@ -159,9 +160,9 @@ lazy_container<Entity, NumBuckets>::enter_write_impl(uint32_t id, fb::thread& th
     throw fb::thread::retry_exception{};
 }
 
-template <typename Entity, size_t NumBuckets>
-async::task<typename lazy_container<Entity, NumBuckets>::guard>
-lazy_container<Entity, NumBuckets>::enter_write(uint32_t id)
+template <typename Entity, size_t NumBuckets, typename Key>
+async::task<typename lazy_container<Entity, NumBuckets, Key>::guard>
+lazy_container<Entity, NumBuckets, Key>::enter_write(Key id)
 {
     auto* thread = this->_server.threads.current();
     if (thread == nullptr)
@@ -175,30 +176,32 @@ lazy_container<Entity, NumBuckets>::enter_write(uint32_t id)
     co_return co_await builder.dispatch();
 }
 
-template <typename Entity, size_t NumBuckets>
-bool lazy_container<Entity, NumBuckets>::contains(hash_type id) const
+template <typename Entity, size_t NumBuckets, typename Key>
+bool lazy_container<Entity, NumBuckets, Key>::contains(hash_type id) const
 {
     return this->try_enter_read(id).has_value();
 }
 
 template class lazy_container<clan>::guard;
-template class lazy_container<group>::guard;
+template class lazy_container<group, 16, uint64_t>::guard;
 template class lazy_container<castle>::guard;
 
 template lazy_container<clan>::lazy_container(server&);
-template lazy_container<group>::lazy_container(server&);
+template lazy_container<group, 16, uint64_t>::lazy_container(server&);
 template lazy_container<castle>::lazy_container(server&);
 
-template async::task<lazy_container<clan>::guard>   lazy_container<clan>::enter_write_impl(uint32_t, fb::thread&);
-template async::task<lazy_container<group>::guard>  lazy_container<group>::enter_write_impl(uint32_t, fb::thread&);
+template async::task<lazy_container<clan>::guard> lazy_container<clan>::enter_write_impl(uint32_t, fb::thread&);
+template async::task<lazy_container<group, 16, uint64_t>::guard>
+lazy_container<group, 16, uint64_t>::enter_write_impl(uint64_t, fb::thread&);
 template async::task<lazy_container<castle>::guard> lazy_container<castle>::enter_write_impl(uint32_t, fb::thread&);
 
-template async::task<lazy_container<clan>::guard>   lazy_container<clan>::enter_write(uint32_t);
-template async::task<lazy_container<group>::guard>  lazy_container<group>::enter_write(uint32_t);
+template async::task<lazy_container<clan>::guard> lazy_container<clan>::enter_write(uint32_t);
+template async::task<lazy_container<group, 16, uint64_t>::guard>
+                                                    lazy_container<group, 16, uint64_t>::enter_write(uint64_t);
 template async::task<lazy_container<castle>::guard> lazy_container<castle>::enter_write(uint32_t);
 
 template bool lazy_container<clan>::contains(hash_type) const;
-template bool lazy_container<group>::contains(hash_type) const;
+template bool lazy_container<group, 16, uint64_t>::contains(hash_type) const;
 template bool lazy_container<castle>::contains(hash_type) const;
 
 } // namespace fb::game

@@ -16,7 +16,5 @@ async::task<void> destroy_group::handle(const internal_resp::DestroyGroup& messa
         co_return;
 
     co_await this->server.groups.on_error(message.error, message.actor.name);
-    co_await this->server.groups.on_destroyed(message.actor.name,
-                                              message.group_id,
-                                              fb::game::version_time(message.updated_date));
+    co_await this->server.groups.on_destroyed(message.actor.name, message.group_id, message.revision);
 }

@@ -17,13 +17,13 @@ namespace Internal.Controllers
         }
 
         [HttpGet("id/{id}")]
-        public async Task<Response.GroupDetails> GetById(uint id)
+        public async Task<Response.GroupDetails> GetById(ulong id)
         {
             return await _groupService.GetById(id);
         }
 
         [HttpGet("{world}/{id}")]
-        public async Task<Response.GroupDetails> Get(uint world, uint id)
+        public async Task<Response.GroupDetails> Get(uint world, ulong id)
         {
             return await _groupService.Get(world, id);
         }

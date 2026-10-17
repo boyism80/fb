@@ -56,11 +56,14 @@ async::task<void> group::container::create(character& me, std::string_view targe
     }
 
     auto   world = me.world();
-    auto&& resp  = co_await this->_server.http.post(
-        weak,
-        "internal",
-        "/group/create",
-        internal_reqs::CreateGroup{world, fb::config<uint32_t>("id"), me.id, target_name_str});
+    auto&& resp  = co_await this->_server.http.post(weak,
+                                                   "internal",
+                                                   "/group/create",
+                                                   internal_reqs::CreateGroup{world,
+                                                                              fb::config<uint32_t>("id"),
+                                                                              me.id,
+                                                                              target_name_str,
+                                                                              this->_server.ids.next(world)});
 
     auto members = std::map<uint32_t, std::string>{};
     for (const auto& member : resp.members)
@@ -69,11 +72,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
     }
 
     co_await this->on_error(resp.error, resp.target);
-    co_await this->on_create(resp.target,
-                             resp.group.id,
-                             resp.group.master,
-                             std::move(members),
-                             version_time(resp.updated_date));
+    co_await this->on_create(resp.target, resp.group.id, resp.group.master, std::move(members), resp.revision);
 }
 
 async::task<void> group::container::destroy(character& me)
@@ -90,7 +89,7 @@ async::task<void> group::container::destroy(character& me)
                                          "/group/destroy",
                                          internal_reqs::DestroyGroup{world, fb::config<uint32_t>("id"), me.name()});
     co_await this->on_error(resp.error, resp.actor.name);
-    co_await this->on_destroyed(resp.actor.name, resp.group_id, version_time(resp.updated_date));
+    co_await this->on_destroyed(resp.actor.name, resp.group_id, resp.revision);
 }
 
 async::task<void> group::container::toggle_member(character& actor, std::string_view target_name)
@@ -142,24 +141,15 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
     switch (resp.action)
     {
     case fb::protocol::internal::GroupActionType::Enter:
-        co_await this->on_enter(std::move(target),
-                                resp.group_id,
-                                std::move(new_member),
-                                version_time(resp.updated_date));
+        co_await this->on_enter(std::move(target), resp.group_id, std::move(new_member), resp.revision);
         break;
 
     case fb::protocol::internal::GroupActionType::Leave:
-        co_await this->on_leave(std::move(target),
-                                resp.group_id,
-                                std::move(deleted_member),
-                                version_time(resp.updated_date));
+        co_await this->on_leave(std::move(target), resp.group_id, std::move(deleted_member), resp.revision);
         break;
 
     case fb::protocol::internal::GroupActionType::Kick:
-        co_await this->on_kick(std::move(target),
-                               resp.group_id,
-                               std::move(deleted_member),
-                               version_time(resp.updated_date));
+        co_await this->on_kick(std::move(target), resp.group_id, std::move(deleted_member), resp.revision);
         break;
 
     default:
@@ -196,24 +186,15 @@ async::task<void> group::container::leave_member(character& leaver)
     switch (resp.action)
     {
     case fb::protocol::internal::GroupActionType::Enter:
-        co_await this->on_enter(std::move(target),
-                                resp.group_id,
-                                std::move(new_member),
-                                version_time(resp.updated_date));
+        co_await this->on_enter(std::move(target), resp.group_id, std::move(new_member), resp.revision);
         break;
 
     case fb::protocol::internal::GroupActionType::Leave:
-        co_await this->on_leave(std::move(target),
-                                resp.group_id,
-                                std::move(deleted_member),
-                                version_time(resp.updated_date));
+        co_await this->on_leave(std::move(target), resp.group_id, std::move(deleted_member), resp.revision);
         break;
 
     case fb::protocol::internal::GroupActionType::Kick:
-        co_await this->on_kick(std::move(target),
-                               resp.group_id,
-                               std::move(deleted_member),
-                               version_time(resp.updated_date));
+        co_await this->on_kick(std::move(target), resp.group_id, std::move(deleted_member), resp.revision);
         break;
 
     default:
@@ -222,7 +203,7 @@ async::task<void> group::container::leave_member(character& leaver)
 }
 
 async::task<void>
-group::container::broadcast(uint32_t world, uint32_t group_id, std::string_view message, MESSAGE_TYPE type)
+group::container::broadcast(uint32_t world, uint64_t group_id, std::string_view message, MESSAGE_TYPE type)
 {
     auto   message_str = std::string(message);
     auto&& resp        = co_await this->_server.http.post("internal",

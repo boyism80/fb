@@ -47,7 +47,7 @@ async::task<void> clan::container::create(character& me, std::string_view name)
     }
 
     auto title = resp.clan.title.has_value() ? resp.clan.title.value() : std::string{};
-    co_await this->on_create(resp.clan.id, resp.clan.name, title, std::move(members), version_time(resp.updated_date));
+    co_await this->on_create(resp.clan.id, resp.clan.name, title, std::move(members), resp.revision);
 }
 
 async::task<void> clan::container::destroy(character& me)
@@ -85,7 +85,7 @@ async::task<void> clan::container::destroy(character& me)
                                          internal_reqs::DestroyClan{world, fb::config<uint32_t>("id"), me.id});
 
     co_await this->on_error(resp.error);
-    co_await this->on_destroyed(resp.clan_id, resp.clan_name, version_time(resp.updated_date));
+    co_await this->on_destroyed(resp.clan_id, resp.clan_name, resp.revision);
     me.clan_reset();
 }
 
@@ -514,7 +514,7 @@ async::task<std::optional<bool>> clan::container::abort_money(uint32_t world, ui
     }
     else if (aborted.value().applied)
     {
-        co_await this->on_set_money(clan_id, aborted.value().money, version_time(aborted.value().updated_date));
+        co_await this->on_set_money(clan_id, aborted.value().money, aborted.value().revision);
         co_return true;
     }
     else

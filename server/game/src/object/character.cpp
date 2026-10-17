@@ -1584,21 +1584,21 @@ void character::title(std::string_view value)
     this->_title = std::string(value);
 }
 
-const std::optional<uint32_t>& character::group_id() const
+const std::optional<uint64_t>& character::group_id() const
 {
     this->assert_thread();
 
     return this->_group_id;
 }
 
-std::optional<uint32_t>& character::group_id()
+std::optional<uint64_t>& character::group_id()
 {
     this->assert_thread();
 
     return this->_group_id;
 }
 
-void character::group_id(uint32_t gid)
+void character::group_id(uint64_t gid)
 {
     this->assert_thread();
 

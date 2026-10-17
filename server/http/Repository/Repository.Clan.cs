@@ -43,6 +43,7 @@ namespace Http.Reepository
                     `title`,
                     `money`,
                     `money_requests`,
+                    `revision`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -52,6 +53,7 @@ namespace Http.Reepository
                     {value.Title.Escape()},
                     {value.Money.Escape()},
                     {JsonConvert.SerializeObject(value.MoneyRequests).Escape()},
+                    {value.Revision.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -60,6 +62,7 @@ namespace Http.Reepository
                     `title`=VALUES(`title`),
                     `money`=VALUES(`money`),
                     `money_requests`=VALUES(`money_requests`),
+                    `revision`=VALUES(`revision`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

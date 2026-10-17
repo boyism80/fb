@@ -32,5 +32,5 @@ async::task<void> create_group::handle(const internal_resp::GroupDetails& messag
                                            message.group.id,
                                            message.group.master,
                                            std::move(members),
-                                           fb::game::version_time(message.updated_date));
+                                           message.revision);
 }

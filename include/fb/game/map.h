@@ -180,7 +180,7 @@ private:
     uint32_t                                                                _sequence = 1;
     std::queue<uint32_t>                                                    _available_seq;
     std::unordered_map<uint32_t, slot_pool>                                 _slot_pools;
-    std::map<std::pair<uint32_t, uint32_t>, std::shared_ptr<fb::game::map>> _group_instances;
+    std::map<std::pair<uint64_t, uint32_t>, std::shared_ptr<fb::game::map>> _group_instances;
     std::mutex                                                              _load_mutex;
     std::mutex                                                              _entry_mutex;
     mutable std::atomic<std::shared_ptr<const snapshot_t>>                  _snapshot{std::make_shared<snapshot_t>()};

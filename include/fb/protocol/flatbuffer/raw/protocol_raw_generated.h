@@ -3191,10 +3191,10 @@ struct Group FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 4,
     VT_MASTER = 6,
     VT_MEMBERS = 8,
-    VT_UPDATED_DATE = 10
+    VT_REVISION = 10
   };
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
+  uint64_t id() const {
+    return GetField<uint64_t>(VT_ID, 0);
   }
   const ::flatbuffers::String *master() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MASTER);
@@ -3202,19 +3202,18 @@ struct Group FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *members() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_MEMBERS);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint64_t>(verifier, VT_ID, 8) &&
            VerifyOffset(verifier, VT_MASTER) &&
            verifier.VerifyString(master()) &&
            VerifyOffset(verifier, VT_MEMBERS) &&
            verifier.VerifyVector(members()) &&
            verifier.VerifyVectorOfStrings(members()) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -3223,8 +3222,8 @@ struct GroupBuilder {
   typedef Group Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(Group::VT_ID, id, 0);
+  void add_id(uint64_t id) {
+    fbb_.AddElement<uint64_t>(Group::VT_ID, id, 0);
   }
   void add_master(::flatbuffers::Offset<::flatbuffers::String> master) {
     fbb_.AddOffset(Group::VT_MASTER, master);
@@ -3232,8 +3231,8 @@ struct GroupBuilder {
   void add_members(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> members) {
     fbb_.AddOffset(Group::VT_MEMBERS, members);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(Group::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(Group::VT_REVISION, revision, 0);
   }
   explicit GroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -3248,33 +3247,32 @@ struct GroupBuilder {
 
 inline ::flatbuffers::Offset<Group> CreateGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t id = 0,
+    uint64_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> master = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> members = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   GroupBuilder builder_(_fbb);
-  builder_.add_updated_date(updated_date);
+  builder_.add_revision(revision);
+  builder_.add_id(id);
   builder_.add_members(members);
   builder_.add_master(master);
-  builder_.add_id(id);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Group> CreateGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t id = 0,
+    uint64_t id = 0,
     const char *master = nullptr,
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *members = nullptr,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0) {
   auto master__ = master ? _fbb.CreateString(master) : 0;
   auto members__ = members ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*members) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::raw::CreateGroup(
       _fbb,
       id,
       master__,
       members__,
-      updated_date__);
+      revision);
 }
 
 struct Achievement FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -3460,7 +3458,7 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ALLIED_CLAN_ID = 10,
     VT_ENEMY_CLAN_IDS = 12,
     VT_MONEY = 14,
-    VT_UPDATED_DATE = 16
+    VT_REVISION = 16
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -3480,8 +3478,8 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t money() const {
     return GetField<uint64_t>(VT_MONEY, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3495,8 +3493,7 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_ENEMY_CLAN_IDS) &&
            verifier.VerifyVector(enemy_clan_ids()) &&
            VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -3523,8 +3520,8 @@ struct ClanBuilder {
   void add_money(uint64_t money) {
     fbb_.AddElement<uint64_t>(Clan::VT_MONEY, money, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(Clan::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(Clan::VT_REVISION, revision, 0);
   }
   explicit ClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -3545,10 +3542,10 @@ inline ::flatbuffers::Offset<Clan> CreateClan(
     ::flatbuffers::Offset<nullable::nullable_uint> allied_clan_id = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> enemy_clan_ids = 0,
     uint64_t money = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   ClanBuilder builder_(_fbb);
+  builder_.add_revision(revision);
   builder_.add_money(money);
-  builder_.add_updated_date(updated_date);
   builder_.add_enemy_clan_ids(enemy_clan_ids);
   builder_.add_allied_clan_id(allied_clan_id);
   builder_.add_title(title);
@@ -3565,11 +3562,10 @@ inline ::flatbuffers::Offset<Clan> CreateClanDirect(
     ::flatbuffers::Offset<nullable::nullable_uint> allied_clan_id = 0,
     const std::vector<uint32_t> *enemy_clan_ids = nullptr,
     uint64_t money = 0,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto enemy_clan_ids__ = enemy_clan_ids ? _fbb.CreateVector<uint32_t>(*enemy_clan_ids) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::raw::CreateClan(
       _fbb,
       id,
@@ -3578,7 +3574,7 @@ inline ::flatbuffers::Offset<Clan> CreateClanDirect(
       allied_clan_id,
       enemy_clan_ids__,
       money,
-      updated_date__);
+      revision);
 }
 
 struct ClanMember FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -6675,7 +6671,8 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 4,
     VT_HOST = 6,
     VT_MASTER = 8,
-    VT_MEMBER = 10
+    VT_MEMBER = 10,
+    VT_ID = 12
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -6689,6 +6686,9 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *member() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
+  uint64_t id() const {
+    return GetField<uint64_t>(VT_ID, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -6696,6 +6696,7 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
            VerifyOffset(verifier, VT_MEMBER) &&
            verifier.VerifyString(member()) &&
+           VerifyField<uint64_t>(verifier, VT_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -6716,6 +6717,9 @@ struct CreateGroupBuilder {
   void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
     fbb_.AddOffset(CreateGroup::VT_MEMBER, member);
   }
+  void add_id(uint64_t id) {
+    fbb_.AddElement<uint64_t>(CreateGroup::VT_ID, id, 0);
+  }
   explicit CreateGroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -6732,8 +6736,10 @@ inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroup(
     uint32_t world = 0,
     uint32_t host = 0,
     uint32_t master = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> member = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> member = 0,
+    uint64_t id = 0) {
   CreateGroupBuilder builder_(_fbb);
+  builder_.add_id(id);
   builder_.add_member(member);
   builder_.add_master(master);
   builder_.add_host(host);
@@ -6746,14 +6752,16 @@ inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroupDirect(
     uint32_t world = 0,
     uint32_t host = 0,
     uint32_t master = 0,
-    const char *member = nullptr) {
+    const char *member = nullptr,
+    uint64_t id = 0) {
   auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::request::raw::CreateCreateGroup(
       _fbb,
       world,
       host,
       master,
-      member__);
+      member__,
+      id);
 }
 
 struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -6858,8 +6866,8 @@ struct BroadcastGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
-  uint32_t group() const {
-    return GetField<uint32_t>(VT_GROUP, 0);
+  uint64_t group() const {
+    return GetField<uint64_t>(VT_GROUP, 0);
   }
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
@@ -6871,7 +6879,7 @@ struct BroadcastGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint32_t>(verifier, VT_GROUP, 4) &&
+           VerifyField<uint64_t>(verifier, VT_GROUP, 8) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
            VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
@@ -6889,8 +6897,8 @@ struct BroadcastGroupBuilder {
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(BroadcastGroup::VT_HOST, host, 0);
   }
-  void add_group(uint32_t group) {
-    fbb_.AddElement<uint32_t>(BroadcastGroup::VT_GROUP, group, 0);
+  void add_group(uint64_t group) {
+    fbb_.AddElement<uint64_t>(BroadcastGroup::VT_GROUP, group, 0);
   }
   void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
     fbb_.AddOffset(BroadcastGroup::VT_MESSAGE, message);
@@ -6913,12 +6921,12 @@ inline ::flatbuffers::Offset<BroadcastGroup> CreateBroadcastGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t host = 0,
-    uint32_t group = 0,
+    uint64_t group = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint8_t type = 0) {
   BroadcastGroupBuilder builder_(_fbb);
-  builder_.add_message(message);
   builder_.add_group(group);
+  builder_.add_message(message);
   builder_.add_host(host);
   builder_.add_world(world);
   builder_.add_type(type);
@@ -6929,7 +6937,7 @@ inline ::flatbuffers::Offset<BroadcastGroup> CreateBroadcastGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t host = 0,
-    uint32_t group = 0,
+    uint64_t group = 0,
     const char *message = nullptr,
     uint8_t type = 0) {
   auto message__ = message ? _fbb.CreateString(message) : 0;
@@ -11830,8 +11838,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const fb::protocol::internal::raw::Marriage *marriage() const {
     return GetPointer<const fb::protocol::internal::raw::Marriage *>(VT_MARRIAGE);
   }
-  const nullable::nullable_uint *group() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_GROUP);
+  const nullable::nullable_ulong *group() const {
+    return GetPointer<const nullable::nullable_ulong *>(VT_GROUP);
   }
   const nullable::nullable_uint *clan() const {
     return GetPointer<const nullable::nullable_uint *>(VT_CLAN);
@@ -11928,7 +11936,7 @@ struct InitBuilder {
   void add_marriage(::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage) {
     fbb_.AddOffset(Init::VT_MARRIAGE, marriage);
   }
-  void add_group(::flatbuffers::Offset<nullable::nullable_uint> group) {
+  void add_group(::flatbuffers::Offset<nullable::nullable_ulong> group) {
     fbb_.AddOffset(Init::VT_GROUP, group);
   }
   void add_clan(::flatbuffers::Offset<nullable::nullable_uint> clan) {
@@ -11985,7 +11993,7 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> group = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> group = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
@@ -12023,7 +12031,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> group = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> group = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
@@ -12321,7 +12329,7 @@ struct GroupDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ACTOR = 12,
     VT_TARGET = 14,
     VT_ERROR = 16,
-    VT_UPDATED_DATE = 18
+    VT_REVISION = 18
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -12344,8 +12352,8 @@ struct GroupDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -12361,8 +12369,7 @@ struct GroupDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_TARGET) &&
            verifier.VerifyString(target()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -12392,8 +12399,8 @@ struct GroupDetailsBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(GroupDetails::VT_ERROR, error, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(GroupDetails::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(GroupDetails::VT_REVISION, revision, 0);
   }
   explicit GroupDetailsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -12415,9 +12422,9 @@ inline ::flatbuffers::Offset<GroupDetails> CreateGroupDetails(
     ::flatbuffers::Offset<::flatbuffers::String> actor = 0,
     ::flatbuffers::Offset<::flatbuffers::String> target = 0,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   GroupDetailsBuilder builder_(_fbb);
-  builder_.add_updated_date(updated_date);
+  builder_.add_revision(revision);
   builder_.add_error(error);
   builder_.add_target(target);
   builder_.add_actor(actor);
@@ -12437,11 +12444,10 @@ inline ::flatbuffers::Offset<GroupDetails> CreateGroupDetailsDirect(
     const char *actor = nullptr,
     const char *target = nullptr,
     uint32_t error = 0,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0) {
   auto members__ = members ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef>>(*members) : 0;
   auto actor__ = actor ? _fbb.CreateString(actor) : 0;
   auto target__ = target ? _fbb.CreateString(target) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::response::raw::CreateGroupDetails(
       _fbb,
       host,
@@ -12451,7 +12457,7 @@ inline ::flatbuffers::Offset<GroupDetails> CreateGroupDetailsDirect(
       actor__,
       target__,
       error,
-      updated_date__);
+      revision);
 }
 
 struct UpdatedGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -12466,7 +12472,7 @@ struct UpdatedGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_NEW_MEMBER = 16,
     VT_DELETED_MEMBER = 18,
     VT_ERROR = 20,
-    VT_UPDATED_DATE = 22
+    VT_REVISION = 22
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -12474,8 +12480,8 @@ struct UpdatedGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   fb::protocol::internal::raw::GroupActionType action() const {
     return static_cast<fb::protocol::internal::raw::GroupActionType>(GetField<int8_t>(VT_ACTION, 0));
   }
-  uint32_t group_id() const {
-    return GetField<uint32_t>(VT_GROUP_ID, 0);
+  uint64_t group_id() const {
+    return GetField<uint64_t>(VT_GROUP_ID, 0);
   }
   const ::flatbuffers::String *group_master() const {
     return GetPointer<const ::flatbuffers::String *>(VT_GROUP_MASTER);
@@ -12495,14 +12501,14 @@ struct UpdatedGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
-           VerifyField<uint32_t>(verifier, VT_GROUP_ID, 4) &&
+           VerifyField<uint64_t>(verifier, VT_GROUP_ID, 8) &&
            VerifyOffset(verifier, VT_GROUP_MASTER) &&
            verifier.VerifyString(group_master()) &&
            VerifyOffset(verifier, VT_ACTOR) &&
@@ -12514,8 +12520,7 @@ struct UpdatedGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_DELETED_MEMBER) &&
            verifier.VerifyTable(deleted_member()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -12530,8 +12535,8 @@ struct UpdatedGroupBuilder {
   void add_action(fb::protocol::internal::raw::GroupActionType action) {
     fbb_.AddElement<int8_t>(UpdatedGroup::VT_ACTION, static_cast<int8_t>(action), 0);
   }
-  void add_group_id(uint32_t group_id) {
-    fbb_.AddElement<uint32_t>(UpdatedGroup::VT_GROUP_ID, group_id, 0);
+  void add_group_id(uint64_t group_id) {
+    fbb_.AddElement<uint64_t>(UpdatedGroup::VT_GROUP_ID, group_id, 0);
   }
   void add_group_master(::flatbuffers::Offset<::flatbuffers::String> group_master) {
     fbb_.AddOffset(UpdatedGroup::VT_GROUP_MASTER, group_master);
@@ -12551,8 +12556,8 @@ struct UpdatedGroupBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(UpdatedGroup::VT_ERROR, error, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(UpdatedGroup::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(UpdatedGroup::VT_REVISION, revision, 0);
   }
   explicit UpdatedGroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -12569,23 +12574,23 @@ inline ::flatbuffers::Offset<UpdatedGroup> CreateUpdatedGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
     fb::protocol::internal::raw::GroupActionType action = fb::protocol::internal::raw::GroupActionType_Enter,
-    uint32_t group_id = 0,
+    uint64_t group_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> group_master = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> target = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> new_member = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> deleted_member = 0,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   UpdatedGroupBuilder builder_(_fbb);
-  builder_.add_updated_date(updated_date);
+  builder_.add_revision(revision);
+  builder_.add_group_id(group_id);
   builder_.add_error(error);
   builder_.add_deleted_member(deleted_member);
   builder_.add_new_member(new_member);
   builder_.add_target(target);
   builder_.add_actor(actor);
   builder_.add_group_master(group_master);
-  builder_.add_group_id(group_id);
   builder_.add_host(host);
   builder_.add_action(action);
   return builder_.Finish();
@@ -12595,16 +12600,15 @@ inline ::flatbuffers::Offset<UpdatedGroup> CreateUpdatedGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
     fb::protocol::internal::raw::GroupActionType action = fb::protocol::internal::raw::GroupActionType_Enter,
-    uint32_t group_id = 0,
+    uint64_t group_id = 0,
     const char *group_master = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> target = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> new_member = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> deleted_member = 0,
     uint32_t error = 0,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0) {
   auto group_master__ = group_master ? _fbb.CreateString(group_master) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::response::raw::CreateUpdatedGroup(
       _fbb,
       host,
@@ -12616,7 +12620,7 @@ inline ::flatbuffers::Offset<UpdatedGroup> CreateUpdatedGroupDirect(
       new_member,
       deleted_member,
       error,
-      updated_date__);
+      revision);
 }
 
 struct DestroyGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -12627,13 +12631,13 @@ struct DestroyGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_GROUP_MASTER = 8,
     VT_ACTOR = 10,
     VT_ERROR = 12,
-    VT_UPDATED_DATE = 14
+    VT_REVISION = 14
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
-  uint32_t group_id() const {
-    return GetField<uint32_t>(VT_GROUP_ID, 0);
+  uint64_t group_id() const {
+    return GetField<uint64_t>(VT_GROUP_ID, 0);
   }
   const ::flatbuffers::String *group_master() const {
     return GetPointer<const ::flatbuffers::String *>(VT_GROUP_MASTER);
@@ -12644,20 +12648,19 @@ struct DestroyGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint32_t>(verifier, VT_GROUP_ID, 4) &&
+           VerifyField<uint64_t>(verifier, VT_GROUP_ID, 8) &&
            VerifyOffset(verifier, VT_GROUP_MASTER) &&
            verifier.VerifyString(group_master()) &&
            VerifyOffset(verifier, VT_ACTOR) &&
            verifier.VerifyTable(actor()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -12669,8 +12672,8 @@ struct DestroyGroupBuilder {
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(DestroyGroup::VT_HOST, host, 0);
   }
-  void add_group_id(uint32_t group_id) {
-    fbb_.AddElement<uint32_t>(DestroyGroup::VT_GROUP_ID, group_id, 0);
+  void add_group_id(uint64_t group_id) {
+    fbb_.AddElement<uint64_t>(DestroyGroup::VT_GROUP_ID, group_id, 0);
   }
   void add_group_master(::flatbuffers::Offset<::flatbuffers::String> group_master) {
     fbb_.AddOffset(DestroyGroup::VT_GROUP_MASTER, group_master);
@@ -12681,8 +12684,8 @@ struct DestroyGroupBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(DestroyGroup::VT_ERROR, error, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(DestroyGroup::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(DestroyGroup::VT_REVISION, revision, 0);
   }
   explicit DestroyGroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -12698,17 +12701,17 @@ struct DestroyGroupBuilder {
 inline ::flatbuffers::Offset<DestroyGroup> CreateDestroyGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
-    uint32_t group_id = 0,
+    uint64_t group_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> group_master = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   DestroyGroupBuilder builder_(_fbb);
-  builder_.add_updated_date(updated_date);
+  builder_.add_revision(revision);
+  builder_.add_group_id(group_id);
   builder_.add_error(error);
   builder_.add_actor(actor);
   builder_.add_group_master(group_master);
-  builder_.add_group_id(group_id);
   builder_.add_host(host);
   return builder_.Finish();
 }
@@ -12716,13 +12719,12 @@ inline ::flatbuffers::Offset<DestroyGroup> CreateDestroyGroup(
 inline ::flatbuffers::Offset<DestroyGroup> CreateDestroyGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
-    uint32_t group_id = 0,
+    uint64_t group_id = 0,
     const char *group_master = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
     uint32_t error = 0,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0) {
   auto group_master__ = group_master ? _fbb.CreateString(group_master) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::response::raw::CreateDestroyGroup(
       _fbb,
       host,
@@ -12730,7 +12732,7 @@ inline ::flatbuffers::Offset<DestroyGroup> CreateDestroyGroupDirect(
       group_master__,
       actor,
       error,
-      updated_date__);
+      revision);
 }
 
 struct BroadcastGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -12745,8 +12747,8 @@ struct BroadcastGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
-  uint32_t group() const {
-    return GetField<uint32_t>(VT_GROUP, 0);
+  uint64_t group() const {
+    return GetField<uint64_t>(VT_GROUP, 0);
   }
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
@@ -12760,7 +12762,7 @@ struct BroadcastGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint32_t>(verifier, VT_GROUP, 4) &&
+           VerifyField<uint64_t>(verifier, VT_GROUP, 8) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
            VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
@@ -12776,8 +12778,8 @@ struct BroadcastGroupBuilder {
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(BroadcastGroup::VT_HOST, host, 0);
   }
-  void add_group(uint32_t group) {
-    fbb_.AddElement<uint32_t>(BroadcastGroup::VT_GROUP, group, 0);
+  void add_group(uint64_t group) {
+    fbb_.AddElement<uint64_t>(BroadcastGroup::VT_GROUP, group, 0);
   }
   void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
     fbb_.AddOffset(BroadcastGroup::VT_MESSAGE, message);
@@ -12802,14 +12804,14 @@ struct BroadcastGroupBuilder {
 inline ::flatbuffers::Offset<BroadcastGroup> CreateBroadcastGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
-    uint32_t group = 0,
+    uint64_t group = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint8_t type = 0,
     uint32_t error = 0) {
   BroadcastGroupBuilder builder_(_fbb);
+  builder_.add_group(group);
   builder_.add_error(error);
   builder_.add_message(message);
-  builder_.add_group(group);
   builder_.add_host(host);
   builder_.add_type(type);
   return builder_.Finish();
@@ -12818,7 +12820,7 @@ inline ::flatbuffers::Offset<BroadcastGroup> CreateBroadcastGroup(
 inline ::flatbuffers::Offset<BroadcastGroup> CreateBroadcastGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
-    uint32_t group = 0,
+    uint64_t group = 0,
     const char *message = nullptr,
     uint8_t type = 0,
     uint32_t error = 0) {
@@ -12840,7 +12842,7 @@ struct ClanDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CLAN = 8,
     VT_MEMBERS = 10,
     VT_ERROR = 12,
-    VT_UPDATED_DATE = 14
+    VT_REVISION = 14
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -12857,8 +12859,8 @@ struct ClanDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -12870,8 +12872,7 @@ struct ClanDetails FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(members()) &&
            verifier.VerifyVectorOfTables(members()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -12895,8 +12896,8 @@ struct ClanDetailsBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(ClanDetails::VT_ERROR, error, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(ClanDetails::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(ClanDetails::VT_REVISION, revision, 0);
   }
   explicit ClanDetailsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -12916,9 +12917,9 @@ inline ::flatbuffers::Offset<ClanDetails> CreateClanDetails(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Clan> clan = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMember>>> members = 0,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   ClanDetailsBuilder builder_(_fbb);
-  builder_.add_updated_date(updated_date);
+  builder_.add_revision(revision);
   builder_.add_error(error);
   builder_.add_members(members);
   builder_.add_clan(clan);
@@ -12934,9 +12935,8 @@ inline ::flatbuffers::Offset<ClanDetails> CreateClanDetailsDirect(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Clan> clan = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMember>> *members = nullptr,
     uint32_t error = 0,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0) {
   auto members__ = members ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::ClanMember>>(*members) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::response::raw::CreateClanDetails(
       _fbb,
       host,
@@ -12944,7 +12944,7 @@ inline ::flatbuffers::Offset<ClanDetails> CreateClanDetailsDirect(
       clan,
       members__,
       error,
-      updated_date__);
+      revision);
 }
 
 struct UpdatedClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -12965,7 +12965,8 @@ struct UpdatedClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_RELATED_CLAN_ID = 28,
     VT_MONEY = 30,
     VT_ERROR = 32,
-    VT_UPDATED_DATE = 34
+    VT_REVISION = 34,
+    VT_RELATED_REVISION = 36
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -13012,8 +13013,11 @@ struct UpdatedClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
+  }
+  uint64_t related_revision() const {
+    return GetField<uint64_t>(VT_RELATED_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -13042,8 +13046,8 @@ struct UpdatedClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(related_clan_id()) &&
            VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
+           VerifyField<uint64_t>(verifier, VT_RELATED_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -13097,8 +13101,11 @@ struct UpdatedClanBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(UpdatedClan::VT_ERROR, error, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(UpdatedClan::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(UpdatedClan::VT_REVISION, revision, 0);
+  }
+  void add_related_revision(uint64_t related_revision) {
+    fbb_.AddElement<uint64_t>(UpdatedClan::VT_RELATED_REVISION, related_revision, 0);
   }
   explicit UpdatedClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -13128,10 +13135,12 @@ inline ::flatbuffers::Offset<UpdatedClan> CreateUpdatedClan(
     ::flatbuffers::Offset<nullable::nullable_uint> related_clan_id = 0,
     uint64_t money = 0,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0,
+    uint64_t related_revision = 0) {
   UpdatedClanBuilder builder_(_fbb);
+  builder_.add_related_revision(related_revision);
+  builder_.add_revision(revision);
   builder_.add_money(money);
-  builder_.add_updated_date(updated_date);
   builder_.add_error(error);
   builder_.add_related_clan_id(related_clan_id);
   builder_.add_new_title(new_title);
@@ -13166,11 +13175,11 @@ inline ::flatbuffers::Offset<UpdatedClan> CreateUpdatedClanDirect(
     ::flatbuffers::Offset<nullable::nullable_uint> related_clan_id = 0,
     uint64_t money = 0,
     uint32_t error = 0,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0,
+    uint64_t related_revision = 0) {
   auto clan_name__ = clan_name ? _fbb.CreateString(clan_name) : 0;
   auto old_title__ = old_title ? _fbb.CreateString(old_title) : 0;
   auto new_title__ = new_title ? _fbb.CreateString(new_title) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::response::raw::CreateUpdatedClan(
       _fbb,
       host,
@@ -13188,7 +13197,8 @@ inline ::flatbuffers::Offset<UpdatedClan> CreateUpdatedClanDirect(
       related_clan_id,
       money,
       error,
-      updated_date__);
+      revision,
+      related_revision);
 }
 
 struct AbortClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -13197,7 +13207,7 @@ struct AbortClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_APPLIED = 4,
     VT_MONEY = 6,
     VT_ERROR = 8,
-    VT_UPDATED_DATE = 10
+    VT_REVISION = 10
   };
   bool applied() const {
     return GetField<uint8_t>(VT_APPLIED, 0) != 0;
@@ -13208,16 +13218,15 @@ struct AbortClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_APPLIED, 1) &&
            VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -13235,8 +13244,8 @@ struct AbortClanMoneyBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(AbortClanMoney::VT_ERROR, error, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(AbortClanMoney::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(AbortClanMoney::VT_REVISION, revision, 0);
   }
   explicit AbortClanMoneyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -13254,28 +13263,13 @@ inline ::flatbuffers::Offset<AbortClanMoney> CreateAbortClanMoney(
     bool applied = false,
     uint64_t money = 0,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   AbortClanMoneyBuilder builder_(_fbb);
+  builder_.add_revision(revision);
   builder_.add_money(money);
-  builder_.add_updated_date(updated_date);
   builder_.add_error(error);
   builder_.add_applied(applied);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<AbortClanMoney> CreateAbortClanMoneyDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool applied = false,
-    uint64_t money = 0,
-    uint32_t error = 0,
-    const char *updated_date = nullptr) {
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
-  return fb::protocol::internal::response::raw::CreateAbortClanMoney(
-      _fbb,
-      applied,
-      money,
-      error,
-      updated_date__);
 }
 
 struct ReleaseClanMoney FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -13426,7 +13420,7 @@ struct DestroyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CLAN_NAME = 8,
     VT_ACTOR = 10,
     VT_ERROR = 12,
-    VT_UPDATED_DATE = 14
+    VT_REVISION = 14
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -13443,8 +13437,8 @@ struct DestroyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
-  const ::flatbuffers::String *updated_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -13455,8 +13449,7 @@ struct DestroyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_ACTOR) &&
            verifier.VerifyTable(actor()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           VerifyOffset(verifier, VT_UPDATED_DATE) &&
-           verifier.VerifyString(updated_date()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -13480,8 +13473,8 @@ struct DestroyClanBuilder {
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(DestroyClan::VT_ERROR, error, 0);
   }
-  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
-    fbb_.AddOffset(DestroyClan::VT_UPDATED_DATE, updated_date);
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(DestroyClan::VT_REVISION, revision, 0);
   }
   explicit DestroyClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -13501,9 +13494,9 @@ inline ::flatbuffers::Offset<DestroyClan> CreateDestroyClan(
     ::flatbuffers::Offset<::flatbuffers::String> clan_name = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    uint64_t revision = 0) {
   DestroyClanBuilder builder_(_fbb);
-  builder_.add_updated_date(updated_date);
+  builder_.add_revision(revision);
   builder_.add_error(error);
   builder_.add_actor(actor);
   builder_.add_clan_name(clan_name);
@@ -13519,9 +13512,8 @@ inline ::flatbuffers::Offset<DestroyClan> CreateDestroyClanDirect(
     const char *clan_name = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::CharacterRef> actor = 0,
     uint32_t error = 0,
-    const char *updated_date = nullptr) {
+    uint64_t revision = 0) {
   auto clan_name__ = clan_name ? _fbb.CreateString(clan_name) : 0;
-  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::response::raw::CreateDestroyClan(
       _fbb,
       host,
@@ -13529,7 +13521,7 @@ inline ::flatbuffers::Offset<DestroyClan> CreateDestroyClanDirect(
       clan_name__,
       actor,
       error,
-      updated_date__);
+      revision);
 }
 
 struct Broadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

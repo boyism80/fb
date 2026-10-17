@@ -66,14 +66,52 @@ namespace Internal.Controllers
             foreach (var clan in clans)
             {
                 clan.UpdatedDate = at;
+                clan.Revision++;
                 _dbContext.Clan.Set(world, clan);
+            }
+        }
+
+        private sealed class ClanLocks : IAsyncDisposable
+        {
+            private readonly List<RedisDistributedLockHandle> _locks = new List<RedisDistributedLockHandle>();
+
+            public void Add(RedisDistributedLockHandle handle)
+            {
+                _locks.Add(handle);
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                for (var i = _locks.Count - 1; i >= 0; i--)
+                {
+                    await _locks[i].DisposeAsync();
+                }
+            }
+        }
+
+        // Every path that touches more than one clan locks them in id order so two such paths cannot deadlock.
+        private async Task<ClanLocks> LockClans(uint world, IEnumerable<uint> ids)
+        {
+            var locks = new ClanLocks();
+            try
+            {
+                foreach (var id in ids.Distinct().OrderBy(x => x))
+                {
+                    locks.Add(await _distributedLock.Lock(world, Clan.DistributedLockKey(id)));
+                }
+                return locks;
+            }
+            catch
+            {
+                await locks.DisposeAsync();
+                throw;
             }
         }
 
         private async Task<Protocol.Clan> GetClanResponse(uint world, Clan clan)
         {
             var protocolClan = _mapper.Map<Protocol.Clan>(clan);
-            protocolClan.UpdatedDate = clan.UpdatedDate.ToVersion();
+            protocolClan.Revision = clan.Revision;
             var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
             protocolClan.AlliedClanId = alliance?.AlliedClan;
             var enemies = await _dbContext.ClanEnemy.Get(world, clan.Id);
@@ -97,7 +135,6 @@ namespace Internal.Controllers
                 return new Response.ClanDetails
                 {
                     Action = Protocol.ClanDetailsAction.Query,
-                    UpdatedDate = DateTime.UtcNow.ToVersion(),
                     Error = (uint)e.Error
                 };
             }
@@ -126,7 +163,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanDetailsAction.Query,
                     Clan = await GetClanResponse(world, clan),
                     Members = await GetClanMemberResponse(world, id),
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -135,7 +172,6 @@ namespace Internal.Controllers
                 return new Response.ClanDetails
                 {
                     Action = Protocol.ClanDetailsAction.Query,
-                    UpdatedDate = DateTime.UtcNow.ToVersion(),
                     Error = (uint)e.Error
                 };
             }
@@ -192,6 +228,7 @@ namespace Internal.Controllers
                     Id = newClanId,
                     Name = request.Name,
                     Title = null,
+                    Revision = 1,
                 });
                 await _dbContext.Clan.SaveChangesAsync();
 
@@ -217,7 +254,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanDetailsAction.Create,
                     Clan = await GetClanResponse(world, clan),
                     Members = await GetClanMemberResponse(world, clan.Id),
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Error = (uint)ErrorCode.None
                 };
 
@@ -272,7 +309,12 @@ namespace Internal.Controllers
                 if (sync.Clan == null)
                     throw new LogicException(ErrorCode.ClanNotJoined);
 
-                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(sync.Clan.Value));
+                var counterpartIds = (await _dbContext.ClanEnemy.Get(world, sync.Clan.Value)).Select(x => x.EnemyClan).ToList();
+                var alliedBefore = await _dbContext.ClanAlliance.Get(world, sync.Clan.Value);
+                if (alliedBefore != null)
+                    counterpartIds.Add(alliedBefore.AlliedClan);
+
+                await using var _2 = await LockClans(world, counterpartIds.Append(sync.Clan.Value));
 
                 var clan = await _dbContext.Clan.Get(world, sync.Clan.Value) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -291,24 +333,41 @@ namespace Internal.Controllers
                 _dbContext.ClanMember.Delete(world, master);
 
                 var oldTitle = clan.Title;
-                var destroyedAt = DateTime.UtcNow;
                 _dbContext.Clan.Delete(world, clan.Id);
 
                 var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
                 await using var _3 = alliance != null ? await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliance.AlliedClan)) : null;
+                var unallied = default(Clan);
                 if (alliance != null)
                 {
+                    if (counterpartIds.Contains(alliance.AlliedClan) == false)
+                        throw new LogicException(ErrorCode.Unhandled);
+
                     _dbContext.ClanAlliance.Delete(world, clan.Id);
                     _dbContext.ClanAlliance.Delete(world, alliance.AlliedClan);
+                    unallied = await _dbContext.Clan.Get(world, alliance.AlliedClan);
+                    if (unallied != null)
+                        Touch(world, unallied);
                 }
 
                 var enemies = (await _dbContext.ClanEnemy.Get(world, clan.Id)).ToList();
+                var unenemies = new List<Clan>();
                 foreach (var enemy in enemies)
                 {
+                    if (counterpartIds.Contains(enemy.EnemyClan) == false)
+                        throw new LogicException(ErrorCode.Unhandled);
+
                     _dbContext.ClanEnemy.Delete(world, enemy);
                     var reverse = await _dbContext.ClanEnemy.Get(world, enemy.EnemyClan, clan.Id);
                     if (reverse != null)
                         _dbContext.ClanEnemy.Delete(world, reverse);
+
+                    var other = await _dbContext.Clan.Get(world, enemy.EnemyClan);
+                    if (other != null)
+                    {
+                        Touch(world, other);
+                        unenemies.Add(other);
+                    }
                 }
 
                 var clearedCastles = new List<byte>();
@@ -360,11 +419,42 @@ namespace Internal.Controllers
                         Uid = ch.Id,
                         Name = masterName ?? ch.Name
                     },
-                    UpdatedDate = destroyedAt.ToVersion(),
+                    Revision = clan.Revision + 1,
                     Error = (uint)ErrorCode.None
                 };
 
                 await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
+
+                // The destroying game server gets no HTTP response for these clans, so no host may skip them.
+                if (unallied != null)
+                {
+                    await _rabbitMqService.NotifySavedAsync(new Response.UpdatedClan
+                    {
+                        Host = uint.MaxValue,
+                        Action = Protocol.ClanActionType.Unally,
+                        ClanId = unallied.Id,
+                        ClanName = unallied.Name,
+                        Revision = unallied.Revision,
+                        Actor = response.Actor,
+                        RelatedClanId = clan.Id,
+                        Error = (uint)ErrorCode.None
+                    }, "clan", request.World);
+                }
+                foreach (var other in unenemies)
+                {
+                    await _rabbitMqService.NotifySavedAsync(new Response.UpdatedClan
+                    {
+                        Host = uint.MaxValue,
+                        Action = Protocol.ClanActionType.Unenemy,
+                        ClanId = other.Id,
+                        ClanName = other.Name,
+                        Revision = other.Revision,
+                        Actor = response.Actor,
+                        RelatedClanId = clan.Id,
+                        Error = (uint)ErrorCode.None
+                    }, "clan", request.World);
+                }
+
                 foreach (var divineBeast in clearedCastles)
                 {
                     await _rabbitMqService.NotifySavedAsync(new Response.UpdatedCastle
@@ -452,7 +542,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.SetTitle,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = changer.Id,
@@ -564,7 +654,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Join,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = inviter.Id,
@@ -654,7 +744,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Leave,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = ch.Id,
@@ -776,7 +866,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Kick,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = kicker.Id,
@@ -944,7 +1034,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.ChangeRole,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = changer.Id,
@@ -1005,7 +1095,7 @@ namespace Internal.Controllers
                 if (request.Clan == request.TargetClan)
                     throw new LogicException(ErrorCode.ClanCannotAllySelf);
 
-                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1043,7 +1133,8 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Ally,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
+                    RelatedRevision = targetClan.Revision,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,
@@ -1095,7 +1186,10 @@ namespace Internal.Controllers
                 if (requesterSync.Clan.Value != request.Clan)
                     throw new LogicException(ErrorCode.ClanNotMatched);
 
-                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+                var alliedBefore = await _dbContext.ClanAlliance.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.ClanNotAllied);
+
+                await using var _2 = await LockClans(world, new[] { request.Clan, alliedBefore.AlliedClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1110,6 +1204,9 @@ namespace Internal.Controllers
 
                 var alliance = await _dbContext.ClanAlliance.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.ClanNotAllied);
+
+                if (alliance.AlliedClan != alliedBefore.AlliedClan)
+                    throw new LogicException(ErrorCode.Unhandled);
 
                 var alliedClanId = alliance.AlliedClan;
                 await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliedClanId));
@@ -1130,7 +1227,8 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Unally,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
+                    RelatedRevision = alliedClan?.Revision ?? 0,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,
@@ -1185,7 +1283,7 @@ namespace Internal.Controllers
                 if (request.Clan == request.TargetClan)
                     throw new LogicException(ErrorCode.ClanCannotEnemySelf);
 
-                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1218,7 +1316,8 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Enemy,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
+                    RelatedRevision = targetClan.Revision,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,
@@ -1276,7 +1375,7 @@ namespace Internal.Controllers
                         Action = Protocol.ClanActionType.SetMoney,
                         ClanId = clan.Id,
                         ClanName = clan.Name,
-                        UpdatedDate = clan.UpdatedDate.ToVersion(),
+                        Revision = clan.Revision,
                         Money = clan.Money,
                         Error = (uint)ErrorCode.None
                     };
@@ -1308,7 +1407,7 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.SetMoney,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Money = clan.Money,
                     Error = (uint)ErrorCode.None
                 };
@@ -1360,7 +1459,7 @@ namespace Internal.Controllers
                     {
                         Applied = true,
                         Money = clan.Money,
-                        UpdatedDate = clan.UpdatedDate.ToVersion(),
+                        Revision = clan.Revision,
                         Error = (uint)ErrorCode.None
                     };
                 }
@@ -1375,7 +1474,7 @@ namespace Internal.Controllers
                 return new Response.AbortClanMoney
                 {
                     Applied = false,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -1438,7 +1537,7 @@ namespace Internal.Controllers
                 if (requesterSync.Clan.Value != request.Clan)
                     throw new LogicException(ErrorCode.ClanNotMatched);
 
-                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1471,7 +1570,8 @@ namespace Internal.Controllers
                     Action = Protocol.ClanActionType.Unenemy,
                     ClanId = clan.Id,
                     ClanName = clan.Name,
-                    UpdatedDate = clan.UpdatedDate.ToVersion(),
+                    Revision = clan.Revision,
+                    RelatedRevision = targetClan?.Revision ?? 0,
                     Actor = new Protocol.CharacterRef
                     {
                         Uid = requester.Id,

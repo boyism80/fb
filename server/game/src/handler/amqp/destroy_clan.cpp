@@ -16,7 +16,5 @@ async::task<void> destroy_clan::handle(const internal_resp::DestroyClan& message
         co_return;
 
     co_await this->server.clans.on_error(message.error);
-    co_await this->server.clans.on_destroyed(message.clan_id,
-                                             message.clan_name,
-                                             fb::game::version_time(message.updated_date));
+    co_await this->server.clans.on_destroyed(message.clan_id, message.clan_name, message.revision);
 }

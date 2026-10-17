@@ -156,7 +156,7 @@ private:
     uint64_t                                         _money = 0;
     std::optional<character_appearance<>>            _mimicry = std::nullopt;
     std::string                                      _title = "";
-    std::optional<uint32_t>                          _group_id = std::nullopt;
+    std::optional<uint64_t>                          _group_id = std::nullopt;
     std::optional<uint32_t>                          _clan_id = std::nullopt;
     uint16_t                                         _weapon_damage = 0;
     bool                                             _detect = false;
@@ -372,9 +372,9 @@ public:
     void                                                      screen_refresh();
     const std::string&                                        title() const;
     void                                                      title(std::string_view value);
-    const std::optional<uint32_t>&                            group_id() const;
-    std::optional<uint32_t>&                                  group_id();
-    void                                                      group_id(uint32_t gid);
+    const std::optional<uint64_t>&                            group_id() const;
+    std::optional<uint64_t>&                                  group_id();
+    void                                                      group_id(uint64_t gid);
     void                                                      group_reset();
     void                                                      refresh_group_portrait();
     const std::optional<uint32_t>&                            clan_id() const;

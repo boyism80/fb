@@ -4,18 +4,20 @@ namespace Http.Model
 {
     public class GroupKey : BaseModel, IRedisValueKey
     {
-        public required uint Master { get; set; }
+        public required ulong Id { get; set; }
 
-        public uint? GetHash() => Master;
+        public uint? GetHash() => (uint)(Id % uint.MaxValue);
 
-        public RedisKey GetRedisKey() => $"fb:cache:group:{Master}";
+        public RedisKey GetRedisKey() => $"fb:cache:group:{Id}";
     }
 
     public class Group : GroupKey, IModel
     {
+        public uint Master { get; set; }
         public List<uint> Members { get; set; } = new List<uint>();
+        public ulong Revision { get; set; }
 
-        public static string DistributedLockKey(uint id)
+        public static string DistributedLockKey(ulong id)
         {
             return $"fb:lock:group:{id}";
         }

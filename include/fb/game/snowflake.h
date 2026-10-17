@@ -64,6 +64,17 @@ public:
 
         return (this->_last_timestamp << TIMESTAMP_SHIFT) | this->_origin | this->_sequence;
     }
+
+    // Internal reads the world back from the id. Cross servers (world 0) issue ids for their characters' home
+    // worlds, which stays unique because cross server ids never overlap home server ids.
+    uint64_t next(uint32_t world)
+    {
+        if (world >= (1U << WORLD_BITS))
+            throw std::runtime_error(std::format("snowflake world {} does not fit in {} bits", world, WORLD_BITS));
+
+        constexpr auto world_mask = ((1ULL << WORLD_BITS) - 1) << WORLD_SHIFT;
+        return (this->next() & ~world_mask) | (static_cast<uint64_t>(world) << WORLD_SHIFT);
+    }
 };
 
 } // namespace fb::game

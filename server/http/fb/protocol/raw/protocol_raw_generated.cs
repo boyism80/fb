@@ -818,13 +818,7 @@ public struct Clan : IFlatbufferObject
 #endif
   public uint[] GetEnemyClanIdsArray() { return __p.__vector_as_array<uint>(12); }
   public ulong Money { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(16, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(16); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(16); }
+  public ulong Revision { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.raw.Clan> CreateClan(FlatBufferBuilder builder,
       uint id = 0,
@@ -833,10 +827,10 @@ public struct Clan : IFlatbufferObject
       Offset<nullable.nullable_uint> allied_clan_idOffset = default(Offset<nullable.nullable_uint>),
       VectorOffset enemy_clan_idsOffset = default(VectorOffset),
       ulong money = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(7);
+    Clan.AddRevision(builder, revision);
     Clan.AddMoney(builder, money);
-    Clan.AddUpdatedDate(builder, updated_dateOffset);
     Clan.AddEnemyClanIds(builder, enemy_clan_idsOffset);
     Clan.AddAlliedClanId(builder, allied_clan_idOffset);
     Clan.AddTitle(builder, titleOffset);
@@ -857,7 +851,7 @@ public struct Clan : IFlatbufferObject
   public static VectorOffset CreateEnemyClanIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<uint>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEnemyClanIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddMoney(FlatBufferBuilder builder, ulong money) { builder.AddUlong(5, money, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(6, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(6, revision, 0); }
   public static Offset<fb.protocol.@internal.raw.Clan> EndClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.Clan>(o);
@@ -876,7 +870,7 @@ static public class ClanVerify
       && verifier.VerifyTable(tablePos, 10 /*AlliedClanId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyVectorOfData(tablePos, 12 /*EnemyClanIds*/, 4 /*uint*/, false)
       && verifier.VerifyField(tablePos, 14 /*Money*/, 8 /*ulong*/, 8, false)
-      && verifier.VerifyString(tablePos, 16 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 16 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -1196,7 +1190,7 @@ public struct Group : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Group __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string Master { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetMasterBytes() { return __p.__vector_as_span<byte>(6, 1); }
@@ -1206,29 +1200,23 @@ public struct Group : IFlatbufferObject
   public byte[] GetMasterArray() { return __p.__vector_as_array<byte>(6); }
   public string Members(int j) { int o = __p.__offset(8); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
   public int MembersLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public string UpdatedDate { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(10, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(10); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(10); }
+  public ulong Revision { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.raw.Group> CreateGroup(FlatBufferBuilder builder,
-      uint id = 0,
+      ulong id = 0,
       StringOffset masterOffset = default(StringOffset),
       VectorOffset membersOffset = default(VectorOffset),
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(4);
-    Group.AddUpdatedDate(builder, updated_dateOffset);
+    Group.AddRevision(builder, revision);
+    Group.AddId(builder, id);
     Group.AddMembers(builder, membersOffset);
     Group.AddMaster(builder, masterOffset);
-    Group.AddId(builder, id);
     return Group.EndGroup(builder);
   }
 
   public static void StartGroup(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
+  public static void AddId(FlatBufferBuilder builder, ulong id) { builder.AddUlong(0, id, 0); }
   public static void AddMaster(FlatBufferBuilder builder, StringOffset masterOffset) { builder.AddOffset(1, masterOffset.Value, 0); }
   public static void AddMembers(FlatBufferBuilder builder, VectorOffset membersOffset) { builder.AddOffset(2, membersOffset.Value, 0); }
   public static VectorOffset CreateMembersVector(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -1236,7 +1224,7 @@ public struct Group : IFlatbufferObject
   public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, ArraySegment<StringOffset> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<StringOffset>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartMembersVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(3, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(3, revision, 0); }
   public static Offset<fb.protocol.@internal.raw.Group> EndGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.Group>(o);
@@ -1249,10 +1237,10 @@ static public class GroupVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Id*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 6 /*Master*/, false)
       && verifier.VerifyVectorOfStrings(tablePos, 8 /*Members*/, false)
-      && verifier.VerifyString(tablePos, 10 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 10 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -3444,7 +3432,7 @@ public struct BroadcastGroup : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Group { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Group { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string Message { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(10, 1); }
@@ -3457,12 +3445,12 @@ public struct BroadcastGroup : IFlatbufferObject
   public static Offset<fb.protocol.@internal.request.raw.BroadcastGroup> CreateBroadcastGroup(FlatBufferBuilder builder,
       uint world = 0,
       uint host = 0,
-      uint group = 0,
+      ulong group = 0,
       StringOffset messageOffset = default(StringOffset),
       byte type = 0) {
     builder.StartTable(5);
-    BroadcastGroup.AddMessage(builder, messageOffset);
     BroadcastGroup.AddGroup(builder, group);
+    BroadcastGroup.AddMessage(builder, messageOffset);
     BroadcastGroup.AddHost(builder, host);
     BroadcastGroup.AddWorld(builder, world);
     BroadcastGroup.AddType(builder, type);
@@ -3472,7 +3460,7 @@ public struct BroadcastGroup : IFlatbufferObject
   public static void StartBroadcastGroup(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
-  public static void AddGroup(FlatBufferBuilder builder, uint group) { builder.AddUint(2, group, 0); }
+  public static void AddGroup(FlatBufferBuilder builder, ulong group) { builder.AddUlong(2, group, 0); }
   public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(3, messageOffset.Value, 0); }
   public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(4, type, 0); }
   public static Offset<fb.protocol.@internal.request.raw.BroadcastGroup> EndBroadcastGroup(FlatBufferBuilder builder) {
@@ -3489,7 +3477,7 @@ static public class BroadcastGroupVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Group*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Group*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 10 /*Message*/, false)
       && verifier.VerifyField(tablePos, 12 /*Type*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
@@ -3843,13 +3831,16 @@ public struct CreateGroup : IFlatbufferObject
   public ArraySegment<byte>? GetMemberBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
   public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(10); }
+  public ulong Id { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.request.raw.CreateGroup> CreateCreateGroup(FlatBufferBuilder builder,
       uint world = 0,
       uint host = 0,
       uint master = 0,
-      StringOffset memberOffset = default(StringOffset)) {
-    builder.StartTable(4);
+      StringOffset memberOffset = default(StringOffset),
+      ulong id = 0) {
+    builder.StartTable(5);
+    CreateGroup.AddId(builder, id);
     CreateGroup.AddMember(builder, memberOffset);
     CreateGroup.AddMaster(builder, master);
     CreateGroup.AddHost(builder, host);
@@ -3857,11 +3848,12 @@ public struct CreateGroup : IFlatbufferObject
     return CreateGroup.EndCreateGroup(builder);
   }
 
-  public static void StartCreateGroup(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartCreateGroup(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
   public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(2, master, 0); }
   public static void AddMember(FlatBufferBuilder builder, StringOffset memberOffset) { builder.AddOffset(3, memberOffset.Value, 0); }
+  public static void AddId(FlatBufferBuilder builder, ulong id) { builder.AddUlong(4, id, 0); }
   public static Offset<fb.protocol.@internal.request.raw.CreateGroup> EndCreateGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.CreateGroup>(o);
@@ -3878,6 +3870,7 @@ static public class CreateGroupVerify
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Master*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 10 /*Member*/, false)
+      && verifier.VerifyField(tablePos, 12 /*Id*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -7683,22 +7676,16 @@ public struct AbortClanMoney : IFlatbufferObject
   public bool Applied { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public ulong Money { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(10, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(10); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(10); }
+  public ulong Revision { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.AbortClanMoney> CreateAbortClanMoney(FlatBufferBuilder builder,
       bool applied = false,
       ulong money = 0,
       uint error = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(4);
+    AbortClanMoney.AddRevision(builder, revision);
     AbortClanMoney.AddMoney(builder, money);
-    AbortClanMoney.AddUpdatedDate(builder, updated_dateOffset);
     AbortClanMoney.AddError(builder, error);
     AbortClanMoney.AddApplied(builder, applied);
     return AbortClanMoney.EndAbortClanMoney(builder);
@@ -7708,7 +7695,7 @@ public struct AbortClanMoney : IFlatbufferObject
   public static void AddApplied(FlatBufferBuilder builder, bool applied) { builder.AddBool(0, applied, false); }
   public static void AddMoney(FlatBufferBuilder builder, ulong money) { builder.AddUlong(1, money, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(3, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(3, revision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.AbortClanMoney> EndAbortClanMoney(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.AbortClanMoney>(o);
@@ -7724,7 +7711,7 @@ static public class AbortClanMoneyVerify
       && verifier.VerifyField(tablePos, 4 /*Applied*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 6 /*Money*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 10 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 10 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -8093,7 +8080,7 @@ public struct BroadcastGroup : IFlatbufferObject
   public BroadcastGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Group { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Group { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
@@ -8106,14 +8093,14 @@ public struct BroadcastGroup : IFlatbufferObject
 
   public static Offset<fb.protocol.@internal.response.raw.BroadcastGroup> CreateBroadcastGroup(FlatBufferBuilder builder,
       uint host = 0,
-      uint group = 0,
+      ulong group = 0,
       StringOffset messageOffset = default(StringOffset),
       byte type = 0,
       uint error = 0) {
     builder.StartTable(5);
+    BroadcastGroup.AddGroup(builder, group);
     BroadcastGroup.AddError(builder, error);
     BroadcastGroup.AddMessage(builder, messageOffset);
-    BroadcastGroup.AddGroup(builder, group);
     BroadcastGroup.AddHost(builder, host);
     BroadcastGroup.AddType(builder, type);
     return BroadcastGroup.EndBroadcastGroup(builder);
@@ -8121,7 +8108,7 @@ public struct BroadcastGroup : IFlatbufferObject
 
   public static void StartBroadcastGroup(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddGroup(FlatBufferBuilder builder, uint group) { builder.AddUint(1, group, 0); }
+  public static void AddGroup(FlatBufferBuilder builder, ulong group) { builder.AddUlong(1, group, 0); }
   public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
   public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(3, type, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
@@ -8138,7 +8125,7 @@ static public class BroadcastGroupVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Group*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Group*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 8 /*Message*/, false)
       && verifier.VerifyField(tablePos, 10 /*Type*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
@@ -8385,13 +8372,7 @@ public struct ClanDetails : IFlatbufferObject
   public fb.protocol.@internal.raw.ClanMember? Members(int j) { int o = __p.__offset(10); return o != 0 ? (fb.protocol.@internal.raw.ClanMember?)(new fb.protocol.@internal.raw.ClanMember()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int MembersLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
   public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(14); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(14); }
+  public ulong Revision { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.ClanDetails> CreateClanDetails(FlatBufferBuilder builder,
       uint host = 0,
@@ -8399,9 +8380,9 @@ public struct ClanDetails : IFlatbufferObject
       Offset<fb.protocol.@internal.raw.Clan> clanOffset = default(Offset<fb.protocol.@internal.raw.Clan>),
       VectorOffset membersOffset = default(VectorOffset),
       uint error = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(6);
-    ClanDetails.AddUpdatedDate(builder, updated_dateOffset);
+    ClanDetails.AddRevision(builder, revision);
     ClanDetails.AddError(builder, error);
     ClanDetails.AddMembers(builder, membersOffset);
     ClanDetails.AddClan(builder, clanOffset);
@@ -8421,7 +8402,7 @@ public struct ClanDetails : IFlatbufferObject
   public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.ClanMember>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartMembersVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(5, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(5, revision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.ClanDetails> EndClanDetails(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.ClanDetails>(o);
@@ -8439,7 +8420,7 @@ static public class ClanDetailsVerify
       && verifier.VerifyTable(tablePos, 8 /*Clan*/, fb.protocol.@internal.raw.ClanVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 10 /*Members*/, fb.protocol.@internal.raw.ClanMemberVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 14 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 14 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -8585,13 +8566,7 @@ public struct DestroyClan : IFlatbufferObject
   public byte[] GetClanNameArray() { return __p.__vector_as_array<byte>(8); }
   public fb.protocol.@internal.raw.CharacterRef? Actor { get { int o = __p.__offset(10); return o != 0 ? (fb.protocol.@internal.raw.CharacterRef?)(new fb.protocol.@internal.raw.CharacterRef()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(14); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(14); }
+  public ulong Revision { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.DestroyClan> CreateDestroyClan(FlatBufferBuilder builder,
       uint host = 0,
@@ -8599,9 +8574,9 @@ public struct DestroyClan : IFlatbufferObject
       StringOffset clan_nameOffset = default(StringOffset),
       Offset<fb.protocol.@internal.raw.CharacterRef> actorOffset = default(Offset<fb.protocol.@internal.raw.CharacterRef>),
       uint error = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(6);
-    DestroyClan.AddUpdatedDate(builder, updated_dateOffset);
+    DestroyClan.AddRevision(builder, revision);
     DestroyClan.AddError(builder, error);
     DestroyClan.AddActor(builder, actorOffset);
     DestroyClan.AddClanName(builder, clan_nameOffset);
@@ -8616,7 +8591,7 @@ public struct DestroyClan : IFlatbufferObject
   public static void AddClanName(FlatBufferBuilder builder, StringOffset clanNameOffset) { builder.AddOffset(2, clanNameOffset.Value, 0); }
   public static void AddActor(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CharacterRef> actorOffset) { builder.AddOffset(3, actorOffset.Value, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(5, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(5, revision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.DestroyClan> EndDestroyClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.DestroyClan>(o);
@@ -8634,7 +8609,7 @@ static public class DestroyClanVerify
       && verifier.VerifyString(tablePos, 8 /*ClanName*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Actor*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 14 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 14 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -8663,7 +8638,7 @@ public struct DestroyGroup : IFlatbufferObject
   public DestroyGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint GroupId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong GroupId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string GroupMaster { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetGroupMasterBytes() { return __p.__vector_as_span<byte>(8, 1); }
@@ -8673,38 +8648,32 @@ public struct DestroyGroup : IFlatbufferObject
   public byte[] GetGroupMasterArray() { return __p.__vector_as_array<byte>(8); }
   public fb.protocol.@internal.raw.CharacterRef? Actor { get { int o = __p.__offset(10); return o != 0 ? (fb.protocol.@internal.raw.CharacterRef?)(new fb.protocol.@internal.raw.CharacterRef()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(14); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(14); }
+  public ulong Revision { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.DestroyGroup> CreateDestroyGroup(FlatBufferBuilder builder,
       uint host = 0,
-      uint group_id = 0,
+      ulong group_id = 0,
       StringOffset group_masterOffset = default(StringOffset),
       Offset<fb.protocol.@internal.raw.CharacterRef> actorOffset = default(Offset<fb.protocol.@internal.raw.CharacterRef>),
       uint error = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(6);
-    DestroyGroup.AddUpdatedDate(builder, updated_dateOffset);
+    DestroyGroup.AddRevision(builder, revision);
+    DestroyGroup.AddGroupId(builder, group_id);
     DestroyGroup.AddError(builder, error);
     DestroyGroup.AddActor(builder, actorOffset);
     DestroyGroup.AddGroupMaster(builder, group_masterOffset);
-    DestroyGroup.AddGroupId(builder, group_id);
     DestroyGroup.AddHost(builder, host);
     return DestroyGroup.EndDestroyGroup(builder);
   }
 
   public static void StartDestroyGroup(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
-  public static void AddGroupId(FlatBufferBuilder builder, uint groupId) { builder.AddUint(1, groupId, 0); }
+  public static void AddGroupId(FlatBufferBuilder builder, ulong groupId) { builder.AddUlong(1, groupId, 0); }
   public static void AddGroupMaster(FlatBufferBuilder builder, StringOffset groupMasterOffset) { builder.AddOffset(2, groupMasterOffset.Value, 0); }
   public static void AddActor(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CharacterRef> actorOffset) { builder.AddOffset(3, actorOffset.Value, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(5, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(5, revision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.DestroyGroup> EndDestroyGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.DestroyGroup>(o);
@@ -8718,11 +8687,11 @@ static public class DestroyGroupVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*GroupId*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*GroupId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 8 /*GroupMaster*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Actor*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 14 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 14 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -9448,13 +9417,7 @@ public struct GroupDetails : IFlatbufferObject
 #endif
   public byte[] GetTargetArray() { return __p.__vector_as_array<byte>(14); }
   public uint Error { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(18); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(18, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(18); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(18); }
+  public ulong Revision { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.GroupDetails> CreateGroupDetails(FlatBufferBuilder builder,
       uint host = 0,
@@ -9464,9 +9427,9 @@ public struct GroupDetails : IFlatbufferObject
       StringOffset actorOffset = default(StringOffset),
       StringOffset targetOffset = default(StringOffset),
       uint error = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(8);
-    GroupDetails.AddUpdatedDate(builder, updated_dateOffset);
+    GroupDetails.AddRevision(builder, revision);
     GroupDetails.AddError(builder, error);
     GroupDetails.AddTarget(builder, targetOffset);
     GroupDetails.AddActor(builder, actorOffset);
@@ -9490,7 +9453,7 @@ public struct GroupDetails : IFlatbufferObject
   public static void AddActor(FlatBufferBuilder builder, StringOffset actorOffset) { builder.AddOffset(4, actorOffset.Value, 0); }
   public static void AddTarget(FlatBufferBuilder builder, StringOffset targetOffset) { builder.AddOffset(5, targetOffset.Value, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(6, error, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(7, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(7, revision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.GroupDetails> EndGroupDetails(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.GroupDetails>(o);
@@ -9510,7 +9473,7 @@ static public class GroupDetailsVerify
       && verifier.VerifyString(tablePos, 12 /*Actor*/, false)
       && verifier.VerifyString(tablePos, 14 /*Target*/, false)
       && verifier.VerifyField(tablePos, 16 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 18 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 18 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -9591,7 +9554,7 @@ public struct Init : IFlatbufferObject
 
   public fb.protocol.@internal.raw.Character? Character { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol.@internal.raw.Character?)(new fb.protocol.@internal.raw.Character()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public fb.protocol.@internal.raw.Marriage? Marriage { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.raw.Marriage?)(new fb.protocol.@internal.raw.Marriage()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_uint? Group { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ulong? Group { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_uint? Clan { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public fb.protocol.@internal.raw.Item? Items(int j) { int o = __p.__offset(12); return o != 0 ? (fb.protocol.@internal.raw.Item?)(new fb.protocol.@internal.raw.Item()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int ItemsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
@@ -9625,7 +9588,7 @@ public struct Init : IFlatbufferObject
   public static Offset<fb.protocol.@internal.response.raw.Init> CreateInit(FlatBufferBuilder builder,
       Offset<fb.protocol.@internal.raw.Character> characterOffset = default(Offset<fb.protocol.@internal.raw.Character>),
       Offset<fb.protocol.@internal.raw.Marriage> marriageOffset = default(Offset<fb.protocol.@internal.raw.Marriage>),
-      Offset<nullable.nullable_uint> groupOffset = default(Offset<nullable.nullable_uint>),
+      Offset<nullable.nullable_ulong> groupOffset = default(Offset<nullable.nullable_ulong>),
       Offset<nullable.nullable_uint> clanOffset = default(Offset<nullable.nullable_uint>),
       VectorOffset itemsOffset = default(VectorOffset),
       VectorOffset spellsOffset = default(VectorOffset),
@@ -9662,7 +9625,7 @@ public struct Init : IFlatbufferObject
   public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(16); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
-  public static void AddGroup(FlatBufferBuilder builder, Offset<nullable.nullable_uint> groupOffset) { builder.AddOffset(2, groupOffset.Value, 0); }
+  public static void AddGroup(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> groupOffset) { builder.AddOffset(2, groupOffset.Value, 0); }
   public static void AddClan(FlatBufferBuilder builder, Offset<nullable.nullable_uint> clanOffset) { builder.AddOffset(3, clanOffset.Value, 0); }
   public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(4, itemsOffset.Value, 0); }
   public static VectorOffset CreateItemsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Item>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -9740,7 +9703,7 @@ static public class InitVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyTable(tablePos, 4 /*Character*/, fb.protocol.@internal.raw.CharacterVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 6 /*Marriage*/, fb.protocol.@internal.raw.MarriageVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 8 /*Group*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 8 /*Group*/, nullable.nullable_ulongVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 10 /*Clan*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 12 /*Items*/, fb.protocol.@internal.raw.ItemVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 14 /*Spells*/, fb.protocol.@internal.raw.SpellVerify.Verify, false)
@@ -11336,13 +11299,8 @@ public struct UpdatedClan : IFlatbufferObject
   public nullable.nullable_uint? RelatedClanId { get { int o = __p.__offset(28); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public ulong Money { get { int o = __p.__offset(30); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public uint Error { get { int o = __p.__offset(32); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(34); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(34, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(34); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(34); }
+  public ulong Revision { get { int o = __p.__offset(34); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong RelatedRevision { get { int o = __p.__offset(36); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.UpdatedClan> CreateUpdatedClan(FlatBufferBuilder builder,
       uint host = 0,
@@ -11360,10 +11318,12 @@ public struct UpdatedClan : IFlatbufferObject
       Offset<nullable.nullable_uint> related_clan_idOffset = default(Offset<nullable.nullable_uint>),
       ulong money = 0,
       uint error = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
-    builder.StartTable(16);
+      ulong revision = 0,
+      ulong related_revision = 0) {
+    builder.StartTable(17);
+    UpdatedClan.AddRelatedRevision(builder, related_revision);
+    UpdatedClan.AddRevision(builder, revision);
     UpdatedClan.AddMoney(builder, money);
-    UpdatedClan.AddUpdatedDate(builder, updated_dateOffset);
     UpdatedClan.AddError(builder, error);
     UpdatedClan.AddRelatedClanId(builder, related_clan_idOffset);
     UpdatedClan.AddNewTitle(builder, new_titleOffset);
@@ -11381,7 +11341,7 @@ public struct UpdatedClan : IFlatbufferObject
     return UpdatedClan.EndUpdatedClan(builder);
   }
 
-  public static void StartUpdatedClan(FlatBufferBuilder builder) { builder.StartTable(16); }
+  public static void StartUpdatedClan(FlatBufferBuilder builder) { builder.StartTable(17); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddAction(FlatBufferBuilder builder, fb.protocol.@internal.raw.ClanActionType action) { builder.AddSbyte(1, (sbyte)action, 0); }
   public static void AddClanId(FlatBufferBuilder builder, uint clanId) { builder.AddUint(2, clanId, 0); }
@@ -11397,7 +11357,8 @@ public struct UpdatedClan : IFlatbufferObject
   public static void AddRelatedClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> relatedClanIdOffset) { builder.AddOffset(12, relatedClanIdOffset.Value, 0); }
   public static void AddMoney(FlatBufferBuilder builder, ulong money) { builder.AddUlong(13, money, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(14, error, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(15, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(15, revision, 0); }
+  public static void AddRelatedRevision(FlatBufferBuilder builder, ulong relatedRevision) { builder.AddUlong(16, relatedRevision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.UpdatedClan> EndUpdatedClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.UpdatedClan>(o);
@@ -11425,7 +11386,8 @@ static public class UpdatedClanVerify
       && verifier.VerifyTable(tablePos, 28 /*RelatedClanId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyField(tablePos, 30 /*Money*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 32 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 34 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 34 /*Revision*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 36 /*RelatedRevision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11455,7 +11417,7 @@ public struct UpdatedGroup : IFlatbufferObject
 
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol.@internal.raw.GroupActionType Action { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.raw.GroupActionType)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.@internal.raw.GroupActionType.Enter; } }
-  public uint GroupId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong GroupId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string GroupMaster { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetGroupMasterBytes() { return __p.__vector_as_span<byte>(10, 1); }
@@ -11468,34 +11430,28 @@ public struct UpdatedGroup : IFlatbufferObject
   public fb.protocol.@internal.raw.CharacterRef? NewMember { get { int o = __p.__offset(16); return o != 0 ? (fb.protocol.@internal.raw.CharacterRef?)(new fb.protocol.@internal.raw.CharacterRef()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public fb.protocol.@internal.raw.CharacterRef? DeletedMember { get { int o = __p.__offset(18); return o != 0 ? (fb.protocol.@internal.raw.CharacterRef?)(new fb.protocol.@internal.raw.CharacterRef()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint Error { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string UpdatedDate { get { int o = __p.__offset(22); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(22, 1); }
-#else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(22); }
-#endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(22); }
+  public ulong Revision { get { int o = __p.__offset(22); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.UpdatedGroup> CreateUpdatedGroup(FlatBufferBuilder builder,
       uint host = 0,
       fb.protocol.@internal.raw.GroupActionType action = fb.protocol.@internal.raw.GroupActionType.Enter,
-      uint group_id = 0,
+      ulong group_id = 0,
       StringOffset group_masterOffset = default(StringOffset),
       Offset<fb.protocol.@internal.raw.CharacterRef> actorOffset = default(Offset<fb.protocol.@internal.raw.CharacterRef>),
       Offset<fb.protocol.@internal.raw.CharacterRef> targetOffset = default(Offset<fb.protocol.@internal.raw.CharacterRef>),
       Offset<fb.protocol.@internal.raw.CharacterRef> new_memberOffset = default(Offset<fb.protocol.@internal.raw.CharacterRef>),
       Offset<fb.protocol.@internal.raw.CharacterRef> deleted_memberOffset = default(Offset<fb.protocol.@internal.raw.CharacterRef>),
       uint error = 0,
-      StringOffset updated_dateOffset = default(StringOffset)) {
+      ulong revision = 0) {
     builder.StartTable(10);
-    UpdatedGroup.AddUpdatedDate(builder, updated_dateOffset);
+    UpdatedGroup.AddRevision(builder, revision);
+    UpdatedGroup.AddGroupId(builder, group_id);
     UpdatedGroup.AddError(builder, error);
     UpdatedGroup.AddDeletedMember(builder, deleted_memberOffset);
     UpdatedGroup.AddNewMember(builder, new_memberOffset);
     UpdatedGroup.AddTarget(builder, targetOffset);
     UpdatedGroup.AddActor(builder, actorOffset);
     UpdatedGroup.AddGroupMaster(builder, group_masterOffset);
-    UpdatedGroup.AddGroupId(builder, group_id);
     UpdatedGroup.AddHost(builder, host);
     UpdatedGroup.AddAction(builder, action);
     return UpdatedGroup.EndUpdatedGroup(builder);
@@ -11504,14 +11460,14 @@ public struct UpdatedGroup : IFlatbufferObject
   public static void StartUpdatedGroup(FlatBufferBuilder builder) { builder.StartTable(10); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddAction(FlatBufferBuilder builder, fb.protocol.@internal.raw.GroupActionType action) { builder.AddSbyte(1, (sbyte)action, 0); }
-  public static void AddGroupId(FlatBufferBuilder builder, uint groupId) { builder.AddUint(2, groupId, 0); }
+  public static void AddGroupId(FlatBufferBuilder builder, ulong groupId) { builder.AddUlong(2, groupId, 0); }
   public static void AddGroupMaster(FlatBufferBuilder builder, StringOffset groupMasterOffset) { builder.AddOffset(3, groupMasterOffset.Value, 0); }
   public static void AddActor(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CharacterRef> actorOffset) { builder.AddOffset(4, actorOffset.Value, 0); }
   public static void AddTarget(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CharacterRef> targetOffset) { builder.AddOffset(5, targetOffset.Value, 0); }
   public static void AddNewMember(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CharacterRef> newMemberOffset) { builder.AddOffset(6, newMemberOffset.Value, 0); }
   public static void AddDeletedMember(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CharacterRef> deletedMemberOffset) { builder.AddOffset(7, deletedMemberOffset.Value, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(8, error, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(9, updatedDateOffset.Value, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(9, revision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.UpdatedGroup> EndUpdatedGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.UpdatedGroup>(o);
@@ -11526,14 +11482,14 @@ static public class UpdatedGroupVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Action*/, 1 /*fb.protocol.@internal.raw.GroupActionType*/, 1, false)
-      && verifier.VerifyField(tablePos, 8 /*GroupId*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*GroupId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 10 /*GroupMaster*/, false)
       && verifier.VerifyTable(tablePos, 12 /*Actor*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 14 /*Target*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 16 /*NewMember*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 18 /*DeletedMember*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyField(tablePos, 20 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 22 /*UpdatedDate*/, false)
+      && verifier.VerifyField(tablePos, 22 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

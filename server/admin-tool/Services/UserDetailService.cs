@@ -304,22 +304,15 @@ namespace AdminTool.Services
 
         private async Task<UserPartyInfo> LoadPartyAsync(uint world, uint userId, CharacterRealtimeState realtimeState)
         {
-            uint? masterId = realtimeState?.Group;
-            Group group = null;
-
-            if (masterId.HasValue)
-            {
-                group = await _dbContext.Group.Get(world, masterId.Value);
-            }
-            else
-            {
-                group = await _dbContext.Group.Get(world, userId);
-                if (group != null)
-                    masterId = userId;
-            }
-
-            if (group == null || !masterId.HasValue)
+            var groupId = realtimeState?.Group;
+            if (groupId.HasValue == false)
                 return null;
+
+            var group = await _dbContext.Group.Get(world, groupId.Value);
+            if (group == null)
+                return null;
+
+            uint? masterId = group.Master;
 
             var members = group.Members ?? new List<uint>();
             var allMemberIds = members

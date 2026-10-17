@@ -164,7 +164,7 @@ table Authenticate {
 table Init {
   character: fb.protocol.internal.Character;
   marriage: fb.protocol.internal.Marriage;
-  group: uint?;
+  group: ulong?;
   clan: uint?;
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
@@ -215,34 +215,34 @@ table GroupDetails {
   actor: string;
   target: string;
   error: uint;
-  updated_date: string;
+  revision: ulong;
 }
 
 table UpdatedGroup {
   host: uint;
   action: fb.protocol.internal.GroupActionType;
-  group_id: uint;
+  group_id: ulong;
   group_master: string;
   actor: fb.protocol.internal.CharacterRef;
   target: fb.protocol.internal.CharacterRef?;
   new_member: fb.protocol.internal.CharacterRef?;
   deleted_member: fb.protocol.internal.CharacterRef?;
   error: uint;
-  updated_date: string;
+  revision: ulong;
 }
 
 table DestroyGroup {
   host: uint;
-  group_id: uint;
+  group_id: ulong;
   group_master: string;
   actor: fb.protocol.internal.CharacterRef;
   error: uint;
-  updated_date: string;
+  revision: ulong;
 }
 
 table BroadcastGroup {
   host: uint;
-  group: uint;
+  group: ulong;
   message: string;
   type: ubyte;
   error: uint;
@@ -254,7 +254,7 @@ table ClanDetails {
   clan: fb.protocol.internal.Clan;
   members: [fb.protocol.internal.ClanMember];
   error: uint;
-  updated_date: string;
+  revision: ulong;
 }
 
 table UpdatedClan {
@@ -274,14 +274,15 @@ table UpdatedClan {
   related_clan_id: uint?;
   money: ulong = 0;
   error: uint;
-  updated_date: string;
+  revision: ulong;
+  related_revision: ulong;
 }
 
 table AbortClanMoney {
   applied: bool;
   money: ulong = 0;
   error: uint;
-  updated_date: string;
+  revision: ulong;
 }
 
 table ReleaseClanMoney {
@@ -302,7 +303,7 @@ table DestroyClan {
   clan_name: string;
   actor: fb.protocol.internal.CharacterRef;
   error: uint;
-  updated_date: string;
+  revision: ulong;
 }
 
 table Broadcast {

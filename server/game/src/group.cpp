@@ -18,15 +18,15 @@ using namespace fb::game;
 using namespace fb::protocol::internal::request;
 
 group::group(server&                         server,
-             uint32_t                        id,
+             uint64_t                        id,
              std::string_view                master,
              const std::vector<std::string>& members,
-             const fb::model::datetime&      updated_date) :
+             uint64_t                        revision) :
     _server(server),
     _id(id),
     _master(std::string(master)),
     _members(members),
-    _updated_date(updated_date)
+    _revision(revision)
 { }
 
 group::group(group&& g) :
@@ -35,7 +35,7 @@ group::group(group&& g) :
     _master(g._master),
     _members(std::move(g._members)),
     _active_members(std::move(g._active_members)),
-    _updated_date(g._updated_date)
+    _revision(g._revision)
 { }
 
 void group::enter(std::weak_ptr<character> ch)
@@ -87,7 +87,7 @@ void group::remove_member(std::string_view name)
                          this->_members.end());
 }
 
-uint32_t group::id() const
+uint64_t group::id() const
 {
     return this->_id;
 }
@@ -107,14 +107,21 @@ std::vector<std::string> group::members() const
     return std::vector<std::string>(this->_members);
 }
 
-const fb::model::datetime& group::updated_date() const
+uint64_t group::revision() const
 {
-    return this->_updated_date;
+    return this->_revision;
 }
 
-void group::updated_date(const fb::model::datetime& value)
+void group::revision(uint64_t value)
 {
-    this->_updated_date = value;
+    this->_revision = value;
+}
+
+void group::reload(const group& fresh)
+{
+    this->_master   = fresh._master;
+    this->_members  = fresh._members;
+    this->_revision = fresh._revision;
 }
 
 std::vector<std::weak_ptr<character>> group::nears(const fb::game::map& map, const fb::model::point16_t& position) const

@@ -12,7 +12,7 @@ namespace Http.Model
 
     public class CharacterRealtimeState : CharacterRealtimeStateKey, IModel
     {
-        public uint? Group { get; set; }
+        public ulong? Group { get; set; }
         public uint? Clan { get; set; }
         public static string DistributedLockKey(uint uid)
         {

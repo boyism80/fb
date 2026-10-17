@@ -2375,7 +2375,7 @@ int builtin::character::builtin_group(lua_State* L)
         auto weak         = ch->weak_from_this_as<fb::game::character>();
         auto ch_holder    = std::make_shared<std::shared_ptr<fb::game::character>>();
         auto group_holder = std::make_shared<std::shared_ptr<fb::game::group>>();
-        auto group_id     = std::make_shared<std::optional<uint32_t>>();
+        auto group_id     = std::make_shared<std::optional<uint64_t>>();
         auto builder      = lua->new_co_builder();
         builder.weak      = weak;
         builder.yield     = [=]() -> async::task<void> {
