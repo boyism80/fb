@@ -330,34 +330,10 @@ namespace Http.Reepository
         public async Task<bool> Delete(uint world, uint user, uint id)
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
-            var systemMailId = await conn.QueryFirstOrDefaultAsync<uint?>(
-                "SELECT `system_mail_id` FROM `mail` WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
-                new { user, id });
-
-            var marked = await conn.ExecuteAsync(
+            var affectedRows = await conn.ExecuteAsync(
                 "UPDATE `mail` SET deleted = 1 WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
-                new { user, id }) == 1;
-            if (marked == false || systemMailId.HasValue == false)
-                return marked;
-
-            // The archive check must follow the mark. The archive purge removes rows marked before the archive row
-            // exists; a row marked later is removed here, because USP_MAIL_NEXT_ID would turn it into a received
-            // record that nothing purges. The received record is deleted too in case a renumber already did that.
-            await using var global = _dbContext.GetGlobalConnection(world);
-            var archived = await global.ExecuteScalarAsync<bool>(
-                "SELECT EXISTS(SELECT 1 FROM `system_mail_archive` WHERE `id` = @systemMailId)",
-                new { systemMailId });
-            if (archived)
-            {
-                await conn.ExecuteAsync(
-                    """
-                    DELETE FROM `mail` WHERE `user` = @user AND `system_mail_id` = @systemMailId AND `deleted` = 1;
-                    DELETE FROM `mail_system_received` WHERE `user` = @user AND `system_mail_id` = @systemMailId;
-                    """,
-                    new { user, systemMailId });
-            }
-
-            return true;
+                new { user, id });
+            return affectedRows == 1;
         }
 
         public Task SaveChangesAsync()
