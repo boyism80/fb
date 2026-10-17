@@ -33,31 +33,39 @@ namespace Http.Reepository
             return new GroupKey { Id = row.Id };
         }
 
+        // Only the create inserts. A later change that reaches the database after the disband finds no row,
+        // so it cannot bring the group back.
         protected override string OnUpsert(Group value)
         {
-            // `revision` must be assigned last: each assignment sees the columns already updated before it.
-            var sql = $"""
-                INSERT INTO `group` (
-                    `id`,
-                    `master`,
-                    `members`,
-                    `revision`,
-                    `created_date`,
-                    `updated_date`)
-                VALUES (
-                    {value.Id.Escape()},
-                    {value.Master.Escape()},
-                    {JsonConvert.SerializeObject(value.Members).Escape()},
-                    {value.Revision.Escape()},
-                    {value.CreatedDate.Escape()},
-                    {value.UpdatedDate.Escape()})
-                ON DUPLICATE KEY UPDATE
-                    `members` = IF(VALUES(`revision`) > `revision`, VALUES(`members`), `members`),
-                    `updated_date` = IF(VALUES(`revision`) > `revision`, VALUES(`updated_date`), `updated_date`),
-                    `revision` = GREATEST(`revision`, VALUES(`revision`));
-                """;
-
-            return sql;
+            if (value.Revision <= 1)
+            {
+                return $"""
+                    INSERT IGNORE INTO `group` (
+                        `id`,
+                        `master`,
+                        `members`,
+                        `revision`,
+                        `created_date`,
+                        `updated_date`)
+                    VALUES (
+                        {value.Id.Escape()},
+                        {value.Master.Escape()},
+                        {JsonConvert.SerializeObject(value.Members).Escape()},
+                        {value.Revision.Escape()},
+                        {value.CreatedDate.Escape()},
+                        {value.UpdatedDate.Escape()});
+                    """;
+            }
+            else
+            {
+                return $"""
+                    UPDATE `group` SET
+                        `members` = {JsonConvert.SerializeObject(value.Members).Escape()},
+                        `revision` = {value.Revision.Escape()},
+                        `updated_date` = {value.UpdatedDate.Escape()}
+                    WHERE `id` = {value.Id.Escape()} AND `revision` < {value.Revision.Escape()};
+                    """;
+            }
         }
 
         protected override string OnDelete(GroupKey key)
