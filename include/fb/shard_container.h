@@ -13,6 +13,7 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
@@ -36,29 +37,9 @@ public:
         if (this->contains(hash))
             return false;
 
-        // Check capacity and remove LRU if necessary
-        if (this->size() >= this->_capacity)
-        {
-            if (!this->_lru_list.empty())
-            {
-                HashType lru_hash = this->_lru_list.back();
-                this->_lru_list.pop_back();
-                this->erase(lru_hash);
-            }
-        }
-
+        this->evict_for_insert();
         this->super::insert({hash, value});
-
-        // Update LRU list
-        // Remove from current position if exists
-        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
-        if (it != this->_lru_list.end())
-        {
-            this->_lru_list.erase(it);
-        }
-        // Add to front (most recently used)
-        this->_lru_list.push_front(hash);
-
+        this->touch(hash);
         return true;
     }
 
@@ -66,49 +47,40 @@ public:
     {
         if (this->contains(hash))
             return false;
+
+        this->evict_for_insert();
         this->super::emplace(hash, std::move(value));
-        this->_lru_list.push_front(hash);
+        this->touch(hash);
         return true;
     }
 
     T& operator[] (HashType hash)
     {
-        // Update LRU list
-        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
-        if (it != this->_lru_list.end())
-            this->_lru_list.erase(it);
-        this->_lru_list.push_front(hash);
-        return this->super::operator[] (hash);
+        if (this->contains(hash) == false)
+            this->evict_for_insert();
+
+        auto& value = this->super::operator[] (hash);
+        this->touch(hash);
+        return value;
     }
 
     const T& operator[] (HashType hash) const
     {
-        // Update LRU list
-        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
-        if (it != this->_lru_list.end())
-            this->_lru_list.erase(it);
-        this->_lru_list.push_front(hash);
-        return this->super::at(hash);
+        return this->at(hash);
     }
 
     T& at(HashType hash)
     {
-        // Update LRU list
-        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
-        if (it != this->_lru_list.end())
-            this->_lru_list.erase(it);
-        this->_lru_list.push_front(hash);
-        return this->super::at(hash);
+        auto& value = this->super::at(hash);
+        this->touch(hash);
+        return value;
     }
 
     const T& at(HashType hash) const
     {
-        // Update LRU list
-        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
-        if (it != this->_lru_list.end())
-            this->_lru_list.erase(it);
-        this->_lru_list.push_front(hash);
-        return this->super::at(hash);
+        auto& value = this->super::at(hash);
+        this->touch(hash);
+        return value;
     }
 
     bool erase(HashType hash)
@@ -117,10 +89,10 @@ public:
             return false;
 
         this->super::erase(hash);
-
-        // Remove from LRU list
-        this->_lru_list.remove(hash);
-
+        {
+            auto _ = std::lock_guard(this->_lru_mutex);
+            this->_lru_list.remove(hash);
+        }
         return true;
     }
 
@@ -146,6 +118,37 @@ public:
     }
 
 private:
+    void touch(HashType hash) const
+    {
+        auto _  = std::lock_guard(this->_lru_mutex);
+        auto it = std::find(this->_lru_list.begin(), this->_lru_list.end(), hash);
+        if (it != this->_lru_list.end())
+            this->_lru_list.erase(it);
+        this->_lru_list.push_front(hash);
+    }
+
+    void evict_for_insert()
+    {
+        if (this->size() < this->_capacity)
+            return;
+
+        auto evicted = std::optional<HashType>{};
+        {
+            auto _ = std::lock_guard(this->_lru_mutex);
+            if (this->_lru_list.empty() == false)
+            {
+                evicted = this->_lru_list.back();
+                this->_lru_list.pop_back();
+            }
+        }
+
+        if (evicted.has_value())
+            this->super::erase(evicted.value());
+    }
+
+private:
+    // Const lookups run under the owner's shared lock, so concurrent readers reorder the list under this mutex.
+    mutable std::mutex          _lru_mutex;
     mutable std::list<HashType> _lru_list; ///< LRU list to track access order
     size_t                      _capacity; ///< Maximum number of elements
 };
@@ -272,7 +275,7 @@ private:
 
 public:
     explicit sub_container(size_t capacity = 0xFFFFFFFF) :
-        _data(map_type(capacity))
+        _data(capacity)
     { }
 
     [[nodiscard]] static bool needs_factory_insert(const map_type& data, HashType hash)
