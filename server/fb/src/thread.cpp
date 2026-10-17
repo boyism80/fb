@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <coroutine>
 #include <cstdlib>
 #include <exception>
 #include <format>
@@ -107,21 +108,23 @@ void fb::thread::on_thread(uint8_t index)
     }
 }
 
+bool fb::thread::try_push(std::function<void()>& fn)
+{
+    std::lock_guard<std::mutex> wake(this->_wake_mutex);
+    if (this->_exit)
+        return false;
+
+    auto guard = this->_queue.enter_write();
+    guard.value().push(std::move(fn));
+    this->_wake.notify_one();
+    return true;
+}
+
 void fb::thread::push(std::function<void()> fn)
 {
-    {
-        std::lock_guard<std::mutex> wake(this->_wake_mutex);
-        if (this->_exit == false)
-        {
-            auto guard = this->_queue.enter_write();
-            guard.value().push(std::move(fn));
-            this->_wake.notify_one();
-            return;
-        }
-    }
-
     // on_thread has left its loop. Run the callback here so a lock waiter still resumes.
-    fn();
+    if (this->try_push(fn) == false)
+        fn();
 }
 
 void fb::thread::on_idle()
@@ -346,11 +349,29 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propa
 
 async::task<void> fb::thread::switching()
 {
-    co_await this->dispatch(
-        [](auto& thread) -> async::task<void> {
-            co_return;
-        },
-        execution_context::token());
+    struct awaiter
+    {
+        fb::thread& target;
+
+        bool await_ready() const noexcept
+        {
+            return target.id() == std::this_thread::get_id();
+        }
+
+        // The resume is queued only after this coroutine has suspended, so the target thread cannot finish first.
+        bool await_suspend(std::coroutine_handle<> handle)
+        {
+            auto fn = std::function<void()>([handle]() {
+                handle.resume();
+            });
+            return target.try_push(fn);
+        }
+
+        void await_resume() const noexcept
+        { }
+    };
+
+    co_await awaiter{*this};
 }
 
 std::thread::id fb::thread::id() const

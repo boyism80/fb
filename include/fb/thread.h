@@ -88,6 +88,7 @@ private:
     void on_thread(uint8_t index);
     void on_idle();
     void assert_exec() const;
+    bool try_push(std::function<void()>& fn);
     void push(std::function<void()> fn);
 
     template <typename T>
