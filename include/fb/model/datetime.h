@@ -33,14 +33,14 @@ namespace fb::model {
  *
  *             This class provides a comprehensive time span implementation that supports
  *             parsing from string format, arithmetic operations, and conversion to/from
- *             standard chrono durations. It internally stores time as milliseconds and
+ *             standard chrono durations. It internally stores time as microseconds and
  *             supports negative time spans. The string format supports patterns like
- *             "1.12:34:56.789" (1 day, 12 hours, 34 minutes, 56 seconds, 789 milliseconds).
+ *             "1.12:34:56.789123" (1 day, 12 hours, 34 minutes, 56 seconds, 789123 microseconds).
  */
 class timespan
 {
 private:
-    std::chrono::milliseconds _ms = std::chrono::milliseconds(0); ///< Internal storage in milliseconds
+    std::chrono::microseconds _us = std::chrono::microseconds(0); ///< Internal storage in microseconds
 
 public:
     /**
@@ -52,8 +52,8 @@ public:
     /**
      * @brief      Constructs a timespan from a string representation.
      *
-     *             Parses time span strings in the format: [negative]?[days.]hours:minutes:seconds[.milliseconds]
-     *             Examples: "12:34:56", "1.12:34:56.789", "-0:30:00"
+     *             Parses time span strings in the format: [negative]?[days.]hours:minutes:seconds[.fraction]
+     *             The fraction is a fractional second, up to 6 digits. Examples: "12:34:56", "1.12:34:56.789123", "-0:30:00"
      *
      * @param[in]  f     The string representation of the timespan.
      *
@@ -67,7 +67,7 @@ public:
             "(?P<hour>\\d+):"
             "(?P<min>\\d{2}):"
             "(?P<sec>\\d{2})"
-            "(?:\\.(?P<ms>\\d+))?");
+            "(?:\\.(?P<frac>\\d+))?");
             
         auto what = boost::xpressive::smatch();
         auto f_str = std::string{f};
@@ -78,20 +78,20 @@ public:
         auto hours = std::stoi(what["hour"].str());
         auto mins  = std::stoi(what["min"].str());
         auto secs  = std::stoi(what["sec"].str());
-        auto ms    = 0;
-        if (what["ms"].matched)
+        auto us = 0;
+        if (what["frac"].matched)
         {
-            auto in   = what["ms"].str();
-            auto step = 100;
-            for (int i = 0; i < std::min<uint32_t>(3, static_cast<uint32_t>(in.size())); i++)
+            auto in   = what["frac"].str();
+            auto step = 100000;
+            for (int i = 0; i < std::min<uint32_t>(6, static_cast<uint32_t>(in.size())); i++)
             {
                 auto v  = in.at(i) - '0';
-                ms     += v * step;
+                us     += v * step;
                 step   /= 10;
             }
         }
 
-        this->_ms = std::chrono::milliseconds(ms)
+        this->_us = std::chrono::microseconds(us)
             + std::chrono::seconds(secs)
             + std::chrono::minutes(mins)
             + std::chrono::hours(hours)
@@ -99,7 +99,7 @@ public:
 
         if (what["ne"].matched)
         {
-            this->_ms *= -1;
+            this->_us *= -1;
         }
     }
 
@@ -111,8 +111,11 @@ public:
      * @param[in]  minutes       The number of minutes.
      * @param[in]  seconds       The number of seconds.
      * @param[in]  milliseconds  The number of milliseconds.
+     * @param[in]  microseconds  The number of microseconds added after milliseconds.
      */
-    timespan(int days, int hours, int minutes, int seconds, int milliseconds) : _ms(std::chrono::milliseconds(milliseconds)
+    timespan(int days, int hours, int minutes, int seconds, int milliseconds, int microseconds = 0) :
+        _us(std::chrono::microseconds(microseconds)
+        + std::chrono::milliseconds(milliseconds)
         + std::chrono::seconds(seconds)
         + std::chrono::minutes(minutes)
         + std::chrono::hours(hours)
@@ -128,7 +131,7 @@ public:
      * @tparam     _Period   The period type of the duration.
      */
     template <class _Rep, class _Period>
-    timespan(const std::chrono::duration<_Rep, _Period>& duration) : _ms(std::chrono::duration_cast<std::chrono::milliseconds>(duration))
+    timespan(const std::chrono::duration<_Rep, _Period>& duration) : _us(std::chrono::duration_cast<std::chrono::microseconds>(duration))
     { }
 
     /**
@@ -136,7 +139,7 @@ public:
      *
      * @param[in]  ts    The timespan to copy.
      */
-    timespan(const timespan& ts) : _ms(ts._ms)
+    timespan(const timespan& ts) : _us(ts._us)
     { }
 
     /**
@@ -149,162 +152,172 @@ public:
     template <class _Rep, class _Period>
     operator std::chrono::duration<_Rep, _Period> () const
     {
-        return std::chrono::duration_cast<std::chrono::duration<_Rep, _Period>>(this->_ms);
+        return std::chrono::duration_cast<std::chrono::duration<_Rep, _Period>>(this->_us);
     }
 
     friend timespan operator+ (const timespan& ts1, const timespan& ts2)
     {
-        return timespan(ts1._ms + ts2._ms);
+        return timespan(ts1._us + ts2._us);
     }
 
     friend timespan operator- (const timespan& ts1, const timespan& ts2)
     {
-        return timespan(ts1._ms - ts2._ms);
+        return timespan(ts1._us - ts2._us);
     }
 
     template <class _Rep, class _Period>
     friend timespan operator+ (const timespan& ts, std::chrono::duration<_Rep, _Period> duration)
     {
-        return timespan(ts._ms + duration);
+        return timespan(ts._us + duration);
     }
 
     template <class _Rep, class _Period>
     friend timespan operator- (const timespan& ts, std::chrono::duration<_Rep, _Period> duration)
     {
-        return timespan(ts._ms - duration);
+        return timespan(ts._us - duration);
     }
 
     friend bool operator== (const timespan& ts1, const timespan& ts2)
     {
-        return ts1._ms == ts2._ms;
+        return ts1._us == ts2._us;
     }
 
     template <class _Rep, class _Period>
     friend bool operator== (const timespan& ts1, std::chrono::duration<_Rep, _Period> duration)
     {
-        return ts1._ms == duration;
+        return ts1._us == duration;
     }
 
     friend bool operator!= (const timespan& ts1, const timespan& ts2)
     {
-        return ts1._ms != ts2._ms;
+        return ts1._us != ts2._us;
     }
 
     template <class _Rep, class _Period>
     friend bool operator!= (const timespan& ts1, std::chrono::duration<_Rep, _Period> duration)
     {
-        return ts1._ms != duration;
+        return ts1._us != duration;
     }
 
     friend bool operator> (const timespan& ts1, const timespan& ts2)
     {
-        return ts1._ms > ts2._ms;
+        return ts1._us > ts2._us;
     }
 
     template <class _Rep, class _Period>
     friend bool operator> (const timespan& ts1, std::chrono::duration<_Rep, _Period> duration)
     {
-        return ts1._ms > duration;
+        return ts1._us > duration;
     }
 
     friend bool operator< (const timespan& ts1, const timespan& ts2)
     {
-        return ts1._ms < ts2._ms;
+        return ts1._us < ts2._us;
     }
 
     template <class _Rep, class _Period>
     friend bool operator< (const timespan& ts1, std::chrono::duration<_Rep, _Period> duration)
     {
-        return ts1._ms < duration;
+        return ts1._us < duration;
     }
 
     friend bool operator>= (const timespan& ts1, const timespan& ts2)
     {
-        return ts1._ms >= ts2._ms;
+        return ts1._us >= ts2._us;
     }
 
     template <class _Rep, class _Period>
     friend bool operator>= (const timespan& ts1, std::chrono::duration<_Rep, _Period> duration)
     {
-        return ts1._ms >= duration;
+        return ts1._us >= duration;
     }
 
     friend bool operator<= (const timespan& ts1, const timespan& ts2)
     {
-        return ts1._ms <= ts2._ms;
+        return ts1._us <= ts2._us;
     }
 
     template <class _Rep, class _Period>
     friend bool operator<= (const timespan& ts1, std::chrono::duration<_Rep, _Period> duration)
     {
-        return ts1._ms <= duration;
+        return ts1._us <= duration;
     }
 
     timespan& operator+= (const timespan& ts)
     {
-        this->_ms += ts._ms;
+        this->_us += ts._us;
         return *this;
     }
 
     timespan& operator-= (const timespan& ts)
     {
-        this->_ms -= ts._ms;
+        this->_us -= ts._us;
         return *this;
     }
 
     template <class _Rep, class _Period>
     timespan& operator+= (std::chrono::duration<_Rep, _Period> duration)
     {
-        this->_ms += duration;
+        this->_us += duration;
         return *this;
     }
 
     template <class _Rep, class _Period>
     timespan& operator-= (std::chrono::duration<_Rep, _Period> duration)
     {
-        this->_ms -= duration;
+        this->_us -= duration;
         return *this;
     }
 
     int milliseconds() const
     {
-        return this->_ms.count() % 1000;
+        return static_cast<int>(this->_us.count() / 1000 % 1000);
+    }
+
+    int microseconds() const
+    {
+        return static_cast<int>(this->_us.count() % 1000);
     }
 
     int seconds() const
     {
-        return std::chrono::duration_cast<std::chrono::seconds>(this->_ms).count() % 60;
+        return std::chrono::duration_cast<std::chrono::seconds>(this->_us).count() % 60;
     }
 
     int minutes() const
     {
-        return std::chrono::duration_cast<std::chrono::minutes>(this->_ms).count() % 60;
+        return std::chrono::duration_cast<std::chrono::minutes>(this->_us).count() % 60;
     }
 
     int hours() const
     {
-        return std::chrono::duration_cast<std::chrono::hours>(this->_ms).count() % 24;
+        return std::chrono::duration_cast<std::chrono::hours>(this->_us).count() % 24;
     }
 
     int days() const
     {
-        return std::chrono::duration_cast<std::chrono::hours>(this->_ms).count() / 24;
+        return std::chrono::duration_cast<std::chrono::hours>(this->_us).count() / 24;
     }
 
     int64_t total_milliseconds() const
     {
-        return this->_ms.count();
+        return this->_us.count() / 1000;
+    }
+
+    int64_t total_microseconds() const
+    {
+        return this->_us.count();
     }
 
     bool empty() const
     {
-        return this->total_milliseconds() == 0;
+        return this->total_microseconds() == 0;
     }
 
     std::string to_string() const
     {
         auto sstream = std::stringstream();
-        if (this->_ms.count() < 0)
+        if (this->_us.count() < 0)
             sstream << '-';
 
         auto days = std::abs(this->days());
@@ -315,9 +328,11 @@ public:
                 << std::setw(2) << std::setfill('0') << std::abs(this->minutes()) << ':' 
                 << std::setw(2) << std::setfill('0') << std::abs(this->seconds());
 
-        auto ms = std::abs(this->milliseconds());
-        if (ms != 0)
-            sstream << '.' << std::setw(3) << std::setfill('0') << ms;
+        auto us = this->_us.count() % 1000000;
+        if (us < 0)
+            us = -us;
+        if (us != 0)
+            sstream << '.' << std::setw(6) << std::setfill('0') << us;
 
         return sstream.str();
     }
@@ -637,7 +652,8 @@ public:
 
     datetime to_local() const
     {
-        const auto epoch = boost::posix_time::to_time_t(this->_ptime);
+        const auto fraction = this->_ptime.time_of_day().fractional_seconds();
+        const auto epoch    = boost::posix_time::to_time_t(this->_ptime);
         std::tm    local{};
 #if defined(_WIN32)
         if (localtime_s(&local, &epoch) != 0)
@@ -646,17 +662,22 @@ public:
         if (localtime_r(&epoch, &local) == nullptr)
             throw std::runtime_error("failed to convert utc datetime to local");
 #endif
-        return datetime(boost::posix_time::ptime_from_tm(local));
+        auto local_time = boost::posix_time::ptime_from_tm(local);
+        local_time += boost::posix_time::time_duration(0, 0, 0, fraction);
+        return datetime(std::move(local_time));
     }
 
     datetime local_to_utc() const
     {
-        auto       tm    = boost::posix_time::to_tm(this->_ptime);
-        tm.tm_isdst      = -1;
-        const auto epoch = std::mktime(&tm);
+        const auto fraction = this->_ptime.time_of_day().fractional_seconds();
+        auto       tm       = boost::posix_time::to_tm(this->_ptime);
+        tm.tm_isdst         = -1;
+        const auto epoch    = std::mktime(&tm);
         if (epoch == static_cast<std::time_t>(-1))
             throw std::runtime_error("failed to convert local datetime to utc");
-        return datetime(boost::posix_time::from_time_t(epoch));
+        auto utc = boost::posix_time::from_time_t(epoch);
+        utc += boost::posix_time::time_duration(0, 0, 0, fraction);
+        return datetime(std::move(utc));
     }
 
     /**
@@ -716,6 +737,11 @@ public:
         return static_cast<uint16_t>(this->_ptime.time_of_day().total_milliseconds() % 1000);
     }
 
+    uint16_t microseconds() const
+    {
+        return static_cast<uint16_t>(this->_ptime.time_of_day().fractional_seconds() % 1000);
+    }
+
     datetime& add_days(int days)
     {
         this->_ptime += boost::posix_time::hours(days * 24);
@@ -752,9 +778,21 @@ public:
         return *this;
     }
 
+    datetime& add_microseconds(int64_t us)
+    {
+        constexpr int64_t us_per_day = 86400000000LL;
+        auto              days       = us / us_per_day;
+        auto              rem        = us % us_per_day;
+        if (days != 0)
+            this->_ptime += boost::gregorian::days(static_cast<int>(days));
+        if (rem != 0)
+            this->_ptime += boost::posix_time::time_duration(0, 0, 0, rem);
+        return *this;
+    }
+
     datetime& add_timespan(const timespan& ts)
     {
-        this->add_milliseconds(ts.total_milliseconds());
+        this->add_microseconds(ts.total_microseconds());
         return *this;
     }
 
@@ -768,14 +806,14 @@ public:
     friend datetime operator- (const datetime& dt, const timespan& ts)
     {
         auto result = datetime(dt);
-        result.add_milliseconds(-ts.total_milliseconds());
+        result.add_microseconds(-ts.total_microseconds());
         return result;
     }
 
     friend timespan operator- (const datetime& dt1, const datetime& dt2)
     {
         auto diff = dt1._ptime - dt2._ptime;
-        return timespan(std::chrono::milliseconds(diff.total_milliseconds()));
+        return timespan(std::chrono::microseconds(diff.total_microseconds()));
     }
 
     datetime& operator+= (const timespan& ts)
@@ -786,7 +824,7 @@ public:
 
     datetime& operator-= (const timespan& ts)
     {
-        this->add_milliseconds(-ts.total_milliseconds());
+        this->add_microseconds(-ts.total_microseconds());
         return *this;
     }
 
@@ -902,9 +940,9 @@ public:
             << std::setw(2) << std::setfill('0') << this->minutes() << ':'
             << std::setw(2) << std::setfill('0') << this->seconds();
 
-        auto ms = this->milliseconds();
-        if (ms > 0)
-            sstream << '.' << std::setw(3) << std::setfill('0') << ms;
+        auto us = this->_ptime.time_of_day().fractional_seconds();
+        if (us > 0)
+            sstream << '.' << std::setw(6) << std::setfill('0') << us;
 
         return sstream.str();
     }

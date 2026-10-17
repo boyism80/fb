@@ -45,7 +45,7 @@ uint16_t spell::delay() const
     if (sec < 0)
         return 0;
 
-    return sec + (diff.milliseconds() > 0 ? 1 : 0);
+    return sec + (diff.milliseconds() > 0 || diff.microseconds() > 0 ? 1 : 0);
 }
 
 const fb::model::datetime& fb::game::spell::next() const
