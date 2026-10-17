@@ -15,6 +15,8 @@ namespace Http.Service
 
         private const int QueueCapacity = 10000;
         private static readonly TimeSpan PublishTimeout = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan EnqueueTimeout = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan ConfirmTimeout = TimeSpan.FromSeconds(5);
 
         private readonly IConfiguration _configuration;
         private readonly ILogger<RabbitMqService> _logger;
@@ -74,7 +76,21 @@ namespace Http.Service
         public async Task PublishFanoutAsync(IFlatBufferEx protocol, string topic, uint homeWorld, CancellationToken cancellationToken = default)
         {
             foreach (var key in AmqpRoute.Fanout(topic, homeWorld))
+            {
                 await PublishAsync(protocol, AmqpRoute.Exchange, key, cancellationToken);
+            }
+        }
+
+        // Returns after the broker confirms every route, so the caller can retry a publish that was lost.
+        public async Task PublishFanoutConfirmedAsync(IFlatBufferEx protocol, string topic, uint homeWorld, CancellationToken cancellationToken = default)
+        {
+            var bytes = protocol.ToBytes();
+            foreach (var key in AmqpRoute.Fanout(topic, homeWorld))
+            {
+                var sent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                await EnqueueAsync(new PublishJob(AmqpRoute.Exchange, key, bytes, false, null, null, sent), cancellationToken);
+                await sent.Task.WaitAsync(ConfirmTimeout, cancellationToken);
+            }
         }
 
         // The change is already saved, so a failed notification must not turn the response into an error:
@@ -117,7 +133,7 @@ namespace Http.Service
 
             try
             {
-                await _pending.Writer.WriteAsync(new PublishJob(exchangeName, routingKey, body, persistent, prepare, onFailure), cancellationToken);
+                await EnqueueAsync(new PublishJob(exchangeName, routingKey, body, persistent, prepare, onFailure, null), cancellationToken);
             }
             catch (Exception ex)
             {
@@ -126,6 +142,14 @@ namespace Http.Service
 
                 await onFailure(ex);
             }
+        }
+
+        // A full queue means the broker is not draining it; fail instead of holding the request open.
+        private async Task EnqueueAsync(PublishJob job, CancellationToken cancellationToken)
+        {
+            using var full = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            full.CancelAfter(EnqueueTimeout);
+            await _pending.Writer.WriteAsync(job, full.Token);
         }
 
         private async Task PublishLoop(CancellationToken stoppingToken)
@@ -139,6 +163,7 @@ namespace Http.Service
                         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
                         timeout.CancelAfter(PublishTimeout);
                         await PublishJobAsync(job, timeout.Token);
+                        job.Sent?.TrySetResult();
                     }
                     catch (Exception ex)
                     {
@@ -153,11 +178,19 @@ namespace Http.Service
             }
 
             while (_pending.Reader.TryRead(out var leftover))
+            {
                 await InvokeFailure(leftover, new OperationCanceledException("publish stopped before send"));
+            }
         }
 
         private async Task InvokeFailure(PublishJob job, Exception ex)
         {
+            if (job.Sent != null)
+            {
+                job.Sent.TrySetException(ex);
+                return;
+            }
+
             if (job.OnFailure == null)
             {
                 _logger.LogError(ex, "Failed to publish {Exchange}/{RoutingKey}", job.Exchange, job.RoutingKey);
@@ -264,6 +297,7 @@ namespace Http.Service
             byte[] Body,
             bool Persistent,
             Func<IChannel, CancellationToken, Task> Prepare,
-            Func<Exception, Task> OnFailure);
+            Func<Exception, Task> OnFailure,
+            TaskCompletionSource Sent);
     }
 }

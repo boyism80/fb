@@ -147,7 +147,7 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
 
             try
             {
-                await _rabbitMqService.PublishFanoutAsync(
+                await _rabbitMqService.PublishFanoutConfirmedAsync(
                     message,
                     "matchmaking",
                     world,
