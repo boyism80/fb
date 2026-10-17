@@ -56,20 +56,31 @@ namespace Internal.Services
                 .ToList();
             if (mails.Count > 0)
             {
-                // These mails are expired or canceled and never sent again, so their received records no longer
-                // guard anything. They are purged before archiving: a failed purge leaves the mails in Redis to
-                // retry, while archiving first would drop them from the next run.
-                // Deleted mail rows go first: USP_MAIL_NEXT_ID turns them into received records when it renumbers.
-                var ids = mails.Select(m => m.Id).ToArray();
-                for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
-                {
-                    await using var conn = dbContext.GetDataConnection(world, db);
-                    await conn.ExecuteAsync("DELETE FROM `mail` WHERE `system_mail_id` IN @ids AND `deleted` = 1", new { ids });
-                    await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @ids", new { ids });
-                }
-
                 await dbContext.SystemMail.Archive(world, mails);
                 _logger.LogInformation("Archived {Count} system mails for world {World}", mails.Count, world);
+            }
+
+            // An archived mail is never sent again, so its deleted mail rows and received records guard nothing.
+            // The purge reads archive rows, which write-back adds only after the mail left Redis: a mail delete that
+            // marked its row before that is purged here, and one that marks it later sees the archive row and
+            // removes the row itself. Deleted rows go first because USP_MAIL_NEXT_ID turns them into received
+            // records. A failed purge leaves `purged` at 0 and runs again next time.
+            await using (var global = dbContext.GetGlobalConnection(world))
+            {
+                var ids = (await global.QueryAsync<uint>(
+                    "SELECT `id` FROM `system_mail_archive` WHERE `purged` = 0 LIMIT 500")).ToArray();
+                if (ids.Length > 0)
+                {
+                    for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
+                    {
+                        await using var conn = dbContext.GetDataConnection(world, db);
+                        await conn.ExecuteAsync("DELETE FROM `mail` WHERE `system_mail_id` IN @ids AND `deleted` = 1", new { ids });
+                        await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @ids", new { ids });
+                    }
+
+                    await global.ExecuteAsync("UPDATE `system_mail_archive` SET `purged` = 1 WHERE `id` IN @ids", new { ids });
+                    _logger.LogInformation("Purged received records of {Count} archived system mails for world {World}", ids.Length, world);
+                }
             }
 
             var boxes = (await dbContext.SystemStorageBox.GetAll(world))

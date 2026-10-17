@@ -334,20 +334,30 @@ namespace Http.Reepository
                 "SELECT `system_mail_id` FROM `mail` WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
                 new { user, id });
 
-            // An archived system mail is never sent again, so its row needs no deleted marker to block a resend.
-            // A marker would let USP_MAIL_NEXT_ID turn it into a received record that nothing purges.
-            if (systemMailId.HasValue && await _dbContext.SystemMail.Get(world, systemMailId.Value) == null)
+            var marked = await conn.ExecuteAsync(
+                "UPDATE `mail` SET deleted = 1 WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
+                new { user, id }) == 1;
+            if (marked == false || systemMailId.HasValue == false)
+                return marked;
+
+            // The archive check must follow the mark. The archive purge removes rows marked before the archive row
+            // exists; a row marked later is removed here, because USP_MAIL_NEXT_ID would turn it into a received
+            // record that nothing purges. The received record is deleted too in case a renumber already did that.
+            await using var global = _dbContext.GetGlobalConnection(world);
+            var archived = await global.ExecuteScalarAsync<bool>(
+                "SELECT EXISTS(SELECT 1 FROM `system_mail_archive` WHERE `id` = @systemMailId)",
+                new { systemMailId });
+            if (archived)
             {
-                return await conn.ExecuteAsync(
-                    "DELETE FROM `mail` WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
-                    new { user, id }) == 1;
+                await conn.ExecuteAsync(
+                    """
+                    DELETE FROM `mail` WHERE `user` = @user AND `system_mail_id` = @systemMailId AND `deleted` = 1;
+                    DELETE FROM `mail_system_received` WHERE `user` = @user AND `system_mail_id` = @systemMailId;
+                    """,
+                    new { user, systemMailId });
             }
-            else
-            {
-                return await conn.ExecuteAsync(
-                    "UPDATE `mail` SET deleted = 1 WHERE `user` = @user AND `id` = @id AND `deleted` = 0",
-                    new { user, id }) == 1;
-            }
+
+            return true;
         }
 
         public Task SaveChangesAsync()
