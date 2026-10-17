@@ -179,16 +179,23 @@ async::task<void> clan::container::on_create(uint32_t                           
     auto ptr = weak.lock();
     if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
     {
-        ptr->clan_id(clan_id);
+        // A leave or kick handled since the create already removed the character, so it is not attached again.
+        auto attached = false;
         try
         {
-            this->write(clan_id, [weak](auto& clan) {
-                if (clan != nullptr)
-                    clan->attach(weak);
+            attached = this->write(clan_id, [weak, name = ptr->name()](auto& clan) {
+                if (clan == nullptr || clan->contains(name) == false)
+                    return false;
+
+                clan->attach(weak);
+                return true;
             });
         }
         catch (const std::runtime_error&)
         { }
+
+        if (attached)
+            ptr->clan_id(clan_id);
     }
 
     if (before != nullptr)
@@ -367,19 +374,28 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
     co_await this->_server.threads.switching(weak);
 
     // Attaching on the character's thread orders it with disconnect cleanup, which detaches by clan_id.
-    auto ptr = weak.lock();
+    auto ptr      = weak.lock();
+    auto attached = false;
     if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
     {
-        ptr->clan_id(clan_id);
+        // A leave or kick handled since the join already removed the character, so it is not attached again.
         try
         {
-            this->write(clan_id, [weak](auto& clan) {
-                if (clan != nullptr)
-                    clan->attach(weak);
+            attached = this->write(clan_id, [weak, name = ptr->name()](auto& clan) {
+                if (clan == nullptr || clan->contains(name) == false)
+                    return false;
+
+                clan->attach(weak);
+                return true;
             });
         }
         catch (const std::runtime_error&)
         { }
+    }
+
+    if (attached)
+    {
+        ptr->clan_id(clan_id);
         ptr->update_external();
         ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan_name), MESSAGE_TYPE::NOTIFY);
     }

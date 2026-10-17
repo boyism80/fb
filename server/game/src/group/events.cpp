@@ -152,17 +152,28 @@ async::task<void> group::container::on_create(std::string                     ta
             if (this->_server.characters.find(ch->id) != ch)
                 co_return;
 
-            ch->group_id(group_id);
+            // A leave or kick handled since the create already removed the character, so it is not entered again.
+            auto entered = false;
             try
             {
-                this->write(group_id, [weak = ch->template weak_from_this_as<character>()](auto& group) {
-                    if (group != nullptr)
-                        group->enter(weak);
-                });
+                entered =
+                    this->write(group_id,
+                                [weak = ch->template weak_from_this_as<character>(), name = ch->name()](auto& group) {
+                                    auto members = group != nullptr ? group->members() : std::vector<std::string>{};
+                                    if (std::find(members.begin(), members.end(), name) == members.end())
+                                        return false;
+
+                                    group->enter(weak);
+                                    return true;
+                                });
             }
             catch (const std::runtime_error&)
             { }
 
+            if (entered == false)
+                co_return;
+
+            ch->group_id(group_id);
             for (const auto& name : member_names)
             {
                 if (name != ch->name())
@@ -238,19 +249,29 @@ async::task<void> group::container::on_enter(std::string                target,
         co_await this->_server.threads.switching(weak);
 
         // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
-        auto ptr = weak.lock();
+        auto ptr     = weak.lock();
+        auto entered = false;
         if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
         {
-            ptr->group_id(group_id);
+            // A leave or kick handled since the enter already removed the character, so it is not entered again.
             try
             {
-                this->write(group_id, [weak](auto& group) {
-                    if (group != nullptr)
-                        group->enter(weak);
+                entered = this->write(group_id, [weak, name](auto& group) {
+                    auto members = group != nullptr ? group->members() : std::vector<std::string>{};
+                    if (std::find(members.begin(), members.end(), name) == members.end())
+                        return false;
+
+                    group->enter(weak);
+                    return true;
                 });
             }
             catch (const std::runtime_error&)
             { }
+        }
+
+        if (entered)
+        {
+            ptr->group_id(group_id);
             ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
         }
 
