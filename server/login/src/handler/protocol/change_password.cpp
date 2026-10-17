@@ -43,7 +43,7 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name must be Hangul syllables (no jamo)
-        if (fb::config<bool>("login:account option:allow_foreign_name") == false && assert_korean(name_cp949) == false)
+        if (fb::config<bool>("allow_foreign_name") == false && assert_korean(name_cp949) == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name cannot contains subcharacters in forbidden list
