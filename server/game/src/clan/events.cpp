@@ -160,7 +160,6 @@ async::task<void> clan::container::on_create(uint32_t                           
 
             weak  = ch->template weak_from_this_as<character>();
             ch_id = ch->id;
-            guard.value()->attach(weak);
         }
     }
 
@@ -176,9 +175,21 @@ async::task<void> clan::container::on_create(uint32_t                           
     auto before = this->_server.threads.current();
     co_await this->_server.threads.switching(weak);
 
+    // Attaching on the character's thread orders it with disconnect cleanup, which detaches by clan_id.
     auto ptr = weak.lock();
-    if (ptr != nullptr)
+    if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
+    {
         ptr->clan_id(clan_id);
+        try
+        {
+            this->write(clan_id, [weak](auto& clan) {
+                if (clan != nullptr)
+                    clan->attach(weak);
+            });
+        }
+        catch (const std::runtime_error&)
+        { }
+    }
 
     if (before != nullptr)
         co_await before->switching();
@@ -336,8 +347,6 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
             ch_id     = ch->id;
             clan_name = clan->name();
             members   = clan->online_characters();
-            if (weak.expired() == false)
-                clan->attach(weak);
         }
     }
 
@@ -357,10 +366,20 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
     auto before = this->_server.threads.current();
     co_await this->_server.threads.switching(weak);
 
+    // Attaching on the character's thread orders it with disconnect cleanup, which detaches by clan_id.
     auto ptr = weak.lock();
-    if (ptr != nullptr)
+    if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
     {
         ptr->clan_id(clan_id);
+        try
+        {
+            this->write(clan_id, [weak](auto& clan) {
+                if (clan != nullptr)
+                    clan->attach(weak);
+            });
+        }
+        catch (const std::runtime_error&)
+        { }
         ptr->update_external();
         ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan_name), MESSAGE_TYPE::NOTIFY);
     }

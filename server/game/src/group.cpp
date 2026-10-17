@@ -9,8 +9,9 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
-#include <unordered_set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -44,11 +45,12 @@ void group::enter(std::weak_ptr<character> ch)
     if (ptr == nullptr)
         return;
 
-    // Prevent duplicate entries
-    if (this->_active_members.contains(ptr))
+    // A live entry is the online character, so a duplicate session must not replace it.
+    auto found = this->_active_members.find(ptr->id);
+    if (found != this->_active_members.end() && found->second.expired() == false)
         return;
 
-    this->_active_members.insert(ptr);
+    this->_active_members.insert_or_assign(ptr->id, ch);
 }
 
 void group::detach(std::weak_ptr<character> ch)
@@ -57,10 +59,15 @@ void group::detach(std::weak_ptr<character> ch)
     if (ptr == nullptr)
         return;
 
-    if (this->_active_members.contains(ptr) == false)
+    auto found = this->_active_members.find(ptr->id);
+    if (found == this->_active_members.end())
         return;
 
-    this->_active_members.erase(ptr);
+    auto current = found->second.lock();
+    if (current != nullptr && current != ptr)
+        return;
+
+    this->_active_members.erase(found);
 }
 
 void group::add_member(std::string_view name)
@@ -99,7 +106,16 @@ const std::string& group::master() const
 
 std::vector<std::shared_ptr<character>> group::characters() const
 {
-    return std::vector<std::shared_ptr<character>>(this->_active_members.begin(), this->_active_members.end());
+    auto result = std::vector<std::shared_ptr<character>>{};
+    result.reserve(this->_active_members.size());
+    for (const auto& [id, weak] : this->_active_members)
+    {
+        std::ignore = id;
+        auto ptr    = weak.lock();
+        if (ptr != nullptr)
+            result.push_back(ptr);
+    }
+    return result;
 }
 
 std::vector<std::string> group::members() const
@@ -133,8 +149,9 @@ std::vector<std::weak_ptr<character>> group::nears(const fb::game::map& map, con
     // Filter only group members
     for (auto& obj : nears)
     {
-        auto ch = std::static_pointer_cast<fb::game::character>(obj);
-        if (this->_active_members.contains(ch))
+        auto ch    = std::static_pointer_cast<fb::game::character>(obj);
+        auto found = this->_active_members.find(ch->id);
+        if (found != this->_active_members.end() && found->second.lock() == ch)
             result.push_back(ch);
     }
 

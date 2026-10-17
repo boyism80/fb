@@ -165,10 +165,12 @@ void clan::attach(std::weak_ptr<character> ch)
     if (shared == nullptr)
         return;
 
-    if (this->_characters.contains(shared->id))
+    // A live entry is the online character, so a duplicate session must not replace it.
+    auto found = this->_characters.find(shared->id);
+    if (found != this->_characters.end() && found->second.expired() == false)
         return;
 
-    this->_characters.insert({shared->id, ch});
+    this->_characters.insert_or_assign(shared->id, ch);
 }
 
 void clan::detach(std::weak_ptr<character> ch)
@@ -179,7 +181,11 @@ void clan::detach(std::weak_ptr<character> ch)
 
     // A duplicate session never replaced the online character's entry, so it must not remove it.
     auto found = this->_characters.find(shared->id);
-    if (found == this->_characters.end() || found->second.lock() != shared)
+    if (found == this->_characters.end())
+        return;
+
+    auto current = found->second.lock();
+    if (current != nullptr && current != shared)
         return;
 
     this->_characters.erase(found);

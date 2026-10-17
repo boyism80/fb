@@ -119,7 +119,6 @@ async::task<void> group::container::on_create(std::string                     ta
                                  : nullptr;
             if (master_ch != nullptr)
             {
-                group->enter(master_ch->template weak_from_this_as<character>());
                 online.push_back(master_ch);
 
                 auto log_data              = Json::Value();
@@ -135,14 +134,9 @@ async::task<void> group::container::on_create(std::string                     ta
                     continue;
 
                 auto ch = this->_server.characters.find(name);
-                if (ch == nullptr)
-                    continue;
-
-                group->enter(ch->template weak_from_this_as<character>());
-                online.push_back(ch);
+                if (ch != nullptr)
+                    online.push_back(ch);
             }
-
-            this->update_portraits(*group, online);
         }
     }
 
@@ -152,9 +146,23 @@ async::task<void> group::container::on_create(std::string                     ta
         co_return;
     }
 
-    this->_server.characters.foreach_enqueue(
-        [group_id, member_names](auto& ch) -> async::task<void> {
+    // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
+    co_await this->_server.characters.foreach_async(
+        [this, group_id, member_names](auto& ch) -> async::task<void> {
+            if (this->_server.characters.find(ch->id) != ch)
+                co_return;
+
             ch->group_id(group_id);
+            try
+            {
+                this->write(group_id, [weak = ch->template weak_from_this_as<character>()](auto& group) {
+                    if (group != nullptr)
+                        group->enter(weak);
+                });
+            }
+            catch (const std::runtime_error&)
+            { }
+
             for (const auto& name : member_names)
             {
                 if (name != ch->name())
@@ -164,6 +172,8 @@ async::task<void> group::container::on_create(std::string                     ta
             co_return;
         },
         online);
+
+    this->update_portraits(group_id);
 }
 
 async::task<void> group::container::on_enter(std::string                target,
@@ -203,7 +213,6 @@ async::task<void> group::container::on_enter(std::string                target,
             weak    = ch->weak_from_this_as<character>();
             ch_id   = ch->id;
             members = group->characters();
-            group->enter(weak);
         }
     }
 
@@ -228,10 +237,20 @@ async::task<void> group::container::on_enter(std::string                target,
         auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
 
+        // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
         auto ptr = weak.lock();
-        if (ptr != nullptr)
+        if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
         {
             ptr->group_id(group_id);
+            try
+            {
+                this->write(group_id, [weak](auto& group) {
+                    if (group != nullptr)
+                        group->enter(weak);
+                });
+            }
+            catch (const std::runtime_error&)
+            { }
             ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
         }
 

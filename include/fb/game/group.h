@@ -28,14 +28,14 @@ public:
 private:
     using character_ptr      = std::shared_ptr<character>;
     using character_weak_ptr = std::weak_ptr<character>;
-    using character_set      = std::unordered_set<character_ptr>;
+    using character_map      = std::unordered_map<uint32_t, character_weak_ptr>;
     using character_vector   = std::vector<character_weak_ptr>;
 
     server&                  _server;
     uint64_t                 _id;
     std::string              _master;
     std::vector<std::string> _members;
-    character_set            _active_members;
+    character_map            _active_members;
     uint64_t                 _revision = 0;
 
 public:
