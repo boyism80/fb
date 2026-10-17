@@ -20,34 +20,6 @@ namespace Http.Reepository
             _logger = logger;
         }
 
-        public async Task DropCachedHashesAsync()
-        {
-            foreach (var world in _redis.GetConfiguredWorlds())
-            {
-                var shards = _redis.GetShardSize(world);
-                for (var i = 0; i < shards; i++)
-                {
-                    var redis = _redis.GetDataConnection(world, i);
-                    if (redis == null)
-                        continue;
-
-                    try
-                    {
-                        var keys = await redis.Connection.ScanKeysAsync("fb:cache:clan_money_request_archive:*", 100);
-                        if (keys.Count == 0)
-                            continue;
-
-                        await redis.Connection.KeyDeleteAsync(keys.Select(key => (RedisKey)key).ToArray());
-                        await redis.Connection.HashDeleteAsync(Const.ReferenceCountKey, keys.Select(key => (RedisValue)key).ToArray());
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to drop clan money archive cache for world {World} shard {Shard}", world, i);
-                    }
-                }
-            }
-        }
-
         public async Task<ClanMoneyRequestArchive> Get(uint world, uint clan, ulong requestId)
         {
             await DropCacheAsync(world, clan);
@@ -80,12 +52,16 @@ namespace Http.Reepository
             _buffer.Enqueue(async () =>
             {
                 foreach (var clan in values.Select(x => x.Clan).Distinct())
+                {
                     await DropCacheAsync(world, clan);
+                }
 
                 foreach (var (conn, items) in _dbContext.GetShardConnections(world, values, value => value.GetHash()))
                 {
                     await using (conn)
+                    {
                         await conn.ExecuteAsync(OnUpsert(items));
+                    }
                 }
             });
             return values;
