@@ -56,9 +56,9 @@ namespace Internal.Services
                 .ToList();
             if (mails.Count > 0)
             {
-                await dbContext.SystemMail.Archive(world, mails);
-
-                // An archived mail is never sent again, so its received records no longer guard anything.
+                // These mails are expired or canceled and never sent again, so their received records no longer
+                // guard anything. They are purged before archiving: a failed purge leaves the mails in Redis to
+                // retry, while archiving first would drop them from the next run.
                 var ids = mails.Select(m => m.Id).ToArray();
                 for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
                 {
@@ -66,6 +66,7 @@ namespace Internal.Services
                     await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @ids", new { ids });
                 }
 
+                await dbContext.SystemMail.Archive(world, mails);
                 _logger.LogInformation("Archived {Count} system mails for world {World}", mails.Count, world);
             }
 
