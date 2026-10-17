@@ -6572,9 +6572,24 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
         return 1;
     }
 
+    // The GM types the expiry in local time; internal stores UTC.
     auto expire_date = std::optional<std::string>{std::nullopt};
-    if (argc >= 3 && lua->is_nil(3) == false && lua->is_string(3))
-        expire_date = lua->tostring(3);
+    if (argc >= 4 && lua->is_nil(4) == false && lua->is_string(4))
+    {
+        auto value = lua->tostring(4);
+        if (value.empty() == false)
+        {
+            try
+            {
+                expire_date = fb::model::datetime(value).local_to_utc().to_string();
+            }
+            catch (const std::exception&)
+            {
+                lua->pushboolean(false);
+                return 1;
+            }
+        }
+    }
 
     auto success  = std::make_shared<bool>(false);
     auto builder  = lua->new_co_builder();

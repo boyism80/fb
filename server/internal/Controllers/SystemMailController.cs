@@ -59,8 +59,17 @@ namespace Internal.Controllers
             try
             {
                 DateTime? expireDate = null;
-                if (!string.IsNullOrEmpty(request.ExpireDate) && DateTime.TryParse(request.ExpireDate, out var parsedDate))
+                if (!string.IsNullOrEmpty(request.ExpireDate))
+                {
+                    if (DateTime.TryParse(request.ExpireDate, out var parsedDate) == false)
+                    {
+                        return new Response.WriteSystemMail
+                        {
+                            Error = (uint)ErrorCode.Unhandled
+                        };
+                    }
                     expireDate = parsedDate;
+                }
 
                 var systemMail = await _dbContext.SystemMail.Write(request.World, request.Sender, request.Title, request.Contents, expireDate);
                 var protocolMail = new Protocol.SystemMail

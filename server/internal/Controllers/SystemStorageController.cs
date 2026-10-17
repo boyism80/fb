@@ -55,8 +55,17 @@ namespace Internal.Controllers
             try
             {
                 DateTime? expireDate = null;
-                if (!string.IsNullOrEmpty(request.ExpireDate) && DateTime.TryParse(request.ExpireDate, out var parsedDate))
+                if (!string.IsNullOrEmpty(request.ExpireDate))
+                {
+                    if (DateTime.TryParse(request.ExpireDate, out var parsedDate) == false)
+                    {
+                        return new Response.WriteSystemStorageBox
+                        {
+                            Error = (uint)ErrorCode.Unhandled
+                        };
+                    }
                     expireDate = parsedDate;
+                }
 
                 var attachments = string.IsNullOrWhiteSpace(request.Attachments)
                     ? new List<Fb.Model.Dsl>()
