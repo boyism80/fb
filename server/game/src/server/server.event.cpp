@@ -120,9 +120,14 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         if (group_id.has_value())
         {
             auto gid = group_id.value();
-            this->groups.write(gid, [weak](auto& group) {
-                group->detach(weak);
-            });
+            try
+            {
+                this->groups.write(gid, [weak](auto& group) {
+                    group->detach(weak);
+                });
+            }
+            catch (const std::runtime_error&)
+            { }
             ptr->group_reset();
             this->groups.update_portraits(gid);
         }
@@ -130,9 +135,14 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         auto& clan_id = ptr->clan_id();
         if (clan_id.has_value())
         {
-            this->clans.write(clan_id.value(), [weak](auto& clan) {
-                clan->detach(weak);
-            });
+            try
+            {
+                this->clans.write(clan_id.value(), [weak](auto& clan) {
+                    clan->detach(weak);
+                });
+            }
+            catch (const std::runtime_error&)
+            { }
             ptr->clan_reset();
         }
 

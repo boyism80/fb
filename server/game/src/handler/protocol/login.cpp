@@ -20,6 +20,7 @@
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -656,9 +657,14 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
             if (group_id.has_value())
             {
                 auto gid = group_id.value();
-                this->server.groups.write(gid, [weak](auto& group) {
-                    group->detach(weak);
-                });
+                try
+                {
+                    this->server.groups.write(gid, [weak](auto& group) {
+                        group->detach(weak);
+                    });
+                }
+                catch (const std::runtime_error&)
+                { }
                 data->group_reset();
                 this->server.groups.update_portraits(gid);
             }
@@ -666,9 +672,14 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
             auto& clan_id = data->clan_id();
             if (clan_id.has_value())
             {
-                this->server.clans.write(clan_id.value(), [weak](auto& clan) {
-                    clan->detach(weak);
-                });
+                try
+                {
+                    this->server.clans.write(clan_id.value(), [weak](auto& clan) {
+                        clan->detach(weak);
+                    });
+                }
+                catch (const std::runtime_error&)
+                { }
                 data->clan_reset();
             }
 
