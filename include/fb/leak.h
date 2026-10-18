@@ -9,15 +9,14 @@
 #define DBG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
 #define new     DBG_NEW
 
+// Dumping from this object's destructor would run before statics of other translation units (model tables) are
+// destroyed and report them all; the CRT flag dumps after every static destructor has run.
 static class leak
 {
 public:
-    leak() = default;
-
-    ~leak()
+    leak()
     {
-        // _CRTDBG_LEAK_CHECK_DF 플래그 설정시 맨 마지막에 invoke해줌
-        _CrtDumpMemoryLeaks();
+        _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
     }
 } mleak;
 
