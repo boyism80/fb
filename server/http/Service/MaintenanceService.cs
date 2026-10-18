@@ -1,6 +1,5 @@
 using Http.Model;
 using Http.Redis;
-using Http.Service;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -8,7 +7,7 @@ namespace Http.Service
 {
     public class MaintenanceService
     {
-        private const string MaintenanceKeyPrefix = "fb:maintenance:";
+        private const string ScheduleKey = "fb:maintenance";
 
         private static readonly double RecurringScheduleScore = ((DateTimeOffset)new DateTime(2099, 12, 31, 23, 59, 59, DateTimeKind.Utc)).ToUnixTimeSeconds();
 
@@ -23,48 +22,33 @@ namespace Http.Service
             _logger = logger;
         }
 
-        public async Task<bool> IsMaintenanceActive(uint world, DateTime? checkTime = null)
-        {
-            var info = await GetMaintenanceInfo(world, checkTime);
-            return info != null && info.IsActive;
-        }
-
-        public async Task<MaintenanceInfo> GetMaintenanceInfo(uint world, DateTime? checkTime = null)
+        public async Task<List<MaintenanceInfo>> GetActiveMaintenances(DateTime? checkTime = null)
         {
             var now = checkTime ?? DateTime.UtcNow;
-            var redis = _redisService.GetUnifiedConnection();
-            if (redis == null)
-                return null;
-
-            var key = GetMaintenanceKey(world);
-            var currentTimestamp = ((DateTimeOffset)now).ToUnixTimeSeconds();
-
-            // Get schedules that haven't ended yet (score >= currentTimestamp); member is full JSON
-            var members = await redis.Connection.SortedSetRangeByScoreAsync(
-                key,
-                start: currentTimestamp,
-                stop: double.PositiveInfinity);
-
-            foreach (var member in members)
+            var result = new List<MaintenanceInfo>();
+            foreach (var (schedule, _) in await ReadSchedules())
             {
-                var schedule = DeserializeSchedule(member.ToString());
-                if (schedule == null || !schedule.IsActive)
+                if (!TryGetActiveWindow(schedule, now, out var start, out var end))
                     continue;
 
-                if (IsWithinMaintenanceWindow(schedule, now))
+                result.Add(new MaintenanceInfo
                 {
-                    return new MaintenanceInfo
-                    {
-                        IsActive = true,
-                        Message = schedule.Message,
-                        StartTime = GetWindowStart(schedule, now),
-                        EndTime = GetWindowEnd(schedule, now),
-                        ScheduleId = schedule.Id
-                    };
-                }
+                    Labels = schedule.Labels,
+                    Message = schedule.Message,
+                    StartTime = start,
+                    EndTime = end,
+                    FinishMatches = schedule.FinishMatches,
+                    ScheduleId = schedule.Id
+                });
             }
 
-            return null;
+            return result;
+        }
+
+        public async Task<MaintenanceInfo> FindActiveMaintenance(string label, DateTime? checkTime = null)
+        {
+            var maintenances = await GetActiveMaintenances(checkTime);
+            return maintenances.FirstOrDefault(x => MaintenanceLabel.Matches(x.Labels, label));
         }
 
         public async Task<bool> CreateMaintenanceSchedule(MaintenanceSchedule schedule)
@@ -74,6 +58,8 @@ namespace Http.Service
 
             schedule.CreatedAt = DateTime.UtcNow;
             schedule.IsActive = true;
+            schedule.Revision = 0;
+            schedule.Occurrence = null;
 
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
@@ -81,12 +67,8 @@ namespace Http.Service
 
             try
             {
-                var key = GetMaintenanceKey(schedule.World);
-                var scheduleJson = JsonConvert.SerializeObject(schedule);
-                var score = GetScoreForSchedule(schedule);
-                await redis.Connection.SortedSetAddAsync(key, scheduleJson, score);
-
-                _logger.LogInformation("Created maintenance schedule {ScheduleId} for world {World}", schedule.Id, schedule.World);
+                await redis.Connection.SortedSetAddAsync(ScheduleKey, JsonConvert.SerializeObject(schedule), GetScoreForSchedule(schedule));
+                _logger.LogInformation("Created maintenance schedule {ScheduleId} for {Labels}", schedule.Id, string.Join(",", schedule.Labels));
                 return true;
             }
             catch (Exception ex)
@@ -96,85 +78,208 @@ namespace Http.Service
             }
         }
 
-        public async Task<bool> CancelMaintenanceSchedule(uint world, string scheduleId)
+        // A started window keeps its start, labels and repeat type; moving them would end and restart the maintenance.
+        // started is what the caller saw; a window that began or ended since then fails the update.
+        public async Task<bool> UpdateMaintenanceSchedule(MaintenanceSchedule updated, bool started)
         {
-            var (schedule, existingMember) = await FindScheduleAndMember(world, scheduleId);
-            if (schedule == null || string.IsNullOrEmpty(existingMember))
+            var (current, member) = await FindScheduleAndMember(updated.Id);
+            if (current == null || !current.IsActive || current.Revision != updated.Revision)
+                return false;
+
+            var now = DateTime.UtcNow;
+            if (TryGetActiveWindow(current, now, out var start, out _) != started)
+                return false;
+
+            var next = JsonConvert.DeserializeObject<MaintenanceSchedule>(member);
+            next.Title = updated.Title;
+            next.Message = updated.Message;
+            next.FinishMatches = updated.FinishMatches;
+            next.NoticeMinutes = updated.NoticeMinutes;
+            if (started)
+            {
+                var end = updated.EndTime < now ? now : updated.EndTime;
+                if (current.RepeatType == MaintenanceRepeatType.None)
+                    next.EndTime = end;
+                else
+                    next.Occurrence = new MaintenanceOccurrence { Start = start, End = end };
+            }
+            else
+            {
+                if (updated.EndTime <= updated.StartTime || updated.Labels.Count == 0)
+                    return false;
+
+                next.Labels = updated.Labels;
+                next.StartTime = updated.StartTime;
+                next.EndTime = updated.EndTime;
+                next.RepeatType = updated.RepeatType;
+            }
+            next.Revision = current.Revision + 1;
+
+            return await ReplaceSchedule(member, next);
+        }
+
+        public async Task<bool> EndMaintenanceSchedule(string scheduleId, int revision)
+        {
+            var (schedule, member) = await FindScheduleAndMember(scheduleId);
+            if (schedule == null || schedule.Revision != revision)
+                return false;
+
+            var now = DateTime.UtcNow;
+            if (!TryGetActiveWindow(schedule, now, out var start, out _))
+                return false;
+
+            if (schedule.RepeatType == MaintenanceRepeatType.None)
+                schedule.EndTime = now;
+            else
+                schedule.Occurrence = new MaintenanceOccurrence { Start = start, End = now };
+            schedule.Revision++;
+            return await ReplaceSchedule(member, schedule);
+        }
+
+        public async Task<bool> CancelMaintenanceSchedule(string scheduleId)
+        {
+            var (schedule, member) = await FindScheduleAndMember(scheduleId);
+            if (schedule == null || !schedule.IsActive)
                 return false;
 
             schedule.IsActive = false;
             schedule.CancelledAt = DateTime.UtcNow;
+            schedule.Revision++;
+            return await ReplaceSchedule(member, schedule);
+        }
 
+        public async Task<List<MaintenanceSchedule>> GetAllSchedules()
+        {
+            var schedules = await ReadSchedules();
+            return schedules.Select(x => x.schedule).OrderByDescending(s => s.CreatedAt).ToList();
+        }
+
+        // Removes by the exact stored member, so a schedule edited after it was read here is left alone.
+        public async Task<int> RemoveExpiredSchedules(DateTime cutoff)
+        {
+            var redis = _redisService.GetUnifiedConnection();
+            if (redis == null)
+                return 0;
+
+            var removed = 0;
+            foreach (var (schedule, member) in await ReadSchedules())
+            {
+                var expired = schedule.RepeatType == MaintenanceRepeatType.None && schedule.EndTime < cutoff;
+                var cancelledLongAgo = !schedule.IsActive &&
+                    schedule.CancelledAt.HasValue &&
+                    schedule.CancelledAt.Value < cutoff - CancelledScheduleRetention;
+                if ((expired || cancelledLongAgo) && await redis.Connection.SortedSetRemoveAsync(ScheduleKey, member))
+                    removed++;
+            }
+
+            if (removed > 0)
+                _logger.LogInformation("Removed {Count} expired or cancelled maintenance schedule(s)", removed);
+
+            return removed;
+        }
+
+        public static bool TryGetActiveWindow(MaintenanceSchedule schedule, DateTime now, out DateTime start, out DateTime end)
+        {
+            start = DateTime.MinValue;
+            end = DateTime.MinValue;
+            if (!schedule.IsActive)
+                return false;
+
+            var occurrence = schedule.Occurrence;
+            if (occurrence != null && occurrence.Start <= now && now <= occurrence.End)
+            {
+                start = occurrence.Start;
+                end = occurrence.End;
+                return true;
+            }
+
+            var windowStart = GetWindowStart(schedule, now);
+            if (windowStart == DateTime.MinValue || (occurrence != null && windowStart == occurrence.Start))
+                return false;
+
+            var windowEnd = GetWindowEnd(schedule, windowStart);
+            if (now < windowStart || now > windowEnd)
+                return false;
+
+            start = windowStart;
+            end = windowEnd;
+            return true;
+        }
+
+        public static DateTime? FindNextStart(MaintenanceSchedule schedule, DateTime now, TimeSpan horizon)
+        {
+            if (!schedule.IsActive)
+                return null;
+
+            if (schedule.RepeatType == MaintenanceRepeatType.None)
+                return schedule.StartTime > now && schedule.StartTime - now <= horizon ? schedule.StartTime : null;
+
+            for (var day = now.Date; day <= (now + horizon).Date; day = day.AddDays(1))
+            {
+                var start = day.Add(schedule.StartTime.TimeOfDay);
+                if (start <= now || start - now > horizon)
+                    continue;
+
+                var matched = schedule.RepeatType switch
+                {
+                    MaintenanceRepeatType.Daily => true,
+                    MaintenanceRepeatType.Weekly => start.DayOfWeek == schedule.StartTime.DayOfWeek,
+                    MaintenanceRepeatType.Monthly => start.Day == schedule.StartTime.Day,
+                    MaintenanceRepeatType.Yearly => start.Month == schedule.StartTime.Month && start.Day == schedule.StartTime.Day,
+                    _ => false
+                };
+                if (matched)
+                    return start;
+            }
+
+            return null;
+        }
+
+        private async Task<bool> ReplaceSchedule(string member, MaintenanceSchedule next)
+        {
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
                 return false;
 
             try
             {
-                var key = GetMaintenanceKey(world);
-                await redis.Connection.SortedSetRemoveAsync(key, existingMember);
-                var updatedJson = JsonConvert.SerializeObject(schedule);
-                var score = GetScoreForSchedule(schedule);
-                await redis.Connection.SortedSetAddAsync(key, updatedJson, score);
-
-                _logger.LogInformation("Cancelled maintenance schedule {ScheduleId} for world {World}", scheduleId, world);
-                return true;
+                var transaction = redis.Connection.CreateTransaction();
+                transaction.AddCondition(Condition.SortedSetContains(ScheduleKey, member));
+                _ = transaction.SortedSetRemoveAsync(ScheduleKey, member);
+                _ = transaction.SortedSetAddAsync(ScheduleKey, JsonConvert.SerializeObject(next), GetScoreForSchedule(next));
+                return await transaction.ExecuteAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to cancel maintenance schedule {ScheduleId}", scheduleId);
+                _logger.LogError(ex, "Failed to update maintenance schedule {ScheduleId}", next.Id);
                 return false;
             }
         }
 
-        public async Task<List<MaintenanceSchedule>> GetAllSchedules(uint world)
+        private async Task<List<(MaintenanceSchedule schedule, string member)>> ReadSchedules()
         {
+            var result = new List<(MaintenanceSchedule, string)>();
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
-                return new List<MaintenanceSchedule>();
+                return result;
 
-            var key = GetMaintenanceKey(world);
-            var members = await redis.Connection.SortedSetRangeByRankAsync(key, 0, -1);
-            var schedules = new List<MaintenanceSchedule>();
+            var members = await redis.Connection.SortedSetRangeByRankAsync(ScheduleKey, 0, -1);
             foreach (var member in members)
             {
-                var schedule = DeserializeSchedule(member.ToString());
+                var memberStr = member.ToString();
+                var schedule = DeserializeSchedule(memberStr);
                 if (schedule != null)
-                    schedules.Add(schedule);
+                    result.Add((schedule, memberStr));
             }
 
-            return schedules.OrderByDescending(s => s.CreatedAt).ToList();
+            return result;
         }
 
-        public async Task<bool> ApplyToAllWorlds(MaintenanceSchedule schedule)
+        private async Task<(MaintenanceSchedule schedule, string member)> FindScheduleAndMember(string scheduleId)
         {
-            var worlds = _redisService.GetConfiguredWorlds();
-            if (worlds.Count == 0)
-                return false;
-
-            var success = true;
-            foreach (var world in worlds)
-            {
-                var worldSchedule = new MaintenanceSchedule
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    World = world,
-                    Title = schedule.Title,
-                    Message = schedule.Message,
-                    StartTime = schedule.StartTime,
-                    EndTime = schedule.EndTime,
-                    RepeatType = schedule.RepeatType,
-                    IsActive = schedule.IsActive
-                };
-
-                if (!await CreateMaintenanceSchedule(worldSchedule))
-                    success = false;
-            }
-
-            return success;
+            var schedules = await ReadSchedules();
+            return schedules.FirstOrDefault(x => x.schedule.Id == scheduleId);
         }
-
-        private static string GetMaintenanceKey(uint world) => $"{MaintenanceKeyPrefix}{world}";
 
         private static double GetScoreForSchedule(MaintenanceSchedule schedule)
         {
@@ -183,7 +288,7 @@ namespace Http.Service
             return ((DateTimeOffset)schedule.EndTime).ToUnixTimeSeconds();
         }
 
-        private MaintenanceSchedule DeserializeSchedule(string json)
+        private static MaintenanceSchedule DeserializeSchedule(string json)
         {
             if (string.IsNullOrEmpty(json))
                 return null;
@@ -197,77 +302,9 @@ namespace Http.Service
             }
         }
 
-        private async Task<(MaintenanceSchedule schedule, string memberJson)> FindScheduleAndMember(uint world, string scheduleId)
-        {
-            var redis = _redisService.GetUnifiedConnection();
-            if (redis == null)
-                return (null, null);
-
-            var key = GetMaintenanceKey(world);
-            var members = await redis.Connection.SortedSetRangeByRankAsync(key, 0, -1);
-            foreach (var member in members)
-            {
-                var memberStr = member.ToString();
-                var schedule = DeserializeSchedule(memberStr);
-                if (schedule != null && schedule.Id == scheduleId)
-                    return (schedule, memberStr);
-            }
-
-            return (null, null);
-        }
-
-        private async Task<MaintenanceSchedule> GetSchedule(uint world, string scheduleId)
-        {
-            var (schedule, _) = await FindScheduleAndMember(world, scheduleId);
-            return schedule;
-        }
-
-        public async Task<int> RemoveExpiredSchedules(uint world, DateTime cutoff)
-        {
-            var redis = _redisService.GetUnifiedConnection();
-            if (redis == null)
-                return 0;
-
-            var key = GetMaintenanceKey(world);
-            var members = await redis.Connection.SortedSetRangeByRankAsync(key, 0, -1);
-            var toRemove = new List<RedisValue>();
-            foreach (var member in members)
-            {
-                var schedule = DeserializeSchedule(member.ToString());
-                if (schedule == null)
-                    continue;
-
-                var expired = schedule.RepeatType == MaintenanceRepeatType.None && schedule.EndTime < cutoff;
-                var cancelledLongAgo = !schedule.IsActive &&
-                    schedule.CancelledAt.HasValue &&
-                    schedule.CancelledAt.Value < cutoff - CancelledScheduleRetention;
-                if (expired || cancelledLongAgo)
-                    toRemove.Add(member);
-            }
-
-            foreach (var member in toRemove)
-            {
-                await redis.Connection.SortedSetRemoveAsync(key, member);
-            }
-
-            if (toRemove.Count > 0)
-            {
-                _logger.LogInformation("Removed {Count} expired or cancelled maintenance schedule(s) for world {World}", toRemove.Count, world);
-            }
-
-            return toRemove.Count;
-        }
-
-        private bool IsWithinMaintenanceWindow(MaintenanceSchedule schedule, DateTime checkTime)
-        {
-            var windowStart = GetWindowStart(schedule, checkTime);
-            var windowEnd = GetWindowEnd(schedule, checkTime);
-            return checkTime >= windowStart && checkTime <= windowEnd;
-        }
-
         // Returns the start of the latest occurrence that began at or before checkTime, so a window that
         // crossed midnight is still found after the date changes. DateTime.MinValue means no occurrence.
-        private DateTime GetWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             return schedule.RepeatType switch
             {
@@ -280,12 +317,8 @@ namespace Http.Service
             };
         }
 
-        private DateTime GetWindowEnd(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetWindowEnd(MaintenanceSchedule schedule, DateTime windowStart)
         {
-            var windowStart = GetWindowStart(schedule, checkTime);
-            if (windowStart == DateTime.MinValue)
-                return DateTime.MinValue;
-
             var duration = schedule.EndTime - schedule.StartTime;
             if (schedule.RepeatType != MaintenanceRepeatType.None && duration < TimeSpan.Zero)
             {
@@ -295,7 +328,7 @@ namespace Http.Service
             return windowStart.Add(duration);
         }
 
-        private DateTime GetDailyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetDailyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
             if (checkTime >= today)
@@ -304,7 +337,7 @@ namespace Http.Service
                 return today.AddDays(-1);
         }
 
-        private DateTime GetWeeklyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetWeeklyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var daysDiff = ((int)checkTime.DayOfWeek - (int)schedule.StartTime.DayOfWeek + 7) % 7;
             var start = checkTime.Date.AddDays(-daysDiff).Add(schedule.StartTime.TimeOfDay);
@@ -314,7 +347,7 @@ namespace Http.Service
                 return start.AddDays(-7);
         }
 
-        private DateTime GetMonthlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetMonthlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
             var yesterday = checkTime.Date.AddDays(-1);
@@ -326,7 +359,7 @@ namespace Http.Service
                 return DateTime.MinValue;
         }
 
-        private DateTime GetYearlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetYearlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
             var yesterday = checkTime.Date.AddDays(-1);

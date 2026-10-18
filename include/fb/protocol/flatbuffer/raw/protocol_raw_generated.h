@@ -507,6 +507,9 @@ struct CastleListBuilder;
 struct UpdatedCastle;
 struct UpdatedCastleBuilder;
 
+struct ActiveMaintenance;
+struct ActiveMaintenanceBuilder;
+
 struct GetMaintenance;
 struct GetMaintenanceBuilder;
 
@@ -10320,9 +10323,7 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_IP = 8,
     VT_PORT = 10,
     VT_BAN_REASON = 12,
-    VT_BAN_EXPIRE_DATE = 14,
-    VT_MAINTENANCE_MESSAGE = 16,
-    VT_MAINTENANCE_END_TIME = 18
+    VT_BAN_EXPIRE_DATE = 14
   };
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -10342,12 +10343,6 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *ban_expire_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_BAN_EXPIRE_DATE);
   }
-  const ::flatbuffers::String *maintenance_message() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_MAINTENANCE_MESSAGE);
-  }
-  const ::flatbuffers::String *maintenance_end_time() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_MAINTENANCE_END_TIME);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
@@ -10359,10 +10354,6 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(ban_reason()) &&
            VerifyOffset(verifier, VT_BAN_EXPIRE_DATE) &&
            verifier.VerifyString(ban_expire_date()) &&
-           VerifyOffset(verifier, VT_MAINTENANCE_MESSAGE) &&
-           verifier.VerifyString(maintenance_message()) &&
-           VerifyOffset(verifier, VT_MAINTENANCE_END_TIME) &&
-           verifier.VerifyString(maintenance_end_time()) &&
            verifier.EndTable();
   }
 };
@@ -10389,12 +10380,6 @@ struct LoginBuilder {
   void add_ban_expire_date(::flatbuffers::Offset<::flatbuffers::String> ban_expire_date) {
     fbb_.AddOffset(Login::VT_BAN_EXPIRE_DATE, ban_expire_date);
   }
-  void add_maintenance_message(::flatbuffers::Offset<::flatbuffers::String> maintenance_message) {
-    fbb_.AddOffset(Login::VT_MAINTENANCE_MESSAGE, maintenance_message);
-  }
-  void add_maintenance_end_time(::flatbuffers::Offset<::flatbuffers::String> maintenance_end_time) {
-    fbb_.AddOffset(Login::VT_MAINTENANCE_END_TIME, maintenance_end_time);
-  }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -10413,12 +10398,8 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
     uint16_t port = 0,
     ::flatbuffers::Offset<::flatbuffers::String> ban_reason = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> ban_expire_date = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> maintenance_message = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> maintenance_end_time = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> ban_expire_date = 0) {
   LoginBuilder builder_(_fbb);
-  builder_.add_maintenance_end_time(maintenance_end_time);
-  builder_.add_maintenance_message(maintenance_message);
   builder_.add_ban_expire_date(ban_expire_date);
   builder_.add_ban_reason(ban_reason);
   builder_.add_ip(ip);
@@ -10435,14 +10416,10 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     const char *ip = nullptr,
     uint16_t port = 0,
     const char *ban_reason = nullptr,
-    const char *ban_expire_date = nullptr,
-    const char *maintenance_message = nullptr,
-    const char *maintenance_end_time = nullptr) {
+    const char *ban_expire_date = nullptr) {
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   auto ban_reason__ = ban_reason ? _fbb.CreateString(ban_reason) : 0;
   auto ban_expire_date__ = ban_expire_date ? _fbb.CreateString(ban_expire_date) : 0;
-  auto maintenance_message__ = maintenance_message ? _fbb.CreateString(maintenance_message) : 0;
-  auto maintenance_end_time__ = maintenance_end_time ? _fbb.CreateString(maintenance_end_time) : 0;
   return fb::protocol::internal::response::raw::CreateLogin(
       _fbb,
       error,
@@ -10450,9 +10427,7 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
       ip__,
       port,
       ban_reason__,
-      ban_expire_date__,
-      maintenance_message__,
-      maintenance_end_time__);
+      ban_expire_date__);
 }
 
 struct Logout FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -14773,16 +14748,16 @@ inline ::flatbuffers::Offset<UpdatedCastle> CreateUpdatedCastle(
   return builder_.Finish();
 }
 
-struct GetMaintenance FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef GetMaintenanceBuilder Builder;
+struct ActiveMaintenance FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ActiveMaintenanceBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ACTIVE = 4,
+    VT_LABELS = 4,
     VT_MESSAGE = 6,
     VT_END_TIME = 8,
-    VT_ERROR = 10
+    VT_FINISH_MATCHES = 10
   };
-  bool active() const {
-    return GetField<uint8_t>(VT_ACTIVE, 0) != 0;
+  const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *labels() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_LABELS);
   }
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
@@ -14790,16 +14765,98 @@ struct GetMaintenance FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *end_time() const {
     return GetPointer<const ::flatbuffers::String *>(VT_END_TIME);
   }
+  bool finish_matches() const {
+    return GetField<uint8_t>(VT_FINISH_MATCHES, 0) != 0;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_LABELS) &&
+           verifier.VerifyVector(labels()) &&
+           verifier.VerifyVectorOfStrings(labels()) &&
+           VerifyOffset(verifier, VT_MESSAGE) &&
+           verifier.VerifyString(message()) &&
+           VerifyOffset(verifier, VT_END_TIME) &&
+           verifier.VerifyString(end_time()) &&
+           VerifyField<uint8_t>(verifier, VT_FINISH_MATCHES, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct ActiveMaintenanceBuilder {
+  typedef ActiveMaintenance Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_labels(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> labels) {
+    fbb_.AddOffset(ActiveMaintenance::VT_LABELS, labels);
+  }
+  void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
+    fbb_.AddOffset(ActiveMaintenance::VT_MESSAGE, message);
+  }
+  void add_end_time(::flatbuffers::Offset<::flatbuffers::String> end_time) {
+    fbb_.AddOffset(ActiveMaintenance::VT_END_TIME, end_time);
+  }
+  void add_finish_matches(bool finish_matches) {
+    fbb_.AddElement<uint8_t>(ActiveMaintenance::VT_FINISH_MATCHES, static_cast<uint8_t>(finish_matches), 0);
+  }
+  explicit ActiveMaintenanceBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ActiveMaintenance> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ActiveMaintenance>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ActiveMaintenance> CreateActiveMaintenance(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> labels = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> message = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> end_time = 0,
+    bool finish_matches = false) {
+  ActiveMaintenanceBuilder builder_(_fbb);
+  builder_.add_end_time(end_time);
+  builder_.add_message(message);
+  builder_.add_labels(labels);
+  builder_.add_finish_matches(finish_matches);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<ActiveMaintenance> CreateActiveMaintenanceDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *labels = nullptr,
+    const char *message = nullptr,
+    const char *end_time = nullptr,
+    bool finish_matches = false) {
+  auto labels__ = labels ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*labels) : 0;
+  auto message__ = message ? _fbb.CreateString(message) : 0;
+  auto end_time__ = end_time ? _fbb.CreateString(end_time) : 0;
+  return fb::protocol::internal::response::raw::CreateActiveMaintenance(
+      _fbb,
+      labels__,
+      message__,
+      end_time__,
+      finish_matches);
+}
+
+struct GetMaintenance FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef GetMaintenanceBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_MAINTENANCES = 4,
+    VT_ERROR = 6
+  };
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance>> *maintenances() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance>> *>(VT_MAINTENANCES);
+  }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_ACTIVE, 1) &&
-           VerifyOffset(verifier, VT_MESSAGE) &&
-           verifier.VerifyString(message()) &&
-           VerifyOffset(verifier, VT_END_TIME) &&
-           verifier.VerifyString(end_time()) &&
+           VerifyOffset(verifier, VT_MAINTENANCES) &&
+           verifier.VerifyVector(maintenances()) &&
+           verifier.VerifyVectorOfTables(maintenances()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -14809,14 +14866,8 @@ struct GetMaintenanceBuilder {
   typedef GetMaintenance Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_active(bool active) {
-    fbb_.AddElement<uint8_t>(GetMaintenance::VT_ACTIVE, static_cast<uint8_t>(active), 0);
-  }
-  void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
-    fbb_.AddOffset(GetMaintenance::VT_MESSAGE, message);
-  }
-  void add_end_time(::flatbuffers::Offset<::flatbuffers::String> end_time) {
-    fbb_.AddOffset(GetMaintenance::VT_END_TIME, end_time);
+  void add_maintenances(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance>>> maintenances) {
+    fbb_.AddOffset(GetMaintenance::VT_MAINTENANCES, maintenances);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(GetMaintenance::VT_ERROR, error, 0);
@@ -14834,31 +14885,22 @@ struct GetMaintenanceBuilder {
 
 inline ::flatbuffers::Offset<GetMaintenance> CreateGetMaintenance(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool active = false,
-    ::flatbuffers::Offset<::flatbuffers::String> message = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> end_time = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance>>> maintenances = 0,
     uint32_t error = 0) {
   GetMaintenanceBuilder builder_(_fbb);
   builder_.add_error(error);
-  builder_.add_end_time(end_time);
-  builder_.add_message(message);
-  builder_.add_active(active);
+  builder_.add_maintenances(maintenances);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<GetMaintenance> CreateGetMaintenanceDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool active = false,
-    const char *message = nullptr,
-    const char *end_time = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance>> *maintenances = nullptr,
     uint32_t error = 0) {
-  auto message__ = message ? _fbb.CreateString(message) : 0;
-  auto end_time__ = end_time ? _fbb.CreateString(end_time) : 0;
+  auto maintenances__ = maintenances ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance>>(*maintenances) : 0;
   return fb::protocol::internal::response::raw::CreateGetMaintenance(
       _fbb,
-      active,
-      message__,
-      end_time__,
+      maintenances__,
       error);
 }
 

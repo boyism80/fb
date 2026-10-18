@@ -129,17 +129,32 @@ void character::container::on_kick_out(const internal_resp::KickOut& message)
         socket_ptr->close();
 }
 
-void character::container::on_maintenance(const std::string& message)
+void character::container::on_maintenance(const maintenance_state& state)
 {
-    this->foreach_enqueue([message](auto& ch) -> async::task<void> {
+    if (state.active == false && state.cross == false)
+        return;
+
+    auto home = fb::config<std::optional<uint32_t>>("world").has_value();
+    this->foreach_enqueue([state, home](auto& ch) -> async::task<void> {
         if (ch->role() >= ROLE::ADMIN)
             co_return;
 
-        auto socket_ptr = ch->socket_ptr();
-        if (socket_ptr == nullptr)
-            co_return;
+        if (state.active)
+        {
+            if (state.finish_matches && ch->match() != nullptr)
+                co_return;
 
-        ch->message(message, MESSAGE_TYPE::STATE);
-        socket_ptr->close();
+            auto socket_ptr = ch->socket_ptr();
+            if (socket_ptr == nullptr)
+                co_return;
+
+            ch->message(state.message, MESSAGE_TYPE::STATE);
+            socket_ptr->close();
+        }
+        else if (home && ch->matchmaker.ticket_id().has_value())
+        {
+            co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
+            ch->message("교차 서버 점검으로 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
+        }
     });
 }

@@ -38,14 +38,26 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                     ch->matchmaker.clear_pending_match_id_if(match_id);
                     ch->matchmaker.clear_ticket();
 
-                    auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_ready");
-                    if (lua)
+                    auto cross_maintenance = ch->server.maintenance.read([](const fb::game::maintenance_state& x) {
+                        return x.cross;
+                    });
+                    if (cross_maintenance && ch->role() < fb::model::enum_value::ROLE::ADMIN)
                     {
-                        lua->pushobject(ch);
-                        lua->pushinteger(static_cast<lua_Integer>(match_id));
-                        lua->pushinteger(match_type);
-                        lua->pushinteger(team_id);
-                        std::ignore = co_await lua->call(4);
+                        ch->timer(0, fb::model::enum_value::TIMER_TYPE::OFF);
+                        ch->message("교차 서버 점검 중이라 매치에 입장할 수 없습니다.",
+                                    fb::model::enum_value::MESSAGE_TYPE::STATE);
+                    }
+                    else
+                    {
+                        auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_ready");
+                        if (lua)
+                        {
+                            lua->pushobject(ch);
+                            lua->pushinteger(static_cast<lua_Integer>(match_id));
+                            lua->pushinteger(match_type);
+                            lua->pushinteger(team_id);
+                            std::ignore = co_await lua->call(4);
+                        }
                     }
                     co_return;
                 };

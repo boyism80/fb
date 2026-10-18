@@ -1297,9 +1297,7 @@ namespace Google.FlatBuffers
                 builder.Build(value.Ip),
                 builder.Build(value.Port),
                 builder.Build(value.BanReason),
-                builder.Build(value.BanExpireDate),
-                builder.Build(value.MaintenanceMessage),
-                builder.Build(value.MaintenanceEndTime));
+                builder.Build(value.BanExpireDate));
         }
         public static Offset<fb.protocol.@internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.Logout value)
         {
@@ -1894,15 +1892,24 @@ namespace Google.FlatBuffers
                 builder.Build(value.OwnerClanId),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol.@internal.response.raw.ActiveMaintenance> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.ActiveMaintenance value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.response.raw.ActiveMaintenance.CreateActiveMaintenance(builder,
+                builder.Build(value.Labels),
+                builder.Build(value.Message),
+                builder.Build(value.EndTime),
+                builder.Build(value.FinishMatches));
+        }
         public static Offset<fb.protocol.@internal.response.raw.GetMaintenance> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.GetMaintenance value)
         {
             if (value == null)
                 return default;
 
             return fb.protocol.@internal.response.raw.GetMaintenance.CreateGetMaintenance(builder,
-                builder.Build(value.Active),
-                builder.Build(value.Message),
-                builder.Build(value.EndTime),
+                builder.Build(value.Maintenances),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol.@internal.response.raw.FriendBroadcast> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.FriendBroadcast value)
@@ -2411,6 +2418,10 @@ namespace Google.FlatBuffers
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.Castle> value)
         {
             return builder.CreateVectorOfTables<fb.protocol.@internal.raw.Castle>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.@internal.response.ActiveMaintenance> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol.@internal.response.raw.ActiveMaintenance>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.marketplace.Listing> value)
         {
@@ -6938,6 +6949,7 @@ namespace fb.protocol.@internal.response
         SetDateTime,
         CastleList,
         UpdatedCastle,
+        ActiveMaintenance,
         GetMaintenance,
         FriendBroadcast,
         OpsNotify
@@ -7027,8 +7039,6 @@ namespace fb.protocol.@internal.response
         public ushort Port { get; set; } = 0;
         public string BanReason { get; set; } = string.Empty;
         public string BanExpireDate { get; set; } = null;
-        public string MaintenanceMessage { get; set; } = null;
-        public string MaintenanceEndTime { get; set; } = null;
 
         public Login()
         { }
@@ -7041,8 +7051,6 @@ namespace fb.protocol.@internal.response
             Port = raw.Port;
             BanReason = raw.BanReason;
             BanExpireDate = raw.BanExpireDate;
-            MaintenanceMessage = raw.MaintenanceMessage;
-            MaintenanceEndTime = raw.MaintenanceEndTime;
         }
 
         public Login(byte[] bytes) : this(fb.protocol.@internal.response.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
@@ -9392,12 +9400,52 @@ namespace fb.protocol.@internal.response
             return new UpdatedCastle(bytes);
         }
     }
+    public class ActiveMaintenance : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.ActiveMaintenance;
+        public List<string> Labels { get; set; } = new List<string>();
+        public string Message { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public bool FinishMatches { get; set; } = false;
+
+        public ActiveMaintenance()
+        { }
+
+        public ActiveMaintenance(fb.protocol.@internal.response.raw.ActiveMaintenance raw)
+        {
+            Labels = Enumerable.Range(0, raw.LabelsLength).Select(i => raw.Labels(i)).Select(x => x).ToList();
+            Message = raw.Message;
+            EndTime = raw.EndTime;
+            FinishMatches = raw.FinishMatches;
+        }
+
+        public ActiveMaintenance(byte[] bytes) : this(fb.protocol.@internal.response.raw.ActiveMaintenance.GetRootAsActiveMaintenance(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static ActiveMaintenance Deserialize(byte[] bytes)
+        {
+            return new ActiveMaintenance(bytes);
+        }
+    }
     public class GetMaintenance : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetMaintenance;
-        public bool Active { get; set; } = false;
-        public string Message { get; set; } = string.Empty;
-        public string EndTime { get; set; } = string.Empty;
+        public List<fb.protocol.@internal.response.ActiveMaintenance> Maintenances { get; set; } = new List<fb.protocol.@internal.response.ActiveMaintenance>();
         public uint Error { get; set; } = 0;
 
         public GetMaintenance()
@@ -9405,9 +9453,7 @@ namespace fb.protocol.@internal.response
 
         public GetMaintenance(fb.protocol.@internal.response.raw.GetMaintenance raw)
         {
-            Active = raw.Active;
-            Message = raw.Message;
-            EndTime = raw.EndTime;
+            Maintenances = Enumerable.Range(0, raw.MaintenancesLength).Select(i => raw.Maintenances(i)).Select(x => new fb.protocol.@internal.response.ActiveMaintenance(x.Value)).ToList();
             Error = raw.Error;
         }
 
@@ -9571,6 +9617,7 @@ namespace fb.protocol.@internal.response
                 FlatBufferProtocolType.SetDateTime => typeof(fb.protocol.@internal.response.SetDateTime),
                 FlatBufferProtocolType.CastleList => typeof(fb.protocol.@internal.response.CastleList),
                 FlatBufferProtocolType.UpdatedCastle => typeof(fb.protocol.@internal.response.UpdatedCastle),
+                FlatBufferProtocolType.ActiveMaintenance => typeof(fb.protocol.@internal.response.ActiveMaintenance),
                 FlatBufferProtocolType.GetMaintenance => typeof(fb.protocol.@internal.response.GetMaintenance),
                 FlatBufferProtocolType.FriendBroadcast => typeof(fb.protocol.@internal.response.FriendBroadcast),
                 FlatBufferProtocolType.OpsNotify => typeof(fb.protocol.@internal.response.OpsNotify),

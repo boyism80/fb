@@ -75,25 +75,6 @@ namespace Internal.Controllers
                     };
                 }
 
-                var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
-                if (maintenanceInfo != null && maintenanceInfo.IsActive)
-                {
-                    var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
-                    if (characterId.HasValue)
-                    {
-                        var character = await _dbContext.Character.Get(world, characterId.Value);
-                        if (character != null && character.Role < Fb.Model.EnumValue.Role.Admin)
-                        {
-                            return new Response.Login
-                            {
-                                Error = (uint)ErrorCode.Maintenance,
-                                MaintenanceMessage = maintenanceInfo.Message,
-                                MaintenanceEndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")
-                            };
-                        }
-                    }
-                }
-
                 var conf = await _serverStateService.GetHostConfig(request.ProcessWorld, Protocol.Service.Game, request.Host);
                 if (conf == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
@@ -169,8 +150,8 @@ namespace Internal.Controllers
                         };
                     }
 
-                    var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
-                    if (maintenanceInfo != null && maintenanceInfo.IsActive)
+                    var maintenanceInfo = await _maintenanceService.FindActiveMaintenance(MaintenanceLabel.World(world));
+                    if (maintenanceInfo != null)
                     {
                         var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
                         if (characterId.HasValue)

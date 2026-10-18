@@ -7,7 +7,10 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@implements IDisposable
 @inject Http.Service.MaintenanceService MaintenanceService
+@inject RedisService RedisService
 @inject LogService LogService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<Maintenance> Logger
@@ -15,198 +18,549 @@
 
 <PageTitle>점검 관리 - FB ADMIN</PageTitle>
 
-<div>
-    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
-        <div>
-            <h1>점검 관리</h1>
-            <p>서버 점검 일정 등록 및 관리</p>
-        </div>
-        <a href="#maintenance-register" class="stitch-btn stitch-btn-primary">
-            <span class="material-symbols-outlined" style="font-size:1rem;">add</span>
-            점검 등록
-        </a>
+<div class="maint-page">
+    <div class="page-header">
+        <h1>점검 관리</h1>
+        <p>서버 점검 일정 등록 및 관리</p>
     </div>
+
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        <div class="stitch-error-banner">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">error</span>
+                <span>@errorMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
     @if (!string.IsNullOrEmpty(successMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @successMessage
-            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
-        </div>
-    }
-    <div class="card-bg filter-toolbar">
-        <div class="toolbar mb-0">
-            <div class="flex-grow-1">
-                @if (currentMaintenanceInfo != null && currentMaintenanceInfo.IsActive)
-                {
-                    <div class="status-online"><span class="status-dot"></span>점검 진행 중</div>
-                    <div class="text-muted mt-1" style="font-size: 0.8125rem;">
-                        @currentMaintenanceInfo.Message
-                        <span class="ms-2">종료: @FormatDateTime(currentMaintenanceInfo.EndTime)</span>
-                    </div>
-                }
-                else
-                {
-                    <div style="font-size:0.875rem;color:var(--text-primary);">정상 운영 중</div>
-                    <div class="text-muted mt-1" style="font-size:0.8125rem;">
-                        Last Checked @lastCheckedAt.ToString("yyyy-MM-dd HH:mm:ss")
-                    </div>
-                }
+        <div class="stitch-success-banner">
+            <div class="stitch-success-banner-content">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span class="stitch-success-text">@successMessage</span>
             </div>
-            <button class="stitch-btn stitch-btn-neutral" @onclick="RefreshStatus" disabled="@isLoading">
-                <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;">refresh</span> 새로고침
+            <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-    </div>
-    <div class="card-bg stitch-form-card">
-        <div class="stitch-form-card-header">
-            <h2 class="dash-card-title">등록된 점검 일정</h2>
+    }
+
+    <section class="maint-card maint-status">
+        <div class="maint-status-head">
+            <div class="maint-status-title">
+                <span class="maint-section-label">현재 상태</span>
+                @if (activeMaintenances?.Any() == true)
+                {
+                    <span class="maint-badge active">@(activeMaintenances.Count)건 진행 중</span>
+                }
+            </div>
+            <div class="maint-idle">
+                @if (activeMaintenances?.Any() != true)
+                {
+                    <span class="maint-dot"></span>
+                    <span>정상 운영 중</span>
+                    <span class="maint-sep">|</span>
+                }
+                <span class="maint-mono">마지막 확인 @lastCheckedAt.ToString("HH:mm:ss")</span>
+                <button type="button" class="maint-btn small" @onclick="LoadData" disabled="@isLoading" aria-label="새로고침">
+                    <span class="material-symbols-outlined">refresh</span>
+                    새로고침
+                </button>
+            </div>
         </div>
-        <div class="card-body">
-            @if (isLoading)
+        @if (activeMaintenances != null)
+        {
+            @foreach (var active in activeMaintenances)
             {
-                <div class="stitch-loading">
-                    <div class="spinner-border" role="status"></div>
-                </div>
-            }
-            else if (schedules == null || !schedules.Any())
-            {
-                <p class="dash-empty">등록된 점검 일정이 없습니다.</p>
-            }
-            else
-            {
-                <div class="dash-table-wrap">
-                    <table class="dash-table">
-                        <thead>
-                            <tr>
-                                <th>시작</th>
-                                <th>종료</th>
-                                <th>내용</th>
-                                <th>상태</th>
-                                <th style="text-align:right;">작업</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var schedule in schedules)
+                var schedule = schedules?.FirstOrDefault(x => x.Id == active.ScheduleId);
+                <div class="maint-live-row">
+                    <div class="maint-live-main">
+                        <span class="maint-live-label"><span class="maint-pulse"></span>점검 진행 중</span>
+                        <span class="maint-chip-group">
+                            @foreach (var label in active.Labels)
                             {
-                                <tr>
-                                    <td class="table-meta">@FormatDateTime(schedule.StartTime)</td>
-                                    <td class="table-meta">@FormatDateTime(schedule.EndTime)</td>
-                                    <td>
-                                        <strong>@schedule.Title</strong>
-                                        <div class="table-meta">@(schedule.World == 0 ? "전체" : $"World {schedule.World}") · @GetRepeatTypeName(schedule.RepeatType)</div>
-                                    </td>
-                                    <td>
-                                        @if (schedule.IsActive)
-                                        {
-                                            <span class="stitch-badge active">@GetScheduleStatusLabel(schedule)</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="stitch-badge muted">취소됨</span>
-                                        }
-                                    </td>
-                                    <td style="text-align:right;">
-                                        @if (schedule.IsActive)
-                                        {
-                                            <button class="text-link" @onclick="() => CancelSchedule(schedule)" disabled="@isProcessing">취소</button>
-                                        }
-                                    </td>
-                                </tr>
+                                <span class="maint-chip">@MaintenanceLabel.Format(new[] { label })</span>
                             }
-                        </tbody>
-                    </table>
+                        </span>
+                        <span class="maint-live-message" title="@active.Message">@active.Message</span>
+                    </div>
+                    <div class="maint-live-side">
+                        <span class="maint-live-end">
+                            <span class="material-symbols-outlined">schedule</span>
+                            <span class="maint-mono">종료 @FormatShort(active.EndTime)</span>
+                        </span>
+                        <span class="maint-remaining">
+                            <span class="material-symbols-outlined">hourglass_top</span>
+                            <span>남은 시간 @FormatRemaining(active.EndTime)</span>
+                        </span>
+                        @if (schedule != null)
+                        {
+                            <a href="#maintenance-register" class="maint-btn" @onclick="() => EditSchedule(schedule)">연장/수정</a>
+                            <button type="button" class="maint-btn danger" @onclick="() => EndScheduleNow(schedule)" disabled="@isProcessing">
+                                <span class="material-symbols-outlined">power_settings_new</span>
+                                즉시 종료
+                            </button>
+                        }
+                    </div>
                 </div>
             }
-        </div>
-    </div>
-    <div class="card-bg stitch-form-card" id="maintenance-register">
-        <div class="stitch-form-card-header">
-            <h2 class="dash-card-title">점검 일정 등록</h2>
-        </div>
-        <div class="card-body">
+        }
+    </section>
+
+    <div class="maint-compose" id="maintenance-register">
+        <section class="maint-card maint-form">
             <EditForm Model="@scheduleModel" OnValidSubmit="@HandleSubmit">
                 <DataAnnotationsValidator />
-                <div class="form-grid">
-                    <div>
-                        <label for="title" class="form-label">제목</label>
-                        <InputText id="title" class="form-control" @bind-Value="scheduleModel.Title" />
+                <div class="maint-card-header">
+                    <h2 class="maint-card-title">
+                        <span class="material-symbols-outlined">edit_calendar</span>
+                        @(editing == null ? "점검 일정 등록" : "점검 일정 수정")
+                    </h2>
+                    @if (editing != null)
+                    {
+                        <span class="maint-chip">@editing.Title</span>
+                    }
+                </div>
+                <div class="maint-form-body">
+                    @if (editingStarted)
+                    {
+                        <div class="maint-note">
+                            <span class="material-symbols-outlined">info</span>
+                            <span>진행 중인 점검은 종료 시간, 제목, 메시지, 매치 허용, 사전 공지만 수정할 수 있습니다.@(editing?.RepeatType != MaintenanceRepeatType.None ? " 반복 점검은 이번 회차에만 적용됩니다." : "")</span>
+                        </div>
+                    }
+
+                    <div class="maint-field">
+                        <label for="title" class="maint-label">제목 <span class="required">*</span></label>
+                        <InputText id="title" class="maint-input" @bind-Value="scheduleModel.Title" placeholder="점검 제목 (관리용, 사전 공지에 표시)" />
                         <ValidationMessage For="@(() => scheduleModel.Title)" />
                     </div>
-                    <div>
-                        <label for="world" class="form-label">월드</label>
-                        <InputSelect id="world" class="form-select" @bind-Value="scheduleModel.World">
-                            <option value="0">전체 월드</option>
-                            @if (selectedWorld.HasValue && selectedWorld.Value > 0)
+
+                    <div class="maint-field">
+                        <div class="maint-field-head">
+                            <span class="maint-label">대상 서버 <span class="required">*</span></span>
+                            <span class="maint-hint">교차 서버와 월드를 함께 고를 수 있습니다</span>
+                        </div>
+                        <div class="maint-segmented compact">
+                            <button type="button" class="@(TargetAll ? "selected" : "")" disabled="@editingStarted" @onclick="() => SetTargetAll(true)">전체 서버</button>
+                            <button type="button" class="@(TargetAll ? "" : "selected")" disabled="@editingStarted" @onclick="() => SetTargetAll(false)">선택한 서버</button>
+                        </div>
+                        @if (!TargetAll)
+                        {
+                            <div class="maint-target-row">
+                                <button type="button"
+                                        class="maint-target @(scheduleModel.Labels.Contains(MaintenanceLabel.Cross) ? "selected" : "")"
+                                        disabled="@editingStarted"
+                                        @onclick="() => ToggleLabel(MaintenanceLabel.Cross)">
+                                    <span class="material-symbols-outlined">check</span>
+                                    교차 서버
+                                </button>
+                                <div class="maint-picker">
+                                    <button type="button" class="maint-picker-trigger @(worldPickerOpen ? "open" : "")" disabled="@editingStarted" @onclick="ToggleWorldPicker">
+                                        <span class="maint-picker-label">
+                                            <span class="material-symbols-outlined">public</span>
+                                            월드 선택
+                                            <span class="maint-count">@SelectedWorlds().Count</span>
+                                        </span>
+                                        <span class="material-symbols-outlined">@(worldPickerOpen ? "expand_less" : "expand_more")</span>
+                                    </button>
+                                    @if (worldPickerOpen)
+                                    {
+                                        <div class="maint-picker-backdrop" @onclick="() => worldPickerOpen = false"></div>
+                                        <div class="maint-picker-panel">
+                                            <div class="maint-picker-search">
+                                                <span class="material-symbols-outlined">search</span>
+                                                <input type="text" placeholder="월드 검색" @bind="worldSearch" @bind:event="oninput" />
+                                            </div>
+                                            <div class="maint-picker-list">
+                                                @foreach (var world in FilteredWorlds())
+                                                {
+                                                    <label class="maint-picker-item @(worldDraft.Contains(world) ? "checked" : "")">
+                                                        <input type="checkbox" checked="@worldDraft.Contains(world)" @onchange="e => ToggleDraftWorld(world, (bool)e.Value)" />
+                                                        World @world
+                                                    </label>
+                                                }
+                                                @if (!FilteredWorlds().Any())
+                                                {
+                                                    <div class="maint-picker-empty">검색 결과가 없습니다</div>
+                                                }
+                                            </div>
+                                            <div class="maint-picker-footer">
+                                                <div class="maint-picker-links">
+                                                    <button type="button" @onclick="SelectAllDraftWorlds">모두 선택</button>
+                                                    <span>|</span>
+                                                    <button type="button" @onclick="() => worldDraft.Clear()">선택 해제</button>
+                                                </div>
+                                                <button type="button" class="maint-btn primary small" @onclick="ApplyWorldPicker">적용</button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            @if (SelectedWorlds().Any())
                             {
-                                <option value="@selectedWorld.Value">World @selectedWorld.Value</option>
+                                <div class="maint-chip-group wrap">
+                                    @foreach (var world in SelectedWorlds())
+                                    {
+                                        <span class="maint-notice-chip">
+                                            World @world
+                                            @if (!editingStarted)
+                                            {
+                                                <button type="button" @onclick="() => scheduleModel.Labels.Remove(MaintenanceLabel.World(world))" aria-label="삭제">
+                                                    <span class="material-symbols-outlined">close</span>
+                                                </button>
+                                            }
+                                        </span>
+                                    }
+                                </div>
                             }
-                        </InputSelect>
-                        <small class="form-text text-muted">0을 선택하면 모든 월드에 적용됩니다</small>
+                        }
                     </div>
-                    <div class="form-grid-full">
-                        <label for="message" class="form-label">메시지</label>
-                        <InputTextArea id="message" class="form-control" rows="3" @bind-Value="scheduleModel.Message" />
+
+                    <div class="maint-field">
+                        <div class="maint-field-head">
+                            <label for="message" class="maint-label">메시지 (유저 안내용) <span class="required">*</span></label>
+                            <span class="maint-hint maint-mono">@(scheduleModel.Message?.Length ?? 0)/500</span>
+                        </div>
+                        <InputTextArea id="message" class="maint-textarea" rows="3" @bind-Value="scheduleModel.Message" placeholder="점검으로 접속이 끊기거나 접속이 거절될 때 유저에게 보이는 메시지" />
                         <ValidationMessage For="@(() => scheduleModel.Message)" />
                     </div>
-                    <div>
-                        <label for="startTime" class="form-label">시작 시간</label>
-                        <InputText id="startTime" type="datetime-local" class="form-control" @bind-Value="startTimeString" />
-                        <ValidationMessage For="@(() => scheduleModel.StartTime)" />
-                        <small class="form-text text-muted">KST (UTC+9)</small>
+
+                    <div class="maint-field">
+                        <div class="maint-field-head">
+                            <span class="maint-label">점검 기간 <span class="required">*</span></span>
+                            @if (scheduleModel.EndTime > scheduleModel.StartTime)
+                            {
+                                <span class="maint-remaining">총 @FormatDuration(scheduleModel.EndTime - scheduleModel.StartTime)</span>
+                            }
+                        </div>
+                        <div class="maint-two">
+                            <div class="maint-field">
+                                <span class="maint-hint">시작 일시 (KST)</span>
+                                <InputText id="startTime" type="datetime-local" class="maint-input mono" @bind-Value="startTimeString" disabled="@editingStarted" />
+                            </div>
+                            <div class="maint-field">
+                                <span class="maint-hint">종료 일시 (KST)</span>
+                                <InputText id="endTime" type="datetime-local" class="maint-input mono" @bind-Value="endTimeString" />
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label for="endTime" class="form-label">종료 시간</label>
-                        <InputText id="endTime" type="datetime-local" class="form-control" @bind-Value="endTimeString" />
-                        <ValidationMessage For="@(() => scheduleModel.EndTime)" />
-                        <small class="form-text text-muted">KST (UTC+9)</small>
+
+                    <div class="maint-field">
+                        <span class="maint-label">반복 유형</span>
+                        <div class="maint-segmented">
+                            @foreach (var repeat in Enum.GetValues<MaintenanceRepeatType>())
+                            {
+                                <button type="button"
+                                        class="@(scheduleModel.RepeatType == repeat ? "selected" : "")"
+                                        disabled="@editingStarted"
+                                        @onclick="() => scheduleModel.RepeatType = repeat">
+                                    @GetRepeatTypeName(repeat)
+                                </button>
+                            }
+                        </div>
+                        <span class="maint-hint">@DescribeRepeat(scheduleModel.RepeatType, scheduleModel.StartTime)</span>
                     </div>
-                    <div class="form-grid-full">
-                        <label for="repeatType" class="form-label">반복 유형</label>
-                        <InputSelect id="repeatType" class="form-select" @bind-Value="scheduleModel.RepeatType">
-                            <option value="@MaintenanceRepeatType.None">1회</option>
-                            <option value="@MaintenanceRepeatType.Daily">매일</option>
-                            <option value="@MaintenanceRepeatType.Weekly">매주</option>
-                            <option value="@MaintenanceRepeatType.Monthly">매월</option>
-                            <option value="@MaintenanceRepeatType.Yearly">매년</option>
-                        </InputSelect>
+
+                    <div class="maint-options">
+                        <div class="maint-option">
+                            <div>
+                                <div class="maint-option-title">
+                                    <span class="material-symbols-outlined">sports_esports</span>
+                                    진행 중인 매치는 끝날 때까지 허용
+                                </div>
+                                <p class="maint-option-desc">교차 서버에서 매치 중인 유저는 매치가 끝난 뒤 접속이 끊깁니다</p>
+                            </div>
+                            <label class="maint-switch">
+                                <InputCheckbox @bind-Value="scheduleModel.FinishMatches" />
+                                <span class="maint-switch-track"></span>
+                            </label>
+                        </div>
+                        <div class="maint-option-group">
+                            <div class="maint-option">
+                                <div>
+                                    <div class="maint-option-title">
+                                        <span class="material-symbols-outlined">campaign</span>
+                                        사전 공지
+                                    </div>
+                                    <p class="maint-option-desc">점검 시작 전 대상 서버에 게임 내 공지를 보냅니다</p>
+                                </div>
+                                <label class="maint-switch">
+                                    <InputCheckbox @bind-Value="scheduleModel.Notice" />
+                                    <span class="maint-switch-track"></span>
+                                </label>
+                            </div>
+                            @if (scheduleModel.Notice)
+                            {
+                                <div class="maint-notice-list">
+                                    @foreach (var minutes in scheduleModel.NoticeMinutes)
+                                    {
+                                        <span class="maint-notice-chip">
+                                            @FormatMinutes(minutes)
+                                            <button type="button" @onclick="() => scheduleModel.NoticeMinutes.Remove(minutes)" aria-label="삭제">
+                                                <span class="material-symbols-outlined">close</span>
+                                            </button>
+                                        </span>
+                                    }
+                                    <span class="maint-notice-add">
+                                        <input type="number" min="1" placeholder="분" @bind="newNoticeMinutes" />
+                                        <button type="button" class="maint-btn small" @onclick="AddNoticeMinutes">추가</button>
+                                    </span>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
-                <div class="stitch-form-actions">
-                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ResetForm" disabled="@isProcessing">
-                        초기화
+                <div class="maint-form-footer">
+                    <button type="button" class="maint-btn text" @onclick="ResetForm" disabled="@isProcessing">
+                        @(editing == null ? "초기화" : "수정 취소")
                     </button>
-                    <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                    <button type="submit" class="maint-btn primary" disabled="@isProcessing">
                         @if (isProcessing)
                         {
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                         }
-                        일정 등록
+                        else
+                        {
+                            <span class="material-symbols-outlined">@(editing == null ? "add_task" : "save")</span>
+                        }
+                        @(editing == null ? "일정 등록" : "일정 수정")
                     </button>
                 </div>
             </EditForm>
-        </div>
+        </section>
+
+        <aside class="maint-card">
+            <div class="maint-card-header">
+                <h2 class="maint-card-title">
+                    <span class="material-symbols-outlined">visibility</span>
+                    미리보기
+                </h2>
+            </div>
+            <div class="maint-preview">
+                <div class="maint-panel">
+                    <span class="maint-panel-title">설정 요약</span>
+                    <div class="maint-chip-group wrap">
+                        @foreach (var label in SelectedLabels())
+                        {
+                            <span class="maint-chip accent">@MaintenanceLabel.Format(new[] { label })</span>
+                        }
+                        <span class="maint-chip">@GetRepeatTypeName(scheduleModel.RepeatType)</span>
+                        @if (scheduleModel.FinishMatches)
+                        {
+                            <span class="maint-chip">매치 허용</span>
+                        }
+                    </div>
+                    <div class="maint-kv">
+                        <div><span>시작</span><span>@scheduleModel.StartTime.ToString("yyyy-MM-dd HH:mm") KST</span></div>
+                        <div><span>종료</span><span>@scheduleModel.EndTime.ToString("yyyy-MM-dd HH:mm") KST</span></div>
+                        @if (scheduleModel.EndTime > scheduleModel.StartTime)
+                        {
+                            <div class="accent"><span>기간</span><span>@FormatDuration(scheduleModel.EndTime - scheduleModel.StartTime)</span></div>
+                        }
+                    </div>
+                </div>
+
+                <div class="maint-timeline-block">
+                    <div class="maint-timeline-head">
+                        <span><span class="material-symbols-outlined">timeline</span>진행 순서</span>
+                        @if (scheduleModel.Notice && !editingStarted)
+                        {
+                            <span class="maint-hint">공지 @(scheduleModel.NoticeMinutes.Count)회</span>
+                        }
+                    </div>
+                    <ol class="maint-timeline">
+                        @foreach (var entry in PreviewTimeline())
+                        {
+                            <li class="@entry.Kind">
+                                <div class="maint-timeline-time">@FormatTimelineTime(entry.Time)</div>
+                                <div class="maint-timeline-text">@entry.Text</div>
+                                @if (!string.IsNullOrEmpty(entry.Sub))
+                                {
+                                    <div class="maint-timeline-sub">@entry.Sub</div>
+                                }
+                            </li>
+                        }
+                    </ol>
+                </div>
+
+                <div class="maint-panel maint-rules">
+                    <div class="maint-option-title">
+                        <span class="material-symbols-outlined">info</span>
+                        운영 정책
+                    </div>
+                    <ul>
+                        <li>진행 중인 점검은 종료 시간·메시지·매치 허용·사전 공지만 수정할 수 있습니다.</li>
+                        <li>반복 점검을 진행 중에 수정하면 이번 회차에만 적용됩니다.</li>
+                        <li>운영자 권한 계정은 점검 중에도 접속할 수 있습니다.</li>
+                        <li>취소와 즉시 종료는 언제든 가능합니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
     </div>
+
+    <section class="maint-card">
+        <div class="maint-card-header">
+            <h2 class="maint-card-title">
+                <span class="material-symbols-outlined">calendar_view_week</span>
+                점검 일정
+                <span class="maint-hint maint-mono">(@(schedules?.Count ?? 0)개 등록됨)</span>
+            </h2>
+            <div class="maint-tabs">
+                @foreach (var (key, name) in Filters)
+                {
+                    <button type="button" class="@(filter == key ? "selected" : "")" @onclick="() => filter = key">
+                        @name<span class="count">@CountFor(key)</span>
+                    </button>
+                }
+            </div>
+        </div>
+        @if (isLoading)
+        {
+            <div class="stitch-loading">
+                <div class="spinner-border" role="status"></div>
+            </div>
+        }
+        else if (!FilteredSchedules().Any())
+        {
+            <div class="maint-empty">표시할 점검 일정이 없습니다.</div>
+        }
+        else
+        {
+            <div class="maint-table-wrap">
+                <table class="maint-table">
+                    <thead>
+                        <tr>
+                            <th>상태</th>
+                            <th>제목 및 대상</th>
+                            <th>시작</th>
+                            <th>종료</th>
+                            <th>반복</th>
+                            <th>옵션</th>
+                            <th class="actions">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var schedule in FilteredSchedules())
+                        {
+                            var state = GetState(schedule, DateTime.UtcNow);
+                            var active = Http.Service.MaintenanceService.TryGetActiveWindow(schedule, DateTime.UtcNow, out var windowStart, out var windowEnd);
+                            <tr class="@(state is ScheduleState.Done or ScheduleState.Cancelled ? "muted" : "")">
+                                <td>
+                                    @switch (state)
+                                    {
+                                        case ScheduleState.Active:
+                                            <span class="maint-badge active"><span class="dot"></span>진행 중</span>
+                                            break;
+                                        case ScheduleState.Waiting:
+                                            <span class="maint-badge"><span class="dot"></span>대기</span>
+                                            break;
+                                        case ScheduleState.Done:
+                                            <span class="maint-badge done">완료</span>
+                                            break;
+                                        default:
+                                            <span class="maint-badge cancelled">취소됨</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <div class="maint-row-title">@schedule.Title</div>
+                                    <div class="maint-chip-group wrap">
+                                        @foreach (var label in schedule.Labels)
+                                        {
+                                            <span class="maint-chip">@MaintenanceLabel.Format(new[] { label })</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="mono">@FormatShort(active ? windowStart : schedule.StartTime)</td>
+                                <td class="mono">@FormatShort(active ? windowEnd : schedule.EndTime)</td>
+                                <td>@GetRepeatTypeName(schedule.RepeatType)</td>
+                                <td>
+                                    <div class="maint-chip-group wrap">
+                                        @if (schedule.FinishMatches)
+                                        {
+                                            <span class="maint-chip"><span class="material-symbols-outlined">sports_esports</span>매치 허용</span>
+                                        }
+                                        @if (schedule.NoticeMinutes.Any())
+                                        {
+                                            <span class="maint-chip"><span class="material-symbols-outlined">campaign</span>공지 @string.Join("·", schedule.NoticeMinutes)분</span>
+                                        }
+                                        @if (!schedule.FinishMatches && !schedule.NoticeMinutes.Any())
+                                        {
+                                            <span class="maint-hint">—</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="actions">
+                                    @if (schedule.IsActive && state != ScheduleState.Done)
+                                    {
+                                        <a href="#maintenance-register" class="maint-link" @onclick="() => EditSchedule(schedule)">수정</a>
+                                        @if (state == ScheduleState.Active)
+                                        {
+                                            <button type="button" class="maint-link danger" @onclick="() => EndScheduleNow(schedule)" disabled="@isProcessing">즉시 종료</button>
+                                        }
+                                        <button type="button" class="maint-link danger" @onclick="() => CancelSchedule(schedule)" disabled="@isProcessing">취소</button>
+                                    }
+                                    else
+                                    {
+                                        <span class="maint-hint">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
 </div>
 
 @code {
-    [CascadingParameter(Name = "SelectedWorld")]
-    private uint? selectedWorld { get; set; }
+    private static readonly int[] DefaultNoticeMinutes = { 60, 30, 10, 5, 1 };
+    private static readonly CultureInfo Korean = CultureInfo.GetCultureInfo("ko-KR");
+    private static readonly (string Key, string Name)[] Filters =
+    {
+        ("all", "전체"),
+        ("active", "진행 중"),
+        ("waiting", "대기"),
+        ("closed", "종료·취소")
+    };
+
+    private enum ScheduleState
+    {
+        Active,
+        Waiting,
+        Done,
+        Cancelled
+    }
+
+    private record TimelineEntry(DateTime Time, string Text, string Sub, string Kind);
+
     private MaintenanceScheduleModel scheduleModel = new();
+    private MaintenanceSchedule editing;
+    private bool editingStarted;
+    private List<string> availableLabels = new();
+    private List<uint> worlds = new();
+    private bool worldPickerOpen;
+    private HashSet<uint> worldDraft = new();
+    private string worldSearch = string.Empty;
     private List<MaintenanceSchedule> schedules;
-    private MaintenanceInfo currentMaintenanceInfo;
+    private List<MaintenanceInfo> activeMaintenances;
+    private string filter = "all";
+    private int? newNoticeMinutes;
     private string errorMessage;
     private string successMessage;
     private bool isProcessing;
     private bool isLoading;
     private string currentUserName = string.Empty;
     private DateTime lastCheckedAt = DateTime.Now;
+    private System.Threading.Timer clock;
+
     private string startTimeString
     {
         get => scheduleModel.StartTime.ToString("yyyy-MM-ddTHH:mm");
@@ -237,7 +591,18 @@
         var nameClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name);
         if (nameClaim != null)
             currentUserName = nameClaim.Value;
+
+        worlds = RedisService.GetConfiguredWorlds().ToList();
+        availableLabels = new List<string> { MaintenanceLabel.All, MaintenanceLabel.Cross };
+        availableLabels.AddRange(worlds.Select(MaintenanceLabel.World));
+        ResetForm();
         await LoadData();
+        clock = new System.Threading.Timer(_ => InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    public void Dispose()
+    {
+        clock?.Dispose();
     }
 
     private async Task LoadData()
@@ -245,9 +610,8 @@
         isLoading = true;
         try
         {
-            var world = selectedWorld ?? 0;
-            schedules = await MaintenanceService.GetAllSchedules(world);
-            currentMaintenanceInfo = await MaintenanceService.GetMaintenanceInfo(world);
+            schedules = await MaintenanceService.GetAllSchedules();
+            activeMaintenances = await MaintenanceService.GetActiveMaintenances();
             lastCheckedAt = DateTime.Now;
         }
         catch (Exception ex)
@@ -261,62 +625,204 @@
         }
     }
 
+    private bool TargetAll => scheduleModel.Labels.Contains(MaintenanceLabel.All);
+
+    private void SetTargetAll(bool value)
+    {
+        if (value)
+            scheduleModel.Labels.Add(MaintenanceLabel.All);
+        else
+            scheduleModel.Labels.Remove(MaintenanceLabel.All);
+        worldPickerOpen = false;
+    }
+
+    private void ToggleLabel(string label)
+    {
+        if (!scheduleModel.Labels.Remove(label))
+            scheduleModel.Labels.Add(label);
+    }
+
+    private List<uint> SelectedWorlds()
+    {
+        return worlds.Where(x => scheduleModel.Labels.Contains(MaintenanceLabel.World(x))).ToList();
+    }
+
+    private IEnumerable<uint> FilteredWorlds()
+    {
+        var keyword = worldSearch.Trim();
+        return keyword.Length == 0
+            ? worlds
+            : worlds.Where(x => $"World {x}".Contains(keyword, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ToggleWorldPicker()
+    {
+        worldPickerOpen = !worldPickerOpen;
+        if (worldPickerOpen)
+        {
+            worldDraft = SelectedWorlds().ToHashSet();
+            worldSearch = string.Empty;
+        }
+    }
+
+    private void ToggleDraftWorld(uint world, bool selected)
+    {
+        if (selected)
+            worldDraft.Add(world);
+        else
+            worldDraft.Remove(world);
+    }
+
+    private void SelectAllDraftWorlds()
+    {
+        worldDraft.UnionWith(FilteredWorlds());
+    }
+
+    private void ApplyWorldPicker()
+    {
+        foreach (var world in worlds)
+        {
+            var label = MaintenanceLabel.World(world);
+            if (worldDraft.Contains(world))
+                scheduleModel.Labels.Add(label);
+            else
+                scheduleModel.Labels.Remove(label);
+        }
+        worldPickerOpen = false;
+    }
+
+    private List<string> SelectedLabels()
+    {
+        return scheduleModel.Labels.Contains(MaintenanceLabel.All)
+            ? new List<string> { MaintenanceLabel.All }
+            : availableLabels.Where(scheduleModel.Labels.Contains).ToList();
+    }
+
+    private void AddNoticeMinutes()
+    {
+        if (newNoticeMinutes is not > 0 || scheduleModel.NoticeMinutes.Contains(newNoticeMinutes.Value))
+            return;
+
+        scheduleModel.NoticeMinutes.Add(newNoticeMinutes.Value);
+        scheduleModel.NoticeMinutes.Sort((a, b) => b.CompareTo(a));
+        newNoticeMinutes = null;
+    }
+
+    private void EditSchedule(MaintenanceSchedule schedule)
+    {
+        editing = schedule;
+        worldPickerOpen = false;
+        editingStarted = Http.Service.MaintenanceService.TryGetActiveWindow(schedule, DateTime.UtcNow, out var windowStart, out var windowEnd);
+        scheduleModel = new MaintenanceScheduleModel
+        {
+            Title = schedule.Title,
+            Message = schedule.Message,
+            Labels = new HashSet<string>(schedule.Labels),
+            StartTime = ToLocal(editingStarted ? windowStart : schedule.StartTime),
+            EndTime = ToLocal(editingStarted ? windowEnd : schedule.EndTime),
+            RepeatType = schedule.RepeatType,
+            FinishMatches = schedule.FinishMatches,
+            Notice = schedule.NoticeMinutes.Any(),
+            NoticeMinutes = schedule.NoticeMinutes.Any() ? schedule.NoticeMinutes.ToList() : DefaultNoticeMinutes.ToList()
+        };
+        errorMessage = null;
+        successMessage = null;
+    }
+
     private async Task HandleSubmit()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        var labels = SelectedLabels();
+        if (labels.Count == 0)
+        {
+            errorMessage = "대상 서버를 하나 이상 선택하세요.";
+            return;
+        }
+
+        if (scheduleModel.Notice && scheduleModel.NoticeMinutes.Count == 0)
+        {
+            errorMessage = "사전 공지 시점을 하나 이상 추가하세요.";
+            return;
+        }
+
+        if (!editingStarted && scheduleModel.EndTime <= scheduleModel.StartTime)
+        {
+            errorMessage = "종료 시간은 시작 시간보다 늦어야 합니다.";
+            return;
+        }
+
+        var schedule = new MaintenanceSchedule
+        {
+            Id = editing?.Id ?? Guid.NewGuid().ToString(),
+            Revision = editing?.Revision ?? 0,
+            Labels = labels,
+            Title = scheduleModel.Title,
+            Message = scheduleModel.Message,
+            StartTime = scheduleModel.StartTime.ToUniversalTime(),
+            EndTime = scheduleModel.EndTime.ToUniversalTime(),
+            RepeatType = scheduleModel.RepeatType,
+            FinishMatches = scheduleModel.FinishMatches,
+            NoticeMinutes = scheduleModel.Notice ? scheduleModel.NoticeMinutes.ToList() : new List<int>()
+        };
+
+        isProcessing = true;
+        try
+        {
+            var creating = editing == null;
+            var success = creating
+                ? await MaintenanceService.CreateMaintenanceSchedule(schedule)
+                : await MaintenanceService.UpdateMaintenanceSchedule(schedule, editingStarted);
+            if (success)
+            {
+                successMessage = creating ? "점검 일정을 등록했습니다." : "점검 일정을 수정했습니다.";
+                await WriteLog(creating ? "maintenance" : "maintenance_update", schedule);
+                ResetForm();
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = creating
+                    ? "점검 일정 등록에 실패했습니다."
+                    : "점검 일정 수정에 실패했습니다. 다른 수정이 먼저 반영됐거나 이미 끝난 일정입니다. 새로고침 후 다시 시도하세요.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to save maintenance schedule");
+            errorMessage = $"점검 일정 저장 실패: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task EndScheduleNow(MaintenanceSchedule schedule)
     {
         isProcessing = true;
         errorMessage = null;
         successMessage = null;
         try
         {
-            var schedule = new MaintenanceSchedule
+            if (await MaintenanceService.EndMaintenanceSchedule(schedule.Id, schedule.Revision))
             {
-                Id = Guid.NewGuid().ToString(),
-                World = scheduleModel.World,
-                Title = scheduleModel.Title,
-                Message = scheduleModel.Message,
-                StartTime = scheduleModel.StartTime.ToUniversalTime(),
-                EndTime = scheduleModel.EndTime.ToUniversalTime(),
-                RepeatType = scheduleModel.RepeatType,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-            bool success;
-            if (schedule.World == 0)
-            {
-                success = await MaintenanceService.ApplyToAllWorlds(schedule);
-            }
-            else
-            {
-                success = await MaintenanceService.CreateMaintenanceSchedule(schedule);
-            }
-            if (success)
-            {
-                successMessage = schedule.World == 0
-                    ? "전체 월드에 점검 일정을 등록했습니다."
-                    : $"World {schedule.World}에 점검 일정을 등록했습니다.";
-                await LogService.WriteAsync("maintenance", new
-                {
-                    action = "maintenance",
-                    source = "admin",
-                    actor = currentUserName,
-                    world = schedule.World,
-                    title = schedule.Title,
-                    start_time = schedule.StartTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                    end_time = schedule.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                    repeat_type = schedule.RepeatType.ToString()
-                });
-                ResetForm();
+                successMessage = "점검을 종료했습니다.";
+                await WriteLog("maintenance_end", schedule);
+                if (editing?.Id == schedule.Id)
+                    ResetForm();
                 await LoadData();
             }
             else
             {
-                errorMessage = "점검 일정 등록에 실패했습니다.";
+                errorMessage = "점검 종료에 실패했습니다. 새로고침 후 다시 시도하세요.";
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to create maintenance schedule");
-            errorMessage = $"점검 일정 등록 실패: {ex.Message}";
+            Logger.LogError(ex, "Failed to end maintenance schedule");
+            errorMessage = $"점검 종료 실패: {ex.Message}";
         }
         finally
         {
@@ -326,31 +832,22 @@
 
     private async Task CancelSchedule(MaintenanceSchedule schedule)
     {
-        if (!await ConfirmCancel(schedule))
-            return;
         isProcessing = true;
         errorMessage = null;
         successMessage = null;
         try
         {
-            var success = await MaintenanceService.CancelMaintenanceSchedule(schedule.World, schedule.Id);
-            if (success)
+            if (await MaintenanceService.CancelMaintenanceSchedule(schedule.Id))
             {
                 successMessage = "점검 일정을 취소했습니다.";
-                await LogService.WriteAsync("maintenance_cancel", new
-                {
-                    action = "maintenance_cancel",
-                    source = "admin",
-                    actor = currentUserName,
-                    world = schedule.World,
-                    schedule_id = schedule.Id,
-                    title = schedule.Title
-                });
+                await WriteLog("maintenance_cancel", schedule);
+                if (editing?.Id == schedule.Id)
+                    ResetForm();
                 await LoadData();
             }
             else
             {
-                errorMessage = "점검 일정 취소에 실패했습니다.";
+                errorMessage = "점검 일정 취소에 실패했습니다. 새로고침 후 다시 시도하세요.";
             }
         }
         catch (Exception ex)
@@ -364,46 +861,146 @@
         }
     }
 
-    private async Task<bool> ConfirmCancel(MaintenanceSchedule schedule)
+    private async Task WriteLog(string action, MaintenanceSchedule schedule)
     {
-        return await Task.FromResult(true);
-    }
-
-    private async Task RefreshStatus()
-    {
-        await LoadData();
-    }
-
-    private static string GetScheduleStatusLabel(MaintenanceSchedule schedule)
-    {
-        if (!schedule.IsActive)
-            return "취소";
-        var now = DateTime.UtcNow;
-        if (now >= schedule.StartTime && now <= schedule.EndTime)
-            return "진행 중";
-        if (now < schedule.StartTime)
-            return "대기 중";
-        return "완료";
+        await LogService.WriteAsync(action, new
+        {
+            action,
+            source = "admin",
+            actor = currentUserName,
+            schedule_id = schedule.Id,
+            labels = string.Join(",", schedule.Labels),
+            title = schedule.Title,
+            start_time = schedule.StartTime.ToString("yyyy-MM-dd HH:mm:ss"),
+            end_time = schedule.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
+            repeat_type = schedule.RepeatType.ToString(),
+            finish_matches = schedule.FinishMatches,
+            notice_minutes = string.Join(",", schedule.NoticeMinutes)
+        });
     }
 
     private void ResetForm()
     {
+        editing = null;
+        editingStarted = false;
+        newNoticeMinutes = null;
+        worldPickerOpen = false;
+        var start = DateTime.Now.Date.AddHours(DateTime.Now.Hour + 1);
         scheduleModel = new MaintenanceScheduleModel
         {
-            World = selectedWorld ?? 0,
-            StartTime = DateTime.Now,
-            EndTime = DateTime.Now.AddHours(1),
-            RepeatType = MaintenanceRepeatType.None
+            Labels = new HashSet<string> { MaintenanceLabel.All },
+            StartTime = start,
+            EndTime = start.AddHours(2),
+            RepeatType = MaintenanceRepeatType.None,
+            NoticeMinutes = DefaultNoticeMinutes.ToList()
         };
     }
 
-    private string FormatDateTime(DateTime dateTime)
+    private static ScheduleState GetState(MaintenanceSchedule schedule, DateTime now)
     {
-        var utc = dateTime.Kind == DateTimeKind.Utc ? dateTime : DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-        return utc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
+        if (!schedule.IsActive)
+            return ScheduleState.Cancelled;
+        else if (Http.Service.MaintenanceService.TryGetActiveWindow(schedule, now, out _, out _))
+            return ScheduleState.Active;
+        else if (schedule.RepeatType != MaintenanceRepeatType.None || now < schedule.StartTime)
+            return ScheduleState.Waiting;
+        else
+            return ScheduleState.Done;
     }
 
-    private string GetRepeatTypeName(MaintenanceRepeatType repeatType)
+    private bool MatchesFilter(MaintenanceSchedule schedule, string key)
+    {
+        var state = GetState(schedule, DateTime.UtcNow);
+        return key switch
+        {
+            "active" => state == ScheduleState.Active,
+            "waiting" => state == ScheduleState.Waiting,
+            "closed" => state is ScheduleState.Done or ScheduleState.Cancelled,
+            _ => true
+        };
+    }
+
+    private IEnumerable<MaintenanceSchedule> FilteredSchedules()
+    {
+        return (schedules ?? new List<MaintenanceSchedule>()).Where(x => MatchesFilter(x, filter));
+    }
+
+    private int CountFor(string key)
+    {
+        return (schedules ?? new List<MaintenanceSchedule>()).Count(x => MatchesFilter(x, key));
+    }
+
+    private IEnumerable<TimelineEntry> PreviewTimeline()
+    {
+        var start = scheduleModel.StartTime;
+        if (scheduleModel.Notice && !editingStarted)
+        {
+            foreach (var minutes in scheduleModel.NoticeMinutes.OrderByDescending(x => x))
+                yield return new TimelineEntry(start.AddMinutes(-minutes), $"{FormatMinutes(minutes)} 전 공지", null, "notice");
+        }
+
+        yield return new TimelineEntry(start,
+                                       "점검 시작 · 일반 유저 접속 종료",
+                                       scheduleModel.FinishMatches ? "교차 서버의 진행 중인 매치는 끝날 때까지 유지" : null,
+                                       "start");
+        yield return new TimelineEntry(scheduleModel.EndTime, "점검 종료 · 접속 허용", null, "end");
+    }
+
+    private string FormatTimelineTime(DateTime time)
+    {
+        return time.Date == scheduleModel.StartTime.Date ? time.ToString("HH:mm") : time.ToString("MM-dd HH:mm");
+    }
+
+    private static string DescribeRepeat(MaintenanceRepeatType repeat, DateTime start)
+    {
+        var time = start.ToString("HH:mm");
+        return repeat switch
+        {
+            MaintenanceRepeatType.Daily => $"매일 {time}에 실행됩니다.",
+            MaintenanceRepeatType.Weekly => $"매주 {Korean.DateTimeFormat.GetDayName(start.DayOfWeek)} {time}에 실행됩니다.",
+            MaintenanceRepeatType.Monthly => $"매월 {start.Day}일 {time}에 실행됩니다.",
+            MaintenanceRepeatType.Yearly => $"매년 {start.Month}월 {start.Day}일 {time}에 실행됩니다.",
+            _ => "한 번만 실행됩니다."
+        };
+    }
+
+    private static string FormatMinutes(int minutes)
+    {
+        return minutes >= 60 && minutes % 60 == 0 ? $"{minutes / 60}시간" : $"{minutes}분";
+    }
+
+    private static string FormatDuration(TimeSpan duration)
+    {
+        var parts = new List<string>();
+        if (duration.Days > 0)
+            parts.Add($"{duration.Days}일");
+        if (duration.Hours > 0)
+            parts.Add($"{duration.Hours}시간");
+        if (duration.Minutes > 0 || parts.Count == 0)
+            parts.Add($"{duration.Minutes}분");
+        return string.Join(" ", parts);
+    }
+
+    private static string FormatRemaining(DateTime endUtc)
+    {
+        var remain = ToLocal(endUtc) - DateTime.Now;
+        if (remain < TimeSpan.Zero)
+            remain = TimeSpan.Zero;
+        return $"{(int)remain.TotalHours:00}:{remain.Minutes:00}:{remain.Seconds:00}";
+    }
+
+    private static DateTime ToLocal(DateTime dateTime)
+    {
+        var utc = dateTime.Kind == DateTimeKind.Utc ? dateTime : DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+        return utc.ToLocalTime();
+    }
+
+    private static string FormatShort(DateTime dateTime)
+    {
+        return ToLocal(dateTime).ToString("yyyy-MM-dd HH:mm");
+    }
+
+    private static string GetRepeatTypeName(MaintenanceRepeatType repeatType)
     {
         return repeatType switch
         {
@@ -424,11 +1021,12 @@
         [Required(ErrorMessage = "메시지를 입력하세요.")]
         [StringLength(500, ErrorMessage = "메시지는 500자 이하여야 합니다.")]
         public string Message { get; set; } = string.Empty;
-        public uint World { get; set; }
-        [Required(ErrorMessage = "시작 시간을 입력하세요.")]
+        public HashSet<string> Labels { get; set; } = new();
         public DateTime StartTime { get; set; } = DateTime.Now;
-        [Required(ErrorMessage = "종료 시간을 입력하세요.")]
         public DateTime EndTime { get; set; } = DateTime.Now.AddHours(1);
         public MaintenanceRepeatType RepeatType { get; set; } = MaintenanceRepeatType.None;
+        public bool FinishMatches { get; set; }
+        public bool Notice { get; set; }
+        public List<int> NoticeMinutes { get; set; } = new();
     }
 }

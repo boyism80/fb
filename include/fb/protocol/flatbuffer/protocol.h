@@ -200,6 +200,7 @@ namespace fb::protocol::internal::response
     class SetDateTime;
     class CastleList;
     class UpdatedCastle;
+    class ActiveMaintenance;
     class GetMaintenance;
     class FriendBroadcast;
     class OpsNotify;
@@ -509,6 +510,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::SetDropRat
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetDateTime> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetDateTime> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::CastleList> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::CastleList> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::UpdatedCastle> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedCastle> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::ActiveMaintenance> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetMaintenance> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetMaintenance> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::FriendBroadcast> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::FriendBroadcast> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::OpsNotify> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::OpsNotify> type; };
@@ -873,6 +875,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::CastleList> build<fb::protocol::internal::response::CastleList>(FlatBufferBuilder& builder, const fb::protocol::internal::response::CastleList& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedCastle> build<fb::protocol::internal::response::UpdatedCastle>(FlatBufferBuilder& builder, const fb::protocol::internal::response::UpdatedCastle& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance> build<fb::protocol::internal::response::ActiveMaintenance>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ActiveMaintenance& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::GetMaintenance> build<fb::protocol::internal::response::GetMaintenance>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetMaintenance& value);
 template <>
@@ -5237,6 +5241,7 @@ enum class FlatBufferProtocolType
     SetDateTime,
     CastleList,
     UpdatedCastle,
+    ActiveMaintenance,
     GetMaintenance,
     FriendBroadcast,
     OpsNotify,
@@ -5327,22 +5332,20 @@ public:
     uint16_t port = 0;
     std::string ban_reason;
     std::optional<std::string> ban_expire_date = std::nullopt;
-    std::optional<std::string> maintenance_message = std::nullopt;
-    std::optional<std::string> maintenance_end_time = std::nullopt;
 
 public:
     Login() = default;
 
     Login(const Login& x)
-        : error(x.error), logon(x.logon), ip(x.ip), port(x.port), ban_reason(x.ban_reason), ban_expire_date(x.ban_expire_date), maintenance_message(x.maintenance_message), maintenance_end_time(x.maintenance_end_time)
+        : error(x.error), logon(x.logon), ip(x.ip), port(x.port), ban_reason(x.ban_reason), ban_expire_date(x.ban_expire_date)
     { }
 
-    Login(uint32_t error, bool logon, std::string_view ip, uint16_t port, std::string_view ban_reason, const std::optional<std::string>& ban_expire_date, const std::optional<std::string>& maintenance_message, const std::optional<std::string>& maintenance_end_time)
-        : error(error), logon(logon), ip(std::string(ip)), port(port), ban_reason(std::string(ban_reason)), ban_expire_date(ban_expire_date), maintenance_message(maintenance_message), maintenance_end_time(maintenance_end_time)
+    Login(uint32_t error, bool logon, std::string_view ip, uint16_t port, std::string_view ban_reason, const std::optional<std::string>& ban_expire_date)
+        : error(error), logon(logon), ip(std::string(ip)), port(port), ban_reason(std::string(ban_reason)), ban_expire_date(ban_expire_date)
     { }
 
     Login(const fb::protocol::internal::response::raw::Login& raw)
-        : error(raw.error()), logon(raw.logon()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port()), ban_reason(flatbuffers::option::decode(raw.ban_reason()->c_str())), ban_expire_date(raw.ban_expire_date() != nullptr ? flatbuffers::option::decode(raw.ban_expire_date()->c_str()) : std::optional<std::string>()), maintenance_message(raw.maintenance_message() != nullptr ? flatbuffers::option::decode(raw.maintenance_message()->c_str()) : std::optional<std::string>()), maintenance_end_time(raw.maintenance_end_time() != nullptr ? flatbuffers::option::decode(raw.maintenance_end_time()->c_str()) : std::optional<std::string>())
+        : error(raw.error()), logon(raw.logon()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port()), ban_reason(flatbuffers::option::decode(raw.ban_reason()->c_str())), ban_expire_date(raw.ban_expire_date() != nullptr ? flatbuffers::option::decode(raw.ban_expire_date()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -7714,30 +7717,70 @@ public:
         return UpdatedCastle(*raw);
     }
 };
+class ActiveMaintenance
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::ActiveMaintenance;
+
+public:
+    std::vector<std::string> labels = {};
+    std::string message;
+    std::string end_time;
+    bool finish_matches = false;
+
+public:
+    ActiveMaintenance() = default;
+
+    ActiveMaintenance(const ActiveMaintenance& x)
+        : labels(x.labels), message(x.message), end_time(x.end_time), finish_matches(x.finish_matches)
+    { }
+
+    ActiveMaintenance(std::vector<std::string> labels, std::string_view message, std::string_view end_time, bool finish_matches)
+        : labels(labels), message(std::string(message)), end_time(std::string(end_time)), finish_matches(finish_matches)
+    { }
+
+    ActiveMaintenance(const fb::protocol::internal::response::raw::ActiveMaintenance& raw)
+        : labels(unpack<std::string>(raw.labels())), message(flatbuffers::option::decode(raw.message()->c_str())), end_time(flatbuffers::option::decode(raw.end_time()->c_str())), finish_matches(raw.finish_matches())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::ActiveMaintenance>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static ActiveMaintenance Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::response::raw::ActiveMaintenance>(bytes);
+        return ActiveMaintenance(*raw);
+    }
+};
 class GetMaintenance
 {
 public:
     static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GetMaintenance;
 
 public:
-    bool active = false;
-    std::string message;
-    std::string end_time;
+    std::vector<fb::protocol::internal::response::ActiveMaintenance> maintenances = {};
     uint32_t error = 0;
 
 public:
     GetMaintenance() = default;
 
     GetMaintenance(const GetMaintenance& x)
-        : active(x.active), message(x.message), end_time(x.end_time), error(x.error)
+        : maintenances(x.maintenances), error(x.error)
     { }
 
-    GetMaintenance(bool active, std::string_view message, std::string_view end_time, uint32_t error)
-        : active(active), message(std::string(message)), end_time(std::string(end_time)), error(error)
+    GetMaintenance(std::vector<fb::protocol::internal::response::ActiveMaintenance> maintenances, uint32_t error)
+        : maintenances(maintenances), error(error)
     { }
 
     GetMaintenance(const fb::protocol::internal::response::raw::GetMaintenance& raw)
-        : active(raw.active()), message(flatbuffers::option::decode(raw.message()->c_str())), end_time(flatbuffers::option::decode(raw.end_time()->c_str())), error(raw.error())
+        : maintenances(unpack<fb::protocol::internal::response::ActiveMaintenance>(raw.maintenances())), error(raw.error())
     { }
 
 public:
@@ -10538,9 +10581,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Login> build<fb::prot
             flatbuffers::build<std::string>(builder, value.ip),
             flatbuffers::build<uint16_t>(builder, value.port),
             flatbuffers::build<std::string>(builder, value.ban_reason),
-            flatbuffers::build<std::optional<std::string>>(builder, value.ban_expire_date),
-            flatbuffers::build<std::optional<std::string>>(builder, value.maintenance_message),
-            flatbuffers::build<std::optional<std::string>>(builder, value.maintenance_end_time));
+            flatbuffers::build<std::optional<std::string>>(builder, value.ban_expire_date));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Logout> build<fb::protocol::internal::response::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Logout& value)
@@ -11021,12 +11062,19 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::UpdatedCastle> build<
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::ActiveMaintenance> build<fb::protocol::internal::response::ActiveMaintenance>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ActiveMaintenance& value)
+{
+    return fb::protocol::internal::response::raw::CreateActiveMaintenance(builder,
+            flatbuffers::build<std::vector<std::string>>(builder, value.labels),
+            flatbuffers::build<std::string>(builder, value.message),
+            flatbuffers::build<std::string>(builder, value.end_time),
+            flatbuffers::build<bool>(builder, value.finish_matches));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::GetMaintenance> build<fb::protocol::internal::response::GetMaintenance>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetMaintenance& value)
 {
     return fb::protocol::internal::response::raw::CreateGetMaintenance(builder,
-            flatbuffers::build<bool>(builder, value.active),
-            flatbuffers::build<std::string>(builder, value.message),
-            flatbuffers::build<std::string>(builder, value.end_time),
+            flatbuffers::build<std::vector<fb::protocol::internal::response::ActiveMaintenance>>(builder, value.maintenances),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>

@@ -378,6 +378,12 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
     if (!fb::config<std::optional<uint32_t>>("world"))
         throw std::runtime_error("교차 서버에서는 매치메이킹을 등록할 수 없습니다.");
 
+    if (this->owner.role() < fb::model::enum_value::ROLE::ADMIN &&
+        this->owner.server.maintenance.read([](const maintenance_state& x) {
+            return x.cross;
+        }))
+        throw std::runtime_error("교차 서버 점검 중에는 매치메이킹을 등록할 수 없습니다.");
+
     auto weak = this->owner.weak_from_this_as<character>();
     auto self = weak.lock();
     if (self == nullptr)

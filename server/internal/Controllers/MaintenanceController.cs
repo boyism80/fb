@@ -1,5 +1,6 @@
 using Fb.Model.EnumValue;
 using Http.Filters;
+using Http.Model;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Response = fb.protocol.@internal.response;
@@ -17,29 +18,27 @@ namespace Internal.Controllers
             _maintenanceService = maintenanceService;
         }
 
-        [HttpGet("{world}")]
+        // A home server also receives cross maintenances, since its players enter cross through matchmaking.
+        [HttpGet("{world?}")]
         [SuppressRequestLog]
-        public async Task<Response.GetMaintenance> GetMaintenance(uint world)
+        public async Task<Response.GetMaintenance> GetMaintenance(uint? world)
         {
             try
             {
-                var info = await _maintenanceService.GetMaintenanceInfo(world);
-                if (info == null || info.IsActive == false)
-                {
-                    return new Response.GetMaintenance
-                    {
-                        Active = false,
-                        Message = string.Empty,
-                        EndTime = string.Empty,
-                        Error = (uint)ErrorCode.None
-                    };
-                }
-
+                var label = world.HasValue ? MaintenanceLabel.World(world.Value) : MaintenanceLabel.Cross;
+                var maintenances = await _maintenanceService.GetActiveMaintenances();
                 return new Response.GetMaintenance
                 {
-                    Active = true,
-                    Message = info.Message ?? string.Empty,
-                    EndTime = info.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Maintenances = maintenances
+                        .Where(x => MaintenanceLabel.Matches(x.Labels, label) || MaintenanceLabel.Matches(x.Labels, MaintenanceLabel.Cross))
+                        .Select(x => new Response.ActiveMaintenance
+                        {
+                            Labels = x.Labels,
+                            Message = x.Message ?? string.Empty,
+                            EndTime = x.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                            FinishMatches = x.FinishMatches
+                        })
+                        .ToList(),
                     Error = (uint)ErrorCode.None
                 };
             }

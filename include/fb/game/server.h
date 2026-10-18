@@ -37,6 +37,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
@@ -128,6 +129,14 @@ enum class scope
     WORLD
 };
 
+struct maintenance_state
+{
+    bool        active         = false;
+    bool        finish_matches = false;
+    std::string message;
+    bool        cross = false;
+};
+
 struct send_option
 {
     bool                                   with_me   = true;
@@ -172,6 +181,7 @@ public:
     service::weather                                       weather;
     fb::transfer_ticket::nonce_cache                       transfer_nonces;
     fb::synchronized<std::unordered_multiset<std::string>> pending_logins;
+    fb::synchronized<maintenance_state>                    maintenance;
     fb::game::snowflake                                    ids;
 
 public:

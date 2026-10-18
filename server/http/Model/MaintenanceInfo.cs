@@ -4,8 +4,8 @@ namespace Http.Model
 {
     public class MaintenanceInfo
     {
-        [JsonProperty("is_active")]
-        public bool IsActive { get; set; }
+        [JsonProperty("labels")]
+        public List<string> Labels { get; set; } = new();
 
         [JsonProperty("message")]
         public string Message { get; set; } = string.Empty;
@@ -15,6 +15,9 @@ namespace Http.Model
 
         [JsonProperty("end_time")]
         public DateTime EndTime { get; set; }
+
+        [JsonProperty("finish_matches")]
+        public bool FinishMatches { get; set; }
 
         [JsonProperty("schedule_id")]
         public string ScheduleId { get; set; } = string.Empty;

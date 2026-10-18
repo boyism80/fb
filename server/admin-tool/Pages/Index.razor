@@ -233,7 +233,7 @@
                         <thead>
                             <tr>
                                 <th>제목</th>
-                                <th>월드</th>
+                                <th>대상</th>
                                 <th>시작</th>
                                 <th>종료</th>
                                 <th>반복</th>
@@ -245,7 +245,7 @@
                             {
                                 <tr>
                                     <td>@schedule.Title</td>
-                                    <td>@(schedule.World == 0 ? "전체" : $"World {schedule.World}")</td>
+                                    <td>@MaintenanceLabel.Format(schedule.Labels)</td>
                                     <td class="meta">@ToLocal(schedule.StartTime).ToString("yyyy-MM-dd HH:mm")</td>
                                     <td class="meta">@ToLocal(schedule.EndTime).ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>@FormatRepeat(schedule.RepeatType)</td>
@@ -362,9 +362,9 @@
         {
             try
             {
-                var maintenance = await MaintenanceService.GetMaintenanceInfo(selectedWorld.Value);
-                maintenanceStatus = maintenance?.IsActive == true ? "진행 중" : "정상";
-                schedules = await MaintenanceService.GetAllSchedules(selectedWorld.Value);
+                var maintenance = await MaintenanceService.FindActiveMaintenance(MaintenanceLabel.World(selectedWorld.Value));
+                maintenanceStatus = maintenance != null ? "진행 중" : "정상";
+                schedules = await MaintenanceService.GetAllSchedules();
             }
             catch
             {
@@ -447,9 +447,9 @@
         if (!schedule.IsActive)
             return "취소";
         var now = DateTime.UtcNow;
-        if (now >= schedule.StartTime && now <= schedule.EndTime)
+        if (Http.Service.MaintenanceService.TryGetActiveWindow(schedule, now, out _, out _))
             return "진행 중";
-        if (now < schedule.StartTime)
+        if (schedule.RepeatType != MaintenanceRepeatType.None || now < schedule.StartTime)
             return "대기";
         return "종료";
     }

@@ -21,8 +21,6 @@ table Login {
   port: ushort;
   ban_reason: string;
   ban_expire_date: string?;
-  maintenance_message: string?;
-  maintenance_end_time: string?;
 }
 
 
@@ -409,10 +407,15 @@ table UpdatedCastle {
   error: uint;
 }
 
-table GetMaintenance {
-  active: bool;
+table ActiveMaintenance {
+  labels: [string];
   message: string;
   end_time: string;
+  finish_matches: bool;
+}
+
+table GetMaintenance {
+  maintenances: [ActiveMaintenance];
   error: uint;
 }
 

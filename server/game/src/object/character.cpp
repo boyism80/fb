@@ -458,6 +458,15 @@ async::task<bool> character::transfer_home()
             case ERROR_CODE::NONE:
                 break;
 
+            case ERROR_CODE::MAINTENANCE:
+            {
+                this->message(resp.maintenance_message.value_or(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS)),
+                              MESSAGE_TYPE::STATE);
+                if (auto socket_ptr = this->socket_ptr(); socket_ptr != nullptr)
+                    socket_ptr->close();
+                co_return false;
+            }
+
             case ERROR_CODE::SERVER_NOT_READY:
                 throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 

@@ -51,6 +51,7 @@ namespace fb::game {
 
 class map;
 class match;
+struct maintenance_state;
 
 struct friend_entry
 {
@@ -487,7 +488,7 @@ public:
     void                  send(const fb::stream& stream, bool encrypt);
     static void           assert_whisper(uint32_t error, std::string_view to);
     void                  on_kick_out(const fb::protocol::internal::response::KickOut& message);
-    void                  on_maintenance(const std::string& message);
+    void                  on_maintenance(const maintenance_state& state);
     static std::string    build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date);
     // clang-format on
 
