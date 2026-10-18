@@ -25,7 +25,6 @@
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>
 #include <fb/game/handler/amqp/shutdown.h>
-#include <fb/game/handler/amqp/start_maintenance.h>
 #include <fb/game/handler/amqp/updated_castle.h>
 #include <fb/game/handler/amqp/updated_clan.h>
 #include <fb/game/handler/amqp/updated_group.h>
@@ -87,6 +86,7 @@
 #include <fb/game/handler/timer/expired_item_timer.h>
 #include <fb/game/handler/timer/gear_timer.h>
 #include <fb/game/handler/timer/heart_beat.h>
+#include <fb/game/handler/timer/maintenance_timer.h>
 #include <fb/game/handler/timer/mob_action_timer.h>
 #include <fb/game/handler/timer/mob_respawn_timer.h>
 #include <fb/game/handler/timer/ping_timer.h>

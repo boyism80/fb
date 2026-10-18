@@ -507,8 +507,8 @@ struct CastleListBuilder;
 struct UpdatedCastle;
 struct UpdatedCastleBuilder;
 
-struct StartMaintenance;
-struct StartMaintenanceBuilder;
+struct GetMaintenance;
+struct GetMaintenanceBuilder;
 
 struct FriendBroadcast;
 struct FriendBroadcastBuilder;
@@ -14773,69 +14773,93 @@ inline ::flatbuffers::Offset<UpdatedCastle> CreateUpdatedCastle(
   return builder_.Finish();
 }
 
-struct StartMaintenance FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef StartMaintenanceBuilder Builder;
+struct GetMaintenance FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef GetMaintenanceBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MESSAGE = 4,
-    VT_END_TIME = 6
+    VT_ACTIVE = 4,
+    VT_MESSAGE = 6,
+    VT_END_TIME = 8,
+    VT_ERROR = 10
   };
+  bool active() const {
+    return GetField<uint8_t>(VT_ACTIVE, 0) != 0;
+  }
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
   }
   const ::flatbuffers::String *end_time() const {
     return GetPointer<const ::flatbuffers::String *>(VT_END_TIME);
   }
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_ACTIVE, 1) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
            VerifyOffset(verifier, VT_END_TIME) &&
            verifier.VerifyString(end_time()) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
 };
 
-struct StartMaintenanceBuilder {
-  typedef StartMaintenance Table;
+struct GetMaintenanceBuilder {
+  typedef GetMaintenance Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_active(bool active) {
+    fbb_.AddElement<uint8_t>(GetMaintenance::VT_ACTIVE, static_cast<uint8_t>(active), 0);
+  }
   void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
-    fbb_.AddOffset(StartMaintenance::VT_MESSAGE, message);
+    fbb_.AddOffset(GetMaintenance::VT_MESSAGE, message);
   }
   void add_end_time(::flatbuffers::Offset<::flatbuffers::String> end_time) {
-    fbb_.AddOffset(StartMaintenance::VT_END_TIME, end_time);
+    fbb_.AddOffset(GetMaintenance::VT_END_TIME, end_time);
   }
-  explicit StartMaintenanceBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(GetMaintenance::VT_ERROR, error, 0);
+  }
+  explicit GetMaintenanceBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<StartMaintenance> Finish() {
+  ::flatbuffers::Offset<GetMaintenance> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<StartMaintenance>(end);
+    auto o = ::flatbuffers::Offset<GetMaintenance>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<StartMaintenance> CreateStartMaintenance(
+inline ::flatbuffers::Offset<GetMaintenance> CreateGetMaintenance(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool active = false,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> end_time = 0) {
-  StartMaintenanceBuilder builder_(_fbb);
+    ::flatbuffers::Offset<::flatbuffers::String> end_time = 0,
+    uint32_t error = 0) {
+  GetMaintenanceBuilder builder_(_fbb);
+  builder_.add_error(error);
   builder_.add_end_time(end_time);
   builder_.add_message(message);
+  builder_.add_active(active);
   return builder_.Finish();
 }
 
-inline ::flatbuffers::Offset<StartMaintenance> CreateStartMaintenanceDirect(
+inline ::flatbuffers::Offset<GetMaintenance> CreateGetMaintenanceDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool active = false,
     const char *message = nullptr,
-    const char *end_time = nullptr) {
+    const char *end_time = nullptr,
+    uint32_t error = 0) {
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto end_time__ = end_time ? _fbb.CreateString(end_time) : 0;
-  return fb::protocol::internal::response::raw::CreateStartMaintenance(
+  return fb::protocol::internal::response::raw::CreateGetMaintenance(
       _fbb,
+      active,
       message__,
-      end_time__);
+      end_time__,
+      error);
 }
 
 struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

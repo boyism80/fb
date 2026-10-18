@@ -15,22 +15,11 @@ namespace Http.Service
         private static readonly TimeSpan CancelledScheduleRetention = TimeSpan.FromDays(7);
 
         private readonly RedisService _redisService;
-        private readonly SessionService _sessionService;
-        private readonly RabbitMqService _rabbitMqService;
-        private readonly ServerStateService _serverStateService;
         private readonly ILogger<MaintenanceService> _logger;
 
-        public MaintenanceService(
-            RedisService redisService,
-            SessionService sessionService,
-            RabbitMqService rabbitMqService,
-            ServerStateService serverStateService,
-            ILogger<MaintenanceService> logger)
+        public MaintenanceService(RedisService redisService, ILogger<MaintenanceService> logger)
         {
             _redisService = redisService;
-            _sessionService = sessionService;
-            _rabbitMqService = rabbitMqService;
-            _serverStateService = serverStateService;
             _logger = logger;
         }
 
@@ -98,16 +87,6 @@ namespace Http.Service
                 await redis.Connection.SortedSetAddAsync(key, scheduleJson, score);
 
                 _logger.LogInformation("Created maintenance schedule {ScheduleId} for world {World}", schedule.Id, schedule.World);
-
-                // If the new schedule is already active, notify game servers immediately so regular users are kicked
-                // without waiting for the background service's next cycle.
-                var maintenanceInfo = await GetMaintenanceInfo(schedule.World);
-                if (maintenanceInfo != null && maintenanceInfo.IsActive)
-                {
-                    var messageCount = await ForceLogoutRegularUsers(schedule.World);
-                    _logger.LogInformation("Maintenance already active for world {World}, sent immediate kick to {Count} game server(s)", schedule.World, messageCount);
-                }
-
                 return true;
             }
             catch (Exception ex)
@@ -193,56 +172,6 @@ namespace Http.Service
             }
 
             return success;
-        }
-
-        public async Task<int> ForceLogoutRegularUsers(uint world)
-        {
-            // Get maintenance info to include in message
-            var maintenanceInfo = await GetMaintenanceInfo(world);
-            if (maintenanceInfo == null || !maintenanceInfo.IsActive)
-            {
-                _logger.LogWarning("No active maintenance found for world {World}", world);
-                return 0;
-            }
-
-            var servers = await _serverStateService.GetRunningServers();
-            var serverIds = servers
-                .Where(s => s.World == world && s.Service == fb.protocol.@internal.Service.Game.ToString())
-                .Select(s => s.Id)
-                .ToHashSet();
-
-            if (serverIds.Count == 0)
-            {
-                _logger.LogWarning("No running game servers found for world {World}", world);
-                return 0;
-            }
-
-            // Send StartMaintenance message to each game server
-            var messageCount = 0;
-            foreach (var serverId in serverIds)
-            {
-                try
-                {
-                    await _rabbitMqService.PublishAsync(new fb.protocol.@internal.response.StartMaintenance
-                    {
-                        Message = maintenanceInfo.Message,
-                        EndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")
-                    }, AmqpRoute.Exchange, AmqpRoute.Unicast(world, serverId));
-
-                    messageCount++;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to send maintenance message to game server {ServerId} in world {World}", serverId, world);
-                }
-            }
-
-            if (messageCount > 0)
-            {
-                _logger.LogInformation("Sent maintenance start message to {Count} game servers in world {World}", messageCount, world);
-            }
-
-            return messageCount;
         }
 
         private static string GetMaintenanceKey(uint world) => $"{MaintenanceKeyPrefix}{world}";

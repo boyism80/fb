@@ -45,7 +45,6 @@ class Ban;
 class Unban;
 class Broadcast;
 class KickOut;
-class StartMaintenance;
 } // namespace fb::protocol::internal::response
 
 namespace fb::game {
@@ -488,7 +487,7 @@ public:
     void                  send(const fb::stream& stream, bool encrypt);
     static void           assert_whisper(uint32_t error, std::string_view to);
     void                  on_kick_out(const fb::protocol::internal::response::KickOut& message);
-    void                  on_start_maintenance(const fb::protocol::internal::response::StartMaintenance& message);
+    void                  on_maintenance(const std::string& message);
     static std::string    build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date);
     // clang-format on
 

@@ -129,9 +129,9 @@ void character::container::on_kick_out(const internal_resp::KickOut& message)
         socket_ptr->close();
 }
 
-void character::container::on_start_maintenance(const internal_resp::StartMaintenance& message)
+void character::container::on_maintenance(const std::string& message)
 {
-    this->foreach_enqueue([message = message.message](auto& ch) -> async::task<void> {
+    this->foreach_enqueue([message](auto& ch) -> async::task<void> {
         if (ch->role() >= ROLE::ADMIN)
             co_return;
 

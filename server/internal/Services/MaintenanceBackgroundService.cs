@@ -59,12 +59,11 @@ namespace Internal.Services
                             using var scope = _scopeFactory.CreateScope();
                             var maintenanceService = scope.ServiceProvider.GetRequiredService<MaintenanceService>();
 
-                            // Process maintenance checks for all worlds
-                            await ProcessMaintenanceChecksAsync(maintenanceService, stoppingToken);
+                            await CleanupExpiredSchedulesAsync(maintenanceService, stoppingToken);
                         }
                         catch (Exception e)
                         {
-                            _logger.LogError(e, "Error processing maintenance checks: {Message}", e.Message);
+                            _logger.LogError(e, "Error cleaning up maintenance schedules: {Message}", e.Message);
                         }
                         // Lock will expire automatically via TTL
 
@@ -105,55 +104,12 @@ namespace Internal.Services
             }
         }
 
-        private async Task ProcessMaintenanceChecksAsync(
-            MaintenanceService maintenanceService,
-            CancellationToken cancellationToken)
-        {
-            var worlds = _redisService.GetConfiguredWorlds();
-            if (worlds.Count == 0)
-                return;
-
-            var now = DateTime.UtcNow;
-            var lastMaintenanceState = new Dictionary<uint, bool>();
-
-            foreach (var world in worlds)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                try
-                {
-                    var wasInMaintenance = lastMaintenanceState.GetValueOrDefault(world, false);
-                    var maintenanceInfo = await maintenanceService.GetMaintenanceInfo(world, now);
-                    var isInMaintenance = maintenanceInfo != null && maintenanceInfo.IsActive;
-
-                    // If maintenance just started (wasn't active before, now is active), force logout
-                    if (!wasInMaintenance && isInMaintenance)
-                    {
-                        _logger.LogInformation("Maintenance started for world {World}, forcing logout of regular users", world);
-                        var kickedCount = await maintenanceService.ForceLogoutRegularUsers(world);
-                        _logger.LogInformation("Kicked {Count} regular users from world {World} due to maintenance start", kickedCount, world);
-                    }
-
-                    lastMaintenanceState[world] = isInMaintenance;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to process maintenance check for world {World}", world);
-                }
-            }
-
-            // Remove expired one-time schedules from all configured worlds
-            await CleanupExpiredSchedulesAsync(maintenanceService, worlds, now, cancellationToken);
-        }
-
         private async Task CleanupExpiredSchedulesAsync(
             MaintenanceService maintenanceService,
-            IReadOnlyList<uint> worlds,
-            DateTime now,
             CancellationToken cancellationToken)
         {
-            foreach (var world in worlds)
+            var now = DateTime.UtcNow;
+            foreach (var world in _redisService.GetConfiguredWorlds())
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;

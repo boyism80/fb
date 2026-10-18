@@ -300,6 +300,7 @@ void fb::game::server::init_timers()
     this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(1s);
     this->bind_timer<fb::game::handler::timer::system_storage_box_timer>(1s);
+    this->bind_timer<fb::game::handler::timer::maintenance_timer>(5s);
 
     if (fb::config<std::optional<uint32_t>>("world"))
         this->schedules.init();
@@ -330,7 +331,6 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(game);
     this->handler.amqp.bind<fb::game::handler::amqp::friend_relation>(game);
     this->handler.amqp.bind<fb::game::handler::amqp::friend_message>(game);
-    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(game);
     this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global");
 
     this->handler.amqp.bind<fb::game::handler::amqp::create_clan>(fb::amqp_key("clan", scope));

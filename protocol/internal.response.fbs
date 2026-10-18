@@ -409,9 +409,11 @@ table UpdatedCastle {
   error: uint;
 }
 
-table StartMaintenance {
+table GetMaintenance {
+  active: bool;
   message: string;
   end_time: string;
+  error: uint;
 }
 
 table FriendBroadcast {
