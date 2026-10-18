@@ -226,6 +226,7 @@ async::task<void> service::system_storage::sync(character& ch)
             try
             {
                 auto&& distribute_resp = co_await this->server.http.post(
+                    weak,
                     "internal",
                     "/storage/system/distribute",
                     internal_reqs::DistributeSystemStorage{world, box.id, {ptr->id}, fb::config<uint32_t>("id")});

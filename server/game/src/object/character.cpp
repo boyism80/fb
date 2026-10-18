@@ -232,13 +232,20 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         if (this->map() == nullptr)
             co_return false;
 
+        auto self    = this->shared_from_this_as<character>();
+        auto old_map = this->_map;
         try
         {
             auto   world = this->world();
             auto&& resp  = co_await this->server.http.post(
+                self->weak_from_this_as<character>(),
                 "internal",
                 "/in-game/transfer",
                 internal_reqs::Transfer{world, internal::Service::Game, map->model().host, this->name(), false});
+
+            // Another move may have run while waiting; that move stands and this transfer is dropped.
+            if (this->_map != old_map)
+                co_return false;
 
             switch (static_cast<ERROR_CODE>(resp.error))
             {
@@ -431,13 +438,20 @@ async::task<bool> character::transfer_home()
         if (this->map() == nullptr)
             co_return false;
 
+        auto self    = this->shared_from_this_as<character>();
+        auto old_map = this->_map;
         try
         {
             auto   world = this->world();
             auto&& resp  = co_await this->server.http.post(
+                self->weak_from_this_as<character>(),
                 "internal",
                 "/in-game/transfer",
                 internal_reqs::Transfer{world, internal::Service::Game, dest->model().host, this->name(), false});
+
+            // Another move may have run while waiting; that move stands and this transfer is dropped.
+            if (this->_map != old_map)
+                co_return false;
 
             switch (static_cast<ERROR_CODE>(resp.error))
             {
