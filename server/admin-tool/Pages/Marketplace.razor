@@ -52,6 +52,7 @@
                 <option value="1">판매완료</option>
                 <option value="2">취소</option>
                 <option value="3">만료</option>
+                <option value="4">등록 중단</option>
             </select>
             <select class="stitch-select" @bind="sortOrder">
                 <option value="newest">최신순</option>
@@ -239,6 +240,7 @@
         1 => "판매완료",
         2 => "취소",
         3 => "만료",
+        4 => "등록 중단",
         _ => status.ToString()
     };
 }
