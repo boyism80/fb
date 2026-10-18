@@ -577,9 +577,9 @@ async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bo
     co_return;
 }
 
-async::task<void> bot_integration_test::sleep(std::chrono::milliseconds duration)
+fb::thread_switch_awaiter bot_integration_test::sleep(std::chrono::milliseconds duration)
 {
-    co_await this->controller.container.threads.current()->sleep(duration);
+    return this->controller.container.threads.current()->sleep(duration);
 }
 
 void bot_integration_test::assert_thread() const

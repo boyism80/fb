@@ -194,10 +194,10 @@ public:
     }
 
 public:
-    std::shared_ptr<fb::timer>      settimer(fb::timer::handle_callback_type&& fn,
-                                             const fb::model::timespan&        duration,
-                                             fb::timer::repeat_type            repeat = fb::timer::repeat_type::repeat);
-    [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration);
+    std::shared_ptr<fb::timer>          settimer(fb::timer::handle_callback_type&& fn,
+                                                 const fb::model::timespan&        duration,
+                                                 fb::timer::repeat_type            repeat = fb::timer::repeat_type::repeat);
+    [[nodiscard]] thread_switch_awaiter sleep(const fb::model::timespan& duration);
 
     template <typename T = void> [[nodiscard]] builder<T> new_builder()
     {
@@ -345,15 +345,17 @@ public:
 };
 
 // An awaiter, not a task: a task wrapper can finish on the target thread before the caller awaits it,
-// and then the caller continues on its own thread.
+// and then the caller continues on its own thread. A null target resumes on the current thread.
 class thread_switch_awaiter
 {
 private:
-    fb::thread& _target;
+    fb::thread*         _target;
+    fb::model::timespan _delay;
 
 public:
-    explicit thread_switch_awaiter(fb::thread& target) noexcept :
-        _target(target)
+    explicit thread_switch_awaiter(fb::thread* target, const fb::model::timespan& delay = {}) noexcept :
+        _target(target),
+        _delay(delay)
     { }
 
     bool await_ready() const noexcept;

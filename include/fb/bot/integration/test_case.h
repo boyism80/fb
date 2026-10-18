@@ -6,6 +6,7 @@
 #include <fb/bot/game_bot.h>
 #include <fb/generator.h>
 #include <fb/synchronized.h>
+#include <fb/thread.h>
 
 #include <boost/asio.hpp>
 
@@ -110,7 +111,7 @@ protected:
     virtual async::task<void>     on_hook_map_config(game_bot& bot, const game_resp::map_config_v550& resp);
     virtual async::task<void>     on_hook_update_internal(game_bot& bot, const game_resp::update_internal_v550& resp);
 
-    [[nodiscard]] async::task<void> sleep(std::chrono::milliseconds duration);
+    [[nodiscard]] fb::thread_switch_awaiter sleep(std::chrono::milliseconds duration);
 
 public:
     test_state                             get_state() const;

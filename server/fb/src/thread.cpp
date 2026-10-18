@@ -251,21 +251,9 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
     return shared_ptr;
 }
 
-async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
+fb::thread_switch_awaiter fb::thread::sleep(const fb::model::timespan& delay)
 {
-    if (delay.total_milliseconds() == 0)
-        co_return;
-
-    auto promise = std::make_shared<async::task_completion_source<void>>();
-    this->settimer(
-        [promise](auto& datetime, auto thread_id) -> async::task<void> {
-            promise->set_value();
-            co_return;
-        },
-        delay,
-        fb::timer::repeat_type::once);
-
-    co_return co_await promise->task();
+    return fb::thread_switch_awaiter(this, delay);
 }
 
 void fb::thread::enqueue(handle_func_type<void>&&  fn,
@@ -349,20 +337,39 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propa
 
 fb::thread_switch_awaiter fb::thread::switching()
 {
-    return fb::thread_switch_awaiter(*this);
+    return fb::thread_switch_awaiter(this);
 }
 
 bool fb::thread_switch_awaiter::await_ready() const noexcept
 {
-    return this->_target.id() == std::this_thread::get_id();
+    if (this->_target == nullptr)
+        return true;
+
+    return this->_delay.total_milliseconds() <= 0 && this->_target->id() == std::this_thread::get_id();
 }
 
 bool fb::thread_switch_awaiter::await_suspend(std::coroutine_handle<> handle)
 {
-    auto fn = std::function<void()>([handle]() {
-        handle.resume();
+    // The timer list belongs to the target thread, so the timer is set from there.
+    auto target = this->_target;
+    auto delay  = this->_delay;
+    auto fn     = std::function<void()>([target, delay, handle]() {
+        if (delay.total_milliseconds() <= 0)
+        {
+            handle.resume();
+        }
+        else
+        {
+            target->settimer(
+                [handle](auto&, auto) -> async::task<void> {
+                    handle.resume();
+                    co_return;
+                },
+                delay,
+                fb::timer::repeat_type::once);
+        }
     });
-    return this->_target.try_push(fn);
+    return target->try_push(fn);
 }
 
 void fb::thread_switch_awaiter::await_resume() const noexcept

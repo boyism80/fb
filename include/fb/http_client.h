@@ -81,18 +81,9 @@ private:
     std::unordered_set<std::string>          _held_paths;
     std::vector<pending_task>                _held_requests;
 
-    [[nodiscard]] async::task<void> sleep(fb::thread* thread, std::string_view service = {})
+    [[nodiscard]] fb::thread_switch_awaiter switching(fb::thread* thread, std::string_view service = {})
     {
-        if (thread == nullptr)
-            co_return;
-
-        co_await thread->switching();
-
-        auto delay_ms = this->response_delay_for(service).total_milliseconds();
-        if (delay_ms <= 0)
-            co_return;
-
-        co_await thread->sleep(fb::model::timespan(std::chrono::milliseconds(delay_ms)));
+        return fb::thread_switch_awaiter(thread, this->response_delay_for(service));
     }
 
     void pump()
@@ -452,7 +443,7 @@ public:
         auto fault  = this->fault(service);
         if (fault == FAULT::UNREACHABLE)
         {
-            co_await this->sleep(thread, service);
+            co_await this->switching(thread, service);
             throw std::runtime_error(
                 std::format("HTTP GET request failed: unreachable fault injected for {}", service));
         }
@@ -472,7 +463,7 @@ public:
             error = std::current_exception();
         }
 
-        co_await this->sleep(thread, service);
+        co_await this->switching(thread, service);
         if (error)
             std::rethrow_exception(error);
         if (fault == FAULT::RESPONSE_LOST)
@@ -564,7 +555,7 @@ public:
             fault = this->fault(service);
         if (fault == FAULT::UNREACHABLE)
         {
-            co_await this->sleep(thread, service);
+            co_await this->switching(thread, service);
             throw std::runtime_error(
                 std::format("HTTP POST request failed: unreachable fault injected for {}", service));
         }
@@ -587,7 +578,7 @@ public:
         }
         if (held)
         {
-            co_await this->sleep(thread, service);
+            co_await this->switching(thread, service);
             throw std::runtime_error(
                 std::format("HTTP POST request failed: request held for {}{}", service_str, path_str));
         }
@@ -603,7 +594,7 @@ public:
             error = std::current_exception();
         }
 
-        co_await this->sleep(thread, service);
+        co_await this->switching(thread, service);
         if (error)
             std::rethrow_exception(error);
         if (fault == FAULT::RESPONSE_LOST)
@@ -655,7 +646,7 @@ public:
             error = std::current_exception();
         }
 
-        co_await this->sleep(thread);
+        co_await this->switching(thread);
         if (error)
             std::rethrow_exception(error);
     }

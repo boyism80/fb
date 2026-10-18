@@ -37,7 +37,7 @@ public:
         if (this->contains(hash))
             return false;
 
-        this->evict_for_insert();
+        this->trim();
         this->super::insert({hash, value});
         this->touch(hash);
         return true;
@@ -48,7 +48,7 @@ public:
         if (this->contains(hash))
             return false;
 
-        this->evict_for_insert();
+        this->trim();
         this->super::emplace(hash, std::move(value));
         this->touch(hash);
         return true;
@@ -57,7 +57,7 @@ public:
     T& operator[] (HashType hash)
     {
         if (this->contains(hash) == false)
-            this->evict_for_insert();
+            this->trim();
 
         auto& value = this->super::operator[] (hash);
         this->touch(hash);
@@ -127,7 +127,7 @@ private:
         this->_lru_list.push_front(hash);
     }
 
-    void evict_for_insert()
+    void trim()
     {
         if (this->size() < this->_capacity)
             return;

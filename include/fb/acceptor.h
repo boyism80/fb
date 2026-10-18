@@ -733,11 +733,9 @@ public:
     }
 
 public:
-    [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration)
+    [[nodiscard]] fb::thread_switch_awaiter sleep(const fb::model::timespan& duration)
     {
-        auto thread = this->threads.current();
-        if (thread != nullptr)
-            co_await thread->sleep(duration);
+        return fb::thread_switch_awaiter(this->threads.current(), duration);
     }
 
 public:
