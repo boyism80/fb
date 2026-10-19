@@ -222,7 +222,8 @@ std::string login<V>::build_maintenance_message(const std::optional<std::string>
     }
     if (end_time.has_value() && !end_time.value().empty())
     {
-        maintenance_message += "\n" + std::format(_TEXT(MESSAGE_MAINTENANCE_END_TIME), end_time.value());
+        maintenance_message += "\n" + std::format(_TEXT(MESSAGE_MAINTENANCE_END_TIME),
+                                                  fb::model::datetime(end_time.value()).to_local().to_string());
     }
     return maintenance_message;
 }
