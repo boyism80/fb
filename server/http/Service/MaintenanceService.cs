@@ -13,6 +13,8 @@ namespace Http.Service
 
         private static readonly TimeSpan CancelledScheduleRetention = TimeSpan.FromDays(7);
 
+        private static readonly TimeZoneInfo OperatingTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul");
+
         private readonly RedisService _redisService;
         private readonly ILogger<MaintenanceService> _logger;
 
@@ -214,26 +216,36 @@ namespace Http.Service
             if (schedule.RepeatType == MaintenanceRepeatType.None)
                 return schedule.StartTime > now && schedule.StartTime - now <= horizon ? schedule.StartTime : null;
 
-            for (var day = now.Date; day <= (now + horizon).Date; day = day.AddDays(1))
+            var template = ToOperating(schedule.StartTime);
+            var operatingNow = ToOperating(now);
+            for (var day = operatingNow.Date; day <= (operatingNow + horizon).Date; day = day.AddDays(1))
             {
-                var start = day.Add(schedule.StartTime.TimeOfDay);
-                if (start <= now || start - now > horizon)
+                var start = day.Add(template.TimeOfDay);
+                var startUtc = ToUtc(start);
+                if (startUtc <= now || startUtc - now > horizon)
                     continue;
 
                 var matched = schedule.RepeatType switch
                 {
                     MaintenanceRepeatType.Daily => true,
-                    MaintenanceRepeatType.Weekly => start.DayOfWeek == schedule.StartTime.DayOfWeek,
-                    MaintenanceRepeatType.Monthly => start.Day == schedule.StartTime.Day,
-                    MaintenanceRepeatType.Yearly => start.Month == schedule.StartTime.Month && start.Day == schedule.StartTime.Day,
+                    MaintenanceRepeatType.Weekly => start.DayOfWeek == template.DayOfWeek,
+                    MaintenanceRepeatType.Monthly => start.Day == template.Day,
+                    MaintenanceRepeatType.Yearly => start.Month == template.Month && start.Day == template.Day,
                     _ => false
                 };
                 if (matched)
-                    return start;
+                    return startUtc;
             }
 
             return null;
         }
+
+        // Admins enter recurring schedules in KST; month days and weekdays must be matched there, not in UTC.
+        private static DateTime ToOperating(DateTime utc) =>
+            TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), OperatingTimeZone);
+
+        private static DateTime ToUtc(DateTime operating) =>
+            TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(operating, DateTimeKind.Unspecified), OperatingTimeZone);
 
         private async Task<bool> ReplaceSchedule(string member, MaintenanceSchedule next)
         {
@@ -306,15 +318,20 @@ namespace Http.Service
         // crossed midnight is still found after the date changes. DateTime.MinValue means no occurrence.
         private static DateTime GetWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
-            return schedule.RepeatType switch
+            if (schedule.RepeatType == MaintenanceRepeatType.None)
+                return schedule.StartTime;
+
+            var template = ToOperating(schedule.StartTime);
+            var now = ToOperating(checkTime);
+            var start = schedule.RepeatType switch
             {
-                MaintenanceRepeatType.None => schedule.StartTime,
-                MaintenanceRepeatType.Daily => GetDailyWindowStart(schedule, checkTime),
-                MaintenanceRepeatType.Weekly => GetWeeklyWindowStart(schedule, checkTime),
-                MaintenanceRepeatType.Monthly => GetMonthlyWindowStart(schedule, checkTime),
-                MaintenanceRepeatType.Yearly => GetYearlyWindowStart(schedule, checkTime),
-                _ => schedule.StartTime
+                MaintenanceRepeatType.Daily => GetDailyWindowStart(template, now),
+                MaintenanceRepeatType.Weekly => GetWeeklyWindowStart(template, now),
+                MaintenanceRepeatType.Monthly => GetMonthlyWindowStart(template, now),
+                MaintenanceRepeatType.Yearly => GetYearlyWindowStart(template, now),
+                _ => DateTime.MinValue
             };
+            return start == DateTime.MinValue ? start : ToUtc(start);
         }
 
         private static DateTime GetWindowEnd(MaintenanceSchedule schedule, DateTime windowStart)
@@ -328,45 +345,45 @@ namespace Http.Service
             return windowStart.Add(duration);
         }
 
-        private static DateTime GetDailyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetDailyWindowStart(DateTime template, DateTime checkTime)
         {
-            var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            var today = checkTime.Date.Add(template.TimeOfDay);
             if (checkTime >= today)
                 return today;
             else
                 return today.AddDays(-1);
         }
 
-        private static DateTime GetWeeklyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetWeeklyWindowStart(DateTime template, DateTime checkTime)
         {
-            var daysDiff = ((int)checkTime.DayOfWeek - (int)schedule.StartTime.DayOfWeek + 7) % 7;
-            var start = checkTime.Date.AddDays(-daysDiff).Add(schedule.StartTime.TimeOfDay);
+            var daysDiff = ((int)checkTime.DayOfWeek - (int)template.DayOfWeek + 7) % 7;
+            var start = checkTime.Date.AddDays(-daysDiff).Add(template.TimeOfDay);
             if (checkTime >= start)
                 return start;
             else
                 return start.AddDays(-7);
         }
 
-        private static DateTime GetMonthlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetMonthlyWindowStart(DateTime template, DateTime checkTime)
         {
-            var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            var today = checkTime.Date.Add(template.TimeOfDay);
             var yesterday = checkTime.Date.AddDays(-1);
-            if (checkTime.Day == schedule.StartTime.Day && checkTime >= today)
+            if (checkTime.Day == template.Day && checkTime >= today)
                 return today;
-            else if (yesterday.Day == schedule.StartTime.Day)
-                return today.AddDays(-1);
+            else if (yesterday.Day == template.Day)
+                return yesterday.Add(template.TimeOfDay);
             else
                 return DateTime.MinValue;
         }
 
-        private static DateTime GetYearlyWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
+        private static DateTime GetYearlyWindowStart(DateTime template, DateTime checkTime)
         {
-            var today = checkTime.Date.Add(schedule.StartTime.TimeOfDay);
+            var today = checkTime.Date.Add(template.TimeOfDay);
             var yesterday = checkTime.Date.AddDays(-1);
-            if (checkTime.Month == schedule.StartTime.Month && checkTime.Day == schedule.StartTime.Day && checkTime >= today)
+            if (checkTime.Month == template.Month && checkTime.Day == template.Day && checkTime >= today)
                 return today;
-            else if (yesterday.Month == schedule.StartTime.Month && yesterday.Day == schedule.StartTime.Day)
-                return today.AddDays(-1);
+            else if (yesterday.Month == template.Month && yesterday.Day == template.Day)
+                return yesterday.Add(template.TimeOfDay);
             else
                 return DateTime.MinValue;
         }

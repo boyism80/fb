@@ -479,7 +479,17 @@
                                 </td>
                                 <td class="mono">@FormatShort(active ? windowStart : schedule.StartTime)</td>
                                 <td class="mono">@FormatShort(active ? windowEnd : schedule.EndTime)</td>
-                                <td>@GetRepeatTypeName(schedule.RepeatType)</td>
+                                <td>
+                                    @GetRepeatTypeName(schedule.RepeatType)
+                                    @if (schedule.IsActive && schedule.RepeatType != MaintenanceRepeatType.None)
+                                    {
+                                        var next = Http.Service.MaintenanceService.FindNextStart(schedule, DateTime.UtcNow, NextStartHorizon);
+                                        if (next.HasValue)
+                                        {
+                                            <div class="maint-hint maint-mono">다음 @FormatShort(next.Value)</div>
+                                        }
+                                    }
+                                </td>
                                 <td>
                                     <div class="maint-chip-group wrap">
                                         @if (schedule.FinishMatches)
@@ -523,6 +533,7 @@
 @code {
     private static readonly int[] DefaultNoticeMinutes = { 60, 30, 10, 5, 1 };
     private static readonly CultureInfo Korean = CultureInfo.GetCultureInfo("ko-KR");
+    private static readonly TimeSpan NextStartHorizon = TimeSpan.FromDays(366 * 4 + 1);
     private static readonly (string Key, string Name)[] Filters =
     {
         ("all", "전체"),
