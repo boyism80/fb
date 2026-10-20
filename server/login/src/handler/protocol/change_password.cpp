@@ -3,13 +3,12 @@
 #include <fb/encoding.h>
 #include <fb/login/exception.h>
 
-#include <json/json.h>
-
 #include <chrono>
 #include <cstdint>
 #include <exception>
 #include <format>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -85,6 +84,9 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
 
         switch (static_cast<ERROR_CODE>(resp2.error_code))
         {
+        case ERROR_CODE::NONE:
+            break;
+
         case ERROR_CODE::NOT_FOUND_CHARACTER: // id wrong
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
@@ -99,14 +101,11 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
         case ERROR_CODE::ACCOUNT_LOCKED:
             session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_LOCKED));
+
+        default:
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp2.error_code));
         }
         session.data()->password_failures = 0;
-
-        // Log password change event
-        auto log_data            = Json::Value();
-        log_data["account_name"] = UTF8(request.name, PLATFORM::WINDOWS);
-        log_data["uid"]          = static_cast<Json::Int64>(uid);
-        this->server.log.write("password_change", log_data);
 
         session.send(response::message((_TEXT(MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD)), 0x00));
         co_return true;
