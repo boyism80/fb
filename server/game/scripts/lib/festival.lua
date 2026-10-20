@@ -2,14 +2,6 @@ local event = require('lib.event')
 
 local M = {}
 
--- Kill penalty for 꿩 (석가탄신일). Stored in server property per character uid
--- so mob kill scripts and NPC dialogs share the same value across Lua contexts.
-local PHEASANT_PENALTY_PROP = 'sesi.pheasant_penalty.'
-
-local function pheasant_penalty_key(me)
-    return PHEASANT_PENALTY_PROP .. tostring(me:uid())
-end
-
 function M.is(name)
     return event.is(name)
 end
@@ -91,14 +83,24 @@ function M.set_pheasant_kill_penalty(me, seconds)
     if ts == nil or ts <= 0 then
         return
     end
-    property(pheasant_penalty_key(me), ts + (seconds or 3600))
+    local quest = require('lib.quest')
+    local q = quest.get_annual(me, quest.QUEST_BUDDHA_LANTERN) or me:start_quest(quest.QUEST_BUDDHA_LANTERN)
+    if q == nil then
+        return
+    end
+    q:param(string.format('%d:%d', M.lunar_year(), ts + (seconds or 3600)))
 end
 
 function M.pheasant_kill_penalty_remaining(me)
     if me == nil then
         return 0
     end
-    local until_ts = tonumber(property(pheasant_penalty_key(me)))
+    local quest = require('lib.quest')
+    local q = quest.get_annual(me, quest.QUEST_BUDDHA_LANTERN)
+    if q == nil then
+        return 0
+    end
+    local until_ts = tonumber(string.match(q:param() or '', '^%d+:(%d+)$'))
     if until_ts == nil then
         return 0
     end

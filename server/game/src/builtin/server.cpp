@@ -1718,6 +1718,11 @@ int builtin::server::builtin_property(lua_State* L)
                 guard.value()[key] = Json::Value(b);
             }
         }
+        else if (t == LUA_TNIL)
+        {
+            auto guard = srv.property.enter_write();
+            guard.value().erase(key);
+        }
     }
     return 0;
 }

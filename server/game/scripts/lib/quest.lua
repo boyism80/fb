@@ -93,6 +93,8 @@ M.QUEST_HWAHWA_SMILE = 266
 M.QUEST_JUNGYANG_GUKHWA = 267
 M.QUEST_SEOTDAL_GIFTS = 268
 M.QUEST_KIMJANG = 269
+M.QUEST_BUDDHA_LANTERN = 270
+M.QUEST_YUDU_GOSA = 271
 
 -- Festival quests that replay each lunar year.
 function M.get_annual(me, id)
@@ -740,30 +742,18 @@ function M.mountain_treasure_map_on_move(me)
         return
     end
 
-    _G._mountain_treasure_map_move = _G._mountain_treasure_map_move or {}
-    local key = me:uid()
-    local state = _G._mountain_treasure_map_move[key]
-    if state == nil then
-        state = { x = 0, y = 0, check = 0 }
-        _G._mountain_treasure_map_move[key] = state
-    end
-
     local x, y = me:position()
+    local stored_x, stored_y, check = string.match(me:var('mountain_treasure_move') or '', '^(%d+),(%d+),(%d)$')
 
-    if state.check == 0 then
-        state.x = x
-        state.y = y
-        state.check = 1
+    if check ~= '1' then
+        me:var('mountain_treasure_move', string.format('%d,%d,1', x, y))
         return
     end
 
-    state.check = 0
-    if x == state.x and y == state.y then
+    me:var('mountain_treasure_move', string.format('%d,%d,0', x, y))
+    if x == tonumber(stored_x) and y == tonumber(stored_y) then
         return
     end
-
-    state.x = x
-    state.y = y
 
     local r = math.random(1, 100)
     local rate = math.random(1, 100)

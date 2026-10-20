@@ -137,6 +137,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"dialog_0x30_10",               builtin::character::builtin_dialog_0x30_10},
 {"rezen_force",                  builtin::character::builtin_rezen_force},
 {"quest",                        builtin::character::builtin_quest},
+{"var",                          builtin::character::builtin_var},
 {"matchmaker",                   builtin::character::builtin_matchmaker},
 {"start_quest",                  builtin::character::builtin_start_quest},
 {"remove_quest",                 builtin::character::builtin_remove_quest},
@@ -6391,6 +6392,88 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
         co_return 1;
     };
     return builder.run();
+}
+
+int fb::game::builtin::character::builtin_var(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (lua->argc() < 2)
+        return 0;
+
+    auto key = lua->tostring(2);
+    if (key.empty())
+        return 0;
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    if (lua->argc() >= 3)
+    {
+        auto value = Json::Value{Json::nullValue};
+        switch (lua_type(L, 3))
+        {
+        case LUA_TSTRING:
+            value = Json::Value(lua->tostring(3));
+            break;
+
+        case LUA_TNUMBER:
+            value = Json::Value(lua_tonumber(L, 3));
+            break;
+
+        case LUA_TBOOLEAN:
+            value = Json::Value(lua_toboolean(L, 3) != 0);
+            break;
+
+        case LUA_TNIL:
+            break;
+
+        default:
+            return 0;
+        }
+
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            if (value.isNull())
+                ch->vars.erase(key);
+            else
+                ch->vars[key] = value;
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = std::make_shared<Json::Value>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            auto found = ch->vars.find(key);
+            if (found != ch->vars.end())
+                *value = found->second;
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (value->isString())
+                lua->pushstring(value->asString());
+            else if (value->isNumeric())
+                lua->pushnumber(value->asDouble());
+            else if (value->isBool())
+                lua->pushboolean(value->asBool());
+            else
+                lua->pushnil();
+            co_return 1;
+        };
+        return builder.run();
+    }
 }
 
 int fb::game::builtin::character::builtin_start_quest(lua_State* L)

@@ -22,6 +22,8 @@
 #include <fb/socket.h>
 #include <fb/synchronized.h>
 
+#include <json/json.h>
+
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -190,6 +192,7 @@ public:
     fb::game::marketplace                         marketplace;
     fb::game::unsettled_requests                  unsettled;
     fb::game::matchmaker                          matchmaker;
+    std::unordered_map<std::string, Json::Value>  vars;
     fb::lua::context*                             dialog = nullptr;
     achievement_map_t                             achievements;
     listener_t&                                   listener;

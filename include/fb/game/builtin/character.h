@@ -104,6 +104,7 @@ struct character
     static int builtin_dialog_0x30_10(lua_State* L);
     static int builtin_rezen_force(lua_State* L);
     static int builtin_quest(lua_State* L);
+    static int builtin_var(lua_State* L);
     static int builtin_matchmaker(lua_State* L);
     static int builtin_start_quest(lua_State* L);
     static int builtin_remove_quest(lua_State* L);

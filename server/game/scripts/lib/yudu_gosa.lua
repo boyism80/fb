@@ -1,6 +1,7 @@
 -- Yudu 칠성당 고사 (정각 감지=timer, 대사 간격=sleep).
 local festival = require('lib.festival')
 local npc_speak = require('lib.npc_speak')
+local quest = require('lib.quest')
 
 local M = {}
 
@@ -114,10 +115,11 @@ function M.try_reward(me, npc)
     end
     me:message(reward .. ' 받았습니다.', MESSAGE_TYPE.STATE)
 
-    local count_key = 'sesi.yudu_gosa_count.' .. me:name()
-    local count = (property(count_key) or 0) + 1
-    property(count_key, count)
-    me:push_achievement(ACHIEVEMENT_GOSA, string.format('백남인에게 고사음식을 %d번 받았다.', count), 7, 1)
+    local q = me:quest(quest.QUEST_YUDU_GOSA) or me:start_quest(quest.QUEST_YUDU_GOSA)
+    if q ~= nil then
+        q:inc_progress(1)
+        me:push_achievement(ACHIEVEMENT_GOSA, string.format('백남인에게 고사음식을 %d번 받았다.', q:progress()), 7, 1)
+    end
 
     local village = id2map(10932) or name2map('세시마을')
     if village ~= nil then
