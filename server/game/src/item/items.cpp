@@ -210,13 +210,13 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
             }
             else
             {
-                // A bundle whose whole stack is held for a listing keeps its slot, so the new count joins that slot.
+                // A bundle whose whole stack is held by an escrow keeps its slot, so the new count joins that slot.
                 auto index = uint8_t{0xFF};
                 if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
                 {
-                    for (auto i : this->escrow_indices())
+                    for (auto i : this->_escrow.indices())
                     {
-                        if (this->_escrows[i]->item->model() == model)
+                        if (this->_escrow.at(i)->model() == model)
                         {
                             index = i;
                             break;
@@ -226,7 +226,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
 
                 if (index != 0xFF)
                 {
-                    auto free_space = static_cast<uint16_t>(model.capacity - this->_escrows[index]->item->count());
+                    auto free_space = static_cast<uint16_t>(model.capacity - this->_escrow.at(index)->count());
                     if (free_space == 0)
                     {
                         owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
@@ -277,9 +277,8 @@ uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
     if (owner == nullptr)
         return 0xFF;
 
-    auto escrow = this->escrow(index);
-    if (escrow != nullptr &&
-        (item->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || escrow->item->model() != item->model()))
+    auto held = this->_escrow.at(index);
+    if (held != nullptr && (item->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || held->model() != item->model()))
         return 0xFF;
 
     if (super::add(item, index) == 0xFF)
@@ -830,22 +829,19 @@ void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item&
     if (row.stored == ESCROW_STORED)
     {
         auto regular = row.index >= 0 && row.index < CONTAINER_CAPACITY ? this->at(row.index) : nullptr;
-        if (row.index < 0 || row.index >= CONTAINER_CAPACITY || this->_escrows[row.index].has_value() ||
+        if (row.index < 0 || row.index >= CONTAINER_CAPACITY || this->_escrow.reserved(row.index) ||
             (regular != nullptr &&
              (regular->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || regular->model() != item->model())))
         {
-            fb::logger::fatal("{} escrow item {} cannot be restored at slot {} (listing {})",
+            fb::logger::fatal("{} escrow item {} cannot be restored at slot {} (escrow {})",
                               owner->name(),
                               item->model().id,
                               row.index,
-                              row.listing_id.value_or(0));
+                              row.escrow_id.value_or(0));
             return;
         }
 
-        this->_escrows[row.index] =
-            escrow_entry{.listing_id = row.listing_id.value_or(0), .item = item, .money = row.locked_money};
-        this->_escrow_count++;
-        this->_locked_money += row.locked_money;
+        std::ignore = this->_escrow.restore(row.escrow_id.value_or(0), static_cast<uint8_t>(row.index), item);
     }
     else if (row.stored != -1)
     {
@@ -856,10 +852,10 @@ void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item&
     }
     else if (row.parts == static_cast<int16_t>(EQUIPMENT_PARTS::UNKNOWN))
     {
-        auto escrow = row.index >= 0 && row.index < CONTAINER_CAPACITY ? this->escrow(row.index) : nullptr;
+        auto held = row.index >= 0 && row.index < CONTAINER_CAPACITY ? this->_escrow.at(row.index) : nullptr;
         if (row.index < 0 || row.index >= CONTAINER_CAPACITY ||
-            (escrow != nullptr &&
-             (item->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || escrow->item->model() != item->model())) ||
+            (held != nullptr &&
+             (item->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || held->model() != item->model())) ||
             super::add(item, row.index) == 0xFF)
         {
             fb::logger::warn("{} item {} cannot be restored at slot {}; moved to storage",
@@ -949,7 +945,7 @@ void items::sync() const
 
     for (uint8_t i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        if (this->at(i) != nullptr || this->_escrows[i].has_value())
+        if (this->at(i) != nullptr || this->_escrow.reserved(i))
             owner->listener.on_item_update(*owner, i);
     }
 
@@ -1251,10 +1247,11 @@ uint16_t items::free_space(const fb::model::item& model) const
     if (item != nullptr)
         return item->free_space();
 
-    for (auto i : this->escrow_indices())
+    for (auto i : this->_escrow.indices())
     {
-        if (this->_escrows[i]->item->model() == model)
-            return model.capacity - this->_escrows[i]->item->count();
+        auto held = this->_escrow.at(i);
+        if (held->model() == model)
+            return model.capacity - held->count();
     }
 
     return model.capacity;
@@ -1588,7 +1585,7 @@ bool items::swap(uint8_t src, uint8_t dst)
         return false;
 
     // The client sees a slot as one stack, so a held part moves with the slot.
-    std::swap(this->_escrows[src], this->_escrows[dst]);
+    this->_escrow.swap(src, dst);
 
     const auto right = this->at(src);
     if (right != nullptr || this->reserved(src))
@@ -1612,7 +1609,7 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
     if (owner == nullptr)
         return false;
 
-    auto money_cap = std::numeric_limits<uint64_t>::max() - owner->money() - this->_locked_money;
+    auto money_cap = std::numeric_limits<uint64_t>::max() - owner->money() - this->_escrow.money();
     if (money_cap < money)
         return false;
 
@@ -1630,9 +1627,9 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
     auto free_size = this->free_size();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        auto item   = this->at(i);
-        auto escrow = this->escrow(i);
-        auto shown  = item != nullptr ? item : (escrow != nullptr ? escrow->item : nullptr);
+        auto item  = this->at(i);
+        auto held  = this->_escrow.at(i);
+        auto shown = item != nullptr ? item : held;
         if (shown == nullptr)
             continue;
 
@@ -1643,8 +1640,8 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
         if (items.contains(model.id) == false)
             continue;
 
-        auto held = (item != nullptr ? item->count() : 0) + (escrow != nullptr ? escrow->item->count() : 0);
-        if (model.capacity < held + items.at(model.id))
+        auto count = (item != nullptr ? item->count() : 0) + (held != nullptr ? held->count() : 0);
+        if (model.capacity < count + items.at(model.id))
             return false;
 
         free_size++;
@@ -1743,7 +1740,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         }
     }
 
-    uint64_t money_after         = owner->money() + this->_locked_money - cost_money;
+    uint64_t money_after         = owner->money() + this->_escrow.money() - cost_money;
     uint64_t effective_money_cap = std::numeric_limits<uint64_t>::max() - money_after;
     if (effective_money_cap < reward_money)
         co_return exchange_result::lack_capacity;
@@ -2061,58 +2058,30 @@ std::shared_ptr<equipment> items::equipment(EQUIPMENT_PARTS parts) const
 
 bool items::reserved(uint8_t index) const
 {
-    if (index > CONTAINER_CAPACITY - 1)
-        return false;
-
-    return this->_escrows[index].has_value();
+    return this->_escrow.reserved(index);
 }
 
-const items::escrow_entry* items::escrow(uint8_t index) const
+const items::escrow_type& items::escrow() const
 {
-    if (index > CONTAINER_CAPACITY - 1 || this->_escrows[index].has_value() == false)
-        return nullptr;
-
-    return &this->_escrows[index].value();
-}
-
-std::vector<uint8_t> items::escrow_indices() const
-{
-    auto result = std::vector<uint8_t>();
-    if (this->_escrow_count == 0)
-        return result;
-
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        if (this->_escrows[i].has_value())
-            result.push_back(static_cast<uint8_t>(i));
-    }
-    return result;
+    return this->_escrow;
 }
 
 uint16_t items::locked_count(const fb::game::item& item) const
 {
-    if (this->_escrow_count == 0)
-        return 0;
-
-    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    for (auto i : this->_escrow.indices())
     {
-        if (this->at(i).get() != &item)
-            continue;
-
-        if (this->_escrows[i].has_value() == false)
-            return 0;
-
-        return this->_escrows[i]->item->count();
+        if (this->at(i).get() == &item)
+            return this->_escrow.at(i)->count();
     }
     return 0;
 }
 
-uint64_t items::locked_money() const
+void items::load(const fb::protocol::internal::Escrow& row)
 {
-    return this->_locked_money;
+    this->_escrow.restore(row.id, row.money);
 }
 
-bool items::lock(uint8_t index, uint16_t count, uint64_t money, uint64_t listing_id)
+bool items::hold(uint64_t escrow_id, uint64_t money, const std::vector<escrow_part>& parts)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -2120,53 +2089,42 @@ bool items::lock(uint8_t index, uint16_t count, uint64_t money, uint64_t listing
 
     owner->assert_thread();
 
-    if (index > CONTAINER_CAPACITY - 1 || this->_escrows[index].has_value())
+    if (this->_escrow.contains(escrow_id) || owner->money() < money)
         return false;
 
-    auto item = this->at(index);
-    if (item == nullptr || count == 0 || item->count() - item->trade_count() < count)
-        return false;
+    auto claimed = std::array<bool, CONTAINER_CAPACITY>{};
+    for (const auto& part : parts)
+    {
+        if (part.index > CONTAINER_CAPACITY - 1 || claimed[part.index] || this->_escrow.reserved(part.index))
+            return false;
 
-    if (owner->money() < money)
-        return false;
+        auto item = this->at(part.index);
+        if (item == nullptr || part.count == 0 || item->count() - item->trade_count() < part.count)
+            return false;
 
-    auto locked = item->split(count);
-    if (locked == item)
-        std::ignore = inventory<fb::game::item>::remove(index);
-    locked->container(this);
+        claimed[part.index] = true;
+    }
 
-    this->_escrows[index] = escrow_entry{.listing_id = listing_id, .item = locked, .money = money};
-    this->_escrow_count++;
+    // Every part was checked above, so splitting cannot leave the hold half done.
+    auto held = std::vector<escrow_type::part>{};
+    held.reserve(parts.size());
+    for (const auto& part : parts)
+    {
+        auto item  = this->at(part.index);
+        auto split = item->split(part.count);
+        if (split == item)
+            std::ignore = inventory<fb::game::item>::remove(part.index);
+        split->container(this);
+        held.push_back(escrow_type::part{part.index, split});
+    }
+    std::ignore = this->_escrow.hold(escrow_id, money, held);
 
-    // The display shows usable and locked money together, so the lock is counted before the usable money drops.
-    this->_locked_money += money;
+    // The display shows usable and held money together, so the hold is counted before the usable money drops.
     owner->money_reduce(money);
     return true;
 }
 
-bool items::lock(uint8_t index, std::shared_ptr<item> item, uint64_t money, uint64_t listing_id)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return false;
-
-    if (index > CONTAINER_CAPACITY - 1 || this->_escrows[index].has_value())
-        return false;
-
-    auto regular = this->at(index);
-    if (regular != nullptr &&
-        (regular->model().attr(ITEM_ATTRIBUTE::BUNDLE) == false || regular->model() != item->model()))
-        return false;
-
-    item->container(this);
-    this->_escrows[index] = escrow_entry{.listing_id = listing_id, .item = item, .money = money};
-    this->_escrow_count++;
-    this->_locked_money += money;
-    owner->listener.on_item_update(*owner, index);
-    return true;
-}
-
-void items::unlock(uint64_t listing_id)
+void items::release(uint64_t escrow_id)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -2174,35 +2132,29 @@ void items::unlock(uint64_t listing_id)
 
     owner->assert_thread();
 
-    auto indices = this->escrow_indices();
-    auto found   = std::find_if(indices.begin(), indices.end(), [this, listing_id](auto i) {
-        return this->_escrows[i]->listing_id == listing_id;
-    });
-    if (found == indices.end())
+    auto held = this->_escrow.remove(escrow_id);
+    if (held.has_value() == false)
         return;
 
-    auto index = *found;
-    auto entry = std::move(this->_escrows[index].value());
-    this->_escrows[index].reset();
-    this->_escrow_count--;
-
-    auto regular = this->at(index);
-    if (regular == nullptr)
+    for (const auto& part : held->parts)
     {
-        std::ignore = inventory<fb::game::item>::add(entry.item, index);
-    }
-    else
-    {
-        regular->count(regular->count() + entry.item->count());
-        entry.item->container(nullptr);
+        auto regular = this->at(part.index);
+        if (regular == nullptr)
+        {
+            std::ignore = inventory<fb::game::item>::add(part.value, part.index);
+        }
+        else
+        {
+            regular->count(regular->count() + part.value->count());
+            part.value->container(nullptr);
+        }
     }
 
-    this->_locked_money -= entry.money;
-    if (entry.money > 0)
-        std::ignore = owner->money_add(entry.money);
+    if (held->money > 0)
+        std::ignore = owner->money_add(held->money);
 }
 
-void items::deduct(uint64_t listing_id)
+void items::take(uint64_t escrow_id)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -2210,25 +2162,19 @@ void items::deduct(uint64_t listing_id)
 
     owner->assert_thread();
 
-    auto indices = this->escrow_indices();
-    auto found   = std::find_if(indices.begin(), indices.end(), [this, listing_id](auto i) {
-        return this->_escrows[i]->listing_id == listing_id;
-    });
-    if (found == indices.end())
+    auto held = this->_escrow.remove(escrow_id);
+    if (held.has_value() == false)
         return;
 
-    auto index = *found;
-    auto entry = std::move(this->_escrows[index].value());
-    this->_escrows[index].reset();
-    this->_escrow_count--;
-    entry.item->container(nullptr);
+    for (const auto& part : held->parts)
+    {
+        part.value->container(nullptr);
+        if (this->at(part.index) == nullptr)
+            owner->listener.on_item_remove(*owner, part.index, ITEM_DELETE_TYPE::REMOVED);
+        else
+            owner->listener.on_item_update(*owner, part.index);
+    }
 
-    if (this->at(index) == nullptr)
-        owner->listener.on_item_remove(*owner, index, ITEM_DELETE_TYPE::REMOVED);
-    else
-        owner->listener.on_item_update(*owner, index);
-
-    this->_locked_money -= entry.money;
-    if (entry.money > 0)
+    if (held->money > 0)
         owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }

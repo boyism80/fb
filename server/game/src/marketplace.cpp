@@ -77,8 +77,11 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     if (this->_owner.money() < listing_fee)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY_FOR_LISTING_FEE));
 
-    auto id = this->_owner.unsettled.add(UNSETTLED_TYPE::MARKET_LIST, 0);
-    if (this->_owner.items.lock(slot, count, listing_fee, id) == false)
+    auto id    = this->_owner.unsettled.add(UNSETTLED_TYPE::MARKET_LIST, 0);
+    auto parts = std::vector<fb::game::items::escrow_part>{
+        {slot, count}
+    };
+    if (this->_owner.items.hold(id, listing_fee, parts) == false)
     {
         this->_owner.unsettled.erase(id);
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR), "lock"));
@@ -157,7 +160,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     else if (error_code != fb::model::enum_value::ERROR_CODE::NONE)
     {
         this->_owner.unsettled.erase(id);
-        this->_owner.items.unlock(id);
+        this->_owner.items.release(id);
 
         auto log_data            = Json::Value();
         log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -170,7 +173,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     else
     {
         this->_owner.unsettled.erase(id);
-        this->_owner.items.deduct(id);
+        this->_owner.items.take(id);
 
         auto log_data_success            = Json::Value();
         log_data_success["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -518,13 +521,9 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
     auto world    = this->_owner.world();
     auto item     = mp::Item{this->_owner.id, 0, 0, std::nullopt, std::nullopt, std::nullopt};
     auto escrowed = false;
-    for (auto i : this->_owner.items.escrow_indices())
+    for (const auto& part : this->_owner.items.escrow().parts(listing_id))
     {
-        auto escrow = this->_owner.items.escrow(i);
-        if (escrow->listing_id != listing_id)
-            continue;
-
-        auto& source      = *escrow->item;
+        auto& source      = *part.value;
         auto  custom_name = std::optional<std::string>{};
         if (source.model().attr(ITEM_ATTRIBUTE::WEAPON))
             custom_name = static_cast<fb::game::weapon&>(source).custom_name();
@@ -590,9 +589,9 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
     if (escrowed)
     {
         if (created.value())
-            this->_owner.items.deduct(listing_id);
+            this->_owner.items.take(listing_id);
         else
-            this->_owner.items.unlock(listing_id);
+            this->_owner.items.release(listing_id);
     }
     else if (created.value() == false)
     {

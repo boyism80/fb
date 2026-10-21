@@ -58,7 +58,7 @@ void update_internal<V>::serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.exp()));
         writer.write<uint32_t>(fb::game::encode_client_amount(
-            this->ch.money() + this->ch.items.locked_money() -
+            this->ch.money() + this->ch.items.escrow().money() -
             std::min(this->ch.money(), this->ch.trade != nullptr ? this->ch.trade->money(this->ch) : 0)));
     }
 
@@ -126,7 +126,7 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
     {
         writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.exp()));
         writer.write<uint32_t>(fb::game::encode_client_amount(
-            this->ch.money() + this->ch.items.locked_money() -
+            this->ch.money() + this->ch.items.escrow().money() -
             std::min(this->ch.money(), this->ch.trade != nullptr ? this->ch.trade->money(this->ch) : 0)));
         writer.write<uint8_t>(this->unknown_exp_pad);
     }

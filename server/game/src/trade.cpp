@@ -310,14 +310,14 @@ void trade::assert_exchange(size_t i) const
     auto bundle_remains = std::unordered_map<uint32_t, uint32_t>{};
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        auto item   = owner->items.at(static_cast<uint8_t>(i));
-        auto escrow = owner->items.escrow(static_cast<uint8_t>(i));
-        auto shown  = item != nullptr ? item : (escrow != nullptr ? escrow->item : nullptr);
+        auto item  = owner->items.at(static_cast<uint8_t>(i));
+        auto held  = owner->items.escrow().at(static_cast<uint8_t>(i));
+        auto shown = item != nullptr ? item : held;
         if (shown == nullptr)
             continue;
 
         auto remains = static_cast<uint32_t>(item != nullptr ? item->count() - item->trade_count() : 0) +
-                       static_cast<uint32_t>(escrow != nullptr ? escrow->item->count() : 0);
+                       static_cast<uint32_t>(held != nullptr ? held->count() : 0);
         if (remains == 0)
         {
             free_slots++;

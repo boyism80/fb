@@ -109,6 +109,9 @@ struct CollectionUnlockBuilder;
 struct UnsettledRequest;
 struct UnsettledRequestBuilder;
 
+struct Escrow;
+struct EscrowBuilder;
+
 struct SystemMail;
 struct SystemMailBuilder;
 
@@ -2030,9 +2033,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_DURABILITY = 16,
     VT_CUSTOM_NAME = 18,
     VT_EXPIRE_TIME = 20,
-    VT_LISTING_ID = 22,
-    VT_LOCKED_MONEY = 24,
-    VT_UID = 26
+    VT_ESCROW_ID = 22,
+    VT_UID = 24
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
@@ -2061,11 +2063,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *expire_time() const {
     return GetPointer<const ::flatbuffers::String *>(VT_EXPIRE_TIME);
   }
-  const nullable::nullable_ulong *listing_id() const {
-    return GetPointer<const nullable::nullable_ulong *>(VT_LISTING_ID);
-  }
-  uint64_t locked_money() const {
-    return GetField<uint64_t>(VT_LOCKED_MONEY, 0);
+  const nullable::nullable_ulong *escrow_id() const {
+    return GetPointer<const nullable::nullable_ulong *>(VT_ESCROW_ID);
   }
   const nullable::nullable_ulong *uid() const {
     return GetPointer<const nullable::nullable_ulong *>(VT_UID);
@@ -2084,9 +2083,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(custom_name()) &&
            VerifyOffset(verifier, VT_EXPIRE_TIME) &&
            verifier.VerifyString(expire_time()) &&
-           VerifyOffset(verifier, VT_LISTING_ID) &&
-           verifier.VerifyTable(listing_id()) &&
-           VerifyField<uint64_t>(verifier, VT_LOCKED_MONEY, 8) &&
+           VerifyOffset(verifier, VT_ESCROW_ID) &&
+           verifier.VerifyTable(escrow_id()) &&
            VerifyOffset(verifier, VT_UID) &&
            verifier.VerifyTable(uid()) &&
            verifier.EndTable();
@@ -2124,11 +2122,8 @@ struct ItemBuilder {
   void add_expire_time(::flatbuffers::Offset<::flatbuffers::String> expire_time) {
     fbb_.AddOffset(Item::VT_EXPIRE_TIME, expire_time);
   }
-  void add_listing_id(::flatbuffers::Offset<nullable::nullable_ulong> listing_id) {
-    fbb_.AddOffset(Item::VT_LISTING_ID, listing_id);
-  }
-  void add_locked_money(uint64_t locked_money) {
-    fbb_.AddElement<uint64_t>(Item::VT_LOCKED_MONEY, locked_money, 0);
+  void add_escrow_id(::flatbuffers::Offset<nullable::nullable_ulong> escrow_id) {
+    fbb_.AddOffset(Item::VT_ESCROW_ID, escrow_id);
   }
   void add_uid(::flatbuffers::Offset<nullable::nullable_ulong> uid) {
     fbb_.AddOffset(Item::VT_UID, uid);
@@ -2155,13 +2150,11 @@ inline ::flatbuffers::Offset<Item> CreateItem(
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
     ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> expire_time = 0,
-    ::flatbuffers::Offset<nullable::nullable_ulong> listing_id = 0,
-    uint64_t locked_money = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> escrow_id = 0,
     ::flatbuffers::Offset<nullable::nullable_ulong> uid = 0) {
   ItemBuilder builder_(_fbb);
-  builder_.add_locked_money(locked_money);
   builder_.add_uid(uid);
-  builder_.add_listing_id(listing_id);
+  builder_.add_escrow_id(escrow_id);
   builder_.add_expire_time(expire_time);
   builder_.add_custom_name(custom_name);
   builder_.add_durability(durability);
@@ -2185,8 +2178,7 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
     const char *custom_name = nullptr,
     const char *expire_time = nullptr,
-    ::flatbuffers::Offset<nullable::nullable_ulong> listing_id = 0,
-    uint64_t locked_money = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> escrow_id = 0,
     ::flatbuffers::Offset<nullable::nullable_ulong> uid = 0) {
   auto custom_name__ = custom_name ? _fbb.CreateString(custom_name) : 0;
   auto expire_time__ = expire_time ? _fbb.CreateString(expire_time) : 0;
@@ -2201,8 +2193,7 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
       durability,
       custom_name__,
       expire_time__,
-      listing_id,
-      locked_money,
+      escrow_id,
       uid);
 }
 
@@ -4031,6 +4022,67 @@ inline ::flatbuffers::Offset<UnsettledRequest> CreateUnsettledRequestDirect(
       detail__);
 }
 
+struct Escrow FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef EscrowBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_USER = 4,
+    VT_ID = 6,
+    VT_MONEY = 8
+  };
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  uint64_t id() const {
+    return GetField<uint64_t>(VT_ID, 0);
+  }
+  uint64_t money() const {
+    return GetField<uint64_t>(VT_MONEY, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<uint64_t>(verifier, VT_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct EscrowBuilder {
+  typedef Escrow Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(Escrow::VT_USER, user, 0);
+  }
+  void add_id(uint64_t id) {
+    fbb_.AddElement<uint64_t>(Escrow::VT_ID, id, 0);
+  }
+  void add_money(uint64_t money) {
+    fbb_.AddElement<uint64_t>(Escrow::VT_MONEY, money, 0);
+  }
+  explicit EscrowBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Escrow> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Escrow>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Escrow> CreateEscrow(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t user = 0,
+    uint64_t id = 0,
+    uint64_t money = 0) {
+  EscrowBuilder builder_(_fbb);
+  builder_.add_money(money);
+  builder_.add_id(id);
+  builder_.add_user(user);
+  return builder_.Finish();
+}
+
 struct SystemMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SystemMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -4514,7 +4566,8 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_QUESTS = 16,
     VT_COLLECTION_UNLOCKS = 18,
     VT_SNAPSHOT_TIME = 20,
-    VT_UNSETTLED_REQUESTS = 22
+    VT_UNSETTLED_REQUESTS = 22,
+    VT_ESCROWS = 24
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -4546,6 +4599,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *>(VT_UNSETTLED_REQUESTS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *>(VT_ESCROWS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -4574,6 +4630,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_UNSETTLED_REQUESTS) &&
            verifier.VerifyVector(unsettled_requests()) &&
            verifier.VerifyVectorOfTables(unsettled_requests()) &&
+           VerifyOffset(verifier, VT_ESCROWS) &&
+           verifier.VerifyVector(escrows()) &&
+           verifier.VerifyVectorOfTables(escrows()) &&
            verifier.EndTable();
   }
 };
@@ -4612,6 +4671,9 @@ struct SavePayloadBuilder {
   void add_unsettled_requests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests) {
     fbb_.AddOffset(SavePayload::VT_UNSETTLED_REQUESTS, unsettled_requests);
   }
+  void add_escrows(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows) {
+    fbb_.AddOffset(SavePayload::VT_ESCROWS, escrows);
+  }
   explicit SavePayloadBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4634,9 +4696,11 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
     int64_t snapshot_time = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows = 0) {
   SavePayloadBuilder builder_(_fbb);
   builder_.add_snapshot_time(snapshot_time);
+  builder_.add_escrows(escrows);
   builder_.add_unsettled_requests(unsettled_requests);
   builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_quests(quests);
@@ -4660,7 +4724,8 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
     int64_t snapshot_time = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -4668,6 +4733,7 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
   auto unsettled_requests__ = unsettled_requests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>(*unsettled_requests) : 0;
+  auto escrows__ = escrows ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>(*escrows) : 0;
   return fb::protocol::internal::raw::CreateSavePayload(
       _fbb,
       character,
@@ -4679,7 +4745,8 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
       quests__,
       collection_unlocks__,
       snapshot_time,
-      unsettled_requests__);
+      unsettled_requests__,
+      escrows__);
 }
 
 struct OptionChange FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -11833,7 +11900,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MAIL = 28,
     VT_SYSTEM_MAIL_IDS = 30,
     VT_COLLECTION_UNLOCKS = 32,
-    VT_UNSETTLED_REQUESTS = 34
+    VT_UNSETTLED_REQUESTS = 34,
+    VT_ESCROWS = 36
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -11883,6 +11951,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *>(VT_UNSETTLED_REQUESTS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *>(VT_ESCROWS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -11925,6 +11996,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_UNSETTLED_REQUESTS) &&
            verifier.VerifyVector(unsettled_requests()) &&
            verifier.VerifyVectorOfTables(unsettled_requests()) &&
+           VerifyOffset(verifier, VT_ESCROWS) &&
+           verifier.VerifyVector(escrows()) &&
+           verifier.VerifyVectorOfTables(escrows()) &&
            verifier.EndTable();
   }
 };
@@ -11981,6 +12055,9 @@ struct InitBuilder {
   void add_unsettled_requests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests) {
     fbb_.AddOffset(Init::VT_UNSETTLED_REQUESTS, unsettled_requests);
   }
+  void add_escrows(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows) {
+    fbb_.AddOffset(Init::VT_ESCROWS, escrows);
+  }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -12009,8 +12086,10 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     uint32_t mail = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> system_mail_ids = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows = 0) {
   InitBuilder builder_(_fbb);
+  builder_.add_escrows(escrows);
   builder_.add_unsettled_requests(unsettled_requests);
   builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_system_mail_ids(system_mail_ids);
@@ -12047,7 +12126,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     uint32_t mail = 0,
     const std::vector<uint32_t> *system_mail_ids = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -12058,6 +12138,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
   auto system_mail_ids__ = system_mail_ids ? _fbb.CreateVector<uint32_t>(*system_mail_ids) : 0;
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
   auto unsettled_requests__ = unsettled_requests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>(*unsettled_requests) : 0;
+  auto escrows__ = escrows ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>(*escrows) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -12075,7 +12156,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       mail,
       system_mail_ids__,
       collection_unlocks__,
-      unsettled_requests__);
+      unsettled_requests__,
+      escrows__);
 }
 
 struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

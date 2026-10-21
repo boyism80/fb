@@ -52,6 +52,9 @@ namespace Http.Mapping
             CreateMap<Http.Model.UnsettledRequest, Protocol.UnsettledRequest>()
                 .ReverseMap();
 
+            CreateMap<Http.Model.Escrow, Protocol.Escrow>()
+                .ReverseMap();
+
             CreateMap<Http.Model.Spell, Protocol.Spell>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
                 .ForMember(x => x.Next, x => x.MapFrom(u => u.Next.ToString("yyyy-MM-dd HH:mm:ss")))

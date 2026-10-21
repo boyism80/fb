@@ -464,6 +464,7 @@ namespace Internal.Controllers
             var collectionUnlocks = await _dbContext.CollectionUnlock.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
             var unsettledRequests = (await _dbContext.UnsettledRequest.Get(world, uid)).ToList();
+            var escrows = await _dbContext.Escrow.Get(world, uid);
             var friends = await _friendService.GetEntries(world, uid);
             var activeSystemMailIds = (await _dbContext.SystemMail.GetActive(world)).Select(x => x.Id).ToHashSet();
             var option = await _dbContext.Option.Get(world, uid) ??
@@ -515,6 +516,7 @@ namespace Internal.Controllers
                     .Select(_mapper.Map<Protocol.StorageBox>)
                     .ToList(),
                 UnsettledRequests = unsettledRequests.Select(_mapper.Map<Protocol.UnsettledRequest>).ToList(),
+                Escrows = escrows.Select(_mapper.Map<Protocol.Escrow>).ToList(),
                 Friends = friends,
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
@@ -701,10 +703,11 @@ namespace Internal.Controllers
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
             var collectionUnlocksTask = _dbContext.CollectionUnlock.GetMany(world, characterIds);
             var unsettledTask = _dbContext.UnsettledRequest.GetMany(world, characterIds);
+            var escrowTask = _dbContext.Escrow.GetMany(world, characterIds);
             var marriageCreatedTask = _dbContext.Marriage.GetCreatedDates(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                collectionUnlocksTask, unsettledTask, marriageCreatedTask);
+                collectionUnlocksTask, unsettledTask, escrowTask, marriageCreatedTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -713,6 +716,7 @@ namespace Internal.Controllers
             var questsByOwner = await questsTask;
             var collectionUnlocksByOwner = await collectionUnlocksTask;
             var unsettledByOwner = await unsettledTask;
+            var escrowsByOwner = await escrowTask;
             var marriageCreated = await marriageCreatedTask;
 
             foreach (var data in payloads)
@@ -730,7 +734,8 @@ namespace Internal.Controllers
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
                     collectionUnlocksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<CollectionUnlock>(),
-                    unsettledByOwner.GetValueOrDefault(characterId) ?? Array.Empty<UnsettledRequest>());
+                    unsettledByOwner.GetValueOrDefault(characterId) ?? Array.Empty<UnsettledRequest>(),
+                    escrowsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Escrow>());
             }
         }
 
@@ -744,7 +749,8 @@ namespace Internal.Controllers
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
             IReadOnlyList<CollectionUnlock> existingCollectionUnlocks,
-            IReadOnlyList<UnsettledRequest> existingUnsettledRequests)
+            IReadOnlyList<UnsettledRequest> existingUnsettledRequests,
+            IReadOnlyList<Escrow> existingEscrows)
         {
             var characterId = data.Character.Id;
 
@@ -809,6 +815,14 @@ namespace Internal.Controllers
                 existingUnsettledRequests,
                 removed => _dbContext.UnsettledRequest.Delete(world, removed),
                 alive => _dbContext.UnsettledRequest.Set(world, alive));
+
+            var escrows = _mapper.Map<Protocol.Escrow[], Escrow[]>(
+                data.Escrows?.ToArray() ?? Array.Empty<Protocol.Escrow>());
+            ReplaceHashEntities(
+                escrows,
+                existingEscrows,
+                removed => _dbContext.Escrow.Delete(world, removed),
+                alive => _dbContext.Escrow.Set(world, alive));
         }
 
         [HttpPost("option")]

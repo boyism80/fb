@@ -299,14 +299,19 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
         items.push_back(protocol);
     }
 
-    for (auto i : ch.items.escrow_indices())
+    auto& escrow  = ch.items.escrow();
+    auto  escrows = std::vector<internal::Escrow>();
+    for (const auto& [id, money] : escrow.entries())
     {
-        auto escrow           = ch.items.escrow(i);
-        auto protocol         = escrow->item->to_protocol();
-        protocol.index        = i;
-        protocol.stored       = ESCROW_STORED;
-        protocol.listing_id   = escrow->listing_id;
-        protocol.locked_money = escrow->money;
+        escrows.push_back(internal::Escrow{ch.id, id, money});
+    }
+
+    for (auto i : escrow.indices())
+    {
+        auto protocol      = escrow.at(i)->to_protocol();
+        protocol.index     = i;
+        protocol.stored    = ESCROW_STORED;
+        protocol.escrow_id = escrow.id(i);
         items.push_back(protocol);
     }
 
@@ -366,7 +371,8 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  quests,
                                  collection_unlocks,
                                  snapshot_time,
-                                 ch.unsettled.to_protocol());
+                                 ch.unsettled.to_protocol(),
+                                 escrows);
 }
 
 async::task<void> fb::game::server::save(fb::thread& thread)

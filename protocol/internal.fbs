@@ -104,8 +104,7 @@ table Item {
     durability: uint?;
     custom_name: string?;
     expire_time: string?;
-    listing_id: ulong?;
-    locked_money: ulong;
+    escrow_id: ulong?;
     uid: ulong?;
 }
 
@@ -282,6 +281,12 @@ table UnsettledRequest {
     detail: string;
 }
 
+table Escrow {
+    user: uint;
+    id: ulong;
+    money: ulong;
+}
+
 table SystemMail {
     id: uint;
     sender: uint;
@@ -333,6 +338,7 @@ table SavePayload {
     collection_unlocks: [CollectionUnlock];
     snapshot_time: long;
     unsettled_requests: [UnsettledRequest];
+    escrows: [Escrow];
 }
 
 table OptionChange {

@@ -532,7 +532,7 @@ int builtin::character::builtin_money_free_space(lua_State* L)
     auto builder    = lua->new_co_builder();
     builder.weak    = weak;
     builder.yield   = [=]() -> async::task<void> {
-        auto held   = ch->money() + ch->items.locked_money();
+        auto held   = ch->money() + ch->items.escrow().money();
         *free_space = held < 0xFFFFFFFF ? 0xFFFFFFFF - held : 0;
         co_return;
     };

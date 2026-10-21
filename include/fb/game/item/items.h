@@ -1,6 +1,7 @@
 #ifndef __ITEM_ITEMS_H__
 #define __ITEM_ITEMS_H__
 
+#include <fb/game/escrow.h>
 #include <fb/game/inventory.h>
 #include <fb/game/item/armor.h>
 #include <fb/game/item/auxiliary.h>
@@ -23,7 +24,7 @@
 
 namespace fb::game {
 
-// `stored` of a saved item row held for a marketplace listing; -1 is the inventory and 0.. is the storage.
+// `stored` of a saved item row held by an escrow; -1 is the inventory and 0.. is the storage.
 static constexpr int16_t ESCROW_STORED = -2;
 
 enum class exchange_result
@@ -36,13 +37,13 @@ enum class exchange_result
 class items : public fb::game::inventory<fb::game::item>
 {
 public:
-    // Items and money held for a marketplace listing until its result is known.
-    // The slot stays taken and the client sees the slot and money as if nothing was held.
-    struct escrow_entry
+    // Held slots stay taken and the client sees them, and held money, as if nothing was held.
+    using escrow_type = fb::game::escrow<fb::game::item, CONTAINER_CAPACITY>;
+
+    struct escrow_part
     {
-        uint64_t                        listing_id = 0;
-        std::shared_ptr<fb::game::item> item;
-        uint64_t                        money = 0;
+        uint8_t  index = 0;
+        uint16_t count = 0;
     };
 
 private:
@@ -61,18 +62,16 @@ private:
     using equipment_map_t = std::map<EQUIPMENT_PARTS, equipment_ptr>;
 
 private:
-    std::weak_ptr<fb::game::character>                          _owner;
-    weapon_ptr                                                  _weapon         = nullptr;
-    armor_ptr                                                   _armor          = nullptr;
-    helmet_ptr                                                  _helmet         = nullptr;
-    shield_ptr                                                  _shield         = nullptr;
-    ring_ptr                                                    _rings[2]       = {nullptr, nullptr};
-    auxiliary_ptr                                               _auxiliaries[2] = {nullptr, nullptr};
-    std::vector<item_ptr>                                       _stored;
-    uint64_t                                                    _deposited = 0;
-    std::array<std::optional<escrow_entry>, CONTAINER_CAPACITY> _escrows;
-    uint8_t                                                     _escrow_count = 0;
-    uint64_t                                                    _locked_money = 0;
+    std::weak_ptr<fb::game::character> _owner;
+    weapon_ptr                         _weapon         = nullptr;
+    armor_ptr                          _armor          = nullptr;
+    helmet_ptr                         _helmet         = nullptr;
+    shield_ptr                         _shield         = nullptr;
+    ring_ptr                           _rings[2]       = {nullptr, nullptr};
+    auxiliary_ptr                      _auxiliaries[2] = {nullptr, nullptr};
+    std::vector<item_ptr>              _stored;
+    uint64_t                           _deposited = 0;
+    escrow_type                        _escrow;
 
 public:
     // clang-format off
@@ -108,6 +107,7 @@ public:
     bool                                            update(uint8_t index) const;
     equipment_ptr                                   wear(EQUIPMENT_PARTS parts, equipment_ptr item);
     void                                            load(item_ptr item, const fb::protocol::internal::Item& row);
+    void                                            load(const fb::protocol::internal::Escrow& row);
     void                                            sync() const;
 
 private:
@@ -149,14 +149,11 @@ public:
     [[nodiscard]] async::task<exchange_result>      exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint64_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint64_t reward_money, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::GIVE);
     [[nodiscard]] async::task<bool>                 combine(const std::vector<uint8_t>& indices);
     bool                                            reserved(uint8_t index) const override;
-    const escrow_entry*                             escrow(uint8_t index) const;
-    std::vector<uint8_t>                            escrow_indices() const;
+    const escrow_type&                              escrow() const;
     uint16_t                                        locked_count(const fb::game::item& item) const;
-    uint64_t                                        locked_money() const;
-    bool                                            lock(uint8_t index, uint16_t count, uint64_t money, uint64_t listing_id);
-    bool                                            lock(uint8_t index, item_ptr item, uint64_t money, uint64_t listing_id);
-    void                                            unlock(uint64_t listing_id);
-    void                                            deduct(uint64_t listing_id);
+    bool                                            hold(uint64_t escrow_id, uint64_t money, const std::vector<escrow_part>& parts);
+    void                                            release(uint64_t escrow_id);
+    void                                            take(uint64_t escrow_id);
     // clang-format on
 };
 

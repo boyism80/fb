@@ -21,17 +21,17 @@ item_update<V>::item_update(uint8_t index, uint16_t look, uint8_t color, std::st
 template <CLIENT_VERSION V>
 item_update<V> item_update<V>::from_inventory(const fb::game::character& me, uint8_t index)
 {
-    // A slot shows its usable part and the part held for a listing as one stack.
-    auto item   = me.items.at(index);
-    auto escrow = me.items.escrow(index);
-    if (item == nullptr && escrow == nullptr)
+    // A slot shows its usable part and the part held by an escrow as one stack.
+    auto item = me.items.at(index);
+    auto held = me.items.escrow().at(index);
+    if (item == nullptr && held == nullptr)
         return item_update<V>(index, 0, 0, std::string{}, 0, false);
 
-    auto shown = item != nullptr ? item : escrow->item;
+    auto shown = item != nullptr ? item : held;
     auto count = static_cast<uint32_t>(item != nullptr ? item->count() - item->trade_count() : 0) +
-                 static_cast<uint32_t>(escrow != nullptr ? escrow->item->count() : 0);
+                 static_cast<uint32_t>(held != nullptr ? held->count() : 0);
     auto name = shown->inven_name();
-    if (item != nullptr && escrow != nullptr && count > 1)
+    if (item != nullptr && held != nullptr && count > 1)
         name = std::format("{} {}개", shown->model().name, count);
 
     return item_update<V>(index, shown->look(), shown->color(), name, count, true);
@@ -83,16 +83,16 @@ item_update<CLIENT_VERSION::v651>::item_update(uint8_t     index,
 item_update<CLIENT_VERSION::v651> item_update<CLIENT_VERSION::v651>::from_inventory(const fb::game::character& me,
                                                                                     uint8_t                    index)
 {
-    auto item   = me.items.at(index);
-    auto escrow = me.items.escrow(index);
-    if (item == nullptr && escrow == nullptr)
+    auto item = me.items.at(index);
+    auto held = me.items.escrow().at(index);
+    if (item == nullptr && held == nullptr)
         return item_update<CLIENT_VERSION::v651>(index, 0, 0, std::string{}, 0, false);
 
-    auto shown = item != nullptr ? item : escrow->item;
+    auto shown = item != nullptr ? item : held;
     auto count = static_cast<uint32_t>(item != nullptr ? item->count() - item->trade_count() : 0) +
-                 static_cast<uint32_t>(escrow != nullptr ? escrow->item->count() : 0);
+                 static_cast<uint32_t>(held != nullptr ? held->count() : 0);
     auto name = shown->inven_name();
-    if (item != nullptr && escrow != nullptr && count > 1)
+    if (item != nullptr && held != nullptr && count > 1)
         name = std::format("{} {}개", shown->model().name, count);
 
     return item_update<CLIENT_VERSION::v651>(index, shown->look(), shown->color(), name, count, true);
