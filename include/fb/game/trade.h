@@ -38,7 +38,6 @@ private:
         bool                                 locked   = false;
     };
 
-    // A user-facing reason the exchange cannot run, raised for the side that causes it.
     class exchange_error : public std::runtime_error
     {
     public:

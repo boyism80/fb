@@ -74,7 +74,6 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
         if (ptr == nullptr)
             co_return true;
 
-        // Apply only what internal stored, so game memory never drifts from the saved option.
         if (resp.success)
         {
             ptr->option(option, next);

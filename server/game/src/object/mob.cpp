@@ -659,7 +659,6 @@ async::task<void> mob::drop_items()
     auto& position = this->position();
     co_await this->drop_held_items(oids);
 
-    // A summon and an owned mob carry no model drops; what they were given still comes back.
     auto owner = this->owner.lock();
     if (this->_spawn_type != spawn_type::SUMMONED && owner == nullptr)
         co_await this->drop_model_items(model, position, oids);

@@ -143,7 +143,6 @@ test_suite {
             blocker:map_move(MAP_NAME, ASIDE_X, ASIDE_Y)
             ctx:sleep(300)
 
-            -- map:doors() returns every door once, even a door that spans several tiles.
             if run_step(opener, "verify_doors_unique", "doors_unique") == false then
                 return fail(opener, "map:doors() returned the same door more than once")
             end
