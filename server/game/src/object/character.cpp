@@ -2939,34 +2939,47 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
             auto  params     = fb::model::dsl::item(item.params);
             auto  item_table = table::item;
             auto& model      = item_table[params.id];
-            auto  item       = model.make(this->server, params.count);
-            if (params.durability.has_value())
+            auto  capacity   = std::max<uint32_t>(model.capacity, 1);
+            auto  remaining  = std::max<uint32_t>(params.count, 1);
+            auto  uid        = params.uid;
+            // The item constructor clamps the count to capacity, so a larger reward is made in pieces.
+            while (remaining > 0)
             {
-                if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
+                auto piece  = std::min(remaining, capacity);
+                remaining  -= piece;
+
+                auto item = model.make(this->server, piece);
+                if (params.durability.has_value())
                 {
-                    auto equipment = std::static_pointer_cast<fb::game::equipment>(item);
-                    equipment->durability(*params.durability);
+                    if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
+                    {
+                        auto equipment = std::static_pointer_cast<fb::game::equipment>(item);
+                        equipment->durability(*params.durability);
+                    }
+
+                    if (model.attr(ITEM_ATTRIBUTE::CONSUME))
+                    {
+                        auto consume = std::static_pointer_cast<fb::game::consume>(item);
+                        consume->durability(*params.durability);
+                    }
                 }
 
-                if (model.attr(ITEM_ATTRIBUTE::CONSUME))
+                if (params.custom_name.has_value() && params.custom_name->empty() == false &&
+                    *params.custom_name != "null" && model.attr(ITEM_ATTRIBUTE::WEAPON))
                 {
-                    auto consume = std::static_pointer_cast<fb::game::consume>(item);
-                    consume->durability(*params.durability);
+                    auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
+                    weapon->custom_name(*params.custom_name);
                 }
-            }
 
-            if (params.custom_name.has_value() && params.custom_name->empty() == false &&
-                *params.custom_name != "null" && model.attr(ITEM_ATTRIBUTE::WEAPON))
-            {
-                auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
-                weapon->custom_name(*params.custom_name);
+                if (uid.has_value())
+                {
+                    item->uid(uid.value());
+                    uid.reset();
+                }
+                std::ignore = co_await this->items.add(item);
+                if (item->empty() == false && this->items.index(item) == 0xFF)
+                    std::ignore = co_await item->map(this->map(), this->position());
             }
-
-            if (params.uid.has_value())
-                item->uid(params.uid.value());
-            std::ignore = co_await this->items.add(item);
-            if (item->empty() == false && this->items.index(item) == 0xFF)
-                std::ignore = co_await item->map(this->map(), this->position());
             break;
         }
         case fb::model::enum_value::DSL::money:

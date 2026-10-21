@@ -945,6 +945,21 @@ return {
         end
     end,
 
+    -- test.reward.split pays 3 가시철단도, one per slot. test.reward.over pays 250 도토리, more than one stack holds.
+    reward_split = function(me, step)
+        local split = me:reward('test.reward.split')
+        local over = me:reward('test.reward.over')
+        local counts = {}
+        for _, name in ipairs({ '가시철단도', '도토리' }) do
+            counts[name] = 0
+            for _, item in pairs(me:items(name) or {}) do
+                counts[name] = counts[name] + item:count()
+            end
+        end
+        local paid = split == true and counts['가시철단도'] == 3 and over ~= true and counts['도토리'] == 0
+        report(me, paid, step, string.format('split=%s over=%s 가시철단도=%d 도토리=%d', tostring(split), tostring(over), counts['가시철단도'], counts['도토리']))
+    end,
+
     madong_prepare = function(me, step)
         me:promotion(3)
         me:remove_quest(require('lib.quest').QUEST_MADONG_APPLY)

@@ -1619,9 +1619,17 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
         auto  item_table = table::item;
         auto& model      = item_table[id];
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+        {
             required_size += count;
+        }
         else
+        {
+            // A bundle never takes a second slot, so more than one stack cannot be received at all.
+            if (count > model.capacity)
+                return false;
+
             required_size++;
+        }
     }
 
     auto free_size = this->free_size();
@@ -1776,9 +1784,14 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
                 existing = static_cast<uint32_t>(model.capacity - space);
         }
 
-        // Without a stack to merge into, the bundle needs a free slot.
+        // Without a stack to merge into, the bundle needs a free slot and must fit in one stack.
         if (existing.has_value() == false)
+        {
+            if (model.capacity < count)
+                co_return exchange_result::lack_capacity;
+
             continue;
+        }
 
         if (model.capacity < existing.value() + count)
             co_return exchange_result::lack_capacity;
