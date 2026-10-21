@@ -48,6 +48,16 @@ async::task<bool> whisper<V>::handle(fb::socket<character>& session, game_reqs::
 
     if (error.has_value())
     {
+        // The failure may surface on another thread, so return to the sender before messaging.
+        try
+        {
+            co_await this->server.threads.switching(weak);
+        }
+        catch (std::exception&)
+        {
+            co_return true;
+        }
+
         auto ptr = weak.lock();
         if (ptr != nullptr)
             ptr->message(error.value(), MESSAGE_TYPE::NOTIFY);

@@ -2141,29 +2141,30 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
 
     character::container::assert_whisper(resp.error, resp.to);
 
-    // A receiver on this host is skipped by the AMQP whisper handler (same host id), so send it here
+    // A receiver on this host is skipped by the AMQP whisper handler (same host id), so send it here.
+    // The delivery runs on the receiver's thread on its own, so the sender never leaves its thread.
     auto receiver = this->server.characters.find(resp.to);
     if (receiver != nullptr)
     {
         auto receiver_weak = receiver->weak_from_this_as<character>();
-        auto before        = this->server.threads.current();
-        co_await this->server.threads.switching(receiver_weak);
+        auto builder       = this->server.threads.new_builder(receiver_weak);
+        builder.func =
+            [receiver_weak, from = resp.from, to = resp.to, text = resp.message](auto&) -> async::task<void> {
+            auto receiver = receiver_weak.lock();
+            if (receiver == nullptr)
+                co_return;
 
-        receiver = receiver_weak.lock();
-        if (receiver != nullptr)
-        {
-            receiver->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
+            receiver->message(std::format("{}> {}", from, text), MESSAGE_TYPE::NOTIFY);
 
             auto recv_log             = Json::Value();
-            recv_log["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
+            recv_log["sender_name"]   = UTF8(from, PLATFORM::WINDOWS);
             recv_log["receiver_id"]   = static_cast<Json::Int64>(receiver->id);
-            recv_log["receiver_name"] = UTF8(resp.to, PLATFORM::WINDOWS);
-            recv_log["message"]       = UTF8(resp.message, PLATFORM::WINDOWS);
-            this->server.log.write("whisper", recv_log);
-        }
-
-        if (before != nullptr)
-            co_await before->switching();
+            recv_log["receiver_name"] = UTF8(to, PLATFORM::WINDOWS);
+            recv_log["message"]       = UTF8(text, PLATFORM::WINDOWS);
+            receiver->server.log.write("whisper", recv_log);
+            co_return;
+        };
+        builder.enqueue();
     }
 
     this->message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
