@@ -9,6 +9,7 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
+#include <utility>
 
 namespace fb::protocol::internal::response {
 class UpdatedCastle;
@@ -30,6 +31,7 @@ public:
     {
         ENDED,
         NOT_ACTIVE,
+        SAVE_FAILED,
     };
 
 private:
@@ -38,6 +40,8 @@ private:
     std::optional<uint32_t>               _owner_clan_id;
     bool                                  _siege_active = false;
     std::chrono::steady_clock::time_point _siege_end_at{};
+    bool                                  _siege_ending = false;
+    std::optional<uint32_t>               _siege_winner;
 
 public:
     // clang-format off
@@ -57,6 +61,10 @@ public:
     std::optional<uint32_t>             siege_remaining_seconds() const;
     void                                start_siege(uint32_t duration_seconds);
     void                                clear_siege();
+    bool                                siege_ending() const;
+    void                                siege_ending(bool value);
+    const std::optional<uint32_t>&      siege_winner() const;
+    void                                siege_winner(const std::optional<uint32_t>& value);
     // clang-format on
 };
 
@@ -76,7 +84,7 @@ public:
     async::task<void> load_all();
     async::task<void> on_updated(const fb::protocol::internal::response::UpdatedCastle& resp);
     async::task<void> start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, uint32_t duration_seconds);
-    async::task<castle::siege_end_result> end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, const std::optional<uint32_t>& winner_clan_id);
+    async::task<std::pair<castle::siege_end_result, std::optional<uint32_t>>> end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, const std::optional<uint32_t>& winner_clan_id);
     // clang-format on
 };
 

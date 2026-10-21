@@ -5,6 +5,7 @@ local TIMER_PATH = 'scripts/schedule/siege.lua'
 local THRONE_X, THRONE_Y = 20, 8
 local MIN_DURATION_SEC = 1800
 local MAX_DURATION_SEC = 3600
+local SAVE_RETRY_MS = 10000
 
 local CASTLES = {
     [DIVINE_BEAST.VERMILION_BIRD] = { heart_map = 2000, name = '주작', timer = 'siege_end_vermilion', end_func = 'on_siege_end_vermilion' },
@@ -87,20 +88,26 @@ local function end_siege(divine_beast)
     local winner_clan = occupant and clan_as_master(occupant) or nil
 
     map:cancel_timer(info.timer)
-    if castle:end_siege(winner_clan and winner_clan:id() or nil) == 'not_active' then
+    local result, winner_id = castle:end_siege(winner_clan and winner_clan:id() or nil)
+    if result == 'not_active' then
         return false, string.format('%s의성 공성전이 진행 중이 아닙니다.', info.name)
-    end
+    elseif result == 'save_failed' then
+        map:set_timer(SAVE_RETRY_MS, TIMER_PATH, info.end_func, { once = true, name = info.timer })
+        return false, string.format('%s의성 새 성주를 저장하지 못해 잠시 뒤 다시 종료합니다.', info.name)
+    else
+        if winner_id ~= nil and winner_id ~= previous_owner_id then
+            local winner = id2clan(winner_id)
+            local winner_name = winner and winner:name() or ''
+            broadcast(string.format('[정보] %s 문파가 %s의성을 탈환합니다.', winner_name, info.name), MESSAGE_TYPE.WORLD)
+        elseif previous_owner_id ~= nil then
+            local owner_clan = id2clan(previous_owner_id)
+            local owner_name = owner_clan and owner_clan:name() or ''
+            broadcast(string.format('[정보] %s의성이 수성측 %s문파에게 돌아갑니다.', info.name, owner_name), MESSAGE_TYPE.WORLD)
+        end
 
-    if winner_clan ~= nil and winner_clan:id() ~= previous_owner_id then
-        broadcast(string.format('[정보] %s 문파가 %s의성을 탈환합니다.', winner_clan:name(), info.name), MESSAGE_TYPE.WORLD)
-    elseif previous_owner_id ~= nil then
-        local owner_clan = id2clan(previous_owner_id)
-        local owner_name = owner_clan and owner_clan:name() or ''
-        broadcast(string.format('[정보] %s의성이 수성측 %s문파에게 돌아갑니다.', info.name, owner_name), MESSAGE_TYPE.WORLD)
+        castle_lib.evict_castle_maps(info.name)
+        return true, info.name
     end
-
-    castle_lib.evict_castle_maps(info.name)
-    return true, info.name
 end
 
 local function end_active_sieges()

@@ -2,7 +2,6 @@
 
 #include <fb/game/castle.h>
 #include <fb/game/server.h>
-#include <fb/logger.h>
 #include <macro.h>
 
 #include <cstdint>
@@ -10,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 using namespace fb::game;
 
@@ -133,25 +133,33 @@ int builtin::castle::builtin_end_siege(lua_State* L)
         winner_clan_id = static_cast<uint32_t>(lua->tointeger(2));
 
     auto divine_beast = castle->divine_beast();
-    auto ended        = std::make_shared<bool>(true);
+    auto result       = std::make_shared<std::pair<fb::game::castle::siege_end_result, std::optional<uint32_t>>>();
     auto builder      = lua->new_co_builder();
     builder.yield     = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        try
-        {
-            *ended = co_await server.castles.end_siege(divine_beast, winner_clan_id) ==
-                     fb::game::castle::siege_end_result::ENDED;
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::warn("castle: end_siege failed for divine_beast {} ({})",
-                             static_cast<int>(divine_beast),
-                             e.what());
-        }
+        *result      = co_await server.castles.end_siege(divine_beast, winner_clan_id);
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushstring(*ended ? "ended" : "not_active");
-        co_return 1;
+        switch (result->first)
+        {
+        case fb::game::castle::siege_end_result::ENDED:
+            lua->pushstring("ended");
+            break;
+
+        case fb::game::castle::siege_end_result::SAVE_FAILED:
+            lua->pushstring("save_failed");
+            break;
+
+        default:
+            lua->pushstring("not_active");
+            break;
+        }
+
+        if (result->second.has_value())
+            lua->pushinteger(result->second.value());
+        else
+            lua->pushnil();
+        co_return 2;
     };
     return builder.run();
 }

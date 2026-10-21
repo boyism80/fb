@@ -10,6 +10,8 @@ local MESSAGE_WAIT_MS = 15000
 
 local MSG_PREPARED   = "공성준비 완료"
 local MSG_STARTED    = "공성전을 시작했습니다"
+local MSG_ENDED      = "공성전 종료: " .. BEAST
+local MSG_NOT_ENDED  = "진행 중인 공성전이 없습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
 
 local function fail(message)
@@ -34,6 +36,7 @@ test_suite {
 
     on_scenario_finished = function(ctx)
         local bot = ctx:bot(0)
+        bot:chat("/HTTP장애 /castle/owner off")
         bot:chat("/HTTP지연 internal 0")
     end,
 
@@ -57,6 +60,40 @@ test_suite {
 
             if command(a, "/공성시작 " .. BEAST, MSG_STARTED) == false then
                 return fail("could not start the siege")
+            end
+            if run_step(a, "move_to_map", "siege_a_throne", tostring(HEART_MAP), tostring(THRONE_X), tostring(THRONE_Y)) == false then
+                return fail("could not move A to the throne")
+            end
+
+            a:chat("/HTTP장애 /castle/owner on")
+            ctx:sleep(300)
+            a:take_messages()
+            if command(a, "/공성종료", MSG_NOT_ENDED) == false then
+                return fail("the siege ended although the owner was not saved")
+            end
+            for _, text in ipairs(a:take_messages()) do
+                if text:find(MSG_RECAPTURED, 1, true) ~= nil then
+                    return fail("a recapture was announced although the owner was not saved")
+                end
+            end
+            if run_step(a, "verify_siege", "siege_kept", BEAST, "true", "not_mine") == false then
+                return fail("the siege did not stay active after the failed save")
+            end
+
+            a:chat("/HTTP장애 /castle/owner off")
+            ctx:sleep(300)
+            if command(a, "/공성종료", MSG_ENDED) == false then
+                return fail("the retried end did not finish the siege")
+            end
+            if run_step(a, "verify_siege", "siege_owned_a", BEAST, "false", "mine") == false then
+                return fail("A's clan does not own the castle after the retried end")
+            end
+
+            if command(a, "/공성시작 " .. BEAST, MSG_STARTED) == false then
+                return fail("could not restart the siege")
+            end
+            if run_step(a, "move_to_map", "siege_a_aside", tostring(HEART_MAP), tostring(THRONE_X + 2), tostring(THRONE_Y + 2)) == false then
+                return fail("could not move A off the throne")
             end
             if run_step(b, "move_to_map", "siege_b_throne", tostring(HEART_MAP), tostring(THRONE_X), tostring(THRONE_Y)) == false then
                 return fail("could not move B to the throne")

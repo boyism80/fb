@@ -22,7 +22,9 @@ castle::castle(castle&& r) :
     _divine_beast(r._divine_beast),
     _owner_clan_id(r._owner_clan_id),
     _siege_active(r._siege_active),
-    _siege_end_at(r._siege_end_at)
+    _siege_end_at(r._siege_end_at),
+    _siege_ending(r._siege_ending),
+    _siege_winner(r._siege_winner)
 { }
 
 uint32_t castle::id() const
@@ -67,10 +69,34 @@ void castle::start_siege(uint32_t duration_seconds)
 {
     this->_siege_active = true;
     this->_siege_end_at = std::chrono::steady_clock::now() + std::chrono::seconds(duration_seconds);
+    this->_siege_ending = false;
+    this->_siege_winner = std::nullopt;
 }
 
 void castle::clear_siege()
 {
     this->_siege_active = false;
     this->_siege_end_at = std::chrono::steady_clock::time_point{};
+    this->_siege_ending = false;
+    this->_siege_winner = std::nullopt;
+}
+
+bool castle::siege_ending() const
+{
+    return this->_siege_ending;
+}
+
+void castle::siege_ending(bool value)
+{
+    this->_siege_ending = value;
+}
+
+const std::optional<uint32_t>& castle::siege_winner() const
+{
+    return this->_siege_winner;
+}
+
+void castle::siege_winner(const std::optional<uint32_t>& value)
+{
+    this->_siege_winner = value;
 }
