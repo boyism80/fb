@@ -846,49 +846,58 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
         throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_NO_EVALUATION));
 
     auto target = this->server.characters.find(target_name);
-    if (target == nullptr || target->hidden(*this))
+    if (target == nullptr)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name));
 
     if (target->id == this->id)
         throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_SELF));
 
-    auto now       = this->server.now();
-    auto target_id = target->id;
-    auto previous  = std::optional<fb::model::datetime>();
-    auto found     = this->_evaluation.targets.find(target_id);
+    auto now         = this->server.now();
+    auto target_id   = target->id;
+    auto role        = this->role();
+    auto previous    = std::optional<fb::model::datetime>();
+    auto on_cooldown = false;
+    auto found       = this->_evaluation.targets.find(target_id);
     if (found != this->_evaluation.targets.end())
     {
-        if (now - found->second < fb::model::const_value::reputation::EVALUATION_COOLDOWN)
-            throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_ALREADY_EVALUATED));
-
-        previous = found->second;
+        on_cooldown = now - found->second < fb::model::const_value::reputation::EVALUATION_COOLDOWN;
+        previous    = found->second;
     }
 
     // Spend the ticket before leaving this thread so a second request cannot reuse it.
-    this->_evaluation.score--;
-    this->_evaluation.targets.insert_or_assign(target_id, now);
+    if (on_cooldown == false)
+    {
+        this->_evaluation.score--;
+        this->_evaluation.targets.insert_or_assign(target_id, now);
+    }
 
     auto self_weak   = this->weak_from_this_as<character>();
     auto target_weak = target->weak_from_this_as<character>();
-    target_name      = target->name();
     target           = nullptr;
 
+    // The target is read only on its own thread, and a hidden target answers like a logged out one even on cooldown.
+    auto visible           = false;
     auto target_reputation = std::optional<int16_t>();
     try
     {
         co_await this->server.threads.switching(target_weak);
         target = target_weak.lock();
-        if (target != nullptr && target->inited())
+        if (target != nullptr && target->inited() && (target->super_hide() == false || target->hidden(role) == false))
         {
-            auto value          = std::clamp<int32_t>(target->_reputation + (raise ? 1 : -1),
-                                             std::numeric_limits<int16_t>::min(),
-                                             std::numeric_limits<int16_t>::max());
-            target->_reputation = static_cast<int16_t>(value);
-            target_reputation   = target->_reputation;
-            target->message(raise ? _TEXT(MESSAGE_REPUTATION_RAISED_BY_OTHER)
-                                  : _TEXT(MESSAGE_REPUTATION_LOWERED_BY_OTHER),
-                            MESSAGE_TYPE::STATE);
-            target->update(UPDATE_STATE_LEVEL::BASED);
+            visible     = true;
+            target_name = target->name();
+            if (on_cooldown == false)
+            {
+                auto value          = std::clamp<int32_t>(target->_reputation + (raise ? 1 : -1),
+                                                 std::numeric_limits<int16_t>::min(),
+                                                 std::numeric_limits<int16_t>::max());
+                target->_reputation = static_cast<int16_t>(value);
+                target_reputation   = target->_reputation;
+                target->message(raise ? _TEXT(MESSAGE_REPUTATION_RAISED_BY_OTHER)
+                                      : _TEXT(MESSAGE_REPUTATION_LOWERED_BY_OTHER),
+                                MESSAGE_TYPE::STATE);
+                target->update(UPDATE_STATE_LEVEL::BASED);
+            }
         }
     }
     catch (std::exception&)
@@ -918,14 +927,21 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
     }
     else
     {
-        self->_evaluation.score = std::min(static_cast<uint16_t>(self->_evaluation.score + 1),
-                                           fb::model::const_value::reputation::MAX_EVALUATION);
-        if (previous.has_value())
-            self->_evaluation.targets.insert_or_assign(target_id, previous.value());
+        if (on_cooldown == false)
+        {
+            self->_evaluation.score = std::min(static_cast<uint16_t>(self->_evaluation.score + 1),
+                                               fb::model::const_value::reputation::MAX_EVALUATION);
+            if (previous.has_value())
+                self->_evaluation.targets.insert_or_assign(target_id, previous.value());
+            else
+                self->_evaluation.targets.erase(target_id);
+            self->update(UPDATE_STATE_LEVEL::BASED);
+        }
+
+        if (visible)
+            throw std::runtime_error(_TEXT(MESSAGE_REPUTATION_ALREADY_EVALUATED));
         else
-            self->_evaluation.targets.erase(target_id);
-        self->update(UPDATE_STATE_LEVEL::BASED);
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name));
     }
 }
 
