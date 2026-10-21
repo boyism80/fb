@@ -1,6 +1,7 @@
 local resp        = require("integration.response")
 local protocol    = require("integration.protocol")
 local script_step = require("integration.lib.script_step")
+local quest_dialog = require("integration.lib.quest_dialog")
 
 local BEAST      = "백호"
 local HEART_MAP  = 2041
@@ -13,6 +14,13 @@ local MSG_STARTED    = "공성전을 시작했습니다"
 local MSG_ENDED      = "공성전 종료: " .. BEAST
 local MSG_NOT_ENDED  = "진행 중인 공성전이 없습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
+
+local GATE_NPC      = "백호성문지기"
+local GATE_OPTION   = BEAST .. "성 입장"
+local ENTRY_MONEY   = 300000
+local MSG_FEE_ASK   = "입장료를 내고서라도"
+local MSG_FEE_PAY   = "입장료 20만전"
+local MSG_CHANGED   = "성의 상황이 바뀌었습니다."
 
 local function fail(message)
     log("fatal", "Siege test: " .. message)
@@ -123,5 +131,46 @@ test_suite {
             return true
         end,
 
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+
+            if run_step(a, "map_active", "gate_heart_map", tostring(HEART_MAP)) == false then
+                log("debug", "Siege gate test skipped: the heart map does not run on this host")
+                return true
+            end
+            if run_step(b, "verify_siege", "gate_owned_b", BEAST, "false", "mine") == false then
+                return fail("B's clan does not own the castle before the gate check")
+            end
+
+            a:money(ENTRY_MONEY)
+            ctx:sleep(300)
+            if quest_dialog.open_pursuit(a, GATE_NPC, GATE_OPTION, quest_dialog.contains(MSG_FEE_ASK)) == nil then
+                return fail("the gate keeper did not offer the paid entry")
+            end
+            local ask = a:request_dialog(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"), quest_dialog.contains(MSG_FEE_PAY))
+            if ask == nil or ask == false then
+                return fail("the gate keeper did not ask for the entrance fee")
+            end
+
+            if command(b, "/공성시작 " .. BEAST, MSG_STARTED) == false then
+                return fail("could not start the siege during the gate dialog")
+            end
+
+            local packet = a:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, "입장합니다."), quest_dialog.contains(MSG_CHANGED))
+            quest_dialog.remove_npc(a)
+            if packet == nil then
+                return fail("the gate keeper let A in although the siege started")
+            end
+            ctx:sleep(500)
+            if a:money() ~= ENTRY_MONEY then
+                return fail(string.format("A paid the entrance fee: money=%d expected=%d", a:money(), ENTRY_MONEY))
+            end
+
+            if command(b, "/공성종료", MSG_ENDED) == false then
+                return fail("could not end the siege after the gate check")
+            end
+            return true
+        end,
     },
 }

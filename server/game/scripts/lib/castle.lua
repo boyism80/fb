@@ -269,6 +269,11 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
             if button == DIALOG_RESULT.QUIT then
                 return true
             end
+            -- The dialog waits for the player, so the siege or the owner may have changed meanwhile.
+            if castle_obj:siege_active() or castle_obj:owner_clan() ~= owner_clan_id or clan:is_allied(owner_clan_id) == false then
+                me:dialog(npc_obj, '성의 상황이 바뀌었습니다. 다시 말을 걸어 주세요.')
+                return true
+            end
             me:map(map_eye, math.random(12, 16), math.random(22, 25))
         else
             local button = me:dialog(npc_obj, '성을 점령중인 문파나 그 동맹문파만 입장이 가능합니다.\n\n만약 입장료를 내고서라도 입장하시겠다면, 입장을 시켜드릴 수 있습니다.', { prev = false, next = true })
@@ -289,6 +294,11 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
             local map_inner = name2map(castle_name)
             if map_inner == nil then
                 me:dialog(npc_obj, '입장할 수 있는 맵이 없습니다.')
+                return true
+            end
+
+            if castle_obj:siege_active() or castle_obj:owner_clan() ~= owner_clan_id then
+                me:dialog(npc_obj, '성의 상황이 바뀌었습니다. 다시 말을 걸어 주세요.')
                 return true
             end
 
