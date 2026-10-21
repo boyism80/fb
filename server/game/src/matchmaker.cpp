@@ -278,6 +278,8 @@ async::task<void> matchmaker::confirm(uint64_t match_id)
     auto world        = this->owner.world();
     auto character_id = this->owner.id;
     auto weak         = this->owner.weak_from_this_as<character>();
+    // A MatchReady published before the response clears the ticket, so the type is read first.
+    auto match_type = this->_ticket.has_value() ? this->_ticket->match_type : 0;
 
     auto error = std::optional<std::string>{};
     try
@@ -304,8 +306,7 @@ async::task<void> matchmaker::confirm(uint64_t match_id)
     if (ptr == nullptr)
         co_return;
 
-    auto match_type = this->_ticket.has_value() ? this->_ticket->match_type : 0;
-    auto lua        = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
+    auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
     if (lua)
     {
         lua->pushobject(ptr);
@@ -322,6 +323,12 @@ async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
     auto world        = this->owner.world();
     auto character_id = this->owner.id;
     auto weak         = this->owner.weak_from_this_as<character>();
+
+    // A MatchDissolved published before the response must already find the ticket gone, or it notifies again.
+    auto ticket     = this->_ticket;
+    auto match_type = ticket.has_value() ? ticket->match_type : 0;
+    auto pending    = this->clear_pending_match_id_if(match_id);
+    this->clear_ticket();
 
     auto error = std::optional<std::string>{};
     try
@@ -344,15 +351,19 @@ async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
     if (error.has_value())
     {
         if (by == initiator::USER)
+        {
+            // The user may retry, so the ticket comes back unless another one arrived meanwhile.
+            if (ticket.has_value() && this->_ticket.has_value() == false)
+                this->set_ticket(ticket->match_type, ticket->ticket_id);
+            if (pending && this->_pending_match_id.has_value() == false)
+                this->set_pending_match_id(match_id);
             throw std::runtime_error(error.value());
+        }
         else
+        {
             fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, error.value());
+        }
     }
-
-    // Teammates learn about the dropped ticket from the MatchDissolved message.
-    auto match_type = this->_ticket.has_value() ? this->_ticket->match_type : 0;
-    this->clear_pending_match_id_if(match_id);
-    this->clear_ticket();
 
     if (by == initiator::SERVER)
         co_return;

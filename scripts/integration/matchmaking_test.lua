@@ -35,6 +35,9 @@ local MSG_PROPOSAL_DIALOG = "매치를 찾았습니다"
 local MSG_GROUP_JOINED = "님 그룹에 참여"
 local MSG_GROUP_QUEUED_MINE = "매치메이킹 대기 중에는 그룹원을 받을 수 없습니다."
 local MSG_GROUP_QUEUED_TARGET = "님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다."
+local MSG_DECLINED = "매치를 거절했습니다. (유형: 1)"
+local MATCHMAKING_SERVICE = "matchmaking"
+local DECLINE_DELAY_MS = 1500
 
 local function progress(bot, message)
     local level = "debug"
@@ -547,6 +550,100 @@ test_suite {
             end
 
             lib.group.cleanup(ctx)
+            return true
+        end,
+
+        { parallel = {
+            [4] = { function(ctx)
+                if aborted then
+                    return false
+                end
+                local bot = ctx:bot(4)
+                progress(bot, "STEP 8-1: REGISTER MATCH 1 TO DECLINE")
+                if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
+                    return abort_remaining(bot, "FAILED: MATCH 1 REGISTER/PROPOSAL E (DECLINE)")
+                end
+                return true
+            end },
+            [5] = { function(ctx)
+                if aborted then
+                    return false
+                end
+                local bot = ctx:bot(5)
+                local e = ctx:bot(4)
+                progress(bot, "STEP 8-1: WAIT FOR E TO REGISTER, THEN REGISTER MATCH 1")
+                e:take_messages()
+                local e_registered = false
+                lib.wait.state(e, resp.message, function()
+                    for _, text in ipairs(e:take_messages()) do
+                        if text:find(MSG_REGISTER_START, 1, true) ~= nil then
+                            e_registered = true
+                        end
+                    end
+                    return e_registered
+                end, SETTLE_MS)
+                if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
+                    return abort_remaining(bot, "FAILED: MATCH 1 REGISTER/PROPOSAL F (DECLINE)")
+                end
+                return true
+            end },
+        } },
+
+        function(ctx)
+            if aborted then
+                return false
+            end
+
+            local e = ctx:bot(4)
+            local f = ctx:bot(5)
+
+            -- The service publishes MatchDissolved before answering, so a slow answer lets it arrive first.
+            progress(e, "STEP 8-2: E DECLINES WHILE THE DECLINE RESPONSE IS DELAYED")
+            e:chat(string.format("/HTTP지연 %s %d", MATCHMAKING_SERVICE, DECLINE_DELAY_MS))
+            ctx:sleep(300)
+            e:take_messages()
+            local declined = e:request(
+                resp.message,
+                protocol.dialog("LIST", 0, "", 2, 0, "", "NEXT"),
+                function(p)
+                    return is_state_text(p, "매치를 거절했습니다.")
+                end,
+                MESSAGE_WAIT_MS
+            )
+            e:chat(string.format("/HTTP지연 %s 0", MATCHMAKING_SERVICE))
+            if declined == nil or declined == false then
+                return abort_remaining(e, "FAILED: NO DECLINE MESSAGE")
+            end
+            if declined.text:find(MSG_DECLINED, 1, true) == nil then
+                return abort_remaining(e, "FAILED: DECLINE MESSAGE LOST THE MATCH TYPE: " .. declined.text)
+            end
+            for _, text in ipairs(e:take_messages()) do
+                if text:find(MSG_MATCH_CANCELLED, 1, true) ~= nil then
+                    return abort_remaining(e, "FAILED: THE DECLINER ALSO GOT A MATCH-CANCELLED MESSAGE")
+                end
+            end
+
+            -- F goes back to the queue; answer its proposal list and leave the queue for the next step.
+            progress(f, "STEP 8-3: F LEAVES THE QUEUE")
+            f:send(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+            ctx:sleep(500)
+            if f:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+                return abort_remaining(f, "FAILED: F1 MENU DID NOT OPEN (DEQUEUE)")
+            end
+            if f:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+                return abort_remaining(f, "FAILED: MATCHMAKING MENU DID NOT OPEN (DEQUEUE)")
+            end
+            local left = f:request(
+                resp.message,
+                protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
+                function(p)
+                    return is_state_text(p, MSG_REGISTER_CANCEL)
+                end,
+                MESSAGE_WAIT_MS
+            )
+            if left == nil or left == false then
+                return abort_remaining(f, "FAILED: F DID NOT LEAVE THE QUEUE")
+            end
             return true
         end,
 
