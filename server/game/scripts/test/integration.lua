@@ -851,6 +851,48 @@ return {
         end
     end,
 
+    -- Each map:doors() entry must be its own door: toggling one entry flips exactly one entry.
+    -- Checks the first few doors that can toggle and restores each one.
+    verify_doors_unique = function(me, step)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+
+        local doors = map:doors()
+        local checked = 0
+        for i, door in ipairs(doors) do
+            if checked >= 5 then
+                break
+            end
+
+            local before = {}
+            for j, other in ipairs(doors) do
+                before[j] = other:opened()
+            end
+
+            if door:toggle() ~= nil then
+                local flipped = 0
+                for j, other in ipairs(doors) do
+                    if other:opened() ~= before[j] then
+                        flipped = flipped + 1
+                    end
+                end
+                door:toggle()
+                checked = checked + 1
+
+                if flipped ~= 1 then
+                    return report(me, false, step, string.format('door %d flipped %d entries', i, flipped))
+                end
+            end
+        end
+
+        if checked == 0 then
+            return report(me, false, step, 'no door toggled')
+        end
+        report(me, true, step, string.format('doors=%d checked=%d', #doors, checked))
+    end,
+
     -- cost, reward: comma-separated 'name=count' pairs, 'money=n' for money, '-' for nothing.
     -- expected: an exchange_result name, e.g. 'OK' or 'LACK_CAPACITY'.
     exchange_items = function(me, step, cost, reward, expected)

@@ -4,6 +4,7 @@
 #include <fb/game/mob.h>
 #include <fb/game/server.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -379,9 +380,11 @@ int builtin::map::builtin_doors(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
+        // The container holds one entry per door tile, so a wide door appears several times.
         for (const auto& entry : map->doors)
         {
-            doors->push_back(&entry.second);
+            if (std::find(doors->begin(), doors->end(), &entry.second) == doors->end())
+                doors->push_back(&entry.second);
         }
         co_return;
     };
