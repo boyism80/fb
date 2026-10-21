@@ -628,15 +628,19 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
     }
 }
 
-async::task<void> mob::drop_items()
+async::task<void> mob::drop_held_items(std::vector<uint32_t>& oids)
 {
-    this->assert_thread();
-    if (this->_spawn_type == spawn_type::SUMMONED)
+    auto map = this->map();
+    if (map == nullptr)
+    {
+        if (this->_items.empty() == false)
+            fb::logger::warn("mob {} lost {} held items: no map to drop them on",
+                             this->model().id,
+                             this->_items.size());
+        this->_items.clear();
         co_return;
+    }
 
-    auto& model    = this->model();
-    auto  oids     = std::vector<uint32_t>{};
-    auto  map      = this->map();
     auto& position = this->position();
     for (auto& item : this->_items)
     {
@@ -644,9 +648,20 @@ async::task<void> mob::drop_items()
         oids.push_back(item->oid());
     }
     this->_items.clear();
+}
 
+async::task<void> mob::drop_items()
+{
+    this->assert_thread();
+
+    auto  oids     = std::vector<uint32_t>{};
+    auto& model    = this->model();
+    auto& position = this->position();
+    co_await this->drop_held_items(oids);
+
+    // A summon and an owned mob carry no model drops; what they were given still comes back.
     auto owner = this->owner.lock();
-    if (owner == nullptr)
+    if (this->_spawn_type != spawn_type::SUMMONED && owner == nullptr)
         co_await this->drop_model_items(model, position, oids);
 
     if (!oids.empty() && this->map() != nullptr)
@@ -664,6 +679,15 @@ async::task<void> mob::destroy(DESTROY_TYPE destroy_type)
     }
 
     this->_destroying = true;
+
+    // Death settlement drops these first; every other way out (despawn, script destroy, a summon's end) lands here.
+    if (this->_items.empty() == false)
+    {
+        auto oids = std::vector<uint32_t>{};
+        co_await this->drop_held_items(oids);
+        if (!oids.empty() && this->map() != nullptr)
+            this->map()->bulk_update(oids);
+    }
 
     if (this->_parts.empty() == false)
     {

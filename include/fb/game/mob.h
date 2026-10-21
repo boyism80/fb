@@ -138,6 +138,7 @@ private:
     void                            unlink_part(mob& part);
     void                            on_part_hp_increased(uint64_t delta);
     [[nodiscard]] async::task<void> drop_model_items(const fb::model::mob& model, const fb::model::point16_t& position, std::vector<uint32_t>& oids);
+    [[nodiscard]] async::task<void> drop_held_items(std::vector<uint32_t>& oids);
     // clang-format on
 
 public:

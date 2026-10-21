@@ -903,6 +903,16 @@ return {
         end
     end,
 
+    -- Removes a mob the way a despawn or a script does, without killing it.
+    destroy_mob = function(me, step, oid)
+        local mob = find_mob(me, oid)
+        if mob == nil then
+            return report(me, false, step, 'mob not found')
+        end
+        mob:destroy()
+        report(me, true, step)
+    end,
+
     -- slot: 1-based inventory slot. Drops the whole stack even while trading, unlike the client drop.
     drop_slot = function(me, step, slot)
         local dropped = me:dropitem(tonumber(slot), false)

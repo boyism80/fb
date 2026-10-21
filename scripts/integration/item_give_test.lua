@@ -279,5 +279,73 @@ test_suite {
             progress(bot1, "SCENARIO 5 PASSED")
             return true
         end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            progress(bot1, "SCENARIO 6 START (give to mob, mob removed without dying)")
+
+            bot1:direction("BOTTOM")
+            local loot_slot = bot1:learn_spell("노획")
+            if loot_slot == 0xFF then
+                progress(bot1, "FAILED: learn 노획")
+                return false
+            end
+            bot1:create_item("목도", 1)
+            bot1:money(1000)
+            bot1:set_max_hp_mp(1000, 1000)
+
+            local pos = bot1:position()
+            progress(bot1, "SPAWN 다람쥐")
+            local mob = bot1:spawn_monster("다람쥐", pos[1], pos[2] + 1)
+            if mob.oid == 0 then
+                progress(bot1, "FAILED: spawn 다람쥐")
+                return false
+            end
+
+            progress(bot1, "GIVE 목도 TO MOB")
+            bot1:request(
+                resp.item_remove,
+                protocol.give_item(0, false),
+                function(p)
+                    return p.index == 0
+                end)
+
+            progress(bot1, "GIVE MONEY 500 TO MOB")
+            bot1:request(resp.update_internal, protocol.give_money(500), function(packet)
+                return packet.ch_money == 500
+            end)
+            if bot1:money() ~= 500 then
+                progress(bot1, "FAILED: money after give to mob")
+                return false
+            end
+
+            -- A despawn or a script destroy removes the mob without the death settlement.
+            progress(bot1, "DESTROY MOB BY SCRIPT")
+            if lib.script_step.run_script(bot1, "test/integration", "destroy_mob", "give_destroy_mob", tostring(mob.oid)) ~= true then
+                progress(bot1, "FAILED: script destroy of the mob")
+                return false
+            end
+
+            progress(bot1, "CAST 노획 (recover what the mob held)")
+            bot1:mp(1000)
+            bot1:request(resp.update_internal, protocol.spell_cast("NORMAL", loot_slot, "", mob.oid, mob.position), function(packet)
+                return packet.ch_money == 1000
+            end)
+            if bot1:money() ~= 1000 then
+                progress(bot1, "FAILED: money the destroyed mob held was not dropped")
+                return false
+            end
+
+            lib.wait.state(bot1, resp.item_update, function()
+                return bot1:has_item_by_name("목도")
+            end)
+            if bot1:has_item_by_name("목도") == false then
+                progress(bot1, "FAILED: 목도 the destroyed mob held was not dropped")
+                return false
+            end
+
+            progress(bot1, "SCENARIO 6 PASSED")
+            return true
+        end,
     },
 }
