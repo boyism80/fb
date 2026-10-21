@@ -138,30 +138,33 @@ void fb::model::recipe_node::add(const fb::model::recipe& recipe)
 fb::generator<fb::model::recipe_node::recipe_ref_type>
 fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source, int i)
 {
-    if (source.size() <= i)
-        co_return;
-
-    auto& item = source[i];
-    for (auto raw : *this)
+    // Ingredients follow the selection in id order, so a selected item between two of them is an extra and is skipped.
+    for (auto raw_id : *this)
     {
-        auto  node = static_cast<recipe_node*>(raw);
-        auto& data = node->data;
-        if (data.id != item.id)
+        auto id_node = static_cast<recipe_node*>(raw_id);
+        auto found   = std::find_if(source.begin() + i, source.end(), [id_node](const auto& item) {
+            return item.id == id_node->data.id;
+        });
+        if (found == source.end())
             continue;
 
-        if (data.count <= item.count)
+        auto next = static_cast<int>(found - source.begin()) + 1;
+        for (auto raw_count : *id_node)
         {
-            for (auto& x : node->_recipes)
+            auto count_node = static_cast<recipe_node*>(raw_count);
+            if (count_node->data.count > found->count)
+                continue;
+
+            for (auto& x : count_node->_recipes)
             {
                 co_yield x;
             }
-        }
 
-        auto gen = (data.count == 0) ? node->find(source, i) : node->find(source, i + 1);
-
-        while (gen.next())
-        {
-            co_yield gen.value();
+            auto gen = count_node->find(source, next);
+            while (gen.next())
+            {
+                co_yield gen.value();
+            }
         }
     }
 }
@@ -169,25 +172,13 @@ fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source, in
 fb::generator<fb::model::recipe_node::recipe_ref_type>
 fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source)
 {
-    auto buffer = std::unordered_map<uint32_t, uint32_t>();
-    for (auto& params : source)
-    {
-        if (buffer.contains(params.id))
-            buffer[params.id] += params.count;
-        else
-            buffer.insert({params.id, params.count});
-    }
-
     auto compact = std::vector<fb::model::dsl::item>();
     this->compact(source, compact);
 
-    for (int i = 0; i < compact.size(); i++)
+    auto gen = this->find(compact, 0);
+    while (gen.next())
     {
-        auto gen = this->find(compact, i);
-        while (gen.next())
-        {
-            co_yield gen.value();
-        }
+        co_yield gen.value();
     }
 }
 

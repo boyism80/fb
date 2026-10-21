@@ -1914,6 +1914,12 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
             consume[index] += static_cast<uint16_t>(count);
             remaining      -= count;
         }
+
+        if (remaining > 0)
+        {
+            owner->message(_TEXT(MESSAGE_NO_RECIPE));
+            co_return false;
+        }
     }
 
     // A material stack that keeps some count after consumption still occupies its slot.

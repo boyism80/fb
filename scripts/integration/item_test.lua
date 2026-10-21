@@ -61,6 +61,10 @@ test_suite {
         end,
 
         function(ctx)
+            return combine.run_extra(ctx)
+        end,
+
+        function(ctx)
             return active.run(ctx)
         end,
 

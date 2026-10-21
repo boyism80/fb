@@ -4,6 +4,7 @@ local model    = require("integration.model")
 
 local MESSAGE_NO_RECIPE   = "조합할 수 없습니다."
 local MESSAGE_MIX_SUCCESS = "성공하였습니다."
+local MESSAGE_MIX_FAILED  = "실패하였습니다."
 
 function run(ctx, index)
     local bot       = ctx:bot(index)
@@ -103,7 +104,51 @@ function run_failure(ctx)
     return true
 end
 
+-- 가시철도 is made of 가시철단도, 쇠가루 x5, 쇠조각 and 석영, and 장인의돌's id lies between theirs.
+function run_extra(ctx)
+    local bot = ctx:bot(0)
+    bot:clear_inventory()
+
+    local names = { "가시철단도", "쇠가루", "쇠가루", "쇠가루", "쇠가루", "쇠가루", "쇠조각", "장인의돌", "석영" }
+    local slots = {}
+    for i, name in ipairs(names) do
+        bot:create_item(name, 1)
+        table.insert(slots, i - 1)
+    end
+    for _, name in ipairs({ "가시철단도", "쇠가루", "쇠조각", "장인의돌", "석영" }) do
+        if bot:has_item_by_name(name) == false then
+            log("fatal", "combine extra: " .. name .. " was not created")
+            return false
+        end
+    end
+
+    local packet = bot:request(
+        resp.message,
+        protocol.item_combine(slots),
+        function(r)
+            local text = r.text or ""
+            return r.type == "STATE"
+                and (string.find(text, MESSAGE_NO_RECIPE, 1, true) ~= nil
+                    or string.find(text, MESSAGE_MIX_SUCCESS, 1, true) ~= nil
+                    or string.find(text, MESSAGE_MIX_FAILED, 1, true) ~= nil)
+        end)
+    if packet == nil then
+        log("fatal", "combine extra: no combine answer")
+        return false
+    end
+    if string.find(packet.text, MESSAGE_NO_RECIPE, 1, true) ~= nil then
+        log("fatal", "combine extra: an extra item between the ingredients hid the recipe")
+        return false
+    end
+    if bot:has_item_by_name("장인의돌") == false then
+        log("fatal", "combine extra: the extra item was consumed")
+        return false
+    end
+    return true
+end
+
 return {
     run          = run,
     run_failure  = run_failure,
+    run_extra    = run_extra,
 }
