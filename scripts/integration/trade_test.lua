@@ -351,9 +351,7 @@ test_suite {
                 return false
             end
 
-            progress(bot1, "CANCEL TRADE")
-            trade.cancel(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_CANCELLED_BY_ME))
-
+            -- Dropping the offered stack already cancelled the trade, so there is nothing left to cancel.
             progress(bot1, "LOOT DROPPED STACK")
             local looted = bot1:request(resp.item_update, protocol.loot(false), function(packet)
                 return string.find(packet.name or "", "도토리", 1, true) ~= nil
@@ -373,6 +371,54 @@ test_suite {
             end
 
             progress(bot1, "SCENARIO 6 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 7 START (part of an offered stack leaves during the trade)")
+
+            bot1:create_item("도토리", 10)
+            bot2:money(1000)
+
+            progress(bot1, "REQUEST TRADE -> bot2")
+            trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
+
+            progress(bot1, "UP 도토리 x10")
+            trade.up_item(bot1, bot2:oid(), 0)
+            trade.item_count(bot1, bot2:oid(), 10)
+
+            progress(bot2, "UP MONEY 1000 AND LOCK")
+            trade.up_money(bot2, bot1:oid(), 1000)
+            trade.lock(bot2, bot1:oid(), trade.type_is("lock"))
+
+            -- An NPC sale or a quest can take part of the stack while the trade window is open.
+            progress(bot1, "REMOVE 도토리 x5 BY SCRIPT")
+            if script_step.run_script(bot1, "test/integration", "remove_items", "trade_take_part", "도토리", "5") ~= true then
+                progress(bot1, "FAILED: script removal of part of the offered stack")
+                return false
+            end
+
+            progress(bot1, "LOCK (the trade must already be cancelled)")
+            bot1:send(protocol.trade("LOCK", bot2:oid(), {}))
+            ctx:sleep(1000)
+
+            if bot2:item_count("도토리") ~= 0 then
+                progress(bot2, string.format("FAILED: bot2 received %d 도토리 from a trade that lost part of its offer",
+                    bot2:item_count("도토리")))
+                return false
+            end
+            if bot2:money() ~= 1000 or bot1:money() ~= 0 then
+                progress(bot1, string.format("FAILED: money moved (bot1=%d bot2=%d)", bot1:money(), bot2:money()))
+                return false
+            end
+            if bot1:item_count("도토리") ~= 5 then
+                progress(bot1, string.format("FAILED: bot1 도토리 shows %d, expected 5", bot1:item_count("도토리")))
+                return false
+            end
+
+            progress(bot1, "SCENARIO 7 PASSED")
             return true
         end,
     },

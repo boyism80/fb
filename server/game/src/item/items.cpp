@@ -1462,12 +1462,13 @@ std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_T
         return nullptr;
 
     auto splitted = item->split(count);
+    // The partner agreed to the offered count, so an offer that can no longer be covered ends the trade.
+    auto short_offer = splitted == item ? item->trade_count() > 0 : item->count() < item->trade_count();
     if (splitted == item)
     {
         if (detach)
             splitted->_container = nullptr;
 
-        // An offer cannot follow the item out of the inventory, so it must not linger on the object.
         splitted->trade_count(0);
 
         std::ignore = inventory<fb::game::item>::remove(index);
@@ -1478,6 +1479,12 @@ std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_T
         item->trade_count(std::min(item->trade_count(), item->count()));
     }
     this->write_item_log("item_remove", *splitted, splitted->count(), index, attr);
+
+    if (short_offer && owner->trade != nullptr)
+    {
+        auto trade = owner->trade;
+        trade->cancel(*owner);
+    }
 
     auto current = this->at(index);
     owner->listener.on_item_update(*owner, index);

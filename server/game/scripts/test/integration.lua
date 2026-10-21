@@ -913,6 +913,12 @@ return {
         report(me, true, step)
     end,
 
+    -- Takes count pieces by name the way an NPC sale or a quest does, even while trading.
+    remove_items = function(me, step, name, count)
+        local removed = me:rmitem(name, tonumber(count))
+        report(me, removed ~= nil and removed ~= false, step, tostring(removed))
+    end,
+
     -- slot: 1-based inventory slot. Drops the whole stack even while trading, unlike the client drop.
     drop_slot = function(me, step, slot)
         local dropped = me:dropitem(tonumber(slot), false)
