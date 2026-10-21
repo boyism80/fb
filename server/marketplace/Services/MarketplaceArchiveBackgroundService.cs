@@ -72,6 +72,7 @@ namespace Marketplace.Services
 
                             // Archive listings
                             await ArchiveListingsAsync(dbContext, logService, stoppingToken);
+                            await DeleteSentParcelsAsync(dbContext, logService, stoppingToken);
                         }
                         catch (Exception e)
                         {
@@ -115,6 +116,27 @@ namespace Marketplace.Services
             await logService.WriteAsync("marketplace_archive_success", new
             {
                 archived_count = archivedCount
+            });
+        }
+
+        // Rows are chosen by their own state, so an interrupted or concurrent run leaves nothing a later run cannot finish.
+        private async Task DeleteSentParcelsAsync(
+            Marketplace.Service.DbContext dbContext,
+            LogService logService,
+            CancellationToken cancellationToken)
+        {
+            var deletedCount = 0;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var count = await dbContext.MarketplaceParcel.DeleteSentAsync(Retention, BatchSize);
+                deletedCount += count;
+                if (count < BatchSize)
+                    break;
+            }
+
+            await logService.WriteAsync("marketplace_parcel_cleanup", new
+            {
+                deleted_count = deletedCount
             });
         }
 

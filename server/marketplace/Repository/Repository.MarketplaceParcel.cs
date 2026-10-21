@@ -63,6 +63,19 @@ namespace Marketplace.Reepository
                 """);
         }
 
+        // A sent row is never read again: its storage box already holds the same external_ref.
+        public async Task<int> DeleteSentAsync(TimeSpan retention, int limit)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.ExecuteAsync($"""
+                DELETE FROM `marketplace_parcel`
+                WHERE `sent_date` IS NOT NULL
+                  AND `sent_date` < UTC_TIMESTAMP(3) - INTERVAL {(long)retention.TotalSeconds} SECOND
+                ORDER BY `id`
+                LIMIT {limit}
+                """);
+        }
+
         public async Task MarkFailedAsync(string externalRef, string error)
         {
             var truncated = error?.Length > 512 ? error[..512] : error;
