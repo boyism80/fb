@@ -60,7 +60,8 @@ namespace Http.Service
                 // Delete from Redis cache if successful
                 if (result == 1)
                 {
-                    await _cacheService.DeleteArticlesBatchAsync(world, new List<(uint section, uint id)> { (section, id) });
+                    var generation = await GetGenerationAsync(world, section);
+                    await _cacheService.DeleteArticlesBatchAsync(world, generation, new List<(uint section, uint id)> { (section, id) });
 
                     await _logService.WriteAsync("bulletin_delete", new
                     {
@@ -116,7 +117,8 @@ namespace Http.Service
                 // Delete from Redis cache for all successfully deleted articles
                 if (deletedIds.Any())
                 {
-                    await _cacheService.DeleteArticlesBatchAsync(world, deletedIds);
+                    var generation = await GetGenerationAsync(world, section);
+                    await _cacheService.DeleteArticlesBatchAsync(world, generation, deletedIds);
 
                     await _logService.WriteAsync("bulletin_delete_batch", new
                     {
@@ -162,13 +164,14 @@ namespace Http.Service
                 if (result == 1)
                 {
                     var (article, _) = await LoadArticleFromDatabase(world, section, id);
+                    var generation = await GetGenerationAsync(world, section);
                     if (article != null)
                     {
-                        await _cacheService.SetArticleAsync(world, section, id, article);
+                        await _cacheService.SetArticleAsync(world, section, generation, id, article);
                     }
                     else
                     {
-                        await _cacheService.DeleteArticlesBatchAsync(world, new List<(uint section, uint id)> { (section, id) });
+                        await _cacheService.DeleteArticlesBatchAsync(world, generation, new List<(uint section, uint id)> { (section, id) });
                     }
 
                     await _logService.WriteAsync("bulletin_update", new
@@ -304,9 +307,11 @@ namespace Http.Service
         {
             bool? nextFlagFromLoader = null;
 
+            var generation = await GetGenerationAsync(world, section);
             var article = await _cacheService.GetArticleAsync(
                 world,
                 section,
+                generation,
                 id,
                 async () =>
                 {
@@ -320,6 +325,21 @@ namespace Http.Service
 
             var nextFlag = nextFlagFromLoader ?? await LoadNextFlagAsync(world, section, id);
             return (article, nextFlag);
+        }
+
+        private Task<uint> GetGenerationAsync(uint world, uint section)
+        {
+            return _cacheService.GetGenerationAsync(world, section, async () =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+                await using var conn = dbContext.GetShardConnection(world, section);
+                var generation = await conn.QueryFirstOrDefaultAsync<uint?>(
+                    "SELECT generation FROM bulletin_sequence WHERE `section` = @section",
+                    new { section });
+                return generation ?? 0;
+            });
         }
 
         private async Task<(Bulletin Article, bool Next)> LoadArticleFromDatabase(uint world, uint section, uint id)

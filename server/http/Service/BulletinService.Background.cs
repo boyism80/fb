@@ -17,6 +17,12 @@ namespace Http.Service
 
         private static readonly int _maxBatchSize = 100;
 
+        private sealed class BulletinSequenceRow
+        {
+            public uint Id { get; set; }
+            public uint Generation { get; set; }
+        }
+
         public BulletinBackgroundService(
             BulletinService bulletinService,
             IServiceScopeFactory scopeFactory,
@@ -82,13 +88,14 @@ namespace Http.Service
                     await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
 
                     uint startId;
-                    uint renumbered = 0;
+                    uint generation = 0;
+                    var renumbered = false;
                     try
                     {
                         // Get current sequence for this bulletin section (with lock)
                         // Note: bulletinSection is the bulletin category, not world
-                        var currentSequence = await conn.QueryFirstOrDefaultAsync<uint?>(
-                            "SELECT id FROM bulletin_sequence WHERE `section` = @section FOR UPDATE",
+                        var currentSequence = await conn.QueryFirstOrDefaultAsync<BulletinSequenceRow>(
+                            "SELECT id, generation FROM bulletin_sequence WHERE `section` = @section FOR UPDATE",
                             new { section = bulletinSection },
                             transaction);
 
@@ -103,7 +110,8 @@ namespace Http.Service
                         }
                         else
                         {
-                            var sequence = currentSequence.Value;
+                            var sequence = currentSequence.Id;
+                            generation = currentSequence.Generation;
 
                             // The client addresses articles with uint16 ids and asks for its first page at MaxId, so
                             // the section is renumbered before an id would pass MaxId. RetainCount leaves room for
@@ -143,15 +151,16 @@ namespace Http.Service
                                     new { section = bulletinSection },
                                     transaction);
 
-                                renumbered = sequence;
+                                renumbered = true;
+                                generation++;
                                 sequence = (uint)kept;
                                 _logger.LogWarning("Renumbered bulletin section {Section} of world {World}: {Count} articles kept", bulletinSection, world, sequence);
                             }
 
                             startId = sequence + 1;
                             await conn.ExecuteAsync(
-                                "UPDATE bulletin_sequence SET id = @id WHERE `section` = @section",
-                                new { section = bulletinSection, id = (uint)(startId + requests.Count - 1) },
+                                "UPDATE bulletin_sequence SET id = @id, generation = @generation WHERE `section` = @section",
+                                new { section = bulletinSection, id = (uint)(startId + requests.Count - 1), generation },
                                 transaction);
                         }
 
@@ -172,11 +181,8 @@ namespace Http.Service
                     // The articles are stored once the commit returns; nothing below may report them as failed.
                     try
                     {
-                        if (renumbered > 0)
-                        {
-                            await _bulletinCacheService.DeleteArticlesBatchAsync(world,
-                                Enumerable.Range(1, (int)renumbered).Select(id => (bulletinSection, (uint)id)));
-                        }
+                        if (renumbered)
+                            await _bulletinCacheService.SetGenerationAsync(world, bulletinSection, generation);
 
                         // Cache articles in Redis after successful DB insert
                         var cacheItems = new Dictionary<(uint section, uint id), Http.Model.Bulletin>();
@@ -202,7 +208,7 @@ namespace Http.Service
                         }
 
                         // Batch cache insert
-                        await _bulletinCacheService.SetArticlesBatchAsync(world, cacheItems);
+                        await _bulletinCacheService.SetArticlesBatchAsync(world, generation, cacheItems);
 
                         for (int i = 0; i < requests.Count; i++)
                         {
