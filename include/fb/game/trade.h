@@ -7,6 +7,8 @@
 #include <array>
 #include <cstdint>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -36,6 +38,19 @@ private:
         bool                                 locked   = false;
     };
 
+    // A user-facing reason the exchange cannot run, raised for the side that causes it.
+    class exchange_error : public std::runtime_error
+    {
+    public:
+        const size_t side;
+
+    public:
+        exchange_error(size_t side, const std::string& message) :
+            std::runtime_error(message),
+            side(side)
+        { }
+    };
+
     std::array<side, 2> _sides;
 
 public:
@@ -48,7 +63,7 @@ private:
     uint8_t           add(side& side, uint8_t index);
     void              restore();
     void              end();
-    void              assert_exchange(const side& me, const side& you) const;
+    void              assert_exchange(size_t i) const;
     async::task<void> exchange();
 
 public:
@@ -74,14 +89,14 @@ enum class trade::state : uint8_t
 struct trade::listener_t
 {
     // clang-format off
-    virtual void on_trade_begin(character& me, character& you)                                           = 0;
-    virtual void on_trade_bundle(character& me)                                                          = 0;
-    virtual void on_trade_item(character& me, character& you, uint8_t index, const fb::game::item& item) = 0;
-    virtual void on_trade_money(character& me, character& you, uint64_t money)                           = 0;
-    virtual void on_trade_cancel(character& me, character& you)                                          = 0;
-    virtual void on_trade_lock(character& me, character& you)                                            = 0;
-    virtual void on_trade_failed(character& me, character& you)                                          = 0;
-    virtual void on_trade_success(character& me, character& you)                                         = 0;
+    virtual void on_trade_begin(character& me, character& you)                                                                 = 0;
+    virtual void on_trade_bundle(character& me)                                                                                = 0;
+    virtual void on_trade_item(character& me, character& you, uint8_t index, const fb::game::item& item)                       = 0;
+    virtual void on_trade_money(character& me, character& you, uint64_t money)                                                 = 0;
+    virtual void on_trade_cancel(character& me, character& you)                                                                = 0;
+    virtual void on_trade_lock(character& me, character& you)                                                                  = 0;
+    virtual void on_trade_failed(character& me, character& you, const std::string& me_message, const std::string& you_message) = 0;
+    virtual void on_trade_success(character& me, character& you)                                                               = 0;
     // clang-format on
 };
 

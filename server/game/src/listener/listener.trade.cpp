@@ -37,10 +37,13 @@ void listener_impl::on_trade_lock(character& me, character& you)
     you.send(game_resp::message(_TEXT(MESSAGE_TRADE_NOTIFY_LOCK_TO_PARTNER), MESSAGE_TYPE::POPUP));
 }
 
-void listener_impl::on_trade_failed(character& me, character& you)
+void listener_impl::on_trade_failed(character&         me,
+                                    character&         you,
+                                    const std::string& me_message,
+                                    const std::string& you_message)
 {
-    me.send(game_resp::trade_close(_TEXT(MESSAGE_TRADE_FAILED)));
-    you.send(game_resp::trade_close(_TEXT(MESSAGE_TRADE_FAILED)));
+    me.send(game_resp::trade_close(me_message));
+    you.send(game_resp::trade_close(you_message));
 }
 
 void listener_impl::on_trade_success(character& me, character& you)

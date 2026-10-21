@@ -117,7 +117,7 @@ public:
     void                            on_trade_money(character& me, character& you, uint64_t money) override final;
     void                            on_trade_cancel(character& me, character& you) override final;
     void                            on_trade_lock(character& me, character& you) override final;
-    void                            on_trade_failed(character& me, character& you) override final;
+    void                            on_trade_failed(character& me, character& you, const std::string& me_message, const std::string& you_message) override final;
     void                            on_trade_success(character& me, character& you) override final;
     void                            on_dialog(character& me, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog(character& me, const fb::model::object& object, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;

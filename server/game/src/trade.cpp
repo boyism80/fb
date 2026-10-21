@@ -268,8 +268,11 @@ uint8_t trade::add(side& side, uint8_t index)
     return order;
 }
 
-void trade::assert_exchange(const side& me, const side& you) const
+void trade::assert_exchange(size_t i) const
 {
+    auto& me  = this->_sides[i];
+    auto& you = this->_sides[1 - i];
+
     auto owner = me.owner.lock();
     if (owner == nullptr)
         throw std::runtime_error("owner is nullptr");
@@ -280,17 +283,17 @@ void trade::assert_exchange(const side& me, const side& you) const
 
     // The offer is not escrowed; it must still be fully covered at exchange time.
     if (owner->money() < me.money)
-        throw std::runtime_error(_TEXT(MESSAGE_NOT_ENOUGH_MONEY));
+        throw exchange_error(i, _TEXT(MESSAGE_NOT_ENOUGH_MONEY));
 
     for (auto& [index, order] : me.items)
     {
         auto item = owner->items[index];
         if (item == nullptr || item->trade_count() == 0 || item->count() < item->trade_count())
-            throw std::runtime_error(_TEXT(MESSAGE_TRADE_FAILED));
+            throw exchange_error(i, _TEXT(MESSAGE_TRADE_FAILED));
     }
 
     if (std::numeric_limits<uint64_t>::max() - you.money < owner->money())
-        throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));
+        throw exchange_error(i, _TEXT(MESSAGE_MONEY_FULL));
 
     auto incoming = std::unordered_map<uint32_t, uint32_t>{};
     for (auto& [index, order] : you.items)
@@ -337,7 +340,7 @@ void trade::assert_exchange(const side& me, const side& you) const
         else if (bundle_remains.contains(id))
         {
             if (model.capacity < bundle_remains[id] + count)
-                throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
+                throw exchange_error(i, _TEXT(MESSAGE_ITEM_FULL));
         }
         else
         {
@@ -346,7 +349,7 @@ void trade::assert_exchange(const side& me, const side& you) const
     }
 
     if (free_slots < required_slots)
-        throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
+        throw exchange_error(i, _TEXT(MESSAGE_ITEM_FULL));
 }
 
 async::task<void> trade::exchange()
@@ -378,8 +381,8 @@ async::task<void> trade::exchange()
         return money;
     };
 
-    this->assert_exchange(this->_sides[0], this->_sides[1]);
-    this->assert_exchange(this->_sides[1], this->_sides[0]);
+    this->assert_exchange(0);
+    this->assert_exchange(1);
 
     auto buffer1 = std::vector<std::shared_ptr<fb::game::item>>();
     auto money1  = push_buffer(this->_sides[0], buffer1);
@@ -472,8 +475,19 @@ async::task<bool> trade::lock(character& ch)
     }
     catch (std::exception& e)
     {
+        auto me_message  = std::string(_TEXT(MESSAGE_TRADE_FAILED));
+        auto you_message = me_message;
+        auto failure     = dynamic_cast<const exchange_error*>(&e);
+        if (failure != nullptr)
+        {
+            if (failure->side == i)
+                me_message = failure->what();
+            else
+                you_message = failure->what();
+        }
+
         this->restore();
-        ch.listener.on_trade_failed(ch, *you);
+        ch.listener.on_trade_failed(ch, *you, me_message, you_message);
         this->end();
         co_return false;
     }

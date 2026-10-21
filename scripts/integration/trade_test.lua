@@ -7,6 +7,7 @@ local MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE = "교환이 불가능한 아이템입�
 local MESSAGE_TRADE_CANCELLED_BY_ME      = "내가 교환을 취소했습니다."
 local MESSAGE_TRADE_SUCCESS              = "교환에 성공했습니다."
 local MESSAGE_TRADE_FAILED               = "교환에 실패했습니다."
+local MESSAGE_ITEM_FULL                  = "더 이상 가질 수 없습니다."
 
 local function progress(bot, message)
     local level = "debug"
@@ -188,8 +189,12 @@ test_suite {
             progress(bot1, "LOCK TRADE")
             trade.lock(bot1, bot2:oid(), trade.type_is("lock"))
 
+            -- bot2 cannot hold the incoming stack, so bot2 gets the cause instead of the generic failure.
             progress(bot2, "LOCK TRADE (expect fail)")
-            trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
+            if trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_ITEM_FULL)) == nil then
+                progress(bot2, "FAILED: cause message missing for the side that cannot hold the stack")
+                return false
+            end
             progress(bot2, "TRADE FAILED AS EXPECTED")
 
             lib.wait.state(bot1, resp.item_update, function()
@@ -224,10 +229,28 @@ test_suite {
             progress(bot1, "LOCK TRADE")
             trade.lock(bot1, bot2:oid(), trade.type_is("lock"))
 
-            progress(bot2, "LOCK TRADE (expect fail)")
-            trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
+            -- bot1's inventory is full; bot2 is not the cause, so the side locking last sees the generic failure.
+            progress(bot2, "LOCK TRADE (expect generic fail)")
+            if trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED)) == nil then
+                progress(bot2, "FAILED: generic failure message missing for the side that is not the cause")
+                return false
+            end
+
+            progress(bot1, "REQUEST TRADE -> bot2 (cause locks last)")
+            trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
+            trade.up_item_upload(bot2, bot1:oid(), 0)
+            trade.lock(bot2, bot1:oid(), trade.type_is("lock"))
+
+            progress(bot1, "LOCK TRADE (expect cause)")
+            if trade.lock(bot1, bot2:oid(), trade.close_contains(MESSAGE_ITEM_FULL)) == nil then
+                progress(bot1, "FAILED: full-inventory side did not get the cause message")
+                return false
+            end
             progress(bot2, "TRADE FAILED AS EXPECTED")
 
+            lib.wait.state(bot2, resp.item_update, function()
+                return bot2:has_item_by_name("현철중검")
+            end)
             if bot1:has_item_by_name("현철중검") or bot2:has_item_by_name("현철중검") == false then
                 progress(bot1, "FAILED: inventory-full trade outcome wrong")
                 return false
@@ -261,7 +284,10 @@ test_suite {
             trade.lock(bot2, bot1:oid(), trade.type_is("lock"))
 
             progress(bot1, "LOCK TRADE (expect fail)")
-            trade.lock(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
+            if trade.lock(bot1, bot2:oid(), trade.close_contains(MESSAGE_ITEM_FULL)) == nil then
+                progress(bot1, "FAILED: cause message missing for the side that cannot hold the stack")
+                return false
+            end
             progress(bot1, "TRADE FAILED AS EXPECTED")
 
             lib.wait.state(bot2, resp.item_update, function()
