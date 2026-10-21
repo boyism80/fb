@@ -194,11 +194,14 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
             auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
             if (exists != nullptr)
             {
+                auto before = exists->count();
                 exists->merge(item);
 
                 auto index = this->index(exists);
                 updates.insert({index, exists});
                 indices.push_back(index);
+                if (exists->count() > before)
+                    this->write_item_log("item_gain", *exists, exists->count() - before, index);
 
                 if (item->empty())
                     co_await item->destroy();
@@ -287,25 +290,38 @@ uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
     if (item->empty() == false)
     {
         owner->listener.on_item_update(*owner, index);
-
-        // Log item gain event (only for non-cash items)
-        auto& model = item->model();
-        if (!model.attr(ITEM_ATTRIBUTE::CASH))
-        {
-            auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
-            log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
-            log_data["item_id"]        = static_cast<Json::Int64>(model.id);
-            log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
-            log_data["count"]          = static_cast<Json::Int64>(item->count());
-            log_data["index"]          = index;
-            if (item->uid() != 0)
-                log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
-            owner->server.log.write("item_gain", log_data);
-        }
+        this->write_item_log("item_gain", *item, item->count(), index);
     }
 
     return index;
+}
+
+void items::write_item_log(std::string_view                event,
+                           const fb::game::item&           item,
+                           uint16_t                        count,
+                           uint8_t                         index,
+                           std::optional<ITEM_DELETE_TYPE> attr) const
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    auto& model = item.model();
+    if (model.attr(ITEM_ATTRIBUTE::CASH))
+        return;
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
+    log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
+    log_data["item_id"]        = static_cast<Json::Int64>(model.id);
+    log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
+    log_data["count"]          = static_cast<Json::Int64>(count);
+    log_data["index"]          = index;
+    if (attr.has_value())
+        log_data["delete_type"] = static_cast<int>(attr.value());
+    if (item.uid() != 0)
+        log_data["item_uid"] = static_cast<Json::UInt64>(item.uid());
+    owner->server.log.write(event, log_data);
 }
 
 bool items::store(std::shared_ptr<item> item)
@@ -1453,24 +1469,8 @@ std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_T
 
         std::ignore = inventory<fb::game::item>::remove(index);
         owner->listener.on_item_remove(*owner, index, attr);
-
-        // Log item remove event (only for non-cash items)
-        auto& model = item->model();
-        if (!model.attr(ITEM_ATTRIBUTE::CASH))
-        {
-            auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
-            log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
-            log_data["item_id"]        = static_cast<Json::Int64>(model.id);
-            log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
-            log_data["count"]          = static_cast<Json::Int64>(count);
-            log_data["index"]          = index;
-            log_data["delete_type"]    = static_cast<int>(attr);
-            if (item->uid() != 0)
-                log_data["item_uid"] = static_cast<Json::UInt64>(item->uid());
-            owner->server.log.write("item_remove", log_data);
-        }
     }
+    this->write_item_log("item_remove", *splitted, splitted->count(), index, attr);
 
     auto current = this->at(index);
     owner->listener.on_item_update(*owner, index);

@@ -112,6 +112,7 @@ public:
 
 private:
     void                                            notify_equipment_swap(EQUIPMENT_PARTS parts, const equipment_ptr& before, const equipment_ptr& after);
+    void                                            write_item_log(std::string_view event, const fb::game::item& item, uint16_t count, uint8_t index, std::optional<ITEM_DELETE_TYPE> attr = std::nullopt) const;
 
 public:
     weapon_ptr                                      weapon() const;
