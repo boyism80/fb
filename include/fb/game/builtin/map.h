@@ -9,6 +9,7 @@ struct map
 {
     static int builtin_model(lua_State* L);
     static int builtin_id(lua_State* L);
+    static int builtin_active(lua_State* L);
     static int builtin_width(lua_State* L);
     static int builtin_height(lua_State* L);
     static int builtin_area(lua_State* L);

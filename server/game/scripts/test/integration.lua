@@ -913,6 +913,38 @@ return {
         report(me, true, step)
     end,
 
+    map_active = function(me, step, map_id)
+        local map = id2map(tonumber(map_id))
+        report(me, map ~= nil and map:active() == true, step)
+    end,
+
+    move_to_map = function(me, step, map_id, x, y)
+        local map = id2map(tonumber(map_id))
+        if map == nil then
+            return report(me, false, step, 'no map ' .. tostring(map_id))
+        end
+        report(me, me:map(map, { tonumber(x), tonumber(y) }) == true, step)
+    end,
+
+    -- beast: 주작/현무/청룡/백호. active: 'true' or 'false'. owner: 'mine' or 'not_mine' against the caller's clan.
+    verify_siege = function(me, step, beast, active, owner)
+        local divine_beast = require('schedule.siege').NAME_TO_DIVINE_BEAST[beast]
+        local entity = divine_beast and castle(divine_beast) or nil
+        if entity == nil then
+            return report(me, false, step, 'no castle ' .. tostring(beast))
+        end
+
+        local clan = me:clan()
+        local mine = clan ~= nil and entity:owner_clan() == clan:id()
+        local actual_active = tostring(entity:siege_active())
+        local actual_owner = mine and 'mine' or 'not_mine'
+        if actual_active == active and actual_owner == owner then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('active=%s owner=%s, expected active=%s owner=%s', actual_active, actual_owner, active, owner))
+        end
+    end,
+
     -- Takes count pieces by name the way an NPC sale or a quest does, even while trading.
     remove_items = function(me, step, name, count)
         local removed = me:rmitem(name, tonumber(count))

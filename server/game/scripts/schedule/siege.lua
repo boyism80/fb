@@ -87,7 +87,9 @@ local function end_siege(divine_beast)
     local winner_clan = occupant and clan_as_master(occupant) or nil
 
     map:cancel_timer(info.timer)
-    castle:end_siege(winner_clan and winner_clan:id() or nil)
+    if castle:end_siege(winner_clan and winner_clan:id() or nil) == 'not_active' then
+        return false, string.format('%s의성 공성전이 진행 중이 아닙니다.', info.name)
+    end
 
     if winner_clan ~= nil and winner_clan:id() ~= previous_owner_id then
         broadcast(string.format('[정보] %s 문파가 %s의성을 탈환합니다.', winner_clan:name(), info.name), MESSAGE_TYPE.WORLD)

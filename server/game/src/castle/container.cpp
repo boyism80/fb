@@ -111,29 +111,43 @@ void castle::container::on_owner_changed(fb::model::enum_value::DIVINE_BEAST div
         members);
 }
 
-async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
-                                               const std::optional<uint32_t>&      winner_clan_id)
+async::task<void> castle::container::start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
+                                                 uint32_t                            duration_seconds)
+{
+    auto guard = co_await this->enter_write(static_cast<uint32_t>(divine_beast));
+    if (guard.value() == nullptr)
+        co_return;
+
+    guard.value()->start_siege(duration_seconds);
+}
+
+async::task<castle::siege_end_result> castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
+                                                                   const std::optional<uint32_t>&      winner_clan_id)
 {
     auto id             = static_cast<uint32_t>(divine_beast);
     auto previous_owner = std::optional<uint32_t>{};
     {
         auto guard = co_await this->enter_write(id);
         if (guard.value() == nullptr)
-            co_return;
+            co_return siege_end_result::NOT_ACTIVE;
+
+        // Checking and clearing under one lock lets only one of a timer and a GM command end the siege.
+        if (guard.value()->siege_active() == false)
+            co_return siege_end_result::NOT_ACTIVE;
 
         previous_owner = guard.value()->owner_clan_id();
         guard.value()->clear_siege();
     }
 
     if (winner_clan_id.has_value() == false)
-        co_return;
+        co_return siege_end_result::ENDED;
 
     if (previous_owner.has_value() && previous_owner.value() == winner_clan_id.value())
-        co_return;
+        co_return siege_end_result::ENDED;
 
     auto world = fb::config<std::optional<uint32_t>>("world");
     if (!world)
-        co_return;
+        co_return siege_end_result::ENDED;
 
     auto&& resp =
         co_await this->_server.http.post("internal",
@@ -146,17 +160,18 @@ async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEA
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
     {
         fb::logger::warn("castle: failed to persist owner change for divine_beast {} (error : {})", id, resp.error);
-        co_return;
+        co_return siege_end_result::ENDED;
     }
 
     {
         auto guard = co_await this->enter_write(id);
         if (guard.value() == nullptr)
-            co_return;
+            co_return siege_end_result::ENDED;
 
         guard.value()->owner_clan_id(resp.owner_clan_id);
     }
 
     if (previous_owner != resp.owner_clan_id)
         this->on_owner_changed(divine_beast, previous_owner);
+    co_return siege_end_result::ENDED;
 }
