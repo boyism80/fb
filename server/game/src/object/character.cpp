@@ -2231,6 +2231,8 @@ async::task<void> character::settle_death(std::shared_ptr<fb::game::object> kill
     // the kill), become ghost, then enqueue death_warp so map() only migrates
     // a dedicated coroutine — never the attacker's damage pipeline.
     life::kill(DESTROY_TYPE::DEAD);
+    if (this->trade != nullptr)
+        this->trade->cancel(*this);
     co_await this->death_penalty();
     this->state(STATE::GHOST);
     this->handle_death(killer);

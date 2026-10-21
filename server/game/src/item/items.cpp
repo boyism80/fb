@@ -1467,8 +1467,15 @@ std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_T
         if (detach)
             splitted->_container = nullptr;
 
+        // An offer cannot follow the item out of the inventory, so it must not linger on the object.
+        splitted->trade_count(0);
+
         std::ignore = inventory<fb::game::item>::remove(index);
         owner->listener.on_item_remove(*owner, index, attr);
+    }
+    else
+    {
+        item->trade_count(std::min(item->trade_count(), item->count()));
     }
     this->write_item_log("item_remove", *splitted, splitted->count(), index, attr);
 

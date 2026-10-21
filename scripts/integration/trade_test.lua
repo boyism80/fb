@@ -1,7 +1,8 @@
-local lib      = require("integration.lib")
-local resp     = require("integration.response")
-local protocol = require("integration.protocol")
-local trade    = require("integration.lib.trade")
+local lib         = require("integration.lib")
+local resp        = require("integration.response")
+local protocol    = require("integration.protocol")
+local trade       = require("integration.lib.trade")
+local script_step = require("integration.lib.script_step")
 
 local MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE = "교환이 불가능한 아이템입니다."
 local MESSAGE_TRADE_CANCELLED_BY_ME      = "내가 교환을 취소했습니다."
@@ -326,6 +327,52 @@ test_suite {
             end
 
             progress(bot1, "SCENARIO 5 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 6 START (offered stack leaves the inventory)")
+
+            bot1:create_item("도토리", 50)
+
+            progress(bot1, "REQUEST TRADE -> bot2")
+            trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
+
+            progress(bot1, "UP 도토리 x50")
+            trade.up_item(bot1, bot2:oid(), 0)
+            trade.item_count(bot1, bot2:oid(), 50)
+
+            -- The client cannot drop while trading; a death drop or a script removal can.
+            progress(bot1, "DROP OFFERED STACK BY SCRIPT")
+            if script_step.run_script(bot1, "test/integration", "drop_slot", "trade_drop", "1") ~= true then
+                progress(bot1, "FAILED: script drop of the offered stack")
+                return false
+            end
+
+            progress(bot1, "CANCEL TRADE")
+            trade.cancel(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_CANCELLED_BY_ME))
+
+            progress(bot1, "LOOT DROPPED STACK")
+            local looted = bot1:request(resp.item_update, protocol.loot(false), function(packet)
+                return string.find(packet.name or "", "도토리", 1, true) ~= nil
+            end)
+            if looted == false or looted == nil then
+                progress(bot1, "FAILED: could not loot the dropped 도토리")
+                return false
+            end
+
+            lib.wait.state(bot1, resp.item_update, function()
+                return bot1:item_count("도토리") == 50
+            end)
+            if bot1:item_count("도토리") ~= 50 then
+                progress(bot1, string.format("FAILED: looted 도토리 shows %d, the trade count stayed on the item",
+                    bot1:item_count("도토리")))
+                return false
+            end
+
+            progress(bot1, "SCENARIO 6 PASSED")
             return true
         end,
     },

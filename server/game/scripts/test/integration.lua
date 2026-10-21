@@ -903,6 +903,12 @@ return {
         end
     end,
 
+    -- slot: 1-based inventory slot. Drops the whole stack even while trading, unlike the client drop.
+    drop_slot = function(me, step, slot)
+        local dropped = me:dropitem(tonumber(slot), false)
+        report(me, dropped ~= nil, step)
+    end,
+
     -- cost, reward: comma-separated 'name=count' pairs, 'money=n' for money, '-' for nothing.
     -- expected: an exchange_result name, e.g. 'OK' or 'LACK_CAPACITY'.
     exchange_items = function(me, step, cost, reward, expected)
