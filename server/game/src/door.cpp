@@ -27,6 +27,22 @@ const fb::model::door& door::model() const
 
 bool door::toggle()
 {
+    if (this->_opened)
+    {
+        for (int i = 0; i < this->width; i++)
+        {
+            auto position = fb::model::point16_t(static_cast<uint16_t>(this->pivot.x + i), this->pivot.y);
+            for (const auto& obj : this->map.belows(position, OBJECT_TYPE::OBJECT))
+            {
+                // A super-hidden admin must not reveal their position by blocking the door.
+                if (obj->is(OBJECT_TYPE::ITEM) || obj->super_hide())
+                    continue;
+
+                return false;
+            }
+        }
+    }
+
     for (int i = 0; i < this->width; i++)
     {
         auto tile = this->map(this->pivot.x + i, this->pivot.y);

@@ -26,6 +26,7 @@ int builtin::door::builtin_toggle(lua_State* L)
     if (door == nullptr)
         return 0;
 
+    auto toggled  = std::make_shared<bool>(false);
     auto opened   = std::make_shared<bool>();
     auto map      = srv.maps[door->map.id];
     auto weak     = map->weak_from_this_as<fb::game::map>();
@@ -33,8 +34,11 @@ int builtin::door::builtin_toggle(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        door->toggle();
-        *opened = door->opened();
+        if (door->toggle() == false)
+            co_return;
+
+        *toggled = true;
+        *opened  = door->opened();
 
         const auto size = fb::model::size<uint16_t>(door->model().pairs.size(), 1);
         const auto area = fb::model::area<uint16_t>(door->pivot.x,
@@ -45,7 +49,10 @@ int builtin::door::builtin_toggle(lua_State* L)
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*opened);
+        if (*toggled)
+            lua->pushboolean(*opened);
+        else
+            lua->pushnil();
         co_return 1;
     };
     return builder.run();

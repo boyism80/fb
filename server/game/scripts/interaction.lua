@@ -687,13 +687,16 @@ return {
         end
 
         local opened = door:toggle()
-        if opened then
-            me:message('문을 열었습니다.')
+        if opened == nil then
+            me:message('문 사이에 누군가 있습니다.')
         else
-            me:message('문을 닫았습니다.')
+            if opened then
+                me:message('문을 열었습니다.')
+            else
+                me:message('문을 닫았습니다.')
+            end
+            lib.any_action(me)
         end
-
-        lib.any_action(me)
     end,
 
     on_move = function(me)
