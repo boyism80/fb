@@ -163,8 +163,9 @@ namespace Http.Service
 
                 if (result == 1)
                 {
-                    var (article, _) = await LoadArticleFromDatabase(world, section, id);
+                    // The generation is read first: an article loaded after a renumber then lands under the older generation, which nobody reads.
                     var generation = await GetGenerationAsync(world, section);
+                    var (article, _) = await LoadArticleFromDatabase(world, section, id);
                     if (article != null)
                     {
                         await _cacheService.SetArticleAsync(world, section, generation, id, article);
