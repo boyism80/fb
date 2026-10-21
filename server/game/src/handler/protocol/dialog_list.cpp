@@ -18,8 +18,10 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua   = ch->dialog;
-    ch->dialog = nullptr;
+    auto lua          = ch->dialog;
+    auto maxlen       = ch->dialog_maxlen;
+    ch->dialog        = nullptr;
+    ch->dialog_maxlen = 0xFF;
     if (lua == nullptr)
         co_return true;
 
@@ -39,8 +41,11 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     case fb::game::dialog::list_type::INPUT_PASSWORD:
     case fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG:
     case fb::game::dialog::list_type::EMAIL:
-        if (reply.action == 0x02) // OK button
+        // The client only displays maxlen, so a longer reply is refused as if the dialog were closed.
+        if (reply.action == 0x02 && reply.message.size() <= maxlen) // OK button
             lua->pushstring(reply.message);
+        else if (reply.action == 0x02)
+            lua->pushinteger(static_cast<int>(DIALOG_RESULT::QUIT));
         else
             lua->pushinteger(reply.action);
 

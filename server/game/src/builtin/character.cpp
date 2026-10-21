@@ -5675,7 +5675,10 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
         }
 
         if (immediate == false)
-            ch->dialog = lua;
+        {
+            ch->dialog        = lua;
+            ch->dialog_maxlen = maxlen;
+        }
         co_return;
     };
     if (immediate)

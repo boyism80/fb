@@ -193,7 +193,8 @@ public:
     fb::game::unsettled_requests                  unsettled;
     fb::game::matchmaker                          matchmaker;
     std::unordered_map<std::string, Json::Value>  vars;
-    fb::lua::context*                             dialog = nullptr;
+    fb::lua::context*                             dialog        = nullptr;
+    uint8_t                                       dialog_maxlen = 0xFF;
     achievement_map_t                             achievements;
     listener_t&                                   listener;
     character_stat                                stat;

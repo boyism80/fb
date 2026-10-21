@@ -26,6 +26,8 @@ private:
     std::string _param     = "";
 
 public:
+    static constexpr size_t MAX_PARAM_LENGTH = 255;
+
     uint32_t                           id;
     std::weak_ptr<fb::game::character> owner;
 
@@ -45,7 +47,7 @@ public:
     uint32_t    progress() const;
     void        progress(uint32_t progress);
     std::string param() const;
-    void        param(std::string_view param);
+    bool        param(std::string_view param);
     bool        inc_progress(uint32_t value = 1);
     bool        inc_step(uint32_t value = 1);
     bool        complete();

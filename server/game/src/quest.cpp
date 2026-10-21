@@ -57,9 +57,14 @@ std::string quest::param() const
     return this->_param;
 }
 
-void quest::param(std::string_view param)
+// A longer param would make the save of every quest of the character fail, and a cut one would no longer parse.
+bool quest::param(std::string_view param)
 {
+    if (param.size() > MAX_PARAM_LENGTH)
+        return false;
+
     this->_param = std::string(param);
+    return true;
 }
 
 bool quest::inc_progress(uint32_t value)

@@ -131,15 +131,17 @@ int builtin::quest::builtin_param(lua_State* L)
     if (argc >= 2)
     {
         auto param    = lua->tostring(2);
+        auto stored   = std::make_shared<bool>(false);
         auto weak     = owner->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            quest->param(param);
+            *stored = quest->param(param);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*stored);
+            co_return 1;
         };
         return builder.run();
     }

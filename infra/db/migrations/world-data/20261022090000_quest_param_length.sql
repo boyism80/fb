@@ -1,0 +1,2 @@
+ALTER TABLE `quest`
+  MODIFY COLUMN `param` varchar(255) DEFAULT NULL;
