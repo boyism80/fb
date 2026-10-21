@@ -81,6 +81,8 @@ namespace Http.Service
                     // Start transaction for sequence management
                     await using var transaction = await conn.BeginTransactionAsync(cancellationToken);
 
+                    uint startId;
+                    uint renumbered = 0;
                     try
                     {
                         // Get current sequence for this bulletin section (with lock)
@@ -90,8 +92,6 @@ namespace Http.Service
                             new { section = bulletinSection },
                             transaction);
 
-                        uint startId;
-                        uint renumbered = 0;
                         if (currentSequence == null)
                         {
                             // First articles for this bulletin section
@@ -161,7 +161,17 @@ namespace Http.Service
 
                         // Commit transaction
                         await transaction.CommitAsync(cancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, $"Error during write transaction for section {bulletinSection}");
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw;
+                    }
 
+                    // The articles are stored once the commit returns; nothing below may report them as failed.
+                    try
+                    {
                         if (renumbered > 0)
                         {
                             await _bulletinCacheService.DeleteArticlesBatchAsync(world,
@@ -206,21 +216,19 @@ namespace Http.Service
                                 user_id = request.User
                             });
                         }
-
-                        // Notify success
-                        foreach (var request in requests)
-                        {
-                            request.CompletionSource.SetResult(true);
-                        }
-
-                        _logger.LogInformation($"Processed {requests.Count} bulletin writes for section {bulletinSection} (IDs: {startId}-{startId + requests.Count - 1})");
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, $"Error during write transaction for section {bulletinSection}");
-                        await transaction.RollbackAsync(cancellationToken);
-                        throw;
+                        _logger.LogError(e, $"Error after committing bulletin writes for section {bulletinSection}");
                     }
+
+                    // Notify success
+                    foreach (var request in requests)
+                    {
+                        request.CompletionSource.TrySetResult(true);
+                    }
+
+                    _logger.LogInformation($"Processed {requests.Count} bulletin writes for section {bulletinSection} (IDs: {startId}-{startId + requests.Count - 1})");
                 }
                 catch (Exception ex)
                 {
@@ -229,7 +237,7 @@ namespace Http.Service
                     // Notify failure
                     foreach (var request in requests)
                     {
-                        request.CompletionSource.SetResult(false);
+                        request.CompletionSource.TrySetResult(false);
                     }
                 }
             }
