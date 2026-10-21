@@ -172,8 +172,6 @@ async::task<size_t> character::send_immediate(const fb::protocol::header& respon
 
 OBJECT_TYPE character::what() const
 {
-    this->assert_thread();
-
     return OBJECT_TYPE::CHARACTER;
 }
 

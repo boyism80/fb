@@ -9,6 +9,7 @@
 #include <fb/thread_container.h>
 
 #include <cstddef>
+#include <cstdio>
 #include <cstdint>
 #include <exception>
 #include <format>
@@ -1293,6 +1294,46 @@ fb::thread_switch_awaiter fb::lua::context::switching()
 fb::thread& fb::lua::root::initial_thread()
 {
     return this->_initial_thread;
+}
+
+int fb::lua::root::call_builtin(lua_State* ctx)
+{
+    auto fn = reinterpret_cast<lua_CFunction>(lua_touserdata(ctx, lua_upvalueindex(1)));
+
+    // luaL_error longjmps, so the message is kept in a buffer without a destructor and raised after the catch.
+    char message[512] = {};
+    try
+    {
+        return fn(ctx);
+    }
+    catch (const std::exception& e)
+    {
+        std::snprintf(message, sizeof(message), "%s", e.what());
+    }
+    catch (...)
+    {
+        std::snprintf(message, sizeof(message), "unknown C++ exception");
+    }
+    return luaL_error(ctx, "%s", message);
+}
+
+void fb::lua::root::push_builtin(lua_CFunction fn)
+{
+    lua_pushlightuserdata(*this, reinterpret_cast<void*>(fn));
+    lua_pushcclosure(*this, fb::lua::root::call_builtin, 1);
+}
+
+void fb::lua::root::set_builtins(const luaL_Reg* funcs)
+{
+    for (auto func = funcs; func->name != nullptr; func++)
+    {
+        // luable userdata is recognized by this exact __gc function.
+        if (std::string_view(func->name) == "__gc")
+            lua_pushcfunction(*this, func->func);
+        else
+            this->push_builtin(func->func);
+        lua_setfield(*this, -2, func->name);
+    }
 }
 
 fb::lua::context_pool::context_pool(fb::async_executor& executor) :

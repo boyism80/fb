@@ -945,6 +945,15 @@ return {
         end
     end,
 
+    -- transfer_to throws a C++ exception when the destination table is missing.
+    builtin_exception = function(me, step)
+        local ok, err = pcall(function()
+            return me:transfer_to('127.0.0.1', 1)
+        end)
+        local raised = ok == false and tostring(err):find('requires a destination table', 1, true) ~= nil
+        report(me, raised, step, tostring(err))
+    end,
+
     -- Takes count pieces by name the way an NPC sale or a quest does, even while trading.
     remove_items = function(me, step, name, count)
         local removed = me:rmitem(name, tonumber(count))

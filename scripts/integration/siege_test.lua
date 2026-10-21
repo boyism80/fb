@@ -116,13 +116,20 @@ test_suite {
             a:chat("/HTTP지연 internal 0")
 
             local recaptured = 0
+            local ended = 0
             for _, text in ipairs(a:take_messages()) do
                 if text:find(MSG_RECAPTURED, 1, true) ~= nil then
                     recaptured = recaptured + 1
                 end
+                if text:find(MSG_ENDED, 1, true) ~= nil then
+                    ended = ended + 1
+                end
             end
             if recaptured ~= 1 then
                 return fail(string.format("the recapture was announced %d times", recaptured))
+            end
+            if ended ~= 1 then
+                return fail(string.format("the ending command answered %d times", ended))
             end
             if run_step(b, "verify_siege", "siege_owned_b", BEAST, "false", "mine") == false then
                 return fail("B's clan does not own the castle after the racing ends")

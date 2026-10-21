@@ -549,9 +549,12 @@ private:
     std::unordered_set<std::string> _lib_modules;
     int                             _loading = 0;
 
-    void remember_lib_from_path(std::string_view path);
-    void capture_loaded_libs();
-    void unload_remembered_libs();
+    void       remember_lib_from_path(std::string_view path);
+    void       capture_loaded_libs();
+    void       unload_remembered_libs();
+    static int call_builtin(lua_State* ctx);
+    void       push_builtin(lua_CFunction fn);
+    void       set_builtins(const luaL_Reg* funcs);
 
 public:
     friend class context;
@@ -589,8 +592,8 @@ public:
                                             // mt.__index = mt
         lua_setfield(*this, -2, "__index"); // [mt]
                                             // [mt.functions = ...]
-        auto metafuncs = T::LUA_METHODS;
-        luaL_setfuncs(*this, metafuncs, 0); // []
+        this->set_builtins(T::LUA_METHODS); // [mt]
+        lua_pop(*this, 1);                  // []
     }
 
     template <typename T, typename B> void build()
@@ -607,13 +610,14 @@ public:
                                                    // mt.__index = mt
         lua_setfield(*this, -2, "__index");        // [mt]
                                                    // mt.functions = ...
-        auto child_metafuncs = T::LUA_METHODS;
-        luaL_setfuncs(*this, child_metafuncs, 0); // []
+        this->set_builtins(T::LUA_METHODS);        // [mt]
+        lua_pop(*this, 1);                         // []
     }
 
     void build(std::string_view name, lua_CFunction fn)
     {
-        lua_register(*this, std::string(name).c_str(), fn);
+        this->push_builtin(fn);
+        lua_setglobal(*this, std::string(name).c_str());
     }
 
     void package_path(std::string_view additional_path)
@@ -632,7 +636,7 @@ public:
     {
         lua_getglobal(*this, "package");
         lua_getfield(*this, -1, "preload");
-        lua_pushcfunction(*this, fn);
+        this->push_builtin(fn);
         lua_setfield(*this, -2, std::string(name).c_str());
         lua_pop(*this, 2);
     }
