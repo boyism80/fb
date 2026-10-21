@@ -44,7 +44,7 @@ local function run_form(me, npc, class_name, partner, schedule)
         if sub_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sub ~= nil and sub >= 0 and sub < #CLASS_OPTIONS then
+        if sub ~= nil and sub >= 1 and sub <= #CLASS_OPTIONS then
             class_name = CLASS_OPTIONS[sub]
         end
         local q = me:quest(quest.QUEST_MADONG_APPLY)
@@ -86,7 +86,7 @@ local function run_form(me, npc, class_name, partner, schedule)
         if sub_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sub ~= nil and sub >= 0 and sub < #SCHEDULE_OPTIONS then
+        if sub ~= nil and sub >= 1 and sub <= #SCHEDULE_OPTIONS then
             schedule = SCHEDULE_OPTIONS[sub].value
         end
         local q = me:quest(quest.QUEST_MADONG_APPLY)

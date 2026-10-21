@@ -945,6 +945,19 @@ return {
         end
     end,
 
+    madong_prepare = function(me, step)
+        me:promotion(3)
+        me:remove_quest(require('lib.quest').QUEST_MADONG_APPLY)
+        report(me, true, step)
+    end,
+
+    -- expected: the 'class|partner|schedule' param of the madong apply quest.
+    verify_madong_param = function(me, step, expected)
+        local q = me:quest(require('lib.quest').QUEST_MADONG_APPLY)
+        local actual = q and q:param() or 'none'
+        report(me, actual == expected, step, tostring(actual))
+    end,
+
     -- order: 'kill_first' or 'heal_first' for the buff order. 노도성황 kills at 1 hp, 운기 restores mp each tick.
     concast_after_death = function(me, step, order)
         me:unbuff('노도성황')
