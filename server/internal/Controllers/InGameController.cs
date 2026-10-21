@@ -820,6 +820,8 @@ namespace Internal.Controllers
                 if (request.Changes == null || request.Changes.Count == 0)
                     throw new Exception("option changes is empty");
 
+                // The row is read and written whole, so concurrent changes must not interleave.
+                await using var optionLock = await _distributedLock.Lock(world, Http.Model.Option.DistributedLockKey(request.User));
                 var option = await _dbContext.Option.Get(world, request.User) ??
                     throw new Exception($"option {request.User} not found");
 

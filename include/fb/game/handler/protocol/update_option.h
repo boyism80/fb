@@ -8,8 +8,9 @@ namespace fb::game::handler::protocol {
 
 namespace game_reqs = fb::protocol::game::request;
 
+// Waits for each option change to finish so the next toggle reads the stored result.
 template <fb::protocol::CLIENT_VERSION V>
-class update_option : public fb::handler::protocol<fb::game::server, game_reqs::update_option<V>>
+class update_option : public fb::handler::protocol<fb::game::server, game_reqs::update_option<V>, 1000, 10, true>
 {
 public:
     update_option(fb::game::server& server);

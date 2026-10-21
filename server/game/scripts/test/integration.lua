@@ -893,6 +893,16 @@ return {
         report(me, true, step, string.format('doors=%d checked=%d', #doors, checked))
     end,
 
+    -- key: an OPTION name, e.g. 'WHISPER'. expected: 'true' or 'false'.
+    verify_option = function(me, step, key, expected)
+        local actual = tostring(me:option(OPTION[key]))
+        if actual == expected then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('%s is %s, expected %s', tostring(key), actual, tostring(expected)))
+        end
+    end,
+
     -- cost, reward: comma-separated 'name=count' pairs, 'money=n' for money, '-' for nothing.
     -- expected: an exchange_result name, e.g. 'OK' or 'LACK_CAPACITY'.
     exchange_items = function(me, step, cost, reward, expected)

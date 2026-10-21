@@ -14,7 +14,7 @@ namespace fb::game::handler::protocol {
 
 template <fb::protocol::CLIENT_VERSION V>
 update_option<V>::update_option(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::update_option<V>>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::update_option<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -74,10 +74,16 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
         if (ptr == nullptr)
             co_return true;
 
-        if (resp.success == false)
+        // Apply only what internal stored, so game memory never drifts from the saved option.
+        if (resp.success)
+        {
+            ptr->option(option, next);
+        }
+        else
+        {
             ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
-
-        ptr->option(option, next);
+            ptr->update_option();
+        }
         break;
     }
     co_return true;
@@ -161,12 +167,17 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
         if (current == nullptr)
             co_return true;
 
-        if (resp.success == false)
-            current->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
-
-        for (auto& [option, next] : applied)
+        if (resp.success)
         {
-            current->option(option, next);
+            for (auto& [option, next] : applied)
+            {
+                current->option(option, next);
+            }
+        }
+        else
+        {
+            current->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
+            current->update_option();
         }
     }
     co_return true;

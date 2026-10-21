@@ -25,5 +25,10 @@ namespace Http.Model
         public bool PkProtect { get; set; } = true;
         public bool VisibleHelmet { get; set; } = true;
         public bool SuperHide { get; set; }
+
+        public static string DistributedLockKey(uint user)
+        {
+            return $"fb:lock:option:{user}";
+        }
     }
 }

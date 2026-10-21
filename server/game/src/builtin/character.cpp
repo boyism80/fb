@@ -4999,8 +4999,6 @@ int builtin::character::builtin_super_hide(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->super_hide(value);
-
             auto&  server = ch->server;
             auto&& resp   = co_await server.http.post(
                 weak,
@@ -5011,7 +5009,12 @@ int builtin::character::builtin_super_hide(lua_State* L)
                                                              {{static_cast<uint8_t>(OPTION::SUPER_HIDE), value}}});
 
             auto locked = weak.lock();
-            if (locked != nullptr && resp.success == false)
+            if (locked == nullptr)
+                co_return;
+
+            if (resp.success)
+                locked->super_hide(value);
+            else
                 locked->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
         };
         builder.resume = []() -> async::task<int> {
