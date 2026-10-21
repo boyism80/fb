@@ -7,6 +7,7 @@
 #include <fb/game/thread_params.h>
 #include <macro.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <exception>
 #include <format>
@@ -52,6 +53,10 @@ async::task<void> group::container::create(character& me, std::string_view targe
 
             if (target->option(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
+
+            if (target->matchmaker.queued())
+                throw std::runtime_error(
+                    std::format("{}님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다.", target_name_str));
         }
     }
 
@@ -115,6 +120,10 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
         {
             if (target->option(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
+
+            if (target->group_id() != actor.group_id() && target->matchmaker.queued())
+                throw std::runtime_error(
+                    std::format("{}님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다.", target_name_str));
         }
     }
 
@@ -229,7 +238,8 @@ async::task<void> group::container::handle_action(character& actor, std::string_
     if (self && group_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
-    auto is_master = false;
+    auto is_master        = false;
+    auto target_is_member = false;
     if (group_id.has_value())
     {
         auto actor_name = actor.name();
@@ -237,7 +247,9 @@ async::task<void> group::container::handle_action(character& actor, std::string_
         if (guard.has_value() == false || guard->value() == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
 
-        is_master = (guard->value()->master() == actor_name);
+        is_master        = (guard->value()->master() == actor_name);
+        auto members     = guard->value()->members();
+        target_is_member = std::find(members.begin(), members.end(), target_name_str) != members.end();
     }
 
     co_await this->_server.threads.switching(weak);
@@ -245,6 +257,10 @@ async::task<void> group::container::handle_action(character& actor, std::string_
     auto error = std::optional<std::string>{};
     try
     {
+        // A ticket holds the members it was queued with, so a queued player takes in no one.
+        if (self == false && target_is_member == false && actor.matchmaker.queued())
+            throw std::runtime_error("매치메이킹 대기 중에는 그룹원을 받을 수 없습니다.");
+
         if (self)
         {
             if (is_master)

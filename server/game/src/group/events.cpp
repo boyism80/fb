@@ -180,6 +180,13 @@ async::task<void> group::container::on_create(std::string                     ta
                     ch->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), name), MESSAGE_TYPE::STATE);
             }
             ch->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+
+            // A member on another host was not checked before joining, so its solo ticket ends here.
+            if (ch->matchmaker.queued())
+            {
+                co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
+                ch->message("그룹에 들어가 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
+            }
             co_return;
         },
         online);
@@ -273,6 +280,13 @@ async::task<void> group::container::on_enter(std::string                target,
         {
             ptr->group_id(group_id);
             ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+
+            // A member on another host was not checked before joining, so its solo ticket ends here.
+            if (ptr->matchmaker.queued())
+            {
+                co_await ptr->matchmaker.dequeue(matchmaker::initiator::SERVER);
+                ptr->message("그룹에 들어가 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
+            }
         }
 
         if (before != nullptr)
