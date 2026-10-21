@@ -945,6 +945,31 @@ return {
         end
     end,
 
+    -- order: 'kill_first' or 'heal_first' for the buff order. 노도성황 kills at 1 hp, 운기 restores mp each tick.
+    concast_after_death = function(me, step, order)
+        me:unbuff('노도성황')
+        me:unbuff('운기')
+        if order == 'kill_first' then
+            me:buff('노도성황', 30)
+            me:buff('운기', 11)
+        else
+            me:buff('운기', 11)
+            me:buff('노도성황', 30)
+        end
+        me:mp(0)
+        me:hp(1)
+        sleep(2500)
+
+        local ghost = me:state() == STATE.GHOST
+        local mp = me:mp()
+        me:unbuff('노도성황')
+        me:unbuff('운기')
+        me:state(STATE.NORMAL)
+        me:hp(me:maxhp())
+        me:mp(me:maxmp())
+        report(me, ghost, step, string.format('mp=%d', mp))
+    end,
+
     -- transfer_to throws a C++ exception when the destination table is missing.
     builtin_exception = function(me, step)
         local ok, err = pcall(function()

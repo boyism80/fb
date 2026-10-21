@@ -58,6 +58,16 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
             auto buffs       = obj->buffs; // To avoid iterator invalidation
             for (auto& [buff_id, buff] : buffs)
             {
+                // An earlier on_concast may have moved the object off this thread, killed it or removed this buff.
+                if (obj->thread() != thread)
+                    break;
+
+                if (obj->is(OBJECT_TYPE::LIFE) && static_cast<fb::game::life&>(*obj).alive() == false)
+                    break;
+
+                if (obj->buffs.find(buff_id) != buff)
+                    continue;
+
                 if (buff->remaining() <= 0ms)
                 {
                     ended_buffs.push_back(buff);
