@@ -275,7 +275,7 @@ namespace Http.Reepository
             return (results, failed);
         }
 
-        public async Task<Mail> Write(uint world, string user, uint sender, string title, string contents)
+        public async Task<(Mail Mail, ushort Unread)> Write(uint world, string user, uint sender, string title, string contents)
         {
             uint uid;
             if (uint.TryParse(user, out var userId))
@@ -299,7 +299,8 @@ namespace Http.Reepository
             dynamicParams.Add("max_count", Fb.Model.ConstValue.Mail.MaxCount);
 
             await using var reader = await conn.QueryMultipleAsync($"USP_MAIL_WRITE", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
-            var result = await reader.ReadFirstAsync<int>();
+            var head = await reader.ReadFirstAsync();
+            var result = Convert.ToInt32(head.RESULT);
             if (result == 2)
                 throw new LogicException(ErrorCode.MailBoxFull);
             if (result != 1)
@@ -308,7 +309,7 @@ namespace Http.Reepository
             var mail = await reader.ReadFirstOrDefaultAsync<Http.Model.Mail>() ??
                 throw new LogicException(ErrorCode.MailNotExists);
 
-            return mail;
+            return (mail, Convert.ToUInt16(head.UNREAD));
         }
 
         public async Task<ushort> Unread(uint world, uint user)

@@ -257,18 +257,17 @@ namespace Internal.Controllers
         {
             try
             {
-                var mail = await _dbContext.Mail.Write(request.World, request.User, request.Sender, request.Title, request.Contents);
-                var protocolMail = _mapper.Map<Protocol.Mail>(mail);
-
                 // Find sender name from UID (name table is in unified DB, cannot JOIN)
-                var senderName = await _dbContext.Character.GetName(request.World, mail.Sender) ?? string.Empty;
+                var senderName = await _dbContext.Character.GetName(request.World, request.Sender) ?? string.Empty;
+                var (mail, unread) = await _dbContext.Mail.Write(request.World, request.User, request.Sender, request.Title, request.Contents);
+                var protocolMail = _mapper.Map<Protocol.Mail>(mail);
                 protocolMail.Sender = senderName;
 
                 var response = new Response.WriteMail
                 {
                     Mail = protocolMail,
                     Host = request.Host,
-                    Unread = await _dbContext.Mail.Unread(request.World, mail.User),
+                    Unread = unread,
                     Error = (uint)ErrorCode.None
                 };
 
