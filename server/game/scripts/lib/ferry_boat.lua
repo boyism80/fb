@@ -174,6 +174,10 @@ local function step_toward(boat, tx, ty)
     return true
 end
 
+function M.docked()
+    return phase_at(datetime()) == 'docked'
+end
+
 function M.sync(map_id)
     local route = ROUTES[map_id]
     if route == nil then

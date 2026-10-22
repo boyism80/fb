@@ -1,4 +1,5 @@
 -- npc: 고구려-일본섬선원
+local ferry_boat = require('lib.ferry_boat')
 
 local function run_schedule_dialog_japan(me, npc)
     ::NPC_206_0010::
@@ -46,14 +47,7 @@ return {
             return
         end
 
-        local t = datetime()
-        local hour = t.hour
-        local minute = t.minute
-        if (hour % 2) ~= 1 then
-            me:dialog(npc, '배가 선착장에 없습니다.', { prev = false, next = false })
-            return
-        end
-        if minute < 40 or minute > 59 then
+        if ferry_boat.docked() == false then
             me:dialog(npc, '배가 선착장에 없습니다.', { prev = false, next = false })
             return
         end
@@ -98,6 +92,10 @@ return {
         me:dialog(npc, '그럼, 선실에 승선시켜드리도록 하겠습니다.', { prev = false, next = true })
         me:dialog(npc, '배가 출항한뒤 일정 시간 후에 일본에 도착하게 됩니다. 즐거운 여행 되시길..', { prev = false, next = false })
 
+        if ferry_boat.docked() == false then
+            me:dialog(npc, '배가 이미 출항했습니다.', { prev = false, next = false })
+            return
+        end
         if not me:rmitem('고구려-일본승선권', 1, ITEM_DELETE_TYPE.GIVE) then
             return
         end
