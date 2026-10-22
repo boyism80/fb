@@ -945,6 +945,20 @@ return {
         end
     end,
 
+    verify_achievement_replaced = function(me, step, id)
+        id = tonumber(id)
+        me:push_achievement(id, 'old', 1, 1)
+        local held = me:achievement(id)
+        me:push_achievement(id, 'new', 1, 1)
+        local text = held ~= nil and held:text() or nil
+        me:erase_achievement(id)
+        if text == nil then
+            report(me, true, step)
+        else
+            report(me, false, step, 'a replaced achievement still answered ' .. tostring(text))
+        end
+    end,
+
     verify_lock_guard = function(me, step, kind, ms)
         local group = kind == 'group' and me:group() or nil
         local clan = kind == 'clan' and me:clan() or nil

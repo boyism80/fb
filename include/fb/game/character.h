@@ -87,7 +87,7 @@ public:
 
 private:
     using mob_vector_t      = std::vector<std::shared_ptr<fb::game::mob>>;
-    using achievement_map_t = std::map<uint32_t, std::unique_ptr<achievement>>;
+    using achievement_map_t = std::map<uint32_t, std::shared_ptr<achievement>>;
 
     enum class LOGIN_STATE : uint8_t
     {

@@ -2827,23 +2827,23 @@ int builtin::character::builtin_achievements(lua_State* L)
         return 0;
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto buffer   = std::make_shared<std::vector<fb::game::achievement*>>();
+    auto buffer   = std::make_shared<std::vector<std::shared_ptr<fb::game::achievement>>>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (auto& [id, achievement] : ch->achievements)
         {
-            buffer->push_back(achievement.get());
+            buffer->push_back(achievement);
         }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
         lua->new_table();
         auto i = 0;
-        for (auto* achievement : *buffer)
+        for (auto& achievement : *buffer)
         {
             lua->pushinteger(i + 1);
-            lua->pushobject(*achievement);
+            lua->pushobject(achievement);
             lua_settable(L, -3);
             i++;
         }
@@ -2864,19 +2864,16 @@ int builtin::character::builtin_achievement(lua_State* L)
 
     auto i           = lua->tointeger(2);
     auto weak        = ch->weak_from_this_as<fb::game::character>();
-    auto achievement = std::make_shared<fb::game::achievement*>();
+    auto achievement = std::make_shared<std::shared_ptr<fb::game::achievement>>();
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
         if (ch->achievements.contains(i))
-            *achievement = ch->achievements.at(i).get();
+            *achievement = ch->achievements.at(i);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        if (*achievement == nullptr)
-            lua->pushnil();
-        else
-            lua->pushobject(**achievement);
+        lua->pushobject(*achievement);
         co_return 1;
     };
     return builder.run();
@@ -2901,16 +2898,16 @@ int builtin::character::builtin_push_achievement(lua_State* L)
     auto color = static_cast<uint16_t>(lua->tointeger(5));
 
     auto weak        = ch->weak_from_this_as<fb::game::character>();
-    auto achievement = std::make_shared<fb::game::achievement*>();
+    auto achievement = std::make_shared<std::shared_ptr<fb::game::achievement>>();
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
-        ch->achievements[id] = std::make_unique<fb::game::achievement>(id, text, icon, color);
-        *achievement         = ch->achievements[id].get();
+        *achievement         = std::make_shared<fb::game::achievement>(id, text, icon, color);
+        ch->achievements[id] = *achievement;
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushobject(**achievement);
+        lua->pushobject(*achievement);
         co_return 1;
     };
     return builder.run();

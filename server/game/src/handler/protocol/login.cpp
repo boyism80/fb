@@ -112,7 +112,7 @@ void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achie
 {
     for (auto& a : response)
     {
-        auto ptr = std::make_unique<fb::game::achievement>(a.model, a.text, a.icon, a.color);
+        auto ptr = std::make_shared<fb::game::achievement>(a.model, a.text, a.icon, a.color);
         ch.achievements.insert({a.model, std::move(ptr)});
     }
 }
