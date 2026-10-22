@@ -103,8 +103,8 @@
                                 <td style="text-align:right;">@listing.RemainingCount</td>
                                 <td style="text-align:right;">@listing.Price.ToString("N0")</td>
                                 <td><span class="dash-status-chip">@FormatStatus(listing.Status)</span></td>
-                                <td class="meta">@listing.ExpireDate.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td class="meta">@listing.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="meta">@DateTime.SpecifyKind(listing.ExpireDate, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="meta">@DateTime.SpecifyKind(listing.CreatedDate, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                             </tr>
                         }
                     </tbody>
