@@ -1777,14 +1777,14 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            auto cid = this->clan.id().value();
-            co_await this->server.clans.broadcast(this->world(), cid, text, MESSAGE_TYPE::BROWN);
-
+            auto cid                = this->clan.id().value();
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
             log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
             log_data["clan_id"]     = static_cast<Json::Int64>(cid);
             log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
+
+            co_await this->server.clans.broadcast(this->world(), cid, text, MESSAGE_TYPE::BROWN);
             this->server.log.write("clan_chat", log_data);
         }
         else if (receiver_name == "!!")
@@ -1795,14 +1795,14 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            auto gid = this->group.id().value();
-            co_await this->server.groups.broadcast(this->world(), gid, text, MESSAGE_TYPE::YELLOW);
-
+            auto gid                = this->group.id().value();
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
             log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
             log_data["group_id"]    = static_cast<Json::Int64>(gid);
             log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
+
+            co_await this->server.groups.broadcast(this->world(), gid, text, MESSAGE_TYPE::YELLOW);
             this->server.log.write("group_chat", log_data);
         }
         else
@@ -1813,13 +1813,13 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            this->message(text, MESSAGE_TYPE::NOTIFY);
-            co_await this->friends.broadcast(text, MESSAGE_TYPE::NOTIFY, true);
-
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
             log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
             log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
+
+            this->message(text, MESSAGE_TYPE::NOTIFY);
+            co_await this->friends.broadcast(text, MESSAGE_TYPE::NOTIFY, true);
             this->server.log.write("friend_chat", log_data);
         }
         co_return;
