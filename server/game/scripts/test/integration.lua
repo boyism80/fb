@@ -945,6 +945,15 @@ return {
         end
     end,
 
+    verify_clock_hour = function(me, step, hour)
+        local t = datetime()
+        if t.hour == tonumber(hour) then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('hour=%d expected=%s', t.hour, tostring(hour)))
+        end
+    end,
+
     verify_achievement_replaced = function(me, step, id)
         id = tonumber(id)
         me:push_achievement(id, 'old', 1, 1)

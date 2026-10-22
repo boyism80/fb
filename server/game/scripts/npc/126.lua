@@ -16,9 +16,9 @@ end
 local function in_hwahwa_time_window()
     local t = datetime()
     local hour = t and t.hour or 0
-    local min = t and t.min or 0
+    local minute = t and t.minute or 0
     local allowed_hours = { [1]=true, [4]=true, [7]=true, [10]=true, [13]=true, [16]=true, [19]=true, [22]=true }
-    return allowed_hours[hour] and min >= 10 and min <= 40
+    return allowed_hours[hour] == true and minute >= 10 and minute <= 40
 end
 
 local function get_smile_count(me)
