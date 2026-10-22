@@ -30,6 +30,7 @@ struct character
     static int builtin_rmitem(lua_State* L);
     static int builtin_exchange(lua_State* L);
     static int builtin_consume(lua_State* L);
+    static int builtin_rename_weapon(lua_State* L);
     static int builtin_drop_escrow_items(lua_State* L);
     static int builtin_state(lua_State* L);
     static int builtin_mimic(lua_State* L);

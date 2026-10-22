@@ -111,14 +111,6 @@ function M.rename_weapon(me, npc, from, to)
         return true
     end
 
-    if rename_price > 0 then
-        local money = me:money()
-        if rename_price > money then
-            npc:chat('돈이 모자랍니다.')
-            return true
-        end
-    end
-
     local cp949 = CP949(to)
     if #cp949 < 4 then
         npc:chat('이름이 너무 짧습니다.')
@@ -135,11 +127,14 @@ function M.rename_weapon(me, npc, from, to)
         return true
     end
 
-    if rename_price > 0 then
-        me:money(me:money() - rename_price)
+    local renamed = me:rename_weapon(weapon, to)
+    if renamed == nil then
+        npc:chat(string.format('%s 가지고 있지 않습니다.', name_with(model:name(), '을', '를')))
+    elseif renamed == false then
+        npc:chat('돈이 모자랍니다.')
+    else
+        npc:chat(string.format('%s의 이름을 %s 변경했습니다.', from, name_with(to, '으로', '로')))
     end
-    weapon:rename(to)
-    npc:chat(string.format('%s의 이름을 %s 변경했습니다.', from, name_with(to, '으로', '로')))
     return true
 end
 
@@ -1142,23 +1137,20 @@ function M.show_rename_weapon_menu(me, npc)
     end
 
     local price = weapon:model():rename_price()
-    local money = me:money()
     if price > 0 then
-        if me:menu(npc, string.format('바꾸는데 %d전이 필요합니다. 정말 바꾸시겠습니까?', price), {'네', '아니오'}) == 1 then
-            if price > money then
-                return me:dialog(npc, '돈이 부족합니다.', { prev = false, next = true })
-            end
-
-            if not me:consume({ ['money'] = price }) then
-                return me:dialog(npc, '돈이 부족합니다.', { prev = false, next = true })
-            end
-        else
+        if me:menu(npc, string.format('바꾸는데 %d전이 필요합니다. 정말 바꾸시겠습니까?', price), {'네', '아니오'}) ~= 1 then
             return DIALOG_RESULT.NEXT
         end
     end
 
-    weapon:rename(name)
-    return me:dialog(npc, string.format('%s의 이름을 %s 변경했습니다.', weapon:model():name(), name_with(name, '으로', '로')), { prev = false, next = true })
+    local renamed = me:rename_weapon(weapon, name)
+    if renamed == nil then
+        return me:dialog(npc, '장비가 바뀌었습니다.', { prev = false, next = true })
+    elseif renamed == false then
+        return me:dialog(npc, '돈이 부족합니다.', { prev = false, next = true })
+    else
+        return me:dialog(npc, string.format('%s의 이름을 %s 변경했습니다.', weapon:model():name(), name_with(name, '으로', '로')), { prev = false, next = true })
+    end
 end
 
 -- Dialog button convention:

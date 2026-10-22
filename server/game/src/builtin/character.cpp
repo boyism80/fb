@@ -64,6 +64,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"rmitem",                       builtin::character::builtin_rmitem},
 {"exchange",                     builtin::character::builtin_exchange},
 {"consume",                      builtin::character::builtin_consume},
+{"rename_weapon",                builtin::character::builtin_rename_weapon},
 {"drop_escrow_items",            builtin::character::builtin_drop_escrow_items},
 {"state",                        builtin::character::builtin_state},
 {"mimic",                        builtin::character::builtin_mimic},
@@ -1394,6 +1395,59 @@ int builtin::character::builtin_exchange(lua_State* L)
 int builtin::character::builtin_consume(lua_State* L)
 {
     return exchange(L, 2, 0, 3, true);
+}
+
+// Returns true when renamed, false when the money is short, and nil when the weapon is no longer in the inventory.
+int builtin::character::builtin_rename_weapon(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    auto item = lua->touserdata<fb::game::item>(2);
+    if (ch == nullptr || item == nullptr || lua->is_string(3) == false)
+        return 0;
+
+    auto& model = item->model();
+    if (model.attr(ITEM_ATTRIBUTE::WEAPON) == false)
+        return 0;
+
+    auto price = static_cast<const fb::model::weapon&>(model).rename;
+    if (price.has_value() == false)
+        return 0;
+
+    // Checking the slot, paying and renaming in one yield leaves no gap for a give or drop to move the weapon.
+    auto name     = lua->tostring(3);
+    auto target   = item->weak_from_this_as<fb::game::item>();
+    auto result   = std::make_shared<std::optional<bool>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = ch->weak_from_this_as<fb::game::character>();
+    builder.yield = [=]() -> async::task<void> {
+        auto weapon = target.lock();
+        if (weapon == nullptr || ch->items.index(weapon) == 0xFF)
+            co_return;
+
+        if (ch->money() < price.value())
+        {
+            *result = false;
+        }
+        else
+        {
+            ch->money_reduce(price.value());
+            std::static_pointer_cast<fb::game::weapon>(weapon)->custom_name(name);
+            *result = true;
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (result->has_value() == false)
+            co_return 0;
+
+        lua->pushboolean(result->value());
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_drop_escrow_items(lua_State* L)

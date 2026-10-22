@@ -85,14 +85,14 @@ void fb::game::weapon::custom_name(std::string_view name)
 
 void fb::game::weapon::reset_custom_name()
 {
-    auto owner = this->_container->owner();
-    if (owner == nullptr)
-        return;
+    this->_custom_name.reset();
 
     if (this->_container == nullptr)
         return;
 
-    this->_custom_name.reset();
+    auto owner = this->_container->owner();
+    if (owner == nullptr)
+        return;
 
     auto index = this->_container->index(this->shared_from_this_as<fb::game::item>());
     if (index != 0xFF)
