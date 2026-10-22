@@ -122,8 +122,8 @@ namespace AdminTool.Services
                     ActiveCount = await conn.QuerySingleAsync<int>(
                         $"SELECT COUNT(*) FROM `marketplace_listing` WHERE {whereClause} AND `status` = 0",
                         parameters),
-                    TodayCompletedCount = await conn.QuerySingleAsync<int>(
-                        $"SELECT COUNT(*) FROM `marketplace_listing` WHERE {whereClause} AND `status` = 1 AND `created_date` >= @todayStart",
+                    TodayPurchaseCount = await conn.QuerySingleAsync<int>(
+                        $"SELECT COUNT(*) FROM `marketplace_purchase` WHERE {whereClause} AND `aborted` = 0 AND `created_date` >= @todayStart",
                         todayParams),
                     AveragePrice = await conn.QuerySingleOrDefaultAsync<ulong?>(
                         $"SELECT CAST(AVG(`price`) AS UNSIGNED) FROM `marketplace_listing` WHERE {whereClause} AND `status` = 0",
@@ -172,7 +172,7 @@ namespace AdminTool.Services
     public class MarketplaceStats
     {
         public int ActiveCount { get; set; }
-        public int TodayCompletedCount { get; set; }
+        public int TodayPurchaseCount { get; set; }
         public ulong AveragePrice { get; set; }
     }
 }
