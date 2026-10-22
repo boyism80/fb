@@ -303,9 +303,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     co_await this->server.threads.switching(weak);
     if (!fb::config<std::optional<uint32_t>>("world"))
     {
-        ch->restore_return_point(resp.character.map,
-                                 fb::model::point16_t{static_cast<uint16_t>(resp.character.position.x),
-                                                      static_cast<uint16_t>(resp.character.position.y)});
+        ch->matchmaker.restore_return_point(resp.character.map,
+                                            fb::model::point16_t{static_cast<uint16_t>(resp.character.position.x),
+                                                                 static_cast<uint16_t>(resp.character.position.y)});
     }
     ch->items.deposited(resp.character.deposited_money);
     ch->stat.base_hp(resp.character.base_hp, false);
@@ -342,7 +342,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         {
             auto members = group->members();
             if (std::find(members.begin(), members.end(), ch->name()) != members.end())
-                ch->group_id(group->id());
+                ch->group.id(group->id());
         }
     }
 
@@ -358,7 +358,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         auto entry    = target_map;
         auto position = std::make_optional(fb::model::point16_t(position_x, position_y));
         if (entry->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP &&
-            ch->group_id().has_value() == false)
+            ch->group.id().has_value() == false)
         {
             entry    = this->server.maps.find(0);
             position = std::nullopt;
@@ -386,9 +386,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         std::ignore        = co_await ch->buffs.push_back(model, buff.time);
     }
 
-    if (ch->group_id().has_value())
+    if (ch->group.id().has_value())
     {
-        auto gid   = ch->group_id().value();
+        auto gid   = ch->group.id().value();
         auto guard = co_await this->server.groups.enter_write(gid);
         if (auto& group = guard.value(); group != nullptr)
         {
@@ -398,7 +398,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         }
         else
         {
-            ch->group_reset();
+            ch->group.reset();
         }
     }
 
@@ -448,7 +448,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         {
             entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
         }
-        ch->friends(std::move(entries));
+        ch->friends.load(std::move(entries));
     }
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
                                         ? this->server.now()
@@ -480,13 +480,13 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     if (transfer == false)
     {
-        ch->friends_sync(1);
+        ch->friends.sync(1);
         // Notify from Init mutual flags. Client may later replace the list;
         // accept that race rather than deferring behind a pending flag.
         if (ch->role() <= ROLE::USER)
         {
             auto message = std::format(_TEXT(MESSAGE_FRIEND_LOGIN), ch->name());
-            co_await ch->broadcast_friends(message, MESSAGE_TYPE::NOTIFY, true);
+            co_await ch->friends.broadcast(message, MESSAGE_TYPE::NOTIFY, true);
         }
     }
 
@@ -676,7 +676,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
             this->server.matches.leave(*data);
 
             auto  weak     = data->template weak_from_this_as<character>();
-            auto& group_id = data->group_id();
+            auto& group_id = data->group.id();
             if (group_id.has_value())
             {
                 auto gid = group_id.value();
@@ -688,7 +688,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
                 }
                 catch (const std::runtime_error&)
                 { }
-                data->group_reset();
+                data->group.reset();
                 this->server.groups.update_portraits(gid);
             }
 

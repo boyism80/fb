@@ -61,7 +61,7 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
         if (marriage.spouse_id.has_value())
             sstream << "배우자: " << marriage.spouse_name << std::endl;
 
-        auto& group_id = this->ch.group_id();
+        auto& group_id = this->ch.group.id();
         if (group_id.has_value())
         {
             auto  guard = this->ch.server.groups.enter_read(group_id.value());

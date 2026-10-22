@@ -116,7 +116,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         }
         this->log.write("logout", log_data);
 
-        auto& group_id = ptr->group_id();
+        auto& group_id = ptr->group.id();
         if (group_id.has_value())
         {
             auto gid = group_id.value();
@@ -128,7 +128,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
             }
             catch (const std::runtime_error&)
             { }
-            ptr->group_reset();
+            ptr->group.reset();
             this->groups.update_portraits(gid);
         }
 

@@ -141,7 +141,7 @@ void character::container::on_maintenance(const maintenance_state& state)
 
         if (state.active)
         {
-            if (state.finish_matches && ch->match() != nullptr)
+            if (state.finish_matches && ch->matchmaker.session() != nullptr)
                 co_return;
 
             auto socket_ptr = ch->socket_ptr();

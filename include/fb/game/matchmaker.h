@@ -3,9 +3,11 @@
 
 #include <async/task.h>
 #include <fb/lua.h>
+#include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <vector>
@@ -13,6 +15,7 @@
 namespace fb::game {
 
 class character;
+class match;
 
 struct matchmaking_skill
 {
@@ -57,6 +60,9 @@ private:
     std::optional<uint64_t>                         _ready_match_id;
     std::optional<ticket_state>                     _ticket;
     bool                                            _enqueuing = false;
+    std::weak_ptr<fb::game::match>                  _session;
+    std::optional<uint32_t>                         _return_map;
+    std::optional<fb::model::point16_t>             _return_position;
 
 public:
     explicit matchmaker(character& owner);
@@ -81,6 +87,14 @@ public:
     async::task<void>                        discard_leftover_ticket();
     async::task<void>                        confirm(uint64_t match_id);
     async::task<void>                        decline(uint64_t match_id, initiator by);
+    std::shared_ptr<fb::game::match>         session() const;
+    void                                     session(std::shared_ptr<fb::game::match> value);
+    void                                     save_return_point();
+    void                                     restore_return_point(uint32_t map, const fb::model::point16_t& position);
+    bool                                     has_return_point() const;
+    uint32_t                                 return_map() const;
+    fb::model::point16_t                     return_position() const;
+    [[nodiscard]] async::task<bool>          transfer_home();
 };
 
 } // namespace fb::game

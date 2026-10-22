@@ -208,7 +208,7 @@ async::task<void> match::join(character& ch, uint32_t team)
     if (start_wait)
         this->wait(DEFAULT_WAIT_SECONDS);
 
-    ch.match(this->shared_from_this_as<match>());
+    ch.matchmaker.session(this->shared_from_this_as<match>());
     co_await this->invoke("on_join", ch);
 
     {
@@ -243,7 +243,7 @@ void match::leave(character& ch)
         }
         empty = this->_members.empty();
     }
-    ch.match(nullptr);
+    ch.matchmaker.session(nullptr);
     if (empty && closed == false)
         this->enqueue_close();
 }
@@ -557,9 +557,9 @@ async::task<void> match::close()
         {
             co_await this->_server.threads.switching(ch->weak_from_this_as<character>());
             ch->timer(0, fb::model::enum_value::TIMER_TYPE::OFF);
-            ch->match(nullptr);
+            ch->matchmaker.session(nullptr);
             if (ch->map() != nullptr)
-                std::ignore = co_await ch->transfer_home();
+                std::ignore = co_await ch->matchmaker.transfer_home();
         }
         catch (std::exception& e)
         {
@@ -698,7 +698,7 @@ async::task<void> match::container::join(character& ch, uint64_t match_id, uint3
     if (host != fb::config<uint8_t>("id"))
         throw std::runtime_error(std::format("match {} belongs to host {}", match_id, host));
 
-    auto current = ch.match();
+    auto current = ch.matchmaker.session();
     if (current != nullptr && current->id() == match_id)
         co_return;
     if (current != nullptr)
@@ -741,7 +741,7 @@ async::task<void> match::container::join(character& ch, uint64_t match_id, uint3
 
 void match::container::leave(character& ch)
 {
-    auto session = ch.match();
+    auto session = ch.matchmaker.session();
     if (session == nullptr)
         return;
 

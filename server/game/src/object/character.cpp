@@ -45,6 +45,8 @@ character::character(fb::game::server& server, const initial_params& params) :
     marketplace(*this),
     unsettled(*this),
     clan(*this),
+    friends(*this),
+    group(*this),
     matchmaker(*this),
     life(server,
          table::life[0],
@@ -72,16 +74,6 @@ character::character(fb::game::server& server, const initial_params& params) :
     _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now();
-}
-
-std::shared_ptr<fb::game::match> character::match() const
-{
-    return this->_match.session.lock();
-}
-
-void character::match(std::shared_ptr<fb::game::match> value)
-{
-    this->_match.session = value;
 }
 
 character::~character()
@@ -385,121 +377,6 @@ uint32_t character::world() const
     return this->_world;
 }
 
-void character::save_return_point()
-{
-    this->assert_thread();
-    if (this->_map == nullptr)
-        return;
-
-    this->_match.return_map      = this->_map->model().id;
-    this->_match.return_position = this->_position;
-}
-
-void character::restore_return_point(uint32_t map, const fb::model::point16_t& position)
-{
-    this->assert_thread();
-    this->_match.return_map      = map;
-    this->_match.return_position = position;
-}
-
-bool character::has_return_point() const
-{
-    return this->_match.return_map.has_value() && this->_match.return_position.has_value();
-}
-
-uint32_t character::return_map() const
-{
-    return this->_match.return_map.value_or(0);
-}
-
-fb::model::point16_t character::return_position() const
-{
-    return this->_match.return_position.value_or(fb::model::point16_t{0, 0});
-}
-
-async::task<bool> character::transfer_home()
-{
-    this->assert_thread();
-    if (this->has_return_point() == false)
-        co_return false;
-
-    auto dest = this->server.maps.find(this->_match.return_map.value());
-    if (dest == nullptr)
-        co_return false;
-
-    auto position = this->_match.return_position.value();
-    if (fb::config<std::optional<uint32_t>>("world"))
-    {
-        co_return co_await this->map(dest, position);
-    }
-    else
-    {
-        if (this->map() == nullptr)
-            co_return false;
-
-        auto self    = this->shared_from_this_as<character>();
-        auto old_map = this->_map;
-        try
-        {
-            auto   world = this->world();
-            auto&& resp  = co_await this->server.http.post(
-                self->weak_from_this_as<character>(),
-                "internal",
-                "/in-game/transfer",
-                internal_reqs::Transfer{world, internal::Service::Game, dest->model().host, this->name(), false});
-
-            // Another move may have run while waiting; that move stands and this transfer is dropped.
-            if (this->_map != old_map)
-                co_return false;
-
-            switch (static_cast<ERROR_CODE>(resp.error))
-            {
-            case ERROR_CODE::NONE:
-                break;
-
-            case ERROR_CODE::MAINTENANCE:
-            {
-                this->message(resp.maintenance_message.value_or(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS)),
-                              MESSAGE_TYPE::STATE);
-                if (auto socket_ptr = this->socket_ptr(); socket_ptr != nullptr)
-                    socket_ptr->close();
-                co_return false;
-            }
-
-            case ERROR_CODE::SERVER_NOT_READY:
-                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-
-            case ERROR_CODE::BANNED:
-                throw std::runtime_error(
-                    character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
-
-            default:
-                throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
-            }
-
-            std::ignore = co_await this->map(nullptr);
-            co_await this->server.save(*this);
-            co_await this->listener.on_transfer(*this, *dest, position, resp.ip, resp.port);
-        }
-        catch (std::exception& e)
-        {
-            this->update_map();
-            this->show();
-            this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
-            co_return false;
-        }
-        catch (boost::system::error_code& /*e*/)
-        {
-            this->update_map();
-            this->show();
-            this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
-            co_return false;
-        }
-
-        co_return true;
-    }
-}
-
 void character::role(ROLE value)
 {
     this->assert_thread();
@@ -614,7 +491,7 @@ void character::hair(uint16_t value)
     auto old_hair = this->_hair;
     this->_hair   = value;
     this->show();
-    this->refresh_group_portrait();
+    this->group.refresh_portrait();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -640,7 +517,7 @@ void character::face(uint8_t value)
 
     this->_face = value;
     this->show();
-    this->refresh_group_portrait();
+    this->group.refresh_portrait();
 }
 
 uint16_t character::ridable_id() const
@@ -674,16 +551,7 @@ void character::color(uint8_t value)
 
     this->_color = value;
     this->show();
-    this->refresh_group_portrait();
-}
-
-void character::refresh_group_portrait()
-{
-    this->assert_thread();
-
-    auto& gid = this->group_id();
-    if (gid.has_value())
-        this->server.groups.update_portraits(gid.value());
+    this->group.refresh_portrait();
 }
 
 std::optional<uint8_t> character::armor_color() const
@@ -1069,8 +937,8 @@ STATE character::state_to(const fb::game::object& to, STATE state) const
     if (ch.detect())
         return STATE::HALF_CLOACK;
 
-    auto& g1 = this->_group_id;
-    auto& g2 = ch._group_id;
+    auto& g1 = this->group._id;
+    auto& g2 = ch.group._id;
     if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
         return STATE::HALF_CLOACK;
 
@@ -1419,7 +1287,7 @@ void character::option(OPTION key, bool value, bool notify)
         {
             this->update_external();
             if (this->items.helmet() != nullptr)
-                this->refresh_group_portrait();
+                this->group.refresh_portrait();
         }
     }
 }
@@ -1620,133 +1488,6 @@ void character::title(std::string_view value)
     this->assert_thread();
 
     this->_title = std::string(value);
-}
-
-const std::optional<uint64_t>& character::group_id() const
-{
-    this->assert_thread();
-
-    return this->_group_id;
-}
-
-std::optional<uint64_t>& character::group_id()
-{
-    this->assert_thread();
-
-    return this->_group_id;
-}
-
-void character::group_id(uint64_t gid)
-{
-    this->assert_thread();
-
-    this->_group_id = gid;
-}
-
-void character::group_reset()
-{
-    this->assert_thread();
-
-    this->_group_id.reset();
-}
-
-const std::vector<friend_entry>& character::friends() const
-{
-    this->assert_thread();
-    return this->_friends;
-}
-
-void character::friends(std::vector<friend_entry> value)
-{
-    this->assert_thread();
-    this->_friends = std::move(value);
-}
-
-void character::update_friend_relation(uint32_t friend_uid, std::string_view friend_name, bool mutual)
-{
-    this->assert_thread();
-
-    for (auto& entry : this->_friends)
-    {
-        if (entry.uid == friend_uid)
-        {
-            entry.name   = std::string(friend_name);
-            entry.mutual = mutual;
-            return;
-        }
-    }
-
-    this->_friends.push_back(friend_entry{friend_uid, std::string(friend_name), mutual});
-}
-
-bool character::is_mutual_friend(uint32_t uid) const
-{
-    this->assert_thread();
-    for (auto& entry : this->_friends)
-    {
-        if (entry.uid == uid)
-            return entry.mutual;
-    }
-    return false;
-}
-
-bool character::is_mutual_friend(std::string_view name) const
-{
-    this->assert_thread();
-    for (auto& entry : this->_friends)
-    {
-        if (entry.name == name)
-            return entry.mutual;
-    }
-    return false;
-}
-
-async::task<void> character::broadcast_friends(std::string_view message, MESSAGE_TYPE type, bool mutual_only)
-{
-    this->assert_thread();
-
-    auto message_str = std::string(message);
-    auto to_uids     = std::vector<uint32_t>{};
-    auto locals      = std::vector<std::shared_ptr<character>>{};
-    for (auto& entry : this->_friends)
-    {
-        if (mutual_only && entry.mutual == false)
-            continue;
-
-        to_uids.push_back(entry.uid);
-        auto ch = this->server.characters.find(entry.uid);
-        if (ch != nullptr)
-            locals.push_back(ch);
-    }
-
-    // Send on each friend's owning thread (same pattern as AMQP friend_message).
-    if (locals.empty() == false)
-    {
-        this->server.characters.foreach_enqueue(
-            [message_str, type](std::shared_ptr<character>& ch) -> async::task<void> {
-                ch->message(message_str, type);
-                co_return;
-            },
-            locals);
-    }
-
-    if (to_uids.empty() == false)
-    {
-        auto world         = this->world();
-        auto host          = fb::config<uint32_t>("id");
-        auto process_world = fb::config<std::optional<uint32_t>>("world");
-        std::ignore        = co_await this->server.http.post("internal",
-                                                      "/in-game/friend-broadcast",
-                                                      internal_reqs::FriendBroadcast{world,
-                                                                                     host,
-                                                                                     this->id,
-                                                                                     this->name(),
-                                                                                     message_str,
-                                                                                     static_cast<uint8_t>(type),
-                                                                                     std::move(to_uids),
-                                                                                     process_world});
-    }
-    co_return;
 }
 
 void character::assert_state(STATE value) const
@@ -2048,13 +1789,13 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
         }
         else if (receiver_name == "!!")
         {
-            if (this->group_id().has_value() == false)
+            if (this->group.id().has_value() == false)
             {
                 this->message(_TEXT(MESSAGE_GROUP_NOT_JOINED), MESSAGE_TYPE::NOTIFY);
                 co_return;
             }
 
-            auto gid = this->group_id().value();
+            auto gid = this->group.id().value();
             co_await this->server.groups.broadcast(this->world(), gid, text, MESSAGE_TYPE::YELLOW);
 
             auto log_data           = Json::Value();
@@ -2066,23 +1807,14 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
         }
         else
         {
-            auto has_mutual = false;
-            for (auto& entry : this->_friends)
-            {
-                if (entry.mutual)
-                {
-                    has_mutual = true;
-                    break;
-                }
-            }
-            if (has_mutual == false)
+            if (this->friends.has_mutual() == false)
             {
                 this->message(_TEXT(MESSAGE_FRIEND_CHAT_NO_MUTUAL), MESSAGE_TYPE::NOTIFY);
                 co_return;
             }
 
             this->message(text, MESSAGE_TYPE::NOTIFY);
-            co_await this->broadcast_friends(text, MESSAGE_TYPE::NOTIFY, true);
+            co_await this->friends.broadcast(text, MESSAGE_TYPE::NOTIFY, true);
 
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
@@ -2258,7 +1990,7 @@ void character::handle_death(std::shared_ptr<fb::game::object> killer)
     }
     this->server.log.write("death", log_data);
 
-    auto session = this->match();
+    auto session = this->matchmaker.session();
     if (session != nullptr)
         session->on_death(*this, killer);
 }
@@ -2267,7 +1999,7 @@ void character::enqueue_death_warp()
 {
     this->assert_thread();
 
-    if (this->match() != nullptr)
+    if (this->matchmaker.session() != nullptr)
         return;
 
     auto weak    = this->weak_from_this_as<character>();
@@ -2380,7 +2112,7 @@ void character::award_exp(const fb::game::mob& mob)
 {
     this->assert_thread();
 
-    auto& group_id = this->group_id();
+    auto& group_id = this->group.id();
     auto  map      = this->map();
     auto  exp      = mob.total_exp();
 
@@ -2450,11 +2182,11 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.divine_beast     = static_cast<uint8_t>(this->_divine_beast);
-    if (this->_match.return_map.has_value() && this->_match.return_position.has_value())
+    if (this->matchmaker.has_return_point())
     {
-        dto.map = this->_match.return_map.value();
-        dto.position =
-            fb::protocol::internal::Position{this->_match.return_position->x, this->_match.return_position->y};
+        dto.map      = this->matchmaker.return_map();
+        dto.position = fb::protocol::internal::Position{this->matchmaker.return_position().x,
+                                                        this->matchmaker.return_position().y};
     }
     else if (!fb::config<std::optional<uint32_t>>("world"))
     {
@@ -2647,12 +2379,6 @@ void character::freeze(bool value)
 {
     this->assert_thread();
     this->listener.on_freeze(*this, value);
-}
-
-void character::friends_sync(uint8_t enabled)
-{
-    this->assert_thread();
-    this->listener.on_friends_sync(*this, enabled);
 }
 
 void character::holyday_screen(uint8_t                          screen,

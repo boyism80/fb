@@ -116,13 +116,6 @@ public:
         bool                enabled        = false;
     };
 
-    struct match_state_t
-    {
-        std::weak_ptr<fb::game::match>      session;
-        std::optional<uint32_t>             return_map;
-        std::optional<fb::model::point16_t> return_position;
-    };
-
     struct evaluation_state_t
     {
         uint16_t                                score = 0;
@@ -155,6 +148,48 @@ public:
         // clang-format on
     };
 
+    class friends
+    {
+    private:
+        character&                _owner;
+        std::vector<friend_entry> _entries;
+
+    public:
+        explicit friends(character& owner);
+
+    public:
+        // clang-format off
+        const std::vector<friend_entry>& entries() const;
+        void                             load(std::vector<friend_entry> value);
+        void                             update(uint32_t uid, std::string_view name, bool mutual);
+        bool                             is_mutual(uint32_t uid) const;
+        bool                             is_mutual(std::string_view name) const;
+        bool                             has_mutual() const;
+        [[nodiscard]] async::task<void>  broadcast(std::string_view message, MESSAGE_TYPE type, bool mutual_only = true);
+        void                             sync(uint8_t enabled);
+        // clang-format on
+    };
+
+    class group
+    {
+        friend class character;
+
+    private:
+        character&              _owner;
+        std::optional<uint64_t> _id = std::nullopt;
+
+    public:
+        explicit group(character& owner);
+
+    public:
+        // clang-format off
+        const std::optional<uint64_t>& id() const;
+        void                           id(uint64_t value);
+        void                           reset();
+        void                           refresh_portrait();
+        // clang-format on
+    };
+
 private:
     // clang-format off
     const fb::model::datetime                        _created_date;
@@ -182,7 +217,6 @@ private:
     uint64_t                                         _money = 0;
     std::optional<character_appearance<>>            _mimicry = std::nullopt;
     std::string                                      _title = "";
-    std::optional<uint64_t>                          _group_id = std::nullopt;
     uint16_t                                         _weapon_damage = 0;
     bool                                             _detect = false;
     mob_vector_t                                     _spawned_mobs = {};
@@ -195,8 +229,6 @@ private:
     mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;
-    std::vector<friend_entry>                        _friends;
-    match_state_t                                    _match;
     std::optional<std::pair<uint32_t, uint16_t>>     _world_map = std::nullopt;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {1,};
     // clang-format on
@@ -215,6 +247,8 @@ public:
     fb::game::marketplace                         marketplace;
     fb::game::unsettled_requests                  unsettled;
     class clan                                    clan;
+    class friends                                 friends;
+    class group                                   group;
     fb::game::matchmaker                          matchmaker;
     std::unordered_map<std::string, Json::Value>  vars;
     fb::lua::context*                             dialog        = nullptr;
@@ -335,14 +369,6 @@ public:
     bool                                                      abort_login();
     ROLE                                                      role() const;
     uint32_t                                                  world() const;
-    void                                                      save_return_point();
-    void                                                      restore_return_point(uint32_t map, const fb::model::point16_t& position);
-    bool                                                      has_return_point() const;
-    uint32_t                                                  return_map() const;
-    fb::model::point16_t                                      return_position() const;
-    [[nodiscard]] async::task<bool>                           transfer_home();
-    std::shared_ptr<fb::game::match>                          match() const;
-    void                                                      match(std::shared_ptr<fb::game::match> value);
     void                                                      role(ROLE value);
     const std::optional<uint32_t>&                            birthday() const;
     void                                                      birthday(const std::optional<uint32_t>& value);
@@ -400,17 +426,6 @@ public:
     void                                                      screen_refresh();
     const std::string&                                        title() const;
     void                                                      title(std::string_view value);
-    const std::optional<uint64_t>&                            group_id() const;
-    std::optional<uint64_t>&                                  group_id();
-    void                                                      group_id(uint64_t gid);
-    void                                                      group_reset();
-    void                                                      refresh_group_portrait();
-    const std::vector<friend_entry>&                          friends() const;
-    void                                                      friends(std::vector<friend_entry> value);
-    void                                                      update_friend_relation(uint32_t friend_uid, std::string_view friend_name, bool mutual);
-    bool                                                      is_mutual_friend(uint32_t uid) const;
-    bool                                                      is_mutual_friend(std::string_view name) const;
-    [[nodiscard]] async::task<void>                           broadcast_friends(std::string_view message, MESSAGE_TYPE type, bool mutual_only = true);
     void                                                      assert_state(STATE value) const;
     void                                                      assert_state(const std::vector<STATE>& values) const;
     [[nodiscard]] async::task<bool>                           move(const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
@@ -437,7 +452,6 @@ public:
     void                                                      ui(uint8_t screen);
     void                                                      item_throw_confirm(uint8_t slot);
     void                                                      freeze(bool value);
-    void                                                      friends_sync(uint8_t enabled);
     void                                                      holyday_screen(uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION direction, const fb::model::point<uint8_t>& position);
     void                                                      weapon_damage(uint16_t value);
     uint16_t                                                  weapon_damage() const;

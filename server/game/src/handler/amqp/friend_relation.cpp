@@ -21,7 +21,7 @@ async::task<void> friend_relation::handle(const internal_resp::FriendRelation& m
 
     ch = weak.lock();
     if (ch != nullptr)
-        ch->update_friend_relation(message.friend_uid, message.friend_name, message.mutual);
+        ch->friends.update(message.friend_uid, message.friend_name, message.mutual);
 
     if (before != nullptr)
         co_await before->switching();

@@ -29,7 +29,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
     if (me.option(OPTION::GROUP) == false)
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
-    if (me.group_id().has_value())
+    if (me.group.id().has_value())
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
     if (me.name() == target_name_str)
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
@@ -48,7 +48,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
         auto target = params->characters.find(target_name_str);
         if (target != nullptr)
         {
-            if (target->group_id().has_value())
+            if (target->group.id().has_value())
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_GROUP_ALREADY_JOINED), target_name_str));
 
             if (target->option(OPTION::GROUP) == false)
@@ -82,7 +82,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
 
 async::task<void> group::container::destroy(character& me)
 {
-    auto group_id = me.group_id();
+    auto group_id = me.group.id();
     if (group_id.has_value() == false)
         co_return;
 
@@ -104,7 +104,7 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
 
     {
         auto found = this->_server.characters.find(target_name_str);
-        if (found != nullptr && found->hidden(actor) && found->group_id() != actor.group_id())
+        if (found != nullptr && found->hidden(actor) && found->group.id() != actor.group.id())
             throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name_str));
 
         if (found != nullptr && found->world() != actor.world())
@@ -121,7 +121,7 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
             if (target->option(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
 
-            if (target->group_id() != actor.group_id() && target->matchmaker.queued())
+            if (target->group.id() != actor.group.id() && target->matchmaker.queued())
                 throw std::runtime_error(
                     std::format("{}님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다.", target_name_str));
         }
@@ -169,7 +169,7 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
 async::task<void> group::container::leave_member(character& leaver)
 {
     auto weak = leaver.weak_from_this_as<character>();
-    if (leaver.group_id().has_value() == false)
+    if (leaver.group.id().has_value() == false)
         co_return;
 
     auto   world = leaver.world();
@@ -234,7 +234,7 @@ async::task<void> group::container::handle_action(character& actor, std::string_
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
     auto self     = (actor.name() == target_name_str);
-    auto group_id = actor.group_id();
+    auto group_id = actor.group.id();
     if (self && group_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 

@@ -412,7 +412,7 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
     auto  members            = std::vector<mp::TicketMember>{};
     auto  participants       = std::vector<std::shared_ptr<character>>{};
 
-    auto group_id = this->owner.group_id();
+    auto group_id = this->owner.group.id();
     if (group_id.has_value() == false)
     {
         participants.push_back(self);
@@ -600,4 +600,138 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
     }
 
     co_await server.threads.switching(weak);
+}
+
+std::shared_ptr<fb::game::match> matchmaker::session() const
+{
+    return this->_session.lock();
+}
+
+void matchmaker::session(std::shared_ptr<fb::game::match> value)
+{
+    this->_session = value;
+}
+
+void matchmaker::save_return_point()
+{
+    this->owner.assert_thread();
+
+    auto map = this->owner.map();
+    if (map == nullptr)
+        return;
+
+    this->_return_map      = map->model().id;
+    this->_return_position = this->owner.position();
+}
+
+void matchmaker::restore_return_point(uint32_t map, const fb::model::point16_t& position)
+{
+    this->owner.assert_thread();
+    this->_return_map      = map;
+    this->_return_position = position;
+}
+
+bool matchmaker::has_return_point() const
+{
+    return this->_return_map.has_value() && this->_return_position.has_value();
+}
+
+uint32_t matchmaker::return_map() const
+{
+    return this->_return_map.value_or(0);
+}
+
+fb::model::point16_t matchmaker::return_position() const
+{
+    return this->_return_position.value_or(fb::model::point16_t{0, 0});
+}
+
+async::task<bool> matchmaker::transfer_home()
+{
+    using fb::model::enum_value::ERROR_CODE;
+    using fb::model::enum_value::MESSAGE_TYPE;
+
+    this->owner.assert_thread();
+    if (this->has_return_point() == false)
+        co_return false;
+
+    auto dest = this->owner.server.maps.find(this->_return_map.value());
+    if (dest == nullptr)
+        co_return false;
+
+    auto position = this->_return_position.value();
+    if (fb::config<std::optional<uint32_t>>("world"))
+    {
+        co_return co_await this->owner.map(dest, position);
+    }
+    else
+    {
+        if (this->owner.map() == nullptr)
+            co_return false;
+
+        auto self    = this->owner.shared_from_this_as<character>();
+        auto old_map = this->owner.map();
+        try
+        {
+            auto   world = this->owner.world();
+            auto&& resp  = co_await this->owner.server.http.post(
+                self->weak_from_this_as<character>(),
+                "internal",
+                "/in-game/transfer",
+                fb::protocol::internal::request::Transfer{world,
+                                                          fb::protocol::internal::Service::Game,
+                                                          dest->model().host,
+                                                          this->owner.name(),
+                                                          false});
+
+            // Another move may have run while waiting; that move stands and this transfer is dropped.
+            if (this->owner.map() != old_map)
+                co_return false;
+
+            switch (static_cast<ERROR_CODE>(resp.error))
+            {
+            case ERROR_CODE::NONE:
+                break;
+
+            case ERROR_CODE::MAINTENANCE:
+            {
+                this->owner.message(resp.maintenance_message.value_or(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS)),
+                                    MESSAGE_TYPE::STATE);
+                if (auto socket_ptr = this->owner.socket_ptr(); socket_ptr != nullptr)
+                    socket_ptr->close();
+                co_return false;
+            }
+
+            case ERROR_CODE::SERVER_NOT_READY:
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+            case ERROR_CODE::BANNED:
+                throw std::runtime_error(
+                    character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
+
+            default:
+                throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
+            }
+
+            std::ignore = co_await this->owner.map(nullptr);
+            co_await this->owner.server.save(this->owner);
+            co_await this->owner.listener.on_transfer(this->owner, *dest, position, resp.ip, resp.port);
+        }
+        catch (std::exception& e)
+        {
+            this->owner.update_map();
+            this->owner.show();
+            this->owner.listener.on_message(this->owner, e.what(), MESSAGE_TYPE::STATE);
+            co_return false;
+        }
+        catch (boost::system::error_code& /*e*/)
+        {
+            this->owner.update_map();
+            this->owner.show();
+            this->owner.listener.on_message(this->owner, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+            co_return false;
+        }
+
+        co_return true;
+    }
 }

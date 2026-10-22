@@ -1494,9 +1494,9 @@ int builtin::character::builtin_hold_lock(lua_State* L)
     builder.yield = [=, &srv]() -> async::task<void> {
         auto locked = std::make_shared<std::promise<bool>>();
         auto ready  = locked->get_future();
-        if (kind == "group" && ch->group_id().has_value())
+        if (kind == "group" && ch->group.id().has_value())
         {
-            auto id = ch->group_id().value();
+            auto id = ch->group.id().value();
             std::thread([&srv, id, ms, locked]() {
                 try
                 {
@@ -2516,7 +2516,7 @@ int builtin::character::builtin_group(lua_State* L)
             if (shared == nullptr)
                 co_return;
 
-            auto group_id = shared->group_id();
+            auto group_id = shared->group.id();
             if (group_id.has_value())
             {
                 auto guard    = server.groups.enter_read(group_id.value());
@@ -2547,7 +2547,7 @@ int builtin::character::builtin_group(lua_State* L)
                 co_return;
 
             *ch_holder = locked;
-            auto gid   = locked->group_id();
+            auto gid   = locked->group.id();
             *group_id  = gid;
             if (gid.has_value())
             {
@@ -4135,7 +4135,7 @@ int builtin::character::builtin_save_return_point(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    ch->save_return_point();
+    ch->matchmaker.save_return_point();
     return 0;
 }
 
@@ -4148,18 +4148,18 @@ int builtin::character::builtin_return_point(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    if (ch->has_return_point() == false)
+    if (ch->matchmaker.has_return_point() == false)
     {
         lua->pushnil();
         return 1;
     }
 
     lua->new_table();
-    lua->pushinteger(ch->return_map());
+    lua->pushinteger(ch->matchmaker.return_map());
     lua_setfield(*lua, -2, "map");
-    lua->pushinteger(ch->return_position().x);
+    lua->pushinteger(ch->matchmaker.return_position().x);
     lua_setfield(*lua, -2, "x");
-    lua->pushinteger(ch->return_position().y);
+    lua->pushinteger(ch->matchmaker.return_position().y);
     lua_setfield(*lua, -2, "y");
     return 1;
 }
@@ -4178,7 +4178,7 @@ int builtin::character::builtin_transfer_home(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *ok = co_await ch->transfer_home();
+        *ok = co_await ch->matchmaker.transfer_home();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -4789,7 +4789,7 @@ int builtin::character::builtin_friends_sync(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->friends_sync(enabled);
+        ch->friends.sync(enabled);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

@@ -585,7 +585,7 @@ std::shared_ptr<fb::game::map> map::container::choice_by_capacity(const std::sha
 std::shared_ptr<fb::game::map> map::container::choice_by_group(character&                            ch,
                                                                const std::shared_ptr<fb::game::map>& source)
 {
-    auto group_id = ch.group_id();
+    auto group_id = ch.group.id();
     if (group_id.has_value() == false)
         return nullptr;
 
@@ -631,7 +631,7 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
     if (dest->is_instance())
         return dest;
 
-    auto session = ch.match();
+    auto session = ch.matchmaker.session();
     if (session != nullptr)
     {
         auto inst = this->find(dest, session->slot());

@@ -91,7 +91,7 @@ void fb::game::server::send(object&                     object,
             return;
 
         auto& ch       = static_cast<const character&>(*shared_ptr);
-        auto& group_id = ch.group_id();
+        auto& group_id = ch.group.id();
         if (group_id.has_value() == false)
             return;
 
@@ -190,7 +190,7 @@ async::task<bool> fb::game::server::save(character& ch)
     if (ch.inited() == false || ch.loaded() == false)
         co_return false;
 
-    if (!fb::config<std::optional<uint32_t>>("world") && ch.has_return_point() == false)
+    if (!fb::config<std::optional<uint32_t>>("world") && ch.matchmaker.has_return_point() == false)
     {
         fb::logger::fatal("Character {} cross save without home snapshot", ch.name());
         co_return false;
@@ -385,7 +385,7 @@ async::task<void> fb::game::server::save(fb::thread& thread)
         if (!character->inited() || !character->loaded())
             return;
 
-        if (!fb::config<std::optional<uint32_t>>("world") && character->has_return_point() == false)
+        if (!fb::config<std::optional<uint32_t>>("world") && character->matchmaker.has_return_point() == false)
         {
             fb::logger::fatal("Character {} cross save without home snapshot", character->name());
             return;

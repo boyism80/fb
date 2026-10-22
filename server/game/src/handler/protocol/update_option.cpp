@@ -50,7 +50,7 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
 
         if (option == OPTION::GROUP && !next)
         {
-            auto group_id = ch->group_id();
+            auto group_id = ch->group.id();
             if (group_id.has_value())
             {
                 try
@@ -132,7 +132,7 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
             auto next = !current->option(option);
             if (option == OPTION::GROUP && !next)
             {
-                auto group_id = current->group_id();
+                auto group_id = current->group.id();
                 if (group_id.has_value())
                 {
                     try

@@ -173,7 +173,7 @@ async::task<void> group::container::on_create(std::string                     ta
             if (entered == false)
                 co_return;
 
-            ch->group_id(group_id);
+            ch->group.id(group_id);
             for (const auto& name : member_names)
             {
                 if (name != ch->name())
@@ -278,7 +278,7 @@ async::task<void> group::container::on_enter(std::string                target,
 
         if (entered)
         {
-            ptr->group_id(group_id);
+            ptr->group.id(group_id);
             ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
 
             // A member on another host was not checked before joining, so its solo ticket ends here.
@@ -405,7 +405,7 @@ async::task<void> group::container::reset_member(character& ch, std::string mess
     ch.assert_thread();
 
     co_await ch.matchmaker.dequeue(matchmaker::initiator::SERVER);
-    ch.group_reset();
+    ch.group.reset();
     this->clear_portraits(ch);
     ch.message(message, MESSAGE_TYPE::STATE);
 
@@ -579,7 +579,7 @@ void group::container::update_portraits(character& ch)
 {
     ch.assert_thread();
 
-    auto& gid = ch.group_id();
+    auto& gid = ch.group.id();
     if (gid.has_value() == false)
     {
         this->clear_portraits(ch);
@@ -606,7 +606,7 @@ void group::container::update_hp(character& source, bool include_max)
 {
     source.assert_thread();
 
-    auto& gid = source.group_id();
+    auto& gid = source.group.id();
     if (gid.has_value() == false)
         return;
 
