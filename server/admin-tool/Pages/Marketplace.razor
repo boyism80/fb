@@ -175,10 +175,20 @@
     {
         isLoading = true;
         errorMessage = null;
+        // The stats tiles and the list are read apart, so a failing stat does not hide the listings.
+        try
+        {
+            stats = await MarketplaceAdminService.GetStatsAsync(selectedWorld);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"거래소 통계를 불러오지 못했습니다: {ex.Message}";
+            stats = null;
+        }
+
         try
         {
             byte? status = string.IsNullOrEmpty(statusFilter) ? null : byte.Parse(statusFilter);
-            stats = await MarketplaceAdminService.GetStatsAsync(selectedWorld);
             listResult = await MarketplaceAdminService.GetListingsAsync(
                 selectedWorld,
                 currentPage,
