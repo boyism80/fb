@@ -69,7 +69,6 @@ public class MatchmakingController : ControllerBase
     {
         try
         {
-            // The ticket id is only a hint; the caller is identified by its member id.
             await _matchMaker.DequeueAsync(
                 request.MatchType,
                 request.TicketId,

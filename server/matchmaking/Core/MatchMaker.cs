@@ -163,6 +163,7 @@ public class MatchMaker<TMember>
                 throw new LogicException(ErrorCode.MatchmakingRegistryNotFound);
             }
 
+            // A late dequeue for an older ticket must not remove the ticket or match the member joined since.
             if (ticketRef.TicketId != ticketId || ticketRef.MatchType != matchType)
             {
                 _logger.LogWarning(
@@ -172,6 +173,7 @@ public class MatchMaker<TMember>
                     matchType,
                     ticketRef.TicketId,
                     ticketRef.MatchType);
+                throw new LogicException(ErrorCode.MatchmakingRegistryNotFound);
             }
 
             if (ticketRef.State == TicketState.Proposed && ticketRef.MatchId.HasValue
