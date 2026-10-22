@@ -56,7 +56,7 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
     if (item->count() - item->trade_count() < count)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_ITEM_COUNT));
 
-    if (model.trade == false)
+    if (model.trade == false || model.duration.has_value())
         throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_REGISTER_ITEM));
 
     auto durability  = item->durability();

@@ -89,6 +89,18 @@ public class MarketplaceService
             throw new LogicException(ErrorCode.MarketplaceItemNotTradeable);
         }
 
+        if (itemDefinition.Duration != null)
+        {
+            await _logService.WriteAsync("marketplace_list_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                item_model = itemModel,
+                error = "item_has_duration"
+            });
+            throw new LogicException(ErrorCode.MarketplaceItemNotTradeable);
+        }
+
         if (remainingCount > 0 && price > ulong.MaxValue / remainingCount)
         {
             await _logService.WriteAsync("marketplace_list_failed", new
