@@ -28,7 +28,7 @@ local function clan_as_master(ch)
     end
 
     for _, member in pairs(clan:members()) do
-        if member:role() == CLAN_ROLE.MASTER and member:name() == ch:name() then
+        if member.role == CLAN_ROLE.MASTER and member.name == ch:name() then
             return clan
         end
     end

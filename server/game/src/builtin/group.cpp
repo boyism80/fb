@@ -8,6 +8,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 using namespace fb::game;
 
@@ -26,12 +27,16 @@ int builtin::group::builtin_master(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto group = lua->touserdata<fb::game::group>(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
         return 0;
 
-    auto master = group->master();
-    lua->pushstring(master);
+    auto guard = srv.groups.try_enter_read(group->id());
+    if (guard.has_value() && guard->value() != nullptr)
+        lua->pushstring(guard->value()->master());
+    else
+        lua->pushnil();
     return 1;
 }
 
@@ -41,12 +46,19 @@ int builtin::group::builtin_members(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto group = lua->touserdata<fb::game::group>(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
         return 0;
 
+    auto members = std::vector<std::string>{};
+    {
+        auto guard = srv.groups.try_enter_read(group->id());
+        if (guard.has_value() && guard->value() != nullptr)
+            members = guard->value()->members();
+    }
+
     lua->new_table();
-    auto members = group->members();
     for (int i = 0, n = members.size(); i < n; i++)
     {
         lua->pushstring(members[i]);
@@ -61,7 +73,8 @@ int builtin::group::builtin_nears(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto group = lua->touserdata<fb::game::group>(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
         return 0;
 
@@ -80,7 +93,13 @@ int builtin::group::builtin_nears(lua_State* L)
     y = (uint16_t)lua->tointeger(-1);
     lua->remove(-1);
 
-    auto nears = group->nears(*map, fb::model::point16_t{x, y});
+    auto nears = std::vector<std::weak_ptr<fb::game::character>>{};
+    {
+        auto guard = srv.groups.try_enter_read(group->id());
+        if (guard.has_value() && guard->value() != nullptr)
+            nears = guard->value()->nears(*map, fb::model::point16_t{x, y});
+    }
+
     lua->new_table();
     int i = 0;
     for (auto& weak_ptr : nears)
@@ -111,16 +130,26 @@ int builtin::group::builtin_message(lua_State* L)
     auto type     = lua->toenum(3, MESSAGE_TYPE::STATE);
     auto group_id = group->id();
 
-    auto                                  master_name = group->master();
-    character::container::character_ptr_t master_ch   = srv.characters.find(master_name);
-    auto                                  world       = uint32_t{0};
+    auto master_name = std::string{};
+    auto members     = std::vector<character::container::character_ptr_t>{};
+    {
+        auto guard = srv.groups.try_enter_read(group_id);
+        if (guard.has_value() && guard->value() != nullptr)
+        {
+            master_name = guard->value()->master();
+            members     = guard->value()->characters();
+        }
+    }
+
+    character::container::character_ptr_t master_ch = srv.characters.find(master_name);
+    auto                                  world     = uint32_t{0};
     if (master_ch != nullptr)
     {
         world = master_ch->world();
     }
     else
     {
-        for (auto& member : group->characters())
+        for (auto& member : members)
         {
             if (member == nullptr)
                 continue;

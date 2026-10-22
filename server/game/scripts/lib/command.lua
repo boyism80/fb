@@ -10,7 +10,7 @@ local function is_clan_master(me)
     end
 
     for _, member in pairs(clan:members()) do
-        if member:role() == CLAN_ROLE.MASTER and member:name() == me:name() then
+        if member.role == CLAN_ROLE.MASTER and member.name == me:name() then
             return true
         end
     end

@@ -10,6 +10,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 using namespace fb::game;
 
@@ -56,11 +57,16 @@ int builtin::clan::builtin_name(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto clan = lua->touserdata<fb::game::clan>(1);
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    lua->pushstring(clan->name());
+    auto guard = srv.clans.try_enter_read(clan->id());
+    if (guard.has_value() && guard->value() != nullptr)
+        lua->pushstring(guard->value()->name());
+    else
+        lua->pushnil();
     return 1;
 }
 
@@ -70,19 +76,25 @@ int builtin::clan::builtin_members(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto clan = lua->touserdata<fb::game::clan>(1);
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
     lua->new_table();
-    auto  i       = 0;
-    auto& members = clan->members();
-    for (auto& [name, member] : members)
+    auto guard = srv.clans.try_enter_read(clan->id());
+    if (guard.has_value() && guard->value() != nullptr)
     {
-        lua->pushobject(member);
-        lua_rawseti(L, -2, i + 1);
-        i++;
+        auto i = 0;
+        for (auto& [name, member] : guard->value()->members())
+        {
+            lua->new_table();
+            lua->pushstring(member.name);
+            lua_setfield(L, -2, "name");
+            lua->pushinteger(member.role);
+            lua_setfield(L, -2, "role");
+            lua_rawseti(L, -2, ++i);
+        }
     }
 
     return 1;
@@ -94,8 +106,8 @@ int builtin::clan::builtin_nears(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto clan = lua->touserdata<fb::game::clan>(1);
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
@@ -114,7 +126,13 @@ int builtin::clan::builtin_nears(lua_State* L)
     y = (uint16_t)lua->tointeger(-1);
     lua->remove(-1);
 
-    auto nears = clan->nears(*map, fb::model::point16_t{x, y});
+    auto nears = std::vector<std::shared_ptr<fb::game::character>>{};
+    {
+        auto guard = srv.clans.try_enter_read(clan->id());
+        if (guard.has_value() && guard->value() != nullptr)
+            nears = guard->value()->nears(*map, fb::model::point16_t{x, y});
+    }
+
     lua->new_table();
     for (int i = 0; i < nears.size(); i++)
     {
@@ -137,9 +155,10 @@ int builtin::clan::builtin_title(lua_State* L)
 
     if (argc == 1)
     {
-        auto& title = clan->title();
-        if (title.has_value())
-            lua->pushstring(title.value());
+        auto& srv   = static_cast<fb::game::server&>(lua->executor);
+        auto  guard = srv.clans.try_enter_read(clan->id());
+        if (guard.has_value() && guard->value() != nullptr && guard->value()->title().has_value())
+            lua->pushstring(guard->value()->title().value());
         else
             lua->pushnil();
 
@@ -204,7 +223,14 @@ int builtin::clan::builtin_join(lua_State* L)
     if (target_name.empty())
         return 0;
 
-    if (clan->member(inviter->name()) == nullptr)
+    auto& srv       = static_cast<fb::game::server&>(lua->executor);
+    auto  is_member = false;
+    {
+        auto guard = srv.clans.try_enter_read(clan->id());
+        is_member =
+            guard.has_value() && guard->value() != nullptr && guard->value()->member(inviter->name()) != nullptr;
+    }
+    if (is_member == false)
     {
         lua->pushstring("inviter is not a member of the clan");
         return 1;
@@ -389,13 +415,20 @@ int builtin::clan::builtin_message(lua_State* L)
     if (clan == nullptr)
         return 0;
 
-    auto message = lua->tostring(2);
-    auto type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
-    auto clan_id = clan->id();
-    auto world   = uint32_t{0};
-    for (auto& [_, weak] : clan->characters())
+    auto& srv     = static_cast<fb::game::server&>(lua->executor);
+    auto  message = lua->tostring(2);
+    auto  type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
+    auto  clan_id = clan->id();
+    auto  members = std::vector<std::shared_ptr<fb::game::character>>{};
     {
-        auto member = weak.lock();
+        auto guard = srv.clans.try_enter_read(clan_id);
+        if (guard.has_value() && guard->value() != nullptr)
+            members = guard->value()->online_characters();
+    }
+
+    auto world = uint32_t{0};
+    for (auto& member : members)
+    {
         if (member == nullptr)
             continue;
 
@@ -435,13 +468,14 @@ int builtin::clan::builtin_allied_clan_id(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto clan = lua->touserdata<fb::game::clan>(1);
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    auto& allied = clan->allied_clan_id();
-    if (allied.has_value())
-        lua->pushinteger(allied.value());
+    auto guard = srv.clans.try_enter_read(clan->id());
+    if (guard.has_value() && guard->value() != nullptr && guard->value()->allied_clan_id().has_value())
+        lua->pushinteger(guard->value()->allied_clan_id().value());
     else
         lua->pushnil();
     return 1;
@@ -453,16 +487,21 @@ int builtin::clan::builtin_enemy_clan_ids(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto clan = lua->touserdata<fb::game::clan>(1);
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
     lua->new_table();
-    auto i = 0;
-    for (auto enemy_id : clan->enemy_clan_ids())
+    auto guard = srv.clans.try_enter_read(clan->id());
+    if (guard.has_value() && guard->value() != nullptr)
     {
-        lua->pushinteger(enemy_id);
-        lua_rawseti(L, -2, ++i);
+        auto i = 0;
+        for (auto enemy_id : guard->value()->enemy_clan_ids())
+        {
+            lua->pushinteger(enemy_id);
+            lua_rawseti(L, -2, ++i);
+        }
     }
     return 1;
 }
@@ -486,7 +525,9 @@ int builtin::clan::builtin_is_allied(lua_State* L)
     if (other_id.has_value() == false)
         return 0;
 
-    lua->pushboolean(clan->is_allied(other_id.value()));
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  guard = srv.clans.try_enter_read(clan->id());
+    lua->pushboolean(guard.has_value() && guard->value() != nullptr && guard->value()->is_allied(other_id.value()));
     return 1;
 }
 
@@ -509,7 +550,9 @@ int builtin::clan::builtin_is_hostile(lua_State* L)
     if (other_id.has_value() == false)
         return 0;
 
-    lua->pushboolean(clan->is_hostile(other_id.value()));
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  guard = srv.clans.try_enter_read(clan->id());
+    lua->pushboolean(guard.has_value() && guard->value() != nullptr && guard->value()->is_hostile(other_id.value()));
     return 1;
 }
 
@@ -727,10 +770,15 @@ int builtin::clan::builtin_money(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto clan = lua->touserdata<fb::game::clan>(1);
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    lua->pushinteger(clan->money());
+    auto guard = srv.clans.try_enter_read(clan->id());
+    if (guard.has_value() && guard->value() != nullptr)
+        lua->pushinteger(guard->value()->money());
+    else
+        lua->pushnil();
     return 1;
 }

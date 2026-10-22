@@ -26,10 +26,12 @@
 #include <cstdint>
 #include <exception>
 #include <format>
+#include <future>
 #include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -66,6 +68,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"consume",                      builtin::character::builtin_consume},
 {"rename_weapon",                builtin::character::builtin_rename_weapon},
 {"drop_escrow_items",            builtin::character::builtin_drop_escrow_items},
+{"hold_lock",                    builtin::character::builtin_hold_lock},
 {"state",                        builtin::character::builtin_state},
 {"mimic",                        builtin::character::builtin_mimic},
 {"class",                        builtin::character::builtin_class},
@@ -1468,6 +1471,87 @@ int builtin::character::builtin_drop_escrow_items(lua_State* L)
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_hold_lock(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto  kind    = lua->tostring(2);
+    auto  ms      = std::chrono::milliseconds(lua->tointeger(3));
+    auto& srv     = static_cast<fb::game::server&>(lua->executor);
+    auto  held    = std::make_shared<bool>(false);
+    auto  builder = lua->new_co_builder();
+    builder.weak  = ch->weak_from_this_as<fb::game::character>();
+    builder.yield = [=, &srv]() -> async::task<void> {
+        auto locked = std::make_shared<std::promise<bool>>();
+        auto ready  = locked->get_future();
+        if (kind == "group" && ch->group_id().has_value())
+        {
+            auto id = ch->group_id().value();
+            std::thread([&srv, id, ms, locked]() {
+                try
+                {
+                    srv.groups.write(id, [&](auto& group) {
+                        if (group == nullptr)
+                        {
+                            locked->set_value(false);
+                            return;
+                        }
+                        group->add_member("__lock__");
+                        locked->set_value(true);
+                        std::this_thread::sleep_for(ms);
+                        group->remove_member("__lock__");
+                    });
+                }
+                catch (std::exception&)
+                {
+                    locked->set_value(false);
+                }
+            }).detach();
+            *held = ready.get();
+        }
+        else if (kind == "clan" && ch->clan_id().has_value())
+        {
+            auto id = ch->clan_id().value();
+            std::thread([&srv, id, ms, locked]() {
+                try
+                {
+                    srv.clans.write(id, [&](auto& clan) {
+                        if (clan == nullptr)
+                        {
+                            locked->set_value(false);
+                            return;
+                        }
+                        auto money = clan->money();
+                        clan->join(fb::game::clan_member("__lock__", CLAN_ROLE::MATE));
+                        clan->money(777);
+                        locked->set_value(true);
+                        std::this_thread::sleep_for(ms);
+                        clan->money(money);
+                        clan->leave("__lock__");
+                    });
+                }
+                catch (std::exception&)
+                {
+                    locked->set_value(false);
+                }
+            }).detach();
+            *held = ready.get();
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*held);
+        co_return 1;
     };
     return builder.run();
 }

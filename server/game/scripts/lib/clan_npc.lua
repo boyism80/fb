@@ -12,8 +12,8 @@ end
 
 local function clan_master_name(clan)
     for _, member in pairs(clan:members()) do
-        if member:role() == CLAN_ROLE.MASTER then
-            return member:name()
+        if member.role == CLAN_ROLE.MASTER then
+            return member.name
         end
     end
 
@@ -103,7 +103,7 @@ local function clan_info(me, npc, clan)
         }
 
         for _, member in pairs(members) do
-            table.insert(lines, string.format(' - %s', member:name()))
+            table.insert(lines, string.format(' - %s', member.name))
         end
 
         me:dialog(npc, table.concat(lines, '\n'))

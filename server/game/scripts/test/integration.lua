@@ -945,6 +945,37 @@ return {
         end
     end,
 
+    verify_lock_guard = function(me, step, kind, ms)
+        local group = kind == 'group' and me:group() or nil
+        local clan = kind == 'clan' and me:clan() or nil
+        if (group == nil and clan == nil) or me:hold_lock(kind, tonumber(ms)) ~= true then
+            return report(me, false, step, 'could not hold the ' .. kind .. ' lock')
+        end
+
+        local names = {}
+        local money = nil
+        if group ~= nil then
+            for _, name in pairs(group:members()) do
+                table.insert(names, name)
+            end
+        else
+            money = clan:money()
+            for _, member in pairs(clan:members()) do
+                table.insert(names, member.name)
+            end
+        end
+
+        for _, name in ipairs(names) do
+            if name == '__lock__' then
+                return report(me, false, step, 'read the ' .. kind .. ' members while the guard was held')
+            end
+        end
+        if money == 777 then
+            return report(me, false, step, 'read the clan money while the guard was held')
+        end
+        report(me, true, step)
+    end,
+
     -- test.reward.split pays 3 가시철단도, one per slot. test.reward.over pays 250 도토리, more than one stack holds.
     reward_split = function(me, step)
         local split = me:reward('test.reward.split')

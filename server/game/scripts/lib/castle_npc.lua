@@ -64,7 +64,7 @@ local function is_clan_master(me)
         return false, nil
     end
     for _, member in pairs(clan:members()) do
-        if member:role() == CLAN_ROLE.MASTER and member:name() == me:name() then
+        if member.role == CLAN_ROLE.MASTER and member.name == me:name() then
             return true, clan
         end
     end
