@@ -325,6 +325,7 @@ table UpdateFriends {
   world: uint;
   user: uint;
   names: [string];
+  revision: ulong;
 }
 
 table FriendBroadcast {

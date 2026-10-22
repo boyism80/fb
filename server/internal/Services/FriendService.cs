@@ -63,6 +63,18 @@ namespace Internal.Services
                         continue;
                     }
 
+                    var stored = await _dbContext.FriendRevision.Get(world, user);
+                    var storedRevision = stored?.Revision ?? 0;
+                    if (request.Revision <= storedRevision)
+                    {
+                        return new Response.UpdateFriends
+                        {
+                            Error = (uint)ErrorCode.None,
+                            Friends = existing.Select(ToEntry).ToList(),
+                            Revision = storedRevision
+                        };
+                    }
+
                     var existingByFriend = existing.ToDictionary(x => x.FriendUid);
                     var newFriendUids = friends.Select(x => x.FriendUid).ToHashSet();
                     var removed = existing.Where(x => !newFriendUids.Contains(x.FriendUid)).ToList();
@@ -133,6 +145,13 @@ namespace Internal.Services
                         existing,
                         removedList => _dbContext.Friend.Delete(world, removedList),
                         alive => _dbContext.Friend.Set(world, alive));
+                    _dbContext.FriendRevision.Set(world, new FriendRevision
+                    {
+                        User = user,
+                        Revision = request.Revision,
+                        CreatedDate = stored?.CreatedDate ?? now,
+                        UpdatedDate = now
+                    });
 
                     await _dbContext.SaveChangesAsync();
                     await NotifyPeerRelations(world, peerUpdates);
@@ -140,7 +159,8 @@ namespace Internal.Services
                     return new Response.UpdateFriends
                     {
                         Error = (uint)ErrorCode.None,
-                        Friends = nextFriends.Select(ToEntry).ToList()
+                        Friends = nextFriends.Select(ToEntry).ToList(),
+                        Revision = request.Revision
                     };
                 }
                 finally

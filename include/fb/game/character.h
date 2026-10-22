@@ -153,6 +153,8 @@ public:
     private:
         character&                _owner;
         std::vector<friend_entry> _entries;
+        uint64_t                  _revision      = 0;
+        uint64_t                  _sent_revision = 0;
 
     public:
         explicit friends(character& owner);
@@ -160,7 +162,8 @@ public:
     public:
         // clang-format off
         const std::vector<friend_entry>& entries() const;
-        void                             load(std::vector<friend_entry> value);
+        void                             load(std::vector<friend_entry> value, uint64_t revision);
+        uint64_t                         next_revision();
         void                             update(uint32_t uid, std::string_view name, bool mutual);
         bool                             is_mutual(uint32_t uid) const;
         bool                             is_mutual(std::string_view name) const;

@@ -8414,7 +8414,8 @@ struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_USER = 6,
-    VT_NAMES = 8
+    VT_NAMES = 8,
+    VT_REVISION = 10
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -8425,6 +8426,9 @@ struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *names() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_NAMES);
   }
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -8432,6 +8436,7 @@ struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_NAMES) &&
            verifier.VerifyVector(names()) &&
            verifier.VerifyVectorOfStrings(names()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -8449,6 +8454,9 @@ struct UpdateFriendsBuilder {
   void add_names(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> names) {
     fbb_.AddOffset(UpdateFriends::VT_NAMES, names);
   }
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(UpdateFriends::VT_REVISION, revision, 0);
+  }
   explicit UpdateFriendsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -8464,8 +8472,10 @@ inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriends(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t user = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> names = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> names = 0,
+    uint64_t revision = 0) {
   UpdateFriendsBuilder builder_(_fbb);
+  builder_.add_revision(revision);
   builder_.add_names(names);
   builder_.add_user(user);
   builder_.add_world(world);
@@ -8476,13 +8486,15 @@ inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriendsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t user = 0,
-    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *names = nullptr) {
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *names = nullptr,
+    uint64_t revision = 0) {
   auto names__ = names ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*names) : 0;
   return fb::protocol::internal::request::raw::CreateUpdateFriends(
       _fbb,
       world,
       user,
-      names__);
+      names__,
+      revision);
 }
 
 struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -11901,7 +11913,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_SYSTEM_MAIL_IDS = 30,
     VT_COLLECTION_UNLOCKS = 32,
     VT_UNSETTLED_REQUESTS = 34,
-    VT_ESCROWS = 36
+    VT_ESCROWS = 36,
+    VT_FRIENDS_REVISION = 38
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -11954,6 +11967,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *>(VT_ESCROWS);
   }
+  uint64_t friends_revision() const {
+    return GetField<uint64_t>(VT_FRIENDS_REVISION, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -11999,6 +12015,7 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_ESCROWS) &&
            verifier.VerifyVector(escrows()) &&
            verifier.VerifyVectorOfTables(escrows()) &&
+           VerifyField<uint64_t>(verifier, VT_FRIENDS_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -12058,6 +12075,9 @@ struct InitBuilder {
   void add_escrows(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows) {
     fbb_.AddOffset(Init::VT_ESCROWS, escrows);
   }
+  void add_friends_revision(uint64_t friends_revision) {
+    fbb_.AddElement<uint64_t>(Init::VT_FRIENDS_REVISION, friends_revision, 0);
+  }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -12087,8 +12107,10 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> system_mail_ids = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows = 0,
+    uint64_t friends_revision = 0) {
   InitBuilder builder_(_fbb);
+  builder_.add_friends_revision(friends_revision);
   builder_.add_escrows(escrows);
   builder_.add_unsettled_requests(unsettled_requests);
   builder_.add_collection_unlocks(collection_unlocks);
@@ -12127,7 +12149,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<uint32_t> *system_mail_ids = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows = nullptr,
+    uint64_t friends_revision = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -12157,7 +12180,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       system_mail_ids__,
       collection_unlocks__,
       unsettled_requests__,
-      escrows__);
+      escrows__,
+      friends_revision);
 }
 
 struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -13700,7 +13724,8 @@ struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UpdateFriendsBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ERROR = 4,
-    VT_FRIENDS = 6
+    VT_FRIENDS = 6,
+    VT_REVISION = 8
   };
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -13708,12 +13733,16 @@ struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *>(VT_FRIENDS);
   }
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            VerifyOffset(verifier, VT_FRIENDS) &&
            verifier.VerifyVector(friends()) &&
            verifier.VerifyVectorOfTables(friends()) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -13727,6 +13756,9 @@ struct UpdateFriendsBuilder {
   }
   void add_friends(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends) {
     fbb_.AddOffset(UpdateFriends::VT_FRIENDS, friends);
+  }
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(UpdateFriends::VT_REVISION, revision, 0);
   }
   explicit UpdateFriendsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -13742,8 +13774,10 @@ struct UpdateFriendsBuilder {
 inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriends(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t error = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends = 0,
+    uint64_t revision = 0) {
   UpdateFriendsBuilder builder_(_fbb);
+  builder_.add_revision(revision);
   builder_.add_friends(friends);
   builder_.add_error(error);
   return builder_.Finish();
@@ -13752,12 +13786,14 @@ inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriends(
 inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriendsDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t error = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends = nullptr,
+    uint64_t revision = 0) {
   auto friends__ = friends ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>(*friends) : 0;
   return fb::protocol::internal::response::raw::CreateUpdateFriends(
       _fbb,
       error,
-      friends__);
+      friends__,
+      revision);
 }
 
 struct FriendRelation FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

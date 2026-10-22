@@ -2,6 +2,7 @@
 
 #include <fb/game/server.h>
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
@@ -23,10 +24,22 @@ const std::vector<friend_entry>& character::friends::entries() const
     return this->_entries;
 }
 
-void character::friends::load(std::vector<friend_entry> value)
+void character::friends::load(std::vector<friend_entry> value, uint64_t revision)
 {
     this->_owner.assert_thread();
-    this->_entries = std::move(value);
+    if (revision < this->_revision)
+        return;
+
+    this->_entries       = std::move(value);
+    this->_revision      = revision;
+    this->_sent_revision = std::max(this->_sent_revision, revision);
+}
+
+uint64_t character::friends::next_revision()
+{
+    this->_owner.assert_thread();
+    this->_sent_revision = std::max(this->_owner.server.ids.next(), this->_sent_revision + 1);
+    return this->_sent_revision;
 }
 
 void character::friends::update(uint32_t uid, std::string_view name, bool mutual)

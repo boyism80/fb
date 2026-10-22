@@ -466,6 +466,7 @@ namespace Internal.Controllers
             var unsettledRequests = (await _dbContext.UnsettledRequest.Get(world, uid)).ToList();
             var escrows = await _dbContext.Escrow.Get(world, uid);
             var friends = await _friendService.GetEntries(world, uid);
+            var friendRevision = await _dbContext.FriendRevision.Get(world, uid);
             var activeSystemMailIds = (await _dbContext.SystemMail.GetActive(world)).Select(x => x.Id).ToHashSet();
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
@@ -518,6 +519,7 @@ namespace Internal.Controllers
                 UnsettledRequests = unsettledRequests.Select(_mapper.Map<Protocol.UnsettledRequest>).ToList(),
                 Escrows = escrows.Select(_mapper.Map<Protocol.Escrow>).ToList(),
                 Friends = friends,
+                FriendsRevision = friendRevision?.Revision ?? 0,
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
                 Group = sync.Group,

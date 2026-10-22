@@ -23,13 +23,14 @@ async::task<bool> friends<V>::handle(fb::socket<character>& session, game_reqs::
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto   weak  = ch->weak_from_this_as<character>();
-    auto   world = ch->world();
-    auto&& resp  = co_await this->server.http.post(weak,
+    auto   weak     = ch->weak_from_this_as<character>();
+    auto   world    = ch->world();
+    auto   revision = ch->friends.next_revision();
+    auto&& resp     = co_await this->server.http.post(weak,
                                                   "internal",
                                                   "/in-game/update-friends",
-                                                  internal_reqs::UpdateFriends{world, ch->id, request.names});
-    auto   ptr   = weak.lock();
+                                                  internal_reqs::UpdateFriends{world, ch->id, request.names, revision});
+    auto   ptr      = weak.lock();
     if (ptr == nullptr)
         co_return true;
 
@@ -39,7 +40,7 @@ async::task<bool> friends<V>::handle(fb::socket<character>& session, game_reqs::
     {
         entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
     }
-    ptr->friends.load(std::move(entries));
+    ptr->friends.load(std::move(entries), resp.revision);
 
     co_return true;
 }

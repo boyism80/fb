@@ -7016,19 +7016,22 @@ public struct UpdateFriends : IFlatbufferObject
   public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string Names(int j) { int o = __p.__offset(8); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
   public int NamesLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public ulong Revision { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.request.raw.UpdateFriends> CreateUpdateFriends(FlatBufferBuilder builder,
       uint world = 0,
       uint user = 0,
-      VectorOffset namesOffset = default(VectorOffset)) {
-    builder.StartTable(3);
+      VectorOffset namesOffset = default(VectorOffset),
+      ulong revision = 0) {
+    builder.StartTable(4);
+    UpdateFriends.AddRevision(builder, revision);
     UpdateFriends.AddNames(builder, namesOffset);
     UpdateFriends.AddUser(builder, user);
     UpdateFriends.AddWorld(builder, world);
     return UpdateFriends.EndUpdateFriends(builder);
   }
 
-  public static void StartUpdateFriends(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartUpdateFriends(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
   public static void AddNames(FlatBufferBuilder builder, VectorOffset namesOffset) { builder.AddOffset(2, namesOffset.Value, 0); }
@@ -7037,6 +7040,7 @@ public struct UpdateFriends : IFlatbufferObject
   public static VectorOffset CreateNamesVectorBlock(FlatBufferBuilder builder, ArraySegment<StringOffset> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateNamesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<StringOffset>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartNamesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(3, revision, 0); }
   public static Offset<fb.protocol.@internal.request.raw.UpdateFriends> EndUpdateFriends(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.UpdateFriends>(o);
@@ -7052,6 +7056,7 @@ static public class UpdateFriendsVerify
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyVectorOfStrings(tablePos, 8 /*Names*/, false)
+      && verifier.VerifyField(tablePos, 10 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -9821,6 +9826,7 @@ public struct Init : IFlatbufferObject
   public int UnsettledRequestsLength { get { int o = __p.__offset(34); return o != 0 ? __p.__vector_len(o) : 0; } }
   public fb.protocol.@internal.raw.Escrow? Escrows(int j) { int o = __p.__offset(36); return o != 0 ? (fb.protocol.@internal.raw.Escrow?)(new fb.protocol.@internal.raw.Escrow()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int EscrowsLength { get { int o = __p.__offset(36); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public ulong FriendsRevision { get { int o = __p.__offset(38); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.Init> CreateInit(FlatBufferBuilder builder,
       Offset<fb.protocol.@internal.raw.Character> characterOffset = default(Offset<fb.protocol.@internal.raw.Character>),
@@ -9839,8 +9845,10 @@ public struct Init : IFlatbufferObject
       VectorOffset system_mail_idsOffset = default(VectorOffset),
       VectorOffset collection_unlocksOffset = default(VectorOffset),
       VectorOffset unsettled_requestsOffset = default(VectorOffset),
-      VectorOffset escrowsOffset = default(VectorOffset)) {
-    builder.StartTable(17);
+      VectorOffset escrowsOffset = default(VectorOffset),
+      ulong friends_revision = 0) {
+    builder.StartTable(18);
+    Init.AddFriendsRevision(builder, friends_revision);
     Init.AddEscrows(builder, escrowsOffset);
     Init.AddUnsettledRequests(builder, unsettled_requestsOffset);
     Init.AddCollectionUnlocks(builder, collection_unlocksOffset);
@@ -9861,7 +9869,7 @@ public struct Init : IFlatbufferObject
     return Init.EndInit(builder);
   }
 
-  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(17); }
+  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(18); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
   public static void AddGroup(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> groupOffset) { builder.AddOffset(2, groupOffset.Value, 0); }
@@ -9934,6 +9942,7 @@ public struct Init : IFlatbufferObject
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.Escrow>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Escrow>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEscrowsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddFriendsRevision(FlatBufferBuilder builder, ulong friendsRevision) { builder.AddUlong(17, friendsRevision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.Init> EndInit(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.Init>(o);
@@ -9963,6 +9972,7 @@ static public class InitVerify
       && verifier.VerifyVectorOfTables(tablePos, 32 /*CollectionUnlocks*/, fb.protocol.@internal.raw.CollectionUnlockVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 34 /*UnsettledRequests*/, fb.protocol.@internal.raw.UnsettledRequestVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 36 /*Escrows*/, fb.protocol.@internal.raw.EscrowVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 38 /*FriendsRevision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11297,17 +11307,20 @@ public struct UpdateFriends : IFlatbufferObject
   public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol.@internal.raw.FriendEntry? Friends(int j) { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.raw.FriendEntry?)(new fb.protocol.@internal.raw.FriendEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int FriendsLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public ulong Revision { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.UpdateFriends> CreateUpdateFriends(FlatBufferBuilder builder,
       uint error = 0,
-      VectorOffset friendsOffset = default(VectorOffset)) {
-    builder.StartTable(2);
+      VectorOffset friendsOffset = default(VectorOffset),
+      ulong revision = 0) {
+    builder.StartTable(3);
+    UpdateFriends.AddRevision(builder, revision);
     UpdateFriends.AddFriends(builder, friendsOffset);
     UpdateFriends.AddError(builder, error);
     return UpdateFriends.EndUpdateFriends(builder);
   }
 
-  public static void StartUpdateFriends(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartUpdateFriends(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
   public static void AddFriends(FlatBufferBuilder builder, VectorOffset friendsOffset) { builder.AddOffset(1, friendsOffset.Value, 0); }
   public static VectorOffset CreateFriendsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.FriendEntry>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -11315,6 +11328,7 @@ public struct UpdateFriends : IFlatbufferObject
   public static VectorOffset CreateFriendsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.FriendEntry>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateFriendsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.FriendEntry>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartFriendsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(2, revision, 0); }
   public static Offset<fb.protocol.@internal.response.raw.UpdateFriends> EndUpdateFriends(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.UpdateFriends>(o);
@@ -11329,6 +11343,7 @@ static public class UpdateFriendsVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyVectorOfTables(tablePos, 6 /*Friends*/, fb.protocol.@internal.raw.FriendEntryVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 8 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

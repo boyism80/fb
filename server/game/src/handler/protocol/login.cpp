@@ -448,7 +448,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         {
             entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
         }
-        ch->friends.load(std::move(entries));
+        ch->friends.load(std::move(entries), resp.friends_revision);
     }
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
                                         ? this->server.now()

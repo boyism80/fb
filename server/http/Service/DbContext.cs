@@ -23,6 +23,8 @@ namespace Http.Service
 
         public FriendRepository Friend => Bind<FriendRepository>();
 
+        public FriendRevisionRepository FriendRevision => Bind<FriendRevisionRepository>();
+
         public ClanRepository Clan => Bind<ClanRepository>();
 
         public ClanMemberRepository ClanMember => Bind<ClanMemberRepository>();

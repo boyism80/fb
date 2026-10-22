@@ -177,6 +177,7 @@ table Init {
   collection_unlocks: [fb.protocol.internal.CollectionUnlock];
   unsettled_requests: [fb.protocol.internal.UnsettledRequest];
   escrows: [fb.protocol.internal.Escrow];
+  friends_revision: ulong;
 }
 
 
@@ -316,6 +317,7 @@ table UpdateFriends
 {
   error: uint;
   friends: [fb.protocol.internal.FriendEntry];
+  revision: ulong;
 }
 
 table FriendRelation {
