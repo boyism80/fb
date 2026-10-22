@@ -32,27 +32,29 @@ async::task<void> name_keep_alive::handle()
         }
     });
 
-    // pending_name is written by protocol handlers on the session thread.
-    auto names = std::vector<std::string>();
+    // pending_uid is written by protocol handlers on the session thread.
+    auto uids = std::vector<uint32_t>();
     for (auto& [thread, list] : sockets)
     {
         co_await thread->switching();
         for (auto& socket : list)
         {
             auto data = socket->data_ptr();
-            if (data != nullptr && data->pending_name.empty() == false)
-                names.push_back(data->pending_name);
+            if (data != nullptr && data->pending_uid.has_value())
+                uids.push_back(data->pending_uid.value());
         }
     }
 
     auto world = fb::config<uint32_t>("world");
-    for (auto& name : names)
+    for (auto uid : uids)
     {
         try
         {
-            std::ignore = co_await this->server.http.post("internal",
+            auto&& resp = co_await this->server.http.post("internal",
                                                           "/account/name-keepalive",
-                                                          internal_reqs::ReserveName{world, name});
+                                                          internal_reqs::ReserveName{world, std::string{}, uid});
+            if (resp.success == false)
+                fb::logger::warn("Name reservation {} is no longer held", uid);
         }
         catch (const std::exception& e)
         {

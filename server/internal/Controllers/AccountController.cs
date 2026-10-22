@@ -123,7 +123,14 @@ namespace Internal.Controllers
                 if (row == null || (int)row.result == 0)
                     return new Response.ReserveName { Success = false, Uid = 0 };
 
-                return new Response.ReserveName { Success = true, Uid = (uint)row.uid };
+                var staleUid = Convert.ToUInt32(row.stale_uid);
+                if (staleUid != 0)
+                {
+                    _dbContext.Character.Delete(Convert.ToUInt32(row.stale_world), new CharacterKey { Id = staleUid });
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                return new Response.ReserveName { Success = true, Uid = Convert.ToUInt32(row.uid) };
             }
             catch (Exception)
             {
@@ -135,15 +142,34 @@ namespace Internal.Controllers
         public async Task<Response.ReserveName> NameKeepAlive(Request.ReserveName request)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
-            await conn.ExecuteAsync("USP_NAME_KEEPALIVE",
-                new { uname = request.Name },
+            var refreshed = await conn.QueryFirstOrDefaultAsync<long>("USP_NAME_KEEPALIVE",
+                new { in_id = request.Uid },
                 commandType: CommandType.StoredProcedure);
-            return new Response.ReserveName { Success = true, Uid = 0 };
+            return new Response.ReserveName { Success = refreshed == 1, Uid = request.Uid };
         }
         [HttpPost("init")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
             var world = request.World;
+            await using var conn = _dbContext.GetUnifiedConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            var held = await conn.ExecuteAsync(
+                """
+                UPDATE `name_registry` SET `reserved_at` = UTC_TIMESTAMP(3)
+                WHERE `id` = @uid AND `world` = @world AND `name` = @name AND `reserved_at` IS NOT NULL
+                """,
+                new { uid = request.Uid, world, name = request.Name },
+                transaction);
+            if (held == 0)
+            {
+                await transaction.RollbackAsync();
+                return new Response.InitCharacter
+                {
+                    Success = false
+                };
+            }
+
             var ch = new Character
             {
                 Id = request.Uid,
@@ -163,6 +189,7 @@ namespace Internal.Controllers
             };
             _dbContext.Character.Set(world, ch);
             await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             await _logService.WriteAsync("account_create", new
             {
@@ -206,6 +233,37 @@ namespace Internal.Controllers
                 }
 
                 var world = request.World;
+                await using var conn = _dbContext.GetUnifiedConnection();
+                await conn.OpenAsync();
+                await using var transaction = await conn.BeginTransactionAsync();
+                var pending = await conn.QuerySingleOrDefaultAsync<long?>(
+                    """
+                    SELECT `reserved_at` IS NOT NULL FROM `name_registry`
+                    WHERE `id` = @uid AND `world` = @world
+                    FOR UPDATE
+                    """,
+                    new { uid = request.Uid, world },
+                    transaction);
+                if (pending == null)
+                {
+                    await transaction.RollbackAsync();
+                    _dbContext.Character.Delete(world, new CharacterKey { Id = request.Uid });
+                    await _dbContext.SaveChangesAsync();
+                    return new Response.MakeCharacter
+                    {
+                        Success = false
+                    };
+                }
+
+                if (pending == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return new Response.MakeCharacter
+                    {
+                        Success = true
+                    };
+                }
+
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new Exception($"user {request.Uid} not found");
 
@@ -218,11 +276,20 @@ namespace Internal.Controllers
 
                 await _dbContext.SaveChangesAsync();
 
-                await using var conn = _dbContext.GetUnifiedConnection();
-                await conn.ExecuteAsync("USP_NAME_CONFIRM",
-                    new { uname = ch.Name },
+                var confirmed = await conn.QueryFirstOrDefaultAsync<long>("USP_NAME_CONFIRM",
+                    new { in_id = request.Uid },
+                    transaction,
                     commandType: CommandType.StoredProcedure);
+                if (confirmed != 1)
+                {
+                    await transaction.RollbackAsync();
+                    return new Response.MakeCharacter
+                    {
+                        Success = false
+                    };
+                }
 
+                await transaction.CommitAsync();
                 return new Response.MakeCharacter
                 {
                     Success = true

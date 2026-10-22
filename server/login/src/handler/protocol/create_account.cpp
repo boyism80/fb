@@ -39,13 +39,13 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
         this->server.assert_account(name, pw);
         auto   world = fb::config<uint32_t>("world");
         auto&& response1 =
-            co_await this->server.http.post("internal", "/account/reserve", internal_reqs::ReserveName{world, name});
+            co_await this->server.http.post("internal", "/account/reserve", internal_reqs::ReserveName{world, name, 0});
         co_await this->server.threads.switching(weak);
 
         if (response1.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_EXISTS));
 
-        session_data->pending_name = name;
+        session_data->pending_uid = response1.uid;
 
         auto        uid    = response1.uid;
         static auto device = std::random_device{};

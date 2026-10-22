@@ -719,7 +719,8 @@ namespace Google.FlatBuffers
 
             return fb.protocol.@internal.request.raw.ReserveName.CreateReserveName(builder,
                 builder.Build(value.World),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.Uid));
         }
         public static Offset<fb.protocol.@internal.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.Save value)
         {
@@ -4743,6 +4744,7 @@ namespace fb.protocol.@internal.request
         public int ProtocolType => (int)FlatBufferProtocolType.ReserveName;
         public uint World { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
+        public uint Uid { get; set; } = 0;
 
         public ReserveName()
         { }
@@ -4751,6 +4753,7 @@ namespace fb.protocol.@internal.request
         {
             World = raw.World;
             Name = raw.Name;
+            Uid = raw.Uid;
         }
 
         public ReserveName(byte[] bytes) : this(fb.protocol.@internal.request.raw.ReserveName.GetRootAsReserveName(new ByteBuffer(bytes)))

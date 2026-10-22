@@ -3112,20 +3112,21 @@ public:
 public:
     uint32_t world = 0;
     std::string name;
+    uint32_t uid = 0;
 
 public:
     ReserveName() = default;
 
     ReserveName(const ReserveName& x)
-        : world(x.world), name(x.name)
+        : world(x.world), name(x.name), uid(x.uid)
     { }
 
-    ReserveName(uint32_t world, std::string_view name)
-        : world(world), name(std::string(name))
+    ReserveName(uint32_t world, std::string_view name, uint32_t uid)
+        : world(world), name(std::string(name)), uid(uid)
     { }
 
     ReserveName(const fb::protocol::internal::request::raw::ReserveName& raw)
-        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str()))
+        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str())), uid(raw.uid())
     { }
 
 public:
@@ -10156,7 +10157,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::ReserveName> build<fb:
 {
     return fb::protocol::internal::request::raw::CreateReserveName(builder,
             flatbuffers::build<uint32_t>(builder, value.world),
-            flatbuffers::build<std::string>(builder, value.name));
+            flatbuffers::build<std::string>(builder, value.name),
+            flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Save> build<fb::protocol::internal::request::Save>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Save& value)

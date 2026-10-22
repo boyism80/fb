@@ -5,6 +5,7 @@
 #include <fb/socket.h>
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 namespace fb::login {
@@ -18,7 +19,7 @@ public:
     uint32_t                           pk                = -1;
     uint32_t                           password_failures = 0;
     std::string                        name;
-    std::string                        pending_name;
+    std::optional<uint32_t>            pending_uid;
     const fb::protocol::CLIENT_VERSION client_version;
     const fb::protocol::CLIENT_UI_MODE ui_mode;
 
