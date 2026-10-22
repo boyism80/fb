@@ -302,15 +302,7 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
                 return true
             end
 
-            local paid = me:transfer_clan_money(owner_clan, ENTRANCE_FEE_TO_OWNER, -ENTRANCE_FEE)
-            if paid ~= true then
-                me:dialog(npc_obj, '문파자금 적립에 실패하여 입장할 수 없습니다.')
-                return true
-            end
-
-            if me:map(map_inner, math.random(74, 84), math.random(117, 130)) ~= true then
-                me:transfer_clan_money(owner_clan, -ENTRANCE_FEE_TO_OWNER, ENTRANCE_FEE)
-            end
+            me:map(map_inner, math.random(74, 84), math.random(117, 130), { clan_fee = { clan = owner_clan, money = ENTRANCE_FEE, clan_money = ENTRANCE_FEE_TO_OWNER } })
         end
     end
     return true

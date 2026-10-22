@@ -976,6 +976,14 @@ return {
         report(me, true, step)
     end,
 
+    clan_money = function(me, step)
+        local clan = me:clan()
+        if clan == nil then
+            return report(me, false, step, 'no clan')
+        end
+        report(me, true, step, tostring(clan:money()))
+    end,
+
     -- test.reward.split pays 3 가시철단도, one per slot. test.reward.over pays 250 도토리, more than one stack holds.
     reward_split = function(me, step)
         local split = me:reward('test.reward.split')

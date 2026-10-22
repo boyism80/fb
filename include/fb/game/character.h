@@ -148,6 +148,10 @@ public:
         [[nodiscard]] async::task<std::optional<bool>> transfer_money(uint32_t clan_id, int64_t clan_delta, int64_t money_delta);
         async::task<void>                              settle_money(uint64_t request_id);
         void                                           complete_money(uint64_t request_id, bool applied);
+        std::optional<uint64_t>                        hold_fee(uint32_t clan_id, uint64_t money, uint64_t clan_money);
+        bool                                           commit_fee(uint64_t request_id);
+        void                                           release_fee(uint64_t request_id);
+        async::task<void>                              settle_fee(uint64_t request_id);
         // clang-format on
     };
 

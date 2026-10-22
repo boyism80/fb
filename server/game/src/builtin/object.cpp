@@ -838,8 +838,39 @@ int builtin::object::builtin_map(lua_State* L)
         }
     }
 
+    auto fee_clan       = std::optional<uint32_t>{};
+    auto fee_money      = uint64_t{0};
+    auto fee_clan_money = uint64_t{0};
     if (argc >= offset && lua->is_table(offset))
+    {
         parse_map_option_table(lua, offset, options, weak);
+
+        ::lua_getfield(*lua, offset, "clan_fee");
+        if (lua->is_table(-1))
+        {
+            ::lua_getfield(*lua, -1, "clan");
+            auto clan = lua->touserdata<fb::game::clan>(-1);
+            ::lua_pop(*lua, 1);
+            if (clan != nullptr)
+                fee_clan = clan->id();
+
+            ::lua_getfield(*lua, -1, "money");
+            fee_money = static_cast<uint64_t>(lua->tointeger(-1));
+            ::lua_pop(*lua, 1);
+
+            ::lua_getfield(*lua, -1, "clan_money");
+            fee_clan_money = static_cast<uint64_t>(lua->tointeger(-1));
+            ::lua_pop(*lua, 1);
+
+            if (fee_clan.has_value() == false || obj->is(OBJECT_TYPE::CHARACTER) == false)
+            {
+                ::lua_pop(*lua, 1);
+                lua->pushboolean(false);
+                return 1;
+            }
+        }
+        ::lua_pop(*lua, 1);
+    }
 
     if (position.has_value() == false)
         position = map->model().spawn_position();
@@ -852,7 +883,36 @@ int builtin::object::builtin_map(lua_State* L)
         if (shared == nullptr)
             co_return;
 
-        *success_holder = co_await shared->map(map, position, options);
+        if (fee_clan.has_value() == false)
+        {
+            *success_holder = co_await shared->map(map, position, options);
+        }
+        else
+        {
+            auto ch     = std::static_pointer_cast<fb::game::character>(shared);
+            auto fee_id = ch->clan.hold_fee(fee_clan.value(), fee_money, fee_clan_money);
+            if (fee_id.has_value() == false)
+                co_return;
+
+            auto id            = fee_id.value();
+            auto ch_weak       = ch->weak_from_this_as<fb::game::character>();
+            auto fee_options   = options;
+            fee_options.before = [before = options.before, ch_weak, id]() -> async::task<bool> {
+                if (before && co_await before() == false)
+                    co_return false;
+
+                auto locked = ch_weak.lock();
+                co_return locked != nullptr && locked->clan.commit_fee(id);
+            };
+
+            *success_holder = co_await ch->map(map, position, fee_options);
+            co_await ch->server.threads.switching(ch_weak);
+            if (ch_weak.expired())
+                co_return;
+
+            if (*success_holder == false)
+                ch->clan.release_fee(id);
+        }
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success_holder);

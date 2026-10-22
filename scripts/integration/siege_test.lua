@@ -21,6 +21,12 @@ local ENTRY_MONEY   = 300000
 local MSG_FEE_ASK   = "입장료를 내고서라도"
 local MSG_FEE_PAY   = "입장료 20만전"
 local MSG_CHANGED   = "성의 상황이 바뀌었습니다."
+local ENTRANCE_FEE  = 200000
+local FEE_TO_OWNER  = 150000
+local MONEY_PATH    = "/clan/money"
+local ABORT_PATH    = "/clan/money/abort"
+local ENTER_WAIT_MS = 20000
+local SETTLE_WAIT_MS = 45000
 
 local function fail(message)
     log("fatal", "Siege test: " .. message)
@@ -29,6 +35,19 @@ end
 
 local function run_step(bot, func, step, ...)
     return script_step.run_script(bot, "test/integration", func, step, ...) == true
+end
+
+local function clan_money(bot, step)
+    local ok, text = script_step.run_script(bot, "test/integration", "clan_money", step)
+    if ok ~= true or text == nil then
+        return nil
+    end
+    return tonumber(text:match(step .. " (%d+)"))
+end
+
+local function clear_fee_faults(bot)
+    bot:chat("/HTTP장애 " .. MONEY_PATH .. " off")
+    bot:chat("/HTTP장애 " .. ABORT_PATH .. " off")
 end
 
 local function command(bot, text, expected)
@@ -46,6 +65,7 @@ test_suite {
         local bot = ctx:bot(0)
         bot:chat("/HTTP장애 /castle/owner off")
         bot:chat("/HTTP지연 internal 0")
+        clear_fee_faults(bot)
     end,
 
     scenarios = {
@@ -176,6 +196,73 @@ test_suite {
 
             if command(b, "/공성종료", MSG_ENDED) == false then
                 return fail("could not end the siege after the gate check")
+            end
+            return true
+        end,
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+
+            if run_step(a, "map_active", "fee_heart_map", tostring(HEART_MAP)) == false then
+                log("debug", "Siege fee test skipped: the heart map does not run on this host")
+                return true
+            end
+            if run_step(b, "verify_siege", "fee_owned_b", BEAST, "false", "mine") == false then
+                return fail("B's clan does not own the castle before the fee check")
+            end
+
+            local clan_before = clan_money(b, "fee_clan_before")
+            if clan_before == nil then
+                return fail("could not read B's clan money")
+            end
+
+            a:money(ENTRY_MONEY)
+            ctx:sleep(300)
+            local gate_map = a:map()
+            if quest_dialog.open_pursuit(a, GATE_NPC, GATE_OPTION, quest_dialog.contains(MSG_FEE_ASK)) == nil then
+                return fail("the gate keeper did not offer the paid entry")
+            end
+            local ask = a:request_dialog(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"), quest_dialog.contains(MSG_FEE_PAY))
+            if ask == nil or ask == false then
+                return fail("the gate keeper did not ask for the entrance fee")
+            end
+
+            a:chat("/HTTP장애 " .. MONEY_PATH .. " lost")
+            a:chat("/HTTP장애 " .. ABORT_PATH .. " lost")
+            ctx:sleep(300)
+            a:send(protocol.dialog("PURSUIT", 0, "", 0, 0, "입장합니다."))
+
+            local waited = 0
+            while a:map() == gate_map and waited < ENTER_WAIT_MS do
+                ctx:sleep(500)
+                waited = waited + 500
+            end
+            clear_fee_faults(a)
+            if a:map() == gate_map then
+                quest_dialog.remove_npc(a)
+                return fail("A was kept out while the clan share of the fee was unknown")
+            end
+            if a:money() ~= ENTRY_MONEY - ENTRANCE_FEE then
+                return fail(string.format("A's money after entering: money=%d expected=%d", a:money(), ENTRY_MONEY - ENTRANCE_FEE))
+            end
+
+            local expected = clan_before + FEE_TO_OWNER
+            local current = clan_money(b, "fee_clan_wait")
+            waited = 0
+            while current ~= expected and waited < SETTLE_WAIT_MS do
+                ctx:sleep(1000)
+                waited = waited + 1000
+                current = clan_money(b, "fee_clan_wait")
+            end
+            if current ~= expected then
+                return fail(string.format("B's clan money after the resend: money=%s expected=%d", tostring(current), expected))
+            end
+
+            ctx:sleep(3000)
+            current = clan_money(b, "fee_clan_after")
+            if current ~= expected or a:money() ~= ENTRY_MONEY - ENTRANCE_FEE then
+                return fail(string.format("the fee settled twice: clan=%s expected=%d money=%d", tostring(current), expected, a:money()))
             end
             return true
         end,

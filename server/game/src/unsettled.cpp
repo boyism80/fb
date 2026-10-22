@@ -145,6 +145,10 @@ async::task<void> unsettled_requests::settle()
                 co_await this->_owner.marketplace.settle_purchase(id);
                 break;
 
+            case UNSETTLED_TYPE::CLAN_FEE:
+                co_await this->_owner.clan.settle_fee(id);
+                break;
+
             default:
                 fb::logger::warn("unsettled.settle unknown type user={} request={} type={}",
                                  owner_id,

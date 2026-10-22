@@ -128,6 +128,7 @@ public:
     async::task<void>                on_enemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id, uint64_t revision, uint64_t related_revision);
     async::task<void>                on_unenemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id, uint64_t revision, uint64_t related_revision);
     async::task<std::optional<bool>> add_money(uint32_t world, uint32_t clan_id, int64_t delta, uint64_t request_id);
+    async::task<std::optional<bool>> send_money(uint32_t world, uint32_t clan_id, int64_t delta, uint64_t request_id);
     async::task<std::optional<bool>> abort_money(uint32_t world, uint32_t clan_id, uint64_t request_id);
     async::task<void>                on_set_money(uint32_t clan_id, uint64_t money, uint64_t revision);
     // clang-format on

@@ -108,3 +108,94 @@ void character::clan::complete_money(uint64_t request_id, bool applied)
     else if (applied == false && money_delta < 0)
         this->_owner.money_add(static_cast<uint64_t>(-money_delta));
 }
+
+std::optional<uint64_t> character::clan::hold_fee(uint32_t clan_id, uint64_t money, uint64_t clan_money)
+{
+    this->_owner.assert_thread();
+
+    auto detail          = Json::Value{Json::objectValue};
+    detail["clan_delta"] = static_cast<Json::Int64>(clan_money);
+
+    auto request_id = this->_owner.unsettled.add(UNSETTLED_TYPE::CLAN_FEE, clan_id, detail);
+    if (this->_owner.items.hold(request_id, money, {}) == false)
+    {
+        this->_owner.unsettled.erase(request_id);
+        return std::nullopt;
+    }
+    return request_id;
+}
+
+bool character::clan::commit_fee(uint64_t request_id)
+{
+    this->_owner.assert_thread();
+
+    auto request = this->_owner.unsettled.find(request_id);
+    if (request == nullptr || this->_owner.items.escrow().contains(request_id) == false)
+        return false;
+
+    this->_owner.items.take(request_id);
+    request->in_flight = false;
+    return true;
+}
+
+void character::clan::release_fee(uint64_t request_id)
+{
+    this->_owner.assert_thread();
+
+    auto request = this->_owner.unsettled.find(request_id);
+    if (request == nullptr)
+        return;
+
+    if (this->_owner.items.escrow().contains(request_id))
+    {
+        this->_owner.items.release(request_id);
+        this->_owner.unsettled.erase(request_id);
+    }
+    else
+    {
+        request->in_flight = false;
+    }
+}
+
+async::task<void> character::clan::settle_fee(uint64_t request_id)
+{
+    this->_owner.assert_thread();
+
+    auto request = this->_owner.unsettled.find(request_id);
+    if (request == nullptr || request->in_flight)
+        co_return;
+
+    if (this->_owner.items.escrow().contains(request_id))
+    {
+        this->_owner.items.release(request_id);
+        this->_owner.unsettled.erase(request_id);
+    }
+    else
+    {
+        auto weak          = this->_owner.weak_from_this_as<character>();
+        auto world         = this->_owner.world();
+        auto clan_id       = static_cast<uint32_t>(request->target);
+        auto clan_delta    = request->detail["clan_delta"].asInt64();
+        request->in_flight = true;
+
+        auto sent = co_await this->_owner.server.clans.send_money(world, clan_id, clan_delta, request_id);
+        co_await this->_owner.server.threads.switching(weak);
+        if (weak.expired())
+            co_return;
+
+        request = this->_owner.unsettled.find(request_id);
+        if (request == nullptr)
+            co_return;
+
+        if (sent.has_value())
+        {
+            if (sent.value() == false)
+                fb::logger::warn("{} clan fee {} dropped: clan {} is gone", this->_owner.name(), request_id, clan_id);
+            this->_owner.unsettled.erase(request_id);
+        }
+        else
+        {
+            request->in_flight = false;
+        }
+    }
+}

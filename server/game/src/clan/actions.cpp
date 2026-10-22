@@ -449,6 +449,16 @@ clan::container::broadcast(uint32_t world, uint32_t clan_id, std::string_view me
 async::task<std::optional<bool>>
 clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta, uint64_t request_id)
 {
+    auto sent = co_await this->send_money(world, clan_id, delta, request_id);
+    if (sent.has_value() && sent.value())
+        co_return true;
+    else
+        co_return co_await this->abort_money(world, clan_id, request_id);
+}
+
+async::task<std::optional<bool>>
+clan::container::send_money(uint32_t world, uint32_t clan_id, int64_t delta, uint64_t request_id)
+{
     if (delta == 0)
         co_return true;
 
@@ -483,9 +493,13 @@ clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta, uint
         co_await this->on_updated(updated.value());
         co_return true;
     }
+    else if (missing)
+    {
+        co_return false;
+    }
     else
     {
-        co_return co_await this->abort_money(world, clan_id, request_id);
+        co_return std::nullopt;
     }
 }
 

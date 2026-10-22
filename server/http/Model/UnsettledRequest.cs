@@ -8,6 +8,7 @@ namespace Http.Model
         StorageClaim = 1,
         MarketList = 2,
         MarketPurchase = 3,
+        ClanFee = 4,
     }
 
     public class UnsettledRequestKey : BaseModel, IRedisHashKey

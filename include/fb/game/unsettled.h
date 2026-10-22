@@ -23,6 +23,7 @@ enum class UNSETTLED_TYPE : uint8_t
     STORAGE_CLAIM   = 1,
     MARKET_LIST     = 2,
     MARKET_PURCHASE = 3,
+    CLAN_FEE        = 4,
 };
 
 class unsettled_requests
