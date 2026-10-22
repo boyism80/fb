@@ -48,27 +48,26 @@ return {
 
         me:dialog(model, '잘 하셨습니다!! 상으로\n목도를 드릴게요!!', { prev = false, next = true })
 
+        local give_exp = (me:level() < 5)
         local code = me:exchange(
             { ['item'] = { ['낙랑의두루마리2'] = 1 } },
-            { ['item'] = { ['낙랑의두루마리3'] = 1, ['초심자의목도'] = 1 } }
+            { ['item'] = { ['낙랑의두루마리3'] = 1, ['초심자의목도'] = 1 }, ['exp'] = give_exp and 50 or 0 }
         )
         if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(model, '소지품이 가득 찼습니다.', { prev = false, next = false })
             return
         end
-
-        if me:level() < 5 then
-            me:exp(me:exp() + 50)
-            me:dialog(model, '<보상>\n\'목도\',\n\'낙랑의두루마리3\'을 얻다!!!\n경험치 50 상승!!', { prev = false, next = true })
-        else
-            btn = me:dialog(model, '<보상>\n\'목도\',\n\'낙랑의두루마리3\'을 얻다!!!', { prev = true, next = true })
-            if btn == DIALOG_RESULT.QUIT then
-                return
-            end
+        if code ~= enum.exchange_result.OK then
+            return
         end
 
         q:progress(0)
         q:complete()
+        if give_exp then
+            me:dialog(model, '<보상>\n\'목도\',\n\'낙랑의두루마리3\'을 얻다!!!\n경험치 50 상승!!', { prev = false, next = true })
+        else
+            me:dialog(model, '<보상>\n\'목도\',\n\'낙랑의두루마리3\'을 얻다!!!', { prev = true, next = true })
+        end
     end,
 
     -- on_deactivated = function(me, item)

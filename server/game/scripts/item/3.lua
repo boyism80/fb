@@ -61,21 +61,22 @@ return {
         end
 
         local armor_name = (me:gender() == GENDER.MALE) and '초심자의남자갑주' or '초심자의여자갑주'
+        local give_exp = (me:level() < 5)
         local code = me:exchange(
             { ['item'] = { ['낙랑의두루마리3'] = 1 } },
-            { ['item'] = { ['낙랑의두루마리4'] = 1, [armor_name] = 1 } }
+            { ['item'] = { ['낙랑의두루마리4'] = 1, [armor_name] = 1 }, ['exp'] = give_exp and 50 or 0 }
         )
         if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(model, '소지품이 가득 찼습니다.', { prev = false, next = false })
             return
         end
-
-        if me:level() < 5 then
-            me:exp(me:exp() + 50)
+        if code ~= enum.exchange_result.OK then
+            return
         end
 
+        q:complete()
         if me:gender() == GENDER.MALE then
-            if me:level() < 5 then
+            if give_exp then
                 me:dialog(model, '<보상>\n\'초심자의남자갑주\',\n\'낙랑의두루마리4\'을 얻다!!!\n경험치 50 상승!!', { prev = false, next = true })
             else
                 ::ON_ACTIVATED_3_0002::
@@ -88,7 +89,7 @@ return {
                 end
             end
         else
-            if me:level() < 5 then
+            if give_exp then
                 me:dialog(model, '<보상>\n\'초심자의여자갑주\',\n\'낙랑의두루마리4\'을 얻다!!!\n경험치 50 상승!!', { prev = false, next = true })
             else
                 ::ON_ACTIVATED_3_0003::
@@ -101,8 +102,6 @@ return {
                 end
             end
         end
-
-        q:complete()
     end,
 
     -- on_deactivated = function(me, item)

@@ -81,7 +81,6 @@ return {
         local squirrel, rabbit = parse_param(q:param())
 
         if squirrel >= GOAL and rabbit >= GOAL then
-            ::ON_ACTIVATED_5_0002::
             btn = me:dialog(model, '잘 하셨습니다!! 상으로\n초심자의머리띠를 드릴게요!!', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -95,19 +94,17 @@ return {
                 me:dialog(model, '소지품이 가득 찼습니다.', { prev = false, next = false })
                 return
             end
-            if give_exp then
-                btn = me:dialog(model, '<보상>\n\'초심자의귀마개\'\n\'낙랑의두루마리6\'을 얻다!!!\n경험치 200 상승!!', { prev = false, next = true })
-            else
-                btn = me:dialog(model, '<보상>\n\'초심자의귀마개\'\n\'낙랑의두루마리6\'을 얻다!!!', { prev = false, next = true })
-            end
-            if btn == DIALOG_RESULT.QUIT then
+            if code ~= enum.exchange_result.OK then
                 return
             end
-            if btn == DIALOG_RESULT.PREV then
-                goto ON_ACTIVATED_5_0002
-            end
+
             set_param(q, 0, 0)
             q:complete()
+            if give_exp then
+                me:dialog(model, '<보상>\n\'초심자의귀마개\'\n\'낙랑의두루마리6\'을 얻다!!!\n경험치 200 상승!!', { prev = false, next = true })
+            else
+                me:dialog(model, '<보상>\n\'초심자의귀마개\'\n\'낙랑의두루마리6\'을 얻다!!!', { prev = false, next = true })
+            end
             return
         end
 

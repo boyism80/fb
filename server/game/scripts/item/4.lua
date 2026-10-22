@@ -130,13 +130,16 @@ return {
             me:dialog(model, '소지품이 가득 찼습니다.', { prev = false, next = false })
             return
         end
+        if code ~= enum.exchange_result.OK then
+            return
+        end
+
+        q:complete()
         if give_exp then
             me:dialog(model, '<보상>\n\'노란비서\',\n\'낙랑의두루마리5\'을 얻다!!!\n경험치 100 상승!!', { prev = false, next = true })
         else
             me:dialog(model, '<보상>\n\'노란비서\',\n\'낙랑의두루마리5\'을 얻다!!!', { prev = false, next = true })
         end
-
-        q:complete()
     end,
 
     -- on_deactivated = function(me, item)

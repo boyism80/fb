@@ -1011,6 +1011,28 @@ return {
         report(me, ok, step, string.format('money=%d free=%d', money, free))
     end,
 
+    -- Below level 5 the 낙랑의두루마리2 reward includes 50 exp.
+    nakrang2_prepare = function(me, step, level)
+        local quest = require('lib.quest')
+        me:level(tonumber(level))
+        me:remove_quest(quest.QUEST_NAKRANG2)
+        local q = me:start_quest(quest.QUEST_NAKRANG2)
+        if q ~= nil then
+            q:step(1)
+            q:progress(2)
+        end
+        local scroll = me:mkitem('낙랑의두루마리2', 1)
+        report(me, q ~= nil and scroll ~= nil, step, string.format('exp=%d', me:exp()))
+    end,
+
+    verify_nakrang2 = function(me, step, completed, exp)
+        local q = me:quest(require('lib.quest').QUEST_NAKRANG2)
+        local done = q ~= nil and q:completed()
+        local rewarded = me:item('낙랑의두루마리3') ~= nil
+        local ok = done == (completed == 'true') and rewarded == done and me:exp() == tonumber(exp)
+        report(me, ok, step, string.format('completed=%s rewarded=%s exp=%d', tostring(done), tostring(rewarded), me:exp()))
+    end,
+
     -- transfer_to throws a C++ exception when the destination table is missing.
     builtin_exception = function(me, step)
         local ok, err = pcall(function()

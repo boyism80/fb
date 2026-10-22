@@ -88,6 +88,9 @@ return {
             me:dialog(model, '소지품이 가득 찼습니다.', { prev = false, next = false })
             return
         end
+        if code ~= enum.exchange_result.OK then
+            return
+        end
         if give_exp then
             me:dialog(model, '<보상>\n\'초심자의반지\',\n\'낙랑의두루마리7\'을 얻다!!!\n경험치400상승', { prev = false, next = true })
         else
