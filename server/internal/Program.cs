@@ -62,6 +62,7 @@ public class Program
         builder.Services.AddSingleton<Http.Service.MaintenanceService>();
         builder.Services.AddHostedService<Internal.Services.MaintenanceBackgroundService>();
         builder.Services.AddHostedService<Internal.Services.SystemArchiveBackgroundService>();
+        builder.Services.AddHostedService<Internal.Services.StorageBoxCleanupBackgroundService>();
         builder.Services.AddFbHealthChecks();
         builder.Services.AddScoped<StorageService>();
         builder.Services.AddScoped<Internal.Services.GroupService>();

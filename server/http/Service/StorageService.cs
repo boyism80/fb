@@ -1,4 +1,5 @@
 using AutoMapper;
+using Dapper;
 using Fb.Model.EnumValue;
 using Http.Model;
 using Http.Util;
@@ -261,6 +262,58 @@ namespace Http.Service
             _dbContext.StorageBox.Set(world, box);
             await _dbContext.StorageBox.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<int> DeleteReceivedBoxesAsync(uint world, int limit)
+        {
+            var users = new SortedSet<uint>();
+            for (var db = 0; db < _dbContext.GetShardDbSize(world); db++)
+            {
+                await using var conn = _dbContext.GetDataConnection(world, db);
+                users.UnionWith(await conn.QueryAsync<uint>(
+                    """
+                    SELECT DISTINCT `user` FROM `storage_box`
+                    WHERE `received` = 1 AND `system_storage_box_id` IS NULL AND `deleted` = 0
+                    LIMIT @limit
+                    """,
+                    new { limit }));
+            }
+
+            var deleted = 0;
+            foreach (var user in users)
+            {
+                await using var _ = await _distributedLock.Lock(world, OpsLockKey(user));
+                if ((await _dbContext.UnsettledRequest.Get(world, user)).Any())
+                    continue;
+
+                var received = (await _dbContext.StorageBox.Get(world, user))
+                    .Where(box => box.Received && box.SystemStorageBoxId == null)
+                    .ToList();
+                var refs = received
+                    .Select(box => box.ExternalRef)
+                    .Where(externalRef => string.IsNullOrEmpty(externalRef) == false)
+                    .ToArray();
+                var parcels = new HashSet<string>();
+                if (refs.Length > 0)
+                {
+                    await using var unified = _dbContext.GetUnifiedConnection();
+                    parcels.UnionWith(await unified.QueryAsync<string>(
+                        "SELECT `external_ref` FROM `marketplace_parcel` WHERE `external_ref` IN @refs",
+                        new { refs }));
+                }
+
+                var targets = received
+                    .Where(box => string.IsNullOrEmpty(box.ExternalRef) || parcels.Contains(box.ExternalRef) == false)
+                    .ToList();
+                if (targets.Count == 0)
+                    continue;
+
+                _dbContext.StorageBox.Delete(world, targets);
+                await _dbContext.SaveChangesAsync();
+                deleted += targets.Count;
+            }
+
+            return deleted;
         }
 
         private async Task PublishWriteAsync(uint world, StorageBox box, uint host)

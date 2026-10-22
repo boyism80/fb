@@ -513,7 +513,9 @@ namespace Internal.Controllers
                 Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
                 CollectionUnlocks = collectionUnlocks.Select(_mapper.Map<Protocol.CollectionUnlock>).ToList(),
                 StorageBoxes = storageBoxes
-                    .Where(box => box.ExpiredDate == null || box.ExpiredDate > now || claimingBoxes.Contains(box.Id))
+                    .Where(box => claimingBoxes.Contains(box.Id) ||
+                                  ((box.ExpiredDate == null || box.ExpiredDate > now) &&
+                                   (box.Received == false || box.SystemStorageBoxId != null)))
                     .Select(_mapper.Map<Protocol.StorageBox>)
                     .ToList(),
                 UnsettledRequests = unsettledRequests.Select(_mapper.Map<Protocol.UnsettledRequest>).ToList(),
