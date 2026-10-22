@@ -64,6 +64,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"rmitem",                       builtin::character::builtin_rmitem},
 {"exchange",                     builtin::character::builtin_exchange},
 {"consume",                      builtin::character::builtin_consume},
+{"drop_escrow_items",            builtin::character::builtin_drop_escrow_items},
 {"state",                        builtin::character::builtin_state},
 {"mimic",                        builtin::character::builtin_mimic},
 {"class",                        builtin::character::builtin_class},
@@ -1393,6 +1394,28 @@ int builtin::character::builtin_exchange(lua_State* L)
 int builtin::character::builtin_consume(lua_State* L)
 {
     return exchange(L, 2, 0, 3, true);
+}
+
+int builtin::character::builtin_drop_escrow_items(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto builder  = lua->new_co_builder();
+    builder.weak  = ch->weak_from_this_as<fb::game::character>();
+    builder.yield = [=]() -> async::task<void> {
+        ch->items.drop_escrow_items();
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 // Index 0 means the argument is absent. boolean_result pushes ok as true instead of the exchange_result code.

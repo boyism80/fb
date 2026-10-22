@@ -998,6 +998,19 @@ return {
         report(me, ghost, step, string.format('mp=%d', mp))
     end,
 
+    drop_escrow_items = function(me, step)
+        me:drop_escrow_items()
+        report(me, true, step)
+    end,
+
+    -- The money free space counts held money, so it shows whether any escrow money is left.
+    verify_money_released = function(me, step, expected)
+        local money = me:money()
+        local free = me:money_free_space()
+        local ok = money == tonumber(expected) and free == 0xFFFFFFFF - money
+        report(me, ok, step, string.format('money=%d free=%d', money, free))
+    end,
+
     -- transfer_to throws a C++ exception when the destination table is missing.
     builtin_exception = function(me, step)
         local ok, err = pcall(function()

@@ -154,6 +154,7 @@ public:
     bool                                            hold(uint64_t escrow_id, uint64_t money, const std::vector<escrow_part>& parts);
     void                                            release(uint64_t escrow_id);
     void                                            take(uint64_t escrow_id);
+    void                                            drop_escrow_items();
     // clang-format on
 };
 

@@ -1792,6 +1792,50 @@ test_suite {
         -- L2: logout while the listing request is in flight and the marketplace never received it
         logout_during_delay_scenario("L2", "on", false),
 
+        -- E1: an escrow left with only the fee, as after a failed item row restore, is still settled and refunded
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "E1: MONEY ONLY ESCROW")
+
+            cleanup_bot(a)
+            if prepare_weapon(a) == false then
+                progress(a, "FAILED: prepare weapon")
+                return false
+            end
+            local money_before = listing_fee(1, BUNDLE_UNIT_PRICE) + 1000
+            a:money(money_before)
+
+            local listed, list_err = list_unreachable(a, { WEAPON_ITEM }, 1)
+            if listed == false then
+                progress(a, "FAILED: " .. tostring(list_err))
+                return false
+            end
+            if script_step.run_script(a, "test/integration", "drop_escrow_items", "E1_DROP") ~= true then
+                progress(a, "FAILED: drop escrow items")
+                return false
+            end
+
+            a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
+            ctx:sleep(RESTORE_FIRST_WAIT_MS)
+            local released = false
+            for attempt = 1, RESTORE_POLL_COUNT do
+                if script_step.run_script(a, "test/integration", "verify_money_released", "E1_FEE_RELEASED", money_before) == true then
+                    released = true
+                    break
+                end
+                progress(a, string.format("fee not released yet attempt=%d", attempt))
+                ctx:sleep(RESTORE_POLL_MS)
+            end
+            if released == false then
+                progress(a, "FAILED: the fee held without an item was never refunded")
+                return false
+            end
+
+            cleanup_bot(a)
+            progress(a, "E1 PASSED")
+            return true
+        end,
+
         -- P2 prep
         function(ctx)
             local a = ctx:bot(0)

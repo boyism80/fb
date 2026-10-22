@@ -432,6 +432,12 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     this->init_quests(resp.quests, *ch);
     ch->collections.load(resp.collection_unlocks);
     ch->unsettled.load(resp.unsettled_requests);
+    // Releasing an entry nobody settles could duplicate a listing the marketplace already made, so it is only reported.
+    for (const auto& [escrow_id, money] : ch->items.escrow().entries())
+    {
+        if (ch->unsettled.find(escrow_id) == nullptr)
+            fb::logger::warn("{} escrow {} has no unsettled request (money {})", ch->name(), escrow_id, money);
+    }
     this->server.system_storage.init_from_login(*ch, resp.storage_boxes);
     ch->storage_box.init_claims();
     this->init_option(resp.option, *ch);

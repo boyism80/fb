@@ -517,10 +517,11 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
     if (request == nullptr)
         co_return;
 
+    // An entry whose item row failed to restore still holds the fee, so the entry decides and not its parts.
     auto weak     = this->_owner.weak_from_this_as<fb::game::character>();
     auto world    = this->_owner.world();
     auto item     = mp::Item{this->_owner.id, 0, 0, std::nullopt, std::nullopt, std::nullopt};
-    auto escrowed = false;
+    auto escrowed = this->_owner.items.escrow().contains(listing_id);
     for (const auto& part : this->_owner.items.escrow().parts(listing_id))
     {
         auto& source      = *part.value;
@@ -528,13 +529,12 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
         if (source.model().attr(ITEM_ATTRIBUTE::WEAPON))
             custom_name = static_cast<fb::game::weapon&>(source).custom_name();
 
-        item     = mp::Item{this->_owner.id,
+        item = mp::Item{this->_owner.id,
                         source.model().id,
                         source.count(),
                         source.durability(),
                         custom_name,
                         source.uid() != 0 ? std::optional<uint64_t>(source.uid()) : std::nullopt};
-        escrowed = true;
         break;
     }
 

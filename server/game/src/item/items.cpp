@@ -2197,3 +2197,29 @@ void items::take(uint64_t escrow_id)
     if (held->money > 0)
         owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
+
+// Test support: leaves every escrow entry with only its money, as an escrow item row that fails to restore does.
+void items::drop_escrow_items()
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    owner->assert_thread();
+
+    auto entries = this->_escrow.entries();
+    for (const auto& [escrow_id, money] : entries)
+    {
+        auto held = this->_escrow.remove(escrow_id);
+        if (held.has_value() == false)
+            continue;
+
+        for (const auto& part : held->parts)
+        {
+            part.value->container(nullptr);
+            if (this->at(part.index) == nullptr)
+                owner->listener.on_item_remove(*owner, part.index, ITEM_DELETE_TYPE::REMOVED);
+        }
+        std::ignore = this->_escrow.hold(escrow_id, held->money, {});
+    }
+}
