@@ -44,6 +44,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     storage_box(*this),
     marketplace(*this),
     unsettled(*this),
+    clan(*this),
     matchmaker(*this),
     life(server,
          table::life[0],
@@ -1649,27 +1650,6 @@ void character::group_reset()
     this->_group_id.reset();
 }
 
-const std::optional<uint32_t>& character::clan_id() const
-{
-    this->assert_thread();
-    return this->_clan_id;
-}
-
-void character::clan_id(std::optional<uint32_t> value)
-{
-    this->assert_thread();
-
-    this->_clan_id = value;
-}
-
-void character::clan_reset()
-{
-    this->assert_thread();
-
-    this->_clan_id.reset();
-    this->update_external();
-}
-
 const std::vector<friend_entry>& character::friends() const
 {
     this->assert_thread();
@@ -2050,13 +2030,13 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
 
         if (receiver_name == "!")
         {
-            if (this->clan_id().has_value() == false)
+            if (this->clan.id().has_value() == false)
             {
                 this->message(_TEXT(MESSAGE_CLAN_NOT_JOINED), MESSAGE_TYPE::NOTIFY);
                 co_return;
             }
 
-            auto cid = this->clan_id().value();
+            auto cid = this->clan.id().value();
             co_await this->server.clans.broadcast(this->world(), cid, text, MESSAGE_TYPE::BROWN);
 
             auto log_data           = Json::Value();
@@ -3022,81 +3002,6 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
         this->money_add(money);
 
     co_return true;
-}
-
-async::task<std::optional<bool>> character::transfer_clan_money(uint32_t clan_id,
-                                                                int64_t  clan_delta,
-                                                                int64_t  money_delta)
-{
-    this->assert_thread();
-
-    auto hold = money_delta < 0 ? static_cast<uint64_t>(-money_delta) : uint64_t{0};
-    if (this->_money < hold)
-        co_return false;
-
-    auto weak             = this->weak_from_this_as<character>();
-    auto world            = this->world();
-    auto detail           = Json::Value{Json::objectValue};
-    detail["clan_delta"]  = static_cast<Json::Int64>(clan_delta);
-    detail["money_delta"] = static_cast<Json::Int64>(money_delta);
-
-    this->money_reduce(hold);
-    auto request_id = this->unsettled.add(UNSETTLED_TYPE::CLAN_MONEY, clan_id, detail);
-
-    auto applied = co_await this->server.clans.add_money(world, clan_id, clan_delta, request_id);
-    co_await this->server.threads.switching(weak);
-    if (weak.expired())
-        co_return applied;
-
-    if (applied.has_value())
-    {
-        this->complete_clan_money(request_id, applied.value());
-    }
-    else
-    {
-        auto request = this->unsettled.find(request_id);
-        if (request != nullptr)
-            request->in_flight = false;
-    }
-    co_return applied;
-}
-
-async::task<void> character::settle_clan_money(uint64_t request_id)
-{
-    this->assert_thread();
-
-    auto request = this->unsettled.find(request_id);
-    if (request == nullptr)
-        co_return;
-
-    auto weak    = this->weak_from_this_as<character>();
-    auto world   = this->world();
-    auto clan_id = static_cast<uint32_t>(request->target);
-
-    auto applied = co_await this->server.clans.abort_money(world, clan_id, request_id);
-    co_await this->server.threads.switching(weak);
-    if (weak.expired())
-        co_return;
-
-    if (applied.has_value())
-        this->complete_clan_money(request_id, applied.value());
-}
-
-void character::complete_clan_money(uint64_t request_id, bool applied)
-{
-    this->assert_thread();
-
-    auto request = this->unsettled.find(request_id);
-    if (request == nullptr)
-        return;
-
-    auto money_delta = request->detail["money_delta"].asInt64();
-    this->unsettled.erase(request_id);
-
-    if (applied && money_delta > 0)
-        this->money_add(static_cast<uint64_t>(money_delta));
-    else if (applied == false && money_delta < 0)
-        this->money_add(static_cast<uint64_t>(-money_delta));
 }
 
 std::shared_ptr<fb::socket<character>> character::socket_ptr() const

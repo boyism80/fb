@@ -23,7 +23,7 @@ namespace internal_resp = fb::protocol::internal::response;
 
 async::task<void> clan::container::create(character& me, std::string_view name)
 {
-    if (me.clan_id().has_value())
+    if (me.clan.id().has_value())
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
     auto   weak     = me.weak_from_this_as<character>();
@@ -52,7 +52,7 @@ async::task<void> clan::container::create(character& me, std::string_view name)
 
 async::task<void> clan::container::destroy(character& me)
 {
-    auto clan_id = me.clan_id();
+    auto clan_id = me.clan.id();
     if (clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -86,12 +86,12 @@ async::task<void> clan::container::destroy(character& me)
 
     co_await this->on_error(resp.error);
     co_await this->on_destroyed(resp.clan_id, resp.clan_name, resp.revision);
-    me.clan_reset();
+    me.clan.reset();
 }
 
 async::task<void> clan::container::join_member(character& inviter, std::string_view target_name)
 {
-    auto inviter_clan_id = inviter.clan_id();
+    auto inviter_clan_id = inviter.clan.id();
     if (inviter_clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -109,7 +109,7 @@ async::task<void> clan::container::join_member(character& inviter, std::string_v
         auto target = params->characters.find(target_name_str);
         if (target != nullptr)
         {
-            if (target->clan_id().has_value())
+            if (target->clan.id().has_value())
                 throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
         }
     }
@@ -125,7 +125,7 @@ async::task<void> clan::container::join_member(character& inviter, std::string_v
 
 async::task<void> clan::container::leave_member(character& leaver)
 {
-    auto clan_id = leaver.clan_id();
+    auto clan_id = leaver.clan.id();
     if (clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -155,7 +155,7 @@ async::task<void> clan::container::leave_member(character& leaver)
 
 async::task<void> clan::container::kick_member(character& kicker, std::string_view target_name)
 {
-    auto kicker_clan_id = kicker.clan_id();
+    auto kicker_clan_id = kicker.clan.id();
     if (kicker_clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -173,7 +173,7 @@ async::task<void> clan::container::kick_member(character& kicker, std::string_vi
         auto target = params->characters.find(target_name_str);
         if (target != nullptr)
         {
-            auto target_clan_id = target->clan_id();
+            auto target_clan_id = target->clan.id();
             if (target_clan_id.has_value() == false || target_clan_id.value() != kicker_clan_id.value())
                 throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
         }
@@ -193,7 +193,7 @@ async::task<void> clan::container::kick_member(character& kicker, std::string_vi
 
 async::task<void> clan::container::change_role(character& changer, std::string_view target_name, CLAN_ROLE role)
 {
-    auto changer_clan_id = changer.clan_id();
+    auto changer_clan_id = changer.clan.id();
     if (changer_clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -211,7 +211,7 @@ async::task<void> clan::container::change_role(character& changer, std::string_v
         auto target = params->characters.find(target_name_str);
         if (target != nullptr)
         {
-            auto target_clan_id = target->clan_id();
+            auto target_clan_id = target->clan.id();
             if (target_clan_id.has_value() == false || target_clan_id.value() != changer_clan_id.value())
                 throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
         }
@@ -232,7 +232,7 @@ async::task<void> clan::container::change_role(character& changer, std::string_v
 
 async::task<void> clan::container::set_title(character& changer, std::string_view title)
 {
-    auto changer_clan_id = changer.clan_id();
+    auto changer_clan_id = changer.clan.id();
     if (changer_clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -272,7 +272,7 @@ async::task<void> clan::container::set_title(character& changer, std::string_vie
 
 async::task<void> clan::container::request_ally(character& requester, uint32_t target_clan_id)
 {
-    auto clan_id = requester.clan_id();
+    auto clan_id = requester.clan.id();
     if (clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -321,7 +321,7 @@ async::task<void> clan::container::request_ally(character& requester, uint32_t t
 
 async::task<void> clan::container::break_ally(character& requester)
 {
-    auto clan_id = requester.clan_id();
+    auto clan_id = requester.clan.id();
     if (clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -351,7 +351,7 @@ async::task<void> clan::container::break_ally(character& requester)
 
 async::task<void> clan::container::declare_enemy(character& requester, uint32_t target_clan_id)
 {
-    auto clan_id = requester.clan_id();
+    auto clan_id = requester.clan.id();
     if (clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
@@ -403,7 +403,7 @@ async::task<void> clan::container::declare_enemy(character& requester, uint32_t 
 
 async::task<void> clan::container::end_enemy(character& requester, uint32_t target_clan_id)
 {
-    auto clan_id = requester.clan_id();
+    auto clan_id = requester.clan.id();
     if (clan_id.has_value() == false)
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 

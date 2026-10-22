@@ -17,12 +17,12 @@ HEAD_MARKER compute_head_marker(const fb::game::character& ch, const fb::game::o
     if (to.is(OBJECT_TYPE::CHARACTER) == false)
         return HEAD_MARKER::NONE;
 
-    auto clan_id_1 = ch.clan_id();
+    auto clan_id_1 = ch.clan.id();
     if (clan_id_1.has_value() == false)
         return HEAD_MARKER::NONE;
 
     auto& you       = static_cast<const fb::game::character&>(to);
-    auto  clan_id_2 = you.clan_id();
+    auto  clan_id_2 = you.clan.id();
     if (clan_id_2.has_value() == false)
         return HEAD_MARKER::NONE;
 

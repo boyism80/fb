@@ -350,7 +350,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         auto guard = co_await this->server.clans.enter_write(resp.clan.value());
         if (auto& clan = guard.value(); clan != nullptr && clan->contains(ch->name()))
-            ch->clan_id(clan->id());
+            ch->clan.id(clan->id());
     }
 
     if (ch->map() == nullptr)
@@ -402,14 +402,14 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         }
     }
 
-    if (ch->clan_id().has_value())
+    if (ch->clan.id().has_value())
     {
-        auto cid   = ch->clan_id().value();
+        auto cid   = ch->clan.id().value();
         auto guard = co_await this->server.clans.enter_write(cid);
         if (auto& clan = guard.value(); clan != nullptr)
             clan->attach(weak);
         else
-            ch->clan_reset();
+            ch->clan.reset();
     }
 
     bool inserted = this->server.characters.insert(ch);
@@ -692,7 +692,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
                 this->server.groups.update_portraits(gid);
             }
 
-            auto& clan_id = data->clan_id();
+            auto& clan_id = data->clan.id();
             if (clan_id.has_value())
             {
                 try
@@ -703,7 +703,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
                 }
                 catch (const std::runtime_error&)
                 { }
-                data->clan_reset();
+                data->clan.reset();
             }
 
             // remove() erases by id and name; a failed duplicate insert must not evict the character already online.

@@ -130,7 +130,7 @@ async::task<void> unsettled_requests::settle()
             switch (type)
             {
             case UNSETTLED_TYPE::CLAN_MONEY:
-                co_await this->_owner.settle_clan_money(id);
+                co_await this->_owner.clan.settle_money(id);
                 break;
 
             case UNSETTLED_TYPE::STORAGE_CLAIM:

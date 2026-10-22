@@ -131,6 +131,26 @@ public:
         std::map<uint32_t, fb::model::datetime> targets;
     };
 
+    class clan
+    {
+    private:
+        character&              _owner;
+        std::optional<uint32_t> _id = std::nullopt;
+
+    public:
+        explicit clan(character& owner);
+
+    public:
+        // clang-format off
+        const std::optional<uint32_t>&                 id() const;
+        void                                           id(std::optional<uint32_t> value);
+        void                                           reset();
+        [[nodiscard]] async::task<std::optional<bool>> transfer_money(uint32_t clan_id, int64_t clan_delta, int64_t money_delta);
+        async::task<void>                              settle_money(uint64_t request_id);
+        void                                           complete_money(uint64_t request_id, bool applied);
+        // clang-format on
+    };
+
 private:
     // clang-format off
     const fb::model::datetime                        _created_date;
@@ -159,7 +179,6 @@ private:
     std::optional<character_appearance<>>            _mimicry = std::nullopt;
     std::string                                      _title = "";
     std::optional<uint64_t>                          _group_id = std::nullopt;
-    std::optional<uint32_t>                          _clan_id = std::nullopt;
     uint16_t                                         _weapon_damage = 0;
     bool                                             _detect = false;
     mob_vector_t                                     _spawned_mobs = {};
@@ -191,6 +210,7 @@ public:
     fb::game::storage_box                         storage_box;
     fb::game::marketplace                         marketplace;
     fb::game::unsettled_requests                  unsettled;
+    class clan                                    clan;
     fb::game::matchmaker                          matchmaker;
     std::unordered_map<std::string, Json::Value>  vars;
     fb::lua::context*                             dialog        = nullptr;
@@ -381,9 +401,6 @@ public:
     void                                                      group_id(uint64_t gid);
     void                                                      group_reset();
     void                                                      refresh_group_portrait();
-    const std::optional<uint32_t>&                            clan_id() const;
-    void                                                      clan_id(std::optional<uint32_t> value);
-    void                                                      clan_reset();
     const std::vector<friend_entry>&                          friends() const;
     void                                                      friends(std::vector<friend_entry> value);
     void                                                      update_friend_relation(uint32_t friend_uid, std::string_view friend_name, bool mutual);
@@ -426,9 +443,6 @@ public:
     const std::vector<std::shared_ptr<fb::game::mob>>&        spawned_mobs() const;
     bool                                                      detach_spawned_mob(fb::game::mob& mob);
     [[nodiscard]] async::task<bool>                           reward(const std::vector<fb::model::dsl>& reward);
-    [[nodiscard]] async::task<std::optional<bool>>            transfer_clan_money(uint32_t clan_id, int64_t clan_delta, int64_t money_delta);
-    async::task<void>                                         settle_clan_money(uint64_t request_id);
-    void                                                      complete_clan_money(uint64_t request_id, bool applied);
     fb::protocol::internal::Character                         to_protocol() const;
     const fb::game::marriage&                                 marriage() const;
     void                                                      marriage(const fb::game::marriage& value);

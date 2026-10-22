@@ -195,7 +195,7 @@ async::task<void> clan::container::on_create(uint32_t                           
         { }
 
         if (attached)
-            ptr->clan_id(clan_id);
+            ptr->clan.id(clan_id);
     }
 
     if (before != nullptr)
@@ -240,7 +240,7 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
         auto message = std::format(_TEXT(MESSAGE_CLAN_DISBANDED), clan_name);
         this->_server.characters.foreach_enqueue(
             [this, message](auto& ch) -> async::task<void> {
-                ch->clan_reset();
+                ch->clan.reset();
                 ch->message(message, MESSAGE_TYPE::NOTIFY);
 
                 auto lua = this->_server.lua.open("scripts/interaction.lua", "on_clan_left");
@@ -348,7 +348,7 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
         }
 
         auto ch = this->_server.characters.find(joined_member_name);
-        if (ch != nullptr && ch->clan_id().has_value() == false)
+        if (ch != nullptr && ch->clan.id().has_value() == false)
         {
             weak      = ch->template weak_from_this_as<character>();
             ch_id     = ch->id;
@@ -395,7 +395,7 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
 
     if (attached)
     {
-        ptr->clan_id(clan_id);
+        ptr->clan.id(clan_id);
         ptr->update_external();
         ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan_name), MESSAGE_TYPE::NOTIFY);
     }
@@ -464,7 +464,7 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
-            ptr->clan_reset();
+            ptr->clan.reset();
             ptr->update_external();
             ptr->message(_TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
 
@@ -549,7 +549,7 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
-            ptr->clan_reset();
+            ptr->clan.reset();
             ptr->update_external();
             ptr->message(_TEXT(MESSAGE_CLAN_KICKED), MESSAGE_TYPE::NOTIFY);
 

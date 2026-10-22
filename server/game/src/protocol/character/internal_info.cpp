@@ -33,7 +33,7 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
     writer.template write<int8_t>(this->ch.stat.dam());
     writer.template write<int8_t>(this->ch.stat.hit());
 
-    auto& clan_id = this->ch.clan_id();
+    auto& clan_id = this->ch.clan.id();
     if (clan_id.has_value())
     {
         auto guard = this->ch.server.clans.enter_read(clan_id.value());

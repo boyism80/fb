@@ -29,7 +29,7 @@ void external_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->ch.title());
 
-    auto& clan_id = this->ch.clan_id();
+    auto& clan_id = this->ch.clan.id();
     if (clan_id.has_value())
     {
         auto guard = this->ch.server.clans.enter_read(clan_id.value());
@@ -121,7 +121,7 @@ void external_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->ch.title());
 
-    auto& clan_id = this->ch.clan_id();
+    auto& clan_id = this->ch.clan.id();
     if (clan_id.has_value())
     {
         auto guard = this->ch.server.clans.enter_read(clan_id.value());

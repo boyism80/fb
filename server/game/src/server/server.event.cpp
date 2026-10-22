@@ -132,7 +132,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
             this->groups.update_portraits(gid);
         }
 
-        auto& clan_id = ptr->clan_id();
+        auto& clan_id = ptr->clan.id();
         if (clan_id.has_value())
         {
             try
@@ -143,7 +143,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
             }
             catch (const std::runtime_error&)
             { }
-            ptr->clan_reset();
+            ptr->clan.reset();
         }
 
         this->characters.remove(ptr);

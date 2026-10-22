@@ -1519,9 +1519,9 @@ int builtin::character::builtin_hold_lock(lua_State* L)
             }).detach();
             *held = ready.get();
         }
-        else if (kind == "clan" && ch->clan_id().has_value())
+        else if (kind == "clan" && ch->clan.id().has_value())
         {
-            auto id = ch->clan_id().value();
+            auto id = ch->clan.id().value();
             std::thread([&srv, id, ms, locked]() {
                 try
                 {
@@ -2655,7 +2655,7 @@ int builtin::character::builtin_clan(lua_State* L)
             if (shared == nullptr)
                 co_return;
 
-            auto& clan_id = shared->clan_id();
+            auto& clan_id = shared->clan.id();
             if (clan_id.has_value())
             {
                 auto guard = server.clans.try_enter_read(clan_id.value());
@@ -2686,7 +2686,7 @@ int builtin::character::builtin_clan(lua_State* L)
                 co_return;
 
             *ch_holder    = locked;
-            auto& clan_id = locked->clan_id();
+            auto& clan_id = locked->clan.id();
             if (clan_id.has_value())
             {
                 auto guard = server.clans.try_enter_read(clan_id.value());
@@ -6784,7 +6784,7 @@ int builtin::character::builtin_transfer_clan_money(lua_State* L)
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
-        *result = co_await ch->transfer_clan_money(clan_id, clan_delta, money_delta);
+        *result = co_await ch->clan.transfer_money(clan_id, clan_delta, money_delta);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
