@@ -40,6 +40,11 @@ namespace Http.Reepository
             return new CharacterKey { Id = row.Id };
         }
 
+        protected override string OnDelete(CharacterKey key)
+        {
+            return $"DELETE FROM `user` WHERE `id` = {key.Id};";
+        }
+
         public async Task<IReadOnlyDictionary<uint, Character>> GetMany(uint world, IReadOnlyList<uint> ids)
         {
             if (ids == null || ids.Count == 0)

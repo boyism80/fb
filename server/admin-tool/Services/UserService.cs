@@ -37,8 +37,8 @@ namespace AdminTool.Services
             var searchPattern = hasSearch ? $"%{searchTerm.Trim()}%" : null;
 
             var whereClause = hasSearch
-                ? "WHERE n.`world` = @world AND (n.`name` LIKE @searchPattern OR CAST(n.`id` AS CHAR) LIKE @searchPattern)"
-                : "WHERE n.`world` = @world";
+                ? "WHERE n.`world` = @world AND n.`reserved_at` IS NULL AND (n.`name` LIKE @searchPattern OR CAST(n.`id` AS CHAR) LIKE @searchPattern)"
+                : "WHERE n.`world` = @world AND n.`reserved_at` IS NULL";
 
             var totalCount = await globalConn.QueryFirstOrDefaultAsync<int>(
                 $"""
@@ -232,7 +232,7 @@ namespace AdminTool.Services
             {
                 await using var globalConn = _dbContext.GetUnifiedConnection();
                 stats.TotalAccounts = await globalConn.QuerySingleAsync<int>(
-                    "SELECT COUNT(*) FROM `name_registry` WHERE `world` = @world",
+                    "SELECT COUNT(*) FROM `name_registry` WHERE `world` = @world AND `reserved_at` IS NULL",
                     new { world });
             }
             catch (Exception ex)
