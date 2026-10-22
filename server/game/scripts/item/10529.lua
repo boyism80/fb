@@ -18,6 +18,10 @@ return {
         if map == nil then
             return me:message('이동할 수 없는 공간입니다.')
         end
+        local here = me:map()
+        if me:role() < ROLE.ADMIN and map:instance() and (here == nil or here:id() ~= map:id()) then
+            return me:message('그곳으로는 이동할 수 없습니다.')
+        end
 
         local x, y = spouse:position()
         local direction = me:direction()
