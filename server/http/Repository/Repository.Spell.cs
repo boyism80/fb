@@ -138,7 +138,6 @@ namespace Http.Reepository
                         `model`=VALUES(`model`),
                         `next`=VALUES(`next`),
                         `deleted`=0,
-                        `created_date`=VALUES(`created_date`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
