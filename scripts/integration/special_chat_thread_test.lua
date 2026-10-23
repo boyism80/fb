@@ -19,6 +19,17 @@ test_suite({
     name = "Special Chat Thread Test",
     bot_count = 1,
 
+    should_skip = function(_ctx)
+        if localhost() then
+            log(
+                "debug",
+                "Special chat thread test skipped on local host (the destination map runs on another game server)"
+            )
+            return true
+        end
+        return false
+    end,
+
     on_scenario_finished = function(ctx)
         ctx:bot(0):chat("/HTTP지연 internal 0")
     end,

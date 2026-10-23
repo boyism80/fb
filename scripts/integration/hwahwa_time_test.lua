@@ -18,6 +18,14 @@ test_suite({
     name = "Hwahwa Time Test",
     bot_count = 1,
 
+    should_skip = function(_ctx)
+        if localhost() then
+            log("debug", "Hwahwa time test skipped on local host (the hwahwa map runs on another game server)")
+            return true
+        end
+        return false
+    end,
+
     on_scenario_finished = function(ctx)
         local bot = ctx:bot(0)
         quest_dialog.remove_npc(bot)

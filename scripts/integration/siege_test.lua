@@ -61,6 +61,14 @@ test_suite({
     name = "Siege Test",
     bot_count = 2,
 
+    should_skip = function(_ctx)
+        if localhost() then
+            log("debug", "Siege test skipped on local host (the castle heart map runs on another game server)")
+            return true
+        end
+        return false
+    end,
+
     on_scenario_finished = function(ctx)
         local bot = ctx:bot(0)
         bot:chat("/HTTP장애 /castle/owner off")
