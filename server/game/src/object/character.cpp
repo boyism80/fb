@@ -243,6 +243,9 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             case ERROR_CODE::NONE:
                 break;
 
+            case ERROR_CODE::MAINTENANCE:
+                throw std::runtime_error(resp.maintenance_message.value_or(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS)));
+
             case ERROR_CODE::SERVER_NOT_READY:
                 throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
