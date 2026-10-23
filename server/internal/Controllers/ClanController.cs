@@ -910,16 +910,16 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
                 }
 
+                // Check if target is not the master (can't kick master)
+                if (targetMember.Role == (uint)ClanRole.Master)
+                {
+                    throw new LogicException(ErrorCode.ClanCannotKickMaster);
+                }
+
                 // Check if target has higher or equal role (can't kick superiors)
                 if (targetMember.Role >= kickerMember.Role)
                 {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
-                }
-
-                // Check if target is not the master (can't kick master)
-                if (targetMember.Role == (uint)ClanRole.Master)
-                {
-                    throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
                 }
 
                 Touch(world, clan);

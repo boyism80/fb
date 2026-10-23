@@ -102,6 +102,31 @@ async::task<void> clan::container::on_error(uint32_t error)
     case ERROR_CODE::CLAN_FULL_MEMBER:
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_FULL_MEMBER));
 
+    case ERROR_CODE::CLAN_NO_PRIVILEGE:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
+
+    case ERROR_CODE::CLAN_NOT_JOINED:
+    case ERROR_CODE::NOT_FOUND_CLAN_MEMBER:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_NOT_JOINED));
+
+    case ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_LEAVE_MASTER));
+
+    case ERROR_CODE::CLAN_CANNOT_KICK_MASTER:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_KICK_MASTER));
+
+    case ERROR_CODE::NOT_FOUND_CHARACTER:
+        throw std::runtime_error(_TEXT(MESSAGE_INVALID_USER_NAME));
+
+    case ERROR_CODE::CANNOT_KICK_SELF:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_KICK_SELF));
+
+    case ERROR_CODE::CANNOT_CHANGE_CLAN_ROLE_SELF:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_CHANGE_ROLE_SELF));
+
+    case ERROR_CODE::INVALID_CLAN_ROLE:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_INVALID_ROLE));
+
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }
