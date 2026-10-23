@@ -1404,6 +1404,32 @@ return {
         report(me, true, step, text)
     end,
 
+    verify_unknown_item_name = function(me, step, name)
+        local function count_of()
+            local total = 0
+            for _, item in pairs(me:items(name) or {}) do
+                total = total + item:count()
+            end
+            return total
+        end
+
+        local unknown = 'integration_unknown_item'
+        local before = count_of()
+        local made = me:mkitem({ [name] = 1, [unknown] = 1 })
+        local removed = me:rmitem({ [name] = 1, [unknown] = 1 })
+        local after = count_of()
+
+        if made ~= nil then
+            report(me, false, step, 'mkitem made part of a table with an unknown name')
+        elseif removed ~= false then
+            report(me, false, step, 'rmitem took part of a table with an unknown name')
+        elseif after ~= before then
+            report(me, false, step, string.format('%s count changed %d -> %d', name, before, after))
+        else
+            report(me, true, step)
+        end
+    end,
+
     verify_no_global_args = function(me, step)
         report(me, args == nil, step, tostring(args))
     end,

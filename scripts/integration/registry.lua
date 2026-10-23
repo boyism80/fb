@@ -52,6 +52,7 @@ register_test("mob_parts_test")
 register_test("resist_test")
 register_test("cross_version_test")
 register_test("state_machine_test")
+register_test("unknown_item_name_test")
 register_test("magpie_bridge_test", { serial = true, label = "script" })
 
 register_test("quest_clear_shield_test", { label = "script" })

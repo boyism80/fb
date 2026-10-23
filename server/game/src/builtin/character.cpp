@@ -1062,10 +1062,19 @@ int builtin::character::builtin_mkitem(lua_State* L)
                 auto name      = lua->tostring(-2);
                 auto raw_count = lua->tointeger(-1);
                 auto model     = table::item->name2item(name);
-                if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                if (model == nullptr)
+                {
+                    fb::logger::warn("mkitem: unknown item name '{}'", name);
                     invalid = true;
-                else if (model != nullptr && raw_count > 0)
+                }
+                else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                {
+                    invalid = true;
+                }
+                else if (raw_count > 0)
+                {
                     id_to_count[model->id] += static_cast<uint16_t>(raw_count);
+                }
             }
             lua->pop(1);
         }
@@ -1192,10 +1201,19 @@ int builtin::character::builtin_rmitem(lua_State* L)
                 auto name      = lua->tostring(-2);
                 auto raw_count = lua->tointeger(-1);
                 auto model     = table::item->name2item(name);
-                if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                if (model == nullptr)
+                {
+                    fb::logger::warn("rmitem: unknown item name '{}'", name);
                     invalid = true;
-                else if (model != nullptr && raw_count > 0)
+                }
+                else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                {
+                    invalid = true;
+                }
+                else if (raw_count > 0)
+                {
                     to_remove[model->id] += static_cast<uint16_t>(raw_count);
+                }
             }
             lua->pop(1);
         }
@@ -1608,10 +1626,19 @@ int builtin::character::exchange(lua_State* L,
                     auto name      = lua->tostring(-2);
                     auto raw_count = lua->tointeger(-1);
                     auto model     = table::item->name2item(name);
-                    if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    if (model == nullptr)
+                    {
+                        fb::logger::warn("exchange: unknown cost item name '{}'", name);
                         invalid_cost = true;
-                    else if (model != nullptr && raw_count > 0)
+                    }
+                    else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    {
+                        invalid_cost = true;
+                    }
+                    else if (raw_count > 0)
+                    {
                         cost_items[model->id] += static_cast<uint16_t>(raw_count);
+                    }
                 }
                 lua->pop(1);
             }
@@ -1645,10 +1672,19 @@ int builtin::character::exchange(lua_State* L,
                     auto name      = lua->tostring(-2);
                     auto raw_count = lua->tointeger(-1);
                     auto model     = table::item->name2item(name);
-                    if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    if (model == nullptr)
+                    {
+                        fb::logger::warn("exchange: unknown reward item name '{}'", name);
                         invalid_reward = true;
-                    else if (model != nullptr && raw_count > 0)
+                    }
+                    else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
+                    {
+                        invalid_reward = true;
+                    }
+                    else if (raw_count > 0)
+                    {
                         reward_items[model->id] += static_cast<uint16_t>(raw_count);
+                    }
                 }
                 lua->pop(1);
             }
@@ -6883,7 +6919,8 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
         return 1;
     }
 
-    auto attachments = std::vector<fb::model::dsl>{};
+    auto attachments  = std::vector<fb::model::dsl>{};
+    auto unknown_item = false;
     if (lua->is_string(5))
     {
         auto reward_id = lua->tostring(5);
@@ -6911,7 +6948,12 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint32_t>(lua->tointeger(-1));
                     auto model = table::item->name2item(name);
-                    if (model != nullptr && count > 0)
+                    if (model == nullptr)
+                    {
+                        fb::logger::warn("storage_box: unknown item name '{}'", name);
+                        unknown_item = true;
+                    }
+                    else if (count > 0)
                     {
                         auto item_dsl =
                             fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0, std::nullopt);
@@ -6944,7 +6986,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
         lua->pop(1);
     }
 
-    if (attachments.empty())
+    if (unknown_item || attachments.empty())
     {
         lua->pushboolean(false);
         return 1;
@@ -7002,7 +7044,8 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
         return 1;
     }
 
-    auto attachments = std::vector<fb::model::dsl>{};
+    auto attachments  = std::vector<fb::model::dsl>{};
+    auto unknown_item = false;
     if (lua->is_string(4))
     {
         auto reward_id = lua->tostring(4);
@@ -7030,7 +7073,12 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint32_t>(lua->tointeger(-1));
                     auto model = table::item->name2item(name);
-                    if (model != nullptr && count > 0)
+                    if (model == nullptr)
+                    {
+                        fb::logger::warn("storage_box: unknown item name '{}'", name);
+                        unknown_item = true;
+                    }
+                    else if (count > 0)
                     {
                         auto item_dsl =
                             fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0, std::nullopt);
@@ -7063,7 +7111,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
         lua->pop(1);
     }
 
-    if (attachments.empty())
+    if (unknown_item || attachments.empty())
     {
         lua->pushboolean(false);
         return 1;
