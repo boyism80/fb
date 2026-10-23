@@ -177,7 +177,7 @@ KeepEmptyLines:
   AtStartOfFile: true
 LambdaBodyIndentation: Signature
 Language: Cpp
-LineEnding: DeriveLF
+LineEnding: LF
 MacroBlockBegin: ""
 MacroBlockEnd: ""
 MainIncludeChar: Quote

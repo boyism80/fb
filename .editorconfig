@@ -1,5 +1,11 @@
 root = true
 
+[*]
+end_of_line = lf
+
+[*.{bat,cmd}]
+end_of_line = crlf
+
 [*.cs]
 csharp_prefer_braces = true
 dotnet_diagnostic.IDE0011.severity = warning
@@ -29,7 +35,7 @@ tab_width = 4
 quote_style = none
 continuation_indent = 4
 max_line_length = 120
-end_of_line = crlf
+end_of_line = lf
 insert_final_newline = true
 call_arg_parentheses = keep
 align_continuous_assign_statement = true
