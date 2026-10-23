@@ -69,6 +69,8 @@ public:
 private:
     using pending_task = std::function<void()>;
 
+    static constexpr uint64_t RAW_BODY_LIMIT = 64ull * 1024 * 1024;
+
     fb::async_executor&                      _executor;
     size_t                                   _max_concurrent;
     std::mutex                               _queue_mutex;
@@ -271,8 +273,10 @@ private:
             co_await boost::beast::http::async_write(socket, req, boost::asio::use_awaitable);
 
             auto buffer = boost::beast::flat_buffer{};
-            auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
-            co_await boost::beast::http::async_read(socket, buffer, res, boost::asio::use_awaitable);
+            auto parser = boost::beast::http::response_parser<boost::beast::http::dynamic_body>{};
+            parser.body_limit(RAW_BODY_LIMIT);
+            co_await boost::beast::http::async_read(socket, buffer, parser, boost::asio::use_awaitable);
+            const auto& res = parser.get();
 
             deadline.release();
             close_http_socket(socket);
