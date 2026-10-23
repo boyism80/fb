@@ -5,7 +5,7 @@ namespace Internal.Services
     public class StorageBoxCleanupBackgroundService : BackgroundService
     {
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(10);
-        private const int UserLimit = 500;
+        private const int PageSize = 500;
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
@@ -36,7 +36,7 @@ namespace Internal.Services
                     {
                         using var scope = _scopeFactory.CreateScope();
                         var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
-                        var deleted = await storageService.DeleteReceivedBoxesAsync(world, UserLimit);
+                        var deleted = await storageService.DeleteReceivedBoxesAsync(world, PageSize);
                         if (deleted > 0)
                         {
                             _logger.LogInformation("Deleted {Count} received storage boxes for world {World}", deleted, world);

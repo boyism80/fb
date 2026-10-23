@@ -302,60 +302,94 @@ namespace Http.Service
             return true;
         }
 
-        public async Task<int> DeleteReceivedBoxesAsync(uint world, int limit)
+        public async Task<int> DeleteReceivedBoxesAsync(uint world, int pageSize)
         {
-            var users = new SortedSet<uint>();
+            var deleted = 0;
             for (var db = 0; db < _dbContext.GetShardDbSize(world); db++)
             {
-                await using var conn = _dbContext.GetDataConnection(world, db);
-                users.UnionWith(await conn.QueryAsync<uint>(
-                    """
-                    SELECT DISTINCT `user` FROM `storage_box`
-                    WHERE `received` = 1 AND `system_storage_box_id` IS NULL AND `deleted` = 0
-                    LIMIT @limit
-                    """,
-                    new { limit }));
-            }
-
-            var deleted = 0;
-            foreach (var user in users)
-            {
-                await using var _ = await _distributedLock.Lock(world, OpsLockKey(user));
-                if ((await _dbContext.UnsettledRequest.Get(world, user)).Any())
+                var afterUser = 0u;
+                List<uint> users;
+                do
                 {
-                    continue;
-                }
+                    await using (var conn = _dbContext.GetDataConnection(world, db))
+                    {
+                        users = (await conn.QueryAsync<uint>(
+                            """
+                            SELECT DISTINCT `user` FROM `storage_box`
+                            WHERE `received` = 1 AND `system_storage_box_id` IS NULL AND `deleted` = 0 AND `user` > @afterUser
+                            ORDER BY `user`
+                            LIMIT @pageSize
+                            """,
+                            new { afterUser, pageSize })).ToList();
+                    }
 
-                var received = (await _dbContext.StorageBox.Get(world, user))
-                    .Where(box => box.Received && box.SystemStorageBoxId == null)
-                    .ToList();
-                var refs = received
-                    .Select(box => box.ExternalRef)
-                    .Where(externalRef => string.IsNullOrEmpty(externalRef) == false)
-                    .ToArray();
-                var parcels = new HashSet<string>();
-                if (refs.Length > 0)
-                {
-                    await using var unified = _dbContext.GetUnifiedConnection();
-                    parcels.UnionWith(await unified.QueryAsync<string>(
-                        "SELECT `external_ref` FROM `marketplace_parcel` WHERE `external_ref` IN @refs",
-                        new { refs }));
-                }
-
-                var targets = received
-                    .Where(box => string.IsNullOrEmpty(box.ExternalRef) || parcels.Contains(box.ExternalRef) == false)
-                    .ToList();
-                if (targets.Count == 0)
-                {
-                    continue;
-                }
-
-                _dbContext.StorageBox.Delete(world, targets);
-                await _dbContext.SaveChangesAsync();
-                deleted += targets.Count;
+                    foreach (var user in users)
+                    {
+                        deleted += await DeleteSettledBoxesAsync(world, user);
+                        afterUser = user;
+                    }
+                } while (users.Count == pageSize);
             }
 
             return deleted;
+        }
+
+        private async Task<int> DeleteSettledBoxesAsync(uint world, uint user)
+        {
+            await using var opsLock = await _distributedLock.Lock(world, OpsLockKey(user));
+            await using var saveLock = await _distributedLock.Lock(world, Character.SaveLockKey(user));
+
+            var character = await _dbContext.Character.Get(world, user);
+            if (character?.SnapshotTime == null)
+            {
+                return 0;
+            }
+
+            var unsettled = await _dbContext.UnsettledRequest.Get(world, user);
+            var settled = new List<StorageBox>();
+            foreach (var box in await _dbContext.StorageBox.Get(world, user))
+            {
+                if (box.Received == false || box.SystemStorageBoxId != null)
+                {
+                    continue;
+                }
+
+                var claimedAt = box.ClaimId is > 0
+                    ? SnowflakeId.Time(box.ClaimId.Value)
+                    : DateTime.SpecifyKind(box.UpdatedDate, DateTimeKind.Utc);
+                var savedAfterClaim = character.SnapshotTime.Value > new DateTimeOffset(claimedAt).ToUnixTimeMilliseconds();
+                var claimPending = box.ClaimId is > 0
+                    ? unsettled.Any(request => request.Id == box.ClaimId.Value)
+                    : unsettled.Any(request => request.Type == (byte)UnsettledType.StorageClaim && request.Target == box.Id);
+                if (savedAfterClaim && claimPending == false)
+                {
+                    settled.Add(box);
+                }
+            }
+
+            var refs = settled
+                .Select(box => box.ExternalRef)
+                .Where(externalRef => string.IsNullOrEmpty(externalRef) == false)
+                .ToArray();
+            var parcels = new HashSet<string>();
+            if (refs.Length > 0)
+            {
+                await using var unified = _dbContext.GetUnifiedConnection();
+                parcels.UnionWith(await unified.QueryAsync<string>(
+                    "SELECT `external_ref` FROM `marketplace_parcel` WHERE `external_ref` IN @refs",
+                    new { refs }));
+            }
+
+            var targets = settled
+                .Where(box => string.IsNullOrEmpty(box.ExternalRef) || parcels.Contains(box.ExternalRef) == false)
+                .ToList();
+            if (targets.Count > 0)
+            {
+                _dbContext.StorageBox.Delete(world, targets);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return targets.Count;
         }
 
         private async Task PublishWriteAsync(uint world, StorageBox box, uint host)
