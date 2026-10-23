@@ -21,10 +21,6 @@ local FILL_ITEM_NAME    = "목도"
 local MQ_WAIT_MS        = 2000
 local HTTP_DELAY_MS     = 3000
 local C2_FILL_WAIT_MS   = 1000
--- unsettled_settle_timer runs every 30s.
-local SETTLE_FIRST_WAIT_MS = 30000
-local SETTLE_POLL_MS       = 5000
-local SETTLE_POLL_COUNT    = 8
 local CLAIM_PATH        = "/storage/claim"
 
 local MSG_GRANT_NEED_REWARD = "보상이 하나 이상 필요합니다."
@@ -328,17 +324,13 @@ local function prepare_one_slot_free(bot)
     bot:drop_item(0, false)
 end
 
-local function wait_item_count(ctx, bot, item_name, expected, first_wait_ms)
-    ctx:sleep(first_wait_ms)
-    for attempt = 1, SETTLE_POLL_COUNT do
-        if bot:item_count(item_name) == expected then
-            return true
-        end
+local function wait_item_count(ctx, bot, item_name, expected)
+    return lib.wait.settle(ctx, function()
+        return bot:item_count(item_name) == expected
+    end, function(attempt)
         progress(bot, string.format("reward not settled yet attempt=%d count=%d expected=%d",
             attempt, bot:item_count(item_name), expected))
-        ctx:sleep(SETTLE_POLL_MS)
     end)
-    return false
 end
 
 -- The anchor box keeps the storage list non-empty, so a missing title means the box is no longer listed.
@@ -380,7 +372,7 @@ end
 
 -- A later tick must not grant the same box again.
 local function assert_granted_once(ctx, bot, title)
-    ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+    lib.wait.settle_tick(ctx)
     if bot:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
         return false, string.format("reward duplicated count=%d", bot:item_count(REWARD_ITEM_NAME))
     end
@@ -400,6 +392,10 @@ test_suite {
         lib.formation.arrange_in_line(ctx)
         cleanup_bot(a)
         cleanup_bot(b)
+    end,
+
+    on_scenario_finished = function(ctx)
+        lib.wait.resume_settle(ctx:bot(0))
     end,
 
     on_finished = function(ctx)
@@ -673,7 +669,7 @@ test_suite {
                 return false
             end
 
-            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT, SETTLE_FIRST_WAIT_MS) == false then
+            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT) == false then
                 progress(b, "FAILED: reward not granted by the settle timer")
                 return false
             end
@@ -701,6 +697,7 @@ test_suite {
                 return false
             end
 
+            lib.wait.pause_settle(a)
             if b:logout() == false then
                 a:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
                 progress(b, "FAILED: logout")
@@ -713,8 +710,9 @@ test_suite {
             end
             b = ctx:bot(1)
 
-            -- Checked well inside one timer period, so the grant comes from the login settle.
+            -- The settle timer is paused, so the grant comes from the login settle.
             ctx:sleep(MQ_WAIT_MS * 2)
+            lib.wait.resume_settle(a)
             if b:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
                 progress(b, string.format("FAILED: reward not granted after relogin count=%d",
                     b:item_count(REWARD_ITEM_NAME)))
@@ -746,7 +744,7 @@ test_suite {
             end
 
             -- The unsettled request must outlive a tick that still cannot reach internal.
-            ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+            lib.wait.settle_tick(ctx)
             if b:item_count(REWARD_ITEM_NAME) ~= 0 then
                 b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
                 progress(b, "FAILED: reward granted while internal was unreachable")
@@ -754,7 +752,7 @@ test_suite {
             end
 
             b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
-            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT, SETTLE_FIRST_WAIT_MS) == false then
+            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT) == false then
                 progress(b, "FAILED: reward not granted after internal came back")
                 return false
             end
@@ -783,10 +781,10 @@ test_suite {
             end
 
             -- The settle resend is held too, then both copies arrive together.
-            ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+            lib.wait.settle_tick(ctx)
             b:chat("/HTTP보류 send")
 
-            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT, SETTLE_FIRST_WAIT_MS) == false then
+            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT) == false then
                 progress(b, "FAILED: reward not granted after late claims")
                 return false
             end

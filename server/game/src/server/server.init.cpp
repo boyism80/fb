@@ -172,6 +172,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("http_response_delay", builtin::server::builtin_http_response_delay);
         lua.build("http_fault", builtin::server::builtin_http_fault);
         lua.build("http_hold", builtin::server::builtin_http_hold);
+        lua.build("settle_timer", builtin::server::builtin_settle_timer);
         lua.build("property", builtin::server::builtin_property);
         lua.build("match_transfer", builtin::server::builtin_match_transfer);
         lua.build("is_cross", builtin::server::builtin_is_cross);
@@ -313,7 +314,8 @@ void fb::game::server::init_timers()
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
-    this->bind_thread_timer<fb::game::handler::timer::unsettled_settle_timer>(30s);
+    this->bind_thread_timer<fb::game::handler::timer::unsettled_settle_timer>(
+        std::chrono::seconds(fb::config<uint32_t>("settle", 30)));
     this->bind_thread_timer<fb::game::handler::timer::evaluation_timer>(1min);
 #if !defined(DEBUG) && !defined(_DEBUG)
     this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);

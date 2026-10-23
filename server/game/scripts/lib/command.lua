@@ -2489,6 +2489,28 @@ M.functions = {
         end,
     },
 
+    ['정산타이머'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '[on|off] - 미정산 요청 정산 타이머 조회/설정, off면 로그인 정산만 동작 (테스트용)',
+        ['command'] = function(me, args)
+            if #args >= 1 then
+                local arg = string.lower(tostring(args[1]))
+                if arg == 'on' then
+                    settle_timer(true)
+                elseif arg == 'off' then
+                    settle_timer(false)
+                else
+                    me:message("사용법: /정산타이머 [on|off]")
+                    return true
+                end
+            end
+
+            local state = settle_timer() and "ON" or "OFF"
+            me:message(string.format("정산 타이머: %s (이 서버에만 적용됩니다)", state), MESSAGE_TYPE.BROWN)
+            return true
+        end,
+    },
+
     ['이속고정'] = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '[on|off] - LOCK_WALK_SPEED(0x04) 조회/설정 (클라 스티키, off 후 재접 필요할 수 있음)',

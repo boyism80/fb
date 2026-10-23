@@ -41,10 +41,6 @@ local DIALOG_TIMEOUT_MS = 30000
 local LIST_DELAY_MS = 5000
 local LOCK_SETTLE_MS = 500
 local LOCK_PROBE_MS = 3000
--- unsettled_settle_timer runs every 30s.
-local RESTORE_FIRST_WAIT_MS = 30000
-local RESTORE_POLL_MS       = 5000
-local RESTORE_POLL_COUNT    = 8
 local MARKETPLACE_SERVICE = "marketplace"
 
 local MSG_FEE_FAIL = "등록 수수료가 부족합니다"
@@ -954,42 +950,56 @@ local function wait_list_confirm_sent(ctx)
 end
 
 -- Unlock sends nothing to the client, so poll until the item can actually be dropped.
-local function wait_item_unlocked(ctx, bot, item_name, first_wait_ms)
-    ctx:sleep(first_wait_ms)
-    for attempt = 1, RESTORE_POLL_COUNT do
+local function wait_item_unlocked(ctx, bot, item_name)
+    local missing = false
+    local unlocked = lib.wait.settle(ctx, function()
         local slot = bot:item_slot(item_name)
         if slot == nil or slot == 0xFF then
+            missing = true
+            return true
+        end
+        local packet = bot:request(resp.item_remove, protocol.item_drop(slot + 1, false), function(p)
+            return p.index == slot
+        end, LOCK_PROBE_MS)
+        return packet ~= nil and packet ~= false
+    end, function(attempt)
+        progress(bot, string.format("unlock not settled yet attempt=%d", attempt))
+    end)
+    if missing then
         return false, "item missing while waiting for unlock"
     end
-        local packet = bot:request(
-            resp.item_remove,
-            protocol.item_drop(slot + 1, false),
-            function(p)
-                return p.index == slot
+    if unlocked == false then
+        return false, "item still locked after restore timer"
     end
-            LOCK_PROBE_MS)
-        if packet ~= nil and packet ~= false then
     return true, nil
-        end
-        progress(bot, string.format("unlock not settled yet attempt=%d", attempt))
-        ctx:sleep(RESTORE_POLL_MS)
-    end
-    return false, "item still locked after restore timer"
 end
 
 -- Deduct removes the escrowed item from the client and lowers the displayed money by the fee.
-local function wait_item_deducted(ctx, bot, item_name, expected_money, first_wait_ms)
-    ctx:sleep(first_wait_ms)
-    for attempt = 1, RESTORE_POLL_COUNT do
-        if bot:has_item_by_name(item_name) == false and bot:money() == expected_money then
+local function wait_item_deducted(ctx, bot, item_name, expected_money)
+    local deducted = lib.wait.settle(ctx, function()
+        return bot:has_item_by_name(item_name) == false and bot:money() == expected_money
+    end, function(attempt)
+        progress(
+            bot,
+            string.format(
+                "deduct not settled yet attempt=%d has_item=%s money=%d expected=%d",
+                attempt,
+                tostring(bot:has_item_by_name(item_name)),
+                bot:money(),
+                expected_money
+            )
+        )
+    end)
+    if deducted then
         return true, nil
     end
-        progress(bot, string.format("deduct not settled yet attempt=%d has_item=%s money=%d expected=%d",
-            attempt, tostring(bot:has_item_by_name(item_name)), bot:money(), expected_money))
-        ctx:sleep(RESTORE_POLL_MS)
-    end
-    return false, string.format("escrow not deducted has_item=%s money=%d expected=%d",
-        tostring(bot:has_item_by_name(item_name)), bot:money(), expected_money)
+    return false,
+        string.format(
+            "escrow not deducted has_item=%s money=%d expected=%d",
+            tostring(bot:has_item_by_name(item_name)),
+            bot:money(),
+            expected_money
+        )
 end
 
 -- Lists every given item as a whole stack while the marketplace is unreachable, so each stays escrowed.
@@ -1008,15 +1018,11 @@ end
 -- Unlock sends nothing to the client, so poll the server-side counts until the escrow is back in its slot.
 local function wait_escrow_returned(ctx, bot, spec)
     bot:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
-    ctx:sleep(RESTORE_FIRST_WAIT_MS)
-    for attempt = 1, RESTORE_POLL_COUNT do
-        if script_step.run_script(bot, "test/integration", "verify_items", "ESCROW_RETURNED", spec) then
-            return true
-    end)
+    return lib.wait.settle(ctx, function()
+        return script_step.run_script(bot, "test/integration", "verify_items", "ESCROW_RETURNED", spec) == true
+    end, function(attempt)
         progress(bot, string.format("escrow not returned yet attempt=%d", attempt))
-        ctx:sleep(RESTORE_POLL_MS)
-    end
-    return false
+    end)
 end
 
 local function combine_sources(bot)
@@ -1073,16 +1079,20 @@ local function count_storage_title(titles, title)
     return n
 end
 
-local function wait_storage_title(ctx, bot, title, first_wait_ms)
-    ctx:sleep(first_wait_ms)
-    for attempt = 1, RESTORE_POLL_COUNT do
+local function wait_storage_title(ctx, bot, title)
+    local last_err = nil
+    local arrived = lib.wait.settle(ctx, function()
         local titles, err = storage_titles(ctx, bot)
-        if titles ~= nil and count_storage_title(titles, title) > 0 then
+        last_err = err
+        return titles ~= nil and count_storage_title(titles, title) > 0
+    end, function(attempt)
+        progress(
+            bot,
+            string.format("storage entry not arrived yet attempt=%d title=%s err=%s", attempt, title, tostring(last_err))
+        )
+    end)
+    if arrived then
         return true, nil
-        end
-        progress(bot, string.format("storage entry not arrived yet attempt=%d title=%s err=%s",
-            attempt, title, tostring(err)))
-        ctx:sleep(RESTORE_POLL_MS)
     end
     return false, "storage entry missing: " .. title
 end
@@ -1101,17 +1111,14 @@ local function held_request_count(ctx, bot)
     return count
 end
 
-local function wait_held_request(ctx, bot, first_wait_ms, min_count)
-    ctx:sleep(first_wait_ms)
-    for attempt = 1, RESTORE_POLL_COUNT do
-        local count = held_request_count(ctx, bot)
-        if count ~= nil and count >= min_count then
-            return true
-    end)
+local function wait_held_request(ctx, bot, min_count)
+    local count = nil
+    return lib.wait.settle(ctx, function()
+        count = held_request_count(ctx, bot)
+        return count ~= nil and count >= min_count
+    end, function(attempt)
         progress(bot, string.format("held request not arrived yet attempt=%d count=%s", attempt, tostring(count)))
-        ctx:sleep(RESTORE_POLL_MS)
-    end
-    return false
+    end)
 end
 
 local function prepare_purchase_listing(a, b)
@@ -1176,9 +1183,9 @@ local function logout_during_delay_scenario(label, fault, listing_created)
         local ok, settle_err
         if listing_created then
             -- Usable money was dropped by the lock check, so only the locked fee is left to deduct.
-            ok, settle_err = wait_item_deducted(ctx, a, WEAPON_ITEM, 0, RESTORE_FIRST_WAIT_MS)
+            ok, settle_err = wait_item_deducted(ctx, a, WEAPON_ITEM, 0)
         else
-            ok, settle_err = wait_item_unlocked(ctx, a, WEAPON_ITEM, RESTORE_FIRST_WAIT_MS)
+            ok, settle_err = wait_item_unlocked(ctx, a, WEAPON_ITEM)
             if ok then
                 local packet = a:request(resp.update_internal, protocol.item_drop_money(fee), function(p)
                     return p.ch_money == 0
@@ -1244,6 +1251,10 @@ test_suite({
         end
         cleanup_bot(ctx:bot(0))
         cleanup_bot(ctx:bot(1))
+    end,
+
+    on_scenario_finished = function(ctx)
+        lib.wait.resume_settle(ctx:bot(0))
     end,
 
     on_finished = function(ctx)
@@ -1657,7 +1668,7 @@ test_suite({
                 return false
             end
 
-            ctx:sleep(RESTORE_FIRST_WAIT_MS + LIST_DELAY_MS)
+            lib.wait.settle_tick(ctx, LIST_DELAY_MS)
             if probe_item_locked(a, WEAPON_ITEM) == false then
                 progress(a, "FAILED: escrow released while marketplace unreachable")
                 return false
@@ -1671,7 +1682,7 @@ test_suite({
                 return false
             end
 
-            local unlocked, unlock_err = wait_item_unlocked(ctx, a, WEAPON_ITEM, RESTORE_FIRST_WAIT_MS)
+            local unlocked, unlock_err = wait_item_unlocked(ctx, a, WEAPON_ITEM)
             if unlocked == false then
                 progress(a, "FAILED: " .. tostring(unlock_err))
                 return false
@@ -1775,7 +1786,7 @@ test_suite({
             end
 
             -- Usable money was dropped during the delay, so only the locked fee is left to deduct.
-            local deducted, deduct_err = wait_item_deducted(ctx, a, WEAPON_ITEM, 0, RESTORE_FIRST_WAIT_MS)
+            local deducted, deduct_err = wait_item_deducted(ctx, a, WEAPON_ITEM, 0)
             if deducted == false then
                 progress(a, "FAILED: " .. tostring(deduct_err))
                 return false
@@ -1830,15 +1841,16 @@ test_suite({
             end
 
             a:chat("/HTTP장애 " .. MARKETPLACE_SERVICE .. " off")
-            ctx:sleep(RESTORE_FIRST_WAIT_MS)
-            local released = false
-            for attempt = 1, RESTORE_POLL_COUNT do
-                if script_step.run_script(a, "test/integration", "verify_money_released", "E1_FEE_RELEASED", money_before) == true then
-                    released = true
-                    break
-                end
+            local released = lib.wait.settle(ctx, function()
+                return script_step.run_script(
+                    a,
+                    "test/integration",
+                    "verify_money_released",
+                    "E1_FEE_RELEASED",
+                    money_before
+                ) == true
+            end, function(attempt)
                 progress(a, string.format("fee not released yet attempt=%d", attempt))
-                ctx:sleep(RESTORE_POLL_MS)
             end)
             if released == false then
                 progress(a, "FAILED: the fee held without an item was never refunded")
@@ -2076,7 +2088,8 @@ test_suite({
                 return false
             end
 
-            local arrived, arrive_err = wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE, RESTORE_FIRST_WAIT_MS)
+            local arrived, arrive_err =
+                wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE)
             if arrived == false then
                 progress(b, "FAILED: " .. tostring(arrive_err))
                 return false
@@ -2147,21 +2160,21 @@ test_suite({
                 return false
             end
 
-            if wait_held_request(ctx, b, RESTORE_FIRST_WAIT_MS, 2) == false then
+            if wait_held_request(ctx, b, 2) == false then
                 progress(b, "FAILED: restore never tried the refund")
                 return false
             end
 
             b:chat("/HTTP보류 send")
-            local arrived, arrive_err = wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE, MQ_WAIT_MS)
+            local arrived, arrive_err = wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE)
             if arrived == false then
                 progress(b, "FAILED: " .. tostring(arrive_err))
                 return false
             end
-            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+            lib.wait.settle_tick(ctx)
 
             b:chat("/HTTP보류 on " .. STORAGE_WRITE_PATH)
-            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+            lib.wait.settle_tick(ctx)
             local held = held_request_count(ctx, b)
             b:chat("/HTTP보류 off")
             if held ~= 0 then
@@ -2223,7 +2236,7 @@ test_suite({
                 return false
             end
 
-            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+            lib.wait.settle_tick(ctx)
 
             local titles, titles_err = storage_titles(ctx, b)
             if titles == nil then
@@ -2278,6 +2291,7 @@ test_suite({
                 return false
             end
 
+            lib.wait.pause_settle(a)
             b:chat("/HTTP보류 on " .. PURCHASE_PATH)
             local msg = select(1, purchase_item_flow(b, WEAPON_ITEM, 1))
             b:chat("/HTTP보류 off")
@@ -2302,15 +2316,16 @@ test_suite({
             b = ctx:bot(1)
             lib.formation.arrange_in_line(ctx)
 
-            -- Checked well inside one timer period, so the refund comes from the login settle.
+            -- The settle timer is paused, so the refund comes from the login settle.
             ctx:sleep(MQ_WAIT_MS * 2)
             local titles, titles_err = storage_titles(ctx, b)
+            lib.wait.resume_settle(a)
             if titles == nil or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
                 progress(b, "FAILED: no refund after relogin " .. tostring(titles_err))
                 return false
             end
 
-            ctx:sleep(RESTORE_FIRST_WAIT_MS + RESTORE_POLL_MS)
+            lib.wait.settle_tick(ctx)
             titles, titles_err = storage_titles(ctx, b)
             if titles == nil then
                 progress(b, "FAILED: " .. tostring(titles_err))

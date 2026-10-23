@@ -1643,6 +1643,20 @@ int builtin::server::builtin_http_hold(lua_State* L)
     return 1;
 }
 
+int builtin::server::builtin_settle_timer(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
+    if (lua->argc() >= 1)
+        srv.settle_paused = lua->toboolean(1) == false;
+
+    lua->pushboolean(srv.settle_paused == false);
+    return 1;
+}
+
 int builtin::server::builtin_property(lua_State* L)
 {
     auto lua = fb::lua::get(L);

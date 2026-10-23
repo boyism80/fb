@@ -30,10 +30,6 @@ local START_MONEY = 1000
 local AMOUNT      = 100
 
 local MQ_WAIT_MS = 2000
--- unsettled_settle_timer runs every 30s.
-local SETTLE_FIRST_WAIT_MS = 30000
-local SETTLE_POLL_MS       = 5000
-local SETTLE_POLL_COUNT    = 8
 
 local g_sensei = nil
 
@@ -206,22 +202,18 @@ local function withdraw(bot, amount)
     return packet.message, nil
 end
 
-local function wait_money(ctx, bot, expected, first_wait_ms)
-    ctx:sleep(first_wait_ms)
-    for attempt = 1, SETTLE_POLL_COUNT do
-        if bot:money() == expected then
-            return true
-        end
+local function wait_money(ctx, bot, expected)
+    return lib.wait.settle(ctx, function()
+        return bot:money() == expected
+    end, function(attempt)
         progress(bot, string.format("money not settled yet attempt=%d money=%d expected=%d",
             attempt, bot:money(), expected))
-        ctx:sleep(SETTLE_POLL_MS)
     end)
-    return false
 end
 
 -- Checks both balances after a later tick, so a settled request cannot pay or refund twice.
 local function assert_stable(ctx, bot, money, clan)
-    ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+    lib.wait.settle_tick(ctx)
     if bot:money() ~= money then
         return false, string.format("money changed after settle money=%d expected=%d", bot:money(), money)
     end
@@ -258,6 +250,10 @@ test_suite {
         progress(a, "CLAN MONEY TEST INITIALIZED")
         lib.formation.arrange_in_line(ctx)
         clear_faults(a)
+    end,
+
+    on_scenario_finished = function(ctx)
+        lib.wait.resume_settle(ctx:bot(1))
     end,
 
     on_finished = function(ctx)
@@ -363,7 +359,7 @@ test_suite {
                 return false
             end
 
-            ctx:sleep(SETTLE_FIRST_WAIT_MS + SETTLE_POLL_MS)
+            lib.wait.settle_tick(ctx)
             if a:money() ~= before - AMOUNT then
                 a:chat("/HTTP장애 " .. ABORT_PATH .. " off")
                 progress(a, string.format("FAILED: hold released while abort failed money=%d", a:money()))
@@ -371,7 +367,7 @@ test_suite {
             end
 
             a:chat("/HTTP장애 " .. ABORT_PATH .. " off")
-            if wait_money(ctx, a, before, SETTLE_FIRST_WAIT_MS) == false then
+            if wait_money(ctx, a, before) == false then
                 progress(a, "FAILED: deposit hold not refunded")
                 return false
             end
@@ -435,6 +431,7 @@ test_suite {
 
             remove_npc(a, g_sensei)
             g_sensei = nil
+            lib.wait.pause_settle(operator)
             if a:logout() == false then
                 clear_faults(operator)
                 progress(a, "FAILED: logout")
@@ -449,8 +446,9 @@ test_suite {
             lib.formation.arrange_in_line(ctx)
             g_sensei = spawn_npc(a, SENSEI_NPC)
 
-            -- Checked well inside one timer period, so the payment comes from the login settle.
+            -- The settle timer is paused, so the payment comes from the login settle.
             ctx:sleep(MQ_WAIT_MS * 2)
+            lib.wait.resume_settle(operator)
             if a:money() ~= before + AMOUNT then
                 progress(a, string.format("FAILED: withdraw not paid after relogin money=%d", a:money()))
                 return false

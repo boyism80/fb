@@ -32,6 +32,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <json/json.h>
 
+#include <atomic>
 #include <cstdint>
 #include <ctime>
 #include <functional>
@@ -183,6 +184,7 @@ public:
     fb::synchronized<std::unordered_multiset<std::string>> pending_logins;
     fb::synchronized<maintenance_state>                    maintenance;
     fb::game::snowflake                                    ids;
+    std::atomic<bool>                                      settle_paused = false;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
