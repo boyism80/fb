@@ -33,7 +33,7 @@
         <div class="cache-action-content">
             <span class="material-symbols-outlined cache-action-icon">warning</span>
             <h2>전체 캐시 삭제</h2>
-            <p>이 작업은 Redis 서버에 저장된 모든 캐시 데이터를 영구적으로 삭제합니다. 진행 중인 세션이나 임시 데이터가 손실될 수 있으므로 주의하여 진행하십시오.</p>
+            <p>DB에 반영이 끝난 Redis 캐시를 삭제합니다. 아직 DB에 쓰이지 않은 값은 남겨 두며, 각 서버의 로컬 캐시는 만료될 때까지 이전 값을 보여줄 수 있습니다.</p>
         </div>
         <button class="cache-clear-btn" @onclick="HandleClearCache" disabled="@isProcessing">
             @if (isProcessing)

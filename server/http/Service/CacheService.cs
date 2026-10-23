@@ -6,6 +6,19 @@ namespace Http.Service
 {
     public class CacheService
     {
+        private const int DeleteBatchSize = 500;
+
+        private static readonly string DeleteSettledKeysScript = """
+            local COUNT_REFS = KEYS[#KEYS]
+            local deleted = 0
+            for i = 1, #KEYS - 1 do
+                if redis.call('hexists', COUNT_REFS, KEYS[i]) == 0 then
+                    deleted = deleted + redis.call('del', KEYS[i])
+                end
+            end
+            return deleted
+            """;
+
         private readonly RedisService _redisService;
         private readonly ILogger<CacheService> _logger;
         private readonly IConfiguration _configuration;
@@ -19,22 +32,26 @@ namespace Http.Service
             _serverStateService = serverStateService;
         }
 
-        private async Task<int> DeleteCache(uint world, int shardIndex, string pattern, int count)
+        private async Task<int> DeleteSettledCache(uint world, int index)
         {
-            var redis = _redisService.GetDataConnection(world, shardIndex);
+            var redis = _redisService.GetDataConnection(world, index);
             if (redis == null)
             {
                 return 0;
             }
 
-            var conn = redis.Connection;
-            var keys = await conn.ScanKeysAsync(pattern, count);
-            if (keys.Count > 0)
+            var keys = await redis.Connection.ScanKeysAsync("fb:cache:*", 1000);
+            var count = 0;
+            foreach (var chunk in keys.Chunk(DeleteBatchSize))
             {
-                await conn.KeyDeleteAsync(keys.Select(x => new RedisKey(x)).ToArray());
+                var scriptKeys = chunk
+                    .Select(x => new RedisKey(x))
+                    .Append(new RedisKey(Const.ReferenceCountKey))
+                    .ToArray();
+                count += (int)await redis.EvalAsync(DeleteSettledKeysScript, scriptKeys);
             }
 
-            return keys.Count;
+            return count;
         }
 
         public async Task<int> ClearCache()
@@ -48,14 +65,13 @@ namespace Http.Service
 
             foreach (var world in worlds)
             {
-                var batch = 10;
-                for (int i = 0; i < _redisService.GetShardSize(world); i++)
+                var worldCount = 0;
+                for (var i = -1; i < _redisService.GetShardSize(world); i++)
                 {
-                    count += await DeleteCache(world, i, "fb:cache:*", batch);
-                    count += await DeleteCache(world, i, Const.ReferenceCountKey, 10);
-                    count += await DeleteCache(world, i, $"{Const.RedisBufferKey}:*", 10);
+                    worldCount += await DeleteSettledCache(world, i);
                 }
-                _logger.LogInformation("Cache cleared for world {World}: {Count} keys deleted", world, count);
+                count += worldCount;
+                _logger.LogInformation("Cache cleared for world {World}: {Count} keys deleted", world, worldCount);
             }
             return count;
         }
