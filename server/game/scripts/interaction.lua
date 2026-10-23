@@ -710,7 +710,7 @@ return {
     on_chat = function(me, message, shout)
         if string.sub(message, 1, 1) == '/' then
             message = string.sub(message, 2, string.len(message))
-            args = lib.string_split(message, ' ')
+            local args = lib.string_split(message, ' ')
 
             local cmd = args[1]
             if command.functions[cmd] == nil then

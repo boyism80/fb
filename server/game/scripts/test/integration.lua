@@ -1404,6 +1404,10 @@ return {
         report(me, true, step, text)
     end,
 
+    verify_no_global_args = function(me, step)
+        report(me, args == nil, step, tostring(args))
+    end,
+
     cleanup = function(me, step)
         local map = me:map()
         if map ~= nil then

@@ -18,6 +18,9 @@ test_suite {
                     return fail("the builtin exception did not reach the script as a Lua error at try " .. i)
                 end
             end
+            if script_step.run_script(bot, "test/integration", "verify_no_global_args", "no_global_args") ~= true then
+                return fail("a slash command left its arguments in a global")
+            end
             return true
         end,
     },
