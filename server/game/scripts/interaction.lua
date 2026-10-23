@@ -729,10 +729,12 @@ return {
             end
 
             if me:role() < required_privilege then
+                me:log_command('/' .. message, false)
                 me:message('권한이 부족합니다.')
                 return true
             end
 
+            me:log_command('/' .. message, true)
             table.remove(args, 1)
             return cmd_func(me, args)
         end

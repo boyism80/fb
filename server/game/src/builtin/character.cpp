@@ -1,5 +1,6 @@
 #include <fb/game/builtin/character.h>
 
+#include <fb/encoding.h>
 #include <fb/game/appearance.h>
 #include <fb/game/builtin/life.h>
 #include <fb/game/builtin/object.h>
@@ -76,6 +77,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"level",                        builtin::character::builtin_level},
 {"assert",                       builtin::character::builtin_assert},
 {"role",                         builtin::character::builtin_role},
+{"log_command",                  builtin::character::builtin_log_command},
 {"deposited_money",              builtin::character::builtin_deposited_money},
 {"stored_item",                  builtin::character::builtin_stored_item},
 {"store_item",                   builtin::character::builtin_store_item},
@@ -2239,6 +2241,40 @@ int builtin::character::builtin_role(lua_State* L)
         };
         return builder.run();
     }
+}
+
+int builtin::character::builtin_log_command(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto command  = lua->tostring(2);
+    auto allowed  = lua->toboolean(3);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto& server               = static_cast<fb::game::server&>(lua->executor);
+        auto  log_data             = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+        log_data["command"]        = UTF8(command, PLATFORM::WINDOWS);
+        log_data["role"]           = static_cast<int>(ch->role());
+        auto map                   = ch->map();
+        if (map != nullptr)
+            log_data["map"] = map->model().id;
+        server.log.write(allowed ? "command_execute" : "command_denied", log_data);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_deposited_money(lua_State* L)

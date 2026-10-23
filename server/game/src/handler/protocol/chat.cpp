@@ -82,18 +82,7 @@ async::task<bool> chat<V>::try_command(character* ch, std::weak_ptr<character> w
     if (ptr == nullptr)
         co_return true;
 
-    if (stop == false)
-        co_return false;
-
-    auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
-    log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
-    log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
-    auto map                   = ptr->map();
-    if (map != nullptr)
-        log_data["map"] = map->model().id;
-    this->server.log.write("command_execute", log_data);
-    co_return true;
+    co_return stop;
 }
 
 template <fb::protocol::CLIENT_VERSION V>
