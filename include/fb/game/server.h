@@ -19,6 +19,7 @@
 #include <fb/game/service/system_storage.h>
 #include <fb/game/service/weather.h>
 #include <fb/game/snowflake.h>
+#include <fb/game/state_machine.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/game/thread_params.h>
@@ -172,6 +173,7 @@ public:
     castle::container                                      castles;
     group::container                                       groups;
     match::container                                       matches;
+    state_machine::container                               state_machines;
     service::mail                                          mail;
     service::bulletin                                      bulletin;
     service::system_storage                                system_storage;

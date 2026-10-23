@@ -65,6 +65,7 @@ struct server
     static int builtin_property(lua_State* L);
     static int builtin_match_transfer(lua_State* L);
     static int builtin_is_cross(lua_State* L);
+    static int builtin_state_machine(lua_State* L);
 
 private:
     static void push_datetime_table(lua_State* L, const fb::model::datetime& dt);

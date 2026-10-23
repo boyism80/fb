@@ -948,6 +948,99 @@ return {
         end
     end,
 
+    verify_state_machine = function(me, step)
+        if state_machine('magpie_bridge') == nil then
+            report(me, false, step, 'magpie_bridge machine is missing')
+            return
+        end
+
+        local sm = state_machine('integration_probe')
+        if sm == nil then
+            report(me, false, step, 'integration_probe machine is missing')
+            return
+        end
+
+        sm:call('on_probe_start')
+        sleep(1800)
+        local ticks = sm:get('ticks') or 0
+        sm:call('on_probe_stop')
+        sleep(1200)
+        local stopped = sm:get('stopped_ticks')
+        local after = sm:get('ticks')
+
+        if sm:get('called') ~= true then
+            report(me, false, step, 'call did not run the hook')
+        elseif ticks < 2 then
+            report(me, false, step, string.format('every ran %d times in 1.8s', ticks))
+        elseif stopped == nil or after ~= stopped then
+            report(me, false, step, string.format('cancel left the timer running stopped=%s after=%s', tostring(stopped), tostring(after)))
+        else
+            sm:call('on_probe_hold', 1000)
+            sleep(100)
+            sm:call('on_probe_peek')
+            sleep(1500)
+            local peeked = sm:get('peeked')
+            if peeked ~= 'after_hold' then
+                report(me, false, step, 'a hook ran while another hook was suspended peeked=' .. tostring(peeked))
+            else
+                report(me, true, step)
+            end
+        end
+    end,
+
+    magpie_walk_without_support = function(me, step, enabled)
+        if enabled == 'true' then
+            property('magpie_bridge.walk_without_support', true)
+        else
+            property('magpie_bridge.walk_without_support', nil)
+        end
+        report(me, true, step)
+    end,
+
+    verify_magpie = function(me, step, spec)
+        local sm = state_machine('magpie_bridge')
+        if sm == nil then
+            return report(me, false, step, 'magpie_bridge machine is missing')
+        end
+
+        local bridge = require('lib.magpie_bridge')
+        local bridge_map = id2map(bridge.MAP_ID)
+        local mismatches = {}
+        for key, expected in tostring(spec):gmatch('([^,=]+)=([^,]+)') do
+            local actual = nil
+            local mob_id = tonumber(string.match(key, '^mob(%d+)$'))
+            if mob_id ~= nil then
+                local count = 0
+                for _, mob in pairs(bridge_map ~= nil and bridge_map:objects(OBJECT_TYPE.MOB) or {}) do
+                    if mob:model():id() == mob_id then
+                        count = count + 1
+                    end
+                end
+                actual = tostring(count)
+            elseif key == 'remaining' then
+                local remaining = bridge.bridge_build_remaining()
+                if remaining == nil then
+                    actual = 'none'
+                elseif remaining > 0 then
+                    actual = 'positive'
+                else
+                    actual = 'zero'
+                end
+            else
+                actual = tostring(sm:get(key))
+            end
+            if actual ~= expected then
+                table.insert(mismatches, string.format('%s=%s(expected %s)', key, actual, expected))
+            end
+        end
+
+        if #mismatches == 0 then
+            report(me, true, step)
+        else
+            report(me, false, step, table.concat(mismatches, ','))
+        end
+    end,
+
     verify_clock_hour = function(me, step, hour)
         local t = datetime()
         if t.hour == tonumber(hour) then

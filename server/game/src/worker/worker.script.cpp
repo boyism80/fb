@@ -90,6 +90,16 @@ fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
             scripts.push_back(path);
     }
 
+    if (std::filesystem::exists(state_machine::SCRIPT_DIRECTORY))
+    {
+        for (const auto& entry : std::filesystem::directory_iterator(state_machine::SCRIPT_DIRECTORY))
+        {
+            if (entry.is_regular_file() && entry.path().extension() == ".lua")
+                scripts.push_back(
+                    std::format("{}/{}", state_machine::SCRIPT_DIRECTORY, entry.path().filename().string()));
+        }
+    }
+
     for (auto& [_, root] : _server.lua)
     {
         co_yield script_work{root.get(), scripts};

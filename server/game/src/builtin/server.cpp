@@ -1751,6 +1751,21 @@ int builtin::server::builtin_is_cross(lua_State* L)
     return 1;
 }
 
+int builtin::server::builtin_state_machine(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv     = static_cast<fb::game::server&>(lua->executor);
+    auto  machine = srv.state_machines.find(lua->tostring(1));
+    if (machine == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(machine);
+    return 1;
+}
+
 int builtin::server::builtin_match_transfer(lua_State* L)
 {
     auto lua = fb::lua::get(L);

@@ -99,6 +99,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build<fb::game::matchmaker, fb::lua::luable>();
         lua.build<fb::game::match, fb::lua::luable>();
         lua.build<fb::game::match::team, fb::lua::luable>();
+        lua.build<fb::game::state_machine, fb::lua::luable>();
         lua.build<fb::game::group, fb::thread_switchable>();
         lua.build<fb::game::object, fb::thread_switchable>();
         lua.build<fb::game::life, fb::game::object>();
@@ -176,6 +177,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("property", builtin::server::builtin_property);
         lua.build("match_transfer", builtin::server::builtin_match_transfer);
         lua.build("is_cross", builtin::server::builtin_is_cross);
+        lua.build("state_machine", builtin::server::builtin_state_machine);
 
         fb::model::lua::map_enum(lua);
         fb::model::lua::map_const(lua);
@@ -430,6 +432,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     castles(*this),
     groups(*this),
     matches(*this),
+    state_machines(*this),
     mail(*this),
     bulletin(*this),
     system_storage(*this),
@@ -519,6 +522,7 @@ async::task<void> fb::game::server::on_start()
 #endif
 
     co_await this->init_thread_params();
+    co_await this->state_machines.load();
     co_await this->init_map_scripts();
     this->init_handlers();
     this->init_timers();
