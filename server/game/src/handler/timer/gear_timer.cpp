@@ -3,10 +3,11 @@
 #include <fb/logger.h>
 
 #include <exception>
+#include <map>
 #include <memory>
 #include <thread>
 #include <tuple>
-#include <unordered_map>
+#include <utility>
 #include <vector>
 
 using namespace fb::game::handler::timer;
@@ -33,32 +34,37 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
         // Scripts may leave us on another thread; resume map walk on this timer thread.
         co_await thread->switching();
 
-        auto concast = std::unordered_map<fb::game::character*, std::vector<std::shared_ptr<fb::game::equipment>>>{};
+        using equipment_map = std::map<EQUIPMENT_PARTS, std::shared_ptr<fb::game::equipment>>;
+        auto concast        = std::vector<std::pair<std::weak_ptr<fb::game::character>, equipment_map>>{};
         for (auto& [fd, obj] : map->objects)
         {
             if (obj->is(OBJECT_TYPE::CHARACTER) == false)
                 continue;
 
             auto ch = std::static_pointer_cast<fb::game::character>(obj);
-            if (ch->state() == STATE::GHOST)
-                continue;
+            concast.push_back({std::weak_ptr<fb::game::character>{ch}, ch->items.equipments()});
+        }
 
-            for (auto& [part, equipment] : ch->items.equipments())
+        for (auto& [weak, equipments] : concast)
+        {
+            for (auto& [part, equipment] : equipments)
             {
                 if (equipment == nullptr)
                     continue;
 
-                if (concast.contains(ch.get()) == false)
-                    concast.insert({ch.get(), {}});
+                auto ch = weak.lock();
+                if (ch == nullptr)
+                    break;
 
-                concast[ch.get()].push_back(equipment);
-            }
-        }
+                if (ch->thread() != thread)
+                    break;
 
-        for (auto& [ch, equipments] : concast)
-        {
-            for (auto& equipment : equipments)
-            {
+                if (ch->state() == STATE::GHOST)
+                    break;
+
+                if (ch->items.equipment(part) != equipment)
+                    continue;
+
                 if (!lua)
                 {
                     lua = this->server.lua.open();
