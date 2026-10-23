@@ -130,7 +130,7 @@ function M.handle(me, npc)
     if ok then
         me:dialog(npc, '지급이 완료되었습니다.', { prev = false, next = true })
     else
-        me:dialog(npc, '지급에 실패했습니다.', { prev = false, next = true })
+        me:dialog(npc, '지급 결과를 확인하지 못했습니다. 다시 보내기 전에 관리툴에서 지급 여부를 확인하세요.', { prev = false, next = true })
     end
     return true
 end
