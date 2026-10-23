@@ -34,6 +34,7 @@ void service::mail::on_error(uint32_t error) const
         throw std::runtime_error(_TEXT(MESSAGE_INVALID_USER_NAME));
 
     case ERROR_CODE::NOT_FOUND_MAIL:
+    case ERROR_CODE::MAIL_NOT_EXISTS:
         throw std::runtime_error(_TEXT(MESSAGE_NOT_FOUND_MAIL));
 
     case ERROR_CODE::MAIL_BOX_FULL:
