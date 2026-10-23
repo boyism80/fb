@@ -1404,6 +1404,11 @@ return {
         report(me, true, step, text)
     end,
 
+    make_items = function(me, step, name, count, seconds)
+        local item = me:mkitem(name, tonumber(count), true, tonumber(seconds))
+        report(me, item ~= nil, step)
+    end,
+
     verify_unknown_item_name = function(me, step, name)
         local function count_of()
             local total = 0

@@ -21,7 +21,9 @@ item::item(fb::game::server& server, const fb::model::item& model, const initial
     listener(server.listener),
     _count(std::clamp<uint16_t>(params.count, 1, model.capacity)),
     _uid(model.attr(ITEM_ATTRIBUTE::BUNDLE) || model.attr(ITEM_ATTRIBUTE::CASH) ? 0 : server.ids.next()),
-    expire_time(params.expire_time.has_value() ? params.expire_time : model.expire_time(server.now()))
+    expire_time(model.attr(ITEM_ATTRIBUTE::BUNDLE) ? std::nullopt
+                : params.expire_time.has_value()   ? params.expire_time
+                                                   : model.expire_time(server.now()))
 { }
 
 item::item(const item& right) :
