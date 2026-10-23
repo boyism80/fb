@@ -31,6 +31,39 @@ namespace mp      = fb::protocol::marketplace;
 namespace mp_reqs = mp::request;
 namespace mp_resp = mp::response;
 
+namespace {
+
+std::string rejection_message(fb::model::enum_value::ERROR_CODE error, std::string fallback)
+{
+    using ERROR_CODE = fb::model::enum_value::ERROR_CODE;
+
+    switch (error)
+    {
+    case ERROR_CODE::MARKETPLACE_LISTING_NOT_FOUND:
+        return _TEXT(MESSAGE_MARKETPLACE_LISTING_NOT_FOUND);
+    case ERROR_CODE::MARKETPLACE_LISTING_EXPIRED:
+        return _TEXT(MESSAGE_MARKETPLACE_LISTING_EXPIRED);
+    case ERROR_CODE::MARKETPLACE_LISTING_ALREADY_SOLD:
+        return _TEXT(MESSAGE_MARKETPLACE_LISTING_ALREADY_SOLD);
+    case ERROR_CODE::MARKETPLACE_LISTING_ALREADY_CANCELLED:
+        return _TEXT(MESSAGE_MARKETPLACE_LISTING_ALREADY_CANCELLED);
+    case ERROR_CODE::MARKETPLACE_INSUFFICIENT_STOCK:
+        return _TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_STOCK);
+    case ERROR_CODE::MARKETPLACE_LISTING_LIMIT_EXCEEDED:
+        return _TEXT(MESSAGE_MARKETPLACE_LISTING_LIMIT_EXCEEDED);
+    case ERROR_CODE::MARKETPLACE_ITEM_NOT_TRADEABLE:
+        return _TEXT(MESSAGE_MARKETPLACE_ITEM_NOT_TRADEABLE);
+    case ERROR_CODE::MARKETPLACE_NOT_LISTING_OWNER:
+        return _TEXT(MESSAGE_MARKETPLACE_NOT_LISTING_OWNER);
+    case ERROR_CODE::MARKETPLACE_INSUFFICIENT_FUNDS:
+        return _TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY);
+    default:
+        return fallback;
+    }
+}
+
+} // namespace
+
 marketplace::marketplace(character& owner) :
     _owner(owner)
 { }
@@ -167,8 +200,9 @@ marketplace::list(uint8_t slot, uint32_t model_id, uint16_t count, uint64_t pric
         log_data["listing_id"]   = static_cast<Json::UInt64>(id);
         log_data["error"]        = enum_tostring(error_code);
         this->_owner.server.log.write("marketplace_list_failed", log_data);
-        throw std::runtime_error(
-            std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM), enum_tostring(error_code)));
+        throw std::runtime_error(rejection_message(
+            error_code,
+            std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM), static_cast<uint32_t>(error_code))));
     }
     else
     {
@@ -219,7 +253,9 @@ async::task<bool> marketplace::cancel(uint64_t id)
         log_data["listing_id"]   = static_cast<Json::UInt64>(id);
         log_data["error"]        = static_cast<Json::Int64>(resp.error);
         this->_owner.server.log.write("marketplace_cancel_failed", log_data);
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_CANCEL_LISTING), resp.error));
+        throw std::runtime_error(
+            rejection_message(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error),
+                              std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_CANCEL_LISTING), resp.error)));
     }
 
     // Log successful cancellation
@@ -368,8 +404,9 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
         log_data["purchase_id"]  = static_cast<Json::UInt64>(purchase_id);
         log_data["error"]        = enum_tostring(error_code);
         this->_owner.server.log.write("marketplace_purchase_failed", log_data);
-        throw std::runtime_error(
-            std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM), enum_tostring(error_code)));
+        throw std::runtime_error(rejection_message(
+            error_code,
+            std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM), static_cast<uint32_t>(error_code))));
     }
     else
     {
@@ -403,8 +440,7 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
                                                                          option.page});
 
     if (resp.error != 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_SEARCH_ITEMS),
-                                             enum_tostring((fb::model::enum_value::ERROR_CODE)resp.error)));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_SEARCH_ITEMS), resp.error));
 
     auto result = search_result{.listings = {}, .total_count = resp.result.total_count, .page = resp.result.page};
     result.listings.reserve(resp.result.listings.size());
