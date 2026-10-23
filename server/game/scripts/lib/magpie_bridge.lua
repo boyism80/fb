@@ -43,6 +43,18 @@ function M.bridge_build_remaining(t)
     return math.max(0, M.BRIDGE_BUILD_SECONDS - elapsed)
 end
 
+function M.round_key()
+    local sm = state_machine(M.MACHINE)
+    if sm == nil then
+        return nil
+    end
+    local key = sm:get('settle_key')
+    if key == nil or key == '' then
+        return nil
+    end
+    return key
+end
+
 function M.sync_timer(me)
     if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
         return

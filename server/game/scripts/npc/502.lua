@@ -3,6 +3,7 @@ local enum = require('lib.enum')
 local festival = require('lib.festival')
 local yudu_gosa = require('lib.yudu_gosa')
 local magpie_bridge = require('lib.magpie_bridge')
+local quest = require('lib.quest')
 
 local ACHIEVEMENT_SEOLBIM = 566
 
@@ -108,6 +109,33 @@ local function give_chilseok_reward(me, npc)
     end
 end
 
+local function bridge_open_seconds(me, npc)
+    local t = datetime()
+    if t == nil or magpie_bridge.BRIDGE_HOURS[t.hour or 0] ~= true then
+        me:dialog(npc, "지금은 제를 올리는 시간이 아닙니다...", { prev = false, next = false })
+        return nil
+    end
+
+    local rem = magpie_bridge.bridge_build_remaining(t)
+    if rem == nil then
+        me:dialog(npc, "아직 제를 올리지 않았습니다. 잠시 기다려 주세요....", { prev = false, next = false })
+        return nil
+    end
+    if rem <= 0 then
+        me:dialog(npc, "저런, 때를 놓치셨군요...", { prev = false, next = false })
+        return nil
+    end
+    return rem
+end
+
+local function received_scrolls(me, round)
+    if round == nil then
+        return false
+    end
+    local q = me:quest(quest.QUEST_MAGPIE_BRIDGE)
+    return q ~= nil and q:param() == round
+end
+
 local function run_chilseok(me, npc)
     local t = datetime()
     local hour = (t and t.hour) or 0
@@ -129,9 +157,8 @@ local function run_chilseok(me, npc)
     end
 
     if bridge_hour then
-        local rem = magpie_bridge.bridge_build_remaining(t)
-        if rem == 0 then
-            me:dialog(npc, "저런, 때를 놓치셨군요...", { prev = false, next = false })
+        local rem = bridge_open_seconds(me, npc)
+        if rem == nil then
             return
         end
 
@@ -162,28 +189,43 @@ local function run_chilseok(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local minutes_left = (rem ~= nil) and math.max(1, math.ceil(rem / 60)) or 5
+        local minutes_left = math.max(1, math.ceil(rem / 60))
         btn = me:dialog(npc, "지금부터 " .. tostring(minutes_left) .. "분안에 참여하지 못하면 다리만드는데 참여하실수가 없어요. 주의하시길...",
             { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "혹시 문제가 생기면 노란비서를 사용하세요. 드리겠습니다.", { prev = false, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        if me:mkitem("노란비서", 3) == nil then
-            me:dialog(npc, "소지품이 가득 차서 노란비서를 드릴 수 없습니다.", { prev = false, next = false })
-            return
-        end
-        local map = name2map(house)
-        if map ~= nil then
-            -- Message/timer before map (thread hop).
-            if rem ~= nil and rem > 0 then
-                me:timer(rem, TIMER_TYPE.DECREASE)
+        if not received_scrolls(me, magpie_bridge.round_key()) then
+            btn = me:dialog(npc, "혹시 문제가 생기면 노란비서를 사용하세요. 드리겠습니다.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
             end
-            me:map(map, math.random(7, 12), math.random(6, 12))
         end
+
+        local map = name2map(house)
+        if map == nil then
+            return
+        end
+        rem = bridge_open_seconds(me, npc)
+        if rem == nil then
+            return
+        end
+
+        local round = magpie_bridge.round_key()
+        if round ~= nil and not received_scrolls(me, round) then
+            local q = me:quest(quest.QUEST_MAGPIE_BRIDGE) or me:start_quest(quest.QUEST_MAGPIE_BRIDGE)
+            if q ~= nil then
+                if me:mkitem("노란비서", 3) == nil then
+                    me:dialog(npc, "소지품이 가득 차서 노란비서를 드릴 수 없습니다.", { prev = false, next = false })
+                    return
+                end
+                q:param(round)
+            end
+        end
+
+        -- Message/timer before map (thread hop).
+        me:timer(rem, TIMER_TYPE.DECREASE)
+        me:map(map, math.random(7, 12), math.random(6, 12))
         return
     end
 
