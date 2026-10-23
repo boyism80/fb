@@ -8,6 +8,27 @@ local MAP_ID_DEATH = 12017
 
 local SURVIVE_ITEMS = { ["노란비서"] = 1, ["소환비서"] = 1, ["동동주"] = 1, ["막걸리"] = 1 }
 
+local function current_rank()
+    local rank = property("surviverun_rank")
+    if rank == nil or rank == 0 then
+        return 1
+    end
+    return rank
+end
+
+local function prize_for(rank)
+    local prize_name = "노란비서"
+    if rank == 1 then
+        return property("survive_prize_1") or prize_name
+    elseif rank == 2 then
+        return property("survive_prize_2") or prize_name
+    elseif rank <= 10 then
+        return property("survive_prize_10") or prize_name
+    else
+        return property("survive_prize_joiner") or prize_name
+    end
+end
+
 return {
     on_click = function(me, npc)
         local m = me:map()
@@ -29,7 +50,7 @@ return {
                 me:state(STATE.NORMAL)
                 me:hp(me:maxhp())
             end
-            local lobby = name2map("서바이벌대기실")
+            local lobby = id2map(MAP_ID_LOBBY)
             if lobby then
                 local x = math.random(45, 55)
                 local y = math.random(44, 54)
@@ -39,28 +60,23 @@ return {
         end
 
         if map_id == MAP_ID_FINISH then
-            local rank = property("surviverun_rank")
-            if rank == nil or rank == 0 then
-                rank = 1
-            end
-            local prize_name = "노란비서"
-            if rank == 1 then
-                prize_name = property("survive_prize_1") or prize_name
-            elseif rank == 2 then
-                prize_name = property("survive_prize_2") or prize_name
-            elseif rank <= 10 then
-                prize_name = property("survive_prize_10") or prize_name
-            else
-                prize_name = property("survive_prize_joiner") or prize_name
-            end
-            local btn = me:dialog(npc,
-                "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.",
-                { prev = false, next = true })
+            local shown_rank = current_rank()
+            local congrats = string.format("축하합니다! %s님은 %d등으로 완주하여 상품으로 %s을(를) 받으실 수 있습니다.",
+                me:name(), shown_rank, prize_for(shown_rank))
+            local btn = me:dialog(npc, congrats, { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:mkitem(prize_name, 1) ~= nil then
-                property("surviverun_rank", rank + 1)
+
+            local rank = current_rank()
+            property("surviverun_rank", rank + 1)
+            local prize_name = prize_for(rank)
+            if me:mkitem(prize_name, 1) == nil then
+                if property("surviverun_rank") == rank + 1 then
+                    property("surviverun_rank", rank)
+                end
+            elseif rank ~= shown_rank then
+                me:message(string.format("%d등으로 완주하여 %s을(를) 받았습니다.", rank, prize_name), MESSAGE_TYPE.STATE)
             end
             local exit_map = name2map("부여성")
             if exit_map then
@@ -151,7 +167,7 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local run_map = name2map("서바이벌달리기")
+                local run_map = id2map(MAP_ID_GAME)
                 if run_map then
                     local x = math.random(6, 13)
                     local y = 5 + math.random(0, 3)
@@ -204,7 +220,7 @@ return {
             return
         end
         if sel == 1 then
-            local lobby = name2map("서바이벌대기실")
+            local lobby = id2map(MAP_ID_LOBBY)
             if lobby then
                 local x = math.random(45, 55)
                 local y = math.random(44, 54)
