@@ -31,11 +31,7 @@ namespace Http.Service
             var userId = row.Id;
 
             // Calculate expire date
-            DateTime? expireDate = null;
-            if (days.HasValue)
-            {
-                expireDate = DateTime.UtcNow.AddDays(days.Value);
-            }
+            DateTime? expireDate = days is > 0 ? DateTime.UtcNow.AddDays(days.Value) : null;
 
             // Create or update ban
             var ban = new Ban
@@ -63,7 +59,7 @@ namespace Http.Service
                 reason,
                 expire_date = expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
             });
-            var duration = days.HasValue && days.Value > 0 ? $"{days.Value}d" : "Permanent";
+            var duration = expireDate.HasValue ? $"{days.Value}d" : "Permanent";
             await _discord.NotifyAsync("ban", source, actor, name, world, $"reason: {reason} / {duration}");
 
             return new BanResult

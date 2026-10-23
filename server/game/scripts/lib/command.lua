@@ -1838,8 +1838,11 @@ M.functions = {
 
             if days then
                 days = tonumber(days)
-                if not days or days < 0 then
-                    me:message("기간은 0 이상의 숫자여야 합니다. (0 또는 생략 시 영구정지)")
+                if days ~= nil then
+                    days = math.tointeger(days)
+                end
+                if days == nil or days < 0 or days > 3650 then
+                    me:message("기간은 0~3650 사이의 정수여야 합니다. (0 또는 생략 시 영구정지)")
                     return true
                 end
             end
