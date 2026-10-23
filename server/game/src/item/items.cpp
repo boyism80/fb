@@ -593,77 +593,67 @@ void items::deposited(uint64_t value)
     this->_deposited = value;
 }
 
-uint64_t items::deposit(uint64_t value)
+items::money_transfer items::deposit(uint64_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return 0;
+        return money_transfer::LACK_MONEY;
 
     owner->assert_thread();
 
-    uint64_t capacity         = std::numeric_limits<uint64_t>::max() - this->_deposited;
-    uint32_t lack             = 0;
-    uint64_t deposited_amount = 0;
+    if (owner->money() < value)
+        return money_transfer::LACK_MONEY;
+
+    auto capacity = this->_deposited < MONEY_LIMIT ? MONEY_LIMIT - this->_deposited : 0;
     if (value > capacity)
-    {
-        deposited_amount = capacity;
-        this->deposited(this->_deposited + capacity);
-        lack = value - capacity;
-    }
-    else
-    {
-        deposited_amount = value;
-        this->deposited(this->_deposited + value);
-    }
+        return money_transfer::DEPOSIT_FULL;
 
-    // Log money deposit event
-    if (deposited_amount > 0)
-    {
-        auto log_data                 = Json::Value();
-        log_data["character_id"]      = static_cast<Json::Int64>(owner->id);
-        log_data["character_name"]    = UTF8(owner->name(), PLATFORM::WINDOWS);
-        log_data["amount"]            = static_cast<Json::Int64>(deposited_amount);
-        log_data["current_deposited"] = static_cast<Json::Int64>(this->_deposited);
-        owner->server.log.write("money_deposit", log_data);
-    }
+    if (value == 0)
+        return money_transfer::DONE;
 
-    return lack;
+    owner->money(owner->money() - value);
+    this->_deposited += value;
+
+    auto log_data                 = Json::Value();
+    log_data["character_id"]      = static_cast<Json::Int64>(owner->id);
+    log_data["character_name"]    = UTF8(owner->name(), PLATFORM::WINDOWS);
+    log_data["amount"]            = static_cast<Json::Int64>(value);
+    log_data["current_deposited"] = static_cast<Json::Int64>(this->_deposited);
+    log_data["current_money"]     = static_cast<Json::Int64>(owner->money());
+    owner->server.log.write("money_deposit", log_data);
+    return money_transfer::DONE;
 }
 
-uint64_t items::withdraw(uint64_t value)
+items::money_transfer items::withdraw(uint64_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return 0;
+        return money_transfer::LACK_DEPOSITED;
 
     owner->assert_thread();
 
-    uint32_t lack             = 0;
-    uint64_t withdrawn_amount = 0;
     if (this->_deposited < value)
-    {
-        withdrawn_amount = this->_deposited;
-        lack             = value - this->_deposited;
-        this->deposited(0);
-    }
-    else
-    {
-        withdrawn_amount = value;
-        this->deposited(this->_deposited - value);
-    }
+        return money_transfer::LACK_DEPOSITED;
 
-    // Log money withdraw event
-    if (withdrawn_amount > 0)
-    {
-        auto log_data                 = Json::Value();
-        log_data["character_id"]      = static_cast<Json::Int64>(owner->id);
-        log_data["character_name"]    = UTF8(owner->name(), PLATFORM::WINDOWS);
-        log_data["amount"]            = static_cast<Json::Int64>(withdrawn_amount);
-        log_data["current_deposited"] = static_cast<Json::Int64>(this->_deposited);
-        owner->server.log.write("money_withdraw", log_data);
-    }
+    auto held       = owner->money() + this->_escrow.money();
+    auto free_space = held < MONEY_LIMIT ? MONEY_LIMIT - held : 0;
+    if (value > free_space)
+        return money_transfer::MONEY_FULL;
 
-    return lack;
+    if (value == 0)
+        return money_transfer::DONE;
+
+    this->_deposited -= value;
+    owner->money(owner->money() + value);
+
+    auto log_data                 = Json::Value();
+    log_data["character_id"]      = static_cast<Json::Int64>(owner->id);
+    log_data["character_name"]    = UTF8(owner->name(), PLATFORM::WINDOWS);
+    log_data["amount"]            = static_cast<Json::Int64>(value);
+    log_data["current_deposited"] = static_cast<Json::Int64>(this->_deposited);
+    log_data["current_money"]     = static_cast<Json::Int64>(owner->money());
+    owner->server.log.write("money_withdraw", log_data);
+    return money_transfer::DONE;
 }
 
 async::task<items::item_ptr> items::active(uint8_t index)

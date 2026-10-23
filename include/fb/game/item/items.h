@@ -61,6 +61,18 @@ private:
     using equipment_ptr   = std::shared_ptr<fb::game::equipment>;
     using equipment_map_t = std::map<EQUIPMENT_PARTS, equipment_ptr>;
 
+public:
+    enum class money_transfer
+    {
+        DONE,
+        LACK_MONEY,
+        DEPOSIT_FULL,
+        LACK_DEPOSITED,
+        MONEY_FULL,
+    };
+
+    static constexpr uint64_t MONEY_LIMIT = 0xFFFFFFFF;
+
 private:
     std::weak_ptr<fb::game::character> _owner;
     weapon_ptr                         _weapon         = nullptr;
@@ -96,8 +108,8 @@ public:
     [[nodiscard]] async::task<item_ptr>             retrieve(const fb::model::item& item, uint16_t count);
     uint64_t                                        deposited() const;
     void                                            deposited(uint64_t value);
-    uint64_t                                        deposit(uint64_t value);
-    uint64_t                                        withdraw(uint64_t value);
+    money_transfer                                  deposit(uint64_t value);
+    money_transfer                                  withdraw(uint64_t value);
     [[nodiscard]] async::task<item_ptr>             active(uint8_t index);
     [[nodiscard]] async::task<uint8_t>              inactive(EQUIPMENT_PARTS parts);
     equipment_ptr                                   equipment_off(EQUIPMENT_PARTS parts);

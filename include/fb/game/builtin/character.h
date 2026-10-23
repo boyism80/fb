@@ -42,6 +42,8 @@ struct character
     static int builtin_role(lua_State* L);
     static int builtin_log_command(lua_State* L);
     static int builtin_deposited_money(lua_State* L);
+    static int builtin_deposit_money(lua_State* L);
+    static int builtin_withdraw_money(lua_State* L);
     static int builtin_stored_item(lua_State* L);
     static int builtin_store_item(lua_State* L);
     static int builtin_retrieve_item(lua_State* L);

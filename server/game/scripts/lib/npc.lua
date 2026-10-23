@@ -159,20 +159,16 @@ function M.deposit_money(me, npc, money)
         return true
     end
 
-    if money > my_money then
+    local result = me:deposit_money(money)
+    if result == 'lack_money' then
         npc:chat('돈이 모자랍니다.')
         return true
     end
-
-    local deposited = me:deposited_money()
-    local capacity = 0xFFFFFFFF - deposited
-    if money > capacity then
+    if result ~= 'done' then
         npc:chat('더 이상 맡길 수 없습니다.')
         return true
     end
 
-    me:money(my_money - money)
-    me:deposited_money(deposited + money)
     npc:chat(string.format('금전 %d전을 맡았습니다.', money))
     return true
 end
@@ -192,18 +188,16 @@ function M.withdraw_money(me, npc, money)
         return true
     end
 
-    if money > deposited then
+    local result = me:withdraw_money(money)
+    if result == 'lack_deposited' then
         npc:chat('그만큼 맡기지 않았습니다.')
         return true
     end
-
-    if money > me:money_free_space() then
+    if result ~= 'done' then
         npc:chat('소지금이 너무 많습니다.')
         return false
     end
 
-    me:deposited_money(deposited - money)
-    me:money(me:money() + money)
     npc:chat(string.format('금전 %d전을 돌려드렸습니다.', money))
     return true
 end
@@ -908,19 +902,14 @@ function M.show_hold_money_menu(me, npc)
         return me:dialog(npc, '금액이 올바르지 않습니다.', { prev = false, next = true })
     end
 
-    local current_money = me:money()
-    if count > current_money then
+    local result = me:deposit_money(count)
+    if result == 'lack_money' then
         return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
     end
-
-    local deposited_money = me:deposited_money()
-    local capacity = 0xFFFFFFFF - deposited_money
-    if count > capacity then
+    if result ~= 'done' then
         return me:dialog(npc, '그만큼 맡아드릴 수 없습니다.', { prev = false, next = true })
     end
 
-    me:deposited_money(deposited_money + count)
-    me:money(current_money - count)
     return me:dialog(npc, string.format('금전 %d전을 맡았습니다.', count), { prev = false, next = true })
 end
 
@@ -1018,17 +1007,14 @@ function M.show_return_money_menu(me, npc)
         return me:dialog(npc, '금액이 올바르지 않습니다.', { prev = false, next = true })
     end
 
-    deposited_money = me:deposited_money()
-    if count > deposited_money then
+    local result = me:withdraw_money(count)
+    if result == 'lack_deposited' then
         return me:dialog(npc, '그만큼 보관하고 있지 않습니다.', { prev = false, next = true })
     end
-
-    if count > me:money_free_space() then
+    if result ~= 'done' then
         return me:dialog(npc, '가진 돈이 너무 많습니다.', { prev = false, next = true })
     end
 
-    me:deposited_money(deposited_money - count)
-    me:money(me:money() + count)
     return me:dialog(npc, string.format('금전 %d전을 돌려드렸습니다.', count), { prev = false, next = true })
 end
 

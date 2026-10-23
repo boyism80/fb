@@ -79,6 +79,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"role",                         builtin::character::builtin_role},
 {"log_command",                  builtin::character::builtin_log_command},
 {"deposited_money",              builtin::character::builtin_deposited_money},
+{"deposit_money",                builtin::character::builtin_deposit_money},
+{"withdraw_money",               builtin::character::builtin_withdraw_money},
 {"stored_item",                  builtin::character::builtin_stored_item},
 {"store_item",                   builtin::character::builtin_store_item},
 {"retrieve_item",                builtin::character::builtin_retrieve_item},
@@ -2283,42 +2285,78 @@ int builtin::character::builtin_deposited_money(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto ch   = lua->touserdata<fb::game::character>(1);
+    auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
+    auto weak      = ch->weak_from_this_as<fb::game::character>();
+    auto deposited = std::make_shared<uint64_t>();
+    auto builder   = lua->new_co_builder();
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *deposited = ch->items.deposited();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*deposited);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+static const char* money_transfer_name(fb::game::items::money_transfer result)
+{
+    using money_transfer = fb::game::items::money_transfer;
+
+    switch (result)
     {
-        auto weak      = ch->weak_from_this_as<fb::game::character>();
-        auto deposited = std::make_shared<uint64_t>();
-        auto builder   = lua->new_co_builder();
-        builder.weak   = weak;
-        builder.yield  = [=]() -> async::task<void> {
-            *deposited = ch->items.deposited();
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushinteger(*deposited);
-            co_return 1;
-        };
-        return builder.run();
+    case money_transfer::DONE:
+        return "done";
+    case money_transfer::LACK_MONEY:
+        return "lack_money";
+    case money_transfer::DEPOSIT_FULL:
+        return "deposit_full";
+    case money_transfer::LACK_DEPOSITED:
+        return "lack_deposited";
+    default:
+        return "money_full";
     }
-    else
-    {
-        auto value    = lua->touint64(2);
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            ch->items.deposited(value);
-            co_return;
-        };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
-        };
-        return builder.run();
-    }
+}
+
+static int transfer_money(lua_State* L, bool deposit)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto value    = lua->touint64(2);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<fb::game::items::money_transfer>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = deposit ? ch->items.deposit(value) : ch->items.withdraw(value);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushstring(money_transfer_name(*result));
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_deposit_money(lua_State* L)
+{
+    return transfer_money(L, true);
+}
+
+int builtin::character::builtin_withdraw_money(lua_State* L)
+{
+    return transfer_money(L, false);
 }
 
 int builtin::character::builtin_stored_item(lua_State* L)
