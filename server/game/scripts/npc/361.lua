@@ -82,7 +82,8 @@ local function run_dongji(me, npc)
     end
 
     if has_cinnamon then
-        local btn = me:dialog(npc, "아아.. 그런 일이 있었군요. 후추귀신이 계피귀신을 괴롭히고 계피를 빼앗아가서 계피가 없었던 건가요...", { prev = false, next = true })
+        local btn = me:dialog(npc, "아아.. 그런 일이 있었군요. 후추귀신이 계피귀신을 괴롭히고 계피를 빼앗아가서 계피가 없었던 건가요...",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -106,11 +107,13 @@ local function run_dongji(me, npc)
     end
 
     if has_key then
-        me:dialog(npc, "동지집에 가시면 창고가 있는데, 동지창고열쇠로 창고 안에서 계피를 좀 찾아와 주시겠어요? 그 동안 저는 팥을 찾아 볼께요.", { prev = false, next = false })
+        me:dialog(npc, "동지집에 가시면 창고가 있는데, 동지창고열쇠로 창고 안에서 계피를 좀 찾아와 주시겠어요? 그 동안 저는 팥을 찾아 볼께요.",
+            { prev = false, next = false })
         return
     end
 
-    local btn = me:dialog(npc, "네? 수인이가 팥을 받아오라고 했다구요? 이런 게으른 녀석! 직접 받으러 오진 않고 손님에게 심부름을 시키다니...", { prev = false, next = true })
+    local btn = me:dialog(npc, "네? 수인이가 팥을 받아오라고 했다구요? 이런 게으른 녀석! 직접 받으러 오진 않고 손님에게 심부름을 시키다니...",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -122,11 +125,13 @@ local function run_dongji(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, "제가 지금 고약을 만들고 있는데.. 고약을 만드는 데 쓰이는 계피가 모자라요. 이상하게 창고에 계피가 모자라더군요.", { prev = false, next = true })
+    btn = me:dialog(npc, "제가 지금 고약을 만들고 있는데.. 고약을 만드는 데 쓰이는 계피가 모자라요. 이상하게 창고에 계피가 모자라더군요.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, "동지집에 가시면 창고가 있는데, 제가 열쇠를 드릴테니 안에서 계피를 좀 찾아와 주시겠어요? 그 동안 저는 팥을 찾아 볼께요.", { prev = false, next = true })
+    btn = me:dialog(npc, "동지집에 가시면 창고가 있는데, 제가 열쇠를 드릴테니 안에서 계피를 좀 찾아와 주시겠어요? 그 동안 저는 팥을 찾아 볼께요.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -155,11 +160,14 @@ local function run_chilseok(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "이 때 까치와 까마귀가 날개를 펴서 다리를 놓아주는데, 이 다리를 오작교라고 해요. 그래서 칠석날 아침에 비가 내리면 견우직녀 상봉의 눈물이구요, 저녁에 비가 내리면 이별의 눈물이래요..", { prev = false, next = true })
+        btn = me:dialog(npc,
+            "이 때 까치와 까마귀가 날개를 펴서 다리를 놓아주는데, 이 다리를 오작교라고 해요. 그래서 칠석날 아침에 비가 내리면 견우직녀 상봉의 눈물이구요, 저녁에 비가 내리면 이별의 눈물이래요..",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "그런데, 사람들이 사냥을 너무 많이 해서 까치와 까마귀의 숫자가 부족해서 올해 견우와 직녀가 못 만날지도 모른다는 얘기가 있던데...", { prev = false, next = true })
+        btn = me:dialog(npc, "그런데, 사람들이 사냥을 너무 많이 해서 까치와 까마귀의 숫자가 부족해서 올해 견우와 직녀가 못 만날지도 모른다는 얘기가 있던데...",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

@@ -41,15 +41,22 @@ namespace Http.Service
 
             var serverId = logConfig["ServerId"];
             if (string.IsNullOrWhiteSpace(serverId) || serverId == "0")
+            {
                 _serverId = Environment.MachineName;
+            }
             else
+            {
                 _serverId = serverId;
+            }
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             if (_enabled)
+            {
                 _run = Task.Run(() => PublishLoop(_stopping.Token));
+            }
+
             return Task.CompletedTask;
         }
 
@@ -71,13 +78,17 @@ namespace Http.Service
         public Task WriteAsync(string eventType, object data, CancellationToken cancellationToken = default)
         {
             if (!_enabled)
+            {
                 return Task.CompletedTask;
+            }
 
             if (_pending.Reader.Count >= QueueCapacity)
             {
                 var dropped = Interlocked.Increment(ref _dropped);
                 if (dropped == 1 || dropped % 1000 == 0)
+                {
                     _logger?.LogWarning("Dropped {Dropped} log entries because the publish queue is full", dropped);
+                }
             }
 
             _pending.Writer.TryWrite(new LogEntry(DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"), eventType, data));
@@ -105,7 +116,9 @@ namespace Http.Service
                     {
                         var failures = Interlocked.Increment(ref _publishFailures);
                         if (failures == 1 || failures % 100 == 0)
+                        {
                             _logger?.LogWarning(ex, "Failed to publish log {EventType} ({Failures} consecutive failures)", entry.EventType, failures);
+                        }
                     }
                 }
             }
@@ -118,7 +131,9 @@ namespace Http.Service
         {
             await EnsureConnectedAsync(cancellationToken);
             if (_channel == null)
+            {
                 throw new InvalidOperationException("log RabbitMQ channel is not open");
+            }
 
             var logEntry = new
             {
@@ -135,7 +150,9 @@ namespace Http.Service
         private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
         {
             if (_connection != null && _connection.IsOpen && _channel != null && _channel.IsOpen)
+            {
                 return;
+            }
 
             await CloseAsync();
 
@@ -156,7 +173,10 @@ namespace Http.Service
         private string RoutingKey()
         {
             if (_world > 0)
+            {
                 return $"fb.{_world}.log";
+            }
+
             return "fb.log";
         }
 

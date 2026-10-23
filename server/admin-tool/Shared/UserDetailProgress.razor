@@ -149,6 +149,7 @@
 </div>
 
 @code {
+
     [Parameter, EditorRequired]
     public UserDetailProgressData Progress { get; set; } = null!;
 
@@ -166,4 +167,5 @@
 
         return Math.Min(99, (int)(quest.Progress % 100));
     }
+
 }

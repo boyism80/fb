@@ -14,7 +14,7 @@ return {
         local sound = 71
         local effect = 14
         local buff_time = 10
-        if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect, resist = {RESIST.DESPAIR, RESIST.BLIND}}) then
+        if spell.debuff_cast(me, you, sp, { mp = mp, sound = sound, effect = effect, resist = { RESIST.DESPAIR, RESIST.BLIND } }) then
             you:buff(sp, buff_time, me)
         end
     end,

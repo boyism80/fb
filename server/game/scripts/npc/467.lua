@@ -32,7 +32,8 @@ end
 
 local function do_sub5_start(me, npc)
     ::NPC_467_0010::
-    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
+    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
+        { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end

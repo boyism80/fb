@@ -24,7 +24,8 @@ return {
                 end
                 if sel == 2 then
                     ::NPC_117_0010::
-                    local btn = me:dialog(npc, "아, 이거? 이 섬의 부자들이 우리 중국과의 교역을 시작한 기념으로 내게 선물해줬다네.", { prev = false, next = true })
+                    local btn = me:dialog(npc, "아, 이거? 이 섬의 부자들이 우리 중국과의 교역을 시작한 기념으로 내게 선물해줬다네.",
+                        { prev = false, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
@@ -38,11 +39,13 @@ return {
                     dq:step(4)
                 elseif sel == 3 then
                     ::NPC_117_0020::
-                    local btn = me:dialog(npc, "부자들이란... 변혁을 두려워하지 않는 사람들이더군. 외국 문물을 받아들이는데 망설임이 없었어.", { prev = false, next = true })
+                    local btn = me:dialog(npc, "부자들이란... 변혁을 두려워하지 않는 사람들이더군. 외국 문물을 받아들이는데 망설임이 없었어.",
+                        { prev = false, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
-                    btn = me:dialog(npc, "역시 부자는 아무나 되는게 아니지. 그야말로 거상의 풍모랄까. 그런 모습에 반해서 당장 중국의 상인들을 소개시켜 줬다네.", { prev = true, next = true })
+                    btn = me:dialog(npc, "역시 부자는 아무나 되는게 아니지. 그야말로 거상의 풍모랄까. 그런 모습에 반해서 당장 중국의 상인들을 소개시켜 줬다네.",
+                        { prev = true, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
@@ -52,11 +55,13 @@ return {
                     dq:step(4)
                 else
                     ::NPC_117_0030::
-                    local btn = me:dialog(npc, "수상쩍은 일? 글쎄, 나는 이 섬에 대해서 연구하는 중이라, 거의 모든 일에 집중하고 있는 탓에", { prev = false, next = true })
+                    local btn = me:dialog(npc, "수상쩍은 일? 글쎄, 나는 이 섬에 대해서 연구하는 중이라, 거의 모든 일에 집중하고 있는 탓에",
+                        { prev = false, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
-                    btn = me:dialog(npc, "무엇이 수상쩍은지, 무엇이 정상인지 분간이 힘들 정도라네. 무릇 사실이란 객관적으로 기록해야하는 법이니까.", { prev = true, next = true })
+                    btn = me:dialog(npc, "무엇이 수상쩍은지, 무엇이 정상인지 분간이 힘들 정도라네. 무릇 사실이란 객관적으로 기록해야하는 법이니까.",
+                        { prev = true, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
@@ -106,7 +111,8 @@ return {
                         goto NPC_117_0001
                     end
                     dq:step(15)
-                    me:dialog(npc, "정말 수고가 많았네! 대국의 위신을 바로 잡을 수 있게 도와주다니! 명수사관다워! 정말 고맙네!", { prev = false, next = false })
+                    me:dialog(npc, "정말 수고가 많았네! 대국의 위신을 바로 잡을 수 있게 도와주다니! 명수사관다워! 정말 고맙네!",
+                        { prev = false, next = false })
                 end
                 return
             end

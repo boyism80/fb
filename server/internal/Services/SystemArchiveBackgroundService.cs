@@ -31,7 +31,9 @@ namespace Internal.Services
                 foreach (var world in _redisService.GetConfiguredWorlds())
                 {
                     if (stoppingToken.IsCancellationRequested)
+                    {
                         break;
+                    }
 
                     try
                     {
@@ -121,7 +123,9 @@ namespace Internal.Services
                     var archived = (await global.QueryAsync<uint>(
                         "SELECT `id` FROM `system_mail_archive` WHERE `id` IN @chunk", new { chunk })).ToArray();
                     if (archived.Length == 0)
+                    {
                         continue;
+                    }
 
                     await conn.ExecuteAsync("DELETE FROM `mail` WHERE `system_mail_id` IN @archived AND `deleted` = 1", new { archived });
                     await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @archived", new { archived });
@@ -130,7 +134,9 @@ namespace Internal.Services
             }
 
             if (swept > 0)
+            {
                 _logger.LogInformation("Swept records of {Count} archived system mail ids for world {World}", swept, world);
+            }
         }
     }
 }

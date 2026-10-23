@@ -5,11 +5,17 @@
     <div class="card-bg filter-toolbar user-detail-mail-filters">
         <div class="filter-toolbar-left">
             <button type="button" class="stitch-btn @(Filter == "all" ? "stitch-btn-primary" : "stitch-btn-neutral")"
-                    @onclick='() => ChangeFilter("all")'>전체</button>
+                    @onclick='() => ChangeFilter("all")'>
+                전체
+            </button>
             <button type="button" class="stitch-btn @(Filter == "unread" ? "stitch-btn-primary" : "stitch-btn-neutral")"
-                    @onclick='() => ChangeFilter("unread")'>미읽음</button>
+                    @onclick='() => ChangeFilter("unread")'>
+                미읽음
+            </button>
             <button type="button" class="stitch-btn @(Filter == "system" ? "stitch-btn-primary" : "stitch-btn-neutral")"
-                    @onclick='() => ChangeFilter("system")'>시스템</button>
+                    @onclick='() => ChangeFilter("system")'>
+                시스템
+            </button>
         </div>
         <div class="filter-toolbar-right">
             @if (UnreadCount > 0)
@@ -112,7 +118,9 @@
                         var pageNum = i;
                         <li>
                             <a class="stitch-page-btn @(Page == pageNum ? "active" : "")" href="#"
-                               @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>@pageNum</a>
+                               @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>
+                                @pageNum
+                            </a>
                         </li>
                     }
                     <li>
@@ -128,6 +136,7 @@
 </div>
 
 @code {
+
     [Parameter, EditorRequired]
     public UserDetailMailData Data { get; set; } = new();
 
@@ -177,4 +186,5 @@
     {
         expandedMailId = expandedMailId == mailId ? null : mailId;
     }
+
 }

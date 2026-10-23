@@ -71,7 +71,8 @@ end
 
 local function run_weapon_info_loop(me, npc)
     ::NPC_274_0010::
-    local btn = me:dialog(npc, "나는 이 세상에 존재하는 모든 무기에 대해 알고 있네. 또한 몇몇 무기는 만들 수도 있다네... 재료만 있다면...", { prev = false, next = true })
+    local btn = me:dialog(npc, "나는 이 세상에 존재하는 모든 무기에 대해 알고 있네. 또한 몇몇 무기는 만들 수도 있다네... 재료만 있다면...",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -132,7 +133,8 @@ local function run_weapon_info_loop(me, npc)
                 return
             end
         elseif weapon_sel == 5 then
-            me:dialog(npc, "백화검이라... 백화검을 만드는 데에는 세가지 재료가 필요하다네... 하지만 지금은 때가 아니야... 미안하네...", { prev = false, next = false })
+            me:dialog(npc, "백화검이라... 백화검을 만드는 데에는 세가지 재료가 필요하다네... 하지만 지금은 때가 아니야... 미안하네...",
+                { prev = false, next = false })
         elseif weapon_sel == 6 then
             me:dialog(npc, "빙룡검은 백화검과 정반대의 속성을 지닌 검일세... 하지만 역시 지금은 때가 아닐세... 미안하네...", { prev = false, next = false })
         else

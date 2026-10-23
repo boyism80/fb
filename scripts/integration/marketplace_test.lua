@@ -1,91 +1,91 @@
-local lib         = require("integration.lib")
-local protocol    = require("integration.protocol")
-local resp        = require("integration.response")
+local lib = require("integration.lib")
+local protocol = require("integration.protocol")
+local resp = require("integration.response")
 local script_step = require("integration.lib.script_step")
 
-local F1_OID          = 0xFFFFFFFF
+local F1_OID = 0xFFFFFFFF
 local DIALOG_CLOSE_OID = 0xFFFFFFFD
 
 local OPT_STORAGE = "통합보관함"
-local OPT_MARKET  = "거래소"
-local OPT_SEARCH  = "검색"
+local OPT_MARKET = "거래소"
+local OPT_SEARCH = "검색"
 local OPT_REGISTER = "등록"
-local OPT_CANCEL  = "취소"
-local OPT_YES     = "예"
-local OPT_NO      = "아니오"
+local OPT_CANCEL = "취소"
+local OPT_YES = "예"
+local OPT_NO = "아니오"
 
 local DIALOG_NEXT = 2
 
-local WEAPON_ITEM       = "양첨목봉"
-local BUNDLE_ITEM       = "도토리"
+local WEAPON_ITEM = "양첨목봉"
+local BUNDLE_ITEM = "도토리"
 local WEAPON_LIST_PRICE = 10000
 local BUNDLE_UNIT_PRICE = 100
 local BUNDLE_LIST_COUNT = 100
 local BUNDLE_PREP_COUNT = 200
-local LISTING_FEE_RATE  = 0.05
+local LISTING_FEE_RATE = 0.05
 local WEAPON_DURABILITY = 50
 -- 도토리 capacity is 201.
-local BUNDLE_CAPACITY   = 201
-local EXCHANGE_COST     = 100
+local BUNDLE_CAPACITY = 201
+local EXCHANGE_COST = 100
 
 -- 초보도시락 + 다랑어살코기 makes 1차도시락 or 끔찍한요리; both have capacity 200.
-local RECIPE_SOURCES  = { "초보도시락", "다랑어살코기" }
-local RECIPE_SUCCESS  = "1차도시락"
-local RECIPE_FAILED   = "끔찍한요리"
+local RECIPE_SOURCES = { "초보도시락", "다랑어살코기" }
+local RECIPE_SUCCESS = "1차도시락"
+local RECIPE_FAILED = "끔찍한요리"
 local RECIPE_CAPACITY = 200
 
-local MQ_WAIT_MS     = 2000
-local HTTP_DELAY_MS  = 3000
+local MQ_WAIT_MS = 2000
+local HTTP_DELAY_MS = 3000
 local DIALOG_TIMEOUT_MS = 30000
 -- Marketplace-only delay so the escrow save to internal is not delayed and the lock checks land inside the window.
-local LIST_DELAY_MS   = 5000
-local LOCK_SETTLE_MS  = 500
-local LOCK_PROBE_MS   = 3000
+local LIST_DELAY_MS = 5000
+local LOCK_SETTLE_MS = 500
+local LOCK_PROBE_MS = 3000
 -- unsettled_settle_timer runs every 30s.
 local RESTORE_FIRST_WAIT_MS = 30000
 local RESTORE_POLL_MS       = 5000
 local RESTORE_POLL_COUNT    = 8
-local MARKETPLACE_SERVICE   = "marketplace"
+local MARKETPLACE_SERVICE = "marketplace"
 
-local MSG_FEE_FAIL       = "등록 수수료가 부족합니다"
-local MSG_LIST_OK        = "등록이 완료되었습니다"
-local MSG_LIST_FAIL      = "등록 실패"
-local MSG_LIST_PENDING   = "등록 결과를 확인하고 있습니다"
-local MSG_ITEM_LOCKED    = "거래소 등록 처리 중인 아이템입니다"
-local MSG_NO_LISTABLE    = "등록할 수 있는 아이템이 없습니다"
-local MSG_PURCHASE_OK    = "구매가 완료되었습니다"
+local MSG_FEE_FAIL = "등록 수수료가 부족합니다"
+local MSG_LIST_OK = "등록이 완료되었습니다"
+local MSG_LIST_FAIL = "등록 실패"
+local MSG_LIST_PENDING = "등록 결과를 확인하고 있습니다"
+local MSG_ITEM_LOCKED = "거래소 등록 처리 중인 아이템입니다"
+local MSG_NO_LISTABLE = "등록할 수 있는 아이템이 없습니다"
+local MSG_PURCHASE_OK = "구매가 완료되었습니다"
 local MSG_PURCHASE_PENDING = "구매 결과를 확인하고 있습니다"
-local MSG_CANCEL_OK      = "취소가 완료되었습니다"
-local MSG_FEE_CONFIRM    = "등록하시겠습니까"
+local MSG_CANCEL_OK = "취소가 완료되었습니다"
+local MSG_FEE_CONFIRM = "등록하시겠습니까"
 local MSG_CANCEL_CONFIRM = "정말 취소하시겠습니까"
-local MSG_WARNING        = "정말 구매하시겠습니까"
+local MSG_WARNING = "정말 구매하시겠습니까"
 local MSG_SEARCH_EMPTY = "검색 결과가 없습니다"
 local MSG_CANCEL_EMPTY = "등록한 물품이 없습니다"
-local MSG_MARKET_CLEAR      = "거래소 초기화"
+local MSG_MARKET_CLEAR = "거래소 초기화"
 local MSG_MARKET_CLEAR_FAIL = "거래소 초기화 실패"
-local MSG_MIX_SUCCESS        = "성공하였습니다"
-local MSG_MIX_FAILED         = "실패하였습니다"
+local MSG_MIX_SUCCESS = "성공하였습니다"
+local MSG_MIX_FAILED = "실패하였습니다"
 local MSG_INVENTORY_OVERFLOW = "소지품이 꽉 찼습니다"
 
-local STORAGE_CANCEL_TITLE   = "거래소 등록 취소"
+local STORAGE_CANCEL_TITLE = "거래소 등록 취소"
 local STORAGE_PURCHASE_TITLE = "거래소 구매"
-local STORAGE_SALE_TITLE     = "거래소 판매"
+local STORAGE_SALE_TITLE = "거래소 판매"
 local STORAGE_PURCHASE_RECOVERY_TITLE = "거래소 구매 복구"
 
-local PURCHASE_PATH      = "/marketplace/purchase"
+local PURCHASE_PATH = "/marketplace/purchase"
 local STORAGE_WRITE_PATH = "/storage/write"
 
 -- Shared across sequential/parallel scenario steps
-local g_list_msg     = nil
+local g_list_msg = nil
 local g_list_confirm_sent = false
-local g_lock_ok      = false
-local g_lock_err     = nil
+local g_lock_ok = false
+local g_lock_err = nil
 local g_purchase_msg = nil
 local g_purchase_done = false
-local g_cancel_msg   = nil
-local g_money_ok              = false
-local g_pay_amount            = 0
-local g_purchase_api_started  = false
+local g_cancel_msg = nil
+local g_money_ok = false
+local g_pay_amount = 0
+local g_purchase_api_started = false
 
 local function listing_fee(count, price)
     return math.floor(count * price * LISTING_FEE_RATE)
@@ -113,7 +113,8 @@ local function dump_dialog(bot, label, packet)
     end
     local slots = ""
     if packet.slot_slots ~= nil then
-        local parts = {}        for i, s in ipairs(packet.slot_slots) do
+        local parts = {}
+        for i, s in ipairs(packet.slot_slots) do
             parts[i] = tostring(s)
         end
         slots = table.concat(parts, ",")
@@ -126,14 +127,18 @@ local function dump_dialog(bot, label, packet)
         end
         items = table.concat(parts, ",")
     end
-    progress(bot, string.format(
-        "DIALOG[%s] type=%s msg=%q lists=%q slots=[%s] items=[%s]",
-        label,
-        tostring(packet.type),
-        tostring(packet.message),
-        lists,
-        slots,
-        items))
+    progress(
+        bot,
+        string.format(
+            "DIALOG[%s] type=%s msg=%q lists=%q slots=[%s] items=[%s]",
+            label,
+            tostring(packet.type),
+            tostring(packet.message),
+            lists,
+            slots,
+            items
+        )
+    )
 end
 
 local function cleanup_bot(bot)
@@ -156,11 +161,9 @@ end
 
 local function f1_open_menu(bot)
     progress(bot, "f1_open_menu")
-    local packet = bot:request_dialog(
-        protocol.click(F1_OID),
-        function(p)
-            return p.type == "pursuit"
-        end)
+    local packet = bot:request_dialog(protocol.click(F1_OID), function(p)
+        return p.type == "pursuit"
+    end)
     dump_dialog(bot, "f1_open", packet)
     return packet
 end
@@ -170,11 +173,9 @@ local function f1_select_pursuit(bot, option, expect_type)
     progress(bot, string.format("f1_select_pursuit option=%s expect=%s", option, expect_type))
     local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
     local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
-    local packet = fn(bot,
-        protocol.dialog("PURSUIT", 0, "", 0, 0, option),
-        function(p)
-            return p.type == expect_type
-        end)
+    local packet = fn(bot, protocol.dialog("PURSUIT", 0, "", 0, 0, option), function(p)
+        return p.type == expect_type
+    end)
     dump_dialog(bot, "f1_select_pursuit", packet)
     return packet
 end
@@ -227,11 +228,15 @@ local function list_slot_for_item(bot, item_name, slot_packet)
         end
     end
 
-    progress(bot, string.format(
-        "list_slot_for_item item=%s invent_0=%s dialog_slots_1based=[%s]",
-        item_name,
-        tostring(invent_0),
-        table.concat(dialog_slots_1based, ",")))
+    progress(
+        bot,
+        string.format(
+            "list_slot_for_item item=%s invent_0=%s dialog_slots_1based=[%s]",
+            item_name,
+            tostring(invent_0),
+            table.concat(dialog_slots_1based, ",")
+        )
+    )
 
     if invent_0 ~= nil then
         local invent_1 = invent_0 + 1
@@ -273,11 +278,9 @@ local function open_storage_entry_detail(bot, title)
         return nil, "entry not found: " .. title
     end
 
-    packet = bot:request_dialog_ext(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, option),
-        function(p)
-            return p.type == "normal"
-        end)
+    packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, option), function(p)
+        return p.type == "normal"
+    end)
     if packet == nil then
         return nil, "entry detail missing"
     end
@@ -290,25 +293,23 @@ local function receive_storage(bot, title)
         local detail, err = open_storage_entry_detail(bot, title)
         if detail == nil then
             last_err = err
-            progress(bot, string.format("receive_storage open failed attempt=%d title=%s err=%s",
-                attempt, title, tostring(err)))
+            progress(
+                bot,
+                string.format("receive_storage open failed attempt=%d title=%s err=%s", attempt, title, tostring(err))
+            )
             close_marketplace_menu(bot)
         else
-            local packet = bot:request_dialog(
-                protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT"),
-                function(p)
-                    return p.type == "pursuit"
-                end)
+            local packet = bot:request_dialog(protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT"), function(p)
+                return p.type == "pursuit"
+            end)
             if packet == nil or packet.type ~= "pursuit" then
                 last_err = "receive confirm missing"
                 progress(bot, string.format("receive_storage confirm missing attempt=%d title=%s", attempt, title))
                 close_marketplace_menu(bot)
             else
-                packet = bot:request_dialog_ext(
-                    protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
-                    function(p)
-                        return p.type == "normal" and p.message ~= nil
-                    end)
+                packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
+                    return p.type == "normal" and p.message ~= nil
+                end)
                 if packet == nil then
                     last_err = "receive result missing"
                     progress(bot, string.format("receive_storage result missing attempt=%d title=%s", attempt, title))
@@ -338,13 +339,17 @@ end
 -- options.confirm_only sends the YES without waiting for the result and returns "".
 local function list_item_flow(bot, item_name, count, price, options)
     options = options or {}
-    progress(bot, string.format(
-        "list_item_flow start item=%s count=%s price=%s money=%s invent=%s",
-        item_name,
-        tostring(count),
-        tostring(price),
-        tostring(bot:money()),
-        tostring(bot:has_item_by_name(item_name))))
+    progress(
+        bot,
+        string.format(
+            "list_item_flow start item=%s count=%s price=%s money=%s invent=%s",
+            item_name,
+            tostring(count),
+            tostring(price),
+            tostring(bot:money()),
+            tostring(bot:has_item_by_name(item_name))
+        )
+    )
 
     local packet, err = open_marketplace_menu(bot)
     if packet == nil then
@@ -363,29 +368,23 @@ local function list_item_flow(bot, item_name, count, price, options)
 
     progress(bot, string.format("list_item_flow send SLOT index=%d", slot))
     if count ~= nil and count > 1 then
-        packet = bot:request_dialog(
-            protocol.dialog("SLOT", 0, "", slot, 0, "", "NEXT"),
-            function(p)
-                return p.type == "input"
-            end)
+        packet = bot:request_dialog(protocol.dialog("SLOT", 0, "", slot, 0, "", "NEXT"), function(p)
+            return p.type == "input"
+        end)
         dump_dialog(bot, "after_slot_count", packet)
         if packet == nil then
             return nil, "count input missing"
         end
 
         progress(bot, string.format("list_item_flow send count=%d", count))
-        packet = bot:request_dialog(
-            protocol.dialog("INPUT", 0, tostring(count), 0, 0, "", "NEXT"),
-            function(p)
-                return p.type == "input"
-            end)
+        packet = bot:request_dialog(protocol.dialog("INPUT", 0, tostring(count), 0, 0, "", "NEXT"), function(p)
+            return p.type == "input"
+        end)
         dump_dialog(bot, "after_count_input", packet)
     else
-        packet = bot:request_dialog(
-            protocol.dialog("SLOT", 0, "", slot, 0, "", "NEXT"),
-            function(p)
-                return p.type == "input"
-            end)
+        packet = bot:request_dialog(protocol.dialog("SLOT", 0, "", slot, 0, "", "NEXT"), function(p)
+            return p.type == "input"
+        end)
         dump_dialog(bot, "after_slot_price", packet)
     end
     if packet == nil then
@@ -396,11 +395,9 @@ local function list_item_flow(bot, item_name, count, price, options)
     end
 
     progress(bot, string.format("list_item_flow send price=%d", price))
-    packet = bot:request_dialog(
-        protocol.dialog("INPUT", 0, tostring(price), 0, 0, "", "NEXT"),
-        function(p)
-            return p.type == "pursuit"
-        end)
+    packet = bot:request_dialog(protocol.dialog("INPUT", 0, tostring(price), 0, 0, "", "NEXT"), function(p)
+        return p.type == "pursuit"
+    end)
     dump_dialog(bot, "after_price_input", packet)
     if packet == nil then
         return nil, "fee confirm missing"
@@ -424,11 +421,9 @@ local function list_item_flow(bot, item_name, count, price, options)
         bot:send(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES))
         return "", nil
     end
-    packet = bot:request_dialog_ext(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
-        function(p)
-            return p.type == "normal" and p.message ~= nil
-        end)
+    packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
+        return p.type == "normal" and p.message ~= nil
+    end)
     dump_dialog(bot, "list_result", packet)
     if packet == nil then
         return nil, "list result missing"
@@ -442,28 +437,24 @@ end
 
 local function abort_search_item_dialog(bot, item_name)
     progress(bot, "abort_search_item_dialog item=" .. item_name)
-    -- Listed weapons in this suite have reduced durability → warning pursuit.
-    local after = bot:request_dialog(
-        protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
-        function(p)
+        -- Listed weapons in this suite have reduced durability → warning pursuit.
+        local after = bot:request_dialog(protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"), function(p)
             return p.type == "pursuit"
         end)
-    dump_dialog(bot, "abort_after_item", after)
+        dump_dialog(bot, "abort_after_item", after)
     if after == nil then
         close_marketplace_menu(bot)
         return
     end
 
-    if after ~= nil and after.message ~= nil and after.message:find(MSG_WARNING, 1, true) ~= nil then
-        after = bot:request_dialog(
-            protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_NO),
-            function(p)
+        if after ~= nil and after.message ~= nil and after.message:find(MSG_WARNING, 1, true) ~= nil then
+            after = bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_NO), function(p)
                 return p.type == "input"
             end)
-        dump_dialog(bot, "abort_after_no", after)
-    end
+            dump_dialog(bot, "abort_after_no", after)
+        end
 
-    close_marketplace_menu(bot)
+        close_marketplace_menu(bot)
 end
 
 local function search_listings_expect_empty(bot, item_name)
@@ -481,12 +472,9 @@ local function search_listings_expect_empty(bot, item_name)
     local input_req = protocol.dialog("INPUT", 0, item_name, 0, 0, "", "NEXT")
 
     -- Empty result is dialog_ext (0x30). Item listings use dialog (0x2F).
-    packet = bot:request_dialog_ext(
-        input_req,
-        function(p)
-            return p.type == "normal"
-        end,
-        DIALOG_TIMEOUT_MS)
+    packet = bot:request_dialog_ext(input_req, function(p)
+        return p.type == "normal"
+    end, DIALOG_TIMEOUT_MS)
     dump_dialog(bot, "search_result_empty", packet)
     if packet == nil then
         return nil, "search empty result missing"
@@ -526,12 +514,9 @@ local function open_cancel_list_expect_present(bot)
         return nil, err
     end
 
-    packet = bot:request_dialog(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_CANCEL),
-        function(p)
-            return p.type == "item"
-        end,
-        DIALOG_TIMEOUT_MS)
+    packet = bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_CANCEL), function(p)
+        return p.type == "item"
+    end, DIALOG_TIMEOUT_MS)
     dump_dialog(bot, "cancel_list", packet)
     if packet == nil then
         return nil, "cancel list missing"
@@ -545,12 +530,9 @@ local function open_cancel_list_expect_empty(bot)
         return nil, err
     end
 
-    packet = bot:request_dialog_ext(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_CANCEL),
-        function(p)
-            return p.type == "normal"
-        end,
-        DIALOG_TIMEOUT_MS)
+    packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_CANCEL), function(p)
+        return p.type == "normal"
+    end, DIALOG_TIMEOUT_MS)
     dump_dialog(bot, "cancel_list_empty", packet)
     if packet == nil then
         return nil, "cancel list empty missing"
@@ -584,8 +566,10 @@ local function assert_search_has_item(bot, item_name, expect_found)
         return false, "listing unexpectedly found"
     end
 
-    if (packet.message == nil or packet.message:find(MSG_SEARCH_EMPTY, 1, true) == nil)
-        and message_normalized_contains(packet, MSG_SEARCH_EMPTY) == false then
+    if
+        (packet.message == nil or packet.message:find(MSG_SEARCH_EMPTY, 1, true) == nil)
+        and message_normalized_contains(packet, MSG_SEARCH_EMPTY) == false
+    then
         local msg = packet.message
         close_marketplace_menu(bot)
         return false, "expected empty search, got=" .. tostring(msg)
@@ -610,20 +594,22 @@ end
 local function purchase_selected_item(bot, item_name, purchase_count, listing_count)
     listing_count = listing_count or 1
     local need_count_input = purchase_count ~= nil and purchase_count > 1
-    progress(bot, string.format(
-        "purchase_selected_item item=%s count=%s listings=%d money=%s",
-        item_name,
-        tostring(purchase_count),
-        listing_count,
-        tostring(bot:money())))
+    progress(
+        bot,
+        string.format(
+            "purchase_selected_item item=%s count=%s listings=%d money=%s",
+            item_name,
+            tostring(purchase_count),
+            listing_count,
+            tostring(bot:money())
+        )
+    )
 
     local packet
     if listing_count > 1 then
-        packet = bot:request_dialog(
-            protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
-            function(p)
-                return p.type == "pursuit"
-            end)
+        packet = bot:request_dialog(protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"), function(p)
+            return p.type == "pursuit"
+        end)
         dump_dialog(bot, "purchase_multi_list", packet)
         if packet == nil then
             return nil, "multi listing dialog missing"
@@ -633,33 +619,25 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
             return nil, "multi listing option missing"
         end
         if need_count_input then
-            packet = bot:request_dialog(
-                protocol.dialog("PURSUIT", 0, "", 0, 0, first),
-                function(p)
-                    return p.type == "input"
-                end)
+            packet = bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, first), function(p)
+                return p.type == "input"
+            end)
         else
-            packet = bot:request_dialog(
-                protocol.dialog("PURSUIT", 0, "", 0, 0, first),
-                function(p)
-                    return p.type == "pursuit"
-                end)
+            packet = bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, first), function(p)
+                return p.type == "pursuit"
+            end)
         end
         dump_dialog(bot, "purchase_after_multi", packet)
     elseif need_count_input then
-        packet = bot:request_dialog(
-            protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
-            function(p)
-                return p.type == "input"
-            end)
+        packet = bot:request_dialog(protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"), function(p)
+            return p.type == "input"
+        end)
         dump_dialog(bot, "purchase_after_item", packet)
     else
         -- Weapon listings in this suite always carry a durability warning (pursuit).
-        packet = bot:request_dialog(
-            protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
-            function(p)
-                return p.type == "pursuit"
-            end)
+        packet = bot:request_dialog(protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"), function(p)
+            return p.type == "pursuit"
+        end)
         dump_dialog(bot, "purchase_after_item", packet)
     end
     if packet == nil then
@@ -672,22 +650,19 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
             protocol.dialog("INPUT", 0, tostring(purchase_count), 0, 0, "", "NEXT"),
             function(p)
                 return p.type == "normal"
-            end)
+            end
+        )
         dump_dialog(bot, "purchase_after_count", packet)
         if packet == nil then
             return nil, "after count input missing"
         end
         g_purchase_api_started = true
     elseif packet.type == "pursuit" then
-        progress(bot, string.format(
-            "purchase confirm YES money_cache=%d",
-            bot:money()))
+        progress(bot, string.format("purchase confirm YES money_cache=%d", bot:money()))
         g_purchase_api_started = true
-        packet = bot:request_dialog_ext(
-            protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
-            function(p)
-                return p.type == "normal" and p.message ~= nil
-            end)
+        packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
+            return p.type == "normal" and p.message ~= nil
+        end)
         dump_dialog(bot, "purchase_result", packet)
     end
 
@@ -712,11 +687,11 @@ local function purchase_item_flow(bot, item_name, purchase_count)
         close_marketplace_menu(bot)
         return nil, msg
     end
-    local listing_count = count_search_items(packet, item_name)
-    if listing_count < 1 then
-        listing_count = 1
-    end
-    return purchase_selected_item(bot, item_name, purchase_count, listing_count)
+        local listing_count = count_search_items(packet, item_name)
+        if listing_count < 1 then
+            listing_count = 1
+        end
+        return purchase_selected_item(bot, item_name, purchase_count, listing_count)
 end
 
 local function cancel_item_flow(bot, item_name)
@@ -733,11 +708,9 @@ local function cancel_item_flow(bot, item_name)
     end
 
     progress(bot, "cancel select ITEM name=" .. item_name)
-    packet = bot:request_dialog(
-        protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
-        function(p)
-            return p.type == "pursuit"
-        end)
+    packet = bot:request_dialog(protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"), function(p)
+        return p.type == "pursuit"
+    end)
     dump_dialog(bot, "cancel_confirm", packet)
     if packet == nil then
         return nil, "cancel confirm missing"
@@ -748,11 +721,9 @@ local function cancel_item_flow(bot, item_name)
         if first == nil then
             return nil, "cancel multi option missing"
         end
-        packet = bot:request_dialog(
-            protocol.dialog("PURSUIT", 0, "", 0, 0, first),
-            function(p)
-                return p.type == "pursuit"
-            end)
+        packet = bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, first), function(p)
+            return p.type == "pursuit"
+        end)
         dump_dialog(bot, "cancel_confirm_multi", packet)
         if packet == nil then
             return nil, "cancel confirm after multi missing"
@@ -760,11 +731,9 @@ local function cancel_item_flow(bot, item_name)
     end
 
     progress(bot, "cancel confirm YES")
-    packet = bot:request_dialog_ext(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
-        function(p)
-            return p.type == "normal" and p.message ~= nil
-        end)
+    packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
+        return p.type == "normal" and p.message ~= nil
+    end)
     dump_dialog(bot, "cancel_result", packet)
     if packet == nil then
         return nil, "cancel result missing"
@@ -783,8 +752,10 @@ local function assert_cancel_list_empty(bot)
     if packet == nil then
         return false, tostring(err)
     end
-    if (packet.message == nil or packet.message:find(MSG_CANCEL_EMPTY, 1, true) == nil)
-        and message_normalized_contains(packet, MSG_CANCEL_EMPTY) == false then
+    if
+        (packet.message == nil or packet.message:find(MSG_CANCEL_EMPTY, 1, true) == nil)
+        and message_normalized_contains(packet, MSG_CANCEL_EMPTY) == false
+    then
         local msg = packet.message
         close_marketplace_menu(bot)
         return false, "expected empty cancel list, got=" .. tostring(msg)
@@ -817,11 +788,15 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
         if packet.ch_money ~= nil and packet.ch_money < pay_amount then
             observed_deduct = true
             observed_money = packet.ch_money
-            progress(bot, string.format(
-                "P2: update_internal during delay money=%d level=%s cache=%d",
-                packet.ch_money,
-                tostring(packet.level),
-                bot:money()))
+            progress(
+                bot,
+                string.format(
+                    "P2: update_internal during delay money=%d level=%s cache=%d",
+                    packet.ch_money,
+                    tostring(packet.level),
+                    bot:money()
+                )
+            )
         end
     end)
 
@@ -839,10 +814,7 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
         return false, nil
     end
 
-    progress(bot, string.format(
-        "P2: purchase API started, observing delay pay=%d cache=%d",
-        pay_amount,
-        bot:money()))
+    progress(bot, string.format("P2: purchase API started, observing delay pay=%d cache=%d", pay_amount, bot:money()))
 
     waited = 0
     while observed_deduct == false and g_purchase_done == false do
@@ -855,15 +827,19 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
 
     ctx:unhook("update_internal")
 
-    progress(bot, string.format(
-        "P2: money probe done ok=%s observed=%s cache=%d purchase_done=%s last_update=%s/%s waited=%d",
-        tostring(observed_deduct),
-        tostring(observed_money),
-        bot:money(),
-        tostring(g_purchase_done),
-        tostring(last_update_level),
-        tostring(last_update_money),
-        waited))
+    progress(
+        bot,
+        string.format(
+            "P2: money probe done ok=%s observed=%s cache=%d purchase_done=%s last_update=%s/%s waited=%d",
+            tostring(observed_deduct),
+            tostring(observed_money),
+            bot:money(),
+            tostring(g_purchase_done),
+            tostring(last_update_level),
+            tostring(last_update_money),
+            waited
+        )
+    )
 
     return observed_deduct, observed_money
 end
@@ -874,13 +850,9 @@ local function probe_item_locked(bot, item_name)
     if slot == nil or slot == 0xFF then
         return false
     end
-    local packet = bot:request(
-        resp.message,
-        protocol.item_drop(slot + 1, false),
-        function(p)
-            return p.text ~= nil and p.text:find(MSG_ITEM_LOCKED, 1, true) ~= nil
-        end,
-        LOCK_PROBE_MS)
+    local packet = bot:request(resp.message, protocol.item_drop(slot + 1, false), function(p)
+        return p.text ~= nil and p.text:find(MSG_ITEM_LOCKED, 1, true) ~= nil
+    end, LOCK_PROBE_MS)
     return packet ~= nil and packet ~= false
 end
 
@@ -901,16 +873,12 @@ local function check_listing_locked(seller, item_name, locked_money)
     if display <= locked_money then
         return false, string.format("no usable money to probe display=%d locked=%d", display, locked_money)
     end
-    local packet = seller:request(
-        resp.update_internal,
-        protocol.item_drop_money(display),
-        function(p)
-            return p.ch_money == locked_money
-        end,
-        LOCK_PROBE_MS)
+    local packet = seller:request(resp.update_internal, protocol.item_drop_money(display), function(p)
+        return p.ch_money == locked_money
+    end, LOCK_PROBE_MS)
     if packet == nil or packet == false then
-        return false, string.format("locked fee was droppable display=%d now=%d locked=%d",
-            display, seller:money(), locked_money)
+        return false,
+            string.format("locked fee was droppable display=%d now=%d locked=%d", display, seller:money(), locked_money)
     end
     return true, nil
 end
@@ -934,17 +902,17 @@ local function wait_item_unlocked(ctx, bot, item_name, first_wait_ms)
     for attempt = 1, RESTORE_POLL_COUNT do
         local slot = bot:item_slot(item_name)
         if slot == nil or slot == 0xFF then
-            return false, "item missing while waiting for unlock"
-        end
+        return false, "item missing while waiting for unlock"
+    end
         local packet = bot:request(
             resp.item_remove,
             protocol.item_drop(slot + 1, false),
             function(p)
                 return p.index == slot
-            end,
+    end
             LOCK_PROBE_MS)
         if packet ~= nil and packet ~= false then
-            return true, nil
+    return true, nil
         end
         progress(bot, string.format("unlock not settled yet attempt=%d", attempt))
         ctx:sleep(RESTORE_POLL_MS)
@@ -957,8 +925,8 @@ local function wait_item_deducted(ctx, bot, item_name, expected_money, first_wai
     ctx:sleep(first_wait_ms)
     for attempt = 1, RESTORE_POLL_COUNT do
         if bot:has_item_by_name(item_name) == false and bot:money() == expected_money then
-            return true, nil
-        end
+        return true, nil
+    end
         progress(bot, string.format("deduct not settled yet attempt=%d has_item=%s money=%d expected=%d",
             attempt, tostring(bot:has_item_by_name(item_name)), bot:money(), expected_money))
         ctx:sleep(RESTORE_POLL_MS)
@@ -987,7 +955,7 @@ local function wait_escrow_returned(ctx, bot, spec)
     for attempt = 1, RESTORE_POLL_COUNT do
         if script_step.run_script(bot, "test/integration", "verify_items", "ESCROW_RETURNED", spec) then
             return true
-        end
+    end)
         progress(bot, string.format("escrow not returned yet attempt=%d", attempt))
         ctx:sleep(RESTORE_POLL_MS)
     end
@@ -999,15 +967,14 @@ local function combine_sources(bot)
     for _, name in ipairs(RECIPE_SOURCES) do
         table.insert(slots, bot:item_slot(name))
     end
-    local packet = bot:request(
-        resp.message,
-        protocol.item_combine(slots),
-        function(p)
-            return p.text ~= nil
-                and (p.text:find(MSG_MIX_SUCCESS, 1, true) ~= nil
-                    or p.text:find(MSG_MIX_FAILED, 1, true) ~= nil
-                    or p.text:find(MSG_INVENTORY_OVERFLOW, 1, true) ~= nil)
-        end)
+    local packet = bot:request(resp.message, protocol.item_combine(slots), function(p)
+        return p.text ~= nil
+            and (
+                p.text:find(MSG_MIX_SUCCESS, 1, true) ~= nil
+                or p.text:find(MSG_MIX_FAILED, 1, true) ~= nil
+                or p.text:find(MSG_INVENTORY_OVERFLOW, 1, true) ~= nil
+            )
+    end)
     if packet == nil or packet == false then
         return nil
     end
@@ -1054,7 +1021,7 @@ local function wait_storage_title(ctx, bot, title, first_wait_ms)
     for attempt = 1, RESTORE_POLL_COUNT do
         local titles, err = storage_titles(ctx, bot)
         if titles ~= nil and count_storage_title(titles, title) > 0 then
-            return true, nil
+        return true, nil
         end
         progress(bot, string.format("storage entry not arrived yet attempt=%d title=%s err=%s",
             attempt, title, tostring(err)))
@@ -1083,7 +1050,7 @@ local function wait_held_request(ctx, bot, first_wait_ms, min_count)
         local count = held_request_count(ctx, bot)
         if count ~= nil and count >= min_count then
             return true
-        end
+    end)
         progress(bot, string.format("held request not arrived yet attempt=%d count=%s", attempt, tostring(count)))
         ctx:sleep(RESTORE_POLL_MS)
     end
@@ -1156,13 +1123,9 @@ local function logout_during_delay_scenario(label, fault, listing_created)
         else
             ok, settle_err = wait_item_unlocked(ctx, a, WEAPON_ITEM, RESTORE_FIRST_WAIT_MS)
             if ok then
-                local packet = a:request(
-                    resp.update_internal,
-                    protocol.item_drop_money(fee),
-                    function(p)
-                        return p.ch_money == 0
-                    end,
-                    LOCK_PROBE_MS)
+                local packet = a:request(resp.update_internal, protocol.item_drop_money(fee), function(p)
+                    return p.ch_money == 0
+                end, LOCK_PROBE_MS)
                 if packet == nil or packet == false then
                     ok, settle_err = false, string.format("fee not released after relogin money=%d", a:money())
                 end
@@ -1195,8 +1158,8 @@ local function logout_during_delay_scenario(label, fault, listing_created)
     end
 end
 
-test_suite {
-    name      = "Marketplace Test",
+test_suite({
+    name = "Marketplace Test",
     bot_count = 2,
 
     on_initialize = function(ctx)
@@ -1205,12 +1168,9 @@ test_suite {
         -- HTTP faults and holds are server-wide and outlive an aborted run.
         cleanup_bot(ctx:bot(0))
         cleanup_bot(ctx:bot(1))
-        local cleared = ctx:bot(0):request(
-            resp.message,
-            protocol.chat(false, "/거래소초기화"),
-            function(p)
-                return p.text ~= nil and p.text:find(MSG_MARKET_CLEAR, 1, true) ~= nil
-            end)
+        local cleared = ctx:bot(0):request(resp.message, protocol.chat(false, "/거래소초기화"), function(p)
+            return p.text ~= nil and p.text:find(MSG_MARKET_CLEAR, 1, true) ~= nil
+        end)
         if cleared == false or cleared == nil or cleared.text:find(MSG_MARKET_CLEAR_FAIL, 1, true) ~= nil then
             progress(ctx:bot(0), "FAILED: precondition clear listings " .. tostring(cleared and cleared.text))
             error("precondition failed: clear listings")
@@ -1454,13 +1414,9 @@ test_suite {
             local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE, {
                 before_confirm = function(bot)
                     local slot = bot:item_slot(WEAPON_ITEM)
-                    local packet = bot:request(
-                        resp.item_remove,
-                        protocol.item_drop(slot + 1, false),
-                        function(p)
-                            return p.index == slot
-                        end,
-                        LOCK_PROBE_MS)
+                    local packet = bot:request(resp.item_remove, protocol.item_drop(slot + 1, false), function(p)
+                        return p.index == slot
+                    end, LOCK_PROBE_MS)
                     if packet == nil or packet == false then
                         return false, "drop before confirm was refused"
                     end
@@ -1510,13 +1466,9 @@ test_suite {
                 before_confirm = function(bot)
                     local weapon_slot = bot:item_slot(WEAPON_ITEM)
                     local other_slot = bot:item_slot(BUNDLE_ITEM)
-                    bot:request(
-                        resp.item_update,
-                        protocol.swap("ITEM", weapon_slot + 1, other_slot + 1),
-                        function(p)
-                            return p.index == other_slot
-                        end,
-                        LOCK_PROBE_MS)
+                    bot:request(resp.item_update, protocol.swap("ITEM", weapon_slot + 1, other_slot + 1), function(p)
+                        return p.index == other_slot
+                    end, LOCK_PROBE_MS)
                     if bot:item_slot(WEAPON_ITEM) ~= other_slot then
                         return false, "swap before confirm did not happen"
                     end
@@ -1595,7 +1547,8 @@ test_suite {
                             progress(seller, "FAILED: " .. g_lock_err)
                             return false
                         end
-                        g_lock_ok, g_lock_err = check_listing_locked(seller, WEAPON_ITEM, listing_fee(1, WEAPON_LIST_PRICE))
+                        g_lock_ok, g_lock_err =
+                            check_listing_locked(seller, WEAPON_ITEM, listing_fee(1, WEAPON_LIST_PRICE))
                         if g_lock_ok and g_list_msg ~= nil then
                             g_lock_ok, g_lock_err = false, "list finished before the lock was probed"
                         end
@@ -1622,8 +1575,15 @@ test_suite {
                 return false
             end
             if a:has_item_by_name(WEAPON_ITEM) == false or a:money() ~= fee then
-                progress(a, string.format("FAILED: escrow display changed has_item=%s money=%d expected=%d",
-                    tostring(a:has_item_by_name(WEAPON_ITEM)), a:money(), fee))
+                progress(
+                    a,
+                    string.format(
+                        "FAILED: escrow display changed has_item=%s money=%d expected=%d",
+                        tostring(a:has_item_by_name(WEAPON_ITEM)),
+                        a:money(),
+                        fee
+                    )
+                )
                 return false
             end
 
@@ -1660,13 +1620,9 @@ test_suite {
                 return false
             end
 
-            local packet = a:request(
-                resp.update_internal,
-                protocol.item_drop_money(fee),
-                function(p)
-                    return p.ch_money == 0
-                end,
-                LOCK_PROBE_MS)
+            local packet = a:request(resp.update_internal, protocol.item_drop_money(fee), function(p)
+                return p.ch_money == 0
+            end, LOCK_PROBE_MS)
             if packet == nil or packet == false then
                 progress(a, string.format("FAILED: fee not released money=%d", a:money()))
                 return false
@@ -1723,7 +1679,8 @@ test_suite {
                             progress(bot, "FAILED: " .. g_lock_err)
                             return false
                         end
-                        g_lock_ok, g_lock_err = check_listing_locked(seller, WEAPON_ITEM, listing_fee(1, WEAPON_LIST_PRICE))
+                        g_lock_ok, g_lock_err =
+                            check_listing_locked(seller, WEAPON_ITEM, listing_fee(1, WEAPON_LIST_PRICE))
                         if g_lock_ok and g_list_msg ~= nil then
                             g_lock_ok, g_lock_err = false, "list finished before the lock was probed"
                         end
@@ -1825,7 +1782,7 @@ test_suite {
                 end
                 progress(a, string.format("fee not released yet attempt=%d", attempt))
                 ctx:sleep(RESTORE_POLL_MS)
-            end
+            end)
             if released == false then
                 progress(a, "FAILED: the fee held without an item was never refunded")
                 return false
@@ -1885,11 +1842,15 @@ test_suite {
                         local ok, observed_money = wait_money_deducted_during_delay(ctx, bot, g_pay_amount)
                         g_money_ok = ok == true
                         if g_money_ok == false then
-                            progress(bot, string.format(
-                                "P2: no update_internal deduction observed (observed=%s cache=%d pay=%d)",
-                                tostring(observed_money),
-                                bot:money(),
-                                g_pay_amount))
+                            progress(
+                                bot,
+                                string.format(
+                                    "P2: no update_internal deduction observed (observed=%s cache=%d pay=%d)",
+                                    tostring(observed_money),
+                                    bot:money(),
+                                    g_pay_amount
+                                )
+                            )
                         end
                         return g_money_ok
                     end,
@@ -1907,17 +1868,21 @@ test_suite {
                 return false
             end
             if g_money_ok == false then
-                progress(b, string.format(
-                    "FAILED: money not deducted during delay cache=%d pay=%d",
-                    b:money(),
-                    g_pay_amount))
+                progress(
+                    b,
+                    string.format("FAILED: money not deducted during delay cache=%d pay=%d", b:money(), g_pay_amount)
+                )
                 return false
             end
 
-            progress(b, string.format(
-                "P2: verify after purchase cache=%d expected<=%d",
-                b:money(),
-                g_pay_amount - WEAPON_LIST_PRICE))
+            progress(
+                b,
+                string.format(
+                    "P2: verify after purchase cache=%d expected<=%d",
+                    b:money(),
+                    g_pay_amount - WEAPON_LIST_PRICE
+                )
+            )
 
             ctx:sleep(MQ_WAIT_MS)
             receive_storage(b, STORAGE_PURCHASE_TITLE)
@@ -1989,12 +1954,16 @@ test_suite {
             local purchase_ok = g_purchase_msg ~= nil and g_purchase_msg:find(MSG_PURCHASE_OK, 1, true) ~= nil
             local cancel_ok = g_cancel_msg ~= nil and g_cancel_msg:find(MSG_CANCEL_OK, 1, true) ~= nil
             if purchase_ok == cancel_ok then
-                progress(a, string.format(
-                    "FAILED: expected exactly one winner purchase=%s cancel=%s p=%s c=%s",
-                    tostring(purchase_ok),
-                    tostring(cancel_ok),
-                    tostring(g_purchase_msg),
-                    tostring(g_cancel_msg)))
+                progress(
+                    a,
+                    string.format(
+                        "FAILED: expected exactly one winner purchase=%s cancel=%s p=%s c=%s",
+                        tostring(purchase_ok),
+                        tostring(cancel_ok),
+                        tostring(g_purchase_msg),
+                        tostring(g_cancel_msg)
+                    )
+                )
                 return false
             end
 
@@ -2064,8 +2033,10 @@ test_suite {
                 progress(b, "FAILED: " .. tostring(titles_err))
                 return false
             end
-            if count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
-                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
+            if
+                count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1
+            then
                 progress(b, string.format("FAILED: late purchase granted storage=[%s]", table.concat(titles, "|")))
                 return false
             end
@@ -2202,8 +2173,10 @@ test_suite {
                 progress(b, "FAILED: " .. tostring(titles_err))
                 return false
             end
-            if count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 1
-                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 0 then
+            if
+                count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 1
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 0
+            then
                 progress(b, string.format("FAILED: committed purchase storage=[%s]", table.concat(titles, "|")))
                 return false
             end
@@ -2286,8 +2259,10 @@ test_suite {
                 progress(b, "FAILED: " .. tostring(titles_err))
                 return false
             end
-            if count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
-                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
+            if
+                count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1
+            then
                 progress(b, string.format("FAILED: refund storage=[%s]", table.concat(titles, "|")))
                 return false
             end
@@ -2335,14 +2310,26 @@ test_suite {
 
             local cost = "money=" .. EXCHANGE_COST
             local overflow = BUNDLE_CAPACITY - BUNDLE_PREP_COUNT + 9
-            local ok, detail = script_step.run_script(a, "test/integration", "exchange_items", "X1",
-                cost, string.format("%s=%d", BUNDLE_ITEM, overflow), "LACK_CAPACITY")
+            local ok, detail = script_step.run_script(
+                a,
+                "test/integration",
+                "exchange_items",
+                "X1",
+                cost,
+                string.format("%s=%d", BUNDLE_ITEM, overflow),
+                "LACK_CAPACITY"
+            )
             if ok == false then
                 progress(a, "FAILED: X1 " .. tostring(detail))
                 return false
             end
-            ok, detail = script_step.run_script(a, "test/integration", "verify_items", "X1_KEPT",
-                string.format("%s=0,money=%d", BUNDLE_ITEM, EXCHANGE_COST))
+            ok, detail = script_step.run_script(
+                a,
+                "test/integration",
+                "verify_items",
+                "X1_KEPT",
+                string.format("%s=0,money=%d", BUNDLE_ITEM, EXCHANGE_COST)
+            )
             if ok == false then
                 progress(a, "FAILED: X1 cost or reward changed " .. tostring(detail))
                 return false
@@ -2350,14 +2337,26 @@ test_suite {
             progress(a, "X1 PASSED")
 
             local fit = BUNDLE_CAPACITY - BUNDLE_PREP_COUNT
-            ok, detail = script_step.run_script(a, "test/integration", "exchange_items", "X2",
-                cost, string.format("%s=%d", BUNDLE_ITEM, fit), "OK")
+            ok, detail = script_step.run_script(
+                a,
+                "test/integration",
+                "exchange_items",
+                "X2",
+                cost,
+                string.format("%s=%d", BUNDLE_ITEM, fit),
+                "OK"
+            )
             if ok == false then
                 progress(a, "FAILED: X2 " .. tostring(detail))
                 return false
             end
-            ok, detail = script_step.run_script(a, "test/integration", "verify_items", "X2_GRANTED",
-                string.format("%s=%d,money=0", BUNDLE_ITEM, fit))
+            ok, detail = script_step.run_script(
+                a,
+                "test/integration",
+                "verify_items",
+                "X2_GRANTED",
+                string.format("%s=%d,money=0", BUNDLE_ITEM, fit)
+            )
             if ok == false then
                 progress(a, "FAILED: X2 reward not granted in full " .. tostring(detail))
                 return false
@@ -2394,8 +2393,19 @@ test_suite {
                 progress(a, "FAILED: C1 combine not refused msg=" .. tostring(text))
                 return false
             end
-            local ok, detail = script_step.run_script(a, "test/integration", "verify_items", "C1_KEPT",
-                string.format("%s=1,%s=1,%s=0,%s=0", RECIPE_SOURCES[1], RECIPE_SOURCES[2], RECIPE_SUCCESS, RECIPE_FAILED))
+            local ok, detail = script_step.run_script(
+                a,
+                "test/integration",
+                "verify_items",
+                "C1_KEPT",
+                string.format(
+                    "%s=1,%s=1,%s=0,%s=0",
+                    RECIPE_SOURCES[1],
+                    RECIPE_SOURCES[2],
+                    RECIPE_SUCCESS,
+                    RECIPE_FAILED
+                )
+            )
             if ok == false then
                 progress(a, "FAILED: C1 materials or results changed " .. tostring(detail))
                 return false
@@ -2439,14 +2449,21 @@ test_suite {
                 progress(a, "FAILED: C2 combine refused msg=" .. tostring(text))
                 return false
             end
-            local ok, detail = script_step.run_script(a, "test/integration", "verify_items", "C2_GRANTED",
-                string.format("%s=0,%s=0,%s=1,%s=0", RECIPE_SOURCES[1], RECIPE_SOURCES[2], made, other))
+            local ok, detail = script_step.run_script(
+                a,
+                "test/integration",
+                "verify_items",
+                "C2_GRANTED",
+                string.format("%s=0,%s=0,%s=1,%s=0", RECIPE_SOURCES[1], RECIPE_SOURCES[2], made, other)
+            )
             if ok == false then
                 progress(a, "FAILED: C2 result not granted " .. tostring(detail))
                 return false
             end
 
-            if wait_escrow_returned(ctx, a, string.format("%s=%d,%s=%d", made, RECIPE_CAPACITY, other, count)) == false then
+            if
+                wait_escrow_returned(ctx, a, string.format("%s=%d,%s=%d", made, RECIPE_CAPACITY, other, count)) == false
+            then
                 progress(a, "FAILED: escrow not returned after C2")
                 return false
             end
@@ -2455,4 +2472,4 @@ test_suite {
             return true
         end,
     },
-}
+})

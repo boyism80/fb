@@ -1,30 +1,30 @@
-local resp        = require("integration.response")
-local protocol    = require("integration.protocol")
+local resp = require("integration.response")
+local protocol = require("integration.protocol")
 local script_step = require("integration.lib.script_step")
 local quest_dialog = require("integration.lib.quest_dialog")
 
-local BEAST      = "백호"
-local HEART_MAP  = 2041
-local THRONE_X   = 20
-local THRONE_Y   = 8
+local BEAST = "백호"
+local HEART_MAP = 2041
+local THRONE_X = 20
+local THRONE_Y = 8
 local MESSAGE_WAIT_MS = 15000
 
-local MSG_PREPARED   = "공성준비 완료"
-local MSG_STARTED    = "공성전을 시작했습니다"
-local MSG_ENDED      = "공성전 종료: " .. BEAST
-local MSG_NOT_ENDED  = "진행 중인 공성전이 없습니다."
+local MSG_PREPARED = "공성준비 완료"
+local MSG_STARTED = "공성전을 시작했습니다"
+local MSG_ENDED = "공성전 종료: " .. BEAST
+local MSG_NOT_ENDED = "진행 중인 공성전이 없습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
 
-local GATE_NPC      = "백호성문지기"
-local GATE_OPTION   = BEAST .. "성 입장"
-local ENTRY_MONEY   = 300000
-local MSG_FEE_ASK   = "입장료를 내고서라도"
-local MSG_FEE_PAY   = "입장료 20만전"
-local MSG_CHANGED   = "성의 상황이 바뀌었습니다."
-local ENTRANCE_FEE  = 200000
-local FEE_TO_OWNER  = 150000
-local MONEY_PATH    = "/clan/money"
-local ABORT_PATH    = "/clan/money/abort"
+local GATE_NPC = "백호성문지기"
+local GATE_OPTION = BEAST .. "성 입장"
+local ENTRY_MONEY = 300000
+local MSG_FEE_ASK = "입장료를 내고서라도"
+local MSG_FEE_PAY = "입장료 20만전"
+local MSG_CHANGED = "성의 상황이 바뀌었습니다."
+local ENTRANCE_FEE = 200000
+local FEE_TO_OWNER = 150000
+local MONEY_PATH = "/clan/money"
+local ABORT_PATH = "/clan/money/abort"
 local ENTER_WAIT_MS = 20000
 local SETTLE_WAIT_MS = 45000
 
@@ -57,8 +57,8 @@ local function command(bot, text, expected)
     return packet ~= nil and packet ~= false
 end
 
-test_suite {
-    name      = "Siege Test",
+test_suite({
+    name = "Siege Test",
     bot_count = 2,
 
     on_scenario_finished = function(ctx)
@@ -82,14 +82,26 @@ test_suite {
                 return fail("could not end the sieges left by other suites")
             end
 
-            if command(a, "/공성준비", MSG_PREPARED) == false or command(b, "/공성준비", MSG_PREPARED) == false then
+            if
+                command(a, "/공성준비", MSG_PREPARED) == false
+                or command(b, "/공성준비", MSG_PREPARED) == false
+            then
                 return fail("could not prepare the clans")
             end
 
             if command(a, "/공성시작 " .. BEAST, MSG_STARTED) == false then
                 return fail("could not start the siege")
             end
-            if run_step(a, "move_to_map", "siege_a_throne", tostring(HEART_MAP), tostring(THRONE_X), tostring(THRONE_Y)) == false then
+            if
+                run_step(
+                    a,
+                    "move_to_map",
+                    "siege_a_throne",
+                    tostring(HEART_MAP),
+                    tostring(THRONE_X),
+                    tostring(THRONE_Y)
+                ) == false
+            then
                 return fail("could not move A to the throne")
             end
 
@@ -120,10 +132,28 @@ test_suite {
             if command(a, "/공성시작 " .. BEAST, MSG_STARTED) == false then
                 return fail("could not restart the siege")
             end
-            if run_step(a, "move_to_map", "siege_a_aside", tostring(HEART_MAP), tostring(THRONE_X + 2), tostring(THRONE_Y + 2)) == false then
+            if
+                run_step(
+                    a,
+                    "move_to_map",
+                    "siege_a_aside",
+                    tostring(HEART_MAP),
+                    tostring(THRONE_X + 2),
+                    tostring(THRONE_Y + 2)
+                ) == false
+            then
                 return fail("could not move A off the throne")
             end
-            if run_step(b, "move_to_map", "siege_b_throne", tostring(HEART_MAP), tostring(THRONE_X), tostring(THRONE_Y)) == false then
+            if
+                run_step(
+                    b,
+                    "move_to_map",
+                    "siege_b_throne",
+                    tostring(HEART_MAP),
+                    tostring(THRONE_X),
+                    tostring(THRONE_Y)
+                ) == false
+            then
                 return fail("could not move B to the throne")
             end
 
@@ -175,7 +205,8 @@ test_suite {
             if quest_dialog.open_pursuit(a, GATE_NPC, GATE_OPTION, quest_dialog.contains(MSG_FEE_ASK)) == nil then
                 return fail("the gate keeper did not offer the paid entry")
             end
-            local ask = a:request_dialog(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"), quest_dialog.contains(MSG_FEE_PAY))
+            local ask =
+                a:request_dialog(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"), quest_dialog.contains(MSG_FEE_PAY))
             if ask == nil or ask == false then
                 return fail("the gate keeper did not ask for the entrance fee")
             end
@@ -184,7 +215,10 @@ test_suite {
                 return fail("could not start the siege during the gate dialog")
             end
 
-            local packet = a:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, "입장합니다."), quest_dialog.contains(MSG_CHANGED))
+            local packet = a:request_dialog_ext(
+                protocol.dialog("PURSUIT", 0, "", 0, 0, "입장합니다."),
+                quest_dialog.contains(MSG_CHANGED)
+            )
             quest_dialog.remove_npc(a)
             if packet == nil then
                 return fail("the gate keeper let A in although the siege started")
@@ -223,7 +257,8 @@ test_suite {
             if quest_dialog.open_pursuit(a, GATE_NPC, GATE_OPTION, quest_dialog.contains(MSG_FEE_ASK)) == nil then
                 return fail("the gate keeper did not offer the paid entry")
             end
-            local ask = a:request_dialog(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"), quest_dialog.contains(MSG_FEE_PAY))
+            local ask =
+                a:request_dialog(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"), quest_dialog.contains(MSG_FEE_PAY))
             if ask == nil or ask == false then
                 return fail("the gate keeper did not ask for the entrance fee")
             end
@@ -244,7 +279,13 @@ test_suite {
                 return fail("A was kept out while the clan share of the fee was unknown")
             end
             if a:money() ~= ENTRY_MONEY - ENTRANCE_FEE then
-                return fail(string.format("A's money after entering: money=%d expected=%d", a:money(), ENTRY_MONEY - ENTRANCE_FEE))
+                return fail(
+                    string.format(
+                        "A's money after entering: money=%d expected=%d",
+                        a:money(),
+                        ENTRY_MONEY - ENTRANCE_FEE
+                    )
+                )
             end
 
             local expected = clan_before + FEE_TO_OWNER
@@ -256,15 +297,24 @@ test_suite {
                 current = clan_money(b, "fee_clan_wait")
             end
             if current ~= expected then
-                return fail(string.format("B's clan money after the resend: money=%s expected=%d", tostring(current), expected))
+                return fail(
+                    string.format("B's clan money after the resend: money=%s expected=%d", tostring(current), expected)
+                )
             end
 
             ctx:sleep(3000)
             current = clan_money(b, "fee_clan_after")
             if current ~= expected or a:money() ~= ENTRY_MONEY - ENTRANCE_FEE then
-                return fail(string.format("the fee settled twice: clan=%s expected=%d money=%d", tostring(current), expected, a:money()))
+                return fail(
+                    string.format(
+                        "the fee settled twice: clan=%s expected=%d money=%d",
+                        tostring(current),
+                        expected,
+                        a:money()
+                    )
+                )
             end
             return true
         end,
     },
-}
+})

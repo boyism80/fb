@@ -100,7 +100,9 @@ namespace Http.Reepository.Cache
         public async Task<(RedisCacheLookupStatus Status, TModel Value)> LookupAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)
+            {
                 return (RedisCacheLookupStatus.Miss, null);
+            }
 
             var result = (RedisResult[])await redis.EvalAsync(
                 LookupValueScript,
@@ -108,7 +110,9 @@ namespace Http.Reepository.Cache
 
             var status = (RedisCacheLookupStatus)int.Parse(result[0].ToString());
             if (status != RedisCacheLookupStatus.Hit)
+            {
                 return (status, null);
+            }
 
             return (status, JsonConvert.DeserializeObject<TModel>(result[1].ToString()));
         }
@@ -116,7 +120,9 @@ namespace Http.Reepository.Cache
         public async Task<bool> WriteBackAsync(Service.Redis redis, RedisKey redisKey, TModel value)
         {
             if (redis == null)
+            {
                 return false;
+            }
 
             var result = await redis.EvalAsync(UpdateValueExpiryScript, new
             {
@@ -132,7 +138,9 @@ namespace Http.Reepository.Cache
         public async Task SetAsync(Service.Redis redis, RedisKey redisKey, TModel value)
         {
             if (redis == null)
+            {
                 return;
+            }
 
             await redis.Connection.TransactAsync(cmd =>
             {
@@ -145,7 +153,9 @@ namespace Http.Reepository.Cache
         public async Task RemovePendingWriteBackAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)
+            {
                 return;
+            }
 
             await redis.EvalAsync(
                 RemovePendingWriteBackScript,
@@ -158,7 +168,9 @@ namespace Http.Reepository.Cache
         {
             var result = new List<(RedisKey, string)>();
             if (redis == null || redisKeys.Count == 0)
+            {
                 return result;
+            }
 
             var keys = new RedisKey[redisKeys.Count + 1];
             for (var i = 0; i < redisKeys.Count; i++)
@@ -174,11 +186,15 @@ namespace Http.Reepository.Cache
             {
                 var elem = elements[i];
                 if (elem.IsNull)
+                {
                     continue;
+                }
 
                 var jsonStr = elem.ToString();
                 if (string.IsNullOrEmpty(jsonStr))
+                {
                     continue;
+                }
 
                 result.Add((redisKeys[i], jsonStr));
             }

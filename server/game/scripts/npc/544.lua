@@ -15,7 +15,8 @@ return {
         end
 
         ::NPC_544_0000::
-        local button = me:dialog(npc, "오! 이 종이쪽지는 제친구로부터의 편지군요! 이친구 아직도 잘 살아있나요? 이 친구가 없었다면 전 이미 이세상에 없을겁니다.", { prev = false, next = true })
+        local button = me:dialog(npc, "오! 이 종이쪽지는 제친구로부터의 편지군요! 이친구 아직도 잘 살아있나요? 이 친구가 없었다면 전 이미 이세상에 없을겁니다.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -42,7 +43,8 @@ return {
         end
 
         ::NPC_544_0003::
-        button = me:dialog(npc, "천상복숭아라. 저희집에 가보로 내려오는 물건이지만 목숨보다 귀하진 않습니다. 기꺼이 드리도록 하죠. 좋은곳에 써주세요~", { prev = true, next = true })
+        button = me:dialog(npc, "천상복숭아라. 저희집에 가보로 내려오는 물건이지만 목숨보다 귀하진 않습니다. 기꺼이 드리도록 하죠. 좋은곳에 써주세요~",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

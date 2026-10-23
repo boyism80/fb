@@ -2,7 +2,7 @@
 
 return {
     on_activated = function(me, item)
-    	local maps = {'주막왈숙네', '왈숙언니네', '왈숙이모네'}
+        local maps = { '주막왈숙네', '왈숙언니네', '왈숙이모네' }
 
         math.randomseed(seed())
         local i = math.random(1, #maps)

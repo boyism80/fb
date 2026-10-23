@@ -159,7 +159,9 @@ namespace Runner.ViewModel
                     foreach (var part in value.Split(new[] { ',', ' ', ';' }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (ushort.TryParse(part.Trim(), out var v))
+                        {
                             parsed.Add(v);
+                        }
                     }
                 }
                 Model.ClientVersions = parsed.Count > 0 ? parsed : new List<ushort> { 550, 565, 651 };
@@ -361,10 +363,14 @@ namespace Runner.ViewModel
             get
             {
                 if (IsRunning)
+                {
                     return false;
+                }
 
                 if (IsConverting)
+                {
                     return false;
+                }
 
                 return true;
             }
@@ -398,9 +404,13 @@ namespace Runner.ViewModel
             get
             {
                 if (SelectedProcess != null)
+                {
                     return SelectedProcess.Output;
+                }
                 else
+                {
                     return BuildLog;
+                }
             }
         }
         public bool IsEnableBuild => BuildProcess == null;
@@ -417,9 +427,13 @@ namespace Runner.ViewModel
             get
             {
                 if (IsRunning)
+                {
                     return "종료";
+                }
                 else
+                {
                     return "시작";
+                }
             }
         }
 
@@ -438,9 +452,13 @@ namespace Runner.ViewModel
             get
             {
                 if (LastBuildDate == DateTime.MinValue)
+                {
                     return string.Empty;
+                }
                 else
+                {
                     return $"마지막 빌드 : {LastBuildDate:yyyy-MM-dd HH:mm:ss}";
+                }
             }
         }
 
@@ -632,7 +650,9 @@ namespace Runner.ViewModel
         public async Task EnsureInfrastructureCheckedAsync()
         {
             if (_infrastructureLoaded)
+            {
                 return;
+            }
 
             _infrastructureLoaded = true;
             await RefreshInfrastructureAsync();
@@ -641,7 +661,9 @@ namespace Runner.ViewModel
         public async Task RefreshInfrastructureAsync()
         {
             if (IsCheckingInfrastructure)
+            {
                 return;
+            }
 
             _infraCheckCts?.Cancel();
             _infraCheckCts = new CancellationTokenSource();
@@ -672,7 +694,9 @@ namespace Runner.ViewModel
                 {
                     InfrastructureChecks.Clear();
                     foreach (var item in items)
+                    {
                         InfrastructureChecks.Add(item);
+                    }
                 });
             }
             catch (OperationCanceledException)
@@ -689,7 +713,9 @@ namespace Runner.ViewModel
             }
 
             if (result != null)
+            {
                 Application.Current.Dispatcher.Invoke(() => UpdateInfrastructureSummary(result));
+            }
         }
 
         private List<InfraCheckItem> BuildInfrastructureCheckItems()
@@ -768,22 +794,34 @@ namespace Runner.ViewModel
                 .ToList();
 
             if (failures.Count > 0)
+            {
                 return string.Join(Environment.NewLine, failures);
+            }
 
             if (IsRunning)
+            {
                 return "서버가 실행 중입니다. 서버를 종료한 후 다시 시도하세요.";
+            }
 
             if (IsConverting)
+            {
                 return "패치 또는 빌드가 진행 중입니다.";
+            }
 
             if (IsCheckingInfrastructure)
+            {
                 return "인프라 확인이 진행 중입니다.";
+            }
 
             if (_lastInfraResult == null)
+            {
                 return "인프라 확인이 아직 완료되지 않았습니다.";
+            }
 
             if (_lastInfraResult.CanBuild == false)
+            {
                 return $"필수 인프라 {_lastInfraResult.RequiredPassed}/{_lastInfraResult.RequiredTotal} 항목만 통과했습니다.";
+            }
 
             return "빌드를 시작할 수 없습니다.";
         }
@@ -796,7 +834,9 @@ namespace Runner.ViewModel
         private async Task OnBuildAsync()
         {
             if (IsConverting || IsCheckingInfrastructure)
+            {
                 return;
+            }
 
             if (IsRunning)
             {
@@ -828,7 +868,9 @@ namespace Runner.ViewModel
                 MessageBoxResult.No);
 
             if (confirm != MessageBoxResult.Yes)
+            {
                 return;
+            }
 
             if (string.IsNullOrWhiteSpace(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
             {
@@ -896,10 +938,14 @@ namespace Runner.ViewModel
             try
             {
                 if (IsRunning == false)
+                {
                     throw new InvalidOperationException("서버가 실행 중이 아닙니다.");
+                }
 
                 if (AdminToolPort == 0)
+                {
                     throw new InvalidOperationException("Admin Tool 서버 포트가 설정되지 않았습니다.");
+                }
 
                 Process.Start(new ProcessStartInfo
                 {
@@ -919,7 +965,9 @@ namespace Runner.ViewModel
             {
                 var path = Path.Combine(WorkingDirectory, "resources", "maps", "maps.zip");
                 if (File.Exists(path) == false)
+                {
                     throw new InvalidOperationException($"{path} 파일을 찾을 수 없습니다.");
+                }
 
                 var output = Path.Combine(WorkingDirectory, "build", "dist", "maps");
                 System.IO.Compression.ZipFile.ExtractToDirectory(path, output, true);
@@ -943,7 +991,9 @@ namespace Runner.ViewModel
                 {
                     var path = Path.Combine(WorkingDirectory, "resources", "meta", fileName);
                     if (File.Exists(path) == false)
+                    {
                         throw new InvalidOperationException($"{path} 파일을 찾을 수 없습니다.");
+                    }
 
                     File.Copy(path, Path.Combine(distDir, fileName), overwrite: true);
                 }
@@ -959,10 +1009,14 @@ namespace Runner.ViewModel
         private void OnUpdateResourceFile(object obj)
         {
             if (IsConverting)
+            {
                 return;
+            }
 
             if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
+            {
                 return;
+            }
 
             var p = new Process
             {
@@ -986,14 +1040,18 @@ namespace Runner.ViewModel
             p.OutputDataReceived += (sender, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
 
                 BuildLog += (e.Data + Environment.NewLine);
             };
             p.ErrorDataReceived += (sender, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
 
                 BuildLog += (e.Data + Environment.NewLine);
             };
@@ -1014,7 +1072,9 @@ namespace Runner.ViewModel
             {
                 var path = Path.Combine(WorkingDirectory, "game", "scripts");
                 if (Directory.Exists(path) == false)
+                {
                     throw new InvalidOperationException($"{path} 경로를 찾을 수 없습니다.");
+                }
 
                 var output = Path.Combine(WorkingDirectory, "build", "dist", "scripts");
                 CopyFolderContents(path, output);
@@ -1071,61 +1131,99 @@ namespace Runner.ViewModel
                 }
 
                 if (Login.Count == 0)
+                {
                     throw new InvalidOperationException("로그인 서버를 하나 이상 추가해야 합니다.");
+                }
 
                 if (Game.Count == 0)
+                {
                     throw new InvalidOperationException("게임 서버를 하나 이상 추가해야 합니다.");
+                }
 
                 if (InternalPort == 0)
+                {
                     throw new InvalidOperationException("Internal 서버 포트가 설정되지 않았습니다.");
+                }
 
                 if (MarketplacePort == 0)
+                {
                     throw new InvalidOperationException("Marketplace 서버 포트가 설정되지 않았습니다.");
+                }
 
                 if (MatchmakingPort == 0)
+                {
                     throw new InvalidOperationException("Matchmaking 서버 포트가 설정되지 않았습니다.");
+                }
 
                 if (AdminToolPort == 0)
+                {
                     throw new InvalidOperationException("Admin Tool 서버 포트가 설정되지 않았습니다.");
+                }
 
                 if (string.IsNullOrEmpty(ExternalIP))
+                {
                     throw new InvalidOperationException("IP가 설정되지 않았습니다.");
+                }
 
                 if (string.IsNullOrEmpty(RabbitMq.IP))
+                {
                     throw new InvalidOperationException("RabbitMQ IP가 설정되지 않았습니다.");
+                }
 
                 if (RabbitMq.Port == 0)
+                {
                     throw new InvalidOperationException("RabbitMQ Port가 설정되지 않았습니다.");
+                }
 
                 if (string.IsNullOrEmpty(RabbitMq.ID))
+                {
                     throw new InvalidOperationException("RabbitMQ 아이디가 설정되지 않았습니다.");
+                }
 
                 if (string.IsNullOrEmpty(RabbitMq.PW))
+                {
                     throw new InvalidOperationException("RabbitMQ 암호가 설정되지 않았습니다.");
+                }
 
                 if (BaseHP == 0)
+                {
                     throw new InvalidOperationException("기본 체력은 1 이상이어야 합니다.");
+                }
 
                 if (BaseMP == 0)
+                {
                     throw new InvalidOperationException("기본 마력은 1 이상이어야 합니다.");
+                }
 
                 if (MinIdLength == 0)
+                {
                     throw new InvalidOperationException("최소 아이디 길이는 1 이상이어야 합니다.");
+                }
 
                 if (MaxIdLength < MinIdLength)
+                {
                     throw new InvalidOperationException("최대 아이디 길이는 최소 아이디 길이보다 길어야 합니다.");
+                }
 
                 if (MinPwLength == 0)
+                {
                     throw new InvalidOperationException("최소 암호 길이는 1 이상이어야 합니다.");
+                }
 
                 if (MaxPwLength < MinPwLength)
+                {
                     throw new InvalidOperationException("최대 암호 길이는 최소 암호 길이보다 길어야 합니다.");
+                }
 
                 if (SaveInterval == 0)
+                {
                     throw new InvalidOperationException("서버 저장 주기는 1초 이상이어야 합니다.");
+                }
 
                 if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
+                {
                     throw new InvalidOperationException("Working directory가 설정되지 않았거나 존재하지 않습니다.");
+                }
 
                 EnsureDistJsonDirectory(
                     Path.Combine(WorkingDirectory, "build", "dist", "json"),
@@ -1140,44 +1238,66 @@ namespace Runner.ViewModel
                 foreach (var mysql in MySQL)
                 {
                     if (Ping(mysql.IP, mysql.Port) == false)
+                    {
                         throw new InvalidOperationException($"MySQL {mysql.IP}:{mysql.Port}가 열리지 않았습니다.");
+                    }
                 }
 
                 foreach (var redis in Redis)
                 {
                     if (Ping(redis.IP, redis.Port) == false)
+                    {
                         throw new InvalidOperationException($"Redis {redis.IP}:{redis.Port}가 열리지 않았습니다.");
+                    }
                 }
 
                 if (Ping(RabbitMq.IP, RabbitMq.Port) == false)
+                {
                     throw new InvalidOperationException($"RabbitMQ {RabbitMq.IP}:{RabbitMq.Port}가 열리지 않았습니다.");
+                }
 
                 var confDir = Path.Combine([WorkingDirectory, "build", "dist", "config"]);
                 if (Directory.Exists(confDir) == false)
+                {
                     Directory.CreateDirectory(confDir);
+                }
 
                 var loginDir = Path.Combine(confDir, "login");
                 var gatewayDir = Path.Combine(confDir, "gateway");
                 var gameDir = Path.Combine(confDir, "game");
 
                 if (Directory.Exists(loginDir) == false)
+                {
                     Directory.CreateDirectory(loginDir);
+                }
+
                 if (Directory.Exists(gatewayDir) == false)
+                {
                     Directory.CreateDirectory(gatewayDir);
+                }
+
                 if (Directory.Exists(gameDir) == false)
+                {
                     Directory.CreateDirectory(gameDir);
+                }
 
                 for (int i = 0; i < Login.Count; i++)
                 {
                     var setting = Login[i];
                     if (string.IsNullOrEmpty(setting.Name))
+                    {
                         throw new InvalidOperationException($"{i + 1}번째 로그인 서버의 이름이 설정되지 않았습니다.");
+                    }
 
                     if (string.IsNullOrEmpty(setting.Desc))
+                    {
                         throw new InvalidOperationException($"{i + 1}번째 로그인 서버의 설명이 설정되지 않았습니다.");
+                    }
 
                     if (setting.Port == 0)
+                    {
                         throw new InvalidOperationException($"{i + 1}번째 로그인 서버의 포트가 설정되지 않았습니다.");
+                    }
 
                     var conf = new JObject();
                     conf["id"] = i;
@@ -1246,16 +1366,23 @@ namespace Runner.ViewModel
                 {
                     var setting = Game[i];
                     if (setting.Port == 0)
+                    {
                         throw new InvalidOperationException($"{i + 1}번째 게임 서버의 포트가 설정되지 않았습니다.");
+                    }
 
                     var role = setting.Role == "cross" ? "cross" : "home";
                     var conf = new JObject();
                     conf["id"] = setting.ID;
                     conf["name"] = role == "cross" ? $"game-cross-{setting.ID}" : $"game-{setting.ID}";
                     if (role == "cross")
+                    {
                         conf["world"] = JValue.CreateNull();
+                    }
                     else
+                    {
                         conf["world"] = 1;
+                    }
+
                     conf["delay"] = 5;
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
@@ -1286,9 +1413,14 @@ namespace Runner.ViewModel
                         port = Login[0].Port
                     });
                     if (role == "cross")
+                    {
                         conf["logins"] = new JObject { ["1"] = loginConf };
+                    }
                     else
+                    {
                         conf["login"] = loginConf;
+                    }
+
                     var gameAmqp = new JObject();
                     gameAmqp["internal"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
                     gameAmqp["log"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
@@ -1310,7 +1442,9 @@ namespace Runner.ViewModel
                 }
 
                 if (Gateway.Port == 0)
+                {
                     throw new InvalidOperationException("게이트웨이 서버의 포트가 설정되지 않았습니다.");
+                }
 
                 var gatewayConf = new JObject();
                 gatewayConf["id"] = 0;
@@ -1380,13 +1514,18 @@ namespace Runner.ViewModel
                 var world1Redis = new JObject();
                 var redisDataArray = new JArray();
                 foreach (var r in Redis)
+                {
                     redisDataArray.Add(JObject.FromObject(new { Host = r.IP, Port = r.Port }));
+                }
+
                 if (Redis.Count > 0)
                 {
                     var first = Redis[0];
                     world1Redis["global"] = JObject.FromObject(new { Host = first.IP, Port = first.Port });
                     if (redisDataArray.Count > 0)
+                    {
                         world1Redis["data"] = redisDataArray;
+                    }
                 }
                 internalRedisWorlds["1"] = world1Redis;
                 internalRedis["worlds"] = internalRedisWorlds;
@@ -1420,13 +1559,18 @@ namespace Runner.ViewModel
                 var wbWorld1Redis = new JObject();
                 var wbRedisDataArray = new JArray();
                 foreach (var r in Redis)
+                {
                     wbRedisDataArray.Add(JObject.FromObject(new { Host = r.IP, Port = r.Port }));
+                }
+
                 if (Redis.Count > 0)
                 {
                     var first = Redis[0];
                     wbWorld1Redis["global"] = JObject.FromObject(new { Host = first.IP, Port = first.Port });
                     if (wbRedisDataArray.Count > 0)
+                    {
                         wbWorld1Redis["data"] = wbRedisDataArray;
+                    }
                 }
                 wbRedisWorlds["1"] = wbWorld1Redis;
                 wbRedis["worlds"] = wbRedisWorlds;
@@ -1607,7 +1751,9 @@ namespace Runner.ViewModel
             };
 
             if (Path.Exists(process.StartInfo.FileName) == false)
+            {
                 throw new InvalidOperationException($"{Path.GetFileName(process.StartInfo.FileName)} 파일이 없습니다. 빌드가 되어있는지 확인하세요.");
+            }
 
             var sp = new ServerProcess
             {
@@ -1618,20 +1764,28 @@ namespace Runner.ViewModel
             process.OutputDataReceived += (sender, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
 
                 sp.Output += (e.Data + Environment.NewLine);
                 if (SelectedProcess == sp)
+                {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
+                }
             };
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
 
                 sp.Output += (e.Data + Environment.NewLine);
                 if (SelectedProcess == sp)
+                {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
+                }
             };
             process.Start();
             process.BeginOutputReadLine();
@@ -1667,7 +1821,9 @@ namespace Runner.ViewModel
             };
 
             if (Path.Exists(process.StartInfo.FileName) == false)
+            {
                 throw new InvalidOperationException($"{Path.GetFileName(process.StartInfo.FileName)} 파일이 없습니다. 빌드가 되어있는지 확인하세요.");
+            }
 
             var sp = new ServerProcess
             {
@@ -1678,20 +1834,28 @@ namespace Runner.ViewModel
             process.OutputDataReceived += (sender, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
 
                 sp.Output += (e.Data + Environment.NewLine);
                 if (SelectedProcess == sp)
+                {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
+                }
             };
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
 
                 sp.Output += (e.Data + Environment.NewLine);
                 if (SelectedProcess == sp)
+                {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
+                }
             };
             process.Start();
             process.BeginOutputReadLine();
@@ -1752,7 +1916,9 @@ namespace Runner.ViewModel
         private static async Task ExtractZipAsync(string zipPath, string destDir, Action<int, int, string> progressCallback)
         {
             if (!Directory.Exists(destDir))
+            {
                 Directory.CreateDirectory(destDir);
+            }
 
             var destRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(destDir)) + Path.DirectorySeparatorChar;
 
@@ -1773,11 +1939,15 @@ namespace Runner.ViewModel
                 {
                     var destinationPath = Path.GetFullPath(Path.Combine(destRoot, entry.FullName));
                     if (destinationPath.StartsWith(destRoot, StringComparison.OrdinalIgnoreCase) == false)
+                    {
                         throw new InvalidDataException($"ZIP entry escapes the destination directory: {entry.FullName}");
+                    }
 
                     var destinationDir = Path.GetDirectoryName(destinationPath);
                     if (string.IsNullOrEmpty(destinationDir) == false)
+                    {
                         Directory.CreateDirectory(destinationDir);
+                    }
 
                     using (var entryStream = entry.Open())
                     using (var fileStream = new FileStream(
@@ -1800,7 +1970,9 @@ namespace Runner.ViewModel
         private static void ParallelDirectoryCopy(string sourceDir, string destDir)
         {
             if (!Directory.Exists(sourceDir))
+            {
                 return;
+            }
 
             foreach (var dirPath in Directory.EnumerateDirectories(sourceDir, "*", SearchOption.AllDirectories))
             {
@@ -1825,10 +1997,14 @@ namespace Runner.ViewModel
         private void OnPatch(object obj)
         {
             if (IsConverting)
+            {
                 return;
+            }
 
             if (string.IsNullOrEmpty(WorkingDirectory) || !Directory.Exists(WorkingDirectory))
+            {
                 return;
+            }
 
             IsConverting = true;
             BuildLog = string.Empty;
@@ -1843,7 +2019,9 @@ namespace Runner.ViewModel
                 try
                 {
                     if (!Directory.Exists(buildDir))
+                    {
                         Directory.CreateDirectory(buildDir);
+                    }
 
                     if (Directory.Exists(distDir))
                     {
@@ -1860,11 +2038,15 @@ namespace Runner.ViewModel
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             if (currentMb < 0)
+                            {
                                 BuildLog += $"Download completed: {zipPath}{Environment.NewLine}";
+                            }
                             else
+                            {
                                 BuildLog += totalMb > 0
                                     ? $"Downloading: {currentMb} MB / {totalMb} MB{Environment.NewLine}"
                                     : $"Downloading: {currentMb} MB{Environment.NewLine}";
+                            }
                         });
                     });
 
@@ -1882,7 +2064,9 @@ namespace Runner.ViewModel
                     }
 
                     if (string.Equals(expectedHash, actualHash, StringComparison.OrdinalIgnoreCase) == false)
+                    {
                         throw new InvalidDataException($"dist.zip SHA-256 mismatch: expected {expectedHash}, actual {actualHash}");
+                    }
 
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
@@ -1907,7 +2091,9 @@ namespace Runner.ViewModel
                         var now = Environment.TickCount64;
                         var isComplete = count >= total;
                         if (!isComplete && now - lastExtractProgressTicks < extractProgressIntervalMs)
+                        {
                             return;
+                        }
 
                         lastExtractProgressTicks = now;
                         _ = Application.Current.Dispatcher.InvokeAsync(() =>
@@ -1996,7 +2182,9 @@ namespace Runner.ViewModel
                 Multiselect = false
             };
             if (dialog.ShowDialog() == false)
+            {
                 return;
+            }
 
             WorkingDirectory = dialog.FolderName;
         }
@@ -2168,7 +2356,9 @@ namespace Runner.ViewModel
         {
             var mySql = new JObject();
             if (MySQL.Count == 0)
+            {
                 return mySql;
+            }
 
             var globalHost = MySQL[0];
             mySql["unified"] = BuildMySqlConnectionString(globalHost, "fb-unified");
@@ -2180,7 +2370,9 @@ namespace Runner.ViewModel
         {
             var mySql = new JObject();
             if (MySQL.Count == 0)
+            {
                 return mySql;
+            }
 
             mySql["worlds"] = new JObject { [RunnerWorldId] = BuildMySqlWorld(MySQL[0]) };
             return mySql;
@@ -2195,10 +2387,14 @@ namespace Runner.ViewModel
 
             var data = new JArray();
             for (var i = 1; i < MySQL.Count; i++)
+            {
                 data.Add(BuildMySqlConnectionString(MySQL[i], $"fb-1-data-{i - 1}"));
+            }
 
             if (data.Count > 0)
+            {
                 world["data"] = data;
+            }
 
             return world;
         }
@@ -2207,7 +2403,9 @@ namespace Runner.ViewModel
         {
             var mySql = new JObject();
             if (MySQL.Count == 0)
+            {
                 return mySql;
+            }
 
             var globalHost = MySQL[0];
             var world = new JObject

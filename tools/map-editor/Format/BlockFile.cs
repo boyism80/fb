@@ -19,11 +19,15 @@ namespace MapEditor.Format
         {
             var file = new BlockFile();
             if (File.Exists(path) == false)
+            {
                 return file;
+            }
 
             var bytes = File.ReadAllBytes(path);
             if (bytes.Length < 4)
+            {
                 return file;
+            }
 
             var count = BitConverter.ToInt32(bytes, 0);
             for (int i = 0; i < count && 8 + i * 4 <= bytes.Length; i++)
@@ -55,21 +59,29 @@ namespace MapEditor.Format
         public void Add(int x, int y)
         {
             if (_lookup.Add((x, y)))
+            {
                 _cells.Add((x, y));
+            }
         }
 
         public void Remove(int x, int y)
         {
             if (_lookup.Remove((x, y)))
+            {
                 _cells.RemoveAll(c => c.X == x && c.Y == y);
+            }
         }
 
         public void Set(int x, int y, bool blocked)
         {
             if (blocked)
+            {
                 Add(x, y);
+            }
             else
+            {
                 Remove(x, y);
+            }
         }
     }
 }

@@ -89,7 +89,7 @@ local function ranggyuryun_pure_water(me, npc)
     end
 
     if q:step() == 2 then
-        local materials = {['홍옥'] = 3}
+        local materials = { ['홍옥'] = 3 }
         if not me:has_items(materials) then
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', { prev = false, next = false })
             return

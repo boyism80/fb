@@ -2,8 +2,8 @@
 
 return {
     on_click = function(me, npc)
-    ::NPC_402_000::
-        local sel, btn = me:list(npc, "나에게 용무라도 있는가?", {"비약이란게 무엇입니까?", "그냥.. 시간이 남아서.."}, { prev = false })
+        ::NPC_402_000::
+        local sel, btn = me:list(npc, "나에게 용무라도 있는가?", { "비약이란게 무엇입니까?", "그냥.. 시간이 남아서.." }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -12,7 +12,8 @@ return {
         end
 
         if sel == 1 then
-            local button = me:dialog(npc, "비약은.. 말 그대로 비밀의 약품이지. 소문에는 천지인의 패들을 서로 합치는데 비약이 필요하다고 하더군.", { prev = false, next = false })
+            local button = me:dialog(npc, "비약은.. 말 그대로 비밀의 약품이지. 소문에는 천지인의 패들을 서로 합치는데 비약이 필요하다고 하더군.",
+                { prev = false, next = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end

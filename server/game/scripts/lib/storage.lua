@@ -3,11 +3,11 @@ local M = {}
 function M.handle(me, npc)
     local entries = nil
     local current_entry = nil
-    
+
     local function has_attachments(entry)
         return entry.attachments ~= nil and #entry.attachments > 0
     end
-    
+
     local function build_reward_text(entry)
         local lines = {}
         if has_attachments(entry) then
@@ -23,7 +23,7 @@ function M.handle(me, npc)
                     else
                         name = string.format('아이템 ID:%d', id)
                     end
-                    
+
                     if count ~= nil and count >= 2 then
                         table.insert(lines, string.format(' - %s x%d', name, count))
                     else
@@ -36,33 +36,33 @@ function M.handle(me, npc)
                 end
             end
         end
-        
+
         if #lines == 0 then
             return '\n\n보상: 없음'
         end
-        
+
         return '\n\n보상:\n' .. table.concat(lines, '\n')
     end
-    
+
     local function build_detail_message(entry)
         local expire_text = ''
         if entry.expired_date then
             expire_text = '\n만료일: ' .. entry.expired_date
         end
-        
+
         local reward_text = ''
         local status_text = ''
-        
+
         if has_attachments(entry) then
             reward_text = build_reward_text(entry)
             local received_text = entry.received and '수령 완료' or '수령 가능'
             status_text = '\n\n상태: ' .. received_text
         end
-        
+
         return string.format('%s%s%s%s', entry.message, expire_text, reward_text, status_text)
     end
-    
-::STORAGE_LIST::
+
+    ::STORAGE_LIST::
     entries = me:storage_entries()
     if entries == nil or #entries == 0 then
         local button = me:dialog(npc, '보관함에 보관된 항목이 없습니다.', { prev = true, next = true })
@@ -74,12 +74,12 @@ function M.handle(me, npc)
         end
         return true
     end
-    
+
     local entry_list = {}
     for _, entry in ipairs(entries) do
         table.insert(entry_list, entry.title ~= nil and entry.title ~= '' and entry.title or entry.message)
     end
-    
+
     local entry_index, button = me:pursuit(npc, '통합보관함', entry_list)
     if entry_index == nil or button == DIALOG_RESULT.QUIT then
         return true
@@ -89,8 +89,8 @@ function M.handle(me, npc)
     if current_entry == nil then
         return true
     end
-    
-::ENTRY_DETAIL::
+
+    ::ENTRY_DETAIL::
     local detail_header = current_entry.title ~= nil and current_entry.title ~= '' and current_entry.title or '보관함 보상'
     local detail_message = build_detail_message(current_entry)
 
@@ -120,7 +120,7 @@ function M.handle(me, npc)
         goto STORAGE_LIST
     end
 
-::RECEIVE_CONFIRM::
+    ::RECEIVE_CONFIRM::
     local receive_selected, receive_button = me:pursuit(npc, '보상을 수령하시겠습니까?', { '예', '아니오' })
     if receive_button == DIALOG_RESULT.QUIT then
         return true

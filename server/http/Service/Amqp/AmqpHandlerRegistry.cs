@@ -26,7 +26,9 @@ namespace Http.Service.Amqp
         {
             var handlerType = typeof(THandler);
             if (handlerType is not { IsClass: true, IsAbstract: false })
+            {
                 throw new ArgumentException($"{handlerType} must be a concrete class");
+            }
 
             var attr = handlerType.GetCustomAttribute<AmqpHandlerAttribute>()
                        ?? throw new InvalidOperationException($"{handlerType.FullName} is missing [AmqpHandler]");
@@ -58,7 +60,9 @@ namespace Http.Service.Amqp
             for (var current = handlerType; current != null; current = current.BaseType)
             {
                 if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(AmqpHandler<>))
+                {
                     return current.GetGenericArguments()[0];
+                }
             }
 
             return null;

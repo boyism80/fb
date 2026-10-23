@@ -38,14 +38,18 @@ namespace Http.Service
         {
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
+            {
                 return new List<ServerInfo>();
+            }
 
             var expired = DateTimeOffset.UtcNow.Subtract(HeartbeatTtl).ToUnixTimeMilliseconds();
             await redis.Connection.SortedSetRemoveRangeByScoreAsync(HeartBeatKey.Index, double.NegativeInfinity, expired, Exclude.Stop);
 
             var members = await redis.Connection.SortedSetRangeByScoreAsync(HeartBeatKey.Index, expired, double.PositiveInfinity);
             if (members.Length == 0)
+            {
                 return new List<ServerInfo>();
+            }
 
             var keys = members.Select(member => new RedisKey(HeartBeatKey.Prefix + member)).ToArray();
             var values = await redis.Connection.StringGetAsync(keys);
@@ -55,11 +59,15 @@ namespace Http.Service
             {
                 var value = values[i];
                 if (value.IsNull)
+                {
                     continue;
+                }
 
                 var parts = members[i].ToString().Split(':');
                 if (parts.Length != 3)
+                {
                     continue;
+                }
 
                 uint? world;
                 if (parts[0] == "cross")
@@ -77,7 +85,9 @@ namespace Http.Service
 
                 var service = parts[1];
                 if (!byte.TryParse(parts[2], out var id))
+                {
                     continue;
+                }
 
                 try
                 {
@@ -122,7 +132,9 @@ namespace Http.Service
             {
                 var redis = _redisService.GetUnifiedConnection();
                 if (redis == null)
+                {
                     return false;
+                }
 
                 var config = new HostConfig
                 {
@@ -149,7 +161,9 @@ namespace Http.Service
         {
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
+            {
                 return null;
+            }
 
             var key = new HeartBeatKey { World = world, Service = service, Id = id };
             return await redis.Connection.JsonGetAsync<HostConfig>(key.Key);

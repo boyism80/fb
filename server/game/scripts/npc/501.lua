@@ -14,7 +14,8 @@ return {
             return
         end
 
-        local sel, btn = me:list(npc, string.format("%s님. 치열한 전장으로 바로 가고 싶으시다구요?", me:name()), {"네. 보내주세요.", "아니오. 겁나서..."}, { prev = false })
+        local sel, btn = me:list(npc, string.format("%s님. 치열한 전장으로 바로 가고 싶으시다구요?", me:name()),
+            { "네. 보내주세요.", "아니오. 겁나서..." }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

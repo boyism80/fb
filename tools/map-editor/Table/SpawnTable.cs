@@ -165,7 +165,9 @@ namespace MapEditor.Table
         private static bool Reopen(string path, ref XSSFWorkbook book, DateTime written)
         {
             if (File.GetLastWriteTimeUtc(path) == written)
+            {
                 return false;
+            }
 
             book = XlsxFile.Open(path);
             return true;
@@ -174,26 +176,34 @@ namespace MapEditor.Table
         private void ReopenNpc()
         {
             if (Reopen(NpcPath, ref _npcBook, _npcWritten))
+            {
                 _npcSheet = new GroupedSheet(_npcBook, "npc_spawn", 4);
+            }
         }
 
         private void ReopenMob()
         {
             if (Reopen(MobPath, ref _mobBook, _mobWritten))
+            {
                 _mobSheet = new GroupedSheet(_mobBook, "mob_spawn", 7);
+            }
         }
 
         private void ReopenMap()
         {
             if (Reopen(MapPath, ref _mapBook, _mapWritten))
+            {
                 _warpSheet = new GroupedSheet(_mapBook, "warp", 4);
+            }
         }
 
         public static (int X, int Y) ParsePoint(string text)
         {
             var parts = text.Split(',');
             if (parts.Length != 2 || int.TryParse(parts[0].Trim(), out var x) == false || int.TryParse(parts[1].Trim(), out var y) == false)
+            {
                 return (0, 0);
+            }
 
             return (x, y);
         }
@@ -291,7 +301,9 @@ namespace MapEditor.Table
         public void AddMap(int id, string name, string sheetName, int template)
         {
             if (MapNames.Entry(id) != null)
+            {
                 throw new InvalidOperationException($"map {id} is already in map.xlsx");
+            }
 
             ReopenMap();
             var sheet = _mapBook.GetSheet(sheetName) ?? throw new ArgumentException($"sheet {sheetName} not found in map.xlsx");
@@ -310,7 +322,9 @@ namespace MapEditor.Table
                 }
             }
             if (source == null)
+            {
                 throw new ArgumentException($"template map {template} not found in map.xlsx");
+            }
 
             var target = sheet.CreateRow(sheet.LastRowNum + 1);
             for (int c = 0; c < source.LastCellNum; c++)
@@ -344,7 +358,9 @@ namespace MapEditor.Table
                 for (int r = XlsxFile.FirstDataRow; r <= sheet.LastRowNum; r++)
                 {
                     if (XlsxFile.Text(sheet.GetRow(r), 0) == id.ToString())
+                    {
                         return name;
+                    }
                 }
             }
             return null;
@@ -371,11 +387,15 @@ namespace MapEditor.Table
                 {
                     var row = sheet.GetRow(r);
                     if (row == null || keys.Contains(XlsxFile.Text(row, 0)) == false)
+                    {
                         continue;
+                    }
 
                     sheet.RemoveRow(row);
                     if (r < sheet.LastRowNum)
+                    {
                         sheet.ShiftRows(r + 1, sheet.LastRowNum, -1);
+                    }
                 }
             }
             foreach (var id in ids)
@@ -388,7 +408,9 @@ namespace MapEditor.Table
             _npcWritten = XlsxFile.Save(_npcBook, NpcPath);
             _mobWritten = XlsxFile.Save(_mobBook, MobPath);
             foreach (var id in ids)
+            {
                 MapNames.Remove(id);
+            }
         }
 
         public void SaveWarp(int mapId, IEnumerable<WarpEntry> warps)

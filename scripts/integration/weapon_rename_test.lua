@@ -108,7 +108,8 @@ test_suite {
                 return fail(err)
             end
 
-            local answer = bot:request_dialog_ext(protocol.dialog("MENU", 0, "", 1, 0, "", "NEXT"), quest_dialog.contains(MSG_RENAMED))
+            local answer = bot:request_dialog_ext(protocol.dialog("MENU", 0, "", 1, 0, "", "NEXT"),
+                quest_dialog.contains(MSG_RENAMED))
             if answer == nil then
                 return fail("the held weapon was not renamed")
             end

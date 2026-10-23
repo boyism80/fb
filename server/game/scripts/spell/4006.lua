@@ -7,7 +7,7 @@ return {
         local mp = 40
         local sound = 75
         local effect = 10
-        if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:unbuff('절망')
         end
     end,

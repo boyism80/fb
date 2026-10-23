@@ -45,7 +45,9 @@ namespace Internal.Services
             var friends = await FindFriends(world, user, request.Names);
             var lockUids = new SortedSet<uint> { user };
             foreach (var friend in friends)
+            {
                 lockUids.Add(friend.FriendUid);
+            }
 
             while (true)
             {
@@ -55,7 +57,9 @@ namespace Internal.Services
                     var existing = (await _dbContext.Friend.Get(world, user)).ToList();
                     var required = new SortedSet<uint>(lockUids);
                     foreach (var row in existing)
+                    {
                         required.Add(row.FriendUid);
+                    }
 
                     if (!required.SetEquals(lockUids))
                     {
@@ -187,13 +191,20 @@ namespace Internal.Services
             {
                 var toName = await _dbContext.Character.GetName(world, toUid);
                 if (string.IsNullOrEmpty(toName))
+                {
                     continue;
+                }
 
                 var session = await _sessionService.Get(world, toName);
                 if (session == null)
+                {
                     continue;
+                }
+
                 if (session.Host == request.Host && session.World == request.ProcessWorld)
+                {
                     continue;
+                }
 
                 await _rabbitMqService.PublishAsync(new Response.FriendMessage
                 {
@@ -216,13 +227,20 @@ namespace Internal.Services
             foreach (var name in names ?? new List<string>())
             {
                 if (string.IsNullOrWhiteSpace(name))
+                {
                     continue;
+                }
 
                 var friendId = await _dbContext.Character.GetCharacterId(world, name);
                 if (!friendId.HasValue || friendId.Value == user)
+                {
                     continue;
+                }
+
                 if (!seen.Add(friendId.Value))
+                {
                     continue;
+                }
 
                 var canonicalName = await _dbContext.Character.GetName(world, friendId.Value) ?? name;
                 friends.Add(new NamedFriend
@@ -247,11 +265,15 @@ namespace Internal.Services
                 {
                     var peerName = await _dbContext.Character.GetName(world, update.PeerUid);
                     if (string.IsNullOrEmpty(peerName))
+                    {
                         continue;
+                    }
 
                     var peerSession = await _sessionService.Get(world, peerName);
                     if (peerSession == null)
+                    {
                         continue;
+                    }
 
                     await _rabbitMqService.PublishAsync(new Response.FriendRelation
                     {
@@ -273,14 +295,19 @@ namespace Internal.Services
         {
             var locks = new List<RedisDistributedLockHandle>();
             foreach (var uid in uids)
+            {
                 locks.Add(await _distributedLock.Lock(world, Friend.DistributedLockKey(uid)));
+            }
+
             return locks;
         }
 
         private static async Task ReleaseLocks(List<RedisDistributedLockHandle> locks)
         {
             for (var i = locks.Count - 1; i >= 0; i--)
+            {
                 await locks[i].DisposeAsync();
+            }
         }
 
         private static void ReplaceHashEntities(
@@ -294,10 +321,14 @@ namespace Internal.Services
 
             var removed = dst.Keys.Except(src.Keys).Select(k => dst[k]).ToList();
             if (removed.Count > 0)
+            {
                 deleteMany(removed);
+            }
 
             if (request.Length > 0)
+            {
                 setMany(request);
+            }
         }
 
         private static Protocol.FriendEntry ToEntry(Friend friend)

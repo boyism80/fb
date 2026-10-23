@@ -10,7 +10,7 @@ return {
     on_f1_event = function(me)
         local npc = name2npc('낙랑')
 
-    ::F1_MENU::
+        ::F1_MENU::
         local menu = { '통합보관함', '거래소', '매치메이킹' }
         if me:role() >= ROLE.ADMIN then
             table.insert(menu, '아이템 지급')
@@ -65,14 +65,14 @@ return {
             ['불의옥'] = '고대마법서\'하',
             ['물의옥'] = '동문열쇠',
         }
-        local option_names = {'산의옥', '구름옥', '불의옥', '물의옥'}
-        local selected, button = me:dialog(nil, '인간이여.. 여기엔 무슨일로 왔는가..', {'말씀을 들으러 왔습니다.', '제물을 바치러 왔습니다.'})
+        local option_names = { '산의옥', '구름옥', '불의옥', '물의옥' }
+        local selected, button = me:dialog(nil, '인간이여.. 여기엔 무슨일로 왔는가..', { '말씀을 들으러 왔습니다.', '제물을 바치러 왔습니다.' })
         if selected == 1 then
             return
         end
 
         if selected == 2 then
-            selected, button = me:dialog(nil, '허허.. 그래. 무엇을 제물로 바치겠느냐?', {'산의옥', '구름옥', '불의옥', '물의옥'})
+            selected, button = me:dialog(nil, '허허.. 그래. 무엇을 제물로 바치겠느냐?', { '산의옥', '구름옥', '불의옥', '물의옥' })
             if selected == nil then
                 return
             end
@@ -114,7 +114,8 @@ return {
                 me:dialog(nil, '이것은 길림성 서쪽에 있는 태극문의 열쇠다.', { prev = false, next = true })
                 me:dialog(nil, '이 열쇠로 태극문으로 들어가서 마지막 암흑왕의 존재를 물리치고 오너라.', { prev = false, next = true })
             elseif selected == 3 then
-                me:dialog(nil, '내가 그대에게 준 마법서 두권은 오래전에 이 세계가 암흑으로 둘러싸여 있을때 그것을 물리친 마법사가 암흑을 봉인한 위치를 적어놓은 것이다.', { prev = false, next = true })
+                me:dialog(nil, '내가 그대에게 준 마법서 두권은 오래전에 이 세계가 암흑으로 둘러싸여 있을때 그것을 물리친 마법사가 암흑을 봉인한 위치를 적어놓은 것이다.',
+                    { prev = false, next = true })
                 me:dialog(nil, '고대어로 쓰여있어서 읽기가 힘드니, 너에게 이 임무를 준 성현을 찾아가도록 하여라.', { prev = false, next = true })
                 me:dialog(nil, '그리고 언제나 내가 너에게 힘을 주고 있다는 사실을 잊지말도록 하여라.', { prev = false, next = true })
             elseif selected == 4 then

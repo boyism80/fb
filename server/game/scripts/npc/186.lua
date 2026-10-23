@@ -16,7 +16,9 @@ return {
                     return
                 end
                 ::NPC_186_0002::
-                btn = me:dialog(npc, '정말 오랫만에 보는 술이군! 고맙네. 이 술을 다 마셔버리지 않고 가져다 준 정직한 자네에게 선물을 주고 싶군. 요즘은 자네같은 사람도 드물다네. 내 고대금속조각\'음을 하나 주지. 어딘가에 쓸모가 있을게야..', { prev = true, next = true })
+                btn = me:dialog(npc,
+                    '정말 오랫만에 보는 술이군! 고맙네. 이 술을 다 마셔버리지 않고 가져다 준 정직한 자네에게 선물을 주고 싶군. 요즘은 자네같은 사람도 드물다네. 내 고대금속조각\'음을 하나 주지. 어딘가에 쓸모가 있을게야..',
+                    { prev = true, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -32,7 +34,8 @@ return {
                     return
                 end
                 if code == enum.exchange_result.LACK_CAPACITY then
-                    me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', { prev = false, next = false })
+                    me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.',
+                        { prev = false, next = false })
                     return
                 end
                 q:step(4)

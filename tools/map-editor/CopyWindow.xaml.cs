@@ -44,7 +44,9 @@ namespace MapEditor
         {
             _chosen = _options.Where(o => o.Checked).Select(o => o.Kind).ToHashSet();
             if (_chosen.Count > 0)
+            {
                 DialogResult = true;
+            }
         }
     }
 }

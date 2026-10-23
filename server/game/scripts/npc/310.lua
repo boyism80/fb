@@ -28,7 +28,8 @@ local function run_ox_admin(me, ch)
         return me:dialog(ch, '출입구를 닫았습니다.', { prev = false, next = false })
     end
 
-    local raw = me:input(ch, '강제퇴장할 유저의 아이디를 적어주세요.', { top = '퇴장할 대상의 아이디는:', bottom = '입니다.', maxlen = 6, prev = false })
+    local raw = me:input(ch, '강제퇴장할 유저의 아이디를 적어주세요.',
+        { top = '퇴장할 대상의 아이디는:', bottom = '입니다.', maxlen = 6, prev = false })
     if raw == DIALOG_RESULT.QUIT then
         return nil
     end

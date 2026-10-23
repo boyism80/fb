@@ -2,7 +2,7 @@
 
 return {
     on_activated = function(me, item)
-        me:hp(math.min(me:hp()+300, me:maxhp()))
+        me:hp(math.min(me:hp() + 300, me:maxhp()))
     end,
 
     -- on_deactivated = function(me, item)

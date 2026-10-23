@@ -11,7 +11,7 @@ local CASES = {
         cast_type = "NORMAL",
         pre = function(caster, _, state)
             state.caster_pos = caster:position()
-            caster:spawn_monsters_relative("다람쥐", {{0, 1}, {-1, 2}, {0, 2}, {1, 2}})
+            caster:spawn_monsters_relative("다람쥐", { { 0, 1 }, { -1, 2 }, { 0, 2 }, { 1, 2 } })
             caster:set_current_hp_mp(1000, 1000)
             local hp = caster:hp()
             local mp = caster:mp()
@@ -34,7 +34,8 @@ local CASES = {
         cast_type = "NORMAL",
         pre = function(caster, _, state)
             state.caster_pos = caster:position()
-            caster:spawn_monsters_relative("다람쥐", {{0, 1}, {-1, 2}, {0, 2}, {1, 2}, {-2, 3}, {-1, 3}, {0, 3}, {1, 3}, {2, 3}})
+            caster:spawn_monsters_relative("다람쥐",
+                { { 0, 1 }, { -1, 2 }, { 0, 2 }, { 1, 2 }, { -2, 3 }, { -1, 3 }, { 0, 3 }, { 1, 3 }, { 2, 3 } })
             caster:set_current_hp_mp(1000, 1000)
             local hp = caster:hp()
             local mp = caster:mp()
@@ -57,14 +58,14 @@ local CASES = {
         cast_type = "NORMAL",
         pre = function(caster, _, state)
             state.caster_pos = caster:position()
-            caster:spawn_monsters_relative("다람쥐", {{0, 1}, {0, 2}, {0, 3}, {0, 4}})
+            caster:spawn_monsters_relative("다람쥐", { { 0, 1 }, { 0, 2 }, { 0, 3 }, { 0, 4 } })
             caster:set_current_hp_mp(1000, 1000)
             local hp = caster:hp()
             local mp = caster:mp()
             local pos = caster:position()
             state.expected_hp = hp - math.floor(hp / 2)
             state.expected_mp = mp - 180
-            state.expected_position = {pos[1], pos[2] + 5}
+            state.expected_position = { pos[1], pos[2] + 5 }
         end,
         condition = function(packet, caster, _, state)
             if packet.ch_hp ~= state.expected_hp then return nil end
@@ -85,7 +86,7 @@ local CASES = {
         cast_type = "NORMAL",
         pre = function(caster, _, state)
             state.caster_pos = caster:position()
-            caster:spawn_monsters_relative("다람쥐", {{0, 4}})
+            caster:spawn_monsters_relative("다람쥐", { { 0, 4 } })
             caster:set_current_hp_mp(1000, 1000)
             local hp = caster:hp()
             local mp = caster:mp()
@@ -108,14 +109,14 @@ local CASES = {
         cast_type = "NORMAL",
         pre = function(caster, _, state)
             state.caster_pos = caster:position()
-            caster:spawn_monsters_relative("다람쥐", {{0, 4}})
+            caster:spawn_monsters_relative("다람쥐", { { 0, 4 } })
             caster:set_current_hp_mp(1000, 1000)
             local hp = caster:hp()
             local mp = caster:mp()
             local pos = caster:position()
             state.expected_hp = hp - math.floor(hp * 2 / 3)
             state.expected_mp = mp - 140
-            state.expected_position = {pos[1], pos[2] + 3}
+            state.expected_position = { pos[1], pos[2] + 3 }
         end,
         condition = function(packet, caster, _, state)
             if packet.ch_hp ~= state.expected_hp then return nil end

@@ -18,7 +18,8 @@ return {
             goto NPC_384_0001
         end
         ::NPC_384_0003::
-        btn = me:dialog(npc, "그래... 어디 반성하고 있길 바라겠네. 그런데...뭐라고? 다시 배우고 싶다니 지금 나와 장난하자는 겐가? 혜천대사님이 화가날 모습을 생각하니 으으...", { prev = true, next = true })
+        btn = me:dialog(npc, "그래... 어디 반성하고 있길 바라겠네. 그런데...뭐라고? 다시 배우고 싶다니 지금 나와 장난하자는 겐가? 혜천대사님이 화가날 모습을 생각하니 으으...",
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -26,7 +27,8 @@ return {
             goto NPC_384_0002
         end
         ::NPC_384_0004::
-        btn = me:dialog(npc, "알았네. 그럼 내 혜천대사님께 잘 일러둘테니, 자네의 그 무지함을 반성하는 의미에서 소림사에 시주를 받아야겠네.", { prev = true, next = true })
+        btn = me:dialog(npc, "알았네. 그럼 내 혜천대사님께 잘 일러둘테니, 자네의 그 무지함을 반성하는 의미에서 소림사에 시주를 받아야겠네.",
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -45,7 +47,8 @@ return {
 
         if sel == 1 then
             ::NPC_384_0006::
-            btn = me:dialog(npc, "그래. 백열장을 다시 배우고 싶으면 그 댓가로 10만전을 시주해야 한다네. 그리고 자네가 수련했던 백열장의 모든 기억은 사라진다네.", { prev = false, next = true })
+            btn = me:dialog(npc, "그래. 백열장을 다시 배우고 싶으면 그 댓가로 10만전을 시주해야 한다네. 그리고 자네가 수련했던 백열장의 모든 기억은 사라진다네.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -75,7 +78,8 @@ return {
 
         if sel == 2 then
             ::NPC_384_0008::
-            btn = me:dialog(npc, "그래. 선풍각을 다시 배우고 싶으면 그 댓가로 20만전을 시주해야 한다네. 그리고 자네가 수련했던 선풍각의 모든 기억은 사라진다네.", { prev = false, next = true })
+            btn = me:dialog(npc, "그래. 선풍각을 다시 배우고 싶으면 그 댓가로 20만전을 시주해야 한다네. 그리고 자네가 수련했던 선풍각의 모든 기억은 사라진다네.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

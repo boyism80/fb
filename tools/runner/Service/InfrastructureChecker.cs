@@ -92,7 +92,9 @@ namespace Runner.Service
                 });
 
                 if (workdirItem.Status == InfraCheckStatus.Fail)
+                {
                     return BuildResult(items);
+                }
             }
 
             if (byId.ContainsKey("git"))
@@ -120,7 +122,9 @@ namespace Runner.Service
                 });
 
                 if (byId["git"].Status == InfraCheckStatus.Fail)
+                {
                     return BuildResult(items);
+                }
             }
 
             if (byId.ContainsKey("submodules"))
@@ -292,7 +296,9 @@ namespace Runner.Service
                         var sdk = line.Trim().Split(' ')[0];
                         var core = sdk.Split('-')[0];
                         if (Version.TryParse(core, out var version) == false || version.Major < 8)
+                        {
                             continue;
+                        }
 
                         if (bestVersion == null || version > bestVersion)
                         {
@@ -364,7 +370,9 @@ namespace Runner.Service
                     {
                         var full = Path.Combine(workdir, relative);
                         if (File.Exists(full) == false && Directory.Exists(full) == false)
+                        {
                             missing.Add(label);
+                        }
                     }
 
                     var boostLibDir = Path.Combine(workdir, @"dependency\lib\boost");

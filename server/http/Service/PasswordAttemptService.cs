@@ -71,7 +71,9 @@ return 1";
             var keys = Keys(world, uid, ip);
             var redis = _redisService.GetShardConnection(world, keys[1].ToString());
             if (redis == null)
+            {
                 return PasswordAttempt.Allowed;
+            }
 
             var result = await redis.EvalAsync(BeginScript, keys,
             [
@@ -95,7 +97,9 @@ return 1";
             var keys = Keys(world, uid, ip);
             var redis = _redisService.GetShardConnection(world, keys[1].ToString());
             if (redis == null)
+            {
                 return;
+            }
 
             await redis.EvalAsync(SucceedScript, keys,
             [

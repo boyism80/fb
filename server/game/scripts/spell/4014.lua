@@ -18,7 +18,7 @@ return {
         if error ~= nil then
             return me:message(error)
         end
-        if not spell.cast(me, you, sp, {mp=300, sound=8, effect=11, no_assert=true}) then
+        if not spell.cast(me, you, sp, { mp = 300, sound = 8, effect = 11, no_assert = true }) then
             return
         end
 

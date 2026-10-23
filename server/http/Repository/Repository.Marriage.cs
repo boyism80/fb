@@ -22,7 +22,9 @@ namespace Http.Reepository
         public async Task<IReadOnlyDictionary<uint, DateTime>> GetCreatedDates(uint world, IReadOnlyList<uint> characterIds)
         {
             if (characterIds == null || characterIds.Count == 0)
+            {
                 return new Dictionary<uint, DateTime>();
+            }
 
             var created = new Dictionary<uint, DateTime>();
             foreach (var (connection, idBatch) in _dbContext.GetShardConnections(world, characterIds.Distinct()))
@@ -37,7 +39,9 @@ namespace Http.Reepository
                         WHERE `character_id` IN ({string.Join(",", idBatch)});
                         """);
                     foreach (var row in rows)
+                    {
                         created[row.CharacterId] = row.CreatedDate;
+                    }
                 }
             }
 

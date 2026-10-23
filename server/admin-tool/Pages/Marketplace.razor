@@ -102,7 +102,9 @@
                                 <td>@GetItemName(listing.ItemModel)</td>
                                 <td style="text-align:right;">@listing.RemainingCount</td>
                                 <td style="text-align:right;">@listing.Price.ToString("N0")</td>
-                                <td><span class="dash-status-chip">@FormatStatus(listing.Status)</span></td>
+                                <td>
+                                    <span class="dash-status-chip">@FormatStatus(listing.Status)</span>
+                                </td>
                                 <td class="meta">@DateTime.SpecifyKind(listing.ExpireDate, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                                 <td class="meta">@DateTime.SpecifyKind(listing.CreatedDate, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                             </tr>
@@ -148,6 +150,7 @@
 </div>
 
 @code {
+
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
@@ -253,4 +256,5 @@
         4 => "등록 중단",
         _ => status.ToString()
     };
+
 }

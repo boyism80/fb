@@ -22,7 +22,8 @@ return {
             return
         end
 
-        local sel, list_btn = me:list(mob, "네놈은 뭍사람인데 어찌하여 용왕님의 편을 드는 것이냐?", { "아니면 반란군인 네놈 편을 들란 말이냐?" }, { prev = false })
+        local sel, list_btn = me:list(mob, "네놈은 뭍사람인데 어찌하여 용왕님의 편을 드는 것이냐?", { "아니면 반란군인 네놈 편을 들란 말이냐?" },
+            { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end

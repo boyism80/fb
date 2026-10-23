@@ -49,7 +49,9 @@ namespace MapEditor.Mcp
                 }
 
                 if (write && _editor.McpAllowWrite == false)
+                {
                     throw new McpException("Write tools are disabled. Enable 'MCP 쓰기 허용' in the editor.");
+                }
 
                 // Only McpException messages reach the client; the editor is local so the message is safe to share.
                 try
@@ -94,7 +96,9 @@ namespace MapEditor.Mcp
             var task = await OnUi("open_map", false, () =>
             {
                 if (_editor.CanOpen == false)
+                {
                     throw new InvalidOperationException("The editor is loading or no client version is enabled (set Client paths in appsettings.{MAPEDITOR_ENVIRONMENT}.json).");
+                }
 
                 var entry = _editor.Maps.FirstOrDefault(m => m.Id == id) ?? throw new InvalidOperationException($"map {id} not found");
                 return _editor.OpenMap(entry);
@@ -133,7 +137,9 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (doc.Map.Contains(x, y) == false)
+                {
                     throw new ArgumentException("out of map");
+                }
 
                 var cell = doc.Get(x, y);
                 var sobj = _editor.Assets?.Objects.Find(cell.Object);
@@ -193,7 +199,9 @@ namespace MapEditor.Mcp
                     {
                         var cell = doc.Get(x, y);
                         if ((tile == null || cell.Tile == tile) && (@object == null || cell.Object == @object))
+                        {
                             result.Add(new[] { x, y });
+                        }
                     }
                 }
                 return Json(result);
@@ -210,11 +218,20 @@ namespace MapEditor.Mcp
                 {
                     var value = doc.Get(c.X, c.Y);
                     if (c.Tile != null)
+                    {
                         value.Tile = (ushort)c.Tile.Value;
+                    }
+
                     if (c.Object != null)
+                    {
                         value.Object = (ushort)c.Object.Value;
+                    }
+
                     if (c.Block != null)
+                    {
                         value.Block = c.Block.Value;
+                    }
+
                     return (c.X, c.Y, value);
                 }).ToList());
                 return Json(new { changed });
@@ -233,13 +250,22 @@ namespace MapEditor.Mcp
                     {
                         var cell = doc.Get(c.X, c.Y);
                         if (layer == "tile")
+                        {
                             cell.Tile = (ushort)value;
+                        }
                         else if (layer == "object")
+                        {
                             cell.Object = (ushort)value;
+                        }
                         else if (layer == "block")
+                        {
                             cell.Block = value != 0;
+                        }
                         else
+                        {
                             throw new ArgumentException("layer must be tile, object or block");
+                        }
+
                         return (c.X, c.Y, cell);
                     }).ToList();
                 return Json(new { changed = doc.Apply(cells) });
@@ -305,7 +331,10 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (doc.CanRedo == false)
+                {
                     throw new InvalidOperationException("nothing to redo");
+                }
+
                 doc.Redo();
                 return "ok";
             });
@@ -319,7 +348,9 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (layer != "tile" && layer != "object" && layer != "block")
+                {
                     throw new ArgumentException("layer must be tile, object or block");
+                }
 
                 var right = width > 0 ? x + width - 1 : doc.Width - 1;
                 var bottom = height > 0 ? y + height - 1 : doc.Height - 1;
@@ -328,13 +359,22 @@ namespace MapEditor.Mcp
                 {
                     var cell = doc.Get(cx, cy);
                     if (layer == "tile" && cell.Tile == from)
+                    {
                         cell.Tile = (ushort)to;
+                    }
                     else if (layer == "object" && cell.Object == from)
+                    {
                         cell.Object = (ushort)to;
+                    }
                     else if (layer == "block" && cell.Block == (from != 0))
+                    {
                         cell.Block = to != 0;
+                    }
                     else
+                    {
                         continue;
+                    }
+
                     cells.Add((cx, cy, cell));
                 }
                 return Json(new { changed = cells.Count == 0 ? 0 : doc.Apply(cells) });
@@ -353,13 +393,21 @@ namespace MapEditor.Mcp
                 foreach (var layer in layers.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
                     if (layer == "tile")
+                    {
                         kinds.Add(CopyKind.Tile);
+                    }
                     else if (layer == "object")
+                    {
                         kinds.Add(CopyKind.Object);
+                    }
                     else if (layer == "block")
+                    {
                         kinds.Add(CopyKind.Block);
+                    }
                     else
+                    {
                         throw new ArgumentException($"unknown layer '{layer}'");
+                    }
                 }
 
                 var right = x + width - 1;
@@ -369,11 +417,19 @@ namespace MapEditor.Mcp
                 var warps = spawns ? doc.Warps.Where(w => Inside(w.X, w.Y)).ToList() : new List<WarpEntry>();
                 var mobs = spawns ? doc.Mobs.Where(m => Inside(m.Left, m.Top) && Inside(m.Right, m.Bottom)).ToList() : new List<MobSpawn>();
                 if (npcs.Count > 0)
+                {
                     kinds.Add(CopyKind.Npc);
+                }
+
                 if (warps.Count > 0)
+                {
                     kinds.Add(CopyKind.Warp);
+                }
+
                 if (mobs.Count > 0)
+                {
                     kinds.Add(CopyKind.Mob);
+                }
 
                 var copyCells = kinds.Contains(CopyKind.Tile) || kinds.Contains(CopyKind.Object) || kinds.Contains(CopyKind.Block);
                 _editor.Clipboard = new ClipboardContent
@@ -411,7 +467,10 @@ namespace MapEditor.Mcp
             {
                 RequireDocument();
                 if (_editor.Clipboard == null)
+                {
                     throw new InvalidOperationException("the clipboard is empty; call copy_region first");
+                }
+
                 _editor.PasteAt(x, y);
                 return _editor.StatusText;
             });
@@ -448,7 +507,10 @@ namespace MapEditor.Mcp
             {
                 var assets = _editor.Assets ?? throw new InvalidOperationException("no client resources loaded");
                 if (ids == null || ids.Length == 0 || ids.Length > 64)
+                {
                     throw new ArgumentException("ids must have 1..64 entries");
+                }
+
                 return Png(Thumbnail.Row(assets, ids), Math.Clamp(scale, 1, 4));
             });
         }
@@ -467,7 +529,9 @@ namespace MapEditor.Mcp
             for (int y = 0; y < height * scale; y++)
             {
                 for (int x = 0; x < width * scale; x++)
+                {
                     scaled[y * width * scale + x] = pixels[y / scale * width + x / scale];
+                }
             }
 
             var bitmap = BitmapSource.Create(width * scale, height * scale, 96, 96, PixelFormats.Pbgra32, null, scaled, width * scale * 4);
@@ -512,13 +576,24 @@ namespace MapEditor.Mcp
                     }
 
                     foreach (var mob in doc.Mobs)
+                    {
                         Box(mob.Left, mob.Top, mob.Right, mob.Bottom, 0xFF40E040);
+                    }
+
                     foreach (var door in doc.Doors)
+                    {
                         Box(door.X, door.Y, door.X + door.Width - 1, door.Y, 0xFFFFD700);
+                    }
+
                     foreach (var warp in doc.Warps)
+                    {
                         Box(warp.X, warp.Y, warp.X, warp.Y, 0xFFFF40FF);
+                    }
+
                     foreach (var npc in doc.Npcs)
+                    {
                         Box(npc.X, npc.Y, npc.X, npc.Y, 0xFF40E0FF);
+                    }
                 }
 
                 var bitmap = BitmapSource.Create(pw, ph, 96, 96, PixelFormats.Pbgra32, null, pixels, pw * 4);
@@ -542,7 +617,9 @@ namespace MapEditor.Mcp
                 for (int cx = x; cx < x + width; cx++)
                 {
                     if (map.Contains(cx, cy) && map.Tiles[cy * map.Width + cx] != 0)
+                    {
                         assets.DrawTile(pixels, pw, ph, (cx - x) * cell, (cy - y) * cell, map.Tiles[cy * map.Width + cx]);
+                    }
                 }
             }
             for (int cy = y; cy < Math.Min(map.Height, y + height + assets.Objects.MaxHeight); cy++)
@@ -550,7 +627,9 @@ namespace MapEditor.Mcp
                 for (int cx = x - 1; cx <= x + width; cx++)
                 {
                     if (map.Contains(cx, cy))
+                    {
                         assets.DrawObject(pixels, pw, ph, (cx - x) * cell, (cy - y) * cell, map.Objects[cy * map.Width + cx]);
+                    }
                 }
             }
             for (int cy = y; cy < y + height; cy++)
@@ -558,7 +637,9 @@ namespace MapEditor.Mcp
                 for (int cx = x; cx < x + width; cx++)
                 {
                     if (map.Contains(cx, cy) == false || blocks.Contains(cx, cy) == false)
+                    {
                         continue;
+                    }
 
                     for (int py = 0; py < cell; py++)
                     {
@@ -587,7 +668,9 @@ namespace MapEditor.Mcp
                 for (int px = Math.Max(0, left); px <= Math.Min(width - 1, right); px++)
                 {
                     if (px - left < 2 || right - px < 2 || py - top < 2 || bottom - py < 2)
+                    {
                         pixels[py * width + px] = color;
+                    }
                 }
             }
         }

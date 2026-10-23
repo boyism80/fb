@@ -68,7 +68,9 @@ namespace MapEditor.Settings
         {
             error = null;
             if (File.Exists(FilePath) == false)
+            {
                 return new UserSettings();
+            }
 
             try
             {

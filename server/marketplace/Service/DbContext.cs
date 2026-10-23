@@ -25,7 +25,9 @@ namespace Marketplace.Service
         private T Bind<T>() where T : class, IRepository
         {
             if (_repositories.TryGetValue(typeof(T), out var repository))
+            {
                 return repository as T;
+            }
 
             repository = ActivatorUtilities.CreateInstance(_serviceProvider, typeof(T)) as T;
             _repositories.Add(typeof(T), repository);
@@ -36,7 +38,10 @@ namespace Marketplace.Service
         {
             var connectionString = _configuration.GetValue<string>("ConnectionStrings:MySql:unified");
             if (string.IsNullOrEmpty(connectionString))
+            {
                 throw new Exception("Unified connection string not found");
+            }
+
             return new MySqlConnection(connectionString);
         }
 

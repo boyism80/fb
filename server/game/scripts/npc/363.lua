@@ -99,11 +99,14 @@ local function run_chuseok(me, npc)
 end
 
 local function explain_yudu(me, npc)
-    local btn = me:dialog(npc, "유두절(流頭節)은 음력 6월 15일이에요. 일가 친지들과 함께 시내나 폭포에 가서 몸을 씻고 서늘하게 하루를 보내는 날이죠.", { prev = false, next = true })
+    local btn = me:dialog(npc, "유두절(流頭節)은 음력 6월 15일이에요. 일가 친지들과 함께 시내나 폭포에 가서 몸을 씻고 서늘하게 하루를 보내는 날이죠.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, "음.. 길림성에 가시면 폭포가 있는데, 거기서 목욕을 한번 해보세요. 그리고 저희 마을 옆에 있는 밭에서 피, 조, 벼, 콩을 구해 오시면 제가 유두면을 만들어 드릴게요.", { prev = false, next = true })
+    btn = me:dialog(npc,
+        "음.. 길림성에 가시면 폭포가 있는데, 거기서 목욕을 한번 해보세요. 그리고 저희 마을 옆에 있는 밭에서 피, 조, 벼, 콩을 구해 오시면 제가 유두면을 만들어 드릴게요.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

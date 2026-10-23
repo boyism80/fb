@@ -212,6 +212,7 @@
                     errorMessage = "월드가 선택되지 않았습니다.";
                     return;
                 }
+
                 await RabbitMqService.PublishAsync(message, AmqpRoute.Exchange, AmqpRoute.Home("global", selectedWorld.Value));
             }
 
@@ -298,4 +299,5 @@
         [Required(ErrorMessage = "Message type is required.")]
         public MessageType Type { get; set; } = MessageType.Notify;
     }
+
 }

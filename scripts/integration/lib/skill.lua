@@ -22,7 +22,8 @@ function M.verify_hp_mp(bot, expected_hp, expected_mp)
     return bot:hp() == expected_hp and bot:mp() == expected_mp
 end
 
-function M.request_update_internal(caster, resp, protocol, spell_type, slot, message, oid, position, expected_hp, expected_mp, label)
+function M.request_update_internal(caster, resp, protocol, spell_type, slot, message, oid, position, expected_hp,
+                                   expected_mp, label)
     label = label or string.format("slot=%d type=%s", slot, spell_type)
 
     log("debug", string.format(

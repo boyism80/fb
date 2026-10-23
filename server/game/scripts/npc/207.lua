@@ -9,7 +9,7 @@ return {
             me:dialog(npc, '고구려입니다. 안녕히 가십시오.', { prev = false, next = false })
             local map = name2map('고구려-일본선착장')
             if map ~= nil then
-                me:map(map, {54, 14})
+                me:map(map, { 54, 14 })
             end
         elseif minute >= 0 and minute <= 19 then
             local btn = me:dialog(npc, '지금 항해중입니다. 곧 도착할 예정이오니 잠시만 더 기다려 주시기 바랍니다.', { prev = false, next = false })
@@ -21,7 +21,7 @@ return {
             me:dialog(npc, '일본입니다. 안녕히 가십시오.', { prev = false, next = false })
             local map = name2map('동쪽해안가')
             if map ~= nil then
-                me:map(map, {1, 44})
+                me:map(map, { 1, 44 })
             end
         else
             me:dialog(npc, '지금 항해중입니다. 곧 도착할 예정이오니 잠시만 더 기다려 주시기 바랍니다.', { prev = false, next = false })

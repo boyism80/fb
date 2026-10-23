@@ -14,7 +14,9 @@ return {
 
         if q == nil or q:completed() then
             ::ON_ACTIVATED_7_0000::
-            btn = me:dialog(model, '<임무>\n 레벨 5 만들기\n\n<내용>\n 잠시 퀴즈로 머리를 식혔으니, 다시 레벨업의\n세계로!! 레벨 5를 만들어보세요!!\n\n<보상>\n초심자의방패', { prev = true, next = true })
+            btn = me:dialog(model,
+                '<임무>\n 레벨 5 만들기\n\n<내용>\n 잠시 퀴즈로 머리를 식혔으니, 다시 레벨업의\n세계로!! 레벨 5를 만들어보세요!!\n\n<보상>\n초심자의방패',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -63,7 +65,8 @@ return {
             q:complete()
             me:dialog(model, '<보상>\n\'초심자의방패\',\n\'낙랑의두루마리8\'을 얻다!!!', { prev = false, next = true })
         else
-            me:dialog(model, '레벨 5를 만드는 것은 그다지\n힘들지 않습니다. 왕초보\n사냥터에서만 사냥해도 금방\n만드실 수 있을 꺼에요.', { prev = false, next = true })
+            me:dialog(model, '레벨 5를 만드는 것은 그다지\n힘들지 않습니다. 왕초보\n사냥터에서만 사냥해도 금방\n만드실 수 있을 꺼에요.',
+                { prev = false, next = true })
         end
     end,
 

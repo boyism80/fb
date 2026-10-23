@@ -31,7 +31,9 @@ namespace Http.Service
             foreach (var (schedule, _) in await ReadSchedules())
             {
                 if (!TryGetActiveWindow(schedule, now, out var start, out var end))
+                {
                     continue;
+                }
 
                 result.Add(new MaintenanceInfo
                 {
@@ -56,7 +58,9 @@ namespace Http.Service
         public async Task<bool> CreateMaintenanceSchedule(MaintenanceSchedule schedule)
         {
             if (string.IsNullOrEmpty(schedule.Id))
+            {
                 schedule.Id = Guid.NewGuid().ToString();
+            }
 
             schedule.CreatedAt = DateTime.UtcNow;
             schedule.IsActive = true;
@@ -65,7 +69,9 @@ namespace Http.Service
 
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
+            {
                 return false;
+            }
 
             try
             {
@@ -86,11 +92,15 @@ namespace Http.Service
         {
             var (current, member) = await FindScheduleAndMember(updated.Id);
             if (current == null || !current.IsActive || current.Revision != updated.Revision)
+            {
                 return false;
+            }
 
             var now = DateTime.UtcNow;
             if (TryGetActiveWindow(current, now, out var start, out _) != started)
+            {
                 return false;
+            }
 
             var next = JsonConvert.DeserializeObject<MaintenanceSchedule>(member);
             next.Title = updated.Title;
@@ -101,14 +111,20 @@ namespace Http.Service
             {
                 var end = updated.EndTime < now ? now : updated.EndTime;
                 if (current.RepeatType == MaintenanceRepeatType.None)
+                {
                     next.EndTime = end;
+                }
                 else
+                {
                     next.Occurrence = new MaintenanceOccurrence { Start = start, End = end };
+                }
             }
             else
             {
                 if (updated.EndTime <= updated.StartTime || updated.Labels.Count == 0)
+                {
                     return false;
+                }
 
                 next.Labels = updated.Labels;
                 next.StartTime = updated.StartTime;
@@ -124,16 +140,25 @@ namespace Http.Service
         {
             var (schedule, member) = await FindScheduleAndMember(scheduleId);
             if (schedule == null || schedule.Revision != revision)
+            {
                 return false;
+            }
 
             var now = DateTime.UtcNow;
             if (!TryGetActiveWindow(schedule, now, out var start, out _))
+            {
                 return false;
+            }
 
             if (schedule.RepeatType == MaintenanceRepeatType.None)
+            {
                 schedule.EndTime = now;
+            }
             else
+            {
                 schedule.Occurrence = new MaintenanceOccurrence { Start = start, End = now };
+            }
+
             schedule.Revision++;
             return await ReplaceSchedule(member, schedule);
         }
@@ -142,7 +167,9 @@ namespace Http.Service
         {
             var (schedule, member) = await FindScheduleAndMember(scheduleId);
             if (schedule == null || !schedule.IsActive)
+            {
                 return false;
+            }
 
             schedule.IsActive = false;
             schedule.CancelledAt = DateTime.UtcNow;
@@ -161,7 +188,9 @@ namespace Http.Service
         {
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
+            {
                 return 0;
+            }
 
             var removed = 0;
             foreach (var (schedule, member) in await ReadSchedules())
@@ -171,11 +200,15 @@ namespace Http.Service
                     schedule.CancelledAt.HasValue &&
                     schedule.CancelledAt.Value < cutoff - CancelledScheduleRetention;
                 if ((expired || cancelledLongAgo) && await redis.Connection.SortedSetRemoveAsync(ScheduleKey, member))
+                {
                     removed++;
+                }
             }
 
             if (removed > 0)
+            {
                 _logger.LogInformation("Removed {Count} expired or cancelled maintenance schedule(s)", removed);
+            }
 
             return removed;
         }
@@ -185,7 +218,9 @@ namespace Http.Service
             start = DateTime.MinValue;
             end = DateTime.MinValue;
             if (!schedule.IsActive)
+            {
                 return false;
+            }
 
             var occurrence = schedule.Occurrence;
             if (occurrence != null && occurrence.Start <= now && now <= occurrence.End)
@@ -197,11 +232,15 @@ namespace Http.Service
 
             var windowStart = GetWindowStart(schedule, now);
             if (windowStart == DateTime.MinValue || (occurrence != null && windowStart == occurrence.Start))
+            {
                 return false;
+            }
 
             var windowEnd = GetWindowEnd(schedule, windowStart);
             if (now < windowStart || now > windowEnd)
+            {
                 return false;
+            }
 
             start = windowStart;
             end = windowEnd;
@@ -211,10 +250,14 @@ namespace Http.Service
         public static DateTime? FindNextStart(MaintenanceSchedule schedule, DateTime now, TimeSpan horizon)
         {
             if (!schedule.IsActive)
+            {
                 return null;
+            }
 
             if (schedule.RepeatType == MaintenanceRepeatType.None)
+            {
                 return schedule.StartTime > now && schedule.StartTime - now <= horizon ? schedule.StartTime : null;
+            }
 
             var template = ToOperating(schedule.StartTime);
             var operatingNow = ToOperating(now);
@@ -223,7 +266,9 @@ namespace Http.Service
                 var start = day.Add(template.TimeOfDay);
                 var startUtc = ToUtc(start);
                 if (startUtc <= now || startUtc - now > horizon)
+                {
                     continue;
+                }
 
                 var matched = schedule.RepeatType switch
                 {
@@ -234,7 +279,9 @@ namespace Http.Service
                     _ => false
                 };
                 if (matched)
+                {
                     return startUtc;
+                }
             }
 
             return null;
@@ -251,7 +298,9 @@ namespace Http.Service
         {
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
+            {
                 return false;
+            }
 
             try
             {
@@ -273,7 +322,9 @@ namespace Http.Service
             var result = new List<(MaintenanceSchedule, string)>();
             var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
+            {
                 return result;
+            }
 
             var members = await redis.Connection.SortedSetRangeByRankAsync(ScheduleKey, 0, -1);
             foreach (var member in members)
@@ -281,7 +332,9 @@ namespace Http.Service
                 var memberStr = member.ToString();
                 var schedule = DeserializeSchedule(memberStr);
                 if (schedule != null)
+                {
                     result.Add((schedule, memberStr));
+                }
             }
 
             return result;
@@ -296,14 +349,20 @@ namespace Http.Service
         private static double GetScoreForSchedule(MaintenanceSchedule schedule)
         {
             if (schedule.RepeatType != MaintenanceRepeatType.None)
+            {
                 return RecurringScheduleScore;
+            }
+
             return ((DateTimeOffset)schedule.EndTime).ToUnixTimeSeconds();
         }
 
         private static MaintenanceSchedule DeserializeSchedule(string json)
         {
             if (string.IsNullOrEmpty(json))
+            {
                 return null;
+            }
+
             try
             {
                 return JsonConvert.DeserializeObject<MaintenanceSchedule>(json);
@@ -319,7 +378,9 @@ namespace Http.Service
         private static DateTime GetWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             if (schedule.RepeatType == MaintenanceRepeatType.None)
+            {
                 return schedule.StartTime;
+            }
 
             var template = ToOperating(schedule.StartTime);
             var now = ToOperating(checkTime);
@@ -349,9 +410,13 @@ namespace Http.Service
         {
             var today = checkTime.Date.Add(template.TimeOfDay);
             if (checkTime >= today)
+            {
                 return today;
+            }
             else
+            {
                 return today.AddDays(-1);
+            }
         }
 
         private static DateTime GetWeeklyWindowStart(DateTime template, DateTime checkTime)
@@ -359,9 +424,13 @@ namespace Http.Service
             var daysDiff = ((int)checkTime.DayOfWeek - (int)template.DayOfWeek + 7) % 7;
             var start = checkTime.Date.AddDays(-daysDiff).Add(template.TimeOfDay);
             if (checkTime >= start)
+            {
                 return start;
+            }
             else
+            {
                 return start.AddDays(-7);
+            }
         }
 
         private static DateTime GetMonthlyWindowStart(DateTime template, DateTime checkTime)
@@ -369,11 +438,17 @@ namespace Http.Service
             var today = checkTime.Date.Add(template.TimeOfDay);
             var yesterday = checkTime.Date.AddDays(-1);
             if (checkTime.Day == template.Day && checkTime >= today)
+            {
                 return today;
+            }
             else if (yesterday.Day == template.Day)
+            {
                 return yesterday.Add(template.TimeOfDay);
+            }
             else
+            {
                 return DateTime.MinValue;
+            }
         }
 
         private static DateTime GetYearlyWindowStart(DateTime template, DateTime checkTime)
@@ -381,11 +456,17 @@ namespace Http.Service
             var today = checkTime.Date.Add(template.TimeOfDay);
             var yesterday = checkTime.Date.AddDays(-1);
             if (checkTime.Month == template.Month && checkTime.Day == template.Day && checkTime >= today)
+            {
                 return today;
+            }
             else if (yesterday.Month == template.Month && yesterday.Day == template.Day)
+            {
                 return yesterday.Add(template.TimeOfDay);
+            }
             else
+            {
                 return DateTime.MinValue;
+            }
         }
     }
 }

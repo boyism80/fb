@@ -16,7 +16,8 @@ return {
         end
 
         ::NPC_545_0000::
-        local button = me:dialog(npc, "이.. 이것은? 천상복숭아?? 자네 이걸 어디서 구했는가. 천도복숭아보다 구하기 훨씬 어려운것을.", { prev = false, next = true })
+        local button = me:dialog(npc, "이.. 이것은? 천상복숭아?? 자네 이걸 어디서 구했는가. 천도복숭아보다 구하기 훨씬 어려운것을.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -37,7 +38,8 @@ return {
         end
 
         ::NPC_545_0002::
-        button = me:dialog(npc, "좋소. 아들의 생명이 달린 문제인데 어떤 물건인들 무슨 소용이 있겠소. 자 진랑검이요. 진황보검이 진랑검과 혈황검 이 두개로 이루어져있는건 알고 있겠지..", { prev = true, next = true })
+        button = me:dialog(npc, "좋소. 아들의 생명이 달린 문제인데 어떤 물건인들 무슨 소용이 있겠소. 자 진랑검이요. 진황보검이 진랑검과 혈황검 이 두개로 이루어져있는건 알고 있겠지..",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -46,7 +48,8 @@ return {
         end
 
         ::NPC_545_0003::
-        button = me:dialog(npc, "내가 가지고 있는것은 진랑검 뿐이네. 혈황검의 행방은 나도 모르오.. 누구에게 처음 들었는지 모르지만 그라면 혈황검에 대해서도 알지 않겠소?", { prev = true, next = true })
+        button = me:dialog(npc, "내가 가지고 있는것은 진랑검 뿐이네. 혈황검의 행방은 나도 모르오.. 누구에게 처음 들었는지 모르지만 그라면 혈황검에 대해서도 알지 않겠소?",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

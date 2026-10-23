@@ -1,7 +1,8 @@
 -- npc: 중원왕
 local quest = require('lib.quest')
 local function do_sub4_start(me, npc)
-    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
+    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
+        { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -50,7 +51,8 @@ end
 
 local function do_sub4_complete(me, npc)
     ::NPC_466_0003::
-    local b = me:dialog(npc, "수고하셨다. 사람들 중에서도 착한 마음씨를 가진 사람이 있으시긴 하셨다. 이걸 받아라. 섬에서 쓰시던 무기시다.", { prev = false, next = true })
+    local b = me:dialog(npc, "수고하셨다. 사람들 중에서도 착한 마음씨를 가진 사람이 있으시긴 하셨다. 이걸 받아라. 섬에서 쓰시던 무기시다.",
+        { prev = false, next = true })
     if b == DIALOG_RESULT.QUIT then
         return false
     end

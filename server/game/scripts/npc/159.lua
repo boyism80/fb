@@ -103,12 +103,14 @@ return {
 
         if sel == 1 then
             ::NPC_159_0001::
-            local btn = me:dialog(npc, '음.. 거북장군에게서 토끼의간을 구해오라는 부탁을 받았단 말아지. 그런데 그 토끼는 정말 희귀한 토끼라네. 보통토끼와는 다르지', { prev = false, next = true })
+            local btn = me:dialog(npc, '음.. 거북장군에게서 토끼의간을 구해오라는 부탁을 받았단 말아지. 그런데 그 토끼는 정말 희귀한 토끼라네. 보통토끼와는 다르지',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_159_0002::
-            btn = me:dialog(npc, '나도 장사 하느라 전국 방방곡곡 안가보는데가 없지만, 그 토끼는 딱 한 번 밖에 못봤었지.. 어디서 보았냐 하면 말일세...', { prev = true, next = true })
+            btn = me:dialog(npc, '나도 장사 하느라 전국 방방곡곡 안가보는데가 없지만, 그 토끼는 딱 한 번 밖에 못봤었지.. 어디서 보았냐 하면 말일세...',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -128,7 +130,8 @@ return {
             if choice == nil or choice ~= 1 then
                 return
             end
-            me:dialog(npc, '요즘 한창 장사가 되는 물건이 뇌진도라네.. 그걸 하나 구해오면 내 분명히 자네에게 그 토끼가 출현하는 장소를 가르쳐 줌세.', { prev = false, next = false })
+            me:dialog(npc, '요즘 한창 장사가 되는 물건이 뇌진도라네.. 그걸 하나 구해오면 내 분명히 자네에게 그 토끼가 출현하는 장소를 가르쳐 줌세.',
+                { prev = false, next = false })
             return
         end
         if not me:has_items(ITEM_NEURAEJINDO, 1) then
@@ -139,7 +142,8 @@ return {
         me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE)
         me:push_achievement(ACHIEVEMENT_RABBIT_CATCH, '토깽이를 생포하자.', 7, 1)
         ::NPC_159_0005::
-        btn = me:dialog(npc, '그 토끼가 출현하는 곳은 다름 아닌 한두고개라네.. 나도 한두고개에서 깊숙히 안들어가봐서 깊숙한 곳에서도 출현할지 어떨지는 모르겠네만', { prev = false, next = true })
+        btn = me:dialog(npc, '그 토끼가 출현하는 곳은 다름 아닌 한두고개라네.. 나도 한두고개에서 깊숙히 안들어가봐서 깊숙한 곳에서도 출현할지 어떨지는 모르겠네만',
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -152,7 +156,8 @@ return {
             goto NPC_159_0005
         end
         ::NPC_159_0007::
-        btn = me:dialog(npc, '그럼 행운을 비네.. 아참, 이건 자네를 위해서 하는 얘기네만, 그 토끼는 아주 간악하다는 사실을 꼭 염두에 두게', { prev = true, next = false })
+        btn = me:dialog(npc, '그럼 행운을 비네.. 아참, 이건 자네를 위해서 하는 얘기네만, 그 토끼는 아주 간악하다는 사실을 꼭 염두에 두게',
+            { prev = true, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

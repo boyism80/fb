@@ -9,7 +9,7 @@ return {
             return
         end
 
-        local hp = me:hp()*2 // 3
+        local hp = me:hp() * 2 // 3
         local mp = 140
         local effect = 97
         local sound = 100
@@ -36,17 +36,18 @@ return {
         end
 
         if direction == DIRECTION.LEFT then
-            x = x-3
+            x = x - 3
         elseif direction == DIRECTION.RIGHT then
-            x = x+3
+            x = x + 3
         elseif direction == DIRECTION.TOP then
-            y = y-3
+            y = y - 3
         else
-            y = y+3
-        end 
+            y = y + 3
+        end
         me:position(x, y)
 
-        spell.attack_cast(me, front, sp, {hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect})
+        spell.attack_cast(me, front, sp,
+            { hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect })
     end,
 
     -- on_buff = function(me, sp)

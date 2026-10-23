@@ -19,12 +19,16 @@ namespace MapEditor.Asset
         {
             var cache = _tiles.GetOrCreateValue(assets);
             if (cache.TryGetValue(id, out var cached))
+            {
                 return cached;
+            }
 
             var frame = assets.TileFrame(id);
             BitmapSource bitmap = null;
             if (frame != null)
+            {
                 bitmap = Create(assets, frame.Width, frame.Height, frame.Pixels);
+            }
 
             cache[id] = bitmap;
             return bitmap;
@@ -34,7 +38,9 @@ namespace MapEditor.Asset
         {
             var cache = _objects.GetOrCreateValue(assets);
             if (cache.TryGetValue(id, out var cached))
+            {
                 return cached;
+            }
 
             BitmapSource bitmap = null;
             var sobj = assets.Objects.Find(id);
@@ -49,7 +55,9 @@ namespace MapEditor.Asset
                 {
                     var frame = assets.ObjectFrame(sobj.Frames[k]);
                     if (frame == null)
+                    {
                         continue;
+                    }
 
                     minX = Math.Min(minX, frame.Left);
                     minY = Math.Min(minY, frame.Top - k * cell);
@@ -81,13 +89,17 @@ namespace MapEditor.Asset
             {
                 var sobj = assets.Objects.Find(ids[i]);
                 if (sobj == null)
+                {
                     continue;
+                }
 
                 for (int k = 0; k < sobj.Frames.Length; k++)
                 {
                     var frame = assets.ObjectFrame(sobj.Frames[k]);
                     if (frame == null)
+                    {
                         continue;
+                    }
 
                     minX = Math.Min(minX, i * cell + frame.Left);
                     minY = Math.Min(minY, frame.Top - k * cell);
@@ -102,7 +114,9 @@ namespace MapEditor.Asset
             for (int i = 0; i < ids.Count; i++)
             {
                 if (ids[i] != 0)
+                {
                     assets.DrawObject(pixels, width, height, i * cell - minX, -minY, ids[i]);
+                }
             }
             return Create(assets, width, height, pixels);
         }
@@ -118,7 +132,9 @@ namespace MapEditor.Asset
         {
             var cache = _templates.GetOrCreateValue(assets);
             if (cache.TryGetValue(template, out var cached) && cached.Item1 == template.Revision)
+            {
                 return (cached.Item2, cached.Item3);
+            }
 
             var (pixels, width, height, above) = Edit.TemplateRender.Draw(assets, template);
             var bitmap = Create(assets, width, height, pixels);
@@ -130,7 +146,9 @@ namespace MapEditor.Asset
         {
             var cache = _monsters.GetOrCreateValue(assets);
             if (cache.TryGetValue((look, color, direction), out var cached))
+            {
                 return cached;
+            }
 
             var frame = assets.MonsterFrame(look, color, direction);
             var bitmap = frame == null ? null : Create(assets, frame.Width, frame.Height, frame.Pixels);

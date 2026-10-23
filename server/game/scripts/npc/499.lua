@@ -2,7 +2,7 @@
 
 return {
     on_click = function(me, npc)
-    ::NPC_499_MENU::
+        ::NPC_499_MENU::
         local sel, list_btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", {
             '설명듣기',
             '남북무한대전 참가',
@@ -38,7 +38,8 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "또한, 아이템 창이 모자른 경우, 대전중 아이템을 바닥에 떨어뜨릴 수도 있으니, 반드시 사전에 아이템창을 넉넉히 비우고 참여하시기 바랍니다.", { prev = false, next = true })
+            btn = me:dialog(npc, "또한, 아이템 창이 모자른 경우, 대전중 아이템을 바닥에 떨어뜨릴 수도 있으니, 반드시 사전에 아이템창을 넉넉히 비우고 참여하시기 바랍니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -50,7 +51,8 @@ return {
         end
 
         if sel == 2 then
-            local btn = me:dialog(npc, "남북무한대전 참가 신청은 공지된 일정에만 가능합니다. 현재는 진행 시간이 아니거나 준비중입니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "남북무한대전 참가 신청은 공지된 일정에만 가능합니다. 현재는 진행 시간이 아니거나 준비중입니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

@@ -49,7 +49,9 @@ namespace MapEditor
             MapScroll.ScrollChanged += (s, e) =>
             {
                 if (e.ViewportWidthChange != 0 || e.ViewportHeightChange != 0)
+                {
                     PlaceMinimap();
+                }
             };
         }
 
@@ -106,7 +108,10 @@ namespace MapEditor
         private void OnMapTabChanged(object sender, SelectionChangedEventArgs e)
         {
             if (MapTabs.SelectedItem is MapDocument document && document != Editor.Document)
+            {
                 Editor.Activate(document);
+            }
+
             MapTabs.ScrollIntoView(Editor.Document);
         }
 
@@ -122,13 +127,17 @@ namespace MapEditor
         private void OnCloseMapTab(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.DataContext is MapDocument document)
+            {
                 Editor.CloseDocument(document);
+            }
         }
 
         private void OnMapTabMenu(object sender, RoutedEventArgs e)
         {
             if (sender is not MenuItem item || item.DataContext is not MapDocument document)
+            {
                 return;
+            }
 
             var tabs = Editor.OpenDocuments.ToList();
             var index = tabs.IndexOf(document);
@@ -165,9 +174,15 @@ namespace MapEditor
                 case "reveal":
                     var entry = Editor.Maps.FirstOrDefault(m => m.Id == document.Id);
                     if (entry == null)
+                    {
                         break;
+                    }
+
                     if (Editor.MapView.Contains(entry) == false)
+                    {
                         Editor.MapQuery = "";
+                    }
+
                     Editor.SelectedMap = entry;
                     MapList.ScrollIntoView(entry);
                     break;
@@ -184,7 +199,9 @@ namespace MapEditor
         private void OnSelectOptions(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement button || (button.Parent as FrameworkElement)?.ContextMenu is not ContextMenu menu)
+            {
                 return;
+            }
 
             menu.PlacementTarget = button;
             menu.Placement = PlacementMode.Bottom;
@@ -221,7 +238,9 @@ namespace MapEditor
         private void OnMinimapDrag(object sender, MouseEventArgs e)
         {
             if (_minimapDrag is not Point start)
+            {
                 return;
+            }
 
             var delta = e.GetPosition(MapScroll) - start;
             MoveMinimap(_minimapStart.X + delta.X, _minimapStart.Y + delta.Y, snap: true);
@@ -239,7 +258,9 @@ namespace MapEditor
         private void OnMinimapResize(object sender, MouseEventArgs e)
         {
             if (_minimapDrag is not Point start)
+            {
                 return;
+            }
 
             // The top-left corner stays where it is; the grip follows the mouse along the larger movement.
             var delta = e.GetPosition(MapScroll) - start;
@@ -253,7 +274,9 @@ namespace MapEditor
         private void OnMinimapDragEnd(object sender, MouseButtonEventArgs e)
         {
             if (_minimapDrag == null)
+            {
                 return;
+            }
 
             _minimapDrag = null;
             ((UIElement)sender).ReleaseMouseCapture();
@@ -293,14 +316,22 @@ namespace MapEditor
             if (snap)
             {
                 if (left < MinimapSnap)
+                {
                     left = 0;
+                }
                 else if (viewWidth - width - left < MinimapSnap)
+                {
                     left = Math.Max(0, viewWidth - width);
+                }
 
                 if (top < MinimapSnap)
+                {
                     top = 0;
+                }
                 else if (viewHeight - height - top < MinimapSnap)
+                {
                     top = Math.Max(0, viewHeight - height);
+                }
             }
 
             var user = Editor.User;
@@ -317,7 +348,9 @@ namespace MapEditor
         private void PlaceMinimap()
         {
             if (DataContext is not MainWindowViewModel editor)
+            {
                 return;
+            }
 
             var user = editor.User;
             var (viewWidth, viewHeight) = MapViewport();
@@ -344,7 +377,9 @@ namespace MapEditor
             _doorEdit.Closed += (s, args) =>
             {
                 if (ReferenceEquals(_doorEdit, s))
+                {
                     _doorEdit = null;
+                }
             };
             _doorEdit.Show();
         }
@@ -406,11 +441,15 @@ namespace MapEditor
         {
             base.OnKeyDown(e);
             if (e.Handled || DataContext is not MainWindowViewModel editor)
+            {
                 return;
+            }
 
             var key = e.Key == Key.System ? e.SystemKey : e.Key == Key.ImeProcessed ? e.ImeProcessedKey : e.Key;
             if (Gesture.IsModifierKey(key))
+            {
                 return;
+            }
 
             // A focused grid cell starts editing on typed text, so it counts as typing too.
             var typing = Keyboard.FocusedElement is TextBoxBase or PasswordBox or ComboBox { IsEditable: true } or DataGridCell;
@@ -424,7 +463,9 @@ namespace MapEditor
         {
             base.OnPreviewMouseDown(e);
             if (DataContext is MainWindowViewModel editor && Gesture.IsGestureButton(e.ChangedButton))
+            {
                 e.Handled = editor.RunShortcut(new Gesture(Keyboard.Modifiers, Key.None, e.ChangedButton), typing: false);
+            }
         }
 
         private void FocusMapSearch()
@@ -445,7 +486,10 @@ namespace MapEditor
                 // The query binding is delayed; filter now so Enter opens what is typed.
                 MapQueryBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
                 if (MapList.Items.Count > 0 && (MapList.SelectedItem ?? MapList.Items[0]) is MapEntry entry)
+                {
                     _ = Editor.OpenMap(entry);
+                }
+
                 e.Handled = true;
             }
             else if (e.Key == Key.Down && MapList.Items.Count > 0)
@@ -459,31 +503,41 @@ namespace MapEditor
         private void EditShortcuts()
         {
             if (ShortcutWindow.Edit(this, Editor.Shortcuts))
+            {
                 Editor.SaveShortcuts();
+            }
         }
 
         private void OnMapDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (MapList.SelectedItem is MapEntry entry)
+            {
                 _ = Editor.OpenMap(entry);
+            }
         }
 
         private void OnDoorDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (Editor.SelectedMapDoor != null)
+            {
                 Editor.Jump(Editor.SelectedMapDoor.X, Editor.SelectedMapDoor.Y);
+            }
         }
 
         private void OnDoorUsageClick(object sender, MouseButtonEventArgs e)
         {
             if (sender is ListBox list && list.SelectedItem is DoorReference reference)
+            {
                 _ = Editor.GoToDoorReference(reference);
+            }
         }
 
         private void OnTemplatePlaceClick(object sender, MouseButtonEventArgs e)
         {
             if (sender is ListBox list && list.SelectedItem is TemplatePlace place)
+            {
                 _ = Editor.GoToTemplatePlace(place);
+            }
         }
 
         private void OnNpcDoubleClick(object sender, MouseButtonEventArgs e)
@@ -531,11 +585,16 @@ namespace MapEditor
         {
             base.OnClosing(e);
             if (DataContext is not MainWindowViewModel editor)
+            {
                 return;
+            }
 
             var dirty = editor.OpenDocuments.Where(d => d.Dirty).Select(d => d.Title).ToList();
             if (editor.DoorTableDirty)
+            {
                 dirty.Add("door.xlsx");
+            }
+
             if (dirty.Count > 0)
             {
                 var answer = MessageBox.Show($"저장하지 않은 변경 사항이 있습니다.\n{string.Join("\n", dirty)}\n\n저장하지 않고 닫을까요?",

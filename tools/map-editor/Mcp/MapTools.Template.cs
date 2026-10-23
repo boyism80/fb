@@ -13,11 +13,15 @@ namespace MapEditor.Mcp
             return await OnUi("delete_maps", true, () =>
             {
                 if (ids == null || ids.Length == 0)
+                {
                     throw new ArgumentException("ids is empty");
+                }
 
                 var missing = ids.Where(id => _editor.Maps.Any(m => m.Id == id) == false).ToList();
                 if (missing.Count > 0)
+                {
                     throw new ArgumentException($"maps not found: {string.Join(", ", missing)}");
+                }
 
                 var deleted = _editor.DeleteMaps(ids.Distinct().ToList());
                 return Json(new { deleted, declined = deleted == 0, status = _editor.StatusText });

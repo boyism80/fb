@@ -20,20 +20,32 @@ local AXIS_X = 'x'
 -- arrive/dock = arrive_dir, depart = depart_dir.
 local ROUTES = {
     [1744] = { -- Buyeo Gogyundo pier
-        dock_x = 21, dock_y = 38, axis = AXIS_Y,
-        arrive_dir = DIRECTION.TOP, depart_dir = DIRECTION.BOTTOM,
+        dock_x = 21,
+        dock_y = 38,
+        axis = AXIS_Y,
+        arrive_dir = DIRECTION.TOP,
+        depart_dir = DIRECTION.BOTTOM,
     },
     [1746] = { -- Goguryeo Gogyundo pier
-        dock_x = 21, dock_y = 38, axis = AXIS_Y,
-        arrive_dir = DIRECTION.TOP, depart_dir = DIRECTION.BOTTOM,
+        dock_x = 21,
+        dock_y = 38,
+        axis = AXIS_Y,
+        arrive_dir = DIRECTION.TOP,
+        depart_dir = DIRECTION.BOTTOM,
     },
     [1822] = { -- Buyeo Japan pier
-        dock_x = 60, dock_y = 21, axis = AXIS_X,
-        arrive_dir = DIRECTION.LEFT, depart_dir = DIRECTION.RIGHT,
+        dock_x = 60,
+        dock_y = 21,
+        axis = AXIS_X,
+        arrive_dir = DIRECTION.LEFT,
+        depart_dir = DIRECTION.RIGHT,
     },
     [1809] = { -- Goguryeo Japan pier
-        dock_x = 60, dock_y = 21, axis = AXIS_X,
-        arrive_dir = DIRECTION.LEFT, depart_dir = DIRECTION.RIGHT,
+        dock_x = 60,
+        dock_y = 21,
+        axis = AXIS_X,
+        arrive_dir = DIRECTION.LEFT,
+        depart_dir = DIRECTION.RIGHT,
     },
 }
 

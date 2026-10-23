@@ -6,7 +6,8 @@ return {
         local q = me:quest(quest.QUEST_BEGINNER_PATH)
 
         if q == nil then
-            local btn = me:dialog(npc, string.format("%s님 안녕하세요? 저는 말도라고 합니다. 말하기 도우미가 떠오른다면 그건 착각일 뿐입니다.", me:name()), { prev = false, next = true })
+            local btn = me:dialog(npc, string.format("%s님 안녕하세요? 저는 말도라고 합니다. 말하기 도우미가 떠오른다면 그건 착각일 뿐입니다.", me:name()),
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -35,7 +36,8 @@ return {
         end
 
         if q:completed() then
-            me:dialog(npc, "제가 가르쳐드릴게 이거밖에 없어서 미안하네요. 말하기는 [ENTER]요. 흥... 이제 다음 방으로 가보세요.", { prev = false, next = false })
+            me:dialog(npc, "제가 가르쳐드릴게 이거밖에 없어서 미안하네요. 말하기는 [ENTER]요. 흥... 이제 다음 방으로 가보세요.",
+                { prev = false, next = false })
             return
         end
 

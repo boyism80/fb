@@ -80,7 +80,8 @@ local function run_jungyang(me, npc)
         return
     end
 
-    btn = me:dialog(npc, "중양절에는 높은 곳에 올라가 국화로 빚은 술을 마시며 즐겁게 놀거나 술친구를 찾아가 함께 놀거나 술을 선물하기도 했지요.", { prev = false, next = true })
+    btn = me:dialog(npc, "중양절에는 높은 곳에 올라가 국화로 빚은 술을 마시며 즐겁게 놀거나 술친구를 찾아가 함께 놀거나 술을 선물하기도 했지요.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

@@ -41,6 +41,7 @@
 </div>
 
 @code {
+
     [Parameter]
     public IReadOnlyList<uint> Worlds { get; set; }
 
@@ -82,4 +83,5 @@
         isOpen = false;
         await SelectedWorldChanged.InvokeAsync(worldId);
     }
+
 }

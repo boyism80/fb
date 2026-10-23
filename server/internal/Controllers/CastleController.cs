@@ -70,7 +70,9 @@ namespace Internal.Controllers
                 if (request.OwnerClanId.HasValue)
                 {
                     if (await _dbContext.Clan.Get(world, request.OwnerClanId.Value) == null)
+                    {
                         throw new LogicException(ErrorCode.NotFoundClan);
+                    }
                 }
 
                 await using var sync = await _distributedLock.Lock(world, Castle.DistributedLockKey(request.DivineBeast));

@@ -54,14 +54,20 @@ namespace MapEditor.Edit
         {
             // A merged stroke can touch a cell twice; reverse order restores the earliest value.
             for (int i = Changes.Count - 1; i >= 0; i--)
+            {
                 _document.Set(Changes[i].X, Changes[i].Y, Changes[i].Before);
+            }
+
             _document.RaiseCellsChanged(Changes.Select(c => (c.X, c.Y)).ToList());
         }
 
         public void Redo()
         {
             foreach (var change in Changes)
+            {
                 _document.Set(change.X, change.Y, change.After);
+            }
+
             _document.RaiseCellsChanged(Changes.Select(c => (c.X, c.Y)).ToList());
         }
     }
@@ -87,17 +93,25 @@ namespace MapEditor.Edit
         public void Undo()
         {
             if (Added)
+            {
                 List.Remove(Item);
+            }
             else
+            {
                 List.Insert(Math.Min(Index, List.Count), Item);
+            }
         }
 
         public void Redo()
         {
             if (Added)
+            {
                 List.Insert(Math.Min(Index, List.Count), Item);
+            }
             else
+            {
                 List.Remove(Item);
+            }
         }
     }
 
@@ -188,7 +202,9 @@ namespace MapEditor.Edit
             }
 
             foreach (var item in items)
+            {
                 item.Edited += OnEdited;
+            }
 
             items.CollectionChanged += (s, e) =>
             {
@@ -215,12 +231,19 @@ namespace MapEditor.Edit
         private void Record(IEditOp op)
         {
             if (_replaying)
+            {
                 return;
+            }
 
             if (_group != null)
+            {
                 _group.Add(op);
+            }
             else
+            {
                 _undo.Push(new List<IEditOp> { op });
+            }
+
             _redo.Clear();
         }
 
@@ -230,17 +253,25 @@ namespace MapEditor.Edit
         public IDisposable Group()
         {
             if (_groupDepth++ == 0)
+            {
                 _group = new List<IEditOp>();
+            }
+
             return new GroupScope(this);
         }
 
         private void EndGroup()
         {
             if (--_groupDepth > 0)
+            {
                 return;
+            }
 
             if (_group.Count > 0)
+            {
                 _undo.Push(_group);
+            }
+
             _group = null;
         }
 
@@ -291,19 +322,27 @@ namespace MapEditor.Edit
             foreach (var (x, y, value) in cells)
             {
                 if (Map.Contains(x, y) == false || seen.Add((x, y)) == false)
+                {
                     continue;
+                }
 
                 var before = Get(x, y);
                 if (before.Tile == value.Tile && before.Object == value.Object && before.Block == value.Block)
+                {
                     continue;
+                }
 
                 op.Changes.Add(new CellChange { X = x, Y = y, Before = before, After = value });
             }
             if (op.Changes.Count == 0)
+            {
                 return 0;
+            }
 
             foreach (var change in op.Changes)
+            {
                 Set(change.X, change.Y, change.After);
+            }
 
             if (merge && _group == null && _undo.Count > 0)
             {
@@ -321,14 +360,18 @@ namespace MapEditor.Edit
         public void Undo()
         {
             if (_undo.Count == 0)
+            {
                 return;
+            }
 
             var step = _undo.Pop();
             _replaying = true;
             try
             {
                 for (int i = step.Count - 1; i >= 0; i--)
+                {
                     step[i].Undo();
+                }
             }
             finally
             {
@@ -340,14 +383,18 @@ namespace MapEditor.Edit
         public void Redo()
         {
             if (_redo.Count == 0)
+            {
                 return;
+            }
 
             var step = _redo.Pop();
             _replaying = true;
             try
             {
                 foreach (var op in step)
+                {
                     op.Redo();
+                }
             }
             finally
             {
@@ -374,9 +421,13 @@ namespace MapEditor.Edit
             var temp = path + ".tmp";
             File.WriteAllBytes(temp, bytes);
             if (File.Exists(path))
+            {
                 File.Replace(temp, path, path + ".bak");
+            }
             else
+            {
                 File.Move(temp, path);
+            }
         }
     }
 }

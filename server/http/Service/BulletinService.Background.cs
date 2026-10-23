@@ -55,7 +55,9 @@ namespace Http.Service
                     {
                         // Parse world key: "1", "2", etc. (must be numeric; bulletin uses per-world DB)
                         if (!uint.TryParse(worldKey, out var world) || world == 0)
+                        {
                             continue;
+                        }
 
                         var writes = _bulletinService.DequeueBatch(world, _maxBatchSize);
                         await ProcessWritesAsync(world, writes, stoppingToken);
@@ -182,7 +184,9 @@ namespace Http.Service
                     try
                     {
                         if (renumbered)
+                        {
                             await _bulletinCacheService.SetGenerationAsync(world, bulletinSection, generation);
+                        }
 
                         // Cache articles in Redis after successful DB insert
                         var cacheItems = new Dictionary<(uint section, uint id), Http.Model.Bulletin>();

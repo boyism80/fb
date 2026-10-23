@@ -39,7 +39,8 @@ return {
                 me:dialog(npc, "멋지게 성공했군. 하하하...", { prev = false, next = false })
             end
         elseif sel == 2 then
-            me:dialog(npc, "난 은으로된 천패, 지패, 인패는 합칠 수 있지만, 천지패와 인패를 합친다던가, 천인패와 지패를 합치는 건 못한다네.", { prev = false, next = false })
+            me:dialog(npc, "난 은으로된 천패, 지패, 인패는 합칠 수 있지만, 천지패와 인패를 합친다던가, 천인패와 지패를 합치는 건 못한다네.",
+                { prev = false, next = false })
         end
         goto NPC_401_000
     end

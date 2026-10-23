@@ -21,13 +21,17 @@ namespace AdminTool.Services
 
                 var path = ResolveMetaDatPath();
                 if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                {
                     return 0;
+                }
 
                 lock (Sync)
                 {
                     if (_cachedTotal.HasValue &&
                         string.Equals(_cachedPath, path, StringComparison.OrdinalIgnoreCase))
+                    {
                         return _cachedTotal.Value;
+                    }
 
                     var names = ReadCollectionNames(path);
                     var mobByName = BuildMobNameMap();
@@ -35,9 +39,14 @@ namespace AdminTool.Services
                     foreach (var name in names)
                     {
                         if (string.IsNullOrWhiteSpace(name))
+                        {
                             continue;
+                        }
+
                         if (mobByName.TryGetValue(name, out var mobId))
+                        {
                             matchedIds.Add(mobId);
+                        }
                     }
 
                     _cachedPath = path;
@@ -63,7 +72,9 @@ namespace AdminTool.Services
             foreach (var path in candidates)
             {
                 if (File.Exists(path))
+                {
                     return path;
+                }
             }
 
             return null;
@@ -75,7 +86,10 @@ namespace AdminTool.Services
             foreach (var pair in Table.Mob)
             {
                 if (string.IsNullOrWhiteSpace(pair.Value?.Name))
+                {
                     continue;
+                }
+
                 map[pair.Value.Name] = pair.Key;
             }
             return map;
@@ -94,7 +108,10 @@ namespace AdminTool.Services
                 var nameLen = ReadUInt16LE(bytes, ref offset);
                 var chars = new char[nameLen];
                 for (int w = 0; w < nameLen; w++)
+                {
                     chars[w] = (char)ReadUInt16LE(bytes, ref offset);
+                }
+
                 var name = new string(chars);
                 var compressedSize = ReadUInt32BE(bytes, ref offset);
                 _ = ReadUInt32BE(bytes, ref offset); // unused
@@ -106,20 +123,26 @@ namespace AdminTool.Services
             foreach (var (name, compressedSize) in entries)
             {
                 if (offset + compressedSize > bytes.Length)
+                {
                     throw new InvalidDataException($"Meta.dat blob truncated: {name}");
+                }
 
                 var compressed = new byte[compressedSize];
                 Buffer.BlockCopy(bytes, offset, compressed, 0, (int)compressedSize);
                 offset += (int)compressedSize;
 
                 if (name != "Collections")
+                {
                     continue;
+                }
 
                 collectionsPlain = Inflate(compressed);
             }
 
             if (collectionsPlain == null)
+            {
                 return new List<string>();
+            }
 
             return ParseCollectionTreeNames(collectionsPlain);
         }
@@ -136,10 +159,14 @@ namespace AdminTool.Services
                 var name = ReadString8(data, ref offset, cp949).Trim();
                 var childCount = ReadUInt16BE(data, ref offset);
                 for (int c = 0; c < childCount; c++)
+                {
                     _ = ReadString16(data, ref offset, cp949);
+                }
 
                 if (!string.IsNullOrEmpty(name))
+                {
                     names.Add(name);
+                }
             }
 
             return names;
@@ -171,7 +198,10 @@ namespace AdminTool.Services
         private static string ReadString8(byte[] data, ref int offset, Encoding encoding)
         {
             if (offset >= data.Length)
+            {
                 throw new InvalidDataException("Meta.dat string8 truncated");
+            }
+
             var len = data[offset++];
             return ReadBytesAsString(data, ref offset, len, encoding);
         }
@@ -185,9 +215,14 @@ namespace AdminTool.Services
         private static string ReadBytesAsString(byte[] data, ref int offset, int len, Encoding encoding)
         {
             if (len < 0 || offset + len > data.Length)
+            {
                 throw new InvalidDataException("Meta.dat string truncated");
+            }
+
             if (len == 0)
+            {
                 return string.Empty;
+            }
 
             var text = encoding.GetString(data, offset, len);
             offset += len;
@@ -235,7 +270,9 @@ namespace AdminTool.Services
         private static void Ensure(byte[] data, int offset, int size)
         {
             if (offset < 0 || offset + size > data.Length)
+            {
                 throw new InvalidDataException("Meta.dat truncated");
+            }
         }
     }
 }

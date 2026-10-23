@@ -46,7 +46,8 @@ return {
         end
 
         if main_step == 1 then
-            local sel, btn = me:list(npc, "원숭이들을 대표하여 감사드리네.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
+            local sel, btn = me:list(npc, "원숭이들을 대표하여 감사드리네.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
+                { prev = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -68,7 +69,8 @@ return {
                 goto NPC_474_0009
             end
             ::NPC_474_0010::
-            local b = me:dialog(npc, "음, 아직도 도와주고 싶다는 마음이 남아있다니, 정말로 보기 드문 의인이로다. 자네의 마음 씀씀이에 경의를 표하겠네.", { prev = true, next = true })
+            local b = me:dialog(npc, "음, 아직도 도와주고 싶다는 마음이 남아있다니, 정말로 보기 드문 의인이로다. 자네의 마음 씀씀이에 경의를 표하겠네.",
+                { prev = true, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -76,7 +78,8 @@ return {
                 goto NPC_474_0009
             end
             ::NPC_474_0011::
-            b = me:dialog(npc, "허지만, 나는 참된 왕으로서 작은 도움을 구할 수는 없네. 자네가 괴로울만큼 어려운 부탁만을 할지도 몰라.", { prev = true, next = true })
+            b = me:dialog(npc, "허지만, 나는 참된 왕으로서 작은 도움을 구할 수는 없네. 자네가 괴로울만큼 어려운 부탁만을 할지도 몰라.",
+                { prev = true, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -99,7 +102,8 @@ return {
             if b == DIALOG_RESULT.PREV then
                 goto NPC_474_0012
             end
-            b = me:dialog(npc, "나에게 알려주지 않겠나? 부탁하겠네. 아마, 모든 왕들을 한번씩은 만나봐야 할게야. 여유있게 다녀오시게.", { prev = false, next = true })
+            b = me:dialog(npc, "나에게 알려주지 않겠나? 부탁하겠네. 아마, 모든 왕들을 한번씩은 만나봐야 할게야. 여유있게 다녀오시게.",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -113,7 +117,8 @@ return {
         end
 
         if main_step == 3 then
-            local b = me:dialog(npc, "토원왕께서 좋은 의견을 내주셨으시다. 저번에 구한 적이 있으시다니, 좌황활력환을 구해와 주시길 부탁드리겠다.", { prev = false, next = true })
+            local b = me:dialog(npc, "토원왕께서 좋은 의견을 내주셨으시다. 저번에 구한 적이 있으시다니, 좌황활력환을 구해와 주시길 부탁드리겠다.",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -128,11 +133,13 @@ return {
 
         if main_step == 5 then
             ::NPC_474_0020::
-            local b = me:dialog(npc, "음? 그럴수가... 우리 원숭이들은 어떻게 되어도 좋다는건가? 인간도 원숭이도 모두 하늘이 만드신 피조물이거늘...", { prev = false, next = true })
+            local b = me:dialog(npc, "음? 그럴수가... 우리 원숭이들은 어떻게 되어도 좋다는건가? 인간도 원숭이도 모두 하늘이 만드신 피조물이거늘...",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
-            b = me:dialog(npc, "어쩔 수 없지. 자, 이 편지를 가져다가 보여주시게. 그래도 아니 될 일이라면, 다른 대책을 강구해보는 수 밖에 없겠지.", { prev = false, next = true })
+            b = me:dialog(npc, "어쩔 수 없지. 자, 이 편지를 가져다가 보여주시게. 그래도 아니 될 일이라면, 다른 대책을 강구해보는 수 밖에 없겠지.",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -151,7 +158,8 @@ return {
 
         if main_step == 7 then
             ::NPC_474_0030::
-            local b = me:dialog(npc, "음, 약을 어떻게든 공급해주겠다는 약속을 받아냈으니, 어찌되었든 한숨 돌린 셈이군... 다행이야.", { prev = false, next = true })
+            local b = me:dialog(npc, "음, 약을 어떻게든 공급해주겠다는 약속을 받아냈으니, 어찌되었든 한숨 돌린 셈이군... 다행이야.",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -170,7 +178,8 @@ return {
 
         if main_step == 9 then
             ::NPC_474_0040::
-            local b = me:dialog(npc, "그래, 역시 문자를 알아야 연구를 할 수 있겠지. 음, 혹시 이 나라 사람들이 배우는 글책을 구할 수 있을까?", { prev = false, next = true })
+            local b = me:dialog(npc, "그래, 역시 문자를 알아야 연구를 할 수 있겠지. 음, 혹시 이 나라 사람들이 배우는 글책을 구할 수 있을까?",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -228,7 +237,8 @@ return {
             if b == DIALOG_RESULT.QUIT then
                 return
             end
-            b = me:dialog(npc, "아, 고맙네. 귀중한 목숨이 위험할때 반드시 요긴하게 쓰도록 하겠네. 자네는 정말 대단한 사람이구만...", { prev = false, next = true })
+            b = me:dialog(npc, "아, 고맙네. 귀중한 목숨이 위험할때 반드시 요긴하게 쓰도록 하겠네. 자네는 정말 대단한 사람이구만...",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -242,7 +252,8 @@ return {
 
         if main_step == 15 then
             ::NPC_474_0070::
-            local b = me:dialog(npc, "정말 애쓰는군. 하지만, 아직 다른 왕들의 의견이나 계책을 더 들어보았으면 한다네. 힘들겠지만,", { prev = false, next = true })
+            local b = me:dialog(npc, "정말 애쓰는군. 하지만, 아직 다른 왕들의 의견이나 계책을 더 들어보았으면 한다네. 힘들겠지만,",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -261,7 +272,8 @@ return {
 
         if main_step == 17 then
             ::NPC_474_0080::
-            local b = me:dialog(npc, "음... 자경단이라... 그래 확실히 전염병은 아니지만, 그 무서운 힘에 다치거나하면 더 큰일이긴하지.", { prev = false, next = true })
+            local b = me:dialog(npc, "음... 자경단이라... 그래 확실히 전염병은 아니지만, 그 무서운 힘에 다치거나하면 더 큰일이긴하지.",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -337,12 +349,14 @@ return {
 
         if main_step == 24 then
             ::NPC_474_0120::
-            local b = me:dialog(npc, "음, 그래 마른갈대가 있으면 아이들이 편하게 잘 수 있을지도 모르겠군.. 일단 그 마른갈대란 것을 구해서 우리 왕들에게", { prev = false, next = true })
+            local b = me:dialog(npc, "음, 그래 마른갈대가 있으면 아이들이 편하게 잘 수 있을지도 모르겠군.. 일단 그 마른갈대란 것을 구해서 우리 왕들에게",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_474_0121::
-            b = me:dialog(npc, "하나씩 나누어 주시게나. 일단 그 마른갈대가 무엇인지만 알면, 우리 나름대로 힘내서 구할 수가 있을게야. 일단", { prev = true, next = true })
+            b = me:dialog(npc, "하나씩 나누어 주시게나. 일단 그 마른갈대가 무엇인지만 알면, 우리 나름대로 힘내서 구할 수가 있을게야. 일단",
+                { prev = true, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end
@@ -380,7 +394,8 @@ return {
             if b == DIALOG_RESULT.QUIT then
                 return
             end
-            b = me:dialog(npc, "원숭이들의 왕인 나 참원왕의 가족일세. 자, 이걸 받으시게. 우리 참원왕 대대로 내려오는 해골 목걸이야.", { prev = false, next = true })
+            b = me:dialog(npc, "원숭이들의 왕인 나 참원왕의 가족일세. 자, 이걸 받으시게. 우리 참원왕 대대로 내려오는 해골 목걸이야.",
+                { prev = false, next = true })
             if b == DIALOG_RESULT.QUIT then
                 return
             end

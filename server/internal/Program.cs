@@ -6,6 +6,7 @@ using Http.Service.Amqp;
 using Http.Worker;
 
 namespace Http;
+
 public class Program
 {
     public static async Task Main(string[] args)

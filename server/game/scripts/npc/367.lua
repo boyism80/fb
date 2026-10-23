@@ -19,7 +19,8 @@ local function run_quest_accept(me, npc)
         return
     end
     ::NPC_367_0011::
-    btn = me:dialog(npc, "무엇을 주면 좋을까... 아 그렇지! 고대유물의 조각에는 귀한 금속의 결정이 조금씩 섞여 있는 경우가 있는데, 그것을 자네에게 주겠네.", { prev = true, next = true })
+    btn = me:dialog(npc, "무엇을 주면 좋을까... 아 그렇지! 고대유물의 조각에는 귀한 금속의 결정이 조금씩 섞여 있는 경우가 있는데, 그것을 자네에게 주겠네.",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -43,7 +44,8 @@ local function run_quest_accept(me, npc)
         goto NPC_367_0012
     end
     ::NPC_367_0014::
-    btn = me:dialog(npc, "이 구슬조각에는 귀환 금속의 결정이 조금씩 섞여 있는 경우가 있는데, 그것을 자네에게 주겠네. 우리 조사단에는 필요가 없는 물건이거든.", { prev = true, next = true })
+    btn = me:dialog(npc, "이 구슬조각에는 귀환 금속의 결정이 조금씩 섞여 있는 경우가 있는데, 그것을 자네에게 주겠네. 우리 조사단에는 필요가 없는 물건이거든.",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -111,7 +113,8 @@ local function run_bead_exchange(me, npc)
         return
     end
     if not me:has_items(bead_item, count) then
-        local btn = me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", { prev = false, next = false })
+        local btn = me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?",
+            { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -155,12 +158,15 @@ end
 
 local function run_intro_and_list(me, npc)
     ::NPC_367_0000::
-    local btn = me:dialog(npc, "남경과 남양은 고대 유물의 보고야. 누구라도 세심하게 조사하면 어디에서나 유물이 나올 정도라네. 그래서 우리 조사단은 여기를 근거지로 고대유물을 발굴하고 있지.", { prev = false, next = true })
+    local btn = me:dialog(npc,
+        "남경과 남양은 고대 유물의 보고야. 누구라도 세심하게 조사하면 어디에서나 유물이 나올 정도라네. 그래서 우리 조사단은 여기를 근거지로 고대유물을 발굴하고 있지.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     ::NPC_367_0001::
-    btn = me:dialog(npc, "하지만, 요새는 괴물들이 자주 출몰하여 위험해 지원자가 없지. 그래서 항상 사람이 모자란다네. 오늘도 두명이 괴물을 보자마자 도망쳤는데, 참 걱정일세..", { prev = true, next = true })
+    btn = me:dialog(npc, "하지만, 요새는 괴물들이 자주 출몰하여 위험해 지원자가 없지. 그래서 항상 사람이 모자란다네. 오늘도 두명이 괴물을 보자마자 도망쳤는데, 참 걱정일세..",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

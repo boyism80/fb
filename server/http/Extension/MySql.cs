@@ -9,7 +9,9 @@ namespace Http.Extension
         public static string Escape<T>(this T? obj) where T : struct
         {
             if (!obj.HasValue)
+            {
                 return "NULL";
+            }
 
             return EscapeNonNull(obj.Value);
         }
@@ -17,7 +19,9 @@ namespace Http.Extension
         public static string Escape(this string obj)
         {
             if (obj is null)
+            {
                 return "NULL";
+            }
 
             return EscapeNonNull(obj);
         }
@@ -25,7 +29,9 @@ namespace Http.Extension
         public static string Escape<T>(this T obj) where T : notnull
         {
             if (obj is null)
+            {
                 return "NULL";
+            }
 
             return EscapeNonNull(obj);
         }
@@ -36,21 +42,45 @@ namespace Http.Extension
             {
                 var underlyingType = System.Enum.GetUnderlyingType(enumValue.GetType());
                 if (underlyingType == typeof(byte))
+                {
                     return ((byte)(object)enumValue).ToString();
+                }
+
                 if (underlyingType == typeof(sbyte))
+                {
                     return ((sbyte)(object)enumValue).ToString();
+                }
+
                 if (underlyingType == typeof(short))
+                {
                     return ((short)(object)enumValue).ToString();
+                }
+
                 if (underlyingType == typeof(ushort))
+                {
                     return ((ushort)(object)enumValue).ToString();
+                }
+
                 if (underlyingType == typeof(int))
+                {
                     return ((int)(object)enumValue).ToString();
+                }
+
                 if (underlyingType == typeof(uint))
+                {
                     return ((uint)(object)enumValue).ToString();
+                }
+
                 if (underlyingType == typeof(long))
+                {
                     return ((long)(object)enumValue).ToString();
+                }
+
                 if (underlyingType == typeof(ulong))
+                {
                     return ((ulong)(object)enumValue).ToString();
+                }
+
                 return Convert.ToInt32(enumValue).ToString();
             }
 

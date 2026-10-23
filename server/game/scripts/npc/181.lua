@@ -10,7 +10,8 @@ return {
 
         if q == nil then
             ::NPC_181_0001::
-            btn = me:dialog(npc, '혹시 자네도 이 이글거리는 기운이 보이는가? 집 전체에 귀기가 서려서 잠을 잘 수가 없군. 집값이 싸서 샀더니만 이런 귀신 붙은 집일 줄 몰랐어.', { prev = false, next = true })
+            btn = me:dialog(npc, '혹시 자네도 이 이글거리는 기운이 보이는가? 집 전체에 귀기가 서려서 잠을 잘 수가 없군. 집값이 싸서 샀더니만 이런 귀신 붙은 집일 줄 몰랐어.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -23,7 +24,8 @@ return {
                 return
             end
             ::NPC_181_0003::
-            sel = me:list(npc, '그래서 조금 전까지는 부적을 묻고 있는 중이였는데, 나 혼자서는 안되겠더구만. 보다시피 나 혼자 살기에는 집이 좀 넓어서 말이야.', { '제가 좀 도와 드리죠.', '열심히 붙이세요. 전 나가봐야겠네요.' })
+            sel = me:list(npc, '그래서 조금 전까지는 부적을 묻고 있는 중이였는데, 나 혼자서는 안되겠더구만. 보다시피 나 혼자 살기에는 집이 좀 넓어서 말이야.',
+                { '제가 좀 도와 드리죠.', '열심히 붙이세요. 전 나가봐야겠네요.' })
             if sel == nil or sel ~= 1 then
                 if sel == 2 then
                     me:dialog(npc, '아이고. 이 많은 부적을 언제 다 묻는담...', { prev = false, next = false })
@@ -35,7 +37,8 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '이 부적을 가지고 집 구석구석을 살피다가... 허술해 보이는 부분이 있으면 바닥에 묻어주게나. 잘 부탁하네.', { prev = true, next = true })
+            btn = me:dialog(npc, '이 부적을 가지고 집 구석구석을 살피다가... 허술해 보이는 부분이 있으면 바닥에 묻어주게나. 잘 부탁하네.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_181_0004
             end
@@ -73,7 +76,8 @@ return {
                 return
             end
             ::NPC_181_0007::
-            btn = me:dialog(npc, '그런데 이 부적은 예전에 중국에 갔을 때 귀신 쫓는 데에 능하다는 고승에게 받은 것이라 더 받으려면 중국까지 가야 할 판국이야. 이거 야단났군...', { prev = true, next = true })
+            btn = me:dialog(npc, '그런데 이 부적은 예전에 중국에 갔을 때 귀신 쫓는 데에 능하다는 고승에게 받은 것이라 더 받으려면 중국까지 가야 할 판국이야. 이거 야단났군...',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_181_0006
             end
@@ -93,7 +97,9 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '그렇지. 그 스님을 찾는다면 이름이라도 가르쳐 줘야겠군. 뭐라고 했더라? ...아, 그렇지.\n\n중국에 있다는 그 시님의 법명은 \'마타\'라고 했다네. 미안하지만 부적을 얻어 와 주게나. 부탁하네.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '그렇지. 그 스님을 찾는다면 이름이라도 가르쳐 줘야겠군. 뭐라고 했더라? ...아, 그렇지.\n\n중국에 있다는 그 시님의 법명은 \'마타\'라고 했다네. 미안하지만 부적을 얻어 와 주게나. 부탁하네.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_181_0009
             end
@@ -128,7 +134,9 @@ return {
                 return
             end
             ::NPC_181_0013::
-            btn = me:dialog(npc, '이건 내가 예전에 귀신을 쫓아 보려고 샀던 부적이야. 비슷하게 생겨서 효과가 있으려니 하고 샀더니만 귀신 쫓는 데에는 효과가 없고 그저 머리가 좀 맑아지더구만.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '이건 내가 예전에 귀신을 쫓아 보려고 샀던 부적이야. 비슷하게 생겨서 효과가 있으려니 하고 샀더니만 귀신 쫓는 데에는 효과가 없고 그저 머리가 좀 맑아지더구만.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_181_0012
             end

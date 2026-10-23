@@ -31,7 +31,9 @@ local function run_form(me, npc, class_name, partner, schedule)
         "참여일정 : " .. schedule_display,
         "제출하기",
     }
-    local sel, btn = me:list(npc, "마동 최강자전 참가 신청입니다. 모든 공란을 채워 넣으신 후, 제출 버튼을 눌러주세요. 제출 뒤에는 수정이 불가능 하니 신중하게 검토하여 신청 하시기 바랍니다.", labels, { prev = false })
+    local sel, btn = me:list(npc,
+        "마동 최강자전 참가 신청입니다. 모든 공란을 채워 넣으신 후, 제출 버튼을 눌러주세요. 제출 뒤에는 수정이 불가능 하니 신중하게 검토하여 신청 하시기 바랍니다.", labels,
+        { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -40,7 +42,8 @@ local function run_form(me, npc, class_name, partner, schedule)
     end
 
     if sel == 1 then
-        local sub, sub_btn = me:list(npc, "마동최강자전에 참여하실 클래스를 선택하여 주세요. (파트너와 충분한 협의 후 신청하시길 바랍니다.)", CLASS_OPTIONS, { prev = false })
+        local sub, sub_btn = me:list(npc, "마동최강자전에 참여하실 클래스를 선택하여 주세요. (파트너와 충분한 협의 후 신청하시길 바랍니다.)", CLASS_OPTIONS,
+            { prev = false })
         if sub_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -59,7 +62,8 @@ local function run_form(me, npc, class_name, partner, schedule)
     end
 
     if sel == 2 then
-        local raw = me:input(npc, "파트너의 아이디를 입력하여 주십시오.", { top = "파트너의 아이디는", bottom = "입니다.", maxlen = 20, prev = false })
+        local raw = me:input(npc, "파트너의 아이디를 입력하여 주십시오.",
+            { top = "파트너의 아이디는", bottom = "입니다.", maxlen = 20, prev = false })
         if raw == DIALOG_RESULT.QUIT then
             return
         end
@@ -136,7 +140,8 @@ return {
         local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q ~= nil and q:step() == 1 then
             local class_name, partner, schedule = parse_param(q:param())
-            me:dialog(npc, "이미 제출하셨습니다.\n선택클래스:" .. class_name .. "\n파트너아이디:" .. partner .. "\n참여일:" .. schedule .. "", { prev = false, next = false })
+            me:dialog(npc, "이미 제출하셨습니다.\n선택클래스:" .. class_name .. "\n파트너아이디:" .. partner .. "\n참여일:" .. schedule .. "",
+                { prev = false, next = false })
             return
         end
 
@@ -157,7 +162,8 @@ return {
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "참가 과정에서 별도의 파트너 동의 여부는 이루어지지 않습니다만, 추 후 검토하게 되므로 반드시 신중하게 참가 신청을 해 주시길 바랍니다.", { prev = false, next = false })
+        d = me:dialog(npc, "참가 과정에서 별도의 파트너 동의 여부는 이루어지지 않습니다만, 추 후 검토하게 되므로 반드시 신중하게 참가 신청을 해 주시길 바랍니다.",
+            { prev = false, next = false })
         if d == DIALOG_RESULT.QUIT then
             return
         end

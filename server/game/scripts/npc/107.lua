@@ -26,17 +26,21 @@ local function dojaeyoung_nobidocument(me, npc)
         return
     end
 
-    local sel, lb = me:list(npc, '아니, 이것은... 얼마 전에 풀어 줬던 황비연의 노비문서군요. 생각납니다. 여기서 일하던 노비였는데, 참 의협심이 강한 청년이였죠. 그는 잘 있나요?', { '예, 실은...' }, { prev = true })
+    local sel, lb = me:list(npc, '아니, 이것은... 얼마 전에 풀어 줬던 황비연의 노비문서군요. 생각납니다. 여기서 일하던 노비였는데, 참 의협심이 강한 청년이였죠. 그는 잘 있나요?',
+        { '예, 실은...' }, { prev = true })
     if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
     ::NPC_107_0001::
-    local btn = me:dialog(npc, '예? 뭐라고요? 그게 사실입니까? 하하... 이거 참, 뭐라고 말해야 할지...\n\n황비연... 그가 의적이 되어 탐관오리를 혼내주고 사람들을 돕고 있단 말이지요?', { prev = false, next = true })
+    local btn = me:dialog(npc,
+        '예? 뭐라고요? 그게 사실입니까? 하하... 이거 참, 뭐라고 말해야 할지...\n\n황비연... 그가 의적이 되어 탐관오리를 혼내주고 사람들을 돕고 있단 말이지요?',
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     ::NPC_107_0010::
-    btn = me:dialog(npc, '뭐라고 해야 할까... 참 대견스럽군요. 그가 어느날 갑자기 어려운 사람들을 돕고 싶다며 풀어달라고 할 때에는 반신반의했었지요.', { prev = true, next = true })
+    btn = me:dialog(npc, '뭐라고 해야 할까... 참 대견스럽군요. 그가 어느날 갑자기 어려운 사람들을 돕고 싶다며 풀어달라고 할 때에는 반신반의했었지요.',
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.PREV then
         goto NPC_107_0001
     end
@@ -56,7 +60,9 @@ local function dojaeyoung_nobidocument(me, npc)
         return
     end
     ::NPC_107_0012::
-    btn = me:dialog(npc, '아마, 아무리 의적이라고 해도 도둑직을 한 것이 부끄러워서 제게 직접 오지 못한 것이겠죠. 하하...\n\n그에게 전해 주십시오. 우린 모두 너를 아주 자랑스럽게 여기고 있다고... 하하하...', { prev = false, next = true })
+    btn = me:dialog(npc,
+        '아마, 아무리 의적이라고 해도 도둑직을 한 것이 부끄러워서 제게 직접 오지 못한 것이겠죠. 하하...\n\n그에게 전해 주십시오. 우린 모두 너를 아주 자랑스럽게 여기고 있다고... 하하하...',
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.PREV then
         goto NPC_107_0011
     end
@@ -81,7 +87,9 @@ end
 
 local function dojaeyoung_herb_start(me, npc)
     ::NPC_107_0020::
-    local btn = me:dialog(npc, '안녕하세요 ' .. me:name() .. '님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.', { prev = false, next = true })
+    local btn = me:dialog(npc,
+        '안녕하세요 ' .. me:name() .. '님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.',
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -94,7 +102,8 @@ local function dojaeyoung_herb_start(me, npc)
         return
     end
     ::NPC_107_0022::
-    local sel, lb = me:list(npc, '의사의 말에 따르면 도삭산의 토끼들이 가지고 있는 약초를 달여서 지은 약을 드시면 차도가 있으실꺼라고 했는데...', { '제가 구해드리겠습니다.', '그렇군요..' }, { prev = false })
+    local sel, lb = me:list(npc, '의사의 말에 따르면 도삭산의 토끼들이 가지고 있는 약초를 달여서 지은 약을 드시면 차도가 있으실꺼라고 했는데...',
+        { '제가 구해드리겠습니다.', '그렇군요..' }, { prev = false })
     if lb == DIALOG_RESULT.QUIT then
         return
     end
@@ -121,7 +130,9 @@ local function dojaeyoung_herb_start(me, npc)
         return
     end
     ::NPC_107_0026::
-    btn = me:dialog(npc, '도삭산의 토끼들은 151층에서 200층에서 나온다고 합니다. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 하네요.\n\n그럼 잘 부탁드리겠습니다! 감사합니다!', { prev = true, next = false })
+    btn = me:dialog(npc,
+        '도삭산의 토끼들은 151층에서 200층에서 나온다고 합니다. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 하네요.\n\n그럼 잘 부탁드리겠습니다! 감사합니다!',
+        { prev = true, next = false })
     if btn == DIALOG_RESULT.PREV then
         goto NPC_107_0025
     end
@@ -132,8 +143,9 @@ local function dojaeyoung_herb_turnin(me, npc)
     if q == nil or q:step() ~= 1 then
         return
     end
-    if not me:has_items({['약초잎사귀'] = 5, ['약초가지'] = 1}) then
-        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', { prev = false, next = false })
+    if not me:has_items({ ['약초잎사귀'] = 5, ['약초가지'] = 1 }) then
+        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.',
+            { prev = false, next = false })
         return
     end
     local btn = me:dialog(npc, '약초잎사귀와 약초가지를 구하셨군요! 감사합니다! 이것으로 저희 아버지가 건강을 되찾으시겠군요!', { prev = false, next = true })
@@ -145,7 +157,8 @@ local function dojaeyoung_herb_turnin(me, npc)
         { ['item'] = { ['강철의구두'] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', { prev = false, next = false })
+        me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.',
+            { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then
@@ -177,7 +190,7 @@ end
 
 return {
     on_click = function(me, npc)
-        local options = {'황비연 퀘스트'}
+        local options = { '황비연 퀘스트' }
         local hwangbiyeon = me:quest(quest.QUEST_HWANGBIYEON)
         local herb = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
         if herb ~= nil or (hwangbiyeon ~= nil and hwangbiyeon:step() >= 2) then

@@ -10,7 +10,9 @@ return {
             return
         end
 
-        local button = me:dialog(npc, string.format('%s님이 아니었으면 이번에 저는 견우님을 못 만날뻔 했네요... 정말 감사합니다. 이 은혜를 어떻게 갚아야 할지...', me:name()), { prev = false, next = true })
+        local button = me:dialog(npc,
+            string.format('%s님이 아니었으면 이번에 저는 견우님을 못 만날뻔 했네요... 정말 감사합니다. 이 은혜를 어떻게 갚아야 할지...', me:name()),
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

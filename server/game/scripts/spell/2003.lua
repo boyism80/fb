@@ -7,7 +7,7 @@ return {
         local mp = 30
         local effect = nil
         local sound = 19
-        if not spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+        if not spell.cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             return
         end
 
@@ -17,7 +17,8 @@ return {
                 title = string.format('%s\n', title)
             end
 
-            local message = string.format('%s %s 레벨 %d\n%s힘 : %d 민첩성 : %d 지능 : %d', you:class(), you:name(), you:level(), title, you:str(), you:dex(), you:int())
+            local message = string.format('%s %s 레벨 %d\n%s힘 : %d 민첩성 : %d 지능 : %d', you:class(), you:name(), you:level(),
+                title, you:str(), you:dex(), you:int())
             me:message(message, MESSAGE_TYPE.POPUP)
         else
             me:message(you:name(), MESSAGE_TYPE.POPUP)

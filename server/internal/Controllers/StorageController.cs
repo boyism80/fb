@@ -31,7 +31,9 @@ namespace Internal.Controllers
             {
                 DateTime? expireDate = null;
                 if (!string.IsNullOrEmpty(request.ExpireDate) && DateTime.TryParse(request.ExpireDate, out var parsedDate))
+                {
                     expireDate = parsedDate;
+                }
 
                 var attachments = string.IsNullOrWhiteSpace(request.Attachments)
                     ? new List<Fb.Model.Dsl>()
@@ -47,7 +49,7 @@ namespace Internal.Controllers
                     {
                         return new Response.WriteStorageBox
                         {
-                            Host  = request.Host,
+                            Host = request.Host,
                             Error = (uint)ErrorCode.NotFoundCharacter
                         };
                     }
@@ -59,7 +61,7 @@ namespace Internal.Controllers
                 {
                     return new Response.WriteStorageBox
                     {
-                        Host  = request.Host,
+                        Host = request.Host,
                         Error = (uint)ErrorCode.Unhandled
                     };
                 }
@@ -75,8 +77,8 @@ namespace Internal.Controllers
 
                 return new Response.WriteStorageBox
                 {
-                    Box   = _mapper.Map<Protocol.StorageBox>(box),
-                    Host  = request.Host,
+                    Box = _mapper.Map<Protocol.StorageBox>(box),
+                    Host = request.Host,
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -84,7 +86,7 @@ namespace Internal.Controllers
             {
                 return new Response.WriteStorageBox
                 {
-                    Host  = request.Host,
+                    Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

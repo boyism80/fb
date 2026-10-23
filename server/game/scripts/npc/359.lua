@@ -35,15 +35,18 @@ return {
         end
 
         if sel == 1 then
-            btn = me:dialog(npc, "삼짇날은 음력 3월 3일이에요. 날씨가 포근하고 개나리와 진달래가 만발하는 시기에 있는 명절이랍니다.", { prev = false, next = true })
+            btn = me:dialog(npc, "삼짇날은 음력 3월 3일이에요. 날씨가 포근하고 개나리와 진달래가 만발하는 시기에 있는 명절이랍니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "음력 9월 9일 중양절에 강남갔던 제비가 돌아오는 날이라고도 해요. 요즘 세시마을에서 제비가 날아다니는거 보셨나요?", { prev = false, next = true })
+            btn = me:dialog(npc, "음력 9월 9일 중양절에 강남갔던 제비가 돌아오는 날이라고도 해요. 요즘 세시마을에서 제비가 날아다니는거 보셨나요?",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, "삼짇날엔 진달래꽃으로 떡을 만들어서 화전을 해먹기도 하죠. 혹은 녹두에 반죽해서 국수를 만들어먹기도 해요. 이것을 화면(花麵)이라고 하죠.", { prev = false, next = false })
+            me:dialog(npc, "삼짇날엔 진달래꽃으로 떡을 만들어서 화전을 해먹기도 하죠. 혹은 녹두에 반죽해서 국수를 만들어먹기도 해요. 이것을 화면(花麵)이라고 하죠.",
+                { prev = false, next = false })
             return
         end
 
@@ -93,11 +96,15 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "아 " .. me:name() .. "님. 손님이 계신데 저희끼리 얘기했네요. 죄송합니다. 놀러가고 싶은데 못가서 속상해서 그런거에요. 화면을 만들어도 기운이 없어서 그런지 제대로 안만들어지구요..", { prev = false, next = true })
+            btn = me:dialog(npc,
+                "아 " ..
+                me:name() .. "님. 손님이 계신데 저희끼리 얘기했네요. 죄송합니다. 놀러가고 싶은데 못가서 속상해서 그런거에요. 화면을 만들어도 기운이 없어서 그런지 제대로 안만들어지구요..",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "앗. 그럼 " .. me:name() .. "님이 나비를 좀 잡아주시겠어요? 그럼 기운이 나서 맛있는 화면을 만들 수 있을것 같은데. 헤헤헤", { prev = false, next = true })
+            btn = me:dialog(npc, "앗. 그럼 " .. me:name() .. "님이 나비를 좀 잡아주시겠어요? 그럼 기운이 나서 맛있는 화면을 만들 수 있을것 같은데. 헤헤헤",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

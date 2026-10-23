@@ -90,7 +90,8 @@ return {
         if step ~= 19 then
             return
         end
-        local sel, list_btn = me:list(mob, "으윽. 이계로까지 도망갔다 온 나를 어떻게 발견했지...", { "네놈이 아무리 날고 뛰어봐야 용왕님이" }, { prev = false })
+        local sel, list_btn = me:list(mob, "으윽. 이계로까지 도망갔다 온 나를 어떻게 발견했지...", { "네놈이 아무리 날고 뛰어봐야 용왕님이" },
+            { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end

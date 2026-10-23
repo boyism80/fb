@@ -1,7 +1,7 @@
 local M = {}
 
 function M.handle(me, npc)
-::MARKETPLACE_MENU::
+    ::MARKETPLACE_MENU::
     local marketplace_selected, button = me:pursuit(npc, '거래소 메뉴', { '검색', '등록', '취소' })
     if button == DIALOG_RESULT.QUIT then
         return true
@@ -30,7 +30,7 @@ function M.handle(me, npc)
 end
 
 function M.search(me, npc)
-::MARKETPLACE_SEARCH::
+    ::MARKETPLACE_SEARCH::
     local item_name_input = me:input(npc, '아이템 이름을 입력해주세요.')
     if item_name_input == nil or item_name_input == '' then
         return
@@ -252,7 +252,8 @@ function M.search(me, npc)
                 model_durability = 0
             end
             if selected_listing.item_data.durability ~= nil and selected_listing.item_data.durability ~= model_durability then
-                table.insert(warning_messages, string.format('내구도: %d (기본값: %d)', selected_listing.item_data.durability, model_durability))
+                table.insert(warning_messages,
+                    string.format('내구도: %d (기본값: %d)', selected_listing.item_data.durability, model_durability))
             end
         end
     end
@@ -310,7 +311,7 @@ function M.search(me, npc)
 end
 
 function M.list(me, npc)
-::MARKETPLACE_LIST::
+    ::MARKETPLACE_LIST::
     local slots = {}
     local items = {}
     for slot, item in pairs(me:items()) do
@@ -432,7 +433,7 @@ function M.list(me, npc)
 end
 
 function M.cancel(me, npc)
-::MARKETPLACE_CANCEL::
+    ::MARKETPLACE_CANCEL::
     local my_listings_option = {}
     my_listings_option.seller_id = me:uid()
     my_listings_option.page = 1
@@ -470,7 +471,7 @@ function M.cancel(me, npc)
                 listing_map[item_name] = {}
             end
             table.insert(listing_map[item_name], listing)
-            table.insert(item_list, {item_name, listing.price})
+            table.insert(item_list, { item_name, listing.price })
         end
     end
 

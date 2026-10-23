@@ -76,7 +76,7 @@ local function run_rabbit_liver_quest(me, npc)
         me:dialog(npc, '아직 토끼의간을 구하시지 못하셨군요..', { prev = false, next = false })
         return
     end
-    
+
     ::NPC_144_0007::
     btn = me:dialog(npc, '토끼의간을 구해오셨군요! 용왕님의 병에 토끼의 간을 써도 될까요?', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
@@ -126,7 +126,8 @@ local function run_shark_weapon_quest(me, npc)
     local btn
     if q == nil then
         ::NPC_144_0020::
-        btn = me:dialog(npc, '상어장군이 사용하던 무기의 제작법이 드디어 알려졌다는 소문이 있다네...\n\n그 무기의 제작 방법을 아는 사람이 았다는 것 같더군.', { prev = false, next = true })
+        btn = me:dialog(npc, '상어장군이 사용하던 무기의 제작법이 드디어 알려졌다는 소문이 있다네...\n\n그 무기의 제작 방법을 아는 사람이 았다는 것 같더군.',
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -154,7 +155,8 @@ local function run_shark_weapon_quest(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, '단지 지나가는 말로 아주 추운 지방에서 누군가 알고 있다고 들은 기억이 있어서 말이야..\n\n자세한 건 자네가 직접 찾아봐야 할거야...\n\n그럼 부탁하네.', { prev = false, next = false })
+        me:dialog(npc, '단지 지나가는 말로 아주 추운 지방에서 누군가 알고 있다고 들은 기억이 있어서 말이야..\n\n자세한 건 자네가 직접 찾아봐야 할거야...\n\n그럼 부탁하네.',
+            { prev = false, next = false })
         return
     end
 
@@ -182,7 +184,8 @@ local function run_shark_weapon_quest(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_144_0030
         end
-        btn = me:dialog(npc, '이걸 만들기 위해서 상어의핵 3개와 불의수정 3개가 필요하다네.\n\n자네가 재료를 다 모아 온다면 내가 직접 만들어 주도록 하겠네.', { prev = false, next = true })
+        btn = me:dialog(npc, '이걸 만들기 위해서 상어의핵 3개와 불의수정 3개가 필요하다네.\n\n자네가 재료를 다 모아 온다면 내가 직접 만들어 주도록 하겠네.',
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

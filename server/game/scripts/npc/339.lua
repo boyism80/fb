@@ -40,7 +40,8 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "배심원 투표는 사적인 친분이나 이해관계에 따라 이뤄지면 안되며, 반드시 공정한 저울의 눈금 위에 있어야만 합니다.", { prev = false, next = true })
+        btn = me:dialog(npc, "배심원 투표는 사적인 친분이나 이해관계에 따라 이뤄지면 안되며, 반드시 공정한 저울의 눈금 위에 있어야만 합니다.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -73,7 +74,8 @@ return {
             return
         end
         if sel == 2 then
-            me:dialog(npc, "재판정은 당신의 의견을 존중합니다. 그러나 배심원 투표에 있어서는 당신의 참여는 투표에 적합하지 않은 것 같군요.", { prev = false, next = false })
+            me:dialog(npc, "재판정은 당신의 의견을 존중합니다. 그러나 배심원 투표에 있어서는 당신의 참여는 투표에 적합하지 않은 것 같군요.",
+                { prev = false, next = false })
             return
         end
 

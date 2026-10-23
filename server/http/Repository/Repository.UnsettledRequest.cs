@@ -25,7 +25,9 @@ namespace Http.Reepository
         public async Task<IReadOnlyDictionary<uint, IReadOnlyList<UnsettledRequest>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
         {
             if (ownerIds == null || ownerIds.Count == 0)
+            {
                 return new Dictionary<uint, IReadOnlyList<UnsettledRequest>>();
+            }
 
             var keys = ownerIds.Distinct().Select(uid => new UnsettledRequestKey { User = uid, Id = 0 }).ToList();
             var list = await base.GetMany(world, keys);
@@ -76,7 +78,9 @@ namespace Http.Reepository
         protected override string OnDeleteMany(IReadOnlyList<UnsettledRequestKey> keys)
         {
             if (keys.Count == 0)
+            {
                 return string.Empty;
+            }
 
             var user = keys[0].User;
             return $"""
@@ -93,7 +97,9 @@ namespace Http.Reepository
         protected override string OnUpsert(UnsettledRequest[] values)
         {
             if (values.Length == 0)
+            {
                 return string.Empty;
+            }
 
             var args = values.Select(value => $"""
                 ({value.User.Escape()},

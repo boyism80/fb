@@ -24,7 +24,9 @@ namespace MapEditor.ViewModel
         public void RequestSaveAs(MapDocument document)
         {
             if (document != null && CanOpen)
+            {
                 SaveAsRequested?.Invoke(document);
+            }
         }
 
         /// <summary>
@@ -46,7 +48,10 @@ namespace MapEditor.ViewModel
             {
                 var ids = items?.OfType<MapEntry>().Select(m => m.Id).ToList() ?? new List<int>();
                 if (ids.Count == 0 && SelectedMap != null)
+                {
                     ids.Add(SelectedMap.Id);
+                }
+
                 DeleteMaps(ids);
             });
         }
@@ -59,7 +64,9 @@ namespace MapEditor.ViewModel
         public int DeleteMaps(IReadOnlyCollection<int> ids)
         {
             if (_spawns == null || Busy)
+            {
                 throw new InvalidOperationException("the editor is still loading");
+            }
 
             var entries = Maps.Where(m => ids.Contains(m.Id)).ToList();
             if (entries.Count == 0)
@@ -78,11 +85,19 @@ namespace MapEditor.ViewModel
                           ".map / .block 파일은 휴지통으로 이동하고 map.xlsx 행과 npc_spawn, mob_spawn, warp 항목을 지웁니다.";
             var closing = OpenDocuments.Where(d => deleted.Contains(d.Id)).ToList();
             if (closing.Count > 0)
+            {
                 message += closing.Any(d => d.Dirty) ? "\n\n열려 있는 맵이 포함되어 있으며 저장하지 않은 변경 사항은 버려집니다." : "\n\n열려 있는 맵이 포함되어 있어 탭이 닫힙니다.";
+            }
+
             if (incoming.Count > 0)
+            {
                 message += $"\n\n다른 맵 {incoming.Distinct().Count()}곳에서 이 맵으로 가는 워프 {incoming.Count}개는 그대로 남습니다 (워프 검사로 찾을 수 있음).";
+            }
+
             if (MessageBox.Show(message, "맵 삭제", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
+            {
                 return 0;
+            }
 
             try
             {
@@ -95,9 +110,14 @@ namespace MapEditor.ViewModel
             }
 
             if (Document != null && deleted.Contains(Document.Id))
+            {
                 Activate(OpenDocuments.FirstOrDefault(d => deleted.Contains(d.Id) == false));
+            }
+
             foreach (var document in closing)
+            {
                 OpenDocuments.Remove(document);
+            }
 
             var directory = Settings.MapDirectory;
             var files = deleted.SelectMany(id => new[] { ".map", ".block", ".map.bak", ".block.bak" }.Select(ext => Path.Combine(directory, $"{id:000000}{ext}")))

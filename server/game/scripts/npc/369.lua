@@ -21,7 +21,8 @@ return {
         end
 
         ::NPC_369_0000::
-        local button = me:dialog(npc, "아니! 자네 그것은 신선의책이 아닌가!\n\n요즘 도삭산이 시끄럽더니, 자네가 신선의책을 가져가서였군?", { prev = false, next = true })
+        local button = me:dialog(npc, "아니! 자네 그것은 신선의책이 아닌가!\n\n요즘 도삭산이 시끄럽더니, 자네가 신선의책을 가져가서였군?",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

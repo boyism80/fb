@@ -215,7 +215,7 @@ local function wait_money(ctx, bot, expected, first_wait_ms)
         progress(bot, string.format("money not settled yet attempt=%d money=%d expected=%d",
             attempt, bot:money(), expected))
         ctx:sleep(SETTLE_POLL_MS)
-    end
+    end)
     return false
 end
 

@@ -140,6 +140,7 @@
 </div>
 
 @code {
+
     [Parameter, EditorRequired]
     public UserDetailItemsData Items { get; set; } = null!;
 
@@ -160,4 +161,5 @@
         var vaultCount = Items.Storage.Select(i => i.Stored).Distinct().Count();
         return $"{Items.Storage.Count}개 · 창고 {vaultCount}개";
     }
+
 }

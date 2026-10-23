@@ -4,12 +4,20 @@ local chilsung = require('lib.chilsung_entrance')
 
 -- Well tiles near 단오집 (머리감기 warp).
 local WELL = {
-    ['38,3'] = true, ['38,4'] = true, ['38,5'] = true, ['38,6'] = true,
-    ['39,3'] = true, ['39,6'] = true, ['39,7'] = true,
-    ['40,2'] = true, ['40,7'] = true,
+    ['38,3'] = true,
+    ['38,4'] = true,
+    ['38,5'] = true,
+    ['38,6'] = true,
+    ['39,3'] = true,
+    ['39,6'] = true,
+    ['39,7'] = true,
+    ['40,2'] = true,
+    ['40,7'] = true,
     ['41,2'] = true,
-    ['42,2'] = true, ['42,7'] = true,
-    ['43,3'] = true, ['43,6'] = true,
+    ['42,2'] = true,
+    ['42,7'] = true,
+    ['43,3'] = true,
+    ['43,6'] = true,
 }
 
 return {

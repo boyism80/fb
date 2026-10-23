@@ -73,14 +73,19 @@ namespace MapEditor.ViewModel
             PlaceTemplateCommand = new RelayCommand(_ =>
             {
                 if (SelectedTemplate != null)
+                {
                     Tool = EditTool.Template;
+                }
             });
             EditTemplateCommand = new RelayCommand(_ => EditTemplate(SelectedTemplate));
             DeleteTemplatesCommand = new RelayCommand<System.Collections.IList>(items =>
             {
                 var templates = items?.OfType<MapTemplate>().ToList() ?? new List<MapTemplate>();
                 if (templates.Count == 0 && SelectedTemplate != null)
+                {
                     templates.Add(SelectedTemplate);
+                }
+
                 DeleteTemplates(templates);
             });
             SaveSelectionAsTemplateCommand = new RelayCommand(_ => SaveTemplateFrom(Selection.ToList()));
@@ -104,7 +109,10 @@ namespace MapEditor.ViewModel
             try
             {
                 foreach (var template in TemplateFile.Read(TemplatePath))
+                {
                     Templates.Add(template);
+                }
+
                 StatusText = $"템플릿 {Templates.Count}개: {TemplatePath}";
             }
             catch (Exception e)
@@ -140,7 +148,9 @@ namespace MapEditor.ViewModel
                 OverwritePrompt = false,
             };
             if (dialog.ShowDialog() != true)
+            {
                 return;
+            }
 
             User.TemplateFile = dialog.FileName;
             OnPropertyChanged(nameof(TemplatePath));
@@ -160,7 +170,9 @@ namespace MapEditor.ViewModel
             else
             {
                 if (SaveTemplates())
+                {
                     StatusText = $"템플릿 {Templates.Count}개를 새 파일에 저장: {dialog.FileName}";
+                }
             }
         }
 
@@ -172,11 +184,15 @@ namespace MapEditor.ViewModel
             foreach (var instance in instances)
             {
                 foreach (var cell in instance.Cells)
+                {
                     cells.TryAdd(cell, instance);
+                }
             }
             var counts = instances.GroupBy(i => i.Template).ToDictionary(g => g.Key, g => g.Count());
             foreach (var template in Templates)
+            {
                 template.OpenMapCount = counts.GetValueOrDefault(template);
+            }
 
             _templateCells = cells;
             TemplateInstances = instances;
@@ -202,7 +218,9 @@ namespace MapEditor.ViewModel
         public void FindTemplate(MapTemplate template)
         {
             if (template == null || Document == null)
+            {
                 return;
+            }
 
             var instances = TemplateInstances.Where(i => i.Template == template).ToList();
             if (instances.Count == 0)
@@ -225,7 +243,9 @@ namespace MapEditor.ViewModel
         public void SaveTemplateFrom(IReadOnlyCollection<(int X, int Y)> cells)
         {
             if (Document == null || Assets == null)
+            {
                 return;
+            }
 
             var inside = cells.Where(c => Document.Map.Contains(c.X, c.Y)).ToHashSet();
             if (inside.Count == 0)
@@ -237,7 +257,9 @@ namespace MapEditor.ViewModel
             var template = MapTemplate.FromCells($"{Document.Name} 템플릿", (x, y) => (Document.Get(x, y).Tile, Document.Get(x, y).Object), inside);
             var edited = TemplateEditWindow.Edit(template, Assets, "템플릿 추가");
             if (edited != null)
+            {
                 AddTemplates(new[] { edited });
+            }
         }
 
         public void AddTemplates(IReadOnlyCollection<MapTemplate> templates)
@@ -264,11 +286,15 @@ namespace MapEditor.ViewModel
         public void EditTemplate(MapTemplate template)
         {
             if (template == null || Assets == null)
+            {
                 return;
+            }
 
             var edited = TemplateEditWindow.Edit(template.Clone(), Assets, "템플릿 편집");
             if (edited == null)
+            {
                 return;
+            }
 
             template.Name = edited.Name;
             template.Width = edited.Width;
@@ -283,19 +309,32 @@ namespace MapEditor.ViewModel
         public int DeleteTemplates(IReadOnlyCollection<MapTemplate> templates)
         {
             if (templates.Count == 0)
+            {
                 return 0;
+            }
 
             var names = string.Join("\n", templates.Take(15).Select(t => $"  {t.Name}")) + (templates.Count > 15 ? $"\n  ... 외 {templates.Count - 15}개" : "");
             if (MessageBox.Show($"템플릿 {templates.Count}개를 삭제할까요? 맵은 바뀌지 않습니다.\n\n{names}", "템플릿 삭제",
                                 MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
+            {
                 return 0;
+            }
 
             foreach (var template in templates.ToList())
+            {
                 Templates.Remove(template);
+            }
+
             if (SelectedTemplate != null && Templates.Contains(SelectedTemplate) == false)
+            {
                 SelectedTemplate = null;
+            }
+
             if (Tool == EditTool.Template && SelectedTemplate == null)
+            {
                 Tool = EditTool.Select;
+            }
+
             if (TemplatePlacesOf != null && Templates.Contains(TemplatePlacesOf) == false)
             {
                 _templatePlaceRevision++;
@@ -316,7 +355,9 @@ namespace MapEditor.ViewModel
         public int PlaceTemplate(MapTemplate template, int x, int y)
         {
             if (Document == null || template == null)
+            {
                 return 0;
+            }
 
             var cells = new List<(int X, int Y, CellValue Value)>();
             foreach (var cell in template.Cells)
@@ -324,13 +365,21 @@ namespace MapEditor.ViewModel
                 var cx = x + cell.Dx;
                 var cy = y + cell.Dy;
                 if (Document.Map.Contains(cx, cy) == false)
+                {
                     continue;
+                }
 
                 var value = Document.Get(cx, cy);
                 if (cell.Tile != null)
+                {
                     value.Tile = cell.Tile.Value;
+                }
+
                 if (cell.Object != null)
+                {
                     value.Object = cell.Object.Value;
+                }
+
                 cells.Add((cx, cy, value));
             }
             var changed = cells.Count == 0 ? 0 : Document.Apply(cells);
@@ -345,13 +394,18 @@ namespace MapEditor.ViewModel
                 var ex = x + expected.X;
                 var ey = y + expected.Y;
                 if (Document.Doors.Any(d => d.Model == expected.Model && d.X == ex && d.Y == ey))
+                {
                     continue;
+                }
 
                 var actual = Document.Doors.FirstOrDefault(d => d.Y == ey && ex + expected.Width > d.X && d.X + d.Width > ex);
                 problems.Add(actual == null ? $"문 {expected.Model.Id} ({ex}, {ey}) 인식 안 됨" : $"문 {expected.Model.Id} ({ex}, {ey})이 문 {actual.Model.Id} ({actual.X}, {actual.Y})으로 인식됨");
             }
             if (problems.Count > 0)
+            {
                 StatusText += $" | 문 확인: {string.Join(", ", problems)}";
+            }
+
             return changed;
         }
 
@@ -364,7 +418,9 @@ namespace MapEditor.ViewModel
             var corpus = await MapCorpus.Load(Settings.MapDirectory);
             Dictionary<int, ServerMap> maps;
             lock (corpus)
+            {
                 maps = new Dictionary<int, ServerMap>(corpus);
+            }
 
             foreach (var document in OpenDocuments)
             {
@@ -383,7 +439,9 @@ namespace MapEditor.ViewModel
         public async Task FindTemplatePlaces(MapTemplate template)
         {
             if (template == null || _spawns == null)
+            {
                 return;
+            }
 
             var revision = ++_templatePlaceRevision;
             TemplatePlacesOf = template;
@@ -399,7 +457,9 @@ namespace MapEditor.ViewModel
                 {
                     var warps = spawns.ReadAllWarps().ToDictionary(w => w.Key, w => w.Value.Select(e => (e.X, e.Y)).ToList());
                     foreach (var (id, list) in openWarps)
+                    {
                         warps[id] = list;
+                    }
 
                     var result = new System.Collections.Concurrent.ConcurrentBag<TemplatePlace>();
                     Parallel.ForEach(maps, map =>
@@ -417,7 +477,9 @@ namespace MapEditor.ViewModel
                     return result.OrderBy(p => p.Map).ThenBy(p => p.Y).ThenBy(p => p.X).ToList();
                 });
                 if (revision != _templatePlaceRevision)
+                {
                     return;
+                }
 
                 TemplatePlaces = places;
                 TemplatePlacesHeader = $"'{template.Name}' 전체 맵 {places.Select(p => p.Map).Distinct().Count()}개, {places.Count}곳 (클릭: 이동, 워프는 건물 기준 좌표)";
@@ -425,7 +487,9 @@ namespace MapEditor.ViewModel
             catch (Exception e)
             {
                 if (revision == _templatePlaceRevision)
+                {
                     TemplatePlacesHeader = $"템플릿 위치를 찾지 못했습니다: {e.Message}";
+                }
             }
         }
 
@@ -435,7 +499,9 @@ namespace MapEditor.ViewModel
         public async Task GoToTemplatePlace(TemplatePlace place)
         {
             if (place == null || TemplatePlacesOf == null)
+            {
                 return;
+            }
 
             var template = TemplatePlacesOf;
             var centerX = place.X + template.Width / 2;
@@ -448,7 +514,10 @@ namespace MapEditor.ViewModel
             {
                 await OpenMap(Maps.FirstOrDefault(m => m.Id == place.Map));
                 if (Document?.Id != place.Map)
+                {
                     return;
+                }
+
                 FocusRequested?.Invoke(centerX, centerY);
             }
             SelectTemplateInstance(new TemplateInstance { Template = template, X = place.X, Y = place.Y }, SelectMode.Replace);
@@ -461,7 +530,9 @@ namespace MapEditor.ViewModel
         public async Task<List<MapTemplate>> ScanTemplates(TemplateScanOptions options, IProgress<(double Done, string Text)> progress, CancellationToken token)
         {
             if (_spawns == null)
+            {
                 throw new InvalidOperationException("the editor is still loading");
+            }
 
             var maps = await CorpusSnapshot(progress);
             var doors = DoorTable.Copy();
@@ -476,16 +547,23 @@ namespace MapEditor.ViewModel
         public async Task<List<TemplateWarpIssue>> CheckTemplateWarps(IProgress<(double Done, string Text)> progress, CancellationToken token)
         {
             if (_spawns == null)
+            {
                 throw new InvalidOperationException("the editor is still loading");
+            }
+
             if (Templates.Count == 0)
+            {
                 throw new InvalidOperationException("등록된 템플릿이 없습니다. 먼저 템플릿을 추가하거나 자동 스캔하세요.");
+            }
 
             var maps = await CorpusSnapshot(progress);
             progress.Report((0, "워프 시트 읽는 중..."));
             var spawns = _spawns;
             var warps = await Task.Run(() => spawns.ReadAllWarps(), token);
             if (Document != null)
+            {
                 warps[Document.Id] = Document.Warps.ToList();
+            }
 
             var matcher = new TemplateMatcher(Templates.ToList(), DoorTable.Partners());
             var names = _spawns.MapNames;
@@ -503,17 +581,24 @@ namespace MapEditor.ViewModel
         public async Task FocusTemplateWarpIssue(TemplateWarpIssue issue)
         {
             if (issue == null)
+            {
                 return;
+            }
 
             if (Document?.Id != issue.MapId)
             {
                 var entry = Maps.FirstOrDefault(m => m.Id == issue.MapId);
                 if (entry == null)
+                {
                     return;
+                }
 
                 await OpenMap(entry);
                 if (Document?.Id != issue.MapId)
+                {
                     return;
+                }
+
                 SelectedMap = entry;
                 FocusRequested?.Invoke(issue.X, issue.Y);
             }
@@ -523,10 +608,15 @@ namespace MapEditor.ViewModel
             }
 
             foreach (var item in TemplateWarpIssues)
+            {
                 item.InOpenMap = item.MapId == Document.Id;
+            }
+
             var warp = Document.Warps.FirstOrDefault(w => w.X == issue.X && w.Y == issue.Y && w.Dest == issue.Dest);
             if (warp != null)
+            {
                 SelectEntity(warp, add: false);
+            }
         }
 
         /// <summary>
@@ -535,7 +625,9 @@ namespace MapEditor.ViewModel
         public void MoveTemplateWarps()
         {
             if (Document == null)
+            {
                 return;
+            }
 
             var issues = TemplateWarpIssues.Where(i => i.Checked && i.MapId == Document.Id).ToList();
             if (issues.Count == 0)

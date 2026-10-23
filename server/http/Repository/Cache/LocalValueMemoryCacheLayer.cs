@@ -20,7 +20,9 @@ namespace Http.Reepository.Cache
         public TModel TryGet(RedisKey redisKey)
         {
             if (!_cache.TryGetValue(ToKey(redisKey), out var json))
+            {
                 return null;
+            }
 
             return JsonConvert.DeserializeObject<TModel>(json);
         }

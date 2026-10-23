@@ -7,7 +7,7 @@ return {
         local mp = 30
         local sound = 67
         local effect = 22
-        if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:unbuff('저주')
         end
     end,

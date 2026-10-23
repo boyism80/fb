@@ -12,7 +12,8 @@ local function run_puffer_general_accept(me, npc)
     end
     local btn
     ::NPC_75_001::
-    local sel, list_btn = me:list(npc, "자넨 뭍사람이 아닌가? 여기 용궁은 무얼하러 왔는지 궁금하네만 그보다 내 부탁좀 들어줄 수 있겠나?", { "물론이지오.", "싫어요" }, { prev = false })
+    local sel, list_btn = me:list(npc, "자넨 뭍사람이 아닌가? 여기 용궁은 무얼하러 왔는지 궁금하네만 그보다 내 부탁좀 들어줄 수 있겠나?", { "물론이지오.", "싫어요" },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -20,7 +21,8 @@ local function run_puffer_general_accept(me, npc)
         return
     end
     ::NPC_75_002::
-    btn = me:dialog(npc, "고맙네.. 사실 자네도 이곳 용궁에 대해서 소문을 들었을지 모르겠네만 요즘 용궁 주위에 심상찮은 분위기가 맴돌고 있다네...", { prev = true, next = true })
+    btn = me:dialog(npc, "고맙네.. 사실 자네도 이곳 용궁에 대해서 소문을 들었을지 모르겠네만 요즘 용궁 주위에 심상찮은 분위기가 맴돌고 있다네...",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -28,7 +30,8 @@ local function run_puffer_general_accept(me, npc)
         goto NPC_75_001
     end
     ::NPC_75_003::
-    btn = me:dialog(npc, "이에 내가 조사를 해 본 결과 용궁 8대 장군 중 하나인 복어장군이 반란에 가담하고 있다는 정보를 입수하게 되었다네..", { prev = true, next = true })
+    btn = me:dialog(npc, "이에 내가 조사를 해 본 결과 용궁 8대 장군 중 하나인 복어장군이 반란에 가담하고 있다는 정보를 입수하게 되었다네..",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -44,7 +47,8 @@ local function run_puffer_general_accept(me, npc)
         goto NPC_75_003
     end
     ::NPC_75_005::
-    local sel2, list_btn2 = me:list(npc, "그래서 말인데 자네가 복어장군에게 정보를 캐내 올 수 있겠는가?", { "좋습니다. 제가 해보지요.", "너무 위험한 일인 것 같아서 못하겠어요." }, { prev = false })
+    local sel2, list_btn2 = me:list(npc, "그래서 말인데 자네가 복어장군에게 정보를 캐내 올 수 있겠는가?",
+        { "좋습니다. 제가 해보지요.", "너무 위험한 일인 것 같아서 못하겠어요." }, { prev = false })
     if list_btn2 == DIALOG_RESULT.QUIT then
         return
     end
@@ -120,7 +124,8 @@ local function run_crab_general_accept(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    local sel, list_btn = me:list(npc, "이번에는 내 직접 게장군을 심문해 볼 터이니 게장군을 생포해 줄 수 있겠나?", { "좋습니다.", "별로여..." }, { prev = false })
+    local sel, list_btn = me:list(npc, "이번에는 내 직접 게장군을 심문해 볼 터이니 게장군을 생포해 줄 수 있겠나?", { "좋습니다.", "별로여..." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -131,12 +136,15 @@ local function run_crab_general_accept(me, npc)
     q:step(3)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "게장군 생포 임무를 받다.", 7, 1)
     ::NPC_75_011::
-    btn = me:dialog(npc, "고맙네, 내 듣기로 게장군이 더 강한 힘을 얻기 위해 근래 탈피를 했다더군.\n\n아직은 몸이 덜 굳어서 활동을 극히 자제하고 있을 걸세.", { prev = false, next = true })
+    btn = me:dialog(npc, "고맙네, 내 듣기로 게장군이 더 강한 힘을 얻기 위해 근래 탈피를 했다더군.\n\n아직은 몸이 덜 굳어서 활동을 극히 자제하고 있을 걸세.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     ::NPC_75_012::
-    btn = me:dialog(npc, "하지만 게장군은 자기 수하들을 극히 아낀다 들었네.\n\n자네가 게장군의 수하들을 손봐주고 있으면 그도 참지 못하고 모습을 드러낼걸세.\n\n그럼 되도록 빨리 잡아오도록 하게", { prev = true, next = false })
+    btn = me:dialog(npc,
+        "하지만 게장군은 자기 수하들을 극히 아낀다 들었네.\n\n자네가 게장군의 수하들을 손봐주고 있으면 그도 참지 못하고 모습을 드러낼걸세.\n\n그럼 되도록 빨리 잡아오도록 하게",
+        { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -180,11 +188,13 @@ local function run_octopus_general_accept(me, npc)
         me:dialog(npc, "아직 나를 돕기엔 많이 부족한 것 같군..", { prev = false, next = false })
         return
     end
-    local btn = me:dialog(npc, "지난번 자네의 도움으로 많은 정보를 얻게 되었네.\n\n예상보다 많은 자들이 이번 반란에 연루 되었더군.", { prev = false, next = true })
+    local btn = me:dialog(npc, "지난번 자네의 도움으로 많은 정보를 얻게 되었네.\n\n예상보다 많은 자들이 이번 반란에 연루 되었더군.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    local sel, list_btn = me:list(npc, "그래서 말인데, 자네가 이번에는 문어장군을 좀 잡아들일 수 있겠나?", { "걱정 마십시오!!!.", "별로 안 내키는데요..." }, { prev = false })
+    local sel, list_btn = me:list(npc, "그래서 말인데, 자네가 이번에는 문어장군을 좀 잡아들일 수 있겠나?", { "걱정 마십시오!!!.", "별로 안 내키는데요..." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -203,12 +213,14 @@ local function run_octopus_general_complete(me, npc)
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
-    local sel, list_btn = me:list(npc, "문어장군은 어디에 있고 왜 혼자 있나?", { "문어장군은 자신의 결백을 증명해 보이고 싶다고", "자결을 하였습니다." }, { prev = false })
+    local sel, list_btn = me:list(npc, "문어장군은 어디에 있고 왜 혼자 있나?", { "문어장군은 자신의 결백을 증명해 보이고 싶다고", "자결을 하였습니다." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 2 then
         return
     end
     ::NPC_75_0090::
-    sel, list_btn = me:list(npc, "뭐라? 자결을?", { "그렇습니다.", "용왕님에게 의심을 받을 바에야 죽어서", "결백을 증명해 보이는 길을 택하겠다고 하며", "자결을 하며 이 다문창을 전해주라 하였습니다" }, { prev = false })
+    sel, list_btn = me:list(npc, "뭐라? 자결을?",
+        { "그렇습니다.", "용왕님에게 의심을 받을 바에야 죽어서", "결백을 증명해 보이는 길을 택하겠다고 하며", "자결을 하며 이 다문창을 전해주라 하였습니다" }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 4 then
         return
     end
@@ -248,7 +260,9 @@ local function run_seahorse_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
-    local btn = me:dialog(npc, "이번 반란에 대한 새로운 정보를 얻었네.\n\n그동안 자네가 내 부탁을 아주 잘 그리고 훌륭하게 들어 주었기 때문에 이번에도 자네의 도움을 좀 얻어볼까 해서야.", { prev = false, next = true })
+    local btn = me:dialog(npc,
+        "이번 반란에 대한 새로운 정보를 얻었네.\n\n그동안 자네가 내 부탁을 아주 잘 그리고 훌륭하게 들어 주었기 때문에 이번에도 자네의 도움을 좀 얻어볼까 해서야.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -270,7 +284,8 @@ local function run_seahorse_accept(me, npc)
         return
     end
     ::NPC_75_0093::
-    btn = me:dialog(npc, "이번에 얻은 정보는 용궁 8대장군 중 해마장군이라는 자가 있는데\n이 자가 반란군의 주력 부대를 생산하는 역할을 담당하고 있다 하는군.", { prev = true, next = true })
+    btn = me:dialog(npc, "이번에 얻은 정보는 용궁 8대장군 중 해마장군이라는 자가 있는데\n이 자가 반란군의 주력 부대를 생산하는 역할을 담당하고 있다 하는군.",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -325,7 +340,8 @@ local function run_seahorse_complete(me, npc)
         return
     end
     ::NPC_75_031::
-    btn = me:dialog(npc, "지금이라면 해마장군 소속 병사들을 와해시키기 쉬울 듯 하네.\n\n정말 고맙네. 이것은 내 조그마한 성의니 받아두게", { prev = true, next = false })
+    btn = me:dialog(npc, "지금이라면 해마장군 소속 병사들을 와해시키기 쉬울 듯 하네.\n\n정말 고맙네. 이것은 내 조그마한 성의니 받아두게",
+        { prev = true, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -359,7 +375,9 @@ local function run_mermaid_accept(me, npc)
         goto NPC_75_032
     end
     ::NPC_75_034::
-    btn = me:dialog(npc, "곰곰히 생각해 보니, 나는 지금껏 게장군의 말만 믿고 반란에 관한 일을 진행해 오지 않았나.\n\n지금 와서 드는 생각이네만, 게장군의 말을 전부 믿을 수 없을 것 같네.", { prev = true, next = true })
+    btn = me:dialog(npc,
+        "곰곰히 생각해 보니, 나는 지금껏 게장군의 말만 믿고 반란에 관한 일을 진행해 오지 않았나.\n\n지금 와서 드는 생각이네만, 게장군의 말을 전부 믿을 수 없을 것 같네.",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -367,14 +385,16 @@ local function run_mermaid_accept(me, npc)
         goto NPC_75_033
     end
     ::NPC_75_035::
-    btn = me:dialog(npc, "그래서 말인데, 게장군도 인어장군에게 설득을 당해 이번 반란에 가담하게 되었다고 했으니, 인어장군은 뭔가 더 많은 것을 알고 있을 것이라 생각하네.", { prev = true, next = true })
+    btn = me:dialog(npc, "그래서 말인데, 게장군도 인어장군에게 설득을 당해 이번 반란에 가담하게 되었다고 했으니, 인어장군은 뭔가 더 많은 것을 알고 있을 것이라 생각하네.",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
         goto NPC_75_034
     end
-    local sel, list_btn = me:list(npc, "그러니 이번에 자네가 인어장군에게 정보를 좀 얻어 올 수 있겠나?", { "그 정도야 가뿐하지요.", "이번만은 좀 힘들 것 같군요..." }, { prev = false })
+    local sel, list_btn = me:list(npc, "그러니 이번에 자네가 인어장군에게 정보를 좀 얻어 올 수 있겠나?", { "그 정도야 가뿐하지요.", "이번만은 좀 힘들 것 같군요..." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -398,7 +418,9 @@ local function run_mermaid_complete(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 2 then
         return
     end
-    sel, list_btn = me:list(npc, "그래? 음..역시.. 그래서 지금 인어장군은 어디에 있나?", { "그게, 인어장군 어미가 많이 아프셔서", "임종을 지켜보기를 간곡히 부탁하길래", "여기 이 내통문서를 받고 풀어주었습니다.", "어미일이 끝나는대로 용왕님을 찾아와서", "죄를 달게 받는다고 했습니다." }, { prev = false })
+    sel, list_btn = me:list(npc, "그래? 음..역시.. 그래서 지금 인어장군은 어디에 있나?",
+        { "그게, 인어장군 어미가 많이 아프셔서", "임종을 지켜보기를 간곡히 부탁하길래", "여기 이 내통문서를 받고 풀어주었습니다.", "어미일이 끝나는대로 용왕님을 찾아와서",
+            "죄를 달게 받는다고 했습니다." }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 5 then
         return
     end
@@ -416,7 +438,8 @@ local function run_mermaid_complete(me, npc)
         return
     end
     ::NPC_75_0096::
-    sel, list_btn = me:list(npc, "이 문서를 도저히 알아 볼 수 없는 언어로 되어 있네 그려, 동방언어가 아니라 아마 서방언어인 듯 싶은데..", { "..." }, { prev = true })
+    sel, list_btn = me:list(npc, "이 문서를 도저히 알아 볼 수 없는 언어로 되어 있네 그려, 동방언어가 아니라 아마 서방언어인 듯 싶은데..", { "..." },
+        { prev = true })
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -426,19 +449,24 @@ local function run_mermaid_complete(me, npc)
     if sel ~= 1 then
         return
     end
-    sel, list_btn = me:list(npc, "아무래도 인어장군은 자네나 내가 이 문서의 내용을 알아 볼 수 없다는 것을\n짐작하고 쉽게 내어 준 것 같네.", { "..." }, { prev = false })
+    sel, list_btn = me:list(npc, "아무래도 인어장군은 자네나 내가 이 문서의 내용을 알아 볼 수 없다는 것을\n짐작하고 쉽게 내어 준 것 같네.", { "..." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
-    sel, list_btn = me:list(npc, "아마도 어미의 일도 거짓일테지. 인어장군, 역시 간사하구나, 저런 저런...", { "아니, 그게 정말이옵니까? 이리 줘 보십시오." }, { prev = false })
+    sel, list_btn = me:list(npc, "아마도 어미의 일도 거짓일테지. 인어장군, 역시 간사하구나, 저런 저런...", { "아니, 그게 정말이옵니까? 이리 줘 보십시오." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
-    sel, list_btn = me:list(npc, " ", { "This is the secret document....", "으허..이게 도대체 무슨 말인지..", "제 실수로 인어장군을 그냥 놓아 주었군요.", "아마도 인어장군은 지금쯤", "어디론가 모습을 감추었겠네요." }, { prev = false })
+    sel, list_btn = me:list(npc, " ",
+        { "This is the secret document....", "으허..이게 도대체 무슨 말인지..", "제 실수로 인어장군을 그냥 놓아 주었군요.", "아마도 인어장군은 지금쯤",
+            "어디론가 모습을 감추었겠네요." }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 5 then
         return
     end
-    sel, list_btn = me:list(npc, " ", { "제 부주의로 인한 것이니,", "제가 반드시 이 문서를 번역해 오겠습니다.", "이것도 분명 언어이니", "누군가가 번역할 수 있겠지요" }, { prev = false })
+    sel, list_btn = me:list(npc, " ", { "제 부주의로 인한 것이니,", "제가 반드시 이 문서를 번역해 오겠습니다.", "이것도 분명 언어이니", "누군가가 번역할 수 있겠지요" },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 4 then
         return
     end
@@ -498,7 +526,8 @@ local function run_shark_accept(me, npc)
         return
     end
     ::NPC_75_041::
-    btn = me:dialog(npc, "그런데 알고보니 문어장군은 정말로 반역에 가담하지 않았더군.\n\n내 문어장군 같이 훌륭한 충신을 의심하다니....아...문어장군.....", { prev = true, next = true })
+    btn = me:dialog(npc, "그런데 알고보니 문어장군은 정말로 반역에 가담하지 않았더군.\n\n내 문어장군 같이 훌륭한 충신을 의심하다니....아...문어장군.....",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -514,14 +543,17 @@ local function run_shark_accept(me, npc)
         goto NPC_75_041
     end
     ::NPC_75_043::
-    btn = me:dialog(npc, "그나저나 내통문서에 적힌대로 상어장군에게 첩자를 심어놓았는데\n적들이 반란을 시도하기 위한 준비를 거의 다 끝냈다는 사실을 알아냈다네.\n\n지금 적들의 사기가 하늘을 찌르고 있다고 하더군.", { prev = true, next = true })
+    btn = me:dialog(npc,
+        "그나저나 내통문서에 적힌대로 상어장군에게 첩자를 심어놓았는데\n적들이 반란을 시도하기 위한 준비를 거의 다 끝냈다는 사실을 알아냈다네.\n\n지금 적들의 사기가 하늘을 찌르고 있다고 하더군.",
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
         goto NPC_75_042
     end
-    sel, list_btn = me:list(npc, "그래서 자네가 적들의 기세를 좀 꺽어주지 않겠는가?", { "매우 쉬운 일이군요.", "저 개인이 무슨 힘이 있어서...." }, { prev = false })
+    sel, list_btn = me:list(npc, "그래서 자네가 적들의 기세를 좀 꺽어주지 않겠는가?", { "매우 쉬운 일이군요.", "저 개인이 무슨 힘이 있어서...." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -534,7 +566,8 @@ local function run_shark_accept(me, npc)
     q:param("0")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "상어장군의 생포 임무를 받다. [1/2]", 7, 1)
     ::NPC_75_045::
-    btn = me:dialog(npc, "정말 고맙네.\n\n마침 상어장군이 돌격대장을 함께 역임하고 있다고 하니, 그자를 제거하면 적의 기세가 한풀 꺽일걸세,", { prev = false, next = true })
+    btn = me:dialog(npc, "정말 고맙네.\n\n마침 상어장군이 돌격대장을 함께 역임하고 있다고 하니, 그자를 제거하면 적의 기세가 한풀 꺽일걸세,",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -596,7 +629,8 @@ local function run_shark_complete(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "믿는 도끼에 발등 찍힌다더니 자네가 딱 그꼴이지 않은가!!!\n\n지금은 자네를 보기도 싫으니 어서 사라지게!!!", { prev = true, next = true })
+        btn = me:dialog(npc, "믿는 도끼에 발등 찍힌다더니 자네가 딱 그꼴이지 않은가!!!\n\n지금은 자네를 보기도 싫으니 어서 사라지게!!!",
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -660,7 +694,8 @@ local function run_jellyfish_accept(me, npc)
     end
     local btn
     ::NPC_75_053::
-    btn = me:dialog(npc, "지금 우리 군대와 반란군의 군대가 한참 전쟁일 벌이고 있는데, 적의 주모자를 제거하면 우리에게 유리한 방향으로 이끌어 나갈 수 있을 것 같네.", { prev = false, next = true })
+    btn = me:dialog(npc, "지금 우리 군대와 반란군의 군대가 한참 전쟁일 벌이고 있는데, 적의 주모자를 제거하면 우리에게 유리한 방향으로 이끌어 나갈 수 있을 것 같네.",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -705,7 +740,8 @@ local function run_jellyfish_report(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
-    sel, list_btn = me:list(npc, "머저 해파리부하를 여러마리 잡고나서 해파리수하를 닥달해보면 겁을 집어먹고 줄 것일세.", { "그렇다면 제가 가서", "그 전략문서를 찾아오도록 하겠습니다." }, { prev = false })
+    sel, list_btn = me:list(npc, "머저 해파리부하를 여러마리 잡고나서 해파리수하를 닥달해보면 겁을 집어먹고 줄 것일세.",
+        { "그렇다면 제가 가서", "그 전략문서를 찾아오도록 하겠습니다." }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 2 then
         return
     end
@@ -733,7 +769,8 @@ local function run_jellyfish_complete(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    sel, list_btn = me:list(npc, "가만히 기다리면 저절로 자신의 손에 들어갈 용왕의 자리가 그렇게도 탐이 냈단 말인가....아....", { "고정하시지요." }, { prev = false })
+    sel, list_btn = me:list(npc, "가만히 기다리면 저절로 자신의 손에 들어갈 용왕의 자리가 그렇게도 탐이 냈단 말인가....아....", { "고정하시지요." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -829,7 +866,8 @@ local function run_crown_prince_accept(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_75_071
     end
-    sel, list_btn = me:list(npc, "그래서 말인데 자네가 도와주던 김에 확실히 좀 도와주겠는가?", { "끝을 보는 게 옳겠지요.", "남의 가족사에는 끼고 싶지 않아요." }, { prev = false })
+    sel, list_btn = me:list(npc, "그래서 말인데 자네가 도와주던 김에 확실히 좀 도와주겠는가?", { "끝을 보는 게 옳겠지요.", "남의 가족사에는 끼고 싶지 않아요." },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -921,7 +959,8 @@ local function run_crown_prince_complete(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    sel, list_btn = me:list(npc, "둘이 나눠서 여의주의 힘을 받으면 버틸 수 있을 것이라고 믿었던 모양이군. 어리석구나...어리석어...", { "그런데 여의주의 힘이 무엇인가요?" }, { prev = false })
+    sel, list_btn = me:list(npc, "둘이 나눠서 여의주의 힘을 받으면 버틸 수 있을 것이라고 믿었던 모양이군. 어리석구나...어리석어...", { "그런데 여의주의 힘이 무엇인가요?" },
+        { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -967,12 +1006,15 @@ end
 local function run_cidequest_yongwang(me, npc)
     local q = me:quest(quest.QUEST_CIDEQUEST)
     if q == nil then
-        local sel, btn = me:list(npc, "이번 반란 사건으로 혼란한 틈을 타서 용궁의 보물이 사라져 버렸다네.\n\n그래서 이번에도 자네의 힘을 빌려야 할 것 같은데... 어떤가. 이번에도 해줄건가?", { "물론 해드려야죠.", "별로 하고싶지 않은데요." }, { prev = false })
+        local sel, btn = me:list(npc,
+            "이번 반란 사건으로 혼란한 틈을 타서 용궁의 보물이 사라져 버렸다네.\n\n그래서 이번에도 자네의 힘을 빌려야 할 것 같은데... 어떤가. 이번에도 해줄건가?",
+            { "물론 해드려야죠.", "별로 하고싶지 않은데요." }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if sel == 1 then
-            local btn = me:dialog(npc, "고맙군. 정말 고마워. \n\n 이번에 들어온 정보에 의하면 그 보물이 용궁 밖에 나타났다는 소리를 들었네.", { prev = false, next = true })
+            local btn = me:dialog(npc, "고맙군. 정말 고마워. \n\n 이번에 들어온 정보에 의하면 그 보물이 용궁 밖에 나타났다는 소리를 들었네.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -1008,15 +1050,18 @@ local function run_cidequest_yongwang(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local btn = me:dialog(npc, "내가 그 대가로 뭔가 주고 싶은데..\n\n얼마전에 내가 만들던 무기가 있는데 그 무기의 핵심 재료인 수정과 크리스탈이 필요하다네.", { prev = false, next = true })
+        local btn = me:dialog(npc, "내가 그 대가로 뭔가 주고 싶은데..\n\n얼마전에 내가 만들던 무기가 있는데 그 무기의 핵심 재료인 수정과 크리스탈이 필요하다네.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local btn = me:dialog(npc, "자네가 수정과 크리스탈을 가지고 온다면 내 무기를 만들어 주도록 하겠네. 꼭 명심해야 할 것은 각각 3개씩 가지고 와야 한다는 거라네.", { prev = false, next = true })
+        local btn = me:dialog(npc, "자네가 수정과 크리스탈을 가지고 온다면 내 무기를 만들어 주도록 하겠네. 꼭 명심해야 할 것은 각각 3개씩 가지고 와야 한다는 거라네.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local btn = me:dialog(npc, "아. 수정과 크리스탈은 호굴 어딘가에서 나온다고 들었네.\n\n가서 수정과 크리스탈을 구해 오시게.", { prev = false, next = true })
+        local btn = me:dialog(npc, "아. 수정과 크리스탈은 호굴 어딘가에서 나온다고 들었네.\n\n가서 수정과 크리스탈을 구해 오시게.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -1089,7 +1134,8 @@ return {
         end
 
         if q:completed() then
-            local sel, btn = me:list(npc, me:name() .. "이군. 반란을 막아준걸 정말 고맙게 생각하고 있네.", { "잘 지내셨습니까?", "심판의낫 만들기" }, { prev = false })
+            local sel, btn = me:list(npc, me:name() .. "이군. 반란을 막아준걸 정말 고맙게 생각하고 있네.", { "잘 지내셨습니까?", "심판의낫 만들기" },
+                { prev = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

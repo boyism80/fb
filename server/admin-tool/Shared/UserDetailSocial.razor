@@ -13,10 +13,18 @@
                 @if (Social.Clan != null)
                 {
                     <dl class="user-detail-dl">
-                        <div class="user-detail-dl-item"><dt>클랜 ID</dt><dd class="table-meta">@Social.Clan.Id</dd></div>
-                        <div class="user-detail-dl-item"><dt>클랜명</dt><dd>@Social.Clan.Name</dd></div>
-                        <div class="user-detail-dl-item"><dt>직위</dt><dd>@UserDetailDisplay.FormatClanRole(Social.Clan.Role)</dd></div>
-                        <div class="user-detail-dl-item"><dt>가입일</dt><dd class="table-meta">@UserDetailDisplay.FormatDateTime(Social.Clan.JoinedDate)</dd></div>
+                        <div class="user-detail-dl-item">
+                            <dt>클랜 ID</dt><dd class="table-meta">@Social.Clan.Id</dd>
+                        </div>
+                        <div class="user-detail-dl-item">
+                            <dt>클랜명</dt><dd>@Social.Clan.Name</dd>
+                        </div>
+                        <div class="user-detail-dl-item">
+                            <dt>직위</dt><dd>@UserDetailDisplay.FormatClanRole(Social.Clan.Role)</dd>
+                        </div>
+                        <div class="user-detail-dl-item">
+                            <dt>가입일</dt><dd class="table-meta">@UserDetailDisplay.FormatDateTime(Social.Clan.JoinedDate)</dd>
+                        </div>
                     </dl>
                 }
                 else
@@ -44,9 +52,9 @@
                         <div class="user-detail-dl-item">
                             <dt>파티장</dt>
                             <dd>
-                            <UserDetailLink UserId="Social.Party.MasterId" Name="@Social.Party.MasterName" />
-                            <span class="table-meta">(UID @Social.Party.MasterId)</span>
-                        </dd>
+                                <UserDetailLink UserId="Social.Party.MasterId" Name="@Social.Party.MasterName" />
+                                <span class="table-meta">(UID @Social.Party.MasterId)</span>
+                            </dd>
                         </div>
                         <div class="user-detail-dl-item">
                             <dt>파티 ID</dt>
@@ -101,9 +109,15 @@
             else
             {
                 <dl class="user-detail-dl user-detail-dl-3col">
-                    <div class="user-detail-dl-item"><dt>배우자</dt><dd>-</dd></div>
-                    <div class="user-detail-dl-item"><dt>이혼 횟수</dt><dd class="table-meta">@(Social.Marriage?.DivorceCount ?? 0)</dd></div>
-                    <div class="user-detail-dl-item"><dt>재결혼 가능일</dt><dd class="table-meta">-</dd></div>
+                    <div class="user-detail-dl-item">
+                        <dt>배우자</dt><dd>-</dd>
+                    </div>
+                    <div class="user-detail-dl-item">
+                        <dt>이혼 횟수</dt><dd class="table-meta">@(Social.Marriage?.DivorceCount ?? 0)</dd>
+                    </div>
+                    <div class="user-detail-dl-item">
+                        <dt>재결혼 가능일</dt><dd class="table-meta">-</dd>
+                    </div>
                 </dl>
             }
         </div>
@@ -153,9 +167,11 @@
 </div>
 
 @code {
+
     [Parameter, EditorRequired]
     public UserDetailSocialData Social { get; set; } = null!;
 
     [Parameter]
     public string SpouseName { get; set; }
+
 }

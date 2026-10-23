@@ -43,6 +43,7 @@
 </nav>
 
 @code {
+
     private sealed record NavChild(string Href, string Label, NavLinkMatch Match = NavLinkMatch.Prefix);
 
     private sealed record NavItem(
@@ -115,4 +116,5 @@
     {
         Navigation.LocationChanged -= OnLocationChanged;
     }
+
 }

@@ -1,4 +1,4 @@
-local lib      = require("integration.lib")
+local lib = require("integration.lib")
 
 local SCRIPT = "test/integration"
 

@@ -3,9 +3,9 @@ local enum = require('lib.enum')
 local TICKET_NAME = "교환권"
 
 local REWARDS = {
-    { count = 25,   name = "인어반지",   label = "인어반지 (25개)" },
-    { count = 50,   name = "진주반지",   label = "진주반지 (50개)" },
-    { count = 100,  name = "주홍투구",   label = "주홍투구 (100개)" },
+    { count = 25, name = "인어반지", label = "인어반지 (25개)" },
+    { count = 50, name = "진주반지", label = "진주반지 (50개)" },
+    { count = 100, name = "주홍투구", label = "주홍투구 (100개)" },
     { count = 1250, name = "정화의방패", label = "정화의방패 (1250개)" },
     { count = 1500, name = "용왕의반지", label = "용왕의반지 (1500개)" },
     { count = 2000, name = "용왕의투구", label = "용왕의투구 (2000개)" },
@@ -21,7 +21,8 @@ local function do_exchange(me, npc, need_count, reward_name)
         return false
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 드리지 못합니다. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
+        me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 드리지 못합니다. 자리 좀 비우고 다시 오세요.",
+            { prev = false, next = false })
         return false
     end
     me:dialog(npc, "여기 있습니다..", { prev = false, next = false })

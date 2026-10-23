@@ -37,7 +37,10 @@ namespace Http.Worker
             {
                 case AggregateException ae:
                     foreach (var x in ae.InnerExceptions)
+                    {
                         _logger.LogError(x.Message);
+                    }
+
                     break;
 
                 default:
@@ -66,7 +69,9 @@ namespace Http.Worker
             {
                 Enqueue(input);
                 if (indices.ContainsKey(input) == false)
+                {
                     indices.Add(input, indices.Count);
+                }
             }
 
             var processed = 0;
@@ -78,7 +83,9 @@ namespace Http.Worker
                 {
                     var exists = _queue.TryDequeue(out var input);
                     if (exists == false)
+                    {
                         break;
+                    }
 
                     try
                     {

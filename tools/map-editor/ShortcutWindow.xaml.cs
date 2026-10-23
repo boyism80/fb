@@ -51,22 +51,34 @@ namespace MapEditor
         {
             var window = new ShortcutWindow(actions) { Owner = owner };
             if (window.ShowDialog() != true)
+            {
                 return false;
+            }
 
             foreach (var row in window._rows)
+            {
                 row.Action.Text = row.Text;
+            }
+
             return true;
         }
 
         private void Assign(object sender, string gesture)
         {
             if (sender is not TextBox box || box.DataContext is not ShortcutRow row)
+            {
                 return;
+            }
 
             if ((string)box.Tag == "First")
+            {
                 row.First = gesture;
+            }
             else
+            {
                 row.Second = gesture;
+            }
+
             UpdateConflicts();
         }
 
@@ -80,19 +92,28 @@ namespace MapEditor
             }
             // Plain Tab still moves between fields.
             if (key == Key.Tab && Keyboard.Modifiers == ModifierKeys.None)
+            {
                 return;
+            }
 
             if (key == Key.Back && Keyboard.Modifiers == ModifierKeys.None)
+            {
                 Assign(sender, "");
+            }
             else
+            {
                 Assign(sender, new Gesture(Keyboard.Modifiers, key, null).ToString());
+            }
+
             e.Handled = true;
         }
 
         private void OnCaptureMouse(object sender, MouseButtonEventArgs e)
         {
             if (Gesture.IsGestureButton(e.ChangedButton) == false)
+            {
                 return;
+            }
 
             Assign(sender, new Gesture(Keyboard.Modifiers, Key.None, e.ChangedButton).ToString());
             e.Handled = true;
@@ -110,7 +131,9 @@ namespace MapEditor
         private void OnCaptureLostFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             if (sender is TextBox box)
+            {
                 box.ClearValue(BackgroundProperty);
+            }
         }
 
         private void UpdateConflicts()
@@ -126,14 +149,20 @@ namespace MapEditor
         private void OnResetSelected(object sender, RoutedEventArgs e)
         {
             if (Rows.SelectedItem is ShortcutRow row)
+            {
                 row.Load(row.Action.Default);
+            }
+
             UpdateConflicts();
         }
 
         private void OnResetAll(object sender, RoutedEventArgs e)
         {
             foreach (var row in _rows)
+            {
                 row.Load(row.Action.Default);
+            }
+
             UpdateConflicts();
         }
 

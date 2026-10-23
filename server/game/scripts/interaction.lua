@@ -395,7 +395,7 @@ local function dispatch_npc_chat(me, npcs, message)
 end
 
 local function make_baram_birth_label()
-    local epoch = os.time{ year = 1996, month = 3, day = 31, hour = 0, min = 0, sec = 0 }
+    local epoch = os.time { year = 1996, month = 3, day = 31, hour = 0, min = 0, sec = 0 }
     local now = os.time()
     local diff_sec = now - epoch
     local total_ms = diff_sec * 1000
@@ -547,11 +547,11 @@ local function on_attack(me, additional_attack)
         if me:isbuff('측면공격') then
             local points = {}
             if direction == DIRECTION.LEFT or direction == DIRECTION.RIGHT then
-                table.insert(points, {x, y-1})
-                table.insert(points, {x, y+1})
+                table.insert(points, { x, y - 1 })
+                table.insert(points, { x, y + 1 })
             else
-                table.insert(points, {x-1, y})
-                table.insert(points, {x+1, y})
+                table.insert(points, { x - 1, y })
+                table.insert(points, { x + 1, y })
             end
 
             local nears = me:nears(enemy_type, points, false)
@@ -566,13 +566,13 @@ local function on_attack(me, additional_attack)
         if me:isbuff('후면공격') then
             local points = {}
             if direction == DIRECTION.LEFT then
-                table.insert(points, {x+1, y})
+                table.insert(points, { x + 1, y })
             elseif direction == DIRECTION.TOP then
-                table.insert(points, {x, y+1})
+                table.insert(points, { x, y + 1 })
             elseif direction == DIRECTION.RIGHT then
-                table.insert(points, {x-1, y})
+                table.insert(points, { x - 1, y })
             else
-                table.insert(points, {x, y-1})
+                table.insert(points, { x, y - 1 })
             end
 
             local nears = me:nears(enemy_type, points, false)
@@ -608,7 +608,7 @@ local function on_npc_chat(me, message, shout)
         npcs = map:objects(OBJECT_TYPE.NPC)
     else
         local x, y = me:position()
-        npcs = map:nears({x, y}, OBJECT_TYPE.NPC)
+        npcs = map:nears({ x, y }, OBJECT_TYPE.NPC)
     end
 
     if #npcs == 0 then
@@ -773,14 +773,16 @@ return {
 
         local npc = name2npc('낙랑')
         local button = nil
-    ::BIRTHDAY_DIALOG_1::
-        button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', { prev = false, next = true })
+        ::BIRTHDAY_DIALOG_1::
+        button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.',
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-    ::BIRTHDAY_DIALOG_2::
-        button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.', { prev = true, next = true })
+        ::BIRTHDAY_DIALOG_2::
+        button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.',
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -788,8 +790,9 @@ return {
             goto BIRTHDAY_DIALOG_1
         end
 
-    ::BIRTHDAY_DIALOG_3::
-        button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)', { prev = true, next = true })
+        ::BIRTHDAY_DIALOG_3::
+        button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)',
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -797,8 +800,9 @@ return {
             goto BIRTHDAY_DIALOG_2
         end
 
-    ::BIRTHDAY_DIALOG_4::
-        button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.', { prev = true, next = true })
+        ::BIRTHDAY_DIALOG_4::
+        button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.',
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -806,8 +810,9 @@ return {
             goto BIRTHDAY_DIALOG_3
         end
 
-    ::BIRTHDAY_DIALOG_5::
-        button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.', { prev = true, next = true })
+        ::BIRTHDAY_DIALOG_5::
+        button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.',
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -815,8 +820,9 @@ return {
             goto BIRTHDAY_DIALOG_4
         end
 
-    ::BIRTHDAY_DIALOG_6::
-        button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.', { prev = true, next = true })
+        ::BIRTHDAY_DIALOG_6::
+        button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.',
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -824,8 +830,9 @@ return {
             goto BIRTHDAY_DIALOG_5
         end
 
-    ::BIRTHDAY_INPUT::
-        local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.', { top = '저의 생년월일은', bottom = '입니다.', maxlen = 6, prev = true })
+        ::BIRTHDAY_INPUT::
+        local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.',
+            { top = '저의 생년월일은', bottom = '입니다.', maxlen = 6, prev = true })
         if birthday == DIALOG_RESULT.QUIT then
             goto BIRTHDAY_INPUT
         end
@@ -850,7 +857,8 @@ return {
             goto BIRTHDAY_MUST_SET
         end
 
-        local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'}, { prev = true })
+        local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), { '예', '아니오' },
+            { prev = true })
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -894,7 +902,7 @@ return {
         )
 
         local npc = name2npc('낙랑')
-        local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', {'예', '아니오'}, { prev = false })
+        local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', { '예', '아니오' }, { prev = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

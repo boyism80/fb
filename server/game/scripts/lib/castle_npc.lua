@@ -113,13 +113,13 @@ local function buy_clan_sword(me, npc_obj)
     end
     local price = model:price()
 
-::BUY_INTRO_1::
+    ::BUY_INTRO_1::
     local button = me:dialog(npc_obj, '이 성을 가진 주인이라면 마땅히 그 힘을 가질 자격이 있지.', { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
-::BUY_INTRO_2::
+    ::BUY_INTRO_2::
     button = me:dialog(npc_obj, '그러나 그 힘을 얻기 위해서는 그에 마땅한 댓가로 따르는 법...', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
@@ -128,8 +128,9 @@ local function buy_clan_sword(me, npc_obj)
         goto BUY_INTRO_1
     end
 
-::BUY_CONFIRM::
-    local selected, list_btn = me:list(npc_obj, string.format('그래, 금전 %d전을 댓가로 문파검을 구입하겠는가?', price), { '네. 지금 당장 주세요!', '아니요. 돈이 없네요...' }, { prev = true })
+    ::BUY_CONFIRM::
+    local selected, list_btn = me:list(npc_obj, string.format('그래, 금전 %d전을 댓가로 문파검을 구입하겠는가?', price),
+        { '네. 지금 당장 주세요!', '아니요. 돈이 없네요...' }, { prev = true })
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -257,7 +258,8 @@ local function clan_vault(me, npc_obj)
     end
 
     if selected == 3 then
-        local intro = me:dialog(npc_obj, '가지고 있는 성의 자금이 있다면, 언제든 찾아 쓸 수가 있지. 그래, 자네는 문파의 문주인가?', { prev = false, next = true })
+        local intro = me:dialog(npc_obj, '가지고 있는 성의 자금이 있다면, 언제든 찾아 쓸 수가 있지. 그래, 자네는 문파의 문주인가?',
+            { prev = false, next = true })
         if intro == DIALOG_RESULT.QUIT then
             return
         end
@@ -269,7 +271,8 @@ local function clan_vault(me, npc_obj)
             me:dialog(npc_obj, '자네의 문파는 보유한 자금이 없다네.', { prev = false, next = false })
             return
         end
-        local amount = me:input(npc_obj, string.format('그대의 문파 [%s]가 보유한 자금은 [%d]전 이라네. 제가 찾을 금액은?', clan:name(), clan:money()))
+        local amount = me:input(npc_obj,
+            string.format('그대의 문파 [%s]가 보유한 자금은 [%d]전 이라네. 제가 찾을 금액은?', clan:name(), clan:money()))
         if amount == nil then
             return
         end
@@ -293,7 +296,8 @@ local function clan_vault(me, npc_obj)
         else
             me:message(string.format('문파자금 %d전 찾았습니다.', amount), MESSAGE_TYPE.NOTIFY)
             me:message(string.format('금전 %d전 받았습니다.', amount), MESSAGE_TYPE.NOTIFY)
-            me:dialog(npc_obj, string.format('자, 여기있네. 자네에게 문파자금 [%d]전을 줄테니 잘 쓰시게나.', amount), { prev = false, next = false })
+            me:dialog(npc_obj, string.format('자, 여기있네. 자네에게 문파자금 [%d]전을 줄테니 잘 쓰시게나.', amount),
+                { prev = false, next = false })
         end
     end
 end
@@ -355,7 +359,8 @@ function M.buy_clothes(me, npc_obj)
         return
     end
 
-    local selected = me:pursuit(npc_obj, string.format('[%s]을 구입하시겠습니까? 비용은 %d전 입니다.', clothes_name, price), { '네. 주세요.', '너무 비싸요.' })
+    local selected = me:pursuit(npc_obj, string.format('[%s]을 구입하시겠습니까? 비용은 %d전 입니다.', clothes_name, price),
+        { '네. 주세요.', '너무 비싸요.' })
     if selected == 2 then
         me:dialog(npc_obj, '그럼 더 신중히 생각해 보신 뒤 오시기 바랍니다.', { prev = false, next = false })
         return
@@ -407,7 +412,9 @@ function M.repair_dragon_weapon(me, npc_obj)
         price = 1
     end
 
-    local selected = me:pursuit(npc_obj, string.format('지금부터 자네 손에 들고있는 용무기를 고쳐주겠네. 자네가 고칠 무기는 [%s]가 맞는가? 수리비 %d전.', name, price), { '네 맞습니다.', '아니오, 착용후 다시 올게요.' })
+    local selected = me:pursuit(npc_obj,
+        string.format('지금부터 자네 손에 들고있는 용무기를 고쳐주겠네. 자네가 고칠 무기는 [%s]가 맞는가? 수리비 %d전.', name, price),
+        { '네 맞습니다.', '아니오, 착용후 다시 올게요.' })
     if selected ~= 1 then
         return
     end

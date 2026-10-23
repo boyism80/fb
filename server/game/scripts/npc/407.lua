@@ -4,7 +4,8 @@ local POTION_PREFIXES = { "적", "황", "청", "녹" }
 
 return {
     on_click = function(me, npc)
-        local button = me:dialog(npc, "비약? 누구에게 들었는지 모르지만.. 우리 흉노족의 장로에게는 비약을 만드는 법이 대대로 전해지고 있지.", { prev = false, next = true })
+        local button = me:dialog(npc, "비약? 누구에게 들었는지 모르지만.. 우리 흉노족의 장로에게는 비약을 만드는 법이 대대로 전해지고 있지.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -27,7 +28,8 @@ return {
             return
         end
 
-        button = me:dialog(npc, "흠흠.. 그리고 말일세. 자네 요즘 중국에서 유행 한다는 '검정깃발'을 알고 있나? 그거 하나만 가졌으면 좋겠는데 말이야..", { prev = false, next = true })
+        button = me:dialog(npc, "흠흠.. 그리고 말일세. 자네 요즘 중국에서 유행 한다는 '검정깃발'을 알고 있나? 그거 하나만 가졌으면 좋겠는데 말이야..",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

@@ -56,7 +56,8 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "오호라... 과연, 문화재 유출범을 찾고 계신다는 거군요. 알겠어요, 있는 힘껏 정보를 수집해볼게요!", { prev = false, next = true })
+                btn = me:dialog(npc, "오호라... 과연, 문화재 유출범을 찾고 계신다는 거군요. 알겠어요, 있는 힘껏 정보를 수집해볼게요!",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end

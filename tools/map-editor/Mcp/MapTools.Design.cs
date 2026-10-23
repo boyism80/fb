@@ -45,7 +45,9 @@ namespace MapEditor.Mcp
         private async Task<TerrainSet> LearnTerrain(int a, int b)
         {
             if (_terrainSets.TryGetValue((a, b), out var cached))
+            {
                 return cached;
+            }
 
             var corpus = await MapCorpus.Load(_editor.Settings.MapDirectory);
             var set = await Task.Run(() => TerrainSet.Learn(corpus.Values, a, b));
@@ -71,15 +73,22 @@ namespace MapEditor.Mcp
                             int t = map.Tiles[y * map.Width + x];
                             count[t] = count.GetValueOrDefault(t) + 1;
                             if (x + 1 < map.Width && map.Tiles[y * map.Width + x + 1] == t)
+                            {
                                 self[t] = self.GetValueOrDefault(t) + 1;
+                            }
+
                             if (y + 1 < map.Height && map.Tiles[(y + 1) * map.Width + x] == t)
+                            {
                                 self[t] = self.GetValueOrDefault(t) + 1;
+                            }
                         }
                     }
                 }
                 var fill = count.Where(c => c.Value >= 300 && self.GetValueOrDefault(c.Key) >= c.Value).Select(c => c.Key).ToHashSet();
                 if (fill.Contains(tile) == false)
+                {
                     throw new ArgumentException($"tile {tile} is not a fill tile (rarely forms areas of itself)");
+                }
 
                 var pairs = new Dictionary<int, long>();
                 foreach (var map in corpus.Values)
@@ -89,19 +98,28 @@ namespace MapEditor.Mcp
                         for (int x = 0; x < map.Width; x++)
                         {
                             if (map.Tiles[y * map.Width + x] != tile)
+                            {
                                 continue;
+                            }
+
                             foreach (var (dx, dy) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
                             {
                                 for (int step = 1; step <= 3; step++)
                                 {
                                     int nx = x + dx * step, ny = y + dy * step;
                                     if (map.Contains(nx, ny) == false)
+                                    {
                                         break;
+                                    }
+
                                     int n = map.Tiles[ny * map.Width + nx];
                                     if (fill.Contains(n))
                                     {
                                         if (n != tile && step > 1)
+                                        {
                                             pairs[n] = pairs.GetValueOrDefault(n) + 1;
+                                        }
+
                                         break;
                                     }
                                 }
@@ -152,7 +170,9 @@ namespace MapEditor.Mcp
                         for (int x = 0; x < map.Width; x++)
                         {
                             if (Inside(shape, x, y, Wobble))
+                            {
                                 paint[y * map.Width + x] = shape.Erase == false;
+                            }
                         }
                     }
                 }
@@ -171,13 +191,22 @@ namespace MapEditor.Mcp
                     for (int i = 0; i < paint.Length; i++)
                     {
                         if (paint[i] == null)
+                        {
                             continue;
+                        }
+
                         var key = (i % map.Width, i / map.Width);
                         var value = changed.TryGetValue(key, out var v) ? v : doc.Get(key.Item1, key.Item2);
                         if (clearObjects && paint[i] == true)
+                        {
                             value.Object = 0;
+                        }
+
                         if (block)
+                        {
                             value.Block = paint[i].Value;
+                        }
+
                         changed[key] = value;
                     }
                     cells = changed.Select(c => (c.Key.Item1, c.Key.Item2, c.Value)).ToList();
@@ -195,7 +224,10 @@ namespace MapEditor.Mcp
             else if (shape.Shape == "ellipse")
             {
                 if (shape.Rx <= 0 || shape.Ry <= 0)
+                {
                     throw new ArgumentException("ellipse needs rx and ry");
+                }
+
                 var dx = (x - shape.Cx) / shape.Rx;
                 var dy = (y - shape.Cy) / shape.Ry;
                 return Math.Sqrt(dx * dx + dy * dy) <= 1 + wobble(Math.Atan2(dy, dx) * 3);
@@ -203,7 +235,10 @@ namespace MapEditor.Mcp
             else if (shape.Shape == "path")
             {
                 if (shape.Points == null || shape.Points.Length < 2)
+                {
                     throw new ArgumentException("path needs two or more points");
+                }
+
                 double along = 0;
                 for (int k = 0; k + 1 < shape.Points.Length; k++)
                 {
@@ -212,7 +247,10 @@ namespace MapEditor.Mcp
                     double t = Math.Clamp(((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / (length * length), 0, 1);
                     double px = ax + (bx - ax) * t - x, py = ay + (by - ay) * t - y;
                     if (Math.Sqrt(px * px + py * py) <= shape.Size / 2 * (1 + wobble((along + t * length) / 3)))
+                    {
                         return true;
+                    }
+
                     along += length;
                 }
                 return false;
@@ -235,14 +273,19 @@ namespace MapEditor.Mcp
             return await Task.Run(() =>
             {
                 lock (_prefabs)
+                {
                     _links ??= Prefab.Links(all.Values);
+                }
+
                 var chosen = corpus.Where(m => (maps == null || maps.Length == 0 || maps.Contains(m.Key)) &&
                                                (string.IsNullOrWhiteSpace(query) || (names.TryGetValue(m.Key, out var n) && n.Contains(query, StringComparison.OrdinalIgnoreCase))))
                                    .Select(m => (m.Key, m.Value, MapCorpus.Blocks(directory, m.Key)))
                                    .ToList();
                 var found = Prefab.Extract(chosen, _links, Math.Max(1, minCells), Math.Max(minCells, maxCells));
                 foreach (var prefab in found.Values)
+                {
                     _prefabs[prefab.Key] = prefab;
+                }
 
                 return Json(new
                 {
@@ -278,7 +321,10 @@ namespace MapEditor.Mcp
             {
                 var assets = _editor.Assets ?? throw new InvalidOperationException("no client resources loaded");
                 if (keys == null || keys.Length == 0 || keys.Length > 40)
+                {
                     throw new ArgumentException("keys must have 1..40 entries");
+                }
+
                 var prefabs = keys.Select(FindPrefab).ToList();
                 var pad = Math.Min(6, assets.Objects.MaxHeight);
 
@@ -309,7 +355,9 @@ namespace MapEditor.Mcp
                         map.Tiles[y * map.Width + x] = c.Tile;
                         map.Objects[y * map.Width + x] = c.Object;
                         if (blocks && c.Block)
+                        {
                             blockFile.Add(x, y);
+                        }
                     }
                 }
 
@@ -329,7 +377,9 @@ namespace MapEditor.Mcp
                             for (int gx = 0; gx < 6; gx++)
                             {
                                 if ((glyph >> (14 - gy / 2 * 3 - gx / 2) & 1) != 0 && top + gy < map.Height * cell)
+                                {
                                     pixels[(top + gy) * pw + left + i * 8 + gx] = 0xFFFFFF00u;
+                                }
                             }
                         }
                     }
@@ -351,9 +401,15 @@ namespace MapEditor.Mcp
                     var value = doc.Get(x + c.Dx, y + c.Dy);
                     value.Object = c.Object;
                     if (tiles)
+                    {
                         value.Tile = c.Tile;
+                    }
+
                     if (blocks)
+                    {
                         value.Block = c.Block;
+                    }
+
                     return (x + c.Dx, y + c.Dy, value);
                 }).ToList();
                 return Json(new { changed = doc.Apply(cells), prefab.Width, prefab.Height });
@@ -367,7 +423,10 @@ namespace MapEditor.Mcp
             return OnUi("render_layout", false, () =>
             {
                 if (rows == null || rows.Length == 0)
+                {
                     throw new ArgumentException("rows are required");
+                }
+
                 cell = Math.Clamp(cell, 2, 24);
                 var colors = legend.Where(l => l.Key.Length == 1).ToDictionary(l => l.Key[0], l => 0xFF000000u | Convert.ToUInt32(l.Value.TrimStart('#'), 16));
                 var width = rows.Max(r => r.Length) * cell;
@@ -381,7 +440,10 @@ namespace MapEditor.Mcp
                         var cx = px / cell;
                         var color = cx < row.Length && colors.TryGetValue(row[cx], out var c) ? c : 0xFF202020u;
                         if ((cx % 10 == 0 && px % cell == 0) || (py / cell % 10 == 0 && py % cell == 0))
+                        {
                             color = 0xFF000000u | ((color >> 1) & 0x7F7F7F);
+                        }
+
                         pixels[py * width + px] = color;
                     }
                 }
@@ -397,7 +459,9 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (_editor.IsBlocked(x, y))
+                {
                     throw new ArgumentException("the start cell is blocked");
+                }
 
                 var reached = new bool[doc.Width * doc.Height];
                 var queue = new Queue<(int X, int Y)>();
@@ -421,7 +485,10 @@ namespace MapEditor.Mcp
                 for (int i = 0; i < seen.Length; i++)
                 {
                     if (seen[i] || _editor.IsBlocked(i % doc.Width, i / doc.Width))
+                    {
                         continue;
+                    }
+
                     int size = 0, left = int.MaxValue, top = int.MaxValue, right = 0, bottom = 0;
                     var flood = new Queue<int>();
                     flood.Enqueue(i);

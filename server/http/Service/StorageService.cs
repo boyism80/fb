@@ -53,17 +53,25 @@ namespace Http.Service
             uint host = 0)
         {
             if (userId == 0)
+            {
                 throw new ArgumentException("User id is required", nameof(userId));
+            }
 
             if (string.IsNullOrWhiteSpace(title))
+            {
                 throw new ArgumentException("Title is required", nameof(title));
+            }
 
             if (string.IsNullOrWhiteSpace(message))
+            {
                 throw new ArgumentException("Message is required", nameof(message));
+            }
 
             var attachmentsList = attachments ?? new List<Fb.Model.Dsl>();
             if (attachmentsList.Count == 0)
+            {
                 throw new ArgumentException("At least one attachment is required (item, money, or exp)", nameof(attachments));
+            }
 
             StorageBox box;
             await using (await _distributedLock.Lock(world, OpsLockKey(userId)))
@@ -76,7 +84,10 @@ namespace Http.Service
                     if (existing != null)
                     {
                         if (existing.Received == false)
+                        {
                             await PublishWriteAsync(world, existing, host);
+                        }
+
                         return existing;
                     }
                 }
@@ -85,17 +96,17 @@ namespace Http.Service
                 var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
                 box = new StorageBox
                 {
-                    User               = userId,
-                    Id                 = id,
+                    User = userId,
+                    Id = id,
                     SystemStorageBoxId = null,
-                    ExternalRef        = externalRef,
-                    Title              = title.Trim(),
-                    Message            = message.Trim(),
-                    Attachments        = attachmentsList,
-                    Received           = false,
-                    ExpiredDate        = expiredDate,
-                    CreatedDate        = now,
-                    UpdatedDate        = now
+                    ExternalRef = externalRef,
+                    Title = title.Trim(),
+                    Message = message.Trim(),
+                    Attachments = attachmentsList,
+                    Received = false,
+                    ExpiredDate = expiredDate,
+                    CreatedDate = now,
+                    UpdatedDate = now
                 };
 
                 _dbContext.StorageBox.Set(world, box);
@@ -104,8 +115,8 @@ namespace Http.Service
 
             await _logService.WriteAsync("storage_box_create", new
             {
-                box_id       = box.Id,
-                user_id      = box.User,
+                box_id = box.Id,
+                user_id = box.User,
                 external_ref = externalRef,
                 expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss")
             });
@@ -127,14 +138,20 @@ namespace Http.Service
             bool includeNewCharacters = false)
         {
             if (string.IsNullOrWhiteSpace(title))
+            {
                 throw new ArgumentException("Title is required", nameof(title));
+            }
 
             if (string.IsNullOrWhiteSpace(message))
+            {
                 throw new ArgumentException("Message is required", nameof(message));
+            }
 
             var attachmentsList = attachments ?? new List<Fb.Model.Dsl>();
             if (attachmentsList.Count == 0)
+            {
                 throw new ArgumentException("At least one attachment is required (item, money, or exp)", nameof(attachments));
+            }
 
             var box = await _dbContext.SystemStorageBox.Write(world,
                 title.Trim(),
@@ -147,7 +164,7 @@ namespace Http.Service
 
             await _logService.WriteAsync("system_storage_box_create", new
             {
-                box_id       = box.Id,
+                box_id = box.Id,
                 external_ref = box.ExternalRef,
                 reserve_date = reserveDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss")
@@ -163,11 +180,15 @@ namespace Http.Service
         {
             var systemBox = await _dbContext.SystemStorageBox.Get(world, systemStorageBoxId);
             if (systemBox == null)
+            {
                 throw new KeyNotFoundException($"System storage box {systemStorageBoxId} not found");
+            }
 
             var now = DateTime.UtcNow;
             if (systemBox.Active(now) == false)
+            {
                 return new List<StorageBox>();
+            }
 
             var distinctUsers = (users ?? Array.Empty<uint>()).Where(u => u != 0).Distinct().ToArray();
             var written = new List<StorageBox>();
@@ -183,23 +204,26 @@ namespace Http.Service
                     if (existing != null)
                     {
                         if (existing.Received == false)
+                        {
                             written.Add(existing);
+                        }
+
                         continue;
                     }
 
                     var id = await _dbContext.StorageBox.AllocateNextIdAsync(world, userId);
                     var box = new StorageBox
                     {
-                        User               = userId,
-                        Id                 = id,
+                        User = userId,
+                        Id = id,
                         SystemStorageBoxId = systemStorageBoxId,
-                        Title              = systemBox.Title,
-                        Message            = systemBox.Message,
-                        Attachments        = systemBox.Attachments ?? new List<Fb.Model.Dsl>(),
-                        Received           = false,
-                        ExpiredDate        = systemBox.ExpiredDate,
-                        CreatedDate        = now,
-                        UpdatedDate        = now
+                        Title = systemBox.Title,
+                        Message = systemBox.Message,
+                        Attachments = systemBox.Attachments ?? new List<Fb.Model.Dsl>(),
+                        Received = false,
+                        ExpiredDate = systemBox.ExpiredDate,
+                        CreatedDate = now,
+                        UpdatedDate = now
                     };
 
                     _dbContext.StorageBox.Set(world, box);
@@ -210,7 +234,9 @@ namespace Http.Service
             finally
             {
                 if (written.Count > 0)
+                {
                     await PublishDistributedAsync(world, written, host);
+                }
             }
 
             return written;
@@ -224,14 +250,20 @@ namespace Http.Service
 
             var box = await _dbContext.StorageBox.Get(world, userId, id);
             if (box == null)
+            {
                 return false;
+            }
 
             if (box.Received)
+            {
                 return claimId != 0 && box.ClaimId == claimId;
+            }
 
             // A claim resent after an outage is judged by when the game issued it, not by when it arrived.
             if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= SnowflakeId.Time(claimId))
+            {
                 return false;
+            }
 
             var now = DateTime.UtcNow;
             box.Received = true;
@@ -248,13 +280,19 @@ namespace Http.Service
 
             var box = await _dbContext.StorageBox.Get(world, userId, id);
             if (box == null)
+            {
                 return false;
+            }
 
             if (!box.Received)
+            {
                 return true;
+            }
 
             if (box.ClaimId != claimId)
+            {
                 return false;
+            }
 
             box.Received = false;
             box.ClaimId = null;
@@ -284,7 +322,9 @@ namespace Http.Service
             {
                 await using var _ = await _distributedLock.Lock(world, OpsLockKey(user));
                 if ((await _dbContext.UnsettledRequest.Get(world, user)).Any())
+                {
                     continue;
+                }
 
                 var received = (await _dbContext.StorageBox.Get(world, user))
                     .Where(box => box.Received && box.SystemStorageBoxId == null)
@@ -306,7 +346,9 @@ namespace Http.Service
                     .Where(box => string.IsNullOrEmpty(box.ExternalRef) || parcels.Contains(box.ExternalRef) == false)
                     .ToList();
                 if (targets.Count == 0)
+                {
                     continue;
+                }
 
                 _dbContext.StorageBox.Delete(world, targets);
                 await _dbContext.SaveChangesAsync();
@@ -320,8 +362,8 @@ namespace Http.Service
         {
             var response = new Response.WriteStorageBox
             {
-                Box   = _mapper.Map<Protocol.StorageBox>(box),
-                Host  = host,
+                Box = _mapper.Map<Protocol.StorageBox>(box),
+                Host = host,
                 Error = (uint)ErrorCode.None
             };
             await _rabbitMqService.NotifySavedAsync(response, "storage", world);
@@ -332,14 +374,14 @@ namespace Http.Service
             var entries = boxes.Select(box => new Protocol.StorageWriteEntry
             {
                 User = box.User,
-                Box  = _mapper.Map<Protocol.StorageBox>(box)
+                Box = _mapper.Map<Protocol.StorageBox>(box)
             }).ToList();
 
             var response = new Response.DistributeSystemStorage
             {
                 Entries = entries,
-                Host    = host,
-                Error   = (uint)ErrorCode.None
+                Host = host,
+                Error = (uint)ErrorCode.None
             };
             await _rabbitMqService.NotifySavedAsync(response, "storage", world);
         }

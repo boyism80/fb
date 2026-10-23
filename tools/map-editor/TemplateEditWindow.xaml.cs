@@ -70,7 +70,9 @@ namespace MapEditor
         private void OnLayerChanged(object sender, RoutedEventArgs e)
         {
             if (Canvas == null)
+            {
                 return;
+            }
 
             Canvas.ObjectLayer = ObjectLayer.IsChecked == true;
             ValueBox.Text = (Canvas.ObjectLayer ? _objectValue : _tileValue).ToString();
@@ -80,7 +82,9 @@ namespace MapEditor
         private void OnBrushChanged(object sender, RoutedEventArgs e)
         {
             if (Canvas == null)
+            {
                 return;
+            }
 
             Canvas.Brush = EraseBrush.IsChecked == true ? TemplateBrush.Erase : PickBrush.IsChecked == true ? TemplateBrush.Pick : TemplateBrush.Draw;
         }
@@ -90,22 +94,32 @@ namespace MapEditor
             if (Canvas == null || ushort.TryParse(ValueBox.Text, out var value) == false)
             {
                 if (ValuePreview != null)
+                {
                     ValuePreview.Source = null;
+                }
+
                 return;
             }
 
             Canvas.Value = value;
             if (Canvas.ObjectLayer)
+            {
                 _objectValue = value;
+            }
             else
+            {
                 _tileValue = value;
+            }
+
             ValuePreview.Source = Canvas.ObjectLayer ? Thumbnail.Object(_assets, value) : Thumbnail.Tile(_assets, value);
         }
 
         private void OnZoomChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (Canvas == null)
+            {
                 return;
+            }
 
             Canvas.Zoom = ZoomSlider.Value;
             Canvas.Refresh();
@@ -121,7 +135,9 @@ namespace MapEditor
 
             var dropped = _template.Cells.Count(c => c.Dx >= width || c.Dy >= height);
             if (dropped > 0 && MessageBox.Show(this, $"크기 밖으로 나가는 {dropped}칸이 지워집니다. 계속할까요?", Title, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            {
                 return;
+            }
 
             _template.Width = width;
             _template.Height = height;
@@ -132,7 +148,9 @@ namespace MapEditor
         private void OnTrim(object sender, RoutedEventArgs e)
         {
             if (_template.Cells.Count == 0)
+            {
                 return;
+            }
 
             var left = _template.Cells.Min(c => c.Dx);
             var top = _template.Cells.Min(c => c.Dy);

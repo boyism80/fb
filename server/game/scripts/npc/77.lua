@@ -10,7 +10,8 @@ return {
 
         if q == nil then
             ::NPC_77_0001::
-            btn = me:dialog(npc, '요즘 용궁을 드나드는 외분인들이 부쩍 늘었어요.\n\n그래서 용궁의 물이 점차 더러워 지고 있는 것 같아요.', { prev = false, next = true })
+            btn = me:dialog(npc, '요즘 용궁을 드나드는 외분인들이 부쩍 늘었어요.\n\n그래서 용궁의 물이 점차 더러워 지고 있는 것 같아요.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

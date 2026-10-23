@@ -91,7 +91,9 @@ namespace Http.Service
             // Check if ban exists
             var ban = await _dbContext.Ban.Get(world, userId);
             if (ban == null)
+            {
                 throw new LogicException(ErrorCode.NotFoundBan);
+            }
 
             // Delete ban (soft delete)
             _dbContext.Ban.Delete(world, userId);
@@ -123,11 +125,15 @@ namespace Http.Service
         {
             var userId = await _dbContext.Character.GetCharacterId(world, name);
             if (!userId.HasValue)
+            {
                 return null;
+            }
 
             var ban = await _dbContext.Ban.Get(world, userId.Value);
             if (ban == null)
+            {
                 return null;
+            }
 
             // Check if ban is expired
             if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.UtcNow)

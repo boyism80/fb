@@ -68,23 +68,35 @@ namespace MapEditor.Edit
         public string BlockedBy(int x, int y)
         {
             if (Map.Contains(x, y) == false)
+            {
                 return "맵 밖";
+            }
 
             var i = y * Map.Width + x;
             if (Blocks.Contains((x, y)))
+            {
                 return ".block";
+            }
             else if (Map.Tiles[i] == 0)
+            {
                 return "타일 0";
+            }
             else if (DoorCells.Contains((x, y)) == false && ((Objects.Find(Map.Objects[i])?.Collision ?? 0) & 0x0F) == 0x0F)
+            {
                 return $"오브젝트 {Map.Objects[i]} 충돌";
+            }
             else
+            {
                 return null;
+            }
         }
 
         private int Edges(int x, int y)
         {
             if (DoorCells.Contains((x, y)))
+            {
                 return 0;
+            }
 
             return Objects.Find(Map.Objects[y * Map.Width + x])?.Collision ?? 0;
         }
@@ -99,7 +111,9 @@ namespace MapEditor.Edit
             foreach (var arrival in arrivals)
             {
                 if (Map.Contains(arrival.X, arrival.Y) && reached.Add(arrival))
+                {
                     queue.Enqueue(arrival);
+                }
             }
 
             while (queue.Count > 0)
@@ -109,10 +123,14 @@ namespace MapEditor.Edit
                 {
                     var (nx, ny) = (x + step.Dx, y + step.Dy);
                     if (reached.Contains((nx, ny)) || BlockedBy(nx, ny) != null || NpcCells.Contains((nx, ny)) || WarpCells.Contains((nx, ny)))
+                    {
                         continue;
+                    }
 
                     if ((Edges(x, y) & step.Leave) != 0 || (Edges(nx, ny) & step.Enter) != 0)
+                    {
                         continue;
+                    }
 
                     reached.Add((nx, ny));
                     queue.Enqueue((nx, ny));
@@ -168,35 +186,57 @@ namespace MapEditor.Edit
                         var (nx, ny) = (warp.X - step.Dx, warp.Y - step.Dy);
                         var reason = BlockedBy(nx, ny);
                         if (reason == null && NpcCells.Contains((nx, ny)))
+                        {
                             reason = "NPC";
+                        }
                         else if (reason == null && WarpCells.Contains((nx, ny)))
+                        {
                             reason = "다른 워프";
+                        }
                         else if (reason == null && ((Edges(nx, ny) & step.Leave) != 0 || (Edges(warp.X, warp.Y) & step.Enter) != 0))
+                        {
                             reason = "방향 충돌";
+                        }
 
                         if (reason == null)
+                        {
                             entries.Add((nx, ny));
+                        }
                         else
+                        {
                             reasons.Add($"{Sides[d]} {reason}");
+                        }
                     }
 
                     if (entries.Count == 0)
+                    {
                         issues.Add(Issue(true, $"들어갈 수 있는 인접 칸 없음 ({string.Join(", ", reasons)})"));
+                    }
                     else if (reached != null && entries.All(e => reached.Contains(e) == false))
+                    {
                         issues.Add(Issue(false, $"이 맵 도착 지점 {arrivals.Count}곳에서 걸어서 갈 수 없음"));
+                    }
                 }
 
                 if (warp.DestMap is int id && warp.DestX is int dx && warp.DestY is int dy)
                 {
                     var dest = destination(id);
                     if (dest == null)
+                    {
                         issues.Add(Issue(true, $"목적지 맵 {id} 파일 없음"));
+                    }
                     else if (dest.Map.Contains(dx, dy) == false)
+                    {
                         issues.Add(Issue(true, $"목적지 좌표가 맵 밖 (맵 크기 {dest.Map.Width}x{dest.Map.Height})"));
+                    }
                     else if (dest.BlockedBy(dx, dy) is string reason)
+                    {
                         issues.Add(Issue(false, $"목적지 칸이 막혀 있음 ({reason})"));
+                    }
                     else if (dest.WarpCells.Contains((dx, dy)))
+                    {
                         issues.Add(Issue(false, "목적지 칸이 다른 워프 위"));
+                    }
                 }
             }
             return issues;

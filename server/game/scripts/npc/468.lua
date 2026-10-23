@@ -2,7 +2,8 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 local function do_sub6_start(me, npc)
-    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
+    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
+        { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end

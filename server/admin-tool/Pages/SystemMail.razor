@@ -60,7 +60,7 @@
                     <div class="system-mail-field">
                         <label for="contents" class="system-mail-label">내용</label>
                         <InputTextArea id="contents" class="form-control system-mail-textarea" rows="6"
-                            @bind-Value="mailModel.Contents" placeholder="본문 내용을 입력하세요..." />
+                                       @bind-Value="mailModel.Contents" placeholder="본문 내용을 입력하세요..." />
                         <ValidationMessage For="@(() => mailModel.Contents)" />
                     </div>
                     <div class="system-mail-field">
@@ -251,6 +251,7 @@
 </div>
 
 @code {
+
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
@@ -556,4 +557,5 @@
         [StringLength(256, ErrorMessage = "Contents must be 256 characters or less")]
         public string Contents { get; set; } = string.Empty;
     }
+
 }

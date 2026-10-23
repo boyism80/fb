@@ -124,7 +124,8 @@ return {
             local s = main_q:step()
             if s == 2 then
                 ::NPC_465_0001::
-                local b = me:dialog(npc, "음? 참원왕께서 의견이나 계책을 바사리고 계신다고? 그래, 마침 생각하시던 일이 계시는데 말이다.", { prev = false, next = true })
+                local b = me:dialog(npc, "음? 참원왕께서 의견이나 계책을 바사리고 계신다고? 그래, 마침 생각하시던 일이 계시는데 말이다.",
+                    { prev = false, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end

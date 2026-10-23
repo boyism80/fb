@@ -17,7 +17,8 @@ local function run_junghwa(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return true
     end
-    btn = me:dialog(npc, "이 부적은 '향랑각시 속거천리(香娘閣氏 速去千里)'라고 써있답니다. 냄새나는 벌레를 향랑각시라고 했고, 빨리 천리를 가라는 뜻이죠", { prev = false, next = true })
+    btn = me:dialog(npc, "이 부적은 '향랑각시 속거천리(香娘閣氏 速去千里)'라고 써있답니다. 냄새나는 벌레를 향랑각시라고 했고, 빨리 천리를 가라는 뜻이죠",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return true
     end
@@ -185,7 +186,8 @@ local function run_chuseok(me, npc)
             me:dialog(npc, "벌초를 하지 않으셨네요? 절 속이시면 안돼죠..", { prev = false, next = false })
             return true
         end
-        local btn = me:dialog(npc, "수고하셨어요. 올게심니를 드릴께요.. 매달마다 특정 아이템을 하나씩 모아서 1년동안 모으시면 좋을일이 생길꺼에요. 추석엔 올게심니에요.", { prev = false, next = true })
+        local btn = me:dialog(npc, "수고하셨어요. 올게심니를 드릴께요.. 매달마다 특정 아이템을 하나씩 모아서 1년동안 모으시면 좋을일이 생길꺼에요. 추석엔 올게심니에요.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return true
         end

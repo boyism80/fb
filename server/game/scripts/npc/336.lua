@@ -24,7 +24,9 @@ return {
                 return
             end
             ::NPC_336_0002::
-            btn = me:dialog(npc, "매달 1일부터 24일간 24개의 도톨을 종류별로 판매하고 있고,\n\n만약 놓치신 색도톨이 있다면 25일부터 26일 2일동안은 5만전을 주시면 원하는 색상의 도톨 한개를 구입하실 수 있습니다.", { prev = true, next = true })
+            btn = me:dialog(npc,
+                "매달 1일부터 24일간 24개의 도톨을 종류별로 판매하고 있고,\n\n만약 놓치신 색도톨이 있다면 25일부터 26일 2일동안은 5만전을 주시면 원하는 색상의 도톨 한개를 구입하실 수 있습니다.",
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -44,16 +46,21 @@ return {
                 me:dialog(npc, "준비중입니다.", { prev = false, next = false })
                 return
             end
-            btn = me:dialog(npc, "오늘은 [" .. item_name .. "] " .. name_with(item_name, '을', '를') .. " 구입 가능합니다.", { prev = false, next = true })
+            btn = me:dialog(npc, "오늘은 [" .. item_name .. "] " .. name_with(item_name, '을', '를') .. " 구입 가능합니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local sel, list_btn = me:list(npc, "[" .. item_name .. "] " .. name_with(item_name, '을', '를') .. " 1천전에 구입하시겠습니까?", { "예", "아니오" }, { prev = false })
+            local sel, list_btn = me:list(npc,
+                "[" .. item_name .. "] " .. name_with(item_name, '을', '를') .. " 1천전에 구입하시겠습니까?", { "예", "아니오" },
+                { prev = false })
             if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
             if me:has_items(item_name, 1) then
-                me:dialog(npc, "이미 [" .. item_name .. "] " .. name_with(item_name, '을', '를') .. " 가지고 계신것 같군요. 저는 욕심쟁이를 좋아하지 않아요.", { prev = false, next = false })
+                me:dialog(npc,
+                    "이미 [" .. item_name .. "] " .. name_with(item_name, '을', '를') .. " 가지고 계신것 같군요. 저는 욕심쟁이를 좋아하지 않아요.",
+                    { prev = false, next = false })
                 return
             end
             if me:money() < DOTOL_PRICE then
@@ -73,7 +80,8 @@ return {
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, "소지품이 가득 차서 " .. name_with(item_name, '을', '를') .. " 드릴 수 없어요.", { prev = false, next = false })
+                me:dialog(npc, "소지품이 가득 차서 " .. name_with(item_name, '을', '를') .. " 드릴 수 없어요.",
+                    { prev = false, next = false })
                 return
             end
             if q then
@@ -84,7 +92,8 @@ return {
         end
 
         if day == 25 or day == 26 then
-            me:dialog(npc, "오늘은 원하는 색상의 도톨 하나를 드리고 있어요. 단...! 가격은 비싸다는 점! 참고해 주세요. (해당 기능은 준비중입니다.)", { prev = false, next = false })
+            me:dialog(npc, "오늘은 원하는 색상의 도톨 하나를 드리고 있어요. 단...! 가격은 비싸다는 점! 참고해 주세요. (해당 기능은 준비중입니다.)",
+                { prev = false, next = false })
             return
         end
 
@@ -96,14 +105,16 @@ return {
             end
         end
         if not has_all then
-            local btn = me:dialog(npc, "스물네가지 색의 도톨을 모아오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "스물네가지 색의 도톨을 모아오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             me:dialog(npc, "저런, 아쉽게도 도톨이 부족하시군요.", { prev = false, next = false })
             return
         end
-        local sel, list_btn = me:list(npc, "스물 네가지 색의 도톨을 가져 오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", { "예", "아니오" }, { prev = false })
+        local sel, list_btn = me:list(npc, "스물 네가지 색의 도톨을 가져 오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", { "예", "아니오" },
+            { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
@@ -127,6 +138,7 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, "여기 있습니다. 잘 쓰시길 바라며, 수행이 필요 없을지라도 꾸준한 수행은 자신의 진의를 깨달을 수 있는 길입니다. 나무아미타불..", { prev = false, next = false })
+        me:dialog(npc, "여기 있습니다. 잘 쓰시길 바라며, 수행이 필요 없을지라도 꾸준한 수행은 자신의 진의를 깨달을 수 있는 길입니다. 나무아미타불..",
+            { prev = false, next = false })
     end
 }

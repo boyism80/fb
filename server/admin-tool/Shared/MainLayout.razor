@@ -108,6 +108,7 @@
         {
             return serverName;
         }
+
         return world.ToString();
     }
 
@@ -221,6 +222,8 @@
         {
             AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         }
+
         Navigation.LocationChanged -= OnLocationChanged;
     }
+
 }

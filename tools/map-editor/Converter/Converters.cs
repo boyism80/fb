@@ -21,7 +21,9 @@ namespace MapEditor.Converter
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is not true)
+            {
                 return Binding.DoNothing;
+            }
 
             return targetType == typeof(string) ? parameter.ToString() : Enum.Parse(targetType, parameter.ToString());
         }
@@ -63,12 +65,16 @@ namespace MapEditor.Converter
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length < 3 || values[0] is not ClientAssets assets || values[1] is not DoorTable table || values[2] is not DoorModel model)
+            {
                 return null;
+            }
 
             var open = parameter?.ToString() == "open";
             var objects = model.Pairs.Select(id => table.FindPair(id)).Select(pair => pair == null ? 0 : open ? pair.Open : pair.Close).ToList();
             if (objects.Count == 0)
+            {
                 return null;
+            }
 
             var cell = assets.CellPixels;
             var rows = Math.Max(1, objects.Max(id => assets.Objects.Find(id)?.Frames.Length ?? 1));
@@ -76,7 +82,9 @@ namespace MapEditor.Converter
             var height = rows * cell;
             var pixels = new uint[width * height];
             for (int i = 0; i < objects.Count; i++)
+            {
                 assets.DrawObject(pixels, width, height, i * cell, (rows - 1) * cell, objects[i]);
+            }
 
             var bitmap = BitmapSource.Create(width, height, assets.Dpi, assets.Dpi, PixelFormats.Pbgra32, null, pixels, width * 4);
             bitmap.Freeze();
@@ -97,7 +105,9 @@ namespace MapEditor.Converter
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length < 2 || values[0] is not ClientAssets assets || values[1] is not int id)
+            {
                 return null;
+            }
 
             return Thumbnail.Object(assets, id);
         }
@@ -116,7 +126,9 @@ namespace MapEditor.Converter
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length < 2 || values[0] is not ClientAssets assets || values[1] is not Edit.MapTemplate template)
+            {
                 return null;
+            }
 
             return Thumbnail.Template(assets, template).Bitmap;
         }
@@ -135,7 +147,9 @@ namespace MapEditor.Converter
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length < 2 || values[0] is not ClientAssets assets || values[1] is not NameEntry info)
+            {
                 return null;
+            }
 
             var direction = values.Length > 2 && values[2] is int value ? value : 2;
             return Thumbnail.Monster(assets, info.Look, info.Color, direction);
@@ -155,11 +169,15 @@ namespace MapEditor.Converter
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length < 2 || values[0] is not DoorModel model)
+            {
                 return "";
+            }
 
             var here = values[1] is List<MapDoor> doors ? string.Join(" ", doors.Where(d => d.Model == model).Select(d => $"({d.X}, {d.Y})")) : "";
             if (values.Length < 3 || values[2] is not Dictionary<int, int> counts)
+            {
                 return here;
+            }
 
             var total = counts.TryGetValue(model.Id, out var count) ? count : 0;
             return here.Length == 0 ? $"전체 {total}" : $"전체 {total}\n{here}";

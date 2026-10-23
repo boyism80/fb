@@ -56,12 +56,16 @@ namespace MapEditor.Edit
             {
                 token.ThrowIfCancellationRequested();
                 if (k % 20 == 0)
+                {
                     progress.Report((0.9 * k / ids.Count, $"템플릿 찾기: {k}/{ids.Count} 맵, 워프 연결 {links.Count}개"));
+                }
 
                 var id = ids[k];
                 var instances = matcher.Find(maps[id]);
                 if (instances.Count == 0)
+                {
                     continue;
+                }
 
                 foreach (var warp in warps[id])
                 {
@@ -71,7 +75,9 @@ namespace MapEditor.Edit
                                          .ThenBy(i => i.Template.Width * i.Template.Height)
                                          .FirstOrDefault();
                     if (owner != null)
+                    {
                         links.Add((owner, id, warp));
+                    }
                 }
             }
 
@@ -83,14 +89,18 @@ namespace MapEditor.Edit
                 var template = byTemplate.Key;
                 var instances = byTemplate.GroupBy(l => (l.Map, l.Instance.X, l.Instance.Y)).ToList();
                 if (instances.Count < 2)
+                {
                     continue;
+                }
 
                 var offsetCounts = instances.SelectMany(g => g.Select(l => (Dx: l.Warp.X - l.Instance.X, Dy: l.Warp.Y - l.Instance.Y)).Distinct())
                                             .GroupBy(o => o)
                                             .ToDictionary(g => g.Key, g => g.Count());
                 var common = offsetCounts.Where(o => o.Value >= 2 && o.Value * 2 >= instances.Count).Select(o => o.Key).ToList();
                 if (common.Count == 0)
+                {
                     continue;
+                }
 
                 foreach (var instance in instances)
                 {
@@ -102,7 +112,9 @@ namespace MapEditor.Edit
                         // An offset other instances also use is a variant of the building, not a mistake.
                         var offset = (Dx: warp.X - instance.Key.X, Dy: warp.Y - instance.Key.Y);
                         if (common.Contains(offset) || offsetCounts[offset] >= 2)
+                        {
                             continue;
+                        }
 
                         var near = missing.Where(c => Math.Abs(c.Dx - offset.Dx) + Math.Abs(c.Dy - offset.Dy) <= 3).ToList();
                         var issue = new TemplateWarpIssue

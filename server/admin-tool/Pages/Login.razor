@@ -74,6 +74,7 @@
         {
             Navigation.NavigateTo("/");
         }
+
         LoadServers();
     }
 
@@ -140,6 +141,7 @@
                     };
                     await customProvider.MarkUserAsAuthenticated(authData);
                 }
+
                 Navigation.NavigateTo("/");
             }
             else
@@ -168,4 +170,5 @@
         [Required(ErrorMessage = "비밀번호를 입력하세요")]
         public string Password { get; set; } = string.Empty;
     }
+
 }

@@ -17,7 +17,8 @@ return {
         local step = q:step()
         if step == 1 then
             ::NPC_489_0001::
-            local sel, btn = me:list(npc, "삐리리- 삘릴리리- 삘릴리리리- 삐- 삐---\n내 피리 부는 솜씨가 어떠냐!", { "꼬마야, 그 피리 어디서 났니?", "되게 시끄럽네..." }, { prev = false })
+            local sel, btn = me:list(npc, "삐리리- 삘릴리리- 삘릴리리리- 삐- 삐---\n내 피리 부는 솜씨가 어떠냐!",
+                { "꼬마야, 그 피리 어디서 났니?", "되게 시끄럽네..." }, { prev = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -26,7 +27,8 @@ return {
             end
 
             ::NPC_489_0002::
-            sel, btn = me:list(npc, "......응? 이 피리 말이야?\n이 피리는 내꺼야!", { "그래, 어디서 났는지 가르쳐줄래?", "그래, 너 가져라. 난 시끄러워서 가야겠다..." }, { prev = true })
+            sel, btn = me:list(npc, "......응? 이 피리 말이야?\n이 피리는 내꺼야!",
+                { "그래, 어디서 났는지 가르쳐줄래?", "그래, 너 가져라. 난 시끄러워서 가야겠다..." }, { prev = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -38,7 +40,8 @@ return {
             end
 
             ::NPC_489_0003::
-            sel, btn = me:list(npc, "저~기 집 근처에서 주웠어. 주운 거니까 내꺼야. 안 줘.", { "꼬마야, 그 피리는 말이야...", "말이 안 통하는 꼬마로군..." }, { prev = true })
+            sel, btn = me:list(npc, "저~기 집 근처에서 주웠어. 주운 거니까 내꺼야. 안 줘.", { "꼬마야, 그 피리는 말이야...", "말이 안 통하는 꼬마로군..." },
+                { prev = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -50,7 +53,8 @@ return {
             end
 
             ::NPC_489_0004::
-            local button = me:dialog(npc, "......어, 그렇게 중요한 피리였어? 그런 줄은 몰랐는걸. 하지만 내가 주운 거니까 내꺼야. 그냥은 안 줘!", { prev = false, next = true })
+            local button = me:dialog(npc, "......어, 그렇게 중요한 피리였어? 그런 줄은 몰랐는걸. 하지만 내가 주운 거니까 내꺼야. 그냥은 안 줘!",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -62,7 +66,8 @@ return {
             me:push_achievement(48, "파마의 피리를 찾자(사탕을 구하자).", 7, 1)
 
             ::NPC_489_0005::
-            button = me:dialog(npc, "뭔가 좋은 물건을 가져오면 이 피리랑 바꿔 줄게. 뭐가 좋을까? 음... 그래. 사탕! 난 사탕이 먹고 싶어! 사탕을 가져다주면 피리를 줄게!", { prev = true, next = true })
+            button = me:dialog(npc, "뭔가 좋은 물건을 가져오면 이 피리랑 바꿔 줄게. 뭐가 좋을까? 음... 그래. 사탕! 난 사탕이 먹고 싶어! 사탕을 가져다주면 피리를 줄게!",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -71,7 +76,9 @@ return {
             end
 
             ::NPC_489_0006::
-            me:dialog(npc, "사탕이 어디에 있냐구? 나도 몰라! 나도 누가 줘서 한 번밖에 먹어본 적이 없거든. 사람들한테 물어봐.\n\n삘릴리- 삐리리리리리리- 삐- 삐- 삐리리리-- 삐--\n어떠냐! 내 피리 부는 솜씨가!", { prev = false, next = false })
+            me:dialog(npc,
+                "사탕이 어디에 있냐구? 나도 몰라! 나도 누가 줘서 한 번밖에 먹어본 적이 없거든. 사람들한테 물어봐.\n\n삘릴리- 삐리리리리리리- 삐- 삐- 삐리리리-- 삐--\n어떠냐! 내 피리 부는 솜씨가!",
+                { prev = false, next = false })
             return
         end
 
@@ -87,7 +94,8 @@ return {
             end
 
             ::NPC_489_0007::
-            local sel, btn = me:list(npc, "앗, 손에 들고 있는 그거 사탕이지? 내 피리랑 바꾸자!", { "그래, 사탕을 줄 테니 피리를 이리 주렴.", "안 돼." }, { prev = false })
+            local sel, btn = me:list(npc, "앗, 손에 들고 있는 그거 사탕이지? 내 피리랑 바꾸자!", { "그래, 사탕을 줄 테니 피리를 이리 주렴.", "안 돼." },
+                { prev = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

@@ -46,7 +46,8 @@ local function do_exchange(me, npc, need_count, reward_name)
         return
     end
     set_cooldown(me)
-    me:dialog(npc, "앗, 정말로 잔가지들을 구해오셨군요! 그럼 여기 제가 가진 " .. reward_name .. "을 하나 드리겠습니다. 앞으로도 잘 부탁 드리겠습니다.", { prev = false, next = false })
+    me:dialog(npc, "앗, 정말로 잔가지들을 구해오셨군요! 그럼 여기 제가 가진 " .. reward_name .. "을 하나 드리겠습니다. 앞으로도 잘 부탁 드리겠습니다.",
+        { prev = false, next = false })
 end
 
 return {
@@ -57,11 +58,13 @@ return {
             local rem = next_ts - now_ts
             local hour = math.floor(rem / 3600)
             local min = math.floor((rem % 3600) / 60)
-            me:dialog(npc, string.format("일전에는 정말 감사했습니다. 곧 잔가지가 다시 필요할 것 같으니 %d시간 %d분 후에 다시 와주세요!", hour, min), { prev = false, next = false })
+            me:dialog(npc, string.format("일전에는 정말 감사했습니다. 곧 잔가지가 다시 필요할 것 같으니 %d시간 %d분 후에 다시 와주세요!", hour, min),
+                { prev = false, next = false })
             return
         end
 
-        local btn = me:dialog(npc, string.format("앗...! 안녕하십니까 %s님. 저는 북방나무꾼이라고 합니다.", me:name()), { prev = false, next = true })
+        local btn = me:dialog(npc, string.format("앗...! 안녕하십니까 %s님. 저는 북방나무꾼이라고 합니다.", me:name()),
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -80,7 +83,8 @@ return {
         end
 
         ::NPC_450_0011::
-        btn = me:dialog(npc, "나무... 나무 말이군요!\n\n북방대초원에는 기괴한 괴물들이 나무를 모두 훔쳐가버리곤 한다는 사실... 알고 계셨습니까?", { prev = true, next = true })
+        btn = me:dialog(npc, "나무... 나무 말이군요!\n\n북방대초원에는 기괴한 괴물들이 나무를 모두 훔쳐가버리곤 한다는 사실... 알고 계셨습니까?",
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.PREV then
             goto NPC_450_0010
         end
@@ -89,7 +93,8 @@ return {
         end
 
         ::NPC_450_0020::
-        btn = me:dialog(npc, "무시무시한 녀석들이 대체 어디에 쓰려는건지는 모르겠지만... \n\n귀한 [백현목], [자현목], [노송의가지]를 훔쳐가서는 애지중지 품고 다니곤 하더군요.", { prev = true, next = true })
+        btn = me:dialog(npc, "무시무시한 녀석들이 대체 어디에 쓰려는건지는 모르겠지만... \n\n귀한 [백현목], [자현목], [노송의가지]를 훔쳐가서는 애지중지 품고 다니곤 하더군요.",
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.PREV then
             goto NPC_450_0011
         end
@@ -98,7 +103,8 @@ return {
         end
 
         ::NPC_450_0021::
-        sel, list_btn = me:list(npc, "혹시 나무를 구하러 가시는거라면, 제게 몇개 있는데...", { "갈길이 바빠서...", "앗, 나무가 있으시다구요?" }, { prev = true })
+        sel, list_btn = me:list(npc, "혹시 나무를 구하러 가시는거라면, 제게 몇개 있는데...", { "갈길이 바빠서...", "앗, 나무가 있으시다구요?" },
+            { prev = true })
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -113,13 +119,16 @@ return {
             return
         end
 
-        btn = me:dialog(npc, "그렇습니다. 제가 살고있는 집은, 북방의 초원에서 산으로 향하는 기슭에 위치하고 있습니다.\n\n때문에 땔감이 많이 필요한데, 이 귀한 나무들을 땔감으로 쓰기엔 뭣하고...", { prev = false, next = true })
+        btn = me:dialog(npc,
+            "그렇습니다. 제가 살고있는 집은, 북방의 초원에서 산으로 향하는 기슭에 위치하고 있습니다.\n\n때문에 땔감이 많이 필요한데, 이 귀한 나무들을 땔감으로 쓰기엔 뭣하고...",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
 
         ::NPC_450_0030::
-        btn = me:dialog(npc, "[잔가지]정도면 좋을것 같다는 생각이 듭니다. \n\n그래서 잔가지들을 조금 구해다 주시면, 제가 가진 나무와 바꾸어드릴수 있을 것 같은데... ", { prev = true, next = true })
+        btn = me:dialog(npc, "[잔가지]정도면 좋을것 같다는 생각이 듭니다. \n\n그래서 잔가지들을 조금 구해다 주시면, 제가 가진 나무와 바꾸어드릴수 있을 것 같은데... ",
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.PREV then
             goto NPC_450_0021
         end
@@ -156,15 +165,18 @@ return {
         if sel == 4 then
             local map = me:map()
             local map_name = (map and map:model()) and map:model():name() or "이곳"
-            local btn = me:dialog(npc, string.format("잔가지는 이곳 [%s]에서 나무를 베어 얻으실 수 있습니다.", map_name), { prev = false, next = true })
+            local btn = me:dialog(npc, string.format("잔가지는 이곳 [%s]에서 나무를 베어 얻으실 수 있습니다.", map_name),
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local btn = me:dialog(npc, "어디까지나 자잘한 가지들을 모으는 것이기 때문에, 곳곳에 있는 나무들에게 다가가 잔가지를 주워 오시면 됩니다. ", { prev = false, next = true })
+            local btn = me:dialog(npc, "어디까지나 자잘한 가지들을 모으는 것이기 때문에, 곳곳에 있는 나무들에게 다가가 잔가지를 주워 오시면 됩니다. ",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, "나무들은 맨손으로 공격하셔도 좋고 마법으로 공격하셔도 좋습니다.\n\n그렇게 나무 주위에서 떨어지는 잔가지들을 구해다 주시면 됩니다...", { prev = false, next = false })
+            me:dialog(npc, "나무들은 맨손으로 공격하셔도 좋고 마법으로 공격하셔도 좋습니다.\n\n그렇게 나무 주위에서 떨어지는 잔가지들을 구해다 주시면 됩니다...",
+                { prev = false, next = false })
             return
         end
     end

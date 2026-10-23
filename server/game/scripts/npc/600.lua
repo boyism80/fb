@@ -19,7 +19,7 @@ end
 
 return {
     on_click = function(me, npc)
-    ::MENU::
+        ::MENU::
         local sel, btn = me:list(npc, "안녕하신가? 그래.. 요즘 하는 일은 잘 되고? 내게 무슨 볼일로 찾아왔나? 설마 인사차 온건 아닐테고.. 허허허 ~", {
             "비패교환증을 사러 왔어요 !!",
             "문파비패를 사러 왔어요 !!",
@@ -34,7 +34,9 @@ return {
 
         if sel == 1 then
             local price = voucher_price()
-            local d = me:dialog(npc, string.format("음 .. 비패교환증을 구입하러 왔단 말이지. 비패교환증을 사기 위해서는 %d전이 필요하다네. 서버가 시작된 이래로 계속해서 값이 증가하지.", price), { prev = false, next = true })
+            local d = me:dialog(npc,
+                string.format("음 .. 비패교환증을 구입하러 왔단 말이지. 비패교환증을 사기 위해서는 %d전이 필요하다네. 서버가 시작된 이래로 계속해서 값이 증가하지.", price),
+                { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
@@ -57,7 +59,8 @@ return {
                 { ['item'] = { ["비패교환증"] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, string.format("아니! 누굴 놀리나!! %d전이 없지 않나!! 장난하지 말게!!", price), { prev = false, next = false })
+                me:dialog(npc, string.format("아니! 누굴 놀리나!! %d전이 없지 않나!! 장난하지 말게!!", price),
+                    { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
@@ -68,7 +71,8 @@ return {
         end
 
         if sel == 2 then
-            local d = me:dialog(npc, "음 .. 문파비패를 구입하러 왔단 말이지. 문파비패를 사기 위해서는 비패교환증이 필요한데...", { prev = false, next = true })
+            local d = me:dialog(npc, "음 .. 문파비패를 구입하러 왔단 말이지. 문파비패를 사기 위해서는 비패교환증이 필요한데...",
+                { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end

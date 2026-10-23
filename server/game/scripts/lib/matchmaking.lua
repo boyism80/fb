@@ -47,7 +47,7 @@ function M.handle(me, npc)
         labels[#labels + 1] = queue.label
     end
 
-::MATCHMAKING_TYPE::
+    ::MATCHMAKING_TYPE::
     local selected, button = me:pursuit(npc, '매치 유형을 선택해 주세요.', labels)
     if selected == nil or button == DIALOG_RESULT.QUIT then
         return true
@@ -58,7 +58,8 @@ function M.handle(me, npc)
         return true
     end
 
-    local confirm_selected, confirm_button = me:pursuit(npc, string.format('"%s" 매치를 등록하시겠습니까?', queue.label), { '예', '아니오' })
+    local confirm_selected, confirm_button = me:pursuit(npc, string.format('"%s" 매치를 등록하시겠습니까?', queue.label),
+        { '예', '아니오' })
     if confirm_button == DIALOG_RESULT.QUIT then
         return true
     end

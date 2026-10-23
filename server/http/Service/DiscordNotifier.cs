@@ -29,21 +29,35 @@ namespace Http.Service
             _logger = logger;
             _token = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN")?.Trim() ?? string.Empty;
             if (string.IsNullOrEmpty(_token))
+            {
                 _token = configuration["Discord:BotToken"]?.Trim() ?? string.Empty;
+            }
+
             if (_token.StartsWith("Bot ", StringComparison.Ordinal))
+            {
                 _token = _token.Substring(4).Trim();
+            }
+
             _channelId = Environment.GetEnvironmentVariable("DISCORD_CHANNEL_ID")?.Trim() ?? string.Empty;
             if (string.IsNullOrEmpty(_channelId))
+            {
                 _channelId = configuration["Discord:ChannelId"]?.Trim() ?? string.Empty;
+            }
+
             _enabled = string.IsNullOrWhiteSpace(_token) == false && string.IsNullOrWhiteSpace(_channelId) == false;
             if (_enabled == false)
+            {
                 _logger.LogInformation("Discord ops notify disabled (token or channel is empty)");
+            }
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             if (_enabled)
+            {
                 _run = Task.Run(() => SendLoop(_stopping.Token));
+            }
+
             return Task.CompletedTask;
         }
 
@@ -63,13 +77,17 @@ namespace Http.Service
         public Task NotifyAsync(string action, string source, string actor, string target, uint? world, string detail)
         {
             if (_enabled == false)
+            {
                 return Task.CompletedTask;
+            }
 
             if (_pending.Reader.Count >= QueueCapacity)
             {
                 var dropped = Interlocked.Increment(ref _dropped);
                 if (dropped == 1 || dropped % 100 == 0)
+                {
                     _logger.LogWarning("Dropped {Dropped} Discord notices because the queue is full", dropped);
+                }
             }
 
             _pending.Writer.TryWrite(new Notice(action, source, actor, target, world, detail));
@@ -81,7 +99,9 @@ namespace Http.Service
             try
             {
                 await foreach (var notice in _pending.Reader.ReadAllAsync(stoppingToken))
+                {
                     await SendAsync(notice);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -95,17 +115,27 @@ namespace Http.Service
                 var body = new StringBuilder();
                 body.Append('[').Append(notice.Action).Append(']');
                 if (notice.World.HasValue)
+                {
                     body.Append(" world=").Append(notice.World.Value);
+                }
+
                 body.Append(" source=").Append(notice.Source ?? string.Empty);
                 body.Append('\n').Append("actor: ").Append(notice.Actor ?? string.Empty);
                 if (string.IsNullOrEmpty(notice.Target) == false)
+                {
                     body.Append('\n').Append("target: ").Append(notice.Target);
+                }
+
                 if (string.IsNullOrEmpty(notice.Detail) == false)
+                {
                     body.Append('\n').Append(notice.Detail);
+                }
 
                 var content = body.ToString();
                 if (content.Length > ContentLimit)
+                {
                     content = content.Substring(0, ContentLimit);
+                }
 
                 var payload = JsonConvert.SerializeObject(new { content });
                 using var request = new HttpRequestMessage(
@@ -120,7 +150,10 @@ namespace Http.Service
                 {
                     var error = await response.Content.ReadAsStringAsync(_stopping.Token);
                     if (error.Length > 500)
+                    {
                         error = error.Substring(0, 500);
+                    }
+
                     _logger.LogWarning("Discord ops notify failed: {Status} {Body}", (int)response.StatusCode, error);
                 }
             }

@@ -641,7 +641,10 @@ public class MatchMaker<TMember>
                     var first = Random.Shared.Next(hosts.Count);
                     var second = Random.Shared.Next(hosts.Count - 1);
                     if (second >= first)
+                    {
                         second++;
+                    }
+
                     host = hosts[second].Online < hosts[first].Online ? hosts[second] : hosts[first];
                 }
                 match.Id = _ids.Next(host.Id);

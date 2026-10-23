@@ -380,6 +380,7 @@
 }
 
 @code {
+
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
@@ -504,6 +505,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             articles = await BulletinService.GetArticleListAsync(
                 selectedWorld.Value,
                 selectedBulletinSection.Value,
@@ -589,6 +591,7 @@
         {
             return section.Name;
         }
+
         return $"Section {sectionId}";
     }
 
@@ -652,6 +655,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             var success = await BulletinService.Write(
                 selectedWorld.Value,
                 selectedBulletinSection.Value,
@@ -695,6 +699,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             // Get full article data including contents
             var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedWorld.Value, selectedBulletinSection.Value, article.Id);
 
@@ -749,6 +754,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             var result = await BulletinService.Update(
                 selectedWorld.Value,
                 selectedBulletinSection.Value,
@@ -794,6 +800,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             // Get full article data including contents
             var (fullArticle, _) = await BulletinService.GetArticleAsync(selectedWorld.Value, selectedBulletinSection.Value, article.Id);
 
@@ -872,6 +879,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             var result = await BulletinService.Delete(
                 selectedWorld.Value,
                 selectedBulletinSection.Value,
@@ -929,6 +937,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             var ids = selectedArticleIds.ToList();
             var result = await BulletinService.DeleteBatch(
                 selectedWorld.Value,
@@ -986,4 +995,5 @@
 
         public bool IgnoreOwner { get; set; } = false;
     }
+
 }

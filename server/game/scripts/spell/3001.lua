@@ -16,17 +16,17 @@ return {
         local sound = 21
         local effect = 11
         local buff_time = 5
-        if spell.buff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+        if spell.buff_cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:buff(sp, buff_time, me)
         end
     end,
 
     on_buff = function(me, sp)
-        me:buff_str(me:buff_str()+3)
+        me:buff_str(me:buff_str() + 3)
     end,
 
     on_unbuff = function(me, sp)
-        me:buff_str(me:buff_str()-3)
+        me:buff_str(me:buff_str() - 3)
     end,
 
     -- on_concast = function(me, sp)

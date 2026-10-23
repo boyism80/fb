@@ -13,13 +13,15 @@ return {
 
         if q == nil then
             ::NPC_180_0001::
-            local button = me:dialog(npc, '나무를 하러 오셨소? 이 근처는 나무가 많지는 않지만 좋은 나무가 많아서 나무 하기에 제격이지.', { prev = false, next = true })
+            local button = me:dialog(npc, '나무를 하러 오셨소? 이 근처는 나무가 많지는 않지만 좋은 나무가 많아서 나무 하기에 제격이지.',
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
             ::NPC_180_0002::
-            button = me:dialog(npc, '하지만 나무꾼치고는 옷차람이 특이하시구려. 어라, 게다가 도끼도 들고 오지 않은 것 같구려. 잠이 덜 깨셨소? 허허...', { prev = true, next = true })
+            button = me:dialog(npc, '하지만 나무꾼치고는 옷차람이 특이하시구려. 어라, 게다가 도끼도 들고 오지 않은 것 같구려. 잠이 덜 깨셨소? 허허...',
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -27,7 +29,9 @@ return {
                 goto NPC_180_0001
             end
 
-            local selected, list_button = me:list(npc, '괜찮다면 내 도끼를 주겠소이다. 나는 마침 나무를 다 하고 쉬는 중이라, 필요가 없다오. 집에 도끼는 잔뜩 있고 말이오.', {'예, 빌려주세요.', '고맙지만 사양할께요.'}, { prev = false })
+            local selected, list_button = me:list(npc,
+                '괜찮다면 내 도끼를 주겠소이다. 나는 마침 나무를 다 하고 쉬는 중이라, 필요가 없다오. 집에 도끼는 잔뜩 있고 말이오.', { '예, 빌려주세요.', '고맙지만 사양할께요.' },
+                { prev = false })
             if list_button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -54,7 +58,8 @@ return {
             return
         end
 
-        local selected, list_button = me:list(npc, '이미 한 번 쇠도끼를 빌려가지 않았소? 이제 별로 남은 수량이 없어서.. 다시 빌리려면 1만전을 내셔야 하오.', {'다시 빌려주세요.', '필요없어요.'}, { prev = false })
+        local selected, list_button = me:list(npc, '이미 한 번 쇠도끼를 빌려가지 않았소? 이제 별로 남은 수량이 없어서.. 다시 빌리려면 1만전을 내셔야 하오.',
+            { '다시 빌려주세요.', '필요없어요.' }, { prev = false })
         if list_button == DIALOG_RESULT.QUIT then
             return
         end

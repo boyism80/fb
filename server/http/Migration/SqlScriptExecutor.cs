@@ -34,7 +34,9 @@ namespace Http.Migration
             {
                 var start = SkipLeadingTrivia(statement);
                 if (DdlStartPattern().IsMatch(start))
+                {
                     return true;
+                }
             }
 
             return false;
@@ -55,7 +57,10 @@ namespace Http.Migration
                 {
                     var newline = normalized.IndexOf('\n', index);
                     if (newline < 0)
+                    {
                         return string.Empty;
+                    }
+
                     index = newline + 1;
                     continue;
                 }
@@ -64,7 +69,10 @@ namespace Http.Migration
                 {
                     var newline = normalized.IndexOf('\n', index);
                     if (newline < 0)
+                    {
                         return string.Empty;
+                    }
+
                     index = newline + 1;
                     continue;
                 }
@@ -73,7 +81,10 @@ namespace Http.Migration
                 {
                     var end = normalized.IndexOf("*/", index + 2, StringComparison.Ordinal);
                     if (end < 0)
+                    {
                         return string.Empty;
+                    }
+
                     index = end + 2;
                     continue;
                 }
@@ -192,7 +203,9 @@ namespace Http.Migration
                 }
 
                 if (index >= text.Length)
+                {
                     return true;
+                }
 
                 if (index + 1 < text.Length && text[index] == '-' && text[index + 1] == '-')
                 {
@@ -212,7 +225,10 @@ namespace Http.Migration
                 {
                     var end = text.IndexOf("*/", index + 2, StringComparison.Ordinal);
                     if (end < 0)
+                    {
                         return false;
+                    }
+
                     index = end + 2;
                     continue;
                 }

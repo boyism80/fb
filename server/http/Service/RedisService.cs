@@ -89,7 +89,9 @@ namespace Http.Service
         public Redis GetGlobalConnection(uint world)
         {
             if (world == 0)
+            {
                 throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+            }
 
             return _worldGlobalRedis.TryGetValue(world, out var redis) ? redis : null;
         }
@@ -97,16 +99,24 @@ namespace Http.Service
         public Redis GetDataConnection(uint world, int index)
         {
             if (world == 0)
+            {
                 throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+            }
 
             if (index < 0)
+            {
                 return GetGlobalConnection(world);
+            }
 
             if (!_worldShardRedis.TryGetValue(world, out var shardList))
+            {
                 return null;
+            }
 
             if (index >= shardList.Count)
+            {
                 return null;
+            }
 
             return shardList[index];
         }
@@ -115,7 +125,9 @@ namespace Http.Service
         {
             var shardSize = GetShardSize(world);
             if (shardSize == 0)
+            {
                 return null;
+            }
 
             var index = (int)(id % (uint)shardSize);
             return GetDataConnection(world, index);
@@ -124,11 +136,15 @@ namespace Http.Service
         public Redis GetShardConnection(uint world, string key)
         {
             if (world == 0)
+            {
                 throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified-global.");
+            }
 
             var shardSize = GetShardSize(world);
             if (shardSize == 0)
+            {
                 return null;
+            }
 
             ulong hash = 0;
             foreach (var b in Encoding.UTF8.GetBytes(key))
@@ -142,7 +158,9 @@ namespace Http.Service
         public int GetShardSize(uint world)
         {
             if (world == 0)
+            {
                 throw new ArgumentException("World must be greater than 0. Unified has no shards.");
+            }
 
             return _worldShardRedis.TryGetValue(world, out var shardList) ? shardList.Count : 0;
         }

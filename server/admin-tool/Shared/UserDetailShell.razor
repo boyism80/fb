@@ -83,11 +83,15 @@
             <div class="user-detail-profile-stats">
                 <div class="user-detail-stat">
                     <span class="user-detail-stat-label">보유금</span>
-                    <span class="user-detail-stat-value">@UserDetailDisplay.FormatMoney(Core.Character.Money) <span class="user-detail-stat-unit">G</span></span>
+                    <span class="user-detail-stat-value">
+                        @UserDetailDisplay.FormatMoney(Core.Character.Money) <span class="user-detail-stat-unit">G</span>
+                    </span>
                 </div>
                 <div class="user-detail-stat">
                     <span class="user-detail-stat-label">창고예치</span>
-                    <span class="user-detail-stat-value">@UserDetailDisplay.FormatMoney(Core.Character.DepositedMoney) <span class="user-detail-stat-unit">G</span></span>
+                    <span class="user-detail-stat-value">
+                        @UserDetailDisplay.FormatMoney(Core.Character.DepositedMoney) <span class="user-detail-stat-unit">G</span>
+                    </span>
                 </div>
                 <div class="user-detail-stat">
                     <span class="user-detail-stat-label">최근접속</span>
@@ -137,7 +141,9 @@
                 @foreach (var tab in Tabs)
                 {
                     <a href="@GetTabUrl(tab.Key)"
-                       class="user-detail-tab @(ActiveTab == tab.Key ? "active" : "")">@tab.Label</a>
+                       class="user-detail-tab @(ActiveTab == tab.Key ? "active" : "")">
+                        @tab.Label
+                    </a>
                 }
             </div>
             <div class="user-detail-tabs-mobile">
@@ -165,6 +171,7 @@
 </div>
 
 @code {
+
     [Parameter]
     public int UserId { get; set; }
 
@@ -239,4 +246,5 @@
 
         Navigation.NavigateTo(GetTabUrl(tab));
     }
+
 }

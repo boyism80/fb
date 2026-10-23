@@ -16,11 +16,13 @@ return {
             end
             if sel == 1 then
                 ::NPC_122_0000::
-                local btn = me:dialog(npc, "그건 모조품이라구! 아니, 그럼 내가 진짜를 줬을 줄 알았어? 허참! 어이가 없구만!", { prev = false, next = true })
+                local btn = me:dialog(npc, "그건 모조품이라구! 아니, 그럼 내가 진짜를 줬을 줄 알았어? 허참! 어이가 없구만!",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "그리고 교역허가? 허가를 내줄 공무원들이 맨날 숲에서 낮잠이나 자고 있는데, 무슨 수로 허가를 맡느냔 말이지!", { prev = true, next = true })
+                btn = me:dialog(npc, "그리고 교역허가? 허가를 내줄 공무원들이 맨날 숲에서 낮잠이나 자고 있는데, 무슨 수로 허가를 맡느냔 말이지!",
+                    { prev = true, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end

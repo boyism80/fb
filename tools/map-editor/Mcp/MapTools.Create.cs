@@ -25,7 +25,10 @@ namespace MapEditor.Mcp
                 var maps = new Dictionary<int, ServerMap>(corpus);
                 var doc = _editor.Document;
                 if (doc != null)
+                {
                     maps[doc.Id] = doc.Map;
+                }
+
                 var names = _editor.MapChoices.GroupBy(e => e.Id).ToDictionary(g => g.Key, g => g.First().Name);
                 return (maps, names);
             });
@@ -34,11 +37,17 @@ namespace MapEditor.Mcp
         private static ushort[] Layer(ServerMap map, string layer)
         {
             if (layer == "tile")
+            {
                 return map.Tiles;
+            }
             else if (layer == "object")
+            {
                 return map.Objects;
+            }
             else
+            {
                 throw new ArgumentException("layer must be tile or object");
+            }
         }
 
         [McpServerTool(Name = "create_map"), Description("Create a new map: {id}.map filled with one tile, an empty {id}.block and a map.xlsx row on 'sheet' " +
@@ -52,13 +61,25 @@ namespace MapEditor.Mcp
             {
                 var assets = _editor.Assets ?? throw new InvalidOperationException("no client resources loaded");
                 if (id <= 0 || id > 65535)
+                {
                     throw new ArgumentException("id must be 1..65535");
+                }
+
                 if (string.IsNullOrWhiteSpace(name))
+                {
                     throw new ArgumentException("name is required");
+                }
+
                 if (width < 8 || height < 8 || width > 255 || height > 255)
+                {
                     throw new ArgumentException("width and height must be 8..255");
+                }
+
                 if (tile < 0 || tile >= assets.TileCount)
+                {
                     throw new ArgumentException($"tile must be 0..{assets.TileCount - 1}");
+                }
+
                 return _editor.CreateMap(id, name, width, height, tile, sheet, template);
             });
             await task;
@@ -83,10 +104,15 @@ namespace MapEditor.Mcp
                     foreach (var value in Layer(map, layer))
                     {
                         if (layer == "object" && value == 0)
+                        {
                             continue;
+                        }
+
                         cells[value] = cells.GetValueOrDefault(value) + 1;
                         if (seen.Add(value))
+                        {
                             mapCounts[value] = mapCounts.GetValueOrDefault(value) + 1;
+                        }
                     }
                 }
                 return Json(new
@@ -121,12 +147,17 @@ namespace MapEditor.Mcp
                         {
                             var i = y * map.Width + x;
                             if (values[i] != id)
+                            {
                                 continue;
+                            }
 
                             total++;
                             perMap[mapId] = perMap.GetValueOrDefault(mapId) + 1;
                             if (layer == "object" || others[i] != 0)
+                            {
                                 other[others[i]] = other.GetValueOrDefault(others[i]) + 1;
+                            }
+
                             for (int d = 0; d < 4; d++)
                             {
                                 var nx = x + directions[d].Item1;
@@ -176,11 +207,15 @@ namespace MapEditor.Mcp
             {
                 var assets = _editor.Assets ?? throw new InvalidOperationException("no client resources loaded");
                 if (layer != "tile" && layer != "object")
+                {
                     throw new ArgumentException("layer must be tile or object");
+                }
 
                 var list = ids != null && ids.Length > 0 ? ids.ToList() : Enumerable.Range(from, Math.Clamp(count, 1, 256)).ToList();
                 if (list.Count > 256)
+                {
                     throw new ArgumentException("at most 256 ids");
+                }
 
                 columns = Math.Clamp(columns, 1, 32);
                 var cell = assets.CellPixels;
@@ -199,11 +234,18 @@ namespace MapEditor.Mcp
                     var top = i / columns * (boxHeight + label + 4) + 2;
                     Array.Fill(box, 0xFF000000u);
                     if (layer == "tile")
+                    {
                         assets.DrawTile(box, boxWidth, boxHeight, 0, 0, list[i]);
+                    }
                     else
+                    {
                         assets.DrawObject(box, boxWidth, boxHeight, (boxWidth - cell) / 2, boxHeight - cell, list[i]);
+                    }
+
                     for (int y = 0; y < boxHeight; y++)
+                    {
                         Array.Copy(box, y * boxWidth, pixels, (top + y) * width + left, boxWidth);
+                    }
 
                     var text = list[i].ToString();
                     var textLeft = left + (boxWidth - text.Length * 4 + 1) / 2;
@@ -215,7 +257,9 @@ namespace MapEditor.Mcp
                             for (int gx = 0; gx < 3; gx++)
                             {
                                 if ((glyph >> (14 - gy * 3 - gx) & 1) != 0)
+                                {
                                     pixels[(top + boxHeight + 2 + gy) * width + textLeft + k * 4 + gx] = 0xFFFFFFFFu;
+                                }
                             }
                         }
                     }
@@ -241,7 +285,10 @@ namespace MapEditor.Mcp
                 {
                     var path = Path.Combine(_editor.Settings.MapDirectory, $"{id:000000}.map");
                     if (File.Exists(path) == false)
+                    {
                         throw new ArgumentException($"map {id} not found");
+                    }
+
                     map = ServerMap.Read(path);
                 }
 
@@ -266,12 +313,16 @@ namespace MapEditor.Mcp
                     for (int y = top; y < top + rows; y++)
                     {
                         for (int x = 0; x < map.Width; x++)
+                        {
                             assets.DrawTile(strip, sourceWidth, stripHeight, x * cell, (y - top) * cell, map.Tiles[y * map.Width + x]);
+                        }
                     }
                     for (int y = top; y < Math.Min(map.Height, top + rows + assets.Objects.MaxHeight); y++)
                     {
                         for (int x = 0; x < map.Width; x++)
+                        {
                             assets.DrawObject(strip, sourceWidth, stripHeight, x * cell, (y - top) * cell, map.Objects[y * map.Width + x]);
+                        }
                     }
 
                     for (int py = 0; py < stripHeight; py++)

@@ -102,7 +102,9 @@ namespace MapEditor.Asset
             {
                 var path = Path.Combine(directory, $"TILE{n}.DAT");
                 if (File.Exists(path) == false)
+                {
                     break;
+                }
 
                 assets._tileEpf.Append(DatArchive.Read(path).Get($"tile{n}.epf"));
             }
@@ -110,7 +112,9 @@ namespace MapEditor.Asset
             {
                 var path = Path.Combine(directory, $"TILEC{n}.DAT");
                 if (File.Exists(path) == false)
+                {
                     break;
+                }
 
                 assets._objectEpf.Append(DatArchive.Read(path).Get($"tilec{n}.epf"));
             }
@@ -130,7 +134,9 @@ namespace MapEditor.Asset
                 {
                     var path = Path.Combine(directory, $"MON{n}.DAT");
                     if (File.Exists(path) == false)
+                    {
                         break;
+                    }
 
                     assets._monsterEpf.Append(DatArchive.Read(path).Get($"mon{n}.epf"));
                 }
@@ -159,27 +165,37 @@ namespace MapEditor.Asset
         public FrameImage MonsterFrame(int look, int color, int direction)
         {
             if (_monsters == null)
+            {
                 return null;
+            }
 
             return _monsterFrames.GetOrAdd((look, color, direction), key =>
             {
                 // Server sends look + 0x7FFF, the client reads record (u16)(wire - 0x8000).
                 var record = (ushort)(key.Item1 + 0x7FFF - 0x8000);
                 if (record >= _monsters.Count)
+                {
                     return null;
+                }
 
                 var monster = _monsters[record];
                 var anim = 1 + key.Item3;
                 if (anim >= monster.FirstFrames.Length || monster.FirstFrames[anim] < 0)
+                {
                     return null;
+                }
 
                 var index = monster.BaseFrame + monster.FirstFrames[anim];
                 if (index < 0 || index >= _monsterEpf.Count || _monsterPalettes.Count == 0)
+                {
                     return null;
+                }
 
                 var frame = _monsterEpf[index];
                 if (frame.Width <= 0 || frame.Height <= 0)
+                {
                     return null;
+                }
 
                 // color / 32 != 0 selects a fixed effect palette in the client; those are not loaded, so the
                 // record palette is used and only the dye below applies.
@@ -192,7 +208,10 @@ namespace MapEditor.Asset
                 {
                     int value = blob[frame.PixelOffset + i];
                     if (value >= 0x30)
+                    {
                         value = (value + dye) & 0xFF;
+                    }
+
                     pixels[i] = palette[value];
                 }
                 return new FrameImage { Left = frame.Left, Top = frame.Top, Width = frame.Width, Height = frame.Height, Pixels = pixels };
@@ -203,22 +222,30 @@ namespace MapEditor.Asset
         {
             // Frame 0 is the empty frame in both tile sets.
             if (index <= 0 || index >= epf.Count)
+            {
                 return null;
+            }
 
             var frame = epf[index];
             if (frame.Width <= 0 || frame.Height <= 0)
+            {
                 return null;
+            }
 
             var paletteIndex = index < table.Length ? table[index] : 0;
             if (paletteIndex >= palettes.Count)
+            {
                 return null;
+            }
 
             var palette = palettes[paletteIndex];
             var blob = epf.Blob(frame.Blob);
             var pixels = new uint[frame.Width * frame.Height];
             var count = Math.Min(pixels.Length, blob.Length - frame.PixelOffset);
             for (int i = 0; i < count; i++)
+            {
                 pixels[i] = palette[blob[frame.PixelOffset + i]];
+            }
 
             return new FrameImage { Left = frame.Left, Top = frame.Top, Width = frame.Width, Height = frame.Height, Pixels = pixels };
         }
@@ -230,7 +257,9 @@ namespace MapEditor.Asset
         {
             var frame = TileFrame(tile);
             if (frame != null)
+            {
                 Blit(target, targetWidth, targetHeight, px + frame.Left, py + frame.Top, frame);
+            }
         }
 
         /// <summary>
@@ -240,13 +269,17 @@ namespace MapEditor.Asset
         {
             var sobj = Objects.Find(objectId);
             if (sobj == null)
+            {
                 return;
+            }
 
             for (int k = 0; k < sobj.Frames.Length; k++)
             {
                 var frame = ObjectFrame(sobj.Frames[k]);
                 if (frame != null)
+                {
                     Blit(target, targetWidth, targetHeight, px + frame.Left, py - k * CellPixels + frame.Top, frame);
+                }
             }
         }
 
@@ -264,7 +297,9 @@ namespace MapEditor.Asset
                 {
                     var color = frame.Pixels[source + tx];
                     if (color != 0)
+                    {
                         target[row + tx] = color;
+                    }
                 }
             }
         }

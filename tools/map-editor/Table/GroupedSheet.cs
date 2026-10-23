@@ -33,23 +33,31 @@ namespace MapEditor.Table
             {
                 var key = XlsxFile.Text(_sheet.GetRow(r), 0);
                 if (key == "")
+                {
                     continue;
+                }
 
                 if (current >= 0)
+                {
                     _groups[current] = (header, r);
+                }
 
                 current = int.TryParse(key, out var id) ? id : -1;
                 header = r;
             }
             if (current >= 0)
+            {
                 _groups[current] = (header, _sheet.LastRowNum + 1);
+            }
         }
 
         public List<string[]> Read(int mapId)
         {
             var entries = new List<string[]>();
             if (_groups.TryGetValue(mapId, out var group) == false)
+            {
                 return entries;
+            }
 
             for (int r = group.Header + 1; r < group.End; r++)
             {
@@ -62,7 +70,9 @@ namespace MapEditor.Table
                     empty &= values[c] == "";
                 }
                 if (empty == false)
+                {
                     entries.Add(values);
+                }
             }
             return entries;
         }
@@ -72,7 +82,9 @@ namespace MapEditor.Table
             if (_groups.TryGetValue(mapId, out var group) == false)
             {
                 if (entries.Count == 0)
+                {
                     return;
+                }
 
                 var headerRow = _sheet.CreateRow(_sheet.LastRowNum + 1);
                 headerRow.CreateCell(0).SetCellValue(mapId.ToString());
@@ -92,10 +104,14 @@ namespace MapEditor.Table
                 {
                     var row = _sheet.GetRow(r);
                     if (row != null)
+                    {
                         _sheet.RemoveRow(row);
+                    }
                 }
                 if (group.End <= last)
+                {
                     _sheet.ShiftRows(group.End, last, entries.Count - oldCount);
+                }
             }
 
             for (int i = 0; i < entries.Count; i++)
@@ -103,10 +119,14 @@ namespace MapEditor.Table
                 var row = _sheet.GetRow(start + i) ?? _sheet.CreateRow(start + i);
                 var first = row.GetCell(0);
                 if (first != null)
+                {
                     row.RemoveCell(first);
+                }
 
                 for (int c = 1; c < _columns; c++)
+                {
                     XlsxFile.SetText(row, c, entries[i][c]);
+                }
             }
             Index();
         }
@@ -117,17 +137,24 @@ namespace MapEditor.Table
         public void Remove(int mapId)
         {
             if (_groups.TryGetValue(mapId, out var group) == false)
+            {
                 return;
+            }
 
             for (int r = group.Header; r < group.End; r++)
             {
                 var row = _sheet.GetRow(r);
                 if (row != null)
+                {
                     _sheet.RemoveRow(row);
+                }
             }
             var last = _sheet.LastRowNum;
             if (group.End <= last)
+            {
                 _sheet.ShiftRows(group.End, last, group.Header - group.End);
+            }
+
             Index();
         }
     }

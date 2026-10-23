@@ -13,291 +13,292 @@
 <PageTitle>아이템 지급 - FB Admin</PageTitle>
 
 <div class="items-page">
-    <div class="page-header">
-        <h1>아이템 지급</h1>
-        <p>아이템, 골드, 경험치를 유저에게 지급</p>
-    </div>
+<div class="page-header">
+    <h1>아이템 지급</h1>
+    <p>아이템, 골드, 경험치를 유저에게 지급</p>
+</div>
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="stitch-error-banner">
-            <div class="stitch-error-banner-content">
-                <span class="material-symbols-outlined">error</span>
-                <span>@errorMessage</span>
-            </div>
-            <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="stitch-error-banner">
+        <div class="stitch-error-banner-content">
+            <span class="material-symbols-outlined">error</span>
+            <span>@errorMessage</span>
         </div>
-    }
-
-    @if (!string.IsNullOrEmpty(successMessage))
-    {
-        <div class="stitch-success-banner">
-            <div class="stitch-success-banner-content">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span class="stitch-success-text">@successMessage</span>
-            </div>
-            <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-    }
-
-    <div class="items-target-tabs">
-        <button type="button" class="items-target-tab @(model.IsGlobal ? "selected" : null)" @onclick="() => SetGrantMode(true)">
-            <span class="material-symbols-outlined">group</span>
-            전체 지급
-        </button>
-        <button type="button" class="items-target-tab @(!model.IsGlobal ? "selected" : null)" @onclick="() => SetGrantMode(false)">
-            <span class="material-symbols-outlined">person</span>
-            유저 지급
+        <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+            <span class="material-symbols-outlined">close</span>
         </button>
     </div>
+}
 
-    <div class="items-form-card">
-        <h2 class="items-form-title">지급 상세 정보</h2>
-        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
-            <DataAnnotationsValidator />
-            <div class="items-form-grid">
-                @if (!model.IsGlobal)
-                {
-                    <div class="items-field items-col-6">
-                        <label for="userName" class="items-label">유저명</label>
-                        <InputText id="userName" class="form-control items-input" @bind-Value="model.UserName" placeholder="유저 닉네임 입력" />
-                        <ValidationMessage For="@(() => model.UserName)" />
-                    </div>
-                }
-                <div class="items-field @(model.IsGlobal ? "items-col-12" : "items-col-6")">
-                    <label for="title" class="items-label">제목</label>
-                    <InputText id="title" class="form-control items-input" @bind-Value="model.Title" placeholder="메일 제목 입력" />
-                    <ValidationMessage For="@(() => model.Title)" />
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="stitch-success-banner">
+        <div class="stitch-success-banner-content">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span class="stitch-success-text">@successMessage</span>
+        </div>
+        <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+}
+
+<div class="items-target-tabs">
+    <button type="button" class="items-target-tab @(model.IsGlobal ? "selected" : null)" @onclick="() => SetGrantMode(true)">
+        <span class="material-symbols-outlined">group</span>
+        전체 지급
+    </button>
+    <button type="button" class="items-target-tab @(!model.IsGlobal ? "selected" : null)" @onclick="() => SetGrantMode(false)">
+        <span class="material-symbols-outlined">person</span>
+        유저 지급
+    </button>
+</div>
+
+<div class="items-form-card">
+    <h2 class="items-form-title">지급 상세 정보</h2>
+    <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        <div class="items-form-grid">
+            @if (!model.IsGlobal)
+            {
+                <div class="items-field items-col-6">
+                    <label for="userName" class="items-label">유저명</label>
+                    <InputText id="userName" class="form-control items-input" @bind-Value="model.UserName" placeholder="유저 닉네임 입력" />
+                    <ValidationMessage For="@(() => model.UserName)" />
                 </div>
-                <div class="items-field items-col-12">
-                    <label for="message" class="items-label">메시지</label>
-                    <InputTextArea id="message" class="form-control items-textarea" rows="3" @bind-Value="model.Message" placeholder="유저에게 보낼 메시지" />
-                    <ValidationMessage For="@(() => model.Message)" />
-                </div>
-                @if (model.IsGlobal)
-                {
-                    <div class="items-field items-col-4">
-                        <label for="reserveDate" class="items-label">예약 지급 (선택)</label>
-                        <InputDate Type="InputDateType.DateTimeLocal" id="reserveDate" class="form-control items-input" @bind-Value="model.ReserveDate" />
-                        <span class="items-field-hint">비워두면 즉시 지급 · 예약 시각 10초 전까지 수정·취소 가능</span>
-                    </div>
-                    <div class="items-field items-col-8">
-                        <label class="items-label">
-                            <InputCheckbox @bind-Value="model.IncludeNewCharacters" />
-                            지급 이후 생성된 캐릭터도 받음
-                        </label>
-                    </div>
-                }
+            }
+            <div class="items-field @(model.IsGlobal ? "items-col-12" : "items-col-6")">
+                <label for="title" class="items-label">제목</label>
+                <InputText id="title" class="form-control items-input" @bind-Value="model.Title" placeholder="메일 제목 입력" />
+                <ValidationMessage For="@(() => model.Title)" />
+            </div>
+            <div class="items-field items-col-12">
+                <label for="message" class="items-label">메시지</label>
+                <InputTextArea id="message" class="form-control items-textarea" rows="3" @bind-Value="model.Message" placeholder="유저에게 보낼 메시지" />
+                <ValidationMessage For="@(() => model.Message)" />
+            </div>
+            @if (model.IsGlobal)
+            {
                 <div class="items-field items-col-4">
-                    <label for="expiredDate" class="items-label">만료일</label>
-                    <InputDate id="expiredDate" class="form-control items-input" @bind-Value="model.ExpiredDate" />
+                    <label for="reserveDate" class="items-label">예약 지급 (선택)</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" id="reserveDate" class="form-control items-input" @bind-Value="model.ReserveDate" />
+                    <span class="items-field-hint">비워두면 즉시 지급 · 예약 시각 10초 전까지 수정·취소 가능</span>
                 </div>
                 <div class="items-field items-col-8">
-                    <label class="items-label">아이템 검색</label>
-                    <div class="items-search-wrap">
-                        <span class="material-symbols-outlined items-search-icon">search</span>
-                        <input type="text" class="form-control items-input items-search-input"
-                               @bind="itemSearchText"
-                               @bind:event="oninput"
-                               @bind:after="HandleItemSearchInput"
-                               @onkeydown="HandleItemSearchKeyDown"
-                               @onfocus="() => showItemSuggestions = !string.IsNullOrWhiteSpace(itemSearchText) && filteredItems.Any()"
-                               @onblur="() => Task.Delay(200).ContinueWith(_ => InvokeAsync(() => { showItemSuggestions = false; StateHasChanged(); }))"
-                               placeholder="아이템 ID 또는 이름 입력" />
-                        @if (showItemSuggestions && filteredItems.Any())
-                        {
-                            <div class="items-suggestions">
-                                @foreach (var item in filteredItems.Take(10))
-                                {
-                                    <button type="button" class="items-suggestion-item" @onclick="() => SelectItem(item)">
-                                        @item.Name (ID: @item.Id)
-                                    </button>
-                                }
-                            </div>
-                        }
-                    </div>
-                    @if (selectedItem != null)
+                    <label class="items-label">
+                        <InputCheckbox @bind-Value="model.IncludeNewCharacters" />
+                        지급 이후 생성된 캐릭터도 받음
+                    </label>
+                </div>
+            }
+            <div class="items-field items-col-4">
+                <label for="expiredDate" class="items-label">만료일</label>
+                <InputDate id="expiredDate" class="form-control items-input" @bind-Value="model.ExpiredDate" />
+            </div>
+            <div class="items-field items-col-8">
+                <label class="items-label">아이템 검색</label>
+                <div class="items-search-wrap">
+                    <span class="material-symbols-outlined items-search-icon">search</span>
+                    <input type="text" class="form-control items-input items-search-input"
+                           @bind="itemSearchText"
+                           @bind:event="oninput"
+                           @bind:after="HandleItemSearchInput"
+                           @onkeydown="HandleItemSearchKeyDown"
+                           @onfocus="() => showItemSuggestions = !string.IsNullOrWhiteSpace(itemSearchText) && filteredItems.Any()"
+                           @onblur="() => Task.Delay(200).ContinueWith(_ => InvokeAsync(() => { showItemSuggestions = false; StateHasChanged(); }))"
+                           placeholder="아이템 ID 또는 이름 입력" />
+                    @if (showItemSuggestions && filteredItems.Any())
                     {
-                        <span class="items-field-hint">
-                            선택: @selectedItem.Name
-                            @if (selectedItem.Capacity > 1)
+                        <div class="items-suggestions">
+                            @foreach (var item in filteredItems.Take(10))
                             {
-                                <span>(묶음, 최대: @selectedItem.Capacity)</span>
-                            }
-                        </span>
-                    }
-                </div>
-                <div class="items-field items-col-4">
-                    <label class="items-label">수량</label>
-                    <InputNumber class="form-control items-input" @bind-Value="itemQuantity" min="1" max="@(selectedItem?.Capacity ?? 1)" disabled="@(!canEditQuantity)" />
-                </div>
-                <div class="items-field items-col-4">
-                    <label class="items-label">골드 지급</label>
-                    <InputNumber class="form-control items-input" @bind-Value="moneyValue" min="0" />
-                </div>
-                <div class="items-field items-col-4">
-                    <label class="items-label">경험치 지급</label>
-                    <InputNumber class="form-control items-input" @bind-Value="expValue" min="0" />
-                </div>
-                <div class="items-field items-col-12">
-                    <div class="items-add-actions">
-                        <button type="button" class="items-add-btn" @onclick="AddItem" disabled="@(!canAddItem)">아이템 추가</button>
-                        <button type="button" class="items-add-btn" @onclick="AddMoney" disabled="@(moneyValue == null || moneyValue <= 0)">골드 추가</button>
-                        <button type="button" class="items-add-btn" @onclick="AddExp" disabled="@(expValue == null || expValue <= 0)">경험치 추가</button>
-                    </div>
-                </div>
-                <div class="items-field items-col-12">
-                    <label class="items-label">첨부 항목 (미리보기)</label>
-                    <span class="items-field-hint">아이템: @itemCount / 52 · 합계: @totalAttachmentCount / 54</span>
-                    @if (model.Attachments.Any())
-                    {
-                        <div class="items-attachment-chips">
-                            @foreach (var (attachment, index) in model.Attachments.Select((a, i) => (a, i)))
-                            {
-                                <div class="items-attachment-chip">
-                                    <span>@FormatAttachmentLabel(attachment)</span>
-                                    <button type="button" class="items-chip-remove" @onclick="() => RemoveAttachment(index)" aria-label="제거">
-                                        <span class="material-symbols-outlined">close</span>
-                                    </button>
-                                </div>
+                                <button type="button" class="items-suggestion-item" @onclick="() => SelectItem(item)">
+                                    @item.Name (ID: @item.Id)
+                                </button>
                             }
                         </div>
                     }
-                    else
-                    {
-                        <div class="items-attachment-empty">추가된 항목이 없습니다.</div>
-                    }
+                </div>
+                @if (selectedItem != null)
+                {
+                    <span class="items-field-hint">
+                        선택: @selectedItem.Name
+                        @if (selectedItem.Capacity > 1)
+                        {
+                            <span>(묶음, 최대: @selectedItem.Capacity)</span>
+                        }
+                    </span>
+                }
+            </div>
+            <div class="items-field items-col-4">
+                <label class="items-label">수량</label>
+                <InputNumber class="form-control items-input" @bind-Value="itemQuantity" min="1" max="@(selectedItem?.Capacity ?? 1)" disabled="@(!canEditQuantity)" />
+            </div>
+            <div class="items-field items-col-4">
+                <label class="items-label">골드 지급</label>
+                <InputNumber class="form-control items-input" @bind-Value="moneyValue" min="0" />
+            </div>
+            <div class="items-field items-col-4">
+                <label class="items-label">경험치 지급</label>
+                <InputNumber class="form-control items-input" @bind-Value="expValue" min="0" />
+            </div>
+            <div class="items-field items-col-12">
+                <div class="items-add-actions">
+                    <button type="button" class="items-add-btn" @onclick="AddItem" disabled="@(!canAddItem)">아이템 추가</button>
+                    <button type="button" class="items-add-btn" @onclick="AddMoney" disabled="@(moneyValue == null || moneyValue <= 0)">골드 추가</button>
+                    <button type="button" class="items-add-btn" @onclick="AddExp" disabled="@(expValue == null || expValue <= 0)">경험치 추가</button>
                 </div>
             </div>
-            <div class="items-form-actions">
-                <button type="button" class="items-reset-btn" @onclick="ResetForm" disabled="@isProcessing">
-                    @(editingBoxId.HasValue ? "수정 취소" : "초기화")
-                </button>
-                <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
-                    @if (isProcessing)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    }
-                    <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
-                    @(editingBoxId.HasValue ? $"#{editingBoxId} 수정 저장" : "지급하기")
-                </button>
+            <div class="items-field items-col-12">
+                <label class="items-label">첨부 항목 (미리보기)</label>
+                <span class="items-field-hint">아이템: @itemCount / 52 · 합계: @totalAttachmentCount / 54</span>
+                @if (model.Attachments.Any())
+                {
+                    <div class="items-attachment-chips">
+                        @foreach (var (attachment, index) in model.Attachments.Select((a, i) => (a, i)))
+                        {
+                            <div class="items-attachment-chip">
+                                <span>@FormatAttachmentLabel(attachment)</span>
+                                <button type="button" class="items-chip-remove" @onclick="() => RemoveAttachment(index)" aria-label="제거">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="items-attachment-empty">추가된 항목이 없습니다.</div>
+                }
             </div>
-        </EditForm>
+        </div>
+        <div class="items-form-actions">
+            <button type="button" class="items-reset-btn" @onclick="ResetForm" disabled="@isProcessing">
+                @(editingBoxId.HasValue ? "수정 취소" : "초기화")
+            </button>
+            <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                @if (isProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                }
+                <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
+                @(editingBoxId.HasValue ? $"#{editingBoxId} 수정 저장" : "지급하기")
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+<section class="items-log-card">
+    <div class="items-log-header">
+        <h2 class="items-log-title">예약·지급 중 전체 지급</h2>
+        <button type="button" class="items-log-refresh" @onclick="LoadStoredBoxes">
+            <span class="material-symbols-outlined">refresh</span>
+            <span>새로고침</span>
+        </button>
     </div>
-
-    <section class="items-log-card">
-        <div class="items-log-header">
-            <h2 class="items-log-title">예약·지급 중 전체 지급</h2>
-            <button type="button" class="items-log-refresh" @onclick="LoadStoredBoxes">
-                <span class="material-symbols-outlined">refresh</span>
-                <span>새로고침</span>
-            </button>
-        </div>
-        @if (storedBoxes.Any())
-        {
-            <div class="items-log-table-wrap">
-                <table class="items-log-table">
-                    <thead>
+    @if (storedBoxes.Any())
+    {
+        <div class="items-log-table-wrap">
+            <table class="items-log-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th class="col-detail">제목</th>
+                        <th class="col-date">지급 시각</th>
+                        <th class="col-date">만료일</th>
+                        <th>신규 캐릭터</th>
+                        <th class="col-status">상태</th>
+                        <th class="col-status">작업</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var box in storedBoxes)
+                    {
                         <tr>
-                            <th>ID</th>
-                            <th class="col-detail">제목</th>
-                            <th class="col-date">지급 시각</th>
-                            <th class="col-date">만료일</th>
-                            <th>신규 캐릭터</th>
-                            <th class="col-status">상태</th>
-                            <th class="col-status">작업</th>
+                            <td>#@box.Id</td>
+                            <td class="col-detail" title="@box.Title">@box.Title · 첨부 @(box.Attachments.Count)건</td>
+                            <td>@FormatLocal(box.SendDate)</td>
+                            <td>@(box.ExpiredDate.HasValue ? FormatLocal(box.ExpiredDate.Value) : "없음")</td>
+                            <td>@(box.IncludeNewCharacters ? "포함" : "제외")</td>
+                            <td>
+                                <span class="items-status-badge">@(box.ReserveDate > DateTime.UtcNow ? "예약" : "지급 중")</span>
+                            </td>
+                            <td>
+                                @if (Editable(box))
+                                {
+                                    <button type="button" class="items-add-btn" @onclick="() => BeginEdit(box)" disabled="@isProcessing">수정</button>
+                                    <button type="button" class="items-add-btn" @onclick="() => CancelReservation(box)" disabled="@isProcessing">예약 취소</button>
+                                }
+                                else
+                                {
+                                    <span>—</span>
+                                }
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var box in storedBoxes)
-                        {
-                            <tr>
-                                <td>#@box.Id</td>
-                                <td class="col-detail" title="@box.Title">@box.Title · 첨부 @(box.Attachments.Count)건</td>
-                                <td>@FormatLocal(box.SendDate)</td>
-                                <td>@(box.ExpiredDate.HasValue ? FormatLocal(box.ExpiredDate.Value) : "없음")</td>
-                                <td>@(box.IncludeNewCharacters ? "포함" : "제외")</td>
-                                <td>
-                                    <span class="items-status-badge">@(box.ReserveDate > DateTime.UtcNow ? "예약" : "지급 중")</span>
-                                </td>
-                                <td>
-                                    @if (Editable(box))
-                                    {
-                                        <button type="button" class="items-add-btn" @onclick="() => BeginEdit(box)" disabled="@isProcessing">수정</button>
-                                        <button type="button" class="items-add-btn" @onclick="() => CancelReservation(box)" disabled="@isProcessing">예약 취소</button>
-                                    }
-                                    else
-                                    {
-                                        <span>—</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <div class="items-log-empty">예약되었거나 지급 중인 전체 지급이 없습니다.</div>
-        }
-    </section>
-
-    <section class="items-log-card">
-        <div class="items-log-header">
-            <h2 class="items-log-title">아이템 지급 로그</h2>
-            <button type="button" class="items-log-refresh" @onclick="LoadGrantHistory">
-                <span class="material-symbols-outlined">refresh</span>
-                <span>새로고침</span>
-            </button>
+                    }
+                </tbody>
+            </table>
         </div>
-        @if (grantHistory.Any())
-        {
-            <div class="items-log-table-wrap">
-                <table class="items-log-table">
-                    <thead>
+    }
+    else
+    {
+        <div class="items-log-empty">예약되었거나 지급 중인 전체 지급이 없습니다.</div>
+    }
+</section>
+
+<section class="items-log-card">
+    <div class="items-log-header">
+        <h2 class="items-log-title">아이템 지급 로그</h2>
+        <button type="button" class="items-log-refresh" @onclick="LoadGrantHistory">
+            <span class="material-symbols-outlined">refresh</span>
+            <span>새로고침</span>
+        </button>
+    </div>
+    @if (grantHistory.Any())
+    {
+        <div class="items-log-table-wrap">
+            <table class="items-log-table">
+                <thead>
+                    <tr>
+                        <th class="col-date">일시</th>
+                        <th class="col-target">대상</th>
+                        <th class="col-detail">내용</th>
+                        <th class="col-status">상태</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in grantHistory)
+                    {
                         <tr>
-                            <th class="col-date">일시</th>
-                            <th class="col-target">대상</th>
-                            <th class="col-detail">내용</th>
-                            <th class="col-status">상태</th>
+                            <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@entry.Target</td>
+                            <td class="col-detail" title="@entry.Detail">@entry.Detail</td>
+                            <td>
+                                @if (entry.Success)
+                                {
+                                    <span class="items-status-badge">성공</span>
+                                }
+                                else
+                                {
+                                    <span class="items-status-badge failed">실패</span>
+                                }
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var entry in grantHistory)
-                        {
-                            <tr>
-                                <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>@entry.Target</td>
-                                <td class="col-detail" title="@entry.Detail">@entry.Detail</td>
-                                <td>
-                                    @if (entry.Success)
-                                    {
-                                        <span class="items-status-badge">성공</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="items-status-badge failed">실패</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <div class="items-log-empty">지급 로그가 없습니다. (이 서버 세션 기준)</div>
-        }
-    </section>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="items-log-empty">지급 로그가 없습니다. (이 서버 세션 기준)</div>
+    }
+</section>
 </div>
 
 @code {
+
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
@@ -460,7 +461,7 @@
 
             var searchLower = itemSearchText.ToLowerInvariant();
             return allItems.Where(item =>
-                item.Name.ToLowerInvariant().Contains(searchLower))
+                    item.Name.ToLowerInvariant().Contains(searchLower))
                 .OrderBy(item => item.Name)
                 .Take(20);
         }
@@ -791,6 +792,7 @@
 
                 successMessage = $"아이템 지급이 완료되었습니다. (Storage ID: #{result.Id}, 유저: {result.User})";
             }
+
             ResetForm();
         }
         catch (Exception ex)
@@ -845,4 +847,5 @@
 
         public List<Fb.Model.Dsl> Attachments { get; set; } = new();
     }
+
 }

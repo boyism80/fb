@@ -52,7 +52,7 @@ local function do_hair_style(me, npc)
             ['hair_color'] = hair_color,
         }
         local msg = '이 모습으로 바꾸시겠습니까?\n\n비용은 ' .. label .. ' 입니다.'
-        local sel = me:list(appearance, msg, {'이 모습을 선택하겠습니다.', '다른 머리모양을 보여주세요.'}, { prev = false })
+        local sel = me:list(appearance, msg, { '이 모습을 선택하겠습니다.', '다른 머리모양을 보여주세요.' }, { prev = false })
         if sel == nil then
             return
         end
@@ -91,7 +91,8 @@ local function do_hair_style(me, npc)
 end
 
 local function do_hair_dye(me, npc)
-    local btn = me:dialog(npc, '염색을 하시려구요?\n염색 비용은 100전 이고, 이번에 새로 가져온 염색약은 비싸서 500전 이에요.', { prev = false, next = false })
+    local btn = me:dialog(npc, '염색을 하시려구요?\n염색 비용은 100전 이고, 이번에 새로 가져온 염색약은 비싸서 500전 이에요.',
+        { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

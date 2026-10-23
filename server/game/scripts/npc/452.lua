@@ -2,11 +2,13 @@
 
 return {
     on_click = function(me, npc)
-        local d = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아, 사악한악령에게 [민첩한 공격]을 가하는 백호제단지기라네.", { prev = false, next = true })
+        local d = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아, 사악한악령에게 [민첩한 공격]을 가하는 백호제단지기라네.",
+            { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, " 내가 천도복숭아를 먹고, 일격을 가할만한 힘이 [1250 마력]만큼 모이게 되면,\n [민첩한 공격]을 사악한 악령에게 가하여 데미지를 4 입힐 수 있다네.", { prev = false, next = true })
+        d = me:dialog(npc, " 내가 천도복숭아를 먹고, 일격을 가할만한 힘이 [1250 마력]만큼 모이게 되면,\n [민첩한 공격]을 사악한 악령에게 가하여 데미지를 4 입힐 수 있다네.",
+            { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end

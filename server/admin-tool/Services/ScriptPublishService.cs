@@ -34,9 +34,15 @@ namespace AdminTool.Services
         {
             var path = ScriptDependencyAnalyzer.NormalizeRelativePath(relativePath);
             if (string.IsNullOrEmpty(path))
+            {
                 return false;
+            }
+
             if (path.Contains("..", StringComparison.Ordinal))
+            {
                 return false;
+            }
+
             return SafeRelativePath.IsMatch(path);
         }
 
@@ -52,7 +58,9 @@ namespace AdminTool.Services
             }
 
             if (files == null || files.Count == 0)
+            {
                 throw new InvalidOperationException("업로드할 파일이 없습니다.");
+            }
 
             var uploadBase = _options.UploadBaseUrl.TrimEnd('/');
             var client = _httpClientFactory.CreateClient(nameof(ScriptPublishService));
@@ -62,11 +70,15 @@ namespace AdminTool.Services
             {
                 var path = ScriptDependencyAnalyzer.NormalizeRelativePath(relativePath);
                 if (!IsAllowedRelativePath(path))
+                {
                     throw new InvalidOperationException($"허용되지 않은 스크립트 경로입니다: {relativePath}");
+                }
 
                 var bytes = await ReadAllBytesAsync(content, cancellationToken);
                 if (bytes.Length == 0)
+                {
                     throw new InvalidOperationException($"빈 파일입니다: {path}");
+                }
 
                 var url = $"{uploadBase}/{path}";
                 using var request = new HttpRequestMessage(HttpMethod.Put, url)

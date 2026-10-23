@@ -3,9 +3,9 @@ local bot_diag     = require("integration.lib.bot_diag")
 
 local M = {}
 
-local resp     = require("integration.response")
-local protocol = require("integration.protocol")
-local skill    = require("integration.lib.skill")
+local resp        = require("integration.response")
+local protocol    = require("integration.protocol")
+local skill       = require("integration.lib.skill")
 local script_step = require("integration.lib.script_step")
 
 local function slog(fmt, ...)
@@ -105,7 +105,7 @@ local function restore_nakrang_room(caster)
     end
 
     if map_model:name() ~= NAKRANG_ROOM then
-        local ok = restore_position(caster, NAKRANG_ROOM, {6, 6})
+        local ok = restore_position(caster, NAKRANG_ROOM, { 6, 6 })
         if ok == false then
             return false
         end
@@ -118,12 +118,12 @@ local function root_revive_for_map_id(map_id)
     if map_model == nil then
         return nil, nil
     end
-    
+
     local root = map_model:root()
     if root == nil then
         return nil, nil
     end
-    
+
     return root, root:revive()
 end
 
@@ -132,7 +132,7 @@ local function weapon_enchant_condition(packet)
         return nil
     end
     if packet.text:find(WEAPON_NAME, 1, true) ~= nil
-    and packet.text:find("푸른 빛으로 빛납니다", 1, true) ~= nil then
+        and packet.text:find("푸른 빛으로 빛납니다", 1, true) ~= nil then
         return true
     end
     return nil
@@ -149,7 +149,7 @@ local SPECIAL_SPELLS = {
             caster:create_item("양첨목봉", 1)
             caster:equip(0)
             state.before = caster:position()
-            local pos = {state.before[1], state.before[2] + 1}
+            local pos = { state.before[1], state.before[2] + 1 }
             caster:spawn_monster("다람쥐", pos[1], pos[2])
         end,
         condition = function(packet, _, _, state)
@@ -173,13 +173,13 @@ local SPECIAL_SPELLS = {
         cast = function(caster, _, slot, state)
             if localhost() then
                 local packet = caster:request(
-                resp.message,
-                protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}),
-                function(p)
-                    log("debug", "귀환: p.text=" .. p.text)
-                    log("debug", "귀환: p.type=" .. p.type)
-                    return p.type == "STATE" and p.text == NOT_READY_MESSAGE
-                end)
+                    resp.message,
+                    protocol.spell_cast("NORMAL", slot, "", 0, { 0, 0 }),
+                    function(p)
+                        log("debug", "귀환: p.text=" .. p.text)
+                        log("debug", "귀환: p.type=" .. p.type)
+                        return p.type == "STATE" and p.text == NOT_READY_MESSAGE
+                    end)
                 state.packet = packet
                 return true
             end
@@ -200,7 +200,7 @@ local SPECIAL_SPELLS = {
                 tostring(g_suite_slot))
 
             local ok, err = pcall(function()
-                caster:transfer(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+                caster:transfer(protocol.spell_cast("NORMAL", slot, "", 0, { 0, 0 }))
             end)
             if ok == false then
                 slog("귀환: cast transfer FAILED err=%s", tostring(err))
@@ -230,38 +230,39 @@ local SPECIAL_SPELLS = {
         name = "비영사천문",
         cast = function(caster, _, slot, state)
             state.before = caster:position()
-            
+
             if not localhost() then
                 caster:transfer(protocol.chat(false, "/맵이동 국내성"))
             end
-            
+
             local packet = caster:request(
-            resp.message,
-            protocol.spell_cast("INPUT", slot, "동", 0, {0, 0}),
-            function(p)
-                return p.type == "STATE"
-            end)
+                resp.message,
+                protocol.spell_cast("INPUT", slot, "동", 0, { 0, 0 }),
+                function(p)
+                    return p.type == "STATE"
+                end)
             state.packet = packet
-            
+
             if skill.is_cast_ready(packet.text, "비영사천문") == false then
                 slog("비영사천문: cast not ready: p.text=" .. tostring(packet and packet.text))
                 bot_diag.dump(caster, "비영사천문:cast_not_ready")
                 return false
             end
-            
+
             if localhost() then
                 if skill.positions_equal(caster:position(), state.before) == false then
                     return false
                 end
-                return script_step.run_script(caster, "test/integration", "verify_map_instance", "MAP_INSTANCE", "1") == true
+                return script_step.run_script(caster, "test/integration", "verify_map_instance", "MAP_INSTANCE", "1") ==
+                    true
             end
-            
+
             if skill.positions_equal(caster:position(), state.before) then
                 slog("비영사천문: position unchanged after cast")
                 bot_diag.dump(caster, "비영사천문:position_unchanged")
                 return false
             end
-            
+
             return restore_nakrang_room(caster)
         end,
     },
@@ -306,7 +307,8 @@ local SPECIAL_SPELLS = {
         end,
         condition = weapon_enchant_condition,
         post = function(caster)
-            return script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_30", "30") == true
+            return script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_30", "30") ==
+                true
         end,
     },
     {
@@ -316,7 +318,8 @@ local SPECIAL_SPELLS = {
         message = WEAPON_NAME,
         condition = weapon_enchant_condition,
         post = function(caster)
-            return script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_20", "20") == true
+            return script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_20", "20") ==
+                true
         end,
     },
     {
@@ -330,7 +333,8 @@ local SPECIAL_SPELLS = {
                 return false
             end
             caster:unequip("WEAPON")
-            local cleared = script_step.run_script(caster, "test/integration", "verify_weapon_damage", "WEAPON_DAMAGE_OFF", "0") == true
+            local cleared = script_step.run_script(caster, "test/integration", "verify_weapon_damage",
+                "WEAPON_DAMAGE_OFF", "0") == true
             caster:clear_inventory()
             return cleared
         end,
@@ -368,16 +372,16 @@ local SPECIAL_SPELLS = {
             end
             if revive == nil then
                 slog("성황령 should_skip: revive not enabled on root map %s (id=%d), skipping",
-                root:name(), root:id())
+                    root:name(), root:id())
                 return true
             end
-            
+
             local west_map = revive[CARDINAL_DIRECTION.WEST]
             if west_map == nil then
                 slog("성황령 should_skip: WEST revive not configured on root %s, skipping", root:name())
                 return true
             end
-            
+
             state.expected_id = west_map:id()
             slog("성황령 should_skip: expected_west_map=%d (%s)", state.expected_id, west_map:name())
             return false
@@ -390,28 +394,28 @@ local SPECIAL_SPELLS = {
                 return false
             end
             slog("성황령 pre: hell_slot=%d", hell_slot)
-            
+
             caster:set_current_hp_mp(50, 100000)
             local pos = caster:position()
             slog("성황령 pre: oid=%d map=%d hp=%d mp=%d pos=(%d,%d)",
-            caster:oid(), caster:map(), caster:hp(), caster:mp(), pos[1], pos[2])
-            
+                caster:oid(), caster:map(), caster:hp(), caster:mp(), pos[1], pos[2])
+
             slog("성황령 pre: casting 헬파이어 on self, waiting show GHOST")
             local packet = caster:request(
-            resp.show,
-            protocol.spell_cast("TARGET", hell_slot, "", caster:oid(), pos),
-            function(pkt)
-                slog("성황령 pre: show oid=%d state=%s (want oid=%d GHOST)",
-                pkt.oid, tostring(pkt.state), caster:oid())
-                return pkt.oid == caster:oid() and pkt.state == "GHOST"
-            end)
+                resp.show,
+                protocol.spell_cast("TARGET", hell_slot, "", caster:oid(), pos),
+                function(pkt)
+                    slog("성황령 pre: show oid=%d state=%s (want oid=%d GHOST)",
+                        pkt.oid, tostring(pkt.state), caster:oid())
+                    return pkt.oid == caster:oid() and pkt.state == "GHOST"
+                end)
             slog("성황령 pre: ghost state confirmed oid=%d state=%s",
-            packet.oid, tostring(packet.state))
+                packet.oid, tostring(packet.state))
             return true
         end,
         condition = function(packet)
             slog("성황령 cast: map_config id=%d name=%s building=%s",
-            packet.id, tostring(packet.name), tostring(packet.building))
+                packet.id, tostring(packet.name), tostring(packet.building))
             return true
         end,
         post = function(caster, _, state)
@@ -419,15 +423,15 @@ local SPECIAL_SPELLS = {
                 slog("성황령 cast: expected map id %d, got %d", state.expected_id, caster:map())
                 return false
             end
-            
+
             local pos = caster:position()
             slog("성황령 cast: completed map=%d pos=(%d,%d)", caster:map(), pos[1], pos[2])
-            
+
             slog("성황령 post: restoring map and stats")
             caster:chat(string.format("/맵이동 낙랑의방 6 6 %d", g_suite_slot))
             caster:set_max_hp_mp(100000, 100000)
             slog("성황령 post: completed map=%d hp=%d mp=%d",
-            caster:map(), caster:hp(), caster:mp())
+                caster:map(), caster:hp(), caster:mp())
             return true
         end,
     },

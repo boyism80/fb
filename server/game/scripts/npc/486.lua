@@ -3,17 +3,21 @@ local JOIN_MONEY = 100
 
 return {
     on_click = function(me, npc)
-        local btn = me:dialog(npc, "현재 테스트 기간( ~ 2015. 6. 28)입니다. 당첨되어도 따로 상금/상품 지급은 되지 않습니다. 버그를 발견하면 제보 해 주세요.", { prev = false, next = true })
+        local btn = me:dialog(npc, "현재 테스트 기간( ~ 2015. 6. 28)입니다. 당첨되어도 따로 상금/상품 지급은 되지 않습니다. 버그를 발견하면 제보 해 주세요.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
 
-        btn = me:dialog(npc, "현재 [누적상금]전 의 상금이 \\n누적되어 있습니다. \\n\\n매주 발표되는 실제 로또번호를 기반으로 당첨자가 결정됩니다.\\n\\n월요일부터 금요일까지 참여가 가능합니다.", { prev = false, next = true })
+        btn = me:dialog(npc,
+            "현재 [누적상금]전 의 상금이 \\n누적되어 있습니다. \\n\\n매주 발표되는 실제 로또번호를 기반으로 당첨자가 결정됩니다.\\n\\n월요일부터 금요일까지 참여가 가능합니다.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
 
-        btn = me:dialog(npc, "(보너스번호는 당첨 제외)\\n\\n6개 숫자 : 용무기 8류 택1\\n5개 숫자 : 해골갑옷\\n4개 숫자 : 2500만 전\\n3개 숫자 : 500만 전", { prev = false, next = true })
+        btn = me:dialog(npc, "(보너스번호는 당첨 제외)\\n\\n6개 숫자 : 용무기 8류 택1\\n5개 숫자 : 해골갑옷\\n4개 숫자 : 2500만 전\\n3개 숫자 : 500만 전",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

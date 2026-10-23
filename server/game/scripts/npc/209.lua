@@ -6,8 +6,8 @@ local ACHIEVEMENT_HOLYTREE = 5
 local COOLDOWN_SEC = 86400
 
 local HOLYTREE_ITEMS = {
-    { name = '백현목',   exp = 926000000 },
-    { name = '자현목',   exp = 1353000000 },
+    { name = '백현목', exp = 926000000 },
+    { name = '자현목', exp = 1353000000 },
     { name = '노송의가지', exp = 1550000000 },
     { name = '천년묵은가지', exp = 2100000000 },
 }
@@ -36,19 +36,23 @@ return {
                 return
             end
             ::NPC_209_0001::
-            local btn = me:dialog(npc, '최근 몇 년간 흉년이 계속되고 있어 마을을 위한 제를 지내기 위해 신성한 나무 가지를 구하고 있습니다.', { prev = false, next = true })
+            local btn = me:dialog(npc, '최근 몇 년간 흉년이 계속되고 있어 마을을 위한 제를 지내기 위해 신성한 나무 가지를 구하고 있습니다.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_209_0010::
-            btn = me:dialog(npc, '북방대초원에는 백현목,자현목,노송의가지,천년묵은가지와 같이 신성한 기운이 깃든 나무 가지들을 구할 수 있는데, 매일 매일 제를 지내야 하다 보니 많은 양의 나무 가지가 필요합니다.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '북방대초원에는 백현목,자현목,노송의가지,천년묵은가지와 같이 신성한 기운이 깃든 나무 가지들을 구할 수 있는데, 매일 매일 제를 지내야 하다 보니 많은 양의 나무 가지가 필요합니다.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_209_0001
             end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local sel = me:list(npc, '저에게 신성한 기운이 깃든 나무를 가져다 주실 수 있을까요?', { '네. 구해보도록 할께요.', '아니요. 제가 좀 바빠서.' }, { prev = false })
+            local sel = me:list(npc, '저에게 신성한 기운이 깃든 나무를 가져다 주실 수 있을까요?', { '네. 구해보도록 할께요.', '아니요. 제가 좀 바빠서.' },
+                { prev = false })
             if sel == nil then
                 return
             end
@@ -57,7 +61,8 @@ return {
             end
             if sel == 1 then
                 q:step(1)
-                me:dialog(npc, '신성한 나무들은 북방대초원 21~30층을 돌아다니다 보면 구할 수 있을겁니다.\n\n그럼 부탁드리겠습니다.', { prev = false, next = false })
+                me:dialog(npc, '신성한 나무들은 북방대초원 21~30층을 돌아다니다 보면 구할 수 있을겁니다.\n\n그럼 부탁드리겠습니다.',
+                    { prev = false, next = false })
             end
             return
         end
@@ -73,7 +78,8 @@ return {
                 return
             end
             local item = HOLYTREE_ITEMS[list2]
-            local confirm = me:list(npc, '풍년을 위한 제를 올릴 수 있도록 저에게 ' .. name_with(item.name, '을', '를') .. ' 주시겠습니까?', { '네. 드릴께요.', '아니요. 제가 쓸데가 있어서요.' }, { prev = false })
+            local confirm = me:list(npc, '풍년을 위한 제를 올릴 수 있도록 저에게 ' .. name_with(item.name, '을', '를') .. ' 주시겠습니까?',
+                { '네. 드릴께요.', '아니요. 제가 쓸데가 있어서요.' }, { prev = false })
             if confirm == nil then
                 return
             end
@@ -100,7 +106,8 @@ return {
             q:step(0)
             local count = q:progress()
             me:push_achievement(ACHIEVEMENT_HOLYTREE, '신성한나무를 ' .. count .. '회 가져다 주었다.', 7, count)
-            me:dialog(npc, '감사합니다.\n\n하루 빨리 풍년이 찾아 올 수 있도록 몸과 마음을 다해 제를 올려야겠습니다.\n\n계속해서 잘 부탁드립니다.', { prev = false, next = false })
+            me:dialog(npc, '감사합니다.\n\n하루 빨리 풍년이 찾아 올 수 있도록 몸과 마음을 다해 제를 올려야겠습니다.\n\n계속해서 잘 부탁드립니다.',
+                { prev = false, next = false })
         end
     end
 }

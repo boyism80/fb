@@ -32,7 +32,9 @@ local function test_scenario_1(ctx, index)
 
     local base_price     = bot:item_base_price("진호박")
     local expected_money = math.floor(base_price / 2) * 5
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 1: selling 5 pumpkins (expected money >= " .. tostring(expected_money) .. ")"))
+    log("debug",
+        string.format("Chat[%d]: %s", index,
+            "scenario 1: selling 5 pumpkins (expected money >= " .. tostring(expected_money) .. ")"))
 
     bot:request(
         resp.update_internal,
@@ -222,7 +224,8 @@ local function test_scenario_3(ctx, index)
     local revive_attempt = 0
     while true do
         revive_attempt = revive_attempt + 1
-        log("debug", string.format("Chat[%d]: %s", index, "scenario 3: revive request attempt " .. tostring(revive_attempt)))
+        log("debug",
+            string.format("Chat[%d]: %s", index, "scenario 3: revive request attempt " .. tostring(revive_attempt)))
         local packet = bot:request(
             resp.chat,
             protocol.chat(false, "살려주세요"),
@@ -235,7 +238,9 @@ local function test_scenario_3(ctx, index)
         end
     end
 
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 3: waiting for NORMAL state (current=" .. tostring(bot:state()) .. ")"))
+    log("debug",
+        string.format("Chat[%d]: %s", index,
+            "scenario 3: waiting for NORMAL state (current=" .. tostring(bot:state()) .. ")"))
     lib.wait.state(bot, resp.show, function()
         return bot:state() == "NORMAL"
     end, 30000)
@@ -248,7 +253,9 @@ local function test_scenario_3(ctx, index)
         function(packet)
             return packet.ch_hp == bot:base_hp()
         end)
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 3: thank you done, hp=" .. tostring(bot:hp()) .. " base_hp=" .. tostring(bot:base_hp())))
+    log("debug",
+        string.format("Chat[%d]: %s", index,
+            "scenario 3: thank you done, hp=" .. tostring(bot:hp()) .. " base_hp=" .. tostring(bot:base_hp())))
     if bot:hp() ~= bot:base_hp() then
         log("fatal", string.format("Chat[%d]: %s", index, "scenario 3 FAILED: hp not restored to base"))
         return false

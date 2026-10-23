@@ -109,7 +109,9 @@ namespace AdminTool.Services
                 foreach (var table in tables)
                 {
                     if (PreservedTables.Contains(table))
+                    {
                         continue;
+                    }
 
                     await connection.ExecuteAsync($"TRUNCATE TABLE `{table}`;");
                     truncated++;
@@ -150,14 +152,18 @@ namespace AdminTool.Services
             {
                 var redis = _redisService.GetDataConnection(world, i);
                 if (redis == null)
+                {
                     continue;
+                }
 
                 var conn = redis.Connection;
                 foreach (var pattern in new[] { "fb:cache:*", Const.ReferenceCountKey, $"{Const.RedisBufferKey}:*" })
                 {
                     var keys = await conn.ScanKeysAsync(pattern, 1000);
                     if (keys.Count == 0)
+                    {
                         continue;
+                    }
 
                     await conn.KeyDeleteAsync(keys.Select(x => new RedisKey(x)).ToArray());
                     count += keys.Count;

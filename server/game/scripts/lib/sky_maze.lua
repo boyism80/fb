@@ -103,25 +103,25 @@ end
 local function sky_maze_next(my_pos, side)
     if side == 0 then
         local next_pos = my_pos - 5
-        if next_pos <= 0 then 
+        if next_pos <= 0 then
             next_pos = next_pos + 25
         end
         return next_pos
     elseif side == 1 then
-        if my_pos % 5 == 0 then 
-            return my_pos - 4 
+        if my_pos % 5 == 0 then
+            return my_pos - 4
         else
             return my_pos + 1
         end
     elseif side == 2 then
         local next_pos = my_pos + 5
-        if next_pos > 25 then 
+        if next_pos > 25 then
             next_pos = next_pos - 25
         end
         return next_pos
     else
         local next_pos = my_pos - 1
-        if next_pos % 5 == 0 then 
+        if next_pos % 5 == 0 then
             next_pos = next_pos + 5
         end
         return next_pos
@@ -129,42 +129,42 @@ local function sky_maze_next(my_pos, side)
 end
 
 function M.warp(me)
-    if me == nil then 
+    if me == nil then
         return
     end
     local map = me:map()
-    if map == nil then 
+    if map == nil then
         return
     end
     local map_id = map:model():id()
     local map_name = map:model():name()
     local x, y = me:position()
-    
+
     if property("sky_maze_0") == nil then
         M.shuffle()
     end
-    
+
     local arr = {}
     for i = 0, 26 do
-        arr[i] = get_sky_maze_slot_id(i) 
+        arr[i] = get_sky_maze_slot_id(i)
     end
-    
+
     local my_pos = nil
     if map_id == SKY_MAZE_ENTRANCE_MAP_ID then
         my_pos = math.random(1, 25)
     else
         for i = 1, 25 do
-            if map_id == arr[i] then 
-                my_pos = i 
+            if map_id == arr[i] then
+                my_pos = i
                 break
             end
         end
     end
-    
+
     if my_pos == nil then
         return
     end
-    
+
     local side
     if x == 24 and y == 1 then
         side = 0
@@ -174,25 +174,25 @@ function M.warp(me)
         side = 2
     elseif x == 1 and y == 24 then
         side = 3
-    else 
+    else
         return
     end
-    
+
     if map_id == arr[26] then
         local m = id2map(SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID)
-        if m then 
-            me:map(m, 24, 24) 
+        if m then
+            me:map(m, 24, 24)
         end
         return
     end
     if map_id == SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID then
         local m = id2map(SKY_MAZE_FINAL_EXIT_MAP_ID)
-        if m then 
-            me:map(m, 1, 1) 
+        if m then
+            me:map(m, 1, 1)
         end
         return
     end
-    
+
     -- From grid position 25, any of the 4 warp tiles leads to secret room (slot 26)
     if my_pos == 25 then
         local secret = id2map(arr[26])
@@ -201,79 +201,79 @@ function M.warp(me)
         end
         return
     end
-    
+
     local next_pos = sky_maze_next(my_pos, side)
     local dest = id2map(arr[next_pos])
-    if dest then 
-        me:map(dest, 24, 24) 
+    if dest then
+        me:map(dest, 24, 24)
     end
 end
 
 function M.warp_pk(me)
-    if me == nil then 
-        return 
+    if me == nil then
+        return
     end
     local map = me:map()
-    if map == nil then 
-        return 
+    if map == nil then
+        return
     end
     local map_id = map:model():id()
     local map_name = map:model():name()
     local x, y = me:position()
-    
+
     if property("pk_sky_maze_0") == nil then
         M.pk_shuffle()
     end
-    
+
     local arr = {}
-    for i = 0, 26 do 
-        arr[i] = get_pk_sky_maze_slot_id(i) 
+    for i = 0, 26 do
+        arr[i] = get_pk_sky_maze_slot_id(i)
     end
-    
+
     local my_pos = nil
     if map_id == PK_SKY_MAZE_ENTRANCE_MAP_ID then
         my_pos = math.random(1, 25)
     else
         for i = 1, 25 do
-            if map_id == arr[i] then 
-                my_pos = i 
+            if map_id == arr[i] then
+                my_pos = i
                 break
             end
         end
     end
-    
-    if my_pos == nil then 
-        return 
-    end
-    
-    local side
-    if x == 24 and y == 1 then 
-        side = 0
-    elseif x == 47 and y == 24 then 
-        side = 1
-    elseif x == 24 and y == 47 then 
-        side = 2
-    elseif x == 1 and y == 24 then 
-        side = 3
-    else 
+
+    if my_pos == nil then
         return
     end
-    
+
+    local side
+    if x == 24 and y == 1 then
+        side = 0
+    elseif x == 47 and y == 24 then
+        side = 1
+    elseif x == 24 and y == 47 then
+        side = 2
+    elseif x == 1 and y == 24 then
+        side = 3
+    else
+        return
+    end
+
     if map_id == arr[26] then
         local m = id2map(PK_SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID)
-        if m then 
-            me:map(m, 24, 24) 
+        if m then
+            me:map(m, 24, 24)
         end
         return
     end
     if map_id == PK_SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID then
         local m = id2map(PK_SKY_MAZE_FINAL_EXIT_MAP_ID)
-        if m then 
-            me:map(m, 1, 1) 
+        if m then
+            me:map(m, 1, 1)
         end
         return
     end
-    
+
     -- From grid position 25, any of the 4 warp tiles leads to secret room (slot 26)
     if my_pos == 25 then
         local secret = id2map(arr[26])
@@ -282,11 +282,11 @@ function M.warp_pk(me)
         end
         return
     end
-    
+
     local next_pos = sky_maze_next(my_pos, side)
     local dest = id2map(arr[next_pos])
-    if dest then 
-        me:map(dest, 24, 24) 
+    if dest then
+        me:map(dest, 24, 24)
     end
 end
 

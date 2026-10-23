@@ -77,7 +77,9 @@ namespace Internal.Controllers
 
                 var conf = await _serverStateService.GetHostConfig(request.ProcessWorld, Protocol.Service.Game, request.Host);
                 if (conf == null)
+                {
                     throw new LogicException(ErrorCode.ServerNotReady);
+                }
 
                 var success = await _sessionService.Login(world, request.Name, new Session
                 {
@@ -172,7 +174,9 @@ namespace Internal.Controllers
 
                 var config = await _serverStateService.GetHostConfig(world, request.Service, request.Id);
                 if (config == null)
+                {
                     throw new LogicException(ErrorCode.ServerNotReady);
+                }
 
                 if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
@@ -287,10 +291,14 @@ namespace Internal.Controllers
                 var targetWorld = targetRef.World;
                 var targetSession = await _sessionService.Get(targetWorld, request.To);
                 if (targetSession == null)
+                {
                     throw new LogicException(ErrorCode.Offline);
+                }
 
                 if (targetWorld != world && SameCrossHost(session, targetSession) == false)
+                {
                     throw new LogicException(ErrorCode.Offline);
+                }
 
                 var target = await _dbContext.Character.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -302,10 +310,14 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundOption);
 
                 if (targetOption.SuperHide && target.Role > sender.Role)
+                {
                     throw new LogicException(ErrorCode.Offline);
+                }
 
                 if (!targetOption.Whisper)
+                {
                     throw new LogicException(ErrorCode.DisabledWhisperTarget);
+                }
 
                 var response = new Response.Whisper
                 {
@@ -481,7 +493,10 @@ namespace Internal.Controllers
 
             var spouseName = string.Empty;
             if (marriageData.SpouseId.HasValue)
+            {
                 spouseName = await _dbContext.Character.GetName(world, marriageData.SpouseId.Value) ?? string.Empty;
+            }
+
             var marriageProtocol = _mapper.Map<Protocol.Marriage>(marriageData);
             marriageProtocol.SpouseName = spouseName ?? string.Empty;
 
@@ -549,7 +564,9 @@ namespace Internal.Controllers
             }
 
             if (request.Length > 0)
+            {
                 setMany(request);
+            }
         }
 
         [HttpPost("save")]
@@ -558,14 +575,20 @@ namespace Internal.Controllers
             try
             {
                 if (request.Payload == null)
+                {
                     throw new Exception("Save request data is null");
+                }
 
                 var payloads = await OwnedSavePayloads(request.World, request.Host, new List<Protocol.SavePayload> { request.Payload });
                 if (payloads.Count == 0)
+                {
                     return new Response.Save { Success = false };
+                }
 
                 if (await SaveNewerSnapshots(request.World, payloads) == false)
+                {
                     return new Response.Save { Success = false };
+                }
 
                 await _logService.WriteAsync("character_save", new
                 {
@@ -599,7 +622,9 @@ namespace Internal.Controllers
             try
             {
                 if (request.Characters == null || request.Characters.Count == 0)
+                {
                     return new Response.BatchSave { Success = true };
+                }
 
                 var payloads = await OwnedSavePayloads(request.World, request.Host, request.Characters);
                 await SaveNewerSnapshots(request.World, payloads);
@@ -629,7 +654,9 @@ namespace Internal.Controllers
         private async Task<List<Protocol.SavePayload>> OwnedSavePayloads(uint world, byte? host, IReadOnlyList<Protocol.SavePayload> payloads)
         {
             if (host == null)
+            {
                 return payloads.ToList();
+            }
 
             var sessions = await _sessionService.GetMany(world, payloads.Select(x => x.Character.Name).Distinct().ToList());
             var owned = new List<Protocol.SavePayload>();
@@ -651,7 +678,9 @@ namespace Internal.Controllers
         private async Task<bool> SaveNewerSnapshots(uint world, IReadOnlyList<Protocol.SavePayload> payloads)
         {
             if (payloads.Count == 0)
+            {
                 return true;
+            }
 
             var latest = payloads
                 .GroupBy(x => x.Character.Id)
@@ -663,7 +692,9 @@ namespace Internal.Controllers
             try
             {
                 foreach (var payload in latest)
+                {
                     locks.Add(await _distributedLock.Lock(world, Character.SaveLockKey(payload.Character.Id)));
+                }
 
                 var characters = await _dbContext.Character.GetMany(world, latest.Select(x => x.Character.Id).ToList());
                 var newer = new List<Protocol.SavePayload>();
@@ -690,14 +721,18 @@ namespace Internal.Controllers
             finally
             {
                 foreach (var handle in locks)
+                {
                     await handle.DisposeAsync();
+                }
             }
         }
 
         private async Task ReplaceSnapshots(uint world, IReadOnlyList<Protocol.SavePayload> payloads)
         {
             if (payloads == null || payloads.Count == 0)
+            {
                 return;
+            }
 
             var characterIds = payloads.Select(p => p.Character.Id).Distinct().ToList();
             var charactersTask = _dbContext.Character.GetMany(world, characterIds);
@@ -727,7 +762,9 @@ namespace Internal.Controllers
             {
                 var characterId = data.Character.Id;
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
+                {
                     throw new Exception($"Character not found: {characterId}");
+                }
 
                 DateTime? createdDate = marriageCreated.TryGetValue(characterId, out var existingMarriageCreated)
                     ? existingMarriageCreated
@@ -766,7 +803,10 @@ namespace Internal.Controllers
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
             marriage.CharacterId = characterId;
             if (marriageCreatedDate.HasValue)
+            {
                 marriage.CreatedDate = marriageCreatedDate.Value;
+            }
+
             marriage.UpdatedDate = DateTime.UtcNow;
             _dbContext.Marriage.Set(world, marriage);
 
@@ -775,7 +815,10 @@ namespace Internal.Controllers
             var itemFields = items.Select(x => x.GetRedisField()).ToHashSet();
             var removedItems = existingItems.Where(x => itemFields.Contains(x.GetRedisField()) == false).ToList();
             if (removedItems.Count > 0)
+            {
                 _logger.LogWarning($"deleted keys : {string.Join(", ", removedItems.Select(x => $"{x.GetRedisKey()}:{x.GetRedisField()}"))}");
+            }
+
             _dbContext.Item.Replace(world, removedItems, items);
 
             var spells = _mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>());
@@ -788,7 +831,9 @@ namespace Internal.Controllers
             var matchmakingSkills = _mapper.Map<Protocol.MatchmakingSkill[], MatchmakingSkill[]>(
                 data.MatchmakingSkills?.ToArray() ?? Array.Empty<Protocol.MatchmakingSkill>());
             if (matchmakingSkills.Length > 0)
+            {
                 _dbContext.MatchmakingSkill.Set(world, matchmakingSkills);
+            }
 
             var achievements = _mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>());
             ReplaceHashEntities(
@@ -836,7 +881,9 @@ namespace Internal.Controllers
             {
                 var world = request.World;
                 if (request.Changes == null || request.Changes.Count == 0)
+                {
                     throw new Exception("option changes is empty");
+                }
 
                 // The row is read and written whole, so concurrent changes must not interleave.
                 await using var optionLock = await _distributedLock.Lock(world, Http.Model.Option.DistributedLockKey(request.User));
@@ -844,7 +891,9 @@ namespace Internal.Controllers
                     throw new Exception($"option {request.User} not found");
 
                 foreach (var change in request.Changes)
+                {
                     SetOption(option, change.Type, change.Enabled);
+                }
 
                 _dbContext.Option.Set(world, option);
 
@@ -927,10 +976,14 @@ namespace Internal.Controllers
         private static bool SameCrossHost(Session session, Session target)
         {
             if (session.World.HasValue || target.World.HasValue)
+            {
                 return false;
+            }
 
             if (session.Host != target.Host)
+            {
                 return false;
+            }
 
             return true;
         }

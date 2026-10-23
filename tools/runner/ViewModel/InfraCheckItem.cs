@@ -96,7 +96,10 @@ namespace Runner.ViewModel
         public InfraCheckItem Pass(string detail = null)
         {
             if (detail != null)
+            {
                 Detail = detail;
+            }
+
             Status = InfraCheckStatus.Pass;
             Message = string.Empty;
             return this;
@@ -105,7 +108,10 @@ namespace Runner.ViewModel
         public InfraCheckItem Fail(string message, string detail = null)
         {
             if (detail != null)
+            {
                 Detail = detail;
+            }
+
             Status = InfraCheckStatus.Fail;
             Message = message;
             return this;

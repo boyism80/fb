@@ -7,9 +7,11 @@ return {
         local function run_welcome_and_list()
             local msg
             if has_spell then
-                msg = "잘왔소. 금강퇴는 바로 앞의 적에게 강력한 완력으로 치명타를 입히는 무공이오.\n\n단 금강퇴를 전수받기 위해서는 소림사에 십만전을 시주해야 하오. 돈은 소림사의 발전을 위해 쓰여진다오."
+                msg =
+                "잘왔소. 금강퇴는 바로 앞의 적에게 강력한 완력으로 치명타를 입히는 무공이오.\n\n단 금강퇴를 전수받기 위해서는 소림사에 십만전을 시주해야 하오. 돈은 소림사의 발전을 위해 쓰여진다오."
             else
-                msg = "소림사에 오신걸 환영하오. 난 소림십팔나한중의 한명인 철수나한이오. 소림사의 무공중에서도 십팔나한의 무공은 최고라 할 수 있소.\n\n그중에 나의 특기인 금강퇴는 완력을 사용하는 무공으로는 최고라오"
+                msg =
+                "소림사에 오신걸 환영하오. 난 소림십팔나한중의 한명인 철수나한이오. 소림사의 무공중에서도 십팔나한의 무공은 최고라 할 수 있소.\n\n그중에 나의 특기인 금강퇴는 완력을 사용하는 무공으로는 최고라오"
             end
             local button = me:dialog(npc, msg, { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
@@ -33,7 +35,8 @@ return {
 
         if sel == 1 then
             if has_spell then
-                local d = me:dialog(npc, "자네는 이미 금강퇴를 수련중이군.. 금강퇴는 다른 마법과 다르게 꾸준한 수련이 필요한 무술일세.", { prev = false, next = false })
+                local d = me:dialog(npc, "자네는 이미 금강퇴를 수련중이군.. 금강퇴는 다른 마법과 다르게 꾸준한 수련이 필요한 무술일세.",
+                    { prev = false, next = false })
                 if d == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -64,7 +67,8 @@ return {
             if d == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, "금강퇴는 강한 완력을 바탕으로 한 타격 무공이오. 반드시 근접하여 사용해야 한다오. 지금 금강퇴를 익혔다 하더라도 위력이 약할것이오.", { prev = false, next = false })
+            me:dialog(npc, "금강퇴는 강한 완력을 바탕으로 한 타격 무공이오. 반드시 근접하여 사용해야 한다오. 지금 금강퇴를 익혔다 하더라도 위력이 약할것이오.",
+                { prev = false, next = false })
             return
         end
 
@@ -73,7 +77,8 @@ return {
                 me:dialog(npc, "자네는 금강퇴를 아직 배우지 않았구려. 일단 전수부터 받아야 수련을 할 수 있다오.", { prev = false, next = false })
                 return
             end
-            local btn = me:dialog(npc, "일단 자네가 어느정도 위력의 금강퇴를 가지고 있는지. 능력이 어느정도인지 확인해봐야겠구려. 능력에 따라 그에 걸맞는 수련을 하도록 해주겠소.", { prev = false, next = true })
+            local btn = me:dialog(npc, "일단 자네가 어느정도 위력의 금강퇴를 가지고 있는지. 능력이 어느정도인지 확인해봐야겠구려. 능력에 따라 그에 걸맞는 수련을 하도록 해주겠소.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

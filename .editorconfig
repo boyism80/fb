@@ -1,0 +1,40 @@
+root = true
+
+[*.cs]
+csharp_prefer_braces = true
+dotnet_diagnostic.IDE0011.severity = warning
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true
+csharp_new_line_before_open_brace = all
+
+[{server/http/FlatBuffer/protocol.cs,server/http/Model/Model.cs,server/http/fb/protocol/raw/**.cs}]
+generated_code = true
+
+[*.razor]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+resharper_html_space_before_self_closing = true
+resharper_html_no_indent_inside_elements = html,body
+resharper_csharp_place_accessorholder_attribute_on_same_line = never
+resharper_csharp_place_accessor_attribute_on_same_line = never
+resharper_csharp_place_field_attribute_on_same_line = never
+resharper_csharp_place_method_attribute_on_same_line = never
+resharper_csharp_place_type_attribute_on_same_line = never
+
+[*.lua]
+indent_style = space
+indent_size = 4
+tab_width = 4
+quote_style = none
+continuation_indent = 4
+max_line_length = 120
+end_of_line = crlf
+insert_final_newline = true
+call_arg_parentheses = keep
+align_continuous_assign_statement = true
+align_continuous_rect_table_field = true
+align_continuous_line_space = 1
+align_array_table = false
+line_space_after_function_statement = keep
+line_space_around_block = keep

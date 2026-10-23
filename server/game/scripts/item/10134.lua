@@ -41,7 +41,8 @@ return {
                 table.insert(parts, p)
             end
             if #parts == 3 then
-                me:dialog(item:model(), parts[1] .. ' ' .. parts[2] .. ', ' .. parts[3] .. '에 숨겨두다.', { prev = false, next = true })
+                me:dialog(item:model(), parts[1] .. ' ' .. parts[2] .. ', ' .. parts[3] .. '에 숨겨두다.',
+                    { prev = false, next = true })
                 return
             end
         end
@@ -50,7 +51,8 @@ return {
         local spot = TREASURE_SPOTS[idx]
         local new_param = string.format('%s,%d,%d', spot.map, spot.x, spot.y)
         q:param(new_param)
-        me:dialog(item:model(), spot.map .. ' ' .. tostring(spot.x) .. ', ' .. tostring(spot.y) .. '에 숨겨두다.', { prev = false, next = true })
+        me:dialog(item:model(), spot.map .. ' ' .. tostring(spot.x) .. ', ' .. tostring(spot.y) .. '에 숨겨두다.',
+            { prev = false, next = true })
     end,
 
     -- on_deactivated = function(me, item)

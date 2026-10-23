@@ -11,7 +11,7 @@ return {
         local mp = 50
         local sound = 2
         local effect = 88
-        if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:target(me)
         end
     end,

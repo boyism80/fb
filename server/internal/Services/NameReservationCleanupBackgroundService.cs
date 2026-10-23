@@ -29,7 +29,9 @@ namespace Internal.Services
                 {
                     var deleted = await DeleteExpiredAsync();
                     if (deleted > 0)
+                    {
                         _logger.LogInformation("Deleted {Count} expired name reservations", deleted);
+                    }
                 }
                 catch (Exception e)
                 {

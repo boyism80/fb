@@ -66,7 +66,10 @@ namespace MapEditor.Mcp
                 }
 
                 if (focus)
+                {
                     _editor.Jump(x + width / 2, y + height / 2);
+                }
+
                 return Json(new { selected = _editor.Selection.Count });
             });
         }
@@ -80,7 +83,10 @@ namespace MapEditor.Mcp
                 var entity = FindSpawn(RequireDocument(), kind, index);
                 _editor.SelectEntity(entity, add);
                 if (focus)
+                {
                     _editor.FocusEntity(entity);
+                }
+
                 return "ok";
             });
         }
@@ -103,7 +109,10 @@ namespace MapEditor.Mcp
             {
                 RequireDocument();
                 if (_editor.HoverCell is not (int x, int y))
+                {
                     return "null";
+                }
+
                 return Json(new { x, y, text = _editor.HoverText });
             });
         }

@@ -66,7 +66,9 @@ namespace Http.Reepository
         public async Task<IReadOnlyDictionary<uint, IReadOnlyList<Spell>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
         {
             if (ownerIds == null || ownerIds.Count == 0)
+            {
                 return new Dictionary<uint, IReadOnlyList<Spell>>();
+            }
 
             var keys = ownerIds.Distinct().Select(oid => new SpellKey { Owner = oid }).ToList();
             var list = await base.GetMany(world, keys);
@@ -154,7 +156,9 @@ namespace Http.Reepository
         protected override string OnDeleteMany(IReadOnlyList<SpellKey> keys)
         {
             if (keys.Count == 0)
+            {
                 return string.Empty;
+            }
 
             var conditions = keys.Select(k =>
                 $"(`owner` = {k.Owner.Escape()} AND `slot` = {k.Slot.Escape()})");

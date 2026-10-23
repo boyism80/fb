@@ -52,7 +52,10 @@ namespace MapEditor.Settings
                 .AddJsonFile("appsettings.json", optional: true);
             var environment = Environment.GetEnvironmentVariable("MAPEDITOR_ENVIRONMENT");
             if (string.IsNullOrWhiteSpace(environment) == false)
+            {
                 builder.AddJsonFile($"appsettings.{environment}.json", optional: true);
+            }
+
             var configuration = builder.Build();
 
             var settings = new AppSettings();
@@ -86,7 +89,9 @@ namespace MapEditor.Settings
         {
             var dir = ClientDirectory(version);
             if (string.IsNullOrWhiteSpace(dir))
+            {
                 return false;
+            }
 
             return File.Exists(Path.Combine(dir, "TILE.DAT"));
         }

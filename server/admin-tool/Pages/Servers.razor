@@ -95,14 +95,26 @@
                     <button class="dash-ops-btn"
                             disabled="@(isSaveProcessing || !canSaveServers)"
                             @onclick="RequestServerSave">
-                        @if (isSaveProcessing) { <span>저장 전송 중...</span> }
-                        else { <span>전체 저장</span> }
+                        @if (isSaveProcessing)
+                        {
+                            <span>저장 전송 중...</span>
+                        }
+                        else
+                        {
+                            <span>전체 저장</span>
+                        }
                     </button>
                     <button class="dash-ops-btn"
                             disabled="@(isShutdownProcessing || !canShutdownServers)"
                             @onclick="RequestServerShutdown">
-                        @if (isShutdownProcessing) { <span>종료 전송 중...</span> }
-                        else { <span>서버 종료</span> }
+                        @if (isShutdownProcessing)
+                        {
+                            <span>종료 전송 중...</span>
+                        }
+                        else
+                        {
+                            <span>서버 종료</span>
+                        }
                     </button>
                 </div>
                 @if (!canSaveServers || !canShutdownServers)
@@ -117,8 +129,14 @@
                 <p class="dash-ops-desc">Redis에 저장된 유저 세션을 초기화합니다. 서버가 실행 중일 때는 사용할 수 없습니다.</p>
                 <div class="dash-btn-grid dash-btn-grid-single">
                     <button class="dash-ops-btn" @onclick="ClearSessions" disabled="@(isSessionProcessing || filteredServers.Any())">
-                        @if (isSessionProcessing) { <span>처리 중...</span> }
-                        else { <span>세션 초기화</span> }
+                        @if (isSessionProcessing)
+                        {
+                            <span>처리 중...</span>
+                        }
+                        else
+                        {
+                            <span>세션 초기화</span>
+                        }
                     </button>
                 </div>
                 @if (filteredServers.Any())
@@ -143,8 +161,14 @@
                 <button class="dash-ops-btn"
                         @onclick="ShowDbResetModal"
                         disabled="@(isDbResetProcessing || !canResetDatabase || filteredServers.Any() || !selectedWorld.HasValue)">
-                    @if (isDbResetProcessing) { <span>초기화 중...</span> }
-                    else { <span>DB 초기화</span> }
+                    @if (isDbResetProcessing)
+                    {
+                        <span>초기화 중...</span>
+                    }
+                    else
+                    {
+                        <span>DB 초기화</span>
+                    }
                 </button>
             </div>
             @if (!canResetDatabase)
@@ -198,8 +222,14 @@
                         class="stitch-btn stitch-btn-danger"
                         @onclick="ExecuteDbReset"
                         disabled="@(isDbResetProcessing || !IsDbResetConfirmValid)">
-                    @if (isDbResetProcessing) { <span>초기화 중...</span> }
-                    else { <span>DB 초기화 실행</span> }
+                    @if (isDbResetProcessing)
+                    {
+                        <span>초기화 중...</span>
+                    }
+                    else
+                    {
+                        <span>DB 초기화 실행</span>
+                    }
                 </button>
             </div>
         </div>
@@ -207,6 +237,7 @@
 }
 
 @code {
+
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
@@ -351,6 +382,7 @@
                 errorMessage = "월드가 선택되지 않았습니다.";
                 return;
             }
+
             var cleared = await CacheService.ClearUserSessions(selectedWorld.Value);
             if (cleared)
             {
@@ -387,6 +419,7 @@
             successMessage = null;
             return;
         }
+
         isSaveProcessing = true;
         errorMessage = null;
         successMessage = null;
@@ -397,6 +430,7 @@
                 errorMessage = "월드가 선택되지 않았습니다.";
                 return;
             }
+
             var packet = new Response.BroadcastSave();
             await RabbitMqService.PublishAsync(packet, AmqpRoute.Exchange, AmqpRoute.Home("system", selectedWorld.Value));
             await LogService.WriteAsync("save", new
@@ -426,6 +460,7 @@
             successMessage = null;
             return;
         }
+
         isShutdownProcessing = true;
         errorMessage = null;
         successMessage = null;
@@ -436,6 +471,7 @@
                 errorMessage = "월드가 선택되지 않았습니다.";
                 return;
             }
+
             await ShutdownService.Shutdown(currentUserName, "admin");
             successMessage = "전체 게임 서버에 종료 명령을 전송했습니다.";
         }
@@ -559,4 +595,5 @@
             isDbResetProcessing = false;
         }
     }
+
 }

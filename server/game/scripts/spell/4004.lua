@@ -12,7 +12,7 @@ return {
         local sound = 8
         local effect = 110
         local buff_time = 180
-        if spell.buff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+        if spell.buff_cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:buff(sp, buff_time, me)
         end
     end,

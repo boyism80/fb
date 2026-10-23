@@ -32,7 +32,9 @@
                 <span class="user-detail-kpi-label">HP / MP</span>
                 <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
             </div>
-            <span class="user-detail-kpi-value">@Character.Hp <span class="user-detail-kpi-sub">/ @Character.Mp</span></span>
+            <span class="user-detail-kpi-value">
+                @Character.Hp <span class="user-detail-kpi-sub">/ @Character.Mp</span>
+            </span>
         </div>
         <div class="user-detail-kpi-tile">
             <div class="user-detail-kpi-head">
@@ -175,6 +177,7 @@
 </div>
 
 @code {
+
     [Parameter, EditorRequired]
     public Character Character { get; set; } = null!;
 
@@ -201,4 +204,5 @@
 
     private int ActiveBuffCount =>
         Character.Buffs?.Count(b => b.Time > 0) ?? 0;
+
 }

@@ -13,7 +13,7 @@ return {
         local effect = 57
         local buff_time = 60
 
-        if not spell.buff_cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
+        if not spell.buff_cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
             return
         end
         me:buff(sp, buff_time)

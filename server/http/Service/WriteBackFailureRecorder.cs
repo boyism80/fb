@@ -17,7 +17,9 @@ public static class WriteBackFailureRecorder
         string sqlState = null;
         var message = ex.Message;
         if (message.Length > 2048)
+        {
             message = message[..2048];
+        }
 
         for (var e = ex; e != null; e = e.InnerException)
         {
@@ -27,7 +29,10 @@ public static class WriteBackFailureRecorder
                 sqlState = mx.SqlState;
                 message = mx.Message;
                 if (message.Length > 2048)
+                {
                     message = message[..2048];
+                }
+
                 break;
             }
         }

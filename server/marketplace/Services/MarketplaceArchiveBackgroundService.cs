@@ -110,7 +110,9 @@ namespace Marketplace.Services
                 var count = await ArchiveBatchAsync(dbContext, logService, cancellationToken);
                 archivedCount += count;
                 if (count < BatchSize)
+                {
                     break;
+                }
             }
 
             await logService.WriteAsync("marketplace_archive_success", new
@@ -131,7 +133,9 @@ namespace Marketplace.Services
                 var count = await dbContext.MarketplaceParcel.DeleteSentAsync(Retention, BatchSize);
                 deletedCount += count;
                 if (count < BatchSize)
+                {
                     break;
+                }
             }
 
             await logService.WriteAsync("marketplace_parcel_cleanup", new
@@ -206,7 +210,9 @@ namespace Marketplace.Services
                 var archivedCount = await conn.ExecuteAsync(archiveSql, new { Ids = ids }, transaction);
                 var deletedCount = await conn.ExecuteAsync("DELETE FROM `marketplace_listing` WHERE `id` IN @Ids", new { Ids = ids }, transaction);
                 if (archivedCount != ids.Count || deletedCount != ids.Count)
+                {
                     throw new InvalidOperationException($"Archive count mismatch: pinned {ids.Count}, archived {archivedCount}, deleted {deletedCount}");
+                }
 
                 await transaction.CommitAsync(cancellationToken);
                 return ids.Count;

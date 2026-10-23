@@ -82,9 +82,14 @@ namespace MapEditor.Control
         {
             var minimap = (MiniMap)d;
             if (e.OldValue is MapCanvas old)
+            {
                 old.ViewChanged -= minimap.InvalidateVisual;
+            }
+
             if (e.NewValue is MapCanvas canvas)
+            {
                 canvas.ViewChanged += minimap.InvalidateVisual;
+            }
         }
 
         private static void OnEditorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -107,18 +112,27 @@ namespace MapEditor.Control
         private void OnEditorPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MainWindowViewModel.Document) && ReferenceEquals(_document, _editor.Document) == false)
+            {
                 Rebuild();
+            }
             else if (e.PropertyName == nameof(MainWindowViewModel.Assets))
+            {
                 Rebuild();
+            }
         }
 
         private void Rebuild()
         {
             if (_document != null)
+            {
                 _document.CellsChanged -= OnCellsChanged;
+            }
+
             _document = _editor?.Document;
             if (_document != null)
+            {
                 _document.CellsChanged += OnCellsChanged;
+            }
 
             if (ReferenceEquals(_assets, _editor?.Assets) == false)
             {
@@ -143,7 +157,9 @@ namespace MapEditor.Control
         private int BakeCellPixels(MapDocument doc)
         {
             if (_assets == null || Math.Max(doc.Width, doc.Height) >= Side)
+            {
                 return 1;
+            }
 
             var cell = _assets.CellPixels;
             return (long)doc.Width * doc.Height * cell * cell <= MaxDetailedPixels ? cell : 1;
@@ -152,11 +168,16 @@ namespace MapEditor.Control
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_document == null)
+            {
                 return new Size(0, 0);
+            }
 
             var scale = Side / Math.Max(_document.Width, _document.Height);
             if (scale > 1 && BakeCellPixels(_document) == 1)
+            {
                 scale = Math.Floor(scale);
+            }
+
             return new Size(Math.Round(_document.Width * scale), Math.Round(_document.Height * scale));
         }
 
@@ -165,7 +186,9 @@ namespace MapEditor.Control
             var doc = _document;
             var canvas = Canvas;
             if (doc == null || canvas == null)
+            {
                 return;
+            }
 
             var cell = BakeCellPixels(doc);
             if (_dirty || _bitmap == null || _bitmap.PixelWidth != doc.Width * cell || _bitmap.PixelHeight != doc.Height * cell)
@@ -177,7 +200,9 @@ namespace MapEditor.Control
             var enlarged = ActualWidth > _bitmap.PixelWidth;
             var mode = enlarged ? BitmapScalingMode.NearestNeighbor : BitmapScalingMode.HighQuality;
             if (RenderOptions.GetBitmapScalingMode(this) != mode)
+            {
                 RenderOptions.SetBitmapScalingMode(this, mode);
+            }
 
             var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
             dc.DrawImage(_bitmap, bounds);
@@ -188,7 +213,9 @@ namespace MapEditor.Control
             var sy = ActualHeight / doc.Height;
             var rect = Rect.Intersect(new Rect(view.X * sx, view.Y * sy, view.Width * sx, view.Height * sy), bounds);
             if (rect.IsEmpty == false)
+            {
                 dc.DrawRectangle(null, ViewPen, rect);
+            }
         }
 
         /// <summary>
@@ -210,7 +237,9 @@ namespace MapEditor.Control
                     {
                         var tile = doc.Map.Tiles[y * doc.Width + x];
                         if (limit == null || tile < limit.Value.Tiles)
+                        {
                             _assets.DrawTile(pixels, width, height, x * cell, y * cell, tile);
+                        }
                     }
                 }
             }
@@ -222,7 +251,9 @@ namespace MapEditor.Control
                     {
                         var id = doc.Map.Objects[y * doc.Width + x];
                         if (id != 0 && (limit == null || id <= limit.Value.Objects))
+                        {
                             _assets.DrawObject(pixels, width, height, x * cell, y * cell, id);
+                        }
                     }
                 }
             }
@@ -245,7 +276,9 @@ namespace MapEditor.Control
                     for (int i = 0; i < pixels.Length; i++)
                     {
                         if (limit == null || doc.Map.Tiles[i] < limit.Value.Tiles)
+                        {
                             pixels[i] = TileColor(doc.Map.Tiles[i]);
+                        }
                     }
                 }
                 if (_editor.ShowObjects)
@@ -258,13 +291,17 @@ namespace MapEditor.Control
                             var id = doc.Map.Objects[y * doc.Width + x];
                             var sobj = limit != null && id > limit.Value.Objects ? null : _assets.Objects.Find(id);
                             if (sobj == null)
+                            {
                                 continue;
+                            }
 
                             for (int k = 0; k < sobj.Frames.Length && y - k >= 0; k++)
                             {
                                 var color = PieceColor(sobj.Frames[k]);
                                 if (color != 0)
+                                {
                                     pixels[(y - k) * doc.Width + x] = color;
+                                }
                             }
                         }
                     }
@@ -283,7 +320,10 @@ namespace MapEditor.Control
             {
                 color = Average(_assets.TileFrame(tile), 1);
                 if (color == 0)
+                {
                     color = 0xFF000000u;
+                }
+
                 _tileColors[tile] = color;
             }
             return color;
@@ -305,14 +345,18 @@ namespace MapEditor.Control
         private static uint Average(FrameImage frame, int minimumPixels)
         {
             if (frame == null)
+            {
                 return 0;
+            }
 
             long r = 0, g = 0, b = 0;
             var count = 0;
             foreach (var pixel in frame.Pixels)
             {
                 if (pixel == 0)
+                {
                     continue;
+                }
 
                 r += (pixel >> 16) & 0xFF;
                 g += (pixel >> 8) & 0xFF;
@@ -320,7 +364,9 @@ namespace MapEditor.Control
                 count++;
             }
             if (count < minimumPixels)
+            {
                 return 0;
+            }
 
             return 0xFF000000u | ((uint)(r / count) << 16) | ((uint)(g / count) << 8) | (uint)(b / count);
         }
@@ -335,7 +381,9 @@ namespace MapEditor.Control
         protected override void OnMouseMove(MouseEventArgs e)
         {
             if (IsMouseCaptured)
+            {
                 Scroll(e.GetPosition(this));
+            }
         }
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -346,7 +394,9 @@ namespace MapEditor.Control
         private void Scroll(Point point)
         {
             if (_document == null || Canvas == null || ActualWidth <= 0 || ActualHeight <= 0)
+            {
                 return;
+            }
 
             Canvas.CenterOn(point.X / ActualWidth * _document.Width, point.Y / ActualHeight * _document.Height);
         }

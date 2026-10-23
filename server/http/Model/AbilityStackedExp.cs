@@ -40,7 +40,9 @@ namespace Fb.Model
                     var minLevel = classIntra.Keys.Min();
                     var prevLevel = (byte)(minLevel - 1);
                     if (prevLevel > 0 && noneIntra.TryGetValue(prevLevel, out var noneStacked))
+                    {
                         noneBase = noneStacked;
+                    }
                 }
 
                 Cache[cls] = classIntra.ToDictionary(
@@ -52,7 +54,9 @@ namespace Fb.Model
         public static ulong GetStackedExp(Class cls, byte level)
         {
             if (Cache.TryGetValue(cls, out var levels) && levels.TryGetValue(level, out var stacked))
+            {
                 return stacked;
+            }
 
             return 0;
         }

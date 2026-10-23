@@ -5,31 +5,31 @@ local enum = require('lib.enum')
 return {
     on_click = function(me, npc)
         local food_rewards = {
-            ['바나나다발'] = { item = nil,  item_count = 0,  money = 500 },
-            ['영양반찬'] = { item = nil,  item_count = 0,  money = 5000 },
-            ['영양음료'] = { item = nil,  item_count = 0,  money = 5000 },
-            ['영양통구이'] = { item = nil,  item_count = 0,  money = 0 },
-            ['초보도시락'] = { item = '북천황변신시약',  item_count = 1,  money = 0 },
-            ['기분전환반찬'] = { item = nil,  item_count = 0,  money = 0 },
-            ['기분전환음료'] = { item = nil,  item_count = 0,  money = 30000 },
-            ['기분전환통구이'] = { item = nil,  item_count = 0,  money = 30000 },
-            ['활력충전통구이'] = { item = nil,  item_count = 0,  money = 50000 },
-            ['활력충전반찬'] = { item = nil,  item_count = 0,  money = 0 },
-            ['활력충전음료'] = { item = nil,  item_count = 0,  money = 50000 },
-            ['궁극의도시락'] = { item = '양첨목봉',  item_count = 1,  money = 0 },
-            ['생장촉진통구이'] = { item = '청의태자변신시약',  item_count = 1,  money = 0 },
-            ['생장촉진반찬'] = { item = nil,  item_count = 0,  money = 0 },
-            ['생장촉진음료'] = { item = nil,  item_count = 0,  money = 0 },
-            ['전설의도시락'] = { item = '흑형도',  item_count = 1,  money = 0 },
-            ['생명보존통구이'] = { item = '토깽이변신시약',  item_count = 2,  money = 0 },
-            ['생명보존반찬'] = { item = nil,  item_count = 0,  money = 0 },
-            ['생명보존음료'] = { item = nil,  item_count = 0,  money = 0 },
-            ['환상의도시락'] = { item = '천풍선',  item_count = 1,  money = 0 },
-            ['1차도시락'] = { item = '암흑왕변신시약',  item_count = 1,  money = 0 },
-            ['2차도시락'] = { item = '진명삼지창',  item_count = 1,  money = 0 },
-            ['3차도시락'] = { item = '칠교칠선',  item_count = 1,  money = 0 },
-            ['4차도시락'] = { item = '금마반지',  item_count = 2,  money = 0 },
-            ['비장의도시락'] = { item = '이가닌자의검',  item_count = 1,  money = 0 },
+            ['바나나다발'] = { item = nil, item_count = 0, money = 500 },
+            ['영양반찬'] = { item = nil, item_count = 0, money = 5000 },
+            ['영양음료'] = { item = nil, item_count = 0, money = 5000 },
+            ['영양통구이'] = { item = nil, item_count = 0, money = 0 },
+            ['초보도시락'] = { item = '북천황변신시약', item_count = 1, money = 0 },
+            ['기분전환반찬'] = { item = nil, item_count = 0, money = 0 },
+            ['기분전환음료'] = { item = nil, item_count = 0, money = 30000 },
+            ['기분전환통구이'] = { item = nil, item_count = 0, money = 30000 },
+            ['활력충전통구이'] = { item = nil, item_count = 0, money = 50000 },
+            ['활력충전반찬'] = { item = nil, item_count = 0, money = 0 },
+            ['활력충전음료'] = { item = nil, item_count = 0, money = 50000 },
+            ['궁극의도시락'] = { item = '양첨목봉', item_count = 1, money = 0 },
+            ['생장촉진통구이'] = { item = '청의태자변신시약', item_count = 1, money = 0 },
+            ['생장촉진반찬'] = { item = nil, item_count = 0, money = 0 },
+            ['생장촉진음료'] = { item = nil, item_count = 0, money = 0 },
+            ['전설의도시락'] = { item = '흑형도', item_count = 1, money = 0 },
+            ['생명보존통구이'] = { item = '토깽이변신시약', item_count = 2, money = 0 },
+            ['생명보존반찬'] = { item = nil, item_count = 0, money = 0 },
+            ['생명보존음료'] = { item = nil, item_count = 0, money = 0 },
+            ['환상의도시락'] = { item = '천풍선', item_count = 1, money = 0 },
+            ['1차도시락'] = { item = '암흑왕변신시약', item_count = 1, money = 0 },
+            ['2차도시락'] = { item = '진명삼지창', item_count = 1, money = 0 },
+            ['3차도시락'] = { item = '칠교칠선', item_count = 1, money = 0 },
+            ['4차도시락'] = { item = '금마반지', item_count = 2, money = 0 },
+            ['비장의도시락'] = { item = '이가닌자의검', item_count = 1, money = 0 },
         }
 
         local q = me:quest(quest.QUEST_MEOKYEOM)
@@ -37,19 +37,23 @@ return {
 
         if q == nil then
             ::NPC_168_0001::
-            btn = me:dialog(npc, '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.', { prev = false, next = true })
+            btn = me:dialog(npc,
+                '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_168_0010::
-            btn = me:dialog(npc, '환갑잔치에 쓸 요리가 필요한데, 변변한 요리사가 없어서 말이야. 환갑잔치는 평생 한번 있는 경사인데, 그런 날에 맛없는 요리를 드셔서야 안 되지.', { prev = true, next = true })
+            btn = me:dialog(npc, '환갑잔치에 쓸 요리가 필요한데, 변변한 요리사가 없어서 말이야. 환갑잔치는 평생 한번 있는 경사인데, 그런 날에 맛없는 요리를 드셔서야 안 되지.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_168_0001
             end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local sel, lb = me:list(npc, '아버님께 맛있는 것을 많이 드시게 하고 싶은데, 요리사를 구할 수가 없으니 참 큰일이야..', { '저도 요리를 만들 줄 아는데, 도와드릴까요?', '찬찬에게 맡겨보시지 그러세요?' }, { prev = false })
+            local sel, lb = me:list(npc, '아버님께 맛있는 것을 많이 드시게 하고 싶은데, 요리사를 구할 수가 없으니 참 큰일이야..',
+                { '저도 요리를 만들 줄 아는데, 도와드릴까요?', '찬찬에게 맡겨보시지 그러세요?' }, { prev = false })
             if lb == DIALOG_RESULT.QUIT then
                 return
             end
@@ -68,12 +72,16 @@ return {
             q = me:quest(quest.QUEST_MEOKYEOM)
             q:step(1)
             ::NPC_168_0020::
-            btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', { prev = false, next = true })
+            btn = me:dialog(npc,
+                '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_168_0021::
-            btn = me:dialog(npc, '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.', { prev = true, next = false })
+            btn = me:dialog(npc,
+                '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.',
+                { prev = true, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_168_0020
             end
@@ -82,19 +90,23 @@ return {
 
         if q:step() == 0 then
             ::NPC_168_0030::
-            btn = me:dialog(npc, '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.', { prev = false, next = true })
+            btn = me:dialog(npc,
+                '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_168_0031::
-            btn = me:dialog(npc, '환갑잔치에 쓸 요리가 필요한데, 변변한 요리사가 없어서 말이야. 환갑잔치는 평생 한번 있는 경사인데, 그런 날에 맛없는 요리를 드셔서야 안 되지.', { prev = true, next = true })
+            btn = me:dialog(npc, '환갑잔치에 쓸 요리가 필요한데, 변변한 요리사가 없어서 말이야. 환갑잔치는 평생 한번 있는 경사인데, 그런 날에 맛없는 요리를 드셔서야 안 되지.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_168_0030
             end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local sel, lb = me:list(npc, '아버님께 맛있는 것을 많이 드시게 하고 싶은데, 요리사를 구할 수가 없으니 참 큰일이야..', { '저도 요리를 만들 줄 아는데, 도와드릴까요?', '찬찬에게 맡겨보시지 그러세요?' }, { prev = false })
+            local sel, lb = me:list(npc, '아버님께 맛있는 것을 많이 드시게 하고 싶은데, 요리사를 구할 수가 없으니 참 큰일이야..',
+                { '저도 요리를 만들 줄 아는데, 도와드릴까요?', '찬찬에게 맡겨보시지 그러세요?' }, { prev = false })
             if lb == DIALOG_RESULT.QUIT then
                 return
             end
@@ -113,12 +125,16 @@ return {
             q = me:quest(quest.QUEST_MEOKYEOM)
             q:step(1)
             ::NPC_168_0040::
-            btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', { prev = false, next = true })
+            btn = me:dialog(npc,
+                '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_168_0041::
-            btn = me:dialog(npc, '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.', { prev = true, next = false })
+            btn = me:dialog(npc,
+                '그래, 어떤 요리든 좋네. 맛있는 요리라면 뭐든지 좋아. 요리를 가져오면 요리가 얼마나 맛있는가에 따라 사례를 하도록 하겠네.\n\n자자, 이러고 있지 말고 서둘러 주게. 난 여기서 기다리고 있겠네.',
+                { prev = true, next = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_168_0040
             end
@@ -159,7 +175,8 @@ return {
 
         local row = food_rewards[food_name]
         if row == nil then
-            me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', { prev = false, next = false })
+            me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...',
+                { prev = false, next = false })
             return
         end
 
@@ -168,7 +185,8 @@ return {
 
         if not has_reward_item and not has_reward_money then
             if not me:has_items(food_name, 1) or not me:rmitem(food_name, 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', { prev = false, next = false })
+                me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...',
+                    { prev = false, next = false })
                 return
             end
             me:dialog(npc, '정말 고맙네! 수고했네. 앞으로도 계속 부탁하네.', { prev = false, next = false })
@@ -188,7 +206,8 @@ return {
             reward
         )
         if code == enum.exchange_result.LACK_COST then
-            me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', { prev = false, next = false })
+            me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...',
+                { prev = false, next = false })
             return
         elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', { prev = false, next = false })

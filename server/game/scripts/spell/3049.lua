@@ -12,7 +12,7 @@ return {
         local sound = 106
         local effect = 96
         local buff_time = 30
-        if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+        if spell.debuff_cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:buff(sp, buff_time, me)
         end
     end,
@@ -26,7 +26,8 @@ return {
     on_concast = function(me, caster, buff)
         local damage = (me:maxhp() * 5) // 100
         if caster ~= nil then
-            caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
+            caster:damage_to(me, damage,
+                { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
         else
             me:damage(damage)
         end

@@ -8,15 +8,18 @@ return {
             return
         end
 
-        local button = me:dialog(npc, "설날의 겨울 바람은 너무 쌩쌩 불어요~! 그래서인지 바람개비를 가지고 놀면 추운것도 잊어버린다니까요~?", { prev = false, next = true })
+        local button = me:dialog(npc, "설날의 겨울 바람은 너무 쌩쌩 불어요~! 그래서인지 바람개비를 가지고 놀면 추운것도 잊어버린다니까요~?",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        button = me:dialog(npc, "반년 전 세시마을에서는 창포물을 가지고 염색을 하곤 했는데, 그 때 조금 챙겨둔 것으로 바람개비를 물들여드릴 수 있어요.", { prev = false, next = true })
+        button = me:dialog(npc, "반년 전 세시마을에서는 창포물을 가지고 염색을 하곤 했는데, 그 때 조금 챙겨둔 것으로 바람개비를 물들여드릴 수 있어요.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        button = me:dialog(npc, "하늘, 초록, 연두, 파랑, 분홍 바람개비를 각각 하나씩 가져오시면, 다른 색의 바람개비로 바꾸어 드릴게요.", { prev = false, next = true })
+        button = me:dialog(npc, "하늘, 초록, 연두, 파랑, 분홍 바람개비를 각각 하나씩 가져오시면, 다른 색의 바람개비로 바꾸어 드릴게요.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

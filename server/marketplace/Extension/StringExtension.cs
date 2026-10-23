@@ -5,7 +5,9 @@ public static class StringExtension
     public static string ToCSharpFormat(this string format)
     {
         if (string.IsNullOrEmpty(format))
+        {
             return format;
+        }
 
         var result = new System.Text.StringBuilder(format.Length);
         var index = 0;

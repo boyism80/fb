@@ -59,7 +59,9 @@ namespace MapEditor.ViewModel
         private async Task RefreshDoorReferences()
         {
             if (DoorTable == null)
+            {
                 return;
+            }
 
             var revision = ++_doorReferenceRevision;
             var table = DoorTable.Copy();
@@ -72,14 +74,21 @@ namespace MapEditor.ViewModel
                 {
                     List<(int Id, int Width, int Height, ushort[] Objects)> maps;
                     lock (corpus)
+                    {
                         maps = corpus.Select(m => (m.Key, m.Value.Width, m.Value.Height, m.Value.Objects)).ToList();
+                    }
+
                     foreach (var (id, map) in open)
                     {
                         var index = maps.FindIndex(m => m.Id == id);
                         if (index >= 0)
+                        {
                             maps[index] = (id, map.Width, map.Height, map.Objects);
+                        }
                         else
+                        {
                             maps.Add((id, map.Width, map.Height, map.Objects));
+                        }
                     }
 
                     var result = new System.Collections.Concurrent.ConcurrentDictionary<int, List<DoorReference>>();
@@ -88,12 +97,16 @@ namespace MapEditor.ViewModel
                         var name = names.TryGetValue(map.Id, out var n) ? n : "";
                         var doors = table.Find(map.Width, map.Height, map.Objects);
                         if (doors.Count > 0)
+                        {
                             result[map.Id] = doors.Select(d => new DoorReference { Door = d.Model.Id, Map = map.Id, MapName = name, X = d.X, Y = d.Y, Opened = d.Opened }).ToList();
+                        }
                     });
                     return new Dictionary<int, List<DoorReference>>(result);
                 });
                 if (revision != _doorReferenceRevision)
+                {
                     return;
+                }
 
                 _doorReferences = references;
                 DoorReferencesReady = true;
@@ -111,7 +124,9 @@ namespace MapEditor.ViewModel
         private void UpdateDoorReferences(MapDocument document)
         {
             if (DoorReferencesReady == false)
+            {
                 return;
+            }
 
             var name = Maps.FirstOrDefault(m => m.Id == document.Id)?.Name ?? document.Name;
             _doorReferences[document.Id] = document.Doors.Select(d => new DoorReference { Door = d.Model.Id, Map = document.Id, MapName = name, X = d.X, Y = d.Y, Opened = d.Opened }).ToList();
@@ -131,7 +146,9 @@ namespace MapEditor.ViewModel
         public async Task GoToDoorReference(DoorReference reference)
         {
             if (reference == null)
+            {
                 return;
+            }
 
             if (Document?.Id == reference.Map)
             {
@@ -141,7 +158,10 @@ namespace MapEditor.ViewModel
             {
                 await OpenMap(Maps.FirstOrDefault(m => m.Id == reference.Map));
                 if (Document?.Id != reference.Map)
+                {
                     return;
+                }
+
                 FocusRequested?.Invoke(reference.X, reference.Y);
             }
             SelectedMapDoor = Document.Doors.FirstOrDefault(d => d.X == reference.X && d.Y == reference.Y);
@@ -195,11 +215,16 @@ namespace MapEditor.ViewModel
 
                     var next = reference.Opened ? after.Select(c => c.Open).ToList() : after.Select(c => c.Close).ToList();
                     for (int i = 0; i < next.Count; i++)
+                    {
                         cells.Add((reference.X + i, reference.Y, (ushort)next[i]));
+                    }
+
                     places++;
                 }
                 if (cells.Count == 0)
+                {
                     continue;
+                }
 
                 if (document != null)
                 {
@@ -214,7 +239,10 @@ namespace MapEditor.ViewModel
                 else
                 {
                     foreach (var (x, y, obj) in cells)
+                    {
                         file.Objects[y * file.Width + x] = obj;
+                    }
+
                     try
                     {
                         MapDocument.WriteAtomic(path, file.ToBytes());

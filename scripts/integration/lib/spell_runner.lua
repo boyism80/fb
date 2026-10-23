@@ -169,7 +169,7 @@ local function resolve_cast_params(case, caster, target, state)
     elseif target ~= nil then
         position = target:position()
     else
-        position = {0, 0}
+        position = { 0, 0 }
     end
 
     return cast_type, message, oid, position

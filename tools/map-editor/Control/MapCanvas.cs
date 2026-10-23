@@ -132,7 +132,9 @@ namespace MapEditor.Control
             {
                 // ZoomAt already applied zooms that came from the wheel; only toolbar/menu zooms land here.
                 if (Math.Abs(Editor.Zoom - _zoom) > 0.0001)
+                {
                     ZoomAt(Editor.Zoom, new Point(_viewport.Width / 2, _viewport.Height / 2));
+                }
             }
             else if (e.PropertyName == nameof(MainWindowViewModel.Document))
             {
@@ -143,10 +145,15 @@ namespace MapEditor.Control
                 }
 
                 if (_document != null)
+                {
                     _document.CellsChanged -= OnCellsChanged;
+                }
+
                 _document = Editor.Document;
                 if (_document != null)
+                {
                     _document.CellsChanged += OnCellsChanged;
+                }
 
                 _chunks.Clear();
                 _offset = new Vector();
@@ -180,12 +187,17 @@ namespace MapEditor.Control
                         var cx = x + dx;
                         var cy = y - k;
                         if (cx >= 0 && cy >= 0)
+                        {
                             dirty.Add((cx / ChunkCells, cy / ChunkCells));
+                        }
                     }
                 }
             }
             foreach (var key in dirty)
+            {
                 _chunks.Remove(key);
+            }
+
             InvalidateVisual();
         }
 
@@ -236,7 +248,9 @@ namespace MapEditor.Control
             UpdateScroll();
             InvalidateVisual();
             if (Editor != null)
+            {
                 Editor.Zoom = zoom;
+            }
         }
 
         public void Focus(int x, int y)
@@ -301,7 +315,9 @@ namespace MapEditor.Control
         private WriteableBitmap Chunk(int cx, int cy)
         {
             if (_chunks.TryGetValue((cx, cy), out var cached))
+            {
                 return cached;
+            }
 
             var doc = _document;
             var assets = Editor.Assets;
@@ -325,7 +341,9 @@ namespace MapEditor.Control
                     {
                         var tile = doc.Map.Tiles[y * doc.Width + x];
                         if (limit is (int tiles, _) && tile >= tiles)
+                        {
                             continue;
+                        }
 
                         assets.DrawTile(pixels, width, height, (x - x0) * cell, (y - y0) * cell, tile);
                     }
@@ -341,7 +359,9 @@ namespace MapEditor.Control
                     {
                         var objectId = doc.Map.Objects[y * doc.Width + x];
                         if (limit is (_, int objects) && objectId > objects)
+                        {
                             continue;
+                        }
 
                         assets.DrawObject(pixels, width, height, (x - x0) * cell, (y - y0) * cell, objectId);
                     }
@@ -363,7 +383,9 @@ namespace MapEditor.Control
             var doc = _document;
             var editor = Editor;
             if (doc == null || editor == null)
+            {
                 return;
+            }
 
             var mapRect = CellRect(0, 0, doc.Width, doc.Height);
             dc.DrawRectangle(MapBackBrush, MapBorderPen, mapRect);
@@ -375,7 +397,9 @@ namespace MapEditor.Control
             vx1 = Math.Min(doc.Width - 1, vx1);
             vy1 = Math.Min(doc.Height - 1, vy1);
             if (vx1 < vx0 || vy1 < vy0)
+            {
                 return;
+            }
 
             var (cx0, cy0, cx1, cy1) = (vx0 / ChunkCells, vy0 / ChunkCells, vx1 / ChunkCells, vy1 / ChunkCells);
             var chunks = new DrawingGroup();
@@ -399,7 +423,9 @@ namespace MapEditor.Control
             if (_chunks.Count > 24)
             {
                 foreach (var key in _chunks.Keys.Where(k => k.Item1 < cx0 || k.Item1 > cx1 || k.Item2 < cy0 || k.Item2 > cy1).ToList())
+                {
                     _chunks.Remove(key);
+                }
             }
 
             if (editor.ShowBlocks || editor.ShowCollision || editor.Selection.Count > 0)
@@ -434,17 +460,30 @@ namespace MapEditor.Control
                                 var r = CellRect(x, y);
                                 r.Inflate(-edgeWidth / 2, -edgeWidth / 2);
                                 if ((bits & 2) != 0)
+                                {
                                     AddLine(edgeContext, r.TopLeft, r.TopRight);
+                                }
+
                                 if ((bits & 1) != 0)
+                                {
                                     AddLine(edgeContext, r.BottomLeft, r.BottomRight);
+                                }
+
                                 if ((bits & 4) != 0)
+                                {
                                     AddLine(edgeContext, r.TopLeft, r.BottomLeft);
+                                }
+
                                 if ((bits & 8) != 0)
+                                {
                                     AddLine(edgeContext, r.TopRight, r.BottomRight);
+                                }
                             }
 
                             if (editor.Selection.Contains((x, y)))
+                            {
                                 AddRect(selectionContext, CellRect(x, y));
+                            }
                         }
                     }
                 }
@@ -480,7 +519,9 @@ namespace MapEditor.Control
                 foreach (var door in doc.Doors)
                 {
                     if (door.Y < vy0 || door.Y > vy1 || door.X + door.Width < vx0 || door.X > vx1)
+                    {
                         continue;
+                    }
 
                     var pen = ReferenceEquals(door, editor.SelectedMapDoor) ? SelectedPen : door.Opened ? DoorOpenPen : DoorClosePen;
                     dc.DrawRectangle(null, pen, CellRect(door.X, door.Y, door.Width, 1));
@@ -493,12 +534,16 @@ namespace MapEditor.Control
                 {
                     var template = instance.Template;
                     if (instance.X > vx1 || instance.Y > vy1 || instance.X + template.Width < vx0 || instance.Y + template.Height < vy0)
+                    {
                         continue;
+                    }
 
                     var rect = CellRect(instance.X, instance.Y, template.Width, template.Height);
                     dc.DrawRectangle(null, template == editor.SelectedTemplate ? TemplateSelectedPen : TemplatePen, rect);
                     if (_zoom >= 0.5)
+                    {
                         DrawLabel(dc, template.Name, new Point(rect.X, rect.Y), TemplateLabelBrush);
+                    }
                 }
             }
 
@@ -517,7 +562,9 @@ namespace MapEditor.Control
                         var cx = (left + right) / 2.0;
                         var cy = (top + bottom) / 2.0;
                         for (int i = 0; i < kinds.Count; i++)
+                        {
                             DrawSprite(dc, editor.Assets, kinds[i], 2, cx + i - (kinds.Count - 1) / 2.0, cy);
+                        }
                     }
                     var label = string.Join("\n", group.Select(m => $"{(m.Name == "" ? m.Mob.ToString() : m.Name)} ×{m.Count}"));
                     DrawLabel(dc, label, new Point(Math.Max(rect.X, 0) + 2, Math.Max(rect.Y, 0) + 2), MobLabelBrush);
@@ -539,13 +586,17 @@ namespace MapEditor.Control
                 foreach (var warp in doc.Warps)
                 {
                     if (warp.X < vx0 || warp.X > vx1 || warp.Y < vy0 || warp.Y > vy1)
+                    {
                         continue;
+                    }
 
                     var rect = CellRect(warp.X, warp.Y);
                     rect.Inflate(-Scale * 0.15, -Scale * 0.15);
                     dc.DrawRectangle(WarpBrush, editor.SelectedEntities.Contains(warp) ? SelectedPen : null, rect);
                     if (_zoom >= 0.75)
+                    {
                         DrawLabel(dc, $"→{warp.DestLabel}", new Point(rect.X, rect.Bottom + Scale * 0.15), Brushes.Cyan);
+                    }
                 }
             }
 
@@ -555,14 +606,21 @@ namespace MapEditor.Control
                 foreach (var npc in doc.Npcs.OrderBy(n => n.Y))
                 {
                     if (npc.X < vx0 || npc.X > vx1 || npc.Y < vy0 || npc.Y > vy1 + 3)
+                    {
                         continue;
+                    }
 
                     var pen = editor.SelectedEntities.Contains(npc) ? SelectedPen : null;
                     var sprite = editor.ShowSprites && editor.Assets != null ? DrawSprite(dc, editor.Assets, npc.Info, npc.DirectionIndex, npc.X, npc.Y) : Rect.Empty;
                     if (sprite.IsEmpty)
+                    {
                         DrawNpc(dc, npc.X, npc.Y, npc.DirectionIndex, NpcBrush, pen);
+                    }
                     else if (pen != null)
+                    {
                         dc.DrawRectangle(null, pen, Rect.Union(sprite, CellRect(npc.X, npc.Y)));
+                    }
+
                     if (_zoom >= 0.75)
                     {
                         var rect = CellRect(npc.X, npc.Y);
@@ -572,7 +630,9 @@ namespace MapEditor.Control
             }
 
             if (_drag == DragKind.Move)
+            {
                 DrawMoveGhost(dc, editor);
+            }
 
             if (_hover is (int hx, int hy) && doc.Map.Contains(hx, hy) && _drag != DragKind.Move)
             {
@@ -586,14 +646,19 @@ namespace MapEditor.Control
                     var ghost = new DrawingGroup();
                     RenderOptions.SetBitmapScalingMode(ghost, ScalingMode(editor.Assets));
                     using (var context = ghost.Open())
+                    {
                         context.DrawImage(bitmap, CellRect(hx, hy - above, Math.Max(1, template.Width), Math.Max(1, template.Height) + above));
+                    }
+
                     dc.PushOpacity(0.65);
                     dc.DrawDrawing(ghost);
                     dc.Pop();
                     dc.DrawRectangle(null, GhostPen, CellRect(hx, hy, template.Width, template.Height));
                 }
                 else
+                {
                     dc.DrawRectangle(null, HoverPen, CellRect(hx, hy));
+                }
             }
 
             if ((_drag == DragKind.RubberBand || _drag == DragKind.RectFill || _drag == DragKind.MobArea || _drag == DragKind.ContextArea || _drag == DragKind.ResizeMob) &&
@@ -605,7 +670,9 @@ namespace MapEditor.Control
 
             // The cells a context menu acts on stay marked until the menu closes.
             if (_contextArea is Int32Rect area)
+            {
                 dc.DrawRectangle(ContextAreaBrush, ContextAreaPen, CellRect(area.X, area.Y, area.Width, area.Height));
+            }
         }
 
         /// <summary>
@@ -615,12 +682,16 @@ namespace MapEditor.Control
         private Rect DrawSprite(DrawingContext dc, ClientAssets assets, NameEntry info, int direction, double x, double y)
         {
             if (info == null)
+            {
                 return Rect.Empty;
+            }
 
             var frame = assets.MonsterFrame(info.Look, info.Color, direction);
             var bitmap = Thumbnail.Monster(assets, info.Look, info.Color, direction);
             if (frame == null || bitmap == null)
+            {
                 return Rect.Empty;
+            }
 
             // Frame offsets are relative to the feet: centered horizontally, a few pixels above the cell bottom.
             var cell = CellRect(0, 0);
@@ -631,7 +702,10 @@ namespace MapEditor.Control
             var sprite = new DrawingGroup();
             RenderOptions.SetBitmapScalingMode(sprite, ScalingMode(assets));
             using (var context = sprite.Open())
+            {
                 context.DrawImage(bitmap, rect);
+            }
+
             dc.DrawDrawing(sprite);
             return rect;
         }
@@ -678,7 +752,9 @@ namespace MapEditor.Control
         {
             var (dx, dy) = DragDelta;
             if (dx == 0 && dy == 0)
+            {
                 return;
+            }
 
             var ghost = new StreamGeometry();
             using (var context = ghost.Open())
@@ -686,7 +762,9 @@ namespace MapEditor.Control
                 foreach (var (x, y) in editor.Selection)
                 {
                     if (editor.FloatingPaste || editor.MoveTiles || editor.MoveBlocks || _document.Get(x, y).Object != 0)
+                    {
                         AddRect(context, CellRect(x + dx, y + dy));
+                    }
                 }
             }
             dc.DrawGeometry(GhostBrush, GhostPen, ghost);
@@ -747,11 +825,17 @@ namespace MapEditor.Control
         {
             var modifiers = Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Shift);
             if (modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+            {
                 return SelectMode.Remove;
+            }
             else if (modifiers != ModifierKeys.None)
+            {
                 return SelectMode.Add;
+            }
             else
+            {
                 return SelectMode.Replace;
+            }
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -760,7 +844,9 @@ namespace MapEditor.Control
             Focus();
             var editor = Editor;
             if (editor == null || _document == null)
+            {
                 return;
+            }
 
             if (e.ChangedButton == MouseButton.Middle || (e.ChangedButton == MouseButton.Left && _spaceDown))
             {
@@ -779,18 +865,26 @@ namespace MapEditor.Control
                 return;
             }
             if (e.ChangedButton != MouseButton.Left)
+            {
                 return;
+            }
 
             CaptureMouse();
             if (editor.Tool == EditTool.Select)
             {
                 var warp = editor.ShowWarps ? editor.WarpAt(x, y) : null;
                 if (e.ClickCount == 2 && warp != null)
+                {
                     _ = editor.OpenWarpDestination(warp);
+                }
                 else if (e.ClickCount == 2)
+                {
                     editor.SelectSame(x, y, ModifierMode());
+                }
                 else
+                {
                     BeginSelectDrag(editor, x, y, MapPoint(e.GetPosition(this)));
+                }
             }
             else if (editor.Tool == EditTool.Template)
             {
@@ -822,9 +916,13 @@ namespace MapEditor.Control
             {
                 var door = editor.DoorsAt(x, y).FirstOrDefault();
                 if (door != null && editor.SelectedDoorModel == null)
+                {
                     editor.SelectedMapDoor = door;
+                }
                 else
+                {
                     editor.PlaceDoor(x, y);
+                }
             }
             InvalidateVisual();
         }
@@ -865,7 +963,10 @@ namespace MapEditor.Control
                 if (entity != null)
                 {
                     if (editor.SelectedEntities.Contains(entity) == false)
+                    {
                         editor.SelectEntity(entity, add: false);
+                    }
+
                     _drag = DragKind.Move;
                 }
                 else if (objectCell is (int cx, int cy))
@@ -896,12 +997,18 @@ namespace MapEditor.Control
         private static (int X, int Y)? ClickedObjectCell(MainWindowViewModel editor, int x, int y, (double X, double Y) point)
         {
             if (editor.ShowObjects == false)
+            {
                 return null;
+            }
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+            {
                 return editor.ObjectCellAt(point.X, point.Y);
+            }
             else
+            {
                 return editor.Document.Map.Contains(x, y) && editor.Document.Get(x, y).Object != 0 ? (x, y) : null;
+            }
         }
 
         /// <summary>
@@ -920,7 +1027,9 @@ namespace MapEditor.Control
             base.OnMouseMove(e);
             var editor = Editor;
             if (editor == null || _document == null)
+            {
                 return;
+            }
 
             var position = e.GetPosition(this);
             if (_panStart is Point start)
@@ -950,7 +1059,9 @@ namespace MapEditor.Control
         {
             var steps = Math.Max(Math.Abs(to.X - from.X), Math.Abs(to.Y - from.Y));
             for (int i = 1; i <= steps; i++)
+            {
                 yield return (from.X + (to.X - from.X) * i / steps, from.Y + (to.Y - from.Y) * i / steps);
+            }
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -964,7 +1075,9 @@ namespace MapEditor.Control
             var drag = _drag;
             _drag = DragKind.None;
             if (editor == null || _document == null || drag == DragKind.None)
+            {
                 return;
+            }
 
             var (x, y) = CellAt(e.GetPosition(this));
             var (sx, sy) = _dragStart;
@@ -974,9 +1087,13 @@ namespace MapEditor.Control
                 entity ??= editor.ShowMobs ? MobAt(editor, x, y) : null;
                 var objectCell = ClickedObjectCell(editor, x, y, MapPoint(e.GetPosition(this)));
                 if (entity != null)
+                {
                     editor.ToggleEntity(entity);
+                }
                 else
+                {
                     editor.ToggleCell(objectCell ?? (x, y));
+                }
             }
             else if (drag == DragKind.RubberBand && _dragMode == SelectMode.Replace && (sx, sy) == (x, y))
             {
@@ -984,11 +1101,17 @@ namespace MapEditor.Control
                 entity ??= editor.ShowMobs ? MobAt(editor, x, y) : null;
                 var instance = editor.SelectByTemplate && editor.ShowObjects ? editor.TemplateAt(x, y) : null;
                 if (entity != null)
+                {
                     editor.SelectEntity(entity, add: false);
+                }
                 else if (instance != null)
+                {
                     editor.SelectTemplateInstance(instance, SelectMode.Replace);
+                }
                 else
+                {
                     editor.SelectRect(sx, sy, x, y, _dragMode);
+                }
             }
             else if (drag == DragKind.RubberBand)
             {
@@ -1010,9 +1133,13 @@ namespace MapEditor.Control
             else if (drag == DragKind.MobArea)
             {
                 if (editor.SelectedMob != null)
+                {
                     editor.SetMobArea(editor.SelectedMob, sx, sy, x, y);
+                }
                 else
+                {
                     editor.AddMob(sx, sy, x, y);
+                }
             }
             else if (drag == DragKind.ContextArea)
             {
@@ -1042,11 +1169,18 @@ namespace MapEditor.Control
         {
             base.OnMouseWheel(e);
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
                 ZoomAt(e.Delta > 0 ? _zoom * 1.25 : _zoom / 1.25, e.GetPosition(this));
+            }
             else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            {
                 SetHorizontalOffset(_offset.X - e.Delta);
+            }
             else
+            {
                 SetVerticalOffset(_offset.Y - e.Delta);
+            }
+
             e.Handled = true;
         }
 
@@ -1131,7 +1265,9 @@ namespace MapEditor.Control
                 {
                     var entry = PickerWindow.Show("NPC 선택", editor.NpcChoices, editor.Assets);
                     if (entry != null)
+                    {
                         npc.Npc = entry.Id;
+                    }
                 }));
                 npcMenu.Items.Add(Item("삭제", () => editor.RemoveEntity(npc)));
                 menu.Items.Add(npcMenu);
@@ -1193,7 +1329,10 @@ namespace MapEditor.Control
             {
                 var mobMenu = new MenuItem { Header = $"이 칸의 몹 스폰 ({mobs.Count})" };
                 foreach (var mob in mobs)
+                {
                     mobMenu.Items.Add(Item($"{mob.Mob} {mob.Name} ×{mob.Count} ({mob.Left}, {mob.Top})-({mob.Right}, {mob.Bottom})", () => editor.SelectEntity(mob, add: false)));
+                }
+
                 menu.Items.Add(mobMenu);
             }
             menu.Items.Add(new Separator());
@@ -1268,7 +1407,9 @@ namespace MapEditor.Control
                 using (doc.Group())
                 {
                     foreach (var npc in npcs)
+                    {
                         editor.RemoveEntity(npc);
+                    }
                 }
             }, npcs.Count > 0));
             menu.Items.Add(Item($"영역 안 워프 삭제 ({warps.Count})", () =>
@@ -1276,7 +1417,9 @@ namespace MapEditor.Control
                 using (doc.Group())
                 {
                     foreach (var warp in warps)
+                    {
                         editor.RemoveEntity(warp);
+                    }
                 }
             }, warps.Count > 0));
             menu.Items.Add(Item("좌표 복사", () => editor.CopyText($"{left}, {top} - {right}, {bottom}")));

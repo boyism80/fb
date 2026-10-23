@@ -10,11 +10,11 @@ return {
     -- end,
 
     on_buff = function(me, spell)
-    	me:damage_derate(me:damage_derate() + 1000)
+        me:damage_derate(me:damage_derate() + 1000)
     end,
 
     on_unbuff = function(me, spell)
-    	me:damage_derate(me:damage_derate() - 1000)
+        me:damage_derate(me:damage_derate() - 1000)
     end,
 
     -- on_concast = function(me, sp)

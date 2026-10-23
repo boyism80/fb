@@ -32,11 +32,15 @@ namespace Log.Repository
         {
             var logList = logs.ToList();
             if (logList.Count == 0)
+            {
                 return;
+            }
 
             var shardSize = _dbContext.GetShardDbSize(_world);
             if (shardSize == 0)
+            {
                 throw new InvalidOperationException($"No MySQL shards available for world {_world}");
+            }
 
             // Parse all log entries
             var entries = new List<LogEntry>();
@@ -46,7 +50,9 @@ namespace Log.Repository
                 {
                     var entry = ParseLogEntry(log);
                     if (entry != null)
+                    {
                         entries.Add(entry);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -55,7 +61,9 @@ namespace Log.Repository
             }
 
             if (entries.Count == 0)
+            {
                 return;
+            }
 
             // Get MySQL shard using random selection
             var shard = (uint)_random.Next((int)shardSize);
@@ -74,7 +82,9 @@ namespace Log.Repository
                     var value = BuildInsertValue(entry);
                     var valueBytes = Encoding.UTF8.GetByteCount(value);
                     if (prefixBytes + valueBytes > MaxInsertBytes)
+                    {
                         throw new InvalidOperationException("A single log entry exceeds the INSERT size limit");
+                    }
 
                     if (values.Count > 0 && (values.Count >= MaxInsertRows || bytes + 2 + valueBytes > MaxInsertBytes))
                     {
@@ -88,7 +98,9 @@ namespace Log.Repository
                 }
 
                 if (values.Count > 0)
+                {
                     await conn.ExecuteAsync(InsertPrefix + string.Join(", ", values), transaction: transaction);
+                }
 
                 await transaction.CommitAsync();
             }

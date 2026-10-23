@@ -4,12 +4,15 @@ local enum = require('lib.enum')
 return {
     on_click = function(me, npc)
         ::NPC_622_0001::
-        local button = me:dialog(npc, "백두촌이 이상한 기운으로 뒤덮혀 정령들이 이성을 잃기 전 까지만 해도, 나는 그들의 신령한 기운을 모아 이런저런 무기와 장비를 만들곤 했었소.", { prev = false, next = true })
+        local button = me:dialog(npc, "백두촌이 이상한 기운으로 뒤덮혀 정령들이 이성을 잃기 전 까지만 해도, 나는 그들의 신령한 기운을 모아 이런저런 무기와 장비를 만들곤 했었소.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
         ::NPC_622_0002::
-        button = me:dialog(npc, "하지만 최근들어 정령들이 암흑의 기운으로 폭주하고 난 뒤로... 사람들을 가차없이 공격하기에, 나는 그들이 기거하는 동굴의 앞에서 이렇게 정령들을 관찰하고 있소.", { prev = true, next = true })
+        button = me:dialog(npc,
+            "하지만 최근들어 정령들이 암흑의 기운으로 폭주하고 난 뒤로... 사람들을 가차없이 공격하기에, 나는 그들이 기거하는 동굴의 앞에서 이렇게 정령들을 관찰하고 있소.",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -54,7 +57,9 @@ return {
             if d == DIALOG_RESULT.QUIT then
                 return
             end
-            local sub_sel, sub_btn = me:list(npc, "[" .. r.product .. "]를 만들기 위해서는 [" .. r.main .. "] 100개와, 다른 지석 100개가 필요하오. 무엇을 주시겠소?", STONES, { prev = true })
+            local sub_sel, sub_btn = me:list(npc,
+                "[" .. r.product .. "]를 만들기 위해서는 [" .. r.main .. "] 100개와, 다른 지석 100개가 필요하오. 무엇을 주시겠소?", STONES,
+                { prev = true })
             if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -66,7 +71,11 @@ return {
                 me:dialog(npc, "같은 기운의 지석으로 만들 수 없소. 다른 것을 선택 해 주시오.", { prev = false, next = false })
                 return
             end
-            d = me:dialog(npc, "그렇군... [" .. r.main .. "]과 [" .. other .. "]으로 [" .. r.product .. "]를 만들어 보겠소. 다만 성공 확률은 삼할이 채 되지 않으니 실패하더라도 양해해 주시오...", { prev = false, next = false })
+            d = me:dialog(npc,
+                "그렇군... [" ..
+                r.main ..
+                "]과 [" .. other .. "]으로 [" .. r.product .. "]를 만들어 보겠소. 다만 성공 확률은 삼할이 채 되지 않으니 실패하더라도 양해해 주시오...",
+                { prev = false, next = false })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
@@ -100,11 +109,15 @@ return {
 
         if sel == 8 then
             ::NPC_622_0020::
-            local d = me:dialog(npc, "칠요구륜은 모든 정령들의 기운을 혼합한 팔찌로써 모든 직업을 위한 팔찌라고 말할 수 있소..\n\n또한 모든의 기운이 불안정하게 담겨있으므로 모든 요일지석 100개가 필요하오.", { prev = false, next = true })
+            local d = me:dialog(npc,
+                "칠요구륜은 모든 정령들의 기운을 혼합한 팔찌로써 모든 직업을 위한 팔찌라고 말할 수 있소..\n\n또한 모든의 기운이 불안정하게 담겨있으므로 모든 요일지석 100개가 필요하오.",
+                { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
-            local sub_sel, sub_btn = me:list(npc, "[칠요구륜]을 만들기 위해서는 모든 요일의 지석 100개가 필요하오. 성공률은 채 일할이 되지 않으니 실패하더라도 양해해 주시오.", { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
+            local sub_sel, sub_btn = me:list(npc,
+                "[칠요구륜]을 만들기 위해서는 모든 요일의 지석 100개가 필요하오. 성공률은 채 일할이 되지 않으니 실패하더라도 양해해 주시오.",
+                { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
             if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -148,11 +161,15 @@ return {
 
         if sel == 9 then
             ::NPC_622_0030::
-            local d = me:dialog(npc, "팔세지도는 모든 팔요의 기운이 담긴 칼날형 방패로써, 매우 만들기가 어렵소.\n\n또한 팔요의 기운이 불안정하게 담겨있으므로 팔요지석 100개와 모든 요일지석 100개가 필요하오.", { prev = false, next = true })
+            local d = me:dialog(npc,
+                "팔세지도는 모든 팔요의 기운이 담긴 칼날형 방패로써, 매우 만들기가 어렵소.\n\n또한 팔요의 기운이 불안정하게 담겨있으므로 팔요지석 100개와 모든 요일지석 100개가 필요하오.",
+                { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
-            local sub_sel, sub_btn = me:list(npc, "[팔세지도]를 만들기 위해서는 모든 요일의 지석 100개와 팔요지석이 필요하오. 성공률은 채 일할이 되지 않으니 실패하더라도 양해해 주시오.", { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
+            local sub_sel, sub_btn = me:list(npc,
+                "[팔세지도]를 만들기 위해서는 모든 요일의 지석 100개와 팔요지석이 필요하오. 성공률은 채 일할이 되지 않으니 실패하더라도 양해해 주시오.",
+                { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
             if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -205,7 +222,9 @@ return {
                 return
             end
             ::NPC_622_0041::
-            d = me:dialog(npc, "팔요천의 옷을 만들기 위해서는 [일광방패], [월광방패], [화분천검], [수류곡도], [목근정곤], [금기련봉], [토선투구], [칠요구륜], [팔세지도] 모두를 모두 나에게 재물로 가져와야 하오.", { prev = true, next = true })
+            d = me:dialog(npc,
+                "팔요천의 옷을 만들기 위해서는 [일광방패], [월광방패], [화분천검], [수류곡도], [목근정곤], [금기련봉], [토선투구], [칠요구륜], [팔세지도] 모두를 모두 나에게 재물로 가져와야 하오.",
+                { prev = true, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
@@ -213,7 +232,9 @@ return {
                 goto NPC_622_0040
             end
             ::NPC_622_0042::
-            d = me:dialog(npc, "또한 현재 성별이 [남성]일 경우 [팔요천의기]를 만들게 되며, 성별이 [여성]일 경우 [팔요천의향]을 만들게 된다오. 이는 음양의 기운에 따른 것이니 바꿀 수 없소.", { prev = true, next = true })
+            d = me:dialog(npc,
+                "또한 현재 성별이 [남성]일 경우 [팔요천의기]를 만들게 되며, 성별이 [여성]일 경우 [팔요천의향]을 만들게 된다오. 이는 음양의 기운에 따른 것이니 바꿀 수 없소.",
+                { prev = true, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
@@ -229,14 +250,16 @@ return {
                 goto NPC_622_0042
             end
             ::NPC_622_0044::
-            d = me:dialog(npc, "다만 맡겨준다면 최대한 심혈을 기울여 보겠소.  또한 중간에 허튼짓을 하면 모든 아이템이 날아갈 수 있으므로, 집중하도록 하시오.", { prev = true, next = true })
+            d = me:dialog(npc, "다만 맡겨준다면 최대한 심혈을 기울여 보겠소.  또한 중간에 허튼짓을 하면 모든 아이템이 날아갈 수 있으므로, 집중하도록 하시오.",
+                { prev = true, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
             if d == DIALOG_RESULT.PREV then
                 goto NPC_622_0043
             end
-            local sub_sel, sub_btn = me:list(npc, "팔요천의 옷을 만들기 위한 준비가 되었다면, 말을 걸어주시오.", { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
+            local sub_sel, sub_btn = me:list(npc, "팔요천의 옷을 만들기 위한 준비가 되었다면, 말을 걸어주시오.",
+                { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
             if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end

@@ -49,7 +49,7 @@ function M.handle(me, npc)
         ['exp'] = 0,
     }
 
-::REWARD_MENU::
+    ::REWARD_MENU::
     local reward_sel, reward_btn = me:pursuit(npc, '보상을 추가할까요?', {
         '아이템', '경험치', '금전', '없음',
     })

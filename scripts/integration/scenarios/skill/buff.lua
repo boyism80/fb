@@ -11,7 +11,7 @@ local ATTACK_INTERVAL = 100
 local ATTACK_MAX_LOOPS = 300
 local MOB_CLEAR_RANGE = 2
 local MOB_NAME = "다람쥐"
-local COVER_MOB_OFFSETS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+local COVER_MOB_OFFSETS = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } }
 local COVER_WAIT_MS = 3000
 local CHAPYE_MP = 100
 local LURE_MP = 50
@@ -127,11 +127,11 @@ end
 
 local function lure_mob(caster, lure_slot, mob)
     local lure_ok = caster:request(
-    resp.action,
-    protocol.spell_cast("TARGET", lure_slot, "", mob.oid, mob.position),
-    function(packet)
-        return packet.oid == caster:oid()
-    end)
+        resp.action,
+        protocol.spell_cast("TARGET", lure_slot, "", mob.oid, mob.position),
+        function(packet)
+            return packet.oid == caster:oid()
+        end)
     return lure_ok ~= false and lure_ok ~= nil
 end
 
@@ -163,13 +163,13 @@ end
 
 local function attack_until_mobs_dead(caster, ctx, mob_oids, label)
     local dead = {}
-    
+
     log("debug", string.format(
-    "[%s] attack_until_mobs_dead begin caster_oid=%s targets=%s",
-    label,
-    tostring(caster:oid()),
-    table.concat(mob_oids, ",")))
-    
+        "[%s] attack_until_mobs_dead begin caster_oid=%s targets=%s",
+        label,
+        tostring(caster:oid()),
+        table.concat(mob_oids, ",")))
+
     ctx:hook("die", function(_, _, packet)
         for _, oid in ipairs(mob_oids) do
             if packet.oid == oid then
@@ -178,7 +178,7 @@ local function attack_until_mobs_dead(caster, ctx, mob_oids, label)
             end
         end
     end)
-    
+
     for loop = 1, ATTACK_MAX_LOOPS do
         local all_dead = true
         local alive_oids = {}
@@ -193,32 +193,32 @@ local function attack_until_mobs_dead(caster, ctx, mob_oids, label)
             log("debug", string.format("[%s] attack_until_mobs_dead ok loops=%d", label, loop))
             return true
         end
-        
+
         if loop == 1 or loop % 50 == 0 then
             log("debug", string.format(
-            "[%s] attack loop=%d alive=%s pos=(%d,%d) direction=BOTTOM",
-            label,
-            loop,
-            table.concat(alive_oids, ","),
-            caster:position()[1],
-            caster:position()[2]))
+                "[%s] attack loop=%d alive=%s pos=(%d,%d) direction=BOTTOM",
+                label,
+                loop,
+                table.concat(alive_oids, ","),
+                caster:position()[1],
+                caster:position()[2]))
         end
-        
+
         caster:request(
-        resp.action,
-        protocol.attack(),
-        function(packet)
-            return packet.oid == caster:oid() and packet.value == "ATTACK"
-        end)
+            resp.action,
+            protocol.attack(),
+            function(packet)
+                return packet.oid == caster:oid() and packet.value == "ATTACK"
+            end)
         caster:sleep(ATTACK_INTERVAL)
     end
-    
+
     ctx:unhook("die")
     log("debug", string.format(
-    "[%s] attack_until_mobs_dead timeout after %d loops, dead=%s",
-    label,
-    ATTACK_MAX_LOOPS,
-    table.concat(mob_oids, ",")))
+        "[%s] attack_until_mobs_dead timeout after %d loops, dead=%s",
+        label,
+        ATTACK_MAX_LOOPS,
+        table.concat(mob_oids, ",")))
     return false
 end
 
@@ -232,18 +232,18 @@ local function make_directional_attack_case(name, mob_offsets)
             caster:set_current_hp_mp(10000, 10000)
             caster:direction("BOTTOM")
             state.expected_mp = caster:mp() - 90
-            
+
             if state.lure_slot == nil then
                 state.lure_slot = caster:learn_spell("유인")
                 if state.lure_slot == 0xFF then
                     return false
                 end
             end
-            
+
             if offset_target_aside(target, state) == false then
                 return false
             end
-            
+
             caster:chat(string.format("/몬스터범위제거 %d", MOB_CLEAR_RANGE))
             return true
         end,
@@ -505,30 +505,30 @@ local CASES = {
             if caster:mp() ~= state.expected_mp then
                 return false
             end
-            
+
             local cc_sight = 0x02
             if (caster:crowd_control() & cc_sight) == 0 then
                 return false
             end
-            
+
             local recover_slot = caster:learn_spell("시력회복")
             if recover_slot == 0xFF then
                 return false
             end
-            
+
             state.expected_mp_recover = caster:mp() - 40
             local cleared = caster:request(
-            resp.update_cc,
-            protocol.spell_cast("TARGET", recover_slot, "", caster:oid(), caster:position()),
-            function(p)
-                if p.sight == false then
-                    return true
-                end
-                if p.sight == true then
+                resp.update_cc,
+                protocol.spell_cast("TARGET", recover_slot, "", caster:oid(), caster:position()),
+                function(p)
+                    if p.sight == false then
+                        return true
+                    end
+                    if p.sight == true then
+                        return false
+                    end
                     return false
-                end
-                return false
-            end)
+                end)
             if cleared == false or cleared == nil then
                 return false
             end
@@ -538,7 +538,7 @@ local CASES = {
             if (caster:crowd_control() & cc_sight) ~= 0 then
                 return false
             end
-            
+
             caster:remove_buffs()
             return true
         end,
@@ -557,7 +557,7 @@ local CASES = {
             target:remove_buffs()
             state.buff_target = target
             state.expected_mp = caster:mp() - 80
-            state.original_position = {target:position()[1], target:position()[2]}
+            state.original_position = { target:position()[1], target:position()[2] }
         end,
         condition = function(packet, _, _, state)
             if packet.ch_mp ~= state.expected_mp then
@@ -607,7 +607,7 @@ local CASES = {
 
             -- After dispel, a successful move does not emit position to self.
             -- Use move + brief wait; paralysis snapback resets position via on_position.
-            local before_move = {target:position()[1], target:position()[2]}
+            local before_move = { target:position()[1], target:position()[2] }
             target:move("RIGHT", 1)
             target:sleep(200)
             if skill.positions_equal(target:position(), before_move) then
@@ -766,8 +766,8 @@ local CASES = {
             return true
         end,
     },
-    make_directional_attack_case("측면공격", {{-1, 0}, {1, 0}}),
-    make_directional_attack_case("후면공격", {{0, -1}, {0, 1}}),
+    make_directional_attack_case("측면공격", { { -1, 0 }, { 1, 0 } }),
+    make_directional_attack_case("후면공격", { { 0, -1 }, { 0, 1 } }),
     {
         name = "차폐",
         response = resp.message,
@@ -1194,7 +1194,7 @@ local CASES = {
                     return false
                 end
             end
-            
+
             caster:set_current_hp_mp(caster:base_hp(), caster:base_mp())
             if caster:mp() < 600 then
                 return false
@@ -1220,38 +1220,38 @@ local CASES = {
             if buff_result == false or buff_result == nil then
                 return false
             end
-            
+
             local spawn = caster:request(
-            resp.update,
-            protocol.chat(false, "/몬스터범위생성 초급유령 1"),
-            function(packet)
-                return packet.object_count == 4
-            end)
+                resp.update,
+                protocol.chat(false, "/몬스터범위생성 초급유령 1"),
+                function(packet)
+                    return packet.object_count == 4
+                end)
             if spawn == false or spawn == nil then
                 return false
             end
-            
+
             for i = 1, spawn.object_count do
                 local mob = spawn.objects_data[i]
                 local lure_ok = caster:request(
-                resp.action,
-                protocol.spell_cast("TARGET", state.lure_slot, "", mob.oid, {mob.x, mob.y}),
-                function(packet)
-                    return packet.oid == caster:oid()
-                end)
+                    resp.action,
+                    protocol.spell_cast("TARGET", state.lure_slot, "", mob.oid, { mob.x, mob.y }),
+                    function(packet)
+                        return packet.oid == caster:oid()
+                    end)
                 if lure_ok == false or lure_ok == nil then
                     return false
                 end
             end
-            
+
             caster:sleep(3000)
             caster:chat("/몬스터범위제거 1")
             caster:sleep(500)
-            
+
             if caster:hp() ~= state.expected_hp then
                 return false
             end
-            
+
             caster:remove_buffs()
             return true
         end,

@@ -11,7 +11,7 @@ return {
         local mp = me:mp()
         local sound = 80
         local effect = 18
-        if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:mp(math.min(you:maxmp(), you:mp() + mp))
         end
     end,

@@ -2,7 +2,7 @@
 
 return {
     on_activated = function(me, item)
-        me:mp(math.min(me:mp()+300, me:maxmp()))
+        me:mp(math.min(me:mp() + 300, me:maxmp()))
     end,
 
     -- on_deactivated = function(me, item)

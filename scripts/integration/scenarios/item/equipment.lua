@@ -24,7 +24,8 @@ function run(ctx, index)
             else
                 bot:reverse_item_condition(entry.name)
                 if bot:equip(0) then
-                    log("debug", string.format("[%d] Unexpectedly equipped: %s (condition reversed)", seq + 1, entry.name))
+                    log("debug",
+                        string.format("[%d] Unexpectedly equipped: %s (condition reversed)", seq + 1, entry.name))
                     return false
                 end
 

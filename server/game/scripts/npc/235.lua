@@ -4,7 +4,7 @@ local enum = require('lib.enum')
 
 local function bokgeon_sell_doll(me, npc)
     local q = me:quest(quest.QUEST_SELL_DOLL)
-    
+
     if q == nil then
         if not me:has_items('청자다람쥐인형', 1) then
             me:dialog(npc, '아흠.. 어디 재미있는 장난감이 없나..', { prev = false, next = false })
@@ -55,20 +55,21 @@ local function bokgeon_sell_doll(me, npc)
         q:complete()
         return
     end
-    
+
     me:dialog(npc, '다른 재미있는 장난감이 있으면 제게 가져와 주세요. 제가 다 사드릴게요.', { prev = false, next = false })
 end
 
 local function bokgeon_find_toys(me, npc)
     local q = me:quest(quest.QUEST_FIND_TOYS)
-    
+
     if q == nil then
         ::NPC_235_0020::
         local btn = me:dialog(npc, '아... 대체 어디 있지? 어디서 잃어버렸더라? 뒤적뒤적...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local sel, btn = me:list(npc, '어, 누구세요? 제게 하실 말씀이라도 있나요?', { '난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니?', '아니, 아무것도 아니야.' }, { prev = true })
+        local sel, btn = me:list(npc, '어, 누구세요? 제게 하실 말씀이라도 있나요?', { '난 그냥 지나가는 사람인데. 뭘 그리 찾고 있니?', '아니, 아무것도 아니야.' },
+            { prev = true })
         if btn == DIALOG_RESULT.PREV then
             goto NPC_235_0020
         end
@@ -81,7 +82,8 @@ local function bokgeon_find_toys(me, npc)
             return
         end
         ::NPC_235_0019::
-        sel, btn = me:list(npc, '귀한 장난감들인데, 이번에 또 잃어버리면 아버님이 더 이상 사주시지 않겠대요. 이를 어쩌지...', { '장난감은 내가 찾아 줄 테니 여기서 기다리렴.', '그래, 열심히 찾으렴' }, { prev = true })
+        sel, btn = me:list(npc, '귀한 장난감들인데, 이번에 또 잃어버리면 아버님이 더 이상 사주시지 않겠대요. 이를 어쩌지...',
+            { '장난감은 내가 찾아 줄 테니 여기서 기다리렴.', '그래, 열심히 찾으렴' }, { prev = true })
         if btn == DIALOG_RESULT.PREV then
             goto NPC_235_0018
         end
@@ -89,7 +91,8 @@ local function bokgeon_find_toys(me, npc)
             return
         end
         ::NPC_235_0021::
-        btn = me:dialog(npc, '어, 정말요? 고맙습니다! 찾아주시면 저도 뭔가 꼭 보답을 할게요.\n\n잃어버린 장난감은 상아주사위, 오색폭죽, 청옥팽이예요.', { prev = true, next = true })
+        btn = me:dialog(npc, '어, 정말요? 고맙습니다! 찾아주시면 저도 뭔가 꼭 보답을 할게요.\n\n잃어버린 장난감은 상아주사위, 오색폭죽, 청옥팽이예요.',
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -97,7 +100,8 @@ local function bokgeon_find_toys(me, npc)
             goto NPC_235_0019
         end
         ::NPC_235_0022::
-        btn = me:dialog(npc, '상아주사위는 여기 복건성 어딘가에서 잃어버렸고......\n\n오색폭죽은 상해 어딘가에서 잃어버렸고......\n\n청옥팽이는 강서성에서 잃어버렸죠.', { prev = true, next = true })
+        btn = me:dialog(npc, '상아주사위는 여기 복건성 어딘가에서 잃어버렸고......\n\n오색폭죽은 상해 어딘가에서 잃어버렸고......\n\n청옥팽이는 강서성에서 잃어버렸죠.',
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -116,20 +120,21 @@ local function bokgeon_find_toys(me, npc)
         me:push_achievement(37, '복건성태자의 잃어버린 장난감을 찾아주자.', 7, 1)
         return
     end
-    
+
     if q:completed() then
         me:dialog(npc, '그 때는 정말 감사했습니다.', { prev = false, next = false })
         return
     end
-    
-    local materials = {['상아주사위'] = 1, ['오색폭죽'] = 1, ['청옥팽이'] = 1}
+
+    local materials = { ['상아주사위'] = 1, ['오색폭죽'] = 1, ['청옥팽이'] = 1 }
     if me:has_items(materials) then
         ::NPC_235_0030::
         local btn = me:dialog(npc, '우와! 상아주사위, 오색폭죽, 청옥팽이를 모두 찾아 주셨군요! 대단해요! 정말 고맙습니다.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, '찾느라 힘드셨죠? 이건 팔과탕이라는 요리인데, 맛도 좋고 약으로도 쓰이는 우리 전통요리랍니다. 한 번 드셔보세요.', { prev = false, next = true })
+        btn = me:dialog(npc, '찾느라 힘드셨죠? 이건 팔과탕이라는 요리인데, 맛도 좋고 약으로도 쓰이는 우리 전통요리랍니다. 한 번 드셔보세요.',
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -158,7 +163,8 @@ return {
         local q = me:quest(quest.QUEST_PAMASPIRI)
         if q and q:step() == 2 and not q:completed() then
             ::NPC_235_0001::
-            local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." }, { prev = false })
+            local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." },
+                { prev = false })
             if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end

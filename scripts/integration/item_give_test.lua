@@ -260,9 +260,10 @@ test_suite {
 
             progress(bot1, "CAST 노획 (recover money)")
             bot1:mp(1000)
-            bot1:request(resp.update_internal, protocol.spell_cast("NORMAL", 1, "", mob.oid, mob.position), function(packet)
-                return packet.ch_money == 1000
-            end)
+            bot1:request(resp.update_internal, protocol.spell_cast("NORMAL", 1, "", mob.oid, mob.position),
+                function(packet)
+                    return packet.ch_money == 1000
+                end)
             if bot1:money() ~= 1000 then
                 progress(bot1, "FAILED: money not recovered")
                 return false
@@ -328,9 +329,10 @@ test_suite {
 
             progress(bot1, "CAST 노획 (recover what the mob held)")
             bot1:mp(1000)
-            bot1:request(resp.update_internal, protocol.spell_cast("NORMAL", loot_slot, "", mob.oid, mob.position), function(packet)
-                return packet.ch_money == 1000
-            end)
+            bot1:request(resp.update_internal, protocol.spell_cast("NORMAL", loot_slot, "", mob.oid, mob.position),
+                function(packet)
+                    return packet.ch_money == 1000
+                end)
             if bot1:money() ~= 1000 then
                 progress(bot1, "FAILED: money the destroyed mob held was not dropped")
                 return false

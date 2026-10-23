@@ -265,7 +265,9 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
         if clan:id() == owner_clan_id then
             me:map(map_eye, math.random(12, 16), math.random(22, 31))
         elseif clan:is_allied(owner_clan_id) then
-            local button = me:dialog(npc_obj, string.format('자네는 이 성을 차지하고 있는 [%s] 문파의 동맹 문파원 자격으로 %s에 입장할 수 있다네. 자 그럼 들여보내 주겠네.', owner_name, castle_name), { prev = false, next = true })
+            local button = me:dialog(npc_obj,
+                string.format('자네는 이 성을 차지하고 있는 [%s] 문파의 동맹 문파원 자격으로 %s에 입장할 수 있다네. 자 그럼 들여보내 주겠네.', owner_name,
+                    castle_name), { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return true
             end
@@ -276,12 +278,14 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
             end
             me:map(map_eye, math.random(12, 16), math.random(22, 25))
         else
-            local button = me:dialog(npc_obj, '성을 점령중인 문파나 그 동맹문파만 입장이 가능합니다.\n\n만약 입장료를 내고서라도 입장하시겠다면, 입장을 시켜드릴 수 있습니다.', { prev = false, next = true })
+            local button = me:dialog(npc_obj, '성을 점령중인 문파나 그 동맹문파만 입장이 가능합니다.\n\n만약 입장료를 내고서라도 입장하시겠다면, 입장을 시켜드릴 수 있습니다.',
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return true
             end
 
-            local selected = me:pursuit(npc_obj, string.format('[%s] 입장료 20만전을 [%s]문파에게 지불합니다. 입장하시겠습니까?', castle_name, owner_name), { '입장합니다.', '아니오.' })
+            local selected = me:pursuit(npc_obj,
+                string.format('[%s] 입장료 20만전을 [%s]문파에게 지불합니다. 입장하시겠습니까?', castle_name, owner_name), { '입장합니다.', '아니오.' })
             if selected ~= 1 then
                 return true
             end
@@ -302,7 +306,8 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
                 return true
             end
 
-            me:map(map_inner, math.random(74, 84), math.random(117, 130), { clan_fee = { clan = owner_clan, money = ENTRANCE_FEE, clan_money = ENTRANCE_FEE_TO_OWNER } })
+            me:map(map_inner, math.random(74, 84), math.random(117, 130),
+                { clan_fee = { clan = owner_clan, money = ENTRANCE_FEE, clan_money = ENTRANCE_FEE_TO_OWNER } })
         end
     end
     return true

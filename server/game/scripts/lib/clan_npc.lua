@@ -42,10 +42,11 @@ local function find_target_clan(me, npc, prompt)
     return found, target_clan
 end
 
-local function request_diplomacy(me, npc, found, target_clan, wait_message, confirm_message, success_message, fail_message, action)
+local function request_diplomacy(me, npc, found, target_clan, wait_message, confirm_message, success_message,
+                                 fail_message, action)
     me:dialog(npc, wait_message, { immediate = true })
 
-    local yes_or_no = found:menu(npc, confirm_message, {'네', '아니오'})
+    local yes_or_no = found:menu(npc, confirm_message, { '네', '아니오' })
     if yes_or_no ~= 1 then
         me:dialog(npc, fail_message)
         return
@@ -67,7 +68,7 @@ local function request_diplomacy(me, npc, found, target_clan, wait_message, conf
 end
 
 local function clan_registration(me, npc)
-    local yes_or_no = me:list(npc, '당신이 문파를 만들고 싶다면 잘 찾아오셨소.\n문파를 세울 준비가 되셨소?', {'예, 준비됐습니다.', '그런거 없습니다. 포기할게요 ㅜ.ㅜ'})
+    local yes_or_no = me:list(npc, '당신이 문파를 만들고 싶다면 잘 찾아오셨소.\n문파를 세울 준비가 되셨소?', { '예, 준비됐습니다.', '그런거 없습니다. 포기할게요 ㅜ.ㅜ' })
     if yes_or_no ~= 1 then
         me:dialog(npc, '하하! 하나의 문파를 이끈다는 것이 그리 쉬운 일인 줄 알았소? 좀 더 준비를 하고 오시오.')
         return
@@ -83,7 +84,7 @@ local function clan_registration(me, npc)
 end
 
 local function clan_info(me, npc, clan)
-    local selected = me:list(npc, '어떤 정보를 원하십니까?', {'성문파 현황', '문파 구성원', '동맹 현황', '전쟁 현황'})
+    local selected = me:list(npc, '어떤 정보를 원하십니까?', { '성문파 현황', '문파 구성원', '동맹 현황', '전쟁 현황' })
     if selected == nil then
         return
     end
@@ -132,7 +133,7 @@ local function clan_info(me, npc, clan)
 end
 
 local function clan_operation(me, npc, clan)
-    local selected = me:list(npc, '어떤 문파 운영을 하시겠습니까?', {'문파칭호 부여', '문원 등용', '문원 축출', '직책 변경', '문파 공지', '문파 해체'})
+    local selected = me:list(npc, '어떤 문파 운영을 하시겠습니까?', { '문파칭호 부여', '문원 등용', '문원 축출', '직책 변경', '문파 공지', '문파 해체' })
     if selected == nil then
         return
     end
@@ -167,7 +168,8 @@ local function clan_operation(me, npc, clan)
 
         me:dialog(npc, string.format('%s에게 등용 요청서를 보냈으니, 잠시만 기다려보시오.', found:name()), { immediate = true })
 
-        local yes_or_no = found:menu(npc, string.format('%s 문파에서 문파가입 요청이 들어왔습니다. 가입하시겠습니까? ', clan:name()), {'네, 가입하겠습니다.', '아니오, 안할래요.'})
+        local yes_or_no = found:menu(npc, string.format('%s 문파에서 문파가입 요청이 들어왔습니다. 가입하시겠습니까? ', clan:name()),
+            { '네, 가입하겠습니다.', '아니오, 안할래요.' })
         if yes_or_no == 1 then
             clan = me:clan()
             if clan == nil then
@@ -221,7 +223,8 @@ local function clan_operation(me, npc, clan)
             me:dialog(npc, error)
         end
     elseif selected == 6 then
-        local yes_or_no = me:list(npc, string.format('%s 문파를 정말로 해체하시겠소? 되돌릴 수 없소.', clan:name()), {'예, 해체하겠습니다.', '아니오'})
+        local yes_or_no = me:list(npc, string.format('%s 문파를 정말로 해체하시겠소? 되돌릴 수 없소.', clan:name()),
+            { '예, 해체하겠습니다.', '아니오' })
         if yes_or_no ~= 1 then
             return
         end
@@ -236,7 +239,7 @@ local function clan_operation(me, npc, clan)
 end
 
 local function clan_diplomacy(me, npc, clan)
-    local selected = me:list(npc, '행하실 외교를 선택하십시요.', {'동맹 신청 ( 同盟 )', '동맹 파기 ( 同盟破棄 )', '선전포고 ( 宣戰布告 )', '종전 ( 終戰 )'})
+    local selected = me:list(npc, '행하실 외교를 선택하십시요.', { '동맹 신청 ( 同盟 )', '동맹 파기 ( 同盟破棄 )', '선전포고 ( 宣戰布告 )', '종전 ( 終戰 )' })
     if selected == nil then
         return
     end
@@ -306,7 +309,7 @@ local function clan_diplomacy(me, npc, clan)
 end
 
 local function clan_leave(me, npc, clan)
-    local yes_or_no = me:list(npc, '문파를 탈퇴하시겠소?', {'예, 탈퇴시켜 주십시오.', '아니오'})
+    local yes_or_no = me:list(npc, '문파를 탈퇴하시겠소?', { '예, 탈퇴시켜 주십시오.', '아니오' })
     if yes_or_no ~= 1 then
         return
     end
@@ -326,7 +329,7 @@ function M.on_click(me, npc)
         return
     end
 
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'문파 정보', '문파 운영', '외교', '문파 탈퇴'})
+    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '문파 정보', '문파 운영', '외교', '문파 탈퇴' })
     if selected == nil then
         return
     end

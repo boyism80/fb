@@ -32,7 +32,8 @@ function M.upgrade(me)
 
     local from_name = JAR_NAMES[count]
     local to_name = JAR_NAMES[count + 1]
-    return me:exchange({ ['item'] = { [from_name] = 1 } }, { ['item'] = { [to_name] = 1 } }, ITEM_DELETE_TYPE.REDUCE) == enum.exchange_result.OK
+    return me:exchange({ ['item'] = { [from_name] = 1 } }, { ['item'] = { [to_name] = 1 } }, ITEM_DELETE_TYPE.REDUCE) ==
+        enum.exchange_result.OK
 end
 
 -- Called from butterfly mob on_mob_damaged (before the mob is removed on lethal hit).

@@ -2,8 +2,8 @@ local lib      = require("integration.lib")
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
-local MESSAGE_ITEM_FULL                  = "더 이상 가질 수 없습니다."
-local MESSAGE_ITEM_DEATH_PENALTY_WARMTH  = "죽은 자의 온기가 남아있습니다."
+local MESSAGE_ITEM_FULL                 = "더 이상 가질 수 없습니다."
+local MESSAGE_ITEM_DEATH_PENALTY_WARMTH = "죽은 자의 온기가 남아있습니다."
 
 local DEFAULT_INTERVAL = 100
 

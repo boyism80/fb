@@ -2,7 +2,7 @@
 
 return {
     on_activated = function(me, item)
-    	local maps = {'신부여성주막', '신부여서쪽주막', '신부여서쪽주막2'}
+        local maps = { '신부여성주막', '신부여서쪽주막', '신부여서쪽주막2' }
 
         math.randomseed(seed())
         local i = math.random(1, #maps)

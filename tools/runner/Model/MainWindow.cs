@@ -136,27 +136,53 @@ namespace Runner.Model
             {
                 var model = JsonConvert.DeserializeObject<MainWindow>(File.ReadAllText(path));
                 if (model.Gateway.ClientVersions == null || model.Gateway.ClientVersions.Count == 0)
+                {
                     model.Gateway.ClientVersions = new List<ushort> { 550, 565, 651 };
+                }
+
                 if (model.Gateway.ClientNation == 0)
+                {
                     model.Gateway.ClientNation = 215;
+                }
+
                 if (model.Marketplace.Port == 0)
+                {
                     model.Marketplace.Port = 3010;
+                }
+
                 if (model.Matchmaking.Port == 0)
+                {
                     model.Matchmaking.Port = 3340;
+                }
+
                 if (model.AdminTool.Port == 0)
+                {
                     model.AdminTool.Port = 30210;
+                }
+
                 if (model.Discord == null)
+                {
                     model.Discord = new DiscordSetting();
+                }
+
                 if (model.Discord.BotToken == null)
+                {
                     model.Discord.BotToken = string.Empty;
+                }
+
                 if (model.Discord.ChannelId == null)
+                {
                     model.Discord.ChannelId = string.Empty;
+                }
+
                 if (model.Game != null)
                 {
                     foreach (var game in model.Game)
                     {
                         if (string.IsNullOrWhiteSpace(game.Role))
+                        {
                             game.Role = "home";
+                        }
                     }
                 }
                 model.Window = window;

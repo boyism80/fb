@@ -128,7 +128,9 @@ namespace Http.Service
         public async Task SetBatchAsync(uint world, Dictionary<object[], T> items, TimeSpan? ttl = null)
         {
             if (items == null || items.Count == 0)
+            {
                 return;
+            }
 
             try
             {
@@ -183,11 +185,15 @@ namespace Http.Service
         public async Task DeleteBatchAsync(uint world, IEnumerable<object[]> parametersList)
         {
             if (parametersList == null)
+            {
                 return;
+            }
 
             var parametersArray = parametersList.ToList();
             if (parametersArray.Count == 0)
+            {
                 return;
+            }
 
             try
             {

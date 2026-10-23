@@ -21,7 +21,9 @@ return {
         end
 
         ::ON_ACTIVATED_6_0000::
-        btn = me:dialog(model, '<임무>\n 잠깐 퀴즈~!!\n\n<내용>\n 레벨을 올리시느라 힘드셨죠? 그럼 잠시\n쉬어가는 의미에서.. 퀴즈를 풀어보는 것이\n어떨까요?\n\n<보상>\n 초심자의반지, 경험치 400 (레벨5미만)', { prev = true, next = true })
+        btn = me:dialog(model,
+            '<임무>\n 잠깐 퀴즈~!!\n\n<내용>\n 레벨을 올리시느라 힘드셨죠? 그럼 잠시\n쉬어가는 의미에서.. 퀴즈를 풀어보는 것이\n어떨까요?\n\n<보상>\n 초심자의반지, 경험치 400 (레벨5미만)',
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -37,7 +39,8 @@ return {
             goto ON_ACTIVATED_6_0000
         end
 
-        local sel1, list_btn = me:list(model, '그럼, 첫번째 문제입니다.!!\n\n<문제>\n 게임 내 게시판의 단축키는?', { '1) i', '2) o', '3) b' }, { prev = false })
+        local sel1, list_btn = me:list(model, '그럼, 첫번째 문제입니다.!!\n\n<문제>\n 게임 내 게시판의 단축키는?', { '1) i', '2) o', '3) b' },
+            { prev = false })
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -45,9 +48,11 @@ return {
             quiz_wrong_and_exit(me, model, '틀렸습니다!! \'i\'는\n소지품창의 단축키, \'o\'는\n문을 열 때의 단축키 입니다.')
             return
         end
-        me:dialog(model, '잘 하셨습니다!! \'i\'는\n소지품창의 단축키, \'o\'는\n문을 열 때의 단축키, \'b\'가\n게시판을 볼 때의 단축키이죠..', { prev = false, next = true })
+        me:dialog(model, '잘 하셨습니다!! \'i\'는\n소지품창의 단축키, \'o\'는\n문을 열 때의 단축키, \'b\'가\n게시판을 볼 때의 단축키이죠..',
+            { prev = false, next = true })
 
-        local sel2, list_btn2 = me:list(model, '그럼, 두번째 문제!!\n\n<문제>\n 다음 중 바람의나라 운영자의 아이디는?', { '1) 주몽', '2) 주몽지엠', '3) 주몽GM' }, { prev = false })
+        local sel2, list_btn2 = me:list(model, '그럼, 두번째 문제!!\n\n<문제>\n 다음 중 바람의나라 운영자의 아이디는?',
+            { '1) 주몽', '2) 주몽지엠', '3) 주몽GM' }, { prev = false })
         if list_btn2 == DIALOG_RESULT.QUIT then
             return
         end
@@ -57,7 +62,8 @@ return {
         end
         me:dialog(model, '맞추셨습니다!! 바람의나라\n운영자는 아이디 뒤에 영문자\n\'GM\'이 붙습니다.', { prev = false, next = true })
 
-        local sel3, list_btn3 = me:list(model, '세번째 문제~!\n\n<문제>\n 바람의나라 운영자가 비밀번호를\n물었을 경우 해야 할 행동을?', { '1) 친절하게 알려준다', '2) 반만 알려준다', '3) 알려주지 않는다' }, { prev = false })
+        local sel3, list_btn3 = me:list(model, '세번째 문제~!\n\n<문제>\n 바람의나라 운영자가 비밀번호를\n물었을 경우 해야 할 행동을?',
+            { '1) 친절하게 알려준다', '2) 반만 알려준다', '3) 알려주지 않는다' }, { prev = false })
         if list_btn3 == DIALOG_RESULT.QUIT then
             return
         end
@@ -67,7 +73,8 @@ return {
         end
         me:dialog(model, '맞추셨습니다!! 바람의나라\n운영자는 절대로 비밀번호를\n묻지 않습니다. 따라서\n절대로!! 알려주면 안됩니다.', { prev = false, next = true })
 
-        local sel4, list_btn4 = me:list(model, '드디어 마지막 문제!!\n\n<문제>\n 바람의나라에서 유용한 도움말을\n볼 수 있는 단축키는?', { '1) F1', '2) F2', '3) F10' }, { prev = false })
+        local sel4, list_btn4 = me:list(model, '드디어 마지막 문제!!\n\n<문제>\n 바람의나라에서 유용한 도움말을\n볼 수 있는 단축키는?',
+            { '1) F1', '2) F2', '3) F10' }, { prev = false })
         if list_btn4 == DIALOG_RESULT.QUIT then
             return
         end

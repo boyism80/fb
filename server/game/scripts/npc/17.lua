@@ -176,7 +176,8 @@ local function run_appraise_dragon_scale(me, npc)
         reward
     )
     if code == enum.exchange_result.LACK_COST then
-        me:dialog(npc, '아니! 이보게.. 나한테 거짓말을 해도 되는가? ' .. name_with(ITEM_DRAGON_SCALE, '이', '가') .. ' 없지 않은가. 썩 물러 가게!!!', { prev = false, next = false })
+        me:dialog(npc, '아니! 이보게.. 나한테 거짓말을 해도 되는가? ' .. name_with(ITEM_DRAGON_SCALE, '이', '가') .. ' 없지 않은가. 썩 물러 가게!!!',
+            { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then

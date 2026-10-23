@@ -50,15 +50,19 @@ local function run_chuseok(me, npc)
     end
 
     if sel == 1 then
-        btn = me:dialog(npc, "추석(秋夕)은 가을의 시작을 알리며, 햇과일과 햇곡식이 풍성하여 넉넉하고 흥겨운 날이에요. '한가위'라고도 하는데요, '한'은 크다는 뜻이고, '가위'는 가운데라는 뜻이에요.", { prev = false, next = true })
+        btn = me:dialog(npc,
+            "추석(秋夕)은 가을의 시작을 알리며, 햇과일과 햇곡식이 풍성하여 넉넉하고 흥겨운 날이에요. '한가위'라고도 하는데요, '한'은 크다는 뜻이고, '가위'는 가운데라는 뜻이에요.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "추석무렵은 일년중 가장 좋은 시절이고 만물이 풍성한 때여서, 예로부터 '더도 말고 덜도 말고 늘 가윗날만 같아라.'라는 말도 있죠", { prev = false, next = true })
+        btn = me:dialog(npc, "추석무렵은 일년중 가장 좋은 시절이고 만물이 풍성한 때여서, 예로부터 '더도 말고 덜도 말고 늘 가윗날만 같아라.'라는 말도 있죠",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, "추석에는 송편을 만들어 먹어야죠! 유두집의 제 동생 리향에게 송편재료가 있을꺼에요. 받아오시면 제가 송편을 만들어드릴께요~", { prev = false, next = false })
+        me:dialog(npc, "추석에는 송편을 만들어 먹어야죠! 유두집의 제 동생 리향에게 송편재료가 있을꺼에요. 받아오시면 제가 송편을 만들어드릴께요~",
+            { prev = false, next = false })
         return
     end
 
@@ -105,7 +109,8 @@ local function run_junghwa(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    button = me:dialog(npc, "작년 추석에 송편 만들다가 냄비를 떨어뜨려서 냄비가 찌그러졌는데.. 잘됐네요! 나중에 선릉이한테 냄비 새로 만들어 달래야지~", { prev = false, next = true })
+    button = me:dialog(npc, "작년 추석에 송편 만들다가 냄비를 떨어뜨려서 냄비가 찌그러졌는데.. 잘됐네요! 나중에 선릉이한테 냄비 새로 만들어 달래야지~",
+        { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end

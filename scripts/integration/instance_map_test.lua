@@ -13,8 +13,8 @@ local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
 local MAP          = "낙랑의방"
-local POS          = {6, 6}
-local DROP_POS     = {7, 6}
+local POS          = { 6, 6 }
+local DROP_POS     = { 7, 6 }
 local MARKER_S     = "목도"
 local MARKER_C     = "목검"
 local MARKER_SHARE = "양첨목봉"
@@ -142,12 +142,12 @@ end
 local function cast_by_name(caster, target_name, spell_name)
     progress(caster, string.format("CAST %s -> %s", spell_name, target_name))
     caster:clear_all_spells()
-    caster:learn_spells({spell_name})
+    caster:learn_spells({ spell_name })
     caster:set_current_hp_mp(10000, 10000)
     local expected_mp = caster:mp() - 30
     local result = caster:request(
         resp.update_internal,
-        protocol.spell_cast("INPUT", 0, target_name, 0, {0, 0}),
+        protocol.spell_cast("INPUT", 0, target_name, 0, { 0, 0 }),
         function(packet)
             return packet.ch_mp == expected_mp
         end,

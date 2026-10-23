@@ -27,13 +27,15 @@ return {
 
         if step == 3 then
             ::NPC_277_0001::
-            local button = me:dialog(npc, string.format("%s님, 안녕하세요?\n저는 기본적인 사냥방법을 가르쳐 드릴 사냥도우미입니다.", me:name()), { prev = false, next = true })
+            local button = me:dialog(npc, string.format("%s님, 안녕하세요?\n저는 기본적인 사냥방법을 가르쳐 드릴 사냥도우미입니다.", me:name()),
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
             ::NPC_277_0010::
-            button = me:dialog(npc, "사냥에는 일반 공격, 스킬 공격 등 여러가지 방법이 있습니다.\n하지만 지금은 가장 기본적인\n공격에 대해서 알려드리도록 하겠습니다.", { prev = true, next = true })
+            button = me:dialog(npc, "사냥에는 일반 공격, 스킬 공격 등 여러가지 방법이 있습니다.\n하지만 지금은 가장 기본적인\n공격에 대해서 알려드리도록 하겠습니다.",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -42,7 +44,8 @@ return {
             end
 
             ::NPC_277_0011::
-            button = me:dialog(npc, "공격을 하기 위해서 먼저\n몬스터 앞으로 다가가 [a]키를\n누르시거나 혹은 스페이스바를 누르시면 공격을 할 수 있습니다..", { prev = true, next = true })
+            button = me:dialog(npc, "공격을 하기 위해서 먼저\n몬스터 앞으로 다가가 [a]키를\n누르시거나 혹은 스페이스바를 누르시면 공격을 할 수 있습니다..",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -90,11 +93,13 @@ return {
         q:step(6)
         me:exp(me:exp() + 200)
 
-        local btn = me:dialog(npc, "갑옷은 방어력을 낮춰주는 역할을 하며, 방어력이 낮을수록 몬스터에게 입는 데미지가 줄어들게 됩니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "갑옷은 방어력을 낮춰주는 역할을 하며, 방어력이 낮을수록 몬스터에게 입는 데미지가 줄어들게 됩니다.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local btn = me:dialog(npc, "바람의나라에서는 다양한 갑옷이 준비되어 있으니, 모험을 통하여 더 강한 갑옷을 사용하실 수 있습니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "바람의나라에서는 다양한 갑옷이 준비되어 있으니, 모험을 통하여 더 강한 갑옷을 사용하실 수 있습니다.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

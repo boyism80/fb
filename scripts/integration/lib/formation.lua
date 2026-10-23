@@ -10,10 +10,10 @@ local DEFAULT_Y   = 6
 --   direction 3: causer + target at (6, 12), (7, 12) — bots 5, 6
 --   direction 4: causer + target at (13, 12), (14, 12) — bots 3, 4
 local SKILL_PARALLEL_LAYOUT = {
-    { bots = {0}, positions = {{6, 6}} },
-    { bots = {1, 2}, positions = {{13, 6}, {14, 6}} },
-    { bots = {5, 6}, positions = {{6, 12}, {7, 12}} },
-    { bots = {3, 4}, positions = {{13, 12}, {14, 12}} },
+    { bots = { 0 }, positions = { { 6, 6 } } },
+    { bots = { 1, 2 }, positions = { { 13, 6 }, { 14, 6 } } },
+    { bots = { 5, 6 }, positions = { { 6, 12 }, { 7, 12 } } },
+    { bots = { 3, 4 }, positions = { { 13, 12 }, { 14, 12 } } },
 }
 
 M.SKILL_PARALLEL_BOT_COUNT = 7

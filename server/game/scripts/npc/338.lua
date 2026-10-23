@@ -3,7 +3,7 @@ local server = require('lib.server')
 
 return {
     on_click = function(me, npc)
-        local sel, btn = me:list(npc, "귀환 하시겠습니까?", {"네. 나가고 싶어요!", "아니요. 아직 안나갈래요!"}, { prev = false })
+        local sel, btn = me:list(npc, "귀환 하시겠습니까?", { "네. 나가고 싶어요!", "아니요. 아직 안나갈래요!" }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

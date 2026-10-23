@@ -199,7 +199,9 @@ namespace Http.Service
             foreach (var (key, queue) in _writeQueues)
             {
                 if (key.World != world)
+                {
                     continue;
+                }
 
                 var batch = new List<BulletinWriteRequest>();
                 while (batch.Count < maxBatchSize && queue.TryDequeue(out var request))
@@ -207,7 +209,9 @@ namespace Http.Service
                     batch.Add(request);
                 }
                 if (batch.Count > 0)
+                {
                     writes[key.Section] = batch;
+                }
             }
 
             return writes;
@@ -249,7 +253,9 @@ namespace Http.Service
                 {
                     var foundUserId = await dbContext.Character.GetCharacterId(world, searchQuery);
                     if (foundUserId.HasValue)
+                    {
                         userId = foundUserId.Value;
+                    }
                 }
 
                 var sql = @"
@@ -267,15 +273,25 @@ namespace Http.Service
 
                 var conditions = new List<string>();
                 if (searchField is "all" or "title")
+                {
                     conditions.Add("b.title LIKE @search");
+                }
+
                 if (searchField is "all" or "contents")
+                {
                     conditions.Add("b.contents LIKE @search");
+                }
+
                 if (searchField is "author" or "all")
                 {
                     if (userId.HasValue)
+                    {
                         conditions.Add("b.user = @userId");
+                    }
                     else if (searchField == "author")
+                    {
                         conditions.Add("1 = 0");
+                    }
                 }
 
                 sql += string.Join(" OR ", conditions);
@@ -284,7 +300,9 @@ namespace Http.Service
                     LIMIT 20";
 
                 if (userId.HasValue)
+                {
                     dynamicParams.Add("userId", userId.Value);
+                }
 
                 var articles = await conn.QueryAsync<Bulletin>(sql, dynamicParams);
                 articleList = articles.ToList();
@@ -322,7 +340,9 @@ namespace Http.Service
                 });
 
             if (article == null)
+            {
                 return (null, false);
+            }
 
             var nextFlag = nextFlagFromLoader ?? await LoadNextFlagAsync(world, section, id);
             return (article, nextFlag);
@@ -359,7 +379,9 @@ namespace Http.Service
 
             var dbArticle = await reader.ReadFirstOrDefaultAsync<Bulletin>();
             if (dbArticle == null)
+            {
                 return (null, false);
+            }
 
             dbArticle.UserName = await dbContext.Character.GetName(world, dbArticle.User) ?? string.Empty;
             var next = await reader.ReadFirstAsync<bool>();

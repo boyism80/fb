@@ -159,7 +159,9 @@ namespace Http.Reepository.Cache
         public async Task<IReadOnlyDictionary<RedisValue, TModel>> TryGetAllAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)
+            {
                 return new Dictionary<RedisValue, TModel>();
+            }
 
             return await redis.Connection.JsonHashGetAllAsync<TModel>(redisKey);
         }
@@ -167,7 +169,9 @@ namespace Http.Reepository.Cache
         public async Task<bool> KeyExistsAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)
+            {
                 return false;
+            }
 
             return await redis.Connection.KeyExistsAsync(redisKey);
         }
@@ -175,7 +179,9 @@ namespace Http.Reepository.Cache
         public async Task<RedisCacheLookupStatus> LookupHashKeyAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)
+            {
                 return RedisCacheLookupStatus.Miss;
+            }
 
             var result = await redis.EvalAsync(
                 LookupHashKeyScript,
@@ -187,11 +193,15 @@ namespace Http.Reepository.Cache
         public async Task<bool> WriteBackAsync(Service.Redis redis, RedisKey cacheKey, IEnumerable<TModel> values)
         {
             if (redis == null)
+            {
                 return false;
+            }
 
             var dataGroup = values.ToDictionary(x => x.GetRedisField(), x => x);
             if (dataGroup.Count == 0)
+            {
                 return false;
+            }
 
             var scriptValues = new List<RedisValue>
             {
@@ -215,7 +225,9 @@ namespace Http.Reepository.Cache
         public async Task SetFieldAsync(Service.Redis redis, RedisKey cacheKey, RedisValue field, TModel value)
         {
             if (redis == null)
+            {
                 return;
+            }
 
             await redis.EvalAsync(
                 SetHashFieldScript,
@@ -226,7 +238,9 @@ namespace Http.Reepository.Cache
         public async Task SetFieldsAsync(Service.Redis redis, RedisKey cacheKey, IReadOnlyDictionary<RedisValue, TModel> values)
         {
             if (redis == null || values.Count == 0)
+            {
                 return;
+            }
 
             var scriptValues = new List<RedisValue> { values.Count };
             foreach (var (field, val) in values)
@@ -248,7 +262,9 @@ namespace Http.Reepository.Cache
             IReadOnlyDictionary<RedisValue, TModel> values)
         {
             if (redis == null)
+            {
                 return;
+            }
 
             var scriptValues = new List<RedisValue> { removedFields.Count, values.Count };
             scriptValues.AddRange(removedFields);
@@ -267,7 +283,9 @@ namespace Http.Reepository.Cache
         public async Task RemoveFieldsPendingWriteBackAsync(Service.Redis redis, RedisKey cacheKey, IReadOnlyList<RedisValue> fields)
         {
             if (redis == null || fields == null || fields.Count == 0)
+            {
                 return;
+            }
 
             var scriptValues = new List<RedisValue> { fields.Count };
             scriptValues.AddRange(fields);
@@ -284,7 +302,9 @@ namespace Http.Reepository.Cache
         {
             var result = new List<(RedisKey, Dictionary<string, string>)>();
             if (redis == null || redisKeys.Count == 0)
+            {
                 return result;
+            }
 
             var keys = new RedisKey[redisKeys.Count + 1];
             for (var i = 0; i < redisKeys.Count; i++)
@@ -300,12 +320,16 @@ namespace Http.Reepository.Cache
             for (var i = 0; i < redisKeys.Count; i++)
             {
                 if (idx >= flat.Length)
+                {
                     break;
+                }
 
                 idx++;
                 var count = int.Parse(flat[idx++].ToString());
                 if (count == 0)
+                {
                     continue;
+                }
 
                 var localCache = new Dictionary<string, string>();
                 for (var c = 0; c < count; c++)

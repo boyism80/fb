@@ -48,10 +48,14 @@ public static class ItemTableExtension
         {
             var key = keys[i];
             if (key.Length < prefixLower.Length)
+            {
                 continue;
+            }
 
             if (key.Substring(0, prefixLower.Length) != prefixLower)
+            {
                 break;
+            }
 
             result.Add(sortedItems[key]);
         }

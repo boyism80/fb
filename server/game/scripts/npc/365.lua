@@ -26,24 +26,30 @@ return {
         end
 
         if sel == 1 then
-            btn = me:dialog(npc, "음력 4월 8일은 부처님이 세상에 오신날입니다. '석가탄신일', '석탄일', '불탄일', '관불절', '초파일' 등의 많은 명칭이 있습니다.", { prev = false, next = true })
+            btn = me:dialog(npc, "음력 4월 8일은 부처님이 세상에 오신날입니다. '석가탄신일', '석탄일', '불탄일', '관불절', '초파일' 등의 많은 명칭이 있습니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "우리나라의 모든 명절은 조상섬기기와 노은에 대한 공경이 큰 행사로 되어 있으며, 어린이를 위한 명절은 없었습니다. 그런데 4월 초파일은 어린이를 위한 잔칫날이 되었지요.", { prev = false, next = true })
+            btn = me:dialog(npc,
+                "우리나라의 모든 명절은 조상섬기기와 노은에 대한 공경이 큰 행사로 되어 있으며, 어린이를 위한 명절은 없었습니다. 그런데 4월 초파일은 어린이를 위한 잔칫날이 되었지요.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, "남자아이들에게는 피리, 오뚜기를, 여자아이들에게는 각시, 가마, 꽃등을 줬지요. 또 색등에 불을 켜서 높은 대를 세워 연등을 달고 색비단으로 기를 매달기도 했습니다.", { prev = false, next = false })
+            me:dialog(npc, "남자아이들에게는 피리, 오뚜기를, 여자아이들에게는 각시, 가마, 꽃등을 줬지요. 또 색등에 불을 켜서 높은 대를 세워 연등을 달고 색비단으로 기를 매달기도 했습니다.",
+                { prev = false, next = false })
             return
         end
 
         if sel == 2 then
-            btn = me:dialog(npc, "연등을 만들기 위해선 꿩의 꼬리깃털과 색비단이 필요합니다. 꿩은 지금쯤 세시밭에 나타날때가 된 것 같네요.", { prev = false, next = true })
+            btn = me:dialog(npc, "연등을 만들기 위해선 꿩의 꼬리깃털과 색비단이 필요합니다. 꿩은 지금쯤 세시밭에 나타날때가 된 것 같네요.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "조심하셔야 하는것은 불가에선 살생을 금하고 있기 때문에 꿩을 죽이시면 안된다는 것입니다. 깃털만 얻어오십시오.", { prev = false, next = true })
+            btn = me:dialog(npc, "조심하셔야 하는것은 불가에선 살생을 금하고 있기 때문에 꿩을 죽이시면 안된다는 것입니다. 깃털만 얻어오십시오.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

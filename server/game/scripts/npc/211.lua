@@ -41,7 +41,8 @@ return {
                 return
             end
             ::NPC_211_0012::
-            sel, btn = me:list(npc, '산소를 소탕하는데 힘을 빌려주시지 않겠습니까? 도와주시면 보상금을 드리도록 하겠습니다.', { '좋습니다! 제 힘이 도움이 된다면 기꺼이..', '죄송하지만 갈길이 멀답니다. 이만.' }, { prev = false })
+            sel, btn = me:list(npc, '산소를 소탕하는데 힘을 빌려주시지 않겠습니까? 도와주시면 보상금을 드리도록 하겠습니다.',
+                { '좋습니다! 제 힘이 도움이 된다면 기꺼이..', '죄송하지만 갈길이 멀답니다. 이만.' }, { prev = false })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_211_0011
             end
@@ -57,12 +58,14 @@ return {
                 return
             end
             ::NPC_211_0020::
-            btn = me:dialog(npc, '좋습니다! 이정도라면 충분합니다. 산소들은 종류마다 뿔을 가지고 있습니다. 이 뿔은 증표로 모아오시면 그에 따른 보상금을 드리겠습니다.', { prev = false, next = true })
+            btn = me:dialog(npc, '좋습니다! 이정도라면 충분합니다. 산소들은 종류마다 뿔을 가지고 있습니다. 이 뿔은 증표로 모아오시면 그에 따른 보상금을 드리겠습니다.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_211_0021::
-            btn = me:dialog(npc, '우선 약한 산소부터 시작하도록 하죠. 연청산소가 가장 약합니다. 연청산소의 뿔을 50개 모아와 주시기 바랍니다.', { prev = false, next = true })
+            btn = me:dialog(npc, '우선 약한 산소부터 시작하도록 하죠. 연청산소가 가장 약합니다. 연청산소의 뿔을 50개 모아와 주시기 바랍니다.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_211_0020
             end
@@ -93,7 +96,8 @@ return {
                 { ['money'] = t.money }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count), { prev = false, next = false })
+                me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count),
+                    { prev = false, next = false })
                 return
             elseif code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', { prev = false, next = false })
@@ -101,7 +105,9 @@ return {
             end
             q:step(step + 1)
             me:push_achievement(ACHIEVEMENT_OXYGEN, t.next_legend, 7, 1)
-            btn = me:dialog(npc, string.format('정말 수고하셨습니다. 보상금 여기있습니다. 다음은 %s입니다. %s의뿔 %d개를 모아와 주십시오.', t.next_name, t.next_name, t.next_count), { prev = false, next = true })
+            btn = me:dialog(npc,
+                string.format('정말 수고하셨습니다. 보상금 여기있습니다. 다음은 %s입니다. %s의뿔 %d개를 모아와 주십시오.', t.next_name, t.next_name,
+                    t.next_count), { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -123,7 +129,8 @@ return {
                 return
             end
             ::NPC_211_0031::
-            btn = me:dialog(npc, '상당히 강하신분 같은데 한가지 더 부탁드려도 될까요. 산소들의 우두머리인 산소괴왕은 저희가 건드릴 수가 없답니다.', { prev = true, next = true })
+            btn = me:dialog(npc, '상당히 강하신분 같은데 한가지 더 부탁드려도 될까요. 산소들의 우두머리인 산소괴왕은 저희가 건드릴 수가 없답니다.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_211_0030
             end
@@ -151,7 +158,9 @@ return {
             end
             q:step(7)
             me:push_achievement(ACHIEVEMENT_OXYGEN, '산소괴왕의 뿔을 구하자.', 7, 1)
-            me:dialog(npc, '산소괴왕은 다른 산소들과는 차원이 다릅니다. 더구나 잘 나타나지 않아 찾기가 더 힘들답니다.\n\n산소괴왕의뿔을 가져오시면 귀한 물건을 드리도록 하죠. 부디 조심하시기 바랍니다.', { prev = false, next = false })
+            me:dialog(npc,
+                '산소괴왕은 다른 산소들과는 차원이 다릅니다. 더구나 잘 나타나지 않아 찾기가 더 힘들답니다.\n\n산소괴왕의뿔을 가져오시면 귀한 물건을 드리도록 하죠. 부디 조심하시기 바랍니다.',
+                { prev = false, next = false })
             return
         end
 
@@ -177,7 +186,8 @@ return {
             end
             q:complete()
             me:push_achievement(ACHIEVEMENT_OXYGEN, '산소소탕 작전을 성공적으로 수행하였다.', 7, 1)
-            btn = me:dialog(npc, '정말 감사드립니다. 그 보답으로 이 보검을 드리죠. 황제에게 특별히 하사받은것인데 저에겐 과분한 물건인듯 하군요.', { prev = false, next = true })
+            btn = me:dialog(npc, '정말 감사드립니다. 그 보답으로 이 보검을 드리죠. 황제에게 특별히 하사받은것인데 저에겐 과분한 물건인듯 하군요.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

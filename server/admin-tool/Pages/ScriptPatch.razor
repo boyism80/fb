@@ -133,7 +133,9 @@
                             <ul class="script-patch-order-list">
                                 @for (var i = 0; i < orderedPaths.Count; i++)
                                 {
-                                    <li><span class="script-patch-order-index">@(i + 1).</span> @orderedPaths[i]</li>
+                                    <li>
+                                        <span class="script-patch-order-index">@(i + 1).</span> @orderedPaths[i]
+                                    </li>
                                 }
                             </ul>
                         }
@@ -504,4 +506,5 @@
         public string RelativePath { get; set; }
         public List<string> Dependencies { get; set; } = new();
     }
+
 }

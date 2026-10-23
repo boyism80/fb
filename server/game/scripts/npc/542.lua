@@ -32,7 +32,9 @@ return {
             end
 
             ::NPC_542_0002::
-            button = me:dialog(npc, "음.. 혈황검이란 것이 중국황실의 보물인 진황보검의 반쪽이란 말이지. 나야 원래 재물에 관심이 없으니 혈황검에 대한 소식을 듣게 되면 자네에게 알려주겠네.", { prev = true, next = true })
+            button = me:dialog(npc,
+                "음.. 혈황검이란 것이 중국황실의 보물인 진황보검의 반쪽이란 말이지. 나야 원래 재물에 관심이 없으니 혈황검에 대한 소식을 듣게 되면 자네에게 알려주겠네.",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -41,7 +43,8 @@ return {
             end
 
             ::NPC_542_0003::
-            button = me:dialog(npc, "그런데 내가 여행을 간 사이 강시들이 엄청나게 늘어나서 진시황릉을 차지하고 있더군. 이미 너무 많이 불어나서 나 혼자만으론 역부족이라네.", { prev = true, next = true })
+            button = me:dialog(npc, "그런데 내가 여행을 간 사이 강시들이 엄청나게 늘어나서 진시황릉을 차지하고 있더군. 이미 너무 많이 불어나서 나 혼자만으론 역부족이라네.",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -71,7 +74,8 @@ return {
             end
 
             ::NPC_542_0006::
-            button = me:dialog(npc, "잘듣게. 강시는 정말 강한 상대라네. 특히 강시의 왕인 만년원귀는 누구 혼자 물리칠 수 있는 상대가 아니야. 우선 자네의 강함을 시험하겠네.", { prev = true, next = true })
+            button = me:dialog(npc, "잘듣게. 강시는 정말 강한 상대라네. 특히 강시의 왕인 만년원귀는 누구 혼자 물리칠 수 있는 상대가 아니야. 우선 자네의 강함을 시험하겠네.",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -80,7 +84,8 @@ return {
             end
 
             ::NPC_542_0007::
-            button = me:dialog(npc, "강시들을 물리쳐 강시의손톱을 모아와주게. 100개의 강시의 손톱을 모아와보도록 하게나. 만년원귀를 바로 상대했다가 개죽음을 당할 수도 있지 않는가.", { prev = false, next = true })
+            button = me:dialog(npc, "강시들을 물리쳐 강시의손톱을 모아와주게. 100개의 강시의 손톱을 모아와보도록 하게나. 만년원귀를 바로 상대했다가 개죽음을 당할 수도 있지 않는가.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -95,7 +100,9 @@ return {
 
         if step == 7 then
             if not me:has_items("강시의손톱", 100) then
-                button = me:dialog(npc, "강시들을 물리쳐 강시의손톱을 모아와주게. 100개의 강시의 손톱을 모아와보도록 하게나. 만년원귀를 바로 상대했다가 개죽음을 당할 수도 있지 않는가.", { prev = false, next = false })
+                button = me:dialog(npc,
+                    "강시들을 물리쳐 강시의손톱을 모아와주게. 100개의 강시의 손톱을 모아와보도록 하게나. 만년원귀를 바로 상대했다가 개죽음을 당할 수도 있지 않는가.",
+                    { prev = false, next = false })
                 return
             end
 
@@ -111,7 +118,8 @@ return {
             q:step(8)
 
             ::NPC_542_0008::
-            button = me:dialog(npc, "수고했네. 해내리라 믿었다네. 그럼 이제 강시의 왕을 처치해야겠군. 자네도 짐작했을텐데. 강시는 우두머리를 제거하면 힘이 약해져 모두 흩어지지.", { prev = false, next = true })
+            button = me:dialog(npc, "수고했네. 해내리라 믿었다네. 그럼 이제 강시의 왕을 처치해야겠군. 자네도 짐작했을텐데. 강시는 우두머리를 제거하면 힘이 약해져 모두 흩어지지.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -142,7 +150,8 @@ return {
 
         if not me:has_items("만년원귀의손톱", 1) then
             ::NPC_542_0018::
-            button = me:dialog(npc, "수고했네. 해내리라 믿었다네. 그럼 이제 강시의 왕을 처치해야겠군. 자네도 짐작했을텐데. 강시는 우두머리를 제거하면 힘이 약해져 모두 흩어지지.", { prev = false, next = true })
+            button = me:dialog(npc, "수고했네. 해내리라 믿었다네. 그럼 이제 강시의 왕을 처치해야겠군. 자네도 짐작했을텐데. 강시는 우두머리를 제거하면 힘이 약해져 모두 흩어지지.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -174,7 +183,8 @@ return {
         q:step(9)
 
         ::NPC_542_0011::
-        button = me:dialog(npc, "해냈군! 드디어 만년원귀를.. 내 나이가 들어 상대를 하지 못하는게 한이었는데. 자네가 날 대신해서 만년원귀를 물리쳐줬군", { prev = false, next = true })
+        button = me:dialog(npc, "해냈군! 드디어 만년원귀를.. 내 나이가 들어 상대를 하지 못하는게 한이었는데. 자네가 날 대신해서 만년원귀를 물리쳐줬군",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

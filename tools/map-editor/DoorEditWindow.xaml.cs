@@ -73,7 +73,9 @@ namespace MapEditor
                 var door = doors.FirstOrDefault(d => cell.X >= d.X && cell.X < d.X + d.Width);
                 var pair = door == null ? null : editor.DoorTable.FindPair(door.Model.Pairs[cell.X - door.X]);
                 if (pair != null)
+                {
                     cell.Partner = door.Opened ? pair.Close : pair.Open;
+                }
             }
 
             _existing = doors.Count == 1 && doors[0].X == x && doors[0].Width == width ? doors[0].Model : null;
@@ -97,12 +99,20 @@ namespace MapEditor
 
             Columns.ItemsSource = _cells;
             if (closed)
+            {
                 CurrentClosed.IsChecked = true;
+            }
             else
+            {
                 CurrentOpened.IsChecked = true;
+            }
+
             _original = doors.Count == 0 ? new List<(int, int)>() : _cells.Select(c => (c.OpenId, c.CloseId)).ToList();
             foreach (var cell in _cells)
+            {
                 cell.PropertyChanged += (s, e) => Refresh();
+            }
+
             Refresh();
         }
 
@@ -111,10 +121,15 @@ namespace MapEditor
         private void OnStateChanged(object sender, RoutedEventArgs e)
         {
             if (_cells == null)
+            {
                 return;
+            }
 
             foreach (var cell in _cells)
+            {
                 cell.CurrentIsClosed = CurrentIsClosed;
+            }
+
             CurrentRowLabel.Text = CurrentIsClosed ? "현재 (닫힘)" : "현재 (열림)";
             PartnerRowLabel.Text = CurrentIsClosed ? "짝 (열림)" : "짝 (닫힘)";
             Refresh();
@@ -123,7 +138,9 @@ namespace MapEditor
         private void OnPreviewChanged(object sender, RoutedEventArgs e)
         {
             if (_cells != null)
+            {
                 Refresh();
+            }
         }
 
         private void Refresh()
@@ -136,10 +153,16 @@ namespace MapEditor
 
             var problems = new List<string>();
             if (_cells.All(c => c.Fixed))
+            {
                 problems.Add("모든 칸이 고정이라 열고 닫아도 바뀌는 것이 없습니다. 바뀔 칸의 짝을 고르세요.");
+            }
+
             var empty = _cells.Where(c => c.Empty).Select(c => c.X).ToList();
             if (empty.Count > 0)
+            {
                 problems.Add($"x {string.Join(", ", empty)}: 반대 상태에서는 오브젝트가 사라집니다 (의도한 것이 아니면 짝을 고르세요).");
+            }
+
             var fixedCount = _cells.Count(c => c.Fixed);
             Message.Foreground = problems.Count > 0 ? Brushes.Orange : (Brush)FindResource("SemiTextBrush");
             Message.Text = problems.Count > 0
@@ -150,21 +173,28 @@ namespace MapEditor
         private void OnSlotClick(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button || button.DataContext is not DoorEditCell cell)
+            {
                 return;
+            }
 
             var assets = _editor.Assets;
             var menu = new ContextMenu { PlacementTarget = button, Placement = PlacementMode.Bottom };
             var partners = _editor.DoorPartners(cell.Current, CurrentIsClosed);
             menu.Items.Add(new MenuItem { Header = partners.Count > 0 ? "door.xlsx에서 이 오브젝트와 짝인 것" : "door.xlsx에 이 오브젝트의 짝 없음", IsEnabled = false });
             foreach (var id in partners)
+            {
                 menu.Items.Add(ObjectItem(assets, id, $"#{id}", cell));
+            }
 
             menu.Items.Add(new Separator());
             menu.Items.Add(ObjectItem(assets, _editor.SelectedObject, $"팔레트 선택값 #{_editor.SelectedObject}", cell));
 
             var near = new MenuItem { Header = "인접 id (문 그림은 보통 붙어 있음)" };
             foreach (var id in new[] { cell.Current - 2, cell.Current - 1, cell.Current + 1, cell.Current + 2 }.Where(id => id > 0 && id <= (assets?.Objects.Count ?? 0)))
+            {
                 near.Items.Add(ObjectItem(assets, id, $"#{id}", cell));
+            }
+
             menu.Items.Add(near);
 
             menu.Items.Add(new Separator());
@@ -199,20 +229,26 @@ namespace MapEditor
             {
                 var partners = _editor.DoorPartners(cell.Current, CurrentIsClosed);
                 if (partners.Count > 0)
+                {
                     cell.Partner = partners[0];
+                }
             }
         }
 
         private void OnFillPalette(object sender, RoutedEventArgs e)
         {
             for (int i = 0; i < _cells.Count; i++)
+            {
                 _cells[i].Partner = _editor.SelectedObject + i;
+            }
         }
 
         private void OnApply(object sender, RoutedEventArgs e)
         {
             if (_editor.Document == null)
+            {
                 return;
+            }
 
             var cells = _cells.Select(c => (c.OpenId, c.CloseId)).ToList();
             if (cells.SequenceEqual(_original))
@@ -235,11 +271,19 @@ namespace MapEditor
             {
                 _original = cells;
                 foreach (var cell in _cells)
+                {
                     (cell.Current, cell.Partner) = (cell.Partner, cell.Current);
+                }
+
                 if (CurrentIsClosed)
+                {
                     CurrentOpened.IsChecked = true;
+                }
                 else
+                {
                     CurrentClosed.IsChecked = true;
+                }
+
                 Message.Foreground = Brushes.LimeGreen;
                 Message.Text = $"문 {model.Id} 적용: {(found.Opened ? "닫힌" : "열린")} 모양이 id가 더 작은 문 {shadowing?.Id}과 같아서, 맵에는 {(found.Opened ? "열린" : "닫힌")} 상태로 놓았습니다. "
                              + $"맵을 반대 상태로 저장하면 서버가 문 {shadowing?.Id}로 인식하니 이 상태로 저장하세요. door.xlsx 저장도 눌러야 파일에 남습니다.";
@@ -281,7 +325,9 @@ namespace MapEditor
                         var (changed, changedMaps, skipped) = _editor.RewriteDoorReferences(before, cells, others);
                         Message.Text += $" 다른 곳 {changed}곳 (맵 {changedMaps}개)도 바꿨습니다.";
                         if (skipped.Count > 0)
+                        {
                             Message.Text += $" 건너뛴 {skipped.Count}곳: {string.Join(" / ", skipped.Take(3))}{(skipped.Count > 3 ? " ..." : "")}";
+                        }
                     }
                     else
                     {
@@ -294,7 +340,9 @@ namespace MapEditor
         private void OnToggle(object sender, RoutedEventArgs e)
         {
             if (_applied == null || _editor.Document == null)
+            {
                 return;
+            }
 
             _editor.ToggleDoor(_applied);
             _applied = _editor.Document.Doors.FirstOrDefault(d => d.Y == _y && d.X == _x && d.Model == _applied.Model);
@@ -302,11 +350,18 @@ namespace MapEditor
 
             // The map now shows the other state, so the top row follows it.
             foreach (var cell in _cells)
+            {
                 (cell.Current, cell.Partner) = (cell.Partner, cell.Current);
+            }
+
             if (CurrentIsClosed)
+            {
                 CurrentOpened.IsChecked = true;
+            }
             else
+            {
                 CurrentClosed.IsChecked = true;
+            }
         }
 
         private void OnClose(object sender, RoutedEventArgs e)

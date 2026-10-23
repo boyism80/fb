@@ -48,7 +48,9 @@ namespace Runner.Service
                 cancellationToken);
 
             if (configure.ExitCode != 0)
+            {
                 throw new BuildFailedException("cmake configure", TrimOutput(configure));
+            }
 
             log("[cpp] Building C++ (Debug)..." + Environment.NewLine);
             var cppBuild = await RunToolAsync(
@@ -61,7 +63,9 @@ namespace Runner.Service
                 cancellationToken);
 
             if (cppBuild.ExitCode != 0)
+            {
                 throw new BuildFailedException("C++ build", TrimOutput(cppBuild));
+            }
 
             log("[copy] Copying executables to build\\dist..." + Environment.NewLine);
             CopyExecutable(buildDir, distDir, @"server\gateway\Debug\gateway.exe", "gateway.exe", log);
@@ -79,7 +83,9 @@ namespace Runner.Service
 
                 var outPath = Path.Combine(distDir, outputDir);
                 if (Directory.Exists(outPath))
+                {
                     Directory.Delete(outPath, true);
+                }
 
                 log($"[dotnet] Publishing {project}..." + Environment.NewLine);
                 var publish = await ProcessRunner.RunAsync(
@@ -91,7 +97,9 @@ namespace Runner.Service
                     cancellationToken);
 
                 if (publish.ExitCode != 0)
+                {
                     throw new BuildFailedException($"dotnet publish ({outputDir})", TrimOutput(publish));
+                }
             }
 
             log("[maps] Extracting maps..." + Environment.NewLine);
@@ -100,7 +108,10 @@ namespace Runner.Service
             if (File.Exists(mapsZip))
             {
                 if (Directory.Exists(mapsOut))
+                {
                     Directory.Delete(mapsOut, true);
+                }
+
                 Directory.CreateDirectory(mapsOut);
                 ZipFile.ExtractToDirectory(mapsZip, mapsOut, true);
                 log($"[maps] Extracted to {mapsOut}{Environment.NewLine}");
@@ -179,7 +190,9 @@ namespace Runner.Service
             var source = Path.Combine(buildDir, relativeSource);
             var dest = Path.Combine(distDir, fileName);
             if (File.Exists(source) == false)
+            {
                 throw new BuildFailedException("copy", $"Missing build output: {source}");
+            }
 
             File.Copy(source, dest, true);
             log($"[copy] {source} -> {dest}{Environment.NewLine}");
@@ -202,7 +215,9 @@ namespace Runner.Service
             }
 
             if (Directory.Exists(destDir))
+            {
                 Directory.Delete(destDir, true);
+            }
 
             CopyDirectoryRecursive(sourceDir, destDir);
             log($"{prefix} Copied {sourceDir} -> {destDir}{Environment.NewLine}");
@@ -212,10 +227,14 @@ namespace Runner.Service
         {
             Directory.CreateDirectory(destDir);
             foreach (var file in Directory.GetFiles(sourceDir))
+            {
                 File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), true);
+            }
 
             foreach (var dir in Directory.GetDirectories(sourceDir))
+            {
                 CopyDirectoryRecursive(dir, Path.Combine(destDir, Path.GetFileName(dir)));
+            }
         }
 
         private static string TrimOutput(ProcessResult result)
@@ -234,10 +253,15 @@ namespace Runner.Service
             }
 
             if (errors.Count > 0)
+            {
                 text = string.Join(Environment.NewLine, errors);
+            }
 
             if (text.Length > 2000)
+            {
                 text = text[..2000] + "...";
+            }
+
             return string.IsNullOrWhiteSpace(text) ? $"Exit code {result.ExitCode}" : text;
         }
     }

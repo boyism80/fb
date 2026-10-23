@@ -3,8 +3,8 @@ local protocol    = require("integration.protocol")
 local script_step = require("integration.lib.script_step")
 
 local MAP             = "낙랑의방"
-local A_POS           = {6, 6}
-local B_POS           = {8, 6}
+local A_POS           = { 6, 6 }
+local B_POS           = { 8, 6 }
 local ROLE_USER       = 0
 local ROLE_ADMIN      = 2
 local MSG_NO_APPEAR   = "그곳으로는 출두할 수 없습니다."

@@ -2,17 +2,17 @@ local npc = require('lib.npc')
 local enum = require('lib.enum')
 
 local CHANGEITEM = {
-    { source = { name = '낡은어전의칼', count = 10 },   dest = { name = '어전의칼', count = 1 } },
-    { source = { name = '원숭이잔털', count = 10 },    dest = { name = '원숭이털', count = 1 } },
-    { source = { name = '너구리잔털', count = 10 },    dest = { name = '너구리털', count = 1 } },
-    { source = { name = '은여우잔털', count = 10 },    dest = { name = '은여우털', count = 1 } },
+    { source = { name = '낡은어전의칼', count = 10 }, dest = { name = '어전의칼', count = 1 } },
+    { source = { name = '원숭이잔털', count = 10 }, dest = { name = '원숭이털', count = 1 } },
+    { source = { name = '너구리잔털', count = 10 }, dest = { name = '너구리털', count = 1 } },
+    { source = { name = '은여우잔털', count = 10 }, dest = { name = '은여우털', count = 1 } },
     { source = { name = '낡은도깨비방망이', count = 10 }, dest = { name = '도깨비방망이', count = 1 } },
-    { source = { name = '참나무껍질', count = 10 },    dest = { name = '참나무조각', count = 1 } },
-    { source = { name = '깨진불의수정', count = 10 },  dest = { name = '불의수정', count = 1 } },
-    { source = { name = '낡은철도', count = 10 },      dest = { name = '철도', count = 1 } },
+    { source = { name = '참나무껍질', count = 10 }, dest = { name = '참나무조각', count = 1 } },
+    { source = { name = '깨진불의수정', count = 10 }, dest = { name = '불의수정', count = 1 } },
+    { source = { name = '낡은철도', count = 10 }, dest = { name = '철도', count = 1 } },
     { source = { name = '늑대의큰송곳니', count = 1 }, dest = { name = '늑대의송곳니', count = 2 } },
     { source = { name = '다랑어살코기뭉치', count = 1 }, dest = { name = '다랑어살코기', count = 10 } },
-    { source = { name = '노회뭉치', count = 1 },       dest = { name = '노회', count = 10 } }
+    { source = { name = '노회뭉치', count = 1 }, dest = { name = '노회', count = 10 } }
 }
 
 local function run_change_item(me, npc_obj)
@@ -34,7 +34,8 @@ local function run_change_item(me, npc_obj)
     local src = entry.source
     local dest = entry.dest
 
-    local confirm_msg = string.format('%s %d개를 가져오시면 %s %d개로 교환해 드려요. 하시겠어요?', src.name, src.count, dest.name, dest.count)
+    local confirm_msg = string.format('%s %d개를 가져오시면 %s %d개로 교환해 드려요. 하시겠어요?', src.name, src.count, dest.name, dest
+        .count)
     local confirm = me:list(npc_obj, confirm_msg, { '예', '아뇨' })
     if confirm == nil then
         return false

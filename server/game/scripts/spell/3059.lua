@@ -12,7 +12,7 @@ return {
         local sound = 68
         local effect = 14
         local buff_time = 30
-        if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect, resist = RESIST.POISON}) then
+        if spell.debuff_cast(me, you, sp, { mp = mp, sound = sound, effect = effect, resist = RESIST.POISON }) then
             you:buff(sp, buff_time, me)
         end
     end,
@@ -31,7 +31,8 @@ return {
             damage = math.max(0, me:hp() - 100)
         end
         if caster ~= nil then
-            caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
+            caster:damage_to(me, damage,
+                { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
         else
             me:damage(damage)
         end

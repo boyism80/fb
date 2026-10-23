@@ -69,12 +69,14 @@ local function run_kimjang(me, npc)
         return
     end
 
-    btn = me:dialog(npc, "아니 나연이 얘는 무슨 거짓말을 하는거야! 김장 준비는 나연이가 전부다 한다구요. 괜히 자기가 하기 싫으니까 나한테 떠넘기는것좀 봐..", { prev = false, next = true })
+    btn = me:dialog(npc, "아니 나연이 얘는 무슨 거짓말을 하는거야! 김장 준비는 나연이가 전부다 한다구요. 괜히 자기가 하기 싫으니까 나한테 떠넘기는것좀 봐..",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
-    btn = me:dialog(npc, "어쩔수 없죠 뭐. 자호의가죽 1개와 여우모피 5개를 저한테 주시면 김장 재료를 준비해 드리죠. 요즘 날씨가 추워서...", { prev = false, next = true })
+    btn = me:dialog(npc, "어쩔수 없죠 뭐. 자호의가죽 1개와 여우모피 5개를 저한테 주시면 김장 재료를 준비해 드리죠. 요즘 날씨가 추워서...",
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -242,7 +244,8 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "그럼 저희집 마당의 우물가에서 머리를 감으세요. 그러면 머리카락에 윤기가 생기고 빠지지 않게 된답니다.", { prev = false, next = false })
+                btn = me:dialog(npc, "그럼 저희집 마당의 우물가에서 머리를 감으세요. 그러면 머리카락에 윤기가 생기고 빠지지 않게 된답니다.",
+                    { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -260,7 +263,8 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "매달마다 받으시는 아이템을 다 모으시면 좋은일이 생길테니.. 잘 보관하세요. 단오의 아이템은 비녀에요.", { prev = false, next = true })
+            btn = me:dialog(npc, "매달마다 받으시는 아이템을 다 모으시면 좋은일이 생길테니.. 잘 보관하세요. 단오의 아이템은 비녀에요.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

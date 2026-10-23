@@ -13,7 +13,8 @@ return {
         end
 
         if q == nil then
-            local btn = me:dialog(npc, '요즘 대륙 사람들이 자꾸 눈에 띄눈군. 정말 성가신 일이야. 그러고보니 자네도 대륙 사람이지? 그렇다면 태존도에 대해 알겠군?', { prev = false, next = true })
+            local btn = me:dialog(npc, '요즘 대륙 사람들이 자꾸 눈에 띄눈군. 정말 성가신 일이야. 그러고보니 자네도 대륙 사람이지? 그렇다면 태존도에 대해 알겠군?',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

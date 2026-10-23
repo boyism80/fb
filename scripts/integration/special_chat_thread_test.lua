@@ -1,22 +1,22 @@
-local resp        = require("integration.response")
-local protocol    = require("integration.protocol")
+local resp = require("integration.response")
+local protocol = require("integration.protocol")
 local script_step = require("integration.lib.script_step")
 
-local MSG_PREPARED     = "공성준비 완료"
+local MSG_PREPARED = "공성준비 완료"
 local MSG_THREAD_ERROR = "active thread not matched"
-local OTHER_MAP        = 2041
-local OTHER_X          = 20
-local OTHER_Y          = 10
-local RESPONSE_DELAY   = 3000
-local MESSAGE_WAIT_MS  = 15000
+local OTHER_MAP = 2041
+local OTHER_X = 20
+local OTHER_Y = 10
+local RESPONSE_DELAY = 3000
+local MESSAGE_WAIT_MS = 15000
 
 local function fail(message)
     log("fatal", "Special chat thread test: " .. message)
     return false
 end
 
-test_suite {
-    name      = "Special Chat Thread Test",
+test_suite({
+    name = "Special Chat Thread Test",
     bot_count = 1,
 
     on_scenario_finished = function(ctx)
@@ -39,7 +39,17 @@ test_suite {
             a:take_messages()
             a:send(protocol.whisper("!", "special chat thread test"))
             ctx:sleep(300)
-            if script_step.run_script(a, "test/integration", "move_to_map", "special_chat_move", tostring(OTHER_MAP), tostring(OTHER_X), tostring(OTHER_Y)) ~= true then
+            if
+                script_step.run_script(
+                    a,
+                    "test/integration",
+                    "move_to_map",
+                    "special_chat_move",
+                    tostring(OTHER_MAP),
+                    tostring(OTHER_X),
+                    tostring(OTHER_Y)
+                ) ~= true
+            then
                 return fail("could not move A while the clan broadcast was pending")
             end
 
@@ -53,4 +63,4 @@ test_suite {
             return true
         end,
     },
-}
+})

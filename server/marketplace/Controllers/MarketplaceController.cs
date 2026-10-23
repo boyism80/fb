@@ -83,7 +83,9 @@ public class MarketplaceController : ControllerBase
         try
         {
             if (request.ListingId == 0)
+            {
                 throw new LogicException(ErrorCode.MarketplaceListingNotFound);
+            }
 
             var created = await _marketplaceService.AbortListAsync(
                 request.World,
@@ -180,7 +182,9 @@ public class MarketplaceController : ControllerBase
         try
         {
             if (request.PurchaseId == 0)
+            {
                 throw new LogicException(ErrorCode.MarketplaceListingNotFound);
+            }
 
             var result = await _marketplaceService.PurchaseItemAsync(
                 request.World,
@@ -250,7 +254,9 @@ public class MarketplaceController : ControllerBase
         try
         {
             if (request.PurchaseId == 0)
+            {
                 throw new LogicException(ErrorCode.MarketplaceListingNotFound);
+            }
 
             var purchased = await _marketplaceService.AbortPurchaseAsync(
                 request.World,

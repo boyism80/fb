@@ -16,9 +16,9 @@ return {
         local sound = 32
         local effect = 34
         local buff_time = 4
-        if spell.buff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+        if spell.buff_cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:oblivion(me)
-        	you:buff(sp, buff_time, me)
+            you:buff(sp, buff_time, me)
         end
     end,
 

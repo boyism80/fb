@@ -45,14 +45,20 @@ namespace Runner.Service
             process.OutputDataReceived += (_, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
+
                 stdout.AppendLine(e.Data);
                 onOutput?.Invoke(e.Data);
             };
             process.ErrorDataReceived += (_, e) =>
             {
                 if (e.Data == null)
+                {
                     return;
+                }
+
                 stderr.AppendLine(e.Data);
                 onOutput?.Invoke(e.Data);
             };
@@ -60,7 +66,9 @@ namespace Runner.Service
             try
             {
                 if (!process.Start())
+                {
                     return new ProcessResult { ExitCode = -1, Started = false };
+                }
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
@@ -70,7 +78,9 @@ namespace Runner.Service
                     try
                     {
                         if (!process.HasExited)
+                        {
                             process.Kill(entireProcessTree: true);
+                        }
                     }
                     catch
                     {

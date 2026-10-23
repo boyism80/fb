@@ -42,7 +42,9 @@ namespace Marketplace.Services
                     foreach (var parcel in pending)
                     {
                         if (stoppingToken.IsCancellationRequested)
+                        {
                             break;
+                        }
 
                         await parcelService.SendAsync(parcel);
                     }

@@ -14,13 +14,21 @@ namespace MapEditor.Mcp
         private static object SpawnRef(MapDocument doc, Entity entity)
         {
             if (entity is NpcSpawn npc)
+            {
                 return new { kind = "npc", index = doc.Npcs.IndexOf(npc) };
+            }
             else if (entity is MobSpawn mob)
+            {
                 return new { kind = "mob", index = doc.Mobs.IndexOf(mob) };
+            }
             else if (entity is WarpEntry warp)
+            {
                 return new { kind = "warp", index = doc.Warps.IndexOf(warp) };
+            }
             else
+            {
                 return null;
+            }
         }
 
         private static Entity FindSpawn(MapDocument doc, string kind, int index)
@@ -33,7 +41,10 @@ namespace MapEditor.Mcp
                 _ => throw new ArgumentException("kind must be npc, mob or warp"),
             };
             if (index < 0 || index >= list.Count)
+            {
                 throw new ArgumentException($"{kind} index {index} out of range (0..{list.Count - 1})");
+            }
+
             return list[index];
         }
 
@@ -44,13 +55,21 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (kind == "npc")
+                {
                     return Json(doc.Npcs.Select((n, i) => new { index = i, npc = n.Npc, name = n.Name, x = n.X, y = n.Y, direction = n.Direction }));
+                }
                 else if (kind == "mob")
+                {
                     return Json(doc.Mobs.Select((m, i) => new { index = i, mob = m.Mob, name = m.Name, left = m.Left, top = m.Top, right = m.Right, bottom = m.Bottom, count = m.Count, rezen = m.Rezen, condition = m.Condition }));
+                }
                 else if (kind == "warp")
+                {
                     return Json(doc.Warps.Select((w, i) => new { index = i, x = w.X, y = w.Y, dest = w.Dest, destName = w.DestName, condition = w.Condition }));
+                }
                 else
+                {
                     throw new ArgumentException("kind must be npc, mob or warp");
+                }
             });
         }
 
@@ -61,10 +80,15 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (doc.Map.Contains(x, y) == false)
+                {
                     throw new ArgumentException("out of map");
+                }
+
                 direction = direction.ToUpperInvariant();
                 if (NpcSpawn.Directions.Contains(direction) == false)
+                {
                     throw new ArgumentException("direction must be TOP, RIGHT, BOTTOM or LEFT");
+                }
 
                 var info = _editor.NpcChoices.FirstOrDefault(e => e.Id == npc) ?? throw new ArgumentException($"npc {npc} is not in npc.xlsx");
                 var spawn = new NpcSpawn { Npc = npc, Info = info, X = x, Y = y, Direction = direction };
@@ -106,7 +130,9 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (doc.Map.Contains(x, y) == false)
+                {
                     throw new ArgumentException("out of map");
+                }
 
                 var warp = new WarpEntry { X = x, Y = y, Dest = dest, Condition = condition };
                 warp.DestName = warp.DestMap is int id ? _editor.MapChoices.FirstOrDefault(e => e.Id == id)?.Name ?? "" : "";
@@ -128,11 +154,19 @@ namespace MapEditor.Mcp
                 var doc = RequireDocument();
                 var entity = FindSpawn(doc, kind, index);
                 if (entity is NpcSpawn && id != null && _editor.NpcChoices.Any(e => e.Id == id) == false)
+                {
                     throw new ArgumentException($"npc {id} is not in npc.xlsx");
+                }
+
                 if (entity is MobSpawn && id != null && _editor.MobChoices.Any(e => e.Id == id) == false)
+                {
                     throw new ArgumentException($"mob {id} is not in mob.xlsx");
+                }
+
                 if (direction != null && NpcSpawn.Directions.Contains(direction.ToUpperInvariant()) == false)
+                {
                     throw new ArgumentException("direction must be TOP, RIGHT, BOTTOM or LEFT");
+                }
 
                 using (doc.Group())
                 {
@@ -183,9 +217,15 @@ namespace MapEditor.Mcp
             var task = await OnUi("check_warps", false, () =>
             {
                 if (all == false)
+                {
                     RequireDocument();
+                }
+
                 if (_editor.CheckingWarps)
+                {
                     throw new InvalidOperationException("a warp check is already running");
+                }
+
                 return _editor.CheckWarps(all);
             });
             await task;

@@ -86,13 +86,17 @@ namespace Http.Service
         private async Task EnsureExchangeReadyAsync(IChannel channel, string queueName, CancellationToken cancellationToken)
         {
             if (_declaredQueues.ContainsKey(queueName))
+            {
                 return;
+            }
 
             await _declareLock.WaitAsync(cancellationToken);
             try
             {
                 if (_declaredQueues.ContainsKey(queueName))
+                {
                     return;
+                }
 
                 await channel.ExchangeDeclareAsync(WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
                 await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: QueueArguments, passive: false, noWait: false, cancellationToken);

@@ -54,7 +54,9 @@ namespace Http.Reepository
         protected virtual async Task<IReadOnlyDictionary<TKey, IReadOnlyList<TModel>>> GetManyFromDb(uint world, IReadOnlyList<TKey> keys)
         {
             if (keys == null || keys.Count == 0)
+            {
                 return new Dictionary<TKey, IReadOnlyList<TModel>>();
+            }
 
             var result = new Dictionary<TKey, List<TModel>>();
             foreach (var (connection, keyArray) in _dbContext.GetShardConnections(world, keys, k => k.GetHash()))
@@ -115,7 +117,9 @@ namespace Http.Reepository
         public virtual void Delete(uint world, TKey[] keys)
         {
             if (keys == null || keys.Length == 0)
+            {
                 return;
+            }
 
             _buffer.Enqueue(async () =>
             {

@@ -38,7 +38,9 @@ local function do_craft(me, ch, need_items, money_needed, product_name, rate_per
     if reward == nil then
         return me:dialog(ch, '아앗... 깃털이 그만 접착제와 덕지덕지 붙어버려서 실패하고 말았어요... 죄송합니다....', { prev = false, next = false })
     end
-    return me:dialog(ch, '자, 여기 [' .. product_name .. '] ' .. name_with(product_name, '을', '를') .. ' 만들어 드렸습니다. 예쁘게 입고 다니세요.', { prev = false, next = false })
+    return me:dialog(ch,
+        '자, 여기 [' .. product_name .. '] ' .. name_with(product_name, '을', '를') .. ' 만들어 드렸습니다. 예쁘게 입고 다니세요.',
+        { prev = false, next = false })
 end
 
 local function craft_with_rate_intro(me, ch, product, need_items, money_needed, rate_percent, req_detail)
@@ -78,13 +80,21 @@ local function run_craft_menu(me, ch)
     elseif craft_sel == 3 then
         local sex_name = (me:gender() == GENDER.MALE) and '남자' or '여자'
         local product = sex_name .. '표범가죽옷'
-        local req_detail = '[' .. product .. '] ' .. name_with(product, '을', '를') .. ' 만들기 위해서는, [담비가죽] 100개, [흑담비가죽] 100개, [표범의가죽] 100개 그리고 금전 250만전 을 주셔야 합니다.'
-        return craft_with_rate_intro(me, ch, product, { ['담비가죽'] = 100, ['흑담비가죽'] = 100, ['표범의가죽'] = 100 }, 2500000, 30, req_detail)
+        local req_detail = '[' ..
+            product ..
+            '] ' ..
+            name_with(product, '을', '를') .. ' 만들기 위해서는, [담비가죽] 100개, [흑담비가죽] 100개, [표범의가죽] 100개 그리고 금전 250만전 을 주셔야 합니다.'
+        return craft_with_rate_intro(me, ch, product, { ['담비가죽'] = 100, ['흑담비가죽'] = 100, ['표범의가죽'] = 100 }, 2500000, 30,
+            req_detail)
     elseif craft_sel == 4 then
         local sex_name = (me:gender() == GENDER.MALE) and '남자' or '여자'
         local product = sex_name .. '곰가죽옷'
-        local req_detail = '[' .. product .. '] ' .. name_with(product, '을', '를') .. ' 만들기 위해서는, [담비가죽] 100개, [흑담비가죽] 30개, [백두곰가죽] 100개 그리고 금전 100만전 을 주셔야 합니다.'
-        return craft_with_rate_intro(me, ch, product, { ['담비가죽'] = 100, ['흑담비가죽'] = 30, ['백두곰가죽'] = 100 }, 1000000, 30, req_detail)
+        local req_detail = '[' ..
+            product ..
+            '] ' ..
+            name_with(product, '을', '를') .. ' 만들기 위해서는, [담비가죽] 100개, [흑담비가죽] 30개, [백두곰가죽] 100개 그리고 금전 100만전 을 주셔야 합니다.'
+        return craft_with_rate_intro(me, ch, product, { ['담비가죽'] = 100, ['흑담비가죽'] = 30, ['백두곰가죽'] = 100 }, 1000000, 30,
+            req_detail)
     elseif craft_sel == 5 then
         return do_craft(me, ch, { ['올빼미의깃털'] = 100, ['청원앙의깃털'] = 10 }, 2000000, '원앙청선', 10)
     else

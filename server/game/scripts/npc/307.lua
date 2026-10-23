@@ -60,7 +60,8 @@ return {
                 me:dialog(npc, "소지품이 가득 차서 전사방천화극을 드리지 못합니다.", { prev = false, next = false })
                 return
             end
-            me:dialog(npc, "신작약주를 가지고 있구만... 예전엔 참 좋은 술이었는데...\n\n여기 방천화극이 있네. 종종 들리게나...", { prev = false, next = false })
+            me:dialog(npc, "신작약주를 가지고 있구만... 예전엔 참 좋은 술이었는데...\n\n여기 방천화극이 있네. 종종 들리게나...",
+                { prev = false, next = false })
             return
         end
 
@@ -77,7 +78,8 @@ return {
                 if b1 == DIALOG_RESULT.QUIT then
                     return
                 end
-                local l2, b2 = me:list(npc, "아니 난 그런 적 없소.", { "장돌뱅이한테 물어보니까 당신이", "가지고 가는 것을 보았다고 하는데", "끝까지 발뺌할 건가요?" }, { prev = false })
+                local l2, b2 = me:list(npc, "아니 난 그런 적 없소.", { "장돌뱅이한테 물어보니까 당신이", "가지고 가는 것을 보았다고 하는데", "끝까지 발뺌할 건가요?" },
+                    { prev = false })
                 if b2 == DIALOG_RESULT.QUIT then
                     return
                 end

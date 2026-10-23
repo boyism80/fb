@@ -47,7 +47,8 @@ return {
                 goto NPC_379_0005
             end
             ::NPC_379_0006::
-            btn = me:dialog(npc, "그런 파렴치범은 꼭 잡아서 처벌해야할텐데 말이야. 문제는 도대체 누가 범인인지 실마리조차 찾을 수 없다는거지.", { prev = true, next = true })
+            btn = me:dialog(npc, "그런 파렴치범은 꼭 잡아서 처벌해야할텐데 말이야. 문제는 도대체 누가 범인인지 실마리조차 찾을 수 없다는거지.",
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -78,7 +79,8 @@ return {
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_379_0008
             end
-            btn = me:dialog(npc, "보아하니 행동력과 뛰어난 두뇌를 지닌 것 같은데, 임시 수사관으로써 한 번 범인을 밝혀내보지 않겠나?", { prev = false, next = true })
+            btn = me:dialog(npc, "보아하니 행동력과 뛰어난 두뇌를 지닌 것 같은데, 임시 수사관으로써 한 번 범인을 밝혀내보지 않겠나?",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -102,11 +104,13 @@ return {
                 q:step(1)
             end
             me:push_achievement(54, "문화재 유출범을 찾아라.", 7, 16)
-            btn = me:dialog(npc, "좋았어! 그럼 이제부터 자네는 임시 수사관이야. 이 명찰을 달고 있으면 섬사람들이 수사에 협조해줄걸세.", { prev = false, next = true })
+            btn = me:dialog(npc, "좋았어! 그럼 이제부터 자네는 임시 수사관이야. 이 명찰을 달고 있으면 섬사람들이 수사에 협조해줄걸세.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, "그리고 나와 동생들이라고 놀고 있지는 않을테니까 가끔 들러서 상황도 알려주시게. 우리도 얻은 정보를 그때그때 알려줄테니까.", { prev = false, next = false })
+            me:dialog(npc, "그리고 나와 동생들이라고 놀고 있지는 않을테니까 가끔 들러서 상황도 알려주시게. 우리도 얻은 정보를 그때그때 알려줄테니까.",
+                { prev = false, next = false })
             return
         end
 
@@ -151,14 +155,17 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "아무리 부자라고 해도 요즘들어 재산이 몇 배씩 불어나고 있었거든. 이유를 몰라서 어디서 금이라도 캐오나 싶었더니만.", { prev = false, next = true })
+                btn = me:dialog(npc, "아무리 부자라고 해도 요즘들어 재산이 몇 배씩 불어나고 있었거든. 이유를 몰라서 어디서 금이라도 캐오나 싶었더니만.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                me:dialog(npc, "자네 말대로 이제는 그 뚱보 부자들이 제일 의심스럽네. 자네의 그 추리력을 발휘해서 진상을 밝혀주게나!", { prev = false, next = false })
+                me:dialog(npc, "자네 말대로 이제는 그 뚱보 부자들이 제일 의심스럽네. 자네의 그 추리력을 발휘해서 진상을 밝혀주게나!",
+                    { prev = false, next = false })
             elseif step == 4 then
                 ::NPC_379_0020::
-                local btn = me:dialog(npc, "뭐? 문화재를 선물로? 중국과 교역이라고? 무슨 소리야? 자네가 말한 그 문화재는 이 섬에 얼마 남지 않은", { prev = false, next = true })
+                local btn = me:dialog(npc, "뭐? 문화재를 선물로? 중국과 교역이라고? 무슨 소리야? 자네가 말한 그 문화재는 이 섬에 얼마 남지 않은",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -171,14 +178,16 @@ return {
                     goto NPC_379_0020
                 end
                 ::NPC_379_0022::
-                btn = me:dialog(npc, "거기다가 외부와의 교역은 우리에게 허가를 맡아야 하는데, 부자들은 한 마디 말도 없었다구! 이런 뜬금없는 소리는", { prev = true, next = true })
+                btn = me:dialog(npc, "거기다가 외부와의 교역은 우리에게 허가를 맡아야 하는데, 부자들은 한 마디 말도 없었다구! 이런 뜬금없는 소리는",
+                    { prev = true, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if btn == DIALOG_RESULT.PREV then
                     goto NPC_379_0021
                 end
-                local btn = me:dialog(npc, "난생처음 들어보네! 세상에! 아..아이구! 혈..혈압이 머리 꼭대끼까지 솟아오르네...아이구 아이구;", { prev = false, next = true })
+                local btn = me:dialog(npc, "난생처음 들어보네! 세상에! 아..아이구! 혈..혈압이 머리 꼭대끼까지 솟아오르네...아이구 아이구;",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -194,15 +203,18 @@ return {
         if sel == 2 then
             if step == 10 then
                 ::NPC_379_0030::
-                local btn = me:dialog(npc, "밀수선은 다만 물건만 가지러 오지는 않을게야. 그래서야 수지타산이 맞지 않을테니까.", { prev = false, next = true })
+                local btn = me:dialog(npc, "밀수선은 다만 물건만 가지러 오지는 않을게야. 그래서야 수지타산이 맞지 않을테니까.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "그래, 자네 말대로 무언가 팔 물건도 가져왔겠지... 근데 우리 섬에서 외부 물건을 탐낼만한 사람이", { prev = false, next = true })
+                btn = me:dialog(npc, "그래, 자네 말대로 무언가 팔 물건도 가져왔겠지... 근데 우리 섬에서 외부 물건을 탐낼만한 사람이",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "부자들말고 따로 있을까? 하긴, 부자들만 외부 세상 물건에 관심 있으란 법은 없긴하지.", { prev = false, next = true })
+                local btn = me:dialog(npc, "부자들말고 따로 있을까? 하긴, 부자들만 외부 세상 물건에 관심 있으란 법은 없긴하지.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -211,7 +223,8 @@ return {
                 end
             elseif step == 15 then
                 ::NPC_379_0040::
-                local btn = me:dialog(npc, "대단하군! 자네의 명석한 두뇌를 믿길 잘했지! 설마 이렇게 간단히 사건을 처리할 줄은 몰랐네!", { prev = false, next = true })
+                local btn = me:dialog(npc, "대단하군! 자네의 명석한 두뇌를 믿길 잘했지! 설마 이렇게 간단히 사건을 처리할 줄은 몰랐네!",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -224,7 +237,8 @@ return {
                     goto NPC_379_0040
                 end
                 ::NPC_379_0042::
-                btn = me:dialog(npc, "이제 부자들에게 벌금만 징수하면 끝나겠군. 좋아! 자네에게 명수사관 칭호와 함께 우리 섬주민들을 대표하여", { prev = true, next = true })
+                btn = me:dialog(npc, "이제 부자들에게 벌금만 징수하면 끝나겠군. 좋아! 자네에게 명수사관 칭호와 함께 우리 섬주민들을 대표하여",
+                    { prev = true, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end

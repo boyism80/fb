@@ -1,21 +1,21 @@
-local script_step  = require("integration.lib.script_step")
+local script_step = require("integration.lib.script_step")
 local quest_dialog = require("integration.lib.quest_dialog")
 
-local HWAHWA_NPC      = "화화"
-local HWAHWA_MAP      = "폭염도"
-local HWAHWA_MAP_ID   = 1698
-local HWAHWA_X        = 12
-local HWAHWA_Y        = 88
+local HWAHWA_NPC = "화화"
+local HWAHWA_MAP = "폭염도"
+local HWAHWA_MAP_ID = 1698
+local HWAHWA_X = 12
+local HWAHWA_Y = 88
 local MSG_HWAHWA_GONE = "귀신의 모습으로 돌아가야해"
-local CLOCK_WAIT_MS   = 1500
+local CLOCK_WAIT_MS = 1500
 
 local function fail(message)
     log("fatal", "Hwahwa time test: " .. message)
     return false
 end
 
-test_suite {
-    name      = "Hwahwa Time Test",
+test_suite({
+    name = "Hwahwa Time Test",
     bot_count = 1,
 
     on_scenario_finished = function(ctx)
@@ -51,4 +51,4 @@ test_suite {
             return true
         end,
     },
-}
+})

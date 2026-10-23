@@ -42,15 +42,19 @@ return {
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            button = me:dialog(npc, "잠깐... 자네가 들고 있는 무기는 혹시... " .. weapon_name .. " 아닌가? 정말 오래간만에 보는군.", { prev = false, next = true })
+            button = me:dialog(npc, "잠깐... 자네가 들고 있는 무기는 혹시... " .. weapon_name .. " 아닌가? 정말 오래간만에 보는군.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            button = me:dialog(npc, "하지만 어째 좀 조잡해 보이는군. 솜씨 좋은 장인이 만든 물건이 아니야... 그 물건의 진짜 모습은 그런 것이 아닐세.", { prev = false, next = true })
+            button = me:dialog(npc, "하지만 어째 좀 조잡해 보이는군. 솜씨 좋은 장인이 만든 물건이 아니야... 그 물건의 진짜 모습은 그런 것이 아닐세.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            local sel, btn = me:list(npc, "오래간만에 그 무기를 보니 의욕이 솟는군... 어떤가, 재료만 가져다주면 그 무기의 진짜 모습을 되찾도록 해 주겠네. 물론 지금 쓰고 있는 것보다 훨씬 강해지겠지.", { "예, 잘 부탁드립니다!", "고맙지만 사양하겠습니다." }, { prev = false })
+            local sel, btn = me:list(npc,
+                "오래간만에 그 무기를 보니 의욕이 솟는군... 어떤가, 재료만 가져다주면 그 무기의 진짜 모습을 되찾도록 해 주겠네. 물론 지금 쓰고 있는 것보다 훨씬 강해지겠지.",
+                { "예, 잘 부탁드립니다!", "고맙지만 사양하겠습니다." }, { prev = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -69,7 +73,9 @@ return {
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            button = me:dialog(npc, "금강석은 요즘 구하기가 어렵지만... 언젠가 한번 이 근처에서 사람을 만난 적이 있는데, 금강석을 하나 가지고 있는 것 같더군. 뭐, 조각 하나로는 아무것도 할 수 없긴 하지만...", { prev = false, next = true })
+            button = me:dialog(npc,
+                "금강석은 요즘 구하기가 어렵지만... 언젠가 한번 이 근처에서 사람을 만난 적이 있는데, 금강석을 하나 가지고 있는 것 같더군. 뭐, 조각 하나로는 아무것도 할 수 없긴 하지만...",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -90,7 +96,8 @@ return {
             return
         end
 
-        local button = me:dialog(npc, "왔군. 가공을 하고 싶은 무기를 손에 들고 있어야 내가 알아볼 수 있으니, 꼭 손에 들도록 하게.", { prev = false, next = true })
+        local button = me:dialog(npc, "왔군. 가공을 하고 싶은 무기를 손에 들고 있어야 내가 알아볼 수 있으니, 꼭 손에 들도록 하게.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -157,7 +164,9 @@ return {
         end
 
         ::NPC_451_0003::
-        button = me:dialog(npc, "좋아! 그럼 가공을 시작하도록 하지. 잘 듣게, 가공 도중에는 절대로 허튼 수작 부리지 말게. 말도 걸지 말고. 자칫하면 재료가 모두 사라지는 수가 있어! 그 때에는 절대 책임을 지지 않으니 알아서 하게.", { prev = true, next = true })
+        button = me:dialog(npc,
+            "좋아! 그럼 가공을 시작하도록 하지. 잘 듣게, 가공 도중에는 절대로 허튼 수작 부리지 말게. 말도 걸지 말고. 자칫하면 재료가 모두 사라지는 수가 있어! 그 때에는 절대 책임을 지지 않으니 알아서 하게.",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -208,7 +217,8 @@ return {
             return
         end
 
-        button = me:dialog(npc, "...완성됐네. " .. weapon_cur .. "의 진짜 모습, " .. weapon_new .. "일세. 전보다 훨씬 강력한 무기가 되었지. 어떤가?", { prev = false, next = true })
+        button = me:dialog(npc, "...완성됐네. " .. weapon_cur .. "의 진짜 모습, " .. weapon_new .. "일세. 전보다 훨씬 강력한 무기가 되었지. 어떤가?",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

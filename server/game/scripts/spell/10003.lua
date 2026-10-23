@@ -13,7 +13,7 @@ return {
             return
         end
 
-        me:position(x+1, y)
+        me:position(x + 1, y)
     end,
 
     -- on_buff = function(me, sp)

@@ -6,11 +6,13 @@ local function do_sub9_receive_wine(me, npc)
         me:dialog(npc, "퀘스트 오류입니다.\n특제원숭이술 아이템이 없습니다.", { prev = false, next = false })
         return true
     end
-    local b = me:dialog(npc, "음? 목원왕의 선물이시라고? 이런이런 생각도 못하셨었다. 이런 좋지 않으실때 위로를 해주시는건 역시 친구밖에 안계신다.", { prev = false, next = true })
+    local b = me:dialog(npc, "음? 목원왕의 선물이시라고? 이런이런 생각도 못하셨었다. 이런 좋지 않으실때 위로를 해주시는건 역시 친구밖에 안계신다.",
+        { prev = false, next = true })
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "고마우시다. 잘 받으셨다고 내 인사를 전해주셔야 좋으시다. 이정도면 우리 부족 원숭이들이 한모금씩 맛을 보실 수 있으시다.", { prev = true, next = true })
+    b = me:dialog(npc, "고마우시다. 잘 받으셨다고 내 인사를 전해주셔야 좋으시다. 이정도면 우리 부족 원숭이들이 한모금씩 맛을 보실 수 있으시다.",
+        { prev = true, next = true })
     if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
         return false
     end
@@ -26,7 +28,8 @@ local function do_sub9_receive_wine(me, npc)
 end
 
 local function do_sub7_start(me, npc)
-    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
+    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
+        { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -143,7 +146,8 @@ return {
                     return
                 end
                 ::NPC_469_0002::
-                b = me:dialog(npc, "더 큰 문제가 계시다. 바로 우리 어린 원숭이들에 대한 문제이시다. 이 곳으로 옮겨오신지 얼마 되지 않으신 탓도", { prev = true, next = true })
+                b = me:dialog(npc, "더 큰 문제가 계시다. 바로 우리 어린 원숭이들에 대한 문제이시다. 이 곳으로 옮겨오신지 얼마 되지 않으신 탓도",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -151,7 +155,8 @@ return {
                     goto NPC_469_0001
                 end
                 ::NPC_469_0003::
-                b = me:dialog(npc, "계시지만, 아직 이 땅이 낯설으셔서 편하게 주무실 수가 없으시다. 얼마전에 보셨는데, 담벼락 밖에서 병사 한 명이", { prev = true, next = true })
+                b = me:dialog(npc, "계시지만, 아직 이 땅이 낯설으셔서 편하게 주무실 수가 없으시다. 얼마전에 보셨는데, 담벼락 밖에서 병사 한 명이",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -159,7 +164,8 @@ return {
                     goto NPC_469_0002
                 end
                 ::NPC_469_0004::
-                b = me:dialog(npc, "'마른갈대'라는 것을 깔고 그 위에 누워 주무시던데.. 아주 편해보이셨다. 어디서 나시는 건지는 모르시지만, 그게 계시면", { prev = true, next = true })
+                b = me:dialog(npc, "'마른갈대'라는 것을 깔고 그 위에 누워 주무시던데.. 아주 편해보이셨다. 어디서 나시는 건지는 모르시지만, 그게 계시면",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -167,7 +173,8 @@ return {
                     goto NPC_469_0003
                 end
                 ::NPC_469_0005::
-                b = me:dialog(npc, "적어도 어린 원숭이들이 편하게 주무실 수 있으실거 같으시다. 이런 내 생각을 참원왕께 전해주시면 좋으시다.", { prev = true, next = true })
+                b = me:dialog(npc, "적어도 어린 원숭이들이 편하게 주무실 수 있으실거 같으시다. 이런 내 생각을 참원왕께 전해주시면 좋으시다.",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end

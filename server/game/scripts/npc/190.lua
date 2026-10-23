@@ -14,12 +14,14 @@ return {
 
         if q == nil then
             ::NPC_190_0001::
-            btn = me:dialog(npc, '이곳까지 오시느라 수고하셨네요. 끝까지 올라가실 생각인가요? 음.. 계속 올라가실거라면 부탁하나 드리고 싶은데..', { prev = false, next = true })
+            btn = me:dialog(npc, '이곳까지 오시느라 수고하셨네요. 끝까지 올라가실 생각인가요? 음.. 계속 올라가실거라면 부탁하나 드리고 싶은데..',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_190_0002::
-            btn = me:dialog(npc, '조금더 올라가시다보면 도삭산선비족, 도삭산흉노족이 있답니다. 그녀석들은 포악하고 성격은 나쁘지만 여러가지 신기한것들을 가지고 있죠.', { prev = true, next = true })
+            btn = me:dialog(npc, '조금더 올라가시다보면 도삭산선비족, 도삭산흉노족이 있답니다. 그녀석들은 포악하고 성격은 나쁘지만 여러가지 신기한것들을 가지고 있죠.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -27,14 +29,17 @@ return {
                 goto NPC_190_0001
             end
             ::NPC_190_0003::
-            btn = me:dialog(npc, '그중에 가면종류가 신기한것이 많죠. 각종 나무가면과 또 철이나 다른 금속으로 만든 가면도 있다더군요.\n\n제가 그런 물건에 관심이 많아서 부탁드립니다만 나무가면 50개를 모아다 주실수 없으신가요? 50개면 종류별로 다 모을 수 있을것 같아서..', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '그중에 가면종류가 신기한것이 많죠. 각종 나무가면과 또 철이나 다른 금속으로 만든 가면도 있다더군요.\n\n제가 그런 물건에 관심이 많아서 부탁드립니다만 나무가면 50개를 모아다 주실수 없으신가요? 50개면 종류별로 다 모을 수 있을것 같아서..',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_190_0002
             end
-            local sel, list_btn = me:list(npc, '부탁드려요. 워낙 포악해서 저는 근처도 갈 용기가 없네요. 들어주실거죠?', { '그런일이라면 맡겨만 주세요.', '가면이라. 전 그런것에 관심이 없어서요.' }, { prev = false })
+            local sel, list_btn = me:list(npc, '부탁드려요. 워낙 포악해서 저는 근처도 갈 용기가 없네요. 들어주실거죠?',
+                { '그런일이라면 맡겨만 주세요.', '가면이라. 전 그런것에 관심이 없어서요.' }, { prev = false })
             if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -52,7 +57,8 @@ return {
             end
             q:step(1)
             me:push_achievement(ACHIEVEMENT_700, '하태현의 부탁을 들어주자!', 7, 1)
-            me:dialog(npc, '그럼 전 ' .. me:name() .. '님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.', { prev = false, next = false })
+            me:dialog(npc, '그럼 전 ' .. me:name() .. '님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.',
+                { prev = false, next = false })
             return
         end
 
@@ -80,7 +86,8 @@ return {
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_190_0005
             end
-            local sel2, list_btn2 = me:list(npc, '어떤 투구를 드릴까요?', { '진비투구를 주십시오.', '경비투구를 주십시오.', '법비모를 주십시오.', '격비모를 주십시오.', '어떤 투구들이 있는지 알려주십시오.' }, { prev = false })
+            local sel2, list_btn2 = me:list(npc, '어떤 투구를 드릴까요?',
+                { '진비투구를 주십시오.', '경비투구를 주십시오.', '법비모를 주십시오.', '격비모를 주십시오.', '어떤 투구들이 있는지 알려주십시오.' }, { prev = false })
             if list_btn2 == DIALOG_RESULT.QUIT then
                 return
             end
@@ -96,7 +103,8 @@ return {
                     return
                 end
                 if code == enum.exchange_result.LACK_CAPACITY then
-                    me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', { prev = false, next = false })
+                    me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.',
+                        { prev = false, next = false })
                     return
                 end
                 q:complete()
@@ -105,7 +113,9 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, '혹시 아실지 모르겠지만 도삭산선비족,도삭산흉노족의 가면을 이용하면 더 좋은 투구를 만드실 수 있을거에요.\n\n저도 자세한 방법은 모르지만요. 하여튼 너무나 감사해요. 다음에 꼭 다시 들러주세요~', { prev = false, next = false })
+                btn = me:dialog(npc,
+                    '혹시 아실지 모르겠지만 도삭산선비족,도삭산흉노족의 가면을 이용하면 더 좋은 투구를 만드실 수 있을거에요.\n\n저도 자세한 방법은 모르지만요. 하여튼 너무나 감사해요. 다음에 꼭 다시 들러주세요~',
+                    { prev = false, next = false })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end

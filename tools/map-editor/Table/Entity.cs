@@ -17,7 +17,9 @@ namespace MapEditor.Table
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             if (Derived.Contains(propertyName) == false && Equals(before, after) == false)
+            {
                 Edited?.Invoke(this, propertyName, before, after);
+            }
         }
     }
 }

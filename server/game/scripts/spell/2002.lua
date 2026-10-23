@@ -19,7 +19,7 @@ return {
         local effect = 3
         local sound = 25
         local buff_time = 60
-        spell.disguise(me, mobs, name, sp, {mp=mp, sound=sound, effect=effect, buff_time=buff_time})
+        spell.disguise(me, mobs, name, sp, { mp = mp, sound = sound, effect = effect, buff_time = buff_time })
     end,
 
     -- on_buff = function(me, sp)

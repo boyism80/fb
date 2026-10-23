@@ -65,34 +65,48 @@ namespace Http.Service
         {
             var connectionString = _configuration.GetValue<string>("ConnectionStrings:MySql:unified");
             if (string.IsNullOrEmpty(connectionString))
+            {
                 throw new Exception("Unified connection string not found");
+            }
+
             return new MySqlConnection(connectionString);
         }
 
         public MySqlConnection GetGlobalConnection(uint world)
         {
             if (world == 0)
+            {
                 throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified.");
+            }
 
             var connectionString = _configuration.GetValue<string>($"ConnectionStrings:MySql:worlds:{world}:global");
             if (string.IsNullOrEmpty(connectionString))
+            {
                 throw new Exception($"World {world} global connection string not found");
+            }
+
             return new MySqlConnection(connectionString);
         }
 
         public MySqlConnection GetDataConnection(uint world, int index)
         {
             if (world == 0)
+            {
                 throw new ArgumentException("World must be greater than 0. Use GetUnifiedConnection() for unified.");
+            }
 
             if (index < 0)
+            {
                 throw new ArgumentException("Shard index must be >= 0. Use GetWorldGlobalConnection() for world-global.");
+            }
 
             var dataArray = _configuration.GetSection($"ConnectionStrings:MySql:worlds:{world}:data")
                 .Get<string[]>();
 
             if (dataArray == null || index >= dataArray.Length)
+            {
                 throw new Exception($"Shard index {index} not found for world {world}");
+            }
 
             return new MySqlConnection(dataArray[index]);
         }
@@ -101,7 +115,9 @@ namespace Http.Service
         {
             var shardSize = GetShardDbSize(world);
             if (shardSize == 0)
+            {
                 throw new Exception($"No shards available for world {world}");
+            }
 
             var shardIndex = (int)(id % shardSize);
             return GetDataConnection(world, shardIndex);
@@ -110,7 +126,9 @@ namespace Http.Service
         public uint GetShardDbSize(uint world)
         {
             if (world == 0)
+            {
                 throw new ArgumentException("World must be greater than 0. Unified has no shards.");
+            }
 
             var dataArray = _configuration.GetSection($"ConnectionStrings:MySql:worlds:{world}:data")
                 .Get<string[]>();
@@ -128,7 +146,9 @@ namespace Http.Service
         private T Bind<T>() where T : class, IRepository
         {
             if (_repositories.TryGetValue(typeof(T), out var repository))
+            {
                 return repository as T;
+            }
 
             repository = ActivatorUtilities.CreateInstance(_serviceProvider, typeof(T)) as T;
             _repositories.Add(typeof(T), repository);
@@ -139,7 +159,9 @@ namespace Http.Service
         {
             var shardSize = GetShardDbSize(world);
             if (shardSize == 0)
+            {
                 throw new Exception($"shard db size cannot be zero for world {world}");
+            }
 
             foreach (var g in idList.Distinct().GroupBy(id => (int)(id % shardSize)))
             {
@@ -151,21 +173,31 @@ namespace Http.Service
         {
             var shardSize = GetShardDbSize(world);
             if (shardSize == 0)
+            {
                 throw new Exception($"shard db size cannot be zero for world {world}");
+            }
 
             var groups = idList.Distinct().GroupBy(id =>
             {
                 if (id == null)
+                {
                     return -1; // Use -1 as marker for world-global
+                }
                 else
+                {
                     return (int)(id.Value % shardSize);
+                }
             });
             foreach (var g in groups)
             {
                 if (g.Key == -1)
+                {
                     yield return (GetGlobalConnection(world), g.ToArray());
+                }
                 else
+                {
                     yield return (GetDataConnection(world, g.Key), g.ToArray());
+                }
             }
         }
 
@@ -173,23 +205,33 @@ namespace Http.Service
         {
             var shardSize = GetShardDbSize(world);
             if (shardSize == 0)
+            {
                 throw new Exception($"shard db size cannot be zero for world {world}");
+            }
 
             var groups = values.GroupBy(value =>
             {
                 var hash = selector(value);
                 if (hash == null)
+                {
                     return -1; // Use -1 as marker for world-global
+                }
                 else
+                {
                     return (int)(hash.Value % shardSize);
+                }
             });
 
             foreach (var g in groups)
             {
                 if (g.Key == -1)
+                {
                     yield return (GetGlobalConnection(world), g.ToArray());
+                }
                 else
+                {
                     yield return (GetDataConnection(world, g.Key), g.ToArray());
+                }
             }
         }
 

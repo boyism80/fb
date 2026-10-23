@@ -17,7 +17,8 @@ return {
             return
         end
         ::NPC_182_0010::
-        btn = me:dialog(npc, '그나저나 참 친절한 분이시군요. 생판 모르는 남을 위해 그 머나먼 일본과 이 중국을 왕복하다니. 탄복했습니다.', { prev = false, next = true })
+        btn = me:dialog(npc, '그나저나 참 친절한 분이시군요. 생판 모르는 남을 위해 그 머나먼 일본과 이 중국을 왕복하다니. 탄복했습니다.',
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.PREV then
             goto NPC_182_0001
         end

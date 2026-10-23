@@ -59,9 +59,14 @@ namespace MapEditor.Control
         {
             var view = (PaletteView)d;
             if (e.OldValue is MainWindowViewModel old)
+            {
                 old.PropertyChanged -= view.OnEditorPropertyChanged;
+            }
+
             if (e.NewValue is MainWindowViewModel editor)
+            {
                 editor.PropertyChanged += view.OnEditorPropertyChanged;
+            }
         }
 
         private void OnEditorPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -94,7 +99,9 @@ namespace MapEditor.Control
             var column = (int)(point.X / CellSize);
             var row = (int)((point.Y + _offset) / CellSize);
             if (column >= Columns)
+            {
                 return -1;
+            }
 
             var id = row * Columns + column + 1;
             return id <= Count ? id : -1;
@@ -103,7 +110,9 @@ namespace MapEditor.Control
         public void ScrollTo(int id)
         {
             if (id <= 0)
+            {
                 return;
+            }
 
             var top = (id - 1) / Columns * CellSize;
             if (top < _offset || top + CellSize > _offset + _viewport.Height)
@@ -137,7 +146,9 @@ namespace MapEditor.Control
             dc.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var assets = Editor?.Assets;
             if (assets == null)
+            {
                 return;
+            }
 
             var size = CellSize;
             var firstRow = (int)(_offset / size);
@@ -148,7 +159,9 @@ namespace MapEditor.Control
                 {
                     var id = row * Columns + column + 1;
                     if (id > Count)
+                    {
                         break;
+                    }
 
                     var rect = new Rect(column * size + 1, row * size - _offset + 1, size - 2, size - 2);
                     dc.DrawRectangle(CellBrush, null, rect);
@@ -162,9 +175,13 @@ namespace MapEditor.Control
                     }
 
                     if (id == Selected)
+                    {
                         dc.DrawRectangle(null, SelectedPen, rect);
+                    }
                     else if (id == _hover)
+                    {
                         dc.DrawRectangle(null, HoverPen, rect);
+                    }
                 }
             }
 
@@ -200,7 +217,9 @@ namespace MapEditor.Control
             base.OnMouseDown(e);
             var id = IdAt(e.GetPosition(this));
             if (id <= 0 || Editor == null)
+            {
                 return;
+            }
 
             if (Kind == PaletteKind.Tile)
             {
@@ -213,7 +232,10 @@ namespace MapEditor.Control
                 Editor.Layer = EditLayer.Object;
             }
             if (Editor.Tool != EditTool.Rect && Editor.Tool != EditTool.Fill)
+            {
                 Editor.Tool = EditTool.Brush;
+            }
+
             InvalidateVisual();
         }
 

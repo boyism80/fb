@@ -67,7 +67,8 @@ return {
                     return
                 end
                 ::NPC_472_0031::
-                b = me:dialog(npc, "이런 참혹한 일이 벌어지고 있단 말인가! 아아, 인간의 양심을 가지고서 이런 참혹한 광경을 외면 할 수는 없는 일이야.", { prev = true, next = true })
+                b = me:dialog(npc, "이런 참혹한 일이 벌어지고 있단 말인가! 아아, 인간의 양심을 가지고서 이런 참혹한 광경을 외면 할 수는 없는 일이야.",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end

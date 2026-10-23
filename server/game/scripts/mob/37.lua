@@ -33,7 +33,8 @@ return {
             return
         end
 
-        local btn = me:dialog(mob, '당연히 아무도 모르는 곳에 잘 숨겨 두었소. 음.. 하지만 다른분도 아닌 용왕님께서 병이 위중하시다 하니, 내 기꺼이 내 간을 용왕님께 드리리다.', { prev = false, next = true })
+        local btn = me:dialog(mob, '당연히 아무도 모르는 곳에 잘 숨겨 두었소. 음.. 하지만 다른분도 아닌 용왕님께서 병이 위중하시다 하니, 내 기꺼이 내 간을 용왕님께 드리리다.',
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

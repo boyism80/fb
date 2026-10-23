@@ -23,7 +23,8 @@ local function run_snow_helmet_info(me, npc)
     if d == DIALOG_RESULT.QUIT then
         return
     end
-    d = me:dialog(npc, "갓 제작한 눈꽃투구는 그 한기가 너무 강력해, 착용자의 체력과 마력을 매우 많이 앗아간다는 치명적인 결함을 가지고 있지요.", { prev = false, next = true })
+    d = me:dialog(npc, "갓 제작한 눈꽃투구는 그 한기가 너무 강력해, 착용자의 체력과 마력을 매우 많이 앗아간다는 치명적인 결함을 가지고 있지요.",
+        { prev = false, next = true })
     if d == DIALOG_RESULT.QUIT then
         return
     end
@@ -56,12 +57,14 @@ local function run_snow_helmet_info(me, npc)
     if d == DIALOG_RESULT.QUIT then
         return
     end
-    d = me:dialog(npc, "첫번째 단계는 눈꽃얼음 10개, 두번째 단계에는 눈꽃얼음 20개, 그 다음 단계에는 30개가 필요하고, 그렇게 마지막 열단계 째에는 100개의 눈꽃얼음이 필요합니다.", { prev = false, next = true })
+    d = me:dialog(npc, "첫번째 단계는 눈꽃얼음 10개, 두번째 단계에는 눈꽃얼음 20개, 그 다음 단계에는 30개가 필요하고, 그렇게 마지막 열단계 째에는 100개의 눈꽃얼음이 필요합니다.",
+        { prev = false, next = true })
     if d == DIALOG_RESULT.QUIT then
         return
     end
 
-    sel, btn = me:list(npc, "만약 눈꽃투구와, 눈꽃얼음을 가져오셨다면 더 단단하게 압축하여 결함률을 줄여드리겠습니다.", { "예. 부탁드리겠습니다.", "아니오... 다음에..." }, { prev = false })
+    sel, btn = me:list(npc, "만약 눈꽃투구와, 눈꽃얼음을 가져오셨다면 더 단단하게 압축하여 결함률을 줄여드리겠습니다.", { "예. 부탁드리겠습니다.", "아니오... 다음에..." },
+        { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

@@ -137,15 +137,15 @@ local CASES = {
             target:set_current_hp_mp(10000, 10000)
             state.expected_mp = caster:mp() - 40
         end,
-condition = function(packet)
-    if packet.text == nil then
-        return nil
-    end
-    if skill.is_cast_ready(packet.text, "시력회복") then
-        return true
-    end
-    return false
-end,
+        condition = function(packet)
+            if packet.text == nil then
+                return nil
+            end
+            if skill.is_cast_ready(packet.text, "시력회복") then
+                return true
+            end
+            return false
+        end,
         post = function(caster, _, state)
             return caster:mp() == state.expected_mp
         end,
@@ -159,15 +159,15 @@ end,
             target:set_current_hp_mp(10000, 10000)
             state.expected_mp = caster:mp() - 30
         end,
-condition = function(packet)
-    if packet.text == nil then
-        return nil
-    end
-    if skill.is_cast_ready(packet.text, "퇴마주") then
-        return true
-    end
-    return false
-end,
+        condition = function(packet)
+            if packet.text == nil then
+                return nil
+            end
+            if skill.is_cast_ready(packet.text, "퇴마주") then
+                return true
+            end
+            return false
+        end,
         post = function(caster, _, state)
             return caster:mp() == state.expected_mp
         end,
@@ -181,15 +181,15 @@ end,
             target:set_current_hp_mp(10000, 10000)
             state.expected_mp = caster:mp() - 30
         end,
-condition = function(packet)
-    if packet.text == nil then
-        return nil
-    end
-    if skill.is_cast_ready(packet.text, "파혼술") then
-        return true
-    end
-    return false
-end,
+        condition = function(packet)
+            if packet.text == nil then
+                return nil
+            end
+            if skill.is_cast_ready(packet.text, "파혼술") then
+                return true
+            end
+            return false
+        end,
         post = function(caster, _, state)
             return caster:mp() == state.expected_mp
         end,
@@ -203,15 +203,15 @@ end,
             target:set_current_hp_mp(10000, 10000)
             state.expected_mp = caster:mp() - 30
         end,
-condition = function(packet)
-    if packet.text == nil then
-        return nil
-    end
-    if skill.is_cast_ready(packet.text, "해독") then
-        return true
-    end
-    return false
-end,
+        condition = function(packet)
+            if packet.text == nil then
+                return nil
+            end
+            if skill.is_cast_ready(packet.text, "해독") then
+                return true
+            end
+            return false
+        end,
         post = function(caster, _, state)
             return caster:mp() == state.expected_mp
         end,
@@ -225,15 +225,15 @@ end,
             target:set_current_hp_mp(10000, 10000)
             state.expected_mp = caster:mp() - 30
         end,
-condition = function(packet)
-    if packet.text == nil then
-        return nil
-    end
-    if skill.is_cast_ready(packet.text, "활력") then
-        return true
-    end
-    return false
-end,
+        condition = function(packet)
+            if packet.text == nil then
+                return nil
+            end
+            if skill.is_cast_ready(packet.text, "활력") then
+                return true
+            end
+            return false
+        end,
         post = function(caster, _, state)
             return caster:mp() == state.expected_mp
         end,

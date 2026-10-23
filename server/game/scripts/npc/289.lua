@@ -11,7 +11,8 @@ return {
         if not me:has_items("황매주", 1) then
             return
         end
-        button = me:dialog(npc, string.format("오! %s, 한수가 보내서 왔구만... 그 친구 요즘 근황이 어떠하던가?", me:name()), { prev = false, next = true })
+        button = me:dialog(npc, string.format("오! %s, 한수가 보내서 왔구만... 그 친구 요즘 근황이 어떠하던가?", me:name()),
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

@@ -83,7 +83,9 @@ namespace MapEditor.Table
         {
             var table = new DoorTable(path);
             if (File.Exists(path) == false)
+            {
                 return table;
+            }
 
             table._written = File.GetLastWriteTimeUtc(path);
             var workbook = XlsxFile.Open(path);
@@ -92,7 +94,9 @@ namespace MapEditor.Table
             {
                 var row = pairs.GetRow(r);
                 if (int.TryParse(XlsxFile.Text(row, 0), out var id) == false)
+                {
                     continue;
+                }
 
                 int.TryParse(XlsxFile.Text(row, 1), out var open);
                 int.TryParse(XlsxFile.Text(row, 2), out var close);
@@ -104,7 +108,9 @@ namespace MapEditor.Table
             {
                 var row = doors.GetRow(r);
                 if (int.TryParse(XlsxFile.Text(row, 0), out var id) == false)
+                {
                     continue;
+                }
 
                 table.Doors.Add(new DoorModel { Id = id, PairsText = XlsxFile.Text(row, 1) });
             }
@@ -118,9 +124,15 @@ namespace MapEditor.Table
         {
             var copy = new DoorTable(_path);
             foreach (var pair in Pairs)
+            {
                 copy.Pairs.Add(new DoorPair { Id = pair.Id, Open = pair.Open, Close = pair.Close });
+            }
+
             foreach (var door in Doors)
+            {
                 copy.Doors.Add(new DoorModel { Id = door.Id, Pairs = door.Pairs.ToList() });
+            }
+
             return copy;
         }
 
@@ -135,7 +147,10 @@ namespace MapEditor.Table
                 foreach (var (from, to) in new[] { (pair.Open, pair.Close), (pair.Close, pair.Open) })
                 {
                     if (partners.TryGetValue((ushort)from, out var set) == false)
+                    {
                         partners[(ushort)from] = set = new HashSet<ushort>();
+                    }
+
                     set.Add((ushort)to);
                 }
             }
@@ -152,7 +167,9 @@ namespace MapEditor.Table
             foreach (var door in Find(width, height, objects).Where(d => d.Opened))
             {
                 for (int i = 0; i < door.Width; i++)
+                {
                     copy[door.Y * width + door.X + i] = (ushort)FindPair(door.Model.Pairs[i]).Close;
+                }
             }
             return copy;
         }
@@ -179,7 +196,9 @@ namespace MapEditor.Table
                     foreach (var model in models)
                     {
                         if (x + model.Pairs.Count > width)
+                        {
                             continue;
+                        }
 
                         var opened = true;
                         var closed = true;
@@ -217,7 +236,9 @@ namespace MapEditor.Table
         public void Save()
         {
             if (File.GetLastWriteTimeUtc(_path) != _written)
+            {
                 throw new InvalidOperationException("door.xlsx changed outside the editor; restart the editor to load it before saving");
+            }
 
             var workbook = XlsxFile.Open(_path);
             WriteRows(workbook.GetSheet("door_pair"), Pairs.Select(p => new[] { p.Id.ToString(), p.Open.ToString(), p.Close.ToString() }).ToList(), 3);
@@ -231,13 +252,17 @@ namespace MapEditor.Table
             {
                 var row = sheet.GetRow(r);
                 if (row != null)
+                {
                     sheet.RemoveRow(row);
+                }
             }
             for (int i = 0; i < rows.Count; i++)
             {
                 var row = sheet.CreateRow(XlsxFile.FirstDataRow + i);
                 for (int c = 0; c < columns; c++)
+                {
                     XlsxFile.SetText(row, c, rows[i][c], numeric: true);
+                }
             }
         }
     }

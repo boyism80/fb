@@ -12,7 +12,7 @@ return {
         end
 
         ::NPC_53_0002::
-        local selected, button = me:list(npc, '부여-일본쾌속승선권 한장 사시려나?', {'네, 한장 주세요.', '혹시 사기꾼 아냐?'}, { prev = true })
+        local selected, button = me:list(npc, '부여-일본쾌속승선권 한장 사시려나?', { '네, 한장 주세요.', '혹시 사기꾼 아냐?' }, { prev = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -21,7 +21,8 @@ return {
         end
 
         if selected == 1 then
-            local selected2, button2 = me:list(npc, '부여-일본쾌속승선권.. 한장에 8000원에 드리지. 어때?', {'8000원에 사죠.', '너무 비싼데...'}, { prev = false })
+            local selected2, button2 = me:list(npc, '부여-일본쾌속승선권.. 한장에 8000원에 드리지. 어때?', { '8000원에 사죠.', '너무 비싼데...' },
+                { prev = false })
             if button2 == DIALOG_RESULT.QUIT then
                 return
             end
@@ -63,7 +64,7 @@ return {
                 end
 
                 ::NPC_53_0005::
-                local selected3, button3 = me:list(npc, '살꺼지?', {'그러죠 그럼..', '안살래요.'}, { prev = true })
+                local selected3, button3 = me:list(npc, '살꺼지?', { '그러죠 그럼..', '안살래요.' }, { prev = true })
                 if button3 == DIALOG_RESULT.QUIT then
                     return
                 end

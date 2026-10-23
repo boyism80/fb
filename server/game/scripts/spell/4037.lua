@@ -4,8 +4,8 @@ local spell = require('lib.spell')
 
 return {
     on_cast = function(me, you, sp)
-        local hp = me:mp()*2
-        local mp = me:mp()//2
+        local hp = me:mp() * 2
+        local mp = me:mp() // 2
         local sound = 95
         local effect = 64
         local delay = math.min(60, me:maxmp() // 10000)
@@ -31,7 +31,7 @@ return {
             end
         end
         me:spell(sp):delay(delay)
-        spell.heal(me, you, sp, {hp=hp, mp=mp, sound=sound, effect=effect})
+        spell.heal(me, you, sp, { hp = hp, mp = mp, sound = sound, effect = effect })
     end,
 
     -- on_buff = function(me, sp)

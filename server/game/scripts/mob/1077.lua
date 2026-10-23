@@ -42,7 +42,8 @@ return {
             return
         end
 
-        sel, list_btn = me:list(mob, '글쎄요... 워낙 지체가 높으신 분이라 저도 확실히는 모르겠으나, 사방이 막혀있고 입구가 좋은 곳에 살고 있다 들었습니다.', { '좋다. 또 묻겠다.' }, { prev = false })
+        sel, list_btn = me:list(mob, '글쎄요... 워낙 지체가 높으신 분이라 저도 확실히는 모르겠으나, 사방이 막혀있고 입구가 좋은 곳에 살고 있다 들었습니다.',
+            { '좋다. 또 묻겠다.' }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
@@ -77,7 +78,8 @@ return {
             return
         end
 
-        sel, list_btn = me:list(mob, '아예..예.. 복어대장은 그 긴 소매에 항시 중요한 것들을 숨기고 다닌다 합니다. 거기에 뭔가 중요한 문서가 있지 않을까 합니다.', { '음 그럴듯 하군.' }, { prev = false })
+        sel, list_btn = me:list(mob, '아예..예.. 복어대장은 그 긴 소매에 항시 중요한 것들을 숨기고 다닌다 합니다. 거기에 뭔가 중요한 문서가 있지 않을까 합니다.',
+            { '음 그럴듯 하군.' }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end

@@ -133,16 +133,22 @@
                                         <button class="text-link"
                                                 title="@GetChangeRoleButtonTitle(user)"
                                                 @onclick="() => ShowChangeRoleModal(user)"
-                                                disabled="@isProcessing">역할</button>
+                                                disabled="@isProcessing">
+                                            역할
+                                        </button>
                                         @if (user.IsBanned)
                                         {
                                             <button class="text-link" @onclick="() => ShowUnbanModal(user)"
-                                                disabled="@isProcessing">밴 해제</button>
+                                                    disabled="@isProcessing">
+                                                밴 해제
+                                            </button>
                                         }
                                         else
                                         {
                                             <button class="text-link" @onclick="() => ShowBanModal(user)"
-                                                disabled="@isProcessing">밴</button>
+                                                    disabled="@isProcessing">
+                                                밴
+                                            </button>
                                         }
                                     </div>
                                 </td>
@@ -173,7 +179,9 @@
                             var pageNum = i;
                             <li>
                                 <a class="stitch-page-btn @(currentPage == pageNum ? "active" : "")" href="#"
-                                   @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>@pageNum</a>
+                                   @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>
+                                    @pageNum
+                                </a>
                             </li>
                         }
                         <li>
@@ -211,33 +219,33 @@
                 <button type="button" class="btn-close" @onclick="CloseBanModal"></button>
             </div>
             <div class="stitch-modal-body">
-                    <EditForm Model="@banModel" OnValidSubmit="@HandleBan">
-                        <DataAnnotationsValidator />
-                        <div class="mb-3">
-                            <label for="banReason" class="form-label">사유</label>
-                            <InputTextArea id="banReason" class="form-control" rows="3" @bind-Value="banModel.Reason" />
-                            <ValidationMessage For="@(() => banModel.Reason)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="banDays" class="form-label">밴 기간</label>
-                            <InputSelect id="banDays" class="form-select" @bind-Value="banModel.Days">
-                                <option value="">영구</option>
-                                <option value="7">7일</option>
-                                <option value="15">15일</option>
-                                <option value="30">30일</option>
-                            </InputSelect>
-                        </div>
-                        <div class="stitch-modal-footer">
-                            <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseBanModal">취소</button>
-                            <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                }
-                                밴 처리
-                            </button>
-                        </div>
-                    </EditForm>
+                <EditForm Model="@banModel" OnValidSubmit="@HandleBan">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="banReason" class="form-label">사유</label>
+                        <InputTextArea id="banReason" class="form-control" rows="3" @bind-Value="banModel.Reason" />
+                        <ValidationMessage For="@(() => banModel.Reason)" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="banDays" class="form-label">밴 기간</label>
+                        <InputSelect id="banDays" class="form-select" @bind-Value="banModel.Days">
+                            <option value="">영구</option>
+                            <option value="7">7일</option>
+                            <option value="15">15일</option>
+                            <option value="30">30일</option>
+                        </InputSelect>
+                    </div>
+                    <div class="stitch-modal-footer">
+                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseBanModal">취소</button>
+                        <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            밴 처리
+                        </button>
+                    </div>
+                </EditForm>
             </div>
         </div>
     </div>
@@ -256,7 +264,9 @@
                 <p>이 유저의 밴을 해제하시겠습니까?</p>
                 @if (selectedUser != null && !string.IsNullOrEmpty(selectedUser.BanReason))
                 {
-                    <p><strong>현재 밴 사유:</strong> @selectedUser.BanReason</p>
+                    <p>
+                        <strong>현재 밴 사유:</strong> @selectedUser.BanReason
+                    </p>
                 }
                 <div class="stitch-modal-footer">
                     <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseUnbanModal">취소</button>
@@ -288,7 +298,7 @@
                     <div class="mb-3">
                         <label for="currentRole" class="form-label">현재 역할</label>
                         <input type="text" class="form-control" id="currentRole"
-                            value="@((Role)(selectedUser?.Role ?? (byte)Role.User))" readonly />
+                               value="@((Role)(selectedUser?.Role ?? (byte)Role.User))" readonly />
                     </div>
                     <div class="mb-3">
                         <label for="newRole" class="form-label">새 역할</label>
@@ -326,8 +336,10 @@
 }
 
 @code {
+
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
+
     private UserListResult userList;
     private string searchTerm = string.Empty;
     private int currentPage = 1;
@@ -379,14 +391,17 @@
             {
                 currentUserId = uid;
             }
+
             if (nameClaim != null)
             {
                 currentUserName = nameClaim.Value;
             }
+
             if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
             {
                 currentUserRole = role;
             }
+
             if (loginWorldClaim != null && uint.TryParse(loginWorldClaim.Value, out var world))
             {
                 loginWorld = world;
@@ -400,9 +415,9 @@
     private bool IsSelfUser(UserListItem user)
     {
         return user.Id == currentUserId
-            && loginWorld.HasValue
-            && selectedWorld.HasValue
-            && selectedWorld.Value == loginWorld.Value;
+               && loginWorld.HasValue
+               && selectedWorld.HasValue
+               && selectedWorld.Value == loginWorld.Value;
     }
 
     private bool CanModifyUser(UserListItem user)
@@ -478,7 +493,10 @@
             if (queryParams.TryGetValue("page", out var pageValue) && int.TryParse(pageValue, out var page) && page >= 1)
                 currentPage = page;
         }
-        catch { /* ignore URL parse errors */ }
+        catch
+        {
+            /* ignore URL parse errors */
+        }
     }
 
     private void UpdateUsersUrl()
@@ -495,7 +513,10 @@
             var url = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("/users", query);
             Navigation.NavigateTo(url);
         }
-        catch { /* ignore */ }
+        catch
+        {
+            /* ignore */
+        }
     }
 
     private async Task LoadUsers()
@@ -510,6 +531,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
+
             await using var scope = ScopeFactory.CreateAsyncScope();
             var userService = scope.ServiceProvider.GetRequiredService<UserService>();
             userList = await userService.GetUsers(
@@ -680,6 +702,7 @@
                 CloseChangeRoleModal();
                 return;
             }
+
             var character = await dbContext.Character.Get(selectedWorld.Value, selectedUser.Id);
             if (character == null)
             {
@@ -715,6 +738,7 @@
                     };
                     await customProvider.MarkUserAsAuthenticated(authData);
                 }
+
                 currentUserRole = newRole;
             }
 
@@ -755,6 +779,7 @@
                 CloseBanModal();
                 return;
             }
+
             await using var scope = ScopeFactory.CreateAsyncScope();
             var banService = scope.ServiceProvider.GetRequiredService<BanService>();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
@@ -802,6 +827,7 @@
                 CloseUnbanModal();
                 return;
             }
+
             await using var scope = ScopeFactory.CreateAsyncScope();
             var banService = scope.ServiceProvider.GetRequiredService<BanService>();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
@@ -856,4 +882,5 @@
 
         public string SecretKey { get; set; } = string.Empty;
     }
+
 }

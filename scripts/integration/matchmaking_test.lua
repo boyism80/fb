@@ -81,7 +81,10 @@ local function f1_register(bot, option, member)
         progress(bot, "FAILED: F1 MENU DID NOT OPEN")
         return false
     end
-    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p)
+            return p.type ==
+                "pursuit"
+        end, DIALOG_WAIT_MS) == nil then
         progress(bot, "FAILED: MATCHMAKING MENU DID NOT OPEN")
         return false
     end
@@ -120,7 +123,10 @@ local function f1_register_await_proposal(bot, option)
         progress(bot, "FAILED: F1 MENU DID NOT OPEN")
         return false
     end
-    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+    if bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p)
+            return p.type ==
+                "pursuit"
+        end, DIALOG_WAIT_MS) == nil then
         progress(bot, "FAILED: MATCHMAKING MENU DID NOT OPEN")
         return false
     end
@@ -318,7 +324,8 @@ local function finish_match(ctx, bot_indices, fatal_pos)
             local model = id2map(ctx:bot(bot_indices[pos]):map())
             maps[#maps + 1] = string.format("%d=%s", bot_indices[pos], tostring(model ~= nil and model:name() or nil))
         end
-        progress(ctx:bot(bot_indices[1]), "FAILED: DID NOT RETURN TO " .. HOME_MAP .. " maps=" .. table.concat(maps, ", "))
+        progress(ctx:bot(bot_indices[1]),
+            "FAILED: DID NOT RETURN TO " .. HOME_MAP .. " maps=" .. table.concat(maps, ", "))
         dump_match_bots(ctx, bot_indices, "matchmaking:not_home")
         return false
     end
@@ -483,7 +490,7 @@ test_suite {
             return true
         end,
 
-        confirm_lanes({0, 1, 2, 3, 4}, {index = 5, option = OPT_MATCH_2}),
+        confirm_lanes({ 0, 1, 2, 3, 4 }, { index = 5, option = OPT_MATCH_2 }),
 
         function(ctx)
             if aborted then
@@ -630,7 +637,10 @@ test_suite {
             if f:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
                 return abort_remaining(f, "FAILED: F1 MENU DID NOT OPEN (DEQUEUE)")
             end
-            if f:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p) return p.type == "pursuit" end, DIALOG_WAIT_MS) == nil then
+            if f:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING), function(p)
+                    return p.type ==
+                        "pursuit"
+                end, DIALOG_WAIT_MS) == nil then
                 return abort_remaining(f, "FAILED: MATCHMAKING MENU DID NOT OPEN (DEQUEUE)")
             end
             local left = f:request(
@@ -705,7 +715,7 @@ test_suite {
             end
 
             progress(ctx:bot(4), "STEP 9: FINISH MATCH 1 AND RETURN HOME")
-            if finish_match(ctx, {4, 5}, 1) == false then
+            if finish_match(ctx, { 4, 5 }, 1) == false then
                 return abort_remaining(ctx:bot(4), "FAILED: MATCH 1 FINISH")
             end
 

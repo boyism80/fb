@@ -81,9 +81,14 @@ namespace MapEditor.Mcp
             {
                 var doc = RequireDocument();
                 if (cells == null || cells.Length == 0)
+                {
                     throw new ArgumentException("cells must not be empty");
+                }
+
                 if (doc.Map.Contains(x, y) == false || doc.Map.Contains(x + cells.Length - 1, y) == false)
+                {
                     throw new ArgumentException("the door does not fit in the map");
+                }
 
                 var modify = modifyDoor == null
                     ? null

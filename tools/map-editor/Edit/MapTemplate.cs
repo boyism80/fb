@@ -62,7 +62,10 @@ namespace MapEditor.Edit
         {
             var grid = new ushort[Width * Height];
             foreach (var cell in Cells.Where(c => c.Object is > 0))
+            {
                 grid[cell.Dy * Width + cell.Dx] = cell.Object.Value;
+            }
+
             return grid;
         }
 
@@ -78,7 +81,9 @@ namespace MapEditor.Edit
                 : Cells.Where(c => c.Tile != null).Select(c => (c.Dx, c.Dy, Value: (int)c.Tile.Value));
             var list = keyed.ToList();
             if (list.Count == 0)
+            {
                 return "";
+            }
 
             var left = list.Min(c => c.Dx);
             var top = list.Min(c => c.Dy);
@@ -122,14 +127,21 @@ namespace MapEditor.Edit
         public static List<MapTemplate> Read(string path)
         {
             if (File.Exists(path) == false)
+            {
                 return new List<MapTemplate>();
+            }
 
             using var reader = new BinaryReader(File.OpenRead(path), Encoding.UTF8);
             if (reader.ReadBytes(4).SequenceEqual(Magic) == false)
+            {
                 throw new InvalidDataException($"{path} is not a template file");
+            }
+
             var version = reader.ReadUInt16();
             if (version > Version)
+            {
                 throw new InvalidDataException($"{path} has a newer template format ({version})");
+            }
 
             var count = reader.ReadInt32();
             var templates = new List<MapTemplate>(count);
@@ -196,9 +208,13 @@ namespace MapEditor.Edit
                 }
             }
             if (File.Exists(path))
+            {
                 File.Replace(temp, path, path + ".bak");
+            }
             else
+            {
                 File.Move(temp, path);
+            }
         }
     }
 
@@ -254,7 +270,9 @@ namespace MapEditor.Edit
                 var byObject = template.Cells.Any(c => c.Object is > 0);
                 var keys = byObject ? template.Cells.Where(c => c.Object is > 0).ToList() : template.Cells.Where(c => c.Tile != null).ToList();
                 if (keys.Count < (byObject ? 1 : 2))
+                {
                     continue;
+                }
 
                 var anchor = keys[0];
                 var index = byObject ? _anchors : _tileAnchors;
@@ -263,7 +281,10 @@ namespace MapEditor.Edit
                 foreach (var key in ids)
                 {
                     if (index.TryGetValue(key, out var list) == false)
+                    {
                         index[key] = list = new List<(MapTemplate, TemplateCell, bool)>();
+                    }
+
                     list.Add((template, anchor, byObject));
                 }
             }
@@ -280,9 +301,14 @@ namespace MapEditor.Edit
                 {
                     var i = y * map.Width + x;
                     if (map.Objects[i] != 0 && _anchors.TryGetValue(map.Objects[i], out var byObject))
+                    {
                         Match(map, x, y, byObject, found);
+                    }
+
                     if (_tileAnchors.TryGetValue(map.Tiles[i], out var byTile))
+                    {
                         Match(map, x, y, byTile, found);
+                    }
                 }
             }
 
@@ -292,12 +318,20 @@ namespace MapEditor.Edit
             {
                 var keys = instance.Template.Cells.Where(c => c.Object is > 0).Select(c => (instance.X + c.Dx, instance.Y + c.Dy)).ToList();
                 if (keys.Count == 0)
+                {
                     keys = instance.Cells.ToList();
+                }
+
                 if (keys.Any(claimed.Contains))
+                {
                     continue;
+                }
 
                 foreach (var key in keys)
+                {
                     claimed.Add(key);
+                }
+
                 result.Add(instance);
             }
             return result;
@@ -310,7 +344,9 @@ namespace MapEditor.Edit
                 var left = x - anchor.Dx;
                 var top = y - anchor.Dy;
                 if (left < 0 || top < 0 || left + template.Width > map.Width || top + template.Height > map.Height)
+                {
                     continue;
+                }
 
                 var match = true;
                 foreach (var cell in template.Cells)
@@ -327,7 +363,9 @@ namespace MapEditor.Edit
                     }
                 }
                 if (match)
+                {
                     found.Add((new TemplateInstance { Template = template, X = left, Y = top }, template.ObjectCount * 4 + template.TileCount));
+                }
             }
         }
     }
@@ -352,9 +390,15 @@ namespace MapEditor.Edit
             var height = (Math.Max(1, template.Height) + above) * cellPixels;
             var pixels = new uint[width * height];
             foreach (var cell in template.Cells.Where(c => c.Tile != null))
+            {
                 assets.DrawTile(pixels, width, height, cell.Dx * cellPixels, (cell.Dy + above) * cellPixels, cell.Tile.Value);
+            }
+
             foreach (var cell in template.Cells.Where(c => c.Object is > 0).OrderBy(c => c.Dy).ThenBy(c => c.Dx))
+            {
                 assets.DrawObject(pixels, width, height, cell.Dx * cellPixels, (cell.Dy + above) * cellPixels, cell.Object.Value);
+            }
+
             return (pixels, width, height, above);
         }
     }

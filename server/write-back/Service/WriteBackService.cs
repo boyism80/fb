@@ -242,7 +242,9 @@ namespace WriteBack.Service
                                     entryList[i],
                                     messagesToAck[i],
                                     stoppingToken) == false)
+                                {
                                     break;
+                                }
                             }
                         }
                         else
@@ -260,7 +262,9 @@ namespace WriteBack.Service
                                     entryList[i],
                                     messagesToAck[i],
                                     stoppingToken) == false)
+                                {
                                     break;
+                                }
                             }
                         }
                     }
@@ -317,9 +321,14 @@ namespace WriteBack.Service
             for (var e = ex; e != null; e = e.InnerException)
             {
                 if (e is MySqlException mx)
+                {
                     return mx.IsTransient;
+                }
+
                 if (e is IOException || e is System.Net.Sockets.SocketException || e is TimeoutException)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -343,7 +352,9 @@ namespace WriteBack.Service
             while (true)
             {
                 if (channel.IsOpen == false)
+                {
                     return false;
+                }
 
                 try
                 {
@@ -373,7 +384,9 @@ namespace WriteBack.Service
             }
 
             if (channel.IsOpen == false)
+            {
                 return false;
+            }
 
             if (failure != null)
             {

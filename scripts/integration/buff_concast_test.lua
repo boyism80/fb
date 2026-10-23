@@ -16,9 +16,11 @@ test_suite {
 
             local restored_after_death = 0
             for _, order in ipairs({ "kill_first", "heal_first" }) do
-                local ok, text = script_step.run_script(bot, "test/integration", "concast_after_death", "concast_" .. order, order)
+                local ok, text = script_step.run_script(bot, "test/integration", "concast_after_death",
+                    "concast_" .. order, order)
                 if ok ~= true then
-                    return fail(string.format("%s: the character did not die from the concast damage (%s)", order, tostring(text)))
+                    return fail(string.format("%s: the character did not die from the concast damage (%s)", order,
+                        tostring(text)))
                 end
 
                 local mp = tonumber(tostring(text):match("mp=(%d+)"))

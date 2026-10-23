@@ -34,7 +34,9 @@ namespace AdminTool.Services
         public bool IsAllowedFileName(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName) || !SafeFileName.IsMatch(Path.GetFileName(fileName)))
+            {
                 return false;
+            }
 
             var stem = NormalizeStem(fileName);
             return _allowedStems.Value.Contains(stem);
@@ -50,7 +52,9 @@ namespace AdminTool.Services
             }
 
             if (files == null || files.Count == 0)
+            {
                 throw new InvalidOperationException("업로드할 파일이 없습니다.");
+            }
 
             var uploadBase = _options.UploadBaseUrl.TrimEnd('/');
             var client = _httpClientFactory.CreateClient(nameof(TablePublishService));
@@ -60,12 +64,16 @@ namespace AdminTool.Services
             {
                 var name = Path.GetFileName(fileName);
                 if (!IsAllowedFileName(name))
+                {
                     throw new InvalidOperationException($"허용되지 않은 테이블 파일입니다: {name}");
+                }
 
                 var stem = NormalizeStem(name);
                 var bytes = await ReadAllBytesAsync(content, cancellationToken);
                 if (bytes.Length == 0)
+                {
                     throw new InvalidOperationException($"빈 파일입니다: {name}");
+                }
 
                 var url = $"{uploadBase}/{stem}.json";
                 using var request = new HttpRequestMessage(HttpMethod.Put, url)
@@ -93,7 +101,10 @@ namespace AdminTool.Services
         {
             var stem = Path.GetFileName(fileName).Trim();
             if (stem.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
                 stem = stem[..^5];
+            }
+
             return stem.ToLowerInvariant();
         }
 
@@ -111,11 +122,15 @@ namespace AdminTool.Services
             {
                 var attr = type.GetCustomAttribute<TableAttribute>(true);
                 if (attr?.Path == null)
+                {
                     continue;
+                }
 
                 var fileName = Path.GetFileName(attr.Path);
                 if (string.IsNullOrEmpty(fileName))
+                {
                     continue;
+                }
 
                 stems.Add(NormalizeStem(fileName));
             }

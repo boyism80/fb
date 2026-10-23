@@ -823,7 +823,8 @@ return {
         if actual == expected then
             report(me, true, step)
         else
-            report(me, false, step, string.format('quest %s is %s, expected %s', tostring(id), actual, tostring(expected)))
+            report(me, false, step,
+                string.format('quest %s is %s, expected %s', tostring(id), actual, tostring(expected)))
         end
     end,
 
@@ -941,7 +942,9 @@ return {
         if actual_active == active and actual_owner == owner then
             report(me, true, step)
         else
-            report(me, false, step, string.format('active=%s owner=%s, expected active=%s owner=%s', actual_active, actual_owner, active, owner))
+            report(me, false, step,
+                string.format('active=%s owner=%s, expected active=%s owner=%s', actual_active, actual_owner, active,
+                    owner))
         end
     end,
 
@@ -1019,7 +1022,9 @@ return {
             end
         end
         local paid = split == true and counts['가시철단도'] == 3 and over ~= true and counts['도토리'] == 0
-        report(me, paid, step, string.format('split=%s over=%s 가시철단도=%d 도토리=%d', tostring(split), tostring(over), counts['가시철단도'], counts['도토리']))
+        report(me, paid, step,
+            string.format('split=%s over=%s 가시철단도=%d 도토리=%d', tostring(split), tostring(over), counts['가시철단도'],
+                counts['도토리']))
     end,
 
     madong_prepare = function(me, step)
@@ -1092,7 +1097,8 @@ return {
         local done = q ~= nil and q:completed()
         local rewarded = me:item('낙랑의두루마리3') ~= nil
         local ok = done == (completed == 'true') and rewarded == done and me:exp() == tonumber(exp)
-        report(me, ok, step, string.format('completed=%s rewarded=%s exp=%d', tostring(done), tostring(rewarded), me:exp()))
+        report(me, ok, step,
+            string.format('completed=%s rewarded=%s exp=%d', tostring(done), tostring(rewarded), me:exp()))
     end,
 
     -- transfer_to throws a C++ exception when the destination table is missing.
@@ -1167,7 +1173,8 @@ return {
         if actual == expected then
             report(me, true, step)
         else
-            report(me, false, step, string.format('retrieve %s=%s is %s, expected %s', name, tostring(count), actual, tostring(expected)))
+            report(me, false, step,
+                string.format('retrieve %s=%s is %s, expected %s', name, tostring(count), actual, tostring(expected)))
         end
     end,
 
@@ -1305,12 +1312,12 @@ return {
     end,
 
     cleanup = function(me, step)
-            local map = me:map()
-            if map ~= nil then
-                for _, obj in pairs(map:objects(OBJECT_TYPE.MOB)) do
-                    obj:destroy()
-                end
+        local map = me:map()
+        if map ~= nil then
+            for _, obj in pairs(map:objects(OBJECT_TYPE.MOB)) do
+                obj:destroy()
             end
-            report(me, true, step or 'cleanup')
+        end
+        report(me, true, step or 'cleanup')
     end
 }

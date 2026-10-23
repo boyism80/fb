@@ -11,9 +11,13 @@ namespace Runner.Converter
             var windowState = (WindowState)value;
 
             if (windowState == System.Windows.WindowState.Maximized)
+            {
                 return "/Image/normalize.png";
+            }
             else
+            {
                 return "/Image/maximize.png";
+            }
         }
 
         public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -48,7 +48,8 @@ local function run_ice_sword(me, npc)
         return false
     end
     if sel == 1 then
-        me:dialog(npc, '얼음칼은 얼음으로 만들어진 칼로써 적을 마비시킬 수 있는 능력을 가지고 있지. 단점이 있다면 수리가 안된다고 해야하나? 허허..', { prev = false, next = false })
+        me:dialog(npc, '얼음칼은 얼음으로 만들어진 칼로써 적을 마비시킬 수 있는 능력을 가지고 있지. 단점이 있다면 수리가 안된다고 해야하나? 허허..',
+            { prev = false, next = false })
         return true
     end
     if sel == 2 then
@@ -56,7 +57,9 @@ local function run_ice_sword(me, npc)
             me:dialog(npc, '얼음칼을 만들기 위해선 얼음 100개가 필요하네.', { prev = false, next = false })
             return true
         end
-        btn = me:dialog(npc, '오..모두 모아 왔구만.. 수고했네... 어디보자.. 전체적으로 얼음이 싱글탱글 하구먼.. 허허허.. 이보게..이 좋은 얼음이면..장식품으로 써도 좋아 보이는데..정말 얼음칼로 만들고 싶나?.. 흠.. 그래..할 수 없지... 만들어 주겠네...', { prev = false, next = false })
+        btn = me:dialog(npc,
+            '오..모두 모아 왔구만.. 수고했네... 어디보자.. 전체적으로 얼음이 싱글탱글 하구먼.. 허허허.. 이보게..이 좋은 얼음이면..장식품으로 써도 좋아 보이는데..정말 얼음칼로 만들고 싶나?.. 흠.. 그래..할 수 없지... 만들어 주겠네...',
+            { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return false
         end
@@ -123,7 +126,8 @@ local function run_spirit_summon_shark_weapon(me, npc)
         if sel == nil or sel ~= 1 then
             return
         end
-        sel = me:list(npc, '그래서 말인데 자네가 용왕님께 지어드렸던 보약의 재료를 가지고 오면 내 방법을 알려주도록 하지.', { '헉..별수없군요...', '차라리 모르고 말지..' }, { prev = false })
+        sel = me:list(npc, '그래서 말인데 자네가 용왕님께 지어드렸던 보약의 재료를 가지고 오면 내 방법을 알려주도록 하지.', { '헉..별수없군요...', '차라리 모르고 말지..' },
+            { prev = false })
         if sel == nil or sel ~= 1 then
             return
         end
@@ -181,7 +185,8 @@ local function run_spirit_summon_shark_weapon(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_156_0012
         end
-        me:dialog(npc, '따라서 그를 저승에서 불러내서 물어봐야 한다네..\n\n그를 저승에서 불러내는 방법은 제단을 담당하고 있는 사람한테 가서 직접 물어보시게나.', { prev = false, next = false })
+        me:dialog(npc, '따라서 그를 저승에서 불러내서 물어봐야 한다네..\n\n그를 저승에서 불러내는 방법은 제단을 담당하고 있는 사람한테 가서 직접 물어보시게나.',
+            { prev = false, next = false })
         return
     end
 
@@ -208,7 +213,8 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
     local color_name = colors[sel].color
     local gem_name = color_name .. '보석'
     local helmet_name = color_name .. '투구'
-    local confirm_opt, confirm_btn = me:list(npc, '그래.. ' .. gem_name .. '으로 어떤 아이템을 만들텐가?', { color_name .. '투구입니다.' }, { prev = false })
+    local confirm_opt, confirm_btn = me:list(npc, '그래.. ' .. gem_name .. '으로 어떤 아이템을 만들텐가?', { color_name .. '투구입니다.' },
+        { prev = false })
     if confirm_btn == DIALOG_RESULT.QUIT then
         return DIALOG_RESULT.QUIT
     end
@@ -220,7 +226,8 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
         { ['item'] = { [helmet_name] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.', { prev = false, next = false })
+        return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.',
+            { prev = false, next = false })
     end
     if code == enum.exchange_result.LACK_CAPACITY then
         return me:dialog(npc, '소지품이 가득 차서 ' .. helmet_name .. '를 받을 수 없네.', { prev = false, next = false })

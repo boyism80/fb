@@ -17,7 +17,7 @@ local function in_hwahwa_time_window()
     local t = datetime()
     local hour = t and t.hour or 0
     local minute = t and t.minute or 0
-    local allowed_hours = { [1]=true, [4]=true, [7]=true, [10]=true, [13]=true, [16]=true, [19]=true, [22]=true }
+    local allowed_hours = { [1] = true, [4] = true, [7] = true, [10] = true, [13] = true, [16] = true, [19] = true, [22] = true }
     return allowed_hours[hour] == true and minute >= 10 and minute <= 40
 end
 
@@ -159,7 +159,8 @@ local function do_frolic(me, npc)
         if s2 >= 0 and s2 <= 2 then
             if math.random(1, 100) > 5 then
                 if math.random(1, 2) == 1 then
-                    me:dialog(npc, "쳇! 그렇게 늦게 내면 내가 어떻게 이기니?\n\n이건 내가 진게 아니니까 엉덩이로 이름 쓰지 않을테야.", { prev = false, next = false })
+                    me:dialog(npc, "쳇! 그렇게 늦게 내면 내가 어떻게 이기니?\n\n이건 내가 진게 아니니까 엉덩이로 이름 쓰지 않을테야.",
+                        { prev = false, next = false })
                 else
                     me:dialog(npc, "쳇, 내가 졌잖아!\n\n안해!", { prev = false, next = false })
                 end
@@ -213,7 +214,8 @@ return {
 
 
         if not in_hwahwa_time_window() then
-            me:dialog(npc, "앗, 큰일이야. 이제 다시 귀신의 모습으로 돌아가야해. 나중에 만나자.\n\n(소녀의 씁쓸한 목소리가 귓가에 남아 메아리쳤다.)", { prev = false, next = false })
+            me:dialog(npc, "앗, 큰일이야. 이제 다시 귀신의 모습으로 돌아가야해. 나중에 만나자.\n\n(소녀의 씁쓸한 목소리가 귓가에 남아 메아리쳤다.)",
+                { prev = false, next = false })
             return
         end
 
@@ -277,9 +279,9 @@ return {
 
         if me:has_items("비장의도시락", 1) then
             if not run_dialogs(me, npc, {
-                "소녀가 당신을 본다. 시선이 당신이 들고있는 도시락으로 향한다. 하지만, 표정은 경계심이 가득하다.",
-                "어? 넌 누구야? 돌순이의 기운이 강하게 느껴지네. 돌순이의 친구니?",
-            }) then
+                    "소녀가 당신을 본다. 시선이 당신이 들고있는 도시락으로 향한다. 하지만, 표정은 경계심이 가득하다.",
+                    "어? 넌 누구야? 돌순이의 기운이 강하게 느껴지네. 돌순이의 친구니?",
+                }) then
                 return
             end
             local sel, btn = me:list(npc, "소녀가 호기심에 가득찬 눈으로 쳐다본다. 무어라 대답해야할까?", {
@@ -291,10 +293,10 @@ return {
             end
             if sel == 1 then
                 if not run_dialogs(me, npc, {
-                    "그래?! 돌순이랑 친구였구나. 반가워, 나도 돌순이 친구야. 내 이름은 화화라고해.\n\n이쁜 이름이지? 이미 죽어서 이름이 이뻐도 아무 소용없긴 하지만...",
-                    "헤헤헤, 아무튼 만나서 다행이다. 돌순이가 오지 않는 날엔 하루종일 쓸쓸하거든.\n\n나는 옛날에 폐허 동굴에서 죽어서 친구가 없었거든. 그래서 죽어서도 친구를 사귀고 싶어.",
-                    "요즘은 돌순이가 항상 도시락을 가져다줘. 굉장히 비싼 도시락같던데. 어디서 그런 돈을 구하는걸까?",
-                }) then
+                        "그래?! 돌순이랑 친구였구나. 반가워, 나도 돌순이 친구야. 내 이름은 화화라고해.\n\n이쁜 이름이지? 이미 죽어서 이름이 이뻐도 아무 소용없긴 하지만...",
+                        "헤헤헤, 아무튼 만나서 다행이다. 돌순이가 오지 않는 날엔 하루종일 쓸쓸하거든.\n\n나는 옛날에 폐허 동굴에서 죽어서 친구가 없었거든. 그래서 죽어서도 친구를 사귀고 싶어.",
+                        "요즘은 돌순이가 항상 도시락을 가져다줘. 굉장히 비싼 도시락같던데. 어디서 그런 돈을 구하는걸까?",
+                    }) then
                     return
                 end
                 local sel2, btn2 = me:list(npc, "그런데 이렇게 늦은 밤에 돌아다녀도 괜찮아? 늘 밤에 돌아다니는거야?", {
@@ -316,6 +318,7 @@ return {
             return
         end
 
-        me:dialog(npc, "소녀가 공허한 눈으로 당신을 쳐다본다. 당신에게서 무언가를 찾듯이 한참이나 살펴보다가 이윽고 조금 실망한 표정으로 다른 곳을 바라본다.", { prev = false, next = false })
+        me:dialog(npc, "소녀가 공허한 눈으로 당신을 쳐다본다. 당신에게서 무언가를 찾듯이 한참이나 살펴보다가 이윽고 조금 실망한 표정으로 다른 곳을 바라본다.",
+            { prev = false, next = false })
     end
 }

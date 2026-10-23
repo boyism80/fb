@@ -211,7 +211,9 @@ public class MarketplaceService
             {
                 await transaction.CommitAsync();
                 if (listing.SellerId != characterId)
+                {
                     throw new LogicException(ErrorCode.MarketplaceNotListingOwner);
+                }
 
                 var created = listing.Status != ListingState.ABORTED;
                 await _logService.WriteAsync("marketplace_abort_list", new
@@ -415,7 +417,9 @@ public class MarketplaceService
                     WHERE `status` = {ListingState.ACTIVE.Escape()}", null, transaction);
                 await transaction.CommitAsync();
                 if (remaining == 0)
+                {
                     break;
+                }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(200));
                 continue;
@@ -613,7 +617,9 @@ public class MarketplaceService
 
             var itemName = "unknown item name";
             if (Table.Item.TryGetValue(listing.ItemModel, out var itemModel))
+            {
                 itemName = itemModel.Name;
+            }
 
             var saleParcel = new MarketplaceParcel
             {
@@ -742,7 +748,9 @@ public class MarketplaceService
             {
                 await transaction.CommitAsync();
                 if (purchase.BuyerId != buyerId)
+                {
                     throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
+                }
 
                 var purchased = purchase.Aborted == false;
                 await _logService.WriteAsync("marketplace_abort_purchase", new

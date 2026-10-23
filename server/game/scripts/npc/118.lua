@@ -212,6 +212,7 @@ return {
         end
 
         ::NPC_118_DEFAULT::
-        me:dialog(npc, '일을 가야하는데 도시락을 깜빡 잊었네. 이를 어쩐담?! 이제와서 만들 시간도 없는데. 누가 초보 도시락이라도 팔지 않으려나.', { prev = false, next = false })
+        me:dialog(npc, '일을 가야하는데 도시락을 깜빡 잊었네. 이를 어쩐담?! 이제와서 만들 시간도 없는데. 누가 초보 도시락이라도 팔지 않으려나.',
+            { prev = false, next = false })
     end
 }

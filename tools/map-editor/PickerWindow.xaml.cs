@@ -66,7 +66,9 @@ namespace MapEditor
         {
             Selected = Items.SelectedItem as NameEntry;
             if (Selected != null)
+            {
                 DialogResult = true;
+            }
         }
     }
 }

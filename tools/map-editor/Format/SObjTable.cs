@@ -35,7 +35,9 @@ namespace MapEditor.Format
                 var height = bytes[position + 6];
                 var frames = new ushort[height];
                 for (int k = 0; k < height; k++)
+                {
                     frames[k] = BitConverter.ToUInt16(bytes, position + 7 + k * 2);
+                }
 
                 table._records.Add(new SObj { Collision = collision, Frames = frames });
                 table.MaxHeight = Math.Max(table.MaxHeight, height);
@@ -47,7 +49,9 @@ namespace MapEditor.Format
         public SObj Find(int objectId)
         {
             if (objectId <= 0 || objectId > _records.Count)
+            {
                 return null;
+            }
 
             return _records[objectId - 1];
         }

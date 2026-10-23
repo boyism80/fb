@@ -13,7 +13,8 @@ return {
 
         if step == 1 then
             ::NPC_541_0000::
-            local button = me:dialog(npc, "진황보검에 대해서 얘기하는건가? 자네 그건 어디서 들은건가! 진황보검에 대해서 언급하는 자는 모두 하옥시키라고 하셨네.", { prev = false, next = true })
+            local button = me:dialog(npc, "진황보검에 대해서 얘기하는건가? 자네 그건 어디서 들은건가! 진황보검에 대해서 언급하는 자는 모두 하옥시키라고 하셨네.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -44,7 +45,8 @@ return {
         )
         if code == enum.exchange_result.LACK_COST then
             if not me:has_items("진랑검", 1) or not me:has_items("혈황검", 1) then
-                me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.\n(*진랑검, 혈황검이 없을 경우 나타나는 메시지 입니다.)", { prev = false, next = false })
+                me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.\n(*진랑검, 혈황검이 없을 경우 나타나는 메시지 입니다.)",
+                    { prev = false, next = false })
             else
                 me:dialog(npc, "진랑검과 혈황검이 없지 않은가.", { prev = false, next = false })
             end
@@ -59,13 +61,15 @@ return {
 
         local button
         ::NPC_541_0010::
-        button = me:dialog(npc, "정말 대단한일을 해냈군 자네. 이 진황보검이 제자리를 찾아 중국 황실도 다시 평온해질걸세. 이것은 우리 황실 모두의 보답이네.", { prev = false, next = true })
+        button = me:dialog(npc, "정말 대단한일을 해냈군 자네. 이 진황보검이 제자리를 찾아 중국 황실도 다시 평온해질걸세. 이것은 우리 황실 모두의 보답이네.",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
         ::NPC_541_0011::
-        button = me:dialog(npc, "언제 한번 다시 황궁에 들리게. 나와 같이 술이나 한잔하세. 진황보검을 찾으면서 일어났던 일들도 꼭 듣고싶네. 허허~", { prev = true, next = true })
+        button = me:dialog(npc, "언제 한번 다시 황궁에 들리게. 나와 같이 술이나 한잔하세. 진황보검을 찾으면서 일어났던 일들도 꼭 듣고싶네. 허허~",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

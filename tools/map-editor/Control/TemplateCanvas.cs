@@ -81,7 +81,10 @@ namespace MapEditor.Control
         protected override Size MeasureOverride(Size availableSize)
         {
             if (Template == null)
+            {
                 return new Size();
+            }
+
             return new Size(Math.Max(1, Template.Width) * Scale + 2, (Math.Max(1, Template.Height) + _above) * Scale + 2);
         }
 
@@ -100,7 +103,9 @@ namespace MapEditor.Control
         protected override void OnRender(DrawingContext dc)
         {
             if (Template == null)
+            {
                 return;
+            }
 
             var tiles = Template.Cells.Where(c => c.Tile != null).Select(c => (c.Dx, c.Dy)).ToHashSet();
             for (int y = 0; y < Template.Height; y++)
@@ -108,7 +113,9 @@ namespace MapEditor.Control
                 for (int x = 0; x < Template.Width; x++)
                 {
                     if (tiles.Contains((x, y)))
+                    {
                         continue;
+                    }
 
                     var r = CellRect(x, y);
                     var half = Scale / 2;
@@ -122,13 +129,18 @@ namespace MapEditor.Control
                 var picture = new DrawingGroup();
                 RenderOptions.SetBitmapScalingMode(picture, Assets != null && Scale < Assets.CellPixels ? BitmapScalingMode.Linear : BitmapScalingMode.NearestNeighbor);
                 using (var context = picture.Open())
+                {
                     context.DrawImage(_image, new Rect(1, 1, Math.Max(1, Template.Width) * Scale, (Math.Max(1, Template.Height) + _above) * Scale));
+                }
+
                 dc.DrawDrawing(picture);
             }
             if (ObjectLayer)
             {
                 foreach (var cell in Template.Cells.Where(c => c.Object is > 0))
+                {
                     dc.DrawRectangle(ObjectMark, null, CellRect(cell.Dx, cell.Dy));
+                }
             }
 
             var grid = new StreamGeometry();
@@ -148,14 +160,18 @@ namespace MapEditor.Control
             dc.DrawGeometry(null, GridPen, grid);
             dc.DrawRectangle(null, BorderPen, new Rect(1, 1 + _above * Scale, Template.Width * Scale, Template.Height * Scale));
             if (_hover is (int hx, int hy))
+            {
                 dc.DrawRectangle(null, HoverPen, CellRect(hx, hy));
+            }
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
             if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
+            {
                 return;
+            }
 
             _erasing = e.ChangedButton == MouseButton.Right || Brush == TemplateBrush.Erase;
             if (e.ChangedButton == MouseButton.Left && Brush == TemplateBrush.Pick)
@@ -165,7 +181,9 @@ namespace MapEditor.Control
                     var cell = Template.Cells.FirstOrDefault(c => c.Dx == px && c.Dy == py);
                     var value = ObjectLayer ? cell.Object : cell.Tile;
                     if (value is ushort picked)
+                    {
                         Picked?.Invoke(picked);
+                    }
                 }
                 return;
             }
@@ -184,7 +202,9 @@ namespace MapEditor.Control
                 InvalidateVisual();
             }
             if (_painting)
+            {
                 PaintAt(e.GetPosition(this));
+            }
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -204,24 +224,39 @@ namespace MapEditor.Control
         private void PaintAt(Point point)
         {
             if (CellAt(point) is not (int x, int y))
+            {
                 return;
+            }
 
             var index = Template.Cells.FindIndex(c => c.Dx == x && c.Dy == y);
             var cell = index >= 0 ? Template.Cells[index] : new TemplateCell { Dx = x, Dy = y };
             var before = cell;
             ushort? value = _erasing ? null : Value;
             if (ObjectLayer)
+            {
                 cell.Object = value is 0 ? null : value;
+            }
             else
+            {
                 cell.Tile = value;
+            }
+
             if (before.Tile == cell.Tile && before.Object == cell.Object)
+            {
                 return;
+            }
 
             var cells = Template.Cells.ToList();
             if (index >= 0)
+            {
                 cells.RemoveAt(index);
+            }
+
             if (cell.Tile != null || cell.Object != null)
+            {
                 cells.Add(cell);
+            }
+
             Template.Cells = cells;
             Template.Revision++;
             Refresh();

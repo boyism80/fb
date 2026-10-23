@@ -25,7 +25,9 @@ namespace Http.Redis
         {
             var value = await database.StringGetAsync(key);
             if (value.IsNull)
+            {
                 return null;
+            }
 
             return JsonConvert.DeserializeObject<T>(value);
         }
@@ -34,7 +36,9 @@ namespace Http.Redis
         {
             var value = await database.HashGetAsync(key, field);
             if (value.IsNull)
+            {
                 return null;
+            }
 
             return JsonConvert.DeserializeObject<T>(value.ToString());
         }
@@ -70,7 +74,9 @@ namespace Http.Redis
         {
             var value = await database.StringGetAsync(key);
             if (value.IsNull)
+            {
                 throw new KeyNotFoundException();
+            }
 
             return new JValue(value).ToObject<T>();
         }
@@ -107,7 +113,9 @@ namespace Http.Redis
             addCommands(q);
 
             if (await tran.ExecuteAsync())
+            {
                 await q.CompleteAsync();
+            }
         }
     }
 }

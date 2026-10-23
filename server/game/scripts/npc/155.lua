@@ -7,13 +7,15 @@ return {
         local q = me:quest(quest.QUEST_CROCODILE_BLOOD)
         if q == nil then
             ::NPC_155_0001::
-            local button = me:dialog(npc, '난 천선도사와 죽마고우인 수선도사라네. 이 친구가 압록강의 절경을 혼자보기 너무 아깝다며 날 데려오지 뭔가.', { prev = false, next = true })
+            local button = me:dialog(npc, '난 천선도사와 죽마고우인 수선도사라네. 이 친구가 압록강의 절경을 혼자보기 너무 아깝다며 날 데려오지 뭔가.',
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
             ::NPC_155_0010::
-            button = me:dialog(npc, '근데 와서 보니 걱정이 태산이라네. 이 친구는 아무것도 모르고 그저 아름답다고만 하지만 지금 압록강은 정상이 아니지.', { prev = true, next = true })
+            button = me:dialog(npc, '근데 와서 보니 걱정이 태산이라네. 이 친구는 아무것도 모르고 그저 아름답다고만 하지만 지금 압록강은 정상이 아니지.',
+                { prev = true, next = true })
             if button == DIALOG_RESULT.PREV then
                 goto NPC_155_0001
             end
@@ -22,7 +24,8 @@ return {
             end
 
             ::NPC_155_0011::
-            button = me:dialog(npc, '속에서부터 썩어들어가고 있는데 이게 다 악어녀석들 때문이라네. 번식력이 뛰어나 갑자기 늘어가는 악어의 배설물 때문에...', { prev = true, next = true })
+            button = me:dialog(npc, '속에서부터 썩어들어가고 있는데 이게 다 악어녀석들 때문이라네. 번식력이 뛰어나 갑자기 늘어가는 악어의 배설물 때문에...',
+                { prev = true, next = true })
             if button == DIALOG_RESULT.PREV then
                 goto NPC_155_0010
             end
@@ -31,7 +34,8 @@ return {
             end
 
             ::NPC_155_0012::
-            button = me:dialog(npc, '그래서 자네에게 부탁을 하나 하고 싶네만. 악어 녀석들의 피를 구해와 주는 것이지. 그것으로 강을 정화시킬 방법을 찾을수 있을걸세.', { prev = true, next = true })
+            button = me:dialog(npc, '그래서 자네에게 부탁을 하나 하고 싶네만. 악어 녀석들의 피를 구해와 주는 것이지. 그것으로 강을 정화시킬 방법을 찾을수 있을걸세.',
+                { prev = true, next = true })
             if button == DIALOG_RESULT.PREV then
                 goto NPC_155_0011
             end
@@ -40,7 +44,8 @@ return {
             end
 
             ::NPC_155_0013::
-            local selected, button = me:list(npc, '내 부탁을 들어주겠나?', {'악어를 잡기만 하면 됩니까? 최선을 다하겠습니다.', '저에겐 무리겠군요. 죄송합니다.'}, { prev = false })
+            local selected, button = me:list(npc, '내 부탁을 들어주겠나?', { '악어를 잡기만 하면 됩니까? 최선을 다하겠습니다.', '저에겐 무리겠군요. 죄송합니다.' },
+                { prev = false })
             if button == DIALOG_RESULT.PREV then
                 goto NPC_155_0012
             end
@@ -77,7 +82,8 @@ return {
             end
 
             ::NPC_155_0021::
-            button = me:dialog(npc, '이녀석들의 순수한 피를모아 조사를 해보면 더러워진 압록강을 깨끗히 정화시킬수 있는 약을 만들수 있지.', { prev = true, next = true })
+            button = me:dialog(npc, '이녀석들의 순수한 피를모아 조사를 해보면 더러워진 압록강을 깨끗히 정화시킬수 있는 약을 만들수 있지.',
+                { prev = true, next = true })
             if button == DIALOG_RESULT.PREV then
                 goto NPC_155_0020
             end
@@ -86,7 +92,8 @@ return {
             end
 
             ::NPC_155_0022::
-            button = me:dialog(npc, '다만 순수한 피여야만 하기 때문에 쉽지가 않을걸세. 포기하지 말고 나에게 악어의피 3병을 구해와주게.', { prev = true, next = true })
+            button = me:dialog(npc, '다만 순수한 피여야만 하기 때문에 쉽지가 않을걸세. 포기하지 말고 나에게 악어의피 3병을 구해와주게.',
+                { prev = true, next = true })
             if button == DIALOG_RESULT.PREV then
                 goto NPC_155_0021
             end
@@ -111,7 +118,8 @@ return {
             local items = me:items('악어의피')
             ::NPC_155_0030::
             if #items < 3 then
-                local button = me:dialog(npc, '아직 악어의피를 다 구하지 못했군. 쉽진 않을걸세. 요즘 변종된 악어가많아 순수한 피를 찾기 힘들게야.', { prev = false, next = true })
+                local button = me:dialog(npc, '아직 악어의피를 다 구하지 못했군. 쉽진 않을걸세. 요즘 변종된 악어가많아 순수한 피를 찾기 힘들게야.',
+                    { prev = false, next = true })
                 if button == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -138,7 +146,8 @@ return {
                 me:push_achievement(155, '수선도사의 부탁을 들어주었다.', 6, 8)
                 q:complete()
 
-                local button = me:dialog(npc, '오. 정말 다 구해왔군 그래. 이걸로 압록강을 정화시킬수 있겠어. 아차 이건 내가쓰던 머리띠인데 유용하게 쓰게나.', { prev = false, next = false })
+                local button = me:dialog(npc, '오. 정말 다 구해왔군 그래. 이걸로 압록강을 정화시킬수 있겠어. 아차 이건 내가쓰던 머리띠인데 유용하게 쓰게나.',
+                    { prev = false, next = false })
                 if button == DIALOG_RESULT.QUIT then
                     return
                 end

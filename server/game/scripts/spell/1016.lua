@@ -12,7 +12,7 @@ return {
         local message = '백호참'
 
         local front = me:front(OBJECT_TYPE.LIFE)
-        if not spell.attack_cast(me, front, sp, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect}) then
+        if not spell.attack_cast(me, front, sp, { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect }) then
             return
         end
     end,

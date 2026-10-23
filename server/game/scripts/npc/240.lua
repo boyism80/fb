@@ -13,17 +13,20 @@ return {
         end
 
         if q == nil then
-            local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' }, { prev = false })
+            local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' },
+                { prev = false })
             if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
             ::NPC_240_0001::
-            local btn = me:dialog(npc, '......음... 꼬마가 기력이 없고 말을 잘 하지 못한다... 그럴 때에는 삼전신보탕이 제격이지.', { prev = false, next = true })
+            local btn = me:dialog(npc, '......음... 꼬마가 기력이 없고 말을 잘 하지 못한다... 그럴 때에는 삼전신보탕이 제격이지.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_240_0002::
-            btn = me:dialog(npc, '만드는 것은 쉽다네, 하지만 지금 재료가 다 떨어졌군. 자네가 재료를 구해다 주면 삼전신보탕을 바로 만들어 주지.', { prev = true, next = true })
+            btn = me:dialog(npc, '만드는 것은 쉽다네, 하지만 지금 재료가 다 떨어졌군. 자네가 재료를 구해다 주면 삼전신보탕을 바로 만들어 주지.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -31,7 +34,9 @@ return {
                 goto NPC_240_0001
             end
             ::NPC_240_0003::
-            btn = me:dialog(npc, '삼전보신탕을 만들기 위해서는 감초, 녹용, 국광이 필요하지. 감초는 광동성 푸줏간에서, 녹용은 어디든 푸줏간에서 쉽게 구할 수 있고, 국광은 어딘가의 미궁에서 구할 수 있다고 하네.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '삼전보신탕을 만들기 위해서는 감초, 녹용, 국광이 필요하지. 감초는 광동성 푸줏간에서, 녹용은 어디든 푸줏간에서 쉽게 구할 수 있고, 국광은 어딘가의 미궁에서 구할 수 있다고 하네.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -58,17 +63,20 @@ return {
         end
 
         if q:step() == 0 then
-            local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' }, { prev = false })
+            local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' },
+                { prev = false })
             if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
             ::NPC_240_0005::
-            local btn = me:dialog(npc, '......음... 꼬마가 기력이 없고 말을 잘 하지 못한다... 그럴 때에는 삼전신보탕이 제격이지.', { prev = false, next = true })
+            local btn = me:dialog(npc, '......음... 꼬마가 기력이 없고 말을 잘 하지 못한다... 그럴 때에는 삼전신보탕이 제격이지.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_240_0006::
-            btn = me:dialog(npc, '만드는 것은 쉽다네, 하지만 지금 재료가 다 떨어졌군. 자네가 재료를 구해다 주면 삼전신보탕을 바로 만들어 주지.', { prev = true, next = true })
+            btn = me:dialog(npc, '만드는 것은 쉽다네, 하지만 지금 재료가 다 떨어졌군. 자네가 재료를 구해다 주면 삼전신보탕을 바로 만들어 주지.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -76,7 +84,9 @@ return {
                 goto NPC_240_0005
             end
             ::NPC_240_0007::
-            btn = me:dialog(npc, '삼전보신탕을 만들기 위해서는 감초, 녹용, 국광이 필요하지. 감초는 광동성 푸줏간에서, 녹용은 어디든 푸줏간에서 쉽게 구할 수 있고, 국광은 어딘가의 미궁에서 구할 수 있다고 하네.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '삼전보신탕을 만들기 위해서는 감초, 녹용, 국광이 필요하지. 감초는 광동성 푸줏간에서, 녹용은 어디든 푸줏간에서 쉽게 구할 수 있고, 국광은 어딘가의 미궁에서 구할 수 있다고 하네.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -93,9 +103,10 @@ return {
         end
 
         if q:step() == 1 then
-            local materials = {['감초'] = 1, ['녹용'] = 1, ['국광'] = 1}
+            local materials = { ['감초'] = 1, ['녹용'] = 1, ['국광'] = 1 }
             if not me:has_items(materials) then
-                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', { prev = false, next = false })
+                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.',
+                    { prev = false, next = false })
                 return
             end
             ::NPC_240_0009::
@@ -112,7 +123,8 @@ return {
                 { ['item'] = { ['삼전신보탕'] = 1 } }
             )
             if code == enum.exchange_result.LACK_COST then
-                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', { prev = false, next = false })
+                me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.',
+                    { prev = false, next = false })
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then

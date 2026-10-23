@@ -1,11 +1,11 @@
 local lib = require("integration.lib")
 
-local BOT1_TITLE    = "Bot1 Article Title"
-local BOT1_CONTENTS = "Bot1's test article contents."
-local BOT2_TITLE    = "Bot2 Article Title"
-local BOT2_CONTENTS = "Bot2's test article contents."
-local MAIL_TITLE    = "Mail Test Title"
-local MAIL_CONTENTS = "This is a mail test."
+local BOT1_TITLE          = "Bot1 Article Title"
+local BOT1_CONTENTS       = "Bot1's test article contents."
+local BOT2_TITLE          = "Bot2 Article Title"
+local BOT2_CONTENTS       = "Bot2's test article contents."
+local MAIL_TITLE          = "Mail Test Title"
+local MAIL_CONTENTS       = "This is a mail test."
 -- Must match mail.REQUIRED_LEVEL in const.xlsx.
 local MAIL_REQUIRED_LEVEL = 20
 

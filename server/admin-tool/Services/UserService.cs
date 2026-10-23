@@ -89,7 +89,9 @@ namespace AdminTool.Services
             foreach (var userId in orderedUserIds)
             {
                 if (!characters.TryGetValue(userId, out var character))
+                {
                     continue;
+                }
 
                 var userDetail = new UserListItem
                 {
@@ -130,7 +132,9 @@ namespace AdminTool.Services
             {
                 var sessions = await _sessionService.GetAllSessions(world);
                 foreach (var session in sessions)
+                {
                     onlineIds.Add(session.Uid);
+                }
             }
             catch (Exception ex)
             {
@@ -156,11 +160,15 @@ namespace AdminTool.Services
         {
             var userId = await TryResolveUserIdAsync(world, name);
             if (!userId.HasValue)
+            {
                 return null;
+            }
 
             var character = await _dbContext.Character.Get(world, userId.Value);
             if (character == null)
+            {
                 return null;
+            }
 
             var ban = await _dbContext.Ban.Get(world, userId.Value);
 
@@ -185,7 +193,9 @@ namespace AdminTool.Services
         public async Task<uint?> TryResolveUserIdAsync(uint world, string query)
         {
             if (string.IsNullOrWhiteSpace(query))
+            {
                 return null;
+            }
 
             var term = query.Trim();
 
@@ -193,7 +203,9 @@ namespace AdminTool.Services
             {
                 var character = await _dbContext.Character.Get(world, uid);
                 if (character != null)
+                {
                     return uid;
+                }
             }
 
             return await _dbContext.Character.GetCharacterId(world, term);
@@ -202,7 +214,9 @@ namespace AdminTool.Services
         public async Task<bool> IsOnline(uint world, string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))
+            {
                 return false;
+            }
 
             try
             {
@@ -290,7 +304,9 @@ namespace AdminTool.Services
             var result = new Dictionary<uint, BanInfo>();
             var ids = userIds.Distinct().ToList();
             if (ids.Count == 0)
+            {
                 return result;
+            }
 
             var shardSize = _dbContext.GetShardDbSize(world);
             foreach (var group in ids.GroupBy(id => (int)(id % (uint)shardSize)))
@@ -308,7 +324,9 @@ namespace AdminTool.Services
                     """);
 
                 foreach (var row in rows)
+                {
                     result[row.UserId] = row;
+                }
             }
 
             return result;

@@ -8,7 +8,9 @@ return {
 
         if q == nil then
             ::NPC_143_0001::
-            local btn = me:dialog(npc, '제가 강에서 배를 타다가 반지를 빠뜨리고 말았어요. 그 반지는 옆나라의 제 정혼자인 왕자가 준 반지라 잃어버리면 그 나라와의 관계까지 위험해질수 있어요.', { prev = false, next = true })
+            local btn = me:dialog(npc,
+                '제가 강에서 배를 타다가 반지를 빠뜨리고 말았어요. 그 반지는 옆나라의 제 정혼자인 왕자가 준 반지라 잃어버리면 그 나라와의 관계까지 위험해질수 있어요.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -21,7 +23,8 @@ return {
                 return
             end
             ::NPC_143_0003::
-            local sel = me:list(npc, '제발 부탁드려요. 반지를 찾아주세요.', { '걱정마세요. 제가 꼭 찾아드리죠.', '흠. 전 물을 싫어해서요. 죄송하네요.' }, { prev = false })
+            local sel = me:list(npc, '제발 부탁드려요. 반지를 찾아주세요.', { '걱정마세요. 제가 꼭 찾아드리죠.', '흠. 전 물을 싫어해서요. 죄송하네요.' },
+                { prev = false })
             if sel == nil or sel == 2 then
                 if sel == 2 then
                     me:dialog(npc, '그러시다면야.. 이를 어쩐담...', { prev = false, next = false })

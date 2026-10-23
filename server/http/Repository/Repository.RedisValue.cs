@@ -30,12 +30,16 @@ namespace Http.Reepository
             await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
 
             if (_local.ContainsKey(key.GetRedisKey()))
+            {
                 return _local.TryGet(key.GetRedisKey());
+            }
 
             var redis = _redis.GetConnection(world, key.GetHash());
             var (status, redisValue) = await _redis.LookupAsync(redis, key.GetRedisKey());
             if (status == RedisCacheLookupStatus.Pending)
+            {
                 return null;
+            }
 
             if (status == RedisCacheLookupStatus.Hit)
             {
@@ -45,10 +49,14 @@ namespace Http.Reepository
 
             var dbValue = await base.Get(world, key);
             if (dbValue == null)
+            {
                 return null;
+            }
 
             if (await _redis.WriteBackAsync(redis, key.GetRedisKey(), dbValue))
+            {
                 _local.Put(key.GetRedisKey(), dbValue);
+            }
 
             return dbValue;
         }
@@ -61,7 +69,9 @@ namespace Http.Reepository
         protected virtual async Task<IReadOnlyList<TModel>> GetMany(uint world, IReadOnlyList<TKey> keys)
         {
             if (keys == null || keys.Count == 0)
+            {
                 return Array.Empty<TModel>();
+            }
 
             var result = new List<TModel>();
             var missingKeys = new List<TKey>();
@@ -101,17 +111,23 @@ namespace Http.Reepository
 
                         var val = JsonConvert.DeserializeObject<TModel>(json);
                         if (val != null)
+                        {
                             result.Add(val);
+                        }
                     }
 
                     foreach (var key in localMiss)
                     {
                         if (hitKeys.Contains(key.GetRedisKey().ToString()))
+                        {
                             continue;
+                        }
 
                         var (status, _) = await _redis.LookupAsync(redis, key.GetRedisKey());
                         if (status != RedisCacheLookupStatus.Pending)
+                        {
                             missingKeys.Add(key);
+                        }
                     }
                 }
             }
@@ -127,7 +143,9 @@ namespace Http.Reepository
                     }
 
                     if (kv.Value.Count == 0)
+                    {
                         continue;
+                    }
 
                     var key = kv.Key;
                     var firstEntity = kv.Value[0];
@@ -135,7 +153,9 @@ namespace Http.Reepository
 
                     var redis = _redis.GetConnection(world, key.GetHash());
                     if (await _redis.WriteBackAsync(redis, key.GetRedisKey(), firstEntity))
+                    {
                         _local.Put(key.GetRedisKey(), firstEntity);
+                    }
                 }
             }
 
@@ -150,7 +170,9 @@ namespace Http.Reepository
 
                 var redis = _redis.GetConnection(world, value.GetHash());
                 if (redis == null)
+                {
                     return;
+                }
 
                 await _redis.SetAsync(redis, value.GetRedisKey(), value);
                 _local.Put(value.GetRedisKey(), value);
@@ -168,7 +190,9 @@ namespace Http.Reepository
                 var redisKey = key.GetRedisKey();
                 var redis = _redis.GetConnection(world, key.GetHash());
                 if (redis == null)
+                {
                     return;
+                }
 
                 await using (await _distributedLock.Lock(world, GetLockKey(key)))
                 {
@@ -184,7 +208,9 @@ namespace Http.Reepository
         public override void Delete(uint world, TKey[] keys)
         {
             if (keys == null || keys.Length == 0)
+            {
                 return;
+            }
 
             _buffer.Enqueue(async () =>
             {
@@ -192,7 +218,9 @@ namespace Http.Reepository
                 {
                     var redis = _redis.GetConnection(world, hashGroup.Key);
                     if (redis == null)
+                    {
                         continue;
+                    }
 
                     foreach (var key in hashGroup)
                     {
@@ -207,7 +235,9 @@ namespace Http.Reepository
 
                     var sql = OnDeleteMany(hashGroup.ToList());
                     if (string.IsNullOrEmpty(sql))
+                    {
                         continue;
+                    }
 
                     var refKey = hashGroup.First().GetRedisKey();
                     await _dbExecuteService.Post(world, hashGroup.Key, sql, refKey.ToString());

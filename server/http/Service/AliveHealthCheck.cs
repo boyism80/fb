@@ -14,7 +14,9 @@ namespace Http.Service
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
             if (_health.IsAlive)
+            {
                 return Task.FromResult(HealthCheckResult.Healthy());
+            }
 
             return Task.FromResult(HealthCheckResult.Unhealthy("process is not alive"));
         }

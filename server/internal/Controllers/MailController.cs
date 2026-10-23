@@ -110,7 +110,7 @@ namespace Internal.Controllers
                 {
                     return new Response.WriteMails
                     {
-                        Host  = request.Host,
+                        Host = request.Host,
                         Error = (uint)ErrorCode.None
                     };
                 }
@@ -123,7 +123,7 @@ namespace Internal.Controllers
                     request.Contents);
 
                 var senderName = await _dbContext.Character.GetName(request.World, request.Sender) ?? string.Empty;
-                var entries    = new List<Protocol.MailWriteEntry>(written.Count);
+                var entries = new List<Protocol.MailWriteEntry>(written.Count);
 
                 foreach (var result in written)
                 {
@@ -132,8 +132,8 @@ namespace Internal.Controllers
 
                     entries.Add(new Protocol.MailWriteEntry
                     {
-                        User   = result.Mail.User,
-                        Mail   = protocolMail,
+                        User = result.Mail.User,
+                        Mail = protocolMail,
                         Unread = result.Unread
                     });
                 }
@@ -141,8 +141,8 @@ namespace Internal.Controllers
                 var response = new Response.WriteMails
                 {
                     Entries = entries,
-                    Host    = request.Host,
-                    Error   = (uint)ErrorCode.None
+                    Host = request.Host,
+                    Error = (uint)ErrorCode.None
                 };
 
                 await _rabbitMqService.NotifySavedAsync(response, "mail", request.World);
@@ -152,7 +152,7 @@ namespace Internal.Controllers
             {
                 return new Response.WriteMails
                 {
-                    Host  = request.Host,
+                    Host = request.Host,
                     Error = (uint)e.Error
                 };
             }
@@ -160,7 +160,7 @@ namespace Internal.Controllers
             {
                 return new Response.WriteMails
                 {
-                    Host  = request.Host,
+                    Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -176,7 +176,7 @@ namespace Internal.Controllers
                 {
                     return new Response.SendSystemMail
                     {
-                        Host  = request.Host,
+                        Host = request.Host,
                         Error = (uint)ErrorCode.None
                     };
                 }
@@ -186,7 +186,7 @@ namespace Internal.Controllers
                 {
                     return new Response.SendSystemMail
                     {
-                        Host  = request.Host,
+                        Host = request.Host,
                         Error = (uint)ErrorCode.Unhandled
                     };
                 }
@@ -199,7 +199,7 @@ namespace Internal.Controllers
                     request.Contents);
 
                 var senderName = await _dbContext.Character.GetName(request.World, request.Sender) ?? string.Empty;
-                var entries    = new List<Protocol.MailWriteEntry>(written.Count);
+                var entries = new List<Protocol.MailWriteEntry>(written.Count);
 
                 foreach (var result in written)
                 {
@@ -208,8 +208,8 @@ namespace Internal.Controllers
 
                     entries.Add(new Protocol.MailWriteEntry
                     {
-                        User   = result.Mail.User,
-                        Mail   = protocolMail,
+                        User = result.Mail.User,
+                        Mail = protocolMail,
                         Unread = result.Unread
                     });
                 }
@@ -217,8 +217,8 @@ namespace Internal.Controllers
                 var response = new Response.SendSystemMail
                 {
                     Entries = entries,
-                    Host    = request.Host,
-                    Error   = (uint)ErrorCode.None
+                    Host = request.Host,
+                    Error = (uint)ErrorCode.None
                 };
 
                 await _rabbitMqService.NotifySavedAsync(response, "mail", request.World);
@@ -228,7 +228,7 @@ namespace Internal.Controllers
                 {
                     return new Response.SendSystemMail
                     {
-                        Host  = request.Host,
+                        Host = request.Host,
                         Error = (uint)ErrorCode.Unhandled
                     };
                 }
@@ -238,7 +238,7 @@ namespace Internal.Controllers
             {
                 return new Response.SendSystemMail
                 {
-                    Host  = request.Host,
+                    Host = request.Host,
                     Error = (uint)e.Error
                 };
             }
@@ -246,7 +246,7 @@ namespace Internal.Controllers
             {
                 return new Response.SendSystemMail
                 {
-                    Host  = request.Host,
+                    Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
@@ -296,7 +296,9 @@ namespace Internal.Controllers
             {
                 var success = await _dbContext.Mail.Delete(request.World, request.User, request.Id);
                 if (!success)
+                {
                     throw new LogicException(ErrorCode.MailNotExists);
+                }
 
                 return new Response.DeleteMail
                 {

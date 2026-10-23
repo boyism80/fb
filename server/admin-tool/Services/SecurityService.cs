@@ -15,7 +15,9 @@ namespace AdminTool.Services
         public bool IsValidElevationSecret(string secret)
         {
             if (string.IsNullOrEmpty(_elevationSecret))
+            {
                 return false;
+            }
 
             return string.Equals(secret, _elevationSecret, StringComparison.Ordinal);
         }

@@ -11,7 +11,7 @@ return {
         local sound = 28
         local effect = 20
         local buff_time = 180
-        if spell.buff_cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.buff_cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
             me:state(STATE.CLOACK)
             me:buff(sp, buff_time)
         end

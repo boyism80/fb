@@ -11,7 +11,8 @@ return {
 
         if q == nil or q:step() < 1 then
             ::NPC_145_0001::
-            local sel, btn = me:list(npc, '아이고~ 이거 큰일이네! 어떡하지? 엉엉 울고싶다 정말.', { '무슨 일이세요?', '(그냥 지나친다)' }, { prev = false })
+            local sel, btn = me:list(npc, '아이고~ 이거 큰일이네! 어떡하지? 엉엉 울고싶다 정말.', { '무슨 일이세요?', '(그냥 지나친다)' },
+                { prev = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -19,7 +20,9 @@ return {
                 return
             end
             ::NPC_145_0010::
-            btn = me:dialog(npc, '이 근방은 우리 대양선단의 주요 식량 채취 장소 인데요, 해물, 해초, 과일 등이 풍부한 반면 항상 사나운 두꺼비들과 일본게들이 득시글거려 매번 이렇게 고생이랍니다.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '이 근방은 우리 대양선단의 주요 식량 채취 장소 인데요, 해물, 해초, 과일 등이 풍부한 반면 항상 사나운 두꺼비들과 일본게들이 득시글거려 매번 이렇게 고생이랍니다.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -27,7 +30,8 @@ return {
                 goto NPC_145_0001
             end
             ::NPC_145_0011::
-            sel, btn = me:list(npc, '아 글쎄.. 이번엔 제가 애써 모아놓은 기러기알들을 그놈들이 다 훔쳐갔지 뭡니까요! 흑흑. 그걸 어떻게 되찾는다.', { '흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요.', '어쩔 수 없죠 뭐..' }, { prev = false })
+            sel, btn = me:list(npc, '아 글쎄.. 이번엔 제가 애써 모아놓은 기러기알들을 그놈들이 다 훔쳐갔지 뭡니까요! 흑흑. 그걸 어떻게 되찾는다.',
+                { '흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요.', '어쩔 수 없죠 뭐..' }, { prev = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

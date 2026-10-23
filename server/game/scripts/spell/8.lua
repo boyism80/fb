@@ -18,7 +18,7 @@ return {
     end,
 
     on_buff = function(me, sp)
-        me:buff_phydef(me:buff_phydef() -10)
+        me:buff_phydef(me:buff_phydef() - 10)
     end,
 
     on_unbuff = function(me, sp)

@@ -34,7 +34,8 @@ local function craft_fragment(me, npc_obj, fragment_name, recipes, menu_prompt)
     end
 
     if not me:has_items({ [fragment_name] = recipe.count }) then
-        me:dialog(npc_obj, string.format('적어도 %d개정도는 있어야 뭔가 말들어볼 수 있을 것 같은데 말이야.. 좀 부족하군.', recipe.count), { prev = false, next = false })
+        me:dialog(npc_obj, string.format('적어도 %d개정도는 있어야 뭔가 말들어볼 수 있을 것 같은데 말이야.. 좀 부족하군.', recipe.count),
+            { prev = false, next = false })
         return
     end
 
@@ -43,12 +44,14 @@ local function craft_fragment(me, npc_obj, fragment_name, recipes, menu_prompt)
         { ['item'] = { [recipe.reward] = 1 } }
     )
     if code == enum.exchange_result.LACK_COST then
-        local btn = me:dialog(npc_obj, string.format('적어도 %d개정도는 있어야 뭔가 말들어볼 수 있을 것 같은데 말이야.. 좀 부족하군.', recipe.count), { prev = false, next = false })
+        local btn = me:dialog(npc_obj, string.format('적어도 %d개정도는 있어야 뭔가 말들어볼 수 있을 것 같은데 말이야.. 좀 부족하군.', recipe.count),
+            { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
     elseif code == enum.exchange_result.LACK_CAPACITY then
-        local btn = me:dialog(npc_obj, '소지품이 가득 차서 ' .. name_with(recipe.reward, '을', '를') .. ' 드리지 못합니다.', { prev = false, next = false })
+        local btn = me:dialog(npc_obj, '소지품이 가득 차서 ' .. name_with(recipe.reward, '을', '를') .. ' 드리지 못합니다.',
+            { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -59,7 +62,9 @@ end
 
 local function craft_yin_and_yang_blade(me, npc_obj)
     if not me:has_items({ [YIN_FRAGMENT] = 50, [YANG_FRAGMENT] = 50 }) then
-        me:dialog(npc_obj, "음과 양의 금속조각을 섞겠다고? 농담 말게나. 이 정도 양을 섞겠다고 난리를 치다가는 힘들여 모은 이 금속조각들을 전부 잃게 될 수도 있다네. 혹시 음과 양이 각각 50개 정도 있다면 모를까...", { prev = false, next = false })
+        me:dialog(npc_obj,
+            "음과 양의 금속조각을 섞겠다고? 농담 말게나. 이 정도 양을 섞겠다고 난리를 치다가는 힘들여 모은 이 금속조각들을 전부 잃게 될 수도 있다네. 혹시 음과 양이 각각 50개 정도 있다면 모를까...",
+            { prev = false, next = false })
         return
     end
 
@@ -92,12 +97,15 @@ local function craft_yin_and_yang_blade(me, npc_obj)
 
     local code = me:exchange(cost, reward)
     if code == enum.exchange_result.LACK_COST then
-        local btn = me:dialog(npc_obj, "음과 양의 금속조각을 섞겠다고? 농담 말게나. 이 정도 양을 섞겠다고 난리를 치다가는 힘들여 모은 이 금속조각들을 전부 잃게 될 수도 있다네. 혹시 음과 양이 각각 50개 정도 있다면 모를까...", { prev = false, next = false })
+        local btn = me:dialog(npc_obj,
+            "음과 양의 금속조각을 섞겠다고? 농담 말게나. 이 정도 양을 섞겠다고 난리를 치다가는 힘들여 모은 이 금속조각들을 전부 잃게 될 수도 있다네. 혹시 음과 양이 각각 50개 정도 있다면 모를까...",
+            { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
     elseif code == enum.exchange_result.LACK_CAPACITY then
-        local btn = me:dialog(npc_obj, '소지품이 가득 차서 ' .. name_with('음양도', '을', '를') .. ' 드리지 못합니다.', { prev = false, next = false })
+        local btn = me:dialog(npc_obj, '소지품이 가득 차서 ' .. name_with('음양도', '을', '를') .. ' 드리지 못합니다.',
+            { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -107,7 +115,8 @@ local function craft_yin_and_yang_blade(me, npc_obj)
             return
         end
     else
-        me:dialog(npc_obj, '오오오! 이것은!! 축하하네! 음양도는 굉장히 강력한 무기라는 것 밖에.. 나도 아무것도 알지 못한다네. 직접 사용해보는게 좋겠군.', { prev = false, next = false })
+        me:dialog(npc_obj, '오오오! 이것은!! 축하하네! 음양도는 굉장히 강력한 무기라는 것 밖에.. 나도 아무것도 알지 못한다네. 직접 사용해보는게 좋겠군.',
+            { prev = false, next = false })
     end
 end
 

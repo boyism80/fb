@@ -3,7 +3,8 @@ local REQUIRED_CIGARETTES = 5
 
 return {
     on_click = function(me, npc)
-        local btn = me:dialog(npc, string.format("음... 담배 [ %d ]개피만 있으면 또 모르겠는데...", REQUIRED_CIGARETTES), { prev = false, next = true })
+        local btn = me:dialog(npc, string.format("음... 담배 [ %d ]개피만 있으면 또 모르겠는데...", REQUIRED_CIGARETTES),
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -18,7 +19,8 @@ return {
             return
         end
 
-        local sel, list_btn = me:list(npc, string.format("그 귀하디 귀한 담배 %d개를 내게 준다면 이곳에서 내보내 주지...", REQUIRED_CIGARETTES), { "준다", "주지 않는다" }, { prev = false })
+        local sel, list_btn = me:list(npc, string.format("그 귀하디 귀한 담배 %d개를 내게 준다면 이곳에서 내보내 주지...", REQUIRED_CIGARETTES),
+            { "준다", "주지 않는다" }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end

@@ -12,7 +12,7 @@ return {
         local mp = 30
         local effect = nil
         local sound = 37
-        if not spell.cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
+        if not spell.cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
             return
         end
 

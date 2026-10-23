@@ -22,7 +22,9 @@ namespace Http.Reepository.Cache
         public IEnumerable<TModel> GetAll(RedisKey redisKey)
         {
             if (!_cache.TryGetValue(ToKey(redisKey), out var fields))
+            {
                 return Enumerable.Empty<TModel>();
+            }
 
             return fields.Values
                 .Select(x => JsonConvert.DeserializeObject<TModel>(x))
@@ -59,11 +61,15 @@ namespace Http.Reepository.Cache
         public void RemoveField(RedisKey redisKey, RedisValue field)
         {
             if (!_cache.TryGetValue(ToKey(redisKey), out var fields))
+            {
                 return;
+            }
 
             fields.Remove(field.ToString());
             if (fields.Count == 0)
+            {
                 _cache.Remove(ToKey(redisKey));
+            }
         }
     }
 }

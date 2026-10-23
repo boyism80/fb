@@ -14,7 +14,7 @@ return {
                 return
             end
 
-            selected, button = me:list(npc, '방송쿠폰의 가격은 100 전 이라네. 방송쿠폰을 살텐가?', {'예. 구입하고 싶습니다.', '아니오. 필요 없습니다.'})
+            selected, button = me:list(npc, '방송쿠폰의 가격은 100 전 이라네. 방송쿠폰을 살텐가?', { '예. 구입하고 싶습니다.', '아니오. 필요 없습니다.' })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -43,12 +43,13 @@ return {
         end
 
         if selected == 2 then
-            button = me:dialog(npc, '웨딩드레스를 수선하고 싶다고? 그렇다면 웨딩드레스1,2,3,4,5,6,7 과 말린지네 7개를 가져온다면 수선해주도록 하지.', { prev = false, next = true })
+            button = me:dialog(npc, '웨딩드레스를 수선하고 싶다고? 그렇다면 웨딩드레스1,2,3,4,5,6,7 과 말린지네 7개를 가져온다면 수선해주도록 하지.',
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-            selected, button = me:list(npc, '웨딩드레스를 수선하겠는가?', {'예', '아뇨'})
+            selected, button = me:list(npc, '웨딩드레스를 수선하겠는가?', { '예', '아뇨' })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -71,7 +72,7 @@ return {
                 return
             end
 
-            local dress_names = {'웨딩드레스1', '웨딩드레스2', '웨딩드레스3', '웨딩드레스4', '웨딩드레스5', '웨딩드레스6', '웨딩드레스7'}
+            local dress_names = { '웨딩드레스1', '웨딩드레스2', '웨딩드레스3', '웨딩드레스4', '웨딩드레스5', '웨딩드레스6', '웨딩드레스7' }
             for _, name in ipairs(dress_names) do
                 if (count_by_name[name] or 0) < 1 then
                     me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', { prev = false, next = false })

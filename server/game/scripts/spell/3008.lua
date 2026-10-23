@@ -8,7 +8,7 @@ return {
         local mp = 180
         local sound = 51
         local effect = 41
-        spell.damage(me, you, sp, {damage=damage, mp=mp, sound=sound, effect=effect})
+        spell.damage(me, you, sp, { damage = damage, mp = mp, sound = sound, effect = effect })
     end,
 
     -- on_buff = function(me, sp)

@@ -28,7 +28,9 @@ namespace MapEditor.Edit
                         Parallel.ForEach(Directory.GetFiles(directory, "*.map"), path =>
                         {
                             if (int.TryParse(Path.GetFileNameWithoutExtension(path), out var id))
+                            {
                                 maps[id] = ServerMap.Read(path);
+                            }
                         });
                         return new Dictionary<int, ServerMap>(maps);
                     });
@@ -51,20 +53,30 @@ namespace MapEditor.Edit
             lock (_lock)
             {
                 if (_maps == null || _directory != directory)
+                {
                     return;
+                }
+
                 maps = _maps;
             }
             _blocks.TryRemove(id, out _);
             maps.ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully == false)
+                {
                     return;
+                }
+
                 lock (task.Result)
                 {
                     if (map == null)
+                    {
                         task.Result.Remove(id);
+                    }
                     else
+                    {
                         task.Result[id] = map;
+                    }
                 }
             }, TaskContinuationOptions.ExecuteSynchronously);
         }

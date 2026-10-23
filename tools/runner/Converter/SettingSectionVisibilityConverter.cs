@@ -11,10 +11,14 @@ namespace Runner.Converter
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is not SettingSection current || parameter is not string sectionName)
+            {
                 return Visibility.Collapsed;
+            }
 
             if (!Enum.TryParse<SettingSection>(sectionName, out var target))
+            {
                 return Visibility.Collapsed;
+            }
 
             return current == target ? Visibility.Visible : Visibility.Collapsed;
         }

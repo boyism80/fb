@@ -12,7 +12,9 @@ namespace AdminTool.Services
             {
                 _entries.Insert(0, entry);
                 if (_entries.Count > MaxEntries)
+                {
                     _entries.RemoveRange(MaxEntries, _entries.Count - MaxEntries);
+                }
             }
         }
 

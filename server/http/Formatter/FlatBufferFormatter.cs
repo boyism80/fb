@@ -73,7 +73,9 @@ namespace Http.Formatter
         protected override bool CanWriteType(Type type)
         {
             if (type == null)
+            {
                 return false;
+            }
 
             return type.IsAssignableTo(typeof(IFlatBufferEx));
         }
@@ -81,7 +83,9 @@ namespace Http.Formatter
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             if (context.Object == null || context.ObjectType == null)
+            {
                 throw new InvalidOperationException();
+            }
 
             var protocol = context.Object as IFlatBufferEx ??
                 throw new InvalidOperationException();
@@ -119,11 +123,15 @@ namespace Http.Formatter
         public static void Log(HttpContext httpContext, ILogger logger, IFlatBufferEx protocol, Func<IFlatBufferEx, string> onLog)
         {
             if (ShouldSuppressLog(httpContext))
+            {
                 return;
+            }
 
             var log = onLog(protocol);
             if (log != null)
+            {
                 logger.LogInformation(log);
+            }
         }
 
         private static bool ShouldSuppressLog(HttpContext httpContext)

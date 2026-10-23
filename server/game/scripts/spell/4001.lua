@@ -35,22 +35,22 @@ return {
         local mp = 30
         local sound = 81
         local effect = nil
-        if not spell.cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
+        if not spell.cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
             return
         end
 
         local x, y = me:position()
         local direction = DIRECTION.BOTTOM
-        if x > 0 and map:movable(me, x-1, y) then
+        if x > 0 and map:movable(me, x - 1, y) then
             x = x - 1
             direction = DIRECTION.RIGHT
-        elseif x < map:width() and map:movable(me, x+1, y) then
+        elseif x < map:width() and map:movable(me, x + 1, y) then
             x = x + 1
             direction = DIRECTION.LEFT
-        elseif y > 0 and map:movable(me, x, y-1) then
+        elseif y > 0 and map:movable(me, x, y - 1) then
             y = y - 1
             direction = DIRECTION.BOTTOM
-        elseif y < map:width() and map:movable(me, x, y+1) then
+        elseif y < map:width() and map:movable(me, x, y + 1) then
             y = y + 1
             direction = DIRECTION.TOP
         end

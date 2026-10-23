@@ -33,7 +33,7 @@ end
 
 return {
     on_cast = function(me, sp)
-        local err = me:assert({STATE.GHOST, STATE.RIDING})
+        local err = me:assert({ STATE.GHOST, STATE.RIDING })
         if err then
             me:message(err)
             return
@@ -45,7 +45,7 @@ return {
         end
 
         local direction = me:direction()
-        for _, dir in pairs({direction + 0, direction + 3, direction + 1}) do
+        for _, dir in pairs({ direction + 0, direction + 3, direction + 1 }) do
             if on_cast_lookup(me, front, dir % 4) then
                 me:attack(14)
                 me:action(ACTION.CAST_SPELL, 25)

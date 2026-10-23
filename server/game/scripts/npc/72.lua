@@ -41,7 +41,8 @@ return {
                 goto NPC_72_0003
             end
 
-            selected, button = me:list(npc, '아주 위험한 곳인데, 그래도 들어가길 원하는가?', {'네. 들어가길 원합니다.', '아니오. 다시 생각하니 겁나는군요.'}, { prev = false })
+            selected, button = me:list(npc, '아주 위험한 곳인데, 그래도 들어가길 원하는가?', { '네. 들어가길 원합니다.', '아니오. 다시 생각하니 겁나는군요.' },
+                { prev = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -78,7 +79,7 @@ return {
                 goto NPC_72_0006
             end
 
-            selected, button = me:list(npc, '여기에 동의하는가?', {'네. 모두 동의합니다.', '아니오. 다시 생각하니 겁나는군요.'}, { prev = false })
+            selected, button = me:list(npc, '여기에 동의하는가?', { '네. 모두 동의합니다.', '아니오. 다시 생각하니 겁나는군요.' }, { prev = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -102,7 +103,7 @@ return {
             end
             local x = 25 + math.random(1, 10)
             local y = 12 + math.random(1, 5)
-            me:map(map, {x, y})
+            me:map(map, { x, y })
 
         elseif selected == 2 then
             ::NPC_72_0010::
@@ -138,7 +139,7 @@ return {
                 goto NPC_72_0012
             end
 
-            selected, button = me:list(npc, '정말 신부여성으로 가겠는가?', {'네. 보내주세요.', '아니오. 가기싫어요.'}, { prev = false })
+            selected, button = me:list(npc, '정말 신부여성으로 가겠는가?', { '네. 보내주세요.', '아니오. 가기싫어요.' }, { prev = false })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -156,7 +157,7 @@ return {
                 return
             end
 
-            local map_names = {'신부여서쪽주막', '신부여서쪽주막2'}
+            local map_names = { '신부여서쪽주막', '신부여서쪽주막2' }
             local map_name = map_names[math.random(1, 2)]
             local map = name2map(map_name)
             if map == nil then

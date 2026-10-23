@@ -16,12 +16,15 @@ return {
 
         if q:step() == 5 then
             ::NPC_110_0001::
-            local btn = me:dialog(npc, '앗! ' .. me:name() .. '님 이시군요! 저희 아버지께서 저에게 인어의거울을 주셨는데, 잘 받았습니다.', { prev = false, next = true })
+            local btn = me:dialog(npc, '앗! ' .. me:name() .. '님 이시군요! 저희 아버지께서 저에게 인어의거울을 주셨는데, 잘 받았습니다.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_110_0010::
-            btn = me:dialog(npc, '이곳 도삭산은 외로운 곳이랍니다. 사람들도 그리 많이 오가지 않고.. 그래서 저는 400층까지의 길을 만리향 꽃으로 가득찬 길로 만들겠다는 생각을 하게 되었죠.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '이곳 도삭산은 외로운 곳이랍니다. 사람들도 그리 많이 오가지 않고.. 그래서 저는 400층까지의 길을 만리향 꽃으로 가득찬 길로 만들겠다는 생각을 하게 되었죠.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_110_0001
             end
@@ -29,7 +32,9 @@ return {
                 return
             end
             ::NPC_110_0011::
-            btn = me:dialog(npc, '하지만 얼마전에 정성들여 모으던 만리향 씨앗들을 해파리 괴물들에게 빼앗기고 말았어요.\n\n그래서 말인데 제 부탁을 좀 들어주세요. 해파리 괴물들에게 제 만리향 씨앗을 빼앗아 400층까지 가는길 곳곳에 심어 주시면 됩니다.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '하지만 얼마전에 정성들여 모으던 만리향 씨앗들을 해파리 괴물들에게 빼앗기고 말았어요.\n\n그래서 말인데 제 부탁을 좀 들어주세요. 해파리 괴물들에게 제 만리향 씨앗을 빼앗아 400층까지 가는길 곳곳에 심어 주시면 됩니다.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_110_0010
             end

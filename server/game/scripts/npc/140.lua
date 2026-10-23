@@ -6,38 +6,38 @@ local DRAGON_AWAKEN_RATES = { 20, 8, 2 }
 local DRAGON_WEAPON_LINES = {
     {
         type_name = '용마',
-        options = { '용마제육검', '용마제칠검', '용마제팔검' },
-        success = { '용마제칠검', '용마제팔검', '용마제구검' },
-        failed   = { nil, '[손상]용마제칠검', '[손상]용마제팔검' },
+        options   = { '용마제육검', '용마제칠검', '용마제팔검' },
+        success   = { '용마제칠검', '용마제팔검', '용마제구검' },
+        failed    = { nil, '[손상]용마제칠검', '[손상]용마제팔검' },
     },
     {
         type_name = '용천',
-        options = { '용천제육검', '용천제칠검', '용천제팔검' },
-        success = { '용천제칠검', '용천제팔검', '용천제구검' },
-        failed   = { nil, '[손상]용천제칠검', '[손상]용천제팔검' },
+        options   = { '용천제육검', '용천제칠검', '용천제팔검' },
+        success   = { '용천제칠검', '용천제팔검', '용천제구검' },
+        failed    = { nil, '[손상]용천제칠검', '[손상]용천제팔검' },
     },
     {
         type_name = '용랑',
-        options = { '용랑제육봉', '용랑제칠봉', '용랑제팔봉' },
-        success = { '용랑제칠봉', '용랑제팔봉', '용랑제구봉' },
-        failed   = { nil, '[손상]용랑제칠봉', '[손상]용랑제팔봉' },
+        options   = { '용랑제육봉', '용랑제칠봉', '용랑제팔봉' },
+        success   = { '용랑제칠봉', '용랑제팔봉', '용랑제구봉' },
+        failed    = { nil, '[손상]용랑제칠봉', '[손상]용랑제팔봉' },
     },
     {
         type_name = '용겸',
-        options = { '용겸제육봉', '용겸제칠봉', '용겸제팔봉' },
-        success = { '용겸제칠봉', '용겸제팔봉', '용겸제구봉' },
-        failed   = { nil, '[손상]용겸제칠봉', '[손상]용겸제팔봉' },
+        options   = { '용겸제육봉', '용겸제칠봉', '용겸제팔봉' },
+        success   = { '용겸제칠봉', '용겸제팔봉', '용겸제구봉' },
+        failed    = { nil, '[손상]용겸제칠봉', '[손상]용겸제팔봉' },
     },
 }
 
 local AMBER_COLORS = {
-    { list_text = '황호박별입니다.',  color = '황호박' },
-    { list_text = '적호박별입니다.',  color = '적호박' },
-    { list_text = '녹호박별입니다.',  color = '녹호박' },
-    { list_text = '청호박별입니다.',  color = '청호박' },
-    { list_text = '회호박별입니다.',  color = '회호박' },
-    { list_text = '갈호박별입니다.',  color = '갈호박' },
-    { list_text = '자호박별입니다.',  color = '자호박' },
+    { list_text = '황호박별입니다.', color = '황호박' },
+    { list_text = '적호박별입니다.', color = '적호박' },
+    { list_text = '녹호박별입니다.', color = '녹호박' },
+    { list_text = '청호박별입니다.', color = '청호박' },
+    { list_text = '회호박별입니다.', color = '회호박' },
+    { list_text = '갈호박별입니다.', color = '갈호박' },
+    { list_text = '자호박별입니다.', color = '자호박' },
 }
 
 local LIGHT_AMBER_COLORS = {
@@ -164,7 +164,8 @@ local function run_amber_weapon_craft(me, npc, colors)
     for _, w in ipairs(WEAPON_NAMES) do
         weapon_opts[#weapon_opts + 1] = color_name .. w .. '입니다.'
     end
-    local weapon_sel, weapon_btn = me:list(npc, '그래.. ' .. name_with(color_name .. '별', '으로', '로') .. ' 어떤 아이템을 만들텐가?', weapon_opts, { prev = false })
+    local weapon_sel, weapon_btn = me:list(npc, '그래.. ' .. name_with(color_name .. '별', '으로', '로') .. ' 어떤 아이템을 만들텐가?',
+        weapon_opts, { prev = false })
     if weapon_btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.PREV
     end
@@ -185,7 +186,8 @@ local function run_amber_weapon_craft(me, npc, colors)
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(result_name, '을', '를') .. ' 받을 수 없네.', { prev = false, next = false })
         return DIALOG_RESULT.NEXT
     end
-    me:dialog(npc, name_with(color_name .. '별', '으로', '로') .. ' ' .. color_name .. WEAPON_NAMES[weapon_sel] .. ' 만들어주었네.', { prev = false, next = false })
+    me:dialog(npc, name_with(color_name .. '별', '으로', '로') .. ' ' .. color_name .. WEAPON_NAMES[weapon_sel] .. ' 만들어주었네.',
+        { prev = false, next = false })
     return DIALOG_RESULT.NEXT
 end
 

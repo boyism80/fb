@@ -45,12 +45,15 @@ return {
         end
 
         ::NPC_169_0003::
-        btn = me:dialog(npc, "허허..자네 내가 이것을 번역해 주는 대신 무엇인가 요구를 할 것 같아 잔뜩 긴장해 있구만,\n하긴 무리도 아니지.. 요즘 세상에 공으로 되는 일이 거의 없으니 말일세.", { prev = false, next = true })
+        btn = me:dialog(npc,
+            "허허..자네 내가 이것을 번역해 주는 대신 무엇인가 요구를 할 것 같아 잔뜩 긴장해 있구만,\n하긴 무리도 아니지.. 요즘 세상에 공으로 되는 일이 거의 없으니 말일세.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::NPC_169_0004::
-        btn = me:dialog(npc, "하지만 난 틀려, 나는 한평생을 바다와 함께 살아온 바다 사나이라네.\n나에게는 먹을 음식과 입을 옷만 있으면 그 이상은 필요 없다네.", { prev = true, next = true })
+        btn = me:dialog(npc, "하지만 난 틀려, 나는 한평생을 바다와 함께 살아온 바다 사나이라네.\n나에게는 먹을 음식과 입을 옷만 있으면 그 이상은 필요 없다네.",
+            { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -66,7 +69,8 @@ return {
             goto NPC_169_0004
         end
 
-        sel, list_btn = me:list(npc, " ", { "정말 고맙습니다.", "일본에 자주 왔다갔다 하는데,", "항상 말이 없어 매우 무뚝뚝하고", "무서우신 분인 줄 알았는데", "참 친절하신 분이시군요." }, { prev = false })
+        sel, list_btn = me:list(npc, " ",
+            { "정말 고맙습니다.", "일본에 자주 왔다갔다 하는데,", "항상 말이 없어 매우 무뚝뚝하고", "무서우신 분인 줄 알았는데", "참 친절하신 분이시군요." }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 5 then
             return
         end

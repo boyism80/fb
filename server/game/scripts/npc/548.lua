@@ -14,7 +14,8 @@ local function run_junghwa(me, npc)
         return
     end
 
-    local button = me:dialog(npc, "중화절이 되니 몽연이형이 또 세시마을 대청소를 하는군요. 창고에서 또 뭐 꺼내달라고 할 텐데.. 귀찮은데..", { prev = false, next = true })
+    local button = me:dialog(npc, "중화절이 되니 몽연이형이 또 세시마을 대청소를 하는군요. 창고에서 또 뭐 꺼내달라고 할 텐데.. 귀찮은데..",
+        { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -52,7 +53,8 @@ local function run_dongji(me, npc)
     end
 
     if sel == 1 then
-        btn = me:dialog(npc, "양력으로 12월 12일이나 23일쯤 되면 밤의 길이가 가장 긴 날이 오는데, 이 날을 동지(冬至)라고 해요. 음력으론 11월이죠.", { prev = false, next = true })
+        btn = me:dialog(npc, "양력으로 12월 12일이나 23일쯤 되면 밤의 길이가 가장 긴 날이 오는데, 이 날을 동지(冬至)라고 해요. 음력으론 11월이죠.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -101,7 +103,8 @@ local function run_dongji(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "사실 이번에 팥죽 드시는 분들에게 제가 고약을 드려야 하는데.. 주연이 누나한테서 아직 안받아 왔거든요.. 귀찮아서...", { prev = false, next = true })
+        btn = me:dialog(npc, "사실 이번에 팥죽 드시는 분들에게 제가 고약을 드려야 하는데.. 주연이 누나한테서 아직 안받아 왔거든요.. 귀찮아서...",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

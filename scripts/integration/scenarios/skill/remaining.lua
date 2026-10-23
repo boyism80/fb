@@ -181,7 +181,7 @@ local function hide_case()
     return {
         name = "잠복근무",
         cast = function(caster, _, slot)
-            caster:send(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+            caster:send(protocol.spell_cast("NORMAL", slot, "", 0, { 0, 0 }))
             caster:sleep(200)
             return true
         end,
@@ -200,7 +200,7 @@ local function demote_admin(caster, target)
     if slot == 0xFF then
         return fail("demote: failed to learn 잠복근무")
     end
-    caster:send(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+    caster:send(protocol.spell_cast("NORMAL", slot, "", 0, { 0, 0 }))
     caster:sleep(200)
     if run_step(caster, "verify_super_hide", "demote_hide_on", "1") ~= true then
         return fail("demote: 잠복근무 did not hide")
@@ -218,7 +218,7 @@ local function demote_admin(caster, target)
         caster:sleep(200)
         local granted = caster:spell_slot("잠복근무")
         if granted ~= 0xFF then
-            caster:send(protocol.spell_cast("NORMAL", granted, "", 0, {0, 0}))
+            caster:send(protocol.spell_cast("NORMAL", granted, "", 0, { 0, 0 }))
             caster:sleep(200)
             blocked = run_step(target, "verify_demoted", "demote_blocked", caster:name()) == true
         end
@@ -679,33 +679,33 @@ function M.run(ctx, caster_index, target_index)
 
     caster:clear_all_spells()
     if spell_runner.run_cases({
-        stamp(nuri),
-        stamp(bada),
-        heal_self_case(),
-        azure_case(),
-        hp_drop_case("월아일격", nil),
-    }, caster, target) == false then
+            stamp(nuri),
+            stamp(bada),
+            heal_self_case(),
+            azure_case(),
+            hp_drop_case("월아일격", nil),
+        }, caster, target) == false then
         return false
     end
 
     caster:clear_all_spells()
     if spell_runner.run_cases(build_named(DRAGON_STRIKES, function(name)
-        return hp_drop_case(name, 100)
-    end), caster, target) == false then
+            return hp_drop_case(name, 100)
+        end), caster, target) == false then
         return false
     end
 
     caster:clear_all_spells()
     if spell_runner.run_cases(build_named(PALM_STRIKES, function(entry)
-        return hp_drop_case(entry.name, entry.mp)
-    end), caster, target) == false then
+            return hp_drop_case(entry.name, entry.mp)
+        end), caster, target) == false then
         return false
     end
 
     caster:clear_all_spells()
     if spell_runner.run_cases(build_named(KICKS, function(entry)
-        return kick_case(entry.name, entry.hp)
-    end), caster, nil) == false then
+            return kick_case(entry.name, entry.hp)
+        end), caster, nil) == false then
         return false
     end
     caster:chat("/몬스터범위제거 5")
@@ -734,64 +734,64 @@ function M.run(ctx, caster_index, target_index)
 
     caster:clear_all_spells()
     if spell_runner.run_cases({
-        {
-            name = "의태",
-            response = resp.message,
-            cast_type = "TARGET",
-            condition = function(packet)
-                if skill.is_cast_ready(packet.text, "의태") then
+            {
+                name = "의태",
+                response = resp.message,
+                cast_type = "TARGET",
+                condition = function(packet)
+                    if skill.is_cast_ready(packet.text, "의태") then
+                        return true
+                    end
+                    return nil
+                end,
+                post = function(actor)
+                    if run_step(actor, "verify_mimic", "mimic") ~= true then
+                        return false
+                    end
+                    actor:remove_buffs()
                     return true
-                end
-                return nil
-            end,
-            post = function(actor)
-                if run_step(actor, "verify_mimic", "mimic") ~= true then
-                    return false
-                end
-                actor:remove_buffs()
-                return true
-            end,
-        },
-        {
-            name = "귀염추혼소",
-            pre = function(_, other, state)
-                other:remove_buffs()
-                local pass, text = run_step(other, "snapshot_buff_phydef", "soul_before")
-                state.base = pass and read_trailing_number(text) or nil
-                if state.base == nil then
-                    return false
-                end
-            end,
-            cast = function(caster, other, slot, state)
-                caster:send(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
-                if wait_buff(other, "귀염추혼소", true) == false then
-                    return false
-                end
-                return run_step(other, "verify_buff_phydef", "soul_up", tostring(state.base + 50)) == true
-            end,
-            post = function(_, other, state)
-                other:remove_buffs()
-                return run_step(other, "verify_buff_phydef", "soul_back", tostring(state.base)) == true
-            end,
-        },
-        {
-            name = "다리밟기",
-            response = resp.message,
-            cast_type = "TARGET",
-            condition = function(packet)
-                if skill.is_cast_ready(packet.text, "다리밟기") then
-                    return true
-                end
-                return nil
-            end,
-            post = function(_, other)
-                if wait_buff(other, "다리밟기", true) == false then
-                    return false
-                end
-                return run_step(other, "verify_concast_heal", "bridge_heal", "다리밟기") == true
-            end,
-        },
-    }, caster, target) == false then
+                end,
+            },
+            {
+                name = "귀염추혼소",
+                pre = function(_, other, state)
+                    other:remove_buffs()
+                    local pass, text = run_step(other, "snapshot_buff_phydef", "soul_before")
+                    state.base = pass and read_trailing_number(text) or nil
+                    if state.base == nil then
+                        return false
+                    end
+                end,
+                cast = function(caster, other, slot, state)
+                    caster:send(protocol.spell_cast("NORMAL", slot, "", 0, { 0, 0 }))
+                    if wait_buff(other, "귀염추혼소", true) == false then
+                        return false
+                    end
+                    return run_step(other, "verify_buff_phydef", "soul_up", tostring(state.base + 50)) == true
+                end,
+                post = function(_, other, state)
+                    other:remove_buffs()
+                    return run_step(other, "verify_buff_phydef", "soul_back", tostring(state.base)) == true
+                end,
+            },
+            {
+                name = "다리밟기",
+                response = resp.message,
+                cast_type = "TARGET",
+                condition = function(packet)
+                    if skill.is_cast_ready(packet.text, "다리밟기") then
+                        return true
+                    end
+                    return nil
+                end,
+                post = function(_, other)
+                    if wait_buff(other, "다리밟기", true) == false then
+                        return false
+                    end
+                    return run_step(other, "verify_concast_heal", "bridge_heal", "다리밟기") == true
+                end,
+            },
+        }, caster, target) == false then
         return false
     end
 

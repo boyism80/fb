@@ -105,7 +105,8 @@ test_suite {
             if select_form(bot, form, "파트너", is_input) == nil then
                 return fail("the partner input did not reopen")
             end
-            form = bot:request_dialog_ext(protocol.dialog("INPUT_EX", 2, "partner", 0, 0, "", "NEXT"), quest_dialog.is_list)
+            form = bot:request_dialog_ext(protocol.dialog("INPUT_EX", 2, "partner", 0, 0, "", "NEXT"),
+                quest_dialog.is_list)
             if form == nil then
                 return fail("a valid partner did not reopen the form")
             end

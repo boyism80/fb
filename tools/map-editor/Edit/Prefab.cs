@@ -48,12 +48,20 @@ namespace MapEditor.Edit
                     {
                         int u = map.Objects[y * map.Width + x];
                         if (u == 0)
+                        {
                             continue;
+                        }
+
                         total[u] = total.GetValueOrDefault(u) + 1;
                         if (x + 1 < map.Width && map.Objects[y * map.Width + x + 1] != 0)
+                        {
                             pairs[(u, 0, map.Objects[y * map.Width + x + 1])] = pairs.GetValueOrDefault((u, 0, map.Objects[y * map.Width + x + 1])) + 1;
+                        }
+
                         if (y + 1 < map.Height && map.Objects[(y + 1) * map.Width + x] != 0)
+                        {
                             pairs[(u, 1, map.Objects[(y + 1) * map.Width + x])] = pairs.GetValueOrDefault((u, 1, map.Objects[(y + 1) * map.Width + x])) + 1;
+                        }
                     }
                 }
             }
@@ -69,7 +77,9 @@ namespace MapEditor.Edit
                 for (int start = 0; start < seen.Length; start++)
                 {
                     if (seen[start] || map.Objects[start] == 0)
+                    {
                         continue;
+                    }
 
                     var cells = new List<(int X, int Y)>();
                     var queue = new Queue<int>();
@@ -84,7 +94,10 @@ namespace MapEditor.Edit
                         foreach (var (nx, ny) in new[] { (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1) })
                         {
                             if (map.Contains(nx, ny) == false)
+                            {
                                 continue;
+                            }
+
                             var n = ny * map.Width + nx;
                             int v = map.Objects[n];
                             var linked = nx > x ? links.Contains((u, 0, v)) : nx < x ? links.Contains((v, 0, u)) : ny > y ? links.Contains((u, 1, v)) : links.Contains((v, 1, u));
@@ -96,14 +109,18 @@ namespace MapEditor.Edit
                         }
                     }
                     if (cells.Count < minCells || cells.Count > maxCells)
+                    {
                         continue;
+                    }
 
                     var left = cells.Min(c => c.X);
                     var right = cells.Max(c => c.X);
                     var top = cells.Min(c => c.Y);
                     var bottom = cells.Max(c => c.Y);
                     if (right - left >= 40 || bottom - top >= 40)
+                    {
                         continue;
+                    }
 
                     var footprint = new HashSet<(int X, int Y)>(cells);
                     var flood = new Queue<(int X, int Y)>(cells);
@@ -113,16 +130,24 @@ namespace MapEditor.Edit
                         foreach (var (nx, ny) in new[] { (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1) })
                         {
                             if (nx < left || nx > right || ny < top - 4 || ny > bottom || map.Contains(nx, ny) == false)
+                            {
                                 continue;
+                            }
+
                             if (map.Objects[ny * map.Width + nx] == 0 && blocks.Contains(nx, ny) && footprint.Add((nx, ny)))
+                            {
                                 flood.Enqueue((nx, ny));
+                            }
                         }
                     }
 
                     var minY = footprint.Min(c => c.Y);
                     var signature = new StringBuilder();
                     foreach (var (x, y) in cells.OrderBy(c => c.Y).ThenBy(c => c.X))
+                    {
                         signature.Append($"{x - left},{y - minY}:{map.Objects[y * map.Width + x]};");
+                    }
+
                     var key = Convert.ToHexString(SHA1.HashData(Encoding.ASCII.GetBytes(signature.ToString())))[..10].ToLowerInvariant();
 
                     if (result.TryGetValue(key, out var prefab) == false)

@@ -99,7 +99,7 @@ return {
         if not me:rmitem('부여-일본쾌속승선권', 1, ITEM_DELETE_TYPE.GIVE) then
             return
         end
-        if me:map(map, {math.random(2, 15), 7}) ~= true then
+        if me:map(map, { math.random(2, 15), 7 }) ~= true then
             me:mkitem('부여-일본쾌속승선권', 1)
         end
     end

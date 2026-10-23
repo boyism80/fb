@@ -8,7 +8,7 @@ return {
         local mp = 240
         local sound = 76
         local effect = 66
-        spell.heal(me, you, sp, {hp=hp, mp=mp, sound=sound, effect=effect})
+        spell.heal(me, you, sp, { hp = hp, mp = mp, sound = sound, effect = effect })
     end,
 
     -- on_buff = function(me, sp)

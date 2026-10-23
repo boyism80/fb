@@ -260,7 +260,8 @@ local function finish_path(bot, target, oid, seed, start, path, dialog, previous
     local after = snapshot_reset(bot, target.quests, seed)
     local errors = errors_in(bot:take_messages())
     local change = after and diff(start, after)
-    local ending = dialog == nil and ("end after: " .. short(previous and previous.message)) or ("open: " .. short(dialog.message))
+    local ending = dialog == nil and ("end after: " .. short(previous and previous.message)) or
+        ("open: " .. short(dialog.message))
     local text = path_text(path)
 
     if after == nil then
@@ -408,8 +409,10 @@ local function compare_full_inventory(target, results, lines)
         if r.seed:sub(-5) == ";fill" and quest_changed(r.change) then
             local normal = by_key[r.seed:sub(1, -6) .. "#" .. r.path]
             if normal ~= nil and gained(normal.change) and gained(r.change) == false then
-                emit(lines, string.format("SUSPECT|%s|%s|%s|full inventory advanced the quest without the reward: full %s, normal %s",
-                    target.name, r.seed, r.path, r.change.text, normal.change.text))
+                emit(lines,
+                    string.format(
+                        "SUSPECT|%s|%s|%s|full inventory advanced the quest without the reward: full %s, normal %s",
+                        target.name, r.seed, r.path, r.change.text, normal.change.text))
             end
         end
     end

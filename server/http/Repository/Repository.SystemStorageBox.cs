@@ -24,7 +24,9 @@ namespace Http.Reepository
         public async Task<SystemStorageBox> GetByExternalRef(uint world, string externalRef)
         {
             if (string.IsNullOrWhiteSpace(externalRef))
+            {
                 return null;
+            }
 
             await using var conn = _dbContext.GetGlobalConnection(world);
             var row = await conn.QueryFirstOrDefaultAsync<SystemStorageBox>(
@@ -158,7 +160,9 @@ namespace Http.Reepository
             var box = await Get(world, id);
             var deadline = DateTime.UtcNow + SystemMailRepository.EditLeadTime;
             if (box == null || box.Canceled || box.ReserveDate == null || box.ReserveDate <= deadline || reserveDate <= deadline)
+            {
                 return false;
+            }
 
             box.Title = title;
             box.Message = message;
@@ -175,7 +179,9 @@ namespace Http.Reepository
         {
             var box = await Get(world, id);
             if (box == null || box.Canceled || box.ReserveDate == null || box.ReserveDate <= DateTime.UtcNow + SystemMailRepository.EditLeadTime)
+            {
                 return false;
+            }
 
             box.Canceled = true;
             Set(world, box);
@@ -187,7 +193,9 @@ namespace Http.Reepository
         public async Task Archive(uint world, IReadOnlyList<SystemStorageBox> boxes)
         {
             if (boxes.Count == 0)
+            {
                 return;
+            }
 
             Delete(world, boxes);
             await SaveChangesAsync();
@@ -206,7 +214,9 @@ namespace Http.Reepository
             {
                 var existing = await GetByExternalRef(world, externalRef);
                 if (existing != null)
+                {
                     return existing;
+                }
             }
 
             var attachmentsJson = JsonConvert.SerializeObject(attachments ?? new List<Fb.Model.Dsl>());
@@ -231,16 +241,16 @@ namespace Http.Reepository
 
             var box = new SystemStorageBox
             {
-                Id                   = id,
-                Title                = title,
-                Message              = message,
-                Attachments          = attachments ?? new List<Fb.Model.Dsl>(),
-                ReserveDate          = reserveDate,
-                ExpiredDate          = expireDate,
+                Id = id,
+                Title = title,
+                Message = message,
+                Attachments = attachments ?? new List<Fb.Model.Dsl>(),
+                ReserveDate = reserveDate,
+                ExpiredDate = expireDate,
                 IncludeNewCharacters = includeNewCharacters,
-                ExternalRef          = externalRef,
-                CreatedDate          = DateTime.UtcNow,
-                UpdatedDate          = DateTime.UtcNow
+                ExternalRef = externalRef,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
 
             Set(world, box);

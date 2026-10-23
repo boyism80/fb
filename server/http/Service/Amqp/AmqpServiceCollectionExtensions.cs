@@ -24,12 +24,16 @@ namespace Http.Service.Amqp
             var registry = new AmqpHandlerRegistry();
             configure(registry);
             if (registry.Handlers.Count == 0)
+            {
                 throw new ArgumentException("At least one AMQP handler must be registered", nameof(configure));
+            }
 
             services.AddSingleton(registry);
 
             foreach (var registration in registry.Handlers)
+            {
                 services.AddTransient(registration.HandlerType);
+            }
 
             services.AddHostedService<AmqpListenerService>();
             return services;

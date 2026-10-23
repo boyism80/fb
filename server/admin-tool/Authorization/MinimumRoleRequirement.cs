@@ -20,13 +20,19 @@ namespace AdminTool.Authorization
         {
             var roleClaim = context.User.FindFirst(ClaimTypes.Role);
             if (roleClaim == null)
+            {
                 return Task.CompletedTask;
+            }
 
             if (!TryParseRole(roleClaim.Value, out var currentRole))
+            {
                 return Task.CompletedTask;
+            }
 
             if (currentRole >= requirement.MinimumRole)
+            {
                 context.Succeed(requirement);
+            }
 
             return Task.CompletedTask;
         }
@@ -34,7 +40,9 @@ namespace AdminTool.Authorization
         private static bool TryParseRole(string value, out Role role)
         {
             if (Enum.TryParse(value, true, out role))
+            {
                 return true;
+            }
 
             if (value.Equals("Operator", StringComparison.OrdinalIgnoreCase))
             {

@@ -5,7 +5,7 @@ local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
-    ::NPC_158_0001::
+        ::NPC_158_0001::
         local index, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { '초혼술방법', '무한 복장', '일반 복장' })
         if button == DIALOG_RESULT.QUIT then
             return
@@ -92,7 +92,8 @@ return {
 
         if index == 2 then
             local price = 1000
-            index = me:list(npc, string.format('무한에 참여하시려면 염색비 %d전을 내시고 무한 복장을 하셔야 합니다. %d전을 내시겠습니까?', price, price), {'예', '아니오'})
+            index = me:list(npc, string.format('무한에 참여하시려면 염색비 %d전을 내시고 무한 복장을 하셔야 합니다. %d전을 내시겠습니까?', price, price),
+                { '예', '아니오' })
             if index == nil then
                 return
             end
@@ -101,7 +102,7 @@ return {
                 return
             end
 
-            index = me:list(npc, '어떤 팀으로 참가하시겠습니까?', {'북팀 - 검은색', '남팀 - 붉은색', '동팀 - 파란색', '서팀 - 하얀색'})
+            index = me:list(npc, '어떤 팀으로 참가하시겠습니까?', { '북팀 - 검은색', '남팀 - 붉은색', '동팀 - 파란색', '서팀 - 하얀색' })
             if index == nil then
                 return
             end
@@ -124,7 +125,7 @@ return {
             end
 
             me:money(money - price)
-    ::NPC_158_0010::
+            ::NPC_158_0010::
             if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return
             end
@@ -141,22 +142,22 @@ return {
             goto NPC_158_0001
 
         elseif index == 3 then
-        	index = me:list(npc, '일반 복장으로 바꿔드릴까요?', {'예', '아니오'})
-        	if index == nil then
-        		return
-        	end
+            index = me:list(npc, '일반 복장으로 바꿔드릴까요?', { '예', '아니오' })
+            if index == nil then
+                return
+            end
 
-        	if index ~= 1 then
-        		return
-        	end
+            if index ~= 1 then
+                return
+            end
 
-        	me:armor_color(nil)
-        	button = me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', { prev = false, next = true })
-        	if button == DIALOG_RESULT.QUIT then
-        		return
-        	end
+            me:armor_color(nil)
+            button = me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', { prev = false, next = true })
+            if button == DIALOG_RESULT.QUIT then
+                return
+            end
 
-        	goto NPC_158_0001
+            goto NPC_158_0001
         else
         end
     end

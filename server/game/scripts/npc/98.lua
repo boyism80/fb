@@ -139,7 +139,8 @@ return {
         end
 
         ::NPC_98_0010::
-        button = me:dialog(npc, '그리고 한번에 2명까지 용왕이\n사는 곳으로 보내 줄 수 있으니\n같이 갈 친구가 있으면 지금\n데려오게..', { prev = true, next = true })
+        button = me:dialog(npc, '그리고 한번에 2명까지 용왕이\n사는 곳으로 보내 줄 수 있으니\n같이 갈 친구가 있으면 지금\n데려오게..',
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -166,7 +167,8 @@ return {
         end
 
         ::NPC_98_0013::
-        button = me:dialog(npc, '아마도, 그 기운으로 인하여\n용왕방에 있는 모든 인원이\n용왕방에서 강제로 나가게 될 수\n있다는 것일세...', { prev = true, next = true })
+        button = me:dialog(npc, '아마도, 그 기운으로 인하여\n용왕방에 있는 모든 인원이\n용왕방에서 강제로 나가게 될 수\n있다는 것일세...',
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -220,11 +222,11 @@ return {
         end
 
         if not me:has_items({
-            ['진룡의어금니'] = 1,
-            ['묵룡의어금니'] = 1,
-            ['흑룡의어금니'] = 1,
-            ['감룡의어금니'] = 1
-        }) then
+                ['진룡의어금니'] = 1,
+                ['묵룡의어금니'] = 1,
+                ['흑룡의어금니'] = 1,
+                ['감룡의어금니'] = 1
+            }) then
             me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
             return
         end
@@ -308,7 +310,8 @@ return {
         local friend = nil
         if selected == 1 then
             ::NPC_98_0029::
-            local friend_name = me:input(npc, '함께 갈 친구의 이름은 무엇인가?', { top = '예. 제 친구의 이름은', bottom = '입니다.', maxlen = 12, prev = false })
+            local friend_name = me:input(npc, '함께 갈 친구의 이름은 무엇인가?',
+                { top = '예. 제 친구의 이름은', bottom = '입니다.', maxlen = 12, prev = false })
             if friend_name == DIALOG_RESULT.QUIT or type(friend_name) ~= 'string' or friend_name == '' then
                 return
             end
@@ -347,11 +350,11 @@ return {
         end
 
         if not me:has_items({
-            ['진룡의어금니'] = 1,
-            ['묵룡의어금니'] = 1,
-            ['흑룡의어금니'] = 1,
-            ['감룡의어금니'] = 1
-        }) then
+                ['진룡의어금니'] = 1,
+                ['묵룡의어금니'] = 1,
+                ['흑룡의어금니'] = 1,
+                ['감룡의어금니'] = 1
+            }) then
             me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
             return
         end
@@ -370,11 +373,11 @@ return {
         end
 
         if not me:rmitem({
-            ['진룡의어금니'] = 1,
-            ['묵룡의어금니'] = 1,
-            ['흑룡의어금니'] = 1,
-            ['감룡의어금니'] = 1
-        }, ITEM_DELETE_TYPE.GIVE) then
+                ['진룡의어금니'] = 1,
+                ['묵룡의어금니'] = 1,
+                ['흑룡의어금니'] = 1,
+                ['감룡의어금니'] = 1
+            }, ITEM_DELETE_TYPE.GIVE) then
             inst:destroy()
             me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
             return

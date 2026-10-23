@@ -39,7 +39,9 @@ namespace Http.Reepository
             }
 
             if (stale)
+            {
                 Set(world, sync);
+            }
         }
 
         protected override string OnSelect(CharacterRealtimeStateKey key)

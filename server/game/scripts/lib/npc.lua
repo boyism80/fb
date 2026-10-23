@@ -116,12 +116,12 @@ function M.rename_weapon(me, npc, from, to)
         npc:chat('이름이 너무 짧습니다.')
         return true
     end
-    
+
     if #cp949 > 32 then
         npc:chat('이름이 너무 깁니다.')
         return true
     end
-    
+
     if assert_korean(cp949) == false then
         npc:chat('그렇게 바꿀 수 없습니다.')
         return true
@@ -266,7 +266,7 @@ function M.repair(me, npc, name)
         local model = item:model()
         price = price + (model:repair_price() * (model:durability() - item:durability()))
     end
-    
+
     price = math.floor(price)
     local money = me:money()
     if price > money then
@@ -638,7 +638,7 @@ function M.show_buy_menu(me, npc)
         end
     end
 
-::NPC_BUY_DIALOG_000::
+    ::NPC_BUY_DIALOG_000::
     local slot = me:slot(npc, '뭘 팔래요?', slots)
     if slot == nil then
         return DIALOG_RESULT.NEXT
@@ -674,7 +674,7 @@ function M.show_buy_menu(me, npc)
     else
         message = string.format('%s %d전에 파시겠습니까?', name_with(model:name()), price)
     end
-    if me:menu(npc, message, {'네', '아니오'}) == 1 then
+    if me:menu(npc, message, { '네', '아니오' }) == 1 then
         if me:rmitem(item, count, ITEM_DELETE_TYPE.SELL) then
             me:money(me:money() + price)
         end
@@ -700,7 +700,7 @@ local function show_sell_catalog(me, npc, sell_id)
     end
 
     local list = pursuit_sell(pursuit)
-::NPC_SELL_DIALOG_000::
+    ::NPC_SELL_DIALOG_000::
     local selected = me:item(npc, '제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.', list)
     if selected == nil then
         return
@@ -746,7 +746,7 @@ local function show_sell_catalog(me, npc, sell_id)
     if is_bundle and count > me:item_free_space(item) then
         return me:dialog(npc, '더 이상 가질 수 없습니다.', { prev = false, next = true })
     end
-    
+
     if me:mkitem(selected_name, count) == nil then
         return me:dialog(npc, '공간이 부족합니다.', { prev = false, next = true })
     else
@@ -836,7 +836,7 @@ function M.show_repair_menu(me, npc)
         item:durability(model:durability())
         return me:dialog(npc, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
     else
-        if me:menu(npc, string.format('고치는데 %d전이 필요합니다. 정말 수리하시겠습니까?', price), {'네', '아니오'}) == 1 then
+        if me:menu(npc, string.format('고치는데 %d전이 필요합니다. 정말 수리하시겠습니까?', price), { '네', '아니오' }) == 1 then
             local money = me:money()
             if price > money then
                 return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
@@ -875,7 +875,7 @@ function M.show_repair_all_menu(me, npc)
         end
         return me:dialog(npc, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
     else
-        local selected = me:menu(npc, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), {'네', '아니오'})
+        local selected = me:menu(npc, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), { '네', '아니오' })
         if selected == 1 then
             local money = me:money()
             if money < price then
@@ -910,7 +910,7 @@ function M.show_hold_money_menu(me, npc)
 
     local current_money = me:money()
     if count > current_money then
-       return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true }) 
+        return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
     end
 
     local deposited_money = me:deposited_money()
@@ -976,7 +976,7 @@ function M.show_hold_item_menu(me, npc)
 
     local storage_fee = model:storage_fee()
     if storage_fee > 0 then
-        local selected = me:menu(npc, string.format('맡기는데 %d전이 필요합니다. 맡기시겠습니까?', storage_fee), {'네', '아니오'})
+        local selected = me:menu(npc, string.format('맡기는데 %d전이 필요합니다. 맡기시겠습니까?', storage_fee), { '네', '아니오' })
         if selected ~= 1 then
             return DIALOG_RESULT.NEXT
         end
@@ -1024,7 +1024,7 @@ function M.show_return_money_menu(me, npc)
     end
 
     if count > me:money_free_space() then
-       return me:dialog(npc, '가진 돈이 너무 많습니다.', { prev = false, next = true })
+        return me:dialog(npc, '가진 돈이 너무 많습니다.', { prev = false, next = true })
     end
 
     me:deposited_money(deposited_money - count)
@@ -1039,7 +1039,7 @@ function M.show_return_item_menu(me, npc)
     for _, stored_item in pairs(me:stored_item()) do
         local model = stored_item:model()
         local count = stored_item:count()
-        table.insert(list, {model, count})
+        table.insert(list, { model, count })
     end
 
     local selected = me:item(npc, '제가 맡고 있는 물건들입니다. 무엇을 찾으시겠습니까?', list)
@@ -1058,7 +1058,7 @@ function M.show_return_item_menu(me, npc)
     end
     local model = stored_item:model()
     local count = 1
-    if model:attr(ITEM_ATTRIBUTE.BUNDLE)  then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
         if stored_item:count() > 1 then
             count = me:input(npc, '얼마나 돌려드릴까요?')
             if count == nil then
@@ -1081,7 +1081,7 @@ function M.show_return_item_menu(me, npc)
             return me:dialog(npc, '더 이상 가질 수 없습니다.', { prev = false, next = true })
         end
     end
-    
+
     if me:retrieve_item(stored_item, count) == nil then
         return me:dialog(npc, '공간이 부족합니다.', { prev = false, next = true })
     end
@@ -1104,7 +1104,7 @@ function M.show_rename_weapon_menu(me, npc)
         end
     end
 
-::NPC_RENAME_WEAPON_DIALOG_001::
+    ::NPC_RENAME_WEAPON_DIALOG_001::
     local slot = me:slot(npc, '어떤 장비에 별칭을 부여하시겠어요?', slots)
     if slot == nil then
         return DIALOG_RESULT.NEXT
@@ -1114,7 +1114,7 @@ function M.show_rename_weapon_menu(me, npc)
     if weapon == nil then
         return
     end
-::NPC_RENAME_WEAPON_DIALOG_002::
+    ::NPC_RENAME_WEAPON_DIALOG_002::
     local name = me:input(npc, '어떤 이름을 붙이고 싶으세요?')
     if name == nil then
         goto NPC_RENAME_WEAPON_DIALOG_001
@@ -1138,7 +1138,7 @@ function M.show_rename_weapon_menu(me, npc)
 
     local price = weapon:model():rename_price()
     if price > 0 then
-        if me:menu(npc, string.format('바꾸는데 %d전이 필요합니다. 정말 바꾸시겠습니까?', price), {'네', '아니오'}) ~= 1 then
+        if me:menu(npc, string.format('바꾸는데 %d전이 필요합니다. 정말 바꾸시겠습니까?', price), { '네', '아니오' }) ~= 1 then
             return DIALOG_RESULT.NEXT
         end
     end
@@ -1149,7 +1149,8 @@ function M.show_rename_weapon_menu(me, npc)
     elseif renamed == false then
         return me:dialog(npc, '돈이 부족합니다.', { prev = false, next = true })
     else
-        return me:dialog(npc, string.format('%s의 이름을 %s 변경했습니다.', weapon:model():name(), name_with(name, '으로', '로')), { prev = false, next = true })
+        return me:dialog(npc, string.format('%s의 이름을 %s 변경했습니다.', weapon:model():name(), name_with(name, '으로', '로')),
+            { prev = false, next = true })
     end
 end
 
@@ -1161,11 +1162,12 @@ end
 --   After QUIT (or PREV), selected is never nil — do not write `or selected == nil`.
 function M.basic_class(me, npc, class, spells)
     local SPELL_DONE_MSG = '수행의 길은 끝이 없는 법. 언제라도 어려운 일이 있으면 나를 찾아오도록 하게.'
-::NPC_BASIC_CLASS_000::
+    ::NPC_BASIC_CLASS_000::
     local level = me:level()
     local class_name = class2name(class)
     if me:class() == class then
-        local selected, menu_btn = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {'마법 알아보기', '마법 배우기', '마법 지우기', '칭호 받기'})
+        local selected, menu_btn = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?',
+            { '마법 알아보기', '마법 배우기', '마법 지우기', '칭호 받기' })
         if menu_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -1263,7 +1265,9 @@ function M.basic_class(me, npc, class, spells)
                 end
             end
 
-            local confirm, confirm_btn = me:pursuit(npc, string.format('%s 배우기 위해서는 %s를 바쳐야 하네. 배우겠느냐?', name_with(name), table.concat(material, ', ')), { '예', '아니오' })
+            local confirm, confirm_btn = me:pursuit(npc,
+                string.format('%s 배우기 위해서는 %s를 바쳐야 하네. 배우겠느냐?', name_with(name), table.concat(material, ', ')),
+                { '예', '아니오' })
             if confirm_btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -1303,7 +1307,8 @@ function M.basic_class(me, npc, class, spells)
             me:menu(npc, SPELL_DONE_MSG, {})
             return
         elseif selected == 4 then
-            local title = me:input(npc, '네 정성이 갸륵하니... 그래, 무슨 칭호를 받고 싶으냐?', { top = '받고싶은 칭호는', bottom = '입니다.', maxlen = 10, prev = true })
+            local title = me:input(npc, '네 정성이 갸륵하니... 그래, 무슨 칭호를 받고 싶으냐?',
+                { top = '받고싶은 칭호는', bottom = '입니다.', maxlen = 10, prev = true })
             if title == DIALOG_RESULT.QUIT then
                 return
             end
@@ -1337,7 +1342,7 @@ function M.basic_class(me, npc, class, spells)
             goto NPC_BASIC_CLASS_000
         end
     else
-        local job_sel, menu_btn = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {class_name .. '직업가지기'})
+        local job_sel, menu_btn = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', { class_name .. '직업가지기' })
         if menu_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -1350,13 +1355,13 @@ function M.basic_class(me, npc, class, spells)
             if level < 5 then
                 me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
             end
-::NPC_BASIC_CLASS_001::
+            ::NPC_BASIC_CLASS_001::
             local button = me:dialog(npc, class_name .. '의 길을 가려면, 몇 가지 맹세를 해야하느니.', { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-::NPC_BASIC_CLASS_002::
+            ::NPC_BASIC_CLASS_002::
             local selected, button = me:pursuit(npc, '첫째로, 하늘에서 굽어보고 계신 천제(天帝) 앞에 복종을 맹세하겠느냐?', { '예', '아니오' })
             if button == DIALOG_RESULT.QUIT then
                 return
@@ -1364,7 +1369,7 @@ function M.basic_class(me, npc, class, spells)
             if selected ~= 1 then
                 goto NPC_BASIC_CLASS_STOP
             end
-::NPC_BASIC_CLASS_003::
+            ::NPC_BASIC_CLASS_003::
             selected, button = me:pursuit(npc, '둘째로, 험난한 ' .. class_name .. '수련의 길에 너의 평생을 바칠 것을 맹세하겠느냐?', { '예', '아니오' })
             if button == DIALOG_RESULT.QUIT then
                 return
@@ -1372,7 +1377,7 @@ function M.basic_class(me, npc, class, spells)
             if selected ~= 1 then
                 goto NPC_BASIC_CLASS_STOP
             end
-::NPC_BASIC_CLASS_004::
+            ::NPC_BASIC_CLASS_004::
             selected, button = me:pursuit(npc, '셋째로, 불의를 보고 그냥 지나치지 않을 것을 맹세하겠느냐?', { '예', '아니오' })
             if button == DIALOG_RESULT.QUIT then
                 return
@@ -1380,7 +1385,7 @@ function M.basic_class(me, npc, class, spells)
             if selected ~= 1 then
                 goto NPC_BASIC_CLASS_STOP
             end
-::NPC_BASIC_CLASS_005::
+            ::NPC_BASIC_CLASS_005::
             selected, button = me:pursuit(npc, '훌륭하군. 그렇다면, 지금까지의 맹세를 증명하기 위해 도토리를 10개 바치거라.', { '예', '아니오' })
             if button == DIALOG_RESULT.QUIT then
                 return
@@ -1407,7 +1412,7 @@ function M.basic_class(me, npc, class, spells)
                 end
             end
 
-::NPC_BASIC_CLASS_STOP::
+            ::NPC_BASIC_CLASS_STOP::
             me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
         end
     end
@@ -1422,26 +1427,26 @@ local PROMOTION_ITEMS = {
 
 local PROMOTION_STATS = {
     [CLASS.WARRIOR] = {
-        [0] = { min_hp = 70000,  min_mp = 0 },
+        [0] = { min_hp = 70000, min_mp = 0 },
         [1] = { min_hp = 200000, min_mp = 0 },
         [2] = { min_hp = 600000, min_mp = 0 },
         [3] = { min_hp = 1400000, min_mp = 0 },
     },
     [CLASS.ROGUE] = {
-        [0] = { min_hp = 65000,  min_mp = 0 },
+        [0] = { min_hp = 65000, min_mp = 0 },
         [1] = { min_hp = 220000, min_mp = 0 },
         [2] = { min_hp = 600000, min_mp = 0 },
         [3] = { min_hp = 1400000, min_mp = 0 },
     },
     [CLASS.MAGE] = {
-        [0] = { min_hp = 30000,  min_mp = 20000 },
+        [0] = { min_hp = 30000, min_mp = 20000 },
         [1] = { min_hp = 150000, min_mp = 100000 },
         [2] = { min_hp = 300000, min_mp = 500000 },
         [3] = { min_hp = 650000, min_mp = 900000 },
     },
     [CLASS.POET] = {
-        [0] = { min_hp = 25000,  min_mp = 25000 },
-        [1] = { min_hp = 80000,  min_mp = 70000 },
+        [0] = { min_hp = 25000, min_mp = 25000 },
+        [1] = { min_hp = 80000, min_mp = 70000 },
         [2] = { min_hp = 250000, min_mp = 250000 },
         [3] = { min_hp = 600000, min_mp = 750000 },
     },
@@ -1564,7 +1569,7 @@ function M.promotion_clothes(me, npc, class)
         me:dialog(npc, '이미 보유 중이거나 장착 중이라 더 받을 수 없습니다.', { prev = false, next = true })
         return
     end
-    
+
     if me:mkitem(item_name, 1) == nil then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', { prev = false, next = true })
         return
@@ -1603,7 +1608,9 @@ function M.promotion(me, npc, class)
     if not next_name then
         return
     end
-    local selected, button = me:pursuit(npc, string.format('이토록 강해지시다니, 정말 대단하십니다.\n당신이 지금껏 걸어온 고된 수련의 길에 경의를 표합니다.\n\n지금 %s의 칭호를 받으시겠습니까?', next_name), { '네, 모든 준비가 끝났습니다.', '나중에 다시 오지요.' })
+    local selected, button = me:pursuit(npc,
+        string.format('이토록 강해지시다니, 정말 대단하십니다.\n당신이 지금껏 걸어온 고된 수련의 길에 경의를 표합니다.\n\n지금 %s의 칭호를 받으시겠습니까?', next_name),
+        { '네, 모든 준비가 끝났습니다.', '나중에 다시 오지요.' })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -1619,7 +1626,8 @@ function M.promotion(me, npc, class)
         return
     end
     me:promotion(from_promotion + 1)
-    broadcast(string.format('(( [%s]님이 %s 승급하였습니다. 축하합니다! ))', me:name(), name_with(next_name, '으로', '로')), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
+    broadcast(string.format('(( [%s]님이 %s 승급하였습니다. 축하합니다! ))', me:name(), name_with(next_name, '으로', '로')),
+        MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
     me:dialog(npc, '승급을 마쳤습니다. 더 높은 경지에 도전하시길 바랍니다.', { prev = false, next = true })
 end
 
@@ -1628,19 +1636,19 @@ function M.revive_oath(me, npc)
         return me:dialog(npc, '사망 상태가 아닐 때 나오는 메시지')
     end
 
-    if me:menu(npc, '생명의 소중함을 그렇게 일러왔거늘... 앞으로돋 사소한 일에 목숨을걸지 않으리라고 내가 어떻게 믿을 수 있겠느냐? 또 생명을 잃고 나를 찾아오지 않겠다고 맹세할 수 있겠느냐?', {'예', '아니오'}) ~= 1 then
+    if me:menu(npc, '생명의 소중함을 그렇게 일러왔거늘... 앞으로돋 사소한 일에 목숨을걸지 않으리라고 내가 어떻게 믿을 수 있겠느냐? 또 생명을 잃고 나를 찾아오지 않겠다고 맹세할 수 있겠느냐?', { '예', '아니오' }) ~= 1 then
         return me:dialog(npc, '부활 대답 거부 메시지')
     end
 
-    if me:menu(npc, '싸움은 싸움을 부르고, 피는 반드시 피를 보게 되느니라. 이번의 죽음도 네 책임이라는 것을 진심으로 느끼고 반성하고 있느냐?', {'예', '아니오'}) ~= 1 then
+    if me:menu(npc, '싸움은 싸움을 부르고, 피는 반드시 피를 보게 되느니라. 이번의 죽음도 네 책임이라는 것을 진심으로 느끼고 반성하고 있느냐?', { '예', '아니오' }) ~= 1 then
         return me:dialog(npc, '부활 대답 거부 메시지')
     end
 
-    if me:menu(npc, '그렇다면 잃은 물건과 경험치도 다 네 욕심에서 비롯되었음을 인정하겠느냐?', {'예', '아니오'}) ~= 1 then
+    if me:menu(npc, '그렇다면 잃은 물건과 경험치도 다 네 욕심에서 비롯되었음을 인정하겠느냐?', { '예', '아니오' }) ~= 1 then
         return me:dialog(npc, '부활 대답 거부 메시지')
     end
 
-    if me:menu(npc, '네가 새로 생명을 얻게 되더라도 절대로 무고한 생명을 해치지 않을 것을 맹세하느냐?', {'예', '아니오'}) ~= 1 then
+    if me:menu(npc, '네가 새로 생명을 얻게 되더라도 절대로 무고한 생명을 해치지 않을 것을 맹세하느냐?', { '예', '아니오' }) ~= 1 then
         return me:dialog(npc, '부활 대답 거부 메시지')
     end
 
@@ -1692,7 +1700,8 @@ function M.nakrang_intro(me, npc)
     local q = me:quest(quest.QUEST_NAKRANG_INTRO)
     local already_got = (q ~= nil and q:completed())
     if already_got then
-        me:dialog(npc, '두루마리를 열어보기\n위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면 됩니다.', { prev = false, next = false })
+        me:dialog(npc, '두루마리를 열어보기\n위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면 됩니다.',
+            { prev = false, next = false })
         return
     end
 
@@ -1711,7 +1720,8 @@ function M.nakrang_intro(me, npc)
         goto nakrang_intro_1
     end
     ::nakrang_intro_3::
-    btn = me:dialog(npc, '열어보기 위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면\n됩니다.', { prev = true, next = true })
+    btn = me:dialog(npc, '열어보기 위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면\n됩니다.',
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

@@ -80,7 +80,10 @@ namespace Http.Worker
         {
             var attr = input.GetType().GetCustomAttributes(typeof(TableAttribute), true).FirstOrDefault() as TableAttribute;
             if (attr != null)
+            {
                 _logger.LogInformation($"[{percent,3}%] {attr.Path} loading completed");
+            }
+
             base.OnWorked(input, percent);
         }
     }

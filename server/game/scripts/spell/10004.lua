@@ -17,7 +17,8 @@ return {
                 you:message(string.format('%s %s 가합니다.', name_with(me:name(), '이', '가'), name_with(sp:name(), '을', '를')))
             end
         end
-        me:damage_to(you, math.random(30000, 35000), { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
+        me:damage_to(you, math.random(30000, 35000),
+            { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
     end,
 
     -- on_buff = function(me, sp)

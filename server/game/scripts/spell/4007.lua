@@ -7,7 +7,7 @@ return {
         local mp = 30
         local sound = 77
         local effect = 49
-        if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:unbuff('혼마술')
         end
     end,

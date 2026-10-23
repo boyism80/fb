@@ -47,7 +47,9 @@ namespace Http.Reepository
         public override ClanMoneyRequestArchive[] Set(uint world, ClanMoneyRequestArchive[] values)
         {
             if (values == null || values.Length == 0)
+            {
                 return values;
+            }
 
             _buffer.Enqueue(async () =>
             {
@@ -71,7 +73,9 @@ namespace Http.Reepository
         {
             var redis = _redis.GetShardConnection(world, clan);
             if (redis == null)
+            {
                 return;
+            }
 
             var key = (RedisKey)$"fb:cache:clan_money_request_archive:{clan}";
             try
@@ -123,7 +127,9 @@ namespace Http.Reepository
         protected override string OnDeleteMany(IReadOnlyList<ClanMoneyRequestArchiveKey> keys)
         {
             if (keys.Count == 0)
+            {
                 return string.Empty;
+            }
 
             var clan = keys[0].Clan;
             return $"""
@@ -140,7 +146,9 @@ namespace Http.Reepository
         protected override string OnUpsert(ClanMoneyRequestArchive[] values)
         {
             if (values.Length == 0)
+            {
                 return string.Empty;
+            }
 
             var args = values.Select(value => $"""
                 ({value.Clan.Escape()},

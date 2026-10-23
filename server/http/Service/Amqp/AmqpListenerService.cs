@@ -124,7 +124,9 @@ namespace Http.Service.Amqp
             var bytes = reader.ReadBytes(size);
 
             if (!_registry.TryGet(routeKey, protocolType, out var registration))
+            {
                 return;
+            }
 
             IFlatBufferEx message;
             try

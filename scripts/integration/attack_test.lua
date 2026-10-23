@@ -19,7 +19,7 @@ test_suite {
 
     scenarios = {
         function(ctx)
-            local attacker = ctx:bot(0)
+            local attacker   = ctx:bot(0)
             local died       = false
             local target_oid = nil
 
@@ -35,9 +35,9 @@ test_suite {
                 return false
             end
 
-            local pos      = attacker:position()
-            local monster  = attacker:spawn_monster("초급유령", pos[1], pos[2] + 1)
-            target_oid     = monster.oid
+            local pos     = attacker:position()
+            local monster = attacker:spawn_monster("초급유령", pos[1], pos[2] + 1)
+            target_oid    = monster.oid
             log("debug", string.format(
                 "Enhanced attack test: Bot setup complete, monster spawned at (%d, %d)",
                 pos[1], pos[2] + 1))

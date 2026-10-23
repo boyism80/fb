@@ -11,13 +11,16 @@ return {
 
         if q == nil then
             ::NPC_539_0000::
-            local button = me:dialog(npc, "요즘 성내에는 이상한 소문이 돌고 있습니다. 황실의 기보인 진황보검이 사라졌다는 소문이죠. 황실전체가 진황보검을 되찾기위해 발칵 뒤집혔다는군요.", { prev = false, next = true })
+            local button = me:dialog(npc,
+                "요즘 성내에는 이상한 소문이 돌고 있습니다. 황실의 기보인 진황보검이 사라졌다는 소문이죠. 황실전체가 진황보검을 되찾기위해 발칵 뒤집혔다는군요.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
             ::NPC_539_0001::
-            button = me:dialog(npc, "진황보검이라면 원래 두개의 검으로 나뉘어져있으며 고대부터 중국 황실의 권력을 나타내는 보물이라 합니다. 용사님도 진황보검에 관심이 있으신가요?", { prev = true, next = true })
+            button = me:dialog(npc, "진황보검이라면 원래 두개의 검으로 나뉘어져있으며 고대부터 중국 황실의 권력을 나타내는 보물이라 합니다. 용사님도 진황보검에 관심이 있으신가요?",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -65,13 +68,15 @@ return {
 
         if step == 4 then
             ::NPC_539_0004::
-            local button = me:dialog(npc, "진랑검을 구하셨군요! 오.. 이것이 진황보검의 한조각이란 말인가요.. 나머지 한조각인 혈황검에 대해선 아직 아무런 소문도 듣지 못했습니다.", { prev = false, next = true })
+            local button = me:dialog(npc, "진랑검을 구하셨군요! 오.. 이것이 진황보검의 한조각이란 말인가요.. 나머지 한조각인 혈황검에 대해선 아직 아무런 소문도 듣지 못했습니다.",
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
             ::NPC_539_0005::
-            button = me:dialog(npc, "하지만 혈황검의 행방에 대해서 아는 분이 계신데 지금 여행중이란 얘길 들었습니다. 얼마 있으면 장안성으로 돌아오신다고 하더군요.", { prev = true, next = true })
+            button = me:dialog(npc, "하지만 혈황검의 행방에 대해서 아는 분이 계신데 지금 여행중이란 얘길 들었습니다. 얼마 있으면 장안성으로 돌아오신다고 하더군요.",
+                { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
@@ -98,7 +103,9 @@ return {
         end
 
         if step == 10 then
-            local btn = me:dialog(npc, "진황보검을 찾아서 황실에 돌려주셨다구요? 기어코 찾으셨군요! 정말 대단하시네요~ 찾으신것도 대단하지만 그 기보를 그냥 돌려주시다니. 정말 곧으신 분이군요.", { prev = false, next = true })
+            local btn = me:dialog(npc,
+                "진황보검을 찾아서 황실에 돌려주셨다구요? 기어코 찾으셨군요! 정말 대단하시네요~ 찾으신것도 대단하지만 그 기보를 그냥 돌려주시다니. 정말 곧으신 분이군요.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

@@ -21,7 +21,9 @@ namespace AdminTool.Services
         public async Task SetThemeAsync(IJSRuntime js, string theme)
         {
             if (theme != Light && theme != System)
+            {
                 theme = Dark;
+            }
 
             Current = theme;
             await js.InvokeVoidAsync("fbAdminTheme.set", theme);

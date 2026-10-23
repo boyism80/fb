@@ -23,9 +23,13 @@ namespace MapEditor
             Loaded += (s, e) =>
             {
                 if (current != null)
+                {
                     XBox.Focus();
+                }
                 else
+                {
                     MapBox.Focus();
+                }
             };
         }
 
@@ -33,13 +37,20 @@ namespace MapEditor
         {
             var window = new GoToWindow(editor) { Owner = owner };
             if (window.ShowDialog() != true)
+            {
                 return;
+            }
 
             var (entry, x, y) = (window._entry, window._x, window._y);
             if (editor.Document?.Id != entry.Id)
+            {
                 await editor.OpenMap(entry);
+            }
+
             if (editor.Document?.Id != entry.Id)
+            {
                 return;
+            }
 
             if (editor.Document.Map.Contains(x, y) == false)
             {
@@ -62,12 +73,16 @@ namespace MapEditor
             var number = new string(text.TakeWhile(char.IsDigit).ToArray());
             List<MapEntry> found;
             if (number.Length > 0 && (number.Length == text.Length || text[number.Length] == ' '))
+            {
                 found = _editor.Maps.Where(m => m.Id == int.Parse(number)).ToList();
+            }
             else
             {
                 found = _editor.Maps.Where(m => m.Name == text).ToList();
                 if (found.Count == 0)
+                {
                     found = _editor.Maps.Where(m => m.Name.Contains(text, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
             }
 
             if (text.Length == 0 || found.Count == 0)

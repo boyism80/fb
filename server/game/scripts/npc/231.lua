@@ -13,7 +13,8 @@ return {
                 return
             end
             ::NPC_231_0002::
-            local sel, lb = me:list(npc, '자네 혹시 황비연이라는 자를 아는가?', { '잘 모르겠는데요. 그게 누굽니까?', '전 아무것도 모릅니다. 그럼 이만...' }, { prev = true })
+            local sel, lb = me:list(npc, '자네 혹시 황비연이라는 자를 아는가?', { '잘 모르겠는데요. 그게 누굽니까?', '전 아무것도 모릅니다. 그럼 이만...' },
+                { prev = true })
             if lb == DIALOG_RESULT.QUIT then
                 return
             end
@@ -28,7 +29,9 @@ return {
                 return
             end
             ::NPC_231_0003::
-            btn = me:dialog(npc, '음... 황비연이라는 자는 요즘 기승을 부리고 있는 신출귀몰한 도둑이지. 자칭 의적으로, 검은 머리띠를 두르고 나타나 탐관오리들의 재물을 훔쳐 가난한 사람들에게 나눠 준다는군.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '음... 황비연이라는 자는 요즘 기승을 부리고 있는 신출귀몰한 도둑이지. 자칭 의적으로, 검은 머리띠를 두르고 나타나 탐관오리들의 재물을 훔쳐 가난한 사람들에게 나눠 준다는군.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -36,7 +39,8 @@ return {
                 goto NPC_231_0002
             end
             ::NPC_231_0004::
-            sel, lb = me:list(npc, '백성들도 황비연에게 도움을 많이 받고 있는 모양이야. 그에 대해 물으면 다들 모른다고 잡아떼더군. 허허, 이거야 원...', { '의적이군요? 그럼 슬쩍 눈감아줘도 되지 않을까요?', '고생이 많으시네요. 저는 바쁜 일이 있어서 이만..' }, { prev = true })
+            sel, lb = me:list(npc, '백성들도 황비연에게 도움을 많이 받고 있는 모양이야. 그에 대해 물으면 다들 모른다고 잡아떼더군. 허허, 이거야 원...',
+                { '의적이군요? 그럼 슬쩍 눈감아줘도 되지 않을까요?', '고생이 많으시네요. 저는 바쁜 일이 있어서 이만..' }, { prev = true })
             if lb == DIALOG_RESULT.QUIT then
                 return
             end
@@ -47,7 +51,8 @@ return {
                 return
             end
             ::NPC_231_0005::
-            btn = me:dialog(npc, '...실은 나도 그렇게 하고 싶지만, 상부에서 그를 잡아들이라고 난리라서 어쩔 수 없다네. 현상금도 크게 걸려 있지.', { prev = true, next = true })
+            btn = me:dialog(npc, '...실은 나도 그렇게 하고 싶지만, 상부에서 그를 잡아들이라고 난리라서 어쩔 수 없다네. 현상금도 크게 걸려 있지.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -63,7 +68,8 @@ return {
                 goto NPC_231_0005
             end
             ::NPC_231_0007::
-            sel, lb = me:list(npc, '그래서 지금도 황비연을 잡으려고 수색중인데, 정말 신출귀몰하더군. 도저히 잡을 수가 없어...', { '저도 협조하겠습니다. 황비연을 만나보고 싶군요.', '솔직히 잡히지 말았으면 좋겠군요. 그럼 전 이만..' }, { prev = true })
+            sel, lb = me:list(npc, '그래서 지금도 황비연을 잡으려고 수색중인데, 정말 신출귀몰하더군. 도저히 잡을 수가 없어...',
+                { '저도 협조하겠습니다. 황비연을 만나보고 싶군요.', '솔직히 잡히지 말았으면 좋겠군요. 그럼 전 이만..' }, { prev = true })
             if lb == DIALOG_RESULT.QUIT then
                 return
             end
@@ -74,14 +80,16 @@ return {
                 return
             end
             ::NPC_231_0008::
-            btn = me:dialog(npc, '음! 정말 그래 주겠는가? 고맙네. 자네는 황궁 사람이 아니니 어쩌면 황비연에게 쉽게 접글할 수 있을지도 모르지.', { prev = true, next = true })
+            btn = me:dialog(npc, '음! 정말 그래 주겠는가? 고맙네. 자네는 황궁 사람이 아니니 어쩌면 황비연에게 쉽게 접글할 수 있을지도 모르지.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_231_0007
             end
-            btn = me:dialog(npc, '황비연이 마지막으로 나타난 장소는 상해일세. 그 부근에 숨어 있을 것 같으니 잘 살펴 보게나. 그럼 수고해주게.', { prev = false, next = true })
+            btn = me:dialog(npc, '황비연이 마지막으로 나타난 장소는 상해일세. 그 부근에 숨어 있을 것 같으니 잘 살펴 보게나. 그럼 수고해주게.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -115,11 +123,14 @@ return {
                 return
             end
             ::NPC_231_0010::
-            local btn = me:dialog(npc, '오, 머리띠라... 어디 보세.\n\n음! 과연... 이것은 그가 항상 머리에 두르고 있다는 그 머리띠가 분명하군!', { prev = false, next = true })
+            local btn = me:dialog(npc, '오, 머리띠라... 어디 보세.\n\n음! 과연... 이것은 그가 항상 머리에 두르고 있다는 그 머리띠가 분명하군!',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '그가 정말로 죽었는지 어떤지는 자네만이 알고 있겠지만... 허허허.\n\n뭐, 이 머리띠면 상부에 황비연이 죽었다고 보고할 수 있겠지. 아무튼 수고했네. 여기 현상금 10만전을 가져가게.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '그가 정말로 죽었는지 어떤지는 자네만이 알고 있겠지만... 허허허.\n\n뭐, 이 머리띠면 상부에 황비연이 죽었다고 보고할 수 있겠지. 아무튼 수고했네. 여기 현상금 10만전을 가져가게.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

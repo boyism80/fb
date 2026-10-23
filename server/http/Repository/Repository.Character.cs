@@ -48,7 +48,9 @@ namespace Http.Reepository
         public async Task<IReadOnlyDictionary<uint, Character>> GetMany(uint world, IReadOnlyList<uint> ids)
         {
             if (ids == null || ids.Count == 0)
+            {
                 return new Dictionary<uint, Character>();
+            }
 
             var keys = ids.Distinct().Select(id => new CharacterKey { Id = id }).ToList();
             var list = await base.GetMany(world, keys);
@@ -221,7 +223,10 @@ namespace Http.Reepository
         {
             var row = await GetCharacterRef(name);
             if (row == null || row.World != world)
+            {
                 return null;
+            }
+
             return row.Id;
         }
 
@@ -254,7 +259,9 @@ namespace Http.Reepository
         {
             var list = ids.Distinct().ToList();
             if (list.Count == 0)
+            {
                 return new Dictionary<uint, string>();
+            }
 
             await using var conn = _dbContext.GetUnifiedConnection();
             var result = await conn.QueryAsync<CharacterName>(

@@ -21,18 +21,26 @@ namespace Runner.Behavior
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is not DataGrid grid)
+            {
                 return;
+            }
 
             if ((bool)e.NewValue)
+            {
                 grid.PreviewMouseWheel += OnPreviewMouseWheel;
+            }
             else
+            {
                 grid.PreviewMouseWheel -= OnPreviewMouseWheel;
+            }
         }
 
         private static void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (sender is not DataGrid grid)
+            {
                 return;
+            }
 
             var gridScroll = FindChildScrollViewer(grid);
             if (gridScroll != null && gridScroll.ScrollableHeight > 0)
@@ -57,7 +65,9 @@ namespace Runner.Behavior
 
             var parent = FindParentScrollViewer(grid);
             if (parent == null)
+            {
                 return;
+            }
 
             e.Handled = true;
             parent.ScrollToVerticalOffset(parent.VerticalOffset - e.Delta);
@@ -69,11 +79,15 @@ namespace Runner.Behavior
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
                 if (child is ScrollViewer scrollViewer)
+                {
                     return scrollViewer;
+                }
 
                 var nested = FindChildScrollViewer(child);
                 if (nested != null)
+                {
                     return nested;
+                }
             }
 
             return null;
@@ -84,7 +98,9 @@ namespace Runner.Behavior
             for (var parent = VisualTreeHelper.GetParent(child); parent != null; parent = VisualTreeHelper.GetParent(parent))
             {
                 if (parent is ScrollViewer scrollViewer)
+                {
                     return scrollViewer;
+                }
             }
 
             return null;

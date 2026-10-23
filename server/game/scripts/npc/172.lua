@@ -30,7 +30,8 @@ local function run_intro_and_accept(me, npc)
         return
     end
     ::NPC_172_0003::
-    btn = me:dialog(npc, '아 글쎄, 이 금고를 열어야 하는데 열쇠를 잃어 버렸지 뭐야. 내가 어렸을 때 나중에 커서 열어 보겠다고 잠근 금고인데, 막상 열려고 보니 열쇠가 없네.', { prev = false, next = true })
+    btn = me:dialog(npc, '아 글쎄, 이 금고를 열어야 하는데 열쇠를 잃어 버렸지 뭐야. 내가 어렸을 때 나중에 커서 열어 보겠다고 잠근 금고인데, 막상 열려고 보니 열쇠가 없네.',
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -83,7 +84,8 @@ local function run_intro_and_accept(me, npc)
         goto NPC_172_0008
     end
     ::NPC_172_0010::
-    sel, btn = me:list(npc, '이걸 열면 안에서 봉투가 하나 나올 텐데, 절대 그 봉투를 열어봐선 안돼! 약속할 수 있겠나?', { '예, 절대 안 열어보고 그대로 가져다 드리지요.', '에이, 그게 뭐길래... 그냥 열어보면 안되나요?' }, { prev = true })
+    sel, btn = me:list(npc, '이걸 열면 안에서 봉투가 하나 나올 텐데, 절대 그 봉투를 열어봐선 안돼! 약속할 수 있겠나?',
+        { '예, 절대 안 열어보고 그대로 가져다 드리지요.', '에이, 그게 뭐길래... 그냥 열어보면 안되나요?' }, { prev = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -127,7 +129,8 @@ local function run_turn_in(me, npc)
             q:complete()
         end
         me:push_achievement(ACHIEVEMENT_DONE, '금고주인의 부탁을 들어주었다.', 6, 1)
-        me:dialog(npc, '오! 봉투를 가져왔군. 수고했어. 설마했는데 정말 안 열어봤군. 좋았어! 내 아끼던 거지만 상으로 이 흑장단검을 주지. 중국에서 가져온 귀한 칼이야. 그럼 잘 가게!', { prev = false, next = false })
+        me:dialog(npc, '오! 봉투를 가져왔군. 수고했어. 설마했는데 정말 안 열어봤군. 좋았어! 내 아끼던 거지만 상으로 이 흑장단검을 주지. 중국에서 가져온 귀한 칼이야. 그럼 잘 가게!',
+            { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then
@@ -144,7 +147,8 @@ local function run_turn_in(me, npc)
         end
 
         if sel == 1 then
-            local btn = me:dialog(npc, '이...이놈! 내가 그렇게 말했는데 결국 봉투를 열어봤구나! 나쁜 놈! 약속을 어기다니! 에잇! 말한대로 보수는 없다!', { prev = false, next = true })
+            local btn = me:dialog(npc, '이...이놈! 내가 그렇게 말했는데 결국 봉투를 열어봤구나! 나쁜 놈! 약속을 어기다니! 에잇! 말한대로 보수는 없다!',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -183,14 +187,15 @@ local function run_cursed_forgiveness(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    local sel, btn = me:list(npc, '에이! 네놈만 보면 화가 난다. 설마 했지만 그래도 믿었는데, 보란 듯이 약속을 어기다니! 저리 가! 꼴도 보기 싫다!', { '......', '죄송합니다. 호기심에 그만...' }, { prev = false })
+    local sel, btn = me:list(npc, '에이! 네놈만 보면 화가 난다. 설마 했지만 그래도 믿었는데, 보란 듯이 약속을 어기다니! 저리 가! 꼴도 보기 싫다!',
+        { '......', '죄송합니다. 호기심에 그만...' }, { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel == nil then
         return
     end
-    
+
     local btn
     ::NPC_172_0016::
     btn = me:dialog(npc, '분명히 봉투를 열지 말라고 했는데도! 내가 몇 번이나 말했는데도 그걸 열다니!\n\n에이! 못된 놈 같으니라고!', { prev = false, next = true })
@@ -198,7 +203,8 @@ local function run_cursed_forgiveness(me, npc)
         return
     end
     ::NPC_172_0017::
-    btn = me:dialog(npc, '쯧...\n\n\n...하지만 그걸 열기 위해 저 멀리 중국까지 다녀오며 고생 한 것도 사실이니, 내 그 사정은 좀 봐 주지.', { prev = true, next = true })
+    btn = me:dialog(npc, '쯧...\n\n\n...하지만 그걸 열기 위해 저 멀리 중국까지 다녀오며 고생 한 것도 사실이니, 내 그 사정은 좀 봐 주지.',
+        { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -206,7 +212,8 @@ local function run_cursed_forgiveness(me, npc)
         goto NPC_172_0016
     end
     ::NPC_172_0018::
-    sel, btn = me:list(npc, '대신! 자네가 읽은 그 편지 내용은 아무에게도 말하지 말 것! 어때, 약속할 수 있겠나?', { '예! 물론입니다. 아무렇게도 말하지 않겠어요.', '그건 좀...' }, { prev = true })
+    sel, btn = me:list(npc, '대신! 자네가 읽은 그 편지 내용은 아무에게도 말하지 말 것! 어때, 약속할 수 있겠나?',
+        { '예! 물론입니다. 아무렇게도 말하지 않겠어요.', '그건 좀...' }, { prev = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

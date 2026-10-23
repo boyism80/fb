@@ -45,7 +45,9 @@ namespace Internal.Controllers
                 var row = await _dbContext.Character.GetCharacterRef(name) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
                 if (row.World != world)
+                {
                     throw new LogicException(ErrorCode.NotFoundCharacter);
+                }
 
                 return new Response.GetUid
                 {
@@ -121,7 +123,9 @@ namespace Internal.Controllers
                     commandType: CommandType.StoredProcedure);
 
                 if (row == null || (int)row.result == 0)
+                {
                     return new Response.ReserveName { Success = false, Uid = 0 };
+                }
 
                 var staleUid = Convert.ToUInt32(row.stale_uid);
                 if (staleUid != 0)
@@ -315,13 +319,19 @@ namespace Internal.Controllers
 
                 var attempt = await _passwordAttempts.Begin(world, request.Uid, request.Ip);
                 if (attempt == PasswordAttempt.Locked)
+                {
                     throw new LogicException(ErrorCode.AccountLocked);
+                }
 
                 if (PasswordHash.Matches(ch.Pw, request.Before, out _) == false)
+                {
                     throw new LogicException(ErrorCode.PasswordNotMatched);
+                }
 
                 if (ch.Birth != request.Birthday)
+                {
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
+                }
 
                 await _passwordAttempts.Succeed(world, request.Uid, request.Ip, attempt);
                 ch.Pw = PasswordHash.Compute(request.After);

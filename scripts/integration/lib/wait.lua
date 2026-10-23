@@ -1,6 +1,6 @@
 local M = {}
 
-local DEFAULT_TIMEOUT_MS = 5000
+local DEFAULT_TIMEOUT_MS   = 5000
 
 -- Waits until predicate() holds, re-checking on every `response` packet the bot receives.
 -- The bot applies a packet to its state before validators run, and the first check plus the

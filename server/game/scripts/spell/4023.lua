@@ -7,7 +7,7 @@ return {
         local mp = 30
         local sound = 63
         local effect = 22
-        if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.cast(me, you, sp, { mp = mp, sound = sound, effect = effect }) then
             you:unbuff('중독')
         end
     end,

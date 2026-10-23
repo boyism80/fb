@@ -28,7 +28,9 @@ namespace Internal.Services
                 foreach (var world in _redisService.GetConfiguredWorlds())
                 {
                     if (stoppingToken.IsCancellationRequested)
+                    {
                         break;
+                    }
 
                     try
                     {
@@ -36,7 +38,9 @@ namespace Internal.Services
                         var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
                         var deleted = await storageService.DeleteReceivedBoxesAsync(world, UserLimit);
                         if (deleted > 0)
+                        {
                             _logger.LogInformation("Deleted {Count} received storage boxes for world {World}", deleted, world);
+                        }
                     }
                     catch (Exception e)
                     {

@@ -21,7 +21,8 @@ end
 
 return {
     on_click = function(me, npc)
-        local sel, btn = me:list(npc, "저는 얼음결정과 설인의뼈를 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." }, { prev = false })
+        local sel, btn = me:list(npc, "저는 얼음결정과 설인의뼈를 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ",
+            { "만들어 주세요.", "아니요. 다음에..." }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -37,11 +38,13 @@ return {
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "그렇게 설인의뼈 한개와, 얼음결정 50개를 깎아 만들게 되면, 눈꽃얼음 이라는 특별한 재료가 만들어지게 된답니다.", { prev = false, next = true })
+        d = me:dialog(npc, "그렇게 설인의뼈 한개와, 얼음결정 50개를 깎아 만들게 되면, 눈꽃얼음 이라는 특별한 재료가 만들어지게 된답니다.",
+            { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "설인의뼈 1개와 얼음결정 50개를 이용해 [" .. REWARD_NAME .. "]을 만들어 드릴 수 있습니다.", { prev = false, next = true })
+        d = me:dialog(npc, "설인의뼈 1개와 얼음결정 50개를 이용해 [" .. REWARD_NAME .. "]을 만들어 드릴 수 있습니다.",
+            { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end

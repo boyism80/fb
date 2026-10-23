@@ -86,7 +86,9 @@ namespace AdminTool.Services
             try
             {
                 if (Table.Map.TryGetValue(mapId, out var map) && !string.IsNullOrWhiteSpace(map?.Name))
+                {
                     return map.Name;
+                }
             }
             catch
             {
@@ -101,7 +103,9 @@ namespace AdminTool.Services
             try
             {
                 if (Table.Spell.TryGetValue((uint)modelId, out var spell) && !string.IsNullOrWhiteSpace(spell?.Name))
+                {
                     return spell.Name;
+                }
             }
             catch
             {
@@ -129,7 +133,9 @@ namespace AdminTool.Services
             try
             {
                 if (Table.Mob.TryGetValue(mobId, out var mob) && !string.IsNullOrWhiteSpace(mob?.Name))
+                {
                     return mob.Name;
+                }
             }
             catch
             {
@@ -147,7 +153,9 @@ namespace AdminTool.Services
             {
                 var total = MetaDatCollection.GetCollectionMobTotalCount();
                 if (total > 0)
+                {
                     return total;
+                }
             }
             catch
             {
@@ -161,7 +169,9 @@ namespace AdminTool.Services
         {
             var spellName = FormatSpellName((int)modelId);
             if (!spellName.StartsWith('#'))
+            {
                 return spellName;
+            }
 
             return $"버프 #{modelId}";
         }
@@ -169,11 +179,15 @@ namespace AdminTool.Services
         public static string FormatBuffTime(uint seconds)
         {
             if (seconds <= 0)
+            {
                 return "-";
+            }
 
             var ts = TimeSpan.FromSeconds(seconds);
             if (ts.TotalHours >= 1)
+            {
                 return $"{(int)ts.TotalHours:D2}:{ts.Minutes:D2}:{ts.Seconds:D2}";
+            }
 
             return $"{ts.Minutes:D2}:{ts.Seconds:D2}";
         }
@@ -199,7 +213,9 @@ namespace AdminTool.Services
         public static string FormatDateTime(DateTime? value)
         {
             if (!value.HasValue)
+            {
                 return "-";
+            }
 
             var utc = value.Value.Kind == DateTimeKind.Utc ? value.Value : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
             return utc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
@@ -212,13 +228,17 @@ namespace AdminTool.Services
             try
             {
                 if (!Enum.IsDefined(typeof(Fb.Model.EnumValue.MatchType), (int)matchType))
+                {
                     return "-";
+                }
 
                 var enumValue = (Fb.Model.EnumValue.MatchType)matchType;
                 if (Table.Matchmaking.TryGetValue(enumValue, out var config) && config != null)
                 {
                     if (config.MemberCount > 0 && config.TeamCount == 2)
+                    {
                         return $"{config.MemberCount}v{config.MemberCount}";
+                    }
                 }
             }
             catch
@@ -232,13 +252,17 @@ namespace AdminTool.Services
         public static string FormatMatchTypeName(uint matchType)
         {
             if (!Enum.IsDefined(typeof(Fb.Model.EnumValue.MatchType), (int)matchType))
+            {
                 return $"UNKNOWN_{matchType}";
+            }
 
             var enumValue = (Fb.Model.EnumValue.MatchType)matchType;
             var member = typeof(Fb.Model.EnumValue.MatchType).GetMember(enumValue.ToString()).FirstOrDefault();
             var enumMember = member?.GetCustomAttribute<EnumMemberAttribute>();
             if (!string.IsNullOrWhiteSpace(enumMember?.Value))
+            {
                 return enumMember.Value;
+            }
 
             return enumValue.ToString();
         }
@@ -248,7 +272,9 @@ namespace AdminTool.Services
             var name = FormatMatchTypeName(matchType);
             var format = FormatMatchFormat(matchType);
             if (format == "-")
+            {
                 return name;
+            }
 
             return $"{name} ({format})";
         }
@@ -353,7 +379,9 @@ namespace AdminTool.Services
         {
             var cls = (Class)classValue;
             if (!Table.Ability.TryGetValue(cls, out var classAbilities))
+            {
                 return true;
+            }
 
             return !classAbilities.ContainsKey((byte)(level + 1));
         }

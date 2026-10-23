@@ -126,7 +126,9 @@ namespace Internal.Controllers
             {
                 var world = await _dbContext.Clan.GetWorld(id);
                 if (!world.HasValue)
+                {
                     throw new LogicException(ErrorCode.NotFoundClan);
+                }
 
                 return await Get(world.Value, id);
             }
@@ -205,7 +207,9 @@ namespace Internal.Controllers
                     transaction: trans
                 );
                 if (existing.HasValue)
+                {
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
+                }
 
                 var newClanId = await db.QuerySingleAsync<uint>(
                     @"INSERT INTO clan_name (name, world, created_date, updated_date) VALUES (@Name, @World, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));SELECT LAST_INSERT_ID();",
@@ -221,7 +225,9 @@ namespace Internal.Controllers
 
                 await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, sync);
                 if (sync.Clan != null)
+                {
                     throw new LogicException(ErrorCode.ClanAlreadyJoined);
+                }
 
                 var clan = _dbContext.Clan.Set(world, new Clan
                 {
@@ -274,7 +280,10 @@ namespace Internal.Controllers
             catch (Exception)
             {
                 if (committed == false)
+                {
                     await trans.RollbackAsync();
+                }
+
                 return new Response.ClanDetails
                 {
                     Host = request.Host,
@@ -307,12 +316,16 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (sync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 var counterpartIds = (await _dbContext.ClanEnemy.Get(world, sync.Clan.Value)).Select(x => x.EnemyClan).ToList();
                 var alliedBefore = await _dbContext.ClanAlliance.Get(world, sync.Clan.Value);
                 if (alliedBefore != null)
+                {
                     counterpartIds.Add(alliedBefore.AlliedClan);
+                }
 
                 await using var _2 = await LockClans(world, counterpartIds.Append(sync.Clan.Value));
 
@@ -321,14 +334,20 @@ namespace Internal.Controllers
 
                 var members = (await _dbContext.ClanMember.Get(world, clan.Id)).ToList();
                 if (members.Count != 1)
+                {
                     throw new LogicException(ErrorCode.ClanMemberExists);
+                }
 
                 var master = members[0];
                 if (master.User != ch.Id)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 if (master.Role != (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 _dbContext.ClanMember.Delete(world, master);
 
@@ -341,13 +360,17 @@ namespace Internal.Controllers
                 if (alliance != null)
                 {
                     if (counterpartIds.Contains(alliance.AlliedClan) == false)
+                    {
                         throw new LogicException(ErrorCode.Unhandled);
+                    }
 
                     _dbContext.ClanAlliance.Delete(world, clan.Id);
                     _dbContext.ClanAlliance.Delete(world, alliance.AlliedClan);
                     unallied = await _dbContext.Clan.Get(world, alliance.AlliedClan);
                     if (unallied != null)
+                    {
                         Touch(world, unallied);
+                    }
                 }
 
                 var enemies = (await _dbContext.ClanEnemy.Get(world, clan.Id)).ToList();
@@ -355,12 +378,16 @@ namespace Internal.Controllers
                 foreach (var enemy in enemies)
                 {
                     if (counterpartIds.Contains(enemy.EnemyClan) == false)
+                    {
                         throw new LogicException(ErrorCode.Unhandled);
+                    }
 
                     _dbContext.ClanEnemy.Delete(world, enemy);
                     var reverse = await _dbContext.ClanEnemy.Get(world, enemy.EnemyClan, clan.Id);
                     if (reverse != null)
+                    {
                         _dbContext.ClanEnemy.Delete(world, reverse);
+                    }
 
                     var other = await _dbContext.Clan.Get(world, enemy.EnemyClan);
                     if (other != null)
@@ -479,7 +506,10 @@ namespace Internal.Controllers
             catch (Exception)
             {
                 if (committed == false)
+                {
                     await trans.RollbackAsync();
+                }
+
                 return new Response.DestroyClan
                 {
                     Host = request.Host,
@@ -489,7 +519,10 @@ namespace Internal.Controllers
             finally
             {
                 foreach (var handle in castleLocks)
+                {
                     await handle.DisposeAsync();
+                }
+
                 await db.CloseAsync();
             }
         }
@@ -509,7 +542,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (sync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(sync.Clan.Value));
 
@@ -522,13 +557,19 @@ namespace Internal.Controllers
 
                 // Check if changer has sufficient privileges (Master role or higher)
                 if (changerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumChangeTitlePrivilege)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 if (clan.Title == request.Title)
+                {
                     throw new LogicException(ErrorCode.ClanTitleNotChanged);
+                }
 
                 if (request.Title != null && request.Title.Length < 2)
+                {
                     throw new LogicException(ErrorCode.ClanTitleTooShort);
+                }
 
                 var oldTitle = clan.Title;
                 clan.Title = request.Title;
@@ -587,7 +628,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 if (inviter.Name == request.InviteeName)
+                {
                     throw new LogicException(ErrorCode.CannotInviteSelf);
+                }
 
                 // Get invitee session and character (the one being invited)
                 var inviteeSession = await _sessionService.Get(world, request.InviteeName) ??
@@ -598,7 +641,9 @@ namespace Internal.Controllers
 
                 // Prevent self-invitation
                 if (inviter.Id == invitee.Id)
+                {
                     throw new LogicException(ErrorCode.CannotInviteSelf);
+                }
 
                 await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(inviter.Id, invitee.Id)));
                 await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(inviter.Id, invitee.Id)));
@@ -611,11 +656,15 @@ namespace Internal.Controllers
 
                 // Check if inviter is in a clan
                 if (inviterSync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, inviteeSync);
                 if (inviteeSync.Clan != null)
+                {
                     throw new LogicException(ErrorCode.ClanAlreadyJoined);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, Clan.DistributedLockKey(inviterSync.Clan.Value));
 
@@ -628,11 +677,15 @@ namespace Internal.Controllers
 
                 // Check if inviter has sufficient privileges
                 if (inviterMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumInvitePrivilege)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 var members = await _dbContext.ClanMember.Get(world, clan.Id);
                 if (members.Count() >= Fb.Model.ConstValue.Clan.MaxMember)
+                {
                     throw new LogicException(ErrorCode.ClanFullMember);
+                }
 
                 inviteeSync.Clan = clan.Id;
                 _dbContext.CharacterRealtimeState.Set(world, inviteeSync);
@@ -713,10 +766,14 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (sync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 if (sync.Clan.Value != request.Clan)
+                {
                     throw new LogicException(ErrorCode.ClanNotMatched);
+                }
 
                 await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(sync.Clan.Value));
 
@@ -727,7 +784,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundClanMember);
 
                 if (member.Role == (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
+                }
 
                 Touch(world, clan);
                 _dbContext.ClanMember.Delete(world, member);
@@ -807,7 +866,9 @@ namespace Internal.Controllers
 
                 // Prevent self-kicking
                 if (kicker.Name == target.Name)
+                {
                     throw new LogicException(ErrorCode.CannotKickSelf);
+                }
 
                 await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(kicker.Id, target.Id)));
                 await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(kicker.Id, target.Id)));
@@ -820,11 +881,15 @@ namespace Internal.Controllers
 
                 // Check if kicker is in a clan
                 if (kickerSync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 // Check if target is in the same clan
                 if (targetSync.Clan != kickerSync.Clan)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, Clan.DistributedLockKey(kickerSync.Clan.Value));
 
@@ -841,15 +906,21 @@ namespace Internal.Controllers
 
                 // Check if kicker has minimum kickable role
                 if (kickerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumKickPrivilege)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 // Check if target has higher or equal role (can't kick superiors)
                 if (targetMember.Role >= kickerMember.Role)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 // Check if target is not the master (can't kick master)
                 if (targetMember.Role == (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
+                }
 
                 Touch(world, clan);
                 _dbContext.ClanMember.Delete(world, targetMember);
@@ -964,7 +1035,9 @@ namespace Internal.Controllers
 
                 // Prevent self-role change
                 if (changer.Id == target.Id)
+                {
                     throw new LogicException(ErrorCode.CannotChangeClanRoleSelf);
+                }
 
                 await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(changer.Id, target.Id)));
                 await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(changer.Id, target.Id)));
@@ -977,11 +1050,15 @@ namespace Internal.Controllers
 
                 // Check if changer is in a clan
                 if (changerSync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 // Check if target is in the same clan
                 if (targetSync.Clan != changerSync.Clan)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, Clan.DistributedLockKey(changerSync.Clan.Value));
 
@@ -998,25 +1075,35 @@ namespace Internal.Controllers
 
                 // Check if changer has sufficient privileges
                 if (changerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumChangeRolePrivilege)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 // Check if target has higher or equal role (can't change superiors)
                 if (targetMember.Role >= changerMember.Role)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 // Check if trying to change master role (only master can change master)
                 if (targetMember.Role == (uint)ClanRole.Master &&
                     changerMember.Role != (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 // Validate new role
                 if (request.NewRole < (uint)ClanRole.Mate ||
                     request.NewRole > (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.InvalidClanRole);
+                }
 
                 // Check if new role is higher than changer's role (can't promote to higher rank)
                 if (request.NewRole >= changerMember.Role)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 // Store old role for response
                 var oldRole = targetMember.Role;
@@ -1087,13 +1174,19 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (requesterSync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 if (requesterSync.Clan.Value != request.Clan)
+                {
                     throw new LogicException(ErrorCode.ClanNotMatched);
+                }
 
                 if (request.Clan == request.TargetClan)
+                {
                     throw new LogicException(ErrorCode.ClanCannotAllySelf);
+                }
 
                 await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
 
@@ -1104,7 +1197,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundClanMember);
 
                 if (requesterMember.Role != (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan) ??
                     throw new LogicException(ErrorCode.ClanTargetNotFound);
@@ -1113,13 +1208,19 @@ namespace Internal.Controllers
                 await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(Math.Max(request.Clan, request.TargetClan)));
 
                 if (await _dbContext.ClanAlliance.Get(world, request.Clan) != null)
+                {
                     throw new LogicException(ErrorCode.ClanAlreadyAllied);
+                }
 
                 if (await _dbContext.ClanAlliance.Get(world, request.TargetClan) != null)
+                {
                     throw new LogicException(ErrorCode.ClanAlreadyAllied);
+                }
 
                 if (await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) != null)
+                {
                     throw new LogicException(ErrorCode.ClanCannotAllyEnemy);
+                }
 
                 _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.Clan, AlliedClan = request.TargetClan });
                 _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.TargetClan, AlliedClan = request.Clan });
@@ -1181,10 +1282,14 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (requesterSync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 if (requesterSync.Clan.Value != request.Clan)
+                {
                     throw new LogicException(ErrorCode.ClanNotMatched);
+                }
 
                 var alliedBefore = await _dbContext.ClanAlliance.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.ClanNotAllied);
@@ -1198,7 +1303,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundClanMember);
 
                 if (requesterMember.Role != (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(request.Clan));
 
@@ -1206,7 +1313,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNotAllied);
 
                 if (alliance.AlliedClan != alliedBefore.AlliedClan)
+                {
                     throw new LogicException(ErrorCode.Unhandled);
+                }
 
                 var alliedClanId = alliance.AlliedClan;
                 await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliedClanId));
@@ -1215,9 +1324,13 @@ namespace Internal.Controllers
                 _dbContext.ClanAlliance.Delete(world, alliedClanId);
                 var alliedClan = await _dbContext.Clan.Get(world, alliedClanId);
                 if (alliedClan != null)
+                {
                     Touch(world, clan, alliedClan);
+                }
                 else
+                {
                     Touch(world, clan);
+                }
 
                 await _dbContext.SaveChangesAsync();
 
@@ -1275,13 +1388,19 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (requesterSync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 if (requesterSync.Clan.Value != request.Clan)
+                {
                     throw new LogicException(ErrorCode.ClanNotMatched);
+                }
 
                 if (request.Clan == request.TargetClan)
+                {
                     throw new LogicException(ErrorCode.ClanCannotEnemySelf);
+                }
 
                 await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
 
@@ -1292,17 +1411,23 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundClanMember);
 
                 if (requesterMember.Role != (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan) ??
                     throw new LogicException(ErrorCode.ClanTargetNotFound);
 
                 var alliance = await _dbContext.ClanAlliance.Get(world, request.Clan);
                 if (alliance != null && alliance.AlliedClan == request.TargetClan)
+                {
                     throw new LogicException(ErrorCode.ClanCannotEnemyAlly);
+                }
 
                 if (await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) != null)
+                {
                     throw new LogicException(ErrorCode.ClanAlreadyEnemy);
+                }
 
                 _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.Clan, EnemyClan = request.TargetClan });
                 _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.TargetClan, EnemyClan = request.Clan });
@@ -1361,13 +1486,17 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundClan);
 
                 if (request.RequestId == 0)
+                {
                     throw new LogicException(ErrorCode.Unhandled);
+                }
 
                 var previous = await FindMoneyRequest(world, clan, request.RequestId);
                 if (previous.HasValue)
                 {
                     if (previous.Value == false)
+                    {
                         throw new LogicException(ErrorCode.Unhandled);
+                    }
 
                     return new Response.UpdatedClan
                     {
@@ -1385,14 +1514,20 @@ namespace Internal.Controllers
                 {
                     var next = clan.Money + (ulong)request.Delta;
                     if (next < clan.Money)
+                    {
                         throw new LogicException(ErrorCode.Unhandled);
+                    }
+
                     clan.Money = next;
                 }
                 else if (request.Delta < 0)
                 {
                     var abs = (ulong)(-request.Delta);
                     if (clan.Money < abs)
+                    {
                         throw new LogicException(ErrorCode.Unhandled);
+                    }
+
                     clan.Money -= abs;
                 }
 
@@ -1498,7 +1633,9 @@ namespace Internal.Controllers
         {
             var recent = clan.MoneyRequests.Find(x => x.Id == requestId);
             if (recent != null)
+            {
                 return recent.Applied;
+            }
 
             var archived = await _dbContext.ClanMoneyRequestArchive.Get(world, clan.Id, requestId);
             return archived?.Applied;
@@ -1510,7 +1647,9 @@ namespace Internal.Controllers
         {
             var expired = clan.MoneyRequests.Where(x => now - x.Date > Clan.MoneyRequestRetention).ToList();
             if (expired.Count == 0)
+            {
                 return;
+            }
 
             _dbContext.ClanMoneyRequestArchive.Set(world, expired.Select(x => new ClanMoneyRequestArchive { Clan = clan.Id, RequestId = x.Id, Applied = x.Applied }).ToArray());
             await _dbContext.ClanMoneyRequestArchive.SaveChangesAsync();
@@ -1532,10 +1671,14 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (requesterSync.Clan == null)
+                {
                     throw new LogicException(ErrorCode.ClanNotJoined);
+                }
 
                 if (requesterSync.Clan.Value != request.Clan)
+                {
                     throw new LogicException(ErrorCode.ClanNotMatched);
+                }
 
                 await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
 
@@ -1546,7 +1689,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundClanMember);
 
                 if (requesterMember.Role != (uint)ClanRole.Master)
+                {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
+                }
 
                 var enemy = await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) ??
                     throw new LogicException(ErrorCode.ClanNotEnemy);
@@ -1555,12 +1700,19 @@ namespace Internal.Controllers
 
                 _dbContext.ClanEnemy.Delete(world, enemy);
                 if (reverseEnemy != null)
+                {
                     _dbContext.ClanEnemy.Delete(world, reverseEnemy);
+                }
+
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan);
                 if (targetClan != null)
+                {
                     Touch(world, clan, targetClan);
+                }
                 else
+                {
                     Touch(world, clan);
+                }
 
                 await _dbContext.SaveChangesAsync();
 

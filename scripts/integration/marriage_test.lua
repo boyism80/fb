@@ -2,36 +2,36 @@ local lib      = require("integration.lib")
 local protocol = require("integration.protocol")
 local resp     = require("integration.response")
 
-local NPC_NAME   = "주례사"
+local NPC_NAME    = "주례사"
 local ITEM_CALLER = "사랑호출기"
-local OFF_MAP    = "가상계"
-local HOME_MAP   = "낙랑의방"
-local HOME_Y     = 6
+local OFF_MAP     = "가상계"
+local HOME_MAP    = "낙랑의방"
+local HOME_Y      = 6
 
-local OPT_MARRY    = "결혼을 하려고 왔습니다"
-local OPT_DIVORCE  = "이혼을 하려고 왔습니다"
-local CONFIRM_YES  = 1
-local CONFIRM_NO   = 2
+local OPT_MARRY   = "결혼을 하려고 왔습니다"
+local OPT_DIVORCE = "이혼을 하려고 왔습니다"
+local CONFIRM_YES = 1
+local CONFIRM_NO  = 2
 
 local MIN_LEVEL = 21
 
-local MSG_ALREADY_MARRIED     = "이미 결혼을 하셨습니다."
-local MSG_REMARRY_COOLDOWN    = "재혼 대기 시간이 지나지 않았습니다"
-local MSG_LEVEL_SELF          = "레벨 21 이상만 결혼할 수 있습니다."
-local MSG_NOT_NEAR            = "님은 근처에 없습니다."
-local MSG_MARRY_SELF          = "자신과는 결혼할 수 없습니다."
-local MSG_SAME_GENDER         = "같은 성별끼리는 결혼할 수 없습니다."
-local MSG_TARGET_MARRIED      = "이미 결혼한 상대와는 결혼을 할 수 없습니다."
-local MSG_TARGET_REMARRY      = "상대방은 아직 재혼할 수 없습니다."
-local MSG_LEVEL_TARGET        = "결혼할 상대의 레벨이 21 이상이어야 합니다."
-local MSG_MARRY_OK            = "님과 결혼했습니다."
-local MSG_REJECTED            = "님이 거절하셨습니다."
-local MSG_DIVORCE_ONLY        = "결혼을 한 사람만이 이혼을 할 수 있습니다."
-local MSG_DIVORCE_OK          = "이혼이 완료되었습니다. 7일 후 재혼이 가능합니다."
-local MSG_DIVORCE_AWAY        = "배우자와 같은 곳에 있어야 이혼할 수 있습니다."
-local MSG_CALLER_NOT_MARRIED  = "결혼하지 않아 사용할 수 없습니다."
-local MSG_SPOUSE_PREFIX       = "배우자: "
-local MSG_ASKING              = "에게 의사를 묻고 있습니다."
+local MSG_ALREADY_MARRIED    = "이미 결혼을 하셨습니다."
+local MSG_REMARRY_COOLDOWN   = "재혼 대기 시간이 지나지 않았습니다"
+local MSG_LEVEL_SELF         = "레벨 21 이상만 결혼할 수 있습니다."
+local MSG_NOT_NEAR           = "님은 근처에 없습니다."
+local MSG_MARRY_SELF         = "자신과는 결혼할 수 없습니다."
+local MSG_SAME_GENDER        = "같은 성별끼리는 결혼할 수 없습니다."
+local MSG_TARGET_MARRIED     = "이미 결혼한 상대와는 결혼을 할 수 없습니다."
+local MSG_TARGET_REMARRY     = "상대방은 아직 재혼할 수 없습니다."
+local MSG_LEVEL_TARGET       = "결혼할 상대의 레벨이 21 이상이어야 합니다."
+local MSG_MARRY_OK           = "님과 결혼했습니다."
+local MSG_REJECTED           = "님이 거절하셨습니다."
+local MSG_DIVORCE_ONLY       = "결혼을 한 사람만이 이혼을 할 수 있습니다."
+local MSG_DIVORCE_OK         = "이혼이 완료되었습니다. 7일 후 재혼이 가능합니다."
+local MSG_DIVORCE_AWAY       = "배우자와 같은 곳에 있어야 이혼할 수 있습니다."
+local MSG_CALLER_NOT_MARRIED = "결혼하지 않아 사용할 수 없습니다."
+local MSG_SPOUSE_PREFIX      = "배우자: "
+local MSG_ASKING             = "에게 의사를 묻고 있습니다."
 
 local TIME_FORWARD_7D = "7.00:00:00"
 

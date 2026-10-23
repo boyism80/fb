@@ -62,7 +62,9 @@ namespace Http.Reepository
         public async Task<IReadOnlyDictionary<uint, IReadOnlyList<CollectionUnlock>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
         {
             if (ownerIds == null || ownerIds.Count == 0)
+            {
                 return new Dictionary<uint, IReadOnlyList<CollectionUnlock>>();
+            }
 
             var keys = ownerIds.Distinct().Select(uid => new CollectionUnlockKey { User = uid }).ToList();
             var list = await base.GetMany(world, keys);
@@ -133,7 +135,9 @@ namespace Http.Reepository
         protected override string OnDeleteMany(IReadOnlyList<CollectionUnlockKey> keys)
         {
             if (keys.Count == 0)
+            {
                 return string.Empty;
+            }
 
             var conditions = keys.Select(k =>
                 $"(`user` = {k.User.Escape()} AND `mob_id` = {k.MobId.Escape()})");

@@ -251,7 +251,8 @@ local function run_deposit(me, npc, q)
         return
     end
 
-    local btn = me:dialog(npc, string.format("모레 저에게 다시 오시면 제가 잘 익은 %s를 드리겠습니다.", kimchi.name), { prev = false, next = false })
+    local btn = me:dialog(npc, string.format("모레 저에게 다시 오시면 제가 잘 익은 %s를 드리겠습니다.", kimchi.name),
+        { prev = false, next = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

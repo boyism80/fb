@@ -25,7 +25,9 @@ namespace MapEditor.Format
                 var next = BitConverter.ToInt32(bytes, entry + 17);
                 var nameLength = Array.IndexOf<byte>(bytes, 0, entry + 4, 13) - (entry + 4);
                 if (nameLength < 0)
+                {
                     nameLength = 13;
+                }
 
                 var name = Encoding.ASCII.GetString(bytes, entry + 4, nameLength);
                 archive._files[name] = bytes.AsSpan(offset, next - offset).ToArray();
@@ -41,7 +43,9 @@ namespace MapEditor.Format
         public byte[] Get(string name)
         {
             if (_files.TryGetValue(name, out var bytes) == false)
+            {
                 throw new FileNotFoundException($"{name} is not in the archive");
+            }
 
             return bytes;
         }

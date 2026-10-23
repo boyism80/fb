@@ -7,7 +7,7 @@ local function main(me, npc)
 end
 
 local function sample_group(me, npc)
-    local selected = me:menu(npc, '선택', {'그룹 초대/추방', '그룹 메시지'})
+    local selected = me:menu(npc, '선택', { '그룹 초대/추방', '그룹 메시지' })
     if selected == nil then
         return
     end
@@ -72,7 +72,8 @@ local function sample_clan(me, npc)
     else
         local clan_name = clan:name()
         ::NPC_0_0001::
-        local selected, list_btn = me:list(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 탈퇴', '문파 추방', '문파 직책 변경', '문파 메시지'}, { prev = false })
+        local selected, list_btn = me:list(npc, string.format('클랜 이름 : %s', clan_name),
+            { '문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 탈퇴', '문파 추방', '문파 직책 변경', '문파 메시지' }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -132,7 +133,7 @@ local function sample_clan(me, npc)
                 return
             end
 
-            local yes_or_no = found:menu(npc, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
+            local yes_or_no = found:menu(npc, string.format('%s 문파에 가입?', clan_name), { '네', '아니오' })
             if yes_or_no == 1 then
                 clan = me:clan()
                 if clan == nil then
@@ -243,7 +244,7 @@ local function sample_map(me, npc)
 end
 
 local function sample_cc(me, npc)
-    local selected = me:menu(npc, '선택', {'방향역전', '암흑', '채팅금지', '듣기금지'})
+    local selected = me:menu(npc, '선택', { '방향역전', '암흑', '채팅금지', '듣기금지' })
     if selected == nil then
         return
     end
@@ -329,7 +330,7 @@ local function sample_quest(me, npc)
 end
 
 local function sample_menu(me, npc)
-    local selected = me:menu(npc, '안녕하세요. 무엇을 도와드릴까요?', {'group','clan','whisper','send_mail','map','cc','q'})
+    local selected = me:menu(npc, '안녕하세요. 무엇을 도와드릴까요?', { 'group', 'clan', 'whisper', 'send_mail', 'map', 'cc', 'q' })
     if selected == nil then
         return
     end

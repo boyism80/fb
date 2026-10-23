@@ -28,11 +28,15 @@ namespace AdminTool.Services
         {
             var character = await _dbContext.Character.Get(world, userId);
             if (character == null)
+            {
                 return null;
+            }
 
             var userDetail = await _userService.GetUserByName(world, character.Name);
             if (userDetail == null)
+            {
                 return null;
+            }
 
             var isOnline = await _userService.IsOnline(world, character.Name);
             CharacterRealtimeState realtimeState = null;
@@ -176,7 +180,9 @@ namespace AdminTool.Services
             {
                 var marriage = await _dbContext.Marriage.Get(world, userId);
                 if (marriage != null)
+                {
                     social.Marriage = marriage;
+                }
             }
             catch (Exception ex)
             {
@@ -280,7 +286,9 @@ namespace AdminTool.Services
         public async Task<Dictionary<uint, string>> ResolveCharacterNamesAsync(uint world, IReadOnlyList<uint> userIds)
         {
             if (userIds == null || userIds.Count == 0)
+            {
                 return new Dictionary<uint, string>();
+            }
 
             var characters = await _dbContext.Character.GetMany(world, userIds);
             return characters.ToDictionary(kv => kv.Key, kv => kv.Value.Name);
@@ -306,11 +314,15 @@ namespace AdminTool.Services
         {
             var groupId = realtimeState?.Group;
             if (groupId.HasValue == false)
+            {
                 return null;
+            }
 
             var group = await _dbContext.Group.Get(world, groupId.Value);
             if (group == null)
+            {
                 return null;
+            }
 
             uint? masterId = group.Master;
 

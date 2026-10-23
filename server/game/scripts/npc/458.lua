@@ -38,7 +38,8 @@ return {
         end
 
         if sel == 2 then
-            local d = me:dialog(npc, "아니 글쎄... 빨간양말에 선물을 담아 나누어 주어야 하는데, 그만 빨간양말을 잃어버렸지 뭔가! 이걸 어떻게 해야 한담...", { prev = false, next = true })
+            local d = me:dialog(npc, "아니 글쎄... 빨간양말에 선물을 담아 나누어 주어야 하는데, 그만 빨간양말을 잃어버렸지 뭔가! 이걸 어떻게 해야 한담...",
+                { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end

@@ -27,21 +27,31 @@ namespace AdminTool.Services
         {
             var userId = await _dbContext.Character.GetCharacterId(world, name);
             if (!userId.HasValue)
+            {
                 return new AuthResult { Error = LoginFailedError };
+            }
 
             var character = await _dbContext.Character.Get(world, userId.Value);
             if (character == null)
+            {
                 return new AuthResult { Error = LoginFailedError };
+            }
 
             if (character.Role < Role.Admin)
+            {
                 return new AuthResult { Error = LoginFailedError };
+            }
 
             var attempt = await _passwordAttempts.Begin(world, userId.Value, ip);
             if (attempt == PasswordAttempt.Locked)
+            {
                 return new AuthResult { Error = LoginFailedError };
+            }
 
             if (PasswordHash.Matches(character.Pw, password, out var updatedPw) == false)
+            {
                 return new AuthResult { Error = LoginFailedError };
+            }
 
             await _passwordAttempts.Succeed(world, userId.Value, ip, attempt);
             if (updatedPw != null)

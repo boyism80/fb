@@ -8,9 +8,9 @@ return {
 
     on_mob_die = function(me)
         local lines = {
-        '크크크크....',
-        '인간따위가 감히...',
-    }
+            '크크크크....',
+            '인간따위가 감히...',
+        }
         me:chat(lines[math.random(#lines)], CHAT_TYPE.NORMAL, true)
     end
 }

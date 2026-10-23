@@ -20,7 +20,9 @@ namespace Http.Service
         protected override string GenerateCacheKey(params object[] parameters)
         {
             if (parameters == null || parameters.Length < 3)
+            {
                 throw new ArgumentException("Bulletin cache key requires bulletinSection, generation and id parameters", nameof(parameters));
+            }
 
             var bulletinSection = Convert.ToUInt32(parameters[0]);
             var generation = Convert.ToUInt32(parameters[1]);
@@ -32,7 +34,9 @@ namespace Http.Service
         protected override uint? GetHashForSharding(string cacheKey, params object[] parameters)
         {
             if (parameters == null || parameters.Length < 1)
+            {
                 return null;
+            }
 
             return Convert.ToUInt32(parameters[0]);
         }
@@ -47,11 +51,15 @@ namespace Http.Service
             {
                 var redis = RedisService.GetShardConnection(world, bulletinSection);
                 if (redis == null)
+                {
                     return await dbQueryFunc();
+                }
 
                 var cached = await redis.Connection.StringGetAsync(GenerationKey(bulletinSection));
                 if (cached.HasValue && uint.TryParse(cached.ToString(), out var generation))
+                {
                     return generation;
+                }
 
                 var dbValue = await dbQueryFunc();
                 await redis.Connection.StringSetAsync(GenerationKey(bulletinSection), dbValue.ToString(), GenerationTtl, When.NotExists);
@@ -70,7 +78,9 @@ namespace Http.Service
             {
                 var redis = RedisService.GetShardConnection(world, bulletinSection);
                 if (redis == null)
+                {
                     return;
+                }
 
                 await redis.Connection.StringSetAsync(GenerationKey(bulletinSection), generation.ToString(), GenerationTtl);
             }
@@ -114,7 +124,9 @@ namespace Http.Service
             TimeSpan? ttl = null)
         {
             if (articles == null || articles.Count == 0)
+            {
                 return Task.CompletedTask;
+            }
 
             var items = articles.ToDictionary(
                 kvp => new object[] { kvp.Key.bulletinSection, generation, kvp.Key.id },
@@ -126,7 +138,9 @@ namespace Http.Service
         public Task DeleteArticlesBatchAsync(uint world, uint generation, IEnumerable<(uint bulletinSection, uint id)> articleKeys)
         {
             if (articleKeys == null)
+            {
                 return Task.CompletedTask;
+            }
 
             var parametersList = articleKeys.Select(k => new object[] { k.bulletinSection, generation, k.id });
             return DeleteBatchAsync(world, parametersList);

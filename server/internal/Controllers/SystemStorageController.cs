@@ -82,7 +82,7 @@ namespace Internal.Controllers
 
                 return new Response.WriteSystemStorageBox
                 {
-                    Box   = _mapper.Map<Protocol.SystemStorageBox>(box),
+                    Box = _mapper.Map<Protocol.SystemStorageBox>(box),
                     Error = (uint)ErrorCode.None
                 };
             }
@@ -109,21 +109,21 @@ namespace Internal.Controllers
                 var entries = written.Select(box => new Protocol.StorageWriteEntry
                 {
                     User = box.User,
-                    Box  = _mapper.Map<Protocol.StorageBox>(box)
+                    Box = _mapper.Map<Protocol.StorageBox>(box)
                 }).ToList();
 
                 return new Response.DistributeSystemStorage
                 {
                     Entries = entries,
-                    Host    = request.Host,
-                    Error   = (uint)ErrorCode.None
+                    Host = request.Host,
+                    Error = (uint)ErrorCode.None
                 };
             }
             catch (Exception)
             {
                 return new Response.DistributeSystemStorage
                 {
-                    Host  = request.Host,
+                    Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

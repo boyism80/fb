@@ -2,7 +2,7 @@
 
 return {
     on_click = function(me, npc)
-        local sel = me:list(npc, "부롱대미궁에 입장하실래요?", {"예", "아니오"})
+        local sel = me:list(npc, "부롱대미궁에 입장하실래요?", { "예", "아니오" })
         if sel == nil then
             return
         end

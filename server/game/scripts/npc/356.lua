@@ -18,11 +18,14 @@ local function run_seollal(me, npc)
     end
 
     if sel == 1 then
-        local btn = me:dialog(npc, " 설날엔 아침 일찍 일어나서 세수를 하고 '설빔'을 입죠. 설빔은 지난해 가을부터 옷감을 준비했다가 설날까지 옷을 장만하여 입는거랍니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, " 설날엔 아침 일찍 일어나서 세수를 하고 '설빔'을 입죠. 설빔은 지난해 가을부터 옷감을 준비했다가 설날까지 옷을 장만하여 입는거랍니다.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, " 설빔을 입고, 차례를 지낸후에 어른들께 새해 인사를 드리는데, 이것을 세배라고 하구요, 세배를 마치고 나면 아침 식사로 떡국을 먹지요. 아, 조상님 묘지에 가서 벌초도 해야겠죠?", { prev = false, next = false })
+        me:dialog(npc,
+            " 설빔을 입고, 차례를 지낸후에 어른들께 새해 인사를 드리는데, 이것을 세배라고 하구요, 세배를 마치고 나면 아침 식사로 떡국을 먹지요. 아, 조상님 묘지에 가서 벌초도 해야겠죠?",
+            { prev = false, next = false })
         return
     end
 
@@ -31,7 +34,8 @@ local function run_seollal(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, " 잡초를 베다보면 '잡초풀'이 나오는데, 이 풀을 제게 가져다 주세요. 떡국을 끓일 때 불쏘시개로 유용하게  쓰이거든요. 100개 정도면 적당할 것 같아요.", { prev = false, next = true })
+        btn = me:dialog(npc, " 잡초를 베다보면 '잡초풀'이 나오는데, 이 풀을 제게 가져다 주세요. 떡국을 끓일 때 불쏘시개로 유용하게  쓰이거든요. 100개 정도면 적당할 것 같아요.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

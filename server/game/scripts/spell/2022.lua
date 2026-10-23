@@ -10,7 +10,7 @@ return {
 
         local sound = 501
         local effect = 167
-        local hp = me:hp()//2
+        local hp = me:hp() // 2
         local mp = 180
         local damage = me:hp()
         local message = '파천검무'
@@ -37,7 +37,8 @@ return {
 
         if #targets > 0 then
             me:position(me:front_position(5))
-            spell.attack_cast(me, targets, sp, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect})
+            spell.attack_cast(me, targets, sp,
+                { hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect })
             return
         else
             return failed(me)

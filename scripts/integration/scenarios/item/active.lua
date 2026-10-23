@@ -4,8 +4,8 @@ local wait     = require("integration.lib.wait")
 
 local M = {}
 
-local ITEM_DONGDONGJU = "동동주"
-local ITEM_UITAE      = "의태시약"
+local ITEM_DONGDONGJU         = "동동주"
+local ITEM_UITAE              = "의태시약"
 local EXPECTED_NAME_AFTER_USE = "동동주 [199]잔"
 
 local TARGET_EQUIP = {

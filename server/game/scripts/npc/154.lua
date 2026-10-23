@@ -21,14 +21,16 @@ return {
                 if d == DIALOG_RESULT.QUIT then
                     return
                 end
-                d = me:dialog(npc, "소림사의 무공은 수련을 할수록 그 위력이 엄청나진다오.. 부디 수련에 정진하여 더욱 강해지길 바라오...", { prev = false, next = true })
+                d = me:dialog(npc, "소림사의 무공은 수련을 할수록 그 위력이 엄청나진다오.. 부디 수련에 정진하여 더욱 강해지길 바라오...",
+                    { prev = false, next = true })
                 if d == DIALOG_RESULT.QUIT then
                     return
                 end
                 me:dialog(npc, "소림사 본전의 뒤쪽에 수련장이 있소. 그곳에 가면 소림사 승려들과 수련할 수 있을 것이오..", { prev = false, next = false })
                 return
             end
-            local d = me:dialog(npc, "자네는 백열장을 모르나? 백열장은 소림사에서 가장 쉽게 배울수 있는 무공이라네. 백열장을 모른다면 소림사를 안다고 할 수 없지.", { prev = false, next = true })
+            local d = me:dialog(npc, "자네는 백열장을 모르나? 백열장은 소림사에서 가장 쉽게 배울수 있는 무공이라네. 백열장을 모른다면 소림사를 안다고 할 수 없지.",
+                { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
@@ -67,7 +69,8 @@ return {
 
         if sel == 2 then
             if me:spell("선풍각") then
-                me:dialog(npc, "선풍각을 배워 수련중이구려. 선풍각은 수련에 따라 얼마든지 강해진다오. 수련을 게을리 하지 마시길. 나무아미타불..", { prev = false, next = false })
+                me:dialog(npc, "선풍각을 배워 수련중이구려. 선풍각은 수련에 따라 얼마든지 강해진다오. 수련을 게을리 하지 마시길. 나무아미타불..",
+                    { prev = false, next = false })
                 return
             end
             local dialogs = {

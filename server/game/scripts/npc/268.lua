@@ -105,21 +105,22 @@ return {
     end,
 
     npc_confirm_teammate = function(me, teammate_name, npc)
-            local button = me:dialog(npc, string.format('%s의 동료에게 묻겠다.', teammate_name), { prev = false, next = true })
-            if button == DIALOG_RESULT.QUIT then
-                return false
-            end
+        local button = me:dialog(npc, string.format('%s의 동료에게 묻겠다.', teammate_name), { prev = false, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return false
+        end
 
-            local selected, button = me:list(npc, string.format('너는 %s의 동료로 같이 이 문으로 들어가겠느냐?', teammate_name), { '네, 들어가겠습니다.', '아니오. 들어가지 않겠습니다.' })
-            if button == DIALOG_RESULT.QUIT then
-                return false
-            end
+        local selected, button = me:list(npc, string.format('너는 %s의 동료로 같이 이 문으로 들어가겠느냐?', teammate_name),
+            { '네, 들어가겠습니다.', '아니오. 들어가지 않겠습니다.' })
+        if button == DIALOG_RESULT.QUIT then
+            return false
+        end
 
-            if selected == 2 then
-                me:dialog(npc, '확인했다. 그럼 잠시 기다리고 있도록 하여라.', { prev = false, next = false })
-                return true
-            else
-                return false
-            end
+        if selected == 2 then
+            me:dialog(npc, '확인했다. 그럼 잠시 기다리고 있도록 하여라.', { prev = false, next = false })
+            return true
+        else
+            return false
+        end
     end
 }

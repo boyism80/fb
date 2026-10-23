@@ -123,7 +123,9 @@ namespace Http.Reepository
         protected override string OnDeleteMany(IReadOnlyList<ClanMemberKey> keys)
         {
             if (keys.Count == 0)
+            {
                 return string.Empty;
+            }
 
             var conditions = keys.Select(k =>
                 $"(`clan` = {k.Clan.Escape()} AND `user` = {k.User.Escape()})");

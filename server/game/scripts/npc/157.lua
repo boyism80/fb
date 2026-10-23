@@ -38,7 +38,7 @@ local function do_jungki(me, npc)
         me:push_achievement(24, '무달의 부탁을 들어주자. [1/5]', 7, 1)
         return
     end
-    
+
     local steps = {
         { step_in = 5, item = '복어의심장', count = 30, next_msg = '그럼 이젠 문어의심장을 30개 모아오게나.', reward = '용궁의정기1', legend = '무달의 부탁을 들어주자. [2/5]' },
         { step_in = 6, item = '문어의심장', count = 30, next_msg = '그럼 이젠 해마의심장을 30개 모아오게나.', reward = '용궁의정기2', legend = '무달의 부탁을 들어주자. [3/5]' },
@@ -57,7 +57,8 @@ local function do_jungki(me, npc)
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', { prev = false, next = false })
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.',
+                    { prev = false, next = false })
                 return
             end
             if q then
@@ -79,7 +80,8 @@ end
 
 local function do_armor_infinite(me, npc)
     local price = 1000
-    local pay_sel = me:list(npc, string.format('무한에 참여하시려면 염색비 %d전을 내시고 무한 복장을 하셔야 합니다. %d전을 내시겠습니까?', price, price), { '예', '아니오' })
+    local pay_sel = me:list(npc, string.format('무한에 참여하시려면 염색비 %d전을 내시고 무한 복장을 하셔야 합니다. %d전을 내시겠습니까?', price, price),
+        { '예', '아니오' })
     if pay_sel == nil then
         return
     end

@@ -53,7 +53,9 @@ return {
             else
                 prize_name = property("survive_prize_joiner") or prize_name
             end
-            local btn = me:dialog(npc, "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.", { prev = false, next = true })
+            local btn = me:dialog(npc,
+                "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -92,7 +94,9 @@ return {
                         if not me:has_items("동동주", 1) then lack[#lack + 1] = "동동주" end
                         if not me:has_items("막걸리", 1) then lack[#lack + 1] = "막걸리" end
                         if #lack > 0 then
-                            me:dialog(npc, "저런, " .. me:name() .. "님은 " .. table.concat(lack, ", ") .. " 가 부족하시군요. 어서 구해오세요.", { prev = false, next = false })
+                            me:dialog(npc,
+                                "저런, " .. me:name() .. "님은 " .. table.concat(lack, ", ") .. " 가 부족하시군요. 어서 구해오세요.",
+                                { prev = false, next = false })
                         else
                             me:dialog(npc, "아이템을 건네지 못했습니다.", { prev = false, next = false })
                         end
@@ -103,11 +107,13 @@ return {
                     end
                     me:dialog(npc, "서바이벌증표를 드렸습니다. 중요한 물건이니 절대 잊어버리지 않도록 주의 해 주세요.", { prev = false, next = false })
                 else
-                    local btn = me:dialog(npc, "서바이벌증표는 [노란비서], [소환비서], [동동주], [막걸리]를 가지고 오시면 만들어 드리고 있습니다.", { prev = false, next = true })
+                    local btn = me:dialog(npc, "서바이벌증표는 [노란비서], [소환비서], [동동주], [막걸리]를 가지고 오시면 만들어 드리고 있습니다.",
+                        { prev = false, next = true })
                     if btn == DIALOG_RESULT.QUIT then
                         return
                     end
-                    me:dialog(npc, "만약 없으시다면 북서, 북동, 남서, 남동쪽의 npc가 하나씩 나누어드리고 있으니 가서 받아오세요.", { prev = false, next = false })
+                    me:dialog(npc, "만약 없으시다면 북서, 북동, 남서, 남동쪽의 npc가 하나씩 나누어드리고 있으니 가서 받아오세요.",
+                        { prev = false, next = false })
                 end
                 return
             end
@@ -139,7 +145,9 @@ return {
                 return
             end
             if sel == 1 then
-                local btn = me:dialog(npc, "[서바이벌달리기] 에서는 몬스터에게 단 한대만 맞더라도, 바로 사망을 하게 됩니다.\n\n하지만 죽음에 따른 패널티는 따로 없으니 너무 걱정은 하지 않으셔도 됩니다.\n그럼 입장시켜 드리겠습니다.", { prev = false, next = true })
+                local btn = me:dialog(npc,
+                    "[서바이벌달리기] 에서는 몬스터에게 단 한대만 맞더라도, 바로 사망을 하게 됩니다.\n\n하지만 죽음에 따른 패널티는 따로 없으니 너무 걱정은 하지 않으셔도 됩니다.\n그럼 입장시켜 드리겠습니다.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -179,7 +187,8 @@ return {
             return
         end
 
-        local btn = me:dialog(npc, "안녕하세요? 서바이벌 달리기는 곳곳에 위치한 함정과 몬스터를 피해 결승 지점까지 골인을 목표로 달리는 이벤트 게임 입니다.", { prev = false, next = true })
+        local btn = me:dialog(npc, "안녕하세요? 서바이벌 달리기는 곳곳에 위치한 함정과 몬스터를 피해 결승 지점까지 골인을 목표로 달리는 이벤트 게임 입니다.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -208,15 +217,19 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local btn = me:dialog(npc, "서바이벌달리기는 골인지점까지 살아남아 빠르게 도착한 순서대로 상품을 드리는 이벤트 입니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "서바이벌달리기는 골인지점까지 살아남아 빠르게 도착한 순서대로 상품을 드리는 이벤트 입니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local btn = me:dialog(npc, "서바이벌달리기 내부에서 몬스터에게 죽는다고 하더라도, 별도의 패널티는 존재하지 않으니 안심하셔도 됩니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "서바이벌달리기 내부에서 몬스터에게 죽는다고 하더라도, 별도의 패널티는 존재하지 않으니 안심하셔도 됩니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local btn = me:dialog(npc, "서바이벌달리기 이벤트에 참여하시기 위해서는 [서바이벌증표]라는 아이템이 필요한데, 이 것은 동동주, 막걸리, 소환비서, 노란비서가 있어야 만드실 수 있으니 미리 준비해 가시는 것도 하나의 방법입니다.", { prev = false, next = true })
+            local btn = me:dialog(npc,
+                "서바이벌달리기 이벤트에 참여하시기 위해서는 [서바이벌증표]라는 아이템이 필요한데, 이 것은 동동주, 막걸리, 소환비서, 노란비서가 있어야 만드실 수 있으니 미리 준비해 가시는 것도 하나의 방법입니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

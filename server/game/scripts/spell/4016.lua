@@ -12,7 +12,7 @@ return {
         local sound = 109
         local effect = 116
         local buff_time = 45
-        if spell.buff_cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
+        if spell.buff_cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
             me:buff(sp, buff_time, me)
         end
     end,
@@ -25,10 +25,10 @@ return {
 
     on_concast = function(me, caster, buff)
         local x, y = me:position()
-        local begin_x = x-3
-        local begin_y = y-3
-        local end_x = x+3
-        local end_y = y+3
+        local begin_x = x - 3
+        local begin_y = y - 3
+        local end_x = x + 3
+        local end_y = y + 3
         local targets = {}
         local sp = name2spell('신령지익진')
         for _, obj in pairs(me:nears(OBJECT_TYPE.LIFE)) do

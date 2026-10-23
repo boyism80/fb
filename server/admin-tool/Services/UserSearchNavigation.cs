@@ -12,7 +12,9 @@ namespace AdminTool.Services
             string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
+            {
                 return;
+            }
 
             if (world.HasValue && world.Value > 0)
             {
@@ -26,7 +28,9 @@ namespace AdminTool.Services
 
             var query = new Dictionary<string, string> { ["search"] = searchTerm.Trim() };
             if (world.HasValue && world.Value > 0)
+            {
                 query["world"] = world.Value.ToString();
+            }
 
             navigation.NavigateTo(QueryHelpers.AddQueryString("/users", query));
         }

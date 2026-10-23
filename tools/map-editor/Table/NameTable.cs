@@ -32,13 +32,17 @@ namespace MapEditor.Table
             {
                 var sheet = workbook.GetSheet(name);
                 if (sheet == null)
+                {
                     continue;
+                }
 
                 for (int r = XlsxFile.FirstDataRow; r <= sheet.LastRowNum; r++)
                 {
                     var row = sheet.GetRow(r);
                     if (int.TryParse(XlsxFile.Text(row, 0), out var id) == false || table._entries.ContainsKey(id))
+                    {
                         continue;
+                    }
 
                     var look = 0;
                     var color = 0;

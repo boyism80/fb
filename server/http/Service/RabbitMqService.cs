@@ -129,7 +129,9 @@ namespace Http.Service
             Func<Exception, Task> onFailure = null)
         {
             if (body == null || body.Length == 0)
+            {
                 return;
+            }
 
             try
             {
@@ -138,7 +140,9 @@ namespace Http.Service
             catch (Exception ex)
             {
                 if (onFailure == null)
+                {
                     throw;
+                }
 
                 await onFailure(ex);
             }
@@ -169,7 +173,9 @@ namespace Http.Service
                     {
                         await InvokeFailure(job, ex);
                         if (stoppingToken.IsCancellationRequested)
+                        {
                             break;
+                        }
                     }
                 }
             }
@@ -211,10 +217,14 @@ namespace Http.Service
         {
             await EnsureConnectedAsync(cancellationToken);
             if (_channel == null)
+            {
                 throw new InvalidOperationException("internal RabbitMQ channel is not open");
+            }
 
             if (job.Prepare != null)
+            {
                 await job.Prepare(_channel, cancellationToken);
+            }
 
             if (job.Persistent)
             {
@@ -230,13 +240,17 @@ namespace Http.Service
         private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
         {
             if (_connection != null && _connection.IsOpen && _channel != null && _channel.IsOpen)
+            {
                 return;
+            }
 
             await CloseAsync();
 
             var rabbitMqSection = _configuration.GetSection("RabbitMQ:Internal");
             if (rabbitMqSection == null || !rabbitMqSection.Exists())
+            {
                 throw new Exception("RabbitMQ configuration not found for unified-global");
+            }
 
             var factory = new ConnectionFactory
             {
@@ -285,7 +299,9 @@ namespace Http.Service
         public async ValueTask DisposeAsync()
         {
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            {
                 return;
+            }
 
             await StopAsync(CancellationToken.None);
             _stopping.Dispose();

@@ -58,7 +58,9 @@ namespace Log.Worker
                         {
                             var batchFull = await ProcessLogsAsync(stoppingToken);
                             if (batchFull)
+                            {
                                 continue;
+                            }
                         }
                         catch (Exception ex)
                         {

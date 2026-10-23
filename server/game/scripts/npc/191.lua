@@ -21,7 +21,9 @@ return {
                 return
             end
             ::NPC_191_0010::
-            btn = me:dialog(npc, '코뿔소의 이빨,발톱,뿔은 무기나 갑옷을 만드는데 정말 좋은 재료가 되지. 그중에서도 도삭산코뿔소는 내가 지금까지 본 것들중에서 제일이더군.\n\n그래서 요즘 도삭산코뿔소를 사냥하고 있는데 놈들이 워낙 사나워서 사냥이 매우 위험하다오.', { prev = true, next = true })
+            btn = me:dialog(npc,
+                '코뿔소의 이빨,발톱,뿔은 무기나 갑옷을 만드는데 정말 좋은 재료가 되지. 그중에서도 도삭산코뿔소는 내가 지금까지 본 것들중에서 제일이더군.\n\n그래서 요즘 도삭산코뿔소를 사냥하고 있는데 놈들이 워낙 사나워서 사냥이 매우 위험하다오.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -29,7 +31,8 @@ return {
                 goto NPC_191_0001
             end
             ::NPC_191_0011::
-            btn = me:dialog(npc, '어떻소 도삭산코뿔소를 사냥해서 이빨,발톱,뿔을 내게 구해다 주지 않겠소? 물론 그냥 가져다 달라는것은 아니니 걱정 마시오. 내 좋은 물건 하나 주도록하지!', { prev = true, next = true })
+            btn = me:dialog(npc, '어떻소 도삭산코뿔소를 사냥해서 이빨,발톱,뿔을 내게 구해다 주지 않겠소? 물론 그냥 가져다 달라는것은 아니니 걱정 마시오. 내 좋은 물건 하나 주도록하지!',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -52,7 +55,9 @@ return {
             end
             q:step(1)
             me:push_achievement(ACHIEVEMENT_400, '도태연의 부탁을 들어주자!', 7, 1)
-            me:dialog(npc, '다시 한번 말하지만 도삭산코뿔소의 발톱,이빨,뿔 모두 구해다 줘야하오~\n\n하나라도 빠지면 내 선물을 줄 수 없으니 명심하게나. 그럼 몸조심하구려. 놈들이 정말 사납거든.', { prev = false, next = false })
+            me:dialog(npc,
+                '다시 한번 말하지만 도삭산코뿔소의 발톱,이빨,뿔 모두 구해다 줘야하오~\n\n하나라도 빠지면 내 선물을 줄 수 없으니 명심하게나. 그럼 몸조심하구려. 놈들이 정말 사납거든.',
+                { prev = false, next = false })
             return
         end
 
@@ -71,7 +76,8 @@ return {
                 me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', { prev = false, next = false })
                 return
             end
-            btn = me:dialog(npc, '오! 세가지 다 구해왔구려. 역시 내가 사람보는 눈은 정확하다니깐. 허허~\n\n그러면 내가 다 가져가겠소.', { prev = false, next = true })
+            btn = me:dialog(npc, '오! 세가지 다 구해왔구려. 역시 내가 사람보는 눈은 정확하다니깐. 허허~\n\n그러면 내가 다 가져가겠소.',
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -84,7 +90,8 @@ return {
                 return
             end
             if code == enum.exchange_result.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.', { prev = false, next = false })
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.',
+                    { prev = false, next = false })
                 return
             end
             me:push_achievement(ACHIEVEMENT_400, '도삭산 400층 퀘스트 완료', 7, 1)

@@ -29,7 +29,7 @@ return {
             return me:message('실패')
         end
 
-        if spell.buff_cast(me, me, sp, {mp=0, sound=sound, effect=effect}) then
+        if spell.buff_cast(me, me, sp, { mp = 0, sound = sound, effect = effect }) then
             me:buff(sp, buff_time)
         end
     end,

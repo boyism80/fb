@@ -29,19 +29,29 @@ namespace MapEditor.Command
             gesture = default;
             var parts = text.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 0)
+            {
                 return false;
+            }
 
             var modifiers = ModifierKeys.None;
             foreach (var part in parts[..^1])
             {
                 if (part.Equals("Ctrl", StringComparison.OrdinalIgnoreCase))
+                {
                     modifiers |= ModifierKeys.Control;
+                }
                 else if (part.Equals("Shift", StringComparison.OrdinalIgnoreCase))
+                {
                     modifiers |= ModifierKeys.Shift;
+                }
                 else if (part.Equals("Alt", StringComparison.OrdinalIgnoreCase))
+                {
                     modifiers |= ModifierKeys.Alt;
+                }
                 else
+                {
                     return false;
+                }
             }
 
             // Enum.TryParse also accepts numbers ("3" is MouseButton.XButton1), so only names reach it.
@@ -75,18 +85,32 @@ namespace MapEditor.Command
         {
             var text = "";
             if (Modifiers.HasFlag(ModifierKeys.Control))
+            {
                 text += "Ctrl+";
+            }
+
             if (Modifiers.HasFlag(ModifierKeys.Shift))
+            {
                 text += "Shift+";
+            }
+
             if (Modifiers.HasFlag(ModifierKeys.Alt))
+            {
                 text += "Alt+";
+            }
 
             if (Button is MouseButton button)
+            {
                 return text + button;
+            }
             else if (Key >= Key.D0 && Key <= Key.D9)
+            {
                 return text + (char)('0' + (Key - Key.D0));
+            }
             else
+            {
                 return text + Key;
+            }
         }
     }
 
@@ -116,7 +140,9 @@ namespace MapEditor.Command
             foreach (var part in (text ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             {
                 if (Gesture.TryParse(part, out var gesture))
+                {
                     gestures.Add(gesture);
+                }
             }
             return gestures;
         }

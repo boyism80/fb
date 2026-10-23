@@ -8,7 +8,7 @@ namespace Http.Reepository
 {
     public class MailRepository : IRepository
     {
-        private const string TempMailWriteUsersTable  = "tmp_mail_write_users";
+        private const string TempMailWriteUsersTable = "tmp_mail_write_users";
         private const string TempMailSendContentTable = "tmp_mail_send_content";
 
         private readonly DbContext _dbContext;
@@ -20,7 +20,9 @@ namespace Http.Reepository
         private static async Task PopulateTempMailWriteUsersAsync(MySqlConnection connection, uint[] userIds)
         {
             if (connection.State != System.Data.ConnectionState.Open)
+            {
                 await connection.OpenAsync();
+            }
 
             await connection.ExecuteAsync($"DROP TEMPORARY TABLE IF EXISTS {TempMailWriteUsersTable}");
             await connection.ExecuteAsync(
@@ -29,7 +31,9 @@ namespace Http.Reepository
                 ") ENGINE = MEMORY");
 
             if (userIds.Length == 0)
+            {
                 return;
+            }
 
             var userValues = string.Join(", ", userIds.Select(id => $"({id})"));
             await connection.ExecuteAsync(
@@ -45,7 +49,9 @@ namespace Http.Reepository
             IReadOnlyDictionary<uint, (string Title, string Contents)> rendered)
         {
             if (connection.State != System.Data.ConnectionState.Open)
+            {
                 await connection.OpenAsync();
+            }
 
             await connection.ExecuteAsync($"DROP TEMPORARY TABLE IF EXISTS {TempMailSendContentTable}");
             await connection.ExecuteAsync(
@@ -143,11 +149,15 @@ namespace Http.Reepository
             string contents)
         {
             if (users == null || users.Count == 0)
+            {
                 return new List<MailWriteResult>();
+            }
 
             var distinctUsers = users.Where(u => u != 0).Distinct().ToArray();
             if (distinctUsers.Length == 0)
+            {
                 return new List<MailWriteResult>();
+            }
 
             var results = new List<MailWriteResult>();
 
@@ -156,7 +166,9 @@ namespace Http.Reepository
                 await using (connection)
                 {
                     if (userIds.Length == 0)
+                    {
                         continue;
+                    }
 
                     await PopulateTempMailWriteUsersAsync(connection, userIds);
 
@@ -173,7 +185,9 @@ namespace Http.Reepository
 
                     var success = await reader.ReadFirstAsync<bool>();
                     if (!success)
+                    {
                         continue;
+                    }
 
                     var mails = (await reader.ReadAsync<Mail>()).ToList();
                     var unreadByUser = (await reader.ReadAsync<MailUnreadCount>())
@@ -183,7 +197,7 @@ namespace Http.Reepository
                     {
                         results.Add(new MailWriteResult
                         {
-                            Mail   = mail,
+                            Mail = mail,
                             Unread = unreadByUser.GetValueOrDefault(mail.User, (ushort)0)
                         });
                     }
@@ -201,21 +215,27 @@ namespace Http.Reepository
             string contents)
         {
             if (users == null || users.Count == 0)
+            {
                 return (new List<MailWriteResult>(), false);
+            }
 
             var distinctUsers = users.Where(u => u != 0).Distinct().ToArray();
             if (distinctUsers.Length == 0)
+            {
                 return (new List<MailWriteResult>(), false);
+            }
 
             var results = new List<MailWriteResult>();
-            var failed  = false;
+            var failed = false;
 
             foreach (var (connection, userIds) in _dbContext.GetShardConnections(world, distinctUsers))
             {
                 await using (connection)
                 {
                     if (userIds.Length == 0)
+                    {
                         continue;
+                    }
 
                     // Shards commit one by one, so an exception here must not drop the results of earlier shards.
                     try
@@ -260,7 +280,7 @@ namespace Http.Reepository
                         {
                             results.Add(new MailWriteResult
                             {
-                                Mail   = mail,
+                                Mail = mail,
                                 Unread = unreadByUser.GetValueOrDefault(mail.User, (ushort)0)
                             });
                         }
@@ -302,9 +322,14 @@ namespace Http.Reepository
             var head = await reader.ReadFirstAsync();
             var result = Convert.ToInt32(head.RESULT);
             if (result == 2)
+            {
                 throw new LogicException(ErrorCode.MailBoxFull);
+            }
+
             if (result != 1)
+            {
                 throw new LogicException(ErrorCode.Unhandled);
+            }
 
             var mail = await reader.ReadFirstOrDefaultAsync<Http.Model.Mail>() ??
                 throw new LogicException(ErrorCode.MailNotExists);

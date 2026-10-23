@@ -27,7 +27,8 @@ local function on_jungyang_spring(me)
         return
     end
 
-    local btn = me:dialog(me, '매달 정해진 한가지씩의 아이템을 모아서 12개를 모두 모으시면 좋은일이 생길꺼에요. 중양절엔 약신의물병입니다.', { prev = false, next = true })
+    local btn = me:dialog(me, '매달 정해진 한가지씩의 아이템을 모아서 12개를 모두 모으시면 좋은일이 생길꺼에요. 중양절엔 약신의물병입니다.',
+        { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end

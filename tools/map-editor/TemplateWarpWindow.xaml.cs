@@ -22,7 +22,9 @@ namespace MapEditor
             DataContext = editor;
             Closing += (s, e) => _cancel?.Cancel();
             if (editor.TemplateWarpIssues.Count > 0)
+            {
                 ProgressText.Text = $"이전 분석 결과 {editor.TemplateWarpIssues.Count}건";
+            }
         }
 
         private async void OnStart(object sender, RoutedEventArgs e)
@@ -65,19 +67,25 @@ namespace MapEditor
         private void OnDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (IssueGrid.SelectedItem is TemplateWarpIssue issue)
+            {
                 _ = _editor.FocusTemplateWarpIssue(issue);
+            }
         }
 
         private void OnIssueSelected(object sender, SelectionChangedEventArgs e)
         {
             if (IssueGrid.SelectedItem is TemplateWarpIssue issue && issue.Template != _editor.TemplatePlacesOf)
+            {
                 _ = _editor.FindTemplatePlaces(issue.Template);
+            }
         }
 
         private void OnPlaceClick(object sender, MouseButtonEventArgs e)
         {
             if (sender is ListBox list && list.SelectedItem is TemplatePlace place)
+            {
                 _ = _editor.GoToTemplatePlace(place);
+            }
         }
     }
 }

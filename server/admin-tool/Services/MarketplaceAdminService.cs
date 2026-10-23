@@ -142,7 +142,10 @@ namespace AdminTool.Services
         {
             var connectionString = _configuration.GetValue<string>("ConnectionStrings:MySql:unified");
             if (string.IsNullOrEmpty(connectionString))
+            {
                 throw new InvalidOperationException("Unified connection string not found");
+            }
+
             return new MySqlConnection(connectionString);
         }
     }

@@ -23,14 +23,16 @@ local function do_craft(me, npc)
     if reward == nil then
         me:dialog(npc, "이런... 그만 실패하고 말았군요. 다음 기회를 기약하셔야 할 듯 싶네요...", { prev = false, next = false })
     else
-        me:dialog(npc, "오... 이것이 " .. REWARD_NAME .. "로군요. 이렇게 아름답게 생긴 것은 처음입니다. 잘 사용하시길 바라겠습니다.", { prev = false, next = false })
+        me:dialog(npc, "오... 이것이 " .. REWARD_NAME .. "로군요. 이렇게 아름답게 생긴 것은 처음입니다. 잘 사용하시길 바라겠습니다.",
+            { prev = false, next = false })
     end
     return true
 end
 
 return {
     on_click = function(me, npc)
-        local sel, btn = me:list(npc, "저는 눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." }, { prev = false })
+        local sel, btn = me:list(npc, "저는 눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." },
+            { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -50,7 +52,8 @@ return {
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드리겠습니다. 하지만 성공은 장담하지 못하는데... 괜찮으시겠습니까?", { prev = false, next = true })
+        d = me:dialog(npc, "눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드리겠습니다. 하지만 성공은 장담하지 못하는데... 괜찮으시겠습니까?",
+            { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end

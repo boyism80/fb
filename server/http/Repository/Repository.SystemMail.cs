@@ -159,7 +159,9 @@ namespace Http.Reepository
             var mail = await Get(world, id);
             var deadline = DateTime.UtcNow + EditLeadTime;
             if (mail == null || mail.Canceled || mail.ReserveDate == null || mail.ReserveDate <= deadline || reserveDate <= deadline)
+            {
                 return false;
+            }
 
             mail.Title = title;
             mail.Contents = contents;
@@ -175,7 +177,9 @@ namespace Http.Reepository
         {
             var mail = await Get(world, id);
             if (mail == null || mail.Canceled || mail.ReserveDate == null || mail.ReserveDate <= DateTime.UtcNow + EditLeadTime)
+            {
                 return false;
+            }
 
             mail.Canceled = true;
             Set(world, mail);
@@ -187,7 +191,9 @@ namespace Http.Reepository
         public async Task Archive(uint world, IReadOnlyList<SystemMail> mails)
         {
             if (mails.Count == 0)
+            {
                 return;
+            }
 
             Delete(world, mails);
             await SaveChangesAsync();

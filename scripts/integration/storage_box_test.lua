@@ -1,14 +1,14 @@
 local lib      = require("integration.lib")
 local protocol = require("integration.protocol")
 
-local F1_OID            = 0xFFFFFFFF
-local DIALOG_CLOSE_OID  = 0xFFFFFFFD
-local OPT_STORAGE       = "통합보관함"
-local OPT_GRANT         = "아이템 지급"
-local OPT_TARGET_USER   = "특정 유저"
-local OPT_REWARD_ITEM   = "아이템"
-local OPT_REWARD_NONE   = "없음"
-local OPT_YES           = "예"
+local F1_OID           = 0xFFFFFFFF
+local DIALOG_CLOSE_OID = 0xFFFFFFFD
+local OPT_STORAGE      = "통합보관함"
+local OPT_GRANT        = "아이템 지급"
+local OPT_TARGET_USER  = "특정 유저"
+local OPT_REWARD_ITEM  = "아이템"
+local OPT_REWARD_NONE  = "없음"
+local OPT_YES          = "예"
 
 -- NORMAL dialog resumes with request.action (not button).
 -- Must match fb::model::enum_value::DIALOG_RESULT.
@@ -25,7 +25,7 @@ local C2_FILL_WAIT_MS   = 1000
 local SETTLE_FIRST_WAIT_MS = 30000
 local SETTLE_POLL_MS       = 5000
 local SETTLE_POLL_COUNT    = 8
-local CLAIM_PATH           = "/storage/claim"
+local CLAIM_PATH        = "/storage/claim"
 
 local MSG_GRANT_NEED_REWARD = "보상이 하나 이상 필요합니다."
 local MSG_GRANT_OK          = "지급이 완료되었습니다."
@@ -337,7 +337,7 @@ local function wait_item_count(ctx, bot, item_name, expected, first_wait_ms)
         progress(bot, string.format("reward not settled yet attempt=%d count=%d expected=%d",
             attempt, bot:item_count(item_name), expected))
         ctx:sleep(SETTLE_POLL_MS)
-    end
+    end)
     return false
 end
 

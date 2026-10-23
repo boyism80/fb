@@ -30,7 +30,8 @@ end
 
 return {
     on_click = function(me, npc)
-        local sel, btn = me:list(npc, "저는 눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." }, { prev = false })
+        local sel, btn = me:list(npc, "저는 눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." },
+            { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -46,11 +47,13 @@ return {
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "눈꽃얼음을 10개 가져오시면, 제 나름대로 심혈을 기울여 " .. REWARD_NAME .. "을 만들어 볼 수 있습니다.", { prev = false, next = true })
+        d = me:dialog(npc, "눈꽃얼음을 10개 가져오시면, 제 나름대로 심혈을 기울여 " .. REWARD_NAME .. "을 만들어 볼 수 있습니다.",
+            { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "눈꽃얼음 10개를 가져오시면 [" .. REWARD_NAME .. "]을 만들어 드릴 수 있습니다. 하지만 성공은 장담하지 못하는데... 괜찮으시겠습니까?", { prev = false, next = true })
+        d = me:dialog(npc, "눈꽃얼음 10개를 가져오시면 [" .. REWARD_NAME .. "]을 만들어 드릴 수 있습니다. 하지만 성공은 장담하지 못하는데... 괜찮으시겠습니까?",
+            { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end

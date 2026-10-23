@@ -12,7 +12,7 @@ return {
         local sound = 69
         local effect = 13
         local buff_time = 185
-        if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect, resist = RESIST.CURSE}) then
+        if spell.debuff_cast(me, you, sp, { mp = mp, sound = sound, effect = effect, resist = RESIST.CURSE }) then
             you:buff(sp, buff_time, me)
         end
     end,

@@ -37,7 +37,9 @@ namespace MapEditor.Edit
         {
             var maps = corpus.Where(m => Array.IndexOf(m.Tiles, (ushort)a) >= 0 && Array.IndexOf(m.Tiles, (ushort)b) >= 0).ToList();
             if (maps.Count == 0)
+            {
                 throw new ArgumentException($"no map uses both tile {a} and tile {b}");
+            }
 
             // Candidates: tiles that often touch both A and B.
             var occurrences = new Dictionary<int, long>();
@@ -68,20 +70,30 @@ namespace MapEditor.Edit
                             for (int dx = -1; dx <= 1; dx++)
                             {
                                 if (map.Contains(x + dx, y + dy) == false)
+                                {
                                     continue;
+                                }
+
                                 int n = map.Tiles[(y + dy) * map.Width + x + dx];
                                 hasA |= n == a;
                                 hasB |= n == b;
                             }
                         }
                         if (hasA == false && hasB == false)
+                        {
                             continue;
+                        }
 
                         occurrences[t] = occurrences.GetValueOrDefault(t) + 1;
                         if (hasA)
+                        {
                             touchA[t] = touchA.GetValueOrDefault(t) + 1;
+                        }
+
                         if (hasB)
+                        {
                             touchB[t] = touchB.GetValueOrDefault(t) + 1;
+                        }
                     }
                 }
             }
@@ -98,7 +110,9 @@ namespace MapEditor.Edit
                     {
                         int t = map.Tiles[y * map.Width + x];
                         if (candidates.Contains(t) == false)
+                        {
                             continue;
+                        }
 
                         total[t] = total.GetValueOrDefault(t) + 1;
                         for (int c = 0; c < 4; c++)
@@ -106,13 +120,21 @@ namespace MapEditor.Edit
                             foreach (var (dx, dy, nc) in Shared[c])
                             {
                                 if (map.Contains(x + dx, y + dy) == false)
+                                {
                                     continue;
+                                }
+
                                 int n = map.Tiles[(y + dy) * map.Width + x + dx];
                                 if (n != a && n != b && candidates.Contains(n) == false)
+                                {
                                     continue;
+                                }
 
                                 if (votes.TryGetValue((t, c), out var list) == false)
+                                {
                                     votes[(t, c)] = list = new Dictionary<(int, int), long>();
+                                }
+
                                 list[(n, nc)] = list.GetValueOrDefault((n, nc)) + 1;
                             }
                         }
@@ -126,7 +148,9 @@ namespace MapEditor.Edit
                 p[(a, c)] = 0;
                 p[(b, c)] = 1;
                 foreach (var t in candidates)
+                {
                     p[(t, c)] = 0.5;
+                }
             }
             for (int iteration = 0; iteration < 30; iteration++)
             {
@@ -140,7 +164,9 @@ namespace MapEditor.Edit
                         weight += w;
                     }
                     if (weight > 0)
+                    {
                         next[(t, c)] = sum / weight;
+                    }
                 }
                 p = next;
             }
@@ -158,15 +184,23 @@ namespace MapEditor.Edit
                 {
                     var value = p[(t, c)];
                     if (value > 0.5)
+                    {
                         pattern |= 1 << c;
+                    }
+
                     confidence = Math.Min(confidence, Math.Abs(value * 2 - 1));
                 }
                 set.Patterns[pattern].Add((t, total.GetValueOrDefault(t), Math.Round(confidence, 2)));
                 if (confidence >= MinConfidence)
+                {
                     set.PatternOf[t] = pattern;
+                }
             }
             foreach (var list in set.Patterns)
+            {
                 list.Sort((l, r) => r.Count.CompareTo(l.Count));
+            }
+
             return set;
         }
 
@@ -181,10 +215,16 @@ namespace MapEditor.Edit
             bool IsB(int x, int y)
             {
                 if (map.Contains(x, y) == false)
+                {
                     return true;
+                }
+
                 var i = y * map.Width + x;
                 if (paint[i] != null)
+                {
                     return paint[i].Value;
+                }
+
                 return PatternOf.TryGetValue(map.Tiles[i], out var pattern) && pattern != 0;
             }
 
@@ -194,13 +234,18 @@ namespace MapEditor.Edit
                 for (int x = 0; x < map.Width; x++)
                 {
                     if (paint[y * map.Width + x] == null)
+                    {
                         continue;
+                    }
+
                     for (int dy = -1; dy <= 1; dy++)
                     {
                         for (int dx = -1; dx <= 1; dx++)
                         {
                             if (map.Contains(x + dx, y + dy))
+                            {
                                 region.Add((x + dx, y + dy));
+                            }
                         }
                     }
                 }
@@ -217,16 +262,23 @@ namespace MapEditor.Edit
                     for (int c = 0; c < 4; c++)
                     {
                         if (Shared[c].All(s => IsB(x + s.Dx, y + s.Dy)))
+                        {
                             pattern |= 1 << c;
+                        }
                     }
                     if (PatternOf.TryGetValue(current, out var had) && had == pattern)
+                    {
                         continue;
+                    }
+
                     result.Add((x, y, (ushort)Choose(pattern, x, y, seed, tileCount)));
                 }
                 else if (paint[i] == false || (PatternOf.TryGetValue(current, out var had) && had != 0))
                 {
                     if (current != A)
+                    {
                         result.Add((x, y, (ushort)A));
+                    }
                 }
             }
             return result;
@@ -249,7 +301,10 @@ namespace MapEditor.Edit
             foreach (var (tile, count, _) in tiles)
             {
                 if (hash < (ulong)count)
+                {
                     return tile;
+                }
+
                 hash -= (ulong)count;
             }
             return tiles[0].Tile;

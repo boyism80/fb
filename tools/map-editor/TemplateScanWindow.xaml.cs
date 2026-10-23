@@ -83,22 +83,31 @@ namespace MapEditor
         private void OnCheckAll(object sender, RoutedEventArgs e)
         {
             foreach (var candidate in _candidates)
+            {
                 candidate.Checked = true;
+            }
         }
 
         private void OnUncheckAll(object sender, RoutedEventArgs e)
         {
             foreach (var candidate in _candidates)
+            {
                 candidate.Checked = false;
+            }
         }
 
         private void OnRegister(object sender, RoutedEventArgs e)
         {
             var chosen = _candidates.Where(c => c.Checked && string.IsNullOrWhiteSpace(c.Template.Name) == false).Select(c => c.Template).ToList();
             if (chosen.Count == 0)
+            {
                 return;
+            }
+
             if (MessageBox.Show(this, $"템플릿 {chosen.Count}개를 등록할까요?\n{_editor.TemplatePath}", Title, MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            {
                 return;
+            }
 
             _editor.AddTemplates(chosen);
             _candidates = _candidates.Where(c => chosen.Contains(c.Template) == false).ToList();

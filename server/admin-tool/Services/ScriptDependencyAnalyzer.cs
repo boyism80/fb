@@ -67,13 +67,24 @@ namespace AdminTool.Services
                     var module = match.Groups[1].Value.Trim();
                     var depPath = ModuleToRelativePath(module);
                     if (depPath == null)
+                    {
                         continue;
+                    }
+
                     if (!byPath.ContainsKey(depPath))
+                    {
                         continue;
+                    }
+
                     if (string.Equals(depPath, path, StringComparison.OrdinalIgnoreCase))
+                    {
                         continue;
+                    }
+
                     if (deps[path].Add(depPath))
+                    {
                         incoming[path]++;
+                    }
                 }
             }
 
@@ -81,12 +92,16 @@ namespace AdminTool.Services
             // deps[path] stores dependencies of path; reverse for queue.
             var dependents = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             foreach (var path in byPath.Keys)
+            {
                 dependents[path] = new List<string>();
+            }
 
             foreach (var (path, pathDeps) in deps)
             {
                 foreach (var dep in pathDeps)
+                {
                     dependents[dep].Add(path);
+                }
             }
 
             var ready = byPath.Keys
@@ -142,7 +157,9 @@ namespace AdminTool.Services
         public static string NormalizeRelativePath(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
+            {
                 return null;
+            }
 
             var normalized = path.Trim().Replace('\\', '/');
             while (normalized.StartsWith('/'))
@@ -150,14 +167,19 @@ namespace AdminTool.Services
                 normalized = normalized[1..];
             }
             if (normalized.StartsWith("scripts/", StringComparison.OrdinalIgnoreCase))
+            {
                 normalized = normalized["scripts/".Length..];
+            }
+
             return normalized;
         }
 
         public static string ModuleToRelativePath(string module)
         {
             if (string.IsNullOrWhiteSpace(module))
+            {
                 return null;
+            }
 
             var name = module.Trim().Replace('\\', '/');
             if (!name.StartsWith("lib.", StringComparison.OrdinalIgnoreCase) &&
@@ -167,9 +189,15 @@ namespace AdminTool.Services
             }
 
             if (name.StartsWith("lib.", StringComparison.OrdinalIgnoreCase))
+            {
                 name = "lib/" + name["lib.".Length..].Replace('.', '/');
+            }
+
             if (!name.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
+            {
                 name += ".lua";
+            }
+
             return NormalizeRelativePath(name);
         }
     }

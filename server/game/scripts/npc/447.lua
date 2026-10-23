@@ -32,11 +32,13 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, me:name() .. "님의 체력을 절반으로 깎을테니, 제가 드린 아이템 [웅담]을 사용하여 보세요.", { prev = false, next = true })
+            btn = me:dialog(npc, me:name() .. "님의 체력을 절반으로 깎을테니, 제가 드린 아이템 [웅담]을 사용하여 보세요.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "아이템을 사용하시려면, 목도를 착용했듯 알파벳 i를 눌러 인벤토리를 열고, 해당 아이템을 클릭하시면 됩니다.", { prev = false, next = true })
+            btn = me:dialog(npc, "아이템을 사용하시려면, 목도를 착용했듯 알파벳 i를 눌러 인벤토리를 열고, 해당 아이템을 클릭하시면 됩니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -52,11 +54,13 @@ return {
         if step == 8 then
             local full_hp = (me:hp() and me:maxhp() and me:hp() >= me:maxhp())
             if not full_hp then
-                local btn = me:dialog(npc, "인벤토리는 i를 이용해 열 수 있고, [웅담]을 더블클릭하면 아이템을 사용하실 수 있습니다.", { prev = false, next = true })
+                local btn = me:dialog(npc, "인벤토리는 i를 이용해 열 수 있고, [웅담]을 더블클릭하면 아이템을 사용하실 수 있습니다.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "혹은 u를 누르고, 사용할 아이템의 알파벳을 입력하거나, 혹은 z키를 누르고 사용할 아이템을 지정하실 수도 있습니다.", { prev = false, next = true })
+                local btn = me:dialog(npc, "혹은 u를 누르고, 사용할 아이템의 알파벳을 입력하거나, 혹은 z키를 누르고 사용할 아이템을 지정하실 수도 있습니다.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -67,11 +71,13 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local btn = me:dialog(npc, "그렇다면 이번에는 [조합]을 하는 방법을 알려 드리겠습니다. 조금 어려워도 잘 따라 오실 수 있으실겁니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "그렇다면 이번에는 [조합]을 하는 방법을 알려 드리겠습니다. 조금 어려워도 잘 따라 오실 수 있으실겁니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local btn = me:dialog(npc, "이번에는 제가 [동동주]와 [막걸리]를 드릴테니, 해당 아이템을 조합 해 보도록 하겠습니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "이번에는 제가 [동동주]와 [막걸리]를 드릴테니, 해당 아이템을 조합 해 보도록 하겠습니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -94,7 +100,8 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "이제 직업의길로 보내드릴테니, 어떤 직업을 선택하실지 곰곰히 생각해 보시길 바랄게요. 그럼 안녕히~!", { prev = false, next = true })
+                local btn = me:dialog(npc, "이제 직업의길로 보내드릴테니, 어떤 직업을 선택하실지 곰곰히 생각해 보시길 바랄게요. 그럼 안녕히~!",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -139,7 +146,8 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local btn = me:dialog(npc, "[쉬프트(SHIFT)]와 [알파벳 i]를 동시에 클릭해 조합창을 띄우고, 그 곳에 동동주와 막걸리를 추가해 조합하시면 됩니다.", { prev = false, next = true })
+            local btn = me:dialog(npc, "[쉬프트(SHIFT)]와 [알파벳 i]를 동시에 클릭해 조합창을 띄우고, 그 곳에 동동주와 막걸리를 추가해 조합하시면 됩니다.",
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

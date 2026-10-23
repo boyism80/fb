@@ -87,7 +87,7 @@ return {
 
 
         if q:step() == 1 then
-            local materials = {['고대마법서\'상'] = 1, ['고대마법서\'하'] = 1}
+            local materials = { ['고대마법서\'상'] = 1, ['고대마법서\'하'] = 1 }
             if not me:has_items(materials) then
                 me:dialog(npc, '아직 고대마법서를 찾지 못하셨군요.', { prev = false, next = false })
                 return
@@ -121,7 +121,7 @@ return {
         end
 
         if q:step() == 2 then
-            local materials = {['암흑왕의봉인'] = 1}
+            local materials = { ['암흑왕의봉인'] = 1 }
             if not me:has_items(materials) then
                 me:dialog(npc, '아직 암흑왕의봉인을 찾지 못하셨군요.', { prev = false, next = false })
                 return

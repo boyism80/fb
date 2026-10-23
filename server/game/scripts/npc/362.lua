@@ -72,7 +72,8 @@ local function run_samjit(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "여기 있네요. 이 채집통엔 나비가 10마리 까지 들어가니까.. 많이 잡아서 명주하고 명지에게 잘 전해주세요.", { prev = false, next = true })
+        btn = me:dialog(npc, "여기 있네요. 이 채집통엔 나비가 10마리 까지 들어가니까.. 많이 잡아서 명주하고 명지에게 잘 전해주세요.",
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -126,11 +127,13 @@ local function run_junghwa(me, npc)
             me:dialog(npc, "준비중입니다.", { prev = false, next = false })
             return
         end
-        local button = me:dialog(npc, "전 대청소가 정말 싫어요. 발명할때 사용할 재료들은 잡동사니가 아니란 말이에요! 저에겐 꼭 필요한건데도 몽연이형은 다 치우라고 하고..", { prev = false, next = true })
+        local button = me:dialog(npc, "전 대청소가 정말 싫어요. 발명할때 사용할 재료들은 잡동사니가 아니란 말이에요! 저에겐 꼭 필요한건데도 몽연이형은 다 치우라고 하고..",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        button = me:dialog(npc, "음.. 그런데 몽연이형이 다른 집들에서 이것저것 받아달라고 했죠? 그거.. 저에게 주시면 제가 좋은 아이템 드릴 수 있는데...", { prev = false, next = true })
+        button = me:dialog(npc, "음.. 그런데 몽연이형이 다른 집들에서 이것저것 받아달라고 했죠? 그거.. 저에게 주시면 제가 좋은 아이템 드릴 수 있는데...",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -148,7 +151,9 @@ local function run_junghwa(me, npc)
 
     if me:has_items("연", 1) and me:has_items("깨진김장독", 1) and me:has_items("찌그러진냄비", 1) and me:has_items("널", 1) and me:has_items("실패", 1) then
         local reward_name = OSEONREUNG_REWARDS[math.random(1, 6)]
-        local button = me:dialog(npc, "연, 실패, 깨진김장독, 찌그러진냄비, 널을 가지고 계시군요! 그걸 저에게 주시면.. " .. name_with(reward_name, '을', '를') .. " 드릴 수 있는데...", { prev = false, next = true })
+        local button = me:dialog(npc,
+            "연, 실패, 깨진김장독, 찌그러진냄비, 널을 가지고 계시군요! 그걸 저에게 주시면.. " .. name_with(reward_name, '을', '를') .. " 드릴 수 있는데...",
+            { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -159,7 +164,8 @@ local function run_junghwa(me, npc)
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then
-            me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 받을 수 없어요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
+            me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 받을 수 없어요. 자리 좀 비우고 다시 오세요.",
+                { prev = false, next = false })
             return
         end
         q:progress(1)
@@ -172,11 +178,13 @@ local function run_junghwa(me, npc)
         return
     end
 
-    local button = me:dialog(npc, "전 대청소가 정말 싫어요. 발명할때 사용할 재료들은 잡동사니가 아니란 말이에요! 저에겐 꼭 필요한건데도 몽연이형은 다 치우라고 하고..", { prev = false, next = true })
+    local button = me:dialog(npc, "전 대청소가 정말 싫어요. 발명할때 사용할 재료들은 잡동사니가 아니란 말이에요! 저에겐 꼭 필요한건데도 몽연이형은 다 치우라고 하고..",
+        { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    button = me:dialog(npc, "음.. 그런데 몽연이형이 다른 집들에서 이것저것 받아달라고 했죠? 그거.. 저에게 주시면 제가 좋은 아이템 드릴 수 있는데...", { prev = false, next = true })
+    button = me:dialog(npc, "음.. 그런데 몽연이형이 다른 집들에서 이것저것 받아달라고 했죠? 그거.. 저에게 주시면 제가 좋은 아이템 드릴 수 있는데...",
+        { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -244,7 +252,8 @@ local function run_seotdal(me, npc)
             return
         end
         if not given then
-            me:dialog(npc, "이미 선물을 가지고 계신 것 같아요. 김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.", { prev = false, next = false })
+            me:dialog(npc, "이미 선물을 가지고 계신 것 같아요. 김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.",
+                { prev = false, next = false })
             return
         end
         me:dialog(npc, "여기 있어요. 김장김치는 촌장부인에게, 곶감은 오단미에게, 말린생선은 백남신에게 전해주세요.", { prev = false, next = false })

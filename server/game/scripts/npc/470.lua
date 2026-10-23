@@ -2,7 +2,8 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 local function do_sub8_start(me, npc)
-    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
+    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
+        { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -113,14 +114,16 @@ return {
                     return
                 end
                 ::NPC_470_0031::
-                b = me:dialog(npc, "흠, 마침 좋은 생각을 하나 떠올리셨다. 지금 흉악해진 원숭이들로부터 우리 원숭이들도 몸을 지켜야만하시지.", { prev = true, next = true })
+                b = me:dialog(npc, "흠, 마침 좋은 생각을 하나 떠올리셨다. 지금 흉악해진 원숭이들로부터 우리 원숭이들도 몸을 지켜야만하시지.",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
                 if b == DIALOG_RESULT.PREV then
                     goto NPC_470_0030
                 end
-                b = me:dialog(npc, "해서 나는 우리 원숭이들이 스스로를 지키실 수 있도록 무장을 하실 필요가 있다고 생각하신다. 인간들처럼 말이시다.", { prev = false, next = true })
+                b = me:dialog(npc, "해서 나는 우리 원숭이들이 스스로를 지키실 수 있도록 무장을 하실 필요가 있다고 생각하신다. 인간들처럼 말이시다.",
+                    { prev = false, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -137,11 +140,13 @@ return {
                     return
                 end
                 ::NPC_470_0040::
-                local b = me:dialog(npc, "정말 수고하셨다. 멋진 무기들이시다. 이것을 기반으로 우리 원숭이들도 스스로를 지키실 수 있는 힘을 얻으셨다.", { prev = false, next = true })
+                local b = me:dialog(npc, "정말 수고하셨다. 멋진 무기들이시다. 이것을 기반으로 우리 원숭이들도 스스로를 지키실 수 있는 힘을 얻으셨다.",
+                    { prev = false, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
-                b = me:dialog(npc, "걱정하지 않으셔도 좋으시다. 인간들과 싸우지 않으실 계획이시다. 자, 그러면 이 기쁜 소식을 참원왕께도 빨리 전해주셔야한다.", { prev = false, next = true })
+                b = me:dialog(npc, "걱정하지 않으셔도 좋으시다. 인간들과 싸우지 않으실 계획이시다. 자, 그러면 이 기쁜 소식을 참원왕께도 빨리 전해주셔야한다.",
+                    { prev = false, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end

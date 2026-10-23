@@ -80,7 +80,8 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "토끼나 다람쥐 앞에 가서 알파벳 [a]나 [스페이스바]를 누르면 무기를 휘두를 수 있답니다.", { prev = false, next = true })
+                local btn = me:dialog(npc, "토끼나 다람쥐 앞에 가서 알파벳 [a]나 [스페이스바]를 누르면 무기를 휘두를 수 있답니다.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -103,7 +104,8 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "이처럼 바람의나라의 세계에셔는, 몬스터를 잡고 경험치를 얻어 성장하실 수 있답니다.", { prev = false, next = true })
+                local btn = me:dialog(npc, "이처럼 바람의나라의 세계에셔는, 몬스터를 잡고 경험치를 얻어 성장하실 수 있답니다.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -115,13 +117,15 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "이러한 드랍 아이템인 [도토리]와 [토끼고기]를 각각 10개씩 모아보겠습니다. 부족한 아이템을 모아, 10개를 채워주세요.", { prev = false, next = true })
+                local btn = me:dialog(npc, "이러한 드랍 아이템인 [도토리]와 [토끼고기]를 각각 10개씩 모아보겠습니다. 부족한 아이템을 모아, 10개를 채워주세요.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 q:step(6)
             else
-                me:dialog(npc, string.format("토끼와 다람쥐를 각각 5마리씩 잡아보세요.\n다람쥐 : %d\n토끼   : %d", cnt_squirrel, cnt_rabbit), { prev = false, next = false })
+                me:dialog(npc, string.format("토끼와 다람쥐를 각각 5마리씩 잡아보세요.\n다람쥐 : %d\n토끼   : %d", cnt_squirrel, cnt_rabbit),
+                    { prev = false, next = false })
             end
             return
         end
@@ -136,7 +140,8 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "제가 드린 임무를 훌륭하게 수행하셨으니, 조그마한 선물을 드릴게요. 기쁘게 받아주셨으면 해요.", { prev = false, next = true })
+                local btn = me:dialog(npc, "제가 드린 임무를 훌륭하게 수행하셨으니, 조그마한 선물을 드릴게요. 기쁘게 받아주셨으면 해요.",
+                    { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -158,7 +163,9 @@ return {
                 local imeat = me:item("토끼고기")
                 local n_dotori = (idotori and idotori:count()) or 0
                 local n_meat = (imeat and imeat:count()) or 0
-                me:dialog(npc, string.format("도토리 (%d/10)개, 토끼고기 (%d/10)개 모으셨네요.\n[*TIP] 키보드의 쉼표 [,]키를 눌러 아이템을 주울 수 있다.", n_dotori, n_meat), { prev = false, next = false })
+                me:dialog(npc,
+                    string.format("도토리 (%d/10)개, 토끼고기 (%d/10)개 모으셨네요.\n[*TIP] 키보드의 쉼표 [,]키를 눌러 아이템을 주울 수 있다.", n_dotori,
+                        n_meat), { prev = false, next = false })
             end
             return
         end

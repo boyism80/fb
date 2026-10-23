@@ -123,11 +123,14 @@ namespace Internal.Services
                     throw new Exception($"user {request.Master} not found");
 
                 if (actor.Name == request.Member)
+                {
                     throw new LogicException(ErrorCode.CannotGroupSelf);
+                }
 
                 if (await _sessionService.Get(world, actor.Name) == null)
+                {
                     throw new Exception($"user {request.Master} is offline");
-
+                }
 
                 var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
@@ -139,7 +142,9 @@ namespace Internal.Services
                     throw new Exception($"user option {request.Member} not found");
 
                 if (memberSetting.SuperHide && target.Role > actor.Role)
+                {
                     throw new LogicException(ErrorCode.Offline);
+                }
 
                 // Lock in uid order so a simultaneous Create(A, B) and Create(B, A)
                 // can't acquire the two character locks in opposite order.
@@ -156,22 +161,32 @@ namespace Internal.Services
                 await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, actorSync);
                 await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, targetSync);
                 if (actorSync.Group != null)
+                {
                     throw new LogicException(ErrorCode.GroupAlreadyJoined);
+                }
 
                 if (targetSync.Group != null)
+                {
                     throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+                }
 
                 var masterSetting = await _dbContext.Option.Get(world, actor.Id) ??
                     throw new Exception($"user option {request.Master} not found");
 
                 if (masterSetting.Group == false)
+                {
                     throw new LogicException(ErrorCode.DisabledGroup);
+                }
 
                 if (memberSetting.Group == false)
+                {
                     throw new LogicException(ErrorCode.DisabledGroupTarget);
+                }
 
                 if (request.Id == 0 || SnowflakeId.GameWorld(request.Id) != world)
+                {
                     throw new LogicException(ErrorCode.Unhandled);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(request.Id));
 
@@ -261,11 +276,14 @@ namespace Internal.Services
                     throw new Exception($"user {request.Master} not found");
 
                 if (actor.Name == request.Member)
+                {
                     throw new LogicException(ErrorCode.CannotGroupSelf);
+                }
 
                 if (await _sessionService.Get(world, actor.Name) == null)
+                {
                     throw new Exception($"user {request.Master} is offline");
-
+                }
 
                 var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
@@ -277,7 +295,9 @@ namespace Internal.Services
                     throw new Exception($"user option {request.Member} not found");
 
                 if (memberSetting.SuperHide && target.Role > actor.Role)
+                {
                     throw new LogicException(ErrorCode.Offline);
+                }
 
                 // Lock in uid order to avoid a crossed-order deadlock with a
                 // concurrent call on the same pair.
@@ -292,20 +312,28 @@ namespace Internal.Services
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (actorSync.Group == null)
+                {
                     throw new LogicException(ErrorCode.GroupNotJoined);
+                }
 
                 await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, targetSync);
                 if (targetSync.Group != null)
+                {
                     throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+                }
 
                 var masterSetting = await _dbContext.Option.Get(world, actor.Id) ??
                     throw new Exception($"user option {request.Master} not found");
 
                 if (masterSetting.Group == false)
+                {
                     throw new LogicException(ErrorCode.DisabledGroup);
+                }
 
                 if (memberSetting.Group == false)
+                {
                     throw new LogicException(ErrorCode.DisabledGroupTarget);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actorSync.Group.Value));
 
@@ -358,10 +386,14 @@ namespace Internal.Services
 
                 // Leave group - character must not be master
                 if (character.Id == group.Master)
+                {
                     throw new LogicException(ErrorCode.NotGroupMaster); // Use destroy endpoint instead
+                }
 
                 if (!group.Members.Contains(character.Id))
+                {
                     throw new LogicException(ErrorCode.GroupNotJoined);
+                }
 
                 var master = await _dbContext.Character.Get(world, group.Master) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -439,7 +471,9 @@ namespace Internal.Services
 
                 // Prevent self-kicking
                 if (actor.Name == target.Name)
+                {
                     throw new LogicException(ErrorCode.CannotGroupSelf);
+                }
 
 
                 // Lock in uid order to avoid a crossed-order deadlock with a
@@ -456,11 +490,15 @@ namespace Internal.Services
 
                 // Check if actor is in a group
                 if (actorSync.Group == null)
+                {
                     throw new LogicException(ErrorCode.GroupNotJoined);
+                }
 
                 // Check if target is in the same group
                 if (targetSync.Group != actorSync.Group)
+                {
                     throw new LogicException(ErrorCode.GroupNotJoined);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actorSync.Group.Value));
 
@@ -514,7 +552,9 @@ namespace Internal.Services
                     while (true)
                     {
                         foreach (var uid in lockUids)
+                        {
                             characterLocks.Add(await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid)));
+                        }
 
                         sync = await _dbContext.CharacterRealtimeState.Get(world, character.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -529,16 +569,23 @@ namespace Internal.Services
 
                         // Destroy group - character must be master
                         if (group.Master != character.Id)
+                        {
                             throw new LogicException(ErrorCode.NotGroupMaster);
+                        }
 
                         var required = new SortedSet<uint>(group.Members) { character.Id };
                         if (required.SetEquals(lockUids))
+                        {
                             break;
+                        }
 
                         await groupLock.DisposeAsync();
                         groupLock = null;
                         foreach (var @lock in characterLocks)
+                        {
                             await @lock.DisposeAsync();
+                        }
+
                         characterLocks.Clear();
 
                         lockUids = required;
@@ -588,9 +635,14 @@ namespace Internal.Services
                 finally
                 {
                     if (groupLock != null)
+                    {
                         await groupLock.DisposeAsync();
+                    }
+
                     foreach (var @lock in characterLocks)
+                    {
                         await @lock.DisposeAsync();
+                    }
                 }
             }
             catch (LogicException e)
@@ -659,11 +711,14 @@ namespace Internal.Services
                     throw new Exception($"user {request.Master} not found");
 
                 if (actor.Name == request.Member)
+                {
                     throw new LogicException(ErrorCode.CannotGroupSelf);
+                }
 
                 if (await _sessionService.Get(world, actor.Name) == null)
+                {
                     throw new Exception($"user {request.Master} is offline");
-
+                }
 
                 var targetSession = await _sessionService.Get(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
@@ -684,7 +739,9 @@ namespace Internal.Services
                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                 if (actorSync.Group == null)
+                {
                     throw new LogicException(ErrorCode.GroupNotJoined);
+                }
 
                 await using var _3 = await _distributedLock.Lock(world, Group.DistributedLockKey(actorSync.Group.Value));
 
@@ -701,19 +758,27 @@ namespace Internal.Services
                         throw new Exception($"user option {request.Member} not found");
 
                     if (memberSetting.SuperHide && target.Role > actor.Role)
+                    {
                         throw new LogicException(ErrorCode.Offline);
+                    }
 
                     if (targetSync.Group != null)
+                    {
                         throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+                    }
 
                     var masterSetting = await _dbContext.Option.Get(world, actor.Id) ??
                         throw new Exception($"user option {request.Master} not found");
 
                     if (masterSetting.Group == false)
+                    {
                         throw new LogicException(ErrorCode.DisabledGroup);
+                    }
 
                     if (memberSetting.Group == false)
+                    {
                         throw new LogicException(ErrorCode.DisabledGroupTarget);
+                    }
 
                     return await EnterInternal(world, actor, target, actorSync, targetSync, request.Host);
                 }
@@ -748,14 +813,20 @@ namespace Internal.Services
                 throw new LogicException(ErrorCode.GroupNotFound);
 
             if (group.Master != actor.Id)
+            {
                 throw new LogicException(ErrorCode.NotGroupMaster);
+            }
 
             if (group.Members.Contains(target.Id))
+            {
                 throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+            }
 
             // Members excludes the master.
             if (group.Members.Count + 1 >= Fb.Model.ConstValue.Group.MaxMember)
+            {
                 throw new LogicException(ErrorCode.GroupFullMember);
+            }
 
             targetSync.Group = group.Id;
             _dbContext.CharacterRealtimeState.Set(world, targetSync);
@@ -798,11 +869,15 @@ namespace Internal.Services
 
             // Check if actor is the group master
             if (group.Master != actor.Id)
+            {
                 throw new LogicException(ErrorCode.NotGroupMaster);
+            }
 
             // Check if target is a member of the group
             if (!group.Members.Contains(target.Id))
+            {
                 throw new LogicException(ErrorCode.GroupNotJoined);
+            }
 
             group.Members.Remove(target.Id);
             group.UpdatedDate = DateTime.UtcNow;

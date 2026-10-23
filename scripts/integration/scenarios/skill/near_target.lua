@@ -14,7 +14,7 @@ local CASES = {
         position = function(_, _, state) return state.mob.position end,
         pre = function(caster, _, state)
             state.mob = caster:spawn_monster_relative("다람쥐", 0, 2)
-            caster:spawn_monsters_relative("다람쥐", {{0, 1}, {-1, 2}, {1, 2}, {0, 3}})
+            caster:spawn_monsters_relative("다람쥐", { { 0, 1 }, { -1, 2 }, { 1, 2 }, { 0, 3 } })
             caster:set_current_hp_mp(1000, 1000)
             state.expected_hp = caster:hp()
             state.expected_mp = caster:mp() - caster:mp()
@@ -33,7 +33,7 @@ local CASES = {
         position = function(_, _, state) return state.mob.position end,
         pre = function(caster, _, state)
             state.mob = caster:spawn_monster_relative("다람쥐", 0, 2)
-            caster:spawn_monsters_relative("다람쥐", {{0, 1}, {-1, 2}, {1, 2}, {0, 3}})
+            caster:spawn_monsters_relative("다람쥐", { { 0, 1 }, { -1, 2 }, { 1, 2 }, { 0, 3 } })
             caster:set_current_hp_mp(1000, 1000)
             state.expected_hp = caster:hp()
             state.expected_mp = caster:mp() - 580

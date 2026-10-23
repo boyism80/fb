@@ -11,7 +11,9 @@ namespace MapEditor.Format
             var start = shortCount ? 2 : 4;
             var entries = new ushort[count];
             for (int i = 0; i < count; i++)
+            {
                 entries[i] = (ushort)(BitConverter.ToUInt16(bytes, start + i * 2) & 0x7FFF);
+            }
 
             return entries;
         }

@@ -4,11 +4,11 @@ local spell = require('lib.spell')
 
 return {
     on_cast = function(me, sp)
-    	local damage = 300
+        local damage = 300
         local mp = 180
         local sound = 40
         local effect = 45
-        spell.damage_near(me, sp, {damage=damage, mp=mp, sound=sound, effect=effect})
+        spell.damage_near(me, sp, { damage = damage, mp = mp, sound = sound, effect = effect })
     end,
 
     -- on_buff = function(me, sp)

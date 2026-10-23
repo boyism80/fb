@@ -44,7 +44,9 @@ namespace Internal.Services
                         await SendNoticesAsync(redis);
 
                         if (await redis.Connection.StringSetAsync(CleanupLockKey, "1", CleanupLockTtl, When.NotExists))
+                        {
                             await _maintenanceService.RemoveExpiredSchedules(DateTime.UtcNow);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -65,17 +67,23 @@ namespace Internal.Services
             {
                 var noticeMinutes = schedule.NoticeMinutes.Where(x => x > 0).ToList();
                 if (noticeMinutes.Count == 0)
+                {
                     continue;
+                }
 
                 var start = MaintenanceService.FindNextStart(schedule, now, TimeSpan.FromMinutes(noticeMinutes.Max()));
                 if (start == null)
+                {
                     continue;
+                }
 
                 var remain = start.Value - now;
                 var minutes = noticeMinutes.Where(x => remain <= TimeSpan.FromMinutes(x)).Min();
                 var claimKey = $"{NoticeKeyPrefix}{schedule.Id}:{start.Value.Ticks}:{minutes}";
                 if (!await redis.Connection.StringSetAsync(claimKey, "1", remain + NoticeClaimRetention, When.NotExists))
+                {
                     continue;
+                }
 
                 var remainMinutes = (int)Math.Ceiling(remain.TotalMinutes);
                 var when = remainMinutes >= 60 && remainMinutes % 60 == 0 ? $"{remainMinutes / 60}시간" : $"{remainMinutes}분";
@@ -96,7 +104,10 @@ namespace Internal.Services
                     if (label == MaintenanceLabel.All)
                     {
                         foreach (var world in _redisService.GetConfiguredWorlds())
+                        {
                             routes.Add(AmqpRoute.Home("global", world));
+                        }
+
                         routes.Add(AmqpRoute.Home("global", null));
                     }
                     else if (label == MaintenanceLabel.Cross)
@@ -110,7 +121,9 @@ namespace Internal.Services
                 }
 
                 foreach (var route in routes)
+                {
                     await _rabbitMqService.PublishAsync(message, AmqpRoute.Exchange, route);
+                }
             }
         }
     }

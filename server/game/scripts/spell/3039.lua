@@ -8,7 +8,7 @@ return {
         local mp = 470
         local sound = 49
         local effect = 26
-        spell.damage_near(me, sp, {damage=damage, mp=mp, sound=sound, effect=effect})
+        spell.damage_near(me, sp, { damage = damage, mp = mp, sound = sound, effect = effect })
     end,
 
     -- on_buff = function(me, sp)

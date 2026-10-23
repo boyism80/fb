@@ -27,7 +27,9 @@ namespace MapEditor.Table
 
             var temp = path + ".tmp";
             using (var stream = new FileStream(temp, FileMode.Create, FileAccess.Write))
+            {
                 workbook.Write(stream, leaveOpen: true);
+            }
 
             File.Copy(temp, path, overwrite: true);
             File.Delete(temp);
@@ -47,17 +49,27 @@ namespace MapEditor.Table
         {
             var cell = row?.GetCell(column);
             if (cell == null)
+            {
                 return "";
+            }
 
             var type = cell.CellType == CellType.Formula ? cell.CachedFormulaResultType : cell.CellType;
             if (type == CellType.Numeric)
+            {
                 return cell.NumericCellValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
             else if (type == CellType.String)
+            {
                 return cell.StringCellValue ?? "";
+            }
             else if (type == CellType.Boolean)
+            {
                 return cell.BooleanCellValue ? "true" : "false";
+            }
             else
+            {
                 return "";
+            }
         }
 
         /// <summary>
@@ -69,7 +81,10 @@ namespace MapEditor.Table
             {
                 var existing = row.GetCell(column);
                 if (existing != null)
+                {
                     row.RemoveCell(existing);
+                }
+
                 return;
             }
 
@@ -78,15 +93,24 @@ namespace MapEditor.Table
             var old = row.GetCell(column);
             var style = old?.CellStyle;
             if (old != null)
+            {
                 row.RemoveCell(old);
+            }
 
             var cell = row.CreateCell(column);
             if (style != null)
+            {
                 cell.CellStyle = style;
+            }
+
             if (numeric && double.TryParse(value, out var number))
+            {
                 cell.SetCellValue(number);
+            }
             else
+            {
                 cell.SetCellValue(value);
+            }
         }
     }
 }

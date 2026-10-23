@@ -18,7 +18,8 @@ return {
                 return
             end
             if sel == 1 then
-                local dialog_btn = me:dialog(npc, "지남침은 나침반이라고도 하는 물건으로 안에 들어있는 침이 언제 어디서든 남북을 가리키고 있다오.", { prev = false, next = false })
+                local dialog_btn = me:dialog(npc, "지남침은 나침반이라고도 하는 물건으로 안에 들어있는 침이 언제 어디서든 남북을 가리키고 있다오.",
+                    { prev = false, next = false })
                 if dialog_btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -33,7 +34,8 @@ return {
             end
             if sel == 2 then
                 ::NPC_562_0001::
-                local dialog_btn = me:dialog(npc, "지남침을 구하고 싶다고? 만드는것은 그렇게 어려운일이 아닐세. 시간도 별로 걸리지 않고.", { prev = true, next = true })
+                local dialog_btn = me:dialog(npc, "지남침을 구하고 싶다고? 만드는것은 그렇게 어려운일이 아닐세. 시간도 별로 걸리지 않고.",
+                    { prev = true, next = true })
                 if dialog_btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -41,7 +43,8 @@ return {
                     goto NPC_562_0000
                 end
                 ::NPC_562_0002::
-                dialog_btn = me:dialog(npc, "다만 그 재료가 상당히 희귀하기 때문에 지남침이 귀한것이지. 우선 자철석이 필요하다네.", { prev = true, next = true })
+                dialog_btn = me:dialog(npc, "다만 그 재료가 상당히 희귀하기 때문에 지남침이 귀한것이지. 우선 자철석이 필요하다네.",
+                    { prev = true, next = true })
                 if dialog_btn == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -49,7 +52,8 @@ return {
                     goto NPC_562_0001
                 end
                 ::NPC_562_0003::
-                dialog_btn = me:dialog(npc, "신기하게도 중국의 괴물중에 괴성들의 우두머리의 몸에 질좋은 자철석이 생긴다고 하더군.", { prev = true, next = true })
+                dialog_btn = me:dialog(npc, "신기하게도 중국의 괴물중에 괴성들의 우두머리의 몸에 질좋은 자철석이 생긴다고 하더군.",
+                    { prev = true, next = true })
                 if dialog_btn == DIALOG_RESULT.QUIT then
                     return
                 end

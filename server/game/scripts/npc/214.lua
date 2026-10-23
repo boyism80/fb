@@ -12,7 +12,8 @@ local EXCHANGES = {
 return {
     on_click = function(me, npc)
         ::NPC_214_COS001::
-        local sel = me:list(npc, '아함~ 졸려.... 무슨일로 왔는가? 난 바쁜사람이라네...', { '보물열쇠를 가지고 왔어요...', '하하.. 그냥 인사차...' }, { prev = false })
+        local sel = me:list(npc, '아함~ 졸려.... 무슨일로 왔는가? 난 바쁜사람이라네...', { '보물열쇠를 가지고 왔어요...', '하하.. 그냥 인사차...' },
+            { prev = false })
         if sel == nil then
             return
         end
@@ -56,6 +57,9 @@ return {
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(ex.item, '을', '를') .. ' 받을 수 없습니다.', { prev = false, next = false })
             return
         end
-        me:dialog(npc, '오호 ' .. name_with(ex.key, '을', '를') .. ' 정말로 가지고 왔구먼, 내 좋은 ' .. name_with(ex.clothes, '을', '를') .. ' 선물로 줌세나', { prev = false, next = false })
+        me:dialog(npc,
+            '오호 ' ..
+            name_with(ex.key, '을', '를') .. ' 정말로 가지고 왔구먼, 내 좋은 ' .. name_with(ex.clothes, '을', '를') .. ' 선물로 줌세나',
+            { prev = false, next = false })
     end
 }

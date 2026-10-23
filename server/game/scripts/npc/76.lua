@@ -54,7 +54,8 @@ return {
             q:step(1)
             me:push_achievement(ACHIEVEMENT_WATER, '좌선녀의 부탁을 들어주자.', 7, 1)
             ::NPC_76_COS005::
-            btn = me:dialog(npc, me:name() .. '님 정말 감사합니다. 부탁드릴 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', { prev = true, next = true })
+            btn = me:dialog(npc, me:name() .. '님 정말 감사합니다. 부탁드릴 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -69,7 +70,7 @@ return {
             return
         end
 
-        local materials = {['게등껍질'] = 1, ['게집게'] = 1, ['문어다리'] = 1, ['해마꼬리'] = 1}
+        local materials = { ['게등껍질'] = 1, ['게집게'] = 1, ['문어다리'] = 1, ['해마꼬리'] = 1 }
         if not me:has_items(materials) then
             me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', { prev = false, next = false })
             return

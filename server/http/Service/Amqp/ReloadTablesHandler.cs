@@ -57,7 +57,9 @@ namespace Http.Service.Amqp
             var baseTrimmed = baseUrl.TrimEnd('/');
             var allowed = (_configuration["TablePublish:DownloadBaseUrl"] ?? string.Empty).TrimEnd('/');
             if (allowed.Length == 0 || !string.Equals(baseTrimmed, allowed, StringComparison.Ordinal))
+            {
                 throw new InvalidOperationException($"table download url is not allowed: {baseUrl}");
+            }
 
             var downloaded = new List<(string Stem, byte[] Bytes)>();
 
@@ -74,7 +76,9 @@ namespace Http.Service.Amqp
 
                 var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
                 if (bytes.Length == 0)
+                {
                     throw new InvalidOperationException($"downloaded empty body: {url}");
+                }
 
                 downloaded.Add((stem, bytes));
             }
@@ -98,7 +102,9 @@ namespace Http.Service.Amqp
             {
                 foreach (var temp in tempPaths)
                 {
-                    try { File.Delete(temp); } catch { /* ignore cleanup errors */ }
+                    try
+                    { File.Delete(temp); }
+                    catch { /* ignore cleanup errors */ }
                 }
                 throw;
             }
@@ -113,9 +119,15 @@ namespace Http.Service.Amqp
         {
             var stem = name.Trim();
             if (stem.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
                 stem = stem[..^5];
+            }
+
             if (!SafeStem.IsMatch(stem))
+            {
                 throw new InvalidOperationException($"invalid table name in ReloadTables: {stem}");
+            }
+
             return stem;
         }
     }

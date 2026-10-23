@@ -130,7 +130,9 @@ namespace Http.Reepository
         protected override string OnDeleteMany(IReadOnlyList<FriendKey> keys)
         {
             if (keys.Count == 0)
+            {
                 return string.Empty;
+            }
 
             var conditions = keys.Select(k =>
                 $"(`user` = {k.User.Escape()} AND `friend_uid` = {k.FriendUid.Escape()})");

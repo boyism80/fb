@@ -23,12 +23,16 @@ namespace Http.Service
         {
             var redis = _redisService.GetDataConnection(world, shardIndex);
             if (redis == null)
+            {
                 return 0;
+            }
 
             var conn = redis.Connection;
             var keys = await conn.ScanKeysAsync(pattern, count);
             if (keys.Count > 0)
+            {
                 await conn.KeyDeleteAsync(keys.Select(x => new RedisKey(x)).ToArray());
+            }
 
             return keys.Count;
         }
@@ -73,7 +77,10 @@ namespace Http.Service
 
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
+            {
                 return false;
+            }
+
             var sessionKey = new SessionKey().Key;
             await redis.Connection.KeyDeleteAsync(new RedisKey(sessionKey));
             _logger.LogInformation("User sessions cleared");

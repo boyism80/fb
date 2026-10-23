@@ -13,7 +13,8 @@ return {
                 return
             end
             ::NPC_183_0002::
-            btn = me:dialog(npc, '아, 반갑네 내가 지금 뭘 좀 찾고 있느라 말이지. 실은 아내가 아이를 가졌는데 화기삼동초돈유합을 너무 먹고 싶다고 하는구만.', { prev = true, next = true })
+            btn = me:dialog(npc, '아, 반갑네 내가 지금 뭘 좀 찾고 있느라 말이지. 실은 아내가 아이를 가졌는데 화기삼동초돈유합을 너무 먹고 싶다고 하는구만.',
+                { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_183_0001
             end
@@ -28,7 +29,8 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            local sel = me:list(npc, '날 좀 도와주지 않겠는가?', { '물론입니다. 부인의 몸조리에나 신경쓰십시오.', '죄송합니다만 그런일까지 할 시간이 없군요.' }, { prev = false })
+            local sel = me:list(npc, '날 좀 도와주지 않겠는가?', { '물론입니다. 부인의 몸조리에나 신경쓰십시오.', '죄송합니다만 그런일까지 할 시간이 없군요.' },
+                { prev = false })
             if sel == nil or sel ~= 1 then
                 me:dialog(npc, '그렇다면 할 수 없군요..', { prev = false, next = false })
                 return
@@ -39,7 +41,8 @@ return {
                 return
             end
             me:push_achievement(31, '조왕의동생의 부탁을 들어주자.', 7, 1)
-            me:dialog(npc, '그럼 자네만 믿고 있겠네. 장안성의 푸줏간에 그 음식에 대해 잘 알고 있는 사람이 있다는 얘길 들은적이 있는데.. 혹시 참고가 될지 모르겠군.', { prev = false, next = false })
+            me:dialog(npc, '그럼 자네만 믿고 있겠네. 장안성의 푸줏간에 그 음식에 대해 잘 알고 있는 사람이 있다는 얘길 들은적이 있는데.. 혹시 참고가 될지 모르겠군.',
+                { prev = false, next = false })
             return
         end
 

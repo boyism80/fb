@@ -384,7 +384,9 @@ namespace MapEditor.ViewModel
             SelectAllCommand = new RelayCommand(_ =>
             {
                 if (Document != null)
+                {
                     SelectRect(0, 0, Document.Width - 1, Document.Height - 1, SelectMode.Replace);
+                }
             });
             ClearSelectionCommand = new RelayCommand(_ => ClearSelection());
             ToggleDoorCommand = new RelayCommand(_ => ToggleDoor(SelectedMapDoor));
@@ -394,13 +396,17 @@ namespace MapEditor.ViewModel
             RemoveDoorPairCommand = new RelayCommand(_ =>
             {
                 if (SelectedDoorPair != null && DoorTable.Pairs.Remove(SelectedDoorPair))
+                {
                     DoorDefinitionsChanged();
+                }
             });
             AddDoorModelCommand = new RelayCommand(_ => AddDoorModel());
             RemoveDoorModelCommand = new RelayCommand(_ =>
             {
                 if (SelectedDoorModel != null && DoorTable.Doors.Remove(SelectedDoorModel))
+                {
                     DoorDefinitionsChanged();
+                }
             });
             SaveDoorTableCommand = new RelayCommand(_ => SaveDoorTable());
             AddSpawnCommand = new RelayCommand<string>(AddSpawn);
@@ -409,24 +415,32 @@ namespace MapEditor.ViewModel
             {
                 var entry = SelectedNpc == null ? null : PickerWindow.Show("NPC 선택", NpcChoices, Assets);
                 if (entry != null)
+                {
                     SelectedNpc.Npc = entry.Id;
+                }
             });
             PickMobCommand = new RelayCommand(_ =>
             {
                 var entry = SelectedMob == null ? null : PickerWindow.Show("몹 선택", MobChoices, Assets);
                 if (entry != null)
+                {
                     SelectedMob.Mob = entry.Id;
+                }
             });
             PickWarpMapCommand = new RelayCommand(_ =>
             {
                 var entry = SelectedWarp == null ? null : PickerWindow.Show("목적지 맵 선택", MapChoices);
                 if (entry != null)
+                {
                     SelectedWarp.DestMap = entry.Id;
+                }
             });
             NpcDirectionCommand = new RelayCommand<string>(direction =>
             {
                 if (SelectedNpc != null)
+                {
                     SelectedNpc.Direction = direction;
+                }
             });
             OpenWarpDestinationCommand = new RelayCommand(_ => _ = OpenWarpDestination(SelectedWarp));
             DeleteEntityCommand = new RelayCommand(_ => RemoveEntity(SelectedEntity));
@@ -439,12 +453,16 @@ namespace MapEditor.ViewModel
             FocusValidationCommand = new RelayCommand<ValidationItem>(item =>
             {
                 if (item != null)
+                {
                     Jump(item.X, item.Y);
+                }
             });
             FocusDoorCommand = new RelayCommand<MapDoor>(door =>
             {
                 if (door != null)
+                {
                     Jump(door.X, door.Y);
+                }
             });
             ExitCommand = new RelayCommand(_ => Application.Current.MainWindow?.Close());
             NavigateBackCommand = new RelayCommand(_ => _ = Navigate(back: true));
@@ -516,7 +534,10 @@ namespace MapEditor.ViewModel
                 Shortcut("ShortcutEditor", "설정", "단축키 설정", "Ctrl+OemComma", () => ShortcutEditorRequested?.Invoke()),
             };
             foreach (var shortcut in Shortcuts)
+            {
                 shortcut.Text = user.Shortcuts.TryGetValue(shortcut.Id, out var text) ? text : shortcut.Default;
+            }
+
             ShortcutMap = Shortcuts.ToDictionary(s => s.Id);
         }
 
@@ -526,11 +547,15 @@ namespace MapEditor.ViewModel
         public bool RunShortcut(Gesture gesture, bool typing)
         {
             if (typing && gesture.TypesText)
+            {
                 return false;
+            }
 
             var shortcut = Shortcuts.FirstOrDefault(s => s.Gestures.Contains(gesture));
             if (shortcut == null)
+            {
                 return false;
+            }
 
             shortcut.Execute();
             return true;
@@ -561,14 +586,18 @@ namespace MapEditor.ViewModel
         private void RecordLocation()
         {
             if (Here is not NavLocation here)
+            {
                 return;
+            }
 
             var last = _back.Count > 0 ? _back[^1] : (NavLocation?)null;
             if (last is not NavLocation previous || previous.Map != here.Map || Math.Abs(previous.X - here.X) >= 3 || Math.Abs(previous.Y - here.Y) >= 3)
             {
                 _back.Add(here);
                 if (_back.Count > 100)
+                {
                     _back.RemoveAt(0);
+                }
             }
             _forward.Clear();
             OnPropertyChanged(nameof(CanNavigateBack));
@@ -589,7 +618,9 @@ namespace MapEditor.ViewModel
             var from = back ? _back : _forward;
             var to = back ? _forward : _back;
             if (Busy || from.Count == 0 || Here is not NavLocation here)
+            {
                 return;
+            }
 
             var target = from[^1];
             from.RemoveAt(from.Count - 1);
@@ -597,13 +628,18 @@ namespace MapEditor.ViewModel
             {
                 var entry = Maps.FirstOrDefault(m => m.Id == target.Map);
                 if (entry != null)
+                {
                     await OpenMap(entry, record: false);
+                }
 
                 // Cancelled at the save prompt or the file is gone: keep the entry for another try.
                 if (Document?.Id != target.Map)
                 {
                     if (entry != null)
+                    {
                         from.Add(target);
+                    }
+
                     OnPropertyChanged(nameof(CanNavigateBack));
                     OnPropertyChanged(nameof(CanNavigateForward));
                     return;
@@ -626,7 +662,9 @@ namespace MapEditor.ViewModel
             Task.Delay(300).ContinueWith(_ =>
             {
                 if (_loadingId == id)
+                {
                     LoadingVisible = true;
+                }
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
@@ -681,7 +719,9 @@ namespace MapEditor.ViewModel
             {
                 assetTasks.Add((version, LoadStep($"{version} 리소스", () => ClientAssets.Load(version, settings.ClientDirectory(version)))));
                 if (version != ClientVersion.v550 && ShowMissing550 && settings.IsEnabled(ClientVersion.v550))
+                {
                     assetTasks.Add((ClientVersion.v550, LoadStep("v550 리소스 (5.50에 없는 타일 표시용)", () => ClientAssets.Load(ClientVersion.v550, settings.ClientDirectory(ClientVersion.v550)))));
+                }
             }
 
             try
@@ -709,16 +749,24 @@ namespace MapEditor.ViewModel
                 OnPropertyChanged(nameof(MapChoices));
                 DoorTable = doors;
                 foreach (var pair in DoorTable.Pairs)
+                {
                     pair.PropertyChanged += (s, e) => DoorDefinitionsChanged();
+                }
+
                 foreach (var model in DoorTable.Doors)
+                {
                     model.PropertyChanged += (s, e) => DoorDefinitionsChanged();
+                }
+
                 DoorModelsView = new ListCollectionView(DoorTable.Doors)
                 {
                     Filter = item => OnlyMapDoors == false || (Document?.Doors.Any(d => d.Model == item) ?? false),
                 };
 
                 foreach (var id in ids)
+                {
                     Maps.Add(new MapEntry { Id = id, Name = _spawns.MapNames.Find(id) });
+                }
 
                 StatusText = $"맵 {Maps.Count}개";
             }
@@ -749,7 +797,9 @@ namespace MapEditor.ViewModel
             else
             {
                 foreach (var tab in User.LastTabs)
+                {
                     await OpenMap(Maps.FirstOrDefault(m => m.Id == tab.Map), record: false);
+                }
 
                 // Opening a tab stores the view of the tab it leaves, so the saved views are assigned afterwards.
                 Activate(OpenDocuments.FirstOrDefault(d => d.Id == User.LastActive) ?? OpenDocuments.FirstOrDefault());
@@ -757,7 +807,9 @@ namespace MapEditor.ViewModel
                 {
                     var document = OpenDocuments.FirstOrDefault(d => d.Id == tab.Map);
                     if (document == null)
+                    {
                         continue;
+                    }
 
                     document.ViewCenter = (tab.X, tab.Y);
                     document.Zoom = Math.Clamp(tab.Zoom, 0.25, 8);
@@ -796,7 +848,9 @@ namespace MapEditor.ViewModel
         private bool FilterMap(object item)
         {
             if (string.IsNullOrWhiteSpace(MapQuery))
+            {
                 return true;
+            }
 
             var entry = (MapEntry)item;
             return entry.Label.Contains(MapQuery.Trim(), StringComparison.OrdinalIgnoreCase);
@@ -810,7 +864,9 @@ namespace MapEditor.ViewModel
         private async void OnSelectedVersionChanged()
         {
             if (SelectedVersion == null)
+            {
                 return;
+            }
 
             if (SelectedVersion.Enabled == false)
             {
@@ -897,7 +953,9 @@ namespace MapEditor.ViewModel
         private void RefreshDoorModels()
         {
             if (DoorModelsView == null || DoorModelsView.IsEditingItem || DoorModelsView.IsAddingNew)
+            {
                 return;
+            }
 
             DoorModelsView.Refresh();
         }
@@ -915,7 +973,10 @@ namespace MapEditor.ViewModel
         private void OnSelectedMapDoorChanged()
         {
             if (SelectedMapDoor != null)
+            {
                 SelectedDoorModel = SelectedMapDoor.Model;
+            }
+
             OverlayInvalidated?.Invoke();
         }
 
@@ -933,7 +994,10 @@ namespace MapEditor.ViewModel
                 UpdateSelectionText();
             }
             if (entity != null)
+            {
                 SelectedEntity = entity;
+            }
+
             OverlayInvalidated?.Invoke();
         }
 
@@ -944,10 +1008,14 @@ namespace MapEditor.ViewModel
         public async Task OpenMap(MapEntry entry, bool record = true)
         {
             if (entry == null || CanOpen == false)
+            {
                 return;
+            }
 
             if (record && Document != null && Document.Id != entry.Id)
+            {
                 RecordLocation();
+            }
 
             var open = OpenDocuments.FirstOrDefault(d => d.Id == entry.Id);
             if (open != null)
@@ -989,7 +1057,9 @@ namespace MapEditor.ViewModel
         public void Activate(MapDocument document)
         {
             if (document == Document)
+            {
                 return;
+            }
 
             if (Document != null)
             {
@@ -1020,7 +1090,9 @@ namespace MapEditor.ViewModel
             UpdateSelectionText();
             RenderInvalidated?.Invoke();
             if (Document?.ViewCenter is (double x, double y))
+            {
                 CenterRequested?.Invoke(x, y);
+            }
         }
 
         /// <summary>
@@ -1029,27 +1101,39 @@ namespace MapEditor.ViewModel
         public bool CloseDocument(MapDocument document)
         {
             if (document == null || OpenDocuments.Contains(document) == false)
+            {
                 return true;
+            }
 
             if (document.Dirty)
             {
                 Activate(document);
                 var answer = MessageBox.Show($"{document.Title} 변경 사항을 저장할까요?", "맵 에디터", MessageBoxButton.YesNoCancel);
                 if (answer == MessageBoxResult.Cancel)
+                {
                     return false;
+                }
                 else if (answer == MessageBoxResult.Yes)
                 {
                     if (Save(document) == false || document.Dirty)
+                    {
                         return false;
+                    }
                 }
             }
 
             var index = OpenDocuments.IndexOf(document);
             OpenDocuments.Remove(document);
             if (document == Document)
+            {
                 Activate(OpenDocuments.Count == 0 ? null : OpenDocuments[Math.Min(index, OpenDocuments.Count - 1)]);
+            }
+
             if (document.Dirty)
+            {
                 ScheduleDoorReferences();
+            }
+
             return true;
         }
 
@@ -1059,7 +1143,9 @@ namespace MapEditor.ViewModel
         public void ActivateNext(int step)
         {
             if (OpenDocuments.Count < 2 || Document == null)
+            {
                 return;
+            }
 
             var index = (OpenDocuments.IndexOf(Document) + step + OpenDocuments.Count) % OpenDocuments.Count;
             Activate(OpenDocuments[index]);
@@ -1072,11 +1158,15 @@ namespace MapEditor.ViewModel
         public async Task CreateMap(int id, string name, int width, int height, int tile, string sheet, int template)
         {
             if (_spawns == null || CanOpen == false)
+            {
                 throw new InvalidOperationException("the editor is still loading");
+            }
 
             var mapPath = Path.Combine(Settings.MapDirectory, $"{id:000000}.map");
             if (Maps.Any(m => m.Id == id) || File.Exists(mapPath))
+            {
                 throw new InvalidOperationException($"map {id} already exists");
+            }
 
             _spawns.AddMap(id, name, sheet, template);
             var map = new ServerMap(width, height);
@@ -1101,24 +1191,35 @@ namespace MapEditor.ViewModel
             void OnChanged(object sender, PropertyChangedEventArgs e)
             {
                 if (sender is NpcSpawn npc && e.PropertyName == nameof(NpcSpawn.Npc))
+                {
                     npc.Info = _spawns.NpcNames.Entry(npc.Npc);
+                }
                 else if (sender is MobSpawn mob && e.PropertyName == nameof(MobSpawn.Mob))
+                {
                     mob.Info = _spawns.MobNames.Entry(mob.Mob);
+                }
                 else if (sender is WarpEntry warp && e.PropertyName == nameof(WarpEntry.Dest))
+                {
                     warp.DestName = warp.DestMap is int id ? _spawns.MapNames.Find(id) : "";
+                }
+
                 OverlayInvalidated?.Invoke();
                 OnPropertyChanged(nameof(Document));
             }
 
             foreach (var item in items)
+            {
                 item.PropertyChanged += OnChanged;
+            }
 
             items.CollectionChanged += (s, e) =>
             {
                 if (e.NewItems != null)
                 {
                     foreach (T item in e.NewItems)
+                    {
                         item.PropertyChanged += OnChanged;
+                    }
                 }
                 if (e.OldItems != null)
                 {
@@ -1127,7 +1228,9 @@ namespace MapEditor.ViewModel
                         item.PropertyChanged -= OnChanged;
                         SelectedEntities.Remove(item);
                         if (ReferenceEquals(SelectedEntity, item))
+                        {
                             SelectedEntity = null;
+                        }
                     }
                 }
                 UpdateSelectionText();
@@ -1160,7 +1263,9 @@ namespace MapEditor.ViewModel
         public bool Save(MapDocument document)
         {
             if (document == null)
+            {
                 return true;
+            }
 
             var success = true;
             try
@@ -1224,7 +1329,9 @@ namespace MapEditor.ViewModel
             foreach (var document in dirty)
             {
                 if (Save(document) == false)
+                {
                     return;
+                }
             }
             StatusText = $"탭 {dirty.Count}개 저장: {string.Join(", ", dirty.Select(d => $"{d.Id:000000}"))}";
         }
@@ -1236,11 +1343,15 @@ namespace MapEditor.ViewModel
         public async Task SaveMapAs(MapDocument source, int id, string name, string sheet)
         {
             if (_spawns == null || source == null || CanOpen == false)
+            {
                 throw new InvalidOperationException("the editor is still loading");
+            }
 
             var mapPath = Path.Combine(Settings.MapDirectory, $"{id:000000}.map");
             if (Maps.Any(m => m.Id == id) || File.Exists(mapPath))
+            {
                 throw new InvalidOperationException($"map {id} already exists");
+            }
 
             _spawns.AddMap(id, name, sheet, source.Id);
             File.WriteAllBytes(mapPath, source.Map.ToBytes());
@@ -1258,12 +1369,17 @@ namespace MapEditor.ViewModel
             OnPropertyChanged(nameof(MapChoices));
 
             if (source != Document)
+            {
                 Activate(source);
+            }
+
             var view = ViewCenter;
             var zoom = Zoom;
             await OpenMap(entry, record: false);
             if (Document?.Id != id)
+            {
                 return;
+            }
 
             OpenDocuments.Remove(source);
             SelectedMap = entry;
@@ -1281,7 +1397,9 @@ namespace MapEditor.ViewModel
             foreach (var document in documents.ToList())
             {
                 if (CloseDocument(document) == false)
+                {
                     return false;
+                }
             }
             return true;
         }
@@ -1292,11 +1410,15 @@ namespace MapEditor.ViewModel
         public bool IsBlocked(int x, int y)
         {
             if (Document == null || Document.Map.Contains(x, y) == false)
+            {
                 return true;
+            }
 
             var cell = Document.Get(x, y);
             if (cell.Block || cell.Tile == 0)
+            {
                 return true;
+            }
 
             var sobj = Assets?.Objects.Find(cell.Object);
             return sobj != null && (sobj.Collision & 0x0F) == 0x0F;
@@ -1322,27 +1444,39 @@ namespace MapEditor.ViewModel
                 text += $" (막힌 변: {string.Join(", ", sides)})";
             }
             if (Limit550 is (int tiles, int objects) && (cell.Tile >= tiles || cell.Object > objects))
+            {
                 text += " | 5.50에 없음";
+            }
 
             var doors = DoorsAt(x, y);
             for (int i = 0; i < doors.Count; i++)
+            {
                 text += " | " + DoorLabel(doors[i], y, hidden: i > 0);
+            }
 
             var instance = TemplateAt(x, y);
             if (instance != null)
+            {
                 text += $" | 템플릿 {instance.Template.Name} ({instance.X}, {instance.Y})";
+            }
 
             var npc = NpcAt(x, y);
             if (npc != null)
+            {
                 text += $" | NPC {npc.Npc} {npc.Name} {npc.Direction}";
+            }
 
             var warp = WarpAt(x, y);
             if (warp != null)
+            {
                 text += $" | 워프 → {warp.Dest} {warp.DestName}";
+            }
 
             var mobs = Document.Mobs.Count(m => m.Contains(x, y));
             if (mobs > 0)
+            {
                 text += $" | 몹 스폰 {mobs}개";
+            }
 
             HoverText = text;
         }
@@ -1359,20 +1493,26 @@ namespace MapEditor.ViewModel
         {
             var result = new List<MapDoor>();
             if (Document == null)
+            {
                 return result;
+            }
 
             var reach = Assets == null ? 1 : Math.Max(1, Assets.Objects.MaxHeight);
             for (int k = reach - 1; k >= 0; k--)
             {
                 var door = DoorAt(x, y + k);
                 if (door == null)
+                {
                     continue;
+                }
 
                 if (k > 0)
                 {
                     var sobj = Assets.Objects.Find(Document.Get(x, y + k).Object);
                     if (sobj == null || k >= sobj.Frames.Length || Assets.ObjectFrame(sobj.Frames[k]) == null)
+                    {
                         continue;
+                    }
                 }
                 result.Add(door);
             }
@@ -1386,9 +1526,14 @@ namespace MapEditor.ViewModel
         {
             var label = $"문 {door.Model.Id} {(door.Opened ? "열림" : "닫힘")}";
             if (door.Y != y)
+            {
                 label += $" (아래 ({door.X}, {door.Y})의 문, 그림이 여기까지 올라옴)";
+            }
             else if (hidden)
+            {
                 label += " (앞의 문 그림에 가려 안 보임)";
+            }
+
             return label;
         }
 
@@ -1400,7 +1545,9 @@ namespace MapEditor.ViewModel
         public (int X, int Y)? ObjectCellAt(double mapX, double mapY)
         {
             if (Document == null || Assets == null)
+            {
                 return null;
+            }
 
             var x = (int)Math.Floor(mapX);
             var y = (int)Math.Floor(mapY);
@@ -1410,20 +1557,28 @@ namespace MapEditor.ViewModel
             {
                 var cy = y + k;
                 if (Document.Map.Contains(x, cy) == false)
+                {
                     continue;
+                }
 
                 var sobj = Assets.Objects.Find(Document.Get(x, cy).Object);
                 if (sobj == null || k >= sobj.Frames.Length)
+                {
                     continue;
+                }
 
                 var frame = Assets.ObjectFrame(sobj.Frames[k]);
                 if (frame == null)
+                {
                     continue;
+                }
 
                 var lx = px - frame.Left;
                 var ly = py - frame.Top;
                 if (lx >= 0 && ly >= 0 && lx < frame.Width && ly < frame.Height && frame.Pixels[ly * frame.Width + lx] != 0)
+                {
                     return (x, cy);
+                }
             }
             return null;
         }
@@ -1431,22 +1586,35 @@ namespace MapEditor.ViewModel
         private CellValue WithLayerValue(CellValue cell, bool erase)
         {
             if (Layer == EditLayer.Tile)
+            {
                 cell.Tile = erase ? (ushort)0 : (ushort)SelectedTile;
+            }
             else if (Layer == EditLayer.Object)
+            {
                 cell.Object = erase ? (ushort)0 : (ushort)SelectedObject;
+            }
             else
+            {
                 cell.Block = erase == false;
+            }
+
             return cell;
         }
 
         private int LayerValue(CellValue cell)
         {
             if (Layer == EditLayer.Tile)
+            {
                 return cell.Tile;
+            }
             else if (Layer == EditLayer.Object)
+            {
                 return cell.Object;
+            }
             else
+            {
                 return cell.Block ? 1 : 0;
+            }
         }
 
         /// <summary>
@@ -1455,7 +1623,9 @@ namespace MapEditor.ViewModel
         public void Paint(IEnumerable<(int X, int Y)> cells, bool erase, bool merge)
         {
             if (Document == null)
+            {
                 return;
+            }
 
             Document.Apply(cells.Where(c => Document.Map.Contains(c.X, c.Y))
                                 .Select(c => (c.X, c.Y, WithLayerValue(Document.Get(c.X, c.Y), erase))), merge);
@@ -1467,7 +1637,9 @@ namespace MapEditor.ViewModel
         public void EditCells(IEnumerable<(int X, int Y)> cells, Func<CellValue, CellValue> edit)
         {
             if (Document == null)
+            {
                 return;
+            }
 
             Document.Apply(cells.Where(c => Document.Map.Contains(c.X, c.Y))
                                 .Select(c => (c.X, c.Y, edit(Document.Get(c.X, c.Y)))).ToList());
@@ -1481,7 +1653,9 @@ namespace MapEditor.ViewModel
         public void FloodFill(int x, int y)
         {
             if (Document == null || Document.Map.Contains(x, y) == false)
+            {
                 return;
+            }
 
             var target = LayerValue(Document.Get(x, y));
             var cells = new List<(int X, int Y)>();
@@ -1495,7 +1669,9 @@ namespace MapEditor.ViewModel
                 foreach (var (nx, ny) in new[] { (cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1) })
                 {
                     if (Document.Map.Contains(nx, ny) && visited.Add((nx, ny)) && LayerValue(Document.Get(nx, ny)) == target)
+                    {
                         queue.Enqueue((nx, ny));
+                    }
                 }
             }
             Paint(cells, erase: false, merge: false);
@@ -1504,13 +1680,20 @@ namespace MapEditor.ViewModel
         public void Pick(int x, int y)
         {
             if (Document == null || Document.Map.Contains(x, y) == false)
+            {
                 return;
+            }
 
             var cell = Document.Get(x, y);
             if (Layer == EditLayer.Tile)
+            {
                 SelectedTile = cell.Tile;
+            }
             else if (Layer == EditLayer.Object)
+            {
                 SelectedObject = cell.Object;
+            }
+
             Tool = EditTool.Brush;
         }
 
@@ -1533,7 +1716,9 @@ namespace MapEditor.ViewModel
             for (int y = Math.Min(y0, y1); y <= Math.Max(y0, y1); y++)
             {
                 for (int x = Math.Min(x0, x1); x <= Math.Max(x0, x1); x++)
+                {
                     yield return (x, y);
+                }
             }
         }
 
@@ -1541,17 +1726,25 @@ namespace MapEditor.ViewModel
         {
             _floatingPaste = null;
             if (mode == SelectMode.Replace)
+            {
                 Selection.Clear();
+            }
 
             foreach (var cell in cells)
             {
                 if (Document == null || Document.Map.Contains(cell.X, cell.Y) == false)
+                {
                     continue;
+                }
 
                 if (mode == SelectMode.Remove)
+                {
                     Selection.Remove(cell);
+                }
                 else
+                {
                     Selection.Add(cell);
+                }
             }
             UpdateSelectionText();
             OverlayInvalidated?.Invoke();
@@ -1563,7 +1756,9 @@ namespace MapEditor.ViewModel
         public void SelectRect(int x0, int y0, int x1, int y1, SelectMode mode)
         {
             if (Document == null)
+            {
                 return;
+            }
 
             var left = Math.Min(x0, x1);
             var top = Math.Min(y0, y1);
@@ -1577,13 +1772,20 @@ namespace MapEditor.ViewModel
             entities.AddRange(Document.Mobs.Where(m => Inside(m.Left, m.Top) && Inside(m.Right, m.Bottom)));
 
             if (mode == SelectMode.Replace)
+            {
                 SelectedEntities.Clear();
+            }
+
             foreach (var entity in entities)
             {
                 if (mode == SelectMode.Remove)
+                {
                     SelectedEntities.Remove(entity);
+                }
                 else
+                {
                     SelectedEntities.Add(entity);
+                }
             }
             SelectedEntity = SelectedEntities.Count == 1 ? SelectedEntities.First() : null;
             ChangeSelection(Rect(left, top, right, bottom), mode);
@@ -1602,11 +1804,18 @@ namespace MapEditor.ViewModel
             SelectedEntities.Add(entity);
             SelectedEntity = entity;
             if (entity is NpcSpawn npc)
+            {
                 SelectedNpc = npc;
+            }
             else if (entity is MobSpawn mob)
+            {
                 SelectedMob = mob;
+            }
             else if (entity is WarpEntry warp)
+            {
                 SelectedWarp = warp;
+            }
+
             UpdateSelectionText();
             OverlayInvalidated?.Invoke();
         }
@@ -1650,7 +1859,9 @@ namespace MapEditor.ViewModel
         public void SelectSame(int x, int y, SelectMode mode)
         {
             if (Document == null || Document.Map.Contains(x, y) == false)
+            {
                 return;
+            }
 
             var target = LayerValue(Document.Get(x, y));
             var cells = new List<(int, int)>();
@@ -1659,7 +1870,9 @@ namespace MapEditor.ViewModel
                 for (int cx = 0; cx < Document.Width; cx++)
                 {
                     if (LayerValue(Document.Get(cx, cy)) == target)
+                    {
                         cells.Add((cx, cy));
+                    }
                 }
             }
             ChangeSelection(cells, mode);
@@ -1704,12 +1917,17 @@ namespace MapEditor.ViewModel
         public void MoveSelection(int dx, int dy)
         {
             if (Document == null || (dx == 0 && dy == 0))
+            {
                 return;
+            }
 
             if (FloatingPaste && _floatingPaste is (int px, int py, _, _, bool changed))
             {
                 if (changed)
+                {
                     Document.Undo();
+                }
+
                 PasteAt(px + dx, py + dy);
                 return;
             }
@@ -1725,24 +1943,41 @@ namespace MapEditor.ViewModel
                         var cleared = value;
                         cleared.Object = 0;
                         if (MoveTiles)
+                        {
                             cleared.Tile = 0;
+                        }
+
                         if (MoveBlocks)
+                        {
                             cleared.Block = false;
+                        }
+
                         result[cell] = cleared;
                     }
                     foreach (var (cell, value) in sources)
                     {
                         var target = (cell.X + dx, cell.Y + dy);
                         if (Document.Map.Contains(target.Item1, target.Item2) == false)
+                        {
                             continue;
+                        }
 
                         var moved = result.TryGetValue(target, out var pending) ? pending : Document.Get(target.Item1, target.Item2);
                         if (value.Object != 0)
+                        {
                             moved.Object = value.Object;
+                        }
+
                         if (MoveTiles)
+                        {
                             moved.Tile = value.Tile;
+                        }
+
                         if (MoveBlocks)
+                        {
                             moved.Block = value.Block;
+                        }
+
                         result[target] = moved;
                     }
                     Document.Apply(result.Select(r => (r.Key.X, r.Key.Y, r.Value)).ToList());
@@ -1750,7 +1985,9 @@ namespace MapEditor.ViewModel
                     var shifted = Selection.Select(c => (c.X + dx, c.Y + dy)).Where(c => Document.Map.Contains(c.Item1, c.Item2)).ToList();
                     Selection.Clear();
                     foreach (var cell in shifted)
+                    {
                         Selection.Add(cell);
+                    }
                 }
 
                 foreach (var entity in SelectedEntities)
@@ -1786,7 +2023,9 @@ namespace MapEditor.ViewModel
         public void SetMobArea(MobSpawn mob, int x0, int y0, int x1, int y1)
         {
             if (Document == null || mob == null)
+            {
                 return;
+            }
 
             using (Document.Group())
             {
@@ -1800,14 +2039,21 @@ namespace MapEditor.ViewModel
         public void DeleteSelection()
         {
             if (Document == null)
+            {
                 return;
+            }
 
             using (Document.Group())
             {
                 foreach (var entity in SelectedEntities.ToList())
+                {
                     RemoveEntity(entity);
+                }
+
                 if (Selection.Count > 0)
+                {
                     Paint(Selection.ToList(), erase: true, merge: false);
+                }
             }
             SelectedEntity = null;
             UpdateSelectionText();
@@ -1816,7 +2062,9 @@ namespace MapEditor.ViewModel
         public void ToggleBlockSelection()
         {
             if (Document == null || Selection.Count == 0)
+            {
                 return;
+            }
 
             var block = Selection.Any(c => Document.Blocks.Contains(c.X, c.Y) == false);
             SetBlock(Selection.ToList(), block);
@@ -1838,7 +2086,9 @@ namespace MapEditor.ViewModel
         public void Copy()
         {
             if (Document == null)
+            {
                 return;
+            }
 
             var npcs = SelectedEntities.OfType<NpcSpawn>().ToList();
             var warps = SelectedEntities.OfType<WarpEntry>().ToList();
@@ -1847,17 +2097,34 @@ namespace MapEditor.ViewModel
             var blocks = Selection.Count(c => Document.Blocks.Contains(c.X, c.Y));
             var options = new List<(CopyKind Kind, string Label)>();
             if (Selection.Count > 0)
+            {
                 options.Add((CopyKind.Tile, $"타일 ({Selection.Count}칸)"));
+            }
+
             if (objects > 0)
+            {
                 options.Add((CopyKind.Object, $"오브젝트 ({objects}칸)"));
+            }
+
             if (blocks > 0)
+            {
                 options.Add((CopyKind.Block, $"블록 ({blocks}칸)"));
+            }
+
             if (npcs.Count > 0)
+            {
                 options.Add((CopyKind.Npc, $"NPC ({npcs.Count}개)"));
+            }
+
             if (warps.Count > 0)
+            {
                 options.Add((CopyKind.Warp, $"워프 ({warps.Count}개)"));
+            }
+
             if (mobs.Count > 0)
+            {
                 options.Add((CopyKind.Mob, $"몹 스폰 ({mobs.Count}개)"));
+            }
 
             if (options.Count == 0)
             {
@@ -1867,18 +2134,31 @@ namespace MapEditor.ViewModel
 
             var kinds = options.Count == 1 ? new HashSet<CopyKind> { options[0].Kind } : CopyWindow.Show(options);
             if (kinds == null)
+            {
                 return;
+            }
 
             var copyCells = kinds.Contains(CopyKind.Tile) || kinds.Contains(CopyKind.Object) || kinds.Contains(CopyKind.Block);
             var points = new List<(int X, int Y)>();
             if (copyCells)
+            {
                 points.AddRange(Selection);
+            }
+
             if (kinds.Contains(CopyKind.Npc))
+            {
                 points.AddRange(npcs.Select(n => (n.X, n.Y)));
+            }
+
             if (kinds.Contains(CopyKind.Warp))
+            {
                 points.AddRange(warps.Select(w => (w.X, w.Y)));
+            }
+
             if (kinds.Contains(CopyKind.Mob))
+            {
                 points.AddRange(mobs.SelectMany(m => new[] { (m.Left, m.Top), (m.Right, m.Bottom) }));
+            }
 
             var minX = points.Min(p => p.X);
             var minY = points.Min(p => p.Y);
@@ -1920,7 +2200,9 @@ namespace MapEditor.ViewModel
         public void Paste()
         {
             if (Document == null)
+            {
                 return;
+            }
 
             if (Clipboard == null)
             {
@@ -1932,19 +2214,31 @@ namespace MapEditor.ViewModel
             foreach (var entity in SelectedEntities)
             {
                 if (entity is NpcSpawn npc)
+                {
                     anchors.Add((npc.X, npc.Y));
+                }
                 else if (entity is WarpEntry warp)
+                {
                     anchors.Add((warp.X, warp.Y));
+                }
                 else if (entity is MobSpawn mob)
+                {
                     anchors.Add((mob.Left, mob.Top));
+                }
             }
 
             if (anchors.Count > 0)
+            {
                 PasteAt(anchors.Min(a => a.X), anchors.Min(a => a.Y));
+            }
             else if (_hoverCell is (int hx, int hy))
+            {
                 PasteAt(hx, hy);
+            }
             else
+            {
                 PasteAt(Math.Max(0, (int)ViewCenter.X - Clipboard.Width / 2), Math.Max(0, (int)ViewCenter.Y - Clipboard.Height / 2));
+            }
         }
 
         /// <summary>
@@ -1955,7 +2249,9 @@ namespace MapEditor.ViewModel
         public void PasteAt(int x, int y)
         {
             if (Document == null || Clipboard == null)
+            {
                 return;
+            }
 
             var stamp = Clipboard;
             var pasted = new List<Entity>();
@@ -1968,25 +2264,40 @@ namespace MapEditor.ViewModel
                 {
                     var (tx, ty) = (x + dx, y + dy);
                     if (Document.Map.Contains(tx, ty) == false)
+                    {
                         continue;
+                    }
 
                     var cell = Document.Get(tx, ty);
                     if (stamp.Kinds.Contains(CopyKind.Tile))
+                    {
                         cell.Tile = value.Tile;
+                    }
+
                     if (stamp.Kinds.Contains(CopyKind.Object))
+                    {
                         cell.Object = value.Object;
+                    }
+
                     if (stamp.Kinds.Contains(CopyKind.Block))
+                    {
                         cell.Block = value.Block;
+                    }
+
                     cells.Add((tx, ty, cell));
                     pastedCells.Add((tx, ty));
                 }
                 if (cells.Count > 0)
+                {
                     Document.Apply(cells);
+                }
 
                 foreach (var source in stamp.Npcs)
                 {
                     if (Document.Map.Contains(x + source.X, y + source.Y) == false)
+                    {
                         continue;
+                    }
 
                     var npc = new NpcSpawn { Npc = source.Npc, Info = source.Info, X = x + source.X, Y = y + source.Y, Direction = source.Direction };
                     Document.Npcs.Add(npc);
@@ -1995,7 +2306,9 @@ namespace MapEditor.ViewModel
                 foreach (var source in stamp.Warps)
                 {
                     if (Document.Map.Contains(x + source.X, y + source.Y) == false)
+                    {
                         continue;
+                    }
 
                     var warp = new WarpEntry { X = x + source.X, Y = y + source.Y, Dest = source.Dest, Condition = source.Condition, DestName = source.DestName };
                     Document.Warps.Add(warp);
@@ -2004,7 +2317,9 @@ namespace MapEditor.ViewModel
                 foreach (var source in stamp.Mobs)
                 {
                     if (Document.Map.Contains(x + source.BeginX, y + source.BeginY) == false)
+                    {
                         continue;
+                    }
 
                     var mob = new MobSpawn
                     {
@@ -2025,7 +2340,10 @@ namespace MapEditor.ViewModel
 
             SelectedEntities.Clear();
             foreach (var entity in pasted)
+            {
                 SelectedEntities.Add(entity);
+            }
+
             SelectedEntity = pasted.Count == 1 ? pasted[0] : null;
             ChangeSelection(pastedCells, SelectMode.Replace);
             _floatingPaste = (x, y, Document.LastStep, stamp, Document.LastStep != before);
@@ -2041,14 +2359,18 @@ namespace MapEditor.ViewModel
         public void PlaceDoor(int x, int y)
         {
             if (Document == null || SelectedDoorModel == null)
+            {
                 return;
+            }
 
             var cells = new List<(int, int, CellValue)>();
             for (int i = 0; i < SelectedDoorModel.Pairs.Count; i++)
             {
                 var pair = DoorTable.FindPair(SelectedDoorModel.Pairs[i]);
                 if (pair == null || Document.Map.Contains(x + i, y) == false)
+                {
                     continue;
+                }
 
                 var cell = Document.Get(x + i, y);
                 cell.Object = (ushort)(PlaceDoorOpened ? pair.Open : pair.Close);
@@ -2063,7 +2385,9 @@ namespace MapEditor.ViewModel
         public void ToggleDoor(MapDoor door)
         {
             if (door != null)
+            {
                 ToggleDoors(new[] { door });
+            }
         }
 
         /// <summary>
@@ -2072,7 +2396,9 @@ namespace MapEditor.ViewModel
         public void ToggleDoors(IReadOnlyCollection<MapDoor> doors)
         {
             if (Document == null || doors.Count == 0)
+            {
                 return;
+            }
 
             var cells = new List<(int, int, CellValue)>();
             foreach (var door in doors)
@@ -2088,7 +2414,9 @@ namespace MapEditor.ViewModel
             var selected = SelectedMapDoor;
             Document.Apply(cells);
             if (selected != null)
+            {
                 SelectedMapDoor = Document.Doors.FirstOrDefault(d => d.X == selected.X && d.Y == selected.Y);
+            }
         }
 
         /// <summary>
@@ -2097,21 +2425,31 @@ namespace MapEditor.ViewModel
         private void ToggleSelectedDoors()
         {
             if (Document == null)
+            {
                 return;
+            }
 
             var doors = Selection.Select(c => DoorsAt(c.X, c.Y).FirstOrDefault()).Where(d => d != null).Distinct().ToList();
             if (doors.Count > 0)
+            {
                 ToggleDoors(doors);
+            }
             else if (SelectedMapDoor != null)
+            {
                 ToggleDoors(new[] { SelectedMapDoor });
+            }
             else
+            {
                 StatusText = "열고 닫을 문이 없습니다. 문 칸을 선택하거나 문 목록에서 문을 고르세요.";
+            }
         }
 
         public void DeleteDoor(MapDoor door)
         {
             if (Document == null || door == null)
+            {
                 return;
+            }
 
             EditCells(Rect(door.X, door.Y, door.X + door.Width - 1, door.Y), cell =>
             {
@@ -2127,12 +2465,16 @@ namespace MapEditor.ViewModel
         public (int X, int Y, int Width)? DoorEditRange()
         {
             if (Document == null || Selection.Count == 0)
+            {
                 return null;
+            }
 
             var y = Selection.First().Y;
             var xs = Selection.Select(c => c.X).OrderBy(x => x).ToList();
             if (Selection.Any(c => c.Y != y) || xs[^1] - xs[0] + 1 != xs.Count)
+            {
                 return null;
+            }
 
             var left = xs[0];
             var right = xs[^1];
@@ -2147,9 +2489,13 @@ namespace MapEditor.ViewModel
         public void EditDoor()
         {
             if (DoorEditRange() is (int x, int y, int width))
+            {
                 DoorEditRequested?.Invoke(x, y, width);
+            }
             else
+            {
                 StatusText = "문 편집: 한 행에서 가로로 이어진 칸(오브젝트)을 선택하세요.";
+            }
         }
 
         /// <summary>
@@ -2159,7 +2505,9 @@ namespace MapEditor.ViewModel
         public List<int> DoorPartners(int obj, bool currentIsClosed)
         {
             if (obj == 0)
+            {
                 return new List<int>();
+            }
 
             return DoorTable.Pairs.Where(p => (currentIsClosed ? p.Close : p.Open) == obj)
                             .Select(p => currentIsClosed ? p.Open : p.Close)
@@ -2234,7 +2582,10 @@ namespace MapEditor.ViewModel
                 {
                     var objects = (ushort[])Document.Map.Objects.Clone();
                     for (int i = 0; i < other.Count; i++)
+                    {
                         objects[y * Document.Width + x + i] = (ushort)other[i];
+                    }
+
                     var test = DoorTable.Find(Document.Width, Document.Height, objects).FirstOrDefault(d => d.Y == y && d.X == x);
                     if (test?.Model == model)
                     {
@@ -2259,11 +2610,20 @@ namespace MapEditor.ViewModel
             else
             {
                 if (modify != null)
+                {
                     modify.Pairs = oldPairs;
+                }
+
                 if (addedModel != null)
+                {
                     DoorTable.Doors.Remove(addedModel);
+                }
+
                 foreach (var pair in addedPairs)
+                {
                     DoorTable.Pairs.Remove(pair);
+                }
+
                 DoorDefinitionsChanged();
                 DoorTableDirty = dirty;
                 SelectedDoorModel = selected;
@@ -2322,11 +2682,15 @@ namespace MapEditor.ViewModel
         public NpcSpawn AddNpc(int x, int y)
         {
             if (Document == null)
+            {
                 return null;
+            }
 
             var entry = PickerWindow.Show("NPC 선택", NpcChoices, Assets);
             if (entry == null)
+            {
                 return null;
+            }
 
             var npc = new NpcSpawn { Npc = entry.Id, Info = entry, X = x, Y = y, Direction = "BOTTOM" };
             Document.Npcs.Add(npc);
@@ -2337,11 +2701,15 @@ namespace MapEditor.ViewModel
         public MobSpawn AddMob(int x0, int y0, int x1, int y1)
         {
             if (Document == null)
+            {
                 return null;
+            }
 
             var entry = PickerWindow.Show("몹 선택", MobChoices, Assets);
             if (entry == null)
+            {
                 return null;
+            }
 
             var mob = new MobSpawn
             {
@@ -2360,11 +2728,15 @@ namespace MapEditor.ViewModel
         public WarpEntry AddWarp(int x, int y)
         {
             if (Document == null)
+            {
                 return null;
+            }
 
             var entry = PickerWindow.Show("목적지 맵 선택", MapChoices);
             if (entry == null)
+            {
                 return null;
+            }
 
             var warp = new WarpEntry { X = x, Y = y, Dest = $"map({entry.Id}, 0, 0)" };
             Document.Warps.Add(warp);
@@ -2376,51 +2748,80 @@ namespace MapEditor.ViewModel
         private void AddSpawn(string kind)
         {
             if (Document == null)
+            {
                 return;
+            }
 
             var x = Document.Width / 2;
             var y = Document.Height / 2;
             Entity added;
             if (kind == "npc")
+            {
                 added = AddNpc(x, y);
+            }
             else if (kind == "mob")
+            {
                 added = AddMob(0, 0, Document.Width - 1, Document.Height - 1);
+            }
             else
+            {
                 added = AddWarp(x, y);
+            }
+
             FocusEntity(added);
         }
 
         private void RemoveSpawn(string kind)
         {
             if (kind == "npc")
+            {
                 RemoveEntity(SelectedNpc);
+            }
             else if (kind == "mob")
+            {
                 RemoveEntity(SelectedMob);
+            }
             else
+            {
                 RemoveEntity(SelectedWarp);
+            }
         }
 
         public void RemoveEntity(Entity entity)
         {
             if (Document == null || entity == null)
+            {
                 return;
+            }
 
             if (entity is NpcSpawn npc)
+            {
                 Document.Npcs.Remove(npc);
+            }
             else if (entity is MobSpawn mob)
+            {
                 Document.Mobs.Remove(mob);
+            }
             else if (entity is WarpEntry warp)
+            {
                 Document.Warps.Remove(warp);
+            }
         }
 
         public void FocusEntity(Entity entity)
         {
             if (entity is NpcSpawn npc)
+            {
                 Jump(npc.X, npc.Y);
+            }
             else if (entity is MobSpawn mob)
+            {
                 Jump((mob.Left + mob.Right) / 2, (mob.Top + mob.Bottom) / 2);
+            }
             else if (entity is WarpEntry warp)
+            {
                 Jump(warp.X, warp.Y);
+            }
         }
 
         /// <summary>
@@ -2459,7 +2860,9 @@ namespace MapEditor.ViewModel
         public async Task CheckWarps(bool all)
         {
             if (CheckingWarps || Assets == null || _spawns == null || (all == false && Document == null))
+            {
                 return;
+            }
 
             CheckingWarps = true;
             WarpIssues.Clear();
@@ -2509,7 +2912,10 @@ namespace MapEditor.ViewModel
                         if (warp.DestMap is int id && warp.DestX is int x && warp.DestY is int y)
                         {
                             if (arrivals.TryGetValue(id, out var list) == false)
+                            {
                                 arrivals[id] = list = new List<(int X, int Y)>();
+                            }
+
                             list.Add((x, y));
                         }
                     }
@@ -2519,9 +2925,14 @@ namespace MapEditor.ViewModel
                     WarpCheckMap Load(int id)
                     {
                         if (current != null && id == current.Id)
+                        {
                             return current;
+                        }
+
                         if (loaded.TryGetValue(id, out var cached))
+                        {
                             return cached;
+                        }
 
                         var path = Path.Combine(directory, $"{id:000000}.map");
                         WarpCheckMap map = null;
@@ -2549,11 +2960,15 @@ namespace MapEditor.ViewModel
                     for (int i = 0; i < ids.Count; i++)
                     {
                         if (i % 100 == 0)
+                        {
                             ((IProgress<string>)progress).Report($"워프 검사: {i}/{ids.Count} 맵");
+                        }
 
                         var map = Load(ids[i]);
                         if (map == null)
+                        {
                             continue;
+                        }
 
                         var mapArrivals = arrivals.TryGetValue(map.Id, out var list) ? list : new List<(int X, int Y)>();
                         result.AddRange(map.Check(mapArrivals, Load, names.Find));
@@ -2585,7 +3000,9 @@ namespace MapEditor.ViewModel
         public async Task FocusWarpIssue(WarpIssue issue)
         {
             if (issue == null)
+            {
                 return;
+            }
 
             if (Document?.Id == issue.MapId)
             {
@@ -2595,11 +3012,15 @@ namespace MapEditor.ViewModel
             {
                 var entry = Maps.FirstOrDefault(m => m.Id == issue.MapId);
                 if (entry == null)
+                {
                     return;
+                }
 
                 await OpenMap(entry);
                 if (Document?.Id != issue.MapId)
+                {
                     return;
+                }
 
                 SelectedMap = entry;
                 FocusRequested?.Invoke(issue.X, issue.Y);
@@ -2607,7 +3028,9 @@ namespace MapEditor.ViewModel
 
             var warp = WarpAt(issue.X, issue.Y);
             if (warp != null)
+            {
                 SelectEntity(warp, add: false);
+            }
         }
 
         /// <summary>
@@ -2619,13 +3042,17 @@ namespace MapEditor.ViewModel
             {
                 issue.InOpenMap = issue.MapId == Document?.Id;
                 if (issue.InOpenMap == false)
+                {
                     issue.Checked = false;
+                }
             }
             foreach (var issue in TemplateWarpIssues)
             {
                 issue.InOpenMap = issue.MapId == Document?.Id;
                 if (issue.InOpenMap == false)
+                {
                     issue.Checked = false;
+                }
             }
             RefreshTemplateInstances();
         }
@@ -2636,7 +3063,9 @@ namespace MapEditor.ViewModel
         public void DeleteCheckedWarps()
         {
             if (Document == null)
+            {
                 return;
+            }
 
             var issues = WarpIssues.Where(i => i.Checked && i.MapId == Document.Id).ToList();
             if (issues.Count == 0)
@@ -2649,14 +3078,25 @@ namespace MapEditor.ViewModel
             using (Document.Group())
             {
                 foreach (var warp in warps)
+                {
                     Document.Warps.Remove(warp);
+                }
             }
             foreach (var warp in warps)
+            {
                 SelectedEntities.Remove(warp);
+            }
+
             if (SelectedEntity is WarpEntry selected && warps.Contains(selected))
+            {
                 SelectedEntity = null;
+            }
+
             foreach (var issue in WarpIssues.Where(i => i.MapId == Document.Id && warps.Any(w => w.X == i.X && w.Y == i.Y && w.Dest == i.Dest)).ToList())
+            {
                 WarpIssues.Remove(issue);
+            }
+
             UpdateSelectionText();
             OverlayInvalidated?.Invoke();
             StatusText = $"워프 {warps.Count}개 삭제 (실행 취소 가능)";
@@ -2666,19 +3106,27 @@ namespace MapEditor.ViewModel
         {
             Validation.Clear();
             if (Document == null)
+            {
                 return new List<ValidationItem>();
+            }
 
             var doc = Document;
             var items = new List<ValidationItem>();
             foreach (var npc in doc.Npcs)
             {
                 if (doc.Map.Contains(npc.X, npc.Y) == false)
+                {
                     items.Add(new ValidationItem { X = npc.X, Y = npc.Y, Message = $"NPC {npc.Npc} {npc.Name}: 맵 밖" });
+                }
                 else if (IsBlocked(npc.X, npc.Y))
+                {
                     items.Add(new ValidationItem { X = npc.X, Y = npc.Y, Message = $"NPC {npc.Npc} {npc.Name}: 막힌 칸" });
+                }
             }
             foreach (var group in doc.Npcs.GroupBy(n => (n.X, n.Y)).Where(g => g.Count() > 1))
+            {
                 items.Add(new ValidationItem { X = group.Key.X, Y = group.Key.Y, Message = $"NPC {group.Count()}개가 같은 칸" });
+            }
 
             foreach (var mob in doc.Mobs)
             {
@@ -2690,20 +3138,29 @@ namespace MapEditor.ViewModel
                 {
                     var open = Rect(mob.BeginX, mob.BeginY, mob.EndX, mob.EndY).Any(c => IsBlocked(c.X, c.Y) == false);
                     if (open == false)
+                    {
                         items.Add(new ValidationItem { X = mob.BeginX, Y = mob.BeginY, Message = $"몹 {mob.Mob} {mob.Name}: 스폰 영역이 전부 막힘" });
+                    }
                 }
             }
             foreach (var warp in doc.Warps)
             {
                 if (doc.Map.Contains(warp.X, warp.Y) == false)
+                {
                     items.Add(new ValidationItem { X = warp.X, Y = warp.Y, Message = $"워프 {warp.Dest} {warp.DestName}: 출발 칸이 맵 밖" });
+                }
+
                 if (warp.DestMap is int destMap && Maps.Any(m => m.Id == destMap) == false)
+                {
                     items.Add(new ValidationItem { X = warp.X, Y = warp.Y, Message = $"워프 {warp.Dest} {warp.DestName}: 목적지 맵 파일 없음" });
+                }
             }
             foreach (var (x, y) in doc.Blocks.Cells)
             {
                 if (doc.Map.Contains(x, y) == false)
+                {
                     items.Add(new ValidationItem { X = x, Y = y, Message = "블록 좌표가 맵 밖" });
+                }
             }
             if (Assets != null)
             {
@@ -2713,9 +3170,14 @@ namespace MapEditor.ViewModel
                     {
                         var cell = doc.Get(x, y);
                         if (cell.Tile >= Assets.TileCount)
+                        {
                             items.Add(new ValidationItem { X = x, Y = y, Message = $"타일 {cell.Tile}이 {Assets.Version} 리소스 범위 밖" });
+                        }
+
                         if (cell.Object > Assets.Objects.Count)
+                        {
                             items.Add(new ValidationItem { X = x, Y = y, Message = $"오브젝트 {cell.Object}가 {Assets.Version} 리소스 범위 밖" });
+                        }
                     }
                 }
             }
@@ -2725,14 +3187,21 @@ namespace MapEditor.ViewModel
                 {
                     var pair = DoorTable.FindPair(pairId);
                     if (pair == null)
+                    {
                         items.Add(new ValidationItem { Message = $"문 {model.Id}: door_pair {pairId} 없음" });
+                    }
                     else if (pair.Open == pair.Close)
+                    {
                         items.Add(new ValidationItem { Message = $"door_pair {pair.Id}: 열림과 닫힘 오브젝트가 같음" });
+                    }
                 }
             }
 
             foreach (var item in items.Take(2000))
+            {
                 Validation.Add(item);
+            }
+
             StatusText = $"검증: {items.Count}건";
             return items;
         }

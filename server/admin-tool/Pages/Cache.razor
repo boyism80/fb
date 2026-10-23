@@ -158,4 +158,5 @@
         var text = string.Join("\n", executionLog);
         await JS.InvokeVoidAsync("eval", $"navigator.clipboard.writeText({JsonSerializer.Serialize(text)})");
     }
+
 }

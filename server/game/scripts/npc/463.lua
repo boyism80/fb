@@ -6,7 +6,8 @@ local function do_sub7_cure(me, npc)
         me:dialog(npc, "퀘스트 오류입니다.\n아픈아기원숭이 아이템이 없습니다.", { prev = false, next = false })
         return true
     end
-    local b = me:dialog(npc, "연락은 진작부터 듣고 계셨다. 자, 어서 아이를 이리 주셔야 좋으시다. 나의 힘으로 열병따윈 순식간에 치료해주신다!", { prev = false, next = false })
+    local b = me:dialog(npc, "연락은 진작부터 듣고 계셨다. 자, 어서 아이를 이리 주셔야 좋으시다. 나의 힘으로 열병따윈 순식간에 치료해주신다!",
+        { prev = false, next = false })
     if b ~= 1 then
         return false
     end
@@ -61,7 +62,8 @@ local function do_sub1_start(me, npc)
     if b == DIALOG_RESULT.QUIT or not b then
         return false
     end
-    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = true })
+    local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
+        { prev = true })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -189,7 +191,8 @@ return {
                     return
                 end
                 ::NPC_463_0002::
-                b = me:dialog(npc, "이 나라의 언어를 모르고 계시다는거다. 나는 내 능력으로 대강 필요한 재료를 느끼고 계시는데, 이 땅에는", { prev = true, next = true })
+                b = me:dialog(npc, "이 나라의 언어를 모르고 계시다는거다. 나는 내 능력으로 대강 필요한 재료를 느끼고 계시는데, 이 땅에는",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -197,7 +200,8 @@ return {
                     goto NPC_463_0001
                 end
                 ::NPC_463_0003::
-                b = me:dialog(npc, "그런 재료들이 계시는지, 계시다면 그게 무엇이신지 알아내시려면 글자를 아셔야만 하신다. 그게 가장 큰 문제이시다.", { prev = true, next = true })
+                b = me:dialog(npc, "그런 재료들이 계시는지, 계시다면 그게 무엇이신지 알아내시려면 글자를 아셔야만 하신다. 그게 가장 큰 문제이시다.",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -217,7 +221,8 @@ return {
                     return
                 end
                 ::NPC_463_0004::
-                local b = me:dialog(npc, "으음, 과연과연이시다. 음...이 창힐독본에 따르시면, 내가 생각하시고 계신 재료들의 이름은...", { prev = false, next = true })
+                local b = me:dialog(npc, "으음, 과연과연이시다. 음...이 창힐독본에 따르시면, 내가 생각하시고 계신 재료들의 이름은...",
+                    { prev = false, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -246,16 +251,19 @@ return {
             end
             if s == 13 then
                 if not me:has_items("진원비전탕", 2) then
-                    me:dialog(npc, "기린의 피 2병, 악어의 피 2병, 깨끗한 얼음 5개를 조합한 진원비전탕을 두 개 만들어서 가져다 주시면 좋으시다.", { prev = false, next = false })
+                    me:dialog(npc, "기린의 피 2병, 악어의 피 2병, 깨끗한 얼음 5개를 조합한 진원비전탕을 두 개 만들어서 가져다 주시면 좋으시다.",
+                        { prev = false, next = false })
                     return
                 end
                 ::NPC_463_0007::
-                local b = me:dialog(npc, "이럴수가 계신가. 정말 만들어 주시리라 생각도 못하셨건만... 자네는 다시 안계실 훌륭한 사람이시다.", { prev = false, next = true })
+                local b = me:dialog(npc, "이럴수가 계신가. 정말 만들어 주시리라 생각도 못하셨건만... 자네는 다시 안계실 훌륭한 사람이시다.",
+                    { prev = false, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end
                 ::NPC_463_0008::
-                b = me:dialog(npc, "돌아가시는 날까지 이 은혜를 잊지 않으시겠다. 고마우시다. 자, 그럼 이 남으신 한 병은 참원왕께 가져다주시면 좋으시다.", { prev = true, next = true })
+                b = me:dialog(npc, "돌아가시는 날까지 이 은혜를 잊지 않으시겠다. 고마우시다. 자, 그럼 이 남으신 한 병은 참원왕께 가져다주시면 좋으시다.",
+                    { prev = true, next = true })
                 if b == DIALOG_RESULT.QUIT then
                     return
                 end

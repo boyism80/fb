@@ -14,7 +14,9 @@ namespace Http.Service
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
             if (_health.IsReady)
+            {
                 return Task.FromResult(HealthCheckResult.Healthy());
+            }
 
             return Task.FromResult(HealthCheckResult.Unhealthy("startup incomplete"));
         }

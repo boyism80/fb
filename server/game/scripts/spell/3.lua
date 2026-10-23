@@ -31,7 +31,7 @@ return {
         local sound = 29
         local effect = 16
         local mp = 30
-        if spell.cast(me, nil, nil, {mp=mp, default_action=false}) then
+        if spell.cast(me, nil, nil, { mp = mp, default_action = false }) then
             local x, y = ch:position()
             local direction = me:direction()
             local new_x, new_y, direction = spell.teleport_lookup(me, map, x, y, direction)

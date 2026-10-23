@@ -19,7 +19,8 @@ return {
         end
 
         ::NPC_473_0003::
-        button = me:dialog(npc, "다행히 전염병이 아니어서 아직 정상인 원숭이들도 많지만, 흉폭해진 원숭이들에 비하면 형평없이 약해서 도망다닐 뿐 이라네.", { prev = true, next = true })
+        button = me:dialog(npc, "다행히 전염병이 아니어서 아직 정상인 원숭이들도 많지만, 흉폭해진 원숭이들에 비하면 형평없이 약해서 도망다닐 뿐 이라네.",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -28,7 +29,8 @@ return {
         end
 
         ::NPC_473_0004::
-        button = me:dialog(npc, "흉폭해진 원숭이들은 치료를 해줄 수도 없어. 다만 처단하는 것만이 해결책이야. 들어가서 용감히 싸워주면 고맙겠군.", { prev = true, next = true })
+        button = me:dialog(npc, "흉폭해진 원숭이들은 치료를 해줄 수도 없어. 다만 처단하는 것만이 해결책이야. 들어가서 용감히 싸워주면 고맙겠군.",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -37,7 +39,8 @@ return {
         end
 
         ::NPC_473_0005::
-        button = me:dialog(npc, "다만 조심하시게 원숭이들은 머리도 좋고, 힘도 굉장히 강하니까 말이야. 일국의 장군인 나도 몇 번이나 당할 뻔 했지.", { prev = true, next = true })
+        button = me:dialog(npc, "다만 조심하시게 원숭이들은 머리도 좋고, 힘도 굉장히 강하니까 말이야. 일국의 장군인 나도 몇 번이나 당할 뻔 했지.",
+            { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

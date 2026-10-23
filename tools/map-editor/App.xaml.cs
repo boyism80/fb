@@ -25,7 +25,10 @@ namespace MapEditor
 
             await editor.Initialize();
             if (userError != null)
+            {
                 editor.StatusText = userError;
+            }
+
             _mcp = await McpHost.Start(settings.Mcp, editor);
         }
 

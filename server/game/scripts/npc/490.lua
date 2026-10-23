@@ -20,7 +20,7 @@ local function run_wedding_dress_sale(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", {"네, 사겠습니다.", "아니오, 다음에요..."}, { prev = false })
+        local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", { "네, 사겠습니다.", "아니오, 다음에요..." }, { prev = false })
         if buy_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -48,7 +48,7 @@ local function run_wedding_dress_sale(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", {"네, 사겠습니다.", "아니오, 다음에요..."}, { prev = false })
+        local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", { "네, 사겠습니다.", "아니오, 다음에요..." }, { prev = false })
         if buy_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -76,7 +76,7 @@ local function run_wedding_dress_sale(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", {"네, 사겠습니다.", "아니오, 다음에요..."}, { prev = false })
+        local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", { "네, 사겠습니다.", "아니오, 다음에요..." }, { prev = false })
         if buy_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -104,7 +104,7 @@ local function run_wedding_dress_sale(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local ex_sel, ex_btn = me:list(npc, "교환하시겠어요?", {"네, 교환하겠습니다.", "아니오, 다음에요..."}, { prev = false })
+        local ex_sel, ex_btn = me:list(npc, "교환하시겠어요?", { "네, 교환하겠습니다.", "아니오, 다음에요..." }, { prev = false })
         if ex_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -135,7 +135,7 @@ local function run_wedding_dress_sale(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local ex_sel, ex_btn = me:list(npc, "교환하시겠어요?", {"네, 교환하겠습니다.", "아니오, 다음에요..."}, { prev = false })
+        local ex_sel, ex_btn = me:list(npc, "교환하시겠어요?", { "네, 교환하겠습니다.", "아니오, 다음에요..." }, { prev = false })
         if ex_btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -169,7 +169,7 @@ local function run_garimbin_wing_exchange(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    local sel, list_btn = me:list(npc, "교환하시겠어요?", {"네, 교환하겠습니다.", "아니오, 다음에요..."}, { prev = true })
+    local sel, list_btn = me:list(npc, "교환하시겠어요?", { "네, 교환하겠습니다.", "아니오, 다음에요..." }, { prev = true })
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_490_0001
     end

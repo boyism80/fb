@@ -62,11 +62,16 @@ namespace Http.Service
             var key = new SessionKey().Key;
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
+            {
                 return null;
+            }
+
             var conn = redis.Connection;
             var data = await conn.HashGetAsync(new RedisKey(key), new RedisValue(name));
             if (data.IsNull)
+            {
                 return null;
+            }
 
             return JsonConvert.DeserializeObject<Session>(data.ToString());
         }
@@ -76,13 +81,18 @@ namespace Http.Service
             var sessions = new Dictionary<string, Session>();
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null || names.Count == 0)
+            {
                 return sessions;
+            }
+
             var conn = redis.Connection;
             var values = await conn.HashGetAsync(new RedisKey(new SessionKey().Key), names.Select(x => new RedisValue(x)).ToArray());
             for (var i = 0; i < names.Count; i++)
             {
                 if (values[i].IsNull)
+                {
                     continue;
+                }
 
                 sessions[names[i]] = JsonConvert.DeserializeObject<Session>(values[i].ToString());
             }
@@ -94,7 +104,10 @@ namespace Http.Service
             var key = new SessionKey().Key;
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
+            {
                 return;
+            }
+
             var conn = redis.Connection;
 
             await conn.JsonHashSetAsync(new RedisKey(key), new RedisValue(name), session);
@@ -107,7 +120,10 @@ namespace Http.Service
             var key = new RedisKey(new SessionKey().Key);
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
+            {
                 return;
+            }
+
             var conn = redis.Connection;
 
             if (host == null)
@@ -118,11 +134,15 @@ namespace Http.Service
             {
                 var raw = await conn.HashGetAsync(key, name);
                 if (raw.IsNull)
+                {
                     return;
+                }
 
                 var session = JsonConvert.DeserializeObject<Session>(raw.ToString());
                 if (session == null || session.Host != host.Value)
+                {
                     return;
+                }
 
                 var transaction = conn.CreateTransaction();
                 transaction.AddCondition(Condition.HashEqual(key, name, raw));
@@ -137,7 +157,9 @@ namespace Http.Service
             var key = new SessionKey().Key;
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
+            {
                 return false;
+            }
 
             var redisResult = await redis.EvalAsync(
                 force ? LoginScript : TryLoginScript,
@@ -151,7 +173,9 @@ namespace Http.Service
 
             var success = (bool)redisResult[0];
             if (success)
+            {
                 return true;
+            }
 
             // If force is true and login failed, publish KickOut message
             if (force)
@@ -177,7 +201,10 @@ namespace Http.Service
                 var key = new SessionKey().Key;
                 var redis = _redisService.GetGlobalConnection(world);
                 if (redis == null)
+                {
                     return;
+                }
+
                 await redis.EvalAsync(
                     SessionTtlRefreshScript,
                     [new RedisKey(key)],
@@ -195,7 +222,9 @@ namespace Http.Service
             var key = new SessionKey().Key;
             var redis = _redisService.GetGlobalConnection(world);
             if (redis == null)
+            {
                 return new List<Session>();
+            }
 
             var allSessions = await redis.Connection.HashGetAllAsync(new RedisKey(key));
             var sessions = new List<Session>();

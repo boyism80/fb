@@ -43,7 +43,9 @@ return {
         end
 
         ::NPC_569_0004::
-        local confirm, confirm_btn = me:list(npc, "내게 " .. MATERIAL .. "을 " .. need_count .. "개 준다면 " .. reward_name .. "를 만들어주지... 어떻게 하겠는가?", { "만들어주세요.", "아니요...괜찮습니다." }, { prev = true })
+        local confirm, confirm_btn = me:list(npc,
+            "내게 " .. MATERIAL .. "을 " .. need_count .. "개 준다면 " .. reward_name .. "를 만들어주지... 어떻게 하겠는가?",
+            { "만들어주세요.", "아니요...괜찮습니다." }, { prev = true })
         if confirm_btn == DIALOG_RESULT.QUIT then
             return
         end

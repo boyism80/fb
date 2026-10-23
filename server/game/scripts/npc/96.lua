@@ -2,10 +2,10 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 local PROMOTION_3RD_STATS = {
-    [CLASS.WARRIOR] = { min_hp = 600000,  min_mp = 0 },
-    [CLASS.ROGUE]   = { min_hp = 600000,  min_mp = 0 },
-    [CLASS.MAGE]    = { min_hp = 300000,  min_mp = 500000 },
-    [CLASS.POET]    = { min_hp = 250000,  min_mp = 250000 },
+    [CLASS.WARRIOR] = { min_hp = 600000, min_mp = 0 },
+    [CLASS.ROGUE]   = { min_hp = 600000, min_mp = 0 },
+    [CLASS.MAGE]    = { min_hp = 300000, min_mp = 500000 },
+    [CLASS.POET]    = { min_hp = 250000, min_mp = 250000 },
 }
 
 local PROMOTION_4TH_WEAPON = {
@@ -59,10 +59,12 @@ return {
         if selected == 1 then
             local q = me:quest(quest.QUEST_MUTA)
             if me:has_items('반고의심장', 1) and q and not q:completed() and q:step() >= 7 then
-                local choice = me:list(npc, '당신은 지금껏 수많은 수련을 거쳐 인간으로서 오르기 힘든 경지에 도달하셨고, 더욱이 세상을 종말로부터 보호하는 업적을 세우셨으니 진선으로 불리우시기에 부족함이 없습니다. 지금 바로 승급을 원하시나요?', {
-                    '예',
-                    '아뇨',
-                })
+                local choice = me:list(npc,
+                    '당신은 지금껏 수많은 수련을 거쳐 인간으로서 오르기 힘든 경지에 도달하셨고, 더욱이 세상을 종말로부터 보호하는 업적을 세우셨으니 진선으로 불리우시기에 부족함이 없습니다. 지금 바로 승급을 원하시나요?',
+                    {
+                        '예',
+                        '아뇨',
+                    })
                 if choice == nil or choice ~= 1 then
                     return
                 end
@@ -98,7 +100,9 @@ return {
                 me:dialog(npc, '퀘스트를 시작할 수 없습니다.', { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '기본적인 능력은 갖추셨습니다만, 그만한 지위에 오르시려거든 세상을 위한 업적을 세우셔야 합니다.\n\n소문에, 천인(天人)으로 추앙받고 계신 무타님께서 세상에 닥쳐올 재앙에 대항할 인재를 구하신다고 하던데 한 번 찾아가보시는 것이 어떨까요?', { prev = false, next = false })
+            me:dialog(npc,
+                '기본적인 능력은 갖추셨습니다만, 그만한 지위에 오르시려거든 세상을 위한 업적을 세우셔야 합니다.\n\n소문에, 천인(天人)으로 추앙받고 계신 무타님께서 세상에 닥쳐올 재앙에 대항할 인재를 구하신다고 하던데 한 번 찾아가보시는 것이 어떨까요?',
+                { prev = false, next = false })
             return
         end
 
