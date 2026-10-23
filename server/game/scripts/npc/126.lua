@@ -156,7 +156,7 @@ local function do_frolic(me, npc)
         if b2 == DIALOG_RESULT.QUIT then
             return
         end
-        if s2 >= 0 and s2 <= 2 then
+        if s2 ~= nil and s2 >= 1 and s2 <= 3 then
             if math.random(1, 100) > 5 then
                 if math.random(1, 2) == 1 then
                     me:dialog(npc, "쳇! 그렇게 늦게 내면 내가 어떻게 이기니?\n\n이건 내가 진게 아니니까 엉덩이로 이름 쓰지 않을테야.",
