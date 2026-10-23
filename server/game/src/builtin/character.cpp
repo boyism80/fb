@@ -3002,22 +3002,34 @@ int builtin::character::builtin_push_achievement(lua_State* L)
     if (!lua->is_number(2) || !lua->is_string(3) || !lua->is_number(4) || !lua->is_number(5))
         return 0;
 
+    auto raw_icon  = lua->tointeger(4);
+    auto raw_color = lua->tointeger(5);
+    if (raw_icon < 0 || raw_icon > fb::game::achievement::MAX_ICON || raw_color < 0 ||
+        raw_color > fb::game::achievement::MAX_COLOR)
+        return 0;
+
     auto id    = static_cast<uint32_t>(lua->tointeger(2));
     auto text  = lua->tostring(3);
-    auto icon  = static_cast<uint8_t>(lua->tointeger(4));
-    auto color = static_cast<uint16_t>(lua->tointeger(5));
+    auto icon  = static_cast<uint8_t>(raw_icon);
+    auto color = static_cast<uint16_t>(raw_color);
 
     auto weak        = ch->weak_from_this_as<fb::game::character>();
     auto achievement = std::make_shared<std::shared_ptr<fb::game::achievement>>();
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
+        if (ch->achievements.contains(id) == false && ch->achievements.size() >= fb::game::achievement::MAX_COUNT)
+            co_return;
+
         *achievement         = std::make_shared<fb::game::achievement>(id, text, icon, color);
         ch->achievements[id] = *achievement;
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushobject(*achievement);
+        if (*achievement == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*achievement);
         co_return 1;
     };
     return builder.run();

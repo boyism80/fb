@@ -1961,18 +1961,20 @@ M.functions = {
             end
 
             icon = tonumber(icon)
-            if icon == nil or icon < 0 then
-                me:message("아이콘 ID는 0 이상의 숫자여야 합니다.")
+            if icon == nil or icon < 0 or icon > 255 then
+                me:message("아이콘 ID는 0~255 사이의 숫자여야 합니다.")
                 return true
             end
 
             color = tonumber(color)
-            if color == nil or color < 0 then
-                me:message("색상 ID는 0 이상의 숫자여야 합니다.")
+            if color == nil or color < 0 or color > 255 then
+                me:message("색상 ID는 0~255 사이의 숫자여야 합니다.")
                 return true
             end
 
-            me:push_achievement(id, text, icon, color)
+            if me:push_achievement(id, text, icon, color) == nil then
+                me:message("업적을 더 추가할 수 없습니다.")
+            end
             return true
         end,
     },
