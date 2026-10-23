@@ -373,6 +373,12 @@ int builtin::clan::builtin_change_role(lua_State* L)
         return 1;
     }
 
+    if (lua->is_number(4) == false)
+    {
+        lua->pushstring(_TEXT(MESSAGE_CLAN_INVALID_ROLE));
+        return 1;
+    }
+
     auto target = lua->tostring(3);
     auto role   = lua->toenum(4, CLAN_ROLE::MATE);
 

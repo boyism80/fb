@@ -36,8 +36,7 @@ local DIP_UNENEMY = 4
 local CONFIRM_YES = 1
 local CONFIRM_NO  = 2
 
-local ROLE_DEPUTY = "2"
-local ROLE_MASTER = "3"
+local ROLE_PICK_DEPUTY = 3
 
 local MSG_CREATE_OK       = "축하하오"
 local MSG_CREATE_DUP      = "클랜명이 이미 존재함"
@@ -58,7 +57,6 @@ local MSG_LEAVE_MASTER    = "문파 마스터는 탈퇴할 수 없습니다"
 local MSG_KICK_OK         = "축출 수속이 처리되었소"
 local MSG_ROLE_OK         = "직책 임명 수속이 처리되었소"
 local MSG_NO_PRIV         = "문파 권한이 부족합니다"
-local MSG_ERR_CODE_27     = "에러코드 : 27"
 local MSG_WAITING         = "잠시만 기다려보시오"
 local MSG_NONE            = "없음"
 
@@ -376,7 +374,6 @@ local function is_privilege_error(msg)
         return false
     end
     return msg:find(MSG_NO_PRIV, 1, true) ~= nil
-        or msg:find(MSG_ERR_CODE_27, 1, true) ~= nil
 end
 
 local function send_input_fire(bot, text)
@@ -393,15 +390,11 @@ local function change_role(bot, target_name, role)
     if packet == nil then
         return nil, "role name input missing"
     end
-    packet = bot:request_dialog(
-        protocol.dialog("INPUT", 0, target_name, 0, 0, "", "NEXT"),
-        function(p)
-            return p.type == "input"
-        end)
+    packet = send_input_expect(bot, target_name, "list")
     if packet == nil then
-        return nil, "role second prompt missing"
+        return nil, "role list missing"
     end
-    packet = send_input_expect(bot, tostring(role), "normal")
+    packet = select_list(bot, role, { "normal" })
     if packet == nil then
         return nil, "role result missing"
     end
@@ -821,7 +814,7 @@ test_suite {
             local outsider = ctx:bot(2)
             progress(master, "S8: PROMOTE + PRIVILEGE")
 
-            local msg, err = change_role(master, deputy:name(), ROLE_DEPUTY)
+            local msg, err = change_role(master, deputy:name(), ROLE_PICK_DEPUTY)
             if msg == nil or msg:find(MSG_ROLE_OK, 1, true) == nil then
                 progress(master, "FAILED: promote " .. tostring(msg or err))
                 return false
@@ -890,9 +883,9 @@ test_suite {
                 return false
             end
 
-            local msg, err = change_role(deputy, outsider:name(), ROLE_MASTER)
+            local msg, err = change_role(deputy, outsider:name(), ROLE_PICK_DEPUTY)
             if msg == nil or is_privilege_error(msg) == false then
-                progress(deputy, "FAILED: role-to-master " .. tostring(msg or err))
+                progress(deputy, "FAILED: role-to-deputy by deputy " .. tostring(msg or err))
                 return false
             end
 

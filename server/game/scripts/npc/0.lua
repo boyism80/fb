@@ -186,8 +186,12 @@ local function sample_clan(me, npc)
             end
 
             local name = me:input(npc, '상대 이름 입력')
-            local role = me:input(npc, '직책 입력')
-            local error = clan:change_role(me, name, tonumber(role))
+            local role = tonumber(me:input(npc, '직책 입력'))
+            if role == nil then
+                me:dialog(npc, '직책은 숫자로 입력')
+                return
+            end
+            local error = clan:change_role(me, name, role)
             if error ~= nil then
                 me:dialog(npc, error)
             else

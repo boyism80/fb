@@ -1,5 +1,7 @@
 local M = {}
 
+local ASSIGNABLE_ROLES = { CLAN_ROLE.MATE, CLAN_ROLE.OFFICER, CLAN_ROLE.DEPUTY }
+
 local function find_nearby_character(me, name)
     for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
         if ch:name() == name then
@@ -203,8 +205,12 @@ local function clan_operation(me, npc, clan)
         end
     elseif selected == 4 then
         local name = me:input(npc, '직책을 바꾸고자 하는 회원의 이름은 무엇이오?')
-        local role = me:input(npc, '새로 임명할 직책 번호를 입력하시오.')
-        local error = clan:change_role(me, name, tonumber(role))
+        local role_selected, role_button = me:list(npc, '새로 임명할 직책을 고르시오.', { '문원', '간부', '부문주' })
+        local role = ASSIGNABLE_ROLES[role_selected]
+        if role_button == DIALOG_RESULT.QUIT or role == nil then
+            return
+        end
+        local error = clan:change_role(me, name, role)
         if error ~= nil then
             me:dialog(npc, error)
         else

@@ -21,6 +21,27 @@
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 
+namespace {
+
+std::string role_name(uint32_t role)
+{
+    switch (static_cast<CLAN_ROLE>(role))
+    {
+    case CLAN_ROLE::MATE:
+        return _TEXT(MESSAGE_CLAN_ROLE_MATE);
+    case CLAN_ROLE::OFFICER:
+        return _TEXT(MESSAGE_CLAN_ROLE_OFFICER);
+    case CLAN_ROLE::DEPUTY:
+        return _TEXT(MESSAGE_CLAN_ROLE_DEPUTY);
+    case CLAN_ROLE::MASTER:
+        return _TEXT(MESSAGE_CLAN_ROLE_MASTER);
+    default:
+        return std::to_string(role);
+    }
+}
+
+} // namespace
+
 async::task<void> clan::container::on_updated(const internal_resp::UpdatedClan& resp)
 {
     co_await this->on_error(resp.error);
@@ -905,7 +926,8 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
         if (target != nullptr)
         {
             auto targets = std::vector<std::shared_ptr<character>>{target};
-            auto message = std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), old_role.value(), new_role.value());
+            auto message =
+                std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), role_name(old_role.value()), role_name(new_role.value()));
             this->_server.characters.foreach_enqueue(
                 [message](auto& target_member) -> async::task<void> {
                     target_member->message(message, MESSAGE_TYPE::NOTIFY);
@@ -919,8 +941,8 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
     {
         auto message = std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED_DETAILED),
                                    target_name.value(),
-                                   old_role.value(),
-                                   new_role.value());
+                                   role_name(old_role.value()),
+                                   role_name(new_role.value()));
         this->_server.characters.foreach_enqueue(
             [message](auto& member_ptr) -> async::task<void> {
                 member_ptr->message(message, MESSAGE_TYPE::NOTIFY);
