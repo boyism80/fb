@@ -26,7 +26,8 @@ local CLAIM_PATH        = "/storage/claim"
 local MSG_GRANT_NEED_REWARD = "보상이 하나 이상 필요합니다."
 local MSG_GRANT_OK          = "지급이 완료되었습니다."
 local MSG_RECEIVE_OK        = "보상이 지급되었습니다."
-local MSG_RECEIVE_FAIL      = "수령 조건이 맞지 않습니다"
+local MSG_RECEIVE_FULL      = "소지품이 가득 차서 보상을 받을 수 없습니다"
+local MSG_RECEIVE_PENDING   = "수령 결과를 확인하지 못했습니다"
 local MSG_STATUS_AVAILABLE  = "수령 가능"
 local MSG_STATUS_RECEIVED   = "수령 완료"
 
@@ -360,9 +361,9 @@ local function receive_under_fault(ctx, a, b, title, fault_command)
     if detail == nil then
         return false, err
     end
-    local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_FAIL)
+    local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_PENDING)
     if matched == false then
-        return false, "expected receive fail, got=" .. tostring(result_msg)
+        return false, "expected pending receive, got=" .. tostring(result_msg)
     end
     if b:item_count(REWARD_ITEM_NAME) ~= 0 then
         return false, "reward granted while the claim was unknown"
@@ -490,7 +491,7 @@ test_suite {
                 end
             end)
 
-            local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_FAIL)
+            local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_FULL)
             ctx:unhook("message")
             progress(b, string.format("S3/C1 notifies=%s", table.concat(notifies, " || ")))
 
@@ -557,7 +558,7 @@ test_suite {
                             progress(b, "FAILED: receive result missing")
                             return false
                         end
-                        if message_contains(packet, MSG_RECEIVE_FAIL) == false then
+                        if message_contains(packet, MSG_RECEIVE_FULL) == false then
                             progress(b, "FAILED: expected receive fail after unclaim, got=" .. tostring(packet.message))
                             close_dialog(b)
                             return false

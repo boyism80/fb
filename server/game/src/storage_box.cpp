@@ -195,7 +195,30 @@ bool storage_box::contains_system_box(uint32_t system_storage_box_id) const
     });
 }
 
-async::task<bool> storage_box::receive_reward(uint32_t entry_id)
+const char* storage_box::result_name(receive_result result)
+{
+    switch (result)
+    {
+    case receive_result::RECEIVED:
+        return "received";
+    case receive_result::NOT_FOUND:
+        return "not_found";
+    case receive_result::IN_PROGRESS:
+        return "in_progress";
+    case receive_result::ALREADY_RECEIVED:
+        return "already_received";
+    case receive_result::EXPIRED:
+        return "expired";
+    case receive_result::INVENTORY_FULL:
+        return "inventory_full";
+    case receive_result::PENDING_RETRY:
+        return "pending_retry";
+    default:
+        return "failed";
+    }
+}
+
+async::task<storage_box::receive_result> storage_box::receive_reward(uint32_t entry_id)
 {
     this->_owner.assert_thread();
 
@@ -203,22 +226,22 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     if (it == this->_entries.end())
     {
         fb::logger::warn("storage_box.receive_reward entry not found user={} entry={}", this->_owner.id, entry_id);
-        co_return false;
+        co_return receive_result::NOT_FOUND;
     }
 
     auto pending = this->_owner.unsettled.find(UNSETTLED_TYPE::STORAGE_CLAIM, entry_id);
     if (pending.has_value() && this->_owner.unsettled.find(pending.value())->in_flight)
-        co_return false;
+        co_return receive_result::IN_PROGRESS;
 
     if (it->second.received)
-        co_return false;
+        co_return receive_result::ALREADY_RECEIVED;
 
     auto now = this->_owner.server.now();
     if (pending.has_value() == false && it->second.expire_date.has_value() && it->second.expire_date.value() < now)
-        co_return false;
+        co_return receive_result::EXPIRED;
 
     if (this->_owner.items.is_rewardable(it->second.attachments) == false)
-        co_return false;
+        co_return receive_result::INVENTORY_FULL;
 
     auto weak     = this->_owner.weak_from_this_as<character>();
     auto world    = this->_owner.world();
@@ -250,7 +273,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     if (ptr == nullptr)
     {
         fb::logger::warn("storage_box.receive_reward owner gone after claim entry={}", entry_id);
-        co_return false;
+        co_return receive_result::FAILED;
     }
 
     if (auto request = ptr->unsettled.find(claim_id); request != nullptr)
@@ -260,13 +283,13 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     if (it == ptr->storage_box._entries.end())
     {
         fb::logger::warn("storage_box.receive_reward entry missing after claim user={} entry={}", ptr->id, entry_id);
-        co_return false;
+        co_return receive_result::NOT_FOUND;
     }
 
     // An exception or an unhandled server error leaves the claim unknown, so the unsettled request is kept for the
     // retry.
     if (claim_lost)
-        co_return false;
+        co_return receive_result::PENDING_RETRY;
 
     auto claim_error = static_cast<fb::model::enum_value::ERROR_CODE>(claim_resp.error);
     if (claim_error != fb::model::enum_value::ERROR_CODE::NONE)
@@ -275,9 +298,21 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
                          ptr->id,
                          entry_id,
                          claim_resp.error);
-        if (claim_error != fb::model::enum_value::ERROR_CODE::UNHANDLED)
-            ptr->unsettled.erase(claim_id);
-        co_return false;
+        if (claim_error == fb::model::enum_value::ERROR_CODE::UNHANDLED)
+            co_return receive_result::PENDING_RETRY;
+
+        ptr->unsettled.erase(claim_id);
+        switch (claim_error)
+        {
+        case fb::model::enum_value::ERROR_CODE::STORAGE_BOX_NOT_FOUND:
+            co_return receive_result::NOT_FOUND;
+        case fb::model::enum_value::ERROR_CODE::STORAGE_BOX_ALREADY_RECEIVED:
+            co_return receive_result::ALREADY_RECEIVED;
+        case fb::model::enum_value::ERROR_CODE::STORAGE_BOX_EXPIRED:
+            co_return receive_result::EXPIRED;
+        default:
+            co_return receive_result::FAILED;
+        }
     }
 
     it->second.received = true;
@@ -298,7 +333,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
         ptr = weak.lock();
         if (ptr != nullptr)
             ptr->unsettled.erase(claim_id);
-        co_return false;
+        co_return receive_result::FAILED;
     }
 
     if (granted == false)
@@ -350,7 +385,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
             }
         }
 
-        co_return false;
+        co_return receive_result::INVENTORY_FULL;
     }
 
     ptr->unsettled.erase(claim_id);
@@ -367,7 +402,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     }
     log_data["attachments"] = attachments_array;
     ptr->server.log.write("storage_box_attachment_receive", log_data);
-    co_return true;
+    co_return receive_result::RECEIVED;
 }
 
 void storage_box::set_received(uint32_t entry_id, bool received)

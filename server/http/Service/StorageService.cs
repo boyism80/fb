@@ -244,25 +244,25 @@ namespace Http.Service
 
         // The game retries with the same claim id when a response is lost, so a repeat of the claim that already
         // holds the box succeeds instead of reporting the box as taken.
-        public async Task<bool> ClaimAsync(uint world, uint userId, uint id, ulong claimId)
+        public async Task<ErrorCode> ClaimAsync(uint world, uint userId, uint id, ulong claimId)
         {
             await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId), ClaimLockTimeout);
 
             var box = await _dbContext.StorageBox.Get(world, userId, id);
             if (box == null)
             {
-                return false;
+                return ErrorCode.StorageBoxNotFound;
             }
 
             if (box.Received)
             {
-                return claimId != 0 && box.ClaimId == claimId;
+                return claimId != 0 && box.ClaimId == claimId ? ErrorCode.None : ErrorCode.StorageBoxAlreadyReceived;
             }
 
             // A claim resent after an outage is judged by when the game issued it, not by when it arrived.
             if (box.ExpiredDate.HasValue && box.ExpiredDate.Value <= SnowflakeId.Time(claimId))
             {
-                return false;
+                return ErrorCode.StorageBoxExpired;
             }
 
             var now = DateTime.UtcNow;
@@ -271,27 +271,27 @@ namespace Http.Service
             box.UpdatedDate = now;
             _dbContext.StorageBox.Set(world, box);
             await _dbContext.StorageBox.SaveChangesAsync();
-            return true;
+            return ErrorCode.None;
         }
 
-        public async Task<bool> UnclaimAsync(uint world, uint userId, uint id, ulong claimId)
+        public async Task<ErrorCode> UnclaimAsync(uint world, uint userId, uint id, ulong claimId)
         {
             await using var _ = await _distributedLock.Lock(world, OpsLockKey(userId), ClaimLockTimeout);
 
             var box = await _dbContext.StorageBox.Get(world, userId, id);
             if (box == null)
             {
-                return false;
+                return ErrorCode.StorageBoxNotFound;
             }
 
             if (!box.Received)
             {
-                return true;
+                return ErrorCode.None;
             }
 
             if (box.ClaimId != claimId)
             {
-                return false;
+                return ErrorCode.StorageBoxAlreadyReceived;
             }
 
             box.Received = false;
@@ -299,7 +299,7 @@ namespace Http.Service
             box.UpdatedDate = DateTime.UtcNow;
             _dbContext.StorageBox.Set(world, box);
             await _dbContext.StorageBox.SaveChangesAsync();
-            return true;
+            return ErrorCode.None;
         }
 
         public async Task<int> DeleteReceivedBoxesAsync(uint world, int pageSize)

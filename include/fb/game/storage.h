@@ -35,6 +35,18 @@ public:
     using entry_map = std::map<uint32_t, entry>;
     using box_dto   = fb::protocol::internal::StorageBox;
 
+    enum class receive_result
+    {
+        RECEIVED,
+        NOT_FOUND,
+        IN_PROGRESS,
+        ALREADY_RECEIVED,
+        EXPIRED,
+        INVENTORY_FULL,
+        PENDING_RETRY,
+        FAILED,
+    };
+
 private:
     character& _owner;
     entry_map  _entries;
@@ -47,11 +59,13 @@ private:
 
 public:
     // clang-format off
+    static const char*              result_name(receive_result result);
+
     explicit                        storage_box(character& owner);
     void                            init(const std::vector<entry>& entries);
     void                            add(const std::vector<entry>& entries);
     bool                            contains_system_box(uint32_t system_storage_box_id) const;
-    [[nodiscard]] async::task<bool> receive_reward(uint32_t entry_id);
+    [[nodiscard]] async::task<receive_result> receive_reward(uint32_t entry_id);
     void                            set_received(uint32_t entry_id, bool received);
     const entry_map&                entries() const;
     uint32_t                        next_sequence() const;

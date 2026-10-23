@@ -7275,21 +7275,24 @@ int builtin::character::builtin_receive_storage_reward(lua_State* L)
     if (ch == nullptr)
         return 0;
 
+    using receive_result = fb::game::storage_box::receive_result;
+
     auto entry_id = static_cast<uint32_t>(lua->tointeger(2));
     if (entry_id == 0)
     {
         lua->pushboolean(false);
-        return 1;
+        lua->pushstring(fb::game::storage_box::result_name(receive_result::NOT_FOUND));
+        return 2;
     }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto success  = std::make_shared<bool>(false);
+    auto result   = std::make_shared<receive_result>(receive_result::FAILED);
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         try
         {
-            *success = co_await ch->storage_box.receive_reward(entry_id);
+            *result = co_await ch->storage_box.receive_reward(entry_id);
         }
         catch (const std::exception& e)
         {
@@ -7297,13 +7300,14 @@ int builtin::character::builtin_receive_storage_reward(lua_State* L)
                              ch->id,
                              entry_id,
                              e.what());
-            *success = false;
+            *result = receive_result::FAILED;
         }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*success);
-        co_return 1;
+        lua->pushboolean(*result == receive_result::RECEIVED);
+        lua->pushstring(fb::game::storage_box::result_name(*result));
+        co_return 2;
     };
     return builder.run();
 }

@@ -97,10 +97,10 @@ namespace Internal.Controllers
         {
             try
             {
-                var ok = await _storageService.ClaimAsync(request.World, request.User, request.Id, request.ClaimId);
+                var error = await _storageService.ClaimAsync(request.World, request.User, request.Id, request.ClaimId);
                 return new Response.ClaimStorageBox
                 {
-                    Error = ok ? (uint)ErrorCode.None : (uint)ErrorCode.NotFoundMail
+                    Error = (uint)error
                 };
             }
             catch (Exception)
@@ -117,10 +117,10 @@ namespace Internal.Controllers
         {
             try
             {
-                var ok = await _storageService.UnclaimAsync(request.World, request.User, request.Id, request.ClaimId);
+                var error = await _storageService.UnclaimAsync(request.World, request.User, request.Id, request.ClaimId);
                 return new Response.UnclaimStorageBox
                 {
-                    Error = ok ? (uint)ErrorCode.None : (uint)ErrorCode.NotFoundMail
+                    Error = (uint)error
                 };
             }
             catch (Exception)
