@@ -973,7 +973,8 @@ return {
         elseif ticks < 2 then
             report(me, false, step, string.format('every ran %d times in 1.8s', ticks))
         elseif stopped == nil or after ~= stopped then
-            report(me, false, step, string.format('cancel left the timer running stopped=%s after=%s', tostring(stopped), tostring(after)))
+            report(me, false, step,
+                string.format('cancel left the timer running stopped=%s after=%s', tostring(stopped), tostring(after)))
         else
             sm:call('on_probe_hold', 1000)
             sleep(100)

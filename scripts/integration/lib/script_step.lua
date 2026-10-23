@@ -1,56 +1,59 @@
-local resp     = require("integration.response")
+local resp = require("integration.response")
 local protocol = require("integration.protocol")
 
 local M = {}
 
 function M.run_chat_step(bot, command, pass_prefix, fail_prefix)
-    log("debug", string.format(
-        "run_chat_step: bot=%s command=%q pass=%q fail=%q",
-        bot:name(),
-        command,
-        pass_prefix,
-        fail_prefix))
+    log(
+        "debug",
+        string.format("run_chat_step: bot=%s command=%q pass=%q fail=%q", bot:name(), command, pass_prefix, fail_prefix)
+    )
 
     local oid = bot:oid()
     local attempts = 3
     for attempt = 1, attempts do
-        local packet = bot:request(
-            resp.chat,
-            protocol.chat(false, command),
-            function(p)
-                -- The script reports as normal chat, which every bot nearby also receives.
-                if p.oid ~= oid then
-                    return false
-                end
-                local text = p.text or ""
-                if string.find(text, command, 1, true) ~= nil then
-                    local pass_match = string.find(text, pass_prefix, 1, true) ~= nil
-                    local fail_match = string.find(text, fail_prefix, 1, true) ~= nil
-                    if pass_match == false and fail_match == false then
-                        return false
-                    end
-                end
+        local packet = bot:request(resp.chat, protocol.chat(false, command), function(p)
+            -- The script reports as normal chat, which every bot nearby also receives.
+            if p.oid ~= oid then
+                return false
+            end
+            local text = p.text or ""
+            if string.find(text, command, 1, true) ~= nil then
                 local pass_match = string.find(text, pass_prefix, 1, true) ~= nil
                 local fail_match = string.find(text, fail_prefix, 1, true) ~= nil
-                log("debug", string.format(
+                if pass_match == false and fail_match == false then
+                    return false
+                end
+            end
+            local pass_match = string.find(text, pass_prefix, 1, true) ~= nil
+            local fail_match = string.find(text, fail_prefix, 1, true) ~= nil
+            log(
+                "debug",
+                string.format(
                     "chat validator: text=%q pass_match=%s fail_match=%s",
                     text,
                     tostring(pass_match),
-                    tostring(fail_match)))
-                return pass_match or fail_match
-            end)
+                    tostring(fail_match)
+                )
+            )
+            return pass_match or fail_match
+        end)
 
         if type(packet) ~= "table" then
             local level = "warn"
             if attempt == attempts then
                 level = "fatal"
             end
-            log(level, string.format(
-                "run_chat_step: no chat response bot=%s attempt=%d/%d command=%q",
-                bot:name(),
-                attempt,
-                attempts,
-                command))
+            log(
+                level,
+                string.format(
+                    "run_chat_step: no chat response bot=%s attempt=%d/%d command=%q",
+                    bot:name(),
+                    attempt,
+                    attempts,
+                    command
+                )
+            )
             if attempt < attempts then
                 bot:sleep(500)
             else
@@ -58,11 +61,15 @@ function M.run_chat_step(bot, command, pass_prefix, fail_prefix)
             end
         else
             local pass = string.find(packet.text or "", pass_prefix, 1, true) ~= nil
-            log("debug", string.format(
-                "run_chat_step result: bot=%s pass=%s text=%q",
-                bot:name(),
-                tostring(pass),
-                packet.text or ""))
+            log(
+                "debug",
+                string.format(
+                    "run_chat_step result: bot=%s pass=%s text=%q",
+                    bot:name(),
+                    tostring(pass),
+                    packet.text or ""
+                )
+            )
             return pass, packet.text
         end
     end
