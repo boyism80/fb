@@ -44,16 +44,17 @@ public:
 
     struct suite_def
     {
-        std::string                name;
-        uint32_t                   bot_count{1};
-        int                        on_initialize_ref{LUA_NOREF};
-        int                        on_scenario_started_ref{LUA_NOREF};
-        int                        on_scenario_finished_ref{LUA_NOREF};
-        int                        on_parallel_scenario_started_ref{LUA_NOREF};
-        int                        on_parallel_scenario_finished_ref{LUA_NOREF};
-        int                        on_finished_ref{LUA_NOREF};
-        int                        should_skip_ref{LUA_NOREF};
-        std::vector<scenario_item> scenarios;
+        std::string                          name;
+        uint32_t                             bot_count{1};
+        std::vector<fb::bot::client_profile> clients;
+        int                                  on_initialize_ref{LUA_NOREF};
+        int                                  on_scenario_started_ref{LUA_NOREF};
+        int                                  on_scenario_finished_ref{LUA_NOREF};
+        int                                  on_parallel_scenario_started_ref{LUA_NOREF};
+        int                                  on_parallel_scenario_finished_ref{LUA_NOREF};
+        int                                  on_finished_ref{LUA_NOREF};
+        int                                  should_skip_ref{LUA_NOREF};
+        std::vector<scenario_item>           scenarios;
     };
 
 private:
@@ -98,7 +99,8 @@ public:
 
     std::string name() const override;
 
-    async::task<void> on_activated(game_bot_controller& controller) override;
+    fb::bot::client_profile profile(uint32_t slot) const override;
+    async::task<void>       on_activated(game_bot_controller& controller) override;
 
 protected:
     generator<scenario_t> on_generate_scenario() override;

@@ -31,9 +31,6 @@ using namespace fb::bot;
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;
 
-// The bot speaks the v550 C2S layout; versioned requests are instantiated for it.
-constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
-
 game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id) :
     bot<game_bot>(bot_controller, id)
 {
@@ -52,7 +49,7 @@ game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const 
     game_bot(bot_controller, id)
 {
     auto clone    = fb::stream{params};
-    auto reader   = fb::stream_reader<>(clone);
+    auto reader   = fb::stream_reader<big_endian>(clone);
     auto enc_type = reader.read<uint8_t>();
     auto key_size = reader.read<uint8_t>();
     auto enc_key  = std::make_unique<uint8_t[]>(key_size);
@@ -66,7 +63,7 @@ game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const 
         std::ignore = reader.read<uint8_t>();
         auto packed = reader.read<uint16_t>();
         if (fb::protocol::is_supported(packed))
-            this->_client_version = static_cast<fb::protocol::CLIENT_VERSION>(packed);
+            this->profile(client_profile{.version = static_cast<fb::protocol::CLIENT_VERSION>(packed)});
     }
 }
 
@@ -124,11 +121,6 @@ void game_bot::inited(bool value)
 const fb::stream& game_bot::transfer_buffer() const
 {
     return this->_transfer_buffer;
-}
-
-fb::protocol::CLIENT_VERSION game_bot::client_version() const
-{
-    return this->_client_version;
 }
 
 uint32_t game_bot::transfer_from_bot_id() const
@@ -574,7 +566,7 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
     for (int i = 0; i < step; i++)
     {
         this->_direction = direction;
-        this->send(game_reqs::move<BOT_CLIENT_VERSION>{direction, 0, after});
+        this->send(*this->make<game_reqs::move>(direction, 0, after));
         switch (direction)
         {
         case DIRECTION::LEFT:
@@ -616,8 +608,8 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chron
     }
     else if (this->_map != map->id)
     {
-        std::ignore = co_await this->request<game_resp::map_config_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+        std::ignore = co_await this->request<game_resp::map_config>(
+            *this->make<game_reqs::chat>(false, command),
             [map](auto& resp) -> bool {
                 return resp.id == map->id;
             },
@@ -626,7 +618,7 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chron
     else
     {
         std::ignore = co_await this->request<game_resp::position>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+            *this->make<game_reqs::chat>(false, command),
             [x, y](auto& resp) -> bool {
                 return resp.abs.x == x && resp.abs.y == y;
             },
@@ -657,7 +649,7 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
         auto nudge_y       = y;
         auto nudge_command = std::format("/맵이동 {} {} {} {}", map_name_str, nudge_x, nudge_y, slot);
         std::ignore        = co_await this->request<game_resp::position>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, nudge_command},
+            *this->make<game_reqs::chat>(false, nudge_command),
             [nudge_x, nudge_y](auto& resp) -> bool {
                 return resp.abs.x == nudge_x && resp.abs.y == nudge_y;
             },
@@ -668,8 +660,8 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
     // Same-model moves still emit position (warp) or map_config+position (S->C / C->C).
     if (this->_map != map->id)
     {
-        std::ignore = co_await this->request<game_resp::map_config_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+        std::ignore = co_await this->request<game_resp::map_config>(
+            *this->make<game_reqs::chat>(false, command),
             [map](auto& resp) -> bool {
                 return resp.id == map->id;
             },
@@ -678,7 +670,7 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
     else
     {
         std::ignore = co_await this->request<game_resp::position>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+            *this->make<game_reqs::chat>(false, command),
             [x, y](auto& resp) -> bool {
                 return resp.abs.x == x && resp.abs.y == y;
             },
@@ -694,8 +686,8 @@ async::task<void> game_bot::change_level(uint8_t level, std::chrono::millisecond
         co_return;
 
     auto command = std::format("/레벨바꾸기 {}", level);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [level](auto& resp) -> bool {
             return ENUM_IN(resp.level, UPDATE_STATE_LEVEL::BASED) && resp.ch_level == level;
         },
@@ -709,8 +701,8 @@ game_bot::change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chro
         co_return;
 
     auto command = std::format("/스탯바꾸기 {} {} {}", str, dex, intelligence);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [str, dex, intelligence](auto& resp) -> bool {
             return resp.ch_strength == str && resp.ch_dexterity == dex && resp.ch_intelligence == intelligence;
         },
@@ -723,8 +715,8 @@ async::task<void> game_bot::change_str(uint8_t str, std::chrono::milliseconds ti
         co_return;
 
     auto command = std::format("/힘바꾸기 {}", str);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [str](auto& resp) -> bool {
             return resp.ch_strength == str;
         },
@@ -737,8 +729,8 @@ async::task<void> game_bot::change_dex(uint8_t dex, std::chrono::milliseconds ti
         co_return;
 
     auto command = std::format("/민첩바꾸기 {}", dex);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [dex](auto& resp) -> bool {
             return resp.ch_dexterity == dex;
         },
@@ -751,8 +743,8 @@ async::task<void> game_bot::change_int(uint8_t intelligence, std::chrono::millis
         co_return;
 
     auto command = std::format("/지력바꾸기 {}", intelligence);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [intelligence](auto& resp) -> bool {
             return resp.ch_intelligence == intelligence;
         },
@@ -765,8 +757,8 @@ async::task<void> game_bot::change_gender(GENDER gender, std::chrono::millisecon
         co_return;
 
     auto command = std::format("/성별바꾸기 {}", (uint8_t)gender);
-    std::ignore  = co_await this->request<game_resp::show_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::show>(
+        *this->make<game_reqs::chat>(false, command),
         [gender](auto& resp) -> bool {
             return resp.gender == gender;
         },
@@ -779,8 +771,8 @@ async::task<void> game_bot::change_base_hp(uint32_t hp, std::chrono::millisecond
         co_return;
 
     auto command = std::format("/체력바꾸기 {}", hp);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [hp](auto& resp) -> bool {
             return resp.ch_base_hp == hp;
         },
@@ -793,8 +785,8 @@ async::task<void> game_bot::change_base_mp(uint32_t mp, std::chrono::millisecond
         co_return;
 
     auto command = std::format("/마력바꾸기 {}", mp);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [mp](auto& resp) -> bool {
             return resp.ch_base_mp == mp;
         },
@@ -807,8 +799,8 @@ async::task<void> game_bot::change_hp(uint32_t hp, std::chrono::milliseconds tim
         co_return;
 
     auto command = std::format("/현재체력 {}", hp);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [hp](auto& resp) -> bool {
             return resp.ch_hp == hp;
         },
@@ -821,8 +813,8 @@ async::task<void> game_bot::change_mp(uint32_t mp, std::chrono::milliseconds tim
         co_return;
 
     auto command = std::format("/현재마력 {}", mp);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [mp](auto& resp) -> bool {
             return resp.ch_mp == mp;
         },
@@ -840,7 +832,7 @@ async::task<void> game_bot::direction(DIRECTION direction, std::chrono::millisec
     try
     {
         std::ignore = co_await this->request<game_resp::direction>(
-            game_reqs::direction<BOT_CLIENT_VERSION>{direction},
+            *this->make<game_reqs::direction>(direction),
             [direction](auto& resp) -> bool {
                 return resp.value == direction;
             },
@@ -889,7 +881,7 @@ async::task<void> game_bot::pattern_chat()
 
 async::task<void> game_bot::pattern_attack()
 {
-    this->send(game_reqs::attack<BOT_CLIENT_VERSION>());
+    this->send(*this->make<game_reqs::attack>());
     co_return;
 }
 
@@ -901,7 +893,7 @@ async::task<void> game_bot::pattern_direction()
     static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
-    this->send(game_reqs::direction<BOT_CLIENT_VERSION>{direction});
+    this->send(*this->make<game_reqs::direction>(direction));
 
     // Update internal direction state
     this->_direction = direction;
@@ -917,7 +909,7 @@ async::task<void> game_bot::pattern_move()
     static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
-    this->send(game_reqs::move<BOT_CLIENT_VERSION>{direction, 0, this->_position});
+    this->send(*this->make<game_reqs::move>(direction, 0, this->_position));
 
     // Update internal direction state
     this->_direction = direction;
@@ -945,7 +937,7 @@ async::task<void> game_bot::pattern_move()
 
 async::task<void> game_bot::pattern_loot()
 {
-    this->send(game_reqs::loot<BOT_CLIENT_VERSION>{false});
+    this->send(*this->make<game_reqs::loot>(false));
     co_return;
 }
 
@@ -955,7 +947,7 @@ async::task<void> game_bot::pattern_emotion()
     static auto gen    = std::mt19937(device());
     static auto dist   = std::uniform_int_distribution<>(0, 0xFF - 0x0B);
 
-    this->send(game_reqs::emotion<BOT_CLIENT_VERSION>{(uint8_t)dist(gen)});
+    this->send(*this->make<game_reqs::emotion>((uint8_t)dist(gen)));
     co_return;
 }
 
@@ -965,14 +957,13 @@ async::task<void> game_bot::pattern_bulletin_sections()
     static auto gen    = std::mt19937(device());
     static auto dist   = std::uniform_int_distribution<>(0, 1);
 
-    this->send(game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::SECTIONS));
+    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::SECTIONS));
 
     auto section = (uint32_t)dist(gen);
-    this->send(game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::ARTICLES, section));
-    this->send(game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::ARTICLE, section, 0));
-    this->send(
-        game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
-    this->send(game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::DELETE, section, 0));
+    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLES, section));
+    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLE, section, 0));
+    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
+    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::DELETE, section, 0));
     co_return;
 }
 
@@ -1059,7 +1050,7 @@ uint8_t game_bot::get_spell_slot_by_name(std::string_view name) const
 
 void game_bot::remove_buffs()
 {
-    this->send(game_reqs::chat<BOT_CLIENT_VERSION>{false, "/버프해제"});
+    this->send(*this->make<game_reqs::chat>(false, "/버프해제"));
 }
 
 void game_bot::record_dialog(const integration::dialog_bot& dialog)
@@ -1101,15 +1092,15 @@ std::vector<std::string> game_bot::take_messages()
 
 void game_bot::chat(std::string_view message)
 {
-    this->send(game_reqs::chat<BOT_CLIENT_VERSION>{false, std::string(message)});
+    this->send(*this->make<game_reqs::chat>(false, std::string(message)));
 }
 
 async::task<void> game_bot::create_item(std::string_view item_name, uint32_t count, std::chrono::milliseconds timeout)
 {
     auto item_name_str = std::string(item_name);
     auto command       = std::format("/아이템생성 {} {}", item_name_str, count);
-    std::ignore        = co_await this->request<game_resp::item_update_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore        = co_await this->request<game_resp::item_update>(
+        *this->make<game_reqs::chat>(false, command),
         [item_name_str, count](auto& resp) -> bool {
             return resp.name.starts_with(item_name_str) && resp.count == count;
         },
@@ -1124,9 +1115,9 @@ async::task<game_bot::simple_npc> game_bot::create_npc(std::string_view npc_name
     if (!model)
         throw std::runtime_error(std::format("Failed to find NPC model for {}", npc_name_str));
 
-    auto   look = model->look;
-    auto&& resp = co_await this->request<game_resp::update_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    auto look     = model->look;
+    auto response = co_await this->request<game_resp::update>(
+        *this->make<game_reqs::chat>(false, command),
         [bot_pos = this->position(), look](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -1145,8 +1136,10 @@ async::task<game_bot::simple_npc> game_bot::create_npc(std::string_view npc_name
         },
         timeout);
 
-    auto& npc = resp.objects_data.front();
-    co_return simple_npc(npc.oid, npc_name);
+    auto oid = this->visit<game_resp::update>(*response, [](const auto& resp) {
+        return resp.objects_data.front().oid;
+    });
+    co_return simple_npc(oid, npc_name);
 }
 
 async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseconds timeout)
@@ -1155,8 +1148,8 @@ async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseco
         co_return;
 
     auto command = std::format("/금전 {}", amount);
-    std::ignore  = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+    std::ignore  = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::chat>(false, command),
         [amount](auto& resp) -> bool {
             return resp.ch_money == amount;
         },
@@ -1166,7 +1159,7 @@ async::task<void> game_bot::change_money(uint32_t amount, std::chrono::milliseco
 async::task<void> game_bot::drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout)
 {
     std::ignore = co_await this->request<game_resp::item_remove>(
-        game_reqs::item_drop<BOT_CLIENT_VERSION>(index + 1, all),
+        *this->make<game_reqs::item_drop>(index + 1, all),
         [index, all](auto& resp) -> bool {
             return resp.type == ITEM_DELETE_TYPE::DROP && resp.index == index;
         },
@@ -1176,8 +1169,8 @@ async::task<void> game_bot::drop_item(uint8_t index, bool all, std::chrono::mill
 async::task<void> game_bot::drop_money(uint32_t amount, std::chrono::milliseconds timeout)
 {
     auto before = this->money();
-    std::ignore = co_await this->request<game_resp::update_internal_v550>(
-        game_reqs::item_drop_money<BOT_CLIENT_VERSION>(amount),
+    std::ignore = co_await this->request<game_resp::update_internal>(
+        *this->make<game_reqs::item_drop_money>(amount),
         [before, amount](auto& resp) -> bool {
             return resp.ch_money == before - amount;
         },
@@ -1213,7 +1206,7 @@ async::task<bool> game_bot::equip(uint8_t slot, std::chrono::milliseconds timeou
 
         auto   prefix = prefix_map.at(item_model->type);
         auto&& resp   = co_await this->request<game_resp::message>(
-            game_reqs::item_active<BOT_CLIENT_VERSION>(slot),
+            *this->make<game_reqs::item_active>(slot),
             [prefix](auto& resp) -> bool {
                 return resp.type == MESSAGE_TYPE::STATE;
             },
@@ -1232,8 +1225,7 @@ async::task<bool> game_bot::unequip(EQUIPMENT_PARTS parts, std::chrono::millisec
     try
     {
         std::ignore =
-            co_await this->request<game_resp::item_update_v550>(game_reqs::item_inactive<BOT_CLIENT_VERSION>(parts),
-                                                                timeout);
+            co_await this->request<game_resp::item_update>(*this->make<game_reqs::item_inactive>(parts), timeout);
 
         co_return true;
     }
@@ -1257,41 +1249,13 @@ async::task<void> game_bot::change_class(std::string_view class_name, std::chron
 }
 
 async::task<spawned_monster_info>
-game_bot::spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                 bot,
-                                       std::string_view                                   monster_name,
-                                       uint16_t                                           x,
-                                       uint16_t                                           y,
-                                       std::function<bool(const game_resp::update_v550&)> validator,
-                                       std::chrono::milliseconds                          timeout)
-{
-    auto   monster_name_str = std::string(monster_name);
-    auto&& spawn_response   = co_await this->request<game_resp::update_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/몬스터생성 {} {} {}", monster_name_str, x, y)},
-        validator,
-        timeout);
-
-    if (spawn_response.objects_data.empty())
-    {
-        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name_str, x, y));
-    }
-
-    auto&                mob = spawn_response.objects_data.front();
-    spawned_monster_info monster_info;
-    monster_info.oid      = mob.oid;
-    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-    monster_info.look     = mob.look;
-
-    co_return monster_info;
-}
-
-async::task<spawned_monster_info>
 game_bot::spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
     auto monster_name_str = std::string(monster_name);
     auto expected_look    = table::mob->name2mob(monster_name_str)->look;
 
-    auto&& spawn_response = co_await this->request<game_resp::update_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/몬스터생성 {} {} {}", monster_name_str, x, y)},
+    auto spawn_response = co_await this->request<game_resp::update>(
+        *this->make<game_reqs::chat>(false, std::format("/몬스터생성 {} {} {}", monster_name_str, x, y)),
         [expected_look](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -1301,18 +1265,15 @@ game_bot::spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, s
         },
         timeout);
 
-    if (spawn_response.objects_data.empty())
-    {
-        throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name_str, x, y));
-    }
+    co_return this->visit<game_resp::update>(*spawn_response, [&](const auto& resp) {
+        if (resp.objects_data.empty())
+            throw std::runtime_error(std::format("Failed to spawn monster {} at ({}, {})", monster_name_str, x, y));
 
-    auto&                mob = spawn_response.objects_data.front();
-    spawned_monster_info monster_info;
-    monster_info.oid      = mob.oid;
-    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-    monster_info.look     = mob.look;
-
-    co_return monster_info;
+        auto& mob = resp.objects_data.front();
+        return spawned_monster_info{.oid      = mob.oid,
+                                    .position = fb::model::point<uint16_t>(mob.x, mob.y),
+                                    .look     = mob.look};
+    });
 }
 
 async::task<void> game_bot::spawn_monsters_bulk(std::string_view          monster_name,
@@ -1322,8 +1283,8 @@ async::task<void> game_bot::spawn_monsters_bulk(std::string_view          monste
     auto monster_name_str = std::string(monster_name);
     auto expected_look    = table::mob->name2mob(monster_name_str)->look;
 
-    std::ignore = co_await this->request<game_resp::update_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/몬스터범위생성 {} {}", monster_name_str, range)},
+    std::ignore = co_await this->request<game_resp::update>(
+        *this->make<game_reqs::chat>(false, std::format("/몬스터범위생성 {} {}", monster_name_str, range)),
         [expected_look](auto& resp) -> bool {
             for (const auto& mob : resp.objects_data)
             {
@@ -1333,46 +1294,6 @@ async::task<void> game_bot::spawn_monsters_bulk(std::string_view          monste
             return true;
         },
         timeout);
-}
-
-async::task<std::vector<spawned_monster_info>>
-game_bot::spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot>                 bot,
-                                                 std::string_view                                   monster_name,
-                                                 const std::vector<std::pair<int, int>>&            relative_positions,
-                                                 std::function<bool(const game_resp::update_v550&)> validator,
-                                                 std::chrono::milliseconds                          timeout)
-{
-    auto                              monster_name_str = std::string(monster_name);
-    auto                              caster_pos       = this->position();
-    std::vector<spawned_monster_info> spawned_monsters;
-
-    for (const auto& [rel_x, rel_y] : relative_positions)
-    {
-        auto monster_x = caster_pos.x + rel_x;
-        auto monster_y = caster_pos.y + rel_y;
-
-        auto&& spawn_response = co_await this->request<game_resp::update_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{
-                false,
-                std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)},
-            validator,
-            timeout);
-
-        if (spawn_response.objects_data.empty())
-        {
-            throw std::runtime_error(
-                std::format("Failed to spawn monster {} at ({}, {})", monster_name_str, monster_x, monster_y));
-        }
-
-        auto&                mob = spawn_response.objects_data.front();
-        spawned_monster_info monster_info;
-        monster_info.oid      = mob.oid;
-        monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-        monster_info.look     = mob.look;
-        spawned_monsters.push_back(monster_info);
-    }
-
-    co_return spawned_monsters;
 }
 
 async::task<std::vector<spawned_monster_info>>
@@ -1391,10 +1312,9 @@ game_bot::spawn_monsters_relative(std::string_view                        monste
         auto monster_x = caster_pos.x + rel_x;
         auto monster_y = caster_pos.y + rel_y;
 
-        auto&& spawn_response = co_await this->request<game_resp::update_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{
-                false,
-                std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)},
+        auto spawn_response = co_await this->request<game_resp::update>(
+            *this->make<game_reqs::chat>(false,
+                                         std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)),
             [expected_look, monster_x, monster_y](auto& resp) -> bool {
                 if (resp.objects_data.empty())
                     return false;
@@ -1412,18 +1332,16 @@ game_bot::spawn_monsters_relative(std::string_view                        monste
             },
             timeout);
 
-        if (spawn_response.objects_data.empty())
-        {
-            throw std::runtime_error(
-                std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
-        }
+        spawned_monsters.push_back(this->visit<game_resp::update>(*spawn_response, [&](const auto& resp) {
+            if (resp.objects_data.empty())
+                throw std::runtime_error(
+                    std::format("Failed to spawn monster {} at ({}, {})", monster_name, monster_x, monster_y));
 
-        auto&                mob = spawn_response.objects_data.front();
-        spawned_monster_info monster_info;
-        monster_info.oid      = mob.oid;
-        monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-        monster_info.look     = mob.look;
-        spawned_monsters.push_back(monster_info);
+            auto& mob = resp.objects_data.front();
+            return spawned_monster_info{.oid      = mob.oid,
+                                        .position = fb::model::point<uint16_t>(mob.x, mob.y),
+                                        .look     = mob.look};
+        }));
     }
 
     co_return spawned_monsters;
@@ -1441,10 +1359,9 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(std::string_v
     auto monster_x  = caster_pos.x + relative_x;
     auto monster_y  = caster_pos.y + relative_y;
 
-    auto&& spawn_response = co_await this->request<game_resp::update_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{
-            false,
-            std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)},
+    auto spawn_response = co_await this->request<game_resp::update>(
+        *this->make<game_reqs::chat>(false,
+                                     std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)),
         [expected_look, monster_x, monster_y](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
@@ -1462,21 +1379,18 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(std::string_v
         },
         timeout);
 
-    if (spawn_response.objects_data.empty())
-    {
-        throw std::runtime_error(std::format("Failed to spawn monster {} at relative position ({}, {})",
-                                             monster_name,
-                                             relative_x,
-                                             relative_y));
-    }
+    co_return this->visit<game_resp::update>(*spawn_response, [&](const auto& resp) {
+        if (resp.objects_data.empty())
+            throw std::runtime_error(std::format("Failed to spawn monster {} at relative position ({}, {})",
+                                                 monster_name,
+                                                 relative_x,
+                                                 relative_y));
 
-    auto&                mob = spawn_response.objects_data.front();
-    spawned_monster_info monster_info;
-    monster_info.oid      = mob.oid;
-    monster_info.position = fb::model::point<uint16_t>(mob.x, mob.y);
-    monster_info.look     = mob.look;
-
-    co_return monster_info;
+        auto& mob = resp.objects_data.front();
+        return spawned_monster_info{.oid      = mob.oid,
+                                    .position = fb::model::point<uint16_t>(mob.x, mob.y),
+                                    .look     = mob.look};
+    });
 }
 
 async::task<bool> game_bot::set_max_hp_mp(int max_hp, int max_mp, std::chrono::milliseconds timeout)
@@ -1486,15 +1400,15 @@ async::task<bool> game_bot::set_max_hp_mp(int max_hp, int max_mp, std::chrono::m
 
     if (static_cast<uint32_t>(max_hp) != this->_base_hp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/체력바꾸기 {}", max_hp)},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/체력바꾸기 {}", max_hp)),
             timeout);
     }
 
     if (static_cast<uint32_t>(max_mp) != this->_base_mp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/마력바꾸기 {}", max_mp)},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/마력바꾸기 {}", max_mp)),
             timeout);
     }
 
@@ -1508,8 +1422,8 @@ async::task<bool> game_bot::set_current_hp_mp(int current_hp, int current_mp, st
 
     if (static_cast<uint32_t>(current_hp) != this->_hp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/현재체력 {}", current_hp)},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/현재체력 {}", current_hp)),
             [current_hp](auto& resp) -> bool {
                 return resp.ch_hp == current_hp;
             },
@@ -1518,8 +1432,8 @@ async::task<bool> game_bot::set_current_hp_mp(int current_hp, int current_mp, st
 
     if (static_cast<uint32_t>(current_mp) != this->_mp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/현재마력 {}", current_mp)},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/현재마력 {}", current_mp)),
             [current_mp](auto& resp) -> bool {
                 return resp.ch_mp == current_mp;
             },
@@ -1537,22 +1451,22 @@ async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
 {
     if (static_cast<uint32_t>(max_hp) != this->_base_hp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/체력바꾸기 {}", max_hp)},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/체력바꾸기 {}", max_hp)),
             timeout);
     }
 
     if (static_cast<uint32_t>(max_mp) != this->_base_mp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/마력바꾸기 {}", max_mp)},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/마력바꾸기 {}", max_mp)),
             timeout);
     }
 
     if (current_hp.has_value() && static_cast<uint32_t>(current_hp.value()) != this->_hp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/현재체력 {}", current_hp.value())},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/현재체력 {}", current_hp.value())),
             [current_hp](auto& resp) -> bool {
                 return resp.ch_hp == current_hp.value();
             },
@@ -1561,8 +1475,8 @@ async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
 
     if (current_mp.has_value() && static_cast<uint32_t>(current_mp.value()) != this->_mp)
     {
-        std::ignore = co_await this->request<game_resp::update_internal_v550>(
-            game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/현재마력 {}", current_mp.value())},
+        std::ignore = co_await this->request<game_resp::update_internal>(
+            *this->make<game_reqs::chat>(false, std::format("/현재마력 {}", current_mp.value())),
             [current_mp](auto& resp) -> bool {
                 return resp.ch_mp == current_mp.value();
             },
@@ -1574,15 +1488,17 @@ async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
 
 async::task<uint8_t> game_bot::learn_spell(std::string_view spell_name, std::chrono::milliseconds timeout)
 {
-    auto   spell_name_str = std::string(spell_name);
-    auto&& resp           = co_await this->request<game_resp::spell_update_v550>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/마법배우기 {}", spell_name_str)},
+    auto spell_name_str = std::string(spell_name);
+    auto response       = co_await this->request<game_resp::spell_update>(
+        *this->make<game_reqs::chat>(false, std::format("/마법배우기 {}", spell_name_str)),
         [](auto& resp) -> bool {
             return resp.index != 0xFF;
         },
         timeout);
 
-    co_return resp.index;
+    co_return this->visit<game_resp::spell_update>(*response, [](const auto& resp) -> uint8_t {
+        return resp.index;
+    });
 }
 
 async::task<size_t> game_bot::learn_spells(const std::vector<std::string>& spell_names,
@@ -1620,14 +1536,14 @@ async::task<void> game_bot::clear_all_spells(std::chrono::milliseconds timeout)
         last_slot = std::max<uint8_t>(last_slot, slot);
     }
 
-    this->send(game_reqs::chat<BOT_CLIENT_VERSION>{false, "/마법지우기"});
+    this->send(*this->make<game_reqs::chat>(false, "/마법지우기"));
     co_return; // Command should succeed if bot is valid
 }
 
 async::task<void> game_bot::clear_all_drop_items(std::chrono::milliseconds timeout)
 {
 
-    this->send(game_reqs::chat<BOT_CLIENT_VERSION>{false, "/아이템삭제"});
+    this->send(*this->make<game_reqs::chat>(false, "/아이템삭제"));
     co_return;
 }
 
@@ -1643,7 +1559,7 @@ async::task<void> game_bot::clear_inventory(std::chrono::milliseconds timeout)
     }
 
     std::ignore = co_await this->request<game_resp::item_remove>(
-        game_reqs::chat<BOT_CLIENT_VERSION>{false, "/아이템초기화"},
+        *this->make<game_reqs::chat>(false, "/아이템초기화"),
         [last_slot](auto& resp) -> bool {
             return resp.index == last_slot;
         },
@@ -1683,7 +1599,7 @@ async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uin
     {
         for (auto i = 0; i < move_y_axis; i++)
         {
-            this->send(game_reqs::move<BOT_CLIENT_VERSION>{DIRECTION::TOP, 0, current_position});
+            this->send(*this->make<game_reqs::move>(DIRECTION::TOP, 0, current_position));
             co_await thread->sleep(interval);
             current_position.y--;
             this->set_position(current_position);
@@ -1825,8 +1741,8 @@ async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& c
 
 async::task<void> game_bot::update_internal_info(std::chrono::milliseconds timeout)
 {
-    auto&& resp = co_await this->request<game_resp::internal_info_v550>(
-        game_reqs::self_info<BOT_CLIENT_VERSION>{},
+    std::ignore = co_await this->request<game_resp::internal_info>(
+        *this->make<game_reqs::self_info>(),
         [](auto& resp) -> bool {
             return true;
         },
@@ -1836,7 +1752,7 @@ async::task<void> game_bot::update_internal_info(std::chrono::milliseconds timeo
 async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
 {
     auto&& resp = co_await this->request<game_resp::message>(
-        game_reqs::group<BOT_CLIENT_VERSION>{target->name()},
+        *this->make<game_reqs::group>(target->name()),
         [](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;
@@ -1854,7 +1770,7 @@ async::task<bool> game_bot::invite_group(std::shared_ptr<game_bot> target, std::
 async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
 {
     auto&& resp = co_await this->request<game_resp::message>(
-        game_reqs::group<BOT_CLIENT_VERSION>{this->name()},
+        *this->make<game_reqs::group>(this->name()),
         [](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;
@@ -1869,7 +1785,7 @@ async::task<bool> game_bot::leave_group(std::chrono::milliseconds timeout)
 async::task<bool> game_bot::kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout)
 {
     auto&& resp = co_await this->request<game_resp::message>(
-        game_reqs::group<BOT_CLIENT_VERSION>{target->name()},
+        *this->make<game_reqs::group>(target->name()),
         [&target](auto& resp) -> bool {
             if (resp.type != MESSAGE_TYPE::STATE)
                 return false;

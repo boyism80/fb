@@ -9,24 +9,47 @@
 
 namespace fb::bot::integration {
 
-namespace {
-
-void read_appearance(fb::stream_reader<big_endian>& reader, dialog_bot& self)
+void dialog_bot::read_appearance(fb::stream_reader<big_endian>& reader)
 {
-    self.interaction = reader.read<uint8_t>();
-    self.oid         = reader.read<uint32_t>();
+    this->interaction = reader.read<uint8_t>();
+    this->oid         = reader.read<uint32_t>();
     reader.read<uint8_t>(); // obj type flag
     reader.read<uint8_t>(); // 0x01
-    self.look  = reader.read<uint16_t>();
-    self.color = reader.read<uint8_t>();
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
     reader.read<uint8_t>();  // obj type flag (duplicate)
     reader.read<uint16_t>(); // look (duplicate)
     reader.read<uint8_t>();  // color (duplicate)
 }
 
-} // namespace
+void dialog_bot::read_appearance_v651(fb::stream_reader<big_endian>& reader)
+{
+    this->interaction = reader.read<uint8_t>();
+    this->oid         = reader.read<uint32_t>();
+    reader.read<uint8_t>();
+    if (reader.read<uint8_t>() == 0x00)
+    {
+        this->look  = 0;
+        this->color = 0;
+        for (auto i = 0; i < 23; i++)
+        {
+            reader.read<uint8_t>();
+        }
+    }
+    else
+    {
+        this->look  = reader.read<uint16_t>();
+        this->color = reader.read<uint8_t>();
+    }
+    reader.read<uint32_t>();
+}
 
 void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    this->deserialize(reader, fb::protocol::CLIENT_VERSION::v550);
+}
+
+void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol::CLIENT_VERSION version)
 {
     header::deserialize(reader);
     uint8_t type_byte = reader.read<uint8_t>();
@@ -36,8 +59,29 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
     {
     case dialog_type::input:
     case dialog_type::input_no_ext:
+    case dialog_type::item:
+    case dialog_type::menu:
+    case dialog_type::menu_no_ext:
+    case dialog_type::pursuit:
+    case dialog_type::buy:
+    case dialog_type::slot:
+    case dialog_type::spell:
+        break;
+
+    default:
+        throw std::runtime_error("Unknown dialog type: " + std::to_string(type_byte));
+    }
+
+    if (version == fb::protocol::CLIENT_VERSION::v651)
+        this->read_appearance_v651(reader);
+    else
+        this->read_appearance(reader);
+
+    switch (this->type)
     {
-        read_appearance(reader, *this);
+    case dialog_type::input:
+    case dialog_type::input_no_ext:
+    {
         this->message = reader.read<std::string, uint16_t>();
         if (this->type == dialog_type::input)
             reader.read<std::string, uint8_t>(); // ext blob
@@ -47,7 +91,6 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
 
     case dialog_type::item:
     {
-        read_appearance(reader, *this);
         this->message      = reader.read<std::string, uint16_t>();
         this->item_pursuit = reader.read<uint16_t>();
         this->pursuit      = this->item_pursuit;
@@ -70,7 +113,6 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
     case dialog_type::menu:
     case dialog_type::menu_no_ext:
     {
-        read_appearance(reader, *this);
         this->message = reader.read<std::string, uint16_t>();
         if (this->type == dialog_type::menu)
             reader.read<std::string, uint8_t>(); // ext blob
@@ -87,7 +129,6 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
 
     case dialog_type::pursuit:
     {
-        read_appearance(reader, *this);
         this->message = reader.read<std::string, uint16_t>();
         this->pursuit = reader.read<uint16_t>();
 
@@ -103,7 +144,6 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
 
     case dialog_type::buy:
     {
-        read_appearance(reader, *this);
         this->message = reader.read<std::string, uint16_t>();
         this->pursuit = reader.read<uint16_t>();
 
@@ -112,17 +152,31 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
         this->menu_menus.clear();
         for (uint16_t i = 0; i < entry_count; i++)
         {
-            auto name  = reader.read<std::string, uint8_t>();
-            auto value = reader.read<std::string, uint8_t>();
-            this->menu_menus.push_back(name);
-            this->buy_entries.emplace_back(std::move(name), std::move(value));
+            if (version == fb::protocol::CLIENT_VERSION::v651)
+            {
+                reader.read<uint32_t>();
+                reader.read<uint16_t>();
+                reader.read<uint8_t>();
+                auto price = reader.read<uint32_t>();
+                reader.read<uint8_t>();
+                auto name = reader.read<std::string, uint8_t>();
+                reader.read<uint8_t>();
+                this->menu_menus.push_back(name);
+                this->buy_entries.emplace_back(std::move(name), std::to_string(price));
+            }
+            else
+            {
+                auto name  = reader.read<std::string, uint8_t>();
+                auto value = reader.read<std::string, uint8_t>();
+                this->menu_menus.push_back(name);
+                this->buy_entries.emplace_back(std::move(name), std::move(value));
+            }
         }
     }
     break;
 
     case dialog_type::slot:
     {
-        read_appearance(reader, *this);
         this->message = reader.read<std::string, uint16_t>();
         this->pursuit = reader.read<uint16_t>();
 
@@ -138,14 +192,10 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
     case dialog_type::spell:
     {
         // Client picks from local spellbook; packet carries message + pursuit only.
-        read_appearance(reader, *this);
         this->message = reader.read<std::string, uint16_t>();
         this->pursuit = reader.read<uint16_t>();
     }
     break;
-
-    default:
-        throw std::runtime_error("Unknown dialog type: " + std::to_string(type_byte));
     }
 }
 

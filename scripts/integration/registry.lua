@@ -50,6 +50,7 @@ register_test("special_chat_thread_test", { serial = true })
 register_test("rabbit_quest_test", { label = { "regular", "script" } })
 register_test("mob_parts_test")
 register_test("resist_test")
+register_test("cross_version_test")
 
 register_test("quest_clear_shield_test", { label = "script" })
 register_test("quest_lighthouse_test", { label = "script" })

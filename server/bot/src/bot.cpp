@@ -123,3 +123,58 @@ fb::thread* base_bot::pinned_thread() const
 {
     return this->_pinned_thread;
 }
+
+const client_profile& base_bot::profile() const
+{
+    return this->_profile;
+}
+
+void base_bot::profile(const client_profile& value)
+{
+    this->_profile = value;
+}
+
+fb::protocol::CLIENT_VERSION base_bot::client_version() const
+{
+    return this->_profile.version;
+}
+
+fb::protocol::CLIENT_UI_MODE base_bot::ui_mode() const
+{
+    return this->_profile.ui_mode;
+}
+
+std::optional<uint32_t> base_bot::slot() const
+{
+    return this->_slot;
+}
+
+void base_bot::slot(std::optional<uint32_t> value)
+{
+    this->_slot = value;
+}
+
+void base_bot::carry_over(const base_bot& source)
+{
+    if (this->client_version() != source.client_version())
+        fb::logger::fatal("bot transfer changed client version: bot_id={} source_bot_id={} source={} transferred={}",
+                          this->id,
+                          source.id,
+                          fb::protocol::to_string(source.client_version()),
+                          fb::protocol::to_string(this->client_version()));
+
+    this->_profile.ui_mode = source.ui_mode();
+    this->_slot            = source.slot();
+}
+
+void base_bot::add_unread(uint8_t opcode)
+{
+    auto lock = std::lock_guard(this->_unread_mutex);
+    this->_unread_opcodes[opcode]++;
+}
+
+std::map<uint8_t, uint32_t> base_bot::unread_opcodes() const
+{
+    auto lock = std::lock_guard(this->_unread_mutex);
+    return this->_unread_opcodes;
+}

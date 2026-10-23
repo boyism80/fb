@@ -194,6 +194,10 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"exp",                      builtin::game_bot::builtin_exp},
     {"gender",                   builtin::game_bot::builtin_gender},
     {"map",                      builtin::game_bot::builtin_map},
+    {"client_version",           builtin::game_bot::builtin_client_version},
+    {"ui_mode",                  builtin::game_bot::builtin_ui_mode},
+    {"slot",                     builtin::game_bot::builtin_slot},
+    {"unread_opcodes",           builtin::game_bot::builtin_unread_opcodes},
     {"item_slot",                builtin::game_bot::builtin_item_slot},
     {"item_count",               builtin::game_bot::builtin_item_count},
     {"spell_slot",               builtin::game_bot::builtin_spell_slot},
@@ -340,6 +344,72 @@ int builtin::game_bot::builtin_map(lua_State* L)
         return 0;
 
     lua->pushinteger(static_cast<lua_Integer>(bot->map()));
+    return 1;
+}
+
+int builtin::game_bot::builtin_client_version(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    lua->pushinteger(static_cast<lua_Integer>(bot->client_version()));
+    return 1;
+}
+
+int builtin::game_bot::builtin_ui_mode(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    lua->pushstring(std::string(fb::protocol::to_string(bot->ui_mode())));
+    return 1;
+}
+
+int builtin::game_bot::builtin_slot(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    auto slot = bot->slot();
+    if (slot.has_value())
+        lua->pushinteger(static_cast<lua_Integer>(slot.value()));
+    else
+        lua->pushnil();
+    return 1;
+}
+
+int builtin::game_bot::builtin_unread_opcodes(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    lua->new_table();
+    for (auto& [opcode, count] : bot->unread_opcodes())
+    {
+        lua->pushinteger(static_cast<lua_Integer>(opcode));
+        lua->pushinteger(static_cast<lua_Integer>(count));
+        lua->settable(-3);
+    }
     return 1;
 }
 
@@ -832,7 +902,7 @@ int builtin::game_bot::builtin_request(lua_State* L)
     auto*                                 response_entry = lua_protocol::to_response_token(L, 2);
     std::shared_ptr<fb::protocol::header> request;
     if (lua->argc() >= 3 && lua->is_nil(3) == false)
-        request = lua_protocol::to_request(L, 3);
+        request = lua_protocol::to_request(L, 3, bot->client_version());
 
     if (lua->argc() < 4 || lua->is_function(4) == false)
         return luaL_error(L, "request(response, packet|nil, validator) requires a function as third argument");
@@ -848,10 +918,12 @@ int builtin::game_bot::builtin_request(lua_State* L)
         timeout = fb::model::timespan(std::chrono::milliseconds(static_cast<int>(require_integer<int>(L, lua, 5))));
 
     auto bot_ptr = bot;
+    auto version = bot->client_version();
     auto result  = std::make_shared<std::shared_ptr<fb::protocol::header>>();
 
-    auto builder  = lua->new_co_builder();
-    builder.yield = [lua, bot_ptr, response_entry, request, validator_ref, timeout, result]() -> async::task<void> {
+    auto builder = lua->new_co_builder();
+    builder.yield =
+        [lua, bot_ptr, version, response_entry, request, validator_ref, timeout, result]() -> async::task<void> {
         auto* L_state = static_cast<lua_State*>(*lua);
 
         if (bot_ptr == nullptr)
@@ -860,13 +932,13 @@ int builtin::game_bot::builtin_request(lua_State* L)
             co_return;
         }
 
-        auto condition = [lua, validator_ref, response_entry](const fb::protocol::header& header) -> bool {
+        auto condition = [lua, validator_ref, response_entry, version](const fb::protocol::header& header) -> bool {
             auto* L_state = static_cast<lua_State*>(*lua);
             auto* lua_ctx = fb::lua::get(L_state);
             if (lua_ctx == nullptr)
                 return false;
 
-            response_entry->marshal_lua(L_state, header);
+            response_entry->marshal_lua(L_state, header, version);
 
             lua_rawgeti(L_state, LUA_REGISTRYINDEX, validator_ref);
             lua_pushvalue(L_state, -2);
@@ -885,7 +957,9 @@ int builtin::game_bot::builtin_request(lua_State* L)
 
         std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone;
         if (response_entry->clone != nullptr)
-            clone = response_entry->clone;
+            clone = [response_entry, version](const fb::protocol::header& header) {
+                return response_entry->clone(header, version);
+            };
 
         try
         {
@@ -905,13 +979,13 @@ int builtin::game_bot::builtin_request(lua_State* L)
 
         luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
     };
-    builder.resume = [lua, result, response_entry]() -> async::task<int> {
+    builder.resume = [lua, result, response_entry, version]() -> async::task<int> {
         if (*result == nullptr)
         {
             lua->pushboolean(false);
             co_return 1;
         }
-        response_entry->marshal_lua(static_cast<lua_State*>(*lua), **result);
+        response_entry->marshal_lua(static_cast<lua_State*>(*lua), **result, version);
         co_return 1;
     };
     return builder.run();
@@ -934,7 +1008,7 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
     auto*                                 response_entry = lua_protocol::to_response_token(L, 3);
     std::shared_ptr<fb::protocol::header> request;
     if (lua->argc() >= 4 && lua->is_nil(4) == false)
-        request = lua_protocol::to_request(L, 4);
+        request = lua_protocol::to_request(L, 4, sender->client_version());
 
     if (lua->argc() < 5 || lua->is_function(5) == false)
         return luaL_error(L,
@@ -950,12 +1024,14 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
     if (lua->argc() >= 6 && lua->is_nil(6) == false)
         timeout = fb::model::timespan(std::chrono::milliseconds(static_cast<int>(require_integer<int>(L, lua, 6))));
 
-    auto sender_ptr   = sender;
-    auto listener_ptr = listener;
-    auto result       = std::make_shared<std::shared_ptr<fb::protocol::header>>();
+    auto sender_ptr       = sender;
+    auto listener_ptr     = listener;
+    auto listener_version = listener->client_version();
+    auto result           = std::make_shared<std::shared_ptr<fb::protocol::header>>();
 
-    auto builder  = lua->new_co_builder();
-    builder.yield = [lua, sender_ptr, listener_ptr, response_entry, request, validator_ref, timeout, result]()
+    auto builder = lua->new_co_builder();
+    builder.yield =
+        [lua, sender_ptr, listener_ptr, listener_version, response_entry, request, validator_ref, timeout, result]()
         -> async::task<void> {
         auto* L_state = static_cast<lua_State*>(*lua);
 
@@ -965,13 +1041,14 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
             co_return;
         }
 
-        auto condition = [lua, validator_ref, response_entry](const fb::protocol::header& header) -> bool {
+        auto condition =
+            [lua, validator_ref, response_entry, listener_version](const fb::protocol::header& header) -> bool {
             auto* L_state = static_cast<lua_State*>(*lua);
             auto* lua_ctx = fb::lua::get(L_state);
             if (lua_ctx == nullptr)
                 return false;
 
-            response_entry->marshal_lua(L_state, header);
+            response_entry->marshal_lua(L_state, header, listener_version);
 
             lua_rawgeti(L_state, LUA_REGISTRYINDEX, validator_ref);
             lua_pushvalue(L_state, -2);
@@ -990,7 +1067,9 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
 
         std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone;
         if (response_entry->clone != nullptr)
-            clone = response_entry->clone;
+            clone = [response_entry, listener_version](const fb::protocol::header& header) {
+                return response_entry->clone(header, listener_version);
+            };
 
         try
         {
@@ -1010,13 +1089,13 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
 
         luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
     };
-    builder.resume = [lua, result, response_entry]() -> async::task<int> {
+    builder.resume = [lua, result, response_entry, listener_version]() -> async::task<int> {
         if (*result == nullptr)
         {
             lua->pushboolean(false);
             co_return 1;
         }
-        response_entry->marshal_lua(static_cast<lua_State*>(*lua), **result);
+        response_entry->marshal_lua(static_cast<lua_State*>(*lua), **result, listener_version);
         co_return 1;
     };
     return builder.run();
@@ -1032,7 +1111,7 @@ int builtin::game_bot::builtin_send(lua_State* L)
     if (bot == nullptr)
         return 0;
 
-    auto request = lua_protocol::to_request(L, 2);
+    auto request = lua_protocol::to_request(L, 2, bot->client_version());
     auto bot_ptr = bot;
 
     auto builder  = lua->new_co_builder();
@@ -1170,7 +1249,7 @@ int builtin::game_bot::builtin_transfer(lua_State* L)
     if (bot == nullptr)
         return 0;
 
-    auto request = lua_protocol::to_request(L, 2);
+    auto request = lua_protocol::to_request(L, 2, bot->client_version());
     auto bot_ptr = bot;
 
     if (fb::lua::luable::is_weak_userdata(*lua, 1) == false)

@@ -26,10 +26,6 @@ constexpr auto LOGIN_REQUEST_TIMEOUT = 10s;
 
 constexpr auto RELOGIN_TIMEOUT = 30s;
 
-// create / complete / login C2S layouts carry no version delta, so the bot always
-// builds them with the primary (v550) specialization.
-constexpr auto REQUEST_VERSION = fb::protocol::CLIENT_VERSION::v550;
-
 } // namespace
 
 login_bot_controller::login_bot_controller(bot_container& container) :
@@ -61,8 +57,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
         while (relogin == false)
         {
             fb::logger::debug("login create request: bot_id={} account={}", bot.id, id);
-            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::create<REQUEST_VERSION>(id, pw),
-                                                                    LOGIN_REQUEST_TIMEOUT);
+            auto&& resp =
+                co_await bot.request<login_resp::message>(*bot.make<login_reqs::create>(id, pw), LOGIN_REQUEST_TIMEOUT);
 
             if (resp.type == 0x00)
                 break;
@@ -91,7 +87,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             while (true)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(
-                    login_reqs::complete<REQUEST_VERSION>{hair, gender, nation, divine_beast},
+                    *bot.make<login_reqs::complete>(hair, gender, nation, divine_beast),
                     LOGIN_REQUEST_TIMEOUT);
 
                 if (resp.type == 0x00)
@@ -113,8 +109,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
         auto relogin_deadline = std::chrono::steady_clock::now() + RELOGIN_TIMEOUT;
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::login<REQUEST_VERSION>{id, pw},
-                                                                    LOGIN_REQUEST_TIMEOUT);
+            auto&& resp =
+                co_await bot.request<login_resp::message>(*bot.make<login_reqs::login>(id, pw), LOGIN_REQUEST_TIMEOUT);
             if (resp.type == 0x00)
                 break;
 
@@ -146,6 +142,7 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
     bot.close();
 
     auto created = this->container.game->create(response.parameter);
+    created->carry_over(bot);
     created->credential(bot.credential());
     if (bot.reconnect_from() != 0)
         created->set_transfer_from_bot_id(bot.reconnect_from());
@@ -162,17 +159,14 @@ async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     // Integration test: Initialize authentication test scenario upon connection
     auto& encryption = bot.encryption();
-
-    // Runtime CLIENT_VERSION -> compile-time V for the versioned request layout.
-    fb::protocol::visit_client_version(bot.client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
-        bot.send(login_reqs::agreement<V>(encryption.pattern(),
-                                          fb::encryption::KEY_SIZE,
-                                          encryption.iv(),
-                                          bot.transfer_from(),
-                                          bot.client_version()),
-                 false,
-                 true);
-    });
+    bot.send(*bot.make<login_reqs::agreement>(encryption.pattern(),
+                                              fb::encryption::KEY_SIZE,
+                                              encryption.iv(),
+                                              bot.transfer_from(),
+                                              bot.client_version(),
+                                              bot.ui_mode()),
+             false,
+             true);
 
     // TODO: Set up login-specific test scenarios
     co_return;

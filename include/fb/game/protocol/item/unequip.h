@@ -43,6 +43,9 @@ public:
 #ifndef BOT
 template <>
 void item_unequip<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
+#else
+template <>
+void item_unequip<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 
 using item_unequip_v550 = item_unequip<CLIENT_VERSION::v550>;

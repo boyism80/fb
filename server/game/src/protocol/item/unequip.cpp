@@ -36,6 +36,13 @@ void item_unequip<V>::deserialize(fb::stream_reader<big_endian>& reader)
     this->parts = static_cast<EQUIPMENT_PARTS>(reader.read<uint8_t>());
     reader.read<uint8_t>();
 }
+
+template <>
+void item_unequip<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->parts = static_cast<EQUIPMENT_PARTS>(reader.read<uint8_t>());
+}
 #endif
 
 template class item_unequip<CLIENT_VERSION::v550>;

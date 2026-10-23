@@ -40,12 +40,16 @@ game_bot_controller::game_bot_controller(bot_container& container) :
         co_return;
     });
     this->bind(&game_bot_controller::on_time);
-    this->bind(&game_bot_controller::on_state);
+    this->bind<game_resp::update_internal>([this](game_bot& bot, auto& response) {
+        return this->on_state(bot, response);
+    });
     this->bind(&game_bot_controller::on_message);
     this->bind(&game_bot_controller::on_sequence);
     this->bind(&game_bot_controller::on_position);
     this->bind(&game_bot_controller::on_move);
-    this->bind(&game_bot_controller::on_map);
+    this->bind<game_resp::map_config>([this](game_bot& bot, auto& response) {
+        return this->on_map(bot, response);
+    });
     this->bind(&game_bot_controller::on_transfer);
 }
 
@@ -497,7 +501,8 @@ async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::t
     co_return;
 }
 
-async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal<V>& response)
 {
     if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
     {
@@ -563,7 +568,8 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::m
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config<V>& response)
 {
     bot.set_map(response.id);
     co_return;
@@ -584,6 +590,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     bot.close();
 
     auto created = this->create(response.parameter);
+    created->carry_over(bot);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
     created->credential(bot.credential());
@@ -662,6 +669,8 @@ async::task<std::shared_ptr<fb::bot::game_bot>> fb::bot::game_bot::login(const f
     auto& container = this->controller.container;
     auto  task      = this->wait_reconnect(timeout);
     auto  gateway   = container.gateway->create();
+    gateway->profile(this->profile());
+    gateway->slot(this->slot());
     gateway->credential(this->_credential);
     gateway->reconnect_from(this->id);
 

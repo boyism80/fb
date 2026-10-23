@@ -2,6 +2,7 @@
 #define __BOT_INTEGRATION_TRADE_BOT_H__
 
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 #include <fb/protocol/header.h>
 
 #include <cstdint>
@@ -30,6 +31,7 @@ public:
     // trade_dialog data
     uint32_t    dialog_oid;
     std::string dialog_name;
+    int16_t     dialog_reputation = 0;
 
     // trade_upload data
     uint8_t     upload_index;
@@ -50,6 +52,7 @@ public:
 
 public:
     void deserialize(fb::stream_reader<big_endian>& reader);
+    void deserialize(fb::stream_reader<big_endian>& reader, fb::protocol::CLIENT_VERSION version);
 };
 
 } // namespace fb::bot::integration

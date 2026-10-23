@@ -1,5 +1,6 @@
 #include <fb/bot/bot_controller_factory.h>
 #include <fb/bot/bot_test_runner.h>
+#include <fb/bot/client_profile.h>
 #include <fb/bot/integration/lua_integration_test.h>
 #include <fb/bot/test_mode.h>
 #include <fb/config.h>
@@ -35,7 +36,10 @@ int main(int argc, char** argv)
         "Integration mode: comma-separated test names to run (e.g. skill,matchmaking), regardless of label")(
         "label,l",
         po::value<string>()->default_value(""),
-        "Integration mode: run the tests registered with this label (regular, script, explorer). Empty runs regular");
+        "Integration mode: run the tests registered with this label (regular, script, explorer). Empty runs regular")(
+        "client",
+        po::value<string>()->default_value(""),
+        "Client profile for bots without one (550, 565, 651, 651:new). Empty uses client:version in the config");
 
     po::variables_map vm;
     try
@@ -63,6 +67,18 @@ int main(int argc, char** argv)
 
     auto& config_path = vm["config"].as<string>();
     auto& mode_str    = vm["mode"].as<string>();
+    auto& client_str  = vm["client"].as<string>();
+    if (client_str.empty() == false)
+    {
+        auto profile = fb::bot::client_profile::parse(client_str);
+        if (profile.has_value() == false)
+        {
+            fb::console::puts("Invalid client profile: {}", client_str);
+            return -1;
+        }
+
+        fb::bot::client_profile::configure(profile.value());
+    }
     if (mode_str == "integration")
     {
         auto names   = std::vector<string>();

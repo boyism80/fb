@@ -190,8 +190,61 @@ lua_integration_test::suite_def parse_suite_table(lua_State* L, int table_index)
         suite.name = lua_tostring(L, -1);
     lua_pop(L, 1);
 
+    auto has_bot_count = false;
     if (lua_getfield(L, idx, "bot_count"); lua_isinteger(L, -1))
+    {
         suite.bot_count = static_cast<uint32_t>(lua_tointeger(L, -1));
+        has_bot_count   = true;
+    }
+    lua_pop(L, 1);
+
+    if (lua_getfield(L, idx, "clients"); lua_istable(L, -1))
+    {
+        for (auto i = lua_Integer{1};; i++)
+        {
+            auto type    = lua_rawgeti(L, -1, i);
+            auto profile = std::optional<fb::bot::client_profile>{};
+            if (type == LUA_TNIL)
+            {
+                lua_pop(L, 1);
+                break;
+            }
+            else if (type == LUA_TNUMBER)
+            {
+                profile = fb::bot::client_profile::parse(static_cast<uint16_t>(lua_tointeger(L, -1)), "");
+            }
+            else if (type == LUA_TSTRING)
+            {
+                profile = fb::bot::client_profile::parse(lua_tostring(L, -1));
+            }
+            else if (type == LUA_TTABLE)
+            {
+                lua_getfield(L, -1, "version");
+                auto version = static_cast<uint16_t>(lua_tointeger(L, -1));
+                lua_pop(L, 1);
+                lua_getfield(L, -1, "ui_mode");
+                auto ui_mode = std::string(lua_isstring(L, -1) ? lua_tostring(L, -1) : "");
+                lua_pop(L, 1);
+                profile = fb::bot::client_profile::parse(version, ui_mode);
+            }
+            lua_pop(L, 1);
+
+            if (profile.has_value() == false)
+                luaL_error(L,
+                           "clients[%d] is not a valid client profile (550, \"651\", \"651:new\")",
+                           static_cast<int>(i));
+
+            suite.clients.push_back(profile.value());
+        }
+
+        if (has_bot_count == false)
+            suite.bot_count = static_cast<uint32_t>(suite.clients.size());
+        else if (suite.bot_count != suite.clients.size())
+            luaL_error(L,
+                       "bot_count %d does not match %d clients",
+                       static_cast<int>(suite.bot_count),
+                       static_cast<int>(suite.clients.size()));
+    }
     lua_pop(L, 1);
 
     auto store_callback = [&](const char* key, int& ref) {
@@ -517,6 +570,14 @@ void lua_integration_test::load_script()
         return;
 }
 
+fb::bot::client_profile lua_integration_test::profile(uint32_t slot) const
+{
+    if (slot < this->_suite.clients.size())
+        return this->_suite.clients[slot];
+
+    return bot_integration_test::profile(slot);
+}
+
 async::task<void> lua_integration_test::on_activated(game_bot_controller& controller)
 {
     this->init_lua();
@@ -654,15 +715,16 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
 
     ctx->pushobject(pushed_bot);
 
-    auto* L = (lua_State*)*ctx;
+    auto* L       = (lua_State*)*ctx;
+    auto  version = bot.client_version();
     if (entry->clone != nullptr)
     {
-        auto cloned = entry->clone(header);
-        entry->marshal_lua(L, *cloned);
+        auto cloned = entry->clone(header, version);
+        entry->marshal_lua(L, *cloned, version);
     }
     else
     {
-        entry->marshal_lua(L, header);
+        entry->marshal_lua(L, header, version);
     }
 
     if (ctx->argc() < 4)

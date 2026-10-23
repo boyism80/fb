@@ -8,24 +8,47 @@
 
 namespace fb::bot::integration {
 
-namespace {
-
-void read_appearance(fb::stream_reader<big_endian>& reader, dialog_ext_bot& self)
+void dialog_ext_bot::read_appearance(fb::stream_reader<big_endian>& reader)
 {
-    self.interaction = reader.read<uint8_t>();
-    self.oid         = reader.read<uint32_t>();
+    this->interaction = reader.read<uint8_t>();
+    this->oid         = reader.read<uint32_t>();
     reader.read<uint8_t>(); // obj type flag
     reader.read<uint8_t>(); // 0x01
-    self.look  = reader.read<uint16_t>();
-    self.color = reader.read<uint8_t>();
+    this->look  = reader.read<uint16_t>();
+    this->color = reader.read<uint8_t>();
     reader.read<uint8_t>();  // obj type flag (duplicate)
     reader.read<uint16_t>(); // look (duplicate)
     reader.read<uint8_t>();  // color (duplicate)
 }
 
-} // namespace
+void dialog_ext_bot::read_appearance_v651(fb::stream_reader<big_endian>& reader)
+{
+    this->interaction = reader.read<uint8_t>();
+    this->oid         = reader.read<uint32_t>();
+    reader.read<uint8_t>();
+    if (reader.read<uint8_t>() == 0x00)
+    {
+        this->look  = 0;
+        this->color = 0;
+        for (auto i = 0; i < 23; i++)
+        {
+            reader.read<uint8_t>();
+        }
+    }
+    else
+    {
+        this->look  = reader.read<uint16_t>();
+        this->color = reader.read<uint8_t>();
+    }
+    reader.read<uint32_t>();
+}
 
 void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    this->deserialize(reader, fb::protocol::CLIENT_VERSION::v550);
+}
+
+void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol::CLIENT_VERSION version)
 {
     header::deserialize(reader);
     uint8_t type_byte = reader.read<uint8_t>();
@@ -36,8 +59,30 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
     case dialog_ext_type::normal:
     case dialog_ext_type::normal_no_msg:
     case dialog_ext_type::look:
+    case dialog_ext_type::list:
+    case dialog_ext_type::list_no_msg:
+    case dialog_ext_type::input_ext:
+    case dialog_ext_type::input_ext_no_msg:
+    case dialog_ext_type::input_password:
+    case dialog_ext_type::input_password_no_msg:
+    case dialog_ext_type::email:
+        break;
+
+    default:
+        throw std::runtime_error("Unknown dialog ext type: " + std::to_string(type_byte));
+    }
+
+    if (version == fb::protocol::CLIENT_VERSION::v651)
+        this->read_appearance_v651(reader);
+    else
+        this->read_appearance(reader);
+
+    switch (this->type)
     {
-        read_appearance(reader, *this);
+    case dialog_ext_type::normal:
+    case dialog_ext_type::normal_no_msg:
+    case dialog_ext_type::look:
+    {
         reader.read<uint32_t>(); // seq seed
         this->normal_button_prev = reader.read<uint8_t>() != 0;
         this->normal_button_next = reader.read<uint8_t>() != 0;
@@ -50,7 +95,6 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
     case dialog_ext_type::list:
     case dialog_ext_type::list_no_msg:
     {
-        read_appearance(reader, *this);
         reader.read<uint32_t>(); // 1
         this->list_button_prev = reader.read<uint8_t>() != 0;
         reader.read<uint8_t>(); // 1
@@ -72,7 +116,6 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
     case dialog_ext_type::input_password:
     case dialog_ext_type::input_password_no_msg:
     {
-        read_appearance(reader, *this);
         reader.read<uint32_t>(); // 1
         this->input_ext_button_prev = reader.read<uint8_t>() != 0;
         reader.read<uint8_t>(); // flag_next unused
@@ -91,7 +134,6 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
 
     case dialog_ext_type::email:
     {
-        read_appearance(reader, *this);
         reader.read<uint32_t>(); // 1
         this->normal_button_prev = reader.read<uint8_t>() != 0;
         this->normal_button_next = reader.read<uint8_t>() != 0;
@@ -106,9 +148,6 @@ void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
         this->input_ext_button_prev = this->normal_button_prev;
     }
     break;
-
-    default:
-        throw std::runtime_error("Unknown dialog ext type: " + std::to_string(type_byte));
     }
 }
 

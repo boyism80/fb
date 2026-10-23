@@ -118,27 +118,35 @@ public:
 
 private:
     async::task<void> on_time(game_bot& bot, const game_resp::time& response);
-    async::task<void> on_map_config(game_bot& bot, const game_resp::map_config_v550& response);
-    async::task<void> on_state(game_bot& bot, const game_resp::update_internal_v550& response);
-    async::task<void> on_option(game_bot& bot, const game_resp::option_v550& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_map_config(game_bot& bot, const game_resp::map_config<V>& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_state(game_bot& bot, const game_resp::update_internal<V>& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_option(game_bot& bot, const game_resp::option<V>& response);
     async::task<void> on_message(game_bot& bot, const game_resp::message& response);
     async::task<void> on_sequence(game_bot& bot, const game_resp::id& response);
-    async::task<void> on_spell_update(game_bot& bot, const game_resp::spell_update_v550& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_spell_update(game_bot& bot, const game_resp::spell_update<V>& response);
     async::task<void> on_spell_remove(game_bot& bot, const game_resp::spell_remove& response);
     async::task<void> on_chat(game_bot& bot, const game_resp::chat& response);
     async::task<void> on_action(game_bot& bot, const game_resp::action& response);
     async::task<void> on_direction(game_bot& bot, const game_resp::direction& response);
     async::task<void> on_position(game_bot& bot, const game_resp::position& response);
     async::task<void> on_move(game_bot& bot, const game_resp::move& response);
-    async::task<void> on_effect(game_bot& bot, const game_resp::effect_v550& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_effect(game_bot& bot, const game_resp::effect<V>& response);
     async::task<void> on_hide(game_bot& bot, const game_resp::hide& response);
     async::task<void> on_die(game_bot& bot, const game_resp::die& response);
     async::task<void> on_buff(game_bot& bot, const game_resp::spell_buff& response);
     async::task<void> on_update_cc(game_bot& bot, const game_resp::update_cc& response);
-    async::task<void> on_update(game_bot& bot, const game_resp::update_v550& response);
-    async::task<void> on_map(game_bot& bot, const game_resp::map_config_v550& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_update(game_bot& bot, const game_resp::update<V>& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_map(game_bot& bot, const game_resp::map_config<V>& response);
     async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
-    async::task<void> on_show(game_bot& bot, const game_resp::show_v550& response)
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_show(game_bot& bot, const game_resp::show<V>& response)
     {
         if (bot.oid() != 0 && bot.oid() != response.oid)
             co_return;
@@ -160,7 +168,8 @@ private:
         bot.set_name(response.name);
         co_return;
     }
-    async::task<void> on_update_external(game_bot& bot, const game_resp::update_external_v550& response)
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_update_external(game_bot& bot, const game_resp::update_external<V>& response)
     {
         if (bot.oid() != 0 && bot.oid() != response.oid)
             co_return;
@@ -176,15 +185,20 @@ private:
         bot.set_weapon_color(response.weapon_color);
         bot.set_shield_dress(response.shield_dress);
         bot.set_shield_color(response.shield_color);
-        bot.set_head_marker(response.head_marker);
-        bot.set_name(response.name);
+        if constexpr (V != fb::protocol::CLIENT_VERSION::v651)
+        {
+            bot.set_head_marker(response.head_marker);
+            bot.set_name(response.name);
+        }
         co_return;
     }
 
 private:
-    async::task<void> on_item_update(game_bot& bot, const game_resp::item_update_v550& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_item_update(game_bot& bot, const game_resp::item_update<V>& response);
     async::task<void> on_item_remove(game_bot& bot, const game_resp::item_remove& response);
-    async::task<void> on_internal_info(game_bot& bot, const game_resp::internal_info_v550& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_internal_info(game_bot& bot, const game_resp::internal_info<V>& response);
     async::task<void> on_ping(game_bot& bot, const game_resp::ping& response);
 
 public:

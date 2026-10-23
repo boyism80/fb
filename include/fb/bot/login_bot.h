@@ -23,8 +23,7 @@ template <typename ControllerType> class bot;
 class login_bot : public bot<login_bot>
 {
 private:
-    uint8_t                            _transfer_from  = 0;
-    fb::protocol::CLIENT_VERSION       _client_version = fb::protocol::CLIENT_VERSION::v550;
+    uint8_t                            _transfer_from = 0;
     std::optional<fb::bot::credential> _credential;
     uint32_t                           _reconnect_from = 0;
 
@@ -39,7 +38,6 @@ public:
 public:
     std::string                               generate_id() const;
     uint8_t                                   transfer_from() const;
-    fb::protocol::CLIENT_VERSION              client_version() const;
     const std::optional<fb::bot::credential>& credential() const;
     void                                      credential(const std::optional<fb::bot::credential>& value);
     uint32_t                                  reconnect_from() const;

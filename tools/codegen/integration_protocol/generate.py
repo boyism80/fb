@@ -26,10 +26,12 @@ OPCODE_RE = re.compile(
 TEMPLATE_RE = re.compile(r"template\s*<([^>]+)>\s*class\s+(\w+)\s*:")
 # Template header that immediately precedes the matched class declaration.
 LEADING_TEMPLATE_RE = re.compile(r"template\s*<([^>]+)>\s*$")
+SPECIALIZATION_RE = re.compile(
+    r"template\s*<\s*>\s*class\s+(\w+)\s*<\s*CLIENT_VERSION::(v\d+)\s*>\s*:\s*public\s+fb::protocol::header"
+)
 
-# The bot speaks a single C2S layout; versioned requests are instantiated for it.
-BOT_CLIENT_VERSION_ALIAS = "BOT_CLIENT_VERSION"
-BOT_CLIENT_VERSION_VALUE = "fb::protocol::CLIENT_VERSION::v550"
+CLIENT_VERSION = "fb::protocol::CLIENT_VERSION"
+PRIMARY_VERSION = f"{CLIENT_VERSION}::v550"
 
 FIELD_RE = re.compile(
     r"^\s*(?:(?:const|static|volatile)\s+)*"
@@ -77,17 +79,26 @@ class ProtocolField:
 
 
 @dataclass
+class ProtocolVariant:
+    has_default_ctor: bool = False
+    fields: list[ProtocolField] = field(default_factory=list)
+    ctor_params: list[tuple[str, str]] = field(default_factory=list)
+
+
+@dataclass
 class ProtocolType:
     direction: str  # request | response
     alias: str      # game_reqs | game_resp
     class_name: str
-    cpp_type: str   # C++ expression, may carry template arguments
+    cpp_type: str   # C++ type, or the CLIENT_VERSION class template when versioned
     opcode: int
     type_key: str   # stable registry key, without CLIENT_VERSION arguments
     name: str
+    versioned: bool = False
     has_default_ctor: bool = False
     fields: list[ProtocolField] = field(default_factory=list)
     ctor_params: list[tuple[str, str]] = field(default_factory=list)
+    specializations: dict[str, ProtocolVariant] = field(default_factory=dict)
 
 
 def parse_opcode(expr: str) -> int | None:
@@ -129,8 +140,8 @@ def expand_conditional_opcode(
     if opcode is None:
         raise ValueError(f"unsupported opcode expression: {opcode_expr}")
 
-    # Registry keys stay version agnostic; the C++ type is instantiated for the
-    # single layout the bot speaks.
+    # Registry keys stay version agnostic; generated code instantiates the
+    # CLIENT_VERSION template for the version of the bot that sends or receives.
     if is_client_version_template(template_params):
         return [make_type(direction, alias, class_name, opcode, versioned=True)]
 
@@ -165,15 +176,15 @@ def make_type(
 ) -> ProtocolType:
     type_key = f"{alias}::{cpp_name}"
     name = make_lua_name(cpp_name)
-    cpp_type = f"{type_key}<{BOT_CLIENT_VERSION_ALIAS}>" if versioned else type_key
     return ProtocolType(
         direction=direction,
         alias=alias,
         class_name=cpp_name,
-        cpp_type=cpp_type,
+        cpp_type=type_key,
         opcode=opcode,
         type_key=type_key,
         name=name,
+        versioned=versioned,
     )
 
 
@@ -506,16 +517,28 @@ def scan_protocols() -> list[ProtocolType]:
 
             # Dialog family (and similar) is a CLIENT_VERSION template on the
             # server and a non-template class under #else BOT. Scan the BOT
-            # view so generated code does not emit Type<BOT_CLIENT_VERSION>
-            # for those packets.
+            # view so generated code does not instantiate a CLIENT_VERSION
+            # template for those packets.
             sub = preprocess_for_bot(sub)
+
+            specializations: dict[str, dict[str, ProtocolVariant]] = {}
+            for sm in SPECIALIZATION_RE.finditer(sub):
+                spec_class = sm.group(1)
+                spec_body = extract_class_body(sub, sm)
+                specializations.setdefault(spec_class, {})[sm.group(2)] = ProtocolVariant(
+                    has_default_ctor=(
+                        direction == "request" and has_bot_default_constructor(spec_body, spec_class)
+                    ),
+                    fields=extract_bot_fields(spec_body) if direction == "response" else [],
+                    ctor_params=(
+                        extract_bot_ctor_params(spec_body, spec_class) if direction == "request" else []
+                    ),
+                )
 
             for m in CLASS_RE.finditer(sub):
                 class_name = m.group(1)
                 start = m.start()
                 leading = sub[max(0, start - 120) : start]
-                # Skip explicit specializations (v651 overlays). The bot speaks
-                # the primary CLIENT_VERSION template instantiated as v550.
                 if re.search(r"template\s*<>\s*$", leading):
                     continue
 
@@ -569,9 +592,13 @@ def scan_protocols() -> list[ProtocolType]:
                             opcode=entry.opcode,
                             type_key=entry.type_key,
                             name=entry.name,
+                            versioned=entry.versioned,
                             has_default_ctor=has_default_ctor,
                             fields=fields,
                             ctor_params=ctor_params,
+                            specializations=(
+                                specializations.get(class_name, {}) if entry.versioned else {}
+                            ),
                         )
                     )
 
@@ -703,29 +730,65 @@ SPECIAL_MARSHAL_EXTRAS: dict[str, list[str]] = {
 }
 
 
+def marshal_field_lines(t: ProtocolType, fields: list[ProtocolField]) -> list[str]:
+    lines: list[str] = []
+    for fld in fields:
+        append_marshal_field(lines, fld)
+    extras = SPECIAL_MARSHAL_EXTRAS.get(t.type_key)
+    if extras:
+        lines.extend(extras)
+    return lines
+
+
+def visit_version_open(return_type: str | None = None) -> str:
+    suffix = f" -> {return_type}" if return_type else ""
+    return (
+        f"fb::protocol::visit_client_version(version, [&]<{CLIENT_VERSION} V>(){suffix} {{"
+    )
+
+
 def generate_marshal_functions(types: list[ProtocolType]) -> list[str]:
     lines: list[str] = []
     for t in types:
         if t.direction != "response":
             continue
         sym = mangle_symbol(t.type_key)
+        version_param = f"{CLIENT_VERSION} version" if t.versioned else CLIENT_VERSION
         lines.extend(
             [
-                f"void marshal_lua_{sym}(lua_State* L, const fb::protocol::header& header)",
+                f"void marshal_lua_{sym}(lua_State* L, const fb::protocol::header& header, {version_param})",
                 "{",
                 "    auto* lua = fb::lua::get(L);",
                 "    if (lua == nullptr)",
                 "        return;",
                 "",
-                f"    const auto& resp = static_cast<const {t.cpp_type}&>(header);",
-                "    lua->new_table();",
             ]
         )
-        for fld in t.fields:
-            append_marshal_field(lines, fld)
-        extras = SPECIAL_MARSHAL_EXTRAS.get(t.type_key)
-        if extras:
-            lines.extend(extras)
+        if t.versioned == False:
+            lines.append(f"    const auto& resp = static_cast<const {t.cpp_type}&>(header);")
+            lines.append("    lua->new_table();")
+            lines.extend(marshal_field_lines(t, t.fields))
+            lines.extend(["}", ""])
+            continue
+
+        lines.append("    lua->new_table();")
+        lines.append(f"    {visit_version_open()}")
+        lines.append(f"        [[maybe_unused]] const auto& resp = static_cast<const {t.cpp_type}<V>&>(header);")
+        branches = sorted(t.specializations.items())
+        for index, (version, variant) in enumerate(branches):
+            keyword = "if constexpr" if index == 0 else "else if constexpr"
+            lines.append(f"        {keyword} (V == {CLIENT_VERSION}::{version})")
+            lines.append("        {")
+            lines.extend(marshal_field_lines(t, variant.fields))
+            lines.append("        }")
+        if branches:
+            lines.append("        else")
+            lines.append("        {")
+            lines.extend(marshal_field_lines(t, t.fields))
+            lines.append("        }")
+        else:
+            lines.extend(marshal_field_lines(t, t.fields))
+        lines.append("    });")
         lines.extend(["}", ""])
     return lines
 
@@ -775,6 +838,61 @@ def lua_read_arg_lines(cpp_type: str, lua_index: int, var_name: str) -> list[str
     return []
 
 
+def normalized_params(params: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    return [(normalize_param_type(cpp_type), name) for cpp_type, name in params]
+
+
+def incompatible_versions(t: ProtocolType) -> list[str]:
+    if not t.ctor_params:
+        return []
+
+    expected = normalized_params(t.ctor_params)
+    return [
+        version
+        for version, variant in sorted(t.specializations.items())
+        if normalized_params(variant.ctor_params) != expected
+    ]
+
+
+def push_request_lines(t: ProtocolType, arg_names: list[str]) -> list[str]:
+    ctor_args = ", ".join(arg_names)
+    if t.versioned == False:
+        captures = ", ".join(arg_names)
+        return [
+            "    lua_protocol::push_request(",
+            "        L,",
+            f"        lua_protocol::request_factory([{captures}]({CLIENT_VERSION}) -> std::shared_ptr<fb::protocol::header> {{",
+            f"            return std::make_shared<{t.cpp_type}>({ctor_args});",
+            "        }));",
+        ]
+
+    unsupported = incompatible_versions(t)
+    if not unsupported:
+        args = f", {ctor_args}" if ctor_args else ""
+        return [f"    lua_protocol::push_request<{t.cpp_type}>(L{args});"]
+
+    captures = ", ".join(arg_names)
+    lines = [
+        "    lua_protocol::push_request(",
+        "        L,",
+        f"        lua_protocol::request_factory([{captures}]({CLIENT_VERSION} version) {{",
+        f"            return {visit_version_open('std::shared_ptr<fb::protocol::header>')}",
+    ]
+    condition = " || ".join(f"V == {CLIENT_VERSION}::{version}" for version in unsupported)
+    lines.extend(
+        [
+            f"                if constexpr ({condition})",
+            "                    throw std::runtime_error(",
+            f'                        "{t.type_key} has a different constructor for this client version");',
+            "                else",
+            f"                    return std::make_shared<{t.cpp_type}<V>>({ctor_args});",
+            "            });",
+            "        }));",
+        ]
+    )
+    return lines
+
+
 def generate_protocol_builders(types: list[ProtocolType]) -> list[str]:
     lines: list[str] = []
     for t in types:
@@ -788,7 +906,7 @@ def generate_protocol_builders(types: list[ProtocolType]) -> list[str]:
                     f"int lua_builder_{sym}(lua_State* L)",
                     "{",
                     *lua_builder_prologue(),
-                    f"    lua_protocol::push_request(L, std::make_shared<{t.cpp_type}>());",
+                    *push_request_lines(t, []),
                     "    return 1;",
                     "}",
                     "",
@@ -804,12 +922,11 @@ def generate_protocol_builders(types: list[ProtocolType]) -> list[str]:
             arg_lines.extend(lua_read_arg_lines(cpp_type, index, param_name))
             arg_names.append(param_name)
 
-        ctor_args = ", ".join(arg_names)
         lines.append(f"int lua_builder_{sym}(lua_State* L)")
         lines.append("{")
         lines.extend(lua_builder_prologue())
         lines.extend(arg_lines)
-        lines.append(f"    lua_protocol::push_request(L, std::make_shared<{t.cpp_type}>({ctor_args}));")
+        lines.extend(push_request_lines(t, arg_names))
         lines.append("    return 1;")
         lines.append("}")
         lines.append("")
@@ -826,18 +943,19 @@ def generate_lua_cpp(types: list[ProtocolType]) -> str:
         "#include <fb/bot/integration/lua_integration_protocol.h>",
         "#include <fb/bot/integration/protocol_registry.h>",
         "#include <fb/game/protocol.h>",
-        "#include <fb/model/model.h>",
         "#include <fb/lua.h>",
+        "#include <fb/model/model.h>",
+        "#include <fb/protocol/client_version.h>",
         "",
+        "#include <cstddef>",
+        "#include <cstdint>",
         "#include <memory>",
-        "#include <string>",
+        "#include <stdexcept>",
         "",
         "namespace fb::bot::integration {",
         "",
         "namespace game_reqs = fb::protocol::game::request;",
         "namespace game_resp = fb::protocol::game::response;",
-        "",
-        f"constexpr auto {BOT_CLIENT_VERSION_ALIAS} = {BOT_CLIENT_VERSION_VALUE};",
         "",
         "namespace detail {",
         "",
@@ -873,6 +991,8 @@ def generate_lua_h(types: list[ProtocolType]) -> str:
         "// Auto-generated by tools/codegen/integration_protocol/generate.py",
         "// DO NOT EDIT",
         "",
+        "#include <fb/protocol/client_version.h>",
+        "",
         "struct lua_State;",
         "",
         "namespace fb::protocol {",
@@ -887,7 +1007,7 @@ def generate_lua_h(types: list[ProtocolType]) -> str:
             continue
         sym = mangle_symbol(t.type_key)
         lines.append(
-            f"void marshal_lua_{sym}(lua_State* L, const fb::protocol::header& header);"
+            f"void marshal_lua_{sym}(lua_State* L, const fb::protocol::header& header, {CLIENT_VERSION} version);"
         )
     lines.extend(
         [
@@ -910,21 +1030,40 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         "// Auto-generated by tools/codegen/integration_protocol/generate.py",
         "// DO NOT EDIT",
         "",
-        "#include <fb/bot/integration/protocol_registry.h>",
-        "#include <fb/bot/integration/protocol_lua.generated.h>",
         "#include <fb/bot/game_controller.h>",
+        "#include <fb/bot/integration/protocol_lua.generated.h>",
+        "#include <fb/bot/integration/protocol_registry.h>",
         "#include <fb/game/protocol.h>",
         "#include <fb/lua.h>",
+        "#include <fb/protocol/client_version.h>",
+        "",
+        "#include <memory>",
+        "#include <type_traits>",
         "",
         "namespace fb::bot::integration::detail {",
         "",
-        f"constexpr auto {BOT_CLIENT_VERSION_ALIAS} = {BOT_CLIENT_VERSION_VALUE};",
-        "",
     ]
 
+    header_ptr = "std::shared_ptr<fb::protocol::header>"
     for t in types:
         sym = mangle_symbol(t.type_key)
         if t.direction == "response":
+            if t.versioned:
+                clone_lines = [
+                    f"{header_ptr} clone_{sym}(const fb::protocol::header& header, {CLIENT_VERSION} version)",
+                    "{",
+                    f"    return {visit_version_open(header_ptr)}",
+                    f"        return std::make_shared<{t.cpp_type}<V>>(static_cast<const {t.cpp_type}<V>&>(header));",
+                    "    });",
+                    "}",
+                ]
+            else:
+                clone_lines = [
+                    f"{header_ptr} clone_{sym}(const fb::protocol::header& header, {CLIENT_VERSION})",
+                    "{",
+                    f"    return std::make_shared<{t.cpp_type}>(static_cast<const {t.cpp_type}&>(header));",
+                    "}",
+                ]
             lines.extend(
                 [
                     f"void bind_default_{sym}(fb::bot::game_bot_controller& controller)",
@@ -932,12 +1071,9 @@ def generate_cpp(types: list[ProtocolType]) -> str:
                     f"    controller.bind_default<{t.cpp_type}>();",
                     "}",
                     "",
-                    f"std::shared_ptr<fb::protocol::header> clone_{sym}(const fb::protocol::header& header)",
-                    "{",
-                    f"    return std::make_shared<{t.cpp_type}>(static_cast<const {t.cpp_type}&>(header));",
-                    "}",
+                    *clone_lines,
                     "",
-                    f"std::shared_ptr<fb::protocol::header> create_{sym}()",
+                    f"{header_ptr} create_{sym}({CLIENT_VERSION})",
                     "{",
                     "    return nullptr;",
                     "}",
@@ -945,18 +1081,21 @@ def generate_cpp(types: list[ProtocolType]) -> str:
                 ]
             )
         else:
-            lines.extend(
-                [
-                    f"void bind_default_{sym}(fb::bot::game_bot_controller&)",
+            if t.has_default_ctor and t.versioned:
+                create_lines = [
+                    f"{header_ptr} create_{sym}({CLIENT_VERSION} version)",
                     "{",
+                    f"    return {visit_version_open(header_ptr)}",
+                    f"        if constexpr (std::is_default_constructible_v<{t.cpp_type}<V>>)",
+                    f"            return std::make_shared<{t.cpp_type}<V>>();",
+                    "        else",
+                    "            return nullptr;",
+                    "    });",
                     "}",
-                    "",
-                    f"std::shared_ptr<fb::protocol::header> clone_{sym}(const fb::protocol::header&)",
-                    "{",
-                    "    return nullptr;",
-                    "}",
-                    "",
-                    f"std::shared_ptr<fb::protocol::header> create_{sym}()",
+                ]
+            else:
+                create_lines = [
+                    f"{header_ptr} create_{sym}({CLIENT_VERSION})",
                     "{",
                     (
                         f"    return std::make_shared<{t.cpp_type}>();"
@@ -964,6 +1103,19 @@ def generate_cpp(types: list[ProtocolType]) -> str:
                         else "    return nullptr;"
                     ),
                     "}",
+                ]
+            lines.extend(
+                [
+                    f"void bind_default_{sym}(fb::bot::game_bot_controller&)",
+                    "{",
+                    "}",
+                    "",
+                    f"{header_ptr} clone_{sym}(const fb::protocol::header&, {CLIENT_VERSION})",
+                    "{",
+                    "    return nullptr;",
+                    "}",
+                    "",
+                    *create_lines,
                     "",
                 ]
             )

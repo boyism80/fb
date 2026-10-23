@@ -17,38 +17,57 @@
 
 using namespace fb::bot;
 
-// The bot speaks the v550 C2S layout; versioned requests are instantiated for it.
-constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
-
 game_bot_controller::game_bot_controller(bot_container& container) :
     bot_controller<game_bot>(container)
 {
     this->bind(&game_bot_controller::on_time);
-    this->bind(&game_bot_controller::on_map_config);
-    this->bind(&game_bot_controller::on_state);
-    this->bind(&game_bot_controller::on_option);
+    this->bind<game_resp::map_config>([this](game_bot& bot, auto& response) {
+        return this->on_map_config(bot, response);
+    });
+    this->bind<game_resp::update_internal>([this](game_bot& bot, auto& response) {
+        return this->on_state(bot, response);
+    });
+    this->bind<game_resp::option>([this](game_bot& bot, auto& response) {
+        return this->on_option(bot, response);
+    });
     this->bind(&game_bot_controller::on_message);
     this->bind(&game_bot_controller::on_sequence);
-    this->bind(&game_bot_controller::on_spell_update);
+    this->bind<game_resp::spell_update>([this](game_bot& bot, auto& response) {
+        return this->on_spell_update(bot, response);
+    });
     this->bind(&game_bot_controller::on_spell_remove);
     this->bind(&game_bot_controller::on_chat);
     this->bind(&game_bot_controller::on_action);
     this->bind(&game_bot_controller::on_direction);
     this->bind(&game_bot_controller::on_position);
     this->bind(&game_bot_controller::on_move);
-    this->bind(&game_bot_controller::on_effect);
+    this->bind<game_resp::effect>([this](game_bot& bot, auto& response) {
+        return this->on_effect(bot, response);
+    });
     this->bind(&game_bot_controller::on_hide);
     this->bind(&game_bot_controller::on_die);
     this->bind(&game_bot_controller::on_buff);
     this->bind(&game_bot_controller::on_update_cc);
-    this->bind(&game_bot_controller::on_update);
-    this->bind(&game_bot_controller::on_map);
+    this->bind<game_resp::update>([this](game_bot& bot, auto& response) {
+        return this->on_update(bot, response);
+    });
+    this->bind<game_resp::map_config>([this](game_bot& bot, auto& response) {
+        return this->on_map(bot, response);
+    });
     this->bind(&game_bot_controller::on_transfer);
-    this->bind(&game_bot_controller::on_show);
-    this->bind(&game_bot_controller::on_update_external);
-    this->bind(&game_bot_controller::on_item_update);
+    this->bind<game_resp::show>([this](game_bot& bot, auto& response) {
+        return this->on_show(bot, response);
+    });
+    this->bind<game_resp::update_external>([this](game_bot& bot, auto& response) {
+        return this->on_update_external(bot, response);
+    });
+    this->bind<game_resp::item_update>([this](game_bot& bot, auto& response) {
+        return this->on_item_update(bot, response);
+    });
     this->bind(&game_bot_controller::on_item_remove);
-    this->bind(&game_bot_controller::on_internal_info);
+    this->bind<game_resp::internal_info>([this](game_bot& bot, auto& response) {
+        return this->on_internal_info(bot, response);
+    });
     this->bind(&game_bot_controller::on_ping);
 
     integration::protocol_registry::register_all();
@@ -81,13 +100,15 @@ async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::t
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config<V>& response)
 {
     bot.set_map(response.id);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal<V>& response)
 {
     // Update character information based on the state level received
     if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
@@ -125,7 +146,8 @@ async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::
     co_return;
 }
 
-async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option<V>& response)
 {
     co_return;
 }
@@ -148,7 +170,7 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp
 
         auto id  = what["id"].str();
         auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
-        bot.send(game_reqs::whisper<BOT_CLIENT_VERSION>(id, msg));
+        bot.send(*bot.make<game_reqs::whisper>(id, msg));
     }
 
     co_return;
@@ -160,7 +182,8 @@ async::task<void> game_bot_controller::on_sequence(game_bot& bot, const game_res
     co_return;
 }
 
-async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const game_resp::spell_update_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const game_resp::spell_update<V>& response)
 {
     // Update the bot's spell inventory with the new or updated spell
     bot.update_spell(response.index, response.name, response.type);
@@ -211,7 +234,8 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::m
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config<V>& response)
 {
     if (response.id == 1)
     {
@@ -239,6 +263,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     bot.close();
 
     auto created = this->create(response.parameter);
+    created->carry_over(bot);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
     fb::logger::debug("bot transfer reconnect: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
@@ -252,7 +277,8 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     co_return;
 }
 
-async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp::effect_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp::effect<V>& response)
 {
     // Effect is a one-time event, no need to store state
     co_return;
@@ -290,12 +316,14 @@ async::task<void> game_bot_controller::on_update_cc(game_bot& bot, const game_re
     co_return;
 }
 
-async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update<V>& response)
 {
     co_return;
 }
 
-async::task<void> game_bot_controller::on_item_update(game_bot& bot, const game_resp::item_update_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_item_update(game_bot& bot, const game_resp::item_update<V>& response)
 {
     // Update the bot's inventory with the new or updated item
     bot.update_item(response.index, response.name, response.count);
@@ -309,7 +337,8 @@ async::task<void> game_bot_controller::on_item_remove(game_bot& bot, const game_
     co_return;
 }
 
-async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const game_resp::internal_info_v550& response)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const game_resp::internal_info<V>& response)
 {
     bot.set_clan_name(response.clan_name);
     bot.set_clan_title(response.clan_title);
@@ -322,7 +351,7 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
 
 async::task<void> game_bot_controller::on_ping(game_bot& bot, const game_resp::ping& response)
 {
-    bot.send(game_reqs::pong<BOT_CLIENT_VERSION>(response.value, 0));
+    bot.send(*bot.make<game_reqs::pong>(response.value, 0));
     co_return;
 }
 

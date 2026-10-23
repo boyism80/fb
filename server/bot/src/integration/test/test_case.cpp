@@ -33,10 +33,18 @@ bot_integration_test::bot_integration_test(game_bot_controller& controller, uint
     // Register common hooks for sequence and position responses
     this->controller.hook(this, this, &bot_integration_test::on_hook_sequence);
     this->controller.hook(this, this, &bot_integration_test::on_hook_position);
-    this->controller.hook(this, this, &bot_integration_test::on_hook_show);
-    this->controller.hook(this, this, &bot_integration_test::on_hook_update_external);
-    this->controller.hook(this, this, &bot_integration_test::on_hook_map_config);
-    this->controller.hook(this, this, &bot_integration_test::on_hook_update_internal);
+    this->controller.hook<game_resp::show>(this, [this](game_bot& bot, const auto& resp) {
+        return this->on_hook_show(bot, resp);
+    });
+    this->controller.hook<game_resp::update_external>(this, [this](game_bot& bot, const auto& resp) {
+        return this->on_hook_update_external(bot, resp);
+    });
+    this->controller.hook<game_resp::map_config>(this, [this](game_bot& bot, const auto& resp) {
+        return this->on_hook_map_config(bot, resp);
+    });
+    this->controller.hook<game_resp::update_internal>(this, [this](game_bot& bot, const auto& resp) {
+        return this->on_hook_update_internal(bot, resp);
+    });
 }
 
 bot_integration_test::test_state bot_integration_test::get_state() const
@@ -63,7 +71,20 @@ bool bot_integration_test::is_running() const
 void bot_integration_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 {
     this->assert_thread();
-    this->_test_bots.push_back(bot);
+
+    auto slot = bot->slot();
+    if (bot->transfer_from_bot_id() != 0 || slot.has_value() == false)
+    {
+        this->_test_bots.push_back(bot);
+    }
+    else
+    {
+        auto position = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&slot](const auto& joined) {
+            return joined->slot().has_value() && joined->slot().value() > slot.value();
+        });
+        this->_test_bots.insert(position, bot);
+    }
+
     this->try_notify_ready();
 }
 
@@ -334,6 +355,11 @@ std::vector<std::shared_ptr<fb::bot::game_bot>> bot_integration_test::get_test_b
     return this->_test_bots;
 }
 
+fb::bot::client_profile bot_integration_test::profile(uint32_t slot) const
+{
+    return fb::bot::client_profile::configured();
+}
+
 async::task<void> bot_integration_test::on_activated(game_bot_controller& controller)
 {
     auto ip = controller.container.ipv4(fb::config<std::string_view>("ip"));
@@ -348,7 +374,10 @@ async::task<void> bot_integration_test::on_activated(game_bot_controller& contro
     for (auto i = 0u; i < this->bot_count; i++)
     {
         auto gateway_bot = controller.container.gateway->create();
+        gateway_bot->profile(this->profile(i));
+        gateway_bot->slot(i);
         controller.own(gateway_bot->id, this);
+        fb::logger::debug("{} spawning bot slot={} client={}", this->name(), i, gateway_bot->profile().to_string());
         gateway_bot->connect(endpoint);
     }
 
@@ -536,7 +565,8 @@ async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot,
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_show(fb::bot::game_bot& bot, const game_resp::show_v550& resp)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bot_integration_test::on_hook_show(fb::bot::game_bot& bot, const game_resp::show<V>& resp)
 {
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);
@@ -547,24 +577,26 @@ async::task<void> bot_integration_test::on_hook_show(fb::bot::game_bot& bot, con
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_map_config(fb::bot::game_bot&                bot,
-                                                           const game_resp::map_config_v550& resp)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bot_integration_test::on_hook_map_config(fb::bot::game_bot& bot, const game_resp::map_config<V>& resp)
 {
     this->try_complete_transfer(bot);
     this->try_notify_ready();
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_update_internal(fb::bot::game_bot&                     bot,
-                                                                const game_resp::update_internal_v550& resp)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bot_integration_test::on_hook_update_internal(fb::bot::game_bot&                   bot,
+                                                                const game_resp::update_internal<V>& resp)
 {
     this->try_complete_transfer(bot);
     this->try_notify_ready();
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bot&                     bot,
-                                                                const game_resp::update_external_v550& resp)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bot&                   bot,
+                                                                const game_resp::update_external<V>& resp)
 {
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);

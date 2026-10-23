@@ -9,7 +9,7 @@
 
 namespace fb::bot::integration {
 
-void protocol_registry::marshal_lua_stub(lua_State* L, const fb::protocol::header&)
+void protocol_registry::marshal_lua_stub(lua_State* L, const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     lua_newtable(L);
 }

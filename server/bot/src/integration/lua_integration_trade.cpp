@@ -54,6 +54,9 @@ void push_trade(fb::lua::context* lua, const trade_bot& resp)
     lua->pushstring("dialog_name");
     lua->pushstring(resp.dialog_name);
     lua->settable(-3);
+    lua->pushstring("dialog_reputation");
+    lua->pushinteger(resp.dialog_reputation);
+    lua->settable(-3);
     lua->pushstring("upload_index");
     lua->pushinteger(resp.upload_index);
     lua->settable(-3);
@@ -94,7 +97,7 @@ int builtin::game_bot::builtin_request_trade(lua_State* L)
 
     fb::logger::debug("request_trade entered bot_id={}", bot->id);
 
-    auto request = lua_protocol::to_request(L, 2);
+    auto request = lua_protocol::to_request(L, 2, bot->client_version());
     luaL_checktype(L, 3, LUA_TFUNCTION);
 
     lua_pushvalue(L, 3);

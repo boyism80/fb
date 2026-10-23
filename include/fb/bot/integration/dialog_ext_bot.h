@@ -3,6 +3,7 @@
 
 #include <fb/game/dialog_type.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 #include <fb/protocol/header.h>
 
 #include <cstdint>
@@ -59,8 +60,13 @@ public:
 public:
     dialog_ext_bot() = default;
 
+private:
+    void read_appearance(fb::stream_reader<big_endian>& reader);
+    void read_appearance_v651(fb::stream_reader<big_endian>& reader);
+
 public:
     void deserialize(fb::stream_reader<big_endian>& reader);
+    void deserialize(fb::stream_reader<big_endian>& reader, fb::protocol::CLIENT_VERSION version);
 };
 
 } // namespace fb::bot::integration

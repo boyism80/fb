@@ -1,18 +1,25 @@
 #ifndef __BOT_H__
 #define __BOT_H__
 
+#include <fb/bot/client_profile.h>
 #include <fb/bot/hook_params.h>
 #include <fb/logger.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 #include <fb/socket.h>
 
 #include <boost/endian/conversion.hpp>
 
 #include <atomic>
 #include <chrono>
+#include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <memory>
+#include <mutex>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -48,6 +55,12 @@ protected:
     base_bot_controller& _bot_controller;
     fb::thread*          _pinned_thread = nullptr;
 
+private:
+    client_profile              _profile;
+    std::optional<uint32_t>     _slot;
+    mutable std::mutex          _unread_mutex;
+    std::map<uint8_t, uint32_t> _unread_opcodes;
+
 public:
     const uint32_t id;
 
@@ -74,6 +87,36 @@ public:
     virtual fb::thread* thread() const;
     void                pin_thread(fb::thread* t);
     fb::thread*         pinned_thread() const;
+
+public:
+    const client_profile&        profile() const;
+    void                         profile(const client_profile& value);
+    fb::protocol::CLIENT_VERSION client_version() const;
+    fb::protocol::CLIENT_UI_MODE ui_mode() const;
+    std::optional<uint32_t>      slot() const;
+    void                         slot(std::optional<uint32_t> value);
+    void                         carry_over(const base_bot& source);
+    void                         add_unread(uint8_t opcode);
+    std::map<uint8_t, uint32_t>  unread_opcodes() const;
+
+    template <template <fb::protocol::CLIENT_VERSION> class ProtocolType, typename... Args>
+    std::shared_ptr<fb::protocol::header> make(Args&&... args) const
+    {
+        return fb::protocol::visit_client_version(
+            this->client_version(),
+            [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+                return std::make_shared<ProtocolType<V>>(std::forward<Args>(args)...);
+            });
+    }
+
+    template <template <fb::protocol::CLIENT_VERSION> class ProtocolType, typename Fn>
+    decltype(auto) visit(const fb::protocol::header& header, Fn&& fn) const
+    {
+        return fb::protocol::visit_client_version(this->client_version(),
+                                                  [&]<fb::protocol::CLIENT_VERSION V>() -> decltype(auto) {
+                                                      return fn(static_cast<const ProtocolType<V>&>(header));
+                                                  });
+    }
 };
 
 template <typename BotType>
@@ -254,6 +297,20 @@ public:
                                       const fb::model::timespan&  timeout = 0s,
                                       bool                        encrypt = true,
                                       bool                        wrap    = true);
+
+    template <template <fb::protocol::CLIENT_VERSION> class ResponseType, typename Condition>
+    requires std::predicate<const Condition&, const ResponseType<fb::protocol::CLIENT_VERSION::v550>&>
+    async::task<std::shared_ptr<fb::protocol::header>> request(const fb::protocol::header& protocol,
+                                                               Condition                   condition,
+                                                               const fb::model::timespan&  timeout = 0s,
+                                                               bool                        encrypt = true,
+                                                               bool                        wrap    = true);
+
+    template <template <fb::protocol::CLIENT_VERSION> class ResponseType>
+    async::task<std::shared_ptr<fb::protocol::header>> request(const fb::protocol::header& protocol,
+                                                               const fb::model::timespan&  timeout = 0s,
+                                                               bool                        encrypt = true,
+                                                               bool                        wrap    = true);
 };
 
 } // namespace fb::bot

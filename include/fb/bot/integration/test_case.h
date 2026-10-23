@@ -106,10 +106,14 @@ protected:
     async::task<bool>             parallel_scenarios(const std::vector<std::pair<uint32_t, scenario_t>>& scenarios);
     virtual async::task<void>     on_hook_sequence(game_bot& bot, const game_resp::id& resp);
     virtual async::task<void>     on_hook_position(game_bot& bot, const game_resp::position& resp);
-    virtual async::task<void>     on_hook_show(game_bot& bot, const game_resp::show_v550& resp);
-    virtual async::task<void>     on_hook_update_external(game_bot& bot, const game_resp::update_external_v550& resp);
-    virtual async::task<void>     on_hook_map_config(game_bot& bot, const game_resp::map_config_v550& resp);
-    virtual async::task<void>     on_hook_update_internal(game_bot& bot, const game_resp::update_internal_v550& resp);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_hook_show(game_bot& bot, const game_resp::show<V>& resp);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_hook_update_external(game_bot& bot, const game_resp::update_external<V>& resp);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_hook_map_config(game_bot& bot, const game_resp::map_config<V>& resp);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_hook_update_internal(game_bot& bot, const game_resp::update_internal<V>& resp);
 
     [[nodiscard]] fb::thread_switch_awaiter sleep(std::chrono::milliseconds duration);
 
@@ -124,6 +128,7 @@ public:
     void                                   try_notify_ready();
     virtual bool                           is_ready() const;
     std::vector<std::shared_ptr<game_bot>> get_test_bots() const;
+    virtual fb::bot::client_profile        profile(uint32_t slot) const;
     virtual async::task<void>              on_activated(game_bot_controller& controller);
     virtual async::task<void>              on_initialize(game_bot_controller& controller);
     virtual async::task<void>              on_finished();

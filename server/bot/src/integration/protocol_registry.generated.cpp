@@ -6,35 +6,43 @@
 #include <fb/bot/integration/protocol_registry.h>
 #include <fb/game/protocol.h>
 #include <fb/lua.h>
+#include <fb/protocol/client_version.h>
 
 #include <memory>
+#include <type_traits>
 
 namespace fb::bot::integration::detail {
-
-constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
 
 void bind_default_game_reqs__attack(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__attack(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__attack(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__attack()
+std::shared_ptr<fb::protocol::header> create_game_reqs__attack(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::attack<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::attack<V>>)
+                return std::make_shared<game_reqs::attack<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__browser(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__browser(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__browser(const fb::protocol::header&,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__browser()
+std::shared_ptr<fb::protocol::header> create_game_reqs__browser(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -42,12 +50,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__browser()
 void bind_default_game_reqs__bulletin(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__bulletin(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__bulletin(const fb::protocol::header&,
+                                                                fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__bulletin()
+std::shared_ptr<fb::protocol::header> create_game_reqs__bulletin(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -55,12 +64,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__bulletin()
 void bind_default_game_reqs__chat(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__chat(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__chat(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__chat()
+std::shared_ptr<fb::protocol::header> create_game_reqs__chat(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -68,12 +77,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__chat()
 void bind_default_game_reqs__click(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__click(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__click(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__click()
+std::shared_ptr<fb::protocol::header> create_game_reqs__click(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -81,12 +90,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__click()
 void bind_default_game_reqs__collection(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__collection(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__collection(const fb::protocol::header&,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__collection()
+std::shared_ptr<fb::protocol::header> create_game_reqs__collection(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -94,12 +104,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__collection()
 void bind_default_game_reqs__dialog(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__dialog(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__dialog(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__dialog()
+std::shared_ptr<fb::protocol::header> create_game_reqs__dialog(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -107,12 +117,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__dialog()
 void bind_default_game_reqs__dialog_list(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__dialog_list(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__dialog_list(const fb::protocol::header&,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__dialog_list()
+std::shared_ptr<fb::protocol::header> create_game_reqs__dialog_list(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -120,12 +131,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__dialog_list()
 void bind_default_game_reqs__direction(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__direction(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__direction(const fb::protocol::header&,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__direction()
+std::shared_ptr<fb::protocol::header> create_game_reqs__direction(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -133,25 +145,33 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__direction()
 void bind_default_game_reqs__door(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__door(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__door(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__door()
+std::shared_ptr<fb::protocol::header> create_game_reqs__door(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::door<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::door<V>>)
+                return std::make_shared<game_reqs::door<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__emotion(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__emotion(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__emotion(const fb::protocol::header&,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__emotion()
+std::shared_ptr<fb::protocol::header> create_game_reqs__emotion(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -159,25 +179,33 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__emotion()
 void bind_default_game_reqs__exit(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__exit(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__exit(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__exit()
+std::shared_ptr<fb::protocol::header> create_game_reqs__exit(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::exit<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::exit<V>>)
+                return std::make_shared<game_reqs::exit<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__friends(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__friends(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__friends(const fb::protocol::header&,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__friends()
+std::shared_ptr<fb::protocol::header> create_game_reqs__friends(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -185,25 +213,34 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__friends()
 void bind_default_game_reqs__front_info(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__front_info(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__front_info(const fb::protocol::header&,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__front_info()
+std::shared_ptr<fb::protocol::header> create_game_reqs__front_info(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::front_info<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::front_info<V>>)
+                return std::make_shared<game_reqs::front_info<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__give_item(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__give_item(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__give_item(const fb::protocol::header&,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__give_item()
+std::shared_ptr<fb::protocol::header> create_game_reqs__give_item(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -211,12 +248,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__give_item()
 void bind_default_game_reqs__give_money(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__give_money(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__give_money(const fb::protocol::header&,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__give_money()
+std::shared_ptr<fb::protocol::header> create_game_reqs__give_money(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -224,12 +262,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__give_money()
 void bind_default_game_reqs__group(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__group(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__group(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__group()
+std::shared_ptr<fb::protocol::header> create_game_reqs__group(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -237,12 +275,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__group()
 void bind_default_game_reqs__item_active(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__item_active(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__item_active(const fb::protocol::header&,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__item_active()
+std::shared_ptr<fb::protocol::header> create_game_reqs__item_active(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -250,12 +289,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_active()
 void bind_default_game_reqs__item_combine(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__item_combine(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__item_combine(const fb::protocol::header&,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__item_combine()
+std::shared_ptr<fb::protocol::header> create_game_reqs__item_combine(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -263,12 +303,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_combine()
 void bind_default_game_reqs__item_drop(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__item_drop(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__item_drop(const fb::protocol::header&,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop()
+std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -276,12 +317,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop()
 void bind_default_game_reqs__item_drop_money(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__item_drop_money(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__item_drop_money(const fb::protocol::header&,
+                                                                       fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop_money()
+std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop_money(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -289,12 +331,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop_money()
 void bind_default_game_reqs__item_inactive(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__item_inactive(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__item_inactive(const fb::protocol::header&,
+                                                                     fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__item_inactive()
+std::shared_ptr<fb::protocol::header> create_game_reqs__item_inactive(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -302,12 +345,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_inactive()
 void bind_default_game_reqs__item_info(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__item_info(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__item_info(const fb::protocol::header&,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__item_info()
+std::shared_ptr<fb::protocol::header> create_game_reqs__item_info(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -315,12 +359,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_info()
 void bind_default_game_reqs__item_throws(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__item_throws(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__item_throws(const fb::protocol::header&,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__item_throws()
+std::shared_ptr<fb::protocol::header> create_game_reqs__item_throws(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -328,12 +373,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_throws()
 void bind_default_game_reqs__login(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__login(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__login(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__login()
+std::shared_ptr<fb::protocol::header> create_game_reqs__login(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -341,12 +386,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__login()
 void bind_default_game_reqs__loot(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__loot(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__loot(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__loot()
+std::shared_ptr<fb::protocol::header> create_game_reqs__loot(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -354,25 +399,34 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__loot()
 void bind_default_game_reqs__map_update(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__map_update(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__map_update(const fb::protocol::header&,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__map_update()
+std::shared_ptr<fb::protocol::header> create_game_reqs__map_update(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::map_update<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::map_update<V>>)
+                return std::make_shared<game_reqs::map_update<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__map_world(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__map_world(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__map_world(const fb::protocol::header&,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__map_world()
+std::shared_ptr<fb::protocol::header> create_game_reqs__map_world(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -380,25 +434,32 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__map_world()
 void bind_default_game_reqs__miss(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__miss(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__miss(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__miss()
+std::shared_ptr<fb::protocol::header> create_game_reqs__miss(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::miss<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::miss<V>>)
+                return std::make_shared<game_reqs::miss<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__move(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__move(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__move(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__move()
+std::shared_ptr<fb::protocol::header> create_game_reqs__move(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -406,25 +467,33 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__move()
 void bind_default_game_reqs__move_blocked(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__move_blocked(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__move_blocked(const fb::protocol::header&,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__move_blocked()
+std::shared_ptr<fb::protocol::header> create_game_reqs__move_blocked(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::move_blocked<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::move_blocked<V>>)
+                return std::make_shared<game_reqs::move_blocked<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__pong(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__pong(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__pong(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__pong()
+std::shared_ptr<fb::protocol::header> create_game_reqs__pong(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -432,12 +501,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__pong()
 void bind_default_game_reqs__popup_input_submit(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__popup_input_submit(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__popup_input_submit(const fb::protocol::header&,
+                                                                          fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__popup_input_submit()
+std::shared_ptr<fb::protocol::header> create_game_reqs__popup_input_submit(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -445,25 +515,33 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__popup_input_submit()
 void bind_default_game_reqs__post(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__post(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__post(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__post()
+std::shared_ptr<fb::protocol::header> create_game_reqs__post(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::post<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::post<V>>)
+                return std::make_shared<game_reqs::post<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__reputation(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__reputation(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__reputation(const fb::protocol::header&,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__reputation()
+std::shared_ptr<fb::protocol::header> create_game_reqs__reputation(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -471,38 +549,55 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__reputation()
 void bind_default_game_reqs__screen_refresh(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__screen_refresh(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__screen_refresh(const fb::protocol::header&,
+                                                                      fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__screen_refresh()
+std::shared_ptr<fb::protocol::header> create_game_reqs__screen_refresh(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::screen_refresh<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::screen_refresh<V>>)
+                return std::make_shared<game_reqs::screen_refresh<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__self_info(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__self_info(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__self_info(const fb::protocol::header&,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__self_info()
+std::shared_ptr<fb::protocol::header> create_game_reqs__self_info(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::self_info<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::self_info<V>>)
+                return std::make_shared<game_reqs::self_info<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__spell_cast(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__spell_cast(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__spell_cast(const fb::protocol::header&,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__spell_cast()
+std::shared_ptr<fb::protocol::header> create_game_reqs__spell_cast(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -510,12 +605,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__spell_cast()
 void bind_default_game_reqs__swap(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__swap(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__swap(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__swap()
+std::shared_ptr<fb::protocol::header> create_game_reqs__swap(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -523,12 +618,12 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__swap()
 void bind_default_game_reqs__trade(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__trade(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__trade(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__trade()
+std::shared_ptr<fb::protocol::header> create_game_reqs__trade(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -536,12 +631,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__trade()
 void bind_default_game_reqs__unknown_54(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__unknown_54(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__unknown_54(const fb::protocol::header&,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__unknown_54()
+std::shared_ptr<fb::protocol::header> create_game_reqs__unknown_54(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -549,12 +645,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__unknown_54()
 void bind_default_game_reqs__update_option(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__update_option(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__update_option(const fb::protocol::header&,
+                                                                     fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__update_option()
+std::shared_ptr<fb::protocol::header> create_game_reqs__update_option(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -562,12 +659,13 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__update_option()
 void bind_default_game_reqs__user_info_submit(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__user_info_submit(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__user_info_submit(const fb::protocol::header&,
+                                                                        fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__user_info_submit()
+std::shared_ptr<fb::protocol::header> create_game_reqs__user_info_submit(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -575,38 +673,55 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__user_info_submit()
 void bind_default_game_reqs__user_list(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__user_list(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__user_list(const fb::protocol::header&,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__user_list()
+std::shared_ptr<fb::protocol::header> create_game_reqs__user_list(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::user_list<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::user_list<V>>)
+                return std::make_shared<game_reqs::user_list<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__web_map(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__web_map(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__web_map(const fb::protocol::header&,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__web_map()
+std::shared_ptr<fb::protocol::header> create_game_reqs__web_map(fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_reqs::web_map<BOT_CLIENT_VERSION>>();
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            if constexpr (std::is_default_constructible_v<game_reqs::web_map<V>>)
+                return std::make_shared<game_reqs::web_map<V>>();
+            else
+                return nullptr;
+        });
 }
 
 void bind_default_game_reqs__whisper(fb::bot::game_bot_controller&)
 { }
 
-std::shared_ptr<fb::protocol::header> clone_game_reqs__whisper(const fb::protocol::header&)
+std::shared_ptr<fb::protocol::header> clone_game_reqs__whisper(const fb::protocol::header&,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
-std::shared_ptr<fb::protocol::header> create_game_reqs__whisper()
+std::shared_ptr<fb::protocol::header> create_game_reqs__whisper(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -616,12 +731,13 @@ void bind_default_game_resp__action(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::action>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__action(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__action(const fb::protocol::header& header,
+                                                              fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::action>(static_cast<const game_resp::action&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__action()
+std::shared_ptr<fb::protocol::header> create_game_resp__action(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -631,12 +747,13 @@ void bind_default_game_resp__ad(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::ad>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__ad(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__ad(const fb::protocol::header& header,
+                                                          fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::ad>(static_cast<const game_resp::ad&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__ad()
+std::shared_ptr<fb::protocol::header> create_game_resp__ad(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -646,28 +763,33 @@ void bind_default_game_resp__bright(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::bright>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__bright(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__bright(const fb::protocol::header& header,
+                                                              fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::bright>(static_cast<const game_resp::bright&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__bright()
+std::shared_ptr<fb::protocol::header> create_game_resp__bright(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__browser(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::browser<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::browser>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__browser(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__browser(const fb::protocol::header&  header,
+                                                               fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::browser<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::browser<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::browser<V>>(static_cast<const game_resp::browser<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__browser()
+std::shared_ptr<fb::protocol::header> create_game_resp__browser(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -677,12 +799,13 @@ void bind_default_game_resp__bulletin_article(fb::bot::game_bot_controller& cont
     controller.bind_default<game_resp::bulletin_article>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_article(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_article(const fb::protocol::header& header,
+                                                                        fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::bulletin_article>(static_cast<const game_resp::bulletin_article&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_article()
+std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_article(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -692,12 +815,13 @@ void bind_default_game_resp__bulletin_articles(fb::bot::game_bot_controller& con
     controller.bind_default<game_resp::bulletin_articles>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_articles(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_articles(const fb::protocol::header& header,
+                                                                         fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::bulletin_articles>(static_cast<const game_resp::bulletin_articles&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_articles()
+std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_articles(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -707,12 +831,13 @@ void bind_default_game_resp__bulletin_mail(fb::bot::game_bot_controller& control
     controller.bind_default<game_resp::bulletin_mail>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_mail(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_mail(const fb::protocol::header& header,
+                                                                     fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::bulletin_mail>(static_cast<const game_resp::bulletin_mail&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_mail()
+std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_mail(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -722,12 +847,13 @@ void bind_default_game_resp__bulletin_mails(fb::bot::game_bot_controller& contro
     controller.bind_default<game_resp::bulletin_mails>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_mails(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_mails(const fb::protocol::header& header,
+                                                                      fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::bulletin_mails>(static_cast<const game_resp::bulletin_mails&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_mails()
+std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_mails(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -737,12 +863,13 @@ void bind_default_game_resp__bulletin_message(fb::bot::game_bot_controller& cont
     controller.bind_default<game_resp::bulletin_message>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_message(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_message(const fb::protocol::header& header,
+                                                                        fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::bulletin_message>(static_cast<const game_resp::bulletin_message&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_message()
+std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_message(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -752,12 +879,13 @@ void bind_default_game_resp__bulletin_sections(fb::bot::game_bot_controller& con
     controller.bind_default<game_resp::bulletin_sections>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_sections(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_sections(const fb::protocol::header& header,
+                                                                         fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::bulletin_sections>(static_cast<const game_resp::bulletin_sections&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_sections()
+std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_sections(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -767,12 +895,13 @@ void bind_default_game_resp__c2s_relay(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::c2s_relay>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__c2s_relay(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__c2s_relay(const fb::protocol::header& header,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::c2s_relay>(static_cast<const game_resp::c2s_relay&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__c2s_relay()
+std::shared_ptr<fb::protocol::header> create_game_resp__c2s_relay(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -782,28 +911,33 @@ void bind_default_game_resp__chat(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::chat>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__chat(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__chat(const fb::protocol::header& header,
+                                                            fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::chat>(static_cast<const game_resp::chat&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__chat()
+std::shared_ptr<fb::protocol::header> create_game_resp__chat(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__collection(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::collection<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::collection>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__collection(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__collection(const fb::protocol::header&  header,
+                                                                  fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::collection<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::collection<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::collection<V>>(static_cast<const game_resp::collection<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__collection()
+std::shared_ptr<fb::protocol::header> create_game_resp__collection(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -813,12 +947,13 @@ void bind_default_game_resp__dialog(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::dialog>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog(const fb::protocol::header& header,
+                                                              fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog>(static_cast<const game_resp::dialog&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -828,12 +963,13 @@ void bind_default_game_resp__dialog_0x30_10(fb::bot::game_bot_controller& contro
     controller.bind_default<game_resp::dialog_0x30_10>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_0x30_10(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_0x30_10(const fb::protocol::header& header,
+                                                                      fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_0x30_10>(static_cast<const game_resp::dialog_0x30_10&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_0x30_10()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_0x30_10(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -843,12 +979,13 @@ void bind_default_game_resp__dialog_buy(fb::bot::game_bot_controller& controller
     controller.bind_default<game_resp::dialog_buy>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_buy(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_buy(const fb::protocol::header& header,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_buy>(static_cast<const game_resp::dialog_buy&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_buy()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_buy(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -858,12 +995,13 @@ void bind_default_game_resp__dialog_email(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::dialog_email>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_email(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_email(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_email>(static_cast<const game_resp::dialog_email&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_email()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_email(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -873,12 +1011,13 @@ void bind_default_game_resp__dialog_input(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::dialog_input>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_input(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_input(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_input>(static_cast<const game_resp::dialog_input&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -888,12 +1027,13 @@ void bind_default_game_resp__dialog_input_ext(fb::bot::game_bot_controller& cont
     controller.bind_default<game_resp::dialog_input_ext>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_input_ext(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_input_ext(const fb::protocol::header& header,
+                                                                        fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_input_ext>(static_cast<const game_resp::dialog_input_ext&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input_ext()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input_ext(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -903,12 +1043,13 @@ void bind_default_game_resp__dialog_item(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::dialog_item>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_item(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_item(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_item>(static_cast<const game_resp::dialog_item&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_item()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_item(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -918,12 +1059,13 @@ void bind_default_game_resp__dialog_list(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::dialog_list>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_list(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_list(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_list>(static_cast<const game_resp::dialog_list&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_list()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_list(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -933,12 +1075,13 @@ void bind_default_game_resp__dialog_menu(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::dialog_menu>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_menu(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_menu(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_menu>(static_cast<const game_resp::dialog_menu&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_menu()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_menu(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -948,12 +1091,13 @@ void bind_default_game_resp__dialog_pursuit(fb::bot::game_bot_controller& contro
     controller.bind_default<game_resp::dialog_pursuit>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_pursuit(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_pursuit(const fb::protocol::header& header,
+                                                                      fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_pursuit>(static_cast<const game_resp::dialog_pursuit&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_pursuit()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_pursuit(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -963,12 +1107,13 @@ void bind_default_game_resp__dialog_slot(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::dialog_slot>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_slot(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_slot(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_slot>(static_cast<const game_resp::dialog_slot&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_slot()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_slot(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -978,12 +1123,13 @@ void bind_default_game_resp__dialog_spell(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::dialog_spell>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_spell(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_spell(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::dialog_spell>(static_cast<const game_resp::dialog_spell&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_spell()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_spell(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -993,12 +1139,13 @@ void bind_default_game_resp__die(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::die>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__die(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__die(const fb::protocol::header& header,
+                                                           fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::die>(static_cast<const game_resp::die&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__die()
+std::shared_ptr<fb::protocol::header> create_game_resp__die(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1008,44 +1155,54 @@ void bind_default_game_resp__direction(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::direction>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__direction(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__direction(const fb::protocol::header& header,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::direction>(static_cast<const game_resp::direction&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__direction()
+std::shared_ptr<fb::protocol::header> create_game_resp__direction(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__effect(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::effect<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::effect>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__effect(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__effect(const fb::protocol::header&  header,
+                                                              fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::effect<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::effect<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::effect<V>>(static_cast<const game_resp::effect<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__effect()
+std::shared_ptr<fb::protocol::header> create_game_resp__effect(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__external_info(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::external_info<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::external_info>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__external_info(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__external_info(const fb::protocol::header&  header,
+                                                                     fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::external_info<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::external_info<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::external_info<V>>(
+                static_cast<const game_resp::external_info<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__external_info()
+std::shared_ptr<fb::protocol::header> create_game_resp__external_info(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1055,12 +1212,13 @@ void bind_default_game_resp__freeze(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::freeze>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__freeze(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__freeze(const fb::protocol::header& header,
+                                                              fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::freeze>(static_cast<const game_resp::freeze&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__freeze()
+std::shared_ptr<fb::protocol::header> create_game_resp__freeze(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1070,28 +1228,34 @@ void bind_default_game_resp__friends_sync(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::friends_sync>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__friends_sync(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__friends_sync(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::friends_sync>(static_cast<const game_resp::friends_sync&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__friends_sync()
+std::shared_ptr<fb::protocol::header> create_game_resp__friends_sync(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__group_portrait(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::group_portrait<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::group_portrait>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__group_portrait(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__group_portrait(const fb::protocol::header&  header,
+                                                                      fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::group_portrait<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::group_portrait<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::group_portrait<V>>(
+                static_cast<const game_resp::group_portrait<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__group_portrait()
+std::shared_ptr<fb::protocol::header> create_game_resp__group_portrait(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1101,12 +1265,13 @@ void bind_default_game_resp__hide(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::hide>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__hide(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__hide(const fb::protocol::header& header,
+                                                            fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::hide>(static_cast<const game_resp::hide&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__hide()
+std::shared_ptr<fb::protocol::header> create_game_resp__hide(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1116,12 +1281,13 @@ void bind_default_game_resp__holyday_screen(fb::bot::game_bot_controller& contro
     controller.bind_default<game_resp::holyday_screen>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__holyday_screen(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__holyday_screen(const fb::protocol::header& header,
+                                                                      fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::holyday_screen>(static_cast<const game_resp::holyday_screen&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__holyday_screen()
+std::shared_ptr<fb::protocol::header> create_game_resp__holyday_screen(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1131,12 +1297,13 @@ void bind_default_game_resp__id(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::id>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__id(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__id(const fb::protocol::header& header,
+                                                          fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::id>(static_cast<const game_resp::id&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__id()
+std::shared_ptr<fb::protocol::header> create_game_resp__id(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1146,28 +1313,34 @@ void bind_default_game_resp__init(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::init>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__init(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__init(const fb::protocol::header& header,
+                                                            fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::init>(static_cast<const game_resp::init&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__init()
+std::shared_ptr<fb::protocol::header> create_game_resp__init(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__internal_info(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::internal_info<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::internal_info>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__internal_info(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__internal_info(const fb::protocol::header&  header,
+                                                                     fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::internal_info<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::internal_info<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::internal_info<V>>(
+                static_cast<const game_resp::internal_info<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__internal_info()
+std::shared_ptr<fb::protocol::header> create_game_resp__internal_info(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1177,12 +1350,13 @@ void bind_default_game_resp__item_remove(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::item_remove>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__item_remove(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__item_remove(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::item_remove>(static_cast<const game_resp::item_remove&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__item_remove()
+std::shared_ptr<fb::protocol::header> create_game_resp__item_remove(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1192,12 +1366,13 @@ void bind_default_game_resp__item_throw_confirm(fb::bot::game_bot_controller& co
     controller.bind_default<game_resp::item_throw_confirm>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__item_throw_confirm(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__item_throw_confirm(const fb::protocol::header& header,
+                                                                          fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::item_throw_confirm>(static_cast<const game_resp::item_throw_confirm&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__item_throw_confirm()
+std::shared_ptr<fb::protocol::header> create_game_resp__item_throw_confirm(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1207,76 +1382,94 @@ void bind_default_game_resp__item_throws(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::item_throws>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__item_throws(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__item_throws(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::item_throws>(static_cast<const game_resp::item_throws&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__item_throws()
+std::shared_ptr<fb::protocol::header> create_game_resp__item_throws(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__item_tip(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::item_tip<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_tip>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__item_tip(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__item_tip(const fb::protocol::header&  header,
+                                                                fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::item_tip<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::item_tip<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::item_tip<V>>(static_cast<const game_resp::item_tip<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__item_tip()
+std::shared_ptr<fb::protocol::header> create_game_resp__item_tip(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__item_unequip(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::item_unequip<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_unequip>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__item_unequip(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__item_unequip(const fb::protocol::header&  header,
+                                                                    fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::item_unequip<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::item_unequip<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::item_unequip<V>>(static_cast<const game_resp::item_unequip<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__item_unequip()
+std::shared_ptr<fb::protocol::header> create_game_resp__item_unequip(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__item_update(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::item_update<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_update>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__item_update(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__item_update(const fb::protocol::header&  header,
+                                                                   fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::item_update<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::item_update<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::item_update<V>>(static_cast<const game_resp::item_update<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__item_update()
+std::shared_ptr<fb::protocol::header> create_game_resp__item_update(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__item_update_slot(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::item_update_slot<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_update_slot>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__item_update_slot(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__item_update_slot(const fb::protocol::header&  header,
+                                                                        fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::item_update_slot<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::item_update_slot<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::item_update_slot<V>>(
+                static_cast<const game_resp::item_update_slot<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__item_update_slot()
+std::shared_ptr<fb::protocol::header> create_game_resp__item_update_slot(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1286,12 +1479,13 @@ void bind_default_game_resp__map_bgm(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::map_bgm>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__map_bgm(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__map_bgm(const fb::protocol::header& header,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::map_bgm>(static_cast<const game_resp::map_bgm&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__map_bgm()
+std::shared_ptr<fb::protocol::header> create_game_resp__map_bgm(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1301,28 +1495,33 @@ void bind_default_game_resp__map_bgm_stop(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::map_bgm_stop>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__map_bgm_stop(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__map_bgm_stop(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::map_bgm_stop>(static_cast<const game_resp::map_bgm_stop&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__map_bgm_stop()
+std::shared_ptr<fb::protocol::header> create_game_resp__map_bgm_stop(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__map_config(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::map_config<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::map_config>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__map_config(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__map_config(const fb::protocol::header&  header,
+                                                                  fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::map_config<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::map_config<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::map_config<V>>(static_cast<const game_resp::map_config<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__map_config()
+std::shared_ptr<fb::protocol::header> create_game_resp__map_config(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1332,12 +1531,13 @@ void bind_default_game_resp__map_update(fb::bot::game_bot_controller& controller
     controller.bind_default<game_resp::map_update>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__map_update(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__map_update(const fb::protocol::header& header,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::map_update>(static_cast<const game_resp::map_update&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__map_update()
+std::shared_ptr<fb::protocol::header> create_game_resp__map_update(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1347,12 +1547,13 @@ void bind_default_game_resp__map_worlds(fb::bot::game_bot_controller& controller
     controller.bind_default<game_resp::map_worlds>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__map_worlds(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__map_worlds(const fb::protocol::header& header,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::map_worlds>(static_cast<const game_resp::map_worlds&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__map_worlds()
+std::shared_ptr<fb::protocol::header> create_game_resp__map_worlds(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1362,12 +1563,13 @@ void bind_default_game_resp__message(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::message>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__message(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__message(const fb::protocol::header& header,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::message>(static_cast<const game_resp::message&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__message()
+std::shared_ptr<fb::protocol::header> create_game_resp__message(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1377,28 +1579,33 @@ void bind_default_game_resp__move(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::move>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__move(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__move(const fb::protocol::header& header,
+                                                            fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::move>(static_cast<const game_resp::move&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__move()
+std::shared_ptr<fb::protocol::header> create_game_resp__move(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__move_confirm(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::move_confirm<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::move_confirm>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__move_confirm(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__move_confirm(const fb::protocol::header&  header,
+                                                                    fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::move_confirm<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::move_confirm<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::move_confirm<V>>(static_cast<const game_resp::move_confirm<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm()
+std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1408,45 +1615,54 @@ void bind_default_game_resp__move_confirm_noscroll(fb::bot::game_bot_controller&
     controller.bind_default<game_resp::move_confirm_noscroll>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__move_confirm_noscroll(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__move_confirm_noscroll(const fb::protocol::header& header,
+                                                                             fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::move_confirm_noscroll>(
         static_cast<const game_resp::move_confirm_noscroll&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm_noscroll()
+std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm_noscroll(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__notice(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::notice<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::notice>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__notice(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__notice(const fb::protocol::header&  header,
+                                                              fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::notice<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::notice<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::notice<V>>(static_cast<const game_resp::notice<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__notice()
+std::shared_ptr<fb::protocol::header> create_game_resp__notice(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__option(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::option<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::option>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__option(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__option(const fb::protocol::header&  header,
+                                                              fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::option<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::option<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::option<V>>(static_cast<const game_resp::option<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__option()
+std::shared_ptr<fb::protocol::header> create_game_resp__option(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1456,12 +1672,13 @@ void bind_default_game_resp__ping(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::ping>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__ping(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__ping(const fb::protocol::header& header,
+                                                            fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::ping>(static_cast<const game_resp::ping&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__ping()
+std::shared_ptr<fb::protocol::header> create_game_resp__ping(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1471,12 +1688,13 @@ void bind_default_game_resp__popup_input(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::popup_input>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__popup_input(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__popup_input(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::popup_input>(static_cast<const game_resp::popup_input&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__popup_input()
+std::shared_ptr<fb::protocol::header> create_game_resp__popup_input(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1486,12 +1704,13 @@ void bind_default_game_resp__popup_message(fb::bot::game_bot_controller& control
     controller.bind_default<game_resp::popup_message>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__popup_message(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__popup_message(const fb::protocol::header& header,
+                                                                     fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::popup_message>(static_cast<const game_resp::popup_message&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__popup_message()
+std::shared_ptr<fb::protocol::header> create_game_resp__popup_message(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1501,12 +1720,13 @@ void bind_default_game_resp__position(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::position>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__position(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__position(const fb::protocol::header& header,
+                                                                fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::position>(static_cast<const game_resp::position&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__position()
+std::shared_ptr<fb::protocol::header> create_game_resp__position(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1516,12 +1736,13 @@ void bind_default_game_resp__save(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::save>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__save(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__save(const fb::protocol::header& header,
+                                                            fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::save>(static_cast<const game_resp::save&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__save()
+std::shared_ptr<fb::protocol::header> create_game_resp__save(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1531,29 +1752,34 @@ void bind_default_game_resp__screen_refresh_complete(fb::bot::game_bot_controlle
     controller.bind_default<game_resp::screen_refresh_complete>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__screen_refresh_complete(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__screen_refresh_complete(const fb::protocol::header& header,
+                                                                               fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::screen_refresh_complete>(
         static_cast<const game_resp::screen_refresh_complete&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__screen_refresh_complete()
+std::shared_ptr<fb::protocol::header> create_game_resp__screen_refresh_complete(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__show(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::show<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::show>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__show(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__show(const fb::protocol::header&  header,
+                                                            fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::show<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::show<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::show<V>>(static_cast<const game_resp::show<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__show()
+std::shared_ptr<fb::protocol::header> create_game_resp__show(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1563,12 +1789,13 @@ void bind_default_game_resp__sound(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::sound>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__sound(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__sound(const fb::protocol::header& header,
+                                                             fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::sound>(static_cast<const game_resp::sound&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__sound()
+std::shared_ptr<fb::protocol::header> create_game_resp__sound(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1578,12 +1805,13 @@ void bind_default_game_resp__spell_buff(fb::bot::game_bot_controller& controller
     controller.bind_default<game_resp::spell_buff>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__spell_buff(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__spell_buff(const fb::protocol::header& header,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::spell_buff>(static_cast<const game_resp::spell_buff&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__spell_buff()
+std::shared_ptr<fb::protocol::header> create_game_resp__spell_buff(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1593,12 +1821,13 @@ void bind_default_game_resp__spell_delay(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::spell_delay>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__spell_delay(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__spell_delay(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::spell_delay>(static_cast<const game_resp::spell_delay&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__spell_delay()
+std::shared_ptr<fb::protocol::header> create_game_resp__spell_delay(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1608,12 +1837,13 @@ void bind_default_game_resp__spell_remove(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::spell_remove>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__spell_remove(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__spell_remove(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::spell_remove>(static_cast<const game_resp::spell_remove&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__spell_remove()
+std::shared_ptr<fb::protocol::header> create_game_resp__spell_remove(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1623,28 +1853,33 @@ void bind_default_game_resp__spell_unbuff(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::spell_unbuff>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__spell_unbuff(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__spell_unbuff(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::spell_unbuff>(static_cast<const game_resp::spell_unbuff&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__spell_unbuff()
+std::shared_ptr<fb::protocol::header> create_game_resp__spell_unbuff(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__spell_update(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::spell_update<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::spell_update>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__spell_update(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__spell_update(const fb::protocol::header&  header,
+                                                                    fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::spell_update<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::spell_update<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::spell_update<V>>(static_cast<const game_resp::spell_update<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__spell_update()
+std::shared_ptr<fb::protocol::header> create_game_resp__spell_update(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1654,12 +1889,13 @@ void bind_default_game_resp__time(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::time>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__time(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__time(const fb::protocol::header& header,
+                                                            fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::time>(static_cast<const game_resp::time&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__time()
+std::shared_ptr<fb::protocol::header> create_game_resp__time(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1669,12 +1905,13 @@ void bind_default_game_resp__timer(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::timer>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__timer(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__timer(const fb::protocol::header& header,
+                                                             fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::timer>(static_cast<const game_resp::timer&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__timer()
+std::shared_ptr<fb::protocol::header> create_game_resp__timer(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1684,12 +1921,13 @@ void bind_default_game_resp__trade_bundle(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::trade_bundle>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__trade_bundle(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__trade_bundle(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::trade_bundle>(static_cast<const game_resp::trade_bundle&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__trade_bundle()
+std::shared_ptr<fb::protocol::header> create_game_resp__trade_bundle(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1699,28 +1937,33 @@ void bind_default_game_resp__trade_close(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::trade_close>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__trade_close(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__trade_close(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::trade_close>(static_cast<const game_resp::trade_close&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__trade_close()
+std::shared_ptr<fb::protocol::header> create_game_resp__trade_close(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__trade_dialog(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::trade_dialog<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::trade_dialog>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__trade_dialog(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__trade_dialog(const fb::protocol::header&  header,
+                                                                    fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::trade_dialog<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::trade_dialog<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::trade_dialog<V>>(static_cast<const game_resp::trade_dialog<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__trade_dialog()
+std::shared_ptr<fb::protocol::header> create_game_resp__trade_dialog(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1730,12 +1973,13 @@ void bind_default_game_resp__trade_lock(fb::bot::game_bot_controller& controller
     controller.bind_default<game_resp::trade_lock>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__trade_lock(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__trade_lock(const fb::protocol::header& header,
+                                                                  fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::trade_lock>(static_cast<const game_resp::trade_lock&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__trade_lock()
+std::shared_ptr<fb::protocol::header> create_game_resp__trade_lock(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1745,12 +1989,13 @@ void bind_default_game_resp__trade_money(fb::bot::game_bot_controller& controlle
     controller.bind_default<game_resp::trade_money>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__trade_money(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__trade_money(const fb::protocol::header& header,
+                                                                   fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::trade_money>(static_cast<const game_resp::trade_money&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__trade_money()
+std::shared_ptr<fb::protocol::header> create_game_resp__trade_money(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1760,12 +2005,13 @@ void bind_default_game_resp__trade_upload(fb::bot::game_bot_controller& controll
     controller.bind_default<game_resp::trade_upload>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__trade_upload(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__trade_upload(const fb::protocol::header& header,
+                                                                    fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::trade_upload>(static_cast<const game_resp::trade_upload&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__trade_upload()
+std::shared_ptr<fb::protocol::header> create_game_resp__trade_upload(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1775,44 +2021,53 @@ void bind_default_game_resp__ui_screen(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::ui_screen>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__ui_screen(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__ui_screen(const fb::protocol::header& header,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::ui_screen>(static_cast<const game_resp::ui_screen&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__ui_screen()
+std::shared_ptr<fb::protocol::header> create_game_resp__ui_screen(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__unknown_4f(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::unknown_4f<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::unknown_4f>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__unknown_4f(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__unknown_4f(const fb::protocol::header&  header,
+                                                                  fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::unknown_4f<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::unknown_4f<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::unknown_4f<V>>(static_cast<const game_resp::unknown_4f<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__unknown_4f()
+std::shared_ptr<fb::protocol::header> create_game_resp__unknown_4f(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__update(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::update<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::update>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__update(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__update(const fb::protocol::header&  header,
+                                                              fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::update<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::update<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::update<V>>(static_cast<const game_resp::update<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__update()
+std::shared_ptr<fb::protocol::header> create_game_resp__update(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1822,28 +2077,34 @@ void bind_default_game_resp__update_cc(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::update_cc>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__update_cc(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__update_cc(const fb::protocol::header& header,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::update_cc>(static_cast<const game_resp::update_cc&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__update_cc()
+std::shared_ptr<fb::protocol::header> create_game_resp__update_cc(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__update_external(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::update_external<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::update_external>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__update_external(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__update_external(const fb::protocol::header&  header,
+                                                                       fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::update_external<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::update_external<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::update_external<V>>(
+                static_cast<const game_resp::update_external<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__update_external()
+std::shared_ptr<fb::protocol::header> create_game_resp__update_external(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1853,28 +2114,34 @@ void bind_default_game_resp__update_hp(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::update_hp>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__update_hp(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__update_hp(const fb::protocol::header& header,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::update_hp>(static_cast<const game_resp::update_hp&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__update_hp()
+std::shared_ptr<fb::protocol::header> create_game_resp__update_hp(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__update_internal(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::update_internal<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::update_internal>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__update_internal(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__update_internal(const fb::protocol::header&  header,
+                                                                       fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::update_internal<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::update_internal<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::update_internal<V>>(
+                static_cast<const game_resp::update_internal<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__update_internal()
+std::shared_ptr<fb::protocol::header> create_game_resp__update_internal(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1884,12 +2151,13 @@ void bind_default_game_resp__user_info(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::user_info>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__user_info(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__user_info(const fb::protocol::header& header,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::user_info>(static_cast<const game_resp::user_info&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__user_info()
+std::shared_ptr<fb::protocol::header> create_game_resp__user_info(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1899,12 +2167,13 @@ void bind_default_game_resp__user_list(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::user_list>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__user_list(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__user_list(const fb::protocol::header& header,
+                                                                 fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::user_list>(static_cast<const game_resp::user_list&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__user_list()
+std::shared_ptr<fb::protocol::header> create_game_resp__user_list(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
@@ -1914,44 +2183,53 @@ void bind_default_game_resp__weather(fb::bot::game_bot_controller& controller)
     controller.bind_default<game_resp::weather>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__weather(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__weather(const fb::protocol::header& header,
+                                                               fb::protocol::CLIENT_VERSION)
 {
     return std::make_shared<game_resp::weather>(static_cast<const game_resp::weather&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__weather()
+std::shared_ptr<fb::protocol::header> create_game_resp__weather(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__web(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::web<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::web>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__web(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__web(const fb::protocol::header&  header,
+                                                           fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::web<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::web<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::web<V>>(static_cast<const game_resp::web<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__web()
+std::shared_ptr<fb::protocol::header> create_game_resp__web(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }
 
 void bind_default_game_resp__web_map(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::web_map<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::web_map>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__web_map(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__web_map(const fb::protocol::header&  header,
+                                                               fb::protocol::CLIENT_VERSION version)
 {
-    return std::make_shared<game_resp::web_map<BOT_CLIENT_VERSION>>(
-        static_cast<const game_resp::web_map<BOT_CLIENT_VERSION>&>(header));
+    return fb::protocol::visit_client_version(
+        version,
+        [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<game_resp::web_map<V>>(static_cast<const game_resp::web_map<V>&>(header));
+        });
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__web_map()
+std::shared_ptr<fb::protocol::header> create_game_resp__web_map(fb::protocol::CLIENT_VERSION)
 {
     return nullptr;
 }

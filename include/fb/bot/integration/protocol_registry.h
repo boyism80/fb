@@ -2,6 +2,7 @@
 #define __BOT_INTEGRATION_PROTOCOL_REGISTRY_H__
 
 #include <fb/bot/integration/protocol_registry.generated.h>
+#include <fb/protocol/client_version.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -33,9 +34,9 @@ struct protocol_entry
     uint8_t            opcode;
 
     void (*bind_default)(game_bot_controller&);
-    std::shared_ptr<fb::protocol::header> (*clone)(const fb::protocol::header&);
-    std::shared_ptr<fb::protocol::header> (*create)();
-    void (*marshal_lua)(lua_State* L, const fb::protocol::header& header);
+    std::shared_ptr<fb::protocol::header> (*clone)(const fb::protocol::header&, fb::protocol::CLIENT_VERSION);
+    std::shared_ptr<fb::protocol::header> (*create)(fb::protocol::CLIENT_VERSION);
+    void (*marshal_lua)(lua_State* L, const fb::protocol::header& header, fb::protocol::CLIENT_VERSION);
 };
 
 class protocol_registry
@@ -52,7 +53,9 @@ public:
 
     static void register_all();
     static void bind_default(game_bot_controller& controller);
-    static void marshal_lua_stub(lua_State* L, const fb::protocol::header& header);
+    static void marshal_lua_stub(lua_State*                   L,
+                                 const fb::protocol::header&  header,
+                                 fb::protocol::CLIENT_VERSION version);
 };
 
 } // namespace fb::bot::integration

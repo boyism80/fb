@@ -88,8 +88,10 @@ public:
 private:
     async::task<void> on_timer();
     async::task<void> on_time(game_bot& bot, const game_resp::time& response);
-    async::task<void> on_state(game_bot& bot, const game_resp::update_internal_v550& response);
-    async::task<void> on_map(game_bot& bot, const game_resp::map_config_v550& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_state(game_bot& bot, const game_resp::update_internal<V>& response);
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_map(game_bot& bot, const game_resp::map_config<V>& response);
     async::task<void> on_message(game_bot& bot, const game_resp::message& response);
     async::task<void> on_sequence(game_bot& bot, const game_resp::id& response);
     async::task<void> on_position(game_bot& bot, const game_resp::position& response);
@@ -125,9 +127,27 @@ public:
         this->_test_hooks[test][ResponseType::header].push_back(hook_entry{++this->_hook_sequence, hook_func});
     }
 
+    template <template <fb::protocol::CLIENT_VERSION> class ResponseType, typename Fn>
+    void hook(bot_integration_test* test, Fn&& fn)
+    {
+        auto hook_func = [fn = std::forward<Fn>(fn)](game_bot&                   bot,
+                                                     const fb::protocol::header& header) -> async::task<void> {
+            co_await fb::protocol::visit_client_version(bot.client_version(), [&]<fb::protocol::CLIENT_VERSION V>() {
+                return fn(bot, static_cast<const ResponseType<V>&>(header));
+            });
+        };
+
+        auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
+        this->_test_hooks[test][ResponseType<fb::protocol::CLIENT_VERSION::v550>::opcode].push_back(
+            hook_entry{++this->_hook_sequence, hook_func});
+    }
+
     template <typename Class, typename ResponseType> void
     hook(bot_integration_test* test, Class* instance, async::task<void> (Class::*fn)(game_bot&, const ResponseType&))
     {
+        static_assert(versioned_protocol<ResponseType> == false,
+                      "hook the CLIENT_VERSION template (hook<game_resp::show>) so every bot version is parsed");
+
         auto hook_func = [instance, fn](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
             auto& protocol = static_cast<const ResponseType&>(header);
             co_await (instance->*fn)(bot, protocol);

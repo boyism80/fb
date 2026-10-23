@@ -18,9 +18,6 @@ using namespace std::chrono_literals;
 using namespace fb::bot::integration;
 using namespace fb::model::enum_value;
 
-// The bot speaks the v550 C2S layout; versioned requests are instantiated for it.
-constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
-
 namespace {
 
 #ifdef _DEBUG
@@ -97,7 +94,7 @@ int builtin::game_bot::builtin_bulletin_write(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::WRITE, section, 0, 0, title_str, contents_str),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::WRITE, section, 0, 0, title_str, contents_str),
             INTEGRATION_DEFAULT_TIMEOUT);
 
         *result = resp.type == bulletin_bot::bulletin_type::message &&
@@ -136,7 +133,7 @@ int builtin::game_bot::builtin_bulletin_get_sections(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::SECTIONS),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::SECTIONS),
             [](auto& r) -> bool {
                 return r.type == bulletin_bot::bulletin_type::sections;
             },
@@ -190,7 +187,7 @@ int builtin::game_bot::builtin_bulletin_get_articles(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::ARTICLES, section, 0, offset),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLES, section, 0, offset),
             [section](auto& r) -> bool {
                 return r.type == bulletin_bot::bulletin_type::articles && r.articles_bulletin_id == section;
             },
@@ -241,7 +238,7 @@ int builtin::game_bot::builtin_bulletin_read_article(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::ARTICLE, section, article_id),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLE, section, article_id),
             [article_id](auto& r) -> bool {
                 return r.type == bulletin_bot::bulletin_type::article && r.article_id == article_id;
             },
@@ -294,7 +291,7 @@ int builtin::game_bot::builtin_bulletin_delete_article(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::DELETE, section, article_id),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::DELETE, section, article_id),
             [](auto& r) -> bool {
                 switch (r.type)
                 {
@@ -340,13 +337,7 @@ int builtin::game_bot::builtin_bulletin_send_mail(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::SEND_MAIL,
-                                                    0,
-                                                    0,
-                                                    0,
-                                                    title_str,
-                                                    contents_str,
-                                                    to_str),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::SEND_MAIL, 0, 0, 0, title_str, contents_str, to_str),
             [](auto& r) -> bool {
                 switch (r.type)
                 {
@@ -389,7 +380,7 @@ int builtin::game_bot::builtin_bulletin_get_mails(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::ARTICLES, 0xFFFF, 0, 0x7FFF),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLES, 0xFFFF, 0, 0x7FFF),
             [](auto& r) -> bool {
                 return r.type == bulletin_bot::bulletin_type::mails;
             },
@@ -439,7 +430,7 @@ int builtin::game_bot::builtin_bulletin_read_mail(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::ARTICLE, 0xFFFF, mail_id, 0),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLE, 0xFFFF, mail_id, 0),
             [mail_id](auto& r) -> bool {
                 return r.type == bulletin_bot::bulletin_type::mail && r.mail_id == mail_id;
             },
@@ -491,7 +482,7 @@ int builtin::game_bot::builtin_bulletin_delete_mail(lua_State* L)
 
         namespace game_reqs = fb::protocol::game::request;
         auto&& resp         = co_await bot->request<bulletin_bot>(
-            game_reqs::bulletin<BOT_CLIENT_VERSION>(BULLETIN_ACTION::DELETE, 0xFFFF, mail_id, 0),
+            *bot->make<game_reqs::bulletin>(BULLETIN_ACTION::DELETE, 0xFFFF, mail_id, 0),
             [](auto& r) -> bool {
                 switch (r.type)
                 {

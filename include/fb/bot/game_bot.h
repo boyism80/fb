@@ -46,7 +46,6 @@ public:
     using spawned_monster_task      = async::task<spawned_monster_info>;
     using spawned_monster_list_task = async::task<std::vector<spawned_monster_info>>;
     using game_bot_ptr_task         = async::task<std::shared_ptr<game_bot>>;
-    using update_validator_fn       = std::function<bool(const fb::protocol::game::response::update_v550&)>;
     using relative_positions_t      = std::vector<std::pair<int, int>>;
     // clang-format on
 
@@ -108,7 +107,6 @@ private:
     point<uint16_t>                 _position;
     bool                            _has_position = false;
     fb::stream                      _transfer_buffer;
-    fb::protocol::CLIENT_VERSION    _client_version = fb::protocol::CLIENT_VERSION::v550;
     uint32_t                        _transfer_from_bot_id = 0;
     std::optional<fb::bot::credential> _credential;
     DIRECTION                       _direction            = DIRECTION::BOTTOM;
@@ -189,7 +187,6 @@ public:
     bool                                      inited() const;
     void                                      inited(bool value);
     const fb::stream&                         transfer_buffer() const;
-    fb::protocol::CLIENT_VERSION              client_version() const;
     uint32_t                                  transfer_from_bot_id() const;
     void                                      set_transfer_from_bot_id(uint32_t value);
     const std::optional<fb::bot::credential>& credential() const;
@@ -331,10 +328,8 @@ public:
     async::task<bool>                     unequip(EQUIPMENT_PARTS parts, std::chrono::milliseconds timeout);
     async::task<void>                     sleep(std::chrono::milliseconds timeout);
     async::task<void>                     change_class(std::string_view class_name, std::chrono::milliseconds timeout);
-    spawned_monster_task                  spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot> bot, std::string_view monster_name, uint16_t x, uint16_t y, update_validator_fn validator, std::chrono::milliseconds timeout);
     spawned_monster_task                  spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
     async::task<void>                     spawn_monsters_bulk(std::string_view monster_name, uint8_t range, std::chrono::milliseconds timeout);
-    spawned_monster_list_task             spawn_monsters_relative_with_validator(std::shared_ptr<fb::bot::game_bot> bot, std::string_view monster_name, const relative_positions_t& relative_positions, update_validator_fn validator, std::chrono::milliseconds timeout);
     spawned_monster_list_task             spawn_monsters_relative(std::string_view monster_name, const relative_positions_t& relative_positions, std::chrono::milliseconds timeout);
     spawned_monster_task                  spawn_monster_relative(std::string_view monster_name, int relative_x, int relative_y, std::chrono::milliseconds timeout);
     async::task<bool>                     set_max_hp_mp(int max_hp, int max_mp, std::chrono::milliseconds timeout);

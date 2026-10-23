@@ -12,14 +12,6 @@
 
 using namespace fb::bot::load;
 
-namespace {
-
-// create / complete / login C2S layouts carry no version delta, so the bot always
-// builds them with the primary (v550) specialization.
-constexpr auto REQUEST_VERSION = fb::protocol::CLIENT_VERSION::v550;
-
-} // namespace
-
 login_bot_controller::login_bot_controller(bot_container& container) :
     fb::bot::login_bot_controller(container)
 {
@@ -44,7 +36,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
 
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::create<REQUEST_VERSION>(id, pw));
+            auto&& resp = co_await bot.request<login_resp::message>(*bot.make<login_reqs::create>(id, pw));
 
             if (resp.type == 0x00)
                 break;
@@ -78,7 +70,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             while (true)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(
-                    login_reqs::complete<REQUEST_VERSION>{hair, gender, nation, divine_beast});
+                    *bot.make<login_reqs::complete>(hair, gender, nation, divine_beast));
 
                 if (resp.type == 0x00)
                     break;
@@ -89,7 +81,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
 
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::login<REQUEST_VERSION>{id, pw});
+            auto&& resp = co_await bot.request<login_resp::message>(*bot.make<login_reqs::login>(id, pw));
             if (resp.type == 0x00)
                 break;
 
@@ -108,7 +100,8 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
 {
     bot.close();
 
-    auto created  = this->container.game->create(response.parameter);
+    auto created = this->container.game->create(response.parameter);
+    created->carry_over(bot);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     created->connect(endpoint);
@@ -119,17 +112,14 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
 async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     auto& encryption = bot.encryption();
-
-    // Runtime CLIENT_VERSION -> compile-time V for the versioned request layout.
-    fb::protocol::visit_client_version(bot.client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
-        bot.send(login_reqs::agreement<V>(encryption.pattern(),
-                                          fb::encryption::KEY_SIZE,
-                                          encryption.iv(),
-                                          bot.transfer_from(),
-                                          bot.client_version()),
-                 false,
-                 true);
-    });
+    bot.send(*bot.make<login_reqs::agreement>(encryption.pattern(),
+                                              fb::encryption::KEY_SIZE,
+                                              encryption.iv(),
+                                              bot.transfer_from(),
+                                              bot.client_version(),
+                                              bot.ui_mode()),
+             false,
+             true);
 
     // Bot is now managed by bot_controller's thread-safe collection
     co_return;

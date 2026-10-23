@@ -247,7 +247,7 @@ int bot_request_dialog_impl(lua_State* L)
     if (bot == nullptr)
         return 0;
 
-    auto request = lua_protocol::to_request(L, 2);
+    auto request = lua_protocol::to_request(L, 2, bot->client_version());
     luaL_checktype(L, 3, LUA_TFUNCTION);
 
     lua_pushvalue(L, 3);

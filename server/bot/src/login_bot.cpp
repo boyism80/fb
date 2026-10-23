@@ -20,7 +20,7 @@ login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id, con
     login_bot(bot_controller, id)
 {
     auto clone    = fb::stream{params};
-    auto reader   = fb::stream_reader<>(clone);
+    auto reader   = fb::stream_reader<big_endian>(clone);
     auto enc_type = reader.read<uint8_t>();
     auto key_size = reader.read<uint8_t>();
     auto enc_key  = std::make_unique<uint8_t[]>(key_size);
@@ -33,7 +33,7 @@ login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id, con
         this->_transfer_from = reader.read<uint8_t>();
         auto packed          = reader.read<uint16_t>();
         if (fb::protocol::is_supported(packed))
-            this->_client_version = static_cast<fb::protocol::CLIENT_VERSION>(packed);
+            this->profile(client_profile{.version = static_cast<fb::protocol::CLIENT_VERSION>(packed)});
     }
 }
 
@@ -66,11 +66,6 @@ std::string login_bot::generate_id() const
 uint8_t login_bot::transfer_from() const
 {
     return this->_transfer_from;
-}
-
-fb::protocol::CLIENT_VERSION login_bot::client_version() const
-{
-    return this->_client_version;
 }
 
 const std::optional<fb::bot::credential>& login_bot::credential() const

@@ -9,6 +9,11 @@ namespace fb::bot::integration {
 
 void trade_bot::deserialize(fb::stream_reader<big_endian>& reader)
 {
+    this->deserialize(reader, fb::protocol::CLIENT_VERSION::v550);
+}
+
+void trade_bot::deserialize(fb::stream_reader<big_endian>& reader, fb::protocol::CLIENT_VERSION version)
+{
     header::deserialize(reader);
     this->type = static_cast<trade_type>(reader.read<uint8_t>());
 
@@ -18,6 +23,8 @@ void trade_bot::deserialize(fb::stream_reader<big_endian>& reader)
     {
         this->dialog_oid  = reader.read<uint32_t>();
         this->dialog_name = reader.read<std::string, uint8_t>();
+        if (version == fb::protocol::CLIENT_VERSION::v651)
+            this->dialog_reputation = reader.read<int16_t>();
         break;
     }
 
@@ -55,6 +62,7 @@ void trade_bot::deserialize(fb::stream_reader<big_endian>& reader)
     case trade_type::close:
     {
         this->close_message = reader.read<std::string, uint16_t>();
+        reader.read<uint8_t>();
         break;
     }
     }

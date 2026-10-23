@@ -187,6 +187,27 @@ local function close_marketplace_menu(bot)
     return nil
 end
 
+local function uses_buy_ui(bot)
+    return bot:client_version() == 651 and bot:ui_mode() == "NEW"
+end
+
+local function search_result_type(bot)
+    if uses_buy_ui(bot) then
+        return "buy"
+    else
+        return "item"
+    end
+end
+
+local function buy_row(packet, item_name)
+    for i, entry in ipairs(packet.buy_entries or {}) do
+        if entry.name == item_name then
+            return i
+        end
+    end
+    return nil
+end
+
 local function open_marketplace_menu(bot)
     local packet = f1_open_menu(bot)
     if packet == nil then
@@ -437,15 +458,14 @@ end
 
 local function abort_search_item_dialog(bot, item_name)
     progress(bot, "abort_search_item_dialog item=" .. item_name)
+    if uses_buy_ui(bot) then
+        close_marketplace_menu(bot)
+    else
         -- Listed weapons in this suite have reduced durability → warning pursuit.
         local after = bot:request_dialog(protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"), function(p)
             return p.type == "pursuit"
         end)
         dump_dialog(bot, "abort_after_item", after)
-    if after == nil then
-        close_marketplace_menu(bot)
-        return
-    end
 
         if after ~= nil and after.message ~= nil and after.message:find(MSG_WARNING, 1, true) ~= nil then
             after = bot:request_dialog(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_NO), function(p)
@@ -455,6 +475,7 @@ local function abort_search_item_dialog(bot, item_name)
         end
 
         close_marketplace_menu(bot)
+    end
 end
 
 local function search_listings_expect_empty(bot, item_name)
@@ -495,12 +516,10 @@ local function search_listings_expect_present(bot, item_name)
     end
 
     -- Listing results are dialog item (0x2F), not dialog_ext (0x30).
-    packet = bot:request_dialog(
-        protocol.dialog("INPUT", 0, item_name, 0, 0, "", "NEXT"),
-        function(p)
-            return p.type == "item"
-        end,
-        DIALOG_TIMEOUT_MS)
+    local result_type = search_result_type(bot)
+    packet = bot:request_dialog(protocol.dialog("INPUT", 0, item_name, 0, 0, "", "NEXT"), function(p)
+        return p.type == result_type
+    end, DIALOG_TIMEOUT_MS)
     dump_dialog(bot, "search_result", packet)
     if packet == nil then
         return nil, "search result missing"
@@ -547,7 +566,7 @@ local function assert_search_has_item(bot, item_name, expect_found)
         if packet == nil then
             return false, tostring(err)
         end
-        if packet.type ~= "item" then
+        if packet.type ~= search_result_type(bot) then
             local msg = packet.message
             close_marketplace_menu(bot)
             return false, "expected listings, got=" .. tostring(msg)
@@ -676,22 +695,60 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
     return msg, nil
 end
 
+local function purchase_buy_row(bot, row, purchase_count)
+    local count = purchase_count or 1
+    progress(bot, string.format("purchase_buy_row row=%d count=%d money=%s", row, count, tostring(bot:money())))
+
+    local packet = bot:request_dialog(protocol.dialog("BUY", 0, "", 0, 0, "", nil, row, count), function(p)
+        return p.type == "pursuit"
+    end)
+    dump_dialog(bot, "purchase_after_buy", packet)
+    if packet == nil then
+        return nil, "after buy select missing"
+    end
+
+    progress(bot, string.format("purchase confirm YES money_cache=%d", bot:money()))
+    g_purchase_api_started = true
+    packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
+        return p.type == "normal" and p.message ~= nil
+    end)
+    dump_dialog(bot, "purchase_result", packet)
+    if packet == nil then
+        return nil, "purchase result missing type=nil"
+    end
+
+    local msg = packet.message
+    close_marketplace_menu(bot)
+    progress(bot, "purchase_buy_row done msg=" .. tostring(msg))
+    return msg, nil
+end
+
 local function purchase_item_flow(bot, item_name, purchase_count)
     progress(bot, string.format("purchase_item_flow item=%s count=%s", item_name, tostring(purchase_count)))
     local packet, err = search_listings_expect_present(bot, item_name)
     if packet == nil then
         return nil, err
     end
-    if packet.type ~= "item" then
+    if packet.type ~= search_result_type(bot) then
         local msg = packet.message
         close_marketplace_menu(bot)
         return nil, msg
     end
+
+    if uses_buy_ui(bot) then
+        local row = buy_row(packet, item_name)
+        if row == nil then
+            close_marketplace_menu(bot)
+            return nil, "buy row missing: " .. item_name
+        end
+        return purchase_buy_row(bot, row, purchase_count)
+    else
         local listing_count = count_search_items(packet, item_name)
         if listing_count < 1 then
             listing_count = 1
         end
         return purchase_selected_item(bot, item_name, purchase_count, listing_count)
+    end
 end
 
 local function cancel_item_flow(bot, item_name)

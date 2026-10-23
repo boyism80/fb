@@ -27,6 +27,9 @@
 
 namespace fb::bot {
 
+template <typename ProtocolType>
+concept versioned_protocol = requires { ProtocolType::available_since; };
+
 class base_bot_controller : public std::enable_shared_from_this<base_bot_controller>
 {
 public:
@@ -49,9 +52,11 @@ template <typename BotType>
 class bot_controller : public base_bot_controller
 {
 public:
-    using handle_func        = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
-    using deserilze_func     = std::function<std::shared_ptr<fb::protocol::header>(fb::stream_reader<big_endian>&)>;
-    using response_cloner_fn = std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)>;
+    using handle_func    = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
+    using deserilze_func = std::function<std::shared_ptr<fb::protocol::header>(fb::stream_reader<big_endian>&,
+                                                                               fb::protocol::CLIENT_VERSION)>;
+    using response_cloner_fn =
+        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&, fb::protocol::CLIENT_VERSION)>;
 
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
@@ -70,8 +75,26 @@ private:
             return;
 
         _response_cloners[ResponseType::opcode] =
-            [](const fb::protocol::header& header) -> std::shared_ptr<fb::protocol::header> {
+            [](const fb::protocol::header& header,
+               fb::protocol::CLIENT_VERSION) -> std::shared_ptr<fb::protocol::header> {
             return std::make_shared<ResponseType>(static_cast<const ResponseType&>(header));
+        };
+    }
+
+    template <template <fb::protocol::CLIENT_VERSION> class ResponseType> static void register_opcode_response_cloner()
+    {
+        constexpr auto opcode      = ResponseType<fb::protocol::CLIENT_VERSION::v550>::opcode;
+        auto           unique_lock = std::unique_lock<std::shared_mutex>(_cloner_mutex);
+        if (_response_cloners.contains(opcode))
+            return;
+
+        _response_cloners[opcode] = [](const fb::protocol::header&  header,
+                                       fb::protocol::CLIENT_VERSION version) -> std::shared_ptr<fb::protocol::header> {
+            return fb::protocol::visit_client_version(
+                version,
+                [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+                    return std::make_shared<ResponseType<V>>(static_cast<const ResponseType<V>&>(header));
+                });
         };
     }
 
@@ -82,25 +105,28 @@ public:
         _typed_response_cloners[std::string(type_key)] = std::move(fn);
     }
 
-    static std::shared_ptr<fb::protocol::header> clone_response(uint8_t opcode, const fb::protocol::header& header)
+    static std::shared_ptr<fb::protocol::header> clone_response(uint8_t                      opcode,
+                                                                const fb::protocol::header&  header,
+                                                                fb::protocol::CLIENT_VERSION version)
     {
         auto shared_lock = std::shared_lock<std::shared_mutex>(_cloner_mutex);
         auto it          = _response_cloners.find(opcode);
         if (it == _response_cloners.end())
             throw std::runtime_error(std::format("response opcode {:#04x} is not registered", opcode));
 
-        return it->second(header);
+        return it->second(header, version);
     }
 
-    static std::shared_ptr<fb::protocol::header> clone_response_by_type(std::string_view            type_key,
-                                                                        const fb::protocol::header& header)
+    static std::shared_ptr<fb::protocol::header> clone_response_by_type(std::string_view             type_key,
+                                                                        const fb::protocol::header&  header,
+                                                                        fb::protocol::CLIENT_VERSION version)
     {
         auto shared_lock = std::shared_lock<std::shared_mutex>(_cloner_mutex);
         auto it          = _typed_response_cloners.find(std::string(type_key));
         if (it == _typed_response_cloners.end())
             throw std::runtime_error(std::format("response type {} is not registered", type_key));
 
-        return it->second(header);
+        return it->second(header, version);
     }
 
 protected:
@@ -164,8 +190,8 @@ protected:
         if (this->_deserializer.contains(opcode))
             return;
 
-        this->_deserializer[opcode] =
-            [](fb::stream_reader<big_endian>& reader) -> std::shared_ptr<fb::protocol::header> {
+        this->_deserializer[opcode] = [](fb::stream_reader<big_endian>& reader,
+                                         fb::protocol::CLIENT_VERSION) -> std::shared_ptr<fb::protocol::header> {
             return nullptr;
         };
 
@@ -190,6 +216,19 @@ public:
         }
 
         this->bind<ResponseType>([](BotType& bot, ResponseType& protocol) -> async::task<void> {
+            co_return;
+        });
+    }
+
+    template <template <fb::protocol::CLIENT_VERSION> class ResponseType> void bind_default()
+    {
+        {
+            auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
+            if (this->_handler.contains(ResponseType<fb::protocol::CLIENT_VERSION::v550>::opcode))
+                return;
+        }
+
+        this->bind<ResponseType>([](BotType& bot, auto& protocol) -> async::task<void> {
             co_return;
         });
     }
@@ -280,8 +319,8 @@ public:
                     }
                     else
                     {
-                        deserializer =
-                            [](fb::stream_reader<big_endian>& reader) -> std::shared_ptr<fb::protocol::header> {
+                        deserializer = [](fb::stream_reader<big_endian>& reader,
+                                          fb::protocol::CLIENT_VERSION) -> std::shared_ptr<fb::protocol::header> {
                             return nullptr;
                         };
                     }
@@ -290,7 +329,17 @@ public:
                 // Deserialize from a copy of this packet's body so a parser cannot read into the next packet.
                 auto body        = fb::stream(stream.data(), size - sizeof(uint8_t));
                 auto body_reader = fb::stream_reader<big_endian>(body);
-                protocol         = deserializer(body_reader);
+                protocol         = deserializer(body_reader, bot.client_version());
+                if (protocol != nullptr && body_reader.readable_size() > 0)
+                {
+                    bot.add_unread(opcode);
+                    fb::logger::debug("bot unread bytes: bot_id={} client={} opcode={:#04x} unread={}",
+                                      bot.id,
+                                      bot.profile().to_string(),
+                                      opcode,
+                                      body_reader.readable_size());
+                }
+
                 if (protocol != nullptr)
                 {
                     auto weak = bot.template weak_from_this_as<BotType>();
@@ -312,14 +361,21 @@ public:
             catch (std::exception& e)
             {
                 if (processed_cmd.has_value())
-                    fb::logger::fatal("bot_controller::on_receive: opcode={:#x} error={}\n{}",
+                {
+                    bot.add_unread(processed_cmd.value());
+                    fb::logger::fatal("bot_controller::on_receive: bot_id={} client={} opcode={:#x} error={}\n{}",
+                                      bot.id,
+                                      bot.profile().to_string(),
                                       processed_cmd.value(),
                                       e.what(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                }
                 else
+                {
                     fb::logger::fatal("bot_controller::on_receive: error={}\n{}",
                                       e.what(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                }
                 reader.clear();
                 break;
             }
@@ -376,16 +432,23 @@ public:
                       "ResponseType must inherit from fb::protocol::header");
         static_assert(std::is_same_v<decltype(ResponseType::opcode), const uint8_t>,
                       "ResponseType must have 'static constexpr uint8_t header' member");
+        static_assert(versioned_protocol<ResponseType> == false,
+                      "bind the CLIENT_VERSION template (bind<game_resp::show>) so every bot version is parsed");
 
         register_opcode_response_cloner<ResponseType>();
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
-        this->_deserializer.insert({ResponseType::opcode, [](auto& reader) -> std::shared_ptr<fb::protocol::header> {
-                                        auto protocol = std::make_shared<ResponseType>();
-                                        protocol->deserialize(reader);
-                                        return protocol;
-                                    }});
+        this->_deserializer.insert(
+            {ResponseType::opcode,
+             [](auto& reader, fb::protocol::CLIENT_VERSION version) -> std::shared_ptr<fb::protocol::header> {
+                 auto protocol = std::make_shared<ResponseType>();
+                 if constexpr (requires { protocol->deserialize(reader, version); })
+                     protocol->deserialize(reader, version);
+                 else
+                     protocol->deserialize(reader);
+                 return protocol;
+             }});
 
         this->_decrypt[ResponseType::opcode] = fb::protocol::protocol_decrypt<ResponseType>();
 
@@ -399,6 +462,46 @@ public:
                  co_await controller->on_integration_hook_execution(ResponseType::opcode, bot, header);
 
                  bot.process_hooks(ResponseType::opcode, header);
+             }});
+    }
+
+    template <template <fb::protocol::CLIENT_VERSION> class ResponseType, typename Fn> void bind(Fn&& fn)
+    {
+        using primary_type    = ResponseType<fb::protocol::CLIENT_VERSION::v550>;
+        constexpr auto opcode = primary_type::opcode;
+        static_assert(std::is_base_of_v<fb::protocol::header, primary_type>,
+                      "ResponseType must inherit from fb::protocol::header");
+
+        register_opcode_response_cloner<ResponseType>();
+
+        auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
+
+        this->_deserializer.insert(
+            {opcode, [](auto& reader, fb::protocol::CLIENT_VERSION version) -> std::shared_ptr<fb::protocol::header> {
+                 return fb::protocol::visit_client_version(
+                     version,
+                     [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+                         auto protocol = std::make_shared<ResponseType<V>>();
+                         protocol->deserialize(reader);
+                         return protocol;
+                     });
+             }});
+
+        this->_decrypt[opcode] = fb::protocol::protocol_decrypt<primary_type>();
+
+        this->_handler.insert(
+            {opcode,
+             [this, fn = std::forward<Fn>(fn)](BotType& bot, fb::protocol::header& header) -> async::task<void> {
+                 volatile auto controller = this;
+
+                 co_await fb::protocol::visit_client_version(bot.client_version(),
+                                                             [&]<fb::protocol::CLIENT_VERSION V>() {
+                                                                 return fn(bot, static_cast<ResponseType<V>&>(header));
+                                                             });
+
+                 co_await controller->on_integration_hook_execution(opcode, bot, header);
+
+                 bot.process_hooks(opcode, header);
              }});
     }
 
@@ -510,7 +613,8 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                             return condition(opcode);
                         },
                     .matched =
-                        [context, response_opcode, clone = std::move(clone)](const auto& opcode) {
+                        [context, response_opcode, version = target->client_version(), clone = std::move(clone)](
+                            const auto& opcode) {
                             std::shared_ptr<fb::protocol::header> response;
                             if (clone)
                             {
@@ -518,7 +622,7 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                             }
                             else
                             {
-                                response = bot_controller<BotType>::clone_response(response_opcode, opcode);
+                                response = bot_controller<BotType>::clone_response(response_opcode, opcode, version);
                             }
                             context->complete_success(std::move(response));
                         },
@@ -662,6 +766,55 @@ bot<BotType>::request(const fb::protocol::header& protocol, const fb::model::tim
     co_return co_await this->request<ResponseType>(
         protocol,
         [](auto& resp) -> bool {
+            return true;
+        },
+        timeout,
+        encrypt,
+        wrap);
+}
+
+template <typename BotType>
+template <template <fb::protocol::CLIENT_VERSION> class ResponseType, typename Condition>
+requires std::predicate<const Condition&, const ResponseType<fb::protocol::CLIENT_VERSION::v550>&>
+async::task<std::shared_ptr<fb::protocol::header>> bot<BotType>::request(const fb::protocol::header& protocol,
+                                                                         Condition                   condition,
+                                                                         const fb::model::timespan&  timeout,
+                                                                         bool                        encrypt,
+                                                                         bool                        wrap)
+{
+    auto target  = this->template shared_from_this_as<BotType>();
+    auto version = target->client_version();
+    target->controller.template bind_default<ResponseType>();
+
+    co_return co_await this->request_by_opcode(
+        target,
+        ResponseType<fb::protocol::CLIENT_VERSION::v550>::opcode,
+        &protocol,
+        [version, condition = std::move(condition)](const fb::protocol::header& resp) -> bool {
+            return fb::protocol::visit_client_version(version, [&]<fb::protocol::CLIENT_VERSION V>() -> bool {
+                return condition(static_cast<const ResponseType<V>&>(resp));
+            });
+        },
+        timeout,
+        encrypt,
+        wrap,
+        [version](const fb::protocol::header& header) -> std::shared_ptr<fb::protocol::header> {
+            return fb::protocol::visit_client_version(
+                version,
+                [&]<fb::protocol::CLIENT_VERSION V>() -> std::shared_ptr<fb::protocol::header> {
+                    return std::make_shared<ResponseType<V>>(static_cast<const ResponseType<V>&>(header));
+                });
+        });
+}
+
+template <typename BotType>
+template <template <fb::protocol::CLIENT_VERSION> class ResponseType>
+async::task<std::shared_ptr<fb::protocol::header>>
+bot<BotType>::request(const fb::protocol::header& protocol, const fb::model::timespan& timeout, bool encrypt, bool wrap)
+{
+    co_return co_await this->request<ResponseType>(
+        protocol,
+        [](const auto& resp) -> bool {
             return true;
         },
         timeout,
