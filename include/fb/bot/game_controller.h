@@ -69,7 +69,7 @@ public:
 
                 if (bot != nullptr)
                 {
-                    fb::logger::fatal(
+                    fb::logger::warn(
                         "bot transfer timeout: source_bot_id={} name={} oid={} map={} pos=({},{}) inited={}",
                         source_bot_id,
                         bot->name(),
@@ -81,15 +81,15 @@ public:
                 }
                 else
                 {
-                    fb::logger::fatal("bot transfer timeout: source_bot_id={} (bot already removed from controller)",
-                                      source_bot_id);
+                    fb::logger::warn("bot transfer timeout: source_bot_id={} (bot already removed from controller)",
+                                     source_bot_id);
                 }
 
                 controller->remove_transfer_context(source_bot_id);
             }
             else
             {
-                fb::logger::fatal("bot transfer timeout: source_bot_id={} (controller gone)", source_bot_id);
+                fb::logger::warn("bot transfer timeout: source_bot_id={} (controller gone)", source_bot_id);
             }
 
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));

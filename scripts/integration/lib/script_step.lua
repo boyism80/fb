@@ -41,7 +41,11 @@ function M.run_chat_step(bot, command, pass_prefix, fail_prefix)
             end)
 
         if type(packet) ~= "table" then
-            log("fatal", string.format(
+            local level = "warn"
+            if attempt == attempts then
+                level = "fatal"
+            end
+            log(level, string.format(
                 "run_chat_step: no chat response bot=%s attempt=%d/%d command=%q",
                 bot:name(),
                 attempt,

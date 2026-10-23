@@ -158,12 +158,12 @@ public:
 
             if (auto bot = bot_weak.lock())
             {
-                fb::logger::fatal("bot request timeout: bot_id={} response_opcode=0x{:02X}", bot->id, hook_cmd);
+                fb::logger::warn("bot request timeout: bot_id={} response_opcode=0x{:02X}", bot->id, hook_cmd);
                 bot->remove_hook_by_context(hook_cmd, context_ptr);
             }
             else
             {
-                fb::logger::fatal("bot request timeout: bot=<disconnected> response_opcode=0x{:02X}", hook_cmd);
+                fb::logger::warn("bot request timeout: bot=<disconnected> response_opcode=0x{:02X}", hook_cmd);
             }
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }
@@ -209,12 +209,12 @@ public:
 
             if (auto bot = bot_weak.lock())
             {
-                fb::logger::fatal("bot request timeout: bot_id={} response_opcode=0x{:02X}", bot->id, hook_cmd);
+                fb::logger::warn("bot request timeout: bot_id={} response_opcode=0x{:02X}", bot->id, hook_cmd);
                 bot->remove_hook_by_context(hook_cmd, context_ptr);
             }
             else
             {
-                fb::logger::fatal("bot request timeout: bot=<disconnected> response_opcode=0x{:02X}", hook_cmd);
+                fb::logger::warn("bot request timeout: bot=<disconnected> response_opcode=0x{:02X}", hook_cmd);
             }
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }
