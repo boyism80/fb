@@ -11,6 +11,10 @@ test_suite({
                 log("fatal", "State machine test: every, call or cancel did not behave on the machine thread")
                 return false
             end
+            if script_step.run_script(bot, "test/integration", "verify_state_machine_objects", "state_machine_objects") ~= true then
+                log("fatal", "State machine test: call accepted a game object argument")
+                return false
+            end
             return true
         end,
     },

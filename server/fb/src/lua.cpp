@@ -183,10 +183,16 @@ context& context::pushjson(const Json::Value& json)
 value value::copy(lua_State* L, int offset)
 {
     auto visited = std::unordered_set<const void*>{};
-    return value::copy(L, offset, visited);
+    return value::copy(L, offset, visited, true);
 }
 
-value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& visited)
+value value::copy_data(lua_State* L, int offset)
+{
+    auto visited = std::unordered_set<const void*>{};
+    return value::copy(L, offset, visited, false);
+}
+
+value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& visited, bool objects)
 {
     auto result = value{};
     offset      = lua_absindex(L, offset);
@@ -224,6 +230,9 @@ value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& vis
 
     case LUA_TUSERDATA:
     {
+        if (objects == false)
+            throw std::runtime_error("lua value copy: objects cannot be stored, store an id or name instead");
+
         auto is_luable = false;
         if (lua_getmetatable(L, offset) != 0)
         {
@@ -270,8 +279,8 @@ value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& vis
         lua_pushnil(L);
         while (lua_next(L, offset) != 0)
         {
-            result._keys.push_back(value::copy(L, -2, visited));
-            result._values.push_back(value::copy(L, -1, visited));
+            result._keys.push_back(value::copy(L, -2, visited, objects));
+            result._values.push_back(value::copy(L, -1, visited, objects));
             lua_pop(L, 1);
         }
         visited.erase(ptr);

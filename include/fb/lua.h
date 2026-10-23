@@ -244,10 +244,11 @@ private:
     std::vector<value>      _values;
 
 private:
-    static value copy(lua_State* L, int offset, std::unordered_set<const void*>& visited);
+    static value copy(lua_State* L, int offset, std::unordered_set<const void*>& visited, bool objects);
 
 public:
     static value copy(lua_State* L, int offset);
+    static value copy_data(lua_State* L, int offset);
     void         push(context& ctx) const;
     bool         is_false() const;
 };

@@ -75,7 +75,7 @@ int builtin::state_machine::builtin_set(lua_State* L)
     }
     else if (type == LUA_TBOOLEAN || type == LUA_TNUMBER || type == LUA_TSTRING || type == LUA_TTABLE)
     {
-        machine->property(key, fb::lua::value::copy(L, 3));
+        machine->property(key, fb::lua::value::copy_data(L, 3));
     }
     else
     {
@@ -155,7 +155,7 @@ int builtin::state_machine::builtin_call(lua_State* L)
     auto args = std::vector<fb::lua::value>{};
     for (auto i = 3; i <= lua->argc(); i++)
     {
-        args.push_back(fb::lua::value::copy(L, i));
+        args.push_back(fb::lua::value::copy_data(L, i));
     }
 
     machine->call(std::move(hook), std::move(args));

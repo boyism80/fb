@@ -1430,6 +1430,26 @@ return {
         end
     end,
 
+    verify_state_machine_objects = function(me, step)
+        local sm = state_machine('integration_probe')
+        if sm == nil then
+            return report(me, false, step, 'integration_probe machine is missing')
+        end
+
+        local direct = pcall(function()
+            sm:call('on_probe_peek', me)
+        end)
+        local nested = pcall(function()
+            sm:call('on_probe_peek', { owner = me })
+        end)
+        if direct or nested then
+            report(me, false, step,
+                string.format('object accepted direct=%s nested=%s', tostring(direct), tostring(nested)))
+        else
+            report(me, true, step)
+        end
+    end,
+
     verify_no_global_args = function(me, step)
         report(me, args == nil, step, tostring(args))
     end,
