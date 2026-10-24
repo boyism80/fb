@@ -495,6 +495,15 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
+
+    if (request.match.has_value() && request.match->id != 0 && ch->matchmaker.session() == nullptr)
+    {
+        co_await this->server.threads.switching(weak);
+        fb::logger::warn("Character {} reached closed match {}; sending home", ch->name(), request.match->id);
+        ch->message(_TEXT(MESSAGE_MATCH_ALREADY_CLOSED), MESSAGE_TYPE::STATE);
+        if (co_await ch->matchmaker.transfer_home() == false)
+            fb::logger::warn("Character {} could not return home from closed match {}", ch->name(), request.match->id);
+    }
     co_return ch;
 }
 
