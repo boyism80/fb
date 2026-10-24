@@ -1,4 +1,10 @@
 -- npc: 사냥이벤트도우미
+local function hunt_event_open()
+    local dt = datetime()
+    local hour_ok = (dt.hour == nil or dt.hour == 20)
+    return dt.month == 2 and (dt.day == 4 or dt.day == 5 or dt.day == 6) and hour_ok
+end
+
 local function run_hunt_event_entry(me, npc)
     local btn = me:dialog(npc, "사냥이벤트에 입장하게 되면, 9시가 되는 순간까지 이벤트에 참여하실 수 있습니다.", { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
@@ -32,6 +38,10 @@ local function run_hunt_event_entry(me, npc)
         me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
         return
     end
+    if me:role() < ROLE.ADMIN and not hunt_event_open() then
+        me:dialog(npc, "입장 가능한 시각은 20:00 부터 21:00까지 입니다.", { prev = false, next = false })
+        return
+    end
     if not me:rmitem("노란비서", 1, ITEM_DELETE_TYPE.REDUCE) then
         return
     end
@@ -52,10 +62,7 @@ local function run_hunt_event_admin(me, npc)
 end
 
 local function run_hunt_event_user(me, npc)
-    local dt = datetime()
-    local hour_ok = (dt.hour == nil or dt.hour == 20)
-    local in_window = (dt.month == 2 and (dt.day == 4 or dt.day == 5 or dt.day == 6) and hour_ok)
-    if not in_window then
+    if not hunt_event_open() then
         me:dialog(npc, "입장 가능한 시각은 20:00 부터 21:00까지 입니다.", { prev = false, next = false })
         return
     end

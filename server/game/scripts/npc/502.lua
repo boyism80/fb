@@ -77,6 +77,19 @@ local function run_seollal(me, npc)
     end
 end
 
+local function ritual_open()
+    if not festival.is('칠석') then
+        return false
+    end
+    local t = datetime()
+    if t == nil then
+        return false
+    end
+    local hour = t.hour or 0
+    local ritual_hour = (hour == 3 or hour == 9 or hour == 15 or hour == 21)
+    return ritual_hour and (t.minute or 0) >= 10
+end
+
 local function give_chilseok_reward(me, npc)
     local reward = (math.random(1, 2) == 1) and "직녀의바늘" or "견우의피리"
     local btn = me:dialog(npc, me:name() .. "님이 주신 음식으로 올해도 무사히 제를 올렸군요.", { prev = false, next = true })
@@ -94,6 +107,10 @@ local function give_chilseok_reward(me, npc)
     btn = me:dialog(npc, "매달 얻을 수 있는 아이템을 모두 모으면 좋은일이 생길꺼에요. 칠석에는 견우의피리나 직녀의바늘중 하나만 가지고 계시면 돼요.",
         { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if not ritual_open() then
+        me:dialog(npc, "지금은 제를 올리는 시간이 아닙니다...", { prev = false, next = false })
         return
     end
     if me:mkitem(reward, 1) == nil then
