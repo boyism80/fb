@@ -3278,6 +3278,8 @@ public:
     inline static constexpr const char* MESSAGE_CLAN_ROLE_DEPUTY = "부문주";
     inline static constexpr const char* MESSAGE_CLAN_ROLE_MASTER = "문주";
     inline static constexpr const char* MESSAGE_CLAN_CANNOT_KICK_MASTER = "문주는 축출할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_CLAN_NAME_INVALID = "사용할 수 없는 문파 이름입니다.";
+    inline static constexpr const char* MESSAGE_CLAN_TITLE_INVALID = "사용할 수 없는 문파 칭호입니다.";
     inline static constexpr const char* MESSAGE_WHISPER_DISABLED_MINE = "당신은 귓속말 거부 상태입니다.";
     inline static constexpr const char* MESSAGE_WHISPER_DISABLED_TARGET = "{}님은 귓속말 거부 상태입니다.";
     inline static constexpr const char* MESSAGE_WHISPER_DISABLED_AREA = "귓속말을 할 수 없는 지역입니다.";
@@ -3382,6 +3384,7 @@ public:
     inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_LIMIT_EXCEEDED = "더 이상 물품을 등록할 수 없습니다.";
     inline static constexpr const char* MESSAGE_MARKETPLACE_ITEM_NOT_TRADEABLE = "거래소에 등록할 수 없는 아이템입니다.";
     inline static constexpr const char* MESSAGE_MARKETPLACE_NOT_LISTING_OWNER = "본인이 등록한 물품이 아닙니다.";
+    inline static constexpr const char* MESSAGE_MATCH_ALREADY_CLOSED = "이미 끝난 매치입니다. 원래 있던 곳으로 돌아갑니다.";
     inline static constexpr const char* MESSAGE_EXCEPTION_RIDDING = "말을 타고는 할 수 없습니다.";
     inline static constexpr const char* MESSAGE_EXCEPTION_GHOST = "귀신은 할 수 없습니다.";
     inline static constexpr const char* MESSAGE_EXCEPTION_REQUIRE_CLASS = "직업을 선택해야 합니다.";
@@ -4991,6 +4994,10 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_CLAN_ROLE_MASTER");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CLAN_CANNOT_KICK_MASTER).c_str());
     lua_setfield(lua, -2, "MESSAGE_CLAN_CANNOT_KICK_MASTER");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CLAN_NAME_INVALID).c_str());
+    lua_setfield(lua, -2, "MESSAGE_CLAN_NAME_INVALID");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CLAN_TITLE_INVALID).c_str());
+    lua_setfield(lua, -2, "MESSAGE_CLAN_TITLE_INVALID");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_WHISPER_DISABLED_MINE).c_str());
     lua_setfield(lua, -2, "MESSAGE_WHISPER_DISABLED_MINE");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_WHISPER_DISABLED_TARGET).c_str());
@@ -5199,6 +5206,8 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_MARKETPLACE_ITEM_NOT_TRADEABLE");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MARKETPLACE_NOT_LISTING_OWNER).c_str());
     lua_setfield(lua, -2, "MESSAGE_MARKETPLACE_NOT_LISTING_OWNER");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MATCH_ALREADY_CLOSED).c_str());
+    lua_setfield(lua, -2, "MESSAGE_MATCH_ALREADY_CLOSED");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_EXCEPTION_RIDDING).c_str());
     lua_setfield(lua, -2, "MESSAGE_EXCEPTION_RIDDING");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_EXCEPTION_GHOST).c_str());

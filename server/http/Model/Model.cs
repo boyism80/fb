@@ -1212,6 +1212,8 @@ namespace Fb.Model.ConstValue
         public const string MessageClanRoleDeputy = "부문주";
         public const string MessageClanRoleMaster = "문주";
         public const string MessageClanCannotKickMaster = "문주는 축출할 수 없습니다.";
+        public const string MessageClanNameInvalid = "사용할 수 없는 문파 이름입니다.";
+        public const string MessageClanTitleInvalid = "사용할 수 없는 문파 칭호입니다.";
         public const string MessageWhisperDisabledMine = "당신은 귓속말 거부 상태입니다.";
         public const string MessageWhisperDisabledTarget = "{}님은 귓속말 거부 상태입니다.";
         public const string MessageWhisperDisabledArea = "귓속말을 할 수 없는 지역입니다.";
@@ -1316,6 +1318,7 @@ namespace Fb.Model.ConstValue
         public const string MessageMarketplaceListingLimitExceeded = "더 이상 물품을 등록할 수 없습니다.";
         public const string MessageMarketplaceItemNotTradeable = "거래소에 등록할 수 없는 아이템입니다.";
         public const string MessageMarketplaceNotListingOwner = "본인이 등록한 물품이 아닙니다.";
+        public const string MessageMatchAlreadyClosed = "이미 끝난 매치입니다. 원래 있던 곳으로 돌아갑니다.";
         public const string MessageExceptionRidding = "말을 타고는 할 수 없습니다.";
         public const string MessageExceptionGhost = "귀신은 할 수 없습니다.";
         public const string MessageExceptionRequireClass = "직업을 선택해야 합니다.";
