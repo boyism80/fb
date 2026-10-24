@@ -612,11 +612,12 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
         {
         case DSL::item:
         {
-            auto params           = fb::model::dsl::item(dsl.params);
-            auto multiplier       = this->server.drop_rate_multiplier();
-            auto adjusted_percent = std::min(100.0, params.percent * multiplier);
-            auto random           = std::rand() % 100;
-            if (random > (int)adjusted_percent)
+            static thread_local auto random           = std::mt19937(std::random_device{}());
+            auto                     params           = fb::model::dsl::item(dsl.params);
+            auto                     multiplier       = this->server.drop_rate_multiplier();
+            auto                     adjusted_percent = std::min(100.0, params.percent * multiplier);
+            auto                     roll             = std::uniform_real_distribution<double>(0.0, 100.0)(random);
+            if (!(roll < adjusted_percent))
                 continue;
 
             auto item   = table::item[params.id].make(this->server);
