@@ -2346,12 +2346,18 @@ M.functions = {
                 me:message(string.format("현재 경험치 배율: %.2fx", multiplier), MESSAGE_TYPE.BROWN)
             else
                 local value = tonumber(table.unpack(args))
-                if not value or value < 0 then
-                    me:message("배율은 0 이상의 숫자여야 합니다.")
+                if not value or value ~= value or value < 0 or value > 100 then
+                    me:message("배율은 0~100 사이의 숫자여야 합니다.")
                     return true
                 end
-                exp_multiplier(value)
-                me:message(string.format("경험치 배율을 %.2fx로 설정했습니다. (모든 게임 서버에 적용됩니다)", value), MESSAGE_TYPE.BROWN)
+                local ok, err = exp_multiplier(value)
+                if not ok then
+                    me:message(string.format("경험치 배율을 설정하지 못했습니다. (%s)", tostring(err)), MESSAGE_TYPE.BROWN)
+                    return true
+                end
+                me:message(
+                    string.format("경험치 배율을 %.2fx로 설정했습니다. (이 서버가 속한 월드의 게임 서버에 적용되며, 재시작한 서버는 설정 파일 값으로 돌아갑니다)", value),
+                    MESSAGE_TYPE.BROWN)
             end
             return true
         end,
@@ -2366,12 +2372,18 @@ M.functions = {
                 me:message(string.format("현재 드롭률 배율: %.2fx", multiplier), MESSAGE_TYPE.BROWN)
             else
                 local value = tonumber(table.unpack(args))
-                if not value or value < 0 then
-                    me:message("배율은 0 이상의 숫자여야 합니다.")
+                if not value or value ~= value or value < 0 or value > 100 then
+                    me:message("배율은 0~100 사이의 숫자여야 합니다.")
                     return true
                 end
-                drop_rate_multiplier(value)
-                me:message(string.format("드롭률 배율을 %.2fx로 설정했습니다. (모든 게임 서버에 적용됩니다)", value), MESSAGE_TYPE.BROWN)
+                local ok, err = drop_rate_multiplier(value)
+                if not ok then
+                    me:message(string.format("드롭률 배율을 설정하지 못했습니다. (%s)", tostring(err)), MESSAGE_TYPE.BROWN)
+                    return true
+                end
+                me:message(
+                    string.format("드롭률 배율을 %.2fx로 설정했습니다. (이 서버가 속한 월드의 게임 서버에 적용되며, 재시작한 서버는 설정 파일 값으로 돌아갑니다)", value),
+                    MESSAGE_TYPE.BROWN)
             end
             return true
         end,

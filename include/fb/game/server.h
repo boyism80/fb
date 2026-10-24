@@ -159,8 +159,8 @@ public:
 
 private:
     fb::model::datetime _time = fb::model::datetime::utc_now().to_local();
-    double              _exp_multiplier;
-    double              _drop_rate_multiplier;
+    std::atomic<double> _exp_multiplier;
+    std::atomic<double> _drop_rate_multiplier;
 
 public:
     fb::log_collector                                      log;
