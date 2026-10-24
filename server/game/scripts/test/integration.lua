@@ -1107,6 +1107,155 @@ return {
         report(me, true, step)
     end,
 
+    verify_caster_state = function(me, step)
+        local sp = name2spell('귀염추혼소')
+        if sp == nil then
+            return report(me, false, step, 'no spell')
+        end
+
+        local mp = me:mp()
+        local failures = {}
+        for _, state in ipairs({ STATE.GHOST, STATE.RIDING }) do
+            me:state(state)
+            me:mp(me:maxmp())
+            local before = me:mp()
+            if spell.damage_near(me, sp, { mp = 1 }) ~= false then
+                table.insert(failures, state .. ':damage_near')
+            end
+            if spell.damage_near_target(me, me, sp, { mp = 1 }) ~= false then
+                table.insert(failures, state .. ':damage_near_target')
+            end
+            if #spell.area_debuff_cast(me, sp, { mp = 1 }) ~= 0 then
+                table.insert(failures, state .. ':area_debuff_cast')
+            end
+            if me:mp() ~= before then
+                table.insert(failures, string.format('%d:mp %d -> %d', state, before, me:mp()))
+            end
+        end
+        me:state(STATE.NORMAL)
+        me:mp(mp)
+
+        if #failures == 0 then
+            report(me, true, step)
+        else
+            report(me, false, step, table.concat(failures, ','))
+        end
+    end,
+
+    verify_uncloak = function(me, step)
+        local failures = {}
+        local function expect(label, want)
+            if me:state() ~= want then
+                table.insert(failures, string.format('%s=%d', label, me:state()))
+            end
+        end
+
+        me:state(STATE.RIDING)
+        me:cast('자동투명')
+        sleep(100)
+        if me:isbuff('자동투명') then
+            table.insert(failures, 'riding_auto_cloak_cast')
+        end
+        expect('riding_cast', STATE.RIDING)
+        me:buff('자동투명', 30)
+        sleep(100)
+        expect('riding_auto_buff', STATE.RIDING)
+        me:unbuff('자동투명')
+        expect('riding_auto_unbuff', STATE.RIDING)
+        me:buff('투명', 30)
+        me:unbuff('투명')
+        expect('riding_cloak_unbuff', STATE.RIDING)
+
+        me:state(STATE.NORMAL)
+        me:buff('자동투명', 30)
+        sleep(100)
+        expect('auto_buff', STATE.HALF_CLOACK)
+        me:unbuff('자동투명')
+        expect('auto_unbuff', STATE.NORMAL)
+
+        me:state(STATE.CLOACK)
+        me:buff('투명', 30)
+        me:unbuff('투명')
+        expect('cloak_unbuff', STATE.NORMAL)
+
+        me:unbuff('자동투명')
+        me:unbuff('투명')
+        me:state(STATE.NORMAL)
+
+        if #failures == 0 then
+            report(me, true, step)
+        else
+            report(me, false, step, table.concat(failures, ','))
+        end
+    end,
+
+    verify_heal_ghost = function(me, step, name)
+        local you = name2ch(name)
+        if you == nil then
+            return report(me, false, step, 'missing')
+        end
+        local sp = name2spell('신령의기원')
+        if sp == nil then
+            return report(me, false, step, 'no spell')
+        end
+
+        local failures = {}
+        local maxhp = you:maxhp()
+        you:state(STATE.GHOST)
+        you:hp(1)
+        if spell.heal(me, you, sp, { hp = 100 }) ~= false then
+            table.insert(failures, 'heal')
+        end
+        if spell.heal_near(me, you, sp, { hp = 100 }) ~= false then
+            table.insert(failures, 'heal_near')
+        end
+        if you:hp() ~= 1 then
+            table.insert(failures, string.format('ghost hp 1 -> %d', you:hp()))
+        end
+
+        you:state(STATE.NORMAL)
+        you:hp(math.max(1, maxhp // 2))
+        local before = you:hp()
+        if spell.heal(me, you, sp, { hp = 1 }) ~= true or you:hp() <= before then
+            table.insert(failures, string.format('alive hp %d -> %d', before, you:hp()))
+        end
+        you:hp(maxhp)
+
+        if #failures == 0 then
+            report(me, true, step)
+        else
+            report(me, false, step, table.concat(failures, ','))
+        end
+    end,
+
+    remove_npc = function(me, step, name)
+        local removed = 0
+        for _, obj in pairs(me:map():objects(OBJECT_TYPE.NPC)) do
+            if obj:name() == name then
+                obj:destroy()
+                removed = removed + 1
+            end
+        end
+        report(me, removed > 0, step, tostring(removed))
+    end,
+
+    revive_with_hp = function(me, step, hp)
+        me:state(STATE.NORMAL)
+        me:hp(tonumber(hp))
+        report(me, true, step)
+    end,
+
+    verify_alive_hp = function(me, step, hp)
+        local state = me:state()
+        local now = me:hp()
+        me:state(STATE.NORMAL)
+        me:hp(me:maxhp())
+        if state ~= STATE.NORMAL or now ~= tonumber(hp) then
+            return report(me, false, step, string.format('state=%d hp=%d expected=%s', state, now, tostring(hp)))
+        end
+        report(me, true, step)
+    end,
+
     verify_clock_hour = function(me, step, hour)
         local t = datetime()
         if t.hour == tonumber(hour) then
