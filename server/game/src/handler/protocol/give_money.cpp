@@ -45,6 +45,8 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
     auto error = std::optional<std::string>{};
     try
     {
+        me->assert_state({STATE::RIDING, STATE::GHOST});
+
         auto money = std::min<uint64_t>(request.money, me->money());
         switch (forward->what())
         {

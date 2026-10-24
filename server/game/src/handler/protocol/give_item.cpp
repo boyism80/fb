@@ -55,6 +55,8 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
 
     try
     {
+        me->assert_state({STATE::RIDING, STATE::GHOST});
+
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_ITEM_CANNOT_GIVE));
 

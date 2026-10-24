@@ -1397,6 +1397,8 @@ async::task<bool> items::throws(uint8_t index, bool all)
 
     try
     {
+        owner->assert_state({STATE::RIDING, STATE::GHOST});
+
         auto item = owner->items.at(index);
         if (item == nullptr)
             co_return false;

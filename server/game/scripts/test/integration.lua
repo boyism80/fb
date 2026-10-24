@@ -1042,6 +1042,15 @@ return {
         end
     end,
 
+    set_ghost = function(me, step, enabled)
+        if enabled == 'true' then
+            me:state(STATE.GHOST)
+        else
+            me:state(STATE.NORMAL)
+        end
+        report(me, true, step)
+    end,
+
     verify_clock_hour = function(me, step, hour)
         local t = datetime()
         if t.hour == tonumber(hour) then

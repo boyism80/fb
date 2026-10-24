@@ -5,6 +5,7 @@ local protocol = require("integration.protocol")
 local MESSAGE_ITEM_CANNOT_GIVE            = "줄 수 없습니다."
 local MESSAGE_ITEM_TARGET_INVENTORY_FULL  = "상대방의 인벤토리가 가득 찼습니다."
 local MESSAGE_MONEY_TARGET_CANNOT_RECEIVE = "상대방이 돈을 받을 수 없습니다."
+local MESSAGE_EXCEPTION_GHOST             = "귀신은 할 수 없습니다."
 
 local DEFAULT_INTERVAL = 100
 
@@ -347,6 +348,56 @@ test_suite {
             end
 
             progress(bot1, "SCENARIO 6 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 7 START (ghost cannot give or throw)")
+
+            bot1:direction("RIGHT")
+            bot2:direction("LEFT")
+            bot1:create_item("목도", 1)
+            bot1:money(100)
+
+            if lib.script_step.run_script(bot1, "test/integration", "set_ghost", "give_ghost_on", "true") ~= true then
+                progress(bot1, "FAILED: could not make bot1 a ghost")
+                return false
+            end
+
+            local attempts = {
+                { name = "give item", request = protocol.give_item(0, false) },
+                { name = "give money", request = protocol.give_money(10) },
+                { name = "throw item", request = protocol.item_throws(false, 0) },
+            }
+            local passed = true
+            for _, attempt in ipairs(attempts) do
+                local packet = bot1:request(resp.message, attempt.request, function(p)
+                    return p.text ~= nil and string.find(p.text, MESSAGE_EXCEPTION_GHOST, 1, true) ~= nil
+                end)
+                if packet == nil or packet == false then
+                    progress(bot1, "FAILED: ghost " .. attempt.name .. " was not refused")
+                    passed = false
+                    break
+                end
+            end
+
+            lib.script_step.run_script(bot1, "test/integration", "set_ghost", "give_ghost_off", "false")
+            if passed == false then
+                return false
+            end
+
+            if bot1:has_item_by_name("목도") == false or bot1:money() ~= 100 then
+                progress(bot1, "FAILED: ghost lost the item or money")
+                return false
+            end
+            if bot2:has_item_by_name("목도") then
+                progress(bot2, "FAILED: bot2 received an item from a ghost")
+                return false
+            end
+
+            progress(bot1, "SCENARIO 7 PASSED")
             return true
         end,
     },
