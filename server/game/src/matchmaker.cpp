@@ -646,6 +646,13 @@ fb::model::point16_t matchmaker::return_position() const
     return this->_return_position.value_or(fb::model::point16_t{0, 0});
 }
 
+void matchmaker::disconnect_after_failed_return()
+{
+    fb::logger::warn("Character {} could not return home from the cross server; disconnecting", this->owner.name());
+    if (auto socket_ptr = this->owner.socket_ptr(); socket_ptr != nullptr)
+        socket_ptr->close();
+}
+
 async::task<bool> matchmaker::transfer_home()
 {
     using fb::model::enum_value::ERROR_CODE;
@@ -722,6 +729,7 @@ async::task<bool> matchmaker::transfer_home()
             this->owner.update_map();
             this->owner.show();
             this->owner.listener.on_message(this->owner, e.what(), MESSAGE_TYPE::STATE);
+            this->disconnect_after_failed_return();
             co_return false;
         }
         catch (boost::system::error_code& /*e*/)
@@ -729,6 +737,7 @@ async::task<bool> matchmaker::transfer_home()
             this->owner.update_map();
             this->owner.show();
             this->owner.listener.on_message(this->owner, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+            this->disconnect_after_failed_return();
             co_return false;
         }
 

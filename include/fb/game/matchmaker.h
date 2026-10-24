@@ -64,6 +64,8 @@ private:
     std::optional<uint32_t>                         _return_map;
     std::optional<fb::model::point16_t>             _return_position;
 
+    void disconnect_after_failed_return();
+
 public:
     explicit matchmaker(character& owner);
 
