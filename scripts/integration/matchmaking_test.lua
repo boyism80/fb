@@ -32,6 +32,7 @@ local MSG_REGISTER_CANCEL = "매치메이킹 대기를 취소했습니다"
 local MSG_MATCH_CANCELLED = "매치가 취소되었습니다"
 local MSG_MATCH_ENDED = "매치가 종료되었습니다."
 local MSG_PROPOSAL_DIALOG = "매치를 찾았습니다"
+local PROPOSAL_SECONDS_PATTERN = "매치가 제안되었습니다%. (%d+)초"
 local MSG_GROUP_JOINED = "님 그룹에 참여"
 local MSG_GROUP_QUEUED_MINE = "매치메이킹 대기 중에는 그룹원을 받을 수 없습니다."
 local MSG_GROUP_QUEUED_TARGET = "님은 매치메이킹 대기 중이라 그룹에 들어올 수 없습니다."
@@ -178,6 +179,14 @@ local function confirm_proposal_and_transfer(bot)
     end)
     if caught == false or packet == nil or packet == false then
         return abort_remaining(bot, "FAILED: NO MATCH PROPOSAL LIST")
+    end
+
+    local confirm_seconds = nil
+    for _, text in ipairs(bot:take_messages()) do
+        confirm_seconds = tonumber(text:match(PROPOSAL_SECONDS_PATTERN)) or confirm_seconds
+    end
+    if confirm_seconds == nil or confirm_seconds <= 0 then
+        return abort_remaining(bot, "FAILED: MATCH PROPOSAL COUNTDOWN seconds=" .. tostring(confirm_seconds))
     end
 
     local ok, err = pcall(function()

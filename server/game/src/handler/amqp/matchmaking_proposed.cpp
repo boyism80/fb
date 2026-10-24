@@ -3,7 +3,12 @@
 #include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <fb/logger.h>
+#include <fb/model/datetime.h>
 
+#include <algorithm>
+#include <cstdint>
+#include <exception>
 #include <tuple>
 
 using namespace fb::game::handler::amqp;
@@ -14,9 +19,18 @@ matchmaking_proposed::matchmaking_proposed(fb::game::server& server) :
 
 async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::mq::MatchProposed& message)
 {
-    auto match_id         = message.match_id;
-    auto match_type       = message.match_type;
-    auto confirm_deadline = message.confirm_deadline;
+    auto match_id        = message.match_id;
+    auto match_type      = message.match_type;
+    auto confirm_seconds = int64_t{0};
+    try
+    {
+        auto remaining  = fb::model::datetime(message.confirm_deadline) - fb::model::datetime::utc_now();
+        confirm_seconds = std::max<int64_t>(0, (remaining.total_milliseconds() + 999) / 1000);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("matchmaking_proposed invalid confirm deadline {}: {}", message.confirm_deadline, e.what());
+    }
 
     for (auto& team : message.teams)
     {
@@ -30,7 +44,7 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
 
                 auto weak    = ch->weak_from_this_as<character>();
                 auto builder = this->server.threads.new_builder(weak);
-                builder.func = [weak, match_id, match_type, confirm_deadline](auto&) -> async::task<void> {
+                builder.func = [weak, match_id, match_type, confirm_seconds](auto&) -> async::task<void> {
                     auto ch = weak.lock();
                     if (ch == nullptr)
                         co_return;
@@ -49,7 +63,7 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                         lua->pushobject(ch);
                         lua->pushinteger(static_cast<lua_Integer>(match_id));
                         lua->pushinteger(match_type);
-                        lua->pushstring(confirm_deadline.c_str());
+                        lua->pushinteger(static_cast<lua_Integer>(confirm_seconds));
                         ch.reset();
                         std::ignore = co_await lua->call(4);
                     }

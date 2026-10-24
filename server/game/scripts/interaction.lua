@@ -424,23 +424,6 @@ end
 -- reason: 0=timeout, 1=decline
 -- outcome: 0=excluded, 1=requeued
 
-local function matchmaking_confirm_seconds(confirm_deadline)
-    local y, mo, d, h, mi, se = confirm_deadline:match('^(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)$')
-    if y == nil then
-        return 0
-    end
-    -- Parse absolute deadline string from matchmaking server (not for current time).
-    local deadline = os.time({
-        year = tonumber(y),
-        month = tonumber(mo),
-        day = tonumber(d),
-        hour = tonumber(h),
-        min = tonumber(mi),
-        sec = tonumber(se),
-    })
-    return math.max(0, deadline - now())
-end
-
 local function matchmaking_clear_timer(me)
     me:timer(0, TIMER_TYPE.OFF)
 end
@@ -895,8 +878,7 @@ return {
         me:message(string.format('매치 참여를 수락했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
     end,
 
-    on_matchmaking_proposed = function(me, match_id, match_type, confirm_deadline)
-        local confirm_seconds = matchmaking_confirm_seconds(confirm_deadline)
+    on_matchmaking_proposed = function(me, match_id, match_type, confirm_seconds)
         me:timer(confirm_seconds, TIMER_TYPE.DECREASE)
         me:message(
             string.format('매치가 제안되었습니다. %d초 안에 수락해 주세요. (유형: %d)', confirm_seconds, match_type),
