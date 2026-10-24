@@ -63,6 +63,9 @@ module.exports = {
                 const resourceName = `rabbitmq-${type}`
                 const headlessServiceName = `${resourceName}-headless`
                 const replicas = typeConf.replicas || 1
+                const startupPolicy = type === "log"
+                    ? `(rabbitmqctl await_startup --timeout 600 && rabbitmqctl set_policy --apply-to quorum_queues log-dead-letter '^fb\\.([0-9]+\\.)?log$' '{"dead-letter-exchange":"fb.log.dlx","delivery-limit":20}') &`
+                    : ""
                 
                 // Create ConfigMap for RabbitMQ configuration
                 const configMap = new k8s.core.v1.ConfigMap(`${resourceName}-config`, {
@@ -163,6 +166,7 @@ RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
                                     args: [pulumi.interpolate`
 export RABBITMQ_NODENAME=rabbit@$MY_POD_NAME.${headlessServiceName}.$MY_POD_NAMESPACE.svc.cluster.local
 export RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
+${startupPolicy}
 exec docker-entrypoint.sh rabbitmq-server
 `],
                                         volumeMounts: [

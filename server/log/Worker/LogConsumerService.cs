@@ -20,6 +20,8 @@ namespace Log.Worker
         private static readonly TimeSpan ProcessInterval = TimeSpan.FromSeconds(10);
         private const int BatchSize = 8;
         private const string ExchangeName = "amq.direct";
+        private const string DeadLetterExchangeName = "fb.log.dlx";
+        private const string DeadLetterQueueName = "fb.log.dlq";
         private readonly uint _world;
         private readonly bool _crossLog;
 
@@ -234,6 +236,18 @@ namespace Log.Worker
             _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), cancellationToken);
 
             await _channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
+
+            await _channel.ExchangeDeclareAsync(DeadLetterExchangeName, ExchangeType.Fanout, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
+            await _channel.QueueDeclareAsync(
+                queue: DeadLetterQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: new Dictionary<string, object> { ["x-queue-type"] = "quorum" },
+                passive: false,
+                noWait: false,
+                cancellationToken: cancellationToken);
+            await _channel.QueueBindAsync(DeadLetterQueueName, DeadLetterExchangeName, string.Empty, arguments: null, noWait: false, cancellationToken);
 
             var routingKeys = new List<string> { $"fb.{_world}.log" };
             if (_crossLog)
