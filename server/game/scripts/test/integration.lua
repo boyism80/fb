@@ -1042,6 +1042,62 @@ return {
         end
     end,
 
+    verify_none_exp_cap = function(me, step)
+        local cls = me:class()
+        local level = me:level()
+        local exp = me:exp()
+        local above_cap = 100000
+
+        me:class(CLASS.NONE)
+        me:exp(above_cap)
+        me:exchange({}, { exp = 10 })
+        local after = me:exp()
+
+        me:exp(exp)
+        me:level(level)
+        me:class(cls)
+
+        if after == above_cap then
+            report(me, true, step)
+        else
+            report(me, false, step,
+                string.format('exp %d -> %s after a gain above the class NONE cap', above_cap, tostring(after)))
+        end
+    end,
+
+    verify_potion_refund = function(me, step, name)
+        local function count_of()
+            local total = 0
+            for _, item in pairs(me:items(name) or {}) do
+                total = total + item:count()
+            end
+            return total
+        end
+
+        local mp = me:mp()
+        me:mp(0)
+        local item = me:mkitem(name, 1)
+        if item == nil then
+            me:mp(mp)
+            return report(me, false, step, 'could not make ' .. name)
+        end
+
+        local before = count_of()
+        me:active(item)
+        sleep(500)
+        local after = count_of()
+        me:mp(mp)
+        for _, held in pairs(me:items(name) or {}) do
+            me:rmitem(held, held:count())
+        end
+
+        if after == before then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('%s count %d -> %d after a failed use', name, before, after))
+        end
+    end,
+
     set_ghost = function(me, step, enabled)
         if enabled == 'true' then
             me:state(STATE.GHOST)
