@@ -2,6 +2,7 @@
 #define __THREAD_CONTAINER_H__
 
 #include <async/propagation.h>
+#include <async/task.h>
 #include <fb/execution_context.h>
 #include <fb/thread.h>
 #include <fb/thread_switchable.h>
@@ -153,6 +154,16 @@ public:
     template <typename PivotT> [[nodiscard]] pivot_switch_awaiter<PivotT> switching(std::weak_ptr<PivotT> pivot)
     {
         return pivot_switch_awaiter<PivotT>(std::move(pivot));
+    }
+
+    template <typename PivotT> [[nodiscard]] async::task<void> follow(std::weak_ptr<PivotT> pivot)
+    {
+        try
+        {
+            co_await this->switching(std::move(pivot));
+        }
+        catch (const std::runtime_error&)
+        { }
     }
 
     void        settimer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,

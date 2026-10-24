@@ -79,7 +79,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
             if (lua)
             {
                 lua->pushobject(ch);
-                std::ignore = co_await lua->call(1);
+                std::ignore = co_await fb::lua::call(std::move(lua), ch->weak_from_this_as<fb::game::character>(), 1);
             }
         }
         break;

@@ -686,7 +686,8 @@ public:
     ~thread();
 };
 
-void run_async(context::guard g, int argc);
+void              run_async(context::guard g, int argc);
+async::task<bool> call(context::guard g, std::weak_ptr<fb::thread_switchable> pivot, int argc);
 
 // Called once, before the first resume of a script, with the argument count still on the stack.
 // The game server uses this to attach an admin-only error reporter. nullptr disables it.

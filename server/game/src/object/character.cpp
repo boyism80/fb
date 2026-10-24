@@ -1560,7 +1560,7 @@ async::task<bool> character::move(DIRECTION direction)
         if (lua)
         {
             lua->pushobject(*this);
-            std::ignore = co_await lua->call(1);
+            std::ignore = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<character>(), 1);
         }
     }
 
@@ -1573,7 +1573,7 @@ async::task<bool> character::move(DIRECTION direction)
         if (map_lua)
         {
             map_lua->pushobject(*this);
-            std::ignore = co_await map_lua->call(1);
+            std::ignore = co_await fb::lua::call(std::move(map_lua), this->weak_from_this_as<character>(), 1);
         }
     }
 
@@ -2101,56 +2101,67 @@ async::task<void> character::settle_kills(mob_vector dead)
         groups[m->model().id].push_back(m);
     }
 
-    auto self = this->shared_from_this_as<character>();
+    auto self       = this->shared_from_this_as<character>();
+    auto self_pivot = this->weak_from_this_as<character>();
     for (auto& [id, mobs] : groups)
     {
+        co_await this->server.threads.follow(self_pivot);
         co_await this->collections.try_unlock(id);
 
-        auto path = std::format("scripts/mob/{}.lua", id);
-        auto func = "on_mob_kill";
-        auto lua  = this->server.lua.open(path, func);
-        if (lua)
         {
-            lua->pushobject(*self);
-            lua->new_table();
-            for (auto i = 0; i < static_cast<int>(mobs.size()); i++)
+            auto path = std::format("scripts/mob/{}.lua", id);
+            auto func = "on_mob_kill";
+            auto lua  = this->server.lua.open(path, func);
+            if (lua)
             {
-                lua->pushobject(*mobs[i]);
-                lua->rawseti(-2, i + 1);
-            }
+                lua->pushobject(*self);
+                lua->new_table();
+                for (auto i = 0; i < static_cast<int>(mobs.size()); i++)
+                {
+                    lua->pushobject(*mobs[i]);
+                    lua->rawseti(-2, i + 1);
+                }
 
-            try
-            {
-                std::ignore = co_await lua->call(2);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal("error in ON_MOB_KILL_{}: {}", id, e.what());
-            }
-            catch (...)
-            {
-                fb::logger::fatal("unknown error in ON_MOB_KILL_{}", id);
+                try
+                {
+                    std::ignore = co_await fb::lua::call(std::move(lua), self_pivot, 2);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::fatal("error in ON_MOB_KILL_{}: {}", id, e.what());
+                }
+                catch (...)
+                {
+                    fb::logger::fatal("unknown error in ON_MOB_KILL_{}", id);
+                }
             }
         }
 
         for (auto& m : mobs)
         {
+            auto mob_pivot = m->weak_from_this_as<mob>();
+            co_await this->server.threads.follow(mob_pivot);
             this->listener.on_dead(*m, self);
             co_await m->drop_items();
-            this->award_exp(*m);
+            auto exp = m->total_exp();
+
+            co_await this->server.threads.follow(self_pivot);
+            this->award_exp(exp);
+
+            co_await this->server.threads.follow(mob_pivot);
             m->kill(DESTROY_TYPE::DEAD);
             co_await m->destroy(DESTROY_TYPE::DEAD);
         }
     }
+    co_await this->server.threads.follow(self_pivot);
 }
 
-void character::award_exp(const fb::game::mob& mob)
+void character::award_exp(uint64_t exp)
 {
     this->assert_thread();
 
     auto& group_id = this->group.id();
     auto  map      = this->map();
-    auto  exp      = mob.total_exp();
 
     auto nears = std::vector<std::weak_ptr<character>>{};
     if (group_id.has_value() && map != nullptr)

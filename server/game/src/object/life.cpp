@@ -157,6 +157,7 @@ life::damage_settle life::damage_targets(const damage_list&    targets,
 async::task<void> life::settle_deaths(mob_vector dead)
 {
     this->assert_thread();
+    auto self = this->weak_from_this_as<life>();
 
     auto groups = std::unordered_map<uint32_t, mob_vector>{};
     for (auto& m : dead)
@@ -175,6 +176,9 @@ async::task<void> life::settle_deaths(mob_vector dead)
 
     for (auto& [id, mobs] : groups)
     {
+        auto pivot = mobs.front()->weak_from_this_as<mob>();
+        co_await this->server.threads.follow(pivot);
+
         auto path = std::format("scripts/mob/{}.lua", id);
         auto func = "on_mob_die";
         auto lua  = this->server.lua.open(path, func);
@@ -183,7 +187,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
             lua->pushobject(*mobs.front());
             try
             {
-                std::ignore = co_await lua->call(1);
+                std::ignore = co_await fb::lua::call(std::move(lua), pivot, 1);
             }
             catch (std::exception& e)
             {
@@ -203,6 +207,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
             co_await m->destroy(DESTROY_TYPE::DEAD);
         }
     }
+    co_await this->server.threads.follow(self);
 }
 
 async::task<void> life::damage_to(const damage_list& targets)
@@ -240,10 +245,14 @@ async::task<void> life::damage(uint64_t value, const damage_opts& opts)
 async::task<void> life::settle_character_deaths(const character_vector& dead, std::shared_ptr<life> killer)
 {
     this->assert_thread();
+    auto self = this->weak_from_this_as<life>();
     for (auto& ch : dead)
     {
         if (ch == nullptr)
             continue;
+
+        auto pivot = ch->weak_from_this_as<character>();
+        co_await this->server.threads.follow(pivot);
 
         // HP already zero from damage; skip if already settled as ghost.
         if (ch->stat.hp() != 0)
@@ -260,7 +269,7 @@ async::task<void> life::settle_character_deaths(const character_vector& dead, st
                 lua->pushobject(*ch);
                 try
                 {
-                    std::ignore = co_await lua->call(2);
+                    std::ignore = co_await fb::lua::call(std::move(lua), pivot, 2);
                 }
                 catch (std::exception& e)
                 {
@@ -278,7 +287,7 @@ async::task<void> life::settle_character_deaths(const character_vector& dead, st
         // onto the victim's destination map thread.
         co_await ch->settle_death(killer);
     }
-    co_return;
+    co_await this->server.threads.follow(self);
 }
 
 async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
@@ -291,7 +300,10 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
         if (target == nullptr || target->is(OBJECT_TYPE::MOB) == false)
             continue;
 
-        auto m   = std::static_pointer_cast<mob>(target);
+        auto m     = std::static_pointer_cast<mob>(target);
+        auto pivot = m->weak_from_this_as<mob>();
+        co_await this->server.threads.follow(pivot);
+
         auto lua = this->server.lua.open(std::format("scripts/mob/{}.lua", m->model().id), "on_mob_damaged");
         if (!lua)
             continue;
@@ -300,7 +312,7 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
         lua->pushobject(attacker);
         try
         {
-            std::ignore = co_await lua->call(2);
+            std::ignore = co_await fb::lua::call(std::move(lua), pivot, 2);
         }
         catch (std::exception& e)
         {
@@ -311,7 +323,7 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
             fb::logger::warn("unknown error in on_mob_damaged {}", m->model().id);
         }
     }
-    co_return;
+    co_await this->server.threads.follow(attacker->weak_from_this_as<life>());
 }
 
 async::task<void> life::attack(DURATION duration)
@@ -324,14 +336,18 @@ async::task<void> life::attack(DURATION duration)
         co_return;
 
     // Execute attack interaction script and get attack count
+    auto     self         = this->weak_from_this_as<life>();
     uint32_t attack_count = 0;
-    auto     lua          = this->server.lua.open("scripts/interaction.lua", "on_attack");
-    if (lua)
     {
-        lua->pushobject(*this);
-        if (co_await lua->call(1))
-            attack_count = (uint32_t)lua->tointeger(1);
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_attack");
+        if (lua)
+        {
+            lua->pushobject(*this);
+            if (co_await lua->call(1))
+                attack_count = (uint32_t)lua->tointeger(1);
+        }
     }
+    co_await this->server.threads.follow(self);
 
     // Call listener for packet response
     this->listener.on_attack(*this, duration);

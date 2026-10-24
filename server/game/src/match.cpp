@@ -166,7 +166,7 @@ async::task<void> match::invoke(std::string_view func, character& ch, std::share
 
     auto argc = extra != nullptr ? 3 : 2;
     if (wait)
-        std::ignore = co_await lua->call(argc);
+        std::ignore = co_await fb::lua::call(std::move(lua), ch.weak_from_this_as<character>(), argc);
     else
         fb::lua::run_async(std::move(lua), argc);
     co_return;

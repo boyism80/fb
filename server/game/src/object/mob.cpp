@@ -373,7 +373,7 @@ async::task<void> mob::action(fb::model::datetime now)
         this->_action_busy = true;
         try
         {
-            std::ignore = co_await lua->call(2);
+            std::ignore = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<mob>(), 2);
         }
         catch (std::exception& e)
         {
@@ -410,7 +410,7 @@ async::task<void> mob::attack(DURATION duration)
         else
             lua->pushnil();
 
-        std::ignore = co_await lua->call(2);
+        std::ignore = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<mob>(), 2);
     }
 
     co_await life::attack(duration);
@@ -589,7 +589,9 @@ async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& 
     auto owner = this->owner.lock();
     if (this->_spawn_type == spawn_type::SUMMONED && owner != nullptr)
     {
+        auto self = this->weak_from_this_as<mob>();
         co_await owner->settle_kills(std::move(settle.dead_mobs));
+        co_await this->server.threads.follow(self);
         co_return;
     }
 
@@ -798,7 +800,7 @@ async::task<bool> mob::move(DIRECTION direction)
     if (lua)
     {
         lua->pushobject(this);
-        std::ignore = co_await lua->call(1);
+        std::ignore = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<mob>(), 1);
     }
 
     co_return true;

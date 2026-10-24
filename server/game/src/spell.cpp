@@ -446,7 +446,7 @@ async::task<bool> buffs::remove(uint32_t id)
     {
         lua->pushobject(this->_owner);
         lua->pushobject(model);
-        std::ignore = co_await lua->call(2);
+        std::ignore = co_await fb::lua::call(std::move(lua), this->_owner.weak_from_this_as<fb::game::object>(), 2);
     }
 
     co_await this->_owner.server.destroy(*buff);

@@ -1446,6 +1446,30 @@ void fb::lua::run_async(context::guard g, int argc)
         });
 }
 
+async::task<bool> fb::lua::call(context::guard g, std::weak_ptr<fb::thread_switchable> pivot, int argc)
+{
+    if (!g)
+        co_return false;
+
+    auto& threads = g->executor.threads;
+    auto  result  = false;
+    auto  error   = std::exception_ptr{};
+    try
+    {
+        result = co_await g->call(argc);
+    }
+    catch (...)
+    {
+        error = std::current_exception();
+    }
+
+    g = context::guard{};
+    co_await threads.follow(std::move(pivot));
+    if (error)
+        std::rethrow_exception(error);
+    co_return result;
+}
+
 async::task<void> fb::lua::context_pool::dump(std::string_view path)
 {
     auto p = std::string{path};

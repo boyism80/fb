@@ -316,7 +316,7 @@ private:
     bool                            option_toggle(OPTION key, bool notify = true);
     void                            stop_bgm(uint16_t bgm_id = 0);
     [[nodiscard]] async::task<void> death_warp();
-    void                            award_exp(const fb::game::mob& mob);
+    void                            award_exp(uint64_t exp);
     async::task<void>               death_penalty();
     async::task<void>               settle_kills(mob_vector dead);
     void                            enqueue_death_warp();

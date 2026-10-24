@@ -376,7 +376,7 @@ async::task<void> object::invoke_map_character_hook(const fb::model::map& map_mo
         co_return;
 
     lua->pushobject(*this);
-    std::ignore = co_await lua->call(1);
+    std::ignore = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<object>(), 1);
 }
 
 async::task<std::optional<std::vector<fb::lua::value>>> object::script(std::string                 path,

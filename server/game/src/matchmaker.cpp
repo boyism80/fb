@@ -267,7 +267,7 @@ async::task<void> matchmaker::dequeue(initiator by)
         lua->pushobject(ptr);
         lua->pushinteger(ticket.match_type);
         lua->pushinteger(static_cast<lua_Integer>(ticket.ticket_id));
-        std::ignore = co_await lua->call(3);
+        std::ignore = co_await fb::lua::call(std::move(lua), weak, 3);
     }
 }
 
@@ -312,7 +312,7 @@ async::task<void> matchmaker::confirm(uint64_t match_id)
         lua->pushobject(ptr);
         lua->pushinteger(static_cast<lua_Integer>(match_id));
         lua->pushinteger(match_type);
-        std::ignore = co_await lua->call(3);
+        std::ignore = co_await fb::lua::call(std::move(lua), weak, 3);
     }
 }
 
@@ -378,7 +378,7 @@ async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
         lua->pushobject(ptr);
         lua->pushinteger(static_cast<lua_Integer>(match_id));
         lua->pushinteger(match_type);
-        std::ignore = co_await lua->call(3);
+        std::ignore = co_await fb::lua::call(std::move(lua), weak, 3);
     }
 }
 
