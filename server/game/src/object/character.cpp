@@ -632,7 +632,18 @@ bool character::nation(NATION value)
     if (value != NATION::GOGURYEO && value != NATION::BUYEO)
         return false;
 
-    this->_nation = value;
+    if (this->_nation == value)
+        return true;
+
+    auto old_nation = this->_nation;
+    this->_nation   = value;
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_nation"]     = static_cast<int>(old_nation);
+    log_data["new_nation"]     = static_cast<int>(value);
+    this->server.log.write("nation_change", log_data);
     return true;
 }
 
@@ -1045,8 +1056,16 @@ void character::exp(uint64_t value)
     if (this->_experience == value)
         return;
 
+    auto old_exp      = this->_experience;
     this->_experience = value;
     this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_exp"]        = static_cast<Json::UInt64>(old_exp);
+    log_data["new_exp"]        = static_cast<Json::UInt64>(value);
+    this->server.log.write("exp_change", log_data);
 }
 
 uint64_t character::add_exp(uint64_t value, bool limit, bool notify)
@@ -1491,7 +1510,18 @@ void character::title(std::string_view value)
 {
     this->assert_thread();
 
-    this->_title = std::string(value);
+    if (this->_title == value)
+        return;
+
+    auto old_title = this->_title;
+    this->_title   = std::string(value);
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["old_title"]      = UTF8(old_title, PLATFORM::WINDOWS);
+    log_data["new_title"]      = UTF8(this->_title, PLATFORM::WINDOWS);
+    this->server.log.write("title_change", log_data);
 }
 
 void character::assert_state(STATE value) const
