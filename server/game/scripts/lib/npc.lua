@@ -1340,6 +1340,7 @@ function M.basic_class(me, npc, class, spells)
 
             if level < 5 then
                 me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
+                return
             end
             ::NPC_BASIC_CLASS_001::
             local button = me:dialog(npc, class_name .. '의 길을 가려면, 몇 가지 맹세를 해야하느니.', { prev = false, next = true })
