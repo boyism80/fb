@@ -729,6 +729,13 @@ function M.damage_near(me, spell, opts)
     local mp = opts.mp or 0
     local sound = opts.sound
     local effect = opts.effect
+    if me:is(OBJECT_TYPE.CHARACTER) then
+        local err = me:assert(STATE.GHOST, STATE.RIDING)
+        if err then
+            me:message(err)
+            return false
+        end
+    end
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
@@ -764,6 +771,14 @@ function M.damage_near_target(me, you, spell, opts)
     local mp = opts.mp or 0
     local sound = opts.sound
     local effect = opts.effect
+
+    if me:is(OBJECT_TYPE.CHARACTER) then
+        local err = me:assert(STATE.GHOST, STATE.RIDING)
+        if err then
+            me:message(err)
+            return false
+        end
+    end
 
     if you:is(OBJECT_TYPE.CHARACTER) then
         if not M.assert_map_damage(me, you) then
