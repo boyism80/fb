@@ -118,8 +118,12 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
     uint64_t              best_damage = 0;
 
     // First check recent attackers that are in sight
-    for (const auto& [attacker, record] : this->_recent_damage)
+    for (const auto& [weak, record] : this->_recent_damage)
     {
+        auto attacker = weak.lock();
+        if (attacker == nullptr)
+            continue;
+
         if (!attacker->alive() || attacker->hidden(mob_obj) || !mob_obj.sight(*attacker))
             continue;
 
@@ -168,8 +172,12 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
     uint64_t              best_damage = 0;
 
     // First check recent attackers that are in range
-    for (const auto& [attacker, record] : this->_recent_damage)
+    for (const auto& [weak, record] : this->_recent_damage)
     {
+        auto attacker = weak.lock();
+        if (attacker == nullptr)
+            continue;
+
         if (!attacker->alive() || attacker->hidden(mob_obj) || !mob_obj.sight(*attacker))
             continue;
 
@@ -217,7 +225,7 @@ void ai::cleanup_expired_damage(const datetime& now)
 {
     for (auto it = this->_recent_damage.begin(); it != this->_recent_damage.end();)
     {
-        if ((now - it->second.second) > DAMAGE_MEMORY_DURATION)
+        if (it->first.expired() || (now - it->second.second) > DAMAGE_MEMORY_DURATION)
             it = this->_recent_damage.erase(it);
         else
             ++it;
@@ -262,10 +270,11 @@ bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
 
 void ai::record_damage(std::shared_ptr<life> attacker, const datetime& now)
 {
-    auto found = this->_recent_damage.find(attacker);
+    auto key   = std::weak_ptr<life>(attacker);
+    auto found = this->_recent_damage.find(key);
     if (found == this->_recent_damage.end())
     {
-        this->_recent_damage.emplace(attacker, damage_record{1, now});
+        this->_recent_damage.emplace(std::move(key), damage_record{1, now});
         return;
     }
 

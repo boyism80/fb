@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -28,7 +29,7 @@ public:
 private:
     using datetime      = fb::model::datetime;
     using damage_record = std::pair<uint32_t, datetime>;
-    using damage_map    = std::unordered_map<std::shared_ptr<life>, damage_record>;
+    using damage_map    = std::map<std::weak_ptr<life>, damage_record, std::owner_less<std::weak_ptr<life>>>;
 
 private:
     damage_map _recent_damage;
