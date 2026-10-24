@@ -26,6 +26,9 @@ function M.revive(me, npc, discourteous)
     else
         npc:chat('너의 정성에 감복하여 살려줄터이니 잠시 기다려라....')
         sleep(1000)
+        if me:state() ~= STATE.GHOST then
+            return true
+        end
         npc:chat('영은 생을 얻을지어니...')
         me:state(STATE.NORMAL)
         me:hp(50)
@@ -1640,6 +1643,9 @@ function M.revive_oath(me, npc)
     end
 
     me:dialog(npc, '너의 각오를 믿고 새로운 생명을 내리노니 나에게 한 맹세를 잊지 말고 하루하루를 신께 감사하는 마음으로 살아가도록 하여라.')
+    if me:state() ~= STATE.GHOST then
+        return
+    end
     me:state(STATE.NORMAL)
     me:hp(50)
 end
