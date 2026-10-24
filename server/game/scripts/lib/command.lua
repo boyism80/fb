@@ -571,8 +571,18 @@ M.functions = {
                     end
                 end
 
-                local name = string.format('공성%s%d', me:name(), math.random(1000, 9999))
-                local err = me:create_clan(name)
+                local syllables = { '가', '나', '다', '라', '마', '사', '아', '자', '차', '카', '타', '파', '하' }
+                local err = nil
+                for _ = 1, 5 do
+                    local parts = { '공성' }
+                    for _ = 1, 4 do
+                        table.insert(parts, syllables[math.random(#syllables)])
+                    end
+                    err = me:create_clan(table.concat(parts))
+                    if err == nil then
+                        break
+                    end
+                end
                 if err ~= nil then
                     me:message(string.format("공성준비 실패: %s", err), MESSAGE_TYPE.BROWN)
                     return true
