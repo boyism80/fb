@@ -528,6 +528,60 @@ function M.debuff_cast(me, you, spell, opts)
     return execute_mob_spell_hit(me, you, spell)
 end
 
+function M.area_debuff_cast(me, spell, opts)
+    opts = opts or {}
+
+    local mp = opts.mp or 0
+    if me:is(OBJECT_TYPE.CHARACTER) then
+        local error = me:assert(STATE.GHOST, STATE.RIDING)
+        if error ~= nil then
+            me:message(error)
+            return {}
+        end
+        if me:mp() < mp then
+            me:message('마력이 부족합니다.')
+            return {}
+        end
+    end
+
+    local pk = castle.map_pk_enabled(me)
+    local blocks_pvp = M.attacker_blocks_pvp(me)
+    local relative = M.relative_buff_name(spell:name())
+    local targets = {}
+    for _, you in pairs(me:nears(OBJECT_TYPE.LIFE)) do
+        if you ~= me and M.damageable_life(me, you, pk, blocks_pvp)
+            and not (you:is(OBJECT_TYPE.CHARACTER) and you:assert(STATE.GHOST))
+            and not you:isbuff(table.unpack(relative)) then
+            table.insert(targets, you)
+        end
+    end
+    if #targets == 0 then
+        me:message('걸리지 않습니다.')
+        return {}
+    end
+
+    me:mp_down(mp)
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+    if opts.sound ~= nil then
+        me:sound(opts.sound)
+    end
+    me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
+
+    local hits = {}
+    for _, you in ipairs(targets) do
+        if opts.effect ~= nil then
+            you:effect(opts.effect)
+        end
+        if you:is(OBJECT_TYPE.CHARACTER) and me:is(OBJECT_TYPE.CHARACTER) then
+            you:message(string.format('%s님이 %s 걸었습니다.', me:name(), name_with(spell:name())))
+        end
+        if not M.resisted(you, RESIST.SPELL) and execute_mob_spell_hit(me, you, spell) then
+            table.insert(hits, you)
+        end
+    end
+    return hits
+end
+
 
 function M.attack_cast(me, you, spell, opts)
     opts = opts or {}

@@ -11,18 +11,11 @@ return {
         local mp = 600
         local sound = 79
         local effect = 39
+        local buff_time = 425
 
-        for _, obj in pairs(me:nears(OBJECT_TYPE.LIFE)) do
-            if not obj:isbuff(table.unpack(spell.relative_buff_name(sp:name()))) then
-                obj:effect(effect)
-                obj:buff(sp, 425, me)
-                if me ~= obj and obj:is(OBJECT_TYPE.CHARACTER) then
-                    obj:message(string.format('%s님이 %s 걸었습니다.', me:name(), name_with(sp:name())))
-                end
-            end
+        for _, you in ipairs(spell.area_debuff_cast(me, sp, { mp = mp, sound = sound, effect = effect })) do
+            you:buff(sp, buff_time, me)
         end
-        me:sound(sound)
-        me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end,
 
     on_buff = function(me, sp)
