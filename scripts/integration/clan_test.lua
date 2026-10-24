@@ -40,6 +40,8 @@ local ROLE_PICK_DEPUTY = 3
 
 local MSG_CREATE_OK       = "축하하오"
 local MSG_CREATE_DUP      = "클랜명이 이미 존재함"
+local MSG_CREATE_INVALID  = "사용할 수 없는 문파 이름입니다"
+local MSG_TITLE_INVALID   = "사용할 수 없는 문파 칭호입니다"
 local MSG_TITLE_OK        = "칭호를 새로 내걸었소"
 local MSG_TITLE_PRIV      = "문파 권한이 부족합니다"
 local MSG_TITLE_SHORT     = "문파 칭호가 너무 짧습니다"
@@ -499,6 +501,15 @@ test_suite {
             local other  = ctx:bot(1)
             progress(master, "S1: CREATE")
 
+            for _, invalid_name in ipairs({ "운영자", "abc", "씨발문파" }) do
+                local invalid_msg, invalid_err = create_clan(master, invalid_name)
+                if invalid_msg == nil or invalid_msg:find(MSG_CREATE_INVALID, 1, true) == nil then
+                    progress(master,
+                        "FAILED: invalid name " .. invalid_name .. " " .. tostring(invalid_msg or invalid_err))
+                    return false
+                end
+            end
+
             local msg, err = create_clan(master, master:name())
             if msg == nil or msg:find(MSG_CREATE_OK, 1, true) == nil then
                 progress(master, "FAILED: create " .. tostring(msg or err))
@@ -525,6 +536,12 @@ test_suite {
             local msg, err = change_title(master, "a")
             if is_title_too_short(msg) == false then
                 progress(master, "FAILED: short " .. tostring(msg or err))
+                return false
+            end
+
+            msg, err = change_title(master, "씨발타이틀")
+            if msg == nil or msg:find(MSG_TITLE_INVALID, 1, true) == nil then
+                progress(master, "FAILED: blocked title " .. tostring(msg or err))
                 return false
             end
 

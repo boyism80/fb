@@ -155,6 +155,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("bright", builtin::server::builtin_bright);
         lua.build("name_with", builtin::server::builtin_name_with);
         lua.build("assert_korean", builtin::server::builtin_assert_korean);
+        lua.build("has_blocked_word", builtin::server::builtin_has_blocked_word);
         lua.build("CP949", builtin::server::builtin_cp949);
         lua.build("debug", builtin::server::builtin_debug);
         lua.build("name2class", builtin::server::builtin_name2class);

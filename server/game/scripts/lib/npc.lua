@@ -122,7 +122,7 @@ function M.rename_weapon(me, npc, from, to)
         return true
     end
 
-    if assert_korean(cp949) == false then
+    if assert_korean(cp949) == false or has_blocked_word(to) then
         npc:chat('그렇게 바꿀 수 없습니다.')
         return true
     end
@@ -1117,7 +1117,7 @@ function M.show_rename_weapon_menu(me, npc)
         goto NPC_RENAME_WEAPON_DIALOG_002
     end
 
-    if not assert_korean(cp949) then
+    if not assert_korean(cp949) or has_blocked_word(name) then
         me:dialog(npc, string.format('%s 사용할 수 없는 이름입니다.', name_with(name, '은', '는')), { prev = false, next = true })
         goto NPC_RENAME_WEAPON_DIALOG_002
     end

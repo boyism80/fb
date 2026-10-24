@@ -1862,6 +1862,8 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
     if (this->option(OPTION::WHISPER) == false)
         throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 
+    message = fb::model::table::blocked_word->filter(message);
+
     auto sender_weak = this->weak_from_this_as<character>();
     auto sender_name = this->name();
 

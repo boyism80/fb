@@ -14,6 +14,11 @@ fb::model::___blocked_word::___blocked_word() :
     };
 }
 
+bool fb::model::___blocked_word::contains_substring(std::string_view name) const
+{
+    return this->_matcher.contains(name);
+}
+
 std::string fb::model::___blocked_word::filter(std::string_view message) const
 {
     return this->_matcher.filter(message);

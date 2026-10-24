@@ -41,6 +41,7 @@ struct server
     static int builtin_bright(lua_State* L);
     static int builtin_name_with(lua_State* L);
     static int builtin_assert_korean(lua_State* L);
+    static int builtin_has_blocked_word(lua_State* L);
     static int builtin_cp949(lua_State* L);
     static int builtin_broadcast(lua_State* L);
     static int builtin_assert_alive(lua_State* L);
