@@ -123,7 +123,8 @@ async::task<void> castle::container::start_siege(fb::model::enum_value::DIVINE_B
     guard.value()->start_siege(duration_seconds);
 }
 
-// The siege stays active until the new owner is saved, so a failed save can be retried with the same winner.
+// The siege stays active until the new owner is saved or rejected, so a failed save can be retried with the same
+// winner.
 async::task<std::pair<castle::siege_end_result, std::optional<uint32_t>>>
 castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
                              const std::optional<uint32_t>&      winner_clan_id)
@@ -156,6 +157,7 @@ castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
 
     auto world     = fb::config<std::optional<uint32_t>>("world");
     auto saved     = false;
+    auto rejected  = false;
     auto new_owner = std::optional<uint32_t>{};
     try
     {
@@ -168,10 +170,18 @@ castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
                                                                 fb::config<uint32_t>("id"),
                                                                 static_cast<uint8_t>(id),
                                                                 winner});
-            if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) == fb::model::enum_value::ERROR_CODE::NONE)
+            auto error = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
+            if (error == fb::model::enum_value::ERROR_CODE::NONE)
             {
                 saved     = true;
                 new_owner = resp.owner_clan_id;
+            }
+            else if (error == fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN)
+            {
+                rejected = true;
+                fb::logger::warn("castle: winner clan {} for divine_beast {} no longer exists, ending without winner",
+                                 winner.value(),
+                                 id);
             }
             else
             {
@@ -193,6 +203,12 @@ castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
             co_return std::make_pair(siege_end_result::NOT_ACTIVE, std::optional<uint32_t>{});
 
         auto& castle = guard.value();
+        if (rejected)
+        {
+            castle->clear_siege();
+            co_return std::make_pair(siege_end_result::ENDED, std::optional<uint32_t>{});
+        }
+
         if (saved == false)
         {
             castle->siege_winner(winner);
