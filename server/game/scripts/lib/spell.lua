@@ -906,7 +906,7 @@ function M.heal(me, you, spell, opts)
             return false
         end
     end
-    if not you:is(OBJECT_TYPE.CHARACTER) then
+    if not you:is(OBJECT_TYPE.CHARACTER) or you:assert(STATE.GHOST) then
         me:message('대상이 올바르지 않습니다.')
         return false
     end
@@ -933,7 +933,7 @@ function M.heal_near(me, you, spell, opts)
             return false
         end
     end
-    if not you:is(OBJECT_TYPE.CHARACTER) then
+    if not you:is(OBJECT_TYPE.CHARACTER) or you:assert(STATE.GHOST) then
         me:message('대상이 올바르지 않습니다.')
         return false
     end
@@ -942,7 +942,12 @@ function M.heal_near(me, you, spell, opts)
         return false
     end
     me:mp_down(mp)
-    local targets = M.near(you, OBJECT_TYPE.CHARACTER)
+    local targets = {}
+    for _, ch in pairs(M.near(you, OBJECT_TYPE.CHARACTER)) do
+        if not ch:assert(STATE.GHOST) then
+            table.insert(targets, ch)
+        end
+    end
     table.insert(targets, you)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
@@ -993,7 +998,7 @@ function M.heal_group(me, spell, opts)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     for _, ch in pairs(group:nears(map, { me:position() })) do
-        if me ~= ch then
+        if me ~= ch and not ch:assert(STATE.GHOST) then
             if execute_mob_spell_hit(me, ch, spell) then
                 ch:heal(hp)
             end

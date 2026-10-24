@@ -9,6 +9,11 @@ return {
             return
         end
 
+        if you and you:is(OBJECT_TYPE.CHARACTER) and you:assert(STATE.GHOST) then
+            me:message('대상이 올바르지 않습니다.')
+            return
+        end
+
         local mp = 1000
         local sound = 97
         local effect = 63
