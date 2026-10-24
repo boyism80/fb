@@ -29,11 +29,15 @@ local TREASURE_SPOTS = {
 return {
     on_activated = function(me, item)
         local q = me:quest(quest.QUEST_MOUNTAIN_GOD)
-        if q == nil or q:step() < 1 then
+        if q == nil or q:completed() or q:step() < 1 or q:step() > 2 then
             return
         end
 
         local param = q:param() or ''
+        if param == 'got' then
+            me:dialog(item:model(), '이미 산신의비단을 찾았다.', { prev = false, next = true })
+            return
+        end
 
         if param ~= '' and string.match(param, '^[^,]+,%d+,%d+$') then
             local parts = {}

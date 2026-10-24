@@ -723,7 +723,11 @@ end
 
 function M.mountain_treasure_map_on_move(me)
     local quest = me:quest(M.QUEST_MOUNTAIN_GOD)
-    if quest == nil then
+    if quest == nil or quest:completed() then
+        return
+    end
+    local step = quest:step()
+    if step ~= 1 and not (step == 2 and quest:param() ~= 'got') then
         return
     end
 
