@@ -7,6 +7,7 @@ return {
 
     on_map_move = function(me)
         quest.mountain_treasure_map_on_move(me)
+        quest.mountain_treasure_fabric_on_move(me)
     end,
 
     -- on_map_enter = function(me)
