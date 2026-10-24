@@ -79,6 +79,20 @@ function M.start(map)
     return id ~= nil
 end
 
+local function reward_refusal()
+    if not festival.is('유두') then
+        return '지금은 칠성당 관련 이벤트 기간이 아닙니다.'
+    end
+    local t = datetime()
+    if t == nil or not festival.is_triple_hour(t.hour or 0) then
+        return '지금은 제를 올리는 시간이 아닙니다...'
+    end
+    if property(PROP_RUNNING) then
+        return '이 앞으로 나오지 마십시오.'
+    end
+    return nil
+end
+
 function M.try_reward(me, npc)
     if me == nil then
         return false
@@ -87,16 +101,9 @@ function M.try_reward(me, npc)
         return false
     end
 
-    local t = datetime()
-    if t == nil then
-        return true
-    end
-    if not festival.is_triple_hour(t.hour or 0) then
-        me:dialog(npc, '지금은 제를 올리는 시간이 아닙니다...', { prev = false, next = false })
-        return true
-    end
-    if property(PROP_RUNNING) then
-        me:dialog(npc, '이 앞으로 나오지 마십시오.', { prev = false, next = false })
+    local refusal = reward_refusal()
+    if refusal ~= nil then
+        me:dialog(npc, refusal, { prev = false, next = false })
         return true
     end
 
@@ -107,6 +114,12 @@ function M.try_reward(me, npc)
     end
     btn = me:dialog(npc, name_with(reward, '을', '를') .. ' 드릴게요.. 맛있게 드세요~~', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+
+    refusal = reward_refusal()
+    if refusal ~= nil then
+        me:dialog(npc, refusal, { prev = false, next = false })
         return true
     end
     if me:mkitem(reward, 1) == nil then
