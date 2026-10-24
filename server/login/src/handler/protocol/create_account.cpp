@@ -36,7 +36,7 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
         auto name = std::string(request.id);
         auto pw   = std::string(request.pw);
 
-        this->server.assert_account(name, pw);
+        this->server.assert_new_account(name, pw);
         auto   world = fb::config<uint32_t>("world");
         auto&& response1 =
             co_await this->server.http.post("internal", "/account/reserve", internal_reqs::ReserveName{world, name, 0});

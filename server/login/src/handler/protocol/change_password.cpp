@@ -36,25 +36,7 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
         auto delay = fb::config<uint32_t>("transfer delay");
         co_await this->server.sleep(std::chrono::seconds(delay));
 
-        auto name_cp949 = CP949(request.name);
-        if (name_cp949.length() < fb::config("name_size:min").asInt() ||
-            name_cp949.length() > fb::config("name_size:max").asInt())
-            throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
-
-        // Name must be Hangul syllables (no jamo)
-        if (fb::config<bool>("allow_foreign_name") == false && assert_korean(name_cp949) == false)
-            throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
-
-        // Name cannot contains subcharacters in forbidden list
-        if (fb::model::table::blocked_name->contains_substring(request.name))
-            throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
-
-        if (fb::model::table::blocked_word->contains_substring(request.name))
-            throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
-
-        if (request.pw.length() < fb::config("pw_size:min").asInt() ||
-            request.pw.length() > fb::config("pw_size:max").asInt())
-            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
+        this->server.assert_account(request.name, request.pw);
 
         if (request.new_pw.length() < fb::config("pw_size:min").asInt() ||
             request.new_pw.length() > fb::config("pw_size:max").asInt())

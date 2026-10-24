@@ -111,15 +111,21 @@ void fb::login::server::assert_account(std::string_view id, std::string_view pw)
     if (fb::config<bool>("allow_foreign_name") == false && assert_korean(cp949) == false)
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
+    // Read character's password
+    if (pw.length() < fb::config<int>("pw_size:min") || pw.length() > fb::config<int>("pw_size:max"))
+        throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
+}
+
+void fb::login::server::assert_new_account(std::string_view id, std::string_view pw) const
+{
+    this->assert_account(id, pw);
+
+    auto id_str = std::string(id);
     if (fb::model::table::blocked_name->contains_substring(id_str))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     if (fb::model::table::blocked_word->contains_substring(id_str))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
-
-    // Read character's password
-    if (pw.length() < fb::config<int>("pw_size:min") || pw.length() > fb::config<int>("pw_size:max"))
-        throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 }
 
 async::task<void> fb::login::server::on_accepted(fb::socket<session>& socket)

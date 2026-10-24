@@ -56,6 +56,7 @@ public:
 
     const fb::protocol::login::response::terms_agreement& agreement() const;
     void assert_account(std::string_view id, std::string_view pw) const;
+    void assert_new_account(std::string_view id, std::string_view pw) const;
 
 protected:
     void                            on_init_amqp(fb::amqp::socket& amqp) override final;
