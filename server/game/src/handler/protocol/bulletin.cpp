@@ -204,7 +204,9 @@ async::task<void> bulletin<V>::handle_write(character*               ch,
                                             std::weak_ptr<character> weak,
                                             game_reqs::bulletin<V>&  request)
 {
-    auto error = std::optional<std::string>{};
+    auto error       = std::optional<std::string>{};
+    request.title    = fb::model::table::blocked_word->filter(request.title);
+    request.contents = fb::model::table::blocked_word->filter(request.contents);
     try
     {
         co_await this->server.bulletin.write(*ch, request.section, request.title, request.contents);
@@ -338,7 +340,9 @@ async::task<void> bulletin<V>::handle_send_mail(character*               ch,
         co_return;
     }
 
-    auto error = std::optional<std::string>{};
+    auto error       = std::optional<std::string>{};
+    request.title    = fb::model::table::blocked_word->filter(request.title);
+    request.contents = fb::model::table::blocked_word->filter(request.contents);
     try
     {
         co_await this->server.mail.send(*ch, request.user, request.title, request.contents);

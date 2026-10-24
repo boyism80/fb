@@ -6,6 +6,10 @@ local BOT2_TITLE          = "Bot2 Article Title"
 local BOT2_CONTENTS       = "Bot2's test article contents."
 local MAIL_TITLE          = "Mail Test Title"
 local MAIL_CONTENTS       = "This is a mail test."
+local BLOCKED_TITLE       = "꺼져 Title"
+local BLOCKED_CONTENTS    = "씨발 contents"
+local FILTERED_TITLE      = "가세요 Title"
+local FILTERED_CONTENTS   = "어머 contents"
 -- Must match mail.REQUIRED_LEVEL in const.xlsx.
 local MAIL_REQUIRED_LEVEL = 20
 
@@ -222,6 +226,50 @@ test_suite {
             end
             progress(bot2, "SUCCESS: FAILED TO DELETE NON-EXISTENT MAIL AS EXPECTED")
 
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+
+            progress(bot1, "TESTING BLOCKED WORDS IN ARTICLES AND MAIL")
+            bot1:level(MAIL_REQUIRED_LEVEL)
+            if bot1:bulletin_write(1, BLOCKED_TITLE, BLOCKED_CONTENTS) == false then
+                progress(bot1, "FAILED TO WRITE AN ARTICLE WITH BLOCKED WORDS")
+                return false
+            end
+
+            local articles = bot1:bulletin_get_articles(1, 0x7FFF)
+            local article = find_article_by_name(articles, bot1:name())
+            if article == nil then
+                progress(bot1, "FAILED TO FIND THE ARTICLE WITH BLOCKED WORDS")
+                return false
+            end
+            local read = bot1:bulletin_read_article(1, article.id)
+            bot1:bulletin_delete_article(1, article.id)
+            if read.title ~= FILTERED_TITLE or read.contents ~= FILTERED_CONTENTS then
+                progress(bot1, "FAILED: ARTICLE WAS NOT FILTERED title=" .. tostring(read.title))
+                return false
+            end
+
+            if bot1:bulletin_send_mail(bot2:name(), BLOCKED_TITLE, BLOCKED_CONTENTS) == false then
+                progress(bot1, "FAILED TO SEND MAIL WITH BLOCKED WORDS")
+                return false
+            end
+            local mail = find_mail_by_sender(bot2:bulletin_get_mails(), bot1:name())
+            if mail == nil then
+                progress(bot2, "FAILED: MAIL WITH BLOCKED WORDS NOT FOUND")
+                return false
+            end
+            local read_mail = bot2:bulletin_read_mail(mail.id)
+            bot2:bulletin_delete_mail(mail.id)
+            if read_mail.title ~= FILTERED_TITLE or read_mail.contents ~= FILTERED_CONTENTS then
+                progress(bot2, "FAILED: MAIL WAS NOT FILTERED title=" .. tostring(read_mail.title))
+                return false
+            end
+
+            progress(bot1, "SUCCESS: BLOCKED WORDS FILTERED IN ARTICLES AND MAIL")
             return true
         end,
     },
