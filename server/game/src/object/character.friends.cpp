@@ -55,8 +55,6 @@ void character::friends::update(uint32_t uid, std::string_view name, bool mutual
             return;
         }
     }
-
-    this->_entries.push_back(friend_entry{uid, std::string(name), mutual});
 }
 
 bool character::friends::is_mutual(uint32_t uid) const
