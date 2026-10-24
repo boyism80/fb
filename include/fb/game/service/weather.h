@@ -3,7 +3,9 @@
 
 #include <fb/model/model.h>
 
+#include <atomic>
 #include <cstdint>
+#include <mutex>
 #include <vector>
 
 namespace fb::game {
@@ -31,9 +33,10 @@ private:
         uint32_t snow   = 0;
     };
 
-    fb::model::enum_value::WEATHER_TYPE _current = fb::model::enum_value::WEATHER_TYPE::NORMAL;
-    int                                 _day_key = -1;
-    std::vector<segment>                _segments;
+    std::atomic<fb::model::enum_value::WEATHER_TYPE> _current = fb::model::enum_value::WEATHER_TYPE::NORMAL;
+    std::mutex                                       _mutex;
+    int                                              _day_key = -1;
+    std::vector<segment>                             _segments;
 
     static weights                      weights_for(int month, int day);
     void                                rebuild_segments(uint32_t seed, int month, int day);

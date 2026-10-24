@@ -151,51 +151,67 @@ void service::weather::sync()
     const auto& time = this->server.time();
     auto        day_key =
         static_cast<int>(time.year()) * 10000 + static_cast<int>(time.month()) * 100 + static_cast<int>(time.day());
-    if (day_key != this->_day_key)
+    auto changed = false;
+    auto type    = weather_type::NORMAL;
     {
-        this->_day_key = day_key;
-        this->rebuild_segments(static_cast<uint32_t>(day_key),
-                               static_cast<int>(time.month()),
-                               static_cast<int>(time.day()));
+        auto _ = std::lock_guard(this->_mutex);
+        if (day_key != this->_day_key)
+        {
+            this->_day_key = day_key;
+            this->rebuild_segments(static_cast<uint32_t>(day_key),
+                                   static_cast<int>(time.month()),
+                                   static_cast<int>(time.day()));
+        }
+
+        type = this->type_at_hour(static_cast<uint8_t>(time.hours()));
+        if (type != this->_current.load())
+        {
+            this->_current = type;
+            changed        = true;
+        }
     }
 
-    auto type = this->type_at_hour(static_cast<uint8_t>(time.hours()));
-    if (type == this->_current)
-        return;
-
-    this->_current = type;
-    this->broadcast_outdoor(type);
+    if (changed)
+        this->broadcast_outdoor(type);
 }
 
 weather_type service::weather::reroll(uint32_t max_attempts)
 {
     const auto& time = this->server.time();
-    auto        old  = this->_current;
     auto        day_key =
         static_cast<int>(time.year()) * 10000 + static_cast<int>(time.month()) * 100 + static_cast<int>(time.day());
-    auto month = static_cast<int>(time.month());
-    auto day   = static_cast<int>(time.day());
-    auto hour  = static_cast<uint8_t>(time.hours());
-
-    for (uint32_t attempt = 0; attempt < max_attempts; ++attempt)
+    auto month   = static_cast<int>(time.month());
+    auto day     = static_cast<int>(time.day());
+    auto hour    = static_cast<uint8_t>(time.hours());
+    auto changed = false;
+    auto type    = weather_type::NORMAL;
     {
-        auto seed = static_cast<uint32_t>(day_key) * 1000u + attempt;
-        this->rebuild_segments(seed, month, day);
-        this->_day_key = day_key;
+        auto _   = std::lock_guard(this->_mutex);
+        auto old = this->_current.load();
+        type     = old;
+        for (uint32_t attempt = 0; attempt < max_attempts; ++attempt)
+        {
+            auto seed = static_cast<uint32_t>(day_key) * 1000u + attempt;
+            this->rebuild_segments(seed, month, day);
+            this->_day_key = day_key;
 
-        auto type = this->type_at_hour(hour);
-        if (type == old)
-            continue;
+            auto candidate = this->type_at_hour(hour);
+            if (candidate == old)
+                continue;
 
-        this->_current = type;
-        this->broadcast_outdoor(type);
-        return type;
+            this->_current = candidate;
+            type           = candidate;
+            changed        = true;
+            break;
+        }
     }
 
-    return old;
+    if (changed)
+        this->broadcast_outdoor(type);
+    return type;
 }
 
 weather_type service::weather::current() const
 {
-    return this->_current;
+    return this->_current.load();
 }
