@@ -66,7 +66,16 @@ async::task<void> service::schedule::poll()
 
         auto lua = this->server.lua.open(entry.script, entry.func);
         if (lua)
-            std::ignore = co_await lua->call(0);
+        {
+            try
+            {
+                std::ignore = co_await lua->call(0);
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::warn("schedule {} {}:{} failed: {}", schedule_index, entry.script, entry.func, e.what());
+            }
+        }
 
         if (entry.cron.has_value() && entry.cron->empty() == false)
         {
