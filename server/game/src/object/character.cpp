@@ -1054,26 +1054,27 @@ uint64_t character::add_exp(uint64_t value, bool limit, bool notify)
     this->assert_thread();
 
     // Apply experience multiplier
-    auto multiplier = this->server.exp_multiplier();
-    value           = static_cast<uint32_t>(value * multiplier);
+    auto scaled = static_cast<double>(value) * this->server.exp_multiplier();
+    if (!(scaled > 0.0))
+        value = 0;
+    else if (scaled >= static_cast<double>(std::numeric_limits<uint64_t>::max()))
+        value = std::numeric_limits<uint64_t>::max();
+    else
+        value = static_cast<uint64_t>(scaled);
 
     if (limit)
         value = this->limited_exp(value);
 
-    auto capacity = std::numeric_limits<uint64_t>::max() - this->_experience;
-    auto lack     = 0;
+    auto     capacity = std::numeric_limits<uint64_t>::max() - this->_experience;
+    uint64_t lack     = 0;
 
     try
     {
         // When class is NONE, cap exp to exactly what is needed for level 5
         if (this->_class == CLASS::NONE)
         {
-            auto require = table::ability->stacked_exp(CLASS::NONE, 5);
-            if (this->_experience > require)
-                value = 0;
-
-            if (this->_experience + value > require)
-                value = require - this->_experience;
+            auto require = static_cast<uint64_t>(table::ability->stacked_exp(CLASS::NONE, 5));
+            value        = this->_experience >= require ? 0 : std::min(value, require - this->_experience);
         }
 
         if (value > 0)
