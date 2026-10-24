@@ -9,6 +9,11 @@ local spell = require('lib.spell')
 return {
     on_cast = function(me, sp)
         local buff_time = 180
+        local state = me:state()
+        if state == STATE.GHOST or state == STATE.RIDING then
+            return false
+        end
+
         if me:isbuff(table.unpack(spell.relative_buff_name(sp:name()))) then
             return false
         end
@@ -17,11 +22,16 @@ return {
     end,
 
     on_buff = function(me, sp)
+        local state = me:state()
+        if state == STATE.GHOST or state == STATE.RIDING then
+            return
+        end
+
         me:state(STATE.HALF_CLOACK)
     end,
 
     on_unbuff = function(me, sp)
-        me:state(STATE.NORMAL)
+        spell.uncloak(me)
     end,
 
     -- on_concast = function(me, sp)

@@ -224,6 +224,13 @@ function M.relative_buff_name(buff_name)
     return { buff_name }
 end
 
+function M.uncloak(me)
+    local state = me:state()
+    if state == STATE.CLOACK or state == STATE.HALF_CLOACK or state == STATE.ADV_CLOACK then
+        me:state(STATE.NORMAL)
+    end
+end
+
 function M.near(me, type)
     local result = {}
     local map = me:map()

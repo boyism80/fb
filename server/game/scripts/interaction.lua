@@ -642,14 +642,14 @@ return {
     on_loot = function(me)
         for _, buff_name in pairs(spell.relative_buff_name('투명')) do
             if me:isbuff(buff_name) then
-                me:state(STATE.NORMAL)
+                spell.uncloak(me)
                 me:unbuff(buff_name)
             end
         end
 
         if me:super_hide() then
             me:super_hide(false)
-            me:state(STATE.NORMAL)
+            spell.uncloak(me)
         end
 
         lib.any_action(me)

@@ -21,7 +21,7 @@ return {
     -- end,
 
     on_unbuff = function(me, sp)
-        me:state(STATE.NORMAL)
+        spell.uncloak(me)
     end,
 
     -- on_concast = function(me, sp)
