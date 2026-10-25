@@ -147,8 +147,23 @@ return {
         local is_owner, is_ally = owner_or_ally(me)
         if is_ally then
             local npc = name2npc('문파성선생')
+            local map_before = me:map():model():id()
+            local x_before, y_before = me:position()
             local button = me:dialog(npc, '동맹 문파 자격으로 지하수로에 입장합니다.', { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
+                return
+            end
+            local map_now = me:map()
+            local x_now, y_now = me:position()
+            if map_now == nil or map_now:model():id() ~= map_before or x_now ~= x_before or y_now ~= y_before then
+                return
+            end
+            if block_if_siege(me, '[공성전] 지하수로로 갈 수 없습니다.') then
+                return
+            end
+            local _, still_ally = owner_or_ally(me)
+            if not still_ally then
+                me:message('성의 상황이 바뀌었습니다. 다시 시도해 주세요.', MESSAGE_TYPE.NOTIFY)
                 return
             end
             warp_by_table(me, SEWER_IN)
