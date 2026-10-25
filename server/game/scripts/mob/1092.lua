@@ -34,7 +34,7 @@ return {
             return
         end
 
-        if step ~= 13 then
+        if step ~= 13 or q:progress() ~= 0 then
             return
         end
 
@@ -50,8 +50,11 @@ return {
             return
         end
         if sel == 1 then
+            if me:mkitem("금은보화", 1) == nil then
+                me:dialog(mob, "소지품이 가득 차서 금은보화를 받을 수 없습니다.", { prev = false, next = false })
+                return
+            end
             q:progress(2)
-            me:mkitem("금은보화", 1)
             me:push_achievement(19, "상어장군을 놓아주다.", 7, 1)
             me:dialog(mob, "감사합니다. 자 이걸 받아주십시오. 그럼 전 사라지겠습니다.", { prev = false, next = true })
         else
