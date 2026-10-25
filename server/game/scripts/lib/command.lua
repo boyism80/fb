@@ -1809,10 +1809,15 @@ M.functions = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<제목> <내용> [만료일] - 시스템 메일 전송',
         ['command'] = function(me, args)
-            local title, contents, expire_date = table.unpack(args)
+            local title, contents = args[1], args[2]
             if not title or not contents then
                 me:message("사용법: /시스템메일 <제목> <내용> [만료일]")
                 return true
+            end
+
+            local expire_date = nil
+            if #args > 2 then
+                expire_date = table.concat(args, " ", 3)
             end
 
             local success = me:send_system_mail(title, contents, expire_date)

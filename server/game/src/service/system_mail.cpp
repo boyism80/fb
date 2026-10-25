@@ -102,17 +102,17 @@ fb::async_generator<void> service::system_mail::send_coroutine()
 {
     while (true)
     {
+        auto joined = std::unordered_set<uint32_t>{};
+        {
+            auto _ = std::lock_guard(this->_joined_mutex);
+            joined = std::exchange(this->_joined, {});
+        }
+
         const auto now = this->server.now();
         prune_expired_mails(this->_pending_mails, now);
 
         auto world = fb::config<std::optional<uint32_t>>("world");
-        if (!world)
-        {
-            co_await fb::async_suspend{};
-            continue;
-        }
-
-        if (this->server.characters.size() == 0)
+        if (!world || this->server.characters.size() == 0)
         {
             co_await fb::async_suspend{};
             continue;
@@ -151,12 +151,6 @@ fb::async_generator<void> service::system_mail::send_coroutine()
         catch (const std::exception& e)
         {
             fb::logger::warn("Failed to fetch system mails: {}", e.what());
-        }
-
-        auto joined = std::unordered_set<uint32_t>{};
-        {
-            auto _ = std::lock_guard(this->_joined_mutex);
-            joined = std::exchange(this->_joined, {});
         }
 
         auto pending_mails = std::make_shared<std::vector<fb::game::system_mail>>(this->_pending_mails);

@@ -25,5 +25,7 @@ namespace Http.Model
         public DateTime SendDate => ReserveDate ?? CreatedDate;
 
         public bool Active(DateTime now) => Canceled == false && SendDate <= now && (ExpireDate == null || ExpireDate > now);
+
+        public static string DistributedLockKey(uint id) => $"fb:lock:system_mail:{id}";
     }
 }

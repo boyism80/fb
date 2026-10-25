@@ -17,12 +17,14 @@ namespace Internal.Controllers
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
-        public MailController(IConfiguration configuration, IMapper mapper, DbContext dbContext, RabbitMqService rabbitMqService)
+        private readonly RedisDistributedLockService _distributedLock;
+        public MailController(IConfiguration configuration, IMapper mapper, DbContext dbContext, RabbitMqService rabbitMqService, RedisDistributedLockService distributedLock)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
+            _distributedLock = distributedLock;
         }
         [HttpGet("{world}/{user}")]
         public async Task<Response.GetMailList> GetMailList(uint world, uint user, [FromQuery(Name = "offset")] ushort offset, [FromQuery(Name = "count")] ushort count)
@@ -181,22 +183,27 @@ namespace Internal.Controllers
                     };
                 }
 
-                var systemMail = await _dbContext.SystemMail.Get(request.World, request.SystemMailId);
-                if (systemMail == null || systemMail.Active(DateTime.UtcNow) == false)
+                List<Http.Model.MailWriteResult> written;
+                bool failed;
+                await using (await _distributedLock.Lock(request.World, Http.Model.SystemMail.DistributedLockKey(request.SystemMailId)))
                 {
-                    return new Response.SendSystemMail
+                    var systemMail = await _dbContext.SystemMail.Get(request.World, request.SystemMailId);
+                    if (systemMail == null || systemMail.Active(DateTime.UtcNow) == false)
                     {
-                        Host = request.Host,
-                        Error = (uint)ErrorCode.Unhandled
-                    };
-                }
+                        return new Response.SendSystemMail
+                        {
+                            Host = request.Host,
+                            Error = (uint)ErrorCode.Unhandled
+                        };
+                    }
 
-                var (written, failed) = await _dbContext.Mail.SendSystemMany(request.World,
-                    request.SystemMailId,
-                    request.Sender,
-                    users,
-                    request.Title,
-                    request.Contents);
+                    (written, failed) = await _dbContext.Mail.SendSystemMany(request.World,
+                        request.SystemMailId,
+                        request.Sender,
+                        users,
+                        request.Title,
+                        request.Contents);
+                }
 
                 var senderName = await _dbContext.Character.GetName(request.World, request.Sender) ?? string.Empty;
                 var entries = new List<Protocol.MailWriteEntry>(written.Count);

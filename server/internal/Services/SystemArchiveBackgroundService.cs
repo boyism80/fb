@@ -54,21 +54,23 @@ namespace Internal.Services
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var distributedLock = scope.ServiceProvider.GetRequiredService<RedisDistributedLockService>();
             var now = DateTime.UtcNow;
 
             var mails = (await dbContext.SystemMail.GetAll(world))
                 .Where(m => m.Canceled || (m.ExpireDate != null && m.ExpireDate <= now))
                 .ToList();
+            foreach (var mail in mails)
+            {
+                await using var _ = await distributedLock.Lock(world, Http.Model.SystemMail.DistributedLockKey(mail.Id));
+                await dbContext.SystemMail.Archive(world, new[] { mail });
+            }
+
             if (mails.Count > 0)
             {
-                await dbContext.SystemMail.Archive(world, mails);
                 _logger.LogInformation("Archived {Count} system mails for world {World}", mails.Count, world);
             }
 
-            // An archived mail is never sent again (send-system-mail rejects it), so its deleted mail rows and
-            // received records guard nothing and are always safe to delete. This purge clears what exists when a
-            // mail is archived; the daily sweep below clears whatever appears later. Deleted rows go first because
-            // USP_MAIL_NEXT_ID turns them into received records. A failed purge leaves `purged` at 0 and runs again.
             await using (var global = dbContext.GetGlobalConnection(world))
             {
                 var ids = (await global.QueryAsync<uint>(
@@ -78,7 +80,6 @@ namespace Internal.Services
                     for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
                     {
                         await using var conn = dbContext.GetDataConnection(world, db);
-                        await conn.ExecuteAsync("DELETE FROM `mail` WHERE `system_mail_id` IN @ids AND `deleted` = 1", new { ids });
                         await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @ids", new { ids });
                     }
 
@@ -89,8 +90,7 @@ namespace Internal.Services
 
             if (_lastSweeps.TryGetValue(world, out var lastSweep) == false || now - lastSweep >= SweepInterval)
             {
-                await SweepArchivedMailRecordsAsync(dbContext, world);
-                await SweepArchivedStorageBoxesAsync(dbContext, scope.ServiceProvider.GetRequiredService<RedisDistributedLockService>(), world);
+                await SweepArchivedStorageBoxesAsync(dbContext, distributedLock, world);
                 _lastSweeps[world] = now;
             }
 
@@ -152,43 +152,6 @@ namespace Internal.Services
             if (deleted > 0)
             {
                 _logger.LogInformation("Deleted {Count} archived system storage boxes for world {World}", deleted, world);
-            }
-        }
-
-        // Finds archived ids from the rows themselves, so a row left by any path (a mail deleted after its system
-        // mail was archived, a renumber, a failed request) is removed by the next sweep however it got there.
-        private async Task SweepArchivedMailRecordsAsync(DbContext dbContext, uint world)
-        {
-            await using var global = dbContext.GetGlobalConnection(world);
-            var swept = 0;
-            for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
-            {
-                await using var conn = dbContext.GetDataConnection(world, db);
-                var ids = (await conn.QueryAsync<uint>(
-                    """
-                    SELECT DISTINCT `system_mail_id` FROM `mail` WHERE `deleted` = 1 AND `system_mail_id` IS NOT NULL
-                    UNION
-                    SELECT DISTINCT `system_mail_id` FROM `mail_system_received`
-                    """)).ToArray();
-
-                foreach (var chunk in ids.Chunk(1000))
-                {
-                    var archived = (await global.QueryAsync<uint>(
-                        "SELECT `id` FROM `system_mail_archive` WHERE `id` IN @chunk", new { chunk })).ToArray();
-                    if (archived.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    await conn.ExecuteAsync("DELETE FROM `mail` WHERE `system_mail_id` IN @archived AND `deleted` = 1", new { archived });
-                    await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @archived", new { archived });
-                    swept += archived.Length;
-                }
-            }
-
-            if (swept > 0)
-            {
-                _logger.LogInformation("Swept records of {Count} archived system mail ids for world {World}", swept, world);
             }
         }
     }

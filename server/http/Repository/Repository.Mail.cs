@@ -347,8 +347,7 @@ namespace Http.Reepository
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
             var ids = await conn.QueryAsync<uint>(
-                "SELECT `system_mail_id` FROM `mail` WHERE `user` = @user AND `system_mail_id` IS NOT NULL " +
-                "UNION SELECT `system_mail_id` FROM `mail_system_received` WHERE `user` = @user",
+                "SELECT `system_mail_id` FROM `mail_system_received` WHERE `user` = @user",
                 new { user });
             return ids.ToList();
         }
