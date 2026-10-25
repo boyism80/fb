@@ -2148,6 +2148,15 @@ async::task<void> character::settle_kills(mob_vector dead)
         co_await this->server.threads.follow(self_pivot);
         co_await this->collections.try_unlock(id);
 
+        for (auto& m : mobs)
+        {
+            co_await this->server.threads.follow(m->weak_from_this_as<mob>());
+            auto exp = m->total_exp();
+
+            co_await this->server.threads.follow(self_pivot);
+            this->award_exp(exp);
+        }
+
         {
             auto path = std::format("scripts/mob/{}.lua", id);
             auto func = "on_mob_kill";
@@ -2183,12 +2192,6 @@ async::task<void> character::settle_kills(mob_vector dead)
             co_await this->server.threads.follow(mob_pivot);
             this->listener.on_dead(*m, self);
             co_await m->drop_items();
-            auto exp = m->total_exp();
-
-            co_await this->server.threads.follow(self_pivot);
-            this->award_exp(exp);
-
-            co_await this->server.threads.follow(mob_pivot);
             m->kill(DESTROY_TYPE::DEAD);
             co_await m->destroy(DESTROY_TYPE::DEAD);
         }
