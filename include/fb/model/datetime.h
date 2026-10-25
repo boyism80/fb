@@ -402,9 +402,9 @@ inline double sun_longitude(double jd)
     return lambda;
 }
 
-inline int64_t beijing_day(double jd_ut)
+inline int64_t kst_day(double jd_ut)
 {
-    return static_cast<int64_t>(std::floor(jd_ut + 8.0 / 24.0 + 0.5));
+    return static_cast<int64_t>(std::floor(jd_ut + 9.0 / 24.0 + 0.5));
 }
 
 inline double solar_term_jd(int32_t year, double target_deg)
@@ -430,7 +430,7 @@ inline double solar_term_jd(int32_t year, double target_deg)
 
 inline int64_t solar_term_day(int32_t year, double target_deg)
 {
-    return beijing_day(solar_term_jd(year, target_deg));
+    return kst_day(solar_term_jd(year, target_deg));
 }
 
 inline double new_moon(double k)
@@ -489,7 +489,7 @@ inline std::vector<double> collect_new_moons(double jd0, double jd1)
         if (nm > jd1 + 3.0)
             break;
 
-        const auto d = beijing_day(nm);
+        const auto d = kst_day(nm);
         if (d != last_day)
         {
             result.push_back(nm);
@@ -501,8 +501,8 @@ inline std::vector<double> collect_new_moons(double jd0, double jd1)
 
 inline bool has_zhongqi(double nm0, double nm1)
 {
-    const auto d0 = beijing_day(nm0);
-    const auto d1 = beijing_day(nm1);
+    const auto d0 = kst_day(nm0);
+    const auto d1 = kst_day(nm1);
 
     int32_t y0 = 0, dummy_month = 0, dummy_day = 0;
     ymd_from_jd(d0, y0, dummy_month, dummy_day);
@@ -528,11 +528,11 @@ inline std::vector<month_info> chinese_months_for_dongzhi_year(int32_t dz_year)
 
     const auto last_on_or_before = [&moons](double jd) -> double
     {
-        const auto day = beijing_day(jd);
+        const auto day = kst_day(jd);
         auto       result = moons.front();
         for (const auto& m : moons)
         {
-            if (beijing_day(m) <= day)
+            if (kst_day(m) <= day)
                 result = m;
         }
         return result;
@@ -544,7 +544,7 @@ inline std::vector<month_info> chinese_months_for_dongzhi_year(int32_t dz_year)
     auto seq = std::vector<double>();
     for (const auto& m : moons)
     {
-        if (beijing_day(m11) <= beijing_day(m) && beijing_day(m) <= beijing_day(m11n))
+        if (kst_day(m11) <= kst_day(m) && kst_day(m) <= kst_day(m11n))
             seq.push_back(m);
     }
 
@@ -569,8 +569,8 @@ inline std::vector<month_info> chinese_months_for_dongzhi_year(int32_t dz_year)
     for (auto i = 0; i < n; ++i)
     {
         auto info      = month_info{};
-        info.start_day = beijing_day(seq[i]);
-        info.end_day   = beijing_day(seq[i + 1]);
+        info.start_day = kst_day(seq[i]);
+        info.end_day   = kst_day(seq[i + 1]);
         info.cny_year  = cny_year;
 
         if (i == leap_index)
