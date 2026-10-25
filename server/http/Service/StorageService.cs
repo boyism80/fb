@@ -302,11 +302,13 @@ namespace Http.Service
             return ErrorCode.None;
         }
 
-        public async Task<int> DeleteReceivedBoxesAsync(uint world, int pageSize)
+        public async Task<int> CleanupBoxesAsync(uint world, int pageSize)
         {
             var deleted = 0;
             for (var db = 0; db < _dbContext.GetShardDbSize(world); db++)
             {
+                var archived = await ArchivedSystemBoxesAsync(world, db);
+                var archivedIds = archived.ToArray();
                 var afterUser = 0u;
                 List<uint> users;
                 do
@@ -316,16 +318,19 @@ namespace Http.Service
                         users = (await conn.QueryAsync<uint>(
                             """
                             SELECT DISTINCT `user` FROM `storage_box`
-                            WHERE `received` = 1 AND `system_storage_box_id` IS NULL AND `deleted` = 0 AND `user` > @afterUser
+                            WHERE `deleted` = 0 AND `user` > @afterUser AND (
+                                (`received` = 1 AND `system_storage_box_id` IS NULL)
+                                OR (`received` = 0 AND `expired_date` IS NOT NULL AND `expired_date` <= UTC_TIMESTAMP(3))
+                                OR `system_storage_box_id` IN @archivedIds)
                             ORDER BY `user`
                             LIMIT @pageSize
                             """,
-                            new { afterUser, pageSize })).ToList();
+                            new { afterUser, archivedIds, pageSize })).ToList();
                     }
 
                     foreach (var user in users)
                     {
-                        deleted += await DeleteSettledBoxesAsync(world, user);
+                        deleted += await DeleteSettledBoxesAsync(world, user, archived);
                         afterUser = user;
                     }
                 } while (users.Count == pageSize);
@@ -334,36 +339,79 @@ namespace Http.Service
             return deleted;
         }
 
-        private async Task<int> DeleteSettledBoxesAsync(uint world, uint user)
+        private async Task<HashSet<uint>> ArchivedSystemBoxesAsync(uint world, int db)
+        {
+            var archived = new HashSet<uint>();
+            uint[] ids;
+            await using (var conn = _dbContext.GetDataConnection(world, db))
+            {
+                ids = (await conn.QueryAsync<uint>(
+                    """
+                    SELECT DISTINCT `system_storage_box_id` FROM `storage_box`
+                    WHERE `system_storage_box_id` IS NOT NULL AND `deleted` = 0
+                    """)).ToArray();
+            }
+
+            if (ids.Length == 0)
+            {
+                return archived;
+            }
+
+            await using var global = _dbContext.GetGlobalConnection(world);
+            foreach (var chunk in ids.Chunk(1000))
+            {
+                archived.UnionWith(await global.QueryAsync<uint>(
+                    "SELECT `id` FROM `system_storage_box_archive` WHERE `id` IN @chunk", new { chunk }));
+            }
+
+            return archived;
+        }
+
+        private async Task<int> DeleteSettledBoxesAsync(uint world, uint user, IReadOnlySet<uint> archivedSystemBoxes)
         {
             await using var opsLock = await _distributedLock.Lock(world, OpsLockKey(user));
             await using var saveLock = await _distributedLock.Lock(world, Character.SaveLockKey(user));
 
             var character = await _dbContext.Character.Get(world, user);
-            if (character?.SnapshotTime == null)
-            {
-                return 0;
-            }
-
+            var snapshotTime = character?.SnapshotTime;
             var unsettled = await _dbContext.UnsettledRequest.Get(world, user);
+            var now = DateTime.UtcNow;
             var settled = new List<StorageBox>();
             foreach (var box in await _dbContext.StorageBox.Get(world, user))
             {
-                if (box.Received == false || box.SystemStorageBoxId != null)
+                var archived = box.SystemStorageBoxId is { } systemId && archivedSystemBoxes.Contains(systemId);
+                if (box.Received)
                 {
-                    continue;
-                }
+                    if (snapshotTime == null || (box.SystemStorageBoxId != null && archived == false))
+                    {
+                        continue;
+                    }
 
-                var claimedAt = box.ClaimId is > 0
-                    ? SnowflakeId.Time(box.ClaimId.Value)
-                    : DateTime.SpecifyKind(box.UpdatedDate, DateTimeKind.Utc);
-                var savedAfterClaim = character.SnapshotTime.Value > new DateTimeOffset(claimedAt).ToUnixTimeMilliseconds();
-                var claimPending = box.ClaimId is > 0
-                    ? unsettled.Any(request => request.Id == box.ClaimId.Value)
-                    : unsettled.Any(request => request.Type == (byte)UnsettledType.StorageClaim && request.Target == box.Id);
-                if (savedAfterClaim && claimPending == false)
+                    var claimedAt = box.ClaimId is > 0
+                        ? SnowflakeId.Time(box.ClaimId.Value)
+                        : DateTime.SpecifyKind(box.UpdatedDate, DateTimeKind.Utc);
+                    var savedAfterClaim = snapshotTime.Value > new DateTimeOffset(claimedAt).ToUnixTimeMilliseconds();
+                    var claimPending = box.ClaimId is > 0
+                        ? unsettled.Any(request => request.Id == box.ClaimId.Value)
+                        : unsettled.Any(request => request.Type == (byte)UnsettledType.StorageClaim && request.Target == box.Id);
+                    if (savedAfterClaim && claimPending == false)
+                    {
+                        settled.Add(box);
+                    }
+                }
+                else
                 {
-                    settled.Add(box);
+                    var expired = box.ExpiredDate.HasValue && box.ExpiredDate.Value <= now;
+                    if (expired == false && archived == false)
+                    {
+                        continue;
+                    }
+
+                    var claimPending = unsettled.Any(request => request.Type == (byte)UnsettledType.StorageClaim && request.Target == box.Id);
+                    if (claimPending == false)
+                    {
+                        settled.Add(box);
+                    }
                 }
             }
 

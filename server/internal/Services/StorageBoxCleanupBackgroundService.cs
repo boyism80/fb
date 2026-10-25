@@ -36,15 +36,15 @@ namespace Internal.Services
                     {
                         using var scope = _scopeFactory.CreateScope();
                         var storageService = scope.ServiceProvider.GetRequiredService<StorageService>();
-                        var deleted = await storageService.DeleteReceivedBoxesAsync(world, PageSize);
+                        var deleted = await storageService.CleanupBoxesAsync(world, PageSize);
                         if (deleted > 0)
                         {
-                            _logger.LogInformation("Deleted {Count} received storage boxes for world {World}", deleted, world);
+                            _logger.LogInformation("Deleted {Count} settled storage boxes for world {World}", deleted, world);
                         }
                     }
                     catch (Exception e)
                     {
-                        _logger.LogWarning(e, "Failed to delete received storage boxes for world {World}", world);
+                        _logger.LogWarning(e, "Failed to delete settled storage boxes for world {World}", world);
                     }
                 }
 
