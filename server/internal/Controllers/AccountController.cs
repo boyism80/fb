@@ -15,6 +15,8 @@ namespace Internal.Controllers
     [Route("account")]
     public class AccountController : ControllerBase
     {
+        private const int NameReservationThresholdSeconds = 120;
+
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
         private readonly ILogger<AccountController> _logger;
@@ -117,29 +119,54 @@ namespace Internal.Controllers
             try
             {
                 await using var conn = _dbContext.GetUnifiedConnection();
-                var row = await conn.QueryFirstOrDefaultAsync(
-                    "USP_NAME_RESERVE",
-                    new { uname = request.Name, in_world = request.World, threshold_sec = 120 },
-                    commandType: CommandType.StoredProcedure);
+                await conn.OpenAsync();
+                await using var transaction = await conn.BeginTransactionAsync();
+                var entry = await conn.QuerySingleOrDefaultAsync<NameRegistryEntry>(
+                    """
+                    SELECT `id` AS Id, `world` AS World,
+                           CAST(`reserved_at` IS NULL AS UNSIGNED) AS Confirmed,
+                           CAST(IFNULL(`reserved_at` <= UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND, 0) AS UNSIGNED) AS Expired
+                    FROM `name_registry` WHERE `name` = @name
+                    FOR UPDATE
+                    """,
+                    new { name = request.Name, threshold = NameReservationThresholdSeconds },
+                    transaction);
 
-                if (row == null || (int)row.result == 0)
+                if (entry != null)
                 {
-                    return new Response.ReserveName { Success = false, Uid = 0 };
-                }
+                    if (entry.Confirmed == 1 || entry.Expired == 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return new Response.ReserveName { Success = false, Uid = 0 };
+                    }
 
-                var staleUid = Convert.ToUInt32(row.stale_uid);
-                if (staleUid != 0)
-                {
-                    _dbContext.Character.Delete(Convert.ToUInt32(row.stale_world), new CharacterKey { Id = staleUid });
+                    _dbContext.Character.Delete(entry.World, new CharacterKey { Id = entry.Id });
                     await _dbContext.SaveChangesAsync();
+                    await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id = entry.Id }, transaction);
                 }
 
-                return new Response.ReserveName { Success = true, Uid = Convert.ToUInt32(row.uid) };
+                var uid = await conn.ExecuteScalarAsync<ulong>(
+                    """
+                    INSERT INTO `name_registry` (`name`, `world`, `reserved_at`) VALUES (@name, @world, UTC_TIMESTAMP(3));
+                    SELECT LAST_INSERT_ID();
+                    """,
+                    new { name = request.Name, world = request.World },
+                    transaction);
+                await transaction.CommitAsync();
+                return new Response.ReserveName { Success = true, Uid = Convert.ToUInt32(uid) };
             }
             catch (Exception)
             {
                 return new Response.ReserveName { Success = false, Uid = 0 };
             }
+        }
+
+        private sealed class NameRegistryEntry
+        {
+            public uint Id { get; set; }
+            public uint World { get; set; }
+            public ulong Confirmed { get; set; }
+            public ulong Expired { get; set; }
         }
 
         [HttpPost("name-keepalive")]

@@ -1,0 +1,3 @@
+-- @transaction off
+
+DROP PROCEDURE IF EXISTS `USP_NAME_RESERVE`;
