@@ -1021,4 +1021,13 @@ function M.king_dialog(me, npc, opts)
     end
 end
 
+function M.shark_bribe_state(q)
+    local anger_end, rest = string.match(q:param() or '', '^(%d+)(.*)$')
+    return tonumber(anger_end), rest == ',bribed'
+end
+
+function M.set_shark_bribe_state(q, anger_end, bribed)
+    q:param(tostring(anger_end) .. (bribed and ',bribed' or ''))
+end
+
 return M

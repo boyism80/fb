@@ -38,9 +38,15 @@ return {
             return
         end
 
-        local anger_end = tonumber(q:param() or "")
+        local anger_end, bribed = quest.shark_bribe_state(q)
         local t = now()
         if not anger_end or t < anger_end then
+            return
+        end
+
+        if bribed then
+            q:progress(1)
+            me:push_achievement(19, "상어장군을 생포하였다. [2/2]", 7, 1)
             return
         end
 
@@ -54,6 +60,7 @@ return {
                 me:dialog(mob, "소지품이 가득 차서 금은보화를 받을 수 없습니다.", { prev = false, next = false })
                 return
             end
+            quest.set_shark_bribe_state(q, anger_end, true)
             q:progress(2)
             me:push_achievement(19, "상어장군을 놓아주다.", 7, 1)
             me:dialog(mob, "감사합니다. 자 이걸 받아주십시오. 그럼 전 사라지겠습니다.", { prev = false, next = true })

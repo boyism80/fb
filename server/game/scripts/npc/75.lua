@@ -637,11 +637,12 @@ local function run_shark_complete(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_75_0047
         end
-        q:param(tostring(t + SHARK_ANGER_SEC))
+        local _, bribed = quest.shark_bribe_state(q)
+        quest.set_shark_bribe_state(q, t + SHARK_ANGER_SEC, bribed)
         q:progress(0)
         return
     end
-    local anger_end = tonumber(q:param() or "")
+    local anger_end = quest.shark_bribe_state(q)
     if anger_end and t < anger_end then
         me:dialog(npc, "아직 내 화가 다 안풀렸으니 다음에 다시 오게!!!", { prev = false, next = false })
         return

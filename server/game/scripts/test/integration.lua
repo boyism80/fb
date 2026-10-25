@@ -1658,6 +1658,50 @@ return {
         report(me, true, step, text)
     end,
 
+    verify_shark_bribe_once = function(me, step)
+        local quests = require('lib.quest')
+        local function bribes()
+            local total = 0
+            for _, item in pairs(me:items('금은보화') or {}) do
+                total = total + item:count()
+            end
+            return total
+        end
+
+        me:remove_quest(quests.QUEST_DRAGON_KING)
+        local q = me:start_quest(quests.QUEST_DRAGON_KING)
+        if q == nil then
+            return report(me, false, step, 'cannot start the dragon king quest')
+        end
+
+        quests.set_shark_bribe_state(q, 7, false)
+        local anger_end, bribed = quests.shark_bribe_state(q)
+        if anger_end ~= 7 or bribed ~= false then
+            me:remove_quest(quests.QUEST_DRAGON_KING)
+            return report(me, false, step, 'state roundtrip without bribe: ' .. tostring(q:param()))
+        end
+
+        q:step(13)
+        q:progress(0)
+        quests.set_shark_bribe_state(q, 0, true)
+        anger_end, bribed = quests.shark_bribe_state(q)
+        if anger_end ~= 0 or bribed ~= true then
+            me:remove_quest(quests.QUEST_DRAGON_KING)
+            return report(me, false, step, 'state roundtrip with bribe: ' .. tostring(q:param()))
+        end
+
+        local before = bribes()
+        me:script('scripts/mob/1092.lua', 'on_mob_kill', { me })
+        local progress = q:progress()
+        local after = bribes()
+        me:remove_quest(quests.QUEST_DRAGON_KING)
+
+        if progress ~= 1 or after ~= before then
+            return report(me, false, step, string.format('progress=%d bribes %d->%d', progress, before, after))
+        end
+        report(me, true, step)
+    end,
+
     make_items = function(me, step, name, count, seconds)
         local item = me:mkitem(name, tonumber(count), true, tonumber(seconds))
         report(me, item ~= nil, step)
