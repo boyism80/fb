@@ -38,14 +38,14 @@ std::optional<fb::model::datetime> fb::model::item::expire_time(const fb::model:
 
 fb::model::item* fb::model::___item::name2item(std::string_view name) const
 {
-    static const ___item* cache_owner = nullptr;
-    static auto           cache       = std::unordered_map<std::string, fb::model::item*>{};
-    static auto           cache_mutex = std::shared_mutex{};
+    static auto cache_owner = std::weak_ptr<const ___item>{};
+    static auto cache       = std::unordered_map<std::string, fb::model::item*>{};
+    static auto cache_mutex = std::shared_mutex{};
 
     auto name_str = std::string(name);
     {
         auto lock = std::shared_lock(cache_mutex);
-        if (cache_owner == this)
+        if (cache_owner.lock().get() == this)
         {
             auto it = cache.find(name_str);
             if (it != cache.end())
@@ -57,13 +57,17 @@ fb::model::item* fb::model::___item::name2item(std::string_view name) const
     {
         if (v.name == name)
         {
-            auto lock = std::lock_guard(cache_mutex);
-            if (cache_owner != this)
+            auto published = fb::model::table::item.get();
+            if (published.get() == this)
             {
-                cache.clear();
-                cache_owner = this;
+                auto lock = std::lock_guard(cache_mutex);
+                if (cache_owner.lock() != published)
+                {
+                    cache.clear();
+                    cache_owner = published;
+                }
+                cache[name_str] = &v;
             }
-            cache[name_str] = &v;
             return &v;
         }
     }
@@ -73,52 +77,63 @@ fb::model::item* fb::model::___item::name2item(std::string_view name) const
 
 std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_view prefix) const
 {
-    static const ___item* cache_owner  = nullptr;
-    static auto           sorted_items = std::map<std::string, fb::model::item*>{};
-    static auto           cache_mutex  = std::shared_mutex{};
+    using sorted_map = std::map<std::string, fb::model::item*>;
 
+    static auto cache_owner  = std::weak_ptr<const ___item>{};
+    static auto cache_sorted = std::shared_ptr<const sorted_map>{};
+    static auto cache_mutex  = std::shared_mutex{};
+
+    auto sorted_items = std::shared_ptr<const sorted_map>{};
     {
-        auto lock = std::unique_lock(cache_mutex);
-        if (cache_owner != this)
+        auto lock = std::shared_lock(cache_mutex);
+        if (cache_owner.lock().get() == this)
+            sorted_items = cache_sorted;
+    }
+
+    if (sorted_items == nullptr)
+    {
+        auto built = std::make_shared<sorted_map>();
+        for (auto& [k, v] : *this)
         {
-            sorted_items.clear();
-            for (auto& [k, v] : *this)
-            {
-                sorted_items[v.name] = &v;
-            }
-            cache_owner = this;
+            (*built)[v.name] = &v;
+        }
+        sorted_items = built;
+
+        auto published = fb::model::table::item.get();
+        if (published.get() == this)
+        {
+            auto lock    = std::lock_guard(cache_mutex);
+            cache_owner  = published;
+            cache_sorted = sorted_items;
         }
     }
 
     auto result     = std::vector<fb::model::item*>{};
     auto prefix_str = std::string(prefix);
 
+    if (prefix.empty())
     {
-        auto lock = std::shared_lock(cache_mutex);
-        if (prefix.empty())
+        for (auto& [name, item] : *sorted_items)
         {
-            for (auto& [name, item] : sorted_items)
-            {
-                result.push_back(item);
-            }
-            return result;
+            result.push_back(item);
         }
+        return result;
+    }
 
-        auto it = sorted_items.lower_bound(prefix_str);
-        while (it != sorted_items.end())
+    auto it = sorted_items->lower_bound(prefix_str);
+    while (it != sorted_items->end())
+    {
+        if (it->first.size() < prefix.size())
         {
-            if (it->first.size() < prefix.size())
-            {
-                ++it;
-                continue;
-            }
-
-            if (it->first.substr(0, prefix.size()) != prefix)
-                break;
-
-            result.push_back(it->second);
             ++it;
+            continue;
         }
+
+        if (it->first.substr(0, prefix.size()) != prefix)
+            break;
+
+        result.push_back(it->second);
+        ++it;
     }
 
     return result;
