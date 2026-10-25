@@ -466,6 +466,12 @@ async::task<void> fb::game::server::on_start()
     flatbuffers::option::decoding(fb::cp949);
 #endif
 
+    fb::lua::luable::raw_pin_provider = [](const fb::lua::luable& value) -> std::shared_ptr<void> {
+        if (value.metaname().starts_with("fb.model."))
+            return table::pin();
+        return nullptr;
+    };
+
     table::npc->hook.build = [](const Json::Value& json) -> fb::model::npc* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0x7FFF;

@@ -162,18 +162,45 @@ public:
     virtual ~luable();
 
 public:
-    // An object userdata holds either std::weak_ptr<luable> (shared-owned) or luable* (not shared-owned);
-    // the two are told apart by the userdata size.
+    struct pinned_userdata
+    {
+        luable*               raw = nullptr;
+        std::shared_ptr<void> pin;
+    };
+
+    using pin_provider = std::shared_ptr<void> (*)(const luable& value);
+
+    inline static pin_provider raw_pin_provider = nullptr;
+
+    // An object userdata holds std::weak_ptr<luable> (shared-owned), luable* (not shared-owned) or
+    // pinned_userdata (not shared-owned, with an owner kept alive); they are told apart by the userdata size.
     static bool is_weak_userdata(lua_State* ctx, int offset)
     {
         static_assert(sizeof(std::weak_ptr<luable>) != sizeof(luable*));
+        static_assert(sizeof(pinned_userdata) != sizeof(luable*));
+        static_assert(sizeof(pinned_userdata) != sizeof(std::weak_ptr<luable>));
         return lua_rawlen(ctx, offset) == sizeof(std::weak_ptr<luable>);
+    }
+
+    static bool is_pinned_userdata(lua_State* ctx, int offset)
+    {
+        return lua_rawlen(ctx, offset) == sizeof(pinned_userdata);
+    }
+
+    static luable* raw_userdata(lua_State* ctx, int offset)
+    {
+        auto data = lua_touserdata(ctx, offset);
+        if (is_pinned_userdata(ctx, offset))
+            return static_cast<pinned_userdata*>(data)->raw;
+        return *static_cast<luable**>(data);
     }
 
     static int builtin_gc(lua_State* ctx)
     {
         if (is_weak_userdata(ctx, 1))
             static_cast<std::weak_ptr<luable>*>(lua_touserdata(ctx, 1))->~weak_ptr();
+        else if (is_pinned_userdata(ctx, 1))
+            static_cast<pinned_userdata*>(lua_touserdata(ctx, 1))->~pinned_userdata();
         return 0;
     }
 
@@ -445,7 +472,7 @@ public:
         }
         else
         {
-            auto raw = *static_cast<luable**>(data);
+            auto raw = luable::raw_userdata(*this, offset);
             if constexpr (can_shared_from_this_v<T>)
                 return std::shared_ptr<T>(std::shared_ptr<T>(), static_cast<T*>(raw)); // non-owning
             else

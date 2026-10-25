@@ -110,7 +110,17 @@ context& context::pushuserdata(const luable& value)
 {
     auto& target = const_cast<luable&>(value);
     auto  weak   = target.std::enable_shared_from_this<luable>::weak_from_this();
-    if (weak.expired())
+    auto  pin    = std::shared_ptr<void>{};
+    if (weak.expired() && luable::raw_pin_provider != nullptr)
+        pin = luable::raw_pin_provider(value);
+
+    if (weak.expired() && pin != nullptr)
+    {
+        auto allocated =
+            static_cast<luable::pinned_userdata*>(lua_newuserdata(this->_ctx, sizeof(luable::pinned_userdata)));
+        new (allocated) luable::pinned_userdata{&target, std::move(pin)};
+    }
+    else if (weak.expired())
     {
         auto allocated = static_cast<luable**>(lua_newuserdata(this->_ctx, sizeof(luable*)));
         *allocated     = &target;
@@ -253,7 +263,7 @@ value value::copy(lua_State* L, int offset, std::unordered_set<const void*>& vis
         }
         else
         {
-            result._raw  = *static_cast<luable**>(lua_touserdata(L, offset));
+            result._raw  = luable::raw_userdata(L, offset);
             result._type = type::OBJECT;
         }
         break;

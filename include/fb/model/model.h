@@ -7967,6 +7967,7 @@ public:
     virtual void reload() = 0;
     virtual uint32_t size() const = 0;
     virtual std::string_view name() const = 0;
+    virtual void pin(std::vector<std::shared_ptr<void>>& out) const = 0;
 };
 
 template <typename K, typename V>
@@ -8302,6 +8303,7 @@ private:
     std::shared_ptr<T>              _buf[2];
     std::atomic<int>                _active{0};
     std::atomic<std::shared_ptr<T>> _published;
+    std::atomic<std::shared_ptr<T>> _previous;
     std::vector<std::shared_ptr<T>> _keep_alive;
     std::string                     _name;
     bool                            _loaded{false};
@@ -8332,6 +8334,12 @@ public:
     std::string_view name() const override
     {
         return this->_name;
+    }
+
+    void pin(std::vector<std::shared_ptr<void>>& out) const override
+    {
+        out.push_back(this->_published.load(std::memory_order_acquire));
+        out.push_back(this->_previous.load(std::memory_order_acquire));
     }
 
     uint32_t size() const override
@@ -8371,6 +8379,7 @@ public:
         auto back  = 1 - this->_active.load(std::memory_order_relaxed);
         this->_buf[back] = typed;
         this->_active.store(back, std::memory_order_relaxed);
+        this->_previous.store(this->_published.load(std::memory_order_acquire), std::memory_order_release);
         this->_published.store(typed, std::memory_order_release);
         this->_keep_alive.push_back(typed);
         // use_count == 1 means only this vector still holds that generation.
@@ -9265,6 +9274,17 @@ public:
         {
             fn(*slot);
         }
+    }
+
+    static std::shared_ptr<void> pin()
+    {
+        auto pins = std::make_shared<std::vector<std::shared_ptr<void>>>();
+        pins->reserve(std::size(table::_slots) * 2);
+        for (auto* slot : table::_slots)
+        {
+            slot->pin(*pins);
+        }
+        return pins;
     }
 
     // Sync full reload: build every table, then publish all-or-nothing.
