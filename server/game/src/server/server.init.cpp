@@ -320,6 +320,7 @@ void fb::game::server::init_timers()
     this->bind_thread_timer<fb::game::handler::timer::unsettled_settle_timer>(
         std::chrono::seconds(fb::config<uint32_t>("settle", 30)));
     this->bind_thread_timer<fb::game::handler::timer::evaluation_timer>(1min);
+    this->bind_thread_timer<fb::game::handler::timer::matchmaking_timer>(10s);
 #if !defined(DEBUG) && !defined(_DEBUG)
     this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);

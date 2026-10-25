@@ -99,6 +99,12 @@ const std::optional<uint64_t>& matchmaker::pending_match_id() const
 void matchmaker::set_pending_match_id(uint64_t match_id)
 {
     this->_pending_match_id = match_id;
+    this->touch();
+}
+
+void matchmaker::touch()
+{
+    this->_last_activity = std::chrono::steady_clock::now();
 }
 
 void matchmaker::clear_pending_match_id()
@@ -153,6 +159,7 @@ void matchmaker::begin_enqueue()
     this->owner.assert_thread();
 
     this->_enqueuing = true;
+    this->touch();
 }
 
 void matchmaker::set_ticket(uint32_t match_type, uint64_t ticket_id)
@@ -164,6 +171,7 @@ void matchmaker::set_ticket(uint32_t match_type, uint64_t ticket_id)
            .match_type = match_type,
            .ticket_id  = ticket_id,
     };
+    this->touch();
 }
 
 void matchmaker::clear_ticket()
@@ -201,6 +209,95 @@ async::task<void> matchmaker::discard_leftover_ticket()
     catch (const std::exception& e)
     {
         fb::logger::warn("matchmaking leftover check failed for character {}: {}", character_id, e.what());
+    }
+}
+
+bool matchmaker::reconcile_due(std::chrono::steady_clock::time_point now) const
+{
+    this->owner.assert_thread();
+
+    if (this->_reconciling || this->_enqueuing)
+        return false;
+
+    if (this->_ticket.has_value() == false && this->_pending_match_id.has_value() == false)
+        return false;
+
+    return now - this->_last_activity >= RECONCILE_AFTER;
+}
+
+async::task<void> matchmaker::reconcile()
+{
+    this->owner.assert_thread();
+
+    if (this->_reconciling || this->_enqueuing)
+        co_return;
+
+    auto ticket  = this->_ticket;
+    auto pending = this->_pending_match_id;
+    if (ticket.has_value() == false && pending.has_value() == false)
+        co_return;
+
+    auto& server       = this->owner.server;
+    auto  world        = this->owner.world();
+    auto  character_id = this->owner.id;
+    auto  weak         = this->owner.weak_from_this_as<character>();
+    this->_reconciling = true;
+
+    auto known = std::optional<bool>{};
+    try
+    {
+        auto&& status =
+            co_await server.http.post(weak, "matchmaking", "/matchmaking/status", mp_reqs::Status{world, character_id});
+        if (status.error == 0)
+        {
+            if (ticket.has_value())
+                known = status.ticket_id == ticket->ticket_id;
+            else
+                known = status.pending_match_id == pending.value();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("matchmaking reconcile failed for character {}: {}", character_id, e.what());
+    }
+    catch (...)
+    {
+        fb::logger::warn("matchmaking reconcile failed for character {}", character_id);
+    }
+
+    co_await server.threads.follow(weak);
+    auto ptr = weak.lock();
+    if (ptr == nullptr)
+        co_return;
+
+    this->_reconciling = false;
+    this->touch();
+
+    if (known.value_or(true))
+        co_return;
+
+    auto ticket_now = this->_ticket.has_value() ? std::optional<uint64_t>(this->_ticket->ticket_id) : std::nullopt;
+    auto ticket_was = ticket.has_value() ? std::optional<uint64_t>(ticket->ticket_id) : std::nullopt;
+    if (ticket_now != ticket_was || this->_pending_match_id != pending || this->_enqueuing)
+        co_return;
+
+    fb::logger::warn("matchmaking dropped stale local state of character {} (ticket: {}, pending match: {})",
+                     character_id,
+                     ticket_was.value_or(0),
+                     pending.value_or(0));
+
+    this->clear_pending_match_id();
+    this->clear_ticket();
+    if (ticket.has_value() == false)
+        co_return;
+
+    auto lua = server.lua.open("scripts/interaction.lua", "on_matchmaking_dequeue");
+    if (lua)
+    {
+        lua->pushobject(ptr);
+        lua->pushinteger(ticket->match_type);
+        lua->pushinteger(static_cast<lua_Integer>(ticket->ticket_id));
+        std::ignore = co_await fb::lua::call(std::move(lua), weak, 3);
     }
 }
 
@@ -274,6 +371,7 @@ async::task<void> matchmaker::dequeue(initiator by)
 async::task<void> matchmaker::confirm(uint64_t match_id)
 {
     this->owner.assert_thread();
+    this->touch();
 
     auto world        = this->owner.world();
     auto character_id = this->owner.id;

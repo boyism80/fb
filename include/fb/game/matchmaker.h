@@ -6,6 +6,7 @@
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -39,6 +40,8 @@ public:
     static constexpr double DEFAULT_MU    = 25.0;
     static constexpr double DEFAULT_SIGMA = 25.0 / 3.0;
 
+    static constexpr auto RECONCILE_AFTER = std::chrono::seconds(60);
+
     // USER failures are thrown back to the script; SERVER cleanups only log them and skip script callbacks.
     enum class initiator : uint8_t
     {
@@ -59,12 +62,15 @@ private:
     std::optional<uint64_t>                         _pending_match_id;
     std::optional<uint64_t>                         _ready_match_id;
     std::optional<ticket_state>                     _ticket;
-    bool                                            _enqueuing = false;
+    bool                                            _enqueuing   = false;
+    bool                                            _reconciling = false;
+    std::chrono::steady_clock::time_point           _last_activity;
     std::weak_ptr<fb::game::match>                  _session;
     std::optional<uint32_t>                         _return_map;
     std::optional<fb::model::point16_t>             _return_position;
 
     void disconnect_after_failed_return();
+    void touch();
 
 public:
     explicit matchmaker(character& owner);
@@ -87,6 +93,8 @@ public:
     async::task<void>                        enqueue(uint32_t match_type);
     async::task<void>                        dequeue(initiator by);
     async::task<void>                        discard_leftover_ticket();
+    bool                                     reconcile_due(std::chrono::steady_clock::time_point now) const;
+    async::task<void>                        reconcile();
     async::task<void>                        confirm(uint64_t match_id);
     async::task<void>                        decline(uint64_t match_id, initiator by);
     std::shared_ptr<fb::game::match>         session() const;
