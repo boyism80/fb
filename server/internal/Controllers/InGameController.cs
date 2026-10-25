@@ -31,7 +31,6 @@ namespace Internal.Controllers
         private readonly LogService _logService;
         private readonly MaintenanceService _maintenanceService;
         private readonly FriendService _friendService;
-        private readonly StorageService _storageService;
 
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
@@ -43,8 +42,7 @@ namespace Internal.Controllers
             ServerStateService serverStateService,
             LogService logService,
             MaintenanceService maintenanceService,
-            FriendService friendService,
-            StorageService storageService)
+            FriendService friendService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -57,7 +55,6 @@ namespace Internal.Controllers
             _logService = logService;
             _maintenanceService = maintenanceService;
             _friendService = friendService;
-            _storageService = storageService;
         }
 
         [HttpPost("login")]
@@ -470,7 +467,6 @@ namespace Internal.Controllers
         [HttpGet("init/{world}/{uid}")]
         public async Task<Response.Init> Init(uint world, uint uid)
         {
-            await _storageService.SettleLegacyRequestsAsync(world, uid);
             var ch = await _dbContext.Character.Get(world, uid);
             var items = await _dbContext.Item.Get(world, uid);
             var spells = await _dbContext.Spell.Get(world, uid);
@@ -479,8 +475,16 @@ namespace Internal.Controllers
             var quests = await _dbContext.Quest.Get(world, uid);
             var collectionUnlocks = await _dbContext.CollectionUnlock.Get(world, uid);
             var storageBoxes = (await _dbContext.StorageBox.Get(world, uid)).ToList();
-            var archivedStorageBoxes = await _dbContext.SystemStorageBox.GetArchived(world,
-                storageBoxes.Where(x => x.SystemStorageBoxId != null).Select(x => x.SystemStorageBoxId.Value).ToHashSet());
+            var takenStorageBoxes = storageBoxes
+                .Where(x => x.SystemStorageBoxId != null)
+                .Select(x => x.SystemStorageBoxId.Value)
+                .ToHashSet();
+            var archivedStorageBoxes = await _dbContext.SystemStorageBox.GetArchived(world, takenStorageBoxes);
+            if (takenStorageBoxes.Count > 0)
+            {
+                await _dbContext.SystemStorageBox.Archive(world,
+                    (await _dbContext.SystemStorageBox.GetPersonal(world, uid)).Where(x => takenStorageBoxes.Contains(x.Id)).ToList());
+            }
             var unsettledRequests = (await _dbContext.UnsettledRequest.Get(world, uid)).ToList();
             var escrows = await _dbContext.Escrow.Get(world, uid);
             var friends = await _friendService.GetEntries(world, uid);
@@ -710,8 +714,10 @@ namespace Internal.Controllers
                 }
                 if (newer.Count > 0)
                 {
+                    var previous = await _dbContext.StorageBox.GetMany(world, newer.Select(x => x.Character.Id).ToList());
                     await ReplaceSnapshots(world, newer);
                     await _dbContext.SaveChangesAsync();
+                    await ArchiveTakenStorageBoxes(world, newer, previous);
                 }
                 return newer.Count == latest.Count;
             }
@@ -720,6 +726,39 @@ namespace Internal.Controllers
                 foreach (var handle in locks)
                 {
                     await handle.DisposeAsync();
+                }
+            }
+        }
+
+        private async Task ArchiveTakenStorageBoxes(uint world,
+            IReadOnlyList<Protocol.SavePayload> payloads,
+            IReadOnlyDictionary<uint, IReadOnlyList<StorageBox>> previous)
+        {
+            foreach (var payload in payloads)
+            {
+                var saved = (previous.GetValueOrDefault(payload.Character.Id) ?? Array.Empty<StorageBox>())
+                    .Where(x => x.SystemStorageBoxId != null)
+                    .Select(x => x.SystemStorageBoxId.Value)
+                    .ToHashSet();
+                var taken = (payload.StorageBoxes ?? new List<Protocol.StorageBox>())
+                    .Where(x => x.SystemStorageBoxId != 0 && saved.Contains(x.SystemStorageBoxId) == false)
+                    .Select(x => x.SystemStorageBoxId)
+                    .ToHashSet();
+                if (taken.Count == 0)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var finished = (await _dbContext.SystemStorageBox.GetPersonal(world, payload.Character.Id))
+                        .Where(x => taken.Contains(x.Id))
+                        .ToList();
+                    await _dbContext.SystemStorageBox.Archive(world, finished);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Archiving taken storage boxes failed for {Name}", payload.Character.Name);
                 }
             }
         }

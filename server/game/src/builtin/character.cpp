@@ -7276,10 +7276,11 @@ int builtin::character::builtin_storage_entries(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        co_await server.system_storage.sync(*ch);
-        auto ptr = weak.lock();
+        auto  ptr    = weak.lock();
         if (ptr == nullptr)
             co_return;
+
+        co_await server.system_storage.sync(*ptr);
 
         buffer->reserve(ptr->storage_box.entries().size());
         auto now = server.now();

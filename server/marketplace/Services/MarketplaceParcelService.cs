@@ -6,20 +6,17 @@ namespace Marketplace.Services;
 public class MarketplaceParcelService
 {
     private readonly StorageService _storageService;
-    private readonly Http.Service.DbContext _httpDbContext;
     private readonly Marketplace.Service.DbContext _dbContext;
     private readonly RedisDistributedLockService _distributedLock;
     private readonly ILogger<MarketplaceParcelService> _logger;
 
     public MarketplaceParcelService(
         StorageService storageService,
-        Http.Service.DbContext httpDbContext,
         Marketplace.Service.DbContext dbContext,
         RedisDistributedLockService distributedLock,
         ILogger<MarketplaceParcelService> logger)
     {
         _storageService = storageService;
-        _httpDbContext = httpDbContext;
         _dbContext = dbContext;
         _distributedLock = distributedLock;
         _logger = logger;
@@ -31,8 +28,7 @@ public class MarketplaceParcelService
         try
         {
             await using var _ = await _distributedLock.Lock(parcel.World, StorageService.ExternalRefLockKey(parcel.ExternalRef));
-            if (await _dbContext.MarketplaceParcel.ExistsAsync(parcel.ExternalRef) &&
-                await _httpDbContext.StorageBox.HasLegacyRef(parcel.World, parcel.User, parcel.ExternalRef) == false)
+            if (await _dbContext.MarketplaceParcel.ExistsAsync(parcel.ExternalRef))
             {
                 await _storageService.CreateSystemStorageAsync(
                     world: parcel.World,

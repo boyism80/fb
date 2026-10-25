@@ -1,7 +1,6 @@
 using AutoMapper;
 using Fb.Model.EnumValue;
 using Http.Model;
-using Microsoft.Extensions.Logging;
 using Protocol = fb.protocol.@internal;
 using Response = fb.protocol.@internal.response;
 
@@ -13,19 +12,16 @@ namespace Http.Service
         private readonly LogService _logService;
         private readonly RabbitMqService _rabbitMqService;
         private readonly IMapper _mapper;
-        private readonly ILogger<StorageService> _logger;
 
         public StorageService(DbContext dbContext,
             LogService logService,
             RabbitMqService rabbitMqService,
-            IMapper mapper,
-            ILogger<StorageService> logger)
+            IMapper mapper)
         {
             _dbContext = dbContext;
             _logService = logService;
             _rabbitMqService = rabbitMqService;
             _mapper = mapper;
-            _logger = logger;
         }
 
         public static string ExternalRefLockKey(string externalRef) => $"fb:lock:storage:ref:{externalRef}";
@@ -91,53 +87,6 @@ namespace Http.Service
             }
 
             return box;
-        }
-
-        public async Task SettleLegacyRequestsAsync(uint world, uint user)
-        {
-            var unsettled = (await _dbContext.UnsettledRequest.Get(world, user))
-                .Where(x => x.Type is (byte)UnsettledType.StorageClaim or (byte)UnsettledType.MarketList or (byte)UnsettledType.MarketPurchase)
-                .ToList();
-            if (unsettled.Count == 0)
-            {
-                return;
-            }
-
-            var boxes = (await _dbContext.StorageBox.Get(world, user)).ToList();
-            var settled = new List<UnsettledRequest>();
-            foreach (var request in unsettled)
-            {
-                if (request.Type == (byte)UnsettledType.StorageClaim)
-                {
-                    var box = boxes.FirstOrDefault(x => x.Id == request.Target);
-                    if (box != null && box.Received && box.ClaimId == request.Id)
-                    {
-                        box.Received = false;
-                        box.ClaimId = null;
-                        _dbContext.StorageBox.Set(world, box);
-                    }
-
-                    settled.Add(request);
-                }
-                else
-                {
-                    var prefix = request.Type == (byte)UnsettledType.MarketList ? "marketplace:list" : "marketplace:purchase";
-                    var externalRef = $"{prefix}:{request.Id}";
-                    if (boxes.Any(x => x.ExternalRef == externalRef))
-                    {
-                        settled.Add(request);
-                    }
-                }
-            }
-
-            if (settled.Count == 0)
-            {
-                return;
-            }
-
-            _dbContext.UnsettledRequest.Delete(world, settled);
-            await _dbContext.SaveChangesAsync();
-            _logger.LogInformation("Settled {Count} legacy storage requests of user {User}", settled.Count, user);
         }
     }
 }

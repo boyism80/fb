@@ -17,12 +17,10 @@ namespace Http.Model
     public class StorageBox : StorageBoxKey, IModel
     {
         public uint? SystemStorageBoxId { get; set; }
-        public string ExternalRef { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public List<Dsl> Attachments { get; set; } = new List<Dsl>();
         public bool Received { get; set; }
-        public ulong? ClaimId { get; set; }
         public DateTime? ExpiredDate { get; set; }
     }
 }

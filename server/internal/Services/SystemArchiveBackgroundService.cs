@@ -8,6 +8,7 @@ namespace Internal.Services
     {
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan SweepInterval = TimeSpan.FromDays(1);
+        private static readonly TimeSpan ArchiveExpiryMargin = TimeSpan.FromDays(1);
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
@@ -102,65 +103,55 @@ namespace Internal.Services
                 _logger.LogInformation("Archived {Count} system storage boxes for world {World}", boxes.Count, world);
             }
 
-            var recipients = await dbContext.SystemStorageBox.GetRecipients(world);
-            foreach (var chunk in recipients.Select(x => x.User).Distinct().Chunk(500))
+            var personal = await dbContext.SystemStorageBox.GetFinishedPersonal(world);
+            if (personal.Count > 0)
             {
-                var characters = await dbContext.Character.GetMany(world, chunk.ToList());
-                var storageBoxes = await dbContext.StorageBox.GetMany(world, chunk.ToList());
-                var finished = new List<Http.Model.SystemStorageBox>();
-                foreach (var user in chunk)
-                {
-                    var taken = (storageBoxes.GetValueOrDefault(user) ?? Array.Empty<Http.Model.StorageBox>())
-                        .Where(x => x.SystemStorageBoxId != null)
-                        .Select(x => x.SystemStorageBoxId.Value)
-                        .ToHashSet();
-                    var exists = characters.ContainsKey(user);
-                    finished.AddRange((await dbContext.SystemStorageBox.GetAll(world, user))
-                        .Where(b => b.User == user)
-                        .Where(b => exists == false || b.Canceled || (b.ExpiredDate != null && b.ExpiredDate <= now) || taken.Contains(b.Id)));
-                }
-
-                if (finished.Count > 0)
-                {
-                    await dbContext.SystemStorageBox.Archive(world, finished);
-                    _logger.LogInformation("Archived {Count} recipient system storage boxes for world {World}", finished.Count, world);
-                }
+                await dbContext.SystemStorageBox.Archive(world, personal);
+                _logger.LogInformation("Archived {Count} personal system storage boxes for world {World}", personal.Count, world);
             }
         }
 
         private async Task SweepArchivedStorageBoxesAsync(DbContext dbContext, RedisDistributedLockService distributedLock, uint world)
         {
             var deleted = 0;
+            int count;
+            do
+            {
+                count = await dbContext.SystemStorageBox.DeleteExpiredArchive(world, ArchiveExpiryMargin, 1000);
+                deleted += count;
+            } while (count == 1000);
+
             var afterId = 0u;
-            List<(uint Id, uint User, string ExternalRef)> rows;
+            List<(uint Id, string ExternalRef)> rows;
             do
             {
                 rows = await dbContext.SystemStorageBox.GetArchivedMarketplace(world, afterId, 500);
-                foreach (var row in rows)
+                if (rows.Count == 0)
                 {
-                    afterId = row.Id;
+                    break;
+                }
+
+                afterId = rows[^1].Id;
+                var refs = rows.Select(x => x.ExternalRef).ToArray();
+                HashSet<string> parcels;
+                await using (var unified = dbContext.GetUnifiedConnection())
+                {
+                    parcels = (await unified.QueryAsync<string>(
+                        "SELECT `external_ref` FROM `marketplace_parcel` WHERE `external_ref` IN @refs",
+                        new { refs })).ToHashSet();
+                }
+
+                foreach (var row in rows.Where(x => parcels.Contains(x.ExternalRef) == false))
+                {
                     await using var _ = await distributedLock.Lock(world, StorageService.ExternalRefLockKey(row.ExternalRef));
-
-                    int parcels;
-                    await using (var unified = dbContext.GetUnifiedConnection())
-                    {
-                        parcels = await unified.ExecuteScalarAsync<int>(
-                            "SELECT COUNT(*) FROM `marketplace_parcel` WHERE `external_ref` = @externalRef",
-                            new { externalRef = row.ExternalRef });
-                    }
-
-                    var held = (await dbContext.StorageBox.Get(world, row.User)).Any(x => x.SystemStorageBoxId == row.Id);
-                    if (parcels == 0 && held == false)
-                    {
-                        await dbContext.SystemStorageBox.DeleteArchived(world, row.Id);
-                        deleted++;
-                    }
+                    await dbContext.SystemStorageBox.DeleteArchived(world, row.Id);
+                    deleted++;
                 }
             } while (rows.Count == 500);
 
             if (deleted > 0)
             {
-                _logger.LogInformation("Deleted {Count} archived marketplace storage boxes for world {World}", deleted, world);
+                _logger.LogInformation("Deleted {Count} archived system storage boxes for world {World}", deleted, world);
             }
         }
 

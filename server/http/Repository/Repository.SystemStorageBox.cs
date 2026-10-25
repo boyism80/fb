@@ -28,6 +28,11 @@ namespace Http.Reepository
             return all.OrderByDescending(b => b.Id).ToList();
         }
 
+        public async Task<List<SystemStorageBox>> GetPersonal(uint world, uint user)
+        {
+            return (await base.GetAll(world, new SystemStorageBoxKey { Id = 0, User = user })).ToList();
+        }
+
         public async Task<List<uint>> GetArchived(uint world, IReadOnlyCollection<uint> ids)
         {
             if (ids.Count == 0)
@@ -36,19 +41,43 @@ namespace Http.Reepository
             }
 
             await using var conn = _dbContext.GetGlobalConnection(world);
-            var rows = await conn.QueryAsync<uint>(
-                "SELECT `id` FROM `system_storage_box_archive` WHERE `id` IN @ids;",
-                new { ids });
-            return rows.ToList();
+            var existing = (await conn.QueryAsync<uint>(
+                "SELECT `id` FROM `system_storage_box` WHERE `id` IN @ids;",
+                new { ids })).ToHashSet();
+            return ids.Where(id => existing.Contains(id) == false).ToList();
         }
 
-        public async Task<List<(uint Id, uint User, string ExternalRef)>> GetArchivedMarketplace(uint world, uint afterId, int limit)
+        public async Task<List<SystemStorageBox>> GetFinishedPersonal(uint world)
         {
             await using var conn = _dbContext.GetGlobalConnection(world);
-            var rows = await conn.QueryAsync<(uint Id, uint User, string ExternalRef)>(
+            var rows = await conn.QueryAsync<(uint Id, uint User)>(
                 """
-                SELECT `id` AS Id, `user` AS User, `external_ref` AS ExternalRef FROM `system_storage_box_archive`
-                WHERE `id` > @afterId AND `user` IS NOT NULL AND `external_ref` LIKE 'marketplace:%'
+                SELECT `id` AS Id, `user` AS User FROM `system_storage_box`
+                WHERE `user` IS NOT NULL
+                  AND (`canceled` = 1 OR (`expired_date` IS NOT NULL AND `expired_date` <= UTC_TIMESTAMP(3)));
+                """);
+            return rows.Select(x => new SystemStorageBox { Id = x.Id, User = x.User }).ToList();
+        }
+
+        public async Task<int> DeleteExpiredArchive(uint world, TimeSpan margin, int limit)
+        {
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            return await conn.ExecuteAsync(
+                """
+                DELETE FROM `system_storage_box_archive`
+                WHERE `expired_date` IS NOT NULL AND `expired_date` <= UTC_TIMESTAMP(3) - INTERVAL @seconds SECOND
+                LIMIT @limit;
+                """,
+                new { seconds = (long)margin.TotalSeconds, limit });
+        }
+
+        public async Task<List<(uint Id, string ExternalRef)>> GetArchivedMarketplace(uint world, uint afterId, int limit)
+        {
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            var rows = await conn.QueryAsync<(uint Id, string ExternalRef)>(
+                """
+                SELECT `id` AS Id, `external_ref` AS ExternalRef FROM `system_storage_box_archive`
+                WHERE `id` > @afterId AND `external_ref` LIKE 'marketplace:%'
                 ORDER BY `id`
                 LIMIT @limit;
                 """,
@@ -62,17 +91,6 @@ namespace Http.Reepository
             await conn.ExecuteAsync("DELETE FROM `system_storage_box_archive` WHERE `id` = @id;", new { id });
         }
 
-        public async Task<List<(uint Id, uint User)>> GetRecipients(uint world)
-        {
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var rows = await conn.QueryAsync<(uint Id, uint User)>(
-                """
-                SELECT `id` AS Id, `user` AS User FROM `system_storage_box`
-                WHERE `user` IS NOT NULL AND `deleted` = 0;
-                """);
-            return rows.ToList();
-        }
-
         public async Task<SystemStorageBox> GetByExternalRef(uint world, string externalRef)
         {
             if (string.IsNullOrWhiteSpace(externalRef))
@@ -84,7 +102,7 @@ namespace Http.Reepository
             var row = await conn.QueryFirstOrDefaultAsync<SystemStorageBox>(
                 """
                 SELECT * FROM `system_storage_box`
-                WHERE `external_ref` = @externalRef AND `deleted` = 0
+                WHERE `external_ref` = @externalRef
                 LIMIT 1;
                 """,
                 new { externalRef });
@@ -124,7 +142,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `system_storage_box`
-                WHERE `id` = {key.Id} AND `deleted` = 0
+                WHERE `id` = {key.Id}
                 LIMIT 1;
                 """;
         }
@@ -138,7 +156,7 @@ namespace Http.Reepository
         {
             var user = key.User == null ? "IS NULL" : $"= {key.User.Value}";
             return $"""
-                SELECT * FROM `system_storage_box` WHERE `deleted` = 0 AND `user` {user};
+                SELECT * FROM `system_storage_box` WHERE `user` {user};
                 """;
         }
 
@@ -158,7 +176,6 @@ namespace Http.Reepository
                     `include_new_characters`,
                     `canceled`,
                     `external_ref`,
-                    `deleted`,
                     `created_date`,
                     `updated_date`)
                 VALUES (
@@ -172,7 +189,6 @@ namespace Http.Reepository
                     {value.IncludeNewCharacters.Escape()},
                     {value.Canceled.Escape()},
                     {value.ExternalRef.Escape()},
-                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
@@ -277,8 +293,8 @@ namespace Http.Reepository
             var attachmentsJson = JsonConvert.SerializeObject(attachments ?? new List<Fb.Model.Dsl>());
 
             var query = """
-                INSERT INTO system_storage_box (user, title, message, attachments, reserve_date, expired_date, include_new_characters, canceled, external_ref, deleted, created_date, updated_date)
-                VALUES (@user, @title, @message, CAST(@attachmentsJson AS JSON), @reserveDate, @expireDate, @includeNewCharacters, 0, @externalRef, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
+                INSERT INTO system_storage_box (user, title, message, attachments, reserve_date, expired_date, include_new_characters, canceled, external_ref, created_date, updated_date)
+                VALUES (@user, @title, @message, CAST(@attachmentsJson AS JSON), @reserveDate, @expireDate, @includeNewCharacters, 0, @externalRef, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
                 SELECT LAST_INSERT_ID();
                 """;
 

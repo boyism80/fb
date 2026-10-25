@@ -5,7 +5,6 @@ namespace Http.Model
     public enum UnsettledType : byte
     {
         ClanMoney = 0,
-        StorageClaim = 1,
         MarketList = 2,
         MarketPurchase = 3,
         ClanFee = 4,

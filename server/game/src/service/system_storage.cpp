@@ -225,15 +225,11 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
 {
     while (true)
     {
-        auto world = fb::config<std::optional<uint32_t>>("world");
-        if (!world)
+        auto joined = std::unordered_set<uint32_t>{};
         {
-            co_await fb::async_suspend{};
-            continue;
+            auto _ = std::lock_guard(this->_joined_mutex);
+            joined = std::exchange(this->_joined, {});
         }
-
-        const auto now = this->server.now();
-        prune_expired_boxes(this->_pending_boxes, now);
 
         if (this->server.characters.size() == 0)
         {
@@ -241,45 +237,46 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
             continue;
         }
 
-        auto        new_box_seen = false;
-        const auto& fetch_url    = std::format("/storage/system/{}", *world);
-
-        // Internal returns every box that is sendable now. A reserved box becomes sendable later with an id
-        // lower than boxes already seen, so the list is replaced instead of read from an offset.
-        try
+        auto new_box_seen = false;
+        auto world        = fb::config<std::optional<uint32_t>>("world");
+        if (world)
         {
-            auto&& resp = co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>("internal", fetch_url);
-            if (resp.error == 0)
+            const auto now = this->server.now();
+            prune_expired_boxes(this->_pending_boxes, now);
+
+            // Internal returns every box that is sendable now. A reserved box becomes sendable later with an id
+            // lower than boxes already seen, so the list is replaced instead of read from an offset.
+            try
             {
-                auto fetched = std::vector<system_storage_box>{};
-                for (const auto& dto : resp.boxes)
+                const auto& fetch_url = std::format("/storage/system/{}", *world);
+                auto&&      resp =
+                    co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>("internal", fetch_url);
+                if (resp.error == 0)
                 {
-                    auto box = from_system_storage_dto(dto);
-                    if (box.expired(now))
-                        continue;
+                    auto fetched = std::vector<system_storage_box>{};
+                    for (const auto& dto : resp.boxes)
+                    {
+                        auto box = from_system_storage_dto(dto);
+                        if (box.expired(now))
+                            continue;
 
-                    const auto already_tracked = std::any_of(this->_pending_boxes.cbegin(),
-                                                             this->_pending_boxes.cend(),
-                                                             [&](const system_storage_box& existing) {
-                                                                 return existing.id == box.id;
-                                                             });
-                    if (!already_tracked)
-                        new_box_seen = true;
+                        const auto already_tracked = std::any_of(this->_pending_boxes.cbegin(),
+                                                                 this->_pending_boxes.cend(),
+                                                                 [&](const system_storage_box& existing) {
+                                                                     return existing.id == box.id;
+                                                                 });
+                        if (!already_tracked)
+                            new_box_seen = true;
 
-                    fetched.push_back(std::move(box));
+                        fetched.push_back(std::move(box));
+                    }
+                    this->_pending_boxes = std::move(fetched);
                 }
-                this->_pending_boxes = std::move(fetched);
             }
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::warn("Failed to fetch system storage boxes: {}", e.what());
-        }
-
-        auto joined = std::unordered_set<uint32_t>{};
-        {
-            auto _ = std::lock_guard(this->_joined_mutex);
-            joined = std::exchange(this->_joined, {});
+            catch (const std::exception& e)
+            {
+                fb::logger::warn("Failed to fetch system storage boxes: {}", e.what());
+            }
         }
 
         if (new_box_seen)

@@ -20,7 +20,7 @@ local REWARD_ITEM_COUNT  = 1
 local FILL_ITEM_NAME     = "목도"
 local MQ_WAIT_MS         = 2000
 local SYSTEM_PATH        = "/storage/system"
-local ARCHIVE_WAIT_STEPS = 8
+local ARCHIVE_WAIT_STEPS = 2
 
 local MSG_GRANT_NEED_REWARD = "보상이 하나 이상 필요합니다."
 local MSG_GRANT_OK          = "지급이 완료되었습니다."

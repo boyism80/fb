@@ -1,4 +1,3 @@
-using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -15,26 +14,6 @@ namespace Http.Reepository
         {
         }
 
-        public async Task<bool> HasLegacyRef(uint world, uint user, string externalRef)
-        {
-            await using var conn = _dbContext.GetShardConnection(world, user);
-            return await conn.ExecuteScalarAsync<int>(
-                """
-                SELECT COUNT(*) FROM `storage_box_legacy_ref`
-                WHERE `user` = @user AND `external_ref` = @externalRef;
-                """,
-                new { user, externalRef }) > 0;
-        }
-
-        public async Task<StorageBox> Get(uint world, uint user, uint id)
-        {
-            return await base.Get(world, new StorageBoxKey
-            {
-                User = user,
-                Id = id
-            });
-        }
-
         public async Task<IEnumerable<StorageBox>> Get(uint world, uint user)
         {
             return await base.GetAll(world, new StorageBoxKey
@@ -47,7 +26,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_box`
-                WHERE `user` = {key.User} AND `id` = {key.Id} AND `deleted` = 0
+                WHERE `user` = {key.User} AND `id` = {key.Id}
                 LIMIT 1;
                 """;
         }
@@ -56,7 +35,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_box`
-                WHERE `user` = {key.User} AND `deleted` = 0;
+                WHERE `user` = {key.User};
                 """;
         }
 
@@ -64,8 +43,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_box`
-                WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))})
-                  AND `deleted` = 0;
+                WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});
                 """;
         }
 
@@ -93,49 +71,7 @@ namespace Http.Reepository
 
         protected override string OnUpsert(StorageBox value)
         {
-            var attachmentsJson = JsonConvert.SerializeObject(value.Attachments ?? new List<Fb.Model.Dsl>());
-
-            return $"""
-                INSERT INTO `storage_box` (
-                    `user`,
-                    `id`,
-                    `system_storage_box_id`,
-                    `external_ref`,
-                    `title`,
-                    `message`,
-                    `attachments`,
-                    `received`,
-                    `claim_id`,
-                    `expired_date`,
-                    `deleted`,
-                    `created_date`,
-                    `updated_date`)
-                VALUES (
-                    {value.User.Escape()},
-                    {value.Id.Escape()},
-                    {value.SystemStorageBoxId.Escape()},
-                    {value.ExternalRef.Escape()},
-                    {value.Title.Escape()},
-                    {value.Message.Escape()},
-                    {attachmentsJson.Escape()},
-                    {value.Received.Escape()},
-                    {value.ClaimId.Escape()},
-                    {value.ExpiredDate.Escape()},
-                    0,
-                    {value.CreatedDate.Escape()},
-                    {value.UpdatedDate.Escape()})
-                ON DUPLICATE KEY UPDATE
-                    `system_storage_box_id`=VALUES(`system_storage_box_id`),
-                    `external_ref`=VALUES(`external_ref`),
-                    `title`=VALUES(`title`),
-                    `message`=VALUES(`message`),
-                    `attachments`=VALUES(`attachments`),
-                    `received`=VALUES(`received`),
-                    `claim_id`=VALUES(`claim_id`),
-                    `expired_date`=VALUES(`expired_date`),
-                    `deleted`=0,
-                    `updated_date`=VALUES(`updated_date`);
-                """;
+            return OnUpsert(new[] { value });
         }
 
         protected override string OnUpsert(StorageBox[] values)
@@ -147,14 +83,11 @@ namespace Http.Reepository
                         ({value.User.Escape()},
                          {value.Id.Escape()},
                          {value.SystemStorageBoxId.Escape()},
-                         {value.ExternalRef.Escape()},
                          {value.Title.Escape()},
                          {value.Message.Escape()},
                          {attachmentsJson.Escape()},
                          {value.Received.Escape()},
-                         {value.ClaimId.Escape()},
                          {value.ExpiredDate.Escape()},
-                         0,
                          {value.CreatedDate.Escape()},
                          {value.UpdatedDate.Escape()})
                         """;
@@ -165,27 +98,21 @@ namespace Http.Reepository
                     `user`,
                     `id`,
                     `system_storage_box_id`,
-                    `external_ref`,
                     `title`,
                     `message`,
                     `attachments`,
                     `received`,
-                    `claim_id`,
                     `expired_date`,
-                    `deleted`,
                     `created_date`,
                     `updated_date`)
                 VALUES {string.Join(',', args)}
                 ON DUPLICATE KEY UPDATE
                     `system_storage_box_id`=VALUES(`system_storage_box_id`),
-                    `external_ref`=VALUES(`external_ref`),
                     `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
                     `received`=VALUES(`received`),
-                    `claim_id`=VALUES(`claim_id`),
                     `expired_date`=VALUES(`expired_date`),
-                    `deleted`=0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
         }

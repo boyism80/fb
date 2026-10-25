@@ -90,40 +90,18 @@ void storage_box::init(const std::vector<entry>& entries, const std::vector<uint
     this->_entries.clear();
     this->_sequence = 1;
 
+    auto now = this->_owner.server.now();
     for (const auto& e : entries)
     {
         if (e.id >= this->_sequence)
             this->_sequence = e.id + 1;
 
-        // Copies of one system box may exist from older duplicate distributions; keep a single one, the received one if
-        // any.
-        if (e.system_storage_box_id.has_value())
-        {
-            auto found = std::find_if(this->_entries.begin(), this->_entries.end(), [&](const auto& pair) {
-                return pair.second.system_storage_box_id == e.system_storage_box_id;
-            });
-            if (found != this->_entries.end())
-            {
-                if (found->second.received || e.received == false)
-                    continue;
-
-                this->_entries.erase(found);
-            }
-        }
+        if (e.system_storage_box_id.has_value() &&
+            std::find(archived.begin(), archived.end(), e.system_storage_box_id.value()) != archived.end() &&
+            (e.received || expired(e, now)))
+            continue;
 
         this->_entries.emplace(e.id, e);
-    }
-
-    auto now = this->_owner.server.now();
-    for (auto it = this->_entries.begin(); it != this->_entries.end();)
-    {
-        const auto& box = it->second;
-        if (box.system_storage_box_id.has_value() &&
-            std::find(archived.begin(), archived.end(), box.system_storage_box_id.value()) != archived.end() &&
-            (box.received || expired(box, now)))
-            it = this->_entries.erase(it);
-        else
-            ++it;
     }
 }
 
