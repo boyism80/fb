@@ -106,14 +106,12 @@ namespace Internal.Controllers
                     ? new List<Fb.Model.Dsl>()
                     : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(request.Attachments) ?? new List<Fb.Model.Dsl>());
 
-                var externalRef = string.IsNullOrWhiteSpace(request.ExternalRef) ? null : request.ExternalRef;
-
                 var box = await _storageService.CreateSystemStorageAsync(request.World,
+                    request.ExternalRef,
                     request.Title,
                     request.Message,
-                    expireDate,
                     attachments,
-                    externalRef,
+                    expireDate,
                     user: user);
 
                 return new Response.WriteSystemStorageBox

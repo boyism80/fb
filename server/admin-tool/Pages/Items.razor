@@ -736,11 +736,11 @@
                 {
                     var result = await storageService.CreateSystemStorageAsync(
                         selectedWorld.Value,
+                        model.GrantRef,
                         model.Title.Trim(),
                         model.Message.Trim(),
-                        expireUtc,
                         model.Attachments,
-                        externalRef: model.GrantRef,
+                        expireUtc,
                         reserveDate: reserveUtc,
                         includeNewCharacters: model.IncludeNewCharacters);
 
@@ -774,11 +774,11 @@
 
                 var result = await storageService.CreateSystemStorageAsync(
                     selectedWorld.Value,
+                    model.GrantRef,
                     model.Title.Trim(),
                     model.Message.Trim(),
-                    model.ExpiredDate?.ToUniversalTime(),
                     model.Attachments,
-                    externalRef: model.GrantRef,
+                    model.ExpiredDate?.ToUniversalTime(),
                     user: userId.Value);
 
                 var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";

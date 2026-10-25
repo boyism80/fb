@@ -30,12 +30,11 @@ public class MarketplaceParcelService
             await using var _ = await _distributedLock.Lock(parcel.World, StorageService.ExternalRefLockKey(parcel.ExternalRef));
             if (await _dbContext.MarketplaceParcel.ExistsAsync(parcel.ExternalRef))
             {
-                await _storageService.CreateSystemStorageAsync(
-                    world: parcel.World,
-                    title: parcel.Title,
-                    message: parcel.Message,
-                    attachments: parcel.Attachments,
-                    externalRef: parcel.ExternalRef,
+                await _storageService.CreateSystemStorageAsync(parcel.World,
+                    parcel.ExternalRef,
+                    parcel.Title,
+                    parcel.Message,
+                    parcel.Attachments,
                     user: parcel.User);
             }
         }

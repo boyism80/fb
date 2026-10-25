@@ -27,15 +27,20 @@ namespace Http.Service
         public static string ExternalRefLockKey(string externalRef) => $"fb:lock:storage:ref:{externalRef}";
 
         public async Task<SystemStorageBox> CreateSystemStorageAsync(uint world,
+            string externalRef,
             string title,
             string message,
+            List<Fb.Model.Dsl> attachments,
             DateTime? expiredDate = null,
-            List<Fb.Model.Dsl> attachments = null,
-            string externalRef = null,
             DateTime? reserveDate = null,
             bool includeNewCharacters = false,
             uint? user = null)
         {
+            if (string.IsNullOrWhiteSpace(externalRef))
+            {
+                throw new ArgumentException("External ref is required", nameof(externalRef));
+            }
+
             if (string.IsNullOrWhiteSpace(title))
             {
                 throw new ArgumentException("Title is required", nameof(title));

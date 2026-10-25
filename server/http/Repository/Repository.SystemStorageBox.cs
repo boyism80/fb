@@ -93,11 +93,6 @@ namespace Http.Reepository
 
         public async Task<SystemStorageBox> GetByExternalRef(uint world, string externalRef)
         {
-            if (string.IsNullOrWhiteSpace(externalRef))
-            {
-                return null;
-            }
-
             await using var conn = _dbContext.GetGlobalConnection(world);
             var row = await conn.QueryFirstOrDefaultAsync<SystemStorageBox>(
                 """
@@ -281,13 +276,10 @@ namespace Http.Reepository
             string externalRef,
             uint? user)
         {
-            if (!string.IsNullOrWhiteSpace(externalRef))
+            var existing = await GetByExternalRef(world, externalRef);
+            if (existing != null)
             {
-                var existing = await GetByExternalRef(world, externalRef);
-                if (existing != null)
-                {
-                    return existing;
-                }
+                return existing;
             }
 
             var attachmentsJson = JsonConvert.SerializeObject(attachments ?? new List<Fb.Model.Dsl>());
