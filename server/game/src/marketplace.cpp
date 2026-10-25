@@ -554,10 +554,9 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
         co_return;
 
     // An entry whose item row failed to restore still holds the fee, so the entry decides and not its parts.
-    auto weak     = this->_owner.weak_from_this_as<fb::game::character>();
-    auto world    = this->_owner.world();
-    auto item     = mp::Item{this->_owner.id, 0, 0, std::nullopt, std::nullopt, std::nullopt};
-    auto escrowed = this->_owner.items.escrow().contains(listing_id);
+    auto weak  = this->_owner.weak_from_this_as<fb::game::character>();
+    auto world = this->_owner.world();
+    auto item  = mp::Item{this->_owner.id, 0, 0, std::nullopt, std::nullopt, std::nullopt};
     for (const auto& part : this->_owner.items.escrow().parts(listing_id))
     {
         auto& source      = *part.value;
@@ -572,33 +571,6 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
                         custom_name,
                         source.uid() != 0 ? std::optional<uint64_t>(source.uid()) : std::nullopt};
         break;
-    }
-
-    // Listings created before item escrow removed the item and kept it in the unsettled request detail.
-    auto returns = std::vector<fb::model::dsl>{};
-    if (escrowed == false)
-    {
-        for (const auto& dsl_json : request->detail["attachments"])
-        {
-            auto dsl = fb::model::dsl(dsl_json);
-            returns.push_back(dsl);
-            if (dsl.header != fb::model::enum_value::DSL::item)
-                continue;
-
-            auto params      = fb::model::dsl::item(dsl.params);
-            item.model       = params.id;
-            item.count       = static_cast<uint16_t>(params.count);
-            item.durability  = params.durability;
-            item.custom_name = params.custom_name;
-            item.uid         = params.uid;
-        }
-
-        if (returns.empty())
-        {
-            fb::logger::warn("marketplace.settle_list nothing held user={} listing={}", this->_owner.id, listing_id);
-            this->_owner.unsettled.erase(listing_id);
-            co_return;
-        }
     }
 
     auto created = std::optional<bool>{};
@@ -622,30 +594,16 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
     if (weak.expired() || created.has_value() == false)
         co_return;
 
-    if (escrowed)
-    {
-        if (created.value())
-            this->_owner.items.take(listing_id);
-        else
-            this->_owner.items.release(listing_id);
-    }
-    else if (created.value() == false)
-    {
-        this->_owner.storage_box.add({
-            storage_box::entry{
-                               .title       = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE),
-                               .message     = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE),
-                               .attachments = returns,
-                               }
-        });
-    }
+    if (created.value())
+        this->_owner.items.take(listing_id);
+    else
+        this->_owner.items.release(listing_id);
     this->_owner.unsettled.erase(listing_id);
 
     auto log_data            = Json::Value();
     log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
     log_data["listing_id"]   = static_cast<Json::UInt64>(listing_id);
     log_data["created"]      = created.value();
-    log_data["legacy"]       = escrowed == false;
     this->_owner.server.log.write("marketplace_restore_success", log_data);
 }
 
