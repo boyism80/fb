@@ -22,10 +22,8 @@ local function map_name_to_id(name)
 end
 
 local SKY_MAZE_ENTRANCE_MAP_ID = 2996
-local SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID = 2700
 local SKY_MAZE_FINAL_EXIT_MAP_ID = 649
 local PK_SKY_MAZE_ENTRANCE_MAP_ID = 2479
-local PK_SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID = 2750
 local PK_SKY_MAZE_FINAL_EXIT_MAP_ID = 2474
 
 local function shuffle_array(arr, from_idx, to_idx)
@@ -149,22 +147,6 @@ function M.warp(me)
         arr[i] = get_sky_maze_slot_id(i)
     end
 
-    local my_pos = nil
-    if map_id == SKY_MAZE_ENTRANCE_MAP_ID then
-        my_pos = math.random(1, 25)
-    else
-        for i = 1, 25 do
-            if map_id == arr[i] then
-                my_pos = i
-                break
-            end
-        end
-    end
-
-    if my_pos == nil then
-        return
-    end
-
     local side
     if x == 24 and y == 1 then
         side = 0
@@ -179,17 +161,26 @@ function M.warp(me)
     end
 
     if map_id == arr[26] then
-        local m = id2map(SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID)
-        if m then
-            me:map(m, 24, 24)
+        local exit = id2map(SKY_MAZE_FINAL_EXIT_MAP_ID)
+        if exit ~= nil then
+            me:map(exit, 1, 1)
         end
         return
     end
-    if map_id == SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID then
-        local m = id2map(SKY_MAZE_FINAL_EXIT_MAP_ID)
-        if m then
-            me:map(m, 1, 1)
+
+    local my_pos = nil
+    if map_id == SKY_MAZE_ENTRANCE_MAP_ID then
+        my_pos = math.random(1, 25)
+    else
+        for i = 1, 25 do
+            if map_id == arr[i] then
+                my_pos = i
+                break
+            end
         end
+    end
+
+    if my_pos == nil then
         return
     end
 
@@ -230,22 +221,6 @@ function M.warp_pk(me)
         arr[i] = get_pk_sky_maze_slot_id(i)
     end
 
-    local my_pos = nil
-    if map_id == PK_SKY_MAZE_ENTRANCE_MAP_ID then
-        my_pos = math.random(1, 25)
-    else
-        for i = 1, 25 do
-            if map_id == arr[i] then
-                my_pos = i
-                break
-            end
-        end
-    end
-
-    if my_pos == nil then
-        return
-    end
-
     local side
     if x == 24 and y == 1 then
         side = 0
@@ -260,17 +235,26 @@ function M.warp_pk(me)
     end
 
     if map_id == arr[26] then
-        local m = id2map(PK_SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID)
-        if m then
-            me:map(m, 24, 24)
+        local exit = id2map(PK_SKY_MAZE_FINAL_EXIT_MAP_ID)
+        if exit ~= nil then
+            me:map(exit, 1, 1)
         end
         return
     end
-    if map_id == PK_SKY_MAZE_EXIT_AFTER_SECRET_MAP_ID then
-        local m = id2map(PK_SKY_MAZE_FINAL_EXIT_MAP_ID)
-        if m then
-            me:map(m, 1, 1)
+
+    local my_pos = nil
+    if map_id == PK_SKY_MAZE_ENTRANCE_MAP_ID then
+        my_pos = math.random(1, 25)
+    else
+        for i = 1, 25 do
+            if map_id == arr[i] then
+                my_pos = i
+                break
+            end
         end
+    end
+
+    if my_pos == nil then
         return
     end
 
