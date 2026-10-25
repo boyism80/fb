@@ -308,7 +308,7 @@ namespace Http.Service
             for (var db = 0; db < _dbContext.GetShardDbSize(world); db++)
             {
                 var archived = await ArchivedSystemBoxesAsync(world, db);
-                var archivedIds = archived.ToArray();
+                var archivedIds = archived.Keys.ToArray();
                 var afterUser = 0u;
                 List<uint> users;
                 do
@@ -339,9 +339,9 @@ namespace Http.Service
             return deleted;
         }
 
-        private async Task<HashSet<uint>> ArchivedSystemBoxesAsync(uint world, int db)
+        private async Task<Dictionary<uint, DateTime>> ArchivedSystemBoxesAsync(uint world, int db)
         {
-            var archived = new HashSet<uint>();
+            var archived = new Dictionary<uint, DateTime>();
             uint[] ids;
             await using (var conn = _dbContext.GetDataConnection(world, db))
             {
@@ -360,14 +360,19 @@ namespace Http.Service
             await using var global = _dbContext.GetGlobalConnection(world);
             foreach (var chunk in ids.Chunk(1000))
             {
-                archived.UnionWith(await global.QueryAsync<uint>(
-                    "SELECT `id` FROM `system_storage_box_archive` WHERE `id` IN @chunk", new { chunk }));
+                var rows = await global.QueryAsync<(uint Id, DateTime ArchivedDate)>(
+                    "SELECT `id` AS Id, `archived_date` AS ArchivedDate FROM `system_storage_box_archive` WHERE `id` IN @chunk",
+                    new { chunk });
+                foreach (var row in rows)
+                {
+                    archived[row.Id] = DateTime.SpecifyKind(row.ArchivedDate, DateTimeKind.Utc);
+                }
             }
 
             return archived;
         }
 
-        private async Task<int> DeleteSettledBoxesAsync(uint world, uint user, IReadOnlySet<uint> archivedSystemBoxes)
+        private async Task<int> DeleteSettledBoxesAsync(uint world, uint user, IReadOnlyDictionary<uint, DateTime> archivedSystemBoxes)
         {
             await using var opsLock = await _distributedLock.Lock(world, OpsLockKey(user));
             await using var saveLock = await _distributedLock.Lock(world, Character.SaveLockKey(user));
@@ -379,7 +384,10 @@ namespace Http.Service
             var settled = new List<StorageBox>();
             foreach (var box in await _dbContext.StorageBox.Get(world, user))
             {
-                var archived = box.SystemStorageBoxId is { } systemId && archivedSystemBoxes.Contains(systemId);
+                var archivedAt = box.SystemStorageBoxId is { } systemId && archivedSystemBoxes.TryGetValue(systemId, out var at)
+                    ? at
+                    : (DateTime?)null;
+                var archived = archivedAt != null;
                 if (box.Received)
                 {
                     if (snapshotTime == null || (box.SystemStorageBoxId != null && archived == false))
@@ -403,6 +411,13 @@ namespace Http.Service
                 {
                     var expired = box.ExpiredDate.HasValue && box.ExpiredDate.Value <= now;
                     if (expired == false && archived == false)
+                    {
+                        continue;
+                    }
+
+                    var expiredAt = expired ? DateTime.SpecifyKind(box.ExpiredDate!.Value, DateTimeKind.Utc) : DateTime.MinValue;
+                    var settledAt = archivedAt is { } archivedTime && archivedTime > expiredAt ? archivedTime : expiredAt;
+                    if (snapshotTime == null || snapshotTime.Value <= new DateTimeOffset(settledAt).ToUnixTimeMilliseconds())
                     {
                         continue;
                     }
