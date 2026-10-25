@@ -149,6 +149,13 @@ local function buy_clan_sword(me, npc_obj)
         return
     end
 
+    local still_master = is_clan_master(me)
+    local still_owns, _, still_divine_beast = owns_this_castle(me)
+    if not still_master or not still_owns or still_divine_beast ~= divine_beast or castle_lib.has_item_named(me, weapon_name) then
+        me:dialog(npc_obj, '성의 상황이 바뀌었습니다. 다시 말을 걸어 주세요.', { prev = false, next = false })
+        return
+    end
+
     if me:mkitem(weapon_name, 1) == nil then
         button = me:dialog(npc_obj, '소지품이 가득 찼습니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.PREV then
@@ -396,6 +403,20 @@ function M.buy_clothes(me, npc_obj)
         me:dialog(npc_obj, '보유하신 금전이 부족하시군요.', { prev = false, next = false })
         return
     end
+
+    local still_owns, _, still_divine_beast = owns_this_castle(me)
+    local still_wearing = false
+    for _, name in ipairs(castle_lib.ALL_CLOTHES_NAMES) do
+        if castle_lib.has_item_named(me, name) then
+            still_wearing = true
+            break
+        end
+    end
+    if not still_owns or still_divine_beast ~= divine_beast or still_wearing then
+        me:dialog(npc_obj, '성의 상황이 바뀌었습니다. 다시 말을 걸어 주세요.', { prev = false, next = false })
+        return
+    end
+
     if me:mkitem(clothes_name, 1) == nil then
         me:dialog(npc_obj, '공간이 부족합니다.', { prev = false, next = false })
         return
