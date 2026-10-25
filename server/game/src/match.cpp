@@ -222,11 +222,13 @@ async::task<void> match::join(character& ch, uint32_t team)
 
 void match::leave(character& ch)
 {
-    auto empty  = false;
-    auto closed = false;
+    auto empty   = false;
+    auto closed  = false;
+    auto playing = false;
     {
         auto lock = std::lock_guard(this->_mutex);
         closed    = this->_state == MATCH_STATE::closed;
+        playing   = this->_state == MATCH_STATE::playing;
         auto it   = this->_members.begin();
         while (it != this->_members.end())
         {
@@ -246,6 +248,19 @@ void match::leave(character& ch)
     ch.matchmaker.session(nullptr);
     if (empty && closed == false)
         this->enqueue_close();
+    else if (empty == false && playing)
+        this->on_leave();
+}
+
+void match::on_leave()
+{
+    auto path = std::format("scripts/match/{}.lua", this->_type);
+    auto lua  = this->_server.lua.open(path, "on_leave");
+    if (!lua)
+        return;
+
+    lua->pushobject(*this);
+    fb::lua::run_async(std::move(lua), 1);
 }
 
 void match::wait(uint32_t seconds)

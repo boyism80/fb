@@ -86,6 +86,7 @@ private:
     void cancel_timer();
     void enqueue_play();
     void enqueue_close();
+    void on_leave();
     async::task<void>
     invoke(std::string_view func, character& ch, std::shared_ptr<object> extra = nullptr, bool wait = true);
     std::vector<std::shared_ptr<character>> snapshot();

@@ -2,6 +2,20 @@
 
 local MATCH_DURATION_SECONDS = 600
 
+local function finish_if_wiped(match)
+    if match:state() ~= 'playing' then
+        return
+    end
+
+    for _, ch in ipairs(match:members()) do
+        if ch:state() ~= STATE.GHOST then
+            return
+        end
+    end
+
+    match:finish(5)
+end
+
 return {
     -- on_join = function(match, me)
     -- end,
@@ -13,17 +27,11 @@ return {
     end,
 
     on_death = function(match, me, killer)
-        if match:state() ~= 'playing' then
-            return
-        end
+        finish_if_wiped(match)
+    end,
 
-        for _, ch in ipairs(match:members()) do
-            if ch:state() ~= STATE.GHOST then
-                return
-            end
-        end
-
-        match:finish(5)
+    on_leave = function(match)
+        finish_if_wiped(match)
     end,
 
     on_end = function(match, me)
