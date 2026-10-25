@@ -37,8 +37,7 @@ private:
     static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
     fb::async_generator<void> distribute_coroutine();
 
-    static constexpr std::size_t chunk_limit    = 100;
-    static constexpr int         write_attempts = 3;
+    static constexpr std::size_t chunk_limit = 100;
 
     std::vector<system_storage_box> _pending_boxes;
     std::mutex                      _joined_mutex;

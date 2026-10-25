@@ -84,6 +84,7 @@ namespace Marketplace.Reepository
                     {price.Escape()},
                     {ListingState.ABORTED.Escape()},
                     UTC_TIMESTAMP(3))
+                ON DUPLICATE KEY UPDATE `id` = `id`
                 """;
 
             await transaction.Connection.ExecuteAsync(sql, null, transaction);

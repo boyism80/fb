@@ -277,20 +277,17 @@ async::task<bool> service::system_storage::create(uint32_t                      
                                                         fb::config<uint32_t>("id")};
 
     // The external ref makes a resend return the box an earlier attempt already wrote.
-    for (auto attempt = 1; attempt <= write_attempts; attempt++)
+    try
     {
-        try
-        {
-            auto&& resp = co_await this->server.http.post("internal", "/storage/write", request);
-            if (resp.error == 0)
-                co_return true;
+        auto&& resp = co_await this->server.http.post("internal", "/storage/write", request);
+        if (resp.error == 0)
+            co_return true;
 
-            fb::logger::warn("WriteStorageBox failed for {} (attempt {}): error {}", external_ref, attempt, resp.error);
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::warn("WriteStorageBox request failed for {} (attempt {}): {}", external_ref, attempt, e.what());
-        }
+        fb::logger::warn("WriteStorageBox failed for {}: error {}", external_ref, resp.error);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("WriteStorageBox request failed for {}: {}", external_ref, e.what());
     }
     co_return false;
 }

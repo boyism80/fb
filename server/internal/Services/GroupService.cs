@@ -20,13 +20,15 @@ namespace Internal.Services
         private readonly SessionService _sessionService;
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly ILogger<GroupService> _logger;
 
         public GroupService(IConfiguration configuration,
             DbContext dbContext,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
             RedisService redisService,
-            RedisDistributedLockService distributedLock)
+            RedisDistributedLockService distributedLock,
+            ILogger<GroupService> logger)
         {
             _configuration = configuration;
             _dbContext = dbContext;
@@ -34,6 +36,7 @@ namespace Internal.Services
             _sessionService = sessionService;
             _redisService = redisService;
             _distributedLock = distributedLock;
+            _logger = logger;
         }
 
         public async Task<Response.GroupDetails> GetById(ulong id)
@@ -535,115 +538,52 @@ namespace Internal.Services
                 var character = await _dbContext.Character.Get(world, session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-
-                // Lock every involved character before the group lock so Destroy can never
-                // circular-wait against a concurrent Leave on one of its members.
-                // The member set isn't known until the group is loaded, so lock the
-                // best-known set, verify it against the locked group's member list,
-                // and retry with the updated set if it moved.
-                var lockUids = new SortedSet<uint> { character.Id };
-                var characterLocks = new List<RedisDistributedLockHandle>();
-                RedisDistributedLockHandle groupLock = null;
-                CharacterRealtimeState sync;
                 Group group;
-
-                try
                 {
-                    while (true)
+                    await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(character.Id));
+
+                    var sync = await _dbContext.CharacterRealtimeState.Get(world, character.Id) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                    var groupId = sync.Group ??
+                        throw new LogicException(ErrorCode.GroupNotJoined);
+
+                    await using var _2 = await _distributedLock.Lock(world, Group.DistributedLockKey(groupId));
+
+                    group = await _dbContext.Group.Get(world, groupId) ??
+                        throw new LogicException(ErrorCode.GroupNotFound);
+
+                    // Destroy group - character must be master
+                    if (group.Master != character.Id)
                     {
-                        foreach (var uid in lockUids)
-                        {
-                            characterLocks.Add(await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid)));
-                        }
-
-                        sync = await _dbContext.CharacterRealtimeState.Get(world, character.Id) ??
-                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                        var groupId = sync.Group ??
-                            throw new LogicException(ErrorCode.GroupNotJoined);
-
-                        groupLock = await _distributedLock.Lock(world, Group.DistributedLockKey(groupId));
-
-                        group = await _dbContext.Group.Get(world, groupId) ??
-                            throw new LogicException(ErrorCode.GroupNotFound);
-
-                        // Destroy group - character must be master
-                        if (group.Master != character.Id)
-                        {
-                            throw new LogicException(ErrorCode.NotGroupMaster);
-                        }
-
-                        var required = new SortedSet<uint>(group.Members) { character.Id };
-                        if (required.SetEquals(lockUids))
-                        {
-                            break;
-                        }
-
-                        await groupLock.DisposeAsync();
-                        groupLock = null;
-                        foreach (var @lock in characterLocks)
-                        {
-                            await @lock.DisposeAsync();
-                        }
-
-                        characterLocks.Clear();
-
-                        lockUids = required;
+                        throw new LogicException(ErrorCode.NotGroupMaster);
                     }
 
                     _dbContext.Group.Delete(world, group.Id);
                     await _dbContext.Group.SaveChangesAsync();
 
-                    var memberNames = new List<string>();
-                    foreach (var uid in group.Members)
-                    {
-                        var member = await _dbContext.Character.Get(world, uid) ??
-                            throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                        var memberSync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
-                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                        if (memberSync.Group == group.Id)
-                        {
-                            memberSync.Group = null;
-                            _dbContext.CharacterRealtimeState.Set(world, memberSync);
-                        }
-                        memberNames.Add(member.Name);
-                    }
-
                     sync.Group = null;
                     _dbContext.CharacterRealtimeState.Set(world, sync);
                     await _dbContext.CharacterRealtimeState.SaveChangesAsync();
-
-                    var response = new Response.DestroyGroup
-                    {
-                        Host = request.Host,
-                        GroupId = group.Id,
-                        GroupMaster = character.Name,
-                        Actor = new Protocol.CharacterRef
-                        {
-                            Uid = character.Id,
-                            Name = character.Name
-                        },
-                        Revision = group.Revision + 1,
-                        Error = (uint)ErrorCode.None
-                    };
-
-                    await _rabbitMqService.NotifySavedAsync(response, "group", world);
-                    return response;
                 }
-                finally
+
+                var response = new Response.DestroyGroup
                 {
-                    if (groupLock != null)
+                    Host = request.Host,
+                    GroupId = group.Id,
+                    GroupMaster = character.Name,
+                    Actor = new Protocol.CharacterRef
                     {
-                        await groupLock.DisposeAsync();
-                    }
+                        Uid = character.Id,
+                        Name = character.Name
+                    },
+                    Revision = group.Revision + 1,
+                    Error = (uint)ErrorCode.None
+                };
 
-                    foreach (var @lock in characterLocks)
-                    {
-                        await @lock.DisposeAsync();
-                    }
-                }
+                await _rabbitMqService.NotifySavedAsync(response, "group", world);
+                await ClearMemberGroupsAsync(world, group, character.Id);
+                return response;
             }
             catch (LogicException e)
             {
@@ -660,6 +600,30 @@ namespace Internal.Services
                     Host = _configuration.GetValue<uint>("id"),
                     Error = (uint)ErrorCode.Unhandled
                 };
+            }
+        }
+
+        private async Task ClearMemberGroupsAsync(uint world, Group group, uint master)
+        {
+            foreach (var uid in group.Members.Where(uid => uid != master))
+            {
+                try
+                {
+                    await using var _ = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid));
+                    var memberSync = await _dbContext.CharacterRealtimeState.Get(world, uid);
+                    if (memberSync?.Group != group.Id)
+                    {
+                        continue;
+                    }
+
+                    memberSync.Group = null;
+                    _dbContext.CharacterRealtimeState.Set(world, memberSync);
+                    await _dbContext.CharacterRealtimeState.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Failed to clear group {Group} from member {Uid}", group.Id, uid);
+                }
             }
         }
 

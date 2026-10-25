@@ -199,65 +199,46 @@ public class MarketplaceService
         ulong price)
     {
         // A listing that is not found anywhere gets an ABORTED tombstone, so a late list request fails on the primary key.
-        for (var attempt = 0; attempt < 2; attempt++)
+        await using var conn = _dbContext.GetUnifiedConnection();
+        await conn.OpenAsync();
+        await using var transaction = await conn.BeginTransactionAsync();
+
+        var listing = await _dbContext.Marketplace.GetAnyListingByIdForUpdateAsync(listingId, transaction)
+            ?? await _dbContext.Marketplace.GetArchivedListingByIdAsync(listingId, transaction);
+        var tombstone = false;
+        if (listing == null)
         {
-            await using var conn = _dbContext.GetUnifiedConnection();
-            await conn.OpenAsync();
-            await using var transaction = await conn.BeginTransactionAsync();
+            await _dbContext.Marketplace.CreateAbortedListingAsync(
+                listingId,
+                world,
+                characterId,
+                itemModel,
+                remainingCount,
+                itemDurability,
+                itemCustomName,
+                itemUid,
+                price,
+                transaction);
+            listing = await _dbContext.Marketplace.GetAnyListingByIdForUpdateAsync(listingId, transaction)
+                ?? throw new LogicException(ErrorCode.Unhandled);
+            tombstone = listing.Status == ListingState.ABORTED;
+        }
+        await transaction.CommitAsync();
 
-            var listing = await _dbContext.Marketplace.GetAnyListingByIdForUpdateAsync(listingId, transaction)
-                ?? await _dbContext.Marketplace.GetArchivedListingByIdAsync(listingId, transaction);
-            if (listing != null)
-            {
-                await transaction.CommitAsync();
-                if (listing.SellerId != characterId)
-                {
-                    throw new LogicException(ErrorCode.MarketplaceNotListingOwner);
-                }
-
-                var created = listing.Status != ListingState.ABORTED;
-                await _logService.WriteAsync("marketplace_abort_list", new
-                {
-                    character_id = characterId,
-                    listing_id = listingId,
-                    created = created,
-                    status = listing.Status.ToString()
-                });
-                return created;
-            }
-
-            try
-            {
-                await _dbContext.Marketplace.CreateAbortedListingAsync(
-                    listingId,
-                    world,
-                    characterId,
-                    itemModel,
-                    remainingCount,
-                    itemDurability,
-                    itemCustomName,
-                    itemUid,
-                    price,
-                    transaction);
-                await transaction.CommitAsync();
-            }
-            catch (MySqlException e) when (e.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
-            {
-                await transaction.RollbackAsync();
-                continue;
-            }
-
-            await _logService.WriteAsync("marketplace_abort_list", new
-            {
-                character_id = characterId,
-                listing_id = listingId,
-                created = false,
-                status = "tombstone"
-            });
-            return false;
+        if (listing.SellerId != characterId)
+        {
+            throw new LogicException(ErrorCode.MarketplaceNotListingOwner);
         }
 
-        throw new LogicException(ErrorCode.Unhandled);
+        var created = listing.Status != ListingState.ABORTED;
+        await _logService.WriteAsync("marketplace_abort_list", new
+        {
+            character_id = characterId,
+            listing_id = listingId,
+            created = created,
+            status = tombstone ? "tombstone" : listing.Status.ToString()
+        });
+        return created;
     }
 
     public async Task CancelListingAsync(uint world, uint characterId, ulong listingId)
@@ -737,54 +718,33 @@ public class MarketplaceService
     public async Task<bool> AbortPurchaseAsync(uint world, uint buyerId, ulong listingId, ulong purchaseId)
     {
         // A purchase that is not found gets an aborted tombstone, so a late purchase request fails on the primary key.
-        for (var attempt = 0; attempt < 2; attempt++)
+        await using var conn = _dbContext.GetUnifiedConnection();
+        await conn.OpenAsync();
+        await using var transaction = await conn.BeginTransactionAsync();
+
+        var purchase = await _dbContext.MarketplacePurchase.GetAnyPurchaseByIdForUpdateAsync(purchaseId, transaction);
+        if (purchase == null)
         {
-            await using var conn = _dbContext.GetUnifiedConnection();
-            await conn.OpenAsync();
-            await using var transaction = await conn.BeginTransactionAsync();
+            await _dbContext.MarketplacePurchase.CreateAbortedPurchaseAsync(purchaseId, world, listingId, buyerId, transaction);
+            purchase = await _dbContext.MarketplacePurchase.GetAnyPurchaseByIdForUpdateAsync(purchaseId, transaction)
+                ?? throw new LogicException(ErrorCode.Unhandled);
+        }
+        await transaction.CommitAsync();
 
-            var purchase = await _dbContext.MarketplacePurchase.GetAnyPurchaseByIdForUpdateAsync(purchaseId, transaction);
-            if (purchase != null)
-            {
-                await transaction.CommitAsync();
-                if (purchase.BuyerId != buyerId)
-                {
-                    throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
-                }
-
-                var purchased = purchase.Aborted == false;
-                await _logService.WriteAsync("marketplace_abort_purchase", new
-                {
-                    buyer_id = buyerId,
-                    listing_id = listingId,
-                    purchase_id = purchaseId,
-                    purchased = purchased
-                });
-                return purchased;
-            }
-
-            try
-            {
-                await _dbContext.MarketplacePurchase.CreateAbortedPurchaseAsync(purchaseId, world, listingId, buyerId, transaction);
-                await transaction.CommitAsync();
-            }
-            catch (MySqlException e) when (e.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
-            {
-                await transaction.RollbackAsync();
-                continue;
-            }
-
-            await _logService.WriteAsync("marketplace_abort_purchase", new
-            {
-                buyer_id = buyerId,
-                listing_id = listingId,
-                purchase_id = purchaseId,
-                purchased = false
-            });
-            return false;
+        if (purchase.BuyerId != buyerId)
+        {
+            throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
         }
 
-        throw new LogicException(ErrorCode.Unhandled);
+        var purchased = purchase.Aborted == false;
+        await _logService.WriteAsync("marketplace_abort_purchase", new
+        {
+            buyer_id = buyerId,
+            listing_id = listingId,
+            purchase_id = purchaseId,
+            purchased = purchased
+        });
+        return purchased;
     }
 
     public async Task<MarketplaceSearchResult> SearchItemsAsync(MarketplaceSearchOption option)

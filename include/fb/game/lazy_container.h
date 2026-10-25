@@ -2,6 +2,7 @@
 #define __FB_GAME_LAZY_CONTAINER_H__
 
 #include <async/task.h>
+#include <async/task_completion_source.h>
 #include <fb/model/datetime.h>
 #include <fb/shard_container.h>
 #include <fb/thread.h>
@@ -12,7 +13,8 @@
 #include <mutex>
 #include <optional>
 #include <string_view>
-#include <unordered_set>
+#include <unordered_map>
+#include <vector>
 
 namespace fb::game {
 
@@ -63,12 +65,14 @@ protected:
     server& _server;
 
 private:
-    std::mutex              _fetch_lock;
-    std::unordered_set<Key> _fetching;
+    using fetch_waiter = std::shared_ptr<async::task_completion_source<void>>;
+
+    std::mutex                                         _fetch_lock;
+    std::unordered_map<Key, std::vector<fetch_waiter>> _fetching;
 
 private:
-    bool begin_fetch(Key id);
-    void end_fetch(Key id);
+    fetch_waiter join_fetch(Key id);
+    void         end_fetch(Key id);
 
 protected:
     virtual async::task<entity_ptr> fetch(Key id) = 0;

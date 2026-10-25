@@ -489,6 +489,29 @@ public:
         co_return write_lookup{std::optional<async_write_guard>(std::move(held)), false};
     }
 
+    async::task<write_lookup> lookup_write_wait(HashType hash)
+    {
+        auto  map_guard = co_await this->_data.enter_write_async();
+        auto& data      = map_guard.value();
+        if (data.contains(hash) == false)
+            co_return write_lookup{.missing = true};
+
+        auto held = async_write_guard(std::move(map_guard), hash);
+        co_return write_lookup{std::optional<async_write_guard>(std::move(held)), false};
+    }
+
+    template <typename Func>
+    async::task<async_write_guard> merge_write_wait(HashType hash, Func func)
+    {
+        auto  map_guard = co_await this->_data.enter_write_async();
+        auto& data      = map_guard.value();
+        auto  current   = std::optional<T>{};
+        if (data.contains(hash))
+            current = data.at(hash);
+        data[hash] = func(static_cast<const std::optional<T>&>(current));
+        co_return async_write_guard(std::move(map_guard), hash);
+    }
+
     async::task<std::optional<async_write_guard>> try_enter_write_async(HashType hash)
     {
         auto looked = co_await this->lookup_write_async(hash);
@@ -824,6 +847,17 @@ public:
     async::task<typename sub_container_type::write_lookup> lookup_write_async(HashType hash)
     {
         co_return co_await this->bucket(hash)->lookup_write_async(hash);
+    }
+
+    async::task<typename sub_container_type::write_lookup> lookup_write_wait(HashType hash)
+    {
+        co_return co_await this->bucket(hash)->lookup_write_wait(hash);
+    }
+
+    template <typename Func>
+    async::task<typename sub_container_type::async_write_guard> merge_write_wait(HashType hash, Func func)
+    {
+        co_return co_await this->bucket(hash)->merge_write_wait(hash, std::move(func));
     }
 
     async::task<std::optional<typename sub_container_type::async_write_guard>> try_enter_write_async(HashType hash)

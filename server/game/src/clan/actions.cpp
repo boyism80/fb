@@ -498,23 +498,20 @@ clan::container::send_money(uint32_t world, uint32_t clan_id, int64_t delta, uin
 
     auto updated = std::optional<internal_resp::UpdatedClan>{};
     auto missing = false;
-    for (auto attempt = 0; attempt < 2 && updated.has_value() == false && missing == false; attempt++)
+    try
     {
-        try
-        {
-            auto&& resp =
-                co_await this->_server.http.post("internal",
-                                                 "/clan/money",
-                                                 internal_reqs::SetClanMoney{world, host, clan_id, delta, request_id});
-            auto error = static_cast<ERROR_CODE>(resp.error);
-            if (error == ERROR_CODE::NONE)
-                updated = std::move(resp);
-            else if (error == ERROR_CODE::NOT_FOUND_CLAN)
-                missing = true;
-        }
-        catch (std::exception&)
-        { }
+        auto&& resp =
+            co_await this->_server.http.post("internal",
+                                             "/clan/money",
+                                             internal_reqs::SetClanMoney{world, host, clan_id, delta, request_id});
+        auto error = static_cast<ERROR_CODE>(resp.error);
+        if (error == ERROR_CODE::NONE)
+            updated = std::move(resp);
+        else if (error == ERROR_CODE::NOT_FOUND_CLAN)
+            missing = true;
     }
+    catch (std::exception&)
+    { }
 
     if (before != nullptr)
         co_await before->switching();

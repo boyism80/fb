@@ -8,11 +8,13 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <chrono>
 #include <exception>
 #include <format>
+#include <memory>
+#include <optional>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace fb::game {
 
@@ -60,51 +62,71 @@ lazy_container<Entity, NumBuckets, Key>::lazy_container(server& server) :
 { }
 
 template <typename Entity, size_t NumBuckets, typename Key>
-bool lazy_container<Entity, NumBuckets, Key>::begin_fetch(Key id)
+typename lazy_container<Entity, NumBuckets, Key>::fetch_waiter
+lazy_container<Entity, NumBuckets, Key>::join_fetch(Key id)
 {
-    auto _ = std::lock_guard(this->_fetch_lock);
-    return this->_fetching.insert(id).second;
+    auto _     = std::lock_guard(this->_fetch_lock);
+    auto found = this->_fetching.find(id);
+    if (found == this->_fetching.end())
+    {
+        this->_fetching.emplace(id, std::vector<fetch_waiter>{});
+        return nullptr;
+    }
+
+    auto waiter = std::make_shared<async::task_completion_source<void>>();
+    found->second.push_back(waiter);
+    return waiter;
 }
 
 template <typename Entity, size_t NumBuckets, typename Key>
 void lazy_container<Entity, NumBuckets, Key>::end_fetch(Key id)
 {
-    auto _ = std::lock_guard(this->_fetch_lock);
-    this->_fetching.erase(id);
+    auto waiters = std::vector<fetch_waiter>{};
+    {
+        auto _     = std::lock_guard(this->_fetch_lock);
+        auto found = this->_fetching.find(id);
+        if (found == this->_fetching.end())
+            return;
+
+        waiters = std::move(found->second);
+        this->_fetching.erase(found);
+    }
+
+    for (auto& waiter : waiters)
+    {
+        auto error = std::exception_ptr{};
+        if (waiter->try_set_value(error) == false && error != nullptr)
+            fb::logger::warn("lazy_container fetch waiter failed (id: {})", id);
+    }
 }
 
 template <typename Entity, size_t NumBuckets, typename Key>
 async::task<typename lazy_container<Entity, NumBuckets, Key>::guard>
 lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& thread_ref)
 {
-    // A busy bucket lock is not a cache miss. retry_exception yields this coroutine before the next attempt.
-    // A second fetch for the same id waits until the first one finishes, then reads that result.
-    while (true)
     {
-        auto missing = false;
-        for (auto attempt = 0; attempt < 4; ++attempt)
+        auto looked = co_await this->lookup_write_wait(id);
+        if (looked.guard.has_value())
         {
-            auto looked = co_await this->lookup_write_async(id);
-            if (looked.guard.has_value() && looked.guard->value() == nullptr)
-            {
-                looked.guard.reset();
-                this->erase(id);
-                continue;
-            }
-            if (looked.guard.has_value())
+            if (looked.guard->value() != nullptr)
                 co_return guard(std::move(*looked.guard));
-            if (looked.missing)
-            {
-                missing = true;
-                break;
-            }
-        }
-        if (missing == false)
-            throw fb::thread::retry_exception{};
-        if (this->begin_fetch(id))
-            break;
 
-        co_await thread_ref.sleep(fb::model::timespan(std::chrono::milliseconds(10)));
+            looked.guard.reset();
+            this->erase(id);
+        }
+    }
+
+    // A second fetch for the same id waits for the first one, then reads what it stored.
+    auto waiter = this->join_fetch(id);
+    if (waiter != nullptr)
+    {
+        co_await waiter->task();
+        co_await thread_ref.switching();
+
+        auto looked = co_await this->lookup_write_wait(id);
+        if (looked.guard.has_value() && looked.guard->value() != nullptr)
+            co_return guard(std::move(*looked.guard));
+        co_return guard{};
     }
 
     entity_ptr loaded;
@@ -115,7 +137,6 @@ lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& th
     }
     catch (const std::exception& e)
     {
-        this->end_fetch(id);
         fb::logger::warn("lazy_container fetch failed (id: {}): {}", id, e.what());
         failed = true;
     }
@@ -126,41 +147,21 @@ lazy_container<Entity, NumBuckets, Key>::enter_write_impl(Key id, fb::thread& th
     }
 
     co_await thread_ref.switching();
-    if (failed)
-        co_return guard{};
 
     // A missing row is not stored. The next lookup fetches again.
-    if (loaded == nullptr)
+    if (failed || loaded == nullptr)
     {
         this->end_fetch(id);
         co_return guard{};
     }
 
-    {
-        const auto inserted =
-            co_await this->try_merge_slot(id, [loaded](const std::optional<entity_ptr>&) -> entity_ptr {
-                return loaded;
-            });
-        if (inserted == false)
-        {
-            this->end_fetch(id);
-            throw fb::thread::retry_exception{};
-        }
-    }
-
+    auto held = co_await this->merge_write_wait(id, [loaded](const std::optional<entity_ptr>& current) -> entity_ptr {
+        if (current.has_value() && current.value() != nullptr)
+            return current.value();
+        return loaded;
+    });
     this->end_fetch(id);
-
-    // The bucket lock is released after the insert. An erase in that gap removes the key, and taking the
-    // guard must retry instead of treating the key as permanently missing.
-    for (auto attempt = 0; attempt < 4; ++attempt)
-    {
-        auto looked = co_await this->lookup_write_async(id);
-        if (looked.guard.has_value())
-            co_return guard(std::move(*looked.guard));
-        if (looked.missing)
-            throw fb::thread::retry_exception{};
-    }
-    throw fb::thread::retry_exception{};
+    co_return guard(std::move(held));
 }
 
 template <typename Entity, size_t NumBuckets, typename Key>
@@ -171,12 +172,7 @@ lazy_container<Entity, NumBuckets, Key>::enter_write(Key id)
     if (thread == nullptr)
         throw std::runtime_error(std::format("No thread available for enter_write (id: {})", id));
 
-    auto builder        = thread->template new_builder<guard>();
-    builder.retry_count = 10;
-    builder.func        = [this, id](auto& thread_ref) -> async::task<guard> {
-        co_return co_await this->enter_write_impl(id, thread_ref);
-    };
-    co_return co_await builder.dispatch();
+    co_return co_await this->enter_write_impl(id, *thread);
 }
 
 template <typename Entity, size_t NumBuckets, typename Key>
