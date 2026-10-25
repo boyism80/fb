@@ -91,7 +91,15 @@ function M.on_king_kill(killer, mobs, weapon_name)
     end
 
     if killer:mkitem(weapon_name, 1) == nil then
-        killer:message('소지품이 가득 차서 ' .. name_with(weapon_name, '을', '를') .. ' 받을 수 없습니다.')
+        local weapon_text = name_with(weapon_name, '을', '를')
+        local delivered = killer:send_storage_box(killer:name(), '용왕 처치 보상',
+            string.format('소지품이 가득 차서 %s 보관함으로 보냈습니다.', weapon_text), { item = { [weapon_name] = 1 } })
+        if delivered then
+            killer:message('소지품이 가득 차서 ' .. weapon_text .. ' 보관함으로 보냈습니다.')
+        else
+            log(string.format('dragon_weapon: storage delivery failed name=%s weapon=%s', killer:name(), weapon_name))
+            killer:message('소지품이 가득 차서 ' .. weapon_text .. ' 받을 수 없습니다.')
+        end
     end
 
     local killer_oid = killer:oid()
