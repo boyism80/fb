@@ -14,9 +14,12 @@ end
 
 local WEAPON_NAME = "목도"
 local NOT_READY_MESSAGE = "비바람이 휘몰아치고 있습니다."
-local NAKRANG_ROOM = "낙랑의방"
 local NEARBY_MOB_CLEAR_RANGE = 3
 local g_suite_slot = 0
+
+local function hosted_here(caster, func, step, ...)
+    return script_step.run_script(caster, "test/integration", func, step, ...) == true
+end
 
 local function restore_position(caster, map_name, position)
     slog("restore_position: enter target=%s pos=(%s,%s) suite_slot=%s",
@@ -58,28 +61,37 @@ local function restore_position(caster, map_name, position)
     -- Motel maps from 귀환 are often on hosts that cannot create seat instances.
     -- Step 1: transfer to source 낙랑의방 (no slot) so the host can serve the map.
     -- Step 2: local map_move into suite_slot instance.
-    local cmd_src = string.format("/맵이동 %s %d %d", map_name, position[1], position[2])
-    slog("restore_position: branch=transfer_src cmd=%s", cmd_src)
-    local ok, err = pcall(function()
-        caster:transfer(protocol.chat(false, cmd_src))
-    end)
-    dest_model = id2map(caster:map())
-    if ok == false and (dest_model == nil or dest_model:name() ~= map_name) then
-        slog("restore_position: transfer_src FAILED err=%s", tostring(err))
-        bot_diag.dump(caster, "restore_position:transfer_src_failed")
-        return false
-    end
-    dest_model = id2map(caster:map())
-    if dest_model == nil or dest_model:name() ~= map_name then
-        slog("restore_position: not on target map after transfer_src")
-        bot_diag.dump(caster, "restore_position:transfer_src_map_mismatch")
-        return false
+    if hosted_here(caster, "verify_map_active", "RESTORE_HOSTED", map_name) == false then
+        local cmd_src = string.format("/맵이동 %s %d %d", map_name, position[1], position[2])
+        slog("restore_position: branch=transfer_src cmd=%s", cmd_src)
+        local ok, err = pcall(function()
+            caster:transfer(protocol.chat(false, cmd_src))
+        end)
+        dest_model = id2map(caster:map())
+        if ok == false and (dest_model == nil or dest_model:name() ~= map_name) then
+            slog("restore_position: transfer_src FAILED err=%s", tostring(err))
+            bot_diag.dump(caster, "restore_position:transfer_src_failed")
+            return false
+        end
+        dest_model = id2map(caster:map())
+        if dest_model == nil or dest_model:name() ~= map_name then
+            slog("restore_position: not on target map after transfer_src")
+            bot_diag.dump(caster, "restore_position:transfer_src_map_mismatch")
+            return false
+        end
     end
 
     slog("restore_position: branch=map_move_slot suite_slot=%s", tostring(g_suite_slot))
     local move_ok, move_err = pcall(function()
         caster:map_move(map_name, position[1], position[2], g_suite_slot)
     end)
+    for _ = 1, 20 do
+        dest_pos = caster:position()
+        if dest_pos[1] == position[1] and dest_pos[2] == position[2] then
+            break
+        end
+        caster:sleep(100)
+    end
     dest_model = id2map(caster:map())
     dest_pos = caster:position()
     if dest_model == nil
@@ -96,21 +108,18 @@ local function restore_position(caster, map_name, position)
     return true
 end
 
-local function restore_nakrang_room(caster)
-    local map_model = id2map(caster:map())
-    if map_model == nil then
-        slog("restore_nakrang_room: id2map(%s) not found", tostring(caster:map()))
-        bot_diag.dump(caster, "restore_nakrang_room:unknown_map")
-        return false
+local function cast_until_map_change(caster, cast_type, slot, message)
+    local map_before = caster:map()
+    local packet = caster:request(
+        resp.map_config,
+        protocol.spell_cast(cast_type, slot, message, 0, { 0, 0 }),
+        function(p)
+            return p.id ~= map_before
+        end)
+    if packet == nil or packet == false then
+        return nil
     end
-
-    if map_model:name() ~= NAKRANG_ROOM then
-        local ok = restore_position(caster, NAKRANG_ROOM, { 6, 6 })
-        if ok == false then
-            return false
-        end
-    end
-    return true
+    return packet
 end
 
 local function root_revive_for_map_id(map_id)
@@ -171,7 +180,20 @@ local SPECIAL_SPELLS = {
     {
         name = "귀환",
         cast = function(caster, _, slot, state)
+            if hosted_here(caster, "verify_return_map_active", "RETURN_MAP_HOSTED") then
+                state.hosted = true
+                state.return_map_name = id2map(caster:map()):name()
+                state.return_pos = caster:position()
+                state.packet = cast_until_map_change(caster, "NORMAL", slot, "")
+                return true
+            end
+
             if localhost() then
+                state.mp_before = 1000
+                if caster:set_current_hp_mp(10000, state.mp_before) ~= true then
+                    slog("귀환: could not set mp before the cast")
+                    return false
+                end
                 local packet = caster:request(
                     resp.message,
                     protocol.spell_cast("NORMAL", slot, "", 0, { 0, 0 }),
@@ -211,11 +233,27 @@ local SPECIAL_SPELLS = {
             return true
         end,
         post = function(caster, _, state)
-            if localhost() then
-                if state.packet == nil or state.packet.text ~= NOT_READY_MESSAGE then
+            if state.hosted then
+                if state.packet == nil then
+                    slog("귀환: no map change after cast")
+                    bot_diag.dump(caster, "귀환:no_map_change")
                     return false
                 end
-                return true
+                return restore_position(caster, state.return_map_name, state.return_pos)
+            end
+
+            if localhost() then
+                if type(state.packet) ~= "table" or state.packet.text ~= NOT_READY_MESSAGE then
+                    return false
+                end
+                for _ = 1, 20 do
+                    if caster:mp() == state.mp_before then
+                        return true
+                    end
+                    caster:sleep(100)
+                end
+                slog("귀환: mp was not refunded: before=%d after=%d", state.mp_before, caster:mp())
+                return false
             end
 
             bot_diag.dump(caster, "귀환:post_before_restore")
@@ -229,12 +267,38 @@ local SPECIAL_SPELLS = {
     {
         name = "비영사천문",
         cast = function(caster, _, slot, state)
-            state.before = caster:position()
-
-            if not localhost() then
+            state.return_map_name = id2map(caster:map()):name()
+            state.return_pos = caster:position()
+            local hosted = hosted_here(caster, "verify_cardinal_active", "CARDINAL_HOSTED", "EAST")
+            if hosted == false and hosted_here(caster, "verify_map_active", "CARDINAL_SOURCE_HOSTED", "국내성") then
+                local map_before = caster:map()
+                caster:request(resp.map_config, protocol.chat(false, "/맵이동 국내성"), function(p)
+                    return p.id ~= map_before
+                end)
+                hosted = hosted_here(caster, "verify_cardinal_active", "CARDINAL_HOSTED", "EAST")
+            elseif hosted == false and not localhost() then
                 caster:transfer(protocol.chat(false, "/맵이동 국내성"))
+                hosted = true
             end
 
+            if hosted then
+                local before = caster:position()
+                local packet = caster:request(
+                    resp.position,
+                    protocol.spell_cast("INPUT", slot, "동", 0, { 0, 0 }),
+                    function(p)
+                        return skill.positions_equal(p.abs, before) == false
+                    end)
+                state.packet = packet
+                if type(packet) ~= "table" then
+                    slog("비영사천문: position unchanged after cast")
+                    bot_diag.dump(caster, "비영사천문:position_unchanged")
+                    return false
+                end
+                return restore_position(caster, state.return_map_name, state.return_pos)
+            end
+
+            state.before = caster:position()
             local packet = caster:request(
                 resp.message,
                 protocol.spell_cast("INPUT", slot, "동", 0, { 0, 0 }),
@@ -243,27 +307,15 @@ local SPECIAL_SPELLS = {
                 end)
             state.packet = packet
 
-            if skill.is_cast_ready(packet.text, "비영사천문") == false then
-                slog("비영사천문: cast not ready: p.text=" .. tostring(packet and packet.text))
+            if type(packet) ~= "table" or skill.is_cast_ready(packet.text, "비영사천문") == false then
+                slog("비영사천문: cast not ready: p.text=" .. tostring(type(packet) == "table" and packet.text))
                 bot_diag.dump(caster, "비영사천문:cast_not_ready")
                 return false
             end
-
-            if localhost() then
-                if skill.positions_equal(caster:position(), state.before) == false then
-                    return false
-                end
-                return script_step.run_script(caster, "test/integration", "verify_map_instance", "MAP_INSTANCE", "1") ==
-                    true
-            end
-
-            if skill.positions_equal(caster:position(), state.before) then
-                slog("비영사천문: position unchanged after cast")
-                bot_diag.dump(caster, "비영사천문:position_unchanged")
+            if skill.positions_equal(caster:position(), state.before) == false then
                 return false
             end
-
-            return restore_nakrang_room(caster)
+            return script_step.run_script(caster, "test/integration", "verify_map_instance", "MAP_INSTANCE", "1") == true
         end,
     },
     {

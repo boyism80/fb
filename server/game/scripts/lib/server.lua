@@ -12,10 +12,10 @@ M.return_map_data = {
 function M.warp_to_return_map(ch)
     local data = M.return_map_data[ch:nation()]
     if data == nil then
-        return nil
+        return false
     end
     local map = data.maps[math.random(1, #data.maps)]
-    return ch:map(map)
+    return ch:map(map) == true
 end
 
 return M

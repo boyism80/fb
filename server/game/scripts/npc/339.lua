@@ -27,7 +27,9 @@ return {
                     return
                 end
                 q:step(0)
-                if server.warp_to_return_map(me) == nil then
+                if server.warp_to_return_map(me) ~= true then
+                    q:step(1)
+                    me:mkitem("노란비서", 1)
                     me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
                 end
             elseif sel == 2 then

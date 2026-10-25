@@ -19,7 +19,10 @@ return {
             if not me:rmitem("노란비서", 1, ITEM_DELETE_TYPE.REDUCE) then
                 return
             end
-            server.warp_to_return_map(me)
+            if server.warp_to_return_map(me) ~= true then
+                me:mkitem("노란비서", 1)
+                me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
+            end
         elseif sel == 2 then
             me:dialog(npc, "잘 생각하셨어요.", { prev = false, next = false })
         end

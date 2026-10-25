@@ -7,6 +7,7 @@
 --   CL:PASS:<step> [detail]
 --   CL:FAIL:<step> [detail]
 local spell = require('lib.spell')
+local server = require('lib.server')
 
 local HIT = 500
 
@@ -537,6 +538,44 @@ return {
         local now = map:instance()
         if now ~= (expected == '1') then
             return report(me, false, step, string.format('instance=%s slot=%s', tostring(now), tostring(map:slot())))
+        end
+        report(me, true, step)
+    end,
+
+    verify_map_active = function(me, step, name)
+        local map = name2map(name)
+        if map == nil or map:active() ~= true then
+            return report(me, false, step, 'not hosted here: ' .. tostring(name))
+        end
+        report(me, true, step)
+    end,
+
+    verify_cardinal_active = function(me, step, direction)
+        local map = me:map()
+        if map == nil or map:model() == nil then
+            return report(me, false, step, 'no map')
+        end
+        local cardinal = map:model():root():cardinal(CARDINAL_DIRECTION[direction])
+        if cardinal == nil or cardinal[1] == nil then
+            return report(me, false, step, 'no cardinal ' .. tostring(direction))
+        end
+        local dest = id2map(cardinal[1]:id())
+        if dest == nil or dest:active() ~= true then
+            return report(me, false, step, 'not hosted here: ' .. cardinal[1]:name())
+        end
+        report(me, true, step)
+    end,
+
+    verify_return_map_active = function(me, step)
+        local data = server.return_map_data[me:nation()]
+        if data == nil then
+            return report(me, false, step, 'no return map for nation ' .. tostring(me:nation()))
+        end
+        for _, id in ipairs(data.maps) do
+            local map = id2map(id)
+            if map == nil or map:active() ~= true then
+                return report(me, false, step, 'not hosted here: ' .. tostring(id))
+            end
         end
         report(me, true, step)
     end,

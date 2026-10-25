@@ -4,7 +4,6 @@ local server = require('lib.server')
 
 return {
     on_cast = function(me, spell)
-        local sound = 33
         local mp = 30
         local error = me:assert(STATE.GHOST, STATE.RIDING)
         if error ~= nil then
@@ -17,13 +16,11 @@ return {
         end
         me:mp_down(mp)
 
-        if server.warp_to_return_map(me) ~= nil then
+        if server.warp_to_return_map(me) then
             return
         end
 
-        me:sound(sound)
-        me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
-        me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
+        me:mp(me:mp() + mp)
     end,
 
     -- on_buff = function(me, sp)

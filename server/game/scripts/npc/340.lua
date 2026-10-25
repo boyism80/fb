@@ -25,7 +25,7 @@ return {
         end
 
         if sel == 1 then
-            if server.warp_to_return_map(me) == nil then
+            if server.warp_to_return_map(me) ~= true then
                 me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
             end
         elseif sel == 2 then
