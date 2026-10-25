@@ -11294,7 +11294,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_COLLECTION_UNLOCKS = 32,
     VT_UNSETTLED_REQUESTS = 34,
     VT_ESCROWS = 36,
-    VT_FRIENDS_REVISION = 38
+    VT_FRIENDS_REVISION = 38,
+    VT_ARCHIVED_STORAGE_BOXES = 40
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -11350,6 +11351,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t friends_revision() const {
     return GetField<uint64_t>(VT_FRIENDS_REVISION, 0);
   }
+  const ::flatbuffers::Vector<uint32_t> *archived_storage_boxes() const {
+    return GetPointer<const ::flatbuffers::Vector<uint32_t> *>(VT_ARCHIVED_STORAGE_BOXES);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -11396,6 +11400,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(escrows()) &&
            verifier.VerifyVectorOfTables(escrows()) &&
            VerifyField<uint64_t>(verifier, VT_FRIENDS_REVISION, 8) &&
+           VerifyOffset(verifier, VT_ARCHIVED_STORAGE_BOXES) &&
+           verifier.VerifyVector(archived_storage_boxes()) &&
            verifier.EndTable();
   }
 };
@@ -11458,6 +11464,9 @@ struct InitBuilder {
   void add_friends_revision(uint64_t friends_revision) {
     fbb_.AddElement<uint64_t>(Init::VT_FRIENDS_REVISION, friends_revision, 0);
   }
+  void add_archived_storage_boxes(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> archived_storage_boxes) {
+    fbb_.AddOffset(Init::VT_ARCHIVED_STORAGE_BOXES, archived_storage_boxes);
+  }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -11488,9 +11497,11 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows = 0,
-    uint64_t friends_revision = 0) {
+    uint64_t friends_revision = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> archived_storage_boxes = 0) {
   InitBuilder builder_(_fbb);
   builder_.add_friends_revision(friends_revision);
+  builder_.add_archived_storage_boxes(archived_storage_boxes);
   builder_.add_escrows(escrows);
   builder_.add_unsettled_requests(unsettled_requests);
   builder_.add_collection_unlocks(collection_unlocks);
@@ -11530,7 +11541,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows = nullptr,
-    uint64_t friends_revision = 0) {
+    uint64_t friends_revision = 0,
+    const std::vector<uint32_t> *archived_storage_boxes = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -11542,6 +11554,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
   auto unsettled_requests__ = unsettled_requests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>(*unsettled_requests) : 0;
   auto escrows__ = escrows ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>(*escrows) : 0;
+  auto archived_storage_boxes__ = archived_storage_boxes ? _fbb.CreateVector<uint32_t>(*archived_storage_boxes) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -11561,7 +11574,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       collection_unlocks__,
       unsettled_requests__,
       escrows__,
-      friends_revision);
+      friends_revision,
+      archived_storage_boxes__);
 }
 
 struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -808,7 +808,9 @@
                 Success = false
             });
             LoadGrantHistory();
-            errorMessage = $"아이템 지급 중 오류: {ex.Message}";
+            errorMessage = editingBoxId.HasValue
+                ? $"아이템 지급 중 오류: {ex.Message}"
+                : $"지급 결과를 확인하지 못했습니다: {ex.Message}. 내용을 바꾸지 않고 다시 지급하면 한 번만 지급됩니다.";
         }
         finally
         {
@@ -841,7 +843,27 @@
         [StringLength(32, ErrorMessage = "User name must be 32 characters or less.")]
         public string UserName { get; set; }
 
-        public string GrantRef { get; } = $"admin:{Guid.NewGuid():N}";
+        public Guid FormId { get; } = Guid.NewGuid();
+
+        public string GrantRef
+        {
+            get
+            {
+                var content = Newtonsoft.Json.JsonConvert.SerializeObject(new
+                {
+                    IsGlobal,
+                    UserName,
+                    Title,
+                    Message,
+                    Attachments,
+                    ExpiredDate,
+                    ReserveDate,
+                    IncludeNewCharacters
+                });
+                var hash = System.Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(content)));
+                return $"admin:{FormId:N}:{hash[..16]}";
+            }
+        }
 
         public DateTime? ExpiredDate { get; set; }
 

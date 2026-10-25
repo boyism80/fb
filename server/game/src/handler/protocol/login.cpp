@@ -438,7 +438,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         if (ch->unsettled.find(escrow_id) == nullptr)
             fb::logger::warn("{} escrow {} has no unsettled request (money {})", ch->name(), escrow_id, money);
     }
-    this->server.system_storage.init_from_login(*ch, resp.storage_boxes);
+    this->server.system_storage.init_from_login(*ch, resp.storage_boxes, resp.archived_storage_boxes);
     this->init_option(resp.option, *ch);
     {
         auto entries = std::vector<friend_entry>{};

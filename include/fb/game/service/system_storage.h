@@ -55,7 +55,7 @@ public:
     async::task<void> distribute();
     void              join(uint32_t user);
     void              on_write(const fb::protocol::internal::SystemStorageBox& dto);
-    void              init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes);
+    void              init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes, const std::vector<uint32_t>& archived);
     // clang-format on
 };
 

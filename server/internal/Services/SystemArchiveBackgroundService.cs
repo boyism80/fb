@@ -89,6 +89,7 @@ namespace Internal.Services
             if (_lastSweeps.TryGetValue(world, out var lastSweep) == false || now - lastSweep >= SweepInterval)
             {
                 await SweepArchivedMailRecordsAsync(dbContext, world);
+                await SweepArchivedStorageBoxesAsync(dbContext, scope.ServiceProvider.GetRequiredService<RedisDistributedLockService>(), world);
                 _lastSweeps[world] = now;
             }
 
@@ -124,6 +125,42 @@ namespace Internal.Services
                     await dbContext.SystemStorageBox.Archive(world, finished);
                     _logger.LogInformation("Archived {Count} recipient system storage boxes for world {World}", finished.Count, world);
                 }
+            }
+        }
+
+        private async Task SweepArchivedStorageBoxesAsync(DbContext dbContext, RedisDistributedLockService distributedLock, uint world)
+        {
+            var deleted = 0;
+            var afterId = 0u;
+            List<(uint Id, uint User, string ExternalRef)> rows;
+            do
+            {
+                rows = await dbContext.SystemStorageBox.GetArchivedMarketplace(world, afterId, 500);
+                foreach (var row in rows)
+                {
+                    afterId = row.Id;
+                    await using var _ = await distributedLock.Lock(world, StorageService.ExternalRefLockKey(row.ExternalRef));
+
+                    int parcels;
+                    await using (var unified = dbContext.GetUnifiedConnection())
+                    {
+                        parcels = await unified.ExecuteScalarAsync<int>(
+                            "SELECT COUNT(*) FROM `marketplace_parcel` WHERE `external_ref` = @externalRef",
+                            new { externalRef = row.ExternalRef });
+                    }
+
+                    var held = (await dbContext.StorageBox.Get(world, row.User)).Any(x => x.SystemStorageBoxId == row.Id);
+                    if (parcels == 0 && held == false)
+                    {
+                        await dbContext.SystemStorageBox.DeleteArchived(world, row.Id);
+                        deleted++;
+                    }
+                }
+            } while (rows.Count == 500);
+
+            if (deleted > 0)
+            {
+                _logger.LogInformation("Deleted {Count} archived marketplace storage boxes for world {World}", deleted, world);
             }
         }
 

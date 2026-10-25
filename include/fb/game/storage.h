@@ -9,7 +9,6 @@
 #include <map>
 #include <optional>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 namespace fb::protocol::internal {
@@ -62,9 +61,8 @@ public:
     static const char*              result_name(receive_result result);
 
     explicit                        storage_box(character& owner);
-    void                            init(const std::vector<entry>& entries);
+    void                            init(const std::vector<entry>& entries, const std::vector<uint32_t>& archived);
     void                            add(const std::vector<entry>& entries);
-    void                            sync(const std::vector<entry>& offered, const std::unordered_set<uint32_t>& listed);
     bool                            contains_system_box(uint32_t system_storage_box_id) const;
     [[nodiscard]] async::task<receive_result> receive_reward(uint32_t entry_id);
     const entry_map&                entries() const;

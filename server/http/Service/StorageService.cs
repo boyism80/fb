@@ -28,6 +28,8 @@ namespace Http.Service
             _logger = logger;
         }
 
+        public static string ExternalRefLockKey(string externalRef) => $"fb:lock:storage:ref:{externalRef}";
+
         public async Task<SystemStorageBox> CreateSystemStorageAsync(uint world,
             string title,
             string message,

@@ -53,6 +53,15 @@ namespace Marketplace.Reepository
             return (await conn.QueryAsync<MarketplaceParcel>(sql)).ToList();
         }
 
+        public async Task<bool> ExistsAsync(string externalRef)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.ExecuteScalarAsync<int>($"""
+                SELECT COUNT(*) FROM `marketplace_parcel`
+                WHERE `external_ref` = {externalRef.Escape()}
+                """) > 0;
+        }
+
         public async Task MarkSentAsync(string externalRef)
         {
             await using var conn = _dbContext.GetUnifiedConnection();

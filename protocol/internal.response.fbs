@@ -158,6 +158,7 @@ table Init {
   unsettled_requests: [fb.protocol.internal.UnsettledRequest];
   escrows: [fb.protocol.internal.Escrow];
   friends_revision: ulong;
+  archived_storage_boxes: [uint];
 }
 
 

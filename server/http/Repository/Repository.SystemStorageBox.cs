@@ -28,6 +28,40 @@ namespace Http.Reepository
             return all.OrderByDescending(b => b.Id).ToList();
         }
 
+        public async Task<List<uint>> GetArchived(uint world, IReadOnlyCollection<uint> ids)
+        {
+            if (ids.Count == 0)
+            {
+                return new List<uint>();
+            }
+
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            var rows = await conn.QueryAsync<uint>(
+                "SELECT `id` FROM `system_storage_box_archive` WHERE `id` IN @ids;",
+                new { ids });
+            return rows.ToList();
+        }
+
+        public async Task<List<(uint Id, uint User, string ExternalRef)>> GetArchivedMarketplace(uint world, uint afterId, int limit)
+        {
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            var rows = await conn.QueryAsync<(uint Id, uint User, string ExternalRef)>(
+                """
+                SELECT `id` AS Id, `user` AS User, `external_ref` AS ExternalRef FROM `system_storage_box_archive`
+                WHERE `id` > @afterId AND `user` IS NOT NULL AND `external_ref` LIKE 'marketplace:%'
+                ORDER BY `id`
+                LIMIT @limit;
+                """,
+                new { afterId, limit });
+            return rows.ToList();
+        }
+
+        public async Task DeleteArchived(uint world, uint id)
+        {
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            await conn.ExecuteAsync("DELETE FROM `system_storage_box_archive` WHERE `id` = @id;", new { id });
+        }
+
         public async Task<List<(uint Id, uint User)>> GetRecipients(uint world)
         {
             await using var conn = _dbContext.GetGlobalConnection(world);
@@ -57,7 +91,6 @@ namespace Http.Reepository
 
             if (row != null)
             {
-                Set(world, row);
                 return row;
             }
 

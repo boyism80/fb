@@ -83,7 +83,7 @@ std::vector<storage_box::box_dto> storage_box::to_save_dtos(uint32_t user_id, co
     return dtos;
 }
 
-void storage_box::init(const std::vector<entry>& entries)
+void storage_box::init(const std::vector<entry>& entries, const std::vector<uint32_t>& archived)
 {
     this->_owner.assert_thread();
 
@@ -112,6 +112,18 @@ void storage_box::init(const std::vector<entry>& entries)
         }
 
         this->_entries.emplace(e.id, e);
+    }
+
+    auto now = this->_owner.server.now();
+    for (auto it = this->_entries.begin(); it != this->_entries.end();)
+    {
+        const auto& box = it->second;
+        if (box.system_storage_box_id.has_value() &&
+            std::find(archived.begin(), archived.end(), box.system_storage_box_id.value()) != archived.end() &&
+            (box.received || expired(box, now)))
+            it = this->_entries.erase(it);
+        else
+            ++it;
     }
 }
 
@@ -163,24 +175,6 @@ void storage_box::add(const std::vector<entry>& entries)
         else
             this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
     }
-}
-
-void storage_box::sync(const std::vector<entry>& offered, const std::unordered_set<uint32_t>& listed)
-{
-    this->_owner.assert_thread();
-
-    auto now = this->_owner.server.now();
-    for (auto it = this->_entries.begin(); it != this->_entries.end();)
-    {
-        const auto& box = it->second;
-        if (box.system_storage_box_id.has_value() && listed.contains(box.system_storage_box_id.value()) == false &&
-            (box.received || expired(box, now)))
-            it = this->_entries.erase(it);
-        else
-            ++it;
-    }
-
-    this->add(offered);
 }
 
 bool storage_box::contains_system_box(uint32_t system_storage_box_id) const

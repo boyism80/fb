@@ -478,7 +478,9 @@ namespace Internal.Controllers
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
             var collectionUnlocks = await _dbContext.CollectionUnlock.Get(world, uid);
-            var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
+            var storageBoxes = (await _dbContext.StorageBox.Get(world, uid)).ToList();
+            var archivedStorageBoxes = await _dbContext.SystemStorageBox.GetArchived(world,
+                storageBoxes.Where(x => x.SystemStorageBoxId != null).Select(x => x.SystemStorageBoxId.Value).ToHashSet());
             var unsettledRequests = (await _dbContext.UnsettledRequest.Get(world, uid)).ToList();
             var escrows = await _dbContext.Escrow.Get(world, uid);
             var friends = await _friendService.GetEntries(world, uid);
@@ -531,6 +533,7 @@ namespace Internal.Controllers
                 Escrows = escrows.Select(_mapper.Map<Protocol.Escrow>).ToList(),
                 Friends = friends,
                 FriendsRevision = friendRevision?.Revision ?? 0,
+                ArchivedStorageBoxes = archivedStorageBoxes,
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
                 Group = sync.Group,

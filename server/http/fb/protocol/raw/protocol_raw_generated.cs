@@ -9353,6 +9353,14 @@ public struct Init : IFlatbufferObject
   public fb.protocol.@internal.raw.Escrow? Escrows(int j) { int o = __p.__offset(36); return o != 0 ? (fb.protocol.@internal.raw.Escrow?)(new fb.protocol.@internal.raw.Escrow()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int EscrowsLength { get { int o = __p.__offset(36); return o != 0 ? __p.__vector_len(o) : 0; } }
   public ulong FriendsRevision { get { int o = __p.__offset(38); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public uint ArchivedStorageBoxes(int j) { int o = __p.__offset(40); return o != 0 ? __p.bb.GetUint(__p.__vector(o) + j * 4) : (uint)0; }
+  public int ArchivedStorageBoxesLength { get { int o = __p.__offset(40); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<uint> GetArchivedStorageBoxesBytes() { return __p.__vector_as_span<uint>(40, 4); }
+#else
+  public ArraySegment<byte>? GetArchivedStorageBoxesBytes() { return __p.__vector_as_arraysegment(40); }
+#endif
+  public uint[] GetArchivedStorageBoxesArray() { return __p.__vector_as_array<uint>(40); }
 
   public static Offset<fb.protocol.@internal.response.raw.Init> CreateInit(FlatBufferBuilder builder,
       Offset<fb.protocol.@internal.raw.Character> characterOffset = default(Offset<fb.protocol.@internal.raw.Character>),
@@ -9372,9 +9380,11 @@ public struct Init : IFlatbufferObject
       VectorOffset collection_unlocksOffset = default(VectorOffset),
       VectorOffset unsettled_requestsOffset = default(VectorOffset),
       VectorOffset escrowsOffset = default(VectorOffset),
-      ulong friends_revision = 0) {
-    builder.StartTable(18);
+      ulong friends_revision = 0,
+      VectorOffset archived_storage_boxesOffset = default(VectorOffset)) {
+    builder.StartTable(19);
     Init.AddFriendsRevision(builder, friends_revision);
+    Init.AddArchivedStorageBoxes(builder, archived_storage_boxesOffset);
     Init.AddEscrows(builder, escrowsOffset);
     Init.AddUnsettledRequests(builder, unsettled_requestsOffset);
     Init.AddCollectionUnlocks(builder, collection_unlocksOffset);
@@ -9395,7 +9405,7 @@ public struct Init : IFlatbufferObject
     return Init.EndInit(builder);
   }
 
-  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(18); }
+  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(19); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
   public static void AddGroup(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> groupOffset) { builder.AddOffset(2, groupOffset.Value, 0); }
@@ -9469,6 +9479,12 @@ public struct Init : IFlatbufferObject
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Escrow>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEscrowsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddFriendsRevision(FlatBufferBuilder builder, ulong friendsRevision) { builder.AddUlong(17, friendsRevision, 0); }
+  public static void AddArchivedStorageBoxes(FlatBufferBuilder builder, VectorOffset archivedStorageBoxesOffset) { builder.AddOffset(18, archivedStorageBoxesOffset.Value, 0); }
+  public static VectorOffset CreateArchivedStorageBoxesVector(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddUint(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateArchivedStorageBoxesVectorBlock(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateArchivedStorageBoxesVectorBlock(FlatBufferBuilder builder, ArraySegment<uint> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateArchivedStorageBoxesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<uint>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartArchivedStorageBoxesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol.@internal.response.raw.Init> EndInit(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.Init>(o);
@@ -9499,6 +9515,7 @@ static public class InitVerify
       && verifier.VerifyVectorOfTables(tablePos, 34 /*UnsettledRequests*/, fb.protocol.@internal.raw.UnsettledRequestVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 36 /*Escrows*/, fb.protocol.@internal.raw.EscrowVerify.Verify, false)
       && verifier.VerifyField(tablePos, 38 /*FriendsRevision*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyVectorOfData(tablePos, 40 /*ArchivedStorageBoxes*/, 4 /*uint*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

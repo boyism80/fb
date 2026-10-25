@@ -123,7 +123,8 @@ void service::system_storage::on_write(const fb::protocol::internal::SystemStora
 }
 
 void service::system_storage::init_from_login(character&                                             ch,
-                                              const std::vector<fb::protocol::internal::StorageBox>& boxes)
+                                              const std::vector<fb::protocol::internal::StorageBox>& boxes,
+                                              const std::vector<uint32_t>&                           archived)
 {
     auto entries = std::vector<storage_box::entry>{};
     entries.reserve(boxes.size());
@@ -132,7 +133,7 @@ void service::system_storage::init_from_login(character&                        
         entries.push_back(from_storage_box_dto(dto));
     }
 
-    ch.storage_box.init(entries);
+    ch.storage_box.init(entries, archived);
 }
 
 async::task<void> service::system_storage::sync(character& ch)
@@ -158,16 +159,14 @@ async::task<void> service::system_storage::sync(character& ch)
 
         const auto now     = this->server.now();
         auto       offered = std::vector<storage_box::entry>{};
-        auto       listed  = std::unordered_set<uint32_t>{};
         for (const auto& dto : resp.boxes)
         {
             auto box = from_system_storage_dto(dto);
-            listed.insert(box.id);
             if (box.active && box.expired(now) == false && box.eligible(*ptr))
                 offered.push_back(box.to_entry());
         }
 
-        ptr->storage_box.sync(offered, listed);
+        ptr->storage_box.add(offered);
     }
     catch (const std::exception& e)
     {
@@ -285,20 +284,11 @@ fb::async_generator<void> service::system_storage::distribute_coroutine()
 
         if (new_box_seen)
         {
-            auto pending_boxes = std::make_shared<std::vector<system_storage_box>>(this->_pending_boxes);
-            co_await this->server.characters.foreach_async([pending_boxes](auto& ch) -> async::task<void> {
-                auto entries = std::vector<storage_box::entry>{};
-                for (const auto& box : *pending_boxes)
-                {
-                    if (box.eligible(*ch))
-                        entries.push_back(box.to_entry());
-                }
-                ch->storage_box.add(entries);
-                co_return;
+            co_await this->server.characters.foreach_async([this](auto& ch) -> async::task<void> {
+                co_await this->sync(*ch);
             });
         }
-
-        if (joined.empty() == false)
+        else if (joined.empty() == false)
         {
             auto targets = std::vector<std::shared_ptr<character>>{};
             for (auto user : joined)

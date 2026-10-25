@@ -15,11 +15,12 @@ local OPT_YES          = "예"
 local DIALOG_PREV = 0
 local DIALOG_NEXT = 2
 
-local REWARD_ITEM_NAME  = "도토리"
-local REWARD_ITEM_COUNT = 1
-local FILL_ITEM_NAME    = "목도"
-local MQ_WAIT_MS        = 2000
-local SYSTEM_PATH       = "/storage/system"
+local REWARD_ITEM_NAME   = "도토리"
+local REWARD_ITEM_COUNT  = 1
+local FILL_ITEM_NAME     = "목도"
+local MQ_WAIT_MS         = 2000
+local SYSTEM_PATH        = "/storage/system"
+local ARCHIVE_WAIT_STEPS = 8
 
 local MSG_GRANT_NEED_REWARD = "보상이 하나 이상 필요합니다."
 local MSG_GRANT_OK          = "지급이 완료되었습니다."
@@ -580,6 +581,54 @@ test_suite {
             end
 
             progress(b, "G2 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local b = ctx:bot(1)
+            local title = TITLE .. "_G1"
+            progress(b, "G3: RECEIVED BOX DROPPED AFTER ARCHIVE")
+
+            for _ = 1, ARCHIVE_WAIT_STEPS do
+                ctx:sleep(10000)
+                b:chat("=== G3 waiting for archive ===")
+            end
+
+            local list, err = open_storage_list(b)
+            if list == nil then
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+            close_dialog(b)
+
+            if b:logout() == false then
+                progress(b, "FAILED: logout")
+                return false
+            end
+            if b:login() == false then
+                progress(b, "FAILED: relogin")
+                return false
+            end
+            b = ctx:bot(1)
+            ctx:sleep(MQ_WAIT_MS)
+            lib.formation.arrange_in_line(ctx)
+
+            if b:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
+                progress(b, string.format("FAILED: reward count after archive=%d", b:item_count(REWARD_ITEM_NAME)))
+                return false
+            end
+            local gone, gone_err = assert_entry_gone(b, title)
+            if gone == false then
+                progress(b, "FAILED: " .. tostring(gone_err))
+                return false
+            end
+            local anchor = assert_entry_status(b, TITLE .. "_ANCHOR", MSG_STATUS_AVAILABLE)
+            if anchor == false then
+                progress(b, "FAILED: unreceived anchor dropped after archive")
+                return false
+            end
+
+            progress(b, "G3 PASSED")
             return true
         end,
 
