@@ -63,18 +63,16 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     fb::logger::info("{} has disconnected.", ch->name());
 
     auto thread = ch->thread();
+    auto world  = ch->world();
+    auto name   = ch->name();
+    auto saved  = false;
     try
     {
         if (this->running())
         {
             co_await this->save(*ch);
         }
-        auto world = ch->world();
-        auto resp  = co_await this->http.post("internal",
-                                             "/in-game/logout",
-                                             internal_reqs::Logout{world, ch->name(), fb::config<uint8_t>("id")});
-        if (resp.success == false)
-            fb::logger::fatal("Character {} logout failed: {}", ch->name(), resp.reason.value_or(""));
+        saved = true;
     }
     catch (std::exception& e)
     {
@@ -149,6 +147,22 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         this->characters.remove(ptr);
         co_await ch->destroy();
         socket.data(nullptr);
+    }
+
+    if (saved)
+    {
+        try
+        {
+            auto resp = co_await this->http.post("internal",
+                                                 "/in-game/logout",
+                                                 internal_reqs::Logout{world, name, fb::config<uint8_t>("id")});
+            if (resp.success == false)
+                fb::logger::fatal("Character {} logout failed: {}", name, resp.reason.value_or(""));
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
     }
 
     co_return true;
