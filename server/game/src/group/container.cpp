@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <exception>
 #include <format>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -48,12 +49,14 @@ async::task<void> group::container::reload(uint64_t id)
 {
     auto* thread = this->_server.threads.current();
     auto  fresh  = entity_ptr{};
+    auto  failed = false;
     try
     {
         fresh = co_await this->fetch(id);
     }
     catch (const std::exception& e)
     {
+        failed = true;
         fb::logger::warn("group reload failed (id: {}): {}", id, e.what());
     }
 
@@ -61,7 +64,11 @@ async::task<void> group::container::reload(uint64_t id)
         co_await thread->switching();
 
     if (fresh == nullptr)
+    {
+        if (failed == false)
+            co_await this->on_destroyed(std::string{}, id, std::numeric_limits<uint64_t>::max());
         co_return;
+    }
 
     auto guard = co_await this->enter_write(id);
     if (guard.holds_lock() == false || guard.value() == nullptr)

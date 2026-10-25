@@ -93,6 +93,14 @@ async::task<void> group::container::destroy(character& me)
                                          "internal",
                                          "/group/destroy",
                                          internal_reqs::DestroyGroup{world, fb::config<uint32_t>("id"), me.name()});
+    using fb::model::enum_value::ERROR_CODE;
+    auto error = static_cast<ERROR_CODE>(resp.error);
+    if (error == ERROR_CODE::GROUP_NOT_JOINED || error == ERROR_CODE::GROUP_NOT_FOUND)
+    {
+        co_await this->drop_stale_membership(me, group_id.value());
+        co_return;
+    }
+
     co_await this->on_error(resp.error, resp.actor.name);
     co_await this->on_destroyed(resp.actor.name, resp.group_id, resp.revision);
 }
@@ -168,8 +176,9 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
 
 async::task<void> group::container::leave_member(character& leaver)
 {
-    auto weak = leaver.weak_from_this_as<character>();
-    if (leaver.group.id().has_value() == false)
+    auto weak     = leaver.weak_from_this_as<character>();
+    auto group_id = leaver.group.id();
+    if (group_id.has_value() == false)
         co_return;
 
     auto   world = leaver.world();
@@ -178,6 +187,14 @@ async::task<void> group::container::leave_member(character& leaver)
                                          "internal",
                                          "/group/leave",
                                          internal_reqs::LeaveGroup{world, fb::config<uint32_t>("id"), leaver.name()});
+
+    using fb::model::enum_value::ERROR_CODE;
+    auto error = static_cast<ERROR_CODE>(resp.error);
+    if (error == ERROR_CODE::GROUP_NOT_JOINED || error == ERROR_CODE::GROUP_NOT_FOUND)
+    {
+        co_await this->drop_stale_membership(leaver, group_id.value());
+        co_return;
+    }
 
     auto target = std::string{};
     if (resp.target.has_value())

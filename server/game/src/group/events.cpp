@@ -60,6 +60,10 @@ async::task<void> group::container::on_error(uint32_t error, std::string_view ac
     case ERROR_CODE::GROUP_FULL_MEMBER:
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_FULL_MEMBER));
 
+    case ERROR_CODE::GROUP_NOT_JOINED:
+    case ERROR_CODE::GROUP_NOT_FOUND:
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
+
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }
@@ -415,6 +419,23 @@ async::task<void> group::container::reset_member(character& ch, std::string mess
     {
         std::ignore = co_await map->kick(ch);
     }
+}
+
+async::task<void> group::container::drop_stale_membership(character& ch, uint64_t group_id)
+{
+    auto weak = ch.weak_from_this_as<character>();
+    {
+        auto guard = co_await this->enter_write(group_id);
+        if (guard.holds_lock() && guard.value() != nullptr)
+            guard.value()->detach(weak);
+    }
+
+    co_await this->_server.threads.follow(weak);
+    auto ptr = weak.lock();
+    if (ptr != nullptr && ptr->group.id() == group_id)
+        co_await this->reset_member(*ptr, _TEXT(MESSAGE_GROUP_NOT_JOINED));
+
+    co_await this->reload(group_id);
 }
 
 async::task<void> group::container::on_destroyed(std::string actor, uint64_t group_id, uint64_t revision)
