@@ -55,6 +55,7 @@ local function do_sub1_start(me, npc)
     if b == DIALOG_RESULT.QUIT or not b then
         return false
     end
+    ::NPC_463_0011::
     b = me:dialog(npc, "무작정 이 땅의 과일만 주시는건 해서는 안될 일이시다. 아이들을 잃으셔서 가슴이 아프시다. 아프시다.", { prev = true, next = true })
     if b == DIALOG_RESULT.PREV then
         return false
@@ -62,8 +63,12 @@ local function do_sub1_start(me, npc)
     if b == DIALOG_RESULT.QUIT or not b then
         return false
     end
+    ::NPC_463_0012::
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
         { prev = true })
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_463_0011
+    end
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -76,6 +81,9 @@ local function do_sub1_start(me, npc)
         return true
     end
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, { prev = true })
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_463_0012
+    end
     if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", { prev = false, next = false })
         return true

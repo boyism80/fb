@@ -2,7 +2,7 @@
 
 return {
     on_click = function(me, npc)
-        ::NPC_399_000::
+        ::NPC_399_0000::
         local sel, btn = me:list(npc, "무슨 용건인가?", { "금패, 은패, 동패는 무엇인가요?", "뭐 재미있는 이야기라도 해주십시오." }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -43,6 +43,6 @@ return {
                 return
             end
         end
-        goto NPC_399_000
+        goto NPC_399_0000
     end
 }

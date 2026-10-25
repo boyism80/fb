@@ -2,7 +2,7 @@
 
 return {
     on_click = function(me, npc)
-        ::NPC_36_COS00::
+        ::NPC_36_0000::
         local button = me:dialog(npc, '여기는 사슴굴입니다. 10 레벨부터 25 레벨까지 사냥하기에 좋습니다.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
@@ -13,7 +13,7 @@ return {
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_36_COS00
+            goto NPC_36_0000
         end
     end
 }

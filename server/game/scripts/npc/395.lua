@@ -5,7 +5,7 @@ return {
     on_click = function(me, npc)
         local required = { ["녹비약(소)"] = 1, ["동천패"] = 1, ["동지패"] = 1, ["동인패"] = 1 }
 
-        ::NPC_395_000::
+        ::NPC_395_0000::
         local sel, btn = me:list(npc, "무슨일로 찾아왔는가?", {
             "동천패, 동지패, 동인패를 합쳐주십시오..",
             "도움이 될 만한 정보 없습니까?",
@@ -29,10 +29,10 @@ return {
                 else
                     me:dialog(npc, "동천지인패를 만들기 위해서는 녹비약(소)가 필요하다네. 자네는 가지고 있지 않은 것 같은데?", { prev = false, next = false })
                 end
-                goto NPC_395_000
+                goto NPC_395_0000
             elseif code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 동천지인패를 받을 수 없네. 자리 좀 비우고 다시 오게.", { prev = false, next = false })
-                goto NPC_395_000
+                goto NPC_395_0000
             elseif reward == nil then
                 me:dialog(npc, "아니 실패해버렸잖아! 이런.. 미안하네..", { prev = false, next = false })
             else
@@ -41,6 +41,6 @@ return {
         elseif sel == 2 then
             me:dialog(npc, "고구려엔 왈숙네라는 주모가 있다면서? 어떤 주모이길래 중국에 까지 소문이 나는걸까?", { prev = false, next = false })
         end
-        goto NPC_395_000
+        goto NPC_395_0000
     end
 }

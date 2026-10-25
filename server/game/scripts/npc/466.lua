@@ -1,6 +1,7 @@
 -- npc: 중원왕
 local quest = require('lib.quest')
 local function do_sub4_start(me, npc)
+    ::NPC_466_0005::
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
         { prev = false })
     if btn == DIALOG_RESULT.QUIT then
@@ -14,7 +15,11 @@ local function do_sub4_start(me, npc)
         me:dialog(npc, "이 곳의 상황은 본래와 다를바 없으시다.", { prev = false, next = false })
         return true
     end
+    ::NPC_466_0006::
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, { prev = true })
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_466_0005
+    end
     if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", { prev = false, next = false })
         return true
@@ -23,6 +28,9 @@ local function do_sub4_start(me, npc)
     local b = me:dialog(npc, "이 아이는 원래 우리 부족 아이가 아니시다. 이주하는 난리통에 어머니를 잃어버리신 아이다. 책임지시고", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return false
+    end
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_466_0006
     end
     ::NPC_466_0002::
     b = me:dialog(npc, "이 아이의 부족을 찾아 데려다 주셔야 한다. 우리 원숭이들은 모두 4성에 흩어져 계시다! 힘들어도 꼭 찾아주셔야 한다!", { prev = true, next = true })

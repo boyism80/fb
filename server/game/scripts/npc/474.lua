@@ -46,6 +46,7 @@ return {
         end
 
         if main_step == 1 then
+            ::NPC_474_0008::
             local sel, btn = me:list(npc, "원숭이들을 대표하여 감사드리네.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
                 { prev = false })
             if btn == DIALOG_RESULT.QUIT then
@@ -61,12 +62,12 @@ return {
             end
             ::NPC_474_0009::
             sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, { prev = true })
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_474_0008
+            end
             if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
                 me:dialog(npc, "장난을 치는 사람은 싫어한다.", { prev = false, next = false })
                 return
-            end
-            if btn == DIALOG_RESULT.PREV then
-                goto NPC_474_0009
             end
             ::NPC_474_0010::
             local b = me:dialog(npc, "음, 아직도 도와주고 싶다는 마음이 남아있다니, 정말로 보기 드문 의인이로다. 자네의 마음 씀씀이에 경의를 표하겠네.",
@@ -88,11 +89,11 @@ return {
             end
             ::NPC_474_0012::
             sel, btn = me:list(npc, "그래도 좋은가?", { "네, 괜찮습니다.", "다시 생각해볼래요." }, { prev = true })
-            if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
-                return
-            end
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_474_0011
+            end
+            if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
+                return
             end
             ::NPC_474_0013::
             b = me:dialog(npc, "지금처럼 뿔뿔히 흩어진 상황에서는 모일 수가 없으니, 자네가 대신 의견을 좀 모아다주지 않겠나?", { prev = true, next = true })

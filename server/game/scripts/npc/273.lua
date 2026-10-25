@@ -61,12 +61,9 @@ return {
             me:push_achievement(48, "파마의 피리를 찾자.", 7, 1)
 
             ::NPC_273_0020::
-            button = me:dialog(npc, "예? 정말 그래도 되겠습니까? 이렇게 고마울 데가...", { prev = true, next = true })
+            button = me:dialog(npc, "예? 정말 그래도 되겠습니까? 이렇게 고마울 데가...", { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
-            end
-            if button == DIALOG_RESULT.PREV then
-                goto NPC_273_0012
             end
 
             ::NPC_273_0021::

@@ -7,7 +7,7 @@ return {
             return
         end
 
-        ::NPC_73_1::
+        ::NPC_73_0001::
         if not me:has_items("방송쿠폰", 1) then
             local btn = me:dialog(npc, "방송쿠폰을 가지고 계셔야 방송을 하실 수 있어요.", { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
@@ -22,7 +22,7 @@ return {
         end
 
         if message == DIALOG_RESULT.PREV then
-            goto NPC_73_1
+            goto NPC_73_0001
         end
 
         if not me:rmitem("방송쿠폰", 1, ITEM_DELETE_TYPE.GIVE) then

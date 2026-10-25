@@ -11,7 +11,7 @@ local EXCHANGES = {
 
 return {
     on_click = function(me, npc)
-        ::NPC_214_COS001::
+        ::NPC_214_0001::
         local sel = me:list(npc, '아함~ 졸려.... 무슨일로 왔는가? 난 바쁜사람이라네...', { '보물열쇠를 가지고 왔어요...', '하하.. 그냥 인사차...' },
             { prev = false })
         if sel == nil then

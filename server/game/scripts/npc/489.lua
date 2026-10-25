@@ -67,12 +67,9 @@ return {
 
             ::NPC_489_0005::
             button = me:dialog(npc, "뭔가 좋은 물건을 가져오면 이 피리랑 바꿔 줄게. 뭐가 좋을까? 음... 그래. 사탕! 난 사탕이 먹고 싶어! 사탕을 가져다주면 피리를 줄게!",
-                { prev = true, next = true })
+                { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
-            end
-            if button == DIALOG_RESULT.PREV then
-                goto NPC_489_0004
             end
 
             ::NPC_489_0006::
@@ -121,12 +118,9 @@ return {
             me:push_achievement(48, "파마의 피리를 찾자(파마의 피리를 돌려주자).", 7, 1)
 
             ::NPC_489_0008::
-            button = me:dialog(npc, "좋았어! 나중에 딴말하기 없기!", { prev = true, next = true })
+            local button = me:dialog(npc, "좋았어! 나중에 딴말하기 없기!", { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
-            end
-            if button == DIALOG_RESULT.PREV then
-                goto NPC_489_0007
             end
 
             me:dialog(npc, "사탕은 정말 맛있어! 히히......", { prev = false, next = false })

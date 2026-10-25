@@ -53,7 +53,7 @@ return {
                 return
             end
             ::NPC_184_0020::
-            btn = me:dialog(npc, '허허 고맙구만. 이 재료들은 내가 잘 사용하도록 하지.', { prev = true, next = true })
+            btn = me:dialog(npc, '허허 고맙구만. 이 재료들은 내가 잘 사용하도록 하지.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

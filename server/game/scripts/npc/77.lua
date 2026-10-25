@@ -115,7 +115,7 @@ return {
             q:complete()
             me:push_achievement(ACHIEVEMENT_CLEAR, '용궁정화에 성공하였다.', 7, 1)
             ::NPC_77_0008::
-            btn = me:dialog(npc, '아. 이제야 용궁이 다시 깨끗함을 찾을 수 있겠네요.', { prev = true, next = true })
+            btn = me:dialog(npc, '아. 이제야 용궁이 다시 깨끗함을 찾을 수 있겠네요.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

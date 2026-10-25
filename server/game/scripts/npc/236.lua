@@ -24,6 +24,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_236_0012::
             local sel = me:list(npc, '자네가 후를 퇴치하여 주지 않겠나? 제발 부탁하네.', { '그러죠. 제가 처리하겠습니다!!', '저보다 나은 적임자가 분명 있을겁니다.' },
                 { prev = false })
             if sel == nil or sel ~= 1 then
@@ -34,6 +35,9 @@ return {
                 '고맙네. 후는 번식력도 강해서 한번에 ' ..
                 BONE_COUNT .. '마리 이상 잡지 않으면 금방 다시 번식을 한다네. 후는 여러종류가 있지만, 어떤 종류든 후를 잡으면 뼈를 남긴다네.',
                 { prev = true, next = true })
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_236_0012
+            end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -75,7 +79,7 @@ return {
             btn = me:dialog(npc,
                 BONE_COUNT ..
                 '마리를 잡는데 성공했군! 하지만 아직 일이 끝난게 아닐세. 미리 얘기를 하지 않았지만 후라는 녀석은 마계천신이라는 왕이 있어서 그 왕이 사라지지 않는 이상 시간이 지나면 더욱 강하게 되살아나지.',
-                { prev = true, next = true })
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -98,7 +102,7 @@ return {
             q:step(2)
             me:push_achievement(38, '마계천신의뼈를 구하자.', 7, 1)
             ::NPC_236_0007::
-            btn = me:dialog(npc, '오, 고맙네. 그럼 자네가 가지고온 후의뼈는 가져가도록 하겠네.', { prev = true, next = true })
+            btn = me:dialog(npc, '오, 고맙네. 그럼 자네가 가지고온 후의뼈는 가져가도록 하겠네.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -117,7 +121,7 @@ return {
                 return
             end
             ::NPC_236_0009::
-            btn = me:dialog(npc, '오오, 정말로 마계천신의뼈를 가지고 왔군. 자넨 정말 대단한 인물이군..', { prev = true, next = true })
+            btn = me:dialog(npc, '오오, 정말로 마계천신의뼈를 가지고 왔군. 자넨 정말 대단한 인물이군..', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

@@ -15,28 +15,28 @@ return {
         end
 
         if q == nil then
-            ::NPC_76_COS001::
-            btn = me:dialog(npc, '안녕하세요? ' .. me:name() .. '님, 전 용왕님의 식사를 담당하고 있는 좌선녀라해요', { prev = true, next = true })
+            ::NPC_76_0001::
+            btn = me:dialog(npc, '안녕하세요? ' .. me:name() .. '님, 전 용왕님의 식사를 담당하고 있는 좌선녀라해요', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            ::NPC_76_COS002::
+            ::NPC_76_0002::
             btn = me:dialog(npc, '근래 용왕님께서 여러 어려운 일을 처리하시느라 몸이 상당히 나빠지셨어요', { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
-                goto NPC_76_COS001
+                goto NPC_76_0001
             end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            ::NPC_76_COS003::
+            ::NPC_76_0003::
             btn = me:dialog(npc, '그래서 제가 용왕님의 건강에 도움이 될 천상보강탕을 해 드릴려고 하는데 재료가 부족하네요.', { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
-                goto NPC_76_COS002
+                goto NPC_76_0002
             end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            ::NPC_76_COS004::
+            ::NPC_76_0004::
             sel = me:list(npc, '제가 부탁하는 재료를 구해주실 수 있나요?', { '아.물론입니다.', '죄송하지만 바빠서...' })
             if sel == nil or sel ~= 1 then
                 if sel == 2 then
@@ -53,15 +53,15 @@ return {
             end
             q:step(1)
             me:push_achievement(ACHIEVEMENT_WATER, '좌선녀의 부탁을 들어주자.', 7, 1)
-            ::NPC_76_COS005::
+            ::NPC_76_0005::
             btn = me:dialog(npc, me:name() .. '님 정말 감사합니다. 부탁드릴 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.',
-                { prev = true, next = true })
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             btn = me:dialog(npc, '그럼 부탁드리겠습니다.', { prev = false, next = false })
             if btn == DIALOG_RESULT.PREV then
-                goto NPC_76_COS005
+                goto NPC_76_0005
             end
             return
         end
@@ -76,7 +76,7 @@ return {
             return
         end
 
-        ::NPC_76_COS007::
+        ::NPC_76_0007::
         btn = me:dialog(npc, '어머, 재료를 벌써 다 모아 오셨군요. 정말 감사드려요.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -96,7 +96,7 @@ return {
         me:push_achievement(ACHIEVEMENT_WATER, '좌선녀의 부탁을 들어주었다.', 7, 1)
         btn = me:dialog(npc, '이 인어반지는 제 성의에요. 예전 인어장군님께 선물을 받은 것인데 공좌님의 성의에 꼭 보답하고 싶어서요.', { prev = false, next = true })
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_76_COS007
+            goto NPC_76_0007
         end
         if btn == DIALOG_RESULT.QUIT then
             return

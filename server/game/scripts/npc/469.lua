@@ -28,6 +28,7 @@ local function do_sub9_receive_wine(me, npc)
 end
 
 local function do_sub7_start(me, npc)
+    ::NPC_469_0006::
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
         { prev = false })
     if btn == DIALOG_RESULT.QUIT then
@@ -42,6 +43,9 @@ local function do_sub7_start(me, npc)
         return true
     end
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, { prev = true })
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_469_0006
+    end
     if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", { prev = false, next = false })
         return true

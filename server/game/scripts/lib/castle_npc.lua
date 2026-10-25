@@ -162,7 +162,7 @@ local function buy_clan_sword(me, npc_obj)
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    me:dialog(npc_obj, '죽으면 그 힘이 모두 사라지게 되니 조심해서 쓰시게나.', { prev = true, next = false })
+    me:dialog(npc_obj, '죽으면 그 힘이 모두 사라지게 되니 조심해서 쓰시게나.', { prev = false, next = false })
 end
 
 local function buy_secretary(me, npc_obj)
@@ -349,17 +349,38 @@ function M.buy_clothes(me, npc_obj)
     end
 
     local price = 50000
-    if me:dialog(npc_obj, string.format('안녕하십니까 %s님.', me:name()), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+    ::CLOTHES_INTRO_1::
+    local button = me:dialog(npc_obj, string.format('안녕하십니까 %s님.', me:name()), { prev = false, next = true })
+    if button == DIALOG_RESULT.QUIT then
         return
     end
-    if me:dialog(npc_obj, string.format('[%s]을 구하러 오신 것을 알고 있습니다. 하지만 주의하셔야 할 것이 있습니다.', clothes_name), { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+
+    ::CLOTHES_INTRO_2::
+    button = me:dialog(npc_obj, string.format('[%s]을 구하러 오신 것을 알고 있습니다. 하지만 주의하셔야 할 것이 있습니다.', clothes_name),
+        { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
         return
     end
-    if me:dialog(npc_obj, string.format('[%s]은 어디까지나 신수의 힘을 잠시 빌려 만든 옷. 일정 시간이 지나면 그 힘이 다하게 됩니다.', clothes_name), { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+    if button == DIALOG_RESULT.PREV then
+        goto CLOTHES_INTRO_1
+    end
+
+    ::CLOTHES_INTRO_3::
+    button = me:dialog(npc_obj, string.format('[%s]은 어디까지나 신수의 힘을 잠시 빌려 만든 옷. 일정 시간이 지나면 그 힘이 다하게 됩니다.', clothes_name),
+        { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
         return
     end
-    if me:dialog(npc_obj, '그 점을 기억하시기 바랍니다.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
+    if button == DIALOG_RESULT.PREV then
+        goto CLOTHES_INTRO_2
+    end
+
+    button = me:dialog(npc_obj, '그 점을 기억하시기 바랍니다.', { prev = true, next = true })
+    if button == DIALOG_RESULT.QUIT then
         return
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto CLOTHES_INTRO_3
     end
 
     local selected = me:pursuit(npc_obj, string.format('[%s]을 구입하시겠습니까? 비용은 %d전 입니다.', clothes_name, price),

@@ -2,6 +2,7 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 local function do_sub8_start(me, npc)
+    ::NPC_470_0008::
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" },
         { prev = false })
     if btn == DIALOG_RESULT.QUIT then
@@ -17,6 +18,9 @@ local function do_sub8_start(me, npc)
     end
     ::NPC_470_0009::
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, { prev = true })
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_470_0008
+    end
     if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", { prev = false, next = false })
         return true

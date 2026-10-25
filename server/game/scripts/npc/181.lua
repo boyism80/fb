@@ -34,6 +34,9 @@ return {
             end
             ::NPC_181_0004::
             btn = me:dialog(npc, '그래 주겠는가? 고맙네.', { prev = true, next = true })
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_181_0003
+            end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -94,6 +97,9 @@ return {
             end
             ::NPC_181_0009::
             btn = me:dialog(npc, '정말 고맙네! 자넨 혹시 보살인가? 정말 친절하구만. 일이 끝나고 나면 내 꼭 사례하겠네.', { prev = true, next = true })
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_181_0008
+            end
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

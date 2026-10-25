@@ -11,7 +11,7 @@ return {
         }
         local insufficient_msg = "아직 너의 사랑이 부족한것 같은데?"
 
-        ::NPC_342_000::
+        ::NPC_342_0000::
         local sel, btn = me:list(npc, "들어올땐 마음대로지만 나갈땐 아니란다?", {
             "트렁크 교환 (사랑의증표 30개)",
             "비키니 교환 (사랑의증표 50개)",
@@ -32,14 +32,14 @@ return {
         )
         if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, insufficient_msg, { prev = false, next = false })
-            goto NPC_342_000
+            goto NPC_342_0000
         end
         if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 받을 수 없네요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
-            goto NPC_342_000
+            goto NPC_342_0000
         end
 
         me:dialog(npc, ex.msg, { prev = false, next = false })
-        goto NPC_342_000
+        goto NPC_342_0000
     end
 }

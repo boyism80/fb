@@ -262,7 +262,7 @@ function M.cheongsimcho_on_move(me)
     end
     local obj = name2item('청심초')
     if obj ~= nil then
-        me:dialog(obj, '청심초를 구했다!', { prev = true, next = true })
+        me:dialog(obj, '청심초를 구했다!', { prev = false, next = false })
     else
         me:chat('청심초를 구했다!')
     end
@@ -633,17 +633,17 @@ function M.goddess_dew_on_move(me)
             return
         end
         me:push_achievement(DEW_ACHIEVEMENT_ID, '여신의이슬을 만들었다.', 7, 16)
-        me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', { prev = true, next = true })
+        me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', { prev = false, next = true })
         return
     end
 
     if math.random(1, 10) <= 9 then
         me:push_achievement(DEW_ACHIEVEMENT_ID, string.format('투명한 이슬을 %d개 구했다.', water), 7, 16)
-        me:dialog(nil, '투명한 이슬을 발견했다!\n\n조심조심... 투명한 이슬을 담자.', { prev = true, next = true })
+        me:dialog(nil, '투명한 이슬을 발견했다!\n\n조심조심... 투명한 이슬을 담자.', { prev = false, next = true })
     else
         water = water - 1
         quest:param(string.format('%d,%d,0,%d', x, y, water))
-        me:dialog(nil, '아뿔사! 투명한 이슬을 흘려버렸다!', { prev = true, next = true })
+        me:dialog(nil, '아뿔사! 투명한 이슬을 흘려버렸다!', { prev = false, next = true })
     end
 end
 
@@ -874,7 +874,7 @@ function M.king_dialog(me, npc, opts)
 
     if quest == nil then
         ::KING_START0::
-        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = true, next = true })
+        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -927,7 +927,7 @@ function M.king_dialog(me, npc, opts)
 
     if quest:step() == 0 then
         ::KING_START0B::
-        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = true, next = true })
+        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -991,7 +991,7 @@ function M.king_dialog(me, npc, opts)
                 return
             end
 
-            me:dialog(npc, '감히 폐하의 임무를 취소해달라고? 이놈에게 형벌을 가하라!', { prev = true, next = true })
+            me:dialog(npc, '감히 폐하의 임무를 취소해달라고? 이놈에게 형벌을 가하라!', { prev = false, next = true })
             me:sound(69)
             me:effect(13)
             me:buff('왕의저주', opts.curse_sec)
@@ -1009,7 +1009,7 @@ function M.king_dialog(me, npc, opts)
         local rate = exp_multiplier()
         local exp_amount = math.floor(base_exp * 10 * rate)
         btn = me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치 ' .. tostring(exp_amount) .. ' 을 하사하십니다.',
-            { prev = true, next = true })
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

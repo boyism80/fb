@@ -141,11 +141,11 @@ return {
             end
             ::NPC_232_0025::
             sel, lb = me:list(npc, '예? 도재영님이 이것을 제게 전해달라고 하셨다고요? 정말입니까?', { '예, 당신을 자랑스러워하셨습니다. 황비연씨.' }, { prev = true })
-            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
-                return
-            end
             if lb == DIALOG_RESULT.PREV then
                 goto NPC_232_0024
+            end
+            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
+                return
             end
             ::NPC_232_0026::
             btn = me:dialog(npc,
@@ -159,36 +159,36 @@ return {
             end
             ::NPC_232_0027::
             sel, lb = me:list(npc, '자, 이제 저를 체포하셔서 관아에 넘겨 주십시오.', { '그럴 수는 없습니다.' }, { prev = true })
-            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
-                return
-            end
             if lb == DIALOG_RESULT.PREV then
                 goto NPC_232_0026
             end
-            ::NPC_232_0028::
-            sel, lb = me:list(npc, '예? 무슨 말씀이신지...', { '당신은 의적으로서 많은 사람을 도왔죠.' }, { prev = true })
             if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
+            ::NPC_232_0028::
+            sel, lb = me:list(npc, '예? 무슨 말씀이신지...', { '당신은 의적으로서 많은 사람을 도왔죠.' }, { prev = true })
             if lb == DIALOG_RESULT.PREV then
                 goto NPC_232_0027
             end
-            ::NPC_232_0029::
-            sel, lb = me:list(npc, '......', { '그런 사람을 체포할 수는 없습니다.' }, { prev = true })
             if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
+            ::NPC_232_0029::
+            sel, lb = me:list(npc, '......', { '그런 사람을 체포할 수는 없습니다.' }, { prev = true })
             if lb == DIALOG_RESULT.PREV then
                 goto NPC_232_0028
+            end
+            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
+                return
             end
             ::NPC_232_0030::
             sel, lb = me:list(npc, '음......하지만 의적이라고는 해도 도둑질은 나쁜 일입니다. 저는 죗값을 치러야 합니다.',
                 { '앞으로 좋은 일을 더 많이 하시면 되지 않겠습니까?' }, { prev = true })
-            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
-                return
-            end
             if lb == DIALOG_RESULT.PREV then
                 goto NPC_232_0029
+            end
+            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
+                return
             end
             ::NPC_232_0031::
             btn = me:dialog(npc, '아... 정말로 그럴까요? 부끄럽습니다...\n\n하지만 당신의 이야기를 들어 보니 그런 것 같기도 합니다. 그게 더 보람있는 길이란건 확실하겠지요...',

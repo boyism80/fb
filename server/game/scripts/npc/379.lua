@@ -34,6 +34,7 @@ return {
                 me:dialog(npc, "자네가 좀 도와줬으면 좋겠는데...", { prev = false, next = false })
                 return
             end
+            ::NPC_379_0004::
             btn = me:dialog(npc, "요즘들어 문화재 유출이 너무 많아. 분명 어딘가 외부로 우리 문화재를 팔아넘기는 녀석이 있는거야.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -44,7 +45,7 @@ return {
                 return
             end
             if btn == DIALOG_RESULT.PREV then
-                goto NPC_379_0005
+                goto NPC_379_0004
             end
             ::NPC_379_0006::
             btn = me:dialog(npc, "그런 파렴치범은 꼭 잡아서 처벌해야할텐데 말이야. 문제는 도대체 누가 범인인지 실마리조차 찾을 수 없다는거지.",

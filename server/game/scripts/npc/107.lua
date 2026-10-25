@@ -3,6 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 local function dojaeyoung_nobidocument(me, npc)
+    ::NPC_107_0000::
     local selected = me:list(npc, '음... 뉘신지요? 제게 무슨 볼일이라도?', { '상해에서 물건을 전해달라는 부탁을 받고 왔습니다.', '아무 것도 아닙니다.' })
     if selected == nil then
         return
@@ -28,6 +29,9 @@ local function dojaeyoung_nobidocument(me, npc)
 
     local sel, lb = me:list(npc, '아니, 이것은... 얼마 전에 풀어 줬던 황비연의 노비문서군요. 생각납니다. 여기서 일하던 노비였는데, 참 의협심이 강한 청년이였죠. 그는 잘 있나요?',
         { '예, 실은...' }, { prev = true })
+    if lb == DIALOG_RESULT.PREV then
+        goto NPC_107_0000
+    end
     if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
@@ -125,7 +129,7 @@ local function dojaeyoung_herb_start(me, npc)
     q:step(1)
     me:push_achievement(9, '도재영의 부탁을 들어주자!', 7, 1)
     ::NPC_107_0025::
-    btn = me:dialog(npc, '아.. 정말 감사합니다. ' .. me:name() .. '님은 마음도 넓으신 분이시군요.', { prev = true, next = true })
+    btn = me:dialog(npc, '아.. 정말 감사합니다. ' .. me:name() .. '님은 마음도 넓으신 분이시군요.', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -185,7 +189,7 @@ local function dojaeyoung_herb_quest(me, npc)
         dojaeyoung_herb_turnin(me, npc)
         return
     end
-    me:dialog(npc, '저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.', { prev = true, next = false })
+    me:dialog(npc, '저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.', { prev = false, next = false })
 end
 
 return {
