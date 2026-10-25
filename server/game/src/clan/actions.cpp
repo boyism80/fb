@@ -317,6 +317,9 @@ async::task<void> clan::container::request_ally(character& requester, uint32_t t
                 if (ch != nullptr && ch->world() != requester.world())
                     throw std::runtime_error("다른 월드 문파와는 동맹할 수 없습니다.");
             }
+
+            if (target_guard->value()->allied_clan_id().has_value())
+                throw std::runtime_error(_TEXT(MESSAGE_CLAN_TARGET_ALREADY_ALLIED));
         }
     }
 

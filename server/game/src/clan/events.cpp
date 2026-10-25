@@ -148,6 +148,31 @@ async::task<void> clan::container::on_error(uint32_t error)
     case ERROR_CODE::INVALID_CLAN_ROLE:
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_INVALID_ROLE));
 
+    case ERROR_CODE::CLAN_ALREADY_ALLIED:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_ALREADY_ALLIED));
+
+    case ERROR_CODE::CLAN_NOT_ALLIED:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_NOT_ALLIED));
+
+    case ERROR_CODE::CLAN_ALREADY_ENEMY:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_ALREADY_ENEMY));
+
+    case ERROR_CODE::CLAN_NOT_ENEMY:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_NOT_ENEMY));
+
+    case ERROR_CODE::CLAN_CANNOT_ALLY_ENEMY:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ALLY_ENEMY));
+
+    case ERROR_CODE::CLAN_CANNOT_ENEMY_ALLY:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ENEMY_ALLY));
+
+    case ERROR_CODE::CLAN_TARGET_NOT_FOUND:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_TARGET_NOT_FOUND));
+
+    case ERROR_CODE::CLAN_NOT_MATCHED:
+    case ERROR_CODE::NOT_FOUND_CLAN:
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
     default:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }

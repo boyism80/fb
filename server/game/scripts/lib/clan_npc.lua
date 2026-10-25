@@ -269,6 +269,11 @@ local function clan_diplomacy(me, npc, clan)
             return
         end
 
+        if target_clan:allied_clan_id() ~= nil then
+            me:dialog(npc, '상대 문파는 이미 \n동맹 문파를 \n보유하고 있소.')
+            return
+        end
+
         request_diplomacy(me, npc, found, target_clan,
             string.format('%s 문파의 %s에게 동맹 요청서를 보냈으니, 잠시만 기다려보시오.', target_clan:name(), found:name()),
             string.format('%s문파에서 동맹문파 요청이 들어왔습니다. 동맹을 맺으시겠습니까? ', clan_name),
