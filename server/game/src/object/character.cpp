@@ -2108,8 +2108,7 @@ async::task<void> character::death_warp()
     if (target_map == nullptr)
         co_return;
 
-    static std::random_device random_device;
-    static std::mt19937       random_engine(random_device());
+    static thread_local auto random_engine = std::mt19937(std::random_device{}());
 
     auto x = params.x;
     auto y = params.y;

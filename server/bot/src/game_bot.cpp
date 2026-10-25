@@ -855,9 +855,8 @@ async::task<void> game_bot::process_random_pattern(const fb::model::datetime& no
     if (now < this->_next_action_time)
         co_return;
 
-    static auto device = std::random_device();
-    static auto gen    = std::mt19937(device());
-    static auto dist   = std::uniform_int_distribution<>(0, this->_pattern_params.size() - 1);
+    static thread_local auto gen  = std::mt19937(std::random_device{}());
+    auto                     dist = std::uniform_int_distribution<>(0, this->_pattern_params.size() - 1);
 
     auto& pattern  = this->_pattern_params.at(dist(gen));
     auto  datetime = fb::model::datetime{now};
@@ -869,10 +868,9 @@ async::task<void> game_bot::process_random_pattern(const fb::model::datetime& no
 
 async::task<void> game_bot::pattern_chat()
 {
-    static auto device   = std::random_device();
-    static auto gen      = std::mt19937(device());
-    static auto messages = std::vector<std::string>{"안녕하세요", "반갑습니다."};
-    static auto dist     = std::uniform_int_distribution<>(0, messages.size() - 1);
+    static thread_local auto gen      = std::mt19937(std::random_device{}());
+    static const auto        messages = std::vector<std::string>{"안녕하세요", "반갑습니다."};
+    auto                     dist     = std::uniform_int_distribution<>(0, messages.size() - 1);
 
     auto& message = messages.at(dist(gen));
     this->chat(message);
@@ -887,10 +885,12 @@ async::task<void> game_bot::pattern_attack()
 
 async::task<void> game_bot::pattern_direction()
 {
-    static std::vector<DIRECTION> directions{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
-    static auto                   device = std::random_device();
-    static auto                   gen    = std::mt19937(device());
-    static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
+    static const std::vector<DIRECTION> directions{DIRECTION::LEFT,
+                                                   DIRECTION::TOP,
+                                                   DIRECTION::RIGHT,
+                                                   DIRECTION::BOTTOM};
+    static thread_local auto            gen  = std::mt19937(std::random_device{}());
+    auto                                dist = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
     this->send(*this->make<game_reqs::direction>(direction));
@@ -903,10 +903,12 @@ async::task<void> game_bot::pattern_direction()
 
 async::task<void> game_bot::pattern_move()
 {
-    static std::vector<DIRECTION> directions{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
-    static auto                   device = std::random_device();
-    static auto                   gen    = std::mt19937(device());
-    static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
+    static const std::vector<DIRECTION> directions{DIRECTION::LEFT,
+                                                   DIRECTION::TOP,
+                                                   DIRECTION::RIGHT,
+                                                   DIRECTION::BOTTOM};
+    static thread_local auto            gen  = std::mt19937(std::random_device{}());
+    auto                                dist = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
     this->send(*this->make<game_reqs::move>(direction, 0, this->_position));
@@ -943,9 +945,8 @@ async::task<void> game_bot::pattern_loot()
 
 async::task<void> game_bot::pattern_emotion()
 {
-    static auto device = std::random_device();
-    static auto gen    = std::mt19937(device());
-    static auto dist   = std::uniform_int_distribution<>(0, 0xFF - 0x0B);
+    static thread_local auto gen  = std::mt19937(std::random_device{}());
+    auto                     dist = std::uniform_int_distribution<>(0, 0xFF - 0x0B);
 
     this->send(*this->make<game_reqs::emotion>((uint8_t)dist(gen)));
     co_return;
@@ -953,9 +954,8 @@ async::task<void> game_bot::pattern_emotion()
 
 async::task<void> game_bot::pattern_bulletin_sections()
 {
-    static auto device = std::random_device();
-    static auto gen    = std::mt19937(device());
-    static auto dist   = std::uniform_int_distribution<>(0, 1);
+    static thread_local auto gen  = std::mt19937(std::random_device{}());
+    auto                     dist = std::uniform_int_distribution<>(0, 1);
 
     this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::SECTIONS));
 

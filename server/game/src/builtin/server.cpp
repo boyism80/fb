@@ -43,9 +43,8 @@ int builtin::server::builtin_log(lua_State* L)
 
 int builtin::server::builtin_seed(lua_State* L)
 {
-    static std::random_device random;
-    static std::mt19937       gen(random());
-    static auto               distribution = std::uniform_int_distribution<uint32_t>(0, 0xFFFFFFFF);
+    static thread_local auto gen          = std::mt19937(std::random_device{}());
+    auto                     distribution = std::uniform_int_distribution<uint32_t>(0, 0xFFFFFFFF);
 
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

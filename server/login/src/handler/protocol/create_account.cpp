@@ -47,10 +47,9 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
 
         session_data->pending_uid = response1.uid;
 
-        auto        uid    = response1.uid;
-        static auto device = std::random_device{};
-        static auto gen    = std::mt19937{device()};
-        static auto dist   = std::uniform_int_distribution<uint32_t>{0, 0xFFFFFFFF};
+        auto                     uid  = response1.uid;
+        static thread_local auto gen  = std::mt19937{std::random_device{}()};
+        auto                     dist = std::uniform_int_distribution<uint32_t>{0, 0xFFFFFFFF};
 
         auto   i         = dist(gen) % config<>("init:position").size();
         auto   init_x    = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());

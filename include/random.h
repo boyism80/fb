@@ -6,8 +6,7 @@
 template <typename T = int>
 T random(T min, T max)
 {
-    static auto device = std::random_device{};
-    static auto gen    = std::mt19937(device());
+    static thread_local auto gen = std::mt19937(std::random_device{}());
 
     std::uniform_int_distribution<> dist(min, max);
     return dist(gen);
