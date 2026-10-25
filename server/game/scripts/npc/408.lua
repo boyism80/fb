@@ -1,4 +1,5 @@
 -- npc: 수행간수장
+local server = require('lib.server')
 local REQUIRED_CIGARETTES = 5
 
 return {
@@ -39,12 +40,11 @@ return {
             return
         end
 
-        if not me:rmitem("담배", REQUIRED_CIGARETTES, ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, "음? 그새 담배를 어디다 두었담?", { prev = false, next = false })
-            return
-        end
-        if me:map(exit_map, 70, 140) ~= true then
-            me:mkitem("담배", REQUIRED_CIGARETTES)
-        end
-    end
+        me:map(exit_map, 70, 140,
+            server.item_cost('scripts/npc/408.lua', '담배', REQUIRED_CIGARETTES, ITEM_DELETE_TYPE.GIVE))
+    end,
+
+    on_before_warp = function(me, name, count, delete_type)
+        return server.pay_item(me, name, count, delete_type)
+    end,
 }

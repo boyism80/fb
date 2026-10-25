@@ -56,6 +56,7 @@ register_test("unknown_item_name_test")
 register_test("bundle_expire_test")
 register_test("magpie_bridge_test", { serial = true, label = "script" })
 register_test("character_rule_test")
+register_test("warp_cost_test")
 
 register_test("quest_clear_shield_test", { label = "script" })
 register_test("quest_lighthouse_test", { label = "script" })

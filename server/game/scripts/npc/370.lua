@@ -89,19 +89,22 @@ return {
             return
         end
 
-        if not me:rmitem(required, ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, "필요한 물건이 없어 보이네요.", { prev = false, next = false })
-            return
-        end
+        me:map(map, { 7, 13 }, {
+            before = {
+                script = 'scripts/npc/370.lua',
+                func = 'on_before_warp',
+                args = { required },
+            },
+        })
+    end,
 
-        if me:map(map, { 7, 13 }) ~= true then
-            for name, count in pairs(required) do
-                me:mkitem(name, count)
-            end
-        else
-            broadcast(string.format("<<%s>> 님이 도삭산 1000층에 도착하셨습니다!!", me:name()), MESSAGE_TYPE.WORLD,
-                BROADCAST_TYPE.WORLD)
-            me:push_achievement(44, "도삭산 1000층 도착!", 6, 25)
+    on_before_warp = function(me, required)
+        if not me:rmitem(required, ITEM_DELETE_TYPE.GIVE) then
+            return false
         end
-    end
+        broadcast(string.format("<<%s>> 님이 도삭산 1000층에 도착하셨습니다!!", me:name()), MESSAGE_TYPE.WORLD,
+            BROADCAST_TYPE.WORLD)
+        me:push_achievement(44, "도삭산 1000층 도착!", 6, 25)
+        return true
+    end,
 }

@@ -1,5 +1,7 @@
 -- item: 낙랑의두루마리8
 
+local server = require('lib.server')
+
 local CLASS_MAP_BY_NATION = {
 
     [NATION.GOGURYEO] = {
@@ -156,13 +158,11 @@ return {
             x = math.random(WARP_X_MIN, WARP_X_MAX)
             y = math.random(WARP_Y_MIN, WARP_Y_MAX)
         end
-        local name = item:model():name()
-        if not me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE) then
-            return
-        end
-        if me:map(map, { x, y }) ~= true then
-            me:mkitem(name, 1)
-        end
+        me:map(map, { x, y }, server.item_cost('scripts/item/8.lua', item:model():name()))
+    end,
+
+    on_before_warp = function(me, name)
+        return server.pay_item(me, name)
     end,
 
     -- on_deactivated = function(me, item)

@@ -6,9 +6,11 @@ local server = require('lib.server')
 
 return {
     on_activated = function(me, item)
-        if server.warp_to_return_map(me) then
-            me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
-        end
+        server.warp_to_return_map(me, server.item_cost('scripts/item/4000.lua', item:model():name()))
+    end,
+
+    on_before_warp = function(me, name)
+        return server.pay_item(me, name)
     end,
 
     -- on_deactivated = function(me, item)

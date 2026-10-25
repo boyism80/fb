@@ -16,15 +16,15 @@ return {
                 me:dialog(npc, "만일의 사태를 대비하기 위해 노란비서를 지참해 주시기 바랍니다.", { prev = false, next = false })
                 return
             end
-            if not me:rmitem("노란비서", 1, ITEM_DELETE_TYPE.REDUCE) then
-                return
-            end
-            if server.warp_to_return_map(me) ~= true then
-                me:mkitem("노란비서", 1)
+            if server.warp_to_return_map(me, server.item_cost('scripts/npc/338.lua', "노란비서")) ~= true then
                 me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
             end
         elseif sel == 2 then
             me:dialog(npc, "잘 생각하셨어요.", { prev = false, next = false })
         end
-    end
+    end,
+
+    on_before_warp = function(me, name)
+        return server.pay_item(me, name)
+    end,
 }

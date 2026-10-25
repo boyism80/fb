@@ -9,13 +9,27 @@ M.return_map_data = {
     },
 }
 
-function M.warp_to_return_map(ch)
+function M.warp_to_return_map(ch, options)
     local data = M.return_map_data[ch:nation()]
     if data == nil then
         return false
     end
     local map = data.maps[math.random(1, #data.maps)]
-    return ch:map(map) == true
+    return ch:map(map, nil, options) == true
+end
+
+function M.item_cost(script, name, count, delete_type)
+    return {
+        before = {
+            script = script,
+            func = 'on_before_warp',
+            args = { name, count or 1, delete_type or ITEM_DELETE_TYPE.REDUCE },
+        },
+    }
+end
+
+function M.pay_item(me, name, count, delete_type)
+    return me:rmitem(name, count or 1, delete_type or ITEM_DELETE_TYPE.REDUCE) == true
 end
 
 return M

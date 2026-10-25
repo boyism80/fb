@@ -372,24 +372,24 @@ return {
             return
         end
 
-        if not me:rmitem({
-                ['진룡의어금니'] = 1,
-                ['묵룡의어금니'] = 1,
-                ['흑룡의어금니'] = 1,
-                ['감룡의어금니'] = 1
-            }, ITEM_DELETE_TYPE.GIVE) then
+        local entered = me:map(inst, { math.random(11, 14), math.random(22, 24) }, {
+            before = {
+                script = 'scripts/npc/98.lua',
+                func = 'on_before_warp',
+            },
+        })
+        if entered ~= true then
             inst:destroy()
-            me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
-            return
-        end
-
-        if me:map(inst, { math.random(11, 14), math.random(22, 24) }) ~= true then
-            inst:destroy()
-            for _, name in ipairs(REQUIRED_FANGS) do
-                me:mkitem(name, 1)
-            end
         elseif friend ~= nil then
             friend:map(inst, { math.random(11, 14), math.random(22, 24) })
         end
-    end
+    end,
+
+    on_before_warp = function(me)
+        local fangs = {}
+        for _, name in ipairs(REQUIRED_FANGS) do
+            fangs[name] = 1
+        end
+        return me:rmitem(fangs, ITEM_DELETE_TYPE.GIVE) == true
+    end,
 }

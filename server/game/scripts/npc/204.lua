@@ -1,5 +1,6 @@
 -- npc: 부여-일본섬선원
 local ferry_boat = require('lib.ferry_boat')
+local server = require('lib.server')
 
 local function run_schedule_dialog_buyeo_japan(me, npc)
     ::NPC_204_0010::
@@ -96,11 +97,11 @@ return {
             me:dialog(npc, '배가 이미 출항했습니다.', { prev = false, next = false })
             return
         end
-        if not me:rmitem('부여-일본쾌속승선권', 1, ITEM_DELETE_TYPE.GIVE) then
-            return
-        end
-        if me:map(map, { math.random(2, 15), 7 }) ~= true then
-            me:mkitem('부여-일본쾌속승선권', 1)
-        end
-    end
+        me:map(map, { math.random(2, 15), 7 },
+            server.item_cost('scripts/npc/204.lua', '부여-일본쾌속승선권', 1, ITEM_DELETE_TYPE.GIVE))
+    end,
+
+    on_before_warp = function(me, name, count, delete_type)
+        return server.pay_item(me, name, count, delete_type)
+    end,
 }

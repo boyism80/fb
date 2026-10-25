@@ -1,6 +1,7 @@
 -- npc: 출발도우미
 
 local enum = require('lib.enum')
+local server = require('lib.server')
 local MAP_ID_LOBBY = 12010
 local MAP_ID_GAME = 12011
 local MAP_ID_FINISH = 12016
@@ -184,10 +185,9 @@ return {
                 end
                 if sel2 == 1 then
                     local exit_map = name2map("부여성")
-                    if exit_map ~= nil and me:rmitem("서바이벌증표", 1, ITEM_DELETE_TYPE.GIVE) then
-                        if me:map(exit_map, 70, 140) ~= true then
-                            me:mkitem("서바이벌증표", 1)
-                        end
+                    if exit_map ~= nil then
+                        me:map(exit_map, 70, 140,
+                            server.item_cost('scripts/npc/495.lua', "서바이벌증표", 1, ITEM_DELETE_TYPE.GIVE))
                     end
                 end
             end
@@ -251,5 +251,9 @@ return {
             end
             me:dialog(npc, "모든 준비가 되시면 다시 저를 찾아주세요.", { prev = false, next = false })
         end
-    end
+    end,
+
+    on_before_warp = function(me, name, count, delete_type)
+        return server.pay_item(me, name, count, delete_type)
+    end,
 }

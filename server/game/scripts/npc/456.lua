@@ -1,4 +1,6 @@
 -- npc: 사냥이벤트도우미
+local server = require('lib.server')
+
 local function hunt_event_open()
     local dt = datetime()
     local hour_ok = (dt.hour == nil or dt.hour == 20)
@@ -42,18 +44,11 @@ local function run_hunt_event_entry(me, npc)
         me:dialog(npc, "입장 가능한 시각은 20:00 부터 21:00까지 입니다.", { prev = false, next = false })
         return
     end
-    if not me:rmitem("노란비서", 1, ITEM_DELETE_TYPE.REDUCE) then
-        return
-    end
-
-    local moved = false
+    local cost = server.item_cost('scripts/npc/456.lua', "노란비서")
     if event_map ~= nil then
-        moved = me:map(event_map, math.random(2, 199), math.random(2, 199)) == true
+        me:map(event_map, math.random(2, 199), math.random(2, 199), cost)
     else
-        moved = me:map(fallback, math.random(70, 80), math.random(138, 145)) == true
-    end
-    if moved == false then
-        me:mkitem("노란비서", 1)
+        me:map(fallback, math.random(70, 80), math.random(138, 145), cost)
     end
 end
 
@@ -81,5 +76,9 @@ return {
         else
             run_hunt_event_user(me, npc)
         end
-    end
+    end,
+
+    on_before_warp = function(me, name, count, delete_type)
+        return server.pay_item(me, name, count, delete_type)
+    end,
 }
