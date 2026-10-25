@@ -100,6 +100,31 @@ namespace Internal.Services
                 await dbContext.SystemStorageBox.Archive(world, boxes);
                 _logger.LogInformation("Archived {Count} system storage boxes for world {World}", boxes.Count, world);
             }
+
+            var recipients = await dbContext.SystemStorageBox.GetRecipients(world);
+            foreach (var chunk in recipients.Select(x => x.User).Distinct().Chunk(500))
+            {
+                var characters = await dbContext.Character.GetMany(world, chunk.ToList());
+                var storageBoxes = await dbContext.StorageBox.GetMany(world, chunk.ToList());
+                var finished = new List<Http.Model.SystemStorageBox>();
+                foreach (var user in chunk)
+                {
+                    var taken = (storageBoxes.GetValueOrDefault(user) ?? Array.Empty<Http.Model.StorageBox>())
+                        .Where(x => x.SystemStorageBoxId != null)
+                        .Select(x => x.SystemStorageBoxId.Value)
+                        .ToHashSet();
+                    var exists = characters.ContainsKey(user);
+                    finished.AddRange((await dbContext.SystemStorageBox.GetAll(world, user))
+                        .Where(b => b.User == user)
+                        .Where(b => exists == false || b.Canceled || (b.ExpiredDate != null && b.ExpiredDate <= now) || taken.Contains(b.Id)));
+                }
+
+                if (finished.Count > 0)
+                {
+                    await dbContext.SystemStorageBox.Archive(world, finished);
+                    _logger.LogInformation("Archived {Count} recipient system storage boxes for world {World}", finished.Count, world);
+                }
+            }
         }
 
         // Finds archived ids from the rows themselves, so a row left by any path (a mail deleted after its system

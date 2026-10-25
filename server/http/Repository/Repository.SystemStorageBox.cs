@@ -21,6 +21,24 @@ namespace Http.Reepository
             return await base.Get(world, new SystemStorageBoxKey { Id = id });
         }
 
+        public async Task<List<SystemStorageBox>> GetAll(uint world, uint user)
+        {
+            var all = (await base.GetAll(world, new SystemStorageBoxKey { Id = 0 }))
+                .Concat(await base.GetAll(world, new SystemStorageBoxKey { Id = 0, User = user }));
+            return all.OrderByDescending(b => b.Id).ToList();
+        }
+
+        public async Task<List<(uint Id, uint User)>> GetRecipients(uint world)
+        {
+            await using var conn = _dbContext.GetGlobalConnection(world);
+            var rows = await conn.QueryAsync<(uint Id, uint User)>(
+                """
+                SELECT `id` AS Id, `user` AS User FROM `system_storage_box`
+                WHERE `user` IS NOT NULL AND `deleted` = 0;
+                """);
+            return rows.ToList();
+        }
+
         public async Task<SystemStorageBox> GetByExternalRef(uint world, string externalRef)
         {
             if (string.IsNullOrWhiteSpace(externalRef))
@@ -80,13 +98,14 @@ namespace Http.Reepository
 
         protected override SystemStorageBoxKey GetKeyFromRow(SystemStorageBox row)
         {
-            return new SystemStorageBoxKey { Id = 0 };
+            return new SystemStorageBoxKey { Id = 0, User = row.User };
         }
 
         protected override string OnSelectBulk(SystemStorageBoxKey key)
         {
-            return """
-                SELECT * FROM `system_storage_box` WHERE `deleted` = 0;
+            var user = key.User == null ? "IS NULL" : $"= {key.User.Value}";
+            return $"""
+                SELECT * FROM `system_storage_box` WHERE `deleted` = 0 AND `user` {user};
                 """;
         }
 
@@ -97,6 +116,7 @@ namespace Http.Reepository
             return $"""
                 INSERT INTO `system_storage_box` (
                     `id`,
+                    `user`,
                     `title`,
                     `message`,
                     `attachments`,
@@ -110,6 +130,7 @@ namespace Http.Reepository
                     `updated_date`)
                 VALUES (
                     {value.Id.Escape()},
+                    {value.User.Escape()},
                     {value.Title.Escape()},
                     {value.Message.Escape()},
                     {attachmentsJson.Escape()},
@@ -145,9 +166,9 @@ namespace Http.Reepository
             var ids = string.Join(", ", keys.Select(k => k.Id));
             return $"""
                 INSERT IGNORE INTO `system_storage_box_archive` (
-                    `id`, `title`, `message`, `attachments`, `reserve_date`, `expired_date`,
+                    `id`, `user`, `title`, `message`, `attachments`, `reserve_date`, `expired_date`,
                     `include_new_characters`, `canceled`, `external_ref`, `created_date`, `updated_date`)
-                SELECT `id`, `title`, `message`, `attachments`, `reserve_date`, `expired_date`,
+                SELECT `id`, `user`, `title`, `message`, `attachments`, `reserve_date`, `expired_date`,
                     `include_new_characters`, `canceled`, `external_ref`, `created_date`, `updated_date`
                 FROM `system_storage_box` WHERE `id` IN ({ids});
                 DELETE FROM `system_storage_box` WHERE `id` IN ({ids});
@@ -208,7 +229,8 @@ namespace Http.Reepository
             DateTime? reserveDate,
             DateTime? expireDate,
             bool includeNewCharacters,
-            string externalRef)
+            string externalRef,
+            uint? user)
         {
             if (!string.IsNullOrWhiteSpace(externalRef))
             {
@@ -222,14 +244,15 @@ namespace Http.Reepository
             var attachmentsJson = JsonConvert.SerializeObject(attachments ?? new List<Fb.Model.Dsl>());
 
             var query = """
-                INSERT INTO system_storage_box (title, message, attachments, reserve_date, expired_date, include_new_characters, canceled, external_ref, deleted, created_date, updated_date)
-                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @reserveDate, @expireDate, @includeNewCharacters, 0, @externalRef, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
+                INSERT INTO system_storage_box (user, title, message, attachments, reserve_date, expired_date, include_new_characters, canceled, external_ref, deleted, created_date, updated_date)
+                VALUES (@user, @title, @message, CAST(@attachmentsJson AS JSON), @reserveDate, @expireDate, @includeNewCharacters, 0, @externalRef, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
                 SELECT LAST_INSERT_ID();
                 """;
 
             await using var conn = _dbContext.GetGlobalConnection(world);
             var id = await conn.QueryFirstOrDefaultAsync<uint>(query, new
             {
+                user,
                 title,
                 message,
                 attachmentsJson,
@@ -242,6 +265,7 @@ namespace Http.Reepository
             var box = new SystemStorageBox
             {
                 Id = id,
+                User = user,
                 Title = title,
                 Message = message,
                 Attachments = attachments ?? new List<Fb.Model.Dsl>(),

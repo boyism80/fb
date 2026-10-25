@@ -9,6 +9,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace fb::protocol::internal {
@@ -39,11 +40,9 @@ public:
     {
         RECEIVED,
         NOT_FOUND,
-        IN_PROGRESS,
         ALREADY_RECEIVED,
         EXPIRED,
         INVENTORY_FULL,
-        PENDING_RETRY,
         FAILED,
     };
 
@@ -55,6 +54,7 @@ private:
     // clang-format off
     static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
     static box_dto     to_save_dto(uint32_t user_id, const entry& box);
+    static bool        expired(const entry& box, const fb::model::datetime& now);
     // clang-format on
 
 public:
@@ -64,14 +64,11 @@ public:
     explicit                        storage_box(character& owner);
     void                            init(const std::vector<entry>& entries);
     void                            add(const std::vector<entry>& entries);
+    void                            sync(const std::vector<entry>& offered, const std::unordered_set<uint32_t>& listed);
     bool                            contains_system_box(uint32_t system_storage_box_id) const;
     [[nodiscard]] async::task<receive_result> receive_reward(uint32_t entry_id);
-    void                            set_received(uint32_t entry_id, bool received);
     const entry_map&                entries() const;
-    uint32_t                        next_sequence() const;
-    void                            set_sequence(uint32_t value);
     std::vector<box_dto>            to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const;
-    void                            init_claims();
     // clang-format on
 };
 } // namespace fb::game

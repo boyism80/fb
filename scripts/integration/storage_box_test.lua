@@ -19,17 +19,14 @@ local REWARD_ITEM_NAME  = "도토리"
 local REWARD_ITEM_COUNT = 1
 local FILL_ITEM_NAME    = "목도"
 local MQ_WAIT_MS        = 2000
-local HTTP_DELAY_MS     = 3000
-local C2_FILL_WAIT_MS   = 1000
-local CLAIM_PATH        = "/storage/claim"
+local SYSTEM_PATH       = "/storage/system"
 
 local MSG_GRANT_NEED_REWARD = "보상이 하나 이상 필요합니다."
 local MSG_GRANT_OK          = "지급이 완료되었습니다."
+local MSG_GRANT_RETRY       = "같은 지급을 다시 보낼까요"
 local MSG_RECEIVE_OK        = "보상이 지급되었습니다."
 local MSG_RECEIVE_FULL      = "소지품이 가득 차서 보상을 받을 수 없습니다"
-local MSG_RECEIVE_PENDING   = "수령 결과를 확인하지 못했습니다"
 local MSG_STATUS_AVAILABLE  = "수령 가능"
-local MSG_STATUS_RECEIVED   = "수령 완료"
 
 local TITLE   = nil
 local MESSAGE = nil
@@ -48,7 +45,7 @@ local function cleanup_bot(bot)
     bot:chat("/아이템삭제")
     bot:money(0)
     bot:chat("/HTTP지연 0")
-    bot:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
+    bot:chat("/HTTP장애 " .. SYSTEM_PATH .. " off")
     bot:chat("/HTTP보류 off")
 end
 
@@ -66,6 +63,17 @@ local function find_menu_option(packet, text)
         end
     end
     return nil
+end
+
+local function count_menu_option(packet, text)
+    local count = 0
+    local menus = packet ~= nil and (packet.menu_menus or packet.list_lists) or nil
+    for _, name in ipairs(menus or {}) do
+        if name == text then
+            count = count + 1
+        end
+    end
+    return count
 end
 
 local function message_contains(packet, text)
@@ -126,7 +134,7 @@ local function send_input_expect_pursuit(bot, text)
         end)
 end
 
-local function grant_flow(bot_a, target_name, title, message, item_name, item_count)
+local function grant_flow(bot_a, target_name, title, message, item_name, item_count, expect_retry)
     local packet = f1_open_menu(bot_a)
     if packet == nil then
         return false, "f1 open failed"
@@ -174,6 +182,14 @@ local function grant_flow(bot_a, target_name, title, message, item_name, item_co
         end
     end
 
+    if expect_retry then
+        packet = f1_select_pursuit(bot_a, OPT_REWARD_NONE, "pursuit")
+        if packet == nil then
+            return false, "grant retry dialog missing"
+        end
+        return true, packet.message
+    end
+
     packet = bot_a:request_dialog_ext(
         pursuit_select(OPT_REWARD_NONE),
         function(p)
@@ -189,7 +205,7 @@ local function grant_flow(bot_a, target_name, title, message, item_name, item_co
     return true, result_msg
 end
 
-local function open_storage_entry_detail(bot, title)
+local function open_storage_list(bot)
     local packet = f1_open_menu(bot)
     if packet == nil then
         return nil, "f1 open failed"
@@ -198,6 +214,14 @@ local function open_storage_entry_detail(bot, title)
     packet = f1_select_pursuit(bot, OPT_STORAGE, "pursuit")
     if packet == nil then
         return nil, "storage list missing"
+    end
+    return packet, nil
+end
+
+local function open_storage_entry_detail(bot, title)
+    local packet, err = open_storage_list(bot)
+    if packet == nil then
+        return nil, err
     end
 
     local option = find_menu_option(packet, title)
@@ -291,23 +315,6 @@ local function receive_from_detail(bot, expect_text)
     return matched, result_msg
 end
 
-local function open_receive_confirm(bot, title)
-    local detail, err = open_storage_entry_detail(bot, title)
-    if detail == nil then
-        return nil, err
-    end
-
-    local packet = bot:request_dialog(
-        dialog_normal_next(),
-        function(p)
-            return p.type == "pursuit"
-        end)
-    if packet == nil then
-        return nil, "receive confirm missing"
-    end
-    return packet, nil
-end
-
 local function assert_entry_status(bot, title, status_text)
     local detail, err = open_storage_entry_detail(bot, title)
     if detail == nil then
@@ -317,21 +324,6 @@ local function assert_entry_status(bot, title, status_text)
     local msg = detail.message
     close_detail_with_prev(bot)
     return ok, msg
-end
-
-local function prepare_one_slot_free(bot)
-    bot:clear_inventory()
-    bot:fill_inventory(FILL_ITEM_NAME)
-    bot:drop_item(0, false)
-end
-
-local function wait_item_count(ctx, bot, item_name, expected)
-    return lib.wait.settle(ctx, function()
-        return bot:item_count(item_name) == expected
-    end, function(attempt)
-        progress(bot, string.format("reward not settled yet attempt=%d count=%d expected=%d",
-            attempt, bot:item_count(item_name), expected))
-    end)
 end
 
 -- The anchor box keeps the storage list non-empty, so a missing title means the box is no longer listed.
@@ -347,37 +339,12 @@ local function assert_entry_gone(bot, title)
     return true, nil
 end
 
--- Grants a fresh box and fails its first receive under the given fault, leaving the claim unsettled.
-local function receive_under_fault(ctx, a, b, title, fault_command)
-    b:clear_inventory()
-    local ok, msg = grant_flow(a, b:name(), title, MESSAGE, REWARD_ITEM_NAME, REWARD_ITEM_COUNT)
-    if ok == false or msg == nil or msg:find(MSG_GRANT_OK, 1, true) == nil then
-        return false, "grant " .. tostring(msg)
-    end
-    ctx:sleep(MQ_WAIT_MS)
-
-    b:chat(fault_command)
-    local detail, err = open_storage_entry_detail(b, title)
+local function receive_title(bot, title)
+    local detail, err = open_storage_entry_detail(bot, title)
     if detail == nil then
         return false, err
     end
-    local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_PENDING)
-    if matched == false then
-        return false, "expected pending receive, got=" .. tostring(result_msg)
-    end
-    if b:item_count(REWARD_ITEM_NAME) ~= 0 then
-        return false, "reward granted while the claim was unknown"
-    end
-    return true, nil
-end
-
--- A later tick must not grant the same box again.
-local function assert_granted_once(ctx, bot, title)
-    lib.wait.settle_tick(ctx)
-    if bot:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
-        return false, string.format("reward duplicated count=%d", bot:item_count(REWARD_ITEM_NAME))
-    end
-    return assert_entry_gone(bot, title)
+    return receive_from_detail(bot, MSG_RECEIVE_OK)
 end
 
 test_suite {
@@ -393,10 +360,6 @@ test_suite {
         lib.formation.arrange_in_line(ctx)
         cleanup_bot(a)
         cleanup_bot(b)
-    end,
-
-    on_scenario_finished = function(ctx)
-        lib.wait.resume_settle(ctx:bot(0))
     end,
 
     on_finished = function(ctx)
@@ -425,7 +388,6 @@ test_suite {
             return true
         end,
 
-        -- S2: personal grant success
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
@@ -441,7 +403,7 @@ test_suite {
                 return false
             end
 
-            progress(b, "S2: WAIT MQ DISTRIBUTE")
+            progress(b, "S2: WAIT MQ NOTICE")
             ctx:sleep(MQ_WAIT_MS)
 
             local detail, err = open_storage_entry_detail(b, TITLE)
@@ -460,41 +422,23 @@ test_suite {
             return true
         end,
 
-        -- S3/C1: invent full -> claim not attempted, still available
         function(ctx)
             local b = ctx:bot(1)
-            progress(b, "S3/C1: RECEIVE WITH FULL INVENTORY")
+            progress(b, "S3: RECEIVE WITH FULL INVENTORY")
 
             b:fill_inventory(FILL_ITEM_NAME)
-            progress(b, string.format("S3/C1 after fill invent_size=%d", b:inventory_size()))
             if b:inventory_size() < 52 then
                 progress(b, string.format("FAILED: invent not full after fill, size=%d", b:inventory_size()))
                 return false
             end
 
             local detail, err = open_storage_entry_detail(b, TITLE)
-            dump_dialog(b, "S3-detail", detail)
             if detail == nil then
                 progress(b, "FAILED: " .. tostring(err))
                 return false
             end
 
-            -- Hook server-side notify messages during receive
-            local notifies = {}
-            ctx:hook("message", function(_, hooked_bot, packet)
-                if hooked_bot:name() ~= b:name() then
-                    return
-                end
-                if packet.text ~= nil then
-                    table.insert(notifies, packet.text)
-                    log("debug", string.format("storage_box_test S3 message: %q", packet.text))
-                end
-            end)
-
             local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_FULL)
-            ctx:unhook("message")
-            progress(b, string.format("S3/C1 notifies=%s", table.concat(notifies, " || ")))
-
             if matched == false then
                 progress(b, "FAILED: expected receive fail, got=" .. tostring(result_msg))
                 return false
@@ -506,144 +450,33 @@ test_suite {
                 return false
             end
 
-            progress(b, "S3/C1 PASSED")
+            progress(b, "S3 PASSED")
             return true
         end,
 
-        -- S4/C2 prep: leave one free slot, arm HTTP delay, open receive confirm
         function(ctx)
             local b = ctx:bot(1)
-            progress(b, "S4/C2 PREP: ONE SLOT FREE + HTTP DELAY + CONFIRM")
-
-            prepare_one_slot_free(b)
-            b:chat(string.format("/HTTP지연 %d", HTTP_DELAY_MS))
-            ctx:sleep(200)
-
-            local confirm, err = open_receive_confirm(b, TITLE)
-            if confirm == nil then
-                progress(b, "FAILED: " .. tostring(err))
-                b:chat("/HTTP지연 0")
-                return false
-            end
-
-            progress(b, "S4/C2 PREP DONE")
-            return true
-        end,
-
-        -- S4/C2: click yes while peer task fills last slot during HTTP delay
-        {
-            parallel = {
-                [0] = {
-                    function(ctx)
-                        local b = ctx:bot(1)
-                        progress(b, "S4/C2: CLICK RECEIVE YES")
-
-                        local packet = b:request_dialog_ext(
-                            pursuit_select(OPT_YES),
-                            function(p)
-                                if p.type == "normal" and p.message ~= nil then
-                                    log("debug", string.format(
-                                        "storage_box_test C2 YES candidate type=%s msg=%q",
-                                        tostring(p.type),
-                                        tostring(p.message)))
-                                end
-                                return p.type == "normal" and p.message ~= nil
-                            end)
-
-                        dump_dialog(b, "C2-after-yes", packet)
-                        progress(b, string.format("C2 invent_size after receive=%d", b:inventory_size()))
-                        b:chat("/HTTP지연 0")
-
-                        if packet == nil then
-                            progress(b, "FAILED: receive result missing")
-                            return false
-                        end
-                        if message_contains(packet, MSG_RECEIVE_FULL) == false then
-                            progress(b, "FAILED: expected receive fail after unclaim, got=" .. tostring(packet.message))
-                            close_dialog(b)
-                            return false
-                        end
-
-                        close_dialog(b)
-
-                        local status_ok, status_msg = assert_entry_status(b, TITLE, MSG_STATUS_AVAILABLE)
-                        if status_ok == false then
-                            progress(b, "FAILED: expected unclaim available, got=" .. tostring(status_msg))
-                            return false
-                        end
-
-                        progress(b, "S4/C2 PASSED")
-                        return true
-                    end,
-                },
-                [1] = {
-                    function(ctx)
-                        local b = ctx:bot(1)
-                        progress(b, "S4/C2: FILL LAST SLOT DURING DELAY")
-                        ctx:sleep(C2_FILL_WAIT_MS)
-                        b:create_item(FILL_ITEM_NAME, 1)
-                        progress(b, "S4/C2: LAST SLOT FILLED")
-                        return true
-                    end,
-                },
-            },
-        },
-
-        -- S5: happy path receive
-        function(ctx)
-            local b = ctx:bot(1)
-            progress(b, "S5: HAPPY PATH RECEIVE")
+            progress(b, "S4: HAPPY PATH RECEIVE")
 
             b:clear_inventory()
-            b:chat("/HTTP지연 0")
-
-            local detail, err = open_storage_entry_detail(b, TITLE)
-            if detail == nil then
-                progress(b, "FAILED: " .. tostring(err))
-                return false
-            end
-
-            local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_OK)
+            local matched, result_msg = receive_title(b, TITLE)
             if matched == false then
                 progress(b, "FAILED: expected receive ok, got=" .. tostring(result_msg))
                 return false
             end
-
-            if b:has_item_by_name(REWARD_ITEM_NAME) == false then
-                progress(b, "FAILED: reward item missing")
-                return false
-            end
-            if b:item_count(REWARD_ITEM_NAME) < REWARD_ITEM_COUNT then
-                progress(b, "FAILED: reward count mismatch")
+            if b:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
+                progress(b, string.format("FAILED: reward count=%d", b:item_count(REWARD_ITEM_NAME)))
                 return false
             end
 
-            -- storage_entries() omits received boxes, so the entry should disappear from the list.
-            local packet = f1_open_menu(b)
-            if packet == nil then
-                progress(b, "FAILED: f1 open after receive")
-                return false
-            end
-            -- Empty storage returns normal; remaining entries return pursuit.
-            packet = f1_select_pursuit(b, OPT_STORAGE, "normal")
-            dump_dialog(b, "S5-storage-after-receive", packet)
-            if packet ~= nil and packet.type == "pursuit" and find_menu_option(packet, TITLE) ~= nil then
-                progress(b, "FAILED: received entry still listed")
-                return false
-            end
-            if packet ~= nil and packet.type == "normal" and message_contains(packet, "보관된 항목이 없습니다") then
-                close_dialog(b)
-            end
-
-            progress(b, "S5 PASSED")
+            progress(b, "S4 PASSED")
             return true
         end,
 
-        -- R0: anchor box that stays unreceived until R4 so the storage list is never empty
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
-            progress(b, "R0: ANCHOR BOX")
+            progress(b, "A0: ANCHOR BOX")
 
             local ok, msg = grant_flow(a, b:name(), TITLE .. "_ANCHOR", MESSAGE, REWARD_ITEM_NAME, REWARD_ITEM_COUNT)
             if ok == false or msg == nil or msg:find(MSG_GRANT_OK, 1, true) == nil then
@@ -652,162 +485,116 @@ test_suite {
             end
             ctx:sleep(MQ_WAIT_MS)
 
-            progress(b, "R0 PASSED")
+            local ok_gone, err = assert_entry_gone(b, TITLE)
+            if ok_gone == false then
+                progress(b, "FAILED: received box listed again: " .. tostring(err))
+                return false
+            end
+
+            progress(b, "A0 PASSED")
             return true
         end,
 
-        -- R1: the claim applied but its response was lost, so the settle timer grants the reward exactly once
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
-            local title = TITLE .. "_R1"
-            progress(b, "R1: CLAIM RESPONSE LOST, TIMER SETTLES")
+            local title = TITLE .. "_G1"
+            progress(a, "G1: GRANT RESPONSE LOST, RETRY WITH SAME REF")
 
-            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP장애 " .. CLAIM_PATH .. " lost")
-            b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
-            if ok == false then
+            a:chat("/HTTP장애 " .. SYSTEM_PATH .. " lost")
+            ctx:sleep(300)
+            local ok, msg = grant_flow(a, b:name(), title, MESSAGE, REWARD_ITEM_NAME, REWARD_ITEM_COUNT, true)
+            a:chat("/HTTP장애 " .. SYSTEM_PATH .. " off")
+            if ok == false or msg == nil or msg:find(MSG_GRANT_RETRY, 1, true) == nil then
+                close_dialog(a)
+                progress(a, "FAILED: expected retry prompt, got=" .. tostring(msg))
+                return false
+            end
+            ctx:sleep(300)
+
+            local packet = a:request_dialog_ext(
+                pursuit_select(OPT_YES),
+                function(p)
+                    return p.type == "normal"
+                end)
+            close_dialog(a)
+            if message_contains(packet, MSG_GRANT_OK) == false then
+                progress(a, "FAILED: retry result " .. tostring(packet and packet.message))
+                return false
+            end
+
+            ctx:sleep(MQ_WAIT_MS)
+            local list, err = open_storage_list(b)
+            if list == nil then
                 progress(b, "FAILED: " .. tostring(err))
                 return false
             end
-
-            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT) == false then
-                progress(b, "FAILED: reward not granted by the settle timer")
-                return false
-            end
-            ok, err = assert_granted_once(ctx, b, title)
-            if ok == false then
-                progress(b, "FAILED: " .. tostring(err))
+            local count = count_menu_option(list, title)
+            close_dialog(b)
+            if count ~= 1 then
+                progress(b, string.format("FAILED: box count=%d expected=1", count))
                 return false
             end
 
-            progress(b, "R1 PASSED")
+            progress(a, "G1 PASSED")
             return true
         end,
 
-        -- R2: the unsettled request of a lost claim survives relogin and is settled on login
         function(ctx)
-            local a = ctx:bot(0)
             local b = ctx:bot(1)
-            local title = TITLE .. "_R2"
-            progress(b, "R2: CLAIM RESPONSE LOST, RELOGIN SETTLES")
+            local title = TITLE .. "_G1"
+            progress(b, "G2: RECEIVE THEN RELOGIN")
 
-            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP장애 " .. CLAIM_PATH .. " lost")
-            if ok == false then
-                b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
-                progress(b, "FAILED: " .. tostring(err))
+            b:clear_inventory()
+            local matched, result_msg = receive_title(b, title)
+            if matched == false then
+                progress(b, "FAILED: receive " .. tostring(result_msg))
                 return false
             end
 
-            lib.wait.pause_settle(a)
             if b:logout() == false then
-                a:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
                 progress(b, "FAILED: logout")
                 return false
             end
-            a:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
             if b:login() == false then
                 progress(b, "FAILED: relogin")
                 return false
             end
             b = ctx:bot(1)
-
-            -- The settle timer is paused, so the grant comes from the login settle.
-            ctx:sleep(MQ_WAIT_MS * 2)
-            lib.wait.resume_settle(a)
-            if b:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
-                progress(b, string.format("FAILED: reward not granted after relogin count=%d",
-                    b:item_count(REWARD_ITEM_NAME)))
-                return false
-            end
-            ok, err = assert_granted_once(ctx, b, title)
-            if ok == false then
-                progress(b, "FAILED: " .. tostring(err))
-                return false
-            end
-
+            ctx:sleep(MQ_WAIT_MS)
             lib.formation.arrange_in_line(ctx)
-            progress(b, "R2 PASSED")
+
+            if b:item_count(REWARD_ITEM_NAME) ~= REWARD_ITEM_COUNT then
+                progress(b, string.format("FAILED: reward count after relogin=%d", b:item_count(REWARD_ITEM_NAME)))
+                return false
+            end
+            local gone, err = assert_entry_gone(b, title)
+            if gone == false then
+                progress(b, "FAILED: " .. tostring(err))
+                return false
+            end
+            local anchor = assert_entry_status(b, TITLE .. "_ANCHOR", MSG_STATUS_AVAILABLE)
+            if anchor == false then
+                progress(b, "FAILED: unreceived anchor lost after relogin")
+                return false
+            end
+
+            progress(b, "G2 PASSED")
             return true
         end,
 
-        -- R3: the claim never reached internal, so the settle resends the same claim id and grants once
         function(ctx)
-            local a = ctx:bot(0)
             local b = ctx:bot(1)
-            local title = TITLE .. "_R3"
-            progress(b, "R3: CLAIM UNREACHABLE, RESEND GRANTS")
-
-            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP장애 " .. CLAIM_PATH .. " on")
-            if ok == false then
-                b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
-                progress(b, "FAILED: " .. tostring(err))
-                return false
-            end
-
-            -- The unsettled request must outlive a tick that still cannot reach internal.
-            lib.wait.settle_tick(ctx)
-            if b:item_count(REWARD_ITEM_NAME) ~= 0 then
-                b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
-                progress(b, "FAILED: reward granted while internal was unreachable")
-                return false
-            end
-
-            b:chat("/HTTP장애 " .. CLAIM_PATH .. " off")
-            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT) == false then
-                progress(b, "FAILED: reward not granted after internal came back")
-                return false
-            end
-            ok, err = assert_granted_once(ctx, b, title)
-            if ok == false then
-                progress(b, "FAILED: " .. tostring(err))
-                return false
-            end
-
-            progress(b, "R3 PASSED")
-            return true
-        end,
-
-        -- R4: claims arriving late, after the settle already resent the same id, never grant twice
-        function(ctx)
-            local a = ctx:bot(0)
-            local b = ctx:bot(1)
-            local title = TITLE .. "_R4"
-            progress(b, "R4: LATE DUPLICATE CLAIMS")
-
-            local ok, err = receive_under_fault(ctx, a, b, title, "/HTTP보류 on " .. CLAIM_PATH)
-            if ok == false then
-                b:chat("/HTTP보류 off")
-                progress(b, "FAILED: " .. tostring(err))
-                return false
-            end
-
-            -- The settle resend is held too, then both copies arrive together.
-            lib.wait.settle_tick(ctx)
-            b:chat("/HTTP보류 send")
-
-            if wait_item_count(ctx, b, REWARD_ITEM_NAME, REWARD_ITEM_COUNT) == false then
-                progress(b, "FAILED: reward not granted after late claims")
-                return false
-            end
-            ok, err = assert_granted_once(ctx, b, title)
-            if ok == false then
-                progress(b, "FAILED: " .. tostring(err))
-                return false
-            end
+            progress(b, "F1: RECEIVE ANCHOR")
 
             b:clear_inventory()
-            local detail, detail_err = open_storage_entry_detail(b, TITLE .. "_ANCHOR")
-            if detail == nil then
-                progress(b, "FAILED: anchor " .. tostring(detail_err))
-                return false
-            end
-            local matched, result_msg = receive_from_detail(b, MSG_RECEIVE_OK)
+            local matched, result_msg = receive_title(b, TITLE .. "_ANCHOR")
             if matched == false then
                 progress(b, "FAILED: anchor receive " .. tostring(result_msg))
                 return false
             end
 
-            progress(b, "R4 PASSED")
+            progress(b, "F1 PASSED")
             return true
         end,
     },

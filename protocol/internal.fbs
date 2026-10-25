@@ -309,13 +309,10 @@ table StorageBox {
     expired_date: string?;
 }
 
-table StorageWriteEntry {
-    user: uint;
-    box: StorageBox;
-}
-
 table SystemStorageBox {
     id: uint;
+    user: uint;
+    active: bool;
     title: string;
     message: string;
     attachments: string;
@@ -339,6 +336,7 @@ table SavePayload {
     snapshot_time: long;
     unsettled_requests: [UnsettledRequest];
     escrows: [Escrow];
+    storage_boxes: [StorageBox];
 }
 
 table OptionChange {

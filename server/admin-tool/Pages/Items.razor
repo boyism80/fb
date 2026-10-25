@@ -740,6 +740,7 @@
                         model.Message.Trim(),
                         expireUtc,
                         model.Attachments,
+                        externalRef: model.GrantRef,
                         reserveDate: reserveUtc,
                         includeNewCharacters: model.IncludeNewCharacters);
 
@@ -771,13 +772,14 @@
                     return;
                 }
 
-                var result = await storageService.CreateStorageBoxAsync(
+                var result = await storageService.CreateSystemStorageAsync(
                     selectedWorld.Value,
-                    userId.Value,
                     model.Title.Trim(),
                     model.Message.Trim(),
+                    model.ExpiredDate?.ToUniversalTime(),
                     model.Attachments,
-                    model.ExpiredDate?.ToUniversalTime());
+                    externalRef: model.GrantRef,
+                    user: userId.Value);
 
                 var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
                 ActivityLog.Add(new AdminActivityEntry
@@ -790,7 +792,7 @@
                 });
                 LoadGrantHistory();
 
-                successMessage = $"아이템 지급이 완료되었습니다. (Storage ID: #{result.Id}, 유저: {result.User})";
+                successMessage = $"아이템 지급이 완료되었습니다. (System Storage ID: #{result.Id}, 유저: {userName})";
             }
 
             ResetForm();
@@ -838,6 +840,8 @@
 
         [StringLength(32, ErrorMessage = "User name must be 32 characters or less.")]
         public string UserName { get; set; }
+
+        public string GrantRef { get; } = $"admin:{Guid.NewGuid():N}";
 
         public DateTime? ExpiredDate { get; set; }
 

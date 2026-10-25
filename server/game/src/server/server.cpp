@@ -372,7 +372,8 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  collection_unlocks,
                                  snapshot_time,
                                  ch.unsettled.to_protocol(),
-                                 escrows);
+                                 escrows,
+                                 ch.storage_box.to_save_dtos(ch.id, this->now()));
 }
 
 async::task<void> fb::game::server::save(fb::thread& thread)

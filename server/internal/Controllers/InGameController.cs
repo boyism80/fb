@@ -31,6 +31,7 @@ namespace Internal.Controllers
         private readonly LogService _logService;
         private readonly MaintenanceService _maintenanceService;
         private readonly FriendService _friendService;
+        private readonly StorageService _storageService;
 
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
@@ -42,7 +43,8 @@ namespace Internal.Controllers
             ServerStateService serverStateService,
             LogService logService,
             MaintenanceService maintenanceService,
-            FriendService friendService)
+            FriendService friendService,
+            StorageService storageService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -55,6 +57,7 @@ namespace Internal.Controllers
             _logService = logService;
             _maintenanceService = maintenanceService;
             _friendService = friendService;
+            _storageService = storageService;
         }
 
         [HttpPost("login")]
@@ -467,6 +470,7 @@ namespace Internal.Controllers
         [HttpGet("init/{world}/{uid}")]
         public async Task<Response.Init> Init(uint world, uint uid)
         {
+            await _storageService.SettleLegacyRequestsAsync(world, uid);
             var ch = await _dbContext.Character.Get(world, uid);
             var items = await _dbContext.Item.Get(world, uid);
             var spells = await _dbContext.Spell.Get(world, uid);
@@ -510,11 +514,6 @@ namespace Internal.Controllers
             await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, sync);
 
             await _dbContext.SaveChangesAsync();
-            var now = DateTime.UtcNow;
-            var claimingBoxes = unsettledRequests
-                .Where(x => x.Type == (byte)UnsettledType.StorageClaim)
-                .Select(x => (uint)x.Target)
-                .ToHashSet();
             var character = _mapper.Map<Protocol.Character>(ch);
             character.Pw = string.Empty;
             return new Response.Init
@@ -527,12 +526,7 @@ namespace Internal.Controllers
                 Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                 Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
                 CollectionUnlocks = collectionUnlocks.Select(_mapper.Map<Protocol.CollectionUnlock>).ToList(),
-                StorageBoxes = storageBoxes
-                    .Where(box => claimingBoxes.Contains(box.Id) ||
-                                  ((box.ExpiredDate == null || box.ExpiredDate > now) &&
-                                   (box.Received == false || box.SystemStorageBoxId != null)))
-                    .Select(_mapper.Map<Protocol.StorageBox>)
-                    .ToList(),
+                StorageBoxes = storageBoxes.Select(_mapper.Map<Protocol.StorageBox>).ToList(),
                 UnsettledRequests = unsettledRequests.Select(_mapper.Map<Protocol.UnsettledRequest>).ToList(),
                 Escrows = escrows.Select(_mapper.Map<Protocol.Escrow>).ToList(),
                 Friends = friends,
@@ -743,10 +737,11 @@ namespace Internal.Controllers
             var collectionUnlocksTask = _dbContext.CollectionUnlock.GetMany(world, characterIds);
             var unsettledTask = _dbContext.UnsettledRequest.GetMany(world, characterIds);
             var escrowTask = _dbContext.Escrow.GetMany(world, characterIds);
+            var storageBoxTask = _dbContext.StorageBox.GetMany(world, characterIds);
             var marriageCreatedTask = _dbContext.Marriage.GetCreatedDates(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                collectionUnlocksTask, unsettledTask, escrowTask, marriageCreatedTask);
+                collectionUnlocksTask, unsettledTask, escrowTask, storageBoxTask, marriageCreatedTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -756,6 +751,7 @@ namespace Internal.Controllers
             var collectionUnlocksByOwner = await collectionUnlocksTask;
             var unsettledByOwner = await unsettledTask;
             var escrowsByOwner = await escrowTask;
+            var storageBoxesByOwner = await storageBoxTask;
             var marriageCreated = await marriageCreatedTask;
 
             foreach (var data in payloads)
@@ -776,7 +772,8 @@ namespace Internal.Controllers
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
                     collectionUnlocksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<CollectionUnlock>(),
                     unsettledByOwner.GetValueOrDefault(characterId) ?? Array.Empty<UnsettledRequest>(),
-                    escrowsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Escrow>());
+                    escrowsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Escrow>(),
+                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>());
             }
         }
 
@@ -791,7 +788,8 @@ namespace Internal.Controllers
             IReadOnlyList<Quest> existingQuests,
             IReadOnlyList<CollectionUnlock> existingCollectionUnlocks,
             IReadOnlyList<UnsettledRequest> existingUnsettledRequests,
-            IReadOnlyList<Escrow> existingEscrows)
+            IReadOnlyList<Escrow> existingEscrows,
+            IReadOnlyList<StorageBox> existingStorageBoxes)
         {
             var characterId = data.Character.Id;
 
@@ -872,6 +870,19 @@ namespace Internal.Controllers
                 existingEscrows,
                 removed => _dbContext.Escrow.Delete(world, removed),
                 alive => _dbContext.Escrow.Set(world, alive));
+
+            var storageBoxes = _mapper.Map<Protocol.StorageBox[], StorageBox[]>(
+                data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>());
+            foreach (var box in storageBoxes)
+            {
+                box.User = characterId;
+            }
+
+            ReplaceHashEntities(
+                storageBoxes,
+                existingStorageBoxes,
+                removed => _dbContext.StorageBox.Delete(world, removed),
+                alive => _dbContext.StorageBox.Set(world, alive));
         }
 
         [HttpPost("option")]

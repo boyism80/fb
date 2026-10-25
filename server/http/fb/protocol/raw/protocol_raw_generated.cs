@@ -2314,6 +2314,8 @@ public struct SavePayload : IFlatbufferObject
   public int UnsettledRequestsLength { get { int o = __p.__offset(22); return o != 0 ? __p.__vector_len(o) : 0; } }
   public fb.protocol.@internal.raw.Escrow? Escrows(int j) { int o = __p.__offset(24); return o != 0 ? (fb.protocol.@internal.raw.Escrow?)(new fb.protocol.@internal.raw.Escrow()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int EscrowsLength { get { int o = __p.__offset(24); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.StorageBox? StorageBoxes(int j) { int o = __p.__offset(26); return o != 0 ? (fb.protocol.@internal.raw.StorageBox?)(new fb.protocol.@internal.raw.StorageBox()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int StorageBoxesLength { get { int o = __p.__offset(26); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol.@internal.raw.SavePayload> CreateSavePayload(FlatBufferBuilder builder,
       Offset<fb.protocol.@internal.raw.Character> characterOffset = default(Offset<fb.protocol.@internal.raw.Character>),
@@ -2326,9 +2328,11 @@ public struct SavePayload : IFlatbufferObject
       VectorOffset collection_unlocksOffset = default(VectorOffset),
       long snapshot_time = 0,
       VectorOffset unsettled_requestsOffset = default(VectorOffset),
-      VectorOffset escrowsOffset = default(VectorOffset)) {
-    builder.StartTable(11);
+      VectorOffset escrowsOffset = default(VectorOffset),
+      VectorOffset storage_boxesOffset = default(VectorOffset)) {
+    builder.StartTable(12);
     SavePayload.AddSnapshotTime(builder, snapshot_time);
+    SavePayload.AddStorageBoxes(builder, storage_boxesOffset);
     SavePayload.AddEscrows(builder, escrowsOffset);
     SavePayload.AddUnsettledRequests(builder, unsettled_requestsOffset);
     SavePayload.AddCollectionUnlocks(builder, collection_unlocksOffset);
@@ -2342,7 +2346,7 @@ public struct SavePayload : IFlatbufferObject
     return SavePayload.EndSavePayload(builder);
   }
 
-  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(11); }
+  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(12); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
   public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(2, itemsOffset.Value, 0); }
@@ -2394,6 +2398,12 @@ public struct SavePayload : IFlatbufferObject
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.Escrow>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Escrow>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEscrowsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddStorageBoxes(FlatBufferBuilder builder, VectorOffset storageBoxesOffset) { builder.AddOffset(11, storageBoxesOffset.Value, 0); }
+  public static VectorOffset CreateStorageBoxesVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.StorageBox>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.StorageBox>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartStorageBoxesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol.@internal.raw.SavePayload> EndSavePayload(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.SavePayload>(o);
@@ -2417,6 +2427,7 @@ static public class SavePayloadVerify
       && verifier.VerifyField(tablePos, 20 /*SnapshotTime*/, 8 /*long*/, 8, false)
       && verifier.VerifyVectorOfTables(tablePos, 22 /*UnsettledRequests*/, fb.protocol.@internal.raw.UnsettledRequestVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 24 /*Escrows*/, fb.protocol.@internal.raw.EscrowVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 26 /*StorageBoxes*/, fb.protocol.@internal.raw.StorageBoxVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -2633,62 +2644,6 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct StorageWriteEntry : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static StorageWriteEntry GetRootAsStorageWriteEntry(ByteBuffer _bb) { return GetRootAsStorageWriteEntry(_bb, new StorageWriteEntry()); }
-  public static StorageWriteEntry GetRootAsStorageWriteEntry(ByteBuffer _bb, StorageWriteEntry obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public StorageWriteEntry __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public fb.protocol.@internal.raw.StorageBox? Box { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.raw.StorageBox?)(new fb.protocol.@internal.raw.StorageBox()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-
-  public static Offset<fb.protocol.@internal.raw.StorageWriteEntry> CreateStorageWriteEntry(FlatBufferBuilder builder,
-      uint user = 0,
-      Offset<fb.protocol.@internal.raw.StorageBox> boxOffset = default(Offset<fb.protocol.@internal.raw.StorageBox>)) {
-    builder.StartTable(2);
-    StorageWriteEntry.AddBox(builder, boxOffset);
-    StorageWriteEntry.AddUser(builder, user);
-    return StorageWriteEntry.EndStorageWriteEntry(builder);
-  }
-
-  public static void StartStorageWriteEntry(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
-  public static void AddBox(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageBox> boxOffset) { builder.AddOffset(1, boxOffset.Value, 0); }
-  public static Offset<fb.protocol.@internal.raw.StorageWriteEntry> EndStorageWriteEntry(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.raw.StorageWriteEntry>(o);
-  }
-}
-
-
-static public class StorageWriteEntryVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTable(tablePos, 6 /*Box*/, fb.protocol.@internal.raw.StorageBoxVerify.Verify, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
 public struct SystemMail : IFlatbufferObject
 {
   private Table __p;
@@ -2811,58 +2766,62 @@ public struct SystemStorageBox : IFlatbufferObject
   public SystemStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Title { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public bool Active { get { int o = __p.__offset(8); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public string Title { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(6); }
-  public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(10); }
+  public string Message { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(12, 1); }
 #else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(8); }
-  public string Attachments { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(12); }
+  public string Attachments { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(14, 1); }
 #else
-  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
-  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(10); }
-  public string ExpiredDate { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(14); }
+  public string ExpiredDate { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExpiredDateBytes() { return __p.__vector_as_span<byte>(12, 1); }
+  public Span<byte> GetExpiredDateBytes() { return __p.__vector_as_span<byte>(16, 1); }
 #else
-  public ArraySegment<byte>? GetExpiredDateBytes() { return __p.__vector_as_arraysegment(12); }
+  public ArraySegment<byte>? GetExpiredDateBytes() { return __p.__vector_as_arraysegment(16); }
 #endif
-  public byte[] GetExpiredDateArray() { return __p.__vector_as_array<byte>(12); }
-  public string ExternalRef { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetExpiredDateArray() { return __p.__vector_as_array<byte>(16); }
+  public string ExternalRef { get { int o = __p.__offset(18); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExternalRefBytes() { return __p.__vector_as_span<byte>(14, 1); }
+  public Span<byte> GetExternalRefBytes() { return __p.__vector_as_span<byte>(18, 1); }
 #else
-  public ArraySegment<byte>? GetExternalRefBytes() { return __p.__vector_as_arraysegment(14); }
+  public ArraySegment<byte>? GetExternalRefBytes() { return __p.__vector_as_arraysegment(18); }
 #endif
-  public byte[] GetExternalRefArray() { return __p.__vector_as_array<byte>(14); }
-  public string CreatedDate { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetExternalRefArray() { return __p.__vector_as_array<byte>(18); }
+  public string CreatedDate { get { int o = __p.__offset(20); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(16, 1); }
+  public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(20, 1); }
 #else
-  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(16); }
+  public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(20); }
 #endif
-  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(16); }
-  public string CreatedBefore { get { int o = __p.__offset(18); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(20); }
+  public string CreatedBefore { get { int o = __p.__offset(22); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetCreatedBeforeBytes() { return __p.__vector_as_span<byte>(18, 1); }
+  public Span<byte> GetCreatedBeforeBytes() { return __p.__vector_as_span<byte>(22, 1); }
 #else
-  public ArraySegment<byte>? GetCreatedBeforeBytes() { return __p.__vector_as_arraysegment(18); }
+  public ArraySegment<byte>? GetCreatedBeforeBytes() { return __p.__vector_as_arraysegment(22); }
 #endif
-  public byte[] GetCreatedBeforeArray() { return __p.__vector_as_array<byte>(18); }
+  public byte[] GetCreatedBeforeArray() { return __p.__vector_as_array<byte>(22); }
 
   public static Offset<fb.protocol.@internal.raw.SystemStorageBox> CreateSystemStorageBox(FlatBufferBuilder builder,
       uint id = 0,
+      uint user = 0,
+      bool active = false,
       StringOffset titleOffset = default(StringOffset),
       StringOffset messageOffset = default(StringOffset),
       StringOffset attachmentsOffset = default(StringOffset),
@@ -2870,7 +2829,7 @@ public struct SystemStorageBox : IFlatbufferObject
       StringOffset external_refOffset = default(StringOffset),
       StringOffset created_dateOffset = default(StringOffset),
       StringOffset created_beforeOffset = default(StringOffset)) {
-    builder.StartTable(8);
+    builder.StartTable(10);
     SystemStorageBox.AddCreatedBefore(builder, created_beforeOffset);
     SystemStorageBox.AddCreatedDate(builder, created_dateOffset);
     SystemStorageBox.AddExternalRef(builder, external_refOffset);
@@ -2878,19 +2837,23 @@ public struct SystemStorageBox : IFlatbufferObject
     SystemStorageBox.AddAttachments(builder, attachmentsOffset);
     SystemStorageBox.AddMessage(builder, messageOffset);
     SystemStorageBox.AddTitle(builder, titleOffset);
+    SystemStorageBox.AddUser(builder, user);
     SystemStorageBox.AddId(builder, id);
+    SystemStorageBox.AddActive(builder, active);
     return SystemStorageBox.EndSystemStorageBox(builder);
   }
 
-  public static void StartSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(8); }
+  public static void StartSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(10); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(1, titleOffset.Value, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
-  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(3, attachmentsOffset.Value, 0); }
-  public static void AddExpiredDate(FlatBufferBuilder builder, StringOffset expiredDateOffset) { builder.AddOffset(4, expiredDateOffset.Value, 0); }
-  public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(5, externalRefOffset.Value, 0); }
-  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(6, createdDateOffset.Value, 0); }
-  public static void AddCreatedBefore(FlatBufferBuilder builder, StringOffset createdBeforeOffset) { builder.AddOffset(7, createdBeforeOffset.Value, 0); }
+  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
+  public static void AddActive(FlatBufferBuilder builder, bool active) { builder.AddBool(2, active, false); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(3, titleOffset.Value, 0); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(4, messageOffset.Value, 0); }
+  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(5, attachmentsOffset.Value, 0); }
+  public static void AddExpiredDate(FlatBufferBuilder builder, StringOffset expiredDateOffset) { builder.AddOffset(6, expiredDateOffset.Value, 0); }
+  public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(7, externalRefOffset.Value, 0); }
+  public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(8, createdDateOffset.Value, 0); }
+  public static void AddCreatedBefore(FlatBufferBuilder builder, StringOffset createdBeforeOffset) { builder.AddOffset(9, createdBeforeOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.raw.SystemStorageBox> EndSystemStorageBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.SystemStorageBox>(o);
@@ -2904,13 +2867,15 @@ static public class SystemStorageBoxVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 8 /*Message*/, false)
-      && verifier.VerifyString(tablePos, 10 /*Attachments*/, false)
-      && verifier.VerifyString(tablePos, 12 /*ExpiredDate*/, false)
-      && verifier.VerifyString(tablePos, 14 /*ExternalRef*/, false)
-      && verifier.VerifyString(tablePos, 16 /*CreatedDate*/, false)
-      && verifier.VerifyString(tablePos, 18 /*CreatedBefore*/, false)
+      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Active*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyString(tablePos, 10 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 12 /*Message*/, false)
+      && verifier.VerifyString(tablePos, 14 /*Attachments*/, false)
+      && verifier.VerifyString(tablePos, 16 /*ExpiredDate*/, false)
+      && verifier.VerifyString(tablePos, 18 /*ExternalRef*/, false)
+      && verifier.VerifyString(tablePos, 20 /*CreatedDate*/, false)
+      && verifier.VerifyString(tablePos, 22 /*CreatedBefore*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -3762,72 +3727,6 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct ClaimStorageBox : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static ClaimStorageBox GetRootAsClaimStorageBox(ByteBuffer _bb) { return GetRootAsClaimStorageBox(_bb, new ClaimStorageBox()); }
-  public static ClaimStorageBox GetRootAsClaimStorageBox(ByteBuffer _bb, ClaimStorageBox obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public ClaimStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public ulong ClaimId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
-
-  public static Offset<fb.protocol.@internal.request.raw.ClaimStorageBox> CreateClaimStorageBox(FlatBufferBuilder builder,
-      uint world = 0,
-      uint user = 0,
-      uint id = 0,
-      ulong claim_id = 0) {
-    builder.StartTable(4);
-    ClaimStorageBox.AddClaimId(builder, claim_id);
-    ClaimStorageBox.AddId(builder, id);
-    ClaimStorageBox.AddUser(builder, user);
-    ClaimStorageBox.AddWorld(builder, world);
-    return ClaimStorageBox.EndClaimStorageBox(builder);
-  }
-
-  public static void StartClaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
-  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(2, id, 0); }
-  public static void AddClaimId(FlatBufferBuilder builder, ulong claimId) { builder.AddUlong(3, claimId, 0); }
-  public static Offset<fb.protocol.@internal.request.raw.ClaimStorageBox> EndClaimStorageBox(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.request.raw.ClaimStorageBox>(o);
-  }
-}
-
-
-static public class ClaimStorageBoxVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*ClaimId*/, 8 /*ulong*/, 8, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.request.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
 public struct CreateClan : IFlatbufferObject
 {
   private Table __p;
@@ -4286,84 +4185,6 @@ static public class DestroyGroupVerify
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*Master*/, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.request.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
-public struct DistributeSystemStorage : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static DistributeSystemStorage GetRootAsDistributeSystemStorage(ByteBuffer _bb) { return GetRootAsDistributeSystemStorage(_bb, new DistributeSystemStorage()); }
-  public static DistributeSystemStorage GetRootAsDistributeSystemStorage(ByteBuffer _bb, DistributeSystemStorage obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public DistributeSystemStorage __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint SystemStorageBoxId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Users(int j) { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(__p.__vector(o) + j * 4) : (uint)0; }
-  public int UsersLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
-#if ENABLE_SPAN_T
-  public Span<uint> GetUsersBytes() { return __p.__vector_as_span<uint>(8, 4); }
-#else
-  public ArraySegment<byte>? GetUsersBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public uint[] GetUsersArray() { return __p.__vector_as_array<uint>(8); }
-  public uint Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-
-  public static Offset<fb.protocol.@internal.request.raw.DistributeSystemStorage> CreateDistributeSystemStorage(FlatBufferBuilder builder,
-      uint world = 0,
-      uint system_storage_box_id = 0,
-      VectorOffset usersOffset = default(VectorOffset),
-      uint host = 0) {
-    builder.StartTable(4);
-    DistributeSystemStorage.AddHost(builder, host);
-    DistributeSystemStorage.AddUsers(builder, usersOffset);
-    DistributeSystemStorage.AddSystemStorageBoxId(builder, system_storage_box_id);
-    DistributeSystemStorage.AddWorld(builder, world);
-    return DistributeSystemStorage.EndDistributeSystemStorage(builder);
-  }
-
-  public static void StartDistributeSystemStorage(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
-  public static void AddSystemStorageBoxId(FlatBufferBuilder builder, uint systemStorageBoxId) { builder.AddUint(1, systemStorageBoxId, 0); }
-  public static void AddUsers(FlatBufferBuilder builder, VectorOffset usersOffset) { builder.AddOffset(2, usersOffset.Value, 0); }
-  public static VectorOffset CreateUsersVector(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddUint(data[i]); return builder.EndVector(); }
-  public static VectorOffset CreateUsersVectorBlock(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateUsersVectorBlock(FlatBufferBuilder builder, ArraySegment<uint> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateUsersVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<uint>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartUsersVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(3, host, 0); }
-  public static Offset<fb.protocol.@internal.request.raw.DistributeSystemStorage> EndDistributeSystemStorage(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.request.raw.DistributeSystemStorage>(o);
-  }
-}
-
-
-static public class DistributeSystemStorageVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*SystemStorageBoxId*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyVectorOfData(tablePos, 8 /*Users*/, 4 /*uint*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -6941,72 +6762,6 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct UnclaimStorageBox : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static UnclaimStorageBox GetRootAsUnclaimStorageBox(ByteBuffer _bb) { return GetRootAsUnclaimStorageBox(_bb, new UnclaimStorageBox()); }
-  public static UnclaimStorageBox GetRootAsUnclaimStorageBox(ByteBuffer _bb, UnclaimStorageBox obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public UnclaimStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public ulong ClaimId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
-
-  public static Offset<fb.protocol.@internal.request.raw.UnclaimStorageBox> CreateUnclaimStorageBox(FlatBufferBuilder builder,
-      uint world = 0,
-      uint user = 0,
-      uint id = 0,
-      ulong claim_id = 0) {
-    builder.StartTable(4);
-    UnclaimStorageBox.AddClaimId(builder, claim_id);
-    UnclaimStorageBox.AddId(builder, id);
-    UnclaimStorageBox.AddUser(builder, user);
-    UnclaimStorageBox.AddWorld(builder, world);
-    return UnclaimStorageBox.EndUnclaimStorageBox(builder);
-  }
-
-  public static void StartUnclaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
-  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(2, id, 0); }
-  public static void AddClaimId(FlatBufferBuilder builder, ulong claimId) { builder.AddUlong(3, claimId, 0); }
-  public static Offset<fb.protocol.@internal.request.raw.UnclaimStorageBox> EndUnclaimStorageBox(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.request.raw.UnclaimStorageBox>(o);
-  }
-}
-
-
-static public class UnclaimStorageBoxVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*ClaimId*/, 8 /*ulong*/, 8, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.request.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
 public struct UpdateFriends : IFlatbufferObject
 {
   private Table __p;
@@ -7440,133 +7195,6 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct WriteStorageBox : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static WriteStorageBox GetRootAsWriteStorageBox(ByteBuffer _bb) { return GetRootAsWriteStorageBox(_bb, new WriteStorageBox()); }
-  public static WriteStorageBox GetRootAsWriteStorageBox(ByteBuffer _bb, WriteStorageBox obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public WriteStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Name { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
-  public string Title { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(10, 1); }
-#else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(10); }
-#endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(10); }
-  public string Message { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(12, 1); }
-#else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(12); }
-#endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(12); }
-  public string Attachments { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(14, 1); }
-#else
-  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(14); }
-#endif
-  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(14); }
-  public string ExpireDate { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetExpireDateBytes() { return __p.__vector_as_span<byte>(16, 1); }
-#else
-  public ArraySegment<byte>? GetExpireDateBytes() { return __p.__vector_as_arraysegment(16); }
-#endif
-  public byte[] GetExpireDateArray() { return __p.__vector_as_array<byte>(16); }
-  public string ExternalRef { get { int o = __p.__offset(18); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetExternalRefBytes() { return __p.__vector_as_span<byte>(18, 1); }
-#else
-  public ArraySegment<byte>? GetExternalRefBytes() { return __p.__vector_as_arraysegment(18); }
-#endif
-  public byte[] GetExternalRefArray() { return __p.__vector_as_array<byte>(18); }
-  public uint Host { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-
-  public static Offset<fb.protocol.@internal.request.raw.WriteStorageBox> CreateWriteStorageBox(FlatBufferBuilder builder,
-      uint world = 0,
-      uint user = 0,
-      StringOffset nameOffset = default(StringOffset),
-      StringOffset titleOffset = default(StringOffset),
-      StringOffset messageOffset = default(StringOffset),
-      StringOffset attachmentsOffset = default(StringOffset),
-      StringOffset expire_dateOffset = default(StringOffset),
-      StringOffset external_refOffset = default(StringOffset),
-      uint host = 0) {
-    builder.StartTable(9);
-    WriteStorageBox.AddHost(builder, host);
-    WriteStorageBox.AddExternalRef(builder, external_refOffset);
-    WriteStorageBox.AddExpireDate(builder, expire_dateOffset);
-    WriteStorageBox.AddAttachments(builder, attachmentsOffset);
-    WriteStorageBox.AddMessage(builder, messageOffset);
-    WriteStorageBox.AddTitle(builder, titleOffset);
-    WriteStorageBox.AddName(builder, nameOffset);
-    WriteStorageBox.AddUser(builder, user);
-    WriteStorageBox.AddWorld(builder, world);
-    return WriteStorageBox.EndWriteStorageBox(builder);
-  }
-
-  public static void StartWriteStorageBox(FlatBufferBuilder builder) { builder.StartTable(9); }
-  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(3, titleOffset.Value, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(4, messageOffset.Value, 0); }
-  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(5, attachmentsOffset.Value, 0); }
-  public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(6, expireDateOffset.Value, 0); }
-  public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(7, externalRefOffset.Value, 0); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(8, host, 0); }
-  public static Offset<fb.protocol.@internal.request.raw.WriteStorageBox> EndWriteStorageBox(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.request.raw.WriteStorageBox>(o);
-  }
-}
-
-
-static public class WriteStorageBoxVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*Name*/, false)
-      && verifier.VerifyString(tablePos, 10 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 12 /*Message*/, false)
-      && verifier.VerifyString(tablePos, 14 /*Attachments*/, false)
-      && verifier.VerifyString(tablePos, 16 /*ExpireDate*/, false)
-      && verifier.VerifyString(tablePos, 18 /*ExternalRef*/, false)
-      && verifier.VerifyField(tablePos, 20 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.request.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
 public struct WriteSystemMail : IFlatbufferObject
 {
   private Table __p;
@@ -7667,66 +7295,76 @@ public struct WriteSystemStorageBox : IFlatbufferObject
   public WriteSystemStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Title { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(6); }
-  public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
+  public string Title { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(8); }
-  public string Attachments { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(8); }
+  public string Message { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(10); }
-  public string ExpireDate { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(10); }
+  public string Attachments { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExpireDateBytes() { return __p.__vector_as_span<byte>(12, 1); }
+  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(12, 1); }
 #else
-  public ArraySegment<byte>? GetExpireDateBytes() { return __p.__vector_as_arraysegment(12); }
+  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
-  public byte[] GetExpireDateArray() { return __p.__vector_as_array<byte>(12); }
-  public string ExternalRef { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(12); }
+  public string ExpireDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExternalRefBytes() { return __p.__vector_as_span<byte>(14, 1); }
+  public Span<byte> GetExpireDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
 #else
-  public ArraySegment<byte>? GetExternalRefBytes() { return __p.__vector_as_arraysegment(14); }
+  public ArraySegment<byte>? GetExpireDateBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
-  public byte[] GetExternalRefArray() { return __p.__vector_as_array<byte>(14); }
+  public byte[] GetExpireDateArray() { return __p.__vector_as_array<byte>(14); }
+  public string ExternalRef { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetExternalRefBytes() { return __p.__vector_as_span<byte>(16, 1); }
+#else
+  public ArraySegment<byte>? GetExternalRefBytes() { return __p.__vector_as_arraysegment(16); }
+#endif
+  public byte[] GetExternalRefArray() { return __p.__vector_as_array<byte>(16); }
 
   public static Offset<fb.protocol.@internal.request.raw.WriteSystemStorageBox> CreateWriteSystemStorageBox(FlatBufferBuilder builder,
       uint world = 0,
+      StringOffset nameOffset = default(StringOffset),
       StringOffset titleOffset = default(StringOffset),
       StringOffset messageOffset = default(StringOffset),
       StringOffset attachmentsOffset = default(StringOffset),
       StringOffset expire_dateOffset = default(StringOffset),
       StringOffset external_refOffset = default(StringOffset)) {
-    builder.StartTable(6);
+    builder.StartTable(7);
     WriteSystemStorageBox.AddExternalRef(builder, external_refOffset);
     WriteSystemStorageBox.AddExpireDate(builder, expire_dateOffset);
     WriteSystemStorageBox.AddAttachments(builder, attachmentsOffset);
     WriteSystemStorageBox.AddMessage(builder, messageOffset);
     WriteSystemStorageBox.AddTitle(builder, titleOffset);
+    WriteSystemStorageBox.AddName(builder, nameOffset);
     WriteSystemStorageBox.AddWorld(builder, world);
     return WriteSystemStorageBox.EndWriteSystemStorageBox(builder);
   }
 
-  public static void StartWriteSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartWriteSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(1, titleOffset.Value, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
-  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(3, attachmentsOffset.Value, 0); }
-  public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(4, expireDateOffset.Value, 0); }
-  public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(5, externalRefOffset.Value, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(3, messageOffset.Value, 0); }
+  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(4, attachmentsOffset.Value, 0); }
+  public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(5, expireDateOffset.Value, 0); }
+  public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(6, externalRefOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.request.raw.WriteSystemStorageBox> EndWriteSystemStorageBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.WriteSystemStorageBox>(o);
@@ -7740,11 +7378,12 @@ static public class WriteSystemStorageBoxVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 6 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 8 /*Message*/, false)
-      && verifier.VerifyString(tablePos, 10 /*Attachments*/, false)
-      && verifier.VerifyString(tablePos, 12 /*ExpireDate*/, false)
-      && verifier.VerifyString(tablePos, 14 /*ExternalRef*/, false)
+      && verifier.VerifyString(tablePos, 6 /*Name*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 10 /*Message*/, false)
+      && verifier.VerifyString(tablePos, 12 /*Attachments*/, false)
+      && verifier.VerifyString(tablePos, 14 /*ExpireDate*/, false)
+      && verifier.VerifyString(tablePos, 16 /*ExternalRef*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -8488,57 +8127,6 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct ClaimStorageBox : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static ClaimStorageBox GetRootAsClaimStorageBox(ByteBuffer _bb) { return GetRootAsClaimStorageBox(_bb, new ClaimStorageBox()); }
-  public static ClaimStorageBox GetRootAsClaimStorageBox(ByteBuffer _bb, ClaimStorageBox obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public ClaimStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-
-  public static Offset<fb.protocol.@internal.response.raw.ClaimStorageBox> CreateClaimStorageBox(FlatBufferBuilder builder,
-      uint error = 0) {
-    builder.StartTable(1);
-    ClaimStorageBox.AddError(builder, error);
-    return ClaimStorageBox.EndClaimStorageBox(builder);
-  }
-
-  public static void StartClaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
-  public static Offset<fb.protocol.@internal.response.raw.ClaimStorageBox> EndClaimStorageBox(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.response.raw.ClaimStorageBox>(o);
-  }
-}
-
-
-static public class ClaimStorageBoxVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.response.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
 public struct ClanDetails : IFlatbufferObject
 {
   private Table __p;
@@ -8875,73 +8463,6 @@ static public class DestroyGroupVerify
       && verifier.VerifyTable(tablePos, 10 /*Actor*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*Revision*/, 8 /*ulong*/, 8, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.response.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
-public struct DistributeSystemStorage : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static DistributeSystemStorage GetRootAsDistributeSystemStorage(ByteBuffer _bb) { return GetRootAsDistributeSystemStorage(_bb, new DistributeSystemStorage()); }
-  public static DistributeSystemStorage GetRootAsDistributeSystemStorage(ByteBuffer _bb, DistributeSystemStorage obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public DistributeSystemStorage __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public fb.protocol.@internal.raw.StorageWriteEntry? Entries(int j) { int o = __p.__offset(4); return o != 0 ? (fb.protocol.@internal.raw.StorageWriteEntry?)(new fb.protocol.@internal.raw.StorageWriteEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int EntriesLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-
-  public static Offset<fb.protocol.@internal.response.raw.DistributeSystemStorage> CreateDistributeSystemStorage(FlatBufferBuilder builder,
-      VectorOffset entriesOffset = default(VectorOffset),
-      uint host = 0,
-      uint error = 0) {
-    builder.StartTable(3);
-    DistributeSystemStorage.AddError(builder, error);
-    DistributeSystemStorage.AddHost(builder, host);
-    DistributeSystemStorage.AddEntries(builder, entriesOffset);
-    return DistributeSystemStorage.EndDistributeSystemStorage(builder);
-  }
-
-  public static void StartDistributeSystemStorage(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddEntries(FlatBufferBuilder builder, VectorOffset entriesOffset) { builder.AddOffset(0, entriesOffset.Value, 0); }
-  public static VectorOffset CreateEntriesVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageWriteEntry>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateEntriesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageWriteEntry>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateEntriesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.StorageWriteEntry>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateEntriesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.StorageWriteEntry>>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartEntriesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
-  public static Offset<fb.protocol.@internal.response.raw.DistributeSystemStorage> EndDistributeSystemStorage(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.response.raw.DistributeSystemStorage>(o);
-  }
-}
-
-
-static public class DistributeSystemStorageVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyVectorOfTables(tablePos, 4 /*Entries*/, fb.protocol.@internal.raw.StorageWriteEntryVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11248,57 +10769,6 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct UnclaimStorageBox : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static UnclaimStorageBox GetRootAsUnclaimStorageBox(ByteBuffer _bb) { return GetRootAsUnclaimStorageBox(_bb, new UnclaimStorageBox()); }
-  public static UnclaimStorageBox GetRootAsUnclaimStorageBox(ByteBuffer _bb, UnclaimStorageBox obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public UnclaimStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-
-  public static Offset<fb.protocol.@internal.response.raw.UnclaimStorageBox> CreateUnclaimStorageBox(FlatBufferBuilder builder,
-      uint error = 0) {
-    builder.StartTable(1);
-    UnclaimStorageBox.AddError(builder, error);
-    return UnclaimStorageBox.EndUnclaimStorageBox(builder);
-  }
-
-  public static void StartUnclaimStorageBox(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
-  public static Offset<fb.protocol.@internal.response.raw.UnclaimStorageBox> EndUnclaimStorageBox(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.response.raw.UnclaimStorageBox>(o);
-  }
-}
-
-
-static public class UnclaimStorageBoxVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.response.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
 public struct UpdateFriends : IFlatbufferObject
 {
   private Table __p;
@@ -11937,67 +11407,6 @@ static public class WriteMailsVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyVectorOfTables(tablePos, 4 /*Entries*/, fb.protocol.@internal.raw.MailWriteEntryVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTableEnd(tablePos);
-  }
-}
-
-}
-
-// <auto-generated>
-//  automatically generated by the FlatBuffers compiler, do not modify
-// </auto-generated>
-
-namespace fb.protocol.@internal.response.raw
-{
-
-using global::System;
-using global::System.Collections.Generic;
-using global::Google.FlatBuffers;
-
-public struct WriteStorageBox : IFlatbufferObject
-{
-  private Table __p;
-  public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static WriteStorageBox GetRootAsWriteStorageBox(ByteBuffer _bb) { return GetRootAsWriteStorageBox(_bb, new WriteStorageBox()); }
-  public static WriteStorageBox GetRootAsWriteStorageBox(ByteBuffer _bb, WriteStorageBox obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public WriteStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
-
-  public fb.protocol.@internal.raw.StorageBox? Box { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol.@internal.raw.StorageBox?)(new fb.protocol.@internal.raw.StorageBox()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-
-  public static Offset<fb.protocol.@internal.response.raw.WriteStorageBox> CreateWriteStorageBox(FlatBufferBuilder builder,
-      Offset<fb.protocol.@internal.raw.StorageBox> boxOffset = default(Offset<fb.protocol.@internal.raw.StorageBox>),
-      uint host = 0,
-      uint error = 0) {
-    builder.StartTable(3);
-    WriteStorageBox.AddError(builder, error);
-    WriteStorageBox.AddHost(builder, host);
-    WriteStorageBox.AddBox(builder, boxOffset);
-    return WriteStorageBox.EndWriteStorageBox(builder);
-  }
-
-  public static void StartWriteStorageBox(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddBox(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageBox> boxOffset) { builder.AddOffset(0, boxOffset.Value, 0); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
-  public static Offset<fb.protocol.@internal.response.raw.WriteStorageBox> EndWriteStorageBox(FlatBufferBuilder builder) {
-    int o = builder.EndTable();
-    return new Offset<fb.protocol.@internal.response.raw.WriteStorageBox>(o);
-  }
-}
-
-
-static public class WriteStorageBoxVerify
-{
-  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
-  {
-    return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyTable(tablePos, 4 /*Box*/, fb.protocol.@internal.raw.StorageBoxVerify.Verify, false)
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);

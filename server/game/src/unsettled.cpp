@@ -123,18 +123,13 @@ async::task<void> unsettled_requests::settle()
         if (found == this->_entries.end() || found->second.in_flight)
             continue;
 
-        auto type   = found->second.type;
-        auto target = found->second.target;
+        auto type = found->second.type;
         try
         {
             switch (type)
             {
             case UNSETTLED_TYPE::CLAN_MONEY:
                 co_await this->_owner.clan.settle_money(id);
-                break;
-
-            case UNSETTLED_TYPE::STORAGE_CLAIM:
-                std::ignore = co_await this->_owner.storage_box.receive_reward(static_cast<uint32_t>(target));
                 break;
 
             case UNSETTLED_TYPE::MARKET_LIST:

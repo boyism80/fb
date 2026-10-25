@@ -111,26 +111,6 @@ table SendSystemMail {
   error: uint;
 }
 
-table DistributeSystemStorage {
-  entries: [fb.protocol.internal.StorageWriteEntry];
-  host: uint;
-  error: uint;
-}
-
-table WriteStorageBox {
-  box: fb.protocol.internal.StorageBox;
-  host: uint;
-  error: uint;
-}
-
-table ClaimStorageBox {
-  error: uint;
-}
-
-table UnclaimStorageBox {
-  error: uint;
-}
-
 table DeleteMail {
   unread: uint;
   error: uint;

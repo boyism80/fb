@@ -10,7 +10,6 @@
 #include <fb/game/handler/amqp/create_group.h>
 #include <fb/game/handler/amqp/destroy_clan.h>
 #include <fb/game/handler/amqp/destroy_group.h>
-#include <fb/game/handler/amqp/distribute_system_storage.h>
 #include <fb/game/handler/amqp/friend_message.h>
 #include <fb/game/handler/amqp/friend_relation.h>
 #include <fb/game/handler/amqp/kick_out.h>
@@ -31,7 +30,7 @@
 #include <fb/game/handler/amqp/whisper.h>
 #include <fb/game/handler/amqp/write_mail.h>
 #include <fb/game/handler/amqp/write_mails.h>
-#include <fb/game/handler/amqp/write_storage_box.h>
+#include <fb/game/handler/amqp/write_system_storage_box.h>
 #include <fb/game/handler/protocol/attack.h>
 #include <fb/game/handler/protocol/browser.h>
 #include <fb/game/handler/protocol/bulletin.h>

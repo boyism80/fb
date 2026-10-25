@@ -69,7 +69,6 @@ local STORAGE_SALE_TITLE = "거래소 판매"
 local STORAGE_PURCHASE_RECOVERY_TITLE = "거래소 구매 복구"
 
 local PURCHASE_PATH = "/marketplace/purchase"
-local STORAGE_WRITE_PATH = "/storage/write"
 
 -- Shared across sequential/parallel scenario steps
 local g_list_msg = nil
@@ -1097,30 +1096,6 @@ local function wait_storage_title(ctx, bot, title)
     return false, "storage entry missing: " .. title
 end
 
-local function held_request_count(ctx, bot)
-    bot:take_messages()
-    bot:chat("/HTTP보류")
-    ctx:sleep(MQ_WAIT_MS)
-    local count = nil
-    for _, text in ipairs(bot:take_messages()) do
-        local n = text:match("HTTP.-: (%d+)")
-        if n ~= nil then
-            count = tonumber(n)
-        end
-    end
-    return count
-end
-
-local function wait_held_request(ctx, bot, min_count)
-    local count = nil
-    return lib.wait.settle(ctx, function()
-        count = held_request_count(ctx, bot)
-        return count ~= nil and count >= min_count
-    end, function(attempt)
-        progress(bot, string.format("held request not arrived yet attempt=%d count=%s", attempt, tostring(count)))
-    end)
-end
-
 local function prepare_purchase_listing(a, b)
     cleanup_bot(a)
     cleanup_bot(b)
@@ -2140,11 +2115,10 @@ test_suite({
             return true
         end,
 
-        -- R2: a refund that fails to reach storage keeps the unsettled request and is retried exactly once
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
-            progress(b, "R2: REFUND RETRY")
+            progress(b, "R2: REFUND SURVIVES RELOGIN")
 
             local prepared, prep_err = prepare_purchase_listing(a, b)
             if prepared == false then
@@ -2153,34 +2127,31 @@ test_suite({
             end
 
             b:chat("/HTTP보류 on " .. PURCHASE_PATH)
-            b:chat("/HTTP보류 on " .. STORAGE_WRITE_PATH)
             local msg = select(1, purchase_item_flow(b, WEAPON_ITEM, 1))
             if msg ~= nil and msg:find(MSG_PURCHASE_OK, 1, true) ~= nil then
                 progress(b, "FAILED: held purchase reported success")
                 return false
             end
 
-            if wait_held_request(ctx, b, 2) == false then
-                progress(b, "FAILED: restore never tried the refund")
-                return false
-            end
-
-            b:chat("/HTTP보류 send")
             local arrived, arrive_err = wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE)
             if arrived == false then
                 progress(b, "FAILED: " .. tostring(arrive_err))
                 return false
             end
-            lib.wait.settle_tick(ctx)
-
-            b:chat("/HTTP보류 on " .. STORAGE_WRITE_PATH)
-            lib.wait.settle_tick(ctx)
-            local held = held_request_count(ctx, b)
+            b:chat("/HTTP보류 send")
+            ctx:sleep(MQ_WAIT_MS * 2)
             b:chat("/HTTP보류 off")
-            if held ~= 0 then
-                progress(b, "FAILED: pending purchase not settled held=" .. tostring(held))
+
+            if b:logout() == false then
+                progress(b, "FAILED: logout")
                 return false
             end
+            if b:login() == false then
+                progress(b, "FAILED: relogin")
+                return false
+            end
+            b = ctx:bot(1)
+            lib.wait.settle_tick(ctx)
 
             local titles, titles_err = storage_titles(ctx, b)
             if titles == nil then

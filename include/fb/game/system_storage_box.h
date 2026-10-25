@@ -15,6 +15,8 @@ class character;
 struct system_storage_box
 {
     uint32_t                           id;
+    uint32_t                           user   = 0;
+    bool                               active = true;
     std::string                        title;
     std::string                        message;
     std::string                        attachments;
@@ -24,7 +26,7 @@ struct system_storage_box
     std::optional<fb::model::datetime> created_before;
 
     [[nodiscard]] bool               expired(const fb::model::datetime& now) const;
-    [[nodiscard]] bool               eligible_for(const character& ch) const;
+    [[nodiscard]] bool               eligible(const character& ch) const;
     [[nodiscard]] storage_box::entry to_entry() const;
 };
 

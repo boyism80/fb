@@ -15,52 +15,17 @@ namespace Http.Reepository
         {
         }
 
-        public async Task<uint> AllocateNextIdAsync(uint world, uint user)
+        public async Task<bool> HasLegacyRef(uint world, uint user, string externalRef)
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
-            await conn.OpenAsync();
-            await using var tx = await conn.BeginTransactionAsync();
-
-            var current = await conn.QuerySingleOrDefaultAsync<uint?>(
+            return await conn.ExecuteScalarAsync<int>(
                 """
-                SELECT `id` FROM `storage_box_sequence`
-                WHERE `user` = @user
-                FOR UPDATE;
+                SELECT COUNT(*) FROM `storage_box_legacy_ref`
+                WHERE `user` = @user AND `external_ref` = @externalRef;
                 """,
-                new { user },
-                tx);
-
-            uint newId;
-            if (current == null)
-            {
-                newId = 1;
-                await conn.ExecuteAsync(
-                    """
-                    INSERT INTO `storage_box_sequence` (`user`, `id`)
-                    VALUES (@user, @newId);
-                    """,
-                    new { user, newId },
-                    tx);
-            }
-            else
-            {
-                newId = current.Value + 1;
-                await conn.ExecuteAsync(
-                    """
-                    UPDATE `storage_box_sequence`
-                    SET `id` = @newId
-                    WHERE `user` = @user;
-                    """,
-                    new { user, newId },
-                    tx);
-            }
-
-            await tx.CommitAsync();
-            return newId;
+                new { user, externalRef }) > 0;
         }
 
-        // Expired boxes are returned too: they still hold claim ids and external refs that retried requests are
-        // matched against. Callers that show boxes filter expiry themselves.
         public async Task<StorageBox> Get(uint world, uint user, uint id)
         {
             return await base.Get(world, new StorageBoxKey

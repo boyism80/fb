@@ -13,8 +13,11 @@ bool system_storage_box::expired(const fb::model::datetime& now) const
     return this->expire_date.has_value() && this->expire_date.value() < now;
 }
 
-bool system_storage_box::eligible_for(const character& ch) const
+bool system_storage_box::eligible(const character& ch) const
 {
+    if (this->user != 0 && this->user != ch.id)
+        return false;
+
     return this->created_before.has_value() == false || ch.created_date() < this->created_before.value();
 }
 

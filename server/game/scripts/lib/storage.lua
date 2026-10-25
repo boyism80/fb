@@ -2,11 +2,9 @@ local M = {}
 
 local RECEIVE_FAILURES = {
     not_found = '이미 정리된 보상입니다.',
-    in_progress = '수령을 처리하고 있습니다. 잠시 후 다시 확인해주세요.',
     already_received = '이미 수령한 보상입니다.',
     expired = '수령 기간이 지난 보상입니다.',
     inventory_full = '소지품이 가득 차서 보상을 받을 수 없습니다. 소지품을 비우고 다시 시도해주세요.',
-    pending_retry = '수령 결과를 확인하지 못했습니다. 확인되면 자동으로 지급됩니다.',
 }
 
 function M.handle(me, npc)

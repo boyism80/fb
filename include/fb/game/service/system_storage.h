@@ -6,7 +6,6 @@
 #include <fb/game/system_storage_box.h>
 #include <fb/model/model.h>
 
-#include <cstddef>
 #include <cstdint>
 #include <mutex>
 #include <optional>
@@ -18,7 +17,6 @@
 namespace fb::protocol::internal {
 class StorageBox;
 class SystemStorageBox;
-class StorageWriteEntry;
 } // namespace fb::protocol::internal
 
 namespace fb::game {
@@ -37,8 +35,6 @@ private:
     static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
     fb::async_generator<void> distribute_coroutine();
 
-    static constexpr std::size_t chunk_limit = 100;
-
     std::vector<system_storage_box> _pending_boxes;
     std::mutex                      _joined_mutex;
     std::unordered_set<uint32_t>    _joined;
@@ -54,15 +50,11 @@ public:
 
 public:
     // clang-format off
-    async::task<bool> create(uint32_t world, uint32_t user_id, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
     async::task<bool> create(uint32_t world, std::string_view user_name, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
-    async::task<bool> create_system(uint32_t world, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
     async::task<void> sync(character& ch);
     async::task<void> distribute();
     void              join(uint32_t user);
-    void              add(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids);
-    void              on_write_box(const fb::protocol::internal::StorageBox& dto);
-    void              on_distributed(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries);
+    void              on_write(const fb::protocol::internal::SystemStorageBox& dto);
     void              init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes);
     // clang-format on
 };

@@ -631,16 +631,13 @@ async::task<void> marketplace::settle_list(uint64_t listing_id)
     }
     else if (created.value() == false)
     {
-        auto returned =
-            co_await this->_owner.server.system_storage.create(world,
-                                                               this->_owner.id,
-                                                               std::format("marketplace:list:{}", listing_id),
-                                                               _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE),
-                                                               _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE),
-                                                               returns);
-        co_await this->_owner.server.threads.switching(weak);
-        if (weak.expired() || returned == false)
-            co_return;
+        this->_owner.storage_box.add({
+            storage_box::entry{
+                               .title       = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE),
+                               .message     = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE),
+                               .attachments = returns,
+                               }
+        });
     }
     this->_owner.unsettled.erase(listing_id);
 
@@ -688,16 +685,13 @@ async::task<void> marketplace::settle_purchase(uint64_t purchase_id)
 
     if (purchased.value() == false && price > 0)
     {
-        auto refunded =
-            co_await this->_owner.server.system_storage.create(world,
-                                                               this->_owner.id,
-                                                               std::format("marketplace:purchase:{}", purchase_id),
-                                                               _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
-                                                               _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),
-                                                               {fb::model::dsl::money(price).to_dsl()});
-        co_await this->_owner.server.threads.switching(weak);
-        if (weak.expired() || refunded == false)
-            co_return;
+        this->_owner.storage_box.add({
+            storage_box::entry{
+                               .title       = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
+                               .message     = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),
+                               .attachments = {fb::model::dsl::money(price).to_dsl()},
+                               }
+        });
     }
     this->_owner.unsettled.erase(purchase_id);
 

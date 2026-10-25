@@ -121,16 +121,21 @@ function M.handle(me, npc)
     end
 
     local ok = false
+    local external_ref = nil
+    ::SEND::
     if is_global then
-        ok = me:send_system_storage_box(title, message, payload)
+        ok, external_ref = me:send_system_storage_box(title, message, payload, nil, external_ref)
     else
-        ok = me:send_storage_box(user_name, title, message, payload)
+        ok, external_ref = me:send_storage_box(user_name, title, message, payload, nil, external_ref)
     end
 
     if ok then
         me:dialog(npc, '지급이 완료되었습니다.', { prev = false, next = true })
     else
-        me:dialog(npc, '지급 결과를 확인하지 못했습니다. 다시 보내기 전에 관리툴에서 지급 여부를 확인하세요.', { prev = false, next = true })
+        local retry_sel, retry_btn = me:pursuit(npc, '지급 결과를 확인하지 못했습니다. 같은 지급을 다시 보낼까요?', { '예', '아니오' })
+        if retry_btn ~= DIALOG_RESULT.QUIT and retry_sel == 1 then
+            goto SEND
+        end
     end
     return true
 end

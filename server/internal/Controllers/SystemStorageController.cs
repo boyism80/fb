@@ -49,11 +49,46 @@ namespace Internal.Controllers
             }
         }
 
+        [HttpGet("{world}/{uid}")]
+        [SuppressRequestLog]
+        public async Task<Response.GetSystemStorageBoxes> GetSystemStorageBoxes(uint world, uint uid)
+        {
+            try
+            {
+                var boxes = await _dbContext.SystemStorageBox.GetAll(world, uid);
+                return new Response.GetSystemStorageBoxes
+                {
+                    Boxes = boxes.Select(_mapper.Map<Protocol.SystemStorageBox>).ToList(),
+                    Error = (uint)ErrorCode.None
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.GetSystemStorageBoxes
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
         [HttpPost]
         public async Task<Response.WriteSystemStorageBox> WriteSystemStorageBox(Request.WriteSystemStorageBox request)
         {
             try
             {
+                uint? user = null;
+                if (string.IsNullOrWhiteSpace(request.Name) == false)
+                {
+                    user = await _dbContext.Character.GetCharacterId(request.World, request.Name.Trim());
+                    if (user.HasValue == false)
+                    {
+                        return new Response.WriteSystemStorageBox
+                        {
+                            Error = (uint)ErrorCode.NotFoundCharacter
+                        };
+                    }
+                }
+
                 DateTime? expireDate = null;
                 if (!string.IsNullOrEmpty(request.ExpireDate))
                 {
@@ -78,7 +113,8 @@ namespace Internal.Controllers
                     request.Message,
                     expireDate,
                     attachments,
-                    externalRef);
+                    externalRef,
+                    user: user);
 
                 return new Response.WriteSystemStorageBox
                 {
@@ -90,40 +126,6 @@ namespace Internal.Controllers
             {
                 return new Response.WriteSystemStorageBox
                 {
-                    Error = (uint)ErrorCode.Unhandled
-                };
-            }
-        }
-
-        [HttpPost("distribute")]
-        public async Task<Response.DistributeSystemStorage> DistributeSystemStorage(Request.DistributeSystemStorage request)
-        {
-            try
-            {
-                var users = request.Users ?? new List<uint>();
-                var written = await _storageService.DistributeSystemStorageAsync(request.World,
-                    request.SystemStorageBoxId,
-                    users,
-                    request.Host);
-
-                var entries = written.Select(box => new Protocol.StorageWriteEntry
-                {
-                    User = box.User,
-                    Box = _mapper.Map<Protocol.StorageBox>(box)
-                }).ToList();
-
-                return new Response.DistributeSystemStorage
-                {
-                    Entries = entries,
-                    Host = request.Host,
-                    Error = (uint)ErrorCode.None
-                };
-            }
-            catch (Exception)
-            {
-                return new Response.DistributeSystemStorage
-                {
-                    Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

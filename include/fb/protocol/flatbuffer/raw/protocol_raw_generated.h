@@ -118,9 +118,6 @@ struct SystemMailBuilder;
 struct StorageBox;
 struct StorageBoxBuilder;
 
-struct StorageWriteEntry;
-struct StorageWriteEntryBuilder;
-
 struct SystemStorageBox;
 struct SystemStorageBoxBuilder;
 
@@ -267,18 +264,6 @@ struct UpdateFriendsBuilder;
 struct FriendBroadcast;
 struct FriendBroadcastBuilder;
 
-struct DistributeSystemStorage;
-struct DistributeSystemStorageBuilder;
-
-struct WriteStorageBox;
-struct WriteStorageBoxBuilder;
-
-struct ClaimStorageBox;
-struct ClaimStorageBoxBuilder;
-
-struct UnclaimStorageBox;
-struct UnclaimStorageBoxBuilder;
-
 struct WriteSystemStorageBox;
 struct WriteSystemStorageBoxBuilder;
 
@@ -377,18 +362,6 @@ struct WriteMailsBuilder;
 
 struct SendSystemMail;
 struct SendSystemMailBuilder;
-
-struct DistributeSystemStorage;
-struct DistributeSystemStorageBuilder;
-
-struct WriteStorageBox;
-struct WriteStorageBoxBuilder;
-
-struct ClaimStorageBox;
-struct ClaimStorageBoxBuilder;
-
-struct UnclaimStorageBox;
-struct UnclaimStorageBoxBuilder;
 
 struct DeleteMail;
 struct DeleteMailBuilder;
@@ -4355,72 +4328,28 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBoxDirect(
       expired_date__);
 }
 
-struct StorageWriteEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef StorageWriteEntryBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_USER = 4,
-    VT_BOX = 6
-  };
-  uint32_t user() const {
-    return GetField<uint32_t>(VT_USER, 0);
-  }
-  const fb::protocol::internal::raw::StorageBox *box() const {
-    return GetPointer<const fb::protocol::internal::raw::StorageBox *>(VT_BOX);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyOffset(verifier, VT_BOX) &&
-           verifier.VerifyTable(box()) &&
-           verifier.EndTable();
-  }
-};
-
-struct StorageWriteEntryBuilder {
-  typedef StorageWriteEntry Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_user(uint32_t user) {
-    fbb_.AddElement<uint32_t>(StorageWriteEntry::VT_USER, user, 0);
-  }
-  void add_box(::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox> box) {
-    fbb_.AddOffset(StorageWriteEntry::VT_BOX, box);
-  }
-  explicit StorageWriteEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<StorageWriteEntry> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<StorageWriteEntry>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<StorageWriteEntry> CreateStorageWriteEntry(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t user = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox> box = 0) {
-  StorageWriteEntryBuilder builder_(_fbb);
-  builder_.add_box(box);
-  builder_.add_user(user);
-  return builder_.Finish();
-}
-
 struct SystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SystemStorageBoxBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
-    VT_TITLE = 6,
-    VT_MESSAGE = 8,
-    VT_ATTACHMENTS = 10,
-    VT_EXPIRED_DATE = 12,
-    VT_EXTERNAL_REF = 14,
-    VT_CREATED_DATE = 16,
-    VT_CREATED_BEFORE = 18
+    VT_USER = 6,
+    VT_ACTIVE = 8,
+    VT_TITLE = 10,
+    VT_MESSAGE = 12,
+    VT_ATTACHMENTS = 14,
+    VT_EXPIRED_DATE = 16,
+    VT_EXTERNAL_REF = 18,
+    VT_CREATED_DATE = 20,
+    VT_CREATED_BEFORE = 22
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  bool active() const {
+    return GetField<uint8_t>(VT_ACTIVE, 0) != 0;
   }
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
@@ -4446,6 +4375,8 @@ struct SystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<uint8_t>(verifier, VT_ACTIVE, 1) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
@@ -4470,6 +4401,12 @@ struct SystemStorageBoxBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(SystemStorageBox::VT_ID, id, 0);
+  }
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(SystemStorageBox::VT_USER, user, 0);
+  }
+  void add_active(bool active) {
+    fbb_.AddElement<uint8_t>(SystemStorageBox::VT_ACTIVE, static_cast<uint8_t>(active), 0);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(SystemStorageBox::VT_TITLE, title);
@@ -4506,6 +4443,8 @@ struct SystemStorageBoxBuilder {
 inline ::flatbuffers::Offset<SystemStorageBox> CreateSystemStorageBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t user = 0,
+    bool active = false,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
@@ -4521,13 +4460,17 @@ inline ::flatbuffers::Offset<SystemStorageBox> CreateSystemStorageBox(
   builder_.add_attachments(attachments);
   builder_.add_message(message);
   builder_.add_title(title);
+  builder_.add_user(user);
   builder_.add_id(id);
+  builder_.add_active(active);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<SystemStorageBox> CreateSystemStorageBoxDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t user = 0,
+    bool active = false,
     const char *title = nullptr,
     const char *message = nullptr,
     const char *attachments = nullptr,
@@ -4545,6 +4488,8 @@ inline ::flatbuffers::Offset<SystemStorageBox> CreateSystemStorageBoxDirect(
   return fb::protocol::internal::raw::CreateSystemStorageBox(
       _fbb,
       id,
+      user,
+      active,
       title__,
       message__,
       attachments__,
@@ -4567,7 +4512,8 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_COLLECTION_UNLOCKS = 18,
     VT_SNAPSHOT_TIME = 20,
     VT_UNSETTLED_REQUESTS = 22,
-    VT_ESCROWS = 24
+    VT_ESCROWS = 24,
+    VT_STORAGE_BOXES = 26
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -4602,6 +4548,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *>(VT_ESCROWS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *>(VT_STORAGE_BOXES);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -4633,6 +4582,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_ESCROWS) &&
            verifier.VerifyVector(escrows()) &&
            verifier.VerifyVectorOfTables(escrows()) &&
+           VerifyOffset(verifier, VT_STORAGE_BOXES) &&
+           verifier.VerifyVector(storage_boxes()) &&
+           verifier.VerifyVectorOfTables(storage_boxes()) &&
            verifier.EndTable();
   }
 };
@@ -4674,6 +4626,9 @@ struct SavePayloadBuilder {
   void add_escrows(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows) {
     fbb_.AddOffset(SavePayload::VT_ESCROWS, escrows);
   }
+  void add_storage_boxes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes) {
+    fbb_.AddOffset(SavePayload::VT_STORAGE_BOXES, storage_boxes);
+  }
   explicit SavePayloadBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4697,9 +4652,11 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0,
     int64_t snapshot_time = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>> unsettled_requests = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>> escrows = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes = 0) {
   SavePayloadBuilder builder_(_fbb);
   builder_.add_snapshot_time(snapshot_time);
+  builder_.add_storage_boxes(storage_boxes);
   builder_.add_escrows(escrows);
   builder_.add_unsettled_requests(unsettled_requests);
   builder_.add_collection_unlocks(collection_unlocks);
@@ -4725,7 +4682,8 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr,
     int64_t snapshot_time = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>> *unsettled_requests = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>> *escrows = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -4734,6 +4692,7 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
   auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
   auto unsettled_requests__ = unsettled_requests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::UnsettledRequest>>(*unsettled_requests) : 0;
   auto escrows__ = escrows ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Escrow>>(*escrows) : 0;
+  auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
   return fb::protocol::internal::raw::CreateSavePayload(
       _fbb,
       character,
@@ -4746,7 +4705,8 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
       collection_unlocks__,
       snapshot_time,
       unsettled_requests__,
-      escrows__);
+      escrows__,
+      storage_boxes__);
 }
 
 struct OptionChange FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -8649,111 +8609,19 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcastDirect(
       process_world);
 }
 
-struct DistributeSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef DistributeSystemStorageBuilder Builder;
+struct WriteSystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef WriteSystemStorageBoxBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
-    VT_SYSTEM_STORAGE_BOX_ID = 6,
-    VT_USERS = 8,
-    VT_HOST = 10
+    VT_NAME = 6,
+    VT_TITLE = 8,
+    VT_MESSAGE = 10,
+    VT_ATTACHMENTS = 12,
+    VT_EXPIRE_DATE = 14,
+    VT_EXTERNAL_REF = 16
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
-  }
-  uint32_t system_storage_box_id() const {
-    return GetField<uint32_t>(VT_SYSTEM_STORAGE_BOX_ID, 0);
-  }
-  const ::flatbuffers::Vector<uint32_t> *users() const {
-    return GetPointer<const ::flatbuffers::Vector<uint32_t> *>(VT_USERS);
-  }
-  uint32_t host() const {
-    return GetField<uint32_t>(VT_HOST, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
-           VerifyField<uint32_t>(verifier, VT_SYSTEM_STORAGE_BOX_ID, 4) &&
-           VerifyOffset(verifier, VT_USERS) &&
-           verifier.VerifyVector(users()) &&
-           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           verifier.EndTable();
-  }
-};
-
-struct DistributeSystemStorageBuilder {
-  typedef DistributeSystemStorage Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_WORLD, world, 0);
-  }
-  void add_system_storage_box_id(uint32_t system_storage_box_id) {
-    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_SYSTEM_STORAGE_BOX_ID, system_storage_box_id, 0);
-  }
-  void add_users(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> users) {
-    fbb_.AddOffset(DistributeSystemStorage::VT_USERS, users);
-  }
-  void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_HOST, host, 0);
-  }
-  explicit DistributeSystemStorageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<DistributeSystemStorage> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<DistributeSystemStorage>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorage(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t system_storage_box_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> users = 0,
-    uint32_t host = 0) {
-  DistributeSystemStorageBuilder builder_(_fbb);
-  builder_.add_host(host);
-  builder_.add_users(users);
-  builder_.add_system_storage_box_id(system_storage_box_id);
-  builder_.add_world(world);
-  return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorageDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t system_storage_box_id = 0,
-    const std::vector<uint32_t> *users = nullptr,
-    uint32_t host = 0) {
-  auto users__ = users ? _fbb.CreateVector<uint32_t>(*users) : 0;
-  return fb::protocol::internal::request::raw::CreateDistributeSystemStorage(
-      _fbb,
-      world,
-      system_storage_box_id,
-      users__,
-      host);
-}
-
-struct WriteStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef WriteStorageBoxBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_WORLD = 4,
-    VT_USER = 6,
-    VT_NAME = 8,
-    VT_TITLE = 10,
-    VT_MESSAGE = 12,
-    VT_ATTACHMENTS = 14,
-    VT_EXPIRE_DATE = 16,
-    VT_EXTERNAL_REF = 18,
-    VT_HOST = 20
-  };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
-  }
-  uint32_t user() const {
-    return GetField<uint32_t>(VT_USER, 0);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
@@ -8773,299 +8641,11 @@ struct WriteStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *external_ref() const {
     return GetPointer<const ::flatbuffers::String *>(VT_EXTERNAL_REF);
   }
-  uint32_t host() const {
-    return GetField<uint32_t>(VT_HOST, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
-           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
-           VerifyOffset(verifier, VT_TITLE) &&
-           verifier.VerifyString(title()) &&
-           VerifyOffset(verifier, VT_MESSAGE) &&
-           verifier.VerifyString(message()) &&
-           VerifyOffset(verifier, VT_ATTACHMENTS) &&
-           verifier.VerifyString(attachments()) &&
-           VerifyOffset(verifier, VT_EXPIRE_DATE) &&
-           verifier.VerifyString(expire_date()) &&
-           VerifyOffset(verifier, VT_EXTERNAL_REF) &&
-           verifier.VerifyString(external_ref()) &&
-           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           verifier.EndTable();
-  }
-};
-
-struct WriteStorageBoxBuilder {
-  typedef WriteStorageBox Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(WriteStorageBox::VT_WORLD, world, 0);
-  }
-  void add_user(uint32_t user) {
-    fbb_.AddElement<uint32_t>(WriteStorageBox::VT_USER, user, 0);
-  }
-  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
-    fbb_.AddOffset(WriteStorageBox::VT_NAME, name);
-  }
-  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
-    fbb_.AddOffset(WriteStorageBox::VT_TITLE, title);
-  }
-  void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
-    fbb_.AddOffset(WriteStorageBox::VT_MESSAGE, message);
-  }
-  void add_attachments(::flatbuffers::Offset<::flatbuffers::String> attachments) {
-    fbb_.AddOffset(WriteStorageBox::VT_ATTACHMENTS, attachments);
-  }
-  void add_expire_date(::flatbuffers::Offset<::flatbuffers::String> expire_date) {
-    fbb_.AddOffset(WriteStorageBox::VT_EXPIRE_DATE, expire_date);
-  }
-  void add_external_ref(::flatbuffers::Offset<::flatbuffers::String> external_ref) {
-    fbb_.AddOffset(WriteStorageBox::VT_EXTERNAL_REF, external_ref);
-  }
-  void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(WriteStorageBox::VT_HOST, host, 0);
-  }
-  explicit WriteStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<WriteStorageBox> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<WriteStorageBox>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<WriteStorageBox> CreateWriteStorageBox(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t user = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> message = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> expire_date = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> external_ref = 0,
-    uint32_t host = 0) {
-  WriteStorageBoxBuilder builder_(_fbb);
-  builder_.add_host(host);
-  builder_.add_external_ref(external_ref);
-  builder_.add_expire_date(expire_date);
-  builder_.add_attachments(attachments);
-  builder_.add_message(message);
-  builder_.add_title(title);
-  builder_.add_name(name);
-  builder_.add_user(user);
-  builder_.add_world(world);
-  return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<WriteStorageBox> CreateWriteStorageBoxDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t user = 0,
-    const char *name = nullptr,
-    const char *title = nullptr,
-    const char *message = nullptr,
-    const char *attachments = nullptr,
-    const char *expire_date = nullptr,
-    const char *external_ref = nullptr,
-    uint32_t host = 0) {
-  auto name__ = name ? _fbb.CreateString(name) : 0;
-  auto title__ = title ? _fbb.CreateString(title) : 0;
-  auto message__ = message ? _fbb.CreateString(message) : 0;
-  auto attachments__ = attachments ? _fbb.CreateString(attachments) : 0;
-  auto expire_date__ = expire_date ? _fbb.CreateString(expire_date) : 0;
-  auto external_ref__ = external_ref ? _fbb.CreateString(external_ref) : 0;
-  return fb::protocol::internal::request::raw::CreateWriteStorageBox(
-      _fbb,
-      world,
-      user,
-      name__,
-      title__,
-      message__,
-      attachments__,
-      expire_date__,
-      external_ref__,
-      host);
-}
-
-struct ClaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef ClaimStorageBoxBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_WORLD = 4,
-    VT_USER = 6,
-    VT_ID = 8,
-    VT_CLAIM_ID = 10
-  };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
-  }
-  uint32_t user() const {
-    return GetField<uint32_t>(VT_USER, 0);
-  }
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
-  }
-  uint64_t claim_id() const {
-    return GetField<uint64_t>(VT_CLAIM_ID, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
-           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
-           VerifyField<uint64_t>(verifier, VT_CLAIM_ID, 8) &&
-           verifier.EndTable();
-  }
-};
-
-struct ClaimStorageBoxBuilder {
-  typedef ClaimStorageBox Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(ClaimStorageBox::VT_WORLD, world, 0);
-  }
-  void add_user(uint32_t user) {
-    fbb_.AddElement<uint32_t>(ClaimStorageBox::VT_USER, user, 0);
-  }
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(ClaimStorageBox::VT_ID, id, 0);
-  }
-  void add_claim_id(uint64_t claim_id) {
-    fbb_.AddElement<uint64_t>(ClaimStorageBox::VT_CLAIM_ID, claim_id, 0);
-  }
-  explicit ClaimStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<ClaimStorageBox> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<ClaimStorageBox>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<ClaimStorageBox> CreateClaimStorageBox(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t user = 0,
-    uint32_t id = 0,
-    uint64_t claim_id = 0) {
-  ClaimStorageBoxBuilder builder_(_fbb);
-  builder_.add_claim_id(claim_id);
-  builder_.add_id(id);
-  builder_.add_user(user);
-  builder_.add_world(world);
-  return builder_.Finish();
-}
-
-struct UnclaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef UnclaimStorageBoxBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_WORLD = 4,
-    VT_USER = 6,
-    VT_ID = 8,
-    VT_CLAIM_ID = 10
-  };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
-  }
-  uint32_t user() const {
-    return GetField<uint32_t>(VT_USER, 0);
-  }
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
-  }
-  uint64_t claim_id() const {
-    return GetField<uint64_t>(VT_CLAIM_ID, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
-           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
-           VerifyField<uint64_t>(verifier, VT_CLAIM_ID, 8) &&
-           verifier.EndTable();
-  }
-};
-
-struct UnclaimStorageBoxBuilder {
-  typedef UnclaimStorageBox Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(UnclaimStorageBox::VT_WORLD, world, 0);
-  }
-  void add_user(uint32_t user) {
-    fbb_.AddElement<uint32_t>(UnclaimStorageBox::VT_USER, user, 0);
-  }
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(UnclaimStorageBox::VT_ID, id, 0);
-  }
-  void add_claim_id(uint64_t claim_id) {
-    fbb_.AddElement<uint64_t>(UnclaimStorageBox::VT_CLAIM_ID, claim_id, 0);
-  }
-  explicit UnclaimStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<UnclaimStorageBox> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<UnclaimStorageBox>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<UnclaimStorageBox> CreateUnclaimStorageBox(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t user = 0,
-    uint32_t id = 0,
-    uint64_t claim_id = 0) {
-  UnclaimStorageBoxBuilder builder_(_fbb);
-  builder_.add_claim_id(claim_id);
-  builder_.add_id(id);
-  builder_.add_user(user);
-  builder_.add_world(world);
-  return builder_.Finish();
-}
-
-struct WriteSystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef WriteSystemStorageBoxBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_WORLD = 4,
-    VT_TITLE = 6,
-    VT_MESSAGE = 8,
-    VT_ATTACHMENTS = 10,
-    VT_EXPIRE_DATE = 12,
-    VT_EXTERNAL_REF = 14
-  };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
-  }
-  const ::flatbuffers::String *title() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
-  }
-  const ::flatbuffers::String *message() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
-  }
-  const ::flatbuffers::String *attachments() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_ATTACHMENTS);
-  }
-  const ::flatbuffers::String *expire_date() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_EXPIRE_DATE);
-  }
-  const ::flatbuffers::String *external_ref() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_EXTERNAL_REF);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
@@ -9086,6 +8666,9 @@ struct WriteSystemStorageBoxBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_world(uint32_t world) {
     fbb_.AddElement<uint32_t>(WriteSystemStorageBox::VT_WORLD, world, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(WriteSystemStorageBox::VT_NAME, name);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(WriteSystemStorageBox::VT_TITLE, title);
@@ -9116,6 +8699,7 @@ struct WriteSystemStorageBoxBuilder {
 inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
@@ -9127,6 +8711,7 @@ inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBox(
   builder_.add_attachments(attachments);
   builder_.add_message(message);
   builder_.add_title(title);
+  builder_.add_name(name);
   builder_.add_world(world);
   return builder_.Finish();
 }
@@ -9134,11 +8719,13 @@ inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBox(
 inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBoxDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
+    const char *name = nullptr,
     const char *title = nullptr,
     const char *message = nullptr,
     const char *attachments = nullptr,
     const char *expire_date = nullptr,
     const char *external_ref = nullptr) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto attachments__ = attachments ? _fbb.CreateString(attachments) : 0;
@@ -9147,6 +8734,7 @@ inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBoxD
   return fb::protocol::internal::request::raw::CreateWriteSystemStorageBox(
       _fbb,
       world,
+      name__,
       title__,
       message__,
       attachments__,
@@ -11449,226 +11037,6 @@ inline ::flatbuffers::Offset<SendSystemMail> CreateSendSystemMailDirect(
       entries__,
       host,
       error);
-}
-
-struct DistributeSystemStorage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef DistributeSystemStorageBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ENTRIES = 4,
-    VT_HOST = 6,
-    VT_ERROR = 8
-  };
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>> *entries() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>> *>(VT_ENTRIES);
-  }
-  uint32_t host() const {
-    return GetField<uint32_t>(VT_HOST, 0);
-  }
-  uint32_t error() const {
-    return GetField<uint32_t>(VT_ERROR, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_ENTRIES) &&
-           verifier.VerifyVector(entries()) &&
-           verifier.VerifyVectorOfTables(entries()) &&
-           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           verifier.EndTable();
-  }
-};
-
-struct DistributeSystemStorageBuilder {
-  typedef DistributeSystemStorage Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_entries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>>> entries) {
-    fbb_.AddOffset(DistributeSystemStorage::VT_ENTRIES, entries);
-  }
-  void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_HOST, host, 0);
-  }
-  void add_error(uint32_t error) {
-    fbb_.AddElement<uint32_t>(DistributeSystemStorage::VT_ERROR, error, 0);
-  }
-  explicit DistributeSystemStorageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<DistributeSystemStorage> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<DistributeSystemStorage>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorage(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>>> entries = 0,
-    uint32_t host = 0,
-    uint32_t error = 0) {
-  DistributeSystemStorageBuilder builder_(_fbb);
-  builder_.add_error(error);
-  builder_.add_host(host);
-  builder_.add_entries(entries);
-  return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<DistributeSystemStorage> CreateDistributeSystemStorageDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>> *entries = nullptr,
-    uint32_t host = 0,
-    uint32_t error = 0) {
-  auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageWriteEntry>>(*entries) : 0;
-  return fb::protocol::internal::response::raw::CreateDistributeSystemStorage(
-      _fbb,
-      entries__,
-      host,
-      error);
-}
-
-struct WriteStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef WriteStorageBoxBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_BOX = 4,
-    VT_HOST = 6,
-    VT_ERROR = 8
-  };
-  const fb::protocol::internal::raw::StorageBox *box() const {
-    return GetPointer<const fb::protocol::internal::raw::StorageBox *>(VT_BOX);
-  }
-  uint32_t host() const {
-    return GetField<uint32_t>(VT_HOST, 0);
-  }
-  uint32_t error() const {
-    return GetField<uint32_t>(VT_ERROR, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_BOX) &&
-           verifier.VerifyTable(box()) &&
-           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           verifier.EndTable();
-  }
-};
-
-struct WriteStorageBoxBuilder {
-  typedef WriteStorageBox Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_box(::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox> box) {
-    fbb_.AddOffset(WriteStorageBox::VT_BOX, box);
-  }
-  void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(WriteStorageBox::VT_HOST, host, 0);
-  }
-  void add_error(uint32_t error) {
-    fbb_.AddElement<uint32_t>(WriteStorageBox::VT_ERROR, error, 0);
-  }
-  explicit WriteStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<WriteStorageBox> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<WriteStorageBox>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<WriteStorageBox> CreateWriteStorageBox(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox> box = 0,
-    uint32_t host = 0,
-    uint32_t error = 0) {
-  WriteStorageBoxBuilder builder_(_fbb);
-  builder_.add_error(error);
-  builder_.add_host(host);
-  builder_.add_box(box);
-  return builder_.Finish();
-}
-
-struct ClaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef ClaimStorageBoxBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ERROR = 4
-  };
-  uint32_t error() const {
-    return GetField<uint32_t>(VT_ERROR, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           verifier.EndTable();
-  }
-};
-
-struct ClaimStorageBoxBuilder {
-  typedef ClaimStorageBox Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_error(uint32_t error) {
-    fbb_.AddElement<uint32_t>(ClaimStorageBox::VT_ERROR, error, 0);
-  }
-  explicit ClaimStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<ClaimStorageBox> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<ClaimStorageBox>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<ClaimStorageBox> CreateClaimStorageBox(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t error = 0) {
-  ClaimStorageBoxBuilder builder_(_fbb);
-  builder_.add_error(error);
-  return builder_.Finish();
-}
-
-struct UnclaimStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef UnclaimStorageBoxBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ERROR = 4
-  };
-  uint32_t error() const {
-    return GetField<uint32_t>(VT_ERROR, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
-           verifier.EndTable();
-  }
-};
-
-struct UnclaimStorageBoxBuilder {
-  typedef UnclaimStorageBox Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_error(uint32_t error) {
-    fbb_.AddElement<uint32_t>(UnclaimStorageBox::VT_ERROR, error, 0);
-  }
-  explicit UnclaimStorageBoxBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<UnclaimStorageBox> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<UnclaimStorageBox>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<UnclaimStorageBox> CreateUnclaimStorageBox(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t error = 0) {
-  UnclaimStorageBoxBuilder builder_(_fbb);
-  builder_.add_error(error);
-  return builder_.Finish();
 }
 
 struct DeleteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

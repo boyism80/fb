@@ -340,41 +340,9 @@ table FriendBroadcast {
   process_world: uint?;
 }
 
-table DistributeSystemStorage {
-  world: uint;
-  system_storage_box_id: uint;
-  users: [uint];
-  host: uint;
-}
-
-table WriteStorageBox {
-  world: uint;
-  user: uint;
-  name: string?;
-  title: string;
-  message: string;
-  attachments: string;
-  expire_date: string?;
-  external_ref: string?;
-  host: uint;
-}
-
-table ClaimStorageBox {
-  world: uint;
-  user: uint;
-  id: uint;
-  claim_id: ulong;
-}
-
-table UnclaimStorageBox {
-  world: uint;
-  user: uint;
-  id: uint;
-  claim_id: ulong;
-}
-
 table WriteSystemStorageBox {
   world: uint;
+  name: string?;
   title: string;
   message: string;
   attachments: string;

@@ -6,15 +6,18 @@ namespace Marketplace.Services;
 public class MarketplaceParcelService
 {
     private readonly StorageService _storageService;
+    private readonly Http.Service.DbContext _httpDbContext;
     private readonly Marketplace.Service.DbContext _dbContext;
     private readonly ILogger<MarketplaceParcelService> _logger;
 
     public MarketplaceParcelService(
         StorageService storageService,
+        Http.Service.DbContext httpDbContext,
         Marketplace.Service.DbContext dbContext,
         ILogger<MarketplaceParcelService> logger)
     {
         _storageService = storageService;
+        _httpDbContext = httpDbContext;
         _dbContext = dbContext;
         _logger = logger;
     }
@@ -24,13 +27,16 @@ public class MarketplaceParcelService
     {
         try
         {
-            await _storageService.CreateStorageBoxAsync(
-                world: parcel.World,
-                userId: parcel.User,
-                title: parcel.Title,
-                message: parcel.Message,
-                attachments: parcel.Attachments,
-                externalRef: parcel.ExternalRef);
+            if (await _httpDbContext.StorageBox.HasLegacyRef(parcel.World, parcel.User, parcel.ExternalRef) == false)
+            {
+                await _storageService.CreateSystemStorageAsync(
+                    world: parcel.World,
+                    title: parcel.Title,
+                    message: parcel.Message,
+                    attachments: parcel.Attachments,
+                    externalRef: parcel.ExternalRef,
+                    user: parcel.User);
+            }
         }
         catch (Exception ex)
         {

@@ -7086,21 +7086,46 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
             expire_date = value;
     }
 
+    auto& server       = static_cast<fb::game::server&>(lua->executor);
+    auto  external_ref = std::format("script:{}", server.ids.next());
+    if (argc >= 7 && lua->is_string(7))
+    {
+        auto value = lua->tostring(7);
+        if (value.empty() == false)
+            external_ref = value;
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto success  = std::make_shared<bool>(false);
     auto builder  = lua->new_co_builder();
-    builder.yield = [=]() -> async::task<void> {
-        auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success     = co_await server.system_storage.create(ch->world(),
-                                                         user_name,
-                                                         std::format("script:{}", server.ids.next()),
-                                                         title,
-                                                         message,
-                                                         attachments,
-                                                         expire_date);
+    builder.weak  = weak;
+    builder.yield = [=, &server]() -> async::task<void> {
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return;
+
+        if (user_name == ptr->name())
+        {
+            auto box = fb::game::storage_box::entry{
+                .title       = title,
+                .message     = message,
+                .attachments = attachments,
+            };
+            if (expire_date.has_value())
+                box.expire_date = fb::model::datetime(expire_date.value());
+            ptr->storage_box.add({box});
+            *success = true;
+        }
+        else
+        {
+            *success = co_await server.system_storage
+                           .create(ptr->world(), user_name, external_ref, title, message, attachments, expire_date);
+        }
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
-        co_return 1;
+        lua->pushstring(external_ref);
+        co_return 2;
     };
     return builder.run();
 }
@@ -7211,20 +7236,26 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
             expire_date = value;
     }
 
+    auto& server       = static_cast<fb::game::server&>(lua->executor);
+    auto  external_ref = std::format("script:{}", server.ids.next());
+    if (argc >= 6 && lua->is_string(6))
+    {
+        auto value = lua->tostring(6);
+        if (value.empty() == false)
+            external_ref = value;
+    }
+
+    auto world    = ch->world();
     auto success  = std::make_shared<bool>(false);
     auto builder  = lua->new_co_builder();
-    builder.yield = [=]() -> async::task<void> {
-        auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success     = co_await server.system_storage.create_system(ch->world(),
-                                                                std::format("script:{}", server.ids.next()),
-                                                                title,
-                                                                message,
-                                                                attachments,
-                                                                expire_date);
+    builder.yield = [=, &server]() -> async::task<void> {
+        *success =
+            co_await server.system_storage.create(world, "", external_ref, title, message, attachments, expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
-        co_return 1;
+        lua->pushstring(external_ref);
+        co_return 2;
     };
     return builder.run();
 }
@@ -7245,9 +7276,14 @@ int builtin::character::builtin_storage_entries(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        buffer->reserve(ch->storage_box.entries().size());
+        co_await server.system_storage.sync(*ch);
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return;
+
+        buffer->reserve(ptr->storage_box.entries().size());
         auto now = server.now();
-        for (const auto& [id, entry] : ch->storage_box.entries())
+        for (const auto& [id, entry] : ptr->storage_box.entries())
         {
             if (entry.attachments.empty())
                 continue;
