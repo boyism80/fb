@@ -1,6 +1,6 @@
 -- spell: 견우직녀축복
 -- Short blessing granted when 견우/직녀 reunite on 오작교.
--- On expire: change look and warp to 견우직녀의집.
+-- On expire on 오작교: change look and warp to 견우직녀의집. Leaving 오작교 cancels it without the reward.
 
 return {
     on_cast = function(me, you, sp)
@@ -17,6 +17,13 @@ return {
 
     on_unbuff = function(me, sp)
         if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
+            return
+        end
+
+        local canceled = me:var('magpie_blessing_canceled')
+        me:var('magpie_blessing_canceled', nil)
+        local map = me:map()
+        if canceled or map == nil or map:model():id() ~= 10957 or me:hp() == 0 or me:state() == STATE.GHOST then
             return
         end
 

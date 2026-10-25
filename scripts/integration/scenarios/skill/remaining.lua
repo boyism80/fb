@@ -817,25 +817,28 @@ function M.run(ctx, caster_index, target_index)
         return fail("신령지익진: recast after expiry stacked the buff")
     end
 
-    -- 견우직녀의집 is hosted by another game server. Locally that server is not running, so the
-    -- warp is refused; remotely the caster moves there first so the warp stays on one server.
-    local reunion_ok = false
-    if localhost() then
-        reunion_ok = run_step(caster, "verify_reunion", "reunion", "blocked") == true
-    elseif map_model ~= nil then
-        caster:transfer(protocol.chat(false, "/맵이동 견우직녀의집 3 3"))
-        caster = ctx:bot(caster_index)
-        reunion_ok = run_step(caster, "verify_reunion", "reunion", "warp") == true
-        caster:transfer(protocol.chat(false, string.format("/맵이동 %s %d %d",
-            map_model:name(), caster_home[1], caster_home[2])))
-        caster = ctx:bot(caster_index)
+    -- Off 오작교 the blessing ends without the reward. The reward is checked on 오작교 when this server hosts
+    -- it, or remotely after a transfer to the server that does.
+    local reunion_ok = run_step(caster, "verify_reunion", "reunion_off_bridge", "off_bridge") == true
+    if reunion_ok and map_model ~= nil then
+        if run_step(caster, "verify_map_active", "reunion_bridge_hosted", "오작교") == true then
+            caster:map_move("오작교", 88, 15)
+            reunion_ok = run_step(caster, "verify_reunion", "reunion", "warp") == true
+        elseif localhost() == false then
+            caster:transfer(protocol.chat(false, "/맵이동 오작교 88 15"))
+            caster = ctx:bot(caster_index)
+            reunion_ok = run_step(caster, "verify_reunion", "reunion", "warp") == true
+            caster:transfer(protocol.chat(false, string.format("/맵이동 %s %d %d",
+                map_model:name(), caster_home[1], caster_home[2])))
+            caster = ctx:bot(caster_index)
+        end
     end
     if map_model ~= nil then
         caster:map_move(map_model:name(), caster_home[1], caster_home[2], ctx:suite_slot())
         target:map_move(map_model:name(), home[1], home[2], ctx:suite_slot())
     end
     if reunion_ok == false then
-        return fail("견우직녀축복: unbuff did not change hair and warp")
+        return fail("견우직녀축복: the reward did not follow the 오작교 rule")
     end
 
     caster:remove_buffs()

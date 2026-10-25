@@ -81,6 +81,13 @@ function M.on_bridge_enter(me)
     end
 end
 
+function M.on_bridge_leave(me)
+    if me:isbuff('견우직녀축복') then
+        me:var('magpie_blessing_canceled', true)
+        me:unbuff('견우직녀축복')
+    end
+end
+
 function M.on_step(me)
     if me == nil then
         return

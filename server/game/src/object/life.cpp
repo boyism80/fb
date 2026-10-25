@@ -144,7 +144,7 @@ life::damage_settle life::damage_targets(const damage_list&    targets,
 
             // Defer kill/death_warp until after invoke_on_mob_damaged so later target
             // checks still see a stable thread affinity for this attack frame.
-            if (ch->state() == STATE::GHOST)
+            if (ch->state() == STATE::GHOST || ch->settling_death())
                 continue;
 
             settle.dead_characters.push_back(ch);
@@ -257,30 +257,8 @@ async::task<void> life::settle_character_deaths(const character_vector& dead, st
         // HP already zero from damage; skip if already settled as ghost.
         if (ch->stat.hp() != 0)
             continue;
-        if (ch->state() == STATE::GHOST)
+        if (ch->state() == STATE::GHOST || ch->settling_death())
             continue;
-
-        if (killer != nullptr && killer->is(OBJECT_TYPE::CHARACTER))
-        {
-            auto lua = this->server.lua.open("scripts/interaction.lua", "on_character_kill");
-            if (lua)
-            {
-                lua->pushobject(*killer);
-                lua->pushobject(*ch);
-                try
-                {
-                    std::ignore = co_await fb::lua::call(std::move(lua), pivot, 2);
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::warn("on_character_kill failed: {}", e.what());
-                }
-                catch (...)
-                {
-                    fb::logger::warn("on_character_kill failed");
-                }
-            }
-        }
 
         // settle_death awaits penalty on this map thread, then detaches death_warp.
         // Do not co_await map() here — that would migrate this damage coroutine

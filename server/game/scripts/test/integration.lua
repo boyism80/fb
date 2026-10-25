@@ -763,16 +763,16 @@ return {
         report(me, true, step)
     end,
 
-    -- mode 'warp': the caller already stands in 견우직녀의집, so the warp stays on this server.
-    -- mode 'blocked': 견우직녀의집 is hosted by a server that is not running, so the warp is refused.
+    -- mode 'warp': the caller stands on 오작교, so the blessing ends with the look change and the warp.
+    -- mode 'off_bridge': the caller is elsewhere, so the blessing ends without the reward.
     verify_reunion = function(me, step, mode)
         local origin = me:map()
         if origin == nil or origin:model() == nil then
             return report(me, false, step, 'no map')
         end
         local origin_name = origin:model():name()
-        if mode == 'warp' and origin_name ~= '견우직녀의집' then
-            return report(me, false, step, 'warp mode must start in 견우직녀의집, map=' .. origin_name)
+        if mode == 'warp' and origin_name ~= '오작교' then
+            return report(me, false, step, 'warp mode must start on 오작교, map=' .. origin_name)
         end
 
         local hair = me:hair()
@@ -801,11 +801,11 @@ return {
         local hair_now = me:hair()
         me:hair(hair)
 
-        local ok = hair_now == expect_hair
+        local ok = false
         if mode == 'warp' then
-            ok = ok and now_name == '견우직녀의집' and x >= 7 and x <= 12 and y >= 6 and y <= 15
+            ok = hair_now == expect_hair and now_name == '견우직녀의집' and x >= 7 and x <= 12 and y >= 6 and y <= 15
         else
-            ok = ok and now_name == origin_name
+            ok = hair_now == hair and now_name == origin_name
         end
 
         if ok then

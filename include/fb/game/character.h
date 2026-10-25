@@ -233,6 +233,7 @@ private:
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;
     std::optional<std::pair<uint32_t, uint16_t>>     _world_map = std::nullopt;
+    bool                                             _settling_death = false;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {1,};
     // clang-format on
 
@@ -318,6 +319,7 @@ private:
     [[nodiscard]] async::task<void> death_warp();
     void                            award_exp(uint64_t exp);
     async::task<void>               death_penalty();
+    async::task<void>               death_loss();
     async::task<void>               settle_kills(mob_vector dead);
     void                            enqueue_death_warp();
     [[nodiscard]] async::task<void> ride(mob& horse, uint16_t ridable_id = 1);
@@ -354,6 +356,7 @@ public:
     void                                     update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                     kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     [[nodiscard]] async::task<void>          settle_death(std::shared_ptr<fb::game::object> killer = nullptr);
+    bool                                     settling_death() const;
     void                                     handle_death(std::shared_ptr<fb::game::object> killer = nullptr) override final;
     async::task<void>                        damage_to(const damage_list& targets) override final;
     async::task<void>                        damage_to(const damage_list& targets, const damage_opts& opts) override final;

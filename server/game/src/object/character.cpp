@@ -1992,14 +1992,54 @@ async::task<void> character::settle_death(std::shared_ptr<fb::game::object> kill
     // Correct flow: await death_penalty on the death map thread (same thread as
     // the kill), become ghost, then enqueue death_warp so map() only migrates
     // a dedicated coroutine — never the attacker's damage pipeline.
-    life::kill(DESTROY_TYPE::DEAD);
-    if (this->trade != nullptr)
-        this->trade->cancel(*this);
-    co_await this->death_penalty();
-    this->state(STATE::GHOST);
-    this->handle_death(killer);
-    this->enqueue_death_warp();
-    co_return;
+    if (this->_settling_death || this->state() == STATE::GHOST)
+        co_return;
+
+    this->_settling_death = true;
+    try
+    {
+        if (killer != nullptr && killer->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto lua = this->server.lua.open("scripts/interaction.lua", "on_character_kill");
+            if (lua)
+            {
+                lua->pushobject(*killer);
+                lua->pushobject(*this);
+                try
+                {
+                    std::ignore = co_await fb::lua::call(std::move(lua), this->weak_from_this_as<character>(), 2);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("on_character_kill failed: {}", e.what());
+                }
+                catch (...)
+                {
+                    fb::logger::warn("on_character_kill failed");
+                }
+            }
+        }
+
+        life::kill(DESTROY_TYPE::DEAD);
+        if (this->trade != nullptr)
+            this->trade->cancel(*this);
+        co_await this->death_penalty();
+        this->state(STATE::GHOST);
+        this->handle_death(killer);
+        this->enqueue_death_warp();
+    }
+    catch (...)
+    {
+        this->_settling_death = false;
+        throw;
+    }
+    this->_settling_death = false;
+}
+
+bool character::settling_death() const
+{
+    this->assert_thread();
+    return this->_settling_death;
 }
 
 void character::handle_death(std::shared_ptr<fb::game::object> killer)
@@ -2593,6 +2633,10 @@ async::task<void> character::death_penalty()
 {
     this->assert_thread();
 
+    auto map = this->map();
+    if (map == nullptr || ENUM_IN(map->model().option, MAP_OPTION::DISABLE_DIE_PENALTY) == false)
+        co_await this->death_loss();
+
     // Buffs always clear on death, even when the map disables other penalties.
     auto buff_keys = std::vector<uint32_t>{};
     for (auto& [k, v] : this->buffs)
@@ -2603,10 +2647,11 @@ async::task<void> character::death_penalty()
     {
         std::ignore = co_await this->buffs.remove(k);
     }
+}
 
-    auto map = this->map();
-    if (map != nullptr && ENUM_IN(map->model().option, MAP_OPTION::DISABLE_DIE_PENALTY))
-        co_return;
+async::task<void> character::death_loss()
+{
+    this->assert_thread();
 
     auto money = this->money();
     if (money > 0)
