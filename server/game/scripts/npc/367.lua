@@ -1,6 +1,8 @@
 -- npc: 고대유물연구가
 local quest = require('lib.quest')
 local enum = require('lib.enum')
+
+local ACHIEVEMENT_ANCIENT_RELIC = 567
 local BEAD_OPTIONS = {
     { "갈색구슬조각", "고대금속결정'양" },
     { "자색구슬조각", "고대금속결정'양" },
@@ -65,7 +67,7 @@ local function run_quest_accept(me, npc)
         me:dialog(npc, "퀘스트를 시작할 수 없습니다.", { prev = false, next = false })
         return
     end
-    me:push_achievement(41, "고대유물 연구가를 도와주자.", 7, 16)
+    me:push_achievement(ACHIEVEMENT_ANCIENT_RELIC, "고대유물 연구가를 도와주자.", 7, 16)
 end
 
 local function run_bead_exchange(me, npc)
@@ -143,7 +145,7 @@ local function run_bead_exchange(me, npc)
         me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_item, '을', '를') .. " 받을 수 없네.", { prev = false, next = false })
         return
     end
-    me:push_achievement(41, "고대유물 연구가를 도와주었다.", 7, 16)
+    me:push_achievement(ACHIEVEMENT_ANCIENT_RELIC, "고대유물 연구가를 도와주었다.", 7, 16)
     me:dialog(npc, "자, 여기있네.", { prev = false, next = false })
 end
 
