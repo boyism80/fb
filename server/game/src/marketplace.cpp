@@ -31,9 +31,7 @@ namespace mp      = fb::protocol::marketplace;
 namespace mp_reqs = mp::request;
 namespace mp_resp = mp::response;
 
-namespace {
-
-std::string rejection_message(fb::model::enum_value::ERROR_CODE error, std::string fallback)
+std::string marketplace::rejection_message(fb::model::enum_value::ERROR_CODE error, std::string fallback)
 {
     using ERROR_CODE = fb::model::enum_value::ERROR_CODE;
 
@@ -61,8 +59,6 @@ std::string rejection_message(fb::model::enum_value::ERROR_CODE error, std::stri
         return fallback;
     }
 }
-
-} // namespace
 
 marketplace::marketplace(character& owner) :
     _owner(owner)

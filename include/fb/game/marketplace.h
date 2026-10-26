@@ -89,6 +89,9 @@ public:
     async::task<std::vector<listing>> get_listings(const std::vector<uint64_t>& listing_ids, uint32_t buyer_id = 0);
     async::task<void>                 settle_list(uint64_t listing_id);
     async::task<void>                 settle_purchase(uint64_t purchase_id);
+
+private:
+    static std::string rejection_message(fb::model::enum_value::ERROR_CODE error, std::string fallback);
 };
 
 } // namespace fb::game

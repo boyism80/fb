@@ -28,18 +28,6 @@ constexpr size_t CLAN_NAME_MIN  = 2;
 constexpr size_t CLAN_NAME_MAX  = 12;
 constexpr size_t CLAN_TITLE_MAX = 45;
 
-bool valid_clan_name(const std::string& name)
-{
-    auto cp949 = fb::CP949(name);
-    if (cp949.length() < CLAN_NAME_MIN || cp949.length() > CLAN_NAME_MAX)
-        return false;
-    if (fb::assert_korean(cp949) == false)
-        return false;
-    if (fb::model::table::blocked_name->contains_substring(name))
-        return false;
-    return fb::model::table::blocked_word->contains_substring(name) == false;
-}
-
 } // namespace
 
 async::task<void> clan::container::create(character& me, std::string_view name)
@@ -48,7 +36,11 @@ async::task<void> clan::container::create(character& me, std::string_view name)
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
     auto name_str = std::string(name);
-    if (valid_clan_name(name_str) == false)
+    auto cp949    = fb::CP949(name_str);
+    auto valid    = cp949.length() >= CLAN_NAME_MIN && cp949.length() <= CLAN_NAME_MAX && fb::assert_korean(cp949) &&
+                 fb::model::table::blocked_name->contains_substring(name_str) == false &&
+                 fb::model::table::blocked_word->contains_substring(name_str) == false;
+    if (valid == false)
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_NAME_INVALID));
 
     auto   weak  = me.weak_from_this_as<character>();

@@ -21,27 +21,6 @@
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 
-namespace {
-
-std::string role_name(uint32_t role)
-{
-    switch (static_cast<CLAN_ROLE>(role))
-    {
-    case CLAN_ROLE::MATE:
-        return _TEXT(MESSAGE_CLAN_ROLE_MATE);
-    case CLAN_ROLE::OFFICER:
-        return _TEXT(MESSAGE_CLAN_ROLE_OFFICER);
-    case CLAN_ROLE::DEPUTY:
-        return _TEXT(MESSAGE_CLAN_ROLE_DEPUTY);
-    case CLAN_ROLE::MASTER:
-        return _TEXT(MESSAGE_CLAN_ROLE_MASTER);
-    default:
-        return std::to_string(role);
-    }
-}
-
-} // namespace
-
 async::task<void> clan::container::on_updated(const internal_resp::UpdatedClan& resp)
 {
     co_await this->on_error(resp.error);
@@ -944,6 +923,22 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
 
     if (reload)
         co_await this->reload(clan_id);
+
+    auto role_name = [](uint32_t role) -> std::string {
+        switch (static_cast<CLAN_ROLE>(role))
+        {
+        case CLAN_ROLE::MATE:
+            return _TEXT(MESSAGE_CLAN_ROLE_MATE);
+        case CLAN_ROLE::OFFICER:
+            return _TEXT(MESSAGE_CLAN_ROLE_OFFICER);
+        case CLAN_ROLE::DEPUTY:
+            return _TEXT(MESSAGE_CLAN_ROLE_DEPUTY);
+        case CLAN_ROLE::MASTER:
+            return _TEXT(MESSAGE_CLAN_ROLE_MASTER);
+        default:
+            return std::to_string(role);
+        }
+    };
 
     if (target_uid.has_value() && old_role.has_value() && new_role.has_value())
     {
