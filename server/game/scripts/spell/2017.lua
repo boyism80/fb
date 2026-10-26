@@ -17,8 +17,14 @@ return {
             return me:message('걸리지 않습니다.')
         end
 
-        me:heal(math.min(damage, you:hp()))
-        spell.damage(me, you, sp, { damage = damage, mp = mp, sound = sound, effect = effect })
+        local before = you:hp()
+        local cast, hit = spell.damage(me, you, sp, { damage = damage, mp = mp, sound = sound, effect = effect })
+        if cast and hit then
+            local absorbed = before - (you:hp() or 0)
+            if absorbed > 0 then
+                me:heal(absorbed)
+            end
+        end
     end,
 
     -- on_buff = function(me, sp)

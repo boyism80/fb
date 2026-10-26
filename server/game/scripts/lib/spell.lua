@@ -723,11 +723,12 @@ function M.damage(me, you, spell, opts)
         you:message(string.format("%s님이 %s 가합니다.", me:name(), name_with(spell:name())))
     end
 
-    if execute_mob_spell_hit(me, you, spell) and not M.resisted(you, RESIST.SPELL) then
+    local hit = execute_mob_spell_hit(me, you, spell) and not M.resisted(you, RESIST.SPELL)
+    if hit then
         me:damage_to(you, damage, { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
     end
 
-    return true
+    return true, hit
 end
 
 function M.damage_near(me, spell, opts)
