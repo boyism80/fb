@@ -16,6 +16,8 @@ namespace Http.Service
         private const int MaxUntrustedFailuresPerAccount = 20;
         private static readonly TimeSpan AccountWindow = TimeSpan.FromHours(1);
         private static readonly TimeSpan TrustedIpDuration = TimeSpan.FromDays(30);
+        private const int MaxBirthdayFailures = 5;
+        private static readonly TimeSpan BirthdayWindow = TimeSpan.FromHours(24);
         private const string UnknownIp = "unknown";
 
         // Returns 0 when locked, 1 when allowed without counting the account, 2 when the account was counted.
@@ -48,6 +50,12 @@ if ARGV[3] == '1' and redis.call('EXISTS', KEYS[2]) == 1 then
 end
 if ARGV[2] == '1' then
     redis.call('SET', KEYS[3], '1', 'PX', ARGV[1])
+end
+return 1";
+
+        private const string BirthdayFailScript = @"
+if redis.call('INCR', KEYS[1]) == 1 then
+    redis.call('PEXPIRE', KEYS[1], ARGV[1])
 end
 return 1";
 
@@ -108,5 +116,44 @@ return 1";
                 attempt == PasswordAttempt.Counted ? "1" : "0"
             ]);
         }
+
+        public async Task<bool> BirthdayLocked(uint world, uint uid)
+        {
+            var key = BirthdayKey(world, uid);
+            var redis = _redisService.GetShardConnection(world, key);
+            if (redis == null)
+            {
+                return false;
+            }
+
+            var failures = await redis.Connection.StringGetAsync(key);
+            return failures.HasValue && (long)failures >= MaxBirthdayFailures;
+        }
+
+        public async Task BirthdayFailed(uint world, uint uid)
+        {
+            var key = BirthdayKey(world, uid);
+            var redis = _redisService.GetShardConnection(world, key);
+            if (redis == null)
+            {
+                return;
+            }
+
+            await redis.EvalAsync(BirthdayFailScript, [key], [(long)BirthdayWindow.TotalMilliseconds]);
+        }
+
+        public async Task BirthdaySucceeded(uint world, uint uid)
+        {
+            var key = BirthdayKey(world, uid);
+            var redis = _redisService.GetShardConnection(world, key);
+            if (redis == null)
+            {
+                return;
+            }
+
+            await redis.Connection.KeyDeleteAsync(key);
+        }
+
+        private static string BirthdayKey(uint world, uint uid) => $"fb:account:birth-fail:{world}:{uid}";
     }
 }

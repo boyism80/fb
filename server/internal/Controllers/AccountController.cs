@@ -345,7 +345,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 var attempt = await _passwordAttempts.Begin(world, request.Uid, request.Ip);
-                if (attempt == PasswordAttempt.Locked)
+                if (attempt == PasswordAttempt.Locked || await _passwordAttempts.BirthdayLocked(world, request.Uid))
                 {
                     throw new LogicException(ErrorCode.AccountLocked);
                 }
@@ -357,10 +357,12 @@ namespace Internal.Controllers
 
                 if (ch.Birth != request.Birthday)
                 {
+                    await _passwordAttempts.BirthdayFailed(world, request.Uid);
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
                 }
 
                 await _passwordAttempts.Succeed(world, request.Uid, request.Ip, attempt);
+                await _passwordAttempts.BirthdaySucceeded(world, request.Uid);
                 ch.Pw = PasswordHash.Compute(request.After);
                 _dbContext.Character.Set(world, ch);
 
