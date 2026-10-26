@@ -123,7 +123,7 @@ namespace Internal.Controllers
                 _logger.LogError(ex, "Error enqueueing bulletin delete");
                 return new Response.DeleteArticle
                 {
-                    Result = (int)ErrorCode.Unhandled
+                    Result = -4
                 };
             }
         }

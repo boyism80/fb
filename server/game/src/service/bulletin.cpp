@@ -40,6 +40,9 @@ void service::bulletin::on_delete_error(int32_t result) const
 {
     switch (result)
     {
+    case 1:
+        break;
+
     case -1: // article not found
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_ARTICLE_NOT_EXIST));
 
@@ -48,6 +51,9 @@ void service::bulletin::on_delete_error(int32_t result) const
 
     case -3: // no authenticate
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
+
+    default:
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), result));
     }
 }
 

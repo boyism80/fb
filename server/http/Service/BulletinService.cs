@@ -11,12 +11,14 @@ namespace Http.Service
         private readonly BulletinCacheService _cacheService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly LogService _logService;
+        private readonly ILogger<BulletinService> _logger;
 
-        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService logService)
+        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService logService, ILogger<BulletinService> logger)
         {
             _cacheService = cacheService;
             _scopeFactory = scopeFactory;
             _logService = logService;
+            _logger = logger;
         }
 
         public Task<bool> Write(uint world, uint section, uint user, string title, string contents)
@@ -42,6 +44,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
+            int result;
             try
             {
                 await using var conn = dbContext.GetShardConnection(world, section);
@@ -52,13 +55,22 @@ namespace Http.Service
                 dynamicParams.Add("user", user);
                 dynamicParams.Add("ignore_owner", ignoreOwner ? 1 : 0);
 
-                var result = await conn.QueryFirstOrDefaultAsync<int>(
+                result = await conn.QueryFirstOrDefaultAsync<int>(
                     "USP_BULLETIN_DELETE",
                     dynamicParams,
                     commandType: CommandType.StoredProcedure);
+            }
+            catch (Exception e)
+            {
+                // Log error and return failure code
+                _logger.LogError(e, "Error deleting bulletin article {Id} in section {Section} of world {World}", id, section, world);
+                return -4;
+            }
 
-                // Delete from Redis cache if successful
-                if (result == 1)
+            // Delete from Redis cache if successful
+            if (result == 1)
+            {
+                try
                 {
                     var generation = await GetGenerationAsync(world, section);
                     await _cacheService.DeleteArticlesBatchAsync(world, generation, new List<(uint section, uint id)> { (section, id) });
@@ -72,14 +84,13 @@ namespace Http.Service
                         ignore_owner = ignoreOwner
                     });
                 }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error after deleting bulletin article {Id} in section {Section} of world {World}", id, section, world);
+                }
+            }
 
-                return result;
-            }
-            catch (Exception)
-            {
-                // Log error and return failure code
-                return -4;
-            }
+            return result;
         }
 
         public async Task<int> DeleteBatch(uint world, uint section, List<uint> ids, uint user, bool ignoreOwner = false)
@@ -87,12 +98,11 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
+            var deletedIds = new List<(uint section, uint id)>();
+            var successCount = 0;
             try
             {
                 await using var conn = dbContext.GetShardConnection(world, section);
-
-                var deletedIds = new List<(uint section, uint id)>();
-                var successCount = 0;
 
                 foreach (var id in ids)
                 {
@@ -113,9 +123,20 @@ namespace Http.Service
                         successCount++;
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error deleting bulletin articles in section {Section} of world {World}", section, world);
+                if (deletedIds.Any() == false)
+                {
+                    return -4;
+                }
+            }
 
-                // Delete from Redis cache for all successfully deleted articles
-                if (deletedIds.Any())
+            // Delete from Redis cache for all successfully deleted articles
+            if (deletedIds.Any())
+            {
+                try
                 {
                     var generation = await GetGenerationAsync(world, section);
                     await _cacheService.DeleteArticlesBatchAsync(world, generation, deletedIds);
@@ -130,13 +151,13 @@ namespace Http.Service
                         count = successCount
                     });
                 }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error after deleting bulletin articles in section {Section} of world {World}", section, world);
+                }
+            }
 
-                return successCount;
-            }
-            catch (Exception)
-            {
-                return -4;
-            }
+            return successCount;
         }
 
         public async Task<int> Update(uint world, uint section, uint id, uint user, string title, string contents, bool ignoreOwner = false)
@@ -144,6 +165,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
+            int result;
             try
             {
                 await using var conn = dbContext.GetShardConnection(world, section);
@@ -156,12 +178,20 @@ namespace Http.Service
                 dynamicParams.Add("p_contents", contents);
                 dynamicParams.Add("p_ignore_owner", ignoreOwner ? 1 : 0);
 
-                var result = await conn.QueryFirstOrDefaultAsync<int>(
+                result = await conn.QueryFirstOrDefaultAsync<int>(
                     "USP_BULLETIN_UPDATE",
                     dynamicParams,
                     commandType: CommandType.StoredProcedure);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error updating bulletin article {Id} in section {Section} of world {World}", id, section, world);
+                return -4;
+            }
 
-                if (result == 1)
+            if (result == 1)
+            {
+                try
                 {
                     // The generation is read first: an article loaded after a renumber then lands under the older generation, which nobody reads.
                     var generation = await GetGenerationAsync(world, section);
@@ -184,13 +214,13 @@ namespace Http.Service
                         ignore_owner = ignoreOwner
                     });
                 }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error after updating bulletin article {Id} in section {Section} of world {World}", id, section, world);
+                }
+            }
 
-                return result;
-            }
-            catch (Exception)
-            {
-                return -4;
-            }
+            return result;
         }
 
         public Dictionary<uint, List<BulletinWriteRequest>> DequeueBatch(uint world, int maxBatchSize)
