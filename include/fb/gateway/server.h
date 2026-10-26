@@ -44,10 +44,6 @@ public:
 private:
     void load_entries();
 
-private:
-    fb::stream make_crt_stream(const fb::encryption& encryption);
-    // override
-
 protected:
     void                            on_init_amqp(fb::amqp::socket& amqp) override final;
     [[nodiscard]] async::task<void> on_start() override final;

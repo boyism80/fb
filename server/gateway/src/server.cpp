@@ -70,21 +70,6 @@ void server::load_entries()
     this->_endpoint_crc = this->_endpoint_bytes.crc();
 }
 
-fb::stream server::make_crt_stream(const fb::encryption& encryption)
-{
-    auto stream = fb::stream();
-    auto writer = fb::stream_writer<big_endian>(stream);
-    writer.write<uint8_t>(0x00); // opcode : 0x00
-    writer.write<uint8_t>(0x00);
-    writer.write<uint32_t>(this->_endpoint_crc);
-    writer.write<uint8_t>(encryption.pattern());
-    writer.write<uint8_t>(fb::encryption::KEY_SIZE);
-    writer.write(encryption.iv(), fb::encryption::KEY_SIZE);
-    writer.write<uint8_t>(0x00);
-
-    return stream;
-}
-
 async::task<void> server::on_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
