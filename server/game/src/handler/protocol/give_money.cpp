@@ -47,6 +47,9 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
         me->assert_state({STATE::RIDING, STATE::GHOST});
 
         auto money = std::min<uint64_t>(request.money, me->money());
+        if (money == 0)
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_ENOUGH_MONEY));
+
         switch (forward->what())
         {
         case OBJECT_TYPE::CHARACTER:
