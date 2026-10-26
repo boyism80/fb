@@ -117,7 +117,6 @@ public:
     uint8_t                                         index(const item_ptr& item) const;
     std::vector<uint8_t>                            index_all(const item_ptr& item) const;
     bool                                            update(uint8_t index) const;
-    equipment_ptr                                   wear(EQUIPMENT_PARTS parts, equipment_ptr item);
     void                                            load(item_ptr item, const fb::protocol::internal::Item& row);
     void                                            load(const fb::protocol::internal::Escrow& row);
     void                                            sync() const;

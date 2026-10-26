@@ -768,46 +768,6 @@ bool items::update(uint8_t index) const
     return true;
 }
 
-std::shared_ptr<equipment> items::wear(EQUIPMENT_PARTS parts, equipment_ptr item)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return nullptr;
-
-    if (item != nullptr)
-        item->container(this);
-
-    switch (parts) // EQUIPMENT_PARTS
-    {
-    case EQUIPMENT_PARTS::WEAPON:
-        return owner->items.weapon(std::static_pointer_cast<fb::game::weapon>(item));
-
-    case EQUIPMENT_PARTS::ARMOR:
-        return owner->items.armor(std::static_pointer_cast<fb::game::armor>(item));
-
-    case EQUIPMENT_PARTS::SHIELD:
-        return owner->items.shield(std::static_pointer_cast<fb::game::shield>(item));
-
-    case EQUIPMENT_PARTS::HELMET:
-        return owner->items.helmet(std::static_pointer_cast<fb::game::helmet>(item));
-
-    case EQUIPMENT_PARTS::LEFT_HAND:
-        return owner->items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::LEFT);
-
-    case EQUIPMENT_PARTS::RIGHT_HAND:
-        return owner->items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::RIGHT);
-
-    case EQUIPMENT_PARTS::LEFT_AUX:
-        return owner->items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item), EQUIPMENT_POSITION::LEFT);
-
-    case EQUIPMENT_PARTS::RIGHT_AUX:
-        return owner->items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item), EQUIPMENT_POSITION::RIGHT);
-
-    default:
-        throw std::runtime_error("invalid equipment parts");
-    }
-}
-
 // Nothing is sent here; sync() sends the restored state once the client has the map.
 void items::load(std::shared_ptr<item> item, const fb::protocol::internal::Item& row)
 {
@@ -1376,11 +1336,11 @@ async::task<void> items::loot(bool boost)
         }
         else if (boost)
         {
-            std::ignore = co_await owner->items.add(belows, true);
+            std::ignore = co_await this->add(belows, true);
         }
         else
         {
-            std::ignore = co_await owner->items.add(belows.front());
+            std::ignore = co_await this->add(belows.front());
         }
     }
     catch (std::exception& e)
@@ -1399,7 +1359,7 @@ async::task<bool> items::throws(uint8_t index, bool all)
     {
         owner->assert_state({STATE::RIDING, STATE::GHOST});
 
-        auto item = owner->items.at(index);
+        auto item = this->at(index);
         if (item == nullptr)
             co_return false;
 
