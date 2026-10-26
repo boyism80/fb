@@ -78,12 +78,7 @@ character::character(fb::game::server& server, const initial_params& params) :
 
 character::~character()
 {
-    if (this->dialog != nullptr)
-    {
-        auto* ctx    = this->dialog;
-        this->dialog = nullptr;
-        ctx->reject("character destroyed");
-    }
+    this->dialog.cancel("character destroyed");
 }
 
 void character::on_init()
@@ -260,12 +255,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             if (options.before && co_await options.before() == false)
                 co_return false;
 
-            if (this->dialog != nullptr)
-            {
-                auto* ctx    = this->dialog;
-                this->dialog = nullptr;
-                ctx->reject("transfer");
-            }
+            this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
             co_await this->server.save(*this);
 

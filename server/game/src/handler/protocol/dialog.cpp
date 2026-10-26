@@ -123,8 +123,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua   = ch->dialog;
-    ch->dialog = nullptr;
+    auto lua = ch->dialog.close();
     if (lua == nullptr)
         co_return true;
 

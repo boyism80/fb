@@ -18,10 +18,8 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua          = ch->dialog;
-    auto maxlen       = ch->dialog_maxlen;
-    ch->dialog        = nullptr;
-    ch->dialog_maxlen = 0xFF;
+    auto maxlen = ch->dialog.maxlen();
+    auto lua    = ch->dialog.close();
     if (lua == nullptr)
         co_return true;
 

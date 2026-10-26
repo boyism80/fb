@@ -752,14 +752,7 @@ int builtin::character::builtin_item(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, items, oid, pursuit);
@@ -767,7 +760,7 @@ int builtin::character::builtin_item(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, items, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -5098,18 +5091,11 @@ int builtin::character::builtin_popup_input(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         std::ignore = ch->send(fb::protocol::game::response::popup_input(param0, param1, param2, param3, text));
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -5633,14 +5619,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (appearance != nullptr)
             ch->listener.on_dialog(*ch,
@@ -5657,7 +5636,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
             ch->listener.on_dialog(*ch, message, button_prev, button_next, oid);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -5791,14 +5770,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (appearance != nullptr)
             ch->listener
@@ -5809,7 +5781,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -5926,14 +5898,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     builder.weak        = weak;
     builder.yield       = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (use_list_input)
         {
@@ -5953,8 +5918,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
 
         if (immediate == false)
         {
-            ch->dialog        = lua;
-            ch->dialog_maxlen = maxlen;
+            ch->dialog.open(lua, maxlen);
         }
         co_return;
     };
@@ -6026,14 +5990,7 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, menus, oid, ext);
@@ -6041,7 +5998,7 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, menus, oid, ext);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -6106,14 +6063,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, slots, oid);
@@ -6121,7 +6071,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, slots, oid);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -6207,14 +6157,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (obj != nullptr)
             ch->listener.on_dialog_pursuit(*ch, *obj, message, options, oid, pursuit);
@@ -6222,7 +6165,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
             ch->listener.on_dialog_pursuit(*ch, *model, message, options, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -6366,14 +6309,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (obj != nullptr)
             ch->listener.on_dialog_buy(*ch, *obj, message, entries, oid, pursuit);
@@ -6381,7 +6317,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
             ch->listener.on_dialog_buy(*ch, *model, message, entries, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -6447,14 +6383,7 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (obj != nullptr)
             ch->listener.on_dialog_spell(*ch, *obj, message, oid, pursuit);
@@ -6462,7 +6391,7 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
             ch->listener.on_dialog_spell(*ch, *model, message, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)
@@ -6519,14 +6448,7 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (immediate == false)
-        {
-            if (ch->dialog != nullptr)
-            {
-                auto* ctx  = ch->dialog;
-                ch->dialog = nullptr;
-                ctx->reject("dialog replaced");
-            }
-        }
+            ch->dialog.cancel("dialog replaced");
 
         if (obj != nullptr)
             ch->listener.on_dialog_email(*ch, *obj, message, "", "", false, false, oid);
@@ -6534,7 +6456,7 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
             ch->listener.on_dialog_email(*ch, *model, message, "", "", false, false, oid);
 
         if (immediate == false)
-            ch->dialog = lua;
+            ch->dialog.open(lua);
         co_return;
     };
     if (immediate)

@@ -14,8 +14,7 @@ async::task<bool> popup_input_submit<V>::handle(fb::socket<character>&          
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua   = ch->dialog;
-    ch->dialog = nullptr;
+    auto lua = ch->dialog.close();
     if (lua == nullptr)
         co_return true;
 

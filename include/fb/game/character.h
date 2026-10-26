@@ -186,6 +186,21 @@ public:
         // clang-format on
     };
 
+    class dialog
+    {
+    private:
+        fb::lua::context* _context = nullptr;
+        uint8_t           _maxlen  = 0xFF;
+
+    public:
+        // clang-format off
+        void              open(fb::lua::context* context, uint8_t maxlen = 0xFF);
+        fb::lua::context* close();
+        uint8_t           maxlen() const;
+        void              cancel(std::string_view reason);
+        // clang-format on
+    };
+
 private:
     // clang-format off
     const fb::model::datetime                        _created_date;
@@ -248,8 +263,7 @@ public:
     class group                                   group;
     fb::game::matchmaker                          matchmaker;
     std::unordered_map<std::string, Json::Value>  vars;
-    fb::lua::context*                             dialog        = nullptr;
-    uint8_t                                       dialog_maxlen = 0xFF;
+    class dialog                                  dialog;
     achievement_map_t                             achievements;
     listener_t&                                   listener;
     character_stat                                stat;
@@ -533,7 +547,7 @@ private:
 };
 
 struct character::listener_t : public virtual life::listener_t,
-                               public virtual dialog::listener_t,
+                               public virtual fb::game::dialog::listener_t,
                                public virtual trade::listener_t,
                                public virtual equipment::listener_t
 {
