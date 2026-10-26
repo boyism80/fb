@@ -31,5 +31,5 @@ void character::dialog::cancel(std::string_view reason)
 {
     auto context = this->close();
     if (context != nullptr)
-        context->reject(reason);
+        context->cancel(reason);
 }

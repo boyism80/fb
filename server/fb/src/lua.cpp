@@ -805,6 +805,16 @@ void context::reject(std::string_view message)
     promise->set_exception(std::make_exception_ptr(std::runtime_error(error_text)));
 }
 
+void context::cancel(std::string_view reason)
+{
+    if (this->_promise == nullptr)
+        return;
+
+    auto promise   = this->_promise;
+    this->_promise = nullptr;
+    promise->set_exception(std::make_exception_ptr(fb::lua::cancelled(std::string(reason))));
+}
+
 void context::drop(std::string_view message)
 {
     this->reject(message);
@@ -819,17 +829,33 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
                                            std::function<async::task<int>()>                   resume_fn)
 {
     // Reject only; the owning guard returns the pool slot.
-    const auto abort_pipeline = [lua_ptr](const char* phase, const char* message) {
-        if (message != nullptr)
-            fb::logger::fatal("lua co_builder {} error: {}", phase, message);
-        else
+    const auto abort_pipeline = [lua_ptr](const char* phase, std::exception_ptr error) {
+        try
+        {
+            std::rethrow_exception(error);
+        }
+        catch (const fb::lua::cancelled& e)
+        {
+            lua_ptr->cancel(e.what());
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("lua co_builder {} error: {}", phase, e.what());
+
+            auto error_text = std::string(e.what());
+            // A lua_resume failure already reported from the script context. This path is the C++ failure around it.
+            if (error_text.find("lua error message") == std::string::npos)
+                lua_ptr->report_error(std::format("{}: {}", phase, error_text));
+            lua_ptr->reject(error_text);
+        }
+        catch (...)
+        {
             fb::logger::fatal("lua co_builder {} error", phase);
 
-        auto error_text = message != nullptr ? std::string(message) : std::format("lua co_builder {} error", phase);
-        // A lua_resume failure already reported from the script context. This path is the C++ failure around it.
-        if (error_text.find("lua error message") == std::string::npos)
+            auto error_text = std::format("lua co_builder {} error", phase);
             lua_ptr->report_error(std::format("{}: {}", phase, error_text));
-        lua_ptr->reject(error_text);
+            lua_ptr->reject(error_text);
+        }
     };
 
     if (weak.has_value())
@@ -838,14 +864,9 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
         {
             co_await executor.threads.switching(*weak);
         }
-        catch (const std::exception& e)
-        {
-            abort_pipeline("thread switch", e.what());
-            throw;
-        }
         catch (...)
         {
-            abort_pipeline("thread switch", nullptr);
+            abort_pipeline("thread switch", std::current_exception());
             throw;
         }
     }
@@ -866,14 +887,9 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
 
             co_await yield_fn();
         }
-        catch (const std::exception& e)
-        {
-            abort_pipeline("yield", e.what());
-            throw;
-        }
         catch (...)
         {
-            abort_pipeline("yield", nullptr);
+            abort_pipeline("yield", std::current_exception());
             throw;
         }
     }
@@ -885,14 +901,9 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
     {
         co_await lua_ptr->_initial_thread.switching();
     }
-    catch (const std::exception& e)
-    {
-        abort_pipeline("lua thread switch", e.what());
-        throw;
-    }
     catch (...)
     {
-        abort_pipeline("lua thread switch", nullptr);
+        abort_pipeline("lua thread switch", std::current_exception());
         throw;
     }
 
@@ -900,14 +911,9 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
     {
         co_return co_await resume_fn();
     }
-    catch (const std::exception& e)
-    {
-        abort_pipeline("resume", e.what());
-        throw;
-    }
     catch (...)
     {
-        abort_pipeline("resume", nullptr);
+        abort_pipeline("resume", std::current_exception());
         throw;
     }
 }
@@ -951,6 +957,11 @@ int fb::lua::context::co_builder::run()
                     sync_result = *n;
                 else
                     lua_ptr->resume(*n);
+            }
+            catch (const fb::lua::cancelled&)
+            {
+                if (immediate)
+                    rejected = true;
             }
             catch (const std::exception& e)
             {

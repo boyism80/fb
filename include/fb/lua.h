@@ -29,6 +29,7 @@ extern "C"
 #include <async/awaitable_then.h>
 #include <shared_mutex>
 #include <optional>
+#include <stdexcept>
 #include <json/json.h>
 
 #define LUA_PROTOTYPE                                \
@@ -145,6 +146,12 @@ class thread;
 struct call_options
 {
     bool auto_resume_parent = true;
+};
+
+class cancelled : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
 };
 
 context* get(lua_State* ctx);
@@ -502,6 +509,7 @@ public:
     int                 yield(int retc);
     void                release();
     void                reject(std::string_view message);
+    void                cancel(std::string_view reason);
     void                drop(std::string_view message = "lua context dropped");
     void                parent(context* parent);
     context*            parent() const;
