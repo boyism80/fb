@@ -834,12 +834,22 @@ function M.show_repair_menu(me, npc)
         return me:dialog(npc, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
     else
         if me:menu(npc, string.format('고치는데 %d전이 필요합니다. 정말 수리하시겠습니까?', price), { '네', '아니오' }) == 1 then
+            local current = M.repairable_slots(me)
+            local target = current and current[selected]
+            if target == nil then
+                return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+            end
+
+            local target_model = target:model()
+            local cost = math.floor(target_model:repair_price() * (target_model:durability() - target:durability()))
             local money = me:money()
-            if price > money then
+            if cost > price then
+                return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.', { prev = false, next = true })
+            elseif cost > money then
                 return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
             else
-                me:money(money - price)
-                item:durability(model:durability())
+                me:money(money - cost)
+                target:durability(target_model:durability())
                 return DIALOG_RESULT.NEXT
             end
         else
@@ -874,16 +884,26 @@ function M.show_repair_all_menu(me, npc)
     else
         local selected = me:menu(npc, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), { '네', '아니오' })
         if selected == 1 then
+            local current = M.repairable_slots(me) or {}
+            local cost = 0
+            for slot, item in pairs(current) do
+                local model = item:model()
+                cost = cost + (model:repair_price() * (model:durability() - item:durability()))
+            end
+            cost = math.floor(cost)
+
             local money = me:money()
-            if money < price then
+            if cost > price then
+                return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.')
+            elseif money < cost then
                 return me:dialog(npc, '돈이 모자랍니다.')
             else
-                for slot, item in pairs(items) do
+                for slot, item in pairs(current) do
                     local model = item:model()
                     item:durability(model:durability())
                 end
 
-                me:money(money - price)
+                me:money(money - cost)
                 return me:dialog(npc, '모두 고쳤습니다.')
             end
         else

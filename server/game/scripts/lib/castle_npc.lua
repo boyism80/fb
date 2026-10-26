@@ -463,12 +463,27 @@ function M.repair_dragon_weapon(me, npc_obj)
     if selected ~= 1 then
         return
     end
-    if me:money() < price then
+
+    local current = me:weapon()
+    if current == nil or current:model():name() ~= name then
+        me:dialog(npc_obj, '그 사이 무기가 바뀌었구먼. 다시 말해주게.', { prev = false, next = false })
+        return
+    end
+
+    local cost = math.floor(unit_price * (max_dur - current:durability()) * 2)
+    if cost < 1 then
+        cost = 1
+    end
+    if cost > price then
+        me:dialog(npc_obj, '그 사이 무기 상태가 달라졌구먼. 다시 말해주게.', { prev = false, next = false })
+        return
+    end
+    if me:money() < cost then
         me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = false })
         return
     end
-    me:money(me:money() - price)
-    weapon:durability(max_dur)
+    me:money(me:money() - cost)
+    current:durability(max_dur)
     me:dialog(npc_obj, '용무기를 수리했습니다.', { prev = false, next = false })
 end
 
