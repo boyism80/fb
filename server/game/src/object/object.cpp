@@ -52,6 +52,15 @@ object::~object()
     this->listener.on_destroy(*this);
 }
 
+void object::on_direction_changed()
+{ }
+
+void object::on_map_entered(fb::game::map& map)
+{ }
+
+void object::on_map_left(fb::game::map& map)
+{ }
+
 bool object::is(OBJECT_TYPE type) const
 {
     auto mine = this->what();
@@ -340,17 +349,7 @@ bool object::direction(DIRECTION value)
         return false;
 
     this->_direction = value;
-
-    if (this->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
-        if (lua)
-        {
-            lua->pushobject(*this);
-            fb::lua::run_async(std::move(lua), 1);
-        }
-    }
-
+    this->on_direction_changed();
     this->listener.on_direction(*this);
 
     return true;
@@ -590,19 +589,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
             // Call listener for packet response
             this->listener.on_map_leave(*this, *this->_map);
-
-            // Handle thread management for characters
-            if (this->is(OBJECT_TYPE::CHARACTER))
-            {
-                auto& ch     = static_cast<character&>(*this);
-                auto  thread = this->_map->thread();
-                if (thread != nullptr)
-                {
-                    auto params = thread->template data<thread_params>();
-                    params->characters.remove(ch.shared_from_this_as<character>());
-                }
-                this->_map->on_character_leave();
-            }
+            this->on_map_left(*this->_map);
 
             {
                 auto _     = std::unique_lock(this->_map_lock);
@@ -685,26 +672,13 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         // Call listener for packet response
         this->listener.on_map_enter(*this, *map);
 
-        // Handle thread management for characters
-        if (this->is(OBJECT_TYPE::CHARACTER))
-        {
-            auto& ch     = static_cast<character&>(*this);
-            auto  thread = map->thread();
-            if (thread != nullptr)
-            {
-                auto params = thread->template data<thread_params>();
-                params->characters.insert(ch.shared_from_this_as<character>());
-            }
-        }
-
         this->_position = before_position;
 
         this->update_sector();
 
         // insert character into map cache
         this->_map->objects.push(*this);
-        if (this->is(OBJECT_TYPE::CHARACTER))
-            map->on_character_enter();
+        this->on_map_entered(*map);
         this->update_map(*map);
         this->update_position();
         if (notify)

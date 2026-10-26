@@ -331,6 +331,12 @@ private:
     void                            enqueue_death_warp();
     [[nodiscard]] async::task<void> ride(mob& horse, uint16_t ridable_id = 1);
 
+protected:
+    void on_direction_changed() override final;
+    void on_map_entered(fb::game::map& map) override final;
+    void on_map_left(fb::game::map& map) override final;
+    void on_swing(uint32_t attack_count) override final;
+
 public:
     // clang-format off
     void                                     on_init() override final;

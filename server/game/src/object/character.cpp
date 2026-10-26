@@ -163,6 +163,38 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
+void character::on_direction_changed()
+{
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
+    if (lua)
+    {
+        lua->pushobject(*this);
+        fb::lua::run_async(std::move(lua), 1);
+    }
+}
+
+void character::on_map_entered(fb::game::map& map)
+{
+    auto thread = map.thread();
+    if (thread != nullptr)
+    {
+        auto params = thread->template data<thread_params>();
+        params->characters.insert(this->shared_from_this_as<character>());
+    }
+    map.on_character_enter();
+}
+
+void character::on_map_left(fb::game::map& map)
+{
+    auto thread = map.thread();
+    if (thread != nullptr)
+    {
+        auto params = thread->template data<thread_params>();
+        params->characters.remove(this->shared_from_this_as<character>());
+    }
+    map.on_character_leave();
+}
+
 async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
                                  std::optional<fb::model::point16_t> position,
                                  map_options                         options)
@@ -415,6 +447,32 @@ async::task<void> character::attack(DURATION duration)
         this->message(e.what());
     }
     co_return;
+}
+
+void character::on_swing(uint32_t attack_count)
+{
+    auto weapon = this->items.weapon();
+    if (weapon == nullptr)
+        return;
+
+    auto& model = weapon->model();
+    auto  path  = std::format("scripts/item/{}.lua", model.id);
+    auto  func  = "on_attack";
+
+    auto weapon_lua = this->server.lua.open(path, func);
+    if (weapon_lua)
+    {
+        weapon_lua->pushobject(this);
+        weapon_lua->pushobject(weapon);
+        fb::lua::run_async(std::move(weapon_lua), 2);
+    }
+
+    // Handle weapon durability
+    if (attack_count > 0 && weapon->durability_down(attack_count))
+    {
+        this->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
+        std::ignore = this->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
+    }
 }
 
 void character::action(ACTION action, DURATION duration, uint8_t sound)

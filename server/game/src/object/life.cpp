@@ -329,36 +329,12 @@ async::task<void> life::attack(DURATION duration)
 
     // Call listener for packet response
     this->listener.on_attack(*this, duration);
-
-    // Handle weapon durability and script logic
-    if (this->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto ch     = static_cast<character*>(this);
-        auto weapon = ch->items.weapon();
-        if (weapon != nullptr)
-        {
-            auto& model = weapon->model();
-            auto  path  = std::format("scripts/item/{}.lua", model.id);
-            auto  func  = "on_attack";
-
-            auto weapon_lua = this->server.lua.open(path, func);
-            if (weapon_lua)
-            {
-                weapon_lua->pushobject(ch);
-                weapon_lua->pushobject(weapon);
-                fb::lua::run_async(std::move(weapon_lua), 2);
-            }
-
-            // Handle weapon durability
-            if (attack_count > 0 && weapon->durability_down(attack_count))
-            {
-                ch->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
-                std::ignore = ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
-            }
-        }
-    }
+    this->on_swing(attack_count);
     co_return;
 }
+
+void life::on_swing(uint32_t attack_count)
+{ }
 
 uint64_t life::exp() const
 {

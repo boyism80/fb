@@ -99,6 +99,9 @@ protected:
     // clang-format off
     object(fb::game::server& server, const fb::model::object& model, const initial_params& c);
     object(const object& right);
+    virtual void on_direction_changed();
+    virtual void on_map_entered(fb::game::map& map);
+    virtual void on_map_left(fb::game::map& map);
     // clang-format on
 
 public:

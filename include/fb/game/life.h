@@ -78,6 +78,7 @@ protected:
     async::task<void> settle_deaths(mob_vector dead);
     async::task<void> invoke_on_mob_damaged(const damage_list& targets);
     async::task<void> settle_character_deaths(const character_vector& dead, std::shared_ptr<life> killer);
+    virtual void      on_swing(uint32_t attack_count);
     // clang-format on
 
 public:
