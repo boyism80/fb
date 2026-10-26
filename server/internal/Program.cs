@@ -66,7 +66,6 @@ public class Program
         builder.Services.AddHostedService<Internal.Services.NameReservationCleanupBackgroundService>();
         builder.Services.AddFbHealthChecks();
         builder.Services.AddScoped<StorageService>();
-        builder.Services.AddScoped<Internal.Services.GroupService>();
         builder.Services.AddScoped<Internal.Services.FriendService>();
 
         var app = builder.Build();
