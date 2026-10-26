@@ -398,9 +398,10 @@ function M.list(me, npc)
     end
 
     local total_sale_amount = count * price
-    local listing_fee = math.floor(total_sale_amount * 0.05)
+    local listing_fee = math.floor(total_sale_amount * CONST.MARKETPLACE.LISTING_FEE)
 
-    local fee_message = string.format('판매금액의 5%%인 %d전이 수수료로 부과됩니다.\n등록하시겠습니까?', listing_fee)
+    local fee_message = string.format('판매금액의 %d%%인 %d전이 수수료로 부과됩니다.\n등록하시겠습니까?',
+        math.floor(CONST.MARKETPLACE.LISTING_FEE * 100 + 0.5), listing_fee)
     local confirm_selected, confirm_button = me:pursuit(npc, fee_message, { '예', '아니오' })
     if confirm_button == DIALOG_RESULT.QUIT then
         return false
