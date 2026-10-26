@@ -111,23 +111,31 @@ function M.start(map)
 end
 
 function M.on_tick()
-    if not festival.is('유두') then
-        return
-    end
-
     local map = id2map(MAP_ID)
     if map == nil then
         return
     end
 
-    for _, crop in ipairs(CROPS) do
-        for _, zone in ipairs(crop.zones) do
-            local alive = count_crop_in_zone(map, crop.name, zone)
-            local need = zone[5] - alive
-            for _ = 1, need do
-                if not try_spawn_one(map, crop.name, zone) then
-                    break
+    if festival.is('유두') then
+        for _, crop in ipairs(CROPS) do
+            for _, zone in ipairs(crop.zones) do
+                local alive = count_crop_in_zone(map, crop.name, zone)
+                local need = zone[5] - alive
+                for _ = 1, need do
+                    if not try_spawn_one(map, crop.name, zone) then
+                        break
+                    end
                 end
+            end
+        end
+    else
+        local crop_names = {}
+        for _, crop in ipairs(CROPS) do
+            crop_names[crop.name] = true
+        end
+        for _, item in pairs(map:objects(OBJECT_TYPE.ITEM)) do
+            if crop_names[item:name()] then
+                item:destroy()
             end
         end
     end

@@ -78,21 +78,25 @@ function M.start(map)
 end
 
 function M.on_tick()
-    if not festival.is('칠석') and not festival.is('유두') then
-        return
-    end
-
     local map = id2map(MAP_ID)
     if map == nil then
         return
     end
 
-    for _, zone in ipairs(ZONES) do
-        local alive = count_rice_in_zone(map, zone)
-        local need = zone[5] - alive
-        for _ = 1, need do
-            if not try_spawn_one(map, zone) then
-                break
+    if festival.is('칠석') or festival.is('유두') then
+        for _, zone in ipairs(ZONES) do
+            local alive = count_rice_in_zone(map, zone)
+            local need = zone[5] - alive
+            for _ = 1, need do
+                if not try_spawn_one(map, zone) then
+                    break
+                end
+            end
+        end
+    else
+        for _, item in pairs(map:objects(OBJECT_TYPE.ITEM)) do
+            if item:name() == ITEM_NAME then
+                item:destroy()
             end
         end
     end
