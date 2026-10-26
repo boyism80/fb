@@ -364,5 +364,108 @@ end
 return {
     on_click = function(me, npc)
         main(me, npc)
+    end,
+
+    on_birthday = function(me, npc)
+        local button = nil
+        ::NPC_0_0002::
+        button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.',
+            { prev = false, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+
+        ::NPC_0_0003::
+        button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.',
+            { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto NPC_0_0002
+        end
+
+        ::NPC_0_0004::
+        button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)',
+            { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto NPC_0_0003
+        end
+
+        ::NPC_0_0005::
+        button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.',
+            { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto NPC_0_0004
+        end
+
+        ::NPC_0_0006::
+        button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.',
+            { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto NPC_0_0005
+        end
+
+        ::NPC_0_0007::
+        button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.',
+            { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto NPC_0_0006
+        end
+
+        ::NPC_0_0008::
+        local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.',
+            { top = '저의 생년월일은', bottom = '입니다.', maxlen = 6, prev = true })
+        if birthday == DIALOG_RESULT.QUIT then
+            goto NPC_0_0008
+        end
+        if birthday == DIALOG_RESULT.PREV then
+            goto NPC_0_0007
+        end
+
+        ::NPC_0_0009::
+        if birthday == '' or #birthday ~= 6 then
+            button = me:dialog(npc, '두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.', { prev = true, next = true })
+            if button == DIALOG_RESULT.QUIT then
+                return
+            end
+            if button == DIALOG_RESULT.PREV then
+                goto NPC_0_0008
+            end
+            goto NPC_0_0008
+        end
+
+        birthday = tonumber(birthday)
+        if birthday == nil or birthday <= 0 then
+            goto NPC_0_0009
+        end
+
+        local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), { '예', '아니오' },
+            { prev = true })
+        if list_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if list_btn == DIALOG_RESULT.PREV then
+            goto NPC_0_0008
+        end
+
+        if sel == 1 then
+            me:birthday(birthday)
+            return
+        end
+
+        goto NPC_0_0009
     end
 }
