@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -14,6 +15,8 @@ CHANNEL_ID = os.environ.get("DISCORD_CHANNEL_ID", "").strip()
 DISCORD_ENABLED = BOT_TOKEN != "" and CHANNEL_ID != ""
 
 DISCORD_BODY_LIMIT = 1800
+REPORTED_ANNOTATION = "crash-watch.fb/"
+RESTART_DELAY_SECONDS = 5
 
 seen = set()
 
@@ -52,7 +55,7 @@ def notify(title, body):
     print(title, flush=True)
     print(body, flush=True)
     if DISCORD_ENABLED == False:
-        return
+        return True
 
     content = title + "\n```\n" + body[:DISCORD_BODY_LIMIT] + "\n```"
     payload = json.dumps({"content": content}).encode("utf-8")
@@ -68,11 +71,14 @@ def notify(title, body):
     )
     try:
         urllib.request.urlopen(request, timeout=10).read()
+        return True
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", errors="replace")[:500]
         print("discord post failed: {} {}".format(e, body), file=sys.stderr, flush=True)
+        return False
     except urllib.error.URLError as e:
         print("discord post failed: {}".format(e), file=sys.stderr, flush=True)
+        return False
 
 
 def pod_logs(api, name, container, previous):
@@ -92,17 +98,17 @@ def pod_logs(api, name, container, previous):
         return "failed to read logs: {}".format(e)
 
 
+def last_terminated_id(pod, status):
+    terminated = status.last_state.terminated if status.last_state else None
+    if terminated is None:
+        return None
+    if terminated.container_id:
+        return terminated.container_id
+    return "{}:{}:{}".format(pod.metadata.uid, status.name, status.restart_count)
+
+
 def check_container(api, pod, status):
-    if pod.metadata.deletion_timestamp is not None:
-        return
-
-    terminated = None
-    if status.state and status.state.waiting and status.state.waiting.reason == "CrashLoopBackOff":
-        if status.last_state and status.last_state.terminated:
-            terminated = status.last_state.terminated
-    elif status.state and status.state.terminated:
-        terminated = status.state.terminated
-
+    terminated = status.last_state.terminated if status.last_state else None
     if terminated is None:
         return
     if terminated.exit_code == 0:
@@ -110,16 +116,25 @@ def check_container(api, pod, status):
     if terminated.reason == "Completed":
         return
 
-    key = "{}:{}:{}".format(pod.metadata.uid, status.name, status.restart_count)
-    if key in seen:
+    container_id = last_terminated_id(pod, status)
+    annotation = REPORTED_ANNOTATION + status.name
+    annotations = pod.metadata.annotations or {}
+    if container_id in seen or annotations.get(annotation) == container_id:
         return
-    seen.add(key)
 
-    log_text = pod_logs(api, pod.metadata.name, status.name, previous=status.restart_count > 0)
+    log_text = pod_logs(api, pod.metadata.name, status.name, previous=True)
     if log_text is None:
         return
 
     excerpt = crash_excerpt(log_text)
+    try:
+        current = api.read_namespaced_pod(name=pod.metadata.name, namespace=NAMESPACE)
+        for current_status in current.status.container_statuses or []:
+            if current_status.name == status.name and last_terminated_id(current, current_status) != container_id:
+                excerpt = "(crashed again while reading; this log may be a later instance)\n" + excerpt
+    except Exception as e:
+        print("pod re-read failed: {}".format(e), file=sys.stderr, flush=True)
+
     title = "crash {}/{} container={} exit={} reason={}".format(
         NAMESPACE,
         pod.metadata.name,
@@ -127,7 +142,31 @@ def check_container(api, pod, status):
         terminated.exit_code,
         terminated.reason or "unknown",
     )
-    notify(title, excerpt)
+    if notify(title, excerpt) == False:
+        return
+
+    seen.add(container_id)
+    try:
+        api.patch_namespaced_pod(
+            name=pod.metadata.name,
+            namespace=NAMESPACE,
+            body={"metadata": {"annotations": {annotation: container_id}}},
+        )
+    except Exception as e:
+        print("annotation patch failed: {}".format(e), file=sys.stderr, flush=True)
+
+
+def check_pod(api, pod):
+    labels = pod.metadata.labels or {}
+    app = labels.get("app", "")
+    if app not in WATCH_APPS:
+        return
+    if pod.metadata.deletion_timestamp is not None:
+        return
+    if pod.status is None or pod.status.container_statuses is None:
+        return
+    for status in pod.status.container_statuses:
+        check_container(api, pod, status)
 
 
 def watch_kubernetes():
@@ -139,27 +178,27 @@ def watch_kubernetes():
         config.load_kube_config()
 
     api = client.CoreV1Api()
-    w = watch.Watch()
     print(
         "watching pods in namespace {} (discord {})".format(NAMESPACE, "enabled" if DISCORD_ENABLED else "disabled"),
         flush=True,
     )
 
-    for event in w.stream(api.list_namespaced_pod, namespace=NAMESPACE):
-        if event.get("type") == "DELETED":
-            continue
+    while True:
+        try:
+            pods = api.list_namespaced_pod(namespace=NAMESPACE)
+            for pod in pods.items:
+                check_pod(api, pod)
 
-        pod = event["object"]
-        labels = pod.metadata.labels or {}
-        app = labels.get("app", "")
-        if app not in WATCH_APPS:
-            continue
-        if pod.metadata.deletion_timestamp is not None:
-            continue
-        if pod.status is None or pod.status.container_statuses is None:
-            continue
-        for status in pod.status.container_statuses:
-            check_container(api, pod, status)
+            w = watch.Watch()
+            for event in w.stream(
+                api.list_namespaced_pod, namespace=NAMESPACE, resource_version=pods.metadata.resource_version
+            ):
+                if event.get("type") == "DELETED":
+                    continue
+                check_pod(api, event["object"])
+        except Exception as e:
+            print("watch restarting: {}".format(e), file=sys.stderr, flush=True)
+            time.sleep(RESTART_DELAY_SECONDS)
 
 
 def watch_docker():
