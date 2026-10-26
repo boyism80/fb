@@ -70,6 +70,16 @@ uint32_t match::member_count()
     return this->live_count_locked();
 }
 
+uint32_t match::remaining()
+{
+    auto lock = std::lock_guard(this->_mutex);
+    if (this->_state != MATCH_STATE::playing || this->_ends_at.has_value() == false)
+        return 0;
+
+    auto left = std::chrono::ceil<std::chrono::seconds>(this->_ends_at.value() - std::chrono::steady_clock::now());
+    return left.count() > 0 ? static_cast<uint32_t>(left.count()) : 0;
+}
+
 std::vector<std::shared_ptr<character>> match::members()
 {
     auto lock = std::lock_guard(this->_mutex);
@@ -145,6 +155,7 @@ uint32_t match::live_count_locked()
 
 void match::cancel_timer()
 {
+    this->_ends_at.reset();
     if (this->_timer == nullptr)
         return;
 
@@ -176,6 +187,7 @@ async::task<void> match::join(character& ch, uint32_t team)
 {
     auto already    = false;
     auto full       = false;
+    auto late       = false;
     auto start_wait = false;
     {
         auto lock = std::lock_guard(this->_mutex);
@@ -201,6 +213,7 @@ async::task<void> match::join(character& ch, uint32_t team)
             slot->enter(ch);
         }
         start_wait = already == false && this->_state == MATCH_STATE::waiting && this->_timer == nullptr;
+        late       = already == false && this->_state == MATCH_STATE::playing;
     }
     if (already)
         co_return;
@@ -217,6 +230,8 @@ async::task<void> match::join(character& ch, uint32_t team)
     }
     if (full)
         this->enqueue_play();
+    else if (late)
+        co_await this->invoke("on_playing", ch, nullptr, false);
     co_return;
 }
 
@@ -372,6 +387,7 @@ void match::duration(uint32_t seconds, uint32_t grace_seconds)
         },
         fb::model::timespan(std::chrono::seconds(seconds)),
         fb::timer::repeat_type::once);
+    this->_ends_at = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
 }
 
 void match::finish(uint32_t grace_seconds)

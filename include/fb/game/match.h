@@ -5,9 +5,11 @@
 #include <fb/lua.h>
 #include <fb/timer.h>
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -44,17 +46,18 @@ public:
     class container;
 
 private:
-    server&                                             _server;
-    const uint64_t                                      _id;
-    const uint32_t                                      _type;
-    const uint32_t                                      _slot;
-    const uint32_t                                      _expected;
-    const uint32_t                                      _team_count;
-    MATCH_STATE                                         _state = MATCH_STATE::waiting;
-    mutable std::mutex                                  _mutex;
-    std::vector<std::weak_ptr<character>>               _members;
-    std::unordered_map<uint32_t, std::shared_ptr<team>> _teams;
-    std::shared_ptr<fb::timer>                          _timer;
+    server&                                              _server;
+    const uint64_t                                       _id;
+    const uint32_t                                       _type;
+    const uint32_t                                       _slot;
+    const uint32_t                                       _expected;
+    const uint32_t                                       _team_count;
+    MATCH_STATE                                          _state = MATCH_STATE::waiting;
+    mutable std::mutex                                   _mutex;
+    std::vector<std::weak_ptr<character>>                _members;
+    std::unordered_map<uint32_t, std::shared_ptr<team>>  _teams;
+    std::shared_ptr<fb::timer>                           _timer;
+    std::optional<std::chrono::steady_clock::time_point> _ends_at;
 
 public:
     match(server& server, uint64_t id, uint32_t type, uint32_t slot, uint32_t expected, uint32_t team_count);
@@ -69,6 +72,7 @@ public:
     uint32_t                                expected() const;
     MATCH_STATE                             state() const;
     uint32_t                                member_count();
+    uint32_t                                remaining();
     std::vector<std::shared_ptr<character>> members();
     std::vector<std::shared_ptr<team>>      teams();
     std::shared_ptr<team>                   find(const character& ch);
