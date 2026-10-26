@@ -37,6 +37,48 @@ async::task<bool> fb::game::server::on_connected(fb::socket<character>& socket)
     co_return true;
 }
 
+async::task<void> fb::game::server::unload(character& ch)
+{
+    this->matches.leave(ch);
+
+    auto  weak     = ch.weak_from_this_as<character>();
+    auto& group_id = ch.group.id();
+    if (group_id.has_value())
+    {
+        auto gid = group_id.value();
+        try
+        {
+            this->groups.write(gid, [weak](auto& group) {
+                group->detach(weak);
+            });
+        }
+        catch (const std::runtime_error&)
+        { }
+        ch.group.reset();
+        this->groups.update_portraits(gid);
+    }
+
+    auto& clan_id = ch.clan.id();
+    if (clan_id.has_value())
+    {
+        try
+        {
+            this->clans.write(clan_id.value(), [weak](auto& clan) {
+                clan->detach(weak);
+            });
+        }
+        catch (const std::runtime_error&)
+        { }
+        ch.clan.reset();
+    }
+
+    // remove() erases by id and name; a failed duplicate insert must not evict the character already online.
+    auto self = ch.shared_from_this_as<character>();
+    if (this->characters.find(ch.id) == self)
+        this->characters.remove(self);
+    co_await ch.destroy();
+}
+
 async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socket)
 {
     auto ch = socket.data();
@@ -98,7 +140,6 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     if (ptr != nullptr)
     {
         co_await ptr->matchmaker.dequeue(matchmaker::initiator::SERVER);
-        this->matches.leave(*ptr);
 
         // Log logout event
         auto log_data              = Json::Value();
@@ -114,38 +155,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         }
         this->log.write("logout", log_data);
 
-        auto& group_id = ptr->group.id();
-        if (group_id.has_value())
-        {
-            auto gid = group_id.value();
-            try
-            {
-                this->groups.write(gid, [weak](auto& group) {
-                    group->detach(weak);
-                });
-            }
-            catch (const std::runtime_error&)
-            { }
-            ptr->group.reset();
-            this->groups.update_portraits(gid);
-        }
-
-        auto& clan_id = ptr->clan.id();
-        if (clan_id.has_value())
-        {
-            try
-            {
-                this->clans.write(clan_id.value(), [weak](auto& clan) {
-                    clan->detach(weak);
-                });
-            }
-            catch (const std::runtime_error&)
-            { }
-            ptr->clan.reset();
-        }
-
-        this->characters.remove(ptr);
-        co_await ch->destroy();
+        co_await this->unload(*ptr);
         socket.data(nullptr);
     }
 

@@ -680,43 +680,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         if (auto data = session.data_ptr(); data != nullptr)
         {
             co_await data->thread()->switching();
-            this->server.matches.leave(*data);
-
-            auto  weak     = data->template weak_from_this_as<character>();
-            auto& group_id = data->group.id();
-            if (group_id.has_value())
-            {
-                auto gid = group_id.value();
-                try
-                {
-                    this->server.groups.write(gid, [weak](auto& group) {
-                        group->detach(weak);
-                    });
-                }
-                catch (const std::runtime_error&)
-                { }
-                data->group.reset();
-                this->server.groups.update_portraits(gid);
-            }
-
-            auto& clan_id = data->clan.id();
-            if (clan_id.has_value())
-            {
-                try
-                {
-                    this->server.clans.write(clan_id.value(), [weak](auto& clan) {
-                        clan->detach(weak);
-                    });
-                }
-                catch (const std::runtime_error&)
-                { }
-                data->clan.reset();
-            }
-
-            // remove() erases by id and name; a failed duplicate insert must not evict the character already online.
-            if (this->server.characters.find(data->id) == data)
-                this->server.characters.remove(data);
-            co_await data->destroy();
+            co_await this->server.unload(*data);
             session.data(nullptr);
         }
 

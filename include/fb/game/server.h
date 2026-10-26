@@ -244,6 +244,7 @@ public:
     async::task<void>                 save();
     async::task<void>                 save(fb::thread& thread);
     async::task<bool>                 save(character& ch);
+    async::task<void>                 unload(character& ch);
     void                              sync_time();
     static uint8_t                    brightness_from_time(uint8_t hours, uint8_t minutes);
     uint8_t                           brightness() const;
