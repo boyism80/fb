@@ -7734,6 +7734,11 @@ int builtin::character::builtin_marry(lua_State* L)
             *error = "상대와 같은 곳에 있어야 결혼할 수 있습니다.";
             co_return;
         }
+        if (me->gender() == target->gender())
+        {
+            *error = "같은 성별끼리는 결혼할 수 없습니다.";
+            co_return;
+        }
 
         const auto& my_m  = me->marriage();
         const auto& tar_m = target->marriage();
