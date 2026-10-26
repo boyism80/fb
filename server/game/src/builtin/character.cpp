@@ -1183,13 +1183,18 @@ int builtin::character::builtin_rmitem(lua_State* L)
         return 1;
     }
 
+    auto to_remove   = std::unordered_map<uint32_t, uint16_t>();
+    auto item        = std::shared_ptr<fb::game::item>(nullptr);
+    auto slot        = std::optional<uint8_t>();
+    auto count       = uint16_t{1};
+    auto delete_attr = ITEM_DELETE_TYPE::REMOVED;
+    auto valid       = true;
+
     /* Table form: me:rmitem({['name1'] = count, ['name2'] = count, ...}, optional ITEM_DELETE_TYPE). All-or-nothing:
      * remove only if character has all required counts. Returns success (boolean). */
     if (lua->is_table(2))
     {
-        auto delete_attr = lua->toenum(3, ITEM_DELETE_TYPE::REMOVED);
-        auto to_remove   = std::unordered_map<uint32_t, uint16_t>();
-        auto invalid     = false;
+        delete_attr = lua->toenum(3, ITEM_DELETE_TYPE::REMOVED);
         lua->pushnil();
         while (lua->next(2))
         {
@@ -1201,11 +1206,11 @@ int builtin::character::builtin_rmitem(lua_State* L)
                 if (model == nullptr)
                 {
                     fb::logger::warn("rmitem: unknown item name '{}'", name);
-                    invalid = true;
+                    valid = false;
                 }
                 else if (raw_count < 0 || raw_count > std::numeric_limits<uint16_t>::max())
                 {
-                    invalid = true;
+                    valid = false;
                 }
                 else if (raw_count > 0)
                 {
@@ -1214,194 +1219,79 @@ int builtin::character::builtin_rmitem(lua_State* L)
             }
             lua->pop(1);
         }
-        if (invalid || to_remove.empty())
-        {
-            lua->pushboolean(false);
-            return 1;
-        }
-
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto success  = std::make_shared<bool>(false);
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            try
-            {
-                auto result = co_await ch->items.exchange(to_remove, 0, {}, 0, delete_attr);
-                *success    = result == exchange_result::ok;
-            }
-            catch (...)
-            { }
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushboolean(*success);
-            co_return 1;
-        };
-        return builder.run();
-    }
-
-    // lua_tointeger turns a non-integral count such as 0.5 into 0.
-    auto raw_count = lua->tointeger(3, 1);
-    if (raw_count <= 0 || raw_count > std::numeric_limits<uint16_t>::max())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
-
-    auto count       = static_cast<uint16_t>(raw_count);
-    auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
-
-    if (lua->is_userdata<fb::game::item>(2))
-    {
-        auto item = lua->touserdata<fb::game::item>(2);
-        if (item == nullptr)
-        {
-            lua->pushboolean(false);
-            return 1;
-        }
-
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto success  = std::make_shared<bool>(false);
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            try
-            {
-                auto index = ch->items.index(item);
-                if (index != 0xFF && item->count() >= count)
-                {
-                    auto dropped = ch->items.remove(index, count, delete_attr);
-                    if (dropped != nullptr)
-                    {
-                        co_await dropped->destroy();
-                        *success = true;
-                    }
-                }
-            }
-            catch (...)
-            { }
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushboolean(*success);
-            co_return 1;
-        };
-        return builder.run();
-    }
-    else if (lua->is_userdata<fb::model::item>(2))
-    {
-        auto model = lua->touserdata<fb::model::item>(2);
-        if (model == nullptr)
-        {
-            lua->pushboolean(false);
-            return 1;
-        }
-
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto success  = std::make_shared<bool>(false);
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            try
-            {
-                auto result = co_await ch->items.exchange(
-                    {
-                        {model->id, count}
-                },
-                    0,
-                    {},
-                    0,
-                    delete_attr);
-                *success = result == exchange_result::ok;
-            }
-            catch (...)
-            { }
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushboolean(*success);
-            co_return 1;
-        };
-        return builder.run();
-    }
-    else if (lua->is_number(2))
-    {
-        auto raw_index = lua->tointeger(2);
-        auto index     = static_cast<uint8_t>(raw_index) - 1;
-
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto success  = std::make_shared<bool>(false);
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            try
-            {
-                auto item = ch->items.at(index);
-                if (item != nullptr && item->count() >= count)
-                {
-                    auto dropped = ch->items.remove(index, count, delete_attr);
-                    if (dropped != nullptr)
-                    {
-                        co_await dropped->destroy();
-                        *success = true;
-                    }
-                }
-            }
-            catch (...)
-            { }
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushboolean(*success);
-            co_return 1;
-        };
-        return builder.run();
-    }
-    else if (lua->is_string(2))
-    {
-        auto name = lua->tostring(2);
-        if (name.empty())
-        {
-            lua->pushboolean(false);
-            return 1;
-        }
-
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto success  = std::make_shared<bool>(false);
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            try
-            {
-                auto model = table::item->name2item(name);
-                if (model == nullptr)
-                    co_return;
-
-                auto result = co_await ch->items.exchange(
-                    {
-                        {model->id, count}
-                },
-                    0,
-                    {},
-                    0,
-                    delete_attr);
-                *success = result == exchange_result::ok;
-            }
-            catch (...)
-            { }
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushboolean(*success);
-            co_return 1;
-        };
-        return builder.run();
     }
     else
     {
+        // lua_tointeger turns a non-integral count such as 0.5 into 0.
+        auto raw_count = lua->tointeger(3, 1);
+        valid          = raw_count > 0 && raw_count <= std::numeric_limits<uint16_t>::max();
+        count          = static_cast<uint16_t>(raw_count);
+        delete_attr    = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
+
+        if (lua->is_userdata<fb::game::item>(2))
+        {
+            item = lua->touserdata<fb::game::item>(2);
+        }
+        else if (lua->is_userdata<fb::model::item>(2))
+        {
+            auto model = lua->touserdata<fb::model::item>(2);
+            if (model != nullptr)
+                to_remove[model->id] = count;
+        }
+        else if (lua->is_number(2))
+        {
+            slot = static_cast<uint8_t>(static_cast<uint8_t>(lua->tointeger(2)) - 1);
+        }
+        else if (lua->is_string(2))
+        {
+            auto model = table::item->name2item(lua->tostring(2));
+            if (model != nullptr)
+                to_remove[model->id] = count;
+        }
+    }
+
+    if (valid == false || (to_remove.empty() && item == nullptr && slot.has_value() == false))
+    {
         lua->pushboolean(false);
         return 1;
+    }
+    else
+    {
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto success  = std::make_shared<bool>(false);
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            try
+            {
+                if (to_remove.empty() == false)
+                {
+                    *success = co_await ch->items.exchange(to_remove, 0, {}, 0, delete_attr) == exchange_result::ok;
+                }
+                else
+                {
+                    auto index  = item != nullptr ? ch->items.index(item) : slot.value();
+                    auto target = ch->items.at(index);
+                    if (target != nullptr && target->count() >= count)
+                    {
+                        auto dropped = ch->items.remove(index, count, delete_attr);
+                        if (dropped != nullptr)
+                        {
+                            co_await dropped->destroy();
+                            *success = true;
+                        }
+                    }
+                }
+            }
+            catch (...)
+            { }
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*success);
+            co_return 1;
+        };
+        return builder.run();
     }
 }
 
