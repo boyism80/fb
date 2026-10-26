@@ -435,21 +435,12 @@ return {
             goto NPC_0_0007
         end
 
-        ::NPC_0_0009::
-        if birthday == '' or #birthday ~= 6 then
+        if string.match(birthday, '^%d%d%d%d%d%d$') == nil or birthday == '000000' then
             button = me:dialog(npc, '두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.', { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.PREV then
-                goto NPC_0_0008
-            end
             goto NPC_0_0008
-        end
-
-        birthday = tonumber(birthday)
-        if birthday == nil or birthday <= 0 then
-            goto NPC_0_0009
         end
 
         local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), { '예', '아니오' },
@@ -462,10 +453,10 @@ return {
         end
 
         if sel == 1 then
-            me:birthday(birthday)
+            me:birthday(tonumber(birthday))
             return
         end
 
-        goto NPC_0_0009
+        goto NPC_0_0008
     end
 }
