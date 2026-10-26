@@ -2397,8 +2397,12 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.speed            = this->stat.base_speed();
     dto.reputation       = this->_reputation;
     dto.evaluation       = this->_evaluation.score;
-    dto.evaluation_playtime =
-        static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(this->_evaluation.playtime).count());
+
+    auto playtime = this->_evaluation.playtime;
+    if (this->client_version == fb::protocol::CLIENT_VERSION::v651 &&
+        this->_evaluation.score < fb::model::const_value::reputation::MAX_EVALUATION)
+        playtime += std::chrono::milliseconds((this->server.now() - this->_evaluation.tick).total_milliseconds());
+    dto.evaluation_playtime = static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(playtime).count());
     for (auto& [target, evaluated_at] : this->_evaluation.targets)
     {
         if (this->server.now() - evaluated_at >= fb::model::const_value::reputation::EVALUATION_COOLDOWN)
