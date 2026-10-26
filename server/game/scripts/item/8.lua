@@ -46,12 +46,9 @@ return {
         ::ON_ACTIVATED_8_0000::
         btn = me:dialog(model,
             '<임무>\n 직업가지기\n\n <내용>\n 레벨이 5가 되면 직업을 가져야만 경험치를\n얻으실 수 있습니다. 전사, 주술사, 도적, 도사\n중 마음에 드는 직업을 선택하세요!!!\n\n<보상>\n 새로운두루마리',
-            { prev = true, next = true })
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto ON_ACTIVATED_8_0000
         end
         ::ON_ACTIVATED_8_0001::
         btn = me:dialog(model, '<힌트>\n 자.. 이제부터 직업에 대한 설명을 드리겠습니다.', { prev = true, next = true })
@@ -123,13 +120,11 @@ return {
         btn = me:dialog(model,
             classname ..
             '의 길에 들어서려구요!!\n좋아요. 그럼 ' ..
-            classname .. ' 길드의\n' .. classmaster .. '님께 데려다 드릴께요..\n' .. classname .. '가 되는 방법을\n알려주실 것입니다.',
+            classname ..
+            ' 길드의\n' .. classmaster .. '님께 데려다 드릴께요..\n' .. name_with(classname, '이', '가') .. ' 되는 방법을\n알려주실 것입니다.',
             { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto ON_ACTIVATED_8_0005
         end
         btn = me:dialog(model, '저의 가르침은 여기까집니다.\n앞으로는 ' .. classmaster .. '님의 가르침이\n있을 것입니다..\n그럼 안녕히!!!',
             { prev = true, next = true })
@@ -152,12 +147,11 @@ return {
             return
         end
 
-        local x = math.random(WARP_X_MIN, WARP_X_MAX)
-        local y = math.random(WARP_Y_MIN, WARP_Y_MAX)
-        if x == 6 and y == 6 then
+        local x, y
+        repeat
             x = math.random(WARP_X_MIN, WARP_X_MAX)
             y = math.random(WARP_Y_MIN, WARP_Y_MAX)
-        end
+        until not (x == 6 and y == 6)
         me:map(map, { x, y }, server.item_cost('scripts/item/8.lua', item:model():name()))
     end,
 

@@ -42,12 +42,9 @@ return {
             ::ON_ACTIVATED_5_0000::
             btn = me:dialog(model,
                 '<임무>\n 토끼와 다람쥐 사냥\n\n<내용>\n 이제, 사냥터에 왔으니 사냥을 해 봐야지요!!\n주변에, \'토끼\'와 \'다람쥐\'가 보이실 것입니다.\n일단 몬스터 앞에 서서 스페이스바를\n연타하시면 마구 공격합니다. \'토끼\' 5마리와\n\'다람쥐\' 5마리씩 사냥해보세요~\n\n<보상>\n 초심자의귀마개, 경험치 200 (레벨5미만)',
-                { prev = true, next = true })
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
-            end
-            if btn == DIALOG_RESULT.PREV then
-                goto ON_ACTIVATED_5_0000
             end
             ::ON_ACTIVATED_5_0001::
             btn = me:dialog(model, '<힌트>\n 마우스로 몬스터를 마구 클릭해도 공격합니다.\n떨어진 아이템은 마우스로 클릭하거나, 아이템\n위에 서서 ,키를 누르시면 주울 수 있습니다 ',

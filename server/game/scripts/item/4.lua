@@ -62,12 +62,9 @@ return {
             ::ON_ACTIVATED_4_0000::
             btn = me:dialog(model,
                 '<임무>\n 사냥터 찾아가기\n\n<내용>\n 이제, 목도를 사용할 곳을 찾아가봅시다!!\n본격적인 사냥을~~ 일단 주막에서 나오셔서,\n화면의 왼쪽 위의 조그만 사각형 버튼을\n누르시면 미니맵이 나옵니다.(단축키 *), 이것을\n참고하셔서 \'왕초보사냥터\'로 찾아오세요.\n\n<보상>\n 노란비서, 경험치 100 (레벨5미만)',
-                { prev = true, next = true })
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
-            end
-            if btn == DIALOG_RESULT.PREV then
-                goto ON_ACTIVATED_4_0000
             end
             ::ON_ACTIVATED_4_0001::
             btn = me:dialog(model, '<힌트>\n 집 내부에 있으면 미니맵이 안나오는 경우가\n있습니다.', { prev = true, next = true })

@@ -16,12 +16,9 @@ return {
             ::ON_ACTIVATED_7_0000::
             btn = me:dialog(model,
                 '<임무>\n 레벨 5 만들기\n\n<내용>\n 잠시 퀴즈로 머리를 식혔으니, 다시 레벨업의\n세계로!! 레벨 5를 만들어보세요!!\n\n<보상>\n초심자의방패',
-                { prev = true, next = true })
+                { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
-            end
-            if btn == DIALOG_RESULT.PREV then
-                goto ON_ACTIVATED_7_0000
             end
             ::ON_ACTIVATED_7_0001::
             btn = me:dialog(model, '<힌트>\n 레벨 5를 만들면 직업을 선택하실 수 있습니다.', { prev = true, next = true })

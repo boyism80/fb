@@ -23,12 +23,9 @@ return {
         ::ON_ACTIVATED_6_0000::
         btn = me:dialog(model,
             '<임무>\n 잠깐 퀴즈~!!\n\n<내용>\n 레벨을 올리시느라 힘드셨죠? 그럼 잠시\n쉬어가는 의미에서.. 퀴즈를 풀어보는 것이\n어떨까요?\n\n<보상>\n 초심자의반지, 경험치 400 (레벨5미만)',
-            { prev = true, next = true })
+            { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto ON_ACTIVATED_6_0000
         end
         ::ON_ACTIVATED_6_0001::
         btn = me:dialog(model, '<힌트>\n 퀴즈에 대한 정답을 선택하기만 하면 됩니다.', { prev = true, next = true })
