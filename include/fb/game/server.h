@@ -144,8 +144,6 @@ struct send_option
 
 class server : public fb::acceptor<fb::game::character>
 {
-    friend class character::container;
-
 public:
     LUA_PROTOTYPE
 

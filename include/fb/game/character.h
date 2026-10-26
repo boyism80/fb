@@ -487,9 +487,7 @@ private:
     mutable std::shared_mutex                        _mutex;
     std::unordered_map<uint32_t, character_ptr_t>    _from_uid;
     std::unordered_map<std::string, character_ptr_t> _from_name;
-
-public:
-    fb::game::server& _server;
+    fb::game::server&                                _server;
 
 public:
     container(fb::game::server& server);

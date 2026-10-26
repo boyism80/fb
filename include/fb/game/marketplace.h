@@ -19,8 +19,6 @@ class server;
 
 class marketplace
 {
-    friend class character;
-
 public:
     struct item
     {
