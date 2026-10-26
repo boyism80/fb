@@ -1817,6 +1817,16 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
     if (owner == nullptr)
         co_return false;
 
+    try
+    {
+        owner->assert_state({STATE::RIDING, STATE::GHOST});
+    }
+    catch (std::exception& e)
+    {
+        owner->message(e.what());
+        co_return false;
+    }
+
     // The recipe is matched against the selected slots only, so materials are consumed from those slots only.
     // A repeated index would count the same stack twice.
     auto selected = std::vector<uint8_t>();
