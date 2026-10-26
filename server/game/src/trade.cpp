@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <exception>
 #include <format>
-#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
@@ -292,7 +291,7 @@ void trade::assert_exchange(size_t i) const
             throw exchange_error(i, _TEXT(MESSAGE_TRADE_FAILED));
     }
 
-    if (std::numeric_limits<uint64_t>::max() - you.money < owner->money())
+    if (owner->money_free_space() + me.money < you.money)
         throw exchange_error(i, _TEXT(MESSAGE_MONEY_FULL));
 
     auto incoming = std::unordered_map<uint32_t, uint32_t>{};
@@ -429,13 +428,15 @@ async::task<void> trade::exchange()
         log_data["items2"].append(item_data);
     }
 
+    std::ignore = owner1->money_add(money2);
+    std::ignore = owner2->money_add(money1);
+
     for (auto& item : buffer2)
     {
         std::ignore = co_await owner1->items.add(std::vector<std::shared_ptr<fb::game::item>>{item}, true);
         if (item->empty() == false && owner1->items.index(item) == 0xFF)
             std::ignore = co_await owner2->items.add(item);
     }
-    owner1->money_add(money2);
 
     for (auto& item : buffer1)
     {
@@ -443,7 +444,6 @@ async::task<void> trade::exchange()
         if (item->empty() == false && owner2->items.index(item) == 0xFF)
             std::ignore = co_await owner1->items.add(item);
     }
-    owner2->money_add(money1);
 
     owner1->server.log.write("trade_complete", log_data);
 }

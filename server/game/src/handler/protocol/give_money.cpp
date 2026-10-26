@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <exception>
 #include <format>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -56,8 +55,7 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
             if (you->loaded() == false)
                 co_return true;
 
-            auto capacity = std::numeric_limits<uint64_t>::max() - you->money();
-            money         = std::min(capacity, static_cast<uint64_t>(money));
+            money = std::min(you->money_free_space(), money);
             if (money == 0)
                 throw std::runtime_error(_TEXT(MESSAGE_MONEY_TARGET_CANNOT_RECEIVE));
 
