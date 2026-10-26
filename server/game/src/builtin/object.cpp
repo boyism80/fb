@@ -889,29 +889,9 @@ int builtin::object::builtin_map(lua_State* L)
         }
         else
         {
-            auto ch     = std::static_pointer_cast<fb::game::character>(shared);
-            auto fee_id = ch->clan.hold_fee(fee_clan.value(), fee_money, fee_clan_money);
-            if (fee_id.has_value() == false)
-                co_return;
-
-            auto id            = fee_id.value();
-            auto ch_weak       = ch->weak_from_this_as<fb::game::character>();
-            auto fee_options   = options;
-            fee_options.before = [before = options.before, ch_weak, id]() -> async::task<bool> {
-                if (before && co_await before() == false)
-                    co_return false;
-
-                auto locked = ch_weak.lock();
-                co_return locked != nullptr && locked->clan.commit_fee(id);
-            };
-
-            *success_holder = co_await ch->map(map, position, fee_options);
-            co_await ch->server.threads.switching(ch_weak);
-            if (ch_weak.expired())
-                co_return;
-
-            if (*success_holder == false)
-                ch->clan.release_fee(id);
+            auto ch = std::static_pointer_cast<fb::game::character>(shared);
+            *success_holder =
+                co_await ch->clan.map(map, position, options, fee_clan.value(), fee_money, fee_clan_money);
         }
     };
     builder.resume = [=]() -> async::task<int> {

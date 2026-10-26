@@ -141,9 +141,7 @@ public:
         [[nodiscard]] async::task<std::optional<bool>> transfer_money(uint32_t clan_id, int64_t clan_delta, int64_t money_delta);
         async::task<void>                              settle_money(uint64_t request_id);
         void                                           complete_money(uint64_t request_id, bool applied);
-        std::optional<uint64_t>                        hold_fee(uint32_t clan_id, uint64_t money, uint64_t clan_money);
-        bool                                           commit_fee(uint64_t request_id);
-        void                                           release_fee(uint64_t request_id);
+        [[nodiscard]] async::task<bool>                map(std::shared_ptr<fb::game::map> map, std::optional<fb::model::point16_t> position, map_options options, uint32_t clan_id, uint64_t money, uint64_t clan_money);
         async::task<void>                              settle_fee(uint64_t request_id);
         // clang-format on
     };

@@ -109,7 +109,12 @@ void character::clan::complete_money(uint64_t request_id, bool applied)
         this->_owner.money_add(static_cast<uint64_t>(-money_delta));
 }
 
-std::optional<uint64_t> character::clan::hold_fee(uint32_t clan_id, uint64_t money, uint64_t clan_money)
+async::task<bool> character::clan::map(std::shared_ptr<fb::game::map>      map,
+                                       std::optional<fb::model::point16_t> position,
+                                       map_options                         options,
+                                       uint32_t                            clan_id,
+                                       uint64_t                            money,
+                                       uint64_t                            clan_money)
 {
     this->_owner.assert_thread();
 
@@ -120,41 +125,41 @@ std::optional<uint64_t> character::clan::hold_fee(uint32_t clan_id, uint64_t mon
     if (this->_owner.items.hold(request_id, money, {}) == false)
     {
         this->_owner.unsettled.erase(request_id);
-        return std::nullopt;
+        co_return false;
     }
-    return request_id;
-}
 
-bool character::clan::commit_fee(uint64_t request_id)
-{
-    this->_owner.assert_thread();
+    auto ch        = this->_owner.shared_from_this_as<character>();
+    auto weak      = std::weak_ptr<character>(ch);
+    options.before = [before = options.before, weak, request_id]() -> async::task<bool> {
+        if (before && co_await before() == false)
+            co_return false;
 
-    auto request = this->_owner.unsettled.find(request_id);
-    if (request == nullptr || this->_owner.items.escrow().contains(request_id) == false)
-        return false;
+        auto locked  = weak.lock();
+        auto request = locked != nullptr ? locked->unsettled.find(request_id) : nullptr;
+        if (request == nullptr || locked->items.escrow().contains(request_id) == false)
+            co_return false;
 
-    this->_owner.items.take(request_id);
-    request->in_flight = false;
-    return true;
-}
-
-void character::clan::release_fee(uint64_t request_id)
-{
-    this->_owner.assert_thread();
-
-    auto request = this->_owner.unsettled.find(request_id);
-    if (request == nullptr)
-        return;
-
-    if (this->_owner.items.escrow().contains(request_id))
-    {
-        this->_owner.items.release(request_id);
-        this->_owner.unsettled.erase(request_id);
-    }
-    else
-    {
+        locked->items.take(request_id);
         request->in_flight = false;
+        co_return true;
+    };
+
+    auto success = co_await ch->map(map, position, options);
+    co_await ch->server.threads.switching(weak);
+    if (success == false)
+    {
+        auto request = ch->unsettled.find(request_id);
+        if (request != nullptr && ch->items.escrow().contains(request_id))
+        {
+            ch->items.release(request_id);
+            ch->unsettled.erase(request_id);
+        }
+        else if (request != nullptr)
+        {
+            request->in_flight = false;
+        }
     }
+    co_return success;
 }
 
 async::task<void> character::clan::settle_fee(uint64_t request_id)
