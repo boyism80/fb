@@ -130,6 +130,35 @@ bool matchmaker::mark_ready(uint64_t match_id)
     return true;
 }
 
+bool matchmaker::on_ready(uint64_t match_id)
+{
+    if (this->mark_ready(match_id) == false)
+        return false;
+
+    this->clear_pending_match_id_if(match_id);
+    this->clear_ticket();
+    return true;
+}
+
+bool matchmaker::on_dissolved(uint64_t match_id, bool ticket_closed)
+{
+    auto had_ticket = this->ticket_id().has_value();
+    this->clear_pending_match_id_if(match_id);
+    if (ticket_closed)
+        this->clear_ticket();
+    return had_ticket;
+}
+
+bool matchmaker::on_ticket_removed(uint64_t ticket_id)
+{
+    if (this->ticket_id() != ticket_id)
+        return false;
+
+    this->clear_pending_match_id();
+    this->clear_ticket();
+    return true;
+}
+
 bool matchmaker::queued() const
 {
     this->owner.assert_thread();

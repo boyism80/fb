@@ -71,6 +71,9 @@ private:
 
     void disconnect_after_failed_return();
     void touch();
+    void clear_pending_match_id();
+    bool clear_pending_match_id_if(uint64_t match_id);
+    bool mark_ready(uint64_t match_id);
 
 public:
     explicit matchmaker(character& owner);
@@ -81,9 +84,9 @@ public:
     void                                     upsert(uint32_t match_type, double mu, double sigma);
     const std::optional<uint64_t>&           pending_match_id() const;
     void                                     set_pending_match_id(uint64_t match_id);
-    void                                     clear_pending_match_id();
-    bool                                     clear_pending_match_id_if(uint64_t match_id);
-    bool                                     mark_ready(uint64_t match_id);
+    bool                                     on_ready(uint64_t match_id);
+    bool                                     on_dissolved(uint64_t match_id, bool ticket_closed);
+    bool                                     on_ticket_removed(uint64_t ticket_id);
     bool                                     queued() const;
     bool                                     enqueuing() const;
     std::optional<uint64_t>                  ticket_id() const;

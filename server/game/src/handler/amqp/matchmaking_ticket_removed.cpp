@@ -27,11 +27,8 @@ async::task<void> matchmaking_ticket_removed::handle(const fb::protocol::matchma
         auto builder = this->server.threads.new_builder(weak);
         builder.func = [ch, match_type, ticket_id](auto&) -> async::task<void> {
             // The member already dropped or replaced this ticket on its own.
-            if (ch->matchmaker.ticket_id() != ticket_id)
+            if (ch->matchmaker.on_ticket_removed(ticket_id) == false)
                 co_return;
-
-            ch->matchmaker.clear_pending_match_id();
-            ch->matchmaker.clear_ticket();
 
             auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_dequeue");
             if (lua)

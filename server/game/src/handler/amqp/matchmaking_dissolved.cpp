@@ -31,10 +31,7 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
             builder.func =
                 [ch, match_id, match_type, reason, outcome_value = outcome.outcome](auto&) -> async::task<void> {
                 // A member who already declined or dequeued has no ticket left and was told by that hook.
-                auto queued = ch->matchmaker.ticket_id().has_value();
-                ch->matchmaker.clear_pending_match_id_if(match_id);
-                if (outcome_value == 0)
-                    ch->matchmaker.clear_ticket();
+                auto queued = ch->matchmaker.on_dissolved(match_id, outcome_value == 0);
 
                 auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_dissolved");
                 if (lua)

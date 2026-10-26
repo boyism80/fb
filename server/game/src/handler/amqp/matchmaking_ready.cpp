@@ -32,11 +32,8 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                 auto weak    = ch->weak_from_this_as<character>();
                 auto builder = this->server.threads.new_builder(weak);
                 builder.func = [ch, match_id, match_type, team_id](auto&) -> async::task<void> {
-                    if (ch->matchmaker.mark_ready(match_id) == false)
+                    if (ch->matchmaker.on_ready(match_id) == false)
                         co_return;
-
-                    ch->matchmaker.clear_pending_match_id_if(match_id);
-                    ch->matchmaker.clear_ticket();
 
                     auto cross_maintenance = ch->server.maintenance.read([](const fb::game::maintenance_state& x) {
                         return x.cross;
