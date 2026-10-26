@@ -951,8 +951,8 @@ STATE character::state_to(const fb::game::object& to, STATE state) const
     if (ch.detect())
         return STATE::HALF_CLOACK;
 
-    auto& g1 = this->group._id;
-    auto& g2 = ch.group._id;
+    auto& g1 = this->group.id();
+    auto& g2 = ch.group.id();
     if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
         return STATE::HALF_CLOACK;
 

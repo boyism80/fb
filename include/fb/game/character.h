@@ -173,8 +173,6 @@ public:
 
     class group
     {
-        friend class character;
-
     private:
         character&              _owner;
         std::optional<uint64_t> _id = std::nullopt;
