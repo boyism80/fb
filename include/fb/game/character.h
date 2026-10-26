@@ -430,6 +430,7 @@ public:
     uint64_t                                                  reduce_exp(uint64_t value);
     uint64_t                                                  money() const;
     void                                                      money(uint64_t value);
+    uint64_t                                                  money_free_space() const;
     uint64_t                                                  money_add(uint64_t value);
     void                                                      money_reduce(uint64_t value);
     [[nodiscard]] async::task<fb::game::cash*>                money_drop(uint64_t value);

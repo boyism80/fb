@@ -1421,7 +1421,7 @@ return {
     verify_money_released = function(me, step, expected)
         local money = me:money()
         local free = me:money_free_space()
-        local ok = money == tonumber(expected) and free == 0xFFFFFFFF - money
+        local ok = money == tonumber(expected) and free == math.maxinteger - money
         report(me, ok, step, string.format('money=%d free=%d', money, free))
     end,
 

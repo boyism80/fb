@@ -1256,11 +1256,20 @@ void character::money(uint64_t value)
     this->server.log.write("money_changed", log_data);
 }
 
+uint64_t character::money_free_space() const
+{
+    this->assert_thread();
+
+    auto limit = static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
+    auto held  = this->_money + this->items.escrow().money();
+    return held < limit ? limit - held : 0;
+}
+
 uint64_t character::money_add(uint64_t value) // Returns remaining value that could not be added
 {
     this->assert_thread();
 
-    uint64_t capacity = std::numeric_limits<uint64_t>::max() - this->_money - this->items.escrow().money();
+    uint64_t capacity = this->money_free_space();
     uint64_t lack     = 0;
     if (value > capacity)
     {

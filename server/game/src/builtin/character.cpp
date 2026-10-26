@@ -535,14 +535,12 @@ int builtin::character::builtin_money_free_space(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // The client shows money as 32 bits and counts money held for a listing in it.
     auto weak       = ch->weak_from_this_as<fb::game::character>();
     auto free_space = std::make_shared<uint64_t>();
     auto builder    = lua->new_co_builder();
     builder.weak    = weak;
     builder.yield   = [=]() -> async::task<void> {
-        auto held   = ch->money() + ch->items.escrow().money();
-        *free_space = held < 0xFFFFFFFF ? 0xFFFFFFFF - held : 0;
+        *free_space = ch->money_free_space();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

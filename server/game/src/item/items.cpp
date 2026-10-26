@@ -635,9 +635,7 @@ items::money_transfer items::withdraw(uint64_t value)
     if (this->_deposited < value)
         return money_transfer::LACK_DEPOSITED;
 
-    auto held       = owner->money() + this->_escrow.money();
-    auto free_space = held < MONEY_LIMIT ? MONEY_LIMIT - held : 0;
-    if (value > free_space)
+    if (value > owner->money_free_space())
         return money_transfer::MONEY_FULL;
 
     if (value == 0)
@@ -1561,8 +1559,7 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
     if (owner == nullptr)
         return false;
 
-    auto money_cap = std::numeric_limits<uint64_t>::max() - owner->money() - this->_escrow.money();
-    if (money_cap < money)
+    if (owner->money_free_space() < money)
         return false;
 
     auto required_size = 0;
@@ -1700,9 +1697,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         }
     }
 
-    uint64_t money_after         = owner->money() + this->_escrow.money() - cost_money;
-    uint64_t effective_money_cap = std::numeric_limits<uint64_t>::max() - money_after;
-    if (effective_money_cap < reward_money)
+    if (owner->money_free_space() + cost_money < reward_money)
         co_return exchange_result::lack_capacity;
 
     int required_size = 0;
