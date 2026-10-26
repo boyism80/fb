@@ -287,49 +287,11 @@ async::task<internal_resp::Unban> fb::game::server::unban(std::string_view actor
 
 internal::SavePayload fb::game::server::save_payload(const character& ch) const
 {
-    auto items = std::vector<internal::Item>();
-    for (auto i = 0; i < CONTAINER_CAPACITY; i++)
-    {
-        auto item = ch.items[i];
-        if (item == nullptr)
-            continue;
-
-        auto protocol  = item->to_protocol();
-        protocol.index = i;
-        items.push_back(protocol);
-    }
-
-    auto& escrow  = ch.items.escrow();
-    auto  escrows = std::vector<internal::Escrow>();
-    for (const auto& [id, money] : escrow.entries())
+    auto items   = ch.items.to_protocol();
+    auto escrows = std::vector<internal::Escrow>();
+    for (const auto& [id, money] : ch.items.escrow().entries())
     {
         escrows.push_back(internal::Escrow{ch.id, id, money});
-    }
-
-    for (auto i : escrow.indices())
-    {
-        auto protocol      = escrow.at(i)->to_protocol();
-        protocol.index     = i;
-        protocol.stored    = ESCROW_STORED;
-        protocol.escrow_id = escrow.id(i);
-        items.push_back(protocol);
-    }
-
-    for (auto& [parts, equipment] : ch.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        items.push_back(equipment->to_protocol(parts));
-    }
-
-    auto& stored_items = ch.items.stored();
-    for (int i = 0; i < stored_items.size(); i++)
-    {
-        auto item       = stored_items.at(i);
-        auto protocol   = item->to_protocol();
-        protocol.stored = i;
-        items.push_back(protocol);
     }
 
     auto spells = std::vector<internal::Spell>();

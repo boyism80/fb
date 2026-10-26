@@ -2052,6 +2052,46 @@ void items::load(const fb::protocol::internal::Escrow& row)
     this->_escrow.restore(row.id, row.money);
 }
 
+std::vector<fb::protocol::internal::Item> items::to_protocol() const
+{
+    auto result = std::vector<fb::protocol::internal::Item>();
+    for (auto i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto item = this->at(i);
+        if (item == nullptr)
+            continue;
+
+        auto protocol  = item->to_protocol();
+        protocol.index = i;
+        result.push_back(protocol);
+    }
+
+    for (auto i : this->_escrow.indices())
+    {
+        auto protocol      = this->_escrow.at(i)->to_protocol();
+        protocol.index     = i;
+        protocol.stored    = ESCROW_STORED;
+        protocol.escrow_id = this->_escrow.id(i);
+        result.push_back(protocol);
+    }
+
+    for (auto& [parts, equipment] : this->equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        result.push_back(equipment->to_protocol(parts));
+    }
+
+    for (int i = 0; i < this->_stored.size(); i++)
+    {
+        auto protocol   = this->_stored.at(i)->to_protocol();
+        protocol.stored = i;
+        result.push_back(protocol);
+    }
+    return result;
+}
+
 bool items::hold(uint64_t escrow_id, uint64_t money, const std::vector<escrow_part>& parts)
 {
     auto owner = this->_owner.lock();

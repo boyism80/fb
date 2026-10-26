@@ -119,6 +119,7 @@ public:
     bool                                            update(uint8_t index) const;
     void                                            load(item_ptr item, const fb::protocol::internal::Item& row);
     void                                            load(const fb::protocol::internal::Escrow& row);
+    std::vector<fb::protocol::internal::Item>       to_protocol() const;
     void                                            sync() const;
 
 private:
