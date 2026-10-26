@@ -6892,7 +6892,17 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
     {
         auto value = lua->tostring(6);
         if (value.empty() == false)
-            expire_date = value;
+        {
+            try
+            {
+                expire_date = fb::model::datetime(value).local_to_utc().to_string();
+            }
+            catch (const std::exception&)
+            {
+                lua->pushboolean(false);
+                return 1;
+            }
+        }
     }
 
     auto& server       = static_cast<fb::game::server&>(lua->executor);
@@ -7042,7 +7052,17 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
     {
         auto value = lua->tostring(5);
         if (value.empty() == false)
-            expire_date = value;
+        {
+            try
+            {
+                expire_date = fb::model::datetime(value).local_to_utc().to_string();
+            }
+            catch (const std::exception&)
+            {
+                lua->pushboolean(false);
+                return 1;
+            }
+        }
     }
 
     auto& server       = static_cast<fb::game::server&>(lua->executor);
