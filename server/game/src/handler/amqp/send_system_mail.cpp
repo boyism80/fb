@@ -30,5 +30,8 @@ async::task<void> send_system_mail::handle(const internal_resp::SendSystemMail& 
         });
     }
 
-    co_await this->server.mail.on_received_batch(entries);
+    for (const auto& entry : entries)
+    {
+        co_await this->server.mail.on_received(entry);
+    }
 }

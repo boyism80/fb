@@ -5329,10 +5329,9 @@ int builtin::character::builtin_send_mail(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            co_await server.mail.send(*ch, to, title, contents);
+            co_await ch->mail_box.send(to, title, contents);
             *result = true;
         }
         catch (const std::exception& e)

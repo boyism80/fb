@@ -16,8 +16,6 @@
 
 using namespace fb;
 using namespace fb::game;
-namespace internal_resp = fb::protocol::internal::response;
-namespace internal_reqs = fb::protocol::internal::request;
 
 service::mail::mail(fb::game::server& server) :
     server(server)
@@ -104,96 +102,5 @@ async::task<void> service::mail::on_received(const mail_box::received& entry)
         };
         builder.enqueue();
     }
-    co_return;
-}
-
-async::task<void> service::mail::on_received_batch(const std::vector<mail_box::received>& entries)
-{
-    for (const auto& entry : entries)
-    {
-        co_await this->on_received(entry);
-    }
-    co_return;
-}
-
-async::task<void>
-service::mail::send(character& sender, std::string_view to, std::string_view title, std::string_view contents)
-{
-    auto   weak         = sender.weak_from_this();
-    auto   to_str       = std::string(to);
-    auto   title_str    = std::string(title);
-    auto   contents_str = std::string(contents);
-    auto   world        = sender.world();
-    auto&& resp         = co_await this->server.http.post(
-        weak,
-        "internal",
-        "/mail/write",
-        internal_reqs::WriteMail{world, sender.id, to_str, title_str, contents_str, fb::config<uint32_t>("id")});
-    if (weak.expired())
-        throw std::runtime_error("character expired while sending mail");
-
-    this->on_error(resp.error);
-
-    auto snapshot         = to_summary(resp.mail);
-    snapshot.created_date = "";
-    co_await this->on_received(mail_box::received{
-        .user_id        = resp.mail.user,
-        .unread         = resp.unread,
-        .snapshot       = snapshot,
-        .system_mail_id = resp.mail.system_mail_id,
-    });
-}
-
-async::task<std::vector<mail_box::summary>> service::mail::list(const character& ch, uint16_t offset, uint16_t count)
-{
-    auto   weak  = ch.weak_from_this();
-    auto   world = ch.world();
-    auto&& resp  = co_await this->server.http.get<internal_resp::GetMailList>(
-        weak,
-        "internal",
-        std::format("/mail/{}/{}?offset={}&count={}", world, ch.id, offset, count));
-    if (weak.expired())
-        throw std::runtime_error("character expired while listing mail");
-
-    this->on_error(resp.error);
-
-    auto summaries = std::vector<mail_box::summary>{};
-    summaries.reserve(resp.summary_list.size());
-    for (const auto& summary : resp.summary_list)
-    {
-        summaries.push_back(to_summary(summary));
-    }
-
-    co_return summaries;
-}
-
-async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
-{
-    auto   weak  = ch.weak_from_this_as<character>();
-    auto   world = ch.world();
-    auto   url   = std::format("/mail/{}/{}/{}", world, ch.id, id);
-    auto&& resp  = co_await this->server.http.get<internal_resp::GetMail>(weak, "internal", url);
-    auto   ptr   = weak.lock();
-    if (ptr == nullptr)
-        throw std::runtime_error("character expired while reading mail");
-
-    this->on_error(resp.error);
-    ptr->mail_box.unread_count(resp.unread);
-    co_return to_mail(resp.mail);
-}
-
-async::task<void> service::mail::remove(character& ch, uint16_t id)
-{
-    auto   weak  = ch.weak_from_this_as<character>();
-    auto   world = ch.world();
-    auto&& resp =
-        co_await this->server.http.post(weak, "internal", "/mail/delete", internal_reqs::DeleteMail{world, ch.id, id});
-    auto ptr = weak.lock();
-    if (ptr == nullptr)
-        throw std::runtime_error("character expired while deleting mail");
-
-    this->on_error(resp.error);
-    ptr->mail_box.unread_count(resp.unread);
-    this->server.system_mail.join(ptr->id);
     co_return;
 }

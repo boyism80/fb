@@ -88,7 +88,7 @@ async::task<void> bulletin<V>::handle_articles(character*               ch,
     {
         if (mail)
         {
-            auto&& summaries = co_await this->server.mail.list(*ch, request.offset, 20);
+            auto&& summaries = co_await ch->mail_box.list(request.offset, 20);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -142,7 +142,7 @@ async::task<void> bulletin<V>::handle_article(character*               ch,
     {
         if (mail)
         {
-            auto&& mail = co_await this->server.mail.read(*ch, request.article);
+            auto&& mail = co_await ch->mail_box.read(request.article);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -248,7 +248,7 @@ async::task<void> bulletin<V>::handle_delete(character*               ch,
     {
         if (mail)
         {
-            co_await this->server.mail.remove(*ch, request.article);
+            co_await ch->mail_box.remove(request.article);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -304,7 +304,7 @@ async::task<void> bulletin<V>::handle_mail(character*               ch,
     auto error = std::optional<std::string>{};
     try
     {
-        auto&& summaries = co_await this->server.mail.list(*ch, 0xFFFF, fb::model::const_value::mail::COUNT_PER_PAGE);
+        auto&& summaries = co_await ch->mail_box.list(0xFFFF, fb::model::const_value::mail::COUNT_PER_PAGE);
         co_await this->server.threads.switching(weak);
         auto ptr = weak.lock();
         if (ptr == nullptr)
@@ -345,7 +345,7 @@ async::task<void> bulletin<V>::handle_send_mail(character*               ch,
     request.contents = fb::model::table::blocked_word->filter(request.contents);
     try
     {
-        co_await this->server.mail.send(*ch, request.user, request.title, request.contents);
+        co_await ch->mail_box.send(request.user, request.title, request.contents);
         auto ptr = weak.lock();
         if (ptr == nullptr)
             co_return;

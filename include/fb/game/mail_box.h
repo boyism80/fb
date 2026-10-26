@@ -37,14 +37,18 @@ public:
 
 public:
     // clang-format off
-    void     show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag);
-    void     show(const mail& mail, MAIL_BUTTON_ENABLE flag);
-    void     message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
-    uint16_t unread_count() const;
-    void     unread_count(uint16_t value);
-    void     init_system_mails(const std::vector<uint32_t>& ids);
-    bool     contains_system_mail(uint32_t system_mail_id) const;
-    void     mark_system_mail(uint32_t system_mail_id);
+    void                              show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag);
+    void                              show(const mail& mail, MAIL_BUTTON_ENABLE flag);
+    void                              message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
+    uint16_t                          unread_count() const;
+    void                              unread_count(uint16_t value);
+    void                              init_system_mails(const std::vector<uint32_t>& ids);
+    bool                              contains_system_mail(uint32_t system_mail_id) const;
+    void                              mark_system_mail(uint32_t system_mail_id);
+    async::task<void>                 send(std::string_view to, std::string_view title, std::string_view contents);
+    async::task<std::vector<summary>> list(uint16_t offset, uint16_t count) const;
+    async::task<mail>                 read(uint16_t id);
+    async::task<void>                 remove(uint16_t id);
     // clang-format on
 };
 

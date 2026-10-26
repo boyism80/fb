@@ -27,21 +27,11 @@ public:
 public:
     explicit mail(fb::game::server& server);
 
-    // clang-format off
-    async::task<void>                           send(character& sender, std::string_view to, std::string_view title, std::string_view contents);
-    async::task<std::vector<mail_box::summary>> list(const character& ch, uint16_t offset, uint16_t count);
-    async::task<mail_box::mail>                 read(character& ch, uint16_t id);
-    async::task<void>                           remove(character& ch, uint16_t id);
-    // clang-format on
-
-    // clang-format off
     async::task<void> on_received(const mail_box::received& entry);
-    async::task<void> on_received_batch(const std::vector<mail_box::received>& entries);
-    // clang-format on
 
     void on_error(uint32_t error) const;
 
-private:
+public:
     // clang-format off
     static mail_box::summary to_summary(const fb::protocol::internal::MailSummary& mail);
     static mail_box::summary to_summary(const fb::protocol::internal::Mail& mail);
