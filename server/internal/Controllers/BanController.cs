@@ -100,5 +100,30 @@ namespace Internal.Controllers
                 };
             }
         }
+
+        [HttpPost("check")]
+        public async Task<Response.CheckBan> Check(Request.CheckBan request)
+        {
+            try
+            {
+                var banCheck = await _banService.IsBanned(request.World, request.Name);
+                if (banCheck == null || banCheck.IsBanned == false)
+                {
+                    return new Response.CheckBan { Banned = false };
+                }
+
+                return new Response.CheckBan
+                {
+                    Banned = true,
+                    Reason = banCheck.Reason,
+                    ExpireDate = banCheck.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking ban for {Name}", request.Name);
+                return new Response.CheckBan { Banned = false };
+            }
+        }
     }
 }

@@ -445,3 +445,8 @@ table OpsNotify {
   world: uint;
   detail: string;
 }
+
+table CheckBan {
+  world: uint;
+  name: string;
+}

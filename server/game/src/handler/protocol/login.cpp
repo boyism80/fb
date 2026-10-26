@@ -725,6 +725,19 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
     };
     builder.enqueue();
 
+    try
+    {
+        auto&& ban = co_await this->server.http.post("internal",
+                                                     "/ban/check",
+                                                     internal_reqs::CheckBan{this->world(request), request.name});
+        if (ban.banned)
+            co_await this->server.characters.kick_banned(request.name, ban.reason, ban.expire_date);
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::warn("Character {} ban check after login failed: {}", request.name, e.what());
+    }
+
     co_return true;
 }
 

@@ -273,7 +273,7 @@ public:
 
                 co_await fb::async_await_task(this->_handle_received(*this, this->_stream), boost::asio::use_awaitable);
                 if (this->is_open() == false)
-                    throw std::runtime_error("disconnected");
+                    break;
             }
         }
         catch (boost::system::system_error&)

@@ -111,3 +111,30 @@ std::string character::container::build_ban_message(std::string_view            
 
     return ban_message;
 }
+
+async::task<void> character::container::kick_banned(std::string                name,
+                                                    std::string                reason,
+                                                    std::optional<std::string> expire_date)
+{
+    auto ch = this->find(name);
+    if (ch == nullptr)
+        co_return;
+
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    co_await this->_server.threads.switching(weak);
+
+    ch = weak.lock();
+    if (ch == nullptr)
+        co_return;
+
+    ch->message(build_ban_message(reason, expire_date), MESSAGE_TYPE::POPUP);
+
+    co_await ch->thread()->sleep(1s);
+
+    ch = weak.lock();
+    if (ch == nullptr)
+        co_return;
+
+    if (auto socket_ptr = ch->socket_ptr(); socket_ptr != nullptr)
+        socket_ptr->close();
+}

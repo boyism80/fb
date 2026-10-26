@@ -309,6 +309,9 @@ struct ReleaseClanMoneyBuilder;
 struct OpsNotify;
 struct OpsNotifyBuilder;
 
+struct CheckBan;
+struct CheckBanBuilder;
+
 }  // namespace raw
 }  // namespace request
 
@@ -494,6 +497,9 @@ struct FriendBroadcastBuilder;
 
 struct OpsNotify;
 struct OpsNotifyBuilder;
+
+struct CheckBan;
+struct CheckBanBuilder;
 
 }  // namespace raw
 }  // namespace response
@@ -9884,6 +9890,69 @@ inline ::flatbuffers::Offset<OpsNotify> CreateOpsNotifyDirect(
       detail__);
 }
 
+struct CheckBan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CheckBanBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_WORLD = 4,
+    VT_NAME = 6
+  };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           verifier.EndTable();
+  }
+};
+
+struct CheckBanBuilder {
+  typedef CheckBan Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(CheckBan::VT_WORLD, world, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(CheckBan::VT_NAME, name);
+  }
+  explicit CheckBanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CheckBan> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CheckBan>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CheckBan> CreateCheckBan(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
+  CheckBanBuilder builder_(_fbb);
+  builder_.add_name(name);
+  builder_.add_world(world);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<CheckBan> CreateCheckBanDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    const char *name = nullptr) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return fb::protocol::internal::request::raw::CreateCheckBan(
+      _fbb,
+      world,
+      name__);
+}
+
 }  // namespace raw
 }  // namespace request
 
@@ -14484,6 +14553,83 @@ inline ::flatbuffers::Offset<OpsNotify> CreateOpsNotify(
     ::flatbuffers::FlatBufferBuilder &_fbb) {
   OpsNotifyBuilder builder_(_fbb);
   return builder_.Finish();
+}
+
+struct CheckBan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CheckBanBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_BANNED = 4,
+    VT_REASON = 6,
+    VT_EXPIRE_DATE = 8
+  };
+  bool banned() const {
+    return GetField<uint8_t>(VT_BANNED, 0) != 0;
+  }
+  const ::flatbuffers::String *reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REASON);
+  }
+  const ::flatbuffers::String *expire_date() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_EXPIRE_DATE);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_BANNED, 1) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.VerifyString(reason()) &&
+           VerifyOffset(verifier, VT_EXPIRE_DATE) &&
+           verifier.VerifyString(expire_date()) &&
+           verifier.EndTable();
+  }
+};
+
+struct CheckBanBuilder {
+  typedef CheckBan Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_banned(bool banned) {
+    fbb_.AddElement<uint8_t>(CheckBan::VT_BANNED, static_cast<uint8_t>(banned), 0);
+  }
+  void add_reason(::flatbuffers::Offset<::flatbuffers::String> reason) {
+    fbb_.AddOffset(CheckBan::VT_REASON, reason);
+  }
+  void add_expire_date(::flatbuffers::Offset<::flatbuffers::String> expire_date) {
+    fbb_.AddOffset(CheckBan::VT_EXPIRE_DATE, expire_date);
+  }
+  explicit CheckBanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CheckBan> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CheckBan>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CheckBan> CreateCheckBan(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool banned = false,
+    ::flatbuffers::Offset<::flatbuffers::String> reason = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> expire_date = 0) {
+  CheckBanBuilder builder_(_fbb);
+  builder_.add_expire_date(expire_date);
+  builder_.add_reason(reason);
+  builder_.add_banned(banned);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<CheckBan> CreateCheckBanDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool banned = false,
+    const char *reason = nullptr,
+    const char *expire_date = nullptr) {
+  auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  auto expire_date__ = expire_date ? _fbb.CreateString(expire_date) : 0;
+  return fb::protocol::internal::response::raw::CreateCheckBan(
+      _fbb,
+      banned,
+      reason__,
+      expire_date__);
 }
 
 }  // namespace raw

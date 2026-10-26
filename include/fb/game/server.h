@@ -79,6 +79,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::KickGroup, fb::protocol::inte
 REGISTER_RESPONSE(fb::protocol::internal::request::DestroyGroup, fb::protocol::internal::response::DestroyGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastGroup, fb::protocol::internal::response::BroadcastGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal::response::Login)
+REGISTER_RESPONSE(fb::protocol::internal::request::CheckBan, fb::protocol::internal::response::CheckBan)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMails, fb::protocol::internal::response::WriteMails)

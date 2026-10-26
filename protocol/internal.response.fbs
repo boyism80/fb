@@ -409,3 +409,9 @@ table FriendBroadcast {
 
 table OpsNotify {
 }
+
+table CheckBan {
+  banned: bool;
+  reason: string;
+  expire_date: string?;
+}

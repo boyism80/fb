@@ -133,6 +133,7 @@ namespace fb::protocol::internal::request
     class AbortClanMoney;
     class ReleaseClanMoney;
     class OpsNotify;
+    class CheckBan;
 } // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
 {
@@ -196,6 +197,7 @@ namespace fb::protocol::internal::response
     class GetMaintenance;
     class FriendBroadcast;
     class OpsNotify;
+    class CheckBan;
 } // end of namespace fb::protocol::internal::response
 namespace fb::protocol::marketplace
 {
@@ -438,6 +440,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::SetClanMone
 template <> struct FlatBufferOffset<fb::protocol::internal::request::AbortClanMoney> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::AbortClanMoney> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::ReleaseClanMoney> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ReleaseClanMoney> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::OpsNotify> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::OpsNotify> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::CheckBan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::CheckBan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Login> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Login> type; };
@@ -498,6 +501,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::ActiveMain
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetMaintenance> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetMaintenance> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::FriendBroadcast> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::FriendBroadcast> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::OpsNotify> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::OpsNotify> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::CheckBan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::CheckBan> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::Item> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::Item> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::PurchaseInfo> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::PurchaseInfo> type; };
 template <> struct FlatBufferOffset<fb::protocol::marketplace::Listing> { typedef flatbuffers::Offset<fb::protocol::marketplace::raw::Listing> type; };
@@ -732,6 +736,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::ReleaseClanMoney> buil
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::OpsNotify> build<fb::protocol::internal::request::OpsNotify>(FlatBufferBuilder& builder, const fb::protocol::internal::request::OpsNotify& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::CheckBan> build<fb::protocol::internal::request::CheckBan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CheckBan& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> build<fb::protocol::internal::response::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Shutdown& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value);
@@ -851,6 +857,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::FriendBroadcast> build<fb::protocol::internal::response::FriendBroadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::response::FriendBroadcast& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::OpsNotify> build<fb::protocol::internal::response::OpsNotify>(FlatBufferBuilder& builder, const fb::protocol::internal::response::OpsNotify& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::CheckBan> build<fb::protocol::internal::response::CheckBan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::CheckBan& value);
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::raw::Item> build<fb::protocol::marketplace::Item>(FlatBufferBuilder& builder, const fb::protocol::marketplace::Item& value);
 template <>
@@ -2477,6 +2485,7 @@ enum class FlatBufferProtocolType
     AbortClanMoney,
     ReleaseClanMoney,
     OpsNotify,
+    CheckBan,
 };
 
 class Shutdown
@@ -4972,6 +4981,46 @@ public:
         return OpsNotify(*raw);
     }
 };
+class CheckBan
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::CheckBan;
+
+public:
+    uint32_t world = 0;
+    std::string name;
+
+public:
+    CheckBan() = default;
+
+    CheckBan(const CheckBan& x)
+        : world(x.world), name(x.name)
+    { }
+
+    CheckBan(uint32_t world, std::string_view name)
+        : world(world), name(std::string(name))
+    { }
+
+    CheckBan(const fb::protocol::internal::request::raw::CheckBan& raw)
+        : world(raw.world()), name(flatbuffers::option::decode(raw.name()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::CheckBan>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static CheckBan Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::request::raw::CheckBan>(bytes);
+        return CheckBan(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::internal::request
 
@@ -5039,6 +5088,7 @@ enum class FlatBufferProtocolType
     GetMaintenance,
     FriendBroadcast,
     OpsNotify,
+    CheckBan,
 };
 
 class Shutdown
@@ -7506,6 +7556,47 @@ public:
     {
         auto raw = flatbuffers::GetRoot<fb::protocol::internal::response::raw::OpsNotify>(bytes);
         return OpsNotify(*raw);
+    }
+};
+class CheckBan
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::CheckBan;
+
+public:
+    bool banned = false;
+    std::string reason;
+    std::optional<std::string> expire_date = std::nullopt;
+
+public:
+    CheckBan() = default;
+
+    CheckBan(const CheckBan& x)
+        : banned(x.banned), reason(x.reason), expire_date(x.expire_date)
+    { }
+
+    CheckBan(bool banned, std::string_view reason, const std::optional<std::string>& expire_date)
+        : banned(banned), reason(std::string(reason)), expire_date(expire_date)
+    { }
+
+    CheckBan(const fb::protocol::internal::response::raw::CheckBan& raw)
+        : banned(raw.banned()), reason(flatbuffers::option::decode(raw.reason()->c_str())), expire_date(raw.expire_date() != nullptr ? flatbuffers::option::decode(raw.expire_date()->c_str()) : std::optional<std::string>())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::CheckBan>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static CheckBan Deserialize(const uint8_t* bytes)
+    {
+        auto raw = flatbuffers::GetRoot<fb::protocol::internal::response::raw::CheckBan>(bytes);
+        return CheckBan(*raw);
     }
 };
 
@@ -10164,6 +10255,13 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::OpsNotify> build<fb::p
             flatbuffers::build<std::string>(builder, value.detail));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::CheckBan> build<fb::protocol::internal::request::CheckBan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::CheckBan& value)
+{
+    return fb::protocol::internal::request::raw::CreateCheckBan(builder,
+            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::string>(builder, value.name));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> build<fb::protocol::internal::response::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Shutdown& value)
 {
     return fb::protocol::internal::response::raw::CreateShutdown(builder);
@@ -10667,6 +10765,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::OpsNotify> build<fb::protocol::internal::response::OpsNotify>(FlatBufferBuilder& builder, const fb::protocol::internal::response::OpsNotify& value)
 {
     return fb::protocol::internal::response::raw::CreateOpsNotify(builder);
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::CheckBan> build<fb::protocol::internal::response::CheckBan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::CheckBan& value)
+{
+    return fb::protocol::internal::response::raw::CreateCheckBan(builder,
+            flatbuffers::build<bool>(builder, value.banned),
+            flatbuffers::build<std::string>(builder, value.reason),
+            flatbuffers::build<std::optional<std::string>>(builder, value.expire_date));
 }
 template <>
 flatbuffers::Offset<fb::protocol::marketplace::raw::Item> build<fb::protocol::marketplace::Item>(FlatBufferBuilder& builder, const fb::protocol::marketplace::Item& value)

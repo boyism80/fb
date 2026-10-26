@@ -541,6 +541,7 @@ public:
     void                  send(const fb::stream& stream, bool encrypt);
     static void           assert_whisper(uint32_t error, std::string_view to);
     static std::string    build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date);
+    async::task<void>     kick_banned(std::string name, std::string reason, std::optional<std::string> expire_date);
     // clang-format on
 
 public:

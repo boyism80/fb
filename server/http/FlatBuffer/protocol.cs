@@ -1226,6 +1226,15 @@ namespace Google.FlatBuffers
                 builder.Build(value.World),
                 builder.Build(value.Detail));
         }
+        public static Offset<fb.protocol.@internal.request.raw.CheckBan> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.CheckBan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.request.raw.CheckBan.CreateCheckBan(builder,
+                builder.Build(value.World),
+                builder.Build(value.Name));
+        }
         public static Offset<fb.protocol.@internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.Shutdown value)
         {
             if (value == null)
@@ -1853,6 +1862,16 @@ namespace Google.FlatBuffers
 
             fb.protocol.@internal.response.raw.OpsNotify.StartOpsNotify(builder);
             return fb.protocol.@internal.response.raw.OpsNotify.EndOpsNotify(builder);
+        }
+        public static Offset<fb.protocol.@internal.response.raw.CheckBan> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.CheckBan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.@internal.response.raw.CheckBan.CreateCheckBan(builder,
+                builder.Build(value.Banned),
+                builder.Build(value.Reason),
+                builder.Build(value.ExpireDate));
         }
         public static Offset<fb.protocol.marketplace.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.marketplace.Item value)
         {
@@ -4056,7 +4075,8 @@ namespace fb.protocol.@internal.request
         SetClanMoney,
         AbortClanMoney,
         ReleaseClanMoney,
-        OpsNotify
+        OpsNotify,
+        CheckBan
     }
 
 
@@ -6568,6 +6588,44 @@ namespace fb.protocol.@internal.request
             return new OpsNotify(bytes);
         }
     }
+    public class CheckBan : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.CheckBan;
+        public uint World { get; set; } = 0;
+        public string Name { get; set; } = string.Empty;
+
+        public CheckBan()
+        { }
+
+        public CheckBan(fb.protocol.@internal.request.raw.CheckBan raw)
+        {
+            World = raw.World;
+            Name = raw.Name;
+        }
+
+        public CheckBan(byte[] bytes) : this(fb.protocol.@internal.request.raw.CheckBan.GetRootAsCheckBan(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static CheckBan Deserialize(byte[] bytes)
+        {
+            return new CheckBan(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -6634,6 +6692,7 @@ namespace fb.protocol.@internal.request
                 FlatBufferProtocolType.AbortClanMoney => typeof(fb.protocol.@internal.request.AbortClanMoney),
                 FlatBufferProtocolType.ReleaseClanMoney => typeof(fb.protocol.@internal.request.ReleaseClanMoney),
                 FlatBufferProtocolType.OpsNotify => typeof(fb.protocol.@internal.request.OpsNotify),
+                FlatBufferProtocolType.CheckBan => typeof(fb.protocol.@internal.request.CheckBan),
                 _ => throw new ArgumentException(),
             };
         }
@@ -6702,7 +6761,8 @@ namespace fb.protocol.@internal.response
         ActiveMaintenance,
         GetMaintenance,
         FriendBroadcast,
-        OpsNotify
+        OpsNotify,
+        CheckBan
     }
 
 
@@ -9156,6 +9216,46 @@ namespace fb.protocol.@internal.response
             return new OpsNotify(bytes);
         }
     }
+    public class CheckBan : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.CheckBan;
+        public bool Banned { get; set; } = false;
+        public string Reason { get; set; } = string.Empty;
+        public string ExpireDate { get; set; } = null;
+
+        public CheckBan()
+        { }
+
+        public CheckBan(fb.protocol.@internal.response.raw.CheckBan raw)
+        {
+            Banned = raw.Banned;
+            Reason = raw.Reason;
+            ExpireDate = raw.ExpireDate;
+        }
+
+        public CheckBan(byte[] bytes) : this(fb.protocol.@internal.response.raw.CheckBan.GetRootAsCheckBan(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static CheckBan Deserialize(byte[] bytes)
+        {
+            return new CheckBan(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -9223,6 +9323,7 @@ namespace fb.protocol.@internal.response
                 FlatBufferProtocolType.GetMaintenance => typeof(fb.protocol.@internal.response.GetMaintenance),
                 FlatBufferProtocolType.FriendBroadcast => typeof(fb.protocol.@internal.response.FriendBroadcast),
                 FlatBufferProtocolType.OpsNotify => typeof(fb.protocol.@internal.response.OpsNotify),
+                FlatBufferProtocolType.CheckBan => typeof(fb.protocol.@internal.response.CheckBan),
                 _ => throw new ArgumentException(),
             };
         }
