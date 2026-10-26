@@ -14,9 +14,12 @@ async::task<void> kick_out::handle(const internal_resp::KickOut& message)
         return names.contains(message.name);
     });
 
-    if (this->server.characters.find(message.name) != nullptr)
+    auto ch = this->server.characters.find(message.name);
+    if (ch != nullptr)
     {
-        this->server.characters.on_kick_out(message);
+        auto socket_ptr = ch->socket_ptr();
+        if (socket_ptr != nullptr)
+            socket_ptr->close();
     }
     else if (pending == false)
     {

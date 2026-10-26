@@ -68,5 +68,31 @@ async::task<void> maintenance_timer::handle()
     this->server.maintenance.write([&state](maintenance_state& value) {
         value = state;
     });
-    this->server.characters.on_maintenance(state);
+
+    if (state.active || state.cross)
+    {
+        auto home = world.has_value();
+        this->server.characters.foreach_enqueue([state, home](auto& ch) -> async::task<void> {
+            if (ch->role() >= ROLE::ADMIN)
+                co_return;
+
+            if (state.active)
+            {
+                if (state.finish_matches && ch->matchmaker.session() != nullptr)
+                    co_return;
+
+                auto socket_ptr = ch->socket_ptr();
+                if (socket_ptr == nullptr)
+                    co_return;
+
+                ch->message(state.message, MESSAGE_TYPE::STATE);
+                socket_ptr->close();
+            }
+            else if (home && ch->matchmaker.ticket_id().has_value())
+            {
+                co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
+                ch->message("교차 서버 점검으로 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
+            }
+        });
+    }
 }

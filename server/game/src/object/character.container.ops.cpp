@@ -48,19 +48,13 @@ async::task<void> character::container::broadcast(std::string_view message,
             "/in-game/broadcast",
             internal_reqs::Broadcast{world, fb::config<uint32_t>("id"), message_str, static_cast<uint8_t>(type)});
         // Cross-host GLOBAL has no respect_roar flag; ROAR filtering is for WORLD (local) use.
-        co_await this->on_broadcast(resp);
+        this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
     }
     else
     {
         this->broadcast(message_str, type, respect_roar);
     }
 
-    co_return;
-}
-
-async::task<void> character::container::on_broadcast(const internal_resp::Broadcast& resp)
-{
-    this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
     co_return;
 }
 
@@ -116,45 +110,4 @@ std::string character::container::build_ban_message(std::string_view            
         ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
 
     return ban_message;
-}
-
-void character::container::on_kick_out(const internal_resp::KickOut& message)
-{
-    auto ch = this->find(message.name);
-    if (ch == nullptr)
-        return;
-
-    auto socket_ptr = ch->socket_ptr();
-    if (socket_ptr != nullptr)
-        socket_ptr->close();
-}
-
-void character::container::on_maintenance(const maintenance_state& state)
-{
-    if (state.active == false && state.cross == false)
-        return;
-
-    auto home = fb::config<std::optional<uint32_t>>("world").has_value();
-    this->foreach_enqueue([state, home](auto& ch) -> async::task<void> {
-        if (ch->role() >= ROLE::ADMIN)
-            co_return;
-
-        if (state.active)
-        {
-            if (state.finish_matches && ch->matchmaker.session() != nullptr)
-                co_return;
-
-            auto socket_ptr = ch->socket_ptr();
-            if (socket_ptr == nullptr)
-                co_return;
-
-            ch->message(state.message, MESSAGE_TYPE::STATE);
-            socket_ptr->close();
-        }
-        else if (home && ch->matchmaker.ticket_id().has_value())
-        {
-            co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
-            ch->message("교차 서버 점검으로 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
-        }
-    });
 }

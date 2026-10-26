@@ -15,5 +15,5 @@ async::task<void> broadcast::handle(const internal_resp::Broadcast& message)
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    co_await this->server.characters.on_broadcast(message);
+    this->server.characters.broadcast(message.message, static_cast<MESSAGE_TYPE>(message.type));
 }

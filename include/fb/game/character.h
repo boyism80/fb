@@ -45,15 +45,12 @@ class stream;
 namespace fb::protocol::internal::response {
 class Ban;
 class Unban;
-class Broadcast;
-class KickOut;
 } // namespace fb::protocol::internal::response
 
 namespace fb::game {
 
 class map;
 class match;
-struct maintenance_state;
 
 struct friend_entry
 {
@@ -521,12 +518,9 @@ public:
     async::task<void>     invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr) const;
     void                  broadcast(std::string_view message, MESSAGE_TYPE type, bool respect_roar = false);
     async::task<void>     broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type, bool respect_roar = false);
-    async::task<void>     on_broadcast(const fb::protocol::internal::response::Broadcast& resp);
     void                  update_time(uint8_t hours, uint8_t minutes);
     void                  send(const fb::stream& stream, bool encrypt);
     static void           assert_whisper(uint32_t error, std::string_view to);
-    void                  on_kick_out(const fb::protocol::internal::response::KickOut& message);
-    void                  on_maintenance(const maintenance_state& state);
     static std::string    build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date);
     // clang-format on
 
