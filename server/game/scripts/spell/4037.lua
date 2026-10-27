@@ -2,6 +2,16 @@
 -- 백호의희원 캐스팅
 local spell = require('lib.spell')
 
+local WEAPON_DELAY_PERCENT = {
+    ['용겸제삼봉'] = 10,
+    ['용겸제사봉'] = 15,
+    ['용겸제오봉'] = 20,
+    ['용겸제육봉'] = 25,
+    ['용겸제칠봉'] = 30,
+    ['용겸제팔봉'] = 35,
+    ['용겸제구봉'] = 40,
+}
+
 return {
     on_cast = function(me, you, sp)
         local hp = me:mp() * 2
@@ -12,21 +22,9 @@ return {
         if me:is(OBJECT_TYPE.CHARACTER) then
             local weapon = me:weapon()
             if weapon ~= nil then
-                local name = weapon:name()
-                if name == '용겸제삼봉' then
-                    delay = delay - (delay * 0.1)
-                elseif name == '용겸제사봉' then
-                    delay = delay - (delay * 0.15)
-                elseif name == '용겸제오봉' then
-                    delay = delay - (delay * 0.2)
-                elseif name == '용겸제육봉' then
-                    delay = delay - (delay * 0.25)
-                elseif name == '용겸제칠봉' then
-                    delay = delay - (delay * 0.3)
-                elseif name == '용겸제팔봉' then
-                    delay = delay - (delay * 0.35)
-                elseif name == '용겸제구봉' then
-                    delay = delay - (delay * 0.4)
+                local pct = WEAPON_DELAY_PERCENT[weapon:name()]
+                if pct ~= nil then
+                    delay = delay - delay * pct // 100
                 end
             end
         end
