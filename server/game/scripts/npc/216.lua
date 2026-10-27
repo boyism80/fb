@@ -90,9 +90,21 @@ return {
             return
         end
 
+        local current = q:progress()
+        local paid = math.min(current, progress)
+        money = paid * REWARD_PER_BAG
+        if money > me:money_free_space() then
+            me:dialog(npc, '돈이 너무 많아 보상을 줄 수가 없네.', { prev = false, next = false })
+            return
+        end
+
         me:money(me:money() + money)
-        q:progress(0)
-        me:erase_achievement(22)
+        q:progress(current - paid)
+        if current - paid == 0 then
+            me:erase_achievement(22)
+        else
+            me:push_achievement(22, string.format('적심토 %d꾸러미 보관중', current - paid), 6, 1)
+        end
 
         if selected == 1 then
             local btn = me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나', { prev = false, next = false })
