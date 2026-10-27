@@ -9,7 +9,6 @@ local ITEM_OLD_ENVELOPE = '낡은봉투'
 local ITEM_OLD_LETTER = '낡은연애편지'
 local ITEM_BLACK_DAGGER = '흑장단검'
 local CURSE_BUFF_SEC = 1250
-local CURSE_AC_PENALTY = 49
 
 local function run_intro_and_accept(me, npc)
     local btn
@@ -156,8 +155,6 @@ local function run_turn_in(me, npc)
                 return
             end
             me:buff('금고주인의저주', CURSE_BUFF_SEC)
-            local dr = me:damage_derate()
-            me:damage_derate(dr + CURSE_AC_PENALTY)
             local q = me:quest(quest.QUEST_STRONGBOX)
             if q then
                 q:step(2)
