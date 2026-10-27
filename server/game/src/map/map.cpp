@@ -298,9 +298,8 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
     });
 }
 
-bool map::movable(const object& object, DIRECTION direction) const
+bool map::movable(const object& object, const fb::model::point16_t& from, DIRECTION direction) const
 {
-    auto from       = object.position();
     auto to         = from;
     auto leave_mask = uint8_t{0};
     auto enter_mask = uint8_t{0};
@@ -356,7 +355,7 @@ bool map::movable(const object& object, DIRECTION direction) const
 
 bool map::movable_forward(const object& object, uint16_t step) const
 {
-    return this->movable(object, object.direction());
+    return this->movable(object, object.position(), object.direction());
 }
 
 const fb::model::warp* map::warpable(const fb::model::point16_t& position) const

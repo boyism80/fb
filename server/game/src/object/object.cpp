@@ -292,7 +292,7 @@ async::task<bool> object::move(DIRECTION direction)
         co_return false;
 
     auto after = this->side_position(direction);
-    if (this->_map->movable(*this, direction) == false)
+    if (this->_map->movable(*this, this->_position, direction) == false)
         co_return false;
 
     if (this->direction(direction) == false)

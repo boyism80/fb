@@ -1374,13 +1374,10 @@ async::task<bool> items::throws(uint8_t index, bool all)
         auto position = owner->position();
         for (int i = 0; i < 7; i++)
         {
-            auto before = position;
-            position.forward(owner->direction());
-            if (map->movable(*owner, position) == false)
-            {
-                position = before;
+            if (map->movable(*owner, position, owner->direction()) == false)
                 break;
-            }
+
+            position.forward(owner->direction());
         }
 
         owner->listener.on_item_throws(*owner, *dropped, position);

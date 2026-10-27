@@ -312,7 +312,7 @@ async::task<void> ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target
 
             for (auto dir : all_dirs)
             {
-                if (!map->movable(mob_obj, dir))
+                if (!map->movable(mob_obj, mob_obj.position(), dir))
                     continue;
 
                 const auto next       = mob_obj.side_position(dir);

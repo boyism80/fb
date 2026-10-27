@@ -121,7 +121,7 @@ public:
     bool                            in_ground(const fb::model::point16_t position) const;
     bool                            movable(const fb::model::point16_t& position, const std::function<bool(const object&)>& predicate) const;
     bool                            movable(const object& object, const fb::model::point16_t position) const;
-    bool                            movable(const object& object, DIRECTION direction) const;
+    bool                            movable(const object& object, const fb::model::point16_t& from, DIRECTION direction) const;
     bool                            movable_forward(const object& object, uint16_t step = 1) const;
     const fb::model::warp*          warpable(const fb::model::point16_t& position) const;
     bool                            is_active() const;
