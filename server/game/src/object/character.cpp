@@ -1421,6 +1421,12 @@ void character::stop_bgm(uint16_t bgm_id)
 void character::update_buff()
 {
     this->listener.on_update_buff(*this, this->buffs);
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto spell = this->spells.at(i);
+        if (spell != nullptr && spell->delay() > 0)
+            this->listener.on_spell_delay(*this, *spell, spell->delay());
+    }
 }
 
 void character::update_internal()

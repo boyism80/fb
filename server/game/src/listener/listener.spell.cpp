@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/spell.h>
 
+#include <chrono>
 #include <cstdint>
 
 using namespace fb::game;
@@ -25,5 +26,9 @@ void listener_impl::on_spell_remove(life& me, uint8_t index)
 
 void listener_impl::on_spell_delay(life& me, const spell& spell, uint32_t delay)
 {
-    me.send(fb::protocol::game::response::spell_delay(spell, delay));
+    auto buff = me.buffs.find(spell.model().id);
+    if (buff != nullptr && buff->remaining() > std::chrono::seconds(delay))
+        me.send(game_resp::spell_buff(*buff));
+    else
+        me.send(game_resp::spell_delay(spell, delay));
 }

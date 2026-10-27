@@ -1713,6 +1713,9 @@ void marshal_lua_game_resp__spell_buff(lua_State* L, const fb::protocol::header&
     lua->pushstring("name");
     lua->pushstring(resp.name);
     lua->settable(-3);
+    lua->pushstring("duration");
+    lua->pushinteger(static_cast<lua_Integer>(resp.duration.total_milliseconds() / 1000));
+    lua->settable(-3);
 }
 
 void marshal_lua_game_resp__spell_delay(lua_State* L, const fb::protocol::header& header, fb::protocol::CLIENT_VERSION)

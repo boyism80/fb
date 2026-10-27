@@ -667,6 +667,11 @@ SPECIAL_MARSHAL_EXTRAS: dict[str, list[str]] = {
         "    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::CHAT)) != 0);",
         "    lua->settable(-3);",
     ],
+    "game_resp::spell_buff": [
+        '    lua->pushstring("duration");',
+        "    lua->pushinteger(static_cast<lua_Integer>(resp.duration.total_milliseconds() / 1000));",
+        "    lua->settable(-3);",
+    ],
     "game_resp::update": [
         '    lua->pushstring("objects_data");',
         "    lua->new_table();",

@@ -399,12 +399,25 @@ void listener_impl::on_move(object& me, const fb::model::point16_t& before)
 
 void listener_impl::on_buff(object& me, buff& buff)
 {
-    me.send(fb::protocol::game::response::spell_buff(buff));
+    auto spell = std::shared_ptr<fb::game::spell>();
+    if (me.is(OBJECT_TYPE::LIFE))
+        spell = static_cast<life&>(me).spells.find(buff.model());
+
+    if (spell != nullptr && spell->delay() > 0)
+        this->on_spell_delay(static_cast<life&>(me), *spell, spell->delay());
+    else
+        me.send(game_resp::spell_buff(buff));
 }
 
 void listener_impl::on_unbuff(object& me, buff& buff)
 {
     me.send(game_resp::spell_unbuff(buff));
+    if (me.is(OBJECT_TYPE::LIFE))
+    {
+        auto spell = static_cast<life&>(me).spells.find(buff.model());
+        if (spell != nullptr && spell->delay() > 0)
+            me.send(game_resp::spell_delay(*spell, spell->delay()));
+    }
 }
 
 void listener_impl::on_sound(object& me, SOUND sound, uint8_t volume)

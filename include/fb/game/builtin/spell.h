@@ -9,7 +9,6 @@ struct spell
 {
     static int builtin_model(lua_State* L);
     static int builtin_delay(lua_State* L);
-    static int builtin_delay2(lua_State* L);
 };
 
 struct buff

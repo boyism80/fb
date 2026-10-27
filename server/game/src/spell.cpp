@@ -35,7 +35,13 @@ const fb::model::spell& spell::model() const
 
 void spell::delay(uint16_t value)
 {
+    auto before = this->delay();
     this->_next = this->server.now() + std::chrono::seconds(value);
+    if (value > 0 || before > 0)
+    {
+        auto& owner = const_cast<life&>(this->owner);
+        owner.listener.on_spell_delay(owner, *this, value);
+    }
 }
 
 uint16_t spell::delay() const
@@ -204,11 +210,14 @@ bool spells::remove(uint8_t index)
 
     owner->assert_thread();
 
+    auto removed = this->at(index);
     auto success = super::remove(index);
 
     if (success)
     {
         owner->listener.on_spell_remove(*owner, index);
+        if (removed != nullptr && removed->delay() > 0)
+            owner->listener.on_spell_delay(*owner, *removed, 0);
 
         // Log spell remove event (only for characters)
         if (owner->is(OBJECT_TYPE::CHARACTER))
