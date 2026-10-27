@@ -11,17 +11,23 @@ namespace Log.Worker
 {
     public class LogConsumerService : BackgroundService
     {
+        private record PendingMessage(string QueueName, ulong DeliveryTag, IReadOnlyBasicProperties Properties, byte[] Body, List<JsonElement> Logs);
+
         private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<LogConsumerService> _logger;
         private IConnection _connection;
         private IChannel _channel;
+        private IChannel _publisher;
         private readonly List<string> _queueNames = new();
         private static readonly TimeSpan ProcessInterval = TimeSpan.FromSeconds(10);
         private const int BatchSize = 8;
         private const string ExchangeName = "amq.direct";
         private const string DeadLetterExchangeName = "fb.log.dlx";
         private const string DeadLetterQueueName = "fb.log.dlq";
+        private const string DeadLetterRouteExchangeName = "fb.log.dlx.route";
+        private const string DeadQueueSuffix = ".dead";
+        private readonly List<PendingMessage> _pending = new();
         private readonly uint _world;
         private readonly bool _crossLog;
 
@@ -234,6 +240,7 @@ namespace Log.Worker
             _logger.LogInformation("RabbitMQ connection established");
 
             _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), cancellationToken);
+            _publisher = await _connection.CreateChannelAsync(new CreateChannelOptions(true, true, null, null), cancellationToken);
 
             await _channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
 
@@ -247,7 +254,9 @@ namespace Log.Worker
                 passive: false,
                 noWait: false,
                 cancellationToken: cancellationToken);
-            await _channel.QueueBindAsync(DeadLetterQueueName, DeadLetterExchangeName, string.Empty, arguments: null, noWait: false, cancellationToken);
+            await _channel.QueueUnbindAsync(DeadLetterQueueName, DeadLetterExchangeName, string.Empty, arguments: null, cancellationToken);
+            await _channel.ExchangeDeclareAsync(DeadLetterRouteExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
+            await _channel.ExchangeBindAsync(DeadLetterRouteExchangeName, DeadLetterExchangeName, string.Empty, arguments: null, noWait: false, cancellationToken);
 
             var routingKeys = new List<string> { $"fb.{_world}.log" };
             if (_crossLog)
@@ -272,6 +281,7 @@ namespace Log.Worker
                         cancellationToken: cancellationToken);
 
                     await _channel.QueueBindAsync(queueName, ExchangeName, routingKey, arguments: null, noWait: false, cancellationToken);
+                    await DeclareDeadQueueAsync(_channel, queueName, cancellationToken);
                     _queueNames.Add(queueName);
                 }
                 catch (Exception ex)
@@ -282,6 +292,58 @@ namespace Log.Worker
 
                 _logger.LogInformation("Connected to RabbitMQ and declared queue {QueueName}", queueName);
             }
+
+            await MoveLegacyDeadLettersAsync(cancellationToken);
+        }
+
+        private static async Task DeclareDeadQueueAsync(IChannel channel, string queueName, CancellationToken cancellationToken)
+        {
+            var deadQueueName = queueName + DeadQueueSuffix;
+            await channel.QueueDeclareAsync(
+                queue: deadQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: new Dictionary<string, object> { ["x-queue-type"] = "quorum", ["x-delivery-limit"] = int.MaxValue },
+                passive: false,
+                noWait: false,
+                cancellationToken: cancellationToken);
+            await channel.QueueBindAsync(deadQueueName, DeadLetterRouteExchangeName, queueName, arguments: null, noWait: false, cancellationToken);
+        }
+
+        private async Task MoveLegacyDeadLettersAsync(CancellationToken cancellationToken)
+        {
+            var count = (await _channel.QueueDeclarePassiveAsync(DeadLetterQueueName, cancellationToken)).MessageCount;
+            if (count == 0)
+            {
+                return;
+            }
+
+            var moved = 0;
+            for (var i = 0; i < count; i++)
+            {
+                var result = await _channel.BasicGetAsync(DeadLetterQueueName, autoAck: false, cancellationToken);
+                if (result == null)
+                {
+                    break;
+                }
+
+                var headers = result.BasicProperties.Headers;
+                if (headers == null || !headers.TryGetValue("x-first-death-queue", out var value) || value is not byte[] raw)
+                {
+                    _logger.LogError("Dropping legacy dead letter without x-first-death-queue: {Body}", Encoding.UTF8.GetString(result.Body.Span));
+                    await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
+                    continue;
+                }
+
+                var queueName = Encoding.UTF8.GetString(raw);
+                await DeclareDeadQueueAsync(_publisher, queueName, cancellationToken);
+                await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, queueName, true, new BasicProperties(result.BasicProperties), result.Body, cancellationToken);
+                await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
+                moved++;
+            }
+
+            _logger.LogInformation("Moved {Count} legacy dead letters to per-queue dead queues", moved);
         }
 
         private static void ParseLogMessage(JsonElement root, List<JsonElement> allLogs)
@@ -306,82 +368,206 @@ namespace Log.Worker
                 return false;
             }
 
-            var allLogs = new List<JsonElement>();
-            var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
             var batchFull = false;
+            if (_pending.Count == 0)
+            {
+                foreach (var queueName in _queueNames)
+                {
+                    var messageCount = 0;
 
+                    while (messageCount < BatchSize)
+                    {
+                        var result = await _channel.BasicGetAsync(queueName, autoAck: false, cancellationToken);
+                        if (result == null)
+                        {
+                            break;
+                        }
+
+                        try
+                        {
+                            var body = result.Body.ToArray();
+                            var logs = new List<JsonElement>();
+                            using var doc = JsonDocument.Parse(body);
+                            ParseLogMessage(doc.RootElement, logs);
+                            _pending.Add(new PendingMessage(queueName, result.DeliveryTag, result.BasicProperties, body, logs));
+                            messageCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", queueName);
+                            await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
+                        }
+                    }
+                    batchFull |= messageCount == BatchSize;
+                }
+            }
+
+            if (_pending.Count == 0)
+            {
+                return false;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var logRepository = scope.ServiceProvider.GetRequiredService<LogRepository>();
+            var logCount = _pending.Sum(x => x.Logs.Count);
+            try
+            {
+                await logRepository.BulkInsertAsync(_pending.SelectMany(x => x.Logs));
+                _logger.LogInformation($"Processed {logCount} log entries");
+                foreach (var message in _pending)
+                {
+                    await AckAsync(message, cancellationToken);
+                }
+                _pending.Clear();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to bulk insert {logCount} log entries, inserting each message alone");
+                var failed = new List<PendingMessage>();
+                foreach (var message in _pending)
+                {
+                    try
+                    {
+                        await logRepository.BulkInsertAsync(message.Logs);
+                        await AckAsync(message, cancellationToken);
+                    }
+                    catch (Exception)
+                    {
+                        failed.Add(message);
+                    }
+                }
+                _pending.Clear();
+
+                if (failed.Count > 0 && await logRepository.PingAsync())
+                {
+                    foreach (var message in failed)
+                    {
+                        _logger.LogError($"Moving a log message that fails on a reachable database to {message.QueueName}{DeadQueueSuffix}");
+                        await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, message.QueueName, true, new BasicProperties(message.Properties), message.Body, cancellationToken);
+                        await AckAsync(message, cancellationToken);
+                    }
+                }
+                else if (failed.Count > 0)
+                {
+                    _logger.LogWarning($"Log database is unreachable, holding {failed.Count} messages for retry");
+                    _pending.AddRange(failed);
+                    return false;
+                }
+            }
+
+            await ReplayDeadLettersAsync(logRepository, cancellationToken);
+            return batchFull;
+        }
+
+        private async Task ReplayDeadLettersAsync(LogRepository logRepository, CancellationToken cancellationToken)
+        {
             foreach (var queueName in _queueNames)
             {
-                var messageCount = 0;
-
-                while (messageCount < BatchSize)
+                var deadQueueName = queueName + DeadQueueSuffix;
+                var count = (await _channel.QueueDeclarePassiveAsync(deadQueueName, cancellationToken)).MessageCount;
+                var failed = new List<PendingMessage>();
+                var replayed = 0;
+                for (var i = 0; i < count; i++)
                 {
-                    var result = await _channel.BasicGetAsync(queueName, autoAck: false, cancellationToken);
+                    var result = await _channel.BasicGetAsync(deadQueueName, autoAck: false, cancellationToken);
                     if (result == null)
                     {
                         break;
                     }
 
+                    var message = new PendingMessage(deadQueueName, result.DeliveryTag, result.BasicProperties, result.Body.ToArray(), new List<JsonElement>());
                     try
                     {
-                        var body = result.Body.ToArray();
-                        var jsonString = Encoding.UTF8.GetString(body);
-                        using var doc = JsonDocument.Parse(jsonString);
-                        ParseLogMessage(doc.RootElement, allLogs);
-                        messagesToAck.Add((queueName, result.DeliveryTag));
-                        messageCount++;
+                        using var doc = JsonDocument.Parse(message.Body);
+                        ParseLogMessage(doc.RootElement, message.Logs);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", queueName);
-                        await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
+                        _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", deadQueueName);
+                        await AckAsync(message, cancellationToken);
+                        continue;
                     }
-                }
-                batchFull |= messageCount == BatchSize;
-            }
 
-            var inserted = true;
-            if (allLogs.Count > 0)
-            {
-                try
-                {
-                    using var scope = _serviceScopeFactory.CreateScope();
-                    var logRepository = scope.ServiceProvider.GetRequiredService<LogRepository>();
-                    await logRepository.BulkInsertAsync(allLogs);
-                    _logger.LogInformation($"Processed {allLogs.Count} log entries");
+                    try
+                    {
+                        await logRepository.BulkInsertAsync(message.Logs);
+                        await AckAsync(message, cancellationToken);
+                        replayed++;
+                    }
+                    catch (Exception)
+                    {
+                        failed.Add(message);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to bulk insert {allLogs.Count} log entries");
-                    inserted = false;
-                }
-            }
 
-            foreach (var (queueName, deliveryTag) in messagesToAck)
-            {
-                try
+                if (failed.Count > 0 && await logRepository.PingAsync())
                 {
-                    if (inserted)
+                    foreach (var message in failed)
                     {
-                        await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
-                    }
-                    else
-                    {
-                        await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: true, cancellationToken);
+                        try
+                        {
+                            await logRepository.BulkInsertAsync(message.Logs);
+                            replayed++;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Dropping a log message that keeps failing on a reachable database: {Body}", Encoding.UTF8.GetString(message.Body));
+                        }
+                        await AckAsync(message, cancellationToken);
                     }
                 }
-                catch (Exception ex)
+                else if (failed.Count > 0)
                 {
-                    _logger.LogWarning(ex, $"Failed to acknowledge message from queue {queueName}");
+                    foreach (var message in failed)
+                    {
+                        try
+                        {
+                            await _channel.BasicNackAsync(message.DeliveryTag, multiple: false, requeue: true, cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, $"Failed to requeue message to {deadQueueName}");
+                        }
+                    }
+                }
+
+                if (replayed > 0)
+                {
+                    _logger.LogInformation($"Replayed {replayed} dead-lettered log messages from {deadQueueName}");
                 }
             }
-            return inserted && batchFull;
+        }
+
+        private async Task AckAsync(PendingMessage message, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _channel.BasicAckAsync(message.DeliveryTag, false, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Failed to acknowledge message from queue {message.QueueName}");
+            }
         }
 
         private async Task DisconnectFromRabbitMQAsync()
         {
             try
             {
+                if (_publisher != null)
+                {
+                    try
+                    {
+                        await _publisher.CloseAsync(cancellationToken: CancellationToken.None);
+                    }
+                    catch
+                    {
+                    }
+
+                    await _publisher.DisposeAsync();
+                    _publisher = null;
+                }
+
                 if (_channel != null)
                 {
                     try
@@ -413,6 +599,7 @@ namespace Log.Worker
                 }
 
                 _queueNames.Clear();
+                _pending.Clear();
             }
             catch (Exception ex)
             {
