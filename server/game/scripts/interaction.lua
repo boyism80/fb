@@ -706,6 +706,10 @@ return {
         castle_lib.strip_all(me)
     end,
 
+    on_clan_unallied = function(me)
+        castle_lib.evict(me)
+    end,
+
     on_castle_lost = function(me, divine_beast)
         castle_lib.strip(me, divine_beast)
     end,

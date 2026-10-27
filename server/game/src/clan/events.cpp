@@ -746,9 +746,15 @@ async::task<void> clan::container::on_unally(uint32_t                clan_id,
         co_await this->reload(related_clan_id.value());
 
     this->_server.characters.foreach_enqueue(
-        [](auto& member) -> async::task<void> {
+        [this](auto& member) -> async::task<void> {
             member->update_external();
-            co_return;
+
+            auto lua = this->_server.lua.open("scripts/interaction.lua", "on_clan_unallied");
+            if (lua)
+            {
+                lua->pushobject(member);
+                std::ignore = co_await lua->call(1);
+            }
         },
         members);
 }
