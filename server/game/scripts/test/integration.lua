@@ -1465,7 +1465,7 @@ return {
 
     -- slot: 1-based inventory slot. Drops the whole stack even while trading, unlike the client drop.
     drop_slot = function(me, step, slot)
-        local dropped = me:dropitem(tonumber(slot), false)
+        local dropped = me:dropitem(tonumber(slot), true)
         report(me, dropped ~= nil, step)
     end,
 

@@ -1013,7 +1013,11 @@ int builtin::character::builtin_item_drop(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *dropped = co_await ch->items.drop(index - 1, drop_all ? 1 : -1);
+        auto item  = ch->items.at(index - 1);
+        auto count = uint16_t{1};
+        if (drop_all && item != nullptr)
+            count = item->count();
+        *dropped = co_await ch->items.drop(index - 1, count);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
