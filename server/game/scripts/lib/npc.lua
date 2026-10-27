@@ -1297,15 +1297,19 @@ function M.basic_class(me, npc, class, spells)
                 end
             end
 
-            if not me:consume(cost) then
+            local code = me:exchange(cost, { ['spell'] = { name } })
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                return
+            elseif code == enum.exchange_result.LACK_COST then
                 if me:dialog(npc, '필요한 것들을 구해보도록 하게. 자네라면 할 수 있겠지?', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
                 goto NPC_BASIC_CLASS_000
+            else
+                me:menu(npc, SPELL_DONE_MSG, {})
+                return
             end
-            me:mkspell(name)
-            me:menu(npc, SPELL_DONE_MSG, {})
-            return
         elseif selected == 3 then
             local slot, button = me:spell(npc, '지금 네가 지울 수 있는 마법은 다음과 같단다. 다시 한 번 심사 숙고 하고 지우도록 하여라.')
             if button == DIALOG_RESULT.QUIT then
@@ -1539,12 +1543,14 @@ function M.promotion_skills(me, npc, class)
         me:dialog(npc, '이미 배운 마법입니다.', { prev = false, next = true })
         return
     end
-    if not me:consume({ ['exp'] = PROMOTION_SKILL_EXP }) then
+    local code = me:exchange({ ['exp'] = PROMOTION_SKILL_EXP }, { ['spell'] = { spell_name } })
+    if code == enum.exchange_result.LACK_CAPACITY then
+        me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = true })
+    elseif code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '경험치가 모자랍니다.', { prev = false, next = true })
-        return
+    else
+        me:dialog(npc, name_with(spell_name, '을', '를') .. ' 드렸습니다.', { prev = false, next = true })
     end
-    me:mkspell(spell_name)
-    me:dialog(npc, name_with(spell_name, '을', '를') .. ' 드렸습니다.', { prev = false, next = true })
 end
 
 local PROMOTION_CLOTHES_ITEMS = {

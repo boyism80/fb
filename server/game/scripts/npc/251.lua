@@ -1,4 +1,5 @@
 -- npc: 철수나한
+local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
@@ -57,12 +58,14 @@ return {
             if d == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:money() < 50000 then
+            local code = me:exchange({ ['money'] = 50000 }, { ['spell'] = { "금강퇴" } })
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                return
+            elseif code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "이런, 금전이 모자라는구려. 돈을 모아 다시 찾아오시오.", { prev = false, next = false })
                 return
             end
-            me:money(me:money() - 50000)
-            me:mkspell("금강퇴")
             d = me:dialog(npc, "무공의 진의는 수련을 통해서만 깨달을 수 있는법. 수련 방법을 자세히 알고 싶다면 내가 가르쳐주겠소.", { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return

@@ -1498,6 +1498,7 @@ int builtin::character::exchange(lua_State* L,
     auto reward_items   = std::unordered_map<uint32_t, uint16_t>();
     auto reward_money   = uint64_t{0};
     auto reward_exp     = uint64_t{0};
+    auto reward_spells  = std::vector<const fb::model::spell*>();
     auto invalid_cost   = false;
     auto invalid_reward = false;
 
@@ -1591,6 +1592,28 @@ int builtin::character::exchange(lua_State* L,
         if (lua->is_number(-1))
             reward_exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
+
+        lua->pushstring("spell");
+        lua->rawget(reward_index);
+        if (lua->is_table(-1))
+        {
+            lua->pushnil();
+            while (lua->next(-2))
+            {
+                auto model = lua->is_string(-1) ? table::spell->name2spell(lua->tostring(-1)) : nullptr;
+                if (model == nullptr)
+                {
+                    fb::logger::warn("exchange: unknown reward spell '{}'", lua->tostring(-1));
+                    invalid_reward = true;
+                }
+                else
+                {
+                    reward_spells.push_back(model);
+                }
+                lua->pop(1);
+            }
+        }
+        lua->pop(1);
     }
 
     auto delete_type =
@@ -1604,12 +1627,18 @@ int builtin::character::exchange(lua_State* L,
         {
             *result = exchange_result::lack_cost;
         }
-        else if (invalid_reward)
+        else if (invalid_reward || ch->spells.free_size() < reward_spells.size())
         {
             *result = exchange_result::lack_capacity;
         }
         else
         {
+            auto spell_slots = std::vector<uint8_t>();
+            for (auto model : reward_spells)
+            {
+                spell_slots.push_back(ch->spells.add(*model));
+            }
+
             *result = co_await ch->items.exchange(cost_items, cost_money, reward_items, reward_money, delete_type);
             if (*result == exchange_result::ok)
             {
@@ -1617,6 +1646,13 @@ int builtin::character::exchange(lua_State* L,
                     ch->reduce_exp(cost_exp);
                 if (reward_exp > 0)
                     ch->add_exp(reward_exp, false, true);
+            }
+            else
+            {
+                for (auto slot : spell_slots)
+                {
+                    ch->spells.remove(slot);
+                }
             }
         }
         co_return;

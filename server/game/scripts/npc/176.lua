@@ -1,5 +1,6 @@
 -- npc: 소림사승려
 local quest = require('lib.quest')
+local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
@@ -154,10 +155,13 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:rmitem('고구려비단', 1, ITEM_DELETE_TYPE.GIVE) then
+        local code = me:exchange({ ['item'] = { ['고구려비단'] = 1 } }, { ['spell'] = { '백열장' } }, ITEM_DELETE_TYPE.GIVE)
+        if code == enum.exchange_result.LACK_CAPACITY then
+            me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+            return
+        elseif code == enum.exchange_result.LACK_COST then
             return
         end
-        me:mkspell('백열장')
         q:step(3)
         me:push_achievement(26, '소림사의 비기를 배웠다.', 7, 1)
     end

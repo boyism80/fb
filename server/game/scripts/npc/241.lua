@@ -127,12 +127,16 @@ return {
             if sel == nil or sel ~= 1 then
                 return
             end
-            if not me:rmitem({ ['뱀고기'] = 100, ['좋은뱀고기'] = 5 }, ITEM_DELETE_TYPE.GIVE) then
+            local code = me:exchange({ ['item'] = { ['뱀고기'] = 100, ['좋은뱀고기'] = 5 } }, { ['spell'] = { '청심초' } },
+                ITEM_DELETE_TYPE.GIVE)
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                return
+            elseif code == enum.exchange_result.LACK_COST then
                 return
             end
             q:step(2)
             me:push_achievement(40, '청심사주의 재료를 구하자.[2/2]', 7, 20)
-            me:mkspell('청심초')
             ::NPC_241_0030::
             btn = me:dialog(npc,
                 '아아 고맙네, 그럼 일단 뱀고기는 내가 가져가겠네..\n\n나머지 재료는 기린의피와 청심초 5뿌리라네. 기린의피는 붉은색의 기린을 잡아서 피를 받아오면 되네.',

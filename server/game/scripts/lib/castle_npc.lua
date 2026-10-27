@@ -1,6 +1,7 @@
 -- Castle NPC menus: 문파성선생, 신수의옷, 대장장이, 수련스승, 일반 상점.
 local npc = require('lib.npc')
 local castle_lib = require('lib.castle')
+local enum = require('lib.enum')
 
 local M = {}
 
@@ -603,17 +604,14 @@ function M.on_trainer_click(me, npc_obj)
         return
     end
 
-    local price = 500000
-    if me:money() < price then
-        me:dialog(npc_obj, '금전이 부족하군...', { prev = false, next = false })
-        return
-    end
-    if me:mkspell(spell_name) == nil then
+    local code = me:exchange({ ['money'] = 500000 }, { ['spell'] = { spell_name } })
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc_obj, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
-        return
+    elseif code == enum.exchange_result.LACK_COST then
+        me:dialog(npc_obj, '금전이 부족하군...', { prev = false, next = false })
+    else
+        me:dialog(npc_obj, string.format('%s 가르쳐 주었네.', spell_name), { prev = false, next = false })
     end
-    me:money(me:money() - price)
-    me:dialog(npc_obj, string.format('%s 가르쳐 주었네.', spell_name), { prev = false, next = false })
 end
 
 return M

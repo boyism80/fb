@@ -1,4 +1,5 @@
 -- npc: 혜천대사
+local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
@@ -53,8 +54,14 @@ return {
                 if me:spell("백열장") then
                     me:dialog(npc, "이미 나에게 배운 것 같군.. 하지만 시주한 금액은 소림사에서 좋은 일에 쓰도록 하겠네.", { prev = false, next = false })
                 else
-                    me:money(me:money() - 10000)
-                    me:mkspell("백열장")
+                    local code = me:exchange({ ['money'] = 10000 }, { ['spell'] = { "백열장" } })
+                    if code == enum.exchange_result.LACK_CAPACITY then
+                        me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                        return
+                    elseif code == enum.exchange_result.LACK_COST then
+                        me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", { prev = false, next = false })
+                        return
+                    end
                     local d = me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", { prev = false, next = true })
                     if d == DIALOG_RESULT.QUIT then
                         return
@@ -102,8 +109,14 @@ return {
                 if me:spell("선풍각") then
                     me:dialog(npc, "이미 나에게 배운 것 같군.. 하지만 시주한 금액은 소림사에서 좋은 일에 쓰도록 하겠네.", { prev = false, next = false })
                 else
-                    me:money(me:money() - 20000)
-                    me:mkspell("선풍각")
+                    local code = me:exchange({ ['money'] = 20000 }, { ['spell'] = { "선풍각" } })
+                    if code == enum.exchange_result.LACK_CAPACITY then
+                        me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                        return
+                    elseif code == enum.exchange_result.LACK_COST then
+                        me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", { prev = false, next = false })
+                        return
+                    end
                     local d = me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", { prev = false, next = true })
                     if d == DIALOG_RESULT.QUIT then
                         return

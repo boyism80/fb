@@ -84,11 +84,15 @@ return {
                     me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
-                if not me:consume({ ['item'] = { ["구기자"] = 5, ["동동주"] = 3 }, ['money'] = 200 }) then
+                local code = me:exchange({ ['item'] = { ["구기자"] = 5, ["동동주"] = 3 }, ['money'] = 200 },
+                    { ['spell'] = { "소림경수둔갑술" } })
+                if code == enum.exchange_result.LACK_CAPACITY then
+                    me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                    return
+                elseif code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "재료를 건네지 못했습니다.", { prev = false, next = false })
                     return
                 end
-                me:mkspell("소림경수둔갑술")
             elseif sel2 == 2 then
                 if me:spell("소림천구둔갑술") then
                     me:dialog(npc, "이미 배운 마법이군요.", { prev = false, next = false })
@@ -115,11 +119,15 @@ return {
                     me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
-                if not me:consume({ ['item'] = { ["구기자"] = 10, ["백세주"] = 5 }, ['money'] = 1000 }) then
+                local code = me:exchange({ ['item'] = { ["구기자"] = 10, ["백세주"] = 5 }, ['money'] = 1000 },
+                    { ['spell'] = { "소림천구둔갑술" } })
+                if code == enum.exchange_result.LACK_CAPACITY then
+                    me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                    return
+                elseif code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "재료를 건네지 못했습니다.", { prev = false, next = false })
                     return
                 end
-                me:mkspell("소림천구둔갑술")
             elseif sel2 == 3 then
                 if me:spell("소림후둔갑술") then
                     me:dialog(npc, "이미 배운 마법이군요.", { prev = false, next = false })
@@ -146,11 +154,15 @@ return {
                     me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = false })
                     return
                 end
-                if not me:consume({ ['item'] = { ["구기자"] = 20, ["백세주"] = 10 }, ['money'] = 5000 }) then
+                local code = me:exchange({ ['item'] = { ["구기자"] = 20, ["백세주"] = 10 }, ['money'] = 5000 },
+                    { ['spell'] = { "소림후둔갑술" } })
+                if code == enum.exchange_result.LACK_CAPACITY then
+                    me:dialog(npc, '더 이상 마법을 배울 수 없습니다.', { prev = false, next = false })
+                    return
+                elseif code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "재료를 건네지 못했습니다.", { prev = false, next = false })
                     return
                 end
-                me:mkspell("소림후둔갑술")
             elseif sel2 == 4 then
                 btn = me:dialog(npc, "강시는 제가 수행을 하던때에는 나타나지 않아서 모습을 알지 못한답니다.", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
