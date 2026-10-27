@@ -28,8 +28,9 @@ return {
                 end
             end
         end
-        me:spell(sp):delay(delay)
-        spell.heal(me, you, sp, { hp = hp, mp = mp, sound = sound, effect = effect })
+        if spell.heal(me, you, sp, { hp = hp, mp = mp, sound = sound, effect = effect }) then
+            me:spell(sp):delay(delay)
+        end
     end,
 
     -- on_buff = function(me, sp)
