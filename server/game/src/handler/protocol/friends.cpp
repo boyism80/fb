@@ -13,7 +13,7 @@ namespace fb::game::handler::protocol {
 
 template <fb::protocol::CLIENT_VERSION V>
 friends<V>::friends(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::friends<V>>(server)
+    fb::handler::protocol<fb::game::server, game_reqs::friends<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>

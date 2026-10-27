@@ -11,6 +11,8 @@ namespace Internal.Services
 {
     public class FriendService
     {
+        private const int MaxFriends = 20;
+
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
@@ -224,7 +226,7 @@ namespace Internal.Services
         {
             var friends = new List<NamedFriend>();
             var seen = new HashSet<uint>();
-            foreach (var name in names ?? new List<string>())
+            foreach (var name in (names ?? new List<string>()).Take(MaxFriends))
             {
                 if (string.IsNullOrWhiteSpace(name))
                 {
