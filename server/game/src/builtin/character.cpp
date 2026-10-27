@@ -2027,6 +2027,7 @@ int builtin::character::builtin_assert(lua_State* L)
             lua->rawgeti(2, i + 1);
             if (lua->is_number(-1))
                 values.push_back((STATE)lua->tointeger(-1));
+            lua->pop(1);
         }
     }
     else

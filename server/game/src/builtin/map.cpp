@@ -653,18 +653,20 @@ int builtin::map::builtin_bulk_update(lua_State* L)
     auto size = lua->rawlen(2);
     for (auto i = 1; i <= size; i++)
     {
-        for (int i = 0; i < size; i++)
-        {
-            lua->rawgeti(2, i + 1);
-            if (lua->is_number(-1))
-                oids.push_back((uint32_t)lua->tointeger(-1));
-        }
+        lua->rawgeti(2, i);
+        if (lua->is_number(-1))
+            oids.push_back((uint32_t)lua->tointeger(-1));
+        lua->pop(1);
     }
 
     auto weak     = map->weak_from_this_as<fb::game::map>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
+        auto map = weak.lock();
+        if (map == nullptr)
+            co_return;
+
         map->bulk_update(oids);
         co_return;
     };
