@@ -1263,7 +1263,7 @@ bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& 
     return true;
 }
 
-async::task<items::item_ptr> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
+async::task<items::item_ptr> items::drop(uint8_t index, uint16_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)

@@ -26,13 +26,17 @@ async::task<bool> item_drop<V>::handle(fb::socket<character>& session, game_reqs
         co_return true;
     }
 
-    if (ch->items.at(request.index) == nullptr && ch->items.reserved(request.index))
+    auto item = ch->items.at(request.index);
+    if (item == nullptr && ch->items.reserved(request.index))
     {
         ch->message(_TEXT(MESSAGE_MARKETPLACE_ITEM_LOCKED));
         co_return true;
     }
 
-    std::ignore = co_await ch->items.drop(request.index, request.all ? -1 : 1);
+    auto count = uint16_t{1};
+    if (request.all && item != nullptr)
+        count = item->count();
+    std::ignore = co_await ch->items.drop(request.index, count);
     co_return true;
 }
 

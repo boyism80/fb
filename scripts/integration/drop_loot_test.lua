@@ -147,6 +147,30 @@ test_suite {
         end,
 
         function(ctx)
+            log("debug", "Starting drop loot scenario 6 (drop all past 255)")
+            local bot1 = ctx:bot(0)
+
+            bot1:create_item("잔가지", 500)
+            bot1:drop_item(bot1:item_slot("잔가지"), true)
+            if bot1:item_count("잔가지") ~= 0 then
+                return false
+            end
+
+            bot1:request(
+                resp.item_update,
+                protocol.loot(false),
+                function(packet)
+                    return string.find(packet.name, "잔가지", 1, true) ~= nil and packet.count == 500
+                end)
+
+            if bot1:item_count("잔가지") ~= 500 then
+                return false
+            end
+
+            return true
+        end,
+
+        function(ctx)
             log("debug", "Starting drop loot scenario 5")
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
@@ -167,6 +191,7 @@ test_suite {
             bot2:direction("BOTTOM")
 
             bot2:create_item("도토리", 200)
+            bot2:create_item("잔가지", 256)
             bot2:create_item("목도", 1)
             bot2:create_item("목검", 1)
 
@@ -187,6 +212,10 @@ test_suite {
                 end)
 
             ctx:sleep(500)
+            if bot2:item_count("잔가지") ~= 0 then
+                return false
+            end
+
             bot2:move("RIGHT")
             bot1:move("RIGHT")
 
