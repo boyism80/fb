@@ -91,6 +91,9 @@ public:
     };
 
     using blocked_func = std::function<bool(const point<uint16_t>&)>;
+    using queue_map    = std::unordered_map<uint64_t, uint32_t>;
+
+    static uint64_t gate_key(uint16_t map, const point<uint16_t>& position);
 
 private:
     std::unordered_map<uint16_t, grid>                         _grids;
@@ -101,6 +104,7 @@ private:
     std::unordered_map<std::string, CLASS>                     _classes;
     std::unordered_map<uint32_t, shop>                         _shops;
     std::unordered_map<std::string, uint64_t>                  _buyable;
+    std::unordered_map<std::string, uint64_t>                  _purchases;
     std::unordered_set<std::string>                            _droppable;
     std::unordered_map<uint16_t, std::unordered_set<uint32_t>> _warp_tiles;
 
@@ -116,7 +120,7 @@ public:
     bool                                         warp_at(uint16_t map, const point<uint16_t>& position) const;
     bool                                         reaches(uint16_t map, const point<uint16_t>& from, const point<uint16_t>& gate) const;
     std::optional<npc_spot>                      find_npc(uint16_t map, uint32_t npc) const;
-    std::unordered_map<uint16_t, visit>          search(uint16_t from, const point<uint16_t>& position, uint8_t level) const;
+    std::unordered_map<uint16_t, visit>          search(uint16_t from, const point<uint16_t>& position, uint8_t level, const queue_map& queues = {}, std::optional<uint16_t> until = std::nullopt) const;
     std::vector<npc_spot>                        npc_spots(uint32_t npc) const;
     std::optional<CLASS>                         find_class(const std::string& name) const;
     const shop*                                  find_shop(uint32_t npc) const;
@@ -124,11 +128,12 @@ public:
     bool                                         buyable(const std::string& item) const;
     bool                                         droppable(const std::string& item) const;
     uint64_t                                     price(const std::string& item) const;
+    std::optional<uint64_t>                      purchase(const std::string& item) const;
     std::vector<npc_spot>                        buyers(const std::vector<std::string>& items) const;
     std::vector<npc_spot>                        sellers(const std::string& item) const;
     const std::vector<hunting_ground>&           hunting_grounds() const;
     const std::vector<npc_spot>&                 revive_spots() const;
-    std::optional<std::vector<warp>>             route(uint16_t from, const point<uint16_t>& position, uint16_t to, uint8_t level) const;
+    std::optional<std::vector<warp>>             route(uint16_t from, const point<uint16_t>& position, uint16_t to, uint8_t level, const queue_map& queues = {}) const;
     std::unordered_map<uint16_t, uint32_t>       distances(uint16_t from, const point<uint16_t>& position, uint8_t level) const;
     std::optional<std::vector<DIRECTION>>        path(uint16_t map, const point<uint16_t>& from, const point<uint16_t>& to, uint16_t range, const blocked_func& blocked) const;
     // clang-format on

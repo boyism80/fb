@@ -315,6 +315,13 @@ knowledge::knowledge(const std::string&                  maps_path,
             {
                 this->_buyable[name] = std::max(this->_buyable[name], price);
             }
+
+            for (auto& [name, price] : entry.sells)
+            {
+                auto found = this->_purchases.find(name);
+                if (found == this->_purchases.end() || price < found->second)
+                    this->_purchases.insert_or_assign(name, price);
+            }
             this->_shops.insert({id, std::move(entry)});
         }
     }
@@ -562,6 +569,12 @@ bool knowledge::droppable(const std::string& item) const
     return this->_droppable.contains(item);
 }
 
+std::optional<uint64_t> knowledge::purchase(const std::string& item) const
+{
+    auto found = this->_purchases.find(item);
+    return found != this->_purchases.end() ? std::optional<uint64_t>{found->second} : std::nullopt;
+}
+
 uint64_t knowledge::price(const std::string& item) const
 {
     auto found = this->_buyable.find(item);
@@ -609,9 +622,16 @@ const std::vector<knowledge::npc_spot>& knowledge::revive_spots() const
     return this->_revive_spots;
 }
 
-std::unordered_map<uint16_t, knowledge::visit> knowledge::search(uint16_t               from,
-                                                                 const point<uint16_t>& position,
-                                                                 uint8_t                level) const
+uint64_t knowledge::gate_key(uint16_t map, const point<uint16_t>& position)
+{
+    return (static_cast<uint64_t>(map) << 32) | (static_cast<uint64_t>(position.y) << 16) | position.x;
+}
+
+std::unordered_map<uint16_t, knowledge::visit> knowledge::search(uint16_t                from,
+                                                                 const point<uint16_t>&  position,
+                                                                 uint8_t                 level,
+                                                                 const queue_map&        queues,
+                                                                 std::optional<uint16_t> until) const
 {
     using node  = std::pair<uint32_t, uint16_t>;
     auto visits = std::unordered_map<uint16_t, visit>{
@@ -628,6 +648,9 @@ std::unordered_map<uint16_t, knowledge::visit> knowledge::search(uint16_t       
         if (cost > here.cost)
             continue;
 
+        if (until.has_value() && current == until.value())
+            break;
+
         auto found = this->_warps.find(current);
         if (found == this->_warps.end())
             continue;
@@ -638,8 +661,9 @@ std::unordered_map<uint16_t, knowledge::visit> knowledge::search(uint16_t       
                 continue;
 
             auto steps = static_cast<uint32_t>(std::abs(hop.before.x - here.at.x) + std::abs(hop.before.y - here.at.y));
-            auto next  = cost + steps + 1;
-            auto known = visits.find(hop.dest);
+            auto queued = queues.find(knowledge::gate_key(current, hop.before));
+            auto next   = cost + steps + 1 + (queued != queues.end() ? queued->second : 0u);
+            auto known  = visits.find(hop.dest);
             if (known != visits.end() && known->second.cost <= next)
                 continue;
 
@@ -650,13 +674,16 @@ std::unordered_map<uint16_t, knowledge::visit> knowledge::search(uint16_t       
     return visits;
 }
 
-std::optional<std::vector<knowledge::warp>>
-knowledge::route(uint16_t from, const point<uint16_t>& position, uint16_t to, uint8_t level) const
+std::optional<std::vector<knowledge::warp>> knowledge::route(uint16_t               from,
+                                                             const point<uint16_t>& position,
+                                                             uint16_t               to,
+                                                             uint8_t                level,
+                                                             const queue_map&       queues) const
 {
     if (from == to)
         return std::vector<warp>{};
 
-    auto visits = this->search(from, position, level);
+    auto visits = this->search(from, position, level, queues, to);
     if (visits.contains(to) == false)
         return std::nullopt;
 

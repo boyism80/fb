@@ -320,6 +320,7 @@ public:
     uint32_t                     count(uint16_t map, const std::string& except) const;
     void                         ask(const std::string& self, uint16_t map, const point<uint16_t>& tile);
     std::vector<point<uint16_t>> passages(uint16_t map, const std::string& self) const;
+    knowledge::queue_map         queues() const;
     cluster::journal&            journal();
     void                         apply(const Json::Value& event);
 };
@@ -601,6 +602,8 @@ private:
     std::optional<std::pair<uint16_t, time_point>>             _cornered;
     mutable std::pair<double, double>                          _powered{-1.0, 0.0};
     mutable time_point                                         _powered_at{};
+    mutable std::pair<time_point, std::optional<std::pair<std::string, uint32_t>>> _shortage;
+    mutable std::pair<time_point, std::optional<std::string>>                       _upgrade;
     mutable std::unordered_map<uint8_t, std::pair<time_point, std::vector<const spellbook::lesson*>>> _lessons;
     // clang-format on
 

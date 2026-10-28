@@ -727,6 +727,19 @@ std::vector<point<uint16_t>> crowd::passages(uint16_t map, const std::string& se
     return result;
 }
 
+knowledge::queue_map crowd::queues() const
+{
+    auto lock   = std::lock_guard(this->_mutex);
+    auto now    = clock::now();
+    auto result = knowledge::queue_map{};
+    for (auto& [_, passage] : this->_passages)
+    {
+        if (now - passage.seen <= PASS_WINDOW)
+            result[knowledge::gate_key(passage.map, passage.tile)]++;
+    }
+    return result;
+}
+
 fb::bot::cluster::journal& crowd::journal()
 {
     return this->_journal;
@@ -2353,7 +2366,7 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
     }
 
     auto keys            = this->experience_keys(bot);
-    auto visits          = this->_knowledge.search(bot.map(), bot.position(), bot.level());
+    auto visits          = this->_knowledge.search(bot.map(), bot.position(), bot.level(), this->_crowd.queues());
     auto distances       = std::unordered_map<uint16_t, uint32_t>{};
     auto candidates      = std::vector<std::pair<double, const knowledge::hunting_ground*>>{};
     auto sparse          = std::vector<std::pair<double, const knowledge::hunting_ground*>>{};
@@ -2690,22 +2703,18 @@ const tutorial::step* brain::find_step(const game_bot& bot) const
 std::optional<knowledge::npc_spot> brain::nearest(const game_bot&                         bot,
                                                   const std::vector<knowledge::npc_spot>& spots) const
 {
-    auto distances = this->_knowledge.distances(bot.map(), bot.position(), bot.level());
-    auto found     = std::optional<knowledge::npc_spot>{};
-    auto best      = std::numeric_limits<uint64_t>::max();
+    auto visits = this->_knowledge.search(bot.map(), bot.position(), bot.level(), this->_crowd.queues());
+    auto found  = std::optional<knowledge::npc_spot>{};
+    auto best   = std::numeric_limits<uint64_t>::max();
     for (auto& spot : spots)
     {
-        auto distance = distances.find(spot.map);
-        if (distance == distances.end())
+        auto visit = visits.find(spot.map);
+        if (visit == visits.end())
             continue;
 
-        auto cost = static_cast<uint64_t>(distance->second) + this->_crowd.count(spot.map, bot.name());
-        if (spot.map != bot.map() && spots.size() > 1)
-        {
-            auto route = this->_knowledge.route(bot.map(), bot.position(), spot.map, bot.level());
-            if (route.has_value() && route->empty() == false)
-                cost += this->_crowd.count(route->back().map, bot.name());
-        }
+        auto cost = static_cast<uint64_t>(visit->second.cost) + this->_crowd.count(spot.map, bot.name());
+        if (visit->second.via != nullptr)
+            cost += this->_crowd.count(visit->second.via->map, bot.name());
 
         if (cost < best)
         {
@@ -3261,16 +3270,9 @@ bool brain::underfunded(const game_bot& bot) const
         auto worth = uint64_t{0};
         for (auto& [name, count] : this->sellable(bot))
         {
-            auto best = uint64_t{0};
-            for (auto& [_, shop] : this->_knowledge.shops())
-            {
-                auto found = shop.buys.find(name);
-                if (found != shop.buys.end())
-                    best = std::max(best, found->second);
-            }
             auto have  = owned.find(name);
             auto sold  = count > 0 ? count : (have != owned.end() ? have->second : 0u);
-            worth     += best * sold;
+            worth     += this->_knowledge.price(name) * sold;
         }
         return worth >= std::min<uint64_t>(cost.value() - bot.money(), FUNDING_MIN);
     }
@@ -3427,16 +3429,9 @@ const spellbook::lesson* brain::affordable(const game_bot& bot) const
 
 std::optional<std::pair<std::string, uint32_t>> brain::shortage(const game_bot& bot) const
 {
-    auto cost = [this](const std::string& item) {
-        auto best = std::optional<uint64_t>{};
-        for (auto& [_, shop] : this->_knowledge.shops())
-        {
-            auto found = shop.sells.find(item);
-            if (found != shop.sells.end() && (best.has_value() == false || found->second < best.value()))
-                best = found->second;
-        }
-        return best;
-    };
+    auto now = clock::now();
+    if (now - this->_shortage.first < POWER_CACHE)
+        return this->_shortage.second;
 
     auto max_hp = std::max(bot.base_hp(), bot.hp());
     auto max_mp = std::max(bot.base_mp(), bot.mp());
@@ -3458,7 +3453,7 @@ std::optional<std::pair<std::string, uint32_t>> brain::shortage(const game_bot& 
 
             auto count  = static_cast<uint32_t>(bot.get_item_count_by_name(remedy.item));
             owned      += static_cast<double>(amount) * count;
-            auto price  = cost(remedy.item);
+            auto price  = this->_knowledge.purchase(remedy.item);
             if (price.has_value() == false)
                 continue;
 
@@ -3471,13 +3466,14 @@ std::optional<std::pair<std::string, uint32_t>> brain::shortage(const game_bot& 
             continue;
 
         auto& [unit, item, amount] = choice.value();
-        auto price                 = cost(item).value_or(0);
+        auto price                 = this->_knowledge.purchase(item).value_or(0);
         if (owned > 0.0 && price > 0 && bot.money() < this->savings(bot) + price)
             continue;
 
         auto count = static_cast<uint32_t>(bot.get_item_count_by_name(item)) +
                      static_cast<uint32_t>(std::ceil((wanted - owned) / amount));
-        return std::pair{item, count};
+        this->_shortage = std::pair{now, std::optional{std::pair{item, count}}};
+        return this->_shortage.second;
     }
 
     auto carried =
@@ -3485,19 +3481,24 @@ std::optional<std::pair<std::string, uint32_t>> brain::shortage(const game_bot& 
             return bot.has_item_by_name(item);
         });
     if (carried)
+    {
+        this->_shortage = std::pair{now, std::optional<std::pair<std::string, uint32_t>>{}};
         return std::nullopt;
+    }
 
     auto travel = std::optional<std::pair<std::string, uint64_t>>{};
     for (auto& item : this->_supplies.travels)
     {
-        auto price = cost(item);
+        auto price = this->_knowledge.purchase(item);
         if (price.has_value() && (travel.has_value() == false || price.value() < travel->second))
             travel = std::pair{item, price.value()};
     }
 
-    if (travel.has_value() == false || bot.money() < this->savings(bot) + travel->second)
-        return std::nullopt;
-    return std::pair{travel->first, 1u};
+    auto result = travel.has_value() && bot.money() >= this->savings(bot) + travel->second
+                      ? std::optional{std::pair{travel->first, 1u}}
+                      : std::optional<std::pair<std::string, uint32_t>>{};
+    this->_shortage = std::pair{now, result};
+    return result;
 }
 
 uint32_t brain::need(const game_bot& bot, const std::string& item) const
@@ -4138,8 +4139,40 @@ async::task<brain::result> brain::wander(game_bot& bot)
     static const auto directions =
         std::vector<DIRECTION>{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
 
-    auto direction = directions.at(std::uniform_int_distribution<size_t>(0, directions.size() - 1)(this->_random));
     auto steps     = std::uniform_int_distribution<int>(1, 4)(this->_random);
+    auto direction = directions.at(std::uniform_int_distribution<size_t>(0, directions.size() - 1)(this->_random));
+    auto least     = std::numeric_limits<double>::max();
+    for (auto candidate : directions)
+    {
+        auto dx       = candidate == DIRECTION::LEFT ? -steps : candidate == DIRECTION::RIGHT ? steps : 0;
+        auto dy       = candidate == DIRECTION::TOP ? -steps : candidate == DIRECTION::BOTTOM ? steps : 0;
+        auto tx       = bot.position().x + dx;
+        auto ty       = bot.position().y + dy;
+        auto crowding = 0.0;
+        for (auto& [_, entry] : bot.sight.entries())
+        {
+            if (entry.name.empty() == false)
+                crowding += 1.0 / (1.0 + std::abs(entry.position.x - tx) + std::abs(entry.position.y - ty));
+        }
+        for (auto dy2 = -GATE_CLEARANCE; dy2 <= GATE_CLEARANCE; dy2++)
+        {
+            for (auto dx2 = -GATE_CLEARANCE; dx2 <= GATE_CLEARANCE; dx2++)
+            {
+                if (tx + dx2 >= 0 && ty + dy2 >= 0 &&
+                    this->_knowledge.warp_at(
+                        bot.map(),
+                        point<uint16_t>(static_cast<uint16_t>(tx + dx2), static_cast<uint16_t>(ty + dy2))))
+                    crowding += 1.0;
+            }
+        }
+
+        auto noise = std::uniform_real_distribution<double>(0.0, 0.01)(this->_random);
+        if (crowding + noise < least)
+        {
+            least     = crowding + noise;
+            direction = candidate;
+        }
+    }
     for (auto i = 0; i < steps; i++)
     {
         if (this->alive(bot) == false || this->_interrupted)
@@ -4304,7 +4337,7 @@ async::task<brain::result> brain::travel(game_bot& bot, uint16_t map, const poin
     detail["from"] = bot.map();
     if (bot.map() != map)
     {
-        auto route = this->_knowledge.route(bot.map(), bot.position(), map, bot.level());
+        auto route = this->_knowledge.route(bot.map(), bot.position(), map, bot.level(), this->_crowd.queues());
         if (route.has_value() == false)
         {
             this->report(bot, "travel", "NO_ROUTE", detail);
@@ -5889,6 +5922,10 @@ async::task<brain::result> brain::escape(game_bot& bot)
 
 std::optional<std::string> brain::upgrade(const game_bot& bot) const
 {
+    auto now = clock::now();
+    if (now - this->_upgrade.first < POWER_CACHE)
+        return this->_upgrade.second;
+
     auto cls    = this->_knowledge.find_class(bot.class_name()).value_or(CLASS::NONE);
     auto items  = table::item;
     auto damage = [](const fb::model::weapon& weapon) {
@@ -5991,6 +6028,7 @@ std::optional<std::string> brain::upgrade(const game_bot& bot) const
             }
         }
     }
+    this->_upgrade = std::pair{now, best};
     return best;
 }
 
