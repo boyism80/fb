@@ -384,12 +384,13 @@ namespace Http.Service
 
             var template = ToOperating(schedule.StartTime);
             var now = ToOperating(checkTime);
+            var duration = GetWindowEnd(schedule, now) - now;
             var start = schedule.RepeatType switch
             {
                 MaintenanceRepeatType.Daily => GetDailyWindowStart(template, now),
                 MaintenanceRepeatType.Weekly => GetWeeklyWindowStart(template, now),
-                MaintenanceRepeatType.Monthly => GetMonthlyWindowStart(template, now),
-                MaintenanceRepeatType.Yearly => GetYearlyWindowStart(template, now),
+                MaintenanceRepeatType.Monthly => GetDatedWindowStart(template, now, duration, false),
+                MaintenanceRepeatType.Yearly => GetDatedWindowStart(template, now, duration, true),
                 _ => DateTime.MinValue
             };
             return start == DateTime.MinValue ? start : ToUtc(start);
@@ -433,40 +434,18 @@ namespace Http.Service
             }
         }
 
-        private static DateTime GetMonthlyWindowStart(DateTime template, DateTime checkTime)
+        private static DateTime GetDatedWindowStart(DateTime template, DateTime checkTime, TimeSpan duration, bool matchMonth)
         {
-            var today = checkTime.Date.Add(template.TimeOfDay);
-            var yesterday = checkTime.Date.AddDays(-1);
-            if (checkTime.Day == template.Day && checkTime >= today)
+            for (var day = checkTime.Date; day >= checkTime.Subtract(duration).Date; day = day.AddDays(-1))
             {
-                return today;
+                var start = day.Add(template.TimeOfDay);
+                if (start <= checkTime && day.Day == template.Day && (matchMonth == false || day.Month == template.Month))
+                {
+                    return start;
+                }
             }
-            else if (yesterday.Day == template.Day)
-            {
-                return yesterday.Add(template.TimeOfDay);
-            }
-            else
-            {
-                return DateTime.MinValue;
-            }
-        }
 
-        private static DateTime GetYearlyWindowStart(DateTime template, DateTime checkTime)
-        {
-            var today = checkTime.Date.Add(template.TimeOfDay);
-            var yesterday = checkTime.Date.AddDays(-1);
-            if (checkTime.Month == template.Month && checkTime.Day == template.Day && checkTime >= today)
-            {
-                return today;
-            }
-            else if (yesterday.Month == template.Month && yesterday.Day == template.Day)
-            {
-                return yesterday.Add(template.TimeOfDay);
-            }
-            else
-            {
-                return DateTime.MinValue;
-            }
+            return DateTime.MinValue;
         }
     }
 }
