@@ -1979,7 +1979,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
             if (receiver == nullptr)
                 co_return;
 
-            receiver->message(std::format("{}> {}", from, text), MESSAGE_TYPE::NOTIFY);
+            receiver->message(std::format("{}\" {}", from, text), MESSAGE_TYPE::NOTIFY);
 
             auto recv_log             = Json::Value();
             recv_log["sender_name"]   = UTF8(from, PLATFORM::WINDOWS);

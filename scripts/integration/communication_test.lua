@@ -77,6 +77,14 @@ test_suite {
             local bot2 = ctx:bot(1)
             local message = "This is a secret whisper message!"
 
+            local received = false
+            ctx:hook("message", function(_, hooked_bot, packet)
+                if hooked_bot:name() == bot2:name() and packet.type == "NOTIFY"
+                    and packet.text == string.format('%s" %s', bot1:name(), message) then
+                    received = true
+                end
+            end)
+
             log("debug", "Starting whisper test")
             bot1:request(
                 resp.message,
@@ -93,6 +101,19 @@ test_suite {
                     local text = packet.text:sub(pos + 2)
                     return target == bot2:name() and text == message
                 end)
+
+            for _ = 1, 50 do
+                if received then
+                    break
+                end
+                ctx:sleep(100)
+            end
+            ctx:unhook("message")
+
+            if received == false then
+                log("fatal", "Whisper receiver message mismatch")
+                return false
+            end
 
             log("debug", "Whisper test PASSED")
             return true
