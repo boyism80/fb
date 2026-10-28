@@ -3457,9 +3457,6 @@ async::task<brain::result> brain::sell(game_bot& bot)
 
         auto detail    = Json::Value{};
         detail["item"] = fb::UTF8(found->second.name, fb::PLATFORM::WINDOWS);
-        auto model     = table::item->name2item(brain::stack_name(found->second.name));
-        if (model != nullptr)
-            this->_unpickable.insert_or_assign(static_cast<uint16_t>(model->look + ITEM_LOOK_MIN), time_point::max());
         co_await bot.drop_item(*slot, true, ACTION_TIMEOUT);
         this->report(bot, "discard", std::string{}, detail);
     }
