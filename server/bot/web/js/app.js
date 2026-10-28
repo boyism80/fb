@@ -280,8 +280,34 @@ function renderIntegration() {
   $('i-started').textContent = run ? `${local(run.started_at)} 시작 · ${run.id}` : '-';
 
   $('i-tab-plan').textContent = run ? `${done.length} / ${suites.length}` : '';
-  $('i-plan').innerHTML = statsRows(suites.map(s => `<tr><td><span class="phase">${s.serial ? 'SERIAL' : 'PARALLEL'}</span></td><td class="file">${esc(s.name)}</td>
-<td class="${SUITE_CLS[s.state]}">${SUITE_WORD[s.state] || s.state}</td><td class="mono">${esc(s.agent_name || '-')}</td><td class="num">${s.attempts}</td><td class="num">${s.seconds ? s.seconds + '초' : '-'}</td></tr>`).join(''), 6);
+  $('i-plan-note').textContent = run ? `${done.length} / ${suites.length}개 종료 · ${run.state === 'done' ? '끝남' : running ? '진행 중' : '대기 중'}` : '-';
+  $('i-plan-meter').style.width = $('i-meter').style.width;
+  $('i-plan-meter-bad').style.width = $('i-meter-bad').style.width;
+  document.querySelector('[data-tabs="itab"] [data-tab="plan"]').classList.toggle('live', !!run && run.state !== 'done');
+  if (suites.length) {
+    const order = new Map((S.catalog ? S.catalog.suites : []).map((s, i) => [s.name, [i + 1, s]]));
+    sync($('i-plan'), suites, s => s.name, () => {
+      const row = document.createElement('tr');
+      row.innerHTML = '<td><span class="phase"></span><span class="order"></span></td><td><div class="file"></div><div class="desc"></div></td><td></td><td class="mono"></td><td class="num"></td><td class="num"></td>';
+      return row;
+    }, (row, s) => {
+      const [index, info] = order.get(s.name) || [0, null];
+      const cells = row.children;
+      row.classList.toggle('active', s.state === 'running' || s.state === 'assigned');
+      cells[0].firstChild.className = `phase ${s.serial ? 'serial' : 'parallel'}`;
+      cells[0].firstChild.textContent = s.serial ? 'SERIAL' : 'PARALLEL';
+      cells[0].lastChild.textContent = index ? `#${index}` : '';
+      cells[1].firstChild.textContent = s.name;
+      cells[1].lastChild.textContent = info ? `${info.bots}봇${info.extra_slot ? ' · extra' : ''}${info.labels.length ? ` · ${info.labels.join(', ')}` : ''}` : '';
+      cells[2].className = `state ${SUITE_CLS[s.state]}`;
+      cells[2].textContent = SUITE_WORD[s.state] || s.state;
+      cells[3].textContent = s.agent_name || '—';
+      cells[4].textContent = s.attempts;
+      cells[5].textContent = s.seconds ? `${s.seconds}초` : '-';
+    });
+  } else {
+    $('i-plan').innerHTML = statsRows([], 6);
+  }
 
   $('i-tab-results').textContent = run ? packets.length : '';
   $('i-stats').innerHTML = statsRows(packets.map(r => `<tr><td class="mono">${esc(r.name)}</td><td class="num">${num(r.count)}</td><td class="num${r.failures ? ' bad' : ''}">${num(r.failures)}</td>

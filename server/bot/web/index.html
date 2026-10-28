@@ -62,7 +62,9 @@
         <div class="foot"><span>label을 누르면 그 label의 스위트를 모두 고르고, 모두 골라진 label을 다시 누르면 뺍니다</span><span>registry.lua 등록 순서</span></div>
       </div>
       <div class="panel" data-panel="itab:plan" hidden>
-        <div class="tbl"><table><thead><tr><th>단계</th><th>스위트</th><th>상태</th><th>Agent</th><th class="num">시도</th><th class="num">소요</th></tr></thead><tbody id="i-plan"></tbody></table></div>
+        <div class="head"><h2>실행 중인 계획</h2><span class="note" id="i-plan-note">-</span></div>
+        <div class="meter plan"><i id="i-plan-meter"></i><b id="i-plan-meter-bad"></b></div>
+        <div class="tbl"><table><thead><tr><th>단계 / 순서</th><th>스위트</th><th>상태</th><th>Agent</th><th class="num">시도</th><th class="num">소요</th></tr></thead><tbody id="i-plan"></tbody></table></div>
         <div class="foot"><span>병렬 스위트는 Agent 자리 수의 두 배씩 묶어 맡깁니다. serial 스위트는 하나가 끝나야 다음을 시작합니다.</span></div>
       </div>
       <div class="panel" data-panel="itab:agents" hidden data-fleet="ia" data-mode="integration"></div>

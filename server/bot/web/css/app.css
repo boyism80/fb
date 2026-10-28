@@ -182,3 +182,13 @@ input.in:disabled, select.in:disabled { opacity: .55; }
 .views a { transition: color .15s ease; }
 .view:not([hidden]), [data-panel]:not([hidden]) { animation: enter .18s ease-out; }
 @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.tabs button { flex: 1; justify-content: center; transition: color .15s ease, border-bottom-color .15s ease, background-color .15s ease; }
+.tabs button[aria-selected="true"] { background: var(--accent-soft); }
+.tabs button.live::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--good); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+.meter.plan { margin: 0; height: 3px; border-radius: 0; }
+.phase.parallel { background: var(--accent-soft); color: var(--accent); }
+.phase.serial { background: rgba(210, 153, 34, .14); color: var(--warn); }
+.order { margin-left: 8px; font: 11px var(--mono); color: var(--faint); }
+#i-plan td { transition: color .4s ease, background-color .4s ease; }
+#i-plan tr.active td { background: var(--accent-soft); }
