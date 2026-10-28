@@ -806,16 +806,19 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
         this->_evaluation.targets.insert_or_assign(target_id, now);
     }
 
-    auto self_weak   = this->weak_from_this_as<character>();
-    auto target_weak = target->weak_from_this_as<character>();
-    target           = nullptr;
+    auto& server      = this->server;
+    auto  user_id     = this->id;
+    auto  user_name   = this->name();
+    auto  self_weak   = this->weak_from_this_as<character>();
+    auto  target_weak = target->weak_from_this_as<character>();
+    target            = nullptr;
 
     // The target is read only on its own thread, and a hidden target answers like a logged out one even on cooldown.
     auto visible           = false;
     auto target_reputation = std::optional<int16_t>();
     try
     {
-        co_await this->server.threads.switching(target_weak);
+        co_await server.threads.switching(target_weak);
         target = target_weak.lock();
         if (target != nullptr && target->inited() && (target->super_hide() == false || target->hidden(role) == false))
         {
@@ -832,6 +835,15 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
                                       : _TEXT(MESSAGE_REPUTATION_LOWERED_BY_OTHER),
                                 MESSAGE_TYPE::STATE);
                 target->update(UPDATE_STATE_LEVEL::BASED);
+
+                auto log_data           = Json::Value();
+                log_data["user_id"]     = static_cast<Json::Int64>(user_id);
+                log_data["user_name"]   = UTF8(user_name, PLATFORM::WINDOWS);
+                log_data["target_id"]   = static_cast<Json::Int64>(target_id);
+                log_data["target_name"] = UTF8(target_name, PLATFORM::WINDOWS);
+                log_data["raise"]       = raise;
+                log_data["reputation"]  = static_cast<Json::Int>(target_reputation.value());
+                server.log.write("reputation", log_data);
             }
         }
     }
@@ -839,7 +851,15 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
     { }
     target = nullptr;
 
-    co_await this->server.threads.switching(self_weak);
+    try
+    {
+        co_await server.threads.switching(self_weak);
+    }
+    catch (std::exception&)
+    {
+        co_return;
+    }
+
     auto self = self_weak.lock();
     if (self == nullptr)
         co_return;
@@ -850,15 +870,6 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
                             : std::format(_TEXT(MESSAGE_REPUTATION_LOWERED), target_name),
                       MESSAGE_TYPE::STATE);
         self->update(UPDATE_STATE_LEVEL::BASED);
-
-        auto log_data           = Json::Value();
-        log_data["user_id"]     = static_cast<Json::Int64>(self->id);
-        log_data["user_name"]   = UTF8(self->name(), PLATFORM::WINDOWS);
-        log_data["target_id"]   = static_cast<Json::Int64>(target_id);
-        log_data["target_name"] = UTF8(target_name, PLATFORM::WINDOWS);
-        log_data["raise"]       = raise;
-        log_data["reputation"]  = static_cast<Json::Int>(target_reputation.value());
-        self->server.log.write("reputation", log_data);
     }
     else
     {
