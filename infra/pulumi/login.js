@@ -204,7 +204,6 @@ module.exports = function () {
                 },
                 spec: {
                     type: "NodePort",
-                    externalTrafficPolicy: "Local",
                     ports: ports,
                     selector: {
                         app: "login",
