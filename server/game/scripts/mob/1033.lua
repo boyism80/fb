@@ -81,7 +81,10 @@ return {
                 return
             end
             if not me:has_items("여의주", 1) then
-                me:mkitem("여의주", 1)
+                if me:mkitem("여의주", 1) == nil then
+                    me:dialog(mob, "소지품이 가득 차서 여의주를 받을 수 없습니다.", { prev = false, next = false })
+                    return
+                end
                 me:push_achievement(19, "청의태자를 생포하였다. [1/2]", 7, 1)
             end
             q:progress(1)

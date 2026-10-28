@@ -69,11 +69,14 @@ return {
             return
         end
 
-        q:progress(1)
         if not me:has_items("내통문서", 1) then
-            me:mkitem("내통문서", 1)
+            if me:mkitem("내통문서", 1) == nil then
+                me:dialog(mob, "소지품이 가득 차서 내통문서를 받을 수 없습니다.", { prev = false, next = false })
+                return
+            end
             me:push_achievement(19, "내통문서를 얻다.", 7, 1)
         end
+        q:progress(1)
     end,
 
     -- on_mob_spell_hit = function(me, you, spell)

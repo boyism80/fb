@@ -31,7 +31,11 @@ return {
         end
 
         local item = me:mkitem("전략문서", 1)
-        me:dialog(item, "휴.. 드디어 전략문서를 구했다.", { prev = false, next = true })
+        if item == nil then
+            me:dialog(mob, "소지품이 가득 차서 전략문서를 받을 수 없습니다.", { prev = false, next = false })
+        else
+            me:dialog(item, "휴.. 드디어 전략문서를 구했다.", { prev = false, next = true })
+        end
     end,
 
     -- on_mob_spell_hit = function(me, you, spell)

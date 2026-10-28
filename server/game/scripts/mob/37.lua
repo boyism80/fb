@@ -48,7 +48,10 @@ return {
             return
         end
 
-        me:mkitem(ITEM_RABBIT_LIVER, 1)
+        if me:mkitem(ITEM_RABBIT_LIVER, 1) == nil then
+            me:dialog(mob, '소지품이 가득 차서 토끼의간을 받을 수 없습니다.', { prev = false, next = false })
+            return
+        end
         me:push_achievement(ACHIEVEMENT_RABBIT_CAPTURE, '토깽이를 성공적으로 포획했다!', 7, 1)
         me:dialog(mob, '으으윽..', { prev = false, next = false })
     end,
