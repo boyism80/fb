@@ -67,10 +67,13 @@ character::character(fb::game::server& server, const initial_params& params) :
     _money(params.money), _mimicry(params.mimicry), _title(params.title), _nation(params.nation),
     _divine_beast(params.divine_beast), _reputation(params.reputation), _super_hide(params.super_hide),
     _last_afk_time(fb::model::datetime::utc_now()),
-    _evaluation{.score    = params.evaluation,
-                .tick     = server.now(),
-                .playtime = std::chrono::seconds(params.evaluation_playtime),
-                .targets  = params.evaluated_targets},
+    _evaluation{
+        .score    = params.evaluation,
+        .tick     = fb::model::datetime::utc_now(),
+        .playtime = std::min<std::chrono::milliseconds>(
+            std::chrono::seconds(params.evaluation_playtime),
+            std::chrono::milliseconds(fb::model::const_value::reputation::EVALUATION_INTERVAL.total_milliseconds())),
+        .targets = params.evaluated_targets},
     _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now();
@@ -749,7 +752,8 @@ void character::accumulate_evaluation_playtime(const fb::model::datetime& now)
 {
     this->assert_thread();
 
-    auto elapsed           = std::chrono::milliseconds((now - this->_evaluation.tick).total_milliseconds());
+    auto elapsed           = std::max(std::chrono::milliseconds(0),
+                            std::chrono::milliseconds((now - this->_evaluation.tick).total_milliseconds()));
     this->_evaluation.tick = now;
     if (this->_evaluation.score >= fb::model::const_value::reputation::MAX_EVALUATION)
         return;
@@ -2419,7 +2423,9 @@ fb::protocol::internal::Character character::to_protocol() const
     auto playtime = this->_evaluation.playtime;
     if (this->client_version == fb::protocol::CLIENT_VERSION::v651 &&
         this->_evaluation.score < fb::model::const_value::reputation::MAX_EVALUATION)
-        playtime += std::chrono::milliseconds((this->server.now() - this->_evaluation.tick).total_milliseconds());
+        playtime += std::max(
+            std::chrono::milliseconds(0),
+            std::chrono::milliseconds((fb::model::datetime::utc_now() - this->_evaluation.tick).total_milliseconds()));
     dto.evaluation_playtime = static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(playtime).count());
     for (auto& [target, evaluated_at] : this->_evaluation.targets)
     {
