@@ -2507,7 +2507,7 @@ int builtin::character::builtin_retrieve_item(lua_State* L)
         {
             if (stored_items[i] == item)
             {
-                *returned = co_await ch->items.retrieve(static_cast<uint8_t>(i), count, to_inventory);
+                *returned = co_await ch->items.retrieve(i, count, to_inventory);
                 break;
             }
         }

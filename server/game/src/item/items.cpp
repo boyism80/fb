@@ -452,7 +452,7 @@ const std::vector<std::shared_ptr<item>>& items::stored() const
     return this->_stored;
 }
 
-async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count, bool to_inventory)
+async::task<items::item_ptr> items::retrieve(size_t index, uint16_t count, bool to_inventory)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -463,7 +463,7 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count, bool
     if (count == 0)
         co_return nullptr;
 
-    if (index > this->_stored.size() - 1)
+    if (index >= this->_stored.size())
         co_return nullptr;
 
     auto stored       = this->_stored.at(index);
@@ -535,40 +535,6 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count, bool
 
         co_return item;
     }
-}
-
-async::task<items::item_ptr> items::retrieve(std::string_view name, uint16_t count)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        co_return nullptr;
-
-    owner->assert_thread();
-
-    for (size_t i = 0; i < this->_stored.size(); ++i)
-    {
-        auto& model = this->_stored[i]->model();
-        if (model.name == name)
-            co_return co_await this->retrieve(static_cast<uint8_t>(i), count);
-    }
-    co_return nullptr;
-}
-
-async::task<items::item_ptr> items::retrieve(const fb::model::item& item, uint16_t count)
-{
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        co_return nullptr;
-
-    owner->assert_thread();
-
-    for (size_t i = 0; i < this->_stored.size(); ++i)
-    {
-        auto& model = this->_stored[i]->model();
-        if (model == item)
-            co_return co_await this->retrieve(static_cast<uint8_t>(i), count);
-    }
-    co_return nullptr;
 }
 
 uint64_t items::deposited() const
