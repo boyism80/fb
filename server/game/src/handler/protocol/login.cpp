@@ -87,7 +87,7 @@ void login<V>::init_spells(const std::vector<internal::Spell>& response, charact
     {
         auto  spell_table = table::spell;
         auto& model       = spell_table[x.model];
-        auto  delay       = fb::model::datetime(x.next) - this->server.now();
+        auto  delay       = fb::model::datetime(x.next) - fb::model::datetime::utc_now();
         auto  sec         = delay.seconds();
         if (sec >= 0)
             sec += (delay.milliseconds() > 0 ? 1 : 0);
