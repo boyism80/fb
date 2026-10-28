@@ -728,7 +728,7 @@ void character_stat::equipment_on(const fb::model::equipment& model)
     this->buff_str(this->buff_str() + model.strength);
     this->buff_dex(this->buff_dex() + model.dexterity);
     this->buff_int(this->buff_int() + model.intelligence);
-    this->buff_phydef(this->buff_phydef() + model.defensive_physical);
+    this->buff_phydef(this->buff_phydef() - model.defensive_physical);
     this->buff_magdef(this->buff_magdef() + model.defensive_magical);
     this->buff_dam(this->buff_dam() + model.damage);
     this->buff_hit(this->buff_hit() + model.hit);
@@ -746,7 +746,7 @@ void character_stat::equipment_off(const fb::model::equipment& model)
     this->buff_str(this->buff_str() - model.strength);
     this->buff_dex(this->buff_dex() - model.dexterity);
     this->buff_int(this->buff_int() - model.intelligence);
-    this->buff_phydef(this->buff_phydef() - model.defensive_physical);
+    this->buff_phydef(this->buff_phydef() + model.defensive_physical);
     this->buff_magdef(this->buff_magdef() - model.defensive_magical);
     this->buff_dam(this->buff_dam() - model.damage);
     this->buff_hit(this->buff_hit() - model.hit);
