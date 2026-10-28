@@ -464,6 +464,7 @@ function renderLoad() {
     $('l-duration').value = run.duration;
     $('l-offset').value = run.offset;
     $('l-client').value = run.client;
+    $('l-target').value = run.target || '';
   }
   ['l-rate', 'l-cap', 'l-duration', 'l-offset', 'l-client', 'l-target'].forEach(id => $(id).disabled = !!running);
   $('l-start').textContent = running ? '봇 수 적용' : '시작';
@@ -490,7 +491,6 @@ function render() {
   const c = S.clock;
   if (run) {
     if (c.id !== run.id)
-    $('l-target').value = run.target || '';
       c.shown = 0;
     Object.assign(c, { id: run.id, base: run.elapsed, at: performance.now(), live: run.state !== 'done', duration: run.duration || 0 });
   } else {
@@ -510,6 +510,21 @@ async function loadCatalog() {
   }
 }
 
+async function loadTargets() {
+  try {
+    const { targets } = await api('/api/targets');
+    document.querySelectorAll('[data-targets]').forEach(select => {
+      const chosen = select.value;
+      select.innerHTML = '<option value="">config 기본</option>' + targets.map(t =>
+        `<option value="${esc(t.address)}">${esc(t.label || t.name)} · ${esc(t.address)}</option>`).join('');
+      if ([...select.options].some(o => o.value === chosen))
+        select.value = chosen;
+    });
+  } catch (error) {
+    notice('l-notice', `접속 대상 목록을 읽지 못했습니다: ${error.message}`, true);
+  }
+}
+
 async function reload(button) {
   button.disabled = true;
   try {
@@ -519,6 +534,7 @@ async function reload(button) {
     notice('i-notice', text, broken.length > 0);
     notice('l-notice', text, broken.length > 0);
     await loadCatalog();
+    await loadTargets();
   } catch (error) {
     notice('i-notice', error.message, true);
     notice('l-notice', error.message, true);
@@ -536,21 +552,6 @@ async function loadHistory() {
     $('h-runs').innerHTML = `<tr><td colspan="5" class="empty bad">${esc(error.message)}</td></tr>`;
   }
 }
-async function loadTargets() {
-  try {
-    const { targets } = await api('/api/targets');
-    document.querySelectorAll('[data-targets]').forEach(select => {
-      const chosen = select.value;
-      select.innerHTML = '<option value="">config 기본</option>' + targets.map(t =>
-        `<option value="${esc(t.address)}">${esc(t.label || t.name)} · ${esc(t.address)}</option>`).join('');
-      if ([...select.options].some(o => o.value === chosen))
-        select.value = chosen;
-    });
-  } catch (error) {
-    notice('l-notice', `접속 대상 목록을 읽지 못했습니다: ${error.message}`, true);
-  }
-}
-
 
 async function showRun(id) {
   $('h-runs').querySelectorAll('tr').forEach(r => r.classList.toggle('on', r.dataset.run === id));
@@ -560,7 +561,6 @@ async function showRun(id) {
   $('h-sub').textContent = `${local(run.started_at)} ~ ${local(run.finished_at)} · ${clock(run.elapsed)}${run.kind === 'load' ? ` · 봇 ${num(run.users)}` : ''}`;
   $('h-files').innerHTML = ['summary.json', 'timeline.jsonl', 'stats.csv'].map(f => `<a href="/api/runs/${encodeURIComponent(run.id)}/${f}">${f}</a>`).join('');
   $('h-suites-wrap').hidden = !run.suites.length;
-    await loadTargets();
   $('h-suites').innerHTML = run.suites.map(s => `<tr><td class="file">${esc(s.name)}</td><td class="${SUITE_CLS[s.state]}">${SUITE_WORD[s.state] || s.state}</td><td class="mono">${esc(s.agent_name || '-')}</td><td class="num">${s.attempts}</td><td class="num">${s.seconds ? s.seconds + '초' : '-'}</td></tr>`).join('');
   $('h-stats').innerHTML = statsRows(run.stats.map(r => `<tr><td class="mono">${esc(r.name)}</td><td class="num">${num(r.count)}</td><td class="num${r.failures ? ' bad' : ''}">${num(r.failures)}</td>
 <td class="num">${r.timed ? num(r.p50) : '-'}</td><td class="num">${r.timed ? num(r.p95) : '-'}</td><td class="num">${r.timed ? num(r.p99) : '-'}</td><td class="num">${r.rps}</td></tr>`).join(''), 7);
@@ -674,6 +674,7 @@ function bind() {
         await api('/api/runs', {
           kind: 'load', users: Number($('l-users').value), rate: Number($('l-rate').value), cap: Number($('l-cap').value),
           duration: Number($('l-duration').value), offset: Number($('l-offset').value), client: $('l-client').value,
+          target: $('l-target').value,
         });
       }
       notice('l-notice', '');
@@ -696,6 +697,5 @@ bind();
 setInterval(tick, 250);
 show(['integration', 'load', 'history'].includes(location.hash.slice(1)) ? location.hash.slice(1) : store.get('fb.cluster.view', 'integration'));
 loadCatalog();
-connect();
-          target: $('l-target').value,
 loadTargets();
+connect();
