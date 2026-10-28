@@ -133,11 +133,28 @@ void group::revision(uint64_t value)
     this->_revision = value;
 }
 
-void group::reload(const group& fresh)
+std::vector<group::character_ptr> group::reload(const group& fresh)
 {
     this->_master   = fresh._master;
     this->_members  = fresh._members;
     this->_revision = fresh._revision;
+
+    auto removed = std::vector<character_ptr>{};
+    for (auto i = this->_active_members.begin(); i != this->_active_members.end();)
+    {
+        auto ptr = i->second.lock();
+        if (ptr != nullptr &&
+            std::find(this->_members.begin(), this->_members.end(), ptr->name()) == this->_members.end())
+        {
+            removed.push_back(ptr);
+            i = this->_active_members.erase(i);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+    return removed;
 }
 
 std::vector<std::weak_ptr<character>> group::nears(const fb::game::map& map, const fb::model::point16_t& position) const

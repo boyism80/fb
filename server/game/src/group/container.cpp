@@ -3,13 +3,17 @@
 #include <fb/game/server.h>
 #include <fb/logger.h>
 #include <fb/model/model.h>
+#include <macro.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <exception>
 #include <format>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <vector>
 
 using namespace fb::game;
@@ -70,10 +74,37 @@ async::task<void> group::container::reload(uint64_t id)
         co_return;
     }
 
-    auto guard = co_await this->enter_write(id);
-    if (guard.holds_lock() == false || guard.value() == nullptr)
-        co_return;
+    auto removed = std::vector<std::shared_ptr<character>>{};
+    auto joining = std::vector<std::shared_ptr<character>>{};
+    {
+        auto guard = co_await this->enter_write(id);
+        if (guard.holds_lock() == false || guard.value() == nullptr)
+            co_return;
+        if (guard.value()->revision() >= fresh->revision())
+            co_return;
 
-    if (guard.value()->revision() < fresh->revision())
-        guard.value()->reload(*fresh);
+        removed     = guard.value()->reload(*fresh);
+        auto active = guard.value()->characters();
+        for (const auto& name : guard.value()->members())
+        {
+            auto ch = this->_server.characters.find(name);
+            if (ch != nullptr && std::find(active.begin(), active.end(), ch) == active.end())
+                joining.push_back(ch);
+        }
+    }
+
+    co_await this->_server.characters.foreach_async(
+        [this, id](auto& ch) -> async::task<void> {
+            if (ch->group.id() == id)
+                co_await this->reset_member(*ch, _TEXT(MESSAGE_GROUP_LEFT_SUCCESS));
+        },
+        removed);
+    co_await this->_server.characters.foreach_async(
+        [this, id](auto& ch) -> async::task<void> {
+            std::ignore = co_await this->enter_member(*ch, id);
+        },
+        joining);
+
+    if (removed.empty() == false || joining.empty() == false)
+        this->update_portraits(id);
 }

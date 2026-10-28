@@ -259,39 +259,9 @@ async::task<void> group::container::on_enter(std::string                target,
         auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
 
-        // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
-        auto ptr     = weak.lock();
-        auto entered = false;
-        if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
-        {
-            // A leave or kick handled since the enter already removed the character, so it is not entered again.
-            try
-            {
-                entered = this->write(group_id, [weak, name](auto& group) {
-                    auto members = group != nullptr ? group->members() : std::vector<std::string>{};
-                    if (std::find(members.begin(), members.end(), name) == members.end())
-                        return false;
-
-                    group->enter(weak);
-                    return true;
-                });
-            }
-            catch (const std::runtime_error&)
-            { }
-        }
-
-        if (entered)
-        {
-            ptr->group.id(group_id);
-            ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
-
-            // A member on another host was not checked before joining, so its solo ticket ends here.
-            if (ptr->matchmaker.queued())
-            {
-                co_await ptr->matchmaker.dequeue(matchmaker::initiator::SERVER);
-                ptr->message("그룹에 들어가 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
-            }
-        }
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+            std::ignore = co_await this->enter_member(*ptr, group_id);
 
         if (before != nullptr)
             co_await before->switching();
@@ -345,15 +315,22 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
     auto ch_id   = uint32_t{0};
     auto members = std::vector<std::shared_ptr<character>>();
     auto reload  = false;
+    auto stale   = false;
     {
         auto  guard = co_await this->enter_write(group_id);
         auto& group = guard.value();
         if (guard.holds_lock() == false || group == nullptr)
             co_return;
-        if (group->revision() > revision)
-            co_return;
 
-        if (group->revision() + 1 == revision)
+        if (group->revision() > revision)
+        {
+            auto current = group->members();
+            if (std::find(current.begin(), current.end(), name) != current.end())
+                co_return;
+
+            stale = true;
+        }
+        else if (group->revision() + 1 == revision)
         {
             group->remove_member(name);
             group->revision(revision);
@@ -381,26 +358,33 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
         auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
 
-        auto ptr = weak.lock();
-        if (ptr != nullptr)
+        auto ptr   = weak.lock();
+        auto reset = ptr != nullptr && (stale == false || ptr->group.id() == group_id);
+        if (reset)
             co_await this->reset_member(*ptr, message);
 
-        auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
-        log_data["character_name"] = UTF8(name, PLATFORM::WINDOWS);
-        log_data["group_id"]       = static_cast<Json::Int64>(group_id);
-        this->_server.log.write(log_name, log_data);
+        if (stale == false || reset)
+        {
+            auto log_data              = Json::Value();
+            log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
+            log_data["character_name"] = UTF8(name, PLATFORM::WINDOWS);
+            log_data["group_id"]       = static_cast<Json::Int64>(group_id);
+            this->_server.log.write(log_name, log_data);
+        }
 
         if (before != nullptr)
             co_await before->switching();
     }
 
-    this->_server.characters.foreach_enqueue(
-        [others_message](auto& member) -> async::task<void> {
-            member->message(others_message, MESSAGE_TYPE::STATE);
-            co_return;
-        },
-        members);
+    if (stale == false)
+    {
+        this->_server.characters.foreach_enqueue(
+            [others_message](auto& member) -> async::task<void> {
+                member->message(others_message, MESSAGE_TYPE::STATE);
+                co_return;
+            },
+            members);
+    }
     this->update_portraits(group_id);
 }
 
@@ -419,6 +403,45 @@ async::task<void> group::container::reset_member(character& ch, std::string mess
     {
         std::ignore = co_await map->kick(ch);
     }
+}
+
+async::task<bool> group::container::enter_member(character& ch, uint64_t group_id)
+{
+    ch.assert_thread();
+
+    if (this->_server.characters.find(ch.id).get() != &ch || ch.group.id() == group_id)
+        co_return false;
+
+    // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
+    // A leave or kick handled since the enter already removed the character, so it is not entered again.
+    auto entered = false;
+    try
+    {
+        entered = this->write(group_id, [weak = ch.weak_from_this_as<character>(), name = ch.name()](auto& group) {
+            auto members = group != nullptr ? group->members() : std::vector<std::string>{};
+            if (std::find(members.begin(), members.end(), name) == members.end())
+                return false;
+
+            group->enter(weak);
+            return true;
+        });
+    }
+    catch (const std::runtime_error&)
+    { }
+
+    if (entered == false)
+        co_return false;
+
+    ch.group.id(group_id);
+    ch.message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+
+    // A member on another host was not checked before joining, so its solo ticket ends here.
+    if (ch.matchmaker.queued())
+    {
+        co_await ch.matchmaker.dequeue(matchmaker::initiator::SERVER);
+        ch.message("그룹에 들어가 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
+    }
+    co_return true;
 }
 
 async::task<void> group::container::drop_stale_membership(character& ch, uint64_t group_id)

@@ -60,7 +60,7 @@ public:
     std::vector<std::string>   members() const;
     uint64_t                   revision() const;
     void                       revision(uint64_t value);
-    void                       reload(const group& fresh);
+    std::vector<character_ptr> reload(const group& fresh);
     character_vector           nears(const fb::game::map& map, const fb::model::point16_t& position) const;
     // clang-format on
 };
@@ -102,6 +102,7 @@ private:
     // clang-format off
     async::task<void>                                         remove_member(uint64_t group_id, std::string name, std::string message, std::string others_message, std::string log_name, uint64_t revision);
     async::task<void>                                         reset_member(character& ch, std::string message);
+    async::task<bool>                                         enter_member(character& ch, uint64_t group_id);
     async::task<void>                                         drop_stale_membership(character& ch, uint64_t group_id);
     async::task<void>                                         send_portraits(std::vector<std::string> names, std::string master, std::vector<std::shared_ptr<character>> online, std::vector<std::shared_ptr<character>> recipients);
     static fb::protocol::game::response::group_portrait_entry portrait_entry(const character& ch, bool leader);
