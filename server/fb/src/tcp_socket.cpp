@@ -35,8 +35,17 @@ void tcp_socket::write(const std::shared_ptr<tcp_socket>& socket, fb::stream wir
             socket->_writes.push_back(
                 pending_write{.wire = std::make_shared<fb::stream>(std::move(wire)), .handler = std::move(handler)});
 
-            if (socket->_writes.size() == 1)
-                tcp_socket::write_front(socket);
+            if (socket->_writing == false)
+            {
+                socket->_writing = true;
+                boost::asio::post(socket->get_executor(), [socket]() {
+                    auto lock = std::lock_guard(socket->_write_mutex);
+                    if (socket->_writes.empty())
+                        socket->_writing = false;
+                    else
+                        tcp_socket::write_front(socket);
+                });
+            }
         }
     }
 
@@ -77,10 +86,15 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
                                          }
                                          socket->_writes.clear();
                                          socket->_write_bytes = 0;
+                                         socket->_writing     = false;
                                      }
                                      else if (socket->_writes.empty() == false)
                                      {
                                          tcp_socket::write_front(socket);
+                                     }
+                                     else
+                                     {
+                                         socket->_writing = false;
                                      }
                                  }
 

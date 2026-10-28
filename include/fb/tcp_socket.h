@@ -34,6 +34,7 @@ private:
     std::mutex                _write_mutex;
     std::deque<pending_write> _writes;
     size_t                    _write_bytes = 0;
+    bool                      _writing     = false;
 
 public:
     explicit tcp_socket(boost::asio::io_context& context);
