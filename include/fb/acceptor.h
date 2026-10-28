@@ -191,7 +191,7 @@ private:
                     auto& entry       = this->handler.protocol.get_handler(*opcode, client_version);
                     auto  await_dispatch = entry.await_dispatch;
                     if (entry.heartbeat == false)
-                        socket.update_last_packet_time();
+                        socket.update_last_packet_time(this->now());
                     auto fd      = socket.fd();
                     auto weak    = socket.template weak_from_this_as<fb::socket<T>>();
                     auto builder = this->threads.new_builder(weak);

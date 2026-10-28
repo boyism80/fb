@@ -373,9 +373,9 @@ public:
     }
 
 public:
-    void update_last_packet_time()
+    void update_last_packet_time(const fb::model::datetime& now)
     {
-        this->_last_packet_time = fb::model::datetime::utc_now();
+        this->_last_packet_time = now;
     }
 
 public:

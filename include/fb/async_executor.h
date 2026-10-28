@@ -129,13 +129,14 @@ protected:
 
         auto weak_this = this->weak_from_this();
         this->threads.settimer(
-            [weak_this](const fb::model::datetime& now, std::thread::id id) -> async::task<void> {
+            [weak_this](const fb::model::datetime&, std::thread::id id) -> async::task<void> {
                 auto shared_this = weak_this.lock();
                 if (!shared_this || shared_this->_running == false)
                     co_return;
 
-                auto handler = std::make_shared<HandlerType>(*std::static_pointer_cast<server_type>(shared_this));
-                co_await handler->handle(now, id);
+                auto server  = std::static_pointer_cast<server_type>(shared_this);
+                auto handler = std::make_shared<HandlerType>(*server);
+                co_await handler->handle(server->now(), id);
             },
             duration);
     }
