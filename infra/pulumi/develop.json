@@ -190,7 +190,7 @@
             "id": 2,
             "name": "무휼",
             "desc": "2000년 2월 서비스 시작",
-            "deploy": true,
+            "deploy": false,
             "mysql": {
                 "data": [
                     {
