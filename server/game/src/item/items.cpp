@@ -140,8 +140,6 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
 
     auto indices = std::vector<uint8_t>();
     auto updates = std::unordered_map<uint8_t, std::shared_ptr<item>>();
-    auto warmed  = false;
-    auto full    = false;
 
     for (auto& item : items)
     {
@@ -157,12 +155,8 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
                 auto diff = owner->server.now() - drop_time.value();
                 if (diff < fb::model::const_value::death_penalty::warmth_time)
                 {
-                    if (warmed == false)
-                        owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
-                    warmed = true;
-                    if (stop_if_remained)
-                        break;
-                    continue;
+                    owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
+                    break;
                 }
             }
         }
@@ -260,12 +254,8 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
 
                 if (index == 0xFF)
                 {
-                    if (full == false)
-                        owner->message(_TEXT(MESSAGE_ITEM_FULL));
-                    full = true;
-                    if (stop_if_remained)
-                        break;
-                    continue;
+                    owner->message(_TEXT(MESSAGE_ITEM_FULL));
+                    break;
                 }
 
                 std::ignore = this->add(item, index);
@@ -1310,7 +1300,7 @@ async::task<void> items::loot(bool boost)
         }
         else if (boost)
         {
-            std::ignore = co_await this->add(belows, false);
+            std::ignore = co_await this->add(belows, true);
         }
         else
         {
