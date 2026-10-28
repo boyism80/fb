@@ -80,27 +80,23 @@ fb::game::door* door::container::find(const character& ch) const
 
 door::container::iterator::iterator(const door::container::base_iterator& i, const container& container) :
     door::container::base_iterator(i),
-    pair(i != static_cast<const super&>(container).end()
-             ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
-                                                                          *i->second.get())
-             : std::nullopt)
+    _container(&container)
 { }
 
 std::pair<fb::model::point16_t, fb::game::door&> door::container::iterator::operator* ()
 {
-    return this->pair.value();
+    const auto& entry = door::container::base_iterator::operator* ();
+    return {this->_container->map.point(entry.first), *entry.second};
 }
 
 door::container::const_iterator::const_iterator(const door::container::const_base_iterator& i,
                                                 const container&                            container) :
     door::container::const_base_iterator(i),
-    pair(i != static_cast<const super&>(container).end()
-             ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
-                                                                          *i->second.get())
-             : std::nullopt)
+    _container(&container)
 { }
 
 const std::pair<fb::model::point16_t, fb::game::door&> door::container::const_iterator::operator* () const
 {
-    return this->pair.value();
+    const auto& entry = door::container::const_base_iterator::operator* ();
+    return {this->_container->map.point(entry.first), *entry.second};
 }

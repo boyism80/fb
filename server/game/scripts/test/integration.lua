@@ -893,13 +893,16 @@ return {
 
     -- Each map:doors() entry must be its own door: toggling one entry flips exactly one entry.
     -- Checks the first few doors that can toggle and restores each one.
-    verify_doors_unique = function(me, step)
+    verify_doors_unique = function(me, step, min_doors)
         local map = me:map()
         if map == nil then
             return report(me, false, step, 'no map')
         end
 
         local doors = map:doors()
+        if #doors < (tonumber(min_doors) or 1) then
+            return report(me, false, step, string.format('only %d doors listed', #doors))
+        end
         local checked = 0
         for i, door in ipairs(doors) do
             if checked >= 5 then

@@ -91,8 +91,8 @@ public:
 
 class door::container::iterator : public door::container::base_iterator
 {
-public:
-    std::optional<std::pair<fb::model::point16_t, door&>> pair;
+private:
+    const container* _container;
 
 public:
     iterator(const container::base_iterator& i, const container& container);
@@ -104,8 +104,8 @@ public:
 
 class door::container::const_iterator : public door::container::const_base_iterator
 {
-public:
-    const std::optional<std::pair<fb::model::point16_t, door&>> pair;
+private:
+    const container* _container;
 
 public:
     const_iterator(const container::const_base_iterator& i, const container& container);
