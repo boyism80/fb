@@ -69,6 +69,7 @@ constexpr auto POWER_CACHE         = std::chrono::seconds(1);
 constexpr auto YIELD_RETRY         = std::chrono::seconds(10);
 constexpr auto JAM_STEPS           = 1000u;
 constexpr auto JAM_STEP            = 100u;
+constexpr auto BASE_DAMAGE_RATE    = 1000.0;
 constexpr auto JAM_WINDOW          = std::chrono::seconds(60);
 constexpr auto MIN_DPS             = 0.5;
 constexpr auto KILL_TIME_RATIO     = 0.6;
@@ -360,6 +361,7 @@ spellbook::spellbook(const Json::Value& catalog, const Json::Value& config) :
         effect.cure      = fb::CP949(source.get("cure", "").asString(), fb::PLATFORM::WINDOWS);
         effect.hp_cost   = source.get("hp_cost", 0.0).asDouble();
         effect.damage_hp = source.get("damage_hp", 0).asUInt();
+        effect.rate      = source["boost"].get("damage_rate", 0).asUInt();
 
         auto trigger   = source.get("trigger", "").asString();
         effect.trigger = trigger == "EMERGENCY" ? TRIGGER::EMERGENCY
@@ -2144,6 +2146,17 @@ double brain::power(const game_bot& bot, double seconds, const spellbook::effect
 
     auto melee =
         this->_dps >= 0.0 ? std::max(this->_dps, MIN_DPS) : static_cast<double>(std::max<uint8_t>(bot.level(), 1));
+    auto boost = 0u;
+    for (auto& [_, spell] : bot.spells())
+    {
+        auto effect = this->_spellbook.find(spell.name);
+        if (effect != nullptr && effect->self && bot.has_buff(spell.name) == false)
+            boost = std::max(boost, effect->rate);
+    }
+    if (extra != nullptr && extra->self)
+        boost = std::max(boost, extra->rate);
+    melee *= 1.0 + boost / BASE_DAMAGE_RATE;
+
     auto interval = std::max(std::chrono::duration<double>(this->_persona.attack_delay).count(), 0.001);
     auto best     = std::optional<spellbook::effect>{};
     auto consider = [&best](const spellbook::effect& effect) {
@@ -2255,6 +2268,11 @@ double brain::worth(const game_bot& bot, const spellbook::lesson& lesson) const
         case spellbook::ROLE::ATTACK:
         case spellbook::ROLE::AREA:
             value = (this->power(bot, horizon, effect) - current) / current;
+            break;
+
+        case spellbook::ROLE::BUFF:
+            value = effect->rate > 0 ? (this->power(bot, horizon, effect) - current) / current
+                                     : this->_persona.explore_rate;
             break;
 
         case spellbook::ROLE::HEAL:

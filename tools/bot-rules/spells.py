@@ -16,6 +16,7 @@ LOCAL = re.compile(r"local\s+(\w+)\s*=\s*(\d+)")
 BEAST = re.compile(r"index == (\d+) then\s*return (?:'([^']+)'|\"([^\"]+)\")")
 CURE = re.compile(r"you:unbuff\('([^']+)'\)")
 CAST = re.compile(r"^\s*on_cast\s*=\s*function", re.M)
+BOOST = re.compile(r"me:(\w+)\(me:\1\(\)\s*\+\s*(\d+)\)")
 
 
 def divine_beast_names():
@@ -133,6 +134,9 @@ def effect(text):
             info['trigger'] = 'EMERGENCY'
         elif 'me:mp_up' in text:
             info['trigger'] = 'MANA'
+        boosts = {stat: int(value) for stat, value in BOOST.findall(text)}
+        if boosts:
+            info['boost'] = boosts
     elif 'spell.boolean_random' in text and 'me:maxmp' in text:
         info['role'] = 'CHARGE'
     elif 'root:cardinal' in text or 'root:revive' in text or 'me:mp_down' in text:

@@ -219,6 +219,7 @@ struct spellbook
         std::string cure;
         double      hp_cost   = 0.0;
         uint32_t    damage_hp = 0;
+        uint32_t    rate      = 0;
     };
 
     std::unordered_map<CLASS, guild>        guilds;
