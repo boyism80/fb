@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <exception>
+#include <filesystem>
+#include <fstream>
 #include <limits>
 #include <memory>
 #include <numeric>
@@ -61,6 +63,10 @@ constexpr auto ARMOR_UPGRADE       = 2.0;
 constexpr auto ESCAPE_COOLDOWN     = std::chrono::minutes(5);
 constexpr auto DPS_ALPHA           = 0.2;
 constexpr auto OBSERVE_ALPHA       = 0.2;
+constexpr auto LEARN_LIMIT         = 8.0;
+constexpr auto VISIT_MIN_MINUTES   = 0.5;
+constexpr auto POWER_CACHE         = std::chrono::seconds(1);
+constexpr auto YIELD_RETRY         = std::chrono::seconds(10);
 constexpr auto MIN_DPS             = 0.5;
 constexpr auto KILL_TIME_RATIO     = 0.6;
 constexpr auto MONEY_NEED_WEIGHT   = 50.0;
@@ -140,7 +146,6 @@ constexpr auto BORROWED_FIGHTS     = 3u;
 constexpr auto EXPLORE_FIGHTS      = 30u;
 constexpr auto EXPLORE_HP_RATIO    = 0.9;
 constexpr auto REST_SECONDS_FULL   = 60.0;
-constexpr auto APPROACH_SECONDS    = 3.0;
 constexpr auto RECORD_ALPHA        = 0.2;
 constexpr auto TUTORIAL_SLICE      = std::chrono::seconds(60);
 constexpr auto INFO_INTERVAL       = std::chrono::seconds(10);
@@ -745,6 +750,140 @@ void crowd::apply(const Json::Value& event)
         this->_presence.insert_or_assign(name, entry);
 }
 
+void learner::configure(const Json::Value& json)
+{
+    auto lock    = std::lock_guard(this->_mutex);
+    this->_alpha = json.get("alpha", 0.02).asDouble();
+    this->_path  = json.get("path", "").asString();
+    if (this->_path.empty())
+        return;
+
+    auto file = std::ifstream(this->_path);
+    if (file.is_open() == false)
+        return;
+
+    auto root = Json::Value{};
+    try
+    {
+        file >> root;
+    }
+    catch (std::exception&)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < FEATURES && i < root["theta"].size(); i++)
+    {
+        this->_theta[i] = root["theta"][static_cast<Json::ArrayIndex>(i)].asDouble();
+    }
+    this->_samples = root.get("samples", 0).asUInt64();
+}
+
+double learner::predict(const features& input) const
+{
+    auto lock   = std::lock_guard(this->_mutex);
+    auto result = 0.0;
+    for (size_t i = 0; i < FEATURES; i++)
+    {
+        result += this->_theta[i] * input[i];
+    }
+    return std::clamp(result, -LEARN_LIMIT, LEARN_LIMIT);
+}
+
+void learner::add(const features& input, double target)
+{
+    auto lock = std::lock_guard(this->_mutex);
+    this->update(input, target);
+
+    auto event      = Json::Value{};
+    event["kind"]   = "learner";
+    event["target"] = target;
+    for (auto value : input)
+    {
+        event["input"].append(value);
+    }
+    this->_journal.record(std::move(event));
+}
+
+void learner::update(const features& input, double target)
+{
+    target         = std::clamp(target, -LEARN_LIMIT, LEARN_LIMIT);
+    auto predicted = 0.0;
+    for (size_t i = 0; i < FEATURES; i++)
+    {
+        predicted += this->_theta[i] * input[i];
+    }
+
+    auto error = target - std::clamp(predicted, -LEARN_LIMIT, LEARN_LIMIT);
+    for (size_t i = 0; i < FEATURES; i++)
+    {
+        this->_theta[i] = std::clamp(this->_theta[i] + this->_alpha * error * input[i], -LEARN_LIMIT, LEARN_LIMIT);
+    }
+    this->_error =
+        this->_samples == 0 ? std::abs(error) : this->_error + (std::abs(error) - this->_error) * RECORD_ALPHA;
+    this->_samples++;
+}
+
+void learner::save() const
+{
+    auto lock = std::lock_guard(this->_mutex);
+    if (this->_path.empty() || this->_samples == 0)
+        return;
+
+    auto root       = Json::Value{};
+    root["samples"] = static_cast<Json::UInt64>(this->_samples);
+    root["error"]   = this->_error;
+    for (auto value : this->_theta)
+    {
+        root["theta"].append(value);
+    }
+
+    auto path = std::filesystem::path(this->_path);
+    std::filesystem::create_directories(path.parent_path());
+    auto temporary  = path;
+    temporary      += std::format(".{}", std::random_device{}());
+    {
+        auto file = std::ofstream(temporary);
+        file << root.toStyledString();
+    }
+    auto error = std::error_code{};
+    std::filesystem::rename(temporary, path, error);
+    if (error)
+        std::filesystem::remove(temporary, error);
+}
+
+Json::Value learner::state() const
+{
+    auto lock       = std::lock_guard(this->_mutex);
+    auto root       = Json::Value{};
+    root["samples"] = static_cast<Json::UInt64>(this->_samples);
+    root["error"]   = this->_error;
+    for (auto value : this->_theta)
+    {
+        root["theta"].append(value);
+    }
+    return root;
+}
+
+fb::bot::cluster::journal& learner::journal()
+{
+    return this->_journal;
+}
+
+void learner::apply(const Json::Value& event)
+{
+    if (event["input"].size() != FEATURES)
+        return;
+
+    auto lock  = std::lock_guard(this->_mutex);
+    auto input = features{};
+    for (size_t i = 0; i < FEATURES; i++)
+    {
+        input[i] = event["input"][static_cast<Json::ArrayIndex>(i)].asDouble();
+    }
+    this->update(input, event["target"].asDouble());
+}
+
 void roster::update(const std::string& name, uint8_t level)
 {
     auto lock  = std::lock_guard(this->_mutex);
@@ -1156,6 +1295,7 @@ brain::brain(const knowledge& knowledge,
              market&          market,
              roster&          roster,
              crowd&           crowd,
+             learner&         learner,
              experience&      experience,
              const messages&  messages,
              trace&           trace,
@@ -1173,6 +1313,7 @@ brain::brain(const knowledge& knowledge,
     _market(market),
     _roster(roster),
     _crowd(crowd),
+    _learner(learner),
     _experience(experience),
     _messages(messages),
     _trace(trace),
@@ -1569,6 +1710,7 @@ void brain::check(game_bot& bot)
         entry["crowd"]            = this->_crowd.count(bot.map(), bot.name());
         entry["persona"]          = this->_persona.name;
         entry["distance"]         = this->_persona.distance;
+        entry["learning"]         = this->_persona.learning;
         entry["explore_rate"]     = this->_persona.explore_rate;
         entry["temperature"]      = this->_persona.temperature;
         entry["max_damage_ratio"] = this->_persona.max_damage_ratio;
@@ -1927,6 +2069,11 @@ bool brain::dangerous(const game_bot& bot, const knowledge::prey& prey, const st
 
 double brain::power(const game_bot& bot, double seconds, const spellbook::effect* extra) const
 {
+    auto now    = clock::now();
+    auto cached = extra == nullptr && this->_powered.first == seconds && now - this->_powered_at < POWER_CACHE;
+    if (cached)
+        return this->_powered.second;
+
     auto melee =
         this->_dps >= 0.0 ? std::max(this->_dps, MIN_DPS) : static_cast<double>(std::max<uint8_t>(bot.level(), 1));
     auto interval = std::max(std::chrono::duration<double>(this->_persona.attack_delay).count(), 0.001);
@@ -1947,7 +2094,14 @@ double brain::power(const game_bot& bot, double seconds, const spellbook::effect
 
     auto rate = best.has_value() ? best->damage / interval : 0.0;
     if (rate <= melee)
+    {
+        if (extra == nullptr)
+        {
+            this->_powered    = std::pair{seconds, melee};
+            this->_powered_at = now;
+        }
         return melee;
+    }
 
     auto budget = static_cast<double>(bot.mp()) + this->regen() * seconds;
     for (auto& remedy : this->_supplies.remedies)
@@ -1955,9 +2109,15 @@ double brain::power(const game_bot& bot, double seconds, const spellbook::effect
         budget += static_cast<double>(this->refill(bot, remedy)) * bot.get_item_count_by_name(remedy.item);
     }
 
-    auto spent = best->mp * seconds / interval;
-    auto share = spent > 0.0 ? std::min(1.0, budget / spent) : 1.0;
-    return melee + (rate - melee) * share;
+    auto spent  = best->mp * seconds / interval;
+    auto share  = spent > 0.0 ? std::min(1.0, budget / spent) : 1.0;
+    auto result = melee + (rate - melee) * share;
+    if (extra == nullptr)
+    {
+        this->_powered    = std::pair{seconds, result};
+        this->_powered_at = now;
+    }
+    return result;
 }
 
 double brain::regen() const
@@ -2014,6 +2174,11 @@ double brain::worth(const game_bot& bot, const spellbook::lesson& lesson) const
 
 std::vector<const spellbook::lesson*> brain::lessons(const game_bot& bot, uint8_t level) const
 {
+    auto now    = clock::now();
+    auto cached = this->_lessons.find(level);
+    if (cached != this->_lessons.end() && now - cached->second.first < POWER_CACHE)
+        return cached->second.second;
+
     auto cls    = this->_knowledge.find_class(bot.class_name()).value_or(CLASS::NONE);
     auto result = std::vector<std::pair<double, const spellbook::lesson*>>{};
     for (auto lesson : this->_spellbook.pending(cls, bot, level))
@@ -2032,6 +2197,7 @@ std::vector<const spellbook::lesson*> brain::lessons(const game_bot& bot, uint8_
     {
         sorted.push_back(lesson);
     }
+    this->_lessons.insert_or_assign(level, std::pair{now, sorted});
     return sorted;
 }
 
@@ -2155,7 +2321,37 @@ uint32_t brain::congestion(const game_bot&                                      
 std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&                        bot,
                                                               const std::unordered_set<std::string>& preys)
 {
-    auto now             = clock::now();
+    struct plan
+    {
+        double            stay = 0.0;
+        double            loss = 0.0;
+        learner::features input{};
+        double            base = 0.0;
+    };
+
+    auto now    = clock::now();
+    auto capped = this->_knowledge.find_class(bot.class_name()) == CLASS::NONE && bot.level() >= this->_job.level;
+    if (this->_visit.has_value())
+    {
+        auto minutes = (this->_visit->travel + this->_visit->hunted) / 60.0;
+        if (this->_visit->hunted >= VISIT_MIN_MINUTES * 60.0 && capped == false && this->_visit->base > 0.0)
+        {
+            auto realized       = this->_visit->gained / minutes;
+            auto target         = std::log((realized + 1.0) / (this->_visit->base + 1.0));
+            auto detail         = Json::Value{};
+            detail["event"]     = "learning";
+            detail["map"]       = this->_visit->map;
+            detail["base"]      = this->_visit->base;
+            detail["realized"]  = realized;
+            detail["predicted"] = this->_learner.predict(this->_visit->input);
+            detail["target"]    = target;
+            detail["minutes"]   = minutes;
+            this->_trace.write(bot.name(), detail);
+            this->_learner.add(this->_visit->input, target);
+        }
+        this->_visit.reset();
+    }
+
     auto keys            = this->experience_keys(bot);
     auto visits          = this->_knowledge.search(bot.map(), bot.position(), bot.level());
     auto distances       = std::unordered_map<uint16_t, uint32_t>{};
@@ -2187,15 +2383,11 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
     }
     auto money_weight = this->_persona.money_weight * (bot.money() < needed ? MONEY_NEED_WEIGHT : 1.0);
 
-    auto dps      = this->power(bot, std::chrono::duration<double>(HUNT_SLICE).count());
-    auto cls      = this->_knowledge.find_class(bot.class_name()).value_or(CLASS::NONE);
-    auto cap      = std::numeric_limits<double>::infinity();
-    auto required = std::numeric_limits<double>::infinity();
+    auto dps = this->power(bot, std::chrono::duration<double>(HUNT_SLICE).count());
+    auto cls = this->_knowledge.find_class(bot.class_name()).value_or(CLASS::NONE);
+    auto cap = std::numeric_limits<double>::infinity();
     if (table::ability[cls].contains(bot.level() + 1))
-    {
-        cap      = table::ability[cls][bot.level()].exp / 100.0 * 3.3 * multiplier + 1;
-        required = static_cast<double>(table::ability[cls][bot.level()].exp);
-    }
+        cap = table::ability[cls][bot.level()].exp / 100.0 * 3.3 * multiplier + 1;
 
     auto max_hp = static_cast<double>(std::max<uint32_t>(std::max(bot.base_hp(), bot.hp()), 1));
     auto stock  = std::max(0.0, bot.hp() - max_hp * this->_persona.rest_below);
@@ -2204,7 +2396,7 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
         stock += static_cast<double>(this->healing(bot, remedy)) * bot.get_item_count_by_name(remedy.item);
     }
     auto room  = std::max(1.0, static_cast<double>(this->_supplies.sell_slots) - bot.items().size());
-    auto plans = std::unordered_map<uint16_t, std::pair<double, double>>{};
+    auto plans = std::unordered_map<uint16_t, plan>{};
 
     for (auto& [map, visit] : visits)
     {
@@ -2241,11 +2433,30 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
         auto drops   = 0.0;
         auto losses  = 0.0;
         auto gains   = 0.0;
+        auto risky   = 0u;
+        auto players = static_cast<double>(this->_crowd.count(ground.map, bot.name()));
+        auto area    = 0.0;
+        auto spawned = 0.0;
+        auto rects   = std::unordered_set<uint64_t>{};
+        for (auto& prey : ground.preys)
+        {
+            spawned += prey.count;
+            for (auto& [begin, end] : prey.areas)
+            {
+                auto key = (static_cast<uint64_t>(begin.x) << 48) | (static_cast<uint64_t>(begin.y) << 32) |
+                           (static_cast<uint64_t>(end.x) << 16) | end.y;
+                if (rects.insert(key).second)
+                    area += (std::abs(end.x - begin.x) + 1.0) * (std::abs(end.y - begin.y) + 1.0);
+            }
+        }
+        auto search =
+            std::sqrt(area / std::max(spawned / (players + 1.0), 0.001)) * this->_persona.step_delay.count() / 1000.0;
         for (auto& prey : ground.preys)
         {
             if (this->dangerous(bot, prey, keys))
             {
                 dangerous_count++;
+                risky++;
                 continue;
             }
 
@@ -2260,8 +2471,8 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
             }
 
             auto record   = this->_experience.find(keys, prey.name);
-            auto seconds  = record.has_value() ? record->seconds + record->loss * REST_SECONDS_FULL
-                                               : APPROACH_SECONDS + static_cast<double>(prey.hp) / dps;
+            auto seconds  = search + (record.has_value() ? record->seconds + record->loss * REST_SECONDS_FULL
+                                                         : static_cast<double>(prey.hp) / dps);
             auto lost     = record.has_value()
                                 ? record->loss * max_hp
                                 : static_cast<double>(prey.hp) / dps / prey.interval * prey.damage * this->_armor;
@@ -2281,7 +2492,7 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
 
         auto steps     = static_cast<double>(hops->second) + this->congestion(bot, visits, ground.map);
         auto travel    = steps * this->_persona.step_delay.count() / 1000.0 * this->_persona.distance;
-        auto available = static_cast<double>(count) / (this->_crowd.count(ground.map, bot.name()) + 1);
+        auto available = static_cast<double>(count) / (players + 1.0);
         auto expected  = per_min / count * std::min(available, 30.0);
         auto yield     = 1.0;
         auto observed  = this->_yields.find(ground.map);
@@ -2297,12 +2508,20 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
             stay = std::min(stay, room / (kills * drops / count));
         if (losses > 0.0)
             stay = std::min(stay, stock / (kills * losses / count));
-        if (gains > 0.0)
-            stay = std::min(stay, required / (kills * gains / count));
-        plans.insert_or_assign(ground.map, std::pair{stay, kills * losses / count});
+        auto kept    = std::isfinite(stay) ? stay / (stay + travel) : 1.0;
+        auto input   = learner::features{1.0,
+                                       std::min(steps / 500.0, 1.0),
+                                       std::min(players / count, 1.0),
+                                       std::min(this->congestion(bot, visits, ground.map) / 50.0, 1.0),
+                                       std::isfinite(stay) ? std::min(stay, 600.0) / 600.0 : 1.0,
+                                       static_cast<double>(risky) / ground.preys.size(),
+                                       bot.level() / 100.0,
+                                       1.0 - kept};
+        auto base    = 60.0 * gains / busy * kept;
+        auto learned = this->_persona.learning ? std::exp(this->_learner.predict(input)) : 1.0;
+        plans.insert_or_assign(ground.map, plan{stay, kills * losses / count, input, base});
 
-        auto kept  = std::isfinite(stay) ? stay / (stay + travel) : 1.0;
-        auto value = expected * yield * kept * (1.0 + MATERIAL_BONUS * useful / count);
+        auto value = expected * yield * kept * learned * (1.0 + MATERIAL_BONUS * useful / count);
         if (count < MIN_PREYS)
         {
             filtered[2]++;
@@ -2364,7 +2583,10 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
         candidate["transit"] = this->congestion(bot, visits, ground->map);
         auto plan            = plans.find(ground->map);
         if (plan != plans.end())
-            candidate["stay"] = std::isfinite(plan->second.first) ? plan->second.first : -1.0;
+        {
+            candidate["stay"]    = std::isfinite(plan->second.stay) ? plan->second.stay : -1.0;
+            candidate["learned"] = this->_learner.predict(plan->second.input);
+        }
         detail["candidates"].append(candidate);
     }
     this->_trace.write(bot.name(), detail);
@@ -2403,8 +2625,9 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
     auto plan = plans.find(ground->map);
     if (plan != plans.end())
     {
-        this->_stay      = std::isfinite(plan->second.first) ? plan->second.first : 0.0;
-        this->_loss_rate = plan->second.second;
+        this->_stay      = std::isfinite(plan->second.stay) ? plan->second.stay : 0.0;
+        this->_loss_rate = plan->second.loss;
+        this->_visit     = visit{ground->map, plan->second.input, plan->second.base, clock::now()};
     }
     return *ground;
 }
@@ -2469,13 +2692,24 @@ std::optional<knowledge::npc_spot> brain::nearest(const game_bot&               
 {
     auto distances = this->_knowledge.distances(bot.map(), bot.position(), bot.level());
     auto found     = std::optional<knowledge::npc_spot>{};
-    auto hops      = std::numeric_limits<uint32_t>::max();
+    auto best      = std::numeric_limits<uint64_t>::max();
     for (auto& spot : spots)
     {
         auto distance = distances.find(spot.map);
-        if (distance != distances.end() && distance->second < hops)
+        if (distance == distances.end())
+            continue;
+
+        auto cost = static_cast<uint64_t>(distance->second) + this->_crowd.count(spot.map, bot.name());
+        if (spot.map != bot.map() && spots.size() > 1)
         {
-            hops  = distance->second;
+            auto route = this->_knowledge.route(bot.map(), bot.position(), spot.map, bot.level());
+            if (route.has_value() && route->empty() == false)
+                cost += this->_crowd.count(route->back().map, bot.name());
+        }
+
+        if (cost < best)
+        {
+            best  = cost;
             found = spot;
         }
     }
@@ -2851,7 +3085,17 @@ async::task<brain::result> brain::join(game_bot& bot)
 
     if (bot.get_item_count_by_name(this->_job.item) < this->_job.count)
     {
-        auto ground = this->find_ground(bot, this->_job.ground);
+        auto droppers = std::unordered_set<std::string>{};
+        for (auto& candidate : this->_knowledge.hunting_grounds())
+        {
+            for (auto& prey : candidate.preys)
+            {
+                if (prey.drops.contains(this->_job.item))
+                    droppers.insert(prey.name);
+            }
+        }
+
+        auto ground = droppers.empty() ? this->find_ground(bot, this->_job.ground) : this->select_ground(bot, droppers);
         if (ground.has_value() == false)
         {
             this->report(bot, "join", "NO_GROUND", Json::Value{});
@@ -2859,6 +3103,8 @@ async::task<brain::result> brain::join(game_bot& bot)
         }
 
         auto arrived = co_await this->travel(bot, ground->map, ground->center, 4);
+        if (arrived == result::FAILED && bot.map() != ground->map)
+            this->_avoided_grounds.insert_or_assign(ground->map, clock::now() + GROUND_AVOID);
         if (arrived != result::SUCCEEDED)
             co_return arrived;
 
@@ -3656,14 +3902,22 @@ async::task<brain::result> brain::hunt(game_bot& bot)
     if (arrived != result::SUCCEEDED)
         co_return arrived;
 
-    auto  started  = clock::now();
-    auto  exp      = bot.exp();
+    auto started = clock::now();
+    auto exp     = bot.exp();
+    if (this->_visit.has_value() && this->_visit->map == ground.map && this->_visit->travel == 0.0)
+        this->_visit->travel = std::chrono::duration<double>(started - this->_visit->since).count();
+
     auto  farmed   = co_await this->farm(bot, ground, HUNT_SLICE);
     auto  gained   = bot.exp() > exp ? bot.exp() - exp : 0u;
     auto  minutes  = std::chrono::duration<double>(clock::now() - started).count() / 60.0;
     auto& yield    = this->_yields[ground.map];
     yield.first   += static_cast<double>(gained);
     yield.second  += minutes;
+    if (this->_visit.has_value() && this->_visit->map == ground.map)
+    {
+        this->_visit->hunted += minutes * 60.0;
+        this->_visit->gained += gained;
+    }
     if (farmed != result::SUCCEEDED)
         co_return farmed;
 
@@ -3945,7 +4199,9 @@ async::task<void> brain::yield(game_bot& bot)
         return false;
     };
 
-    if (bot.state() == STATE::GHOST || cramped(bot.position()) == false)
+    auto stuck =
+        this->_cornered.has_value() && this->_cornered->first == bot.map() && clock::now() < this->_cornered->second;
+    if (bot.state() == STATE::GHOST || stuck || cramped(bot.position()) == false)
         co_return;
 
     auto grid = this->_knowledge.find_grid(bot.map());
@@ -3988,7 +4244,12 @@ async::task<void> brain::yield(game_bot& bot)
     detail["from"] = Json::Value{Json::arrayValue};
     detail["from"].append(from.x);
     detail["from"].append(from.y);
-    this->report(bot, "yield", cramped(bot.position()) ? std::string{"NO_ROOM"} : std::string{}, detail);
+    auto cornered = cramped(bot.position());
+    if (cornered)
+        this->_cornered = std::pair{bot.map(), clock::now() + YIELD_RETRY};
+    else
+        this->_cornered.reset();
+    this->report(bot, "yield", cornered ? std::string{"NO_ROOM"} : std::string{}, detail);
 }
 
 async::task<brain::result> brain::travel(game_bot& bot, uint16_t map, const point<uint16_t>& target, uint16_t range)

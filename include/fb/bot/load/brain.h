@@ -82,6 +82,7 @@ struct persona
     double                    temperature      = 0.3;
     double                    money_weight     = 1.0;
     double                    distance         = 1.0;
+    bool                      learning         = false;
     std::chrono::milliseconds step_delay       = std::chrono::milliseconds(300);
     std::chrono::milliseconds attack_delay     = std::chrono::milliseconds(600);
     std::chrono::milliseconds attack_wait      = std::chrono::milliseconds(600);
@@ -323,6 +324,34 @@ public:
     void                         apply(const Json::Value& event);
 };
 
+class learner
+{
+public:
+    static constexpr size_t FEATURES = 8;
+    using features                   = std::array<double, FEATURES>;
+
+private:
+    mutable std::mutex _mutex;
+    features           _theta{};
+    uint64_t           _samples = 0;
+    double             _alpha   = 0.02;
+    double             _error   = 0.0;
+    std::string        _path;
+    cluster::journal   _journal;
+
+public:
+    void              configure(const Json::Value& json);
+    double            predict(const features& input) const;
+    void              add(const features& input, double target);
+    void              save() const;
+    Json::Value       state() const;
+    cluster::journal& journal();
+    void              apply(const Json::Value& event);
+
+private:
+    void update(const features& input, double target);
+};
+
 class roster
 {
 private:
@@ -452,6 +481,17 @@ private:
     using clock      = std::chrono::steady_clock;
     using time_point = clock::time_point;
 
+    struct visit
+    {
+        uint16_t          map = 0;
+        learner::features input{};
+        double            base = 0.0;
+        time_point        since{};
+        double            travel = 0.0;
+        double            hunted = 0.0;
+        uint32_t          gained = 0;
+    };
+
 private:
     // clang-format off
     const knowledge&                                           _knowledge;
@@ -466,6 +506,7 @@ private:
     market&                                                    _market;
     roster&                                                    _roster;
     crowd&                                                     _crowd;
+    learner&                                                   _learner;
     experience&                                                _experience;
     const messages&                                            _messages;
     trace&                                                     _trace;
@@ -556,6 +597,11 @@ private:
     double                                                     _stay            = 0.0;
     double                                                     _loss_rate       = 0.0;
     std::unordered_map<std::string, std::pair<double, double>> _observed;
+    std::optional<visit>                                       _visit;
+    std::optional<std::pair<uint16_t, time_point>>             _cornered;
+    mutable std::pair<double, double>                          _powered{-1.0, 0.0};
+    mutable time_point                                         _powered_at{};
+    mutable std::unordered_map<uint8_t, std::pair<time_point, std::vector<const spellbook::lesson*>>> _lessons;
     // clang-format on
 
 public:
@@ -571,6 +617,7 @@ public:
           market&          market,
           roster&          roster,
           crowd&           crowd,
+          learner&         learner,
           experience&      experience,
           const messages&  messages,
           trace&           trace,

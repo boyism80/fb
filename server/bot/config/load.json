@@ -102,6 +102,11 @@
 			267
 		]
 	},
+	"learning": {
+		"ratio": 0.5,
+		"alpha": 0.02,
+		"path": "logs/learning/ground.json"
+	},
 	"spread": {
 		"distance": 4.0,
 		"explore": 3.0,

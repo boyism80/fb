@@ -50,8 +50,10 @@ void game_bot_controller::initialize()
         {
             this->_personas.emplace_back(json);
         }
-        this->_spread = root["spread"];
-        speed         = root.get("speed", 1.0).asDouble();
+        this->_spread   = root["spread"];
+        this->_learning = root["learning"].get("ratio", 0.0).asDouble();
+        this->_learner.configure(root["learning"]);
+        speed = root.get("speed", 1.0).asDouble();
 
         this->_tutorial = tutorial(root["tutorial"]);
         this->_job      = job(root["job"]);
@@ -129,6 +131,7 @@ void game_bot_controller::initialize()
         this->_market.journal().enable();
         this->_roster.journal().enable();
         this->_crowd.journal().enable();
+        this->_learner.journal().enable();
         this->_experience.journal().enable();
         this->container.link.on("sync", [this](const Json::Value& message) {
             for (auto& event : message["events"])
@@ -144,6 +147,8 @@ void game_bot_controller::initialize()
                     this->_roster.apply(event);
                 else if (kind == "crowd")
                     this->_crowd.apply(event);
+                else if (kind == "learner")
+                    this->_learner.apply(event);
                 else if (kind == "fight")
                     this->_experience.apply(event);
             }
@@ -160,6 +165,7 @@ async::task<void> game_bot_controller::on_sync()
                           &this->_market.journal(),
                           &this->_roster.journal(),
                           &this->_crowd.journal(),
+                          &this->_learner.journal(),
                           &this->_experience.journal()})
     {
         for (auto& event : journal->drain())
@@ -219,10 +225,12 @@ async::task<void> game_bot_controller::on_timer(const fb::model::datetime& now, 
                     {
                         weights.push_back(persona.ratio);
                     }
-                    auto random = std::mt19937(seed);
-                    auto index  = std::discrete_distribution<size_t>(weights.begin(), weights.end())(random);
-                    selected    = std::make_shared<brain>(*this->_knowledge,
-                                                       this->_personas.at(index).vary(this->_spread, random),
+                    auto random      = std::mt19937(seed);
+                    auto index       = std::discrete_distribution<size_t>(weights.begin(), weights.end())(random);
+                    auto persona     = this->_personas.at(index).vary(this->_spread, random);
+                    persona.learning = std::uniform_real_distribution<double>(0.0, 1.0)(random) < this->_learning;
+                    selected         = std::make_shared<brain>(*this->_knowledge,
+                                                       persona,
                                                        this->_tutorial,
                                                        this->_job,
                                                        this->_supplies,
@@ -233,6 +241,7 @@ async::task<void> game_bot_controller::on_timer(const fb::model::datetime& now, 
                                                        this->_market,
                                                        this->_roster,
                                                        this->_crowd,
+                                                       this->_learner,
                                                        this->_experience,
                                                        this->_messages,
                                                        this->_trace,
@@ -283,14 +292,16 @@ async::task<void> game_bot_controller::on_metrics()
         }
     }
 
-    auto root      = Json::Value{};
-    root["time"]   = std::format("{}", std::chrono::system_clock::now());
-    root["online"] = online;
-    root["kills"]  = static_cast<Json::UInt64>(this->_metrics.kills.load());
-    root["deaths"] = static_cast<Json::UInt64>(this->_metrics.deaths.load());
-    root["exp"]    = static_cast<Json::UInt64>(this->_metrics.exp.load());
-    root["stuck"]  = static_cast<Json::UInt64>(this->_metrics.stuck.load());
-    root["fights"] = static_cast<Json::UInt64>(this->_experience.fights());
+    auto root       = Json::Value{};
+    root["time"]    = std::format("{}", std::chrono::system_clock::now());
+    root["online"]  = online;
+    root["kills"]   = static_cast<Json::UInt64>(this->_metrics.kills.load());
+    root["deaths"]  = static_cast<Json::UInt64>(this->_metrics.deaths.load());
+    root["exp"]     = static_cast<Json::UInt64>(this->_metrics.exp.load());
+    root["stuck"]   = static_cast<Json::UInt64>(this->_metrics.stuck.load());
+    root["fights"]  = static_cast<Json::UInt64>(this->_experience.fights());
+    root["learner"] = this->_learner.state();
+    this->_learner.save();
     for (size_t i = 0; i < GOAL_COUNT; i++)
     {
         root["goals"][GOAL_NAMES.at(i)]    = goals.at(i);

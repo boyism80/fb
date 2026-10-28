@@ -37,6 +37,8 @@ private:
     market                                                  _market;
     roster                                                  _roster;
     crowd                                                   _crowd;
+    learner                                                 _learner;
+    double                                                  _learning = 0.0;
     std::vector<std::string>                                _setup;
     census                                                  _census;
     experience                                              _experience;
