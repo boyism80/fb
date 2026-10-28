@@ -12,11 +12,11 @@ namespace game_reqs = fb::protocol::game::request;
  * Handler for client pong (0x75). Sets pong_received on the character's ping state.
  */
 template <fb::protocol::CLIENT_VERSION V>
-class pong : public fb::handler::protocol<fb::game::server, game_reqs::pong<V>>
+class pong : public fb::handler::protocol<fb::game::server, game_reqs::pong<V>, 1000, 10, false, true>
 {
 public:
     pong(fb::game::server& server) :
-        fb::handler::protocol<fb::game::server, game_reqs::pong<V>>(server)
+        fb::handler::protocol<fb::game::server, game_reqs::pong<V>, 1000, 10, false, true>(server)
     { }
     pong(const pong&)             = delete;
     pong(pong&&)                  = delete;

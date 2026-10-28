@@ -13,7 +13,8 @@ template <typename ServerType,
           typename ProtocolType,
           uint32_t DurationMs    = 1000,
           uint32_t Limit         = 10,
-          bool     AwaitDispatch = false>
+          bool     AwaitDispatch = false,
+          bool     Heartbeat     = false>
 class protocol
 {
 public:
@@ -25,6 +26,7 @@ public:
     static constexpr uint32_t duration_ms    = DurationMs;
     static constexpr uint32_t limit          = Limit;
     static constexpr bool     await_dispatch = AwaitDispatch;
+    static constexpr bool     heartbeat      = Heartbeat;
 
 protected:
     server_type& server;

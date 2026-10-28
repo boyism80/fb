@@ -66,7 +66,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     _ridable_id(params.ridable_id), _level(params.level), _class(params.class_type), _promotion(params.promotion),
     _money(params.money), _mimicry(params.mimicry), _title(params.title), _nation(params.nation),
     _divine_beast(params.divine_beast), _reputation(params.reputation), _super_hide(params.super_hide),
-    _last_afk_time(server.now()),
+    _last_afk_time(fb::model::datetime::utc_now()),
     _evaluation{.score    = params.evaluation,
                 .tick     = server.now(),
                 .playtime = std::chrono::seconds(params.evaluation_playtime),
@@ -2689,7 +2689,7 @@ bool character::hidden(ROLE role) const
 void character::update_last_afk_time()
 {
     this->assert_thread();
-    this->_last_afk_time = this->server.now();
+    this->_last_afk_time = fb::model::datetime::utc_now();
 }
 
 fb::model::datetime& character::last_afk_time()

@@ -42,6 +42,9 @@ async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread:
         if (action_elapsed < action_interval)
             co_return;
 
+        if (ch->state() == STATE::GHOST || ch->state() == STATE::RIDING)
+            co_return;
+
         try
         {
             ch->action(ACTION::SLEEP, DURATION::EMOTION);

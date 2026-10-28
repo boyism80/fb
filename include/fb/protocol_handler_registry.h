@@ -53,17 +53,20 @@ private:
         std::chrono::steady_clock::duration duration       = 1s;
         uint32_t                            limit          = 0xFFFFFFFF;
         bool                                await_dispatch = false;
+        bool                                heartbeat      = false;
 
         rate_limited_command() = default;
 
         rate_limited_command(const handle_func&                         fn,
                              const std::chrono::steady_clock::duration& duration,
                              uint32_t                                   limit,
-                             bool                                       await_dispatch) :
+                             bool                                       await_dispatch,
+                             bool                                       heartbeat) :
             fn(fn),
             duration(duration),
             limit(limit),
-            await_dispatch(await_dispatch)
+            await_dispatch(await_dispatch),
+            heartbeat(heartbeat)
         { }
     };
 
@@ -123,6 +126,7 @@ public:
         auto duration       = std::chrono::milliseconds(HandlerType::duration_ms);
         auto limit          = HandlerType::limit;
         auto await_dispatch = HandlerType::await_dispatch;
+        auto heartbeat      = HandlerType::heartbeat;
         auto opcode         = protocol_type::opcode;
         auto version        = static_cast<uint16_t>(protocol_version_of<protocol_type>());
         auto decrypt        = fb::protocol::protocol_decrypt<protocol_type>();
@@ -144,7 +148,8 @@ public:
             },
             duration,
             limit,
-            await_dispatch);
+            await_dispatch,
+            heartbeat);
 
         this->_policies[opcode] = opcode_policy{.decrypt = decrypt};
     }

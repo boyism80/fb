@@ -167,8 +167,6 @@ private:
 
                 reader.flush(); // remove magic code and size
 
-                socket.update_last_packet_time();
-
                 // Session missing / version not established → deserialize as v550.
                 // A logic thread may release the session at any time; keep it alive while reading the version.
                 auto session_data   = socket.data_ptr();
@@ -187,14 +185,17 @@ private:
                 else
                 {
                     // Deserialize from a copy of this packet's body so a parser cannot read into the next packet.
-                    auto body           = fb::stream(stream.data(), size - sizeof(uint8_t));
-                    auto body_reader    = fb::stream_reader<big_endian>(body);
-                    auto protocol       = this->handler.protocol.get_deserializer(*opcode, client_version)(body_reader);
-                    auto await_dispatch = this->handler.protocol.get_handler(*opcode, client_version).await_dispatch;
-                    auto fd             = socket.fd();
-                    auto weak           = socket.template weak_from_this_as<fb::socket<T>>();
-                    auto builder        = this->threads.new_builder(weak);
-                    auto frame          = execution_context::create();
+                    auto  body        = fb::stream(stream.data(), size - sizeof(uint8_t));
+                    auto  body_reader = fb::stream_reader<big_endian>(body);
+                    auto  protocol    = this->handler.protocol.get_deserializer(*opcode, client_version)(body_reader);
+                    auto& entry       = this->handler.protocol.get_handler(*opcode, client_version);
+                    auto  await_dispatch = entry.await_dispatch;
+                    if (entry.heartbeat == false)
+                        socket.update_last_packet_time();
+                    auto fd      = socket.fd();
+                    auto weak    = socket.template weak_from_this_as<fb::socket<T>>();
+                    auto builder = this->threads.new_builder(weak);
+                    auto frame   = execution_context::create();
                     frame->slot(context::local::slot_id(), context{.transaction_id = mint_transaction_id()});
                     builder.context = execution_context::token(std::move(frame));
                     builder.func    = [this, protocol, weak, fd, opcode = *opcode, client_version](
