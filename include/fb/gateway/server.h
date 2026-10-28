@@ -27,6 +27,8 @@ private:
     std::vector<endpoint> _entrypoints;
     fb::stream            _endpoint_bytes;
     uint32_t              _endpoint_crc = 0;
+    fb::stream            _lan_endpoint_bytes;
+    uint32_t              _lan_endpoint_crc = 0;
     fb::stream            _connection_welcome;
 
 public:
@@ -38,8 +40,8 @@ public:
     server(server&&)      = delete;
     ~server();
     const std::vector<endpoint>& entrypoints() const;
-    const fb::stream&            endpoint_bytes() const;
-    uint32_t                     endpoint_crc() const;
+    const fb::stream&            endpoint_bytes(const fb::socket<fb::gateway::session>& session) const;
+    uint32_t                     endpoint_crc(const fb::socket<fb::gateway::session>& session) const;
 
 private:
     void load_entries();

@@ -37,7 +37,7 @@ async::task<bool> version<V>::handle(fb::socket<fb::gateway::session>& session, 
         auto encryption = fb::encryption::generate();
         session.encryption(encryption);
 
-        this->server.send(session, gateway_resp::encryption(encryption, this->server.endpoint_crc()), false);
+        this->server.send(session, gateway_resp::encryption(encryption, this->server.endpoint_crc(session)), false);
         co_return true;
     }
     catch (std::exception&)
