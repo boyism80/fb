@@ -92,6 +92,7 @@ public:
 
     using blocked_func = std::function<bool(const point<uint16_t>&)>;
     using queue_map    = std::unordered_map<uint64_t, uint32_t>;
+    using detour_map   = std::unordered_map<uint16_t, uint32_t>;
 
     static uint64_t gate_key(uint16_t map, const point<uint16_t>& position);
 
@@ -120,7 +121,7 @@ public:
     bool                                         warp_at(uint16_t map, const point<uint16_t>& position) const;
     bool                                         reaches(uint16_t map, const point<uint16_t>& from, const point<uint16_t>& gate) const;
     std::optional<npc_spot>                      find_npc(uint16_t map, uint32_t npc) const;
-    std::unordered_map<uint16_t, visit>          search(uint16_t from, const point<uint16_t>& position, uint8_t level, const queue_map& queues = {}, std::optional<uint16_t> until = std::nullopt) const;
+    std::unordered_map<uint16_t, visit>          search(uint16_t from, const point<uint16_t>& position, uint8_t level, const queue_map& queues = {}, std::optional<uint16_t> until = std::nullopt, const detour_map& detours = {}) const;
     std::vector<npc_spot>                        npc_spots(uint32_t npc) const;
     std::optional<CLASS>                         find_class(const std::string& name) const;
     const shop*                                  find_shop(uint32_t npc) const;
@@ -133,7 +134,7 @@ public:
     std::vector<npc_spot>                        sellers(const std::string& item) const;
     const std::vector<hunting_ground>&           hunting_grounds() const;
     const std::vector<npc_spot>&                 revive_spots() const;
-    std::optional<std::vector<warp>>             route(uint16_t from, const point<uint16_t>& position, uint16_t to, uint8_t level, const queue_map& queues = {}) const;
+    std::optional<std::vector<warp>>             route(uint16_t from, const point<uint16_t>& position, uint16_t to, uint8_t level, const queue_map& queues = {}, const detour_map& detours = {}) const;
     std::unordered_map<uint16_t, uint32_t>       distances(uint16_t from, const point<uint16_t>& position, uint8_t level) const;
     std::optional<std::vector<DIRECTION>>        path(uint16_t map, const point<uint16_t>& from, const point<uint16_t>& to, uint16_t range, const blocked_func& blocked) const;
     // clang-format on

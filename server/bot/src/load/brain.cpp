@@ -68,6 +68,8 @@ constexpr auto VISIT_MIN_MINUTES   = 0.5;
 constexpr auto POWER_CACHE         = std::chrono::seconds(1);
 constexpr auto YIELD_RETRY         = std::chrono::seconds(10);
 constexpr auto JAM_STEPS           = 1000u;
+constexpr auto JAM_STEP            = 100u;
+constexpr auto JAM_WINDOW          = std::chrono::seconds(60);
 constexpr auto MIN_DPS             = 0.5;
 constexpr auto KILL_TIME_RATIO     = 0.6;
 constexpr auto MONEY_NEED_WEIGHT   = 50.0;
@@ -1730,6 +1732,7 @@ void brain::check(game_bot& bot)
         entry["event"]            = "state";
         entry["nation"]           = bot.nation();
         entry["crowd"]            = this->_crowd.count(bot.map(), bot.name());
+        entry["jam"]              = this->jam(bot.map());
         entry["persona"]          = this->_persona.name;
         entry["distance"]         = this->_persona.distance;
         entry["learning"]         = this->_persona.learning;
@@ -2147,6 +2150,37 @@ double brain::power(const game_bot& bot, double seconds, const spellbook::effect
     return result;
 }
 
+void brain::blocked(uint16_t map)
+{
+    auto now = clock::now();
+    this->_blocks.push_back({map, now});
+    while (this->_blocks.empty() == false && now - this->_blocks.front().second > JAM_WINDOW)
+    {
+        this->_blocks.pop_front();
+    }
+}
+
+uint32_t brain::jam(uint16_t map) const
+{
+    auto now = clock::now();
+    return static_cast<uint32_t>(
+        std::count_if(this->_blocks.begin(), this->_blocks.end(), [map, now](const auto& entry) {
+            return entry.first == map && now - entry.second <= JAM_WINDOW;
+        }));
+}
+
+knowledge::detour_map brain::detours() const
+{
+    auto now    = clock::now();
+    auto result = knowledge::detour_map{};
+    for (auto& [map, at] : this->_blocks)
+    {
+        if (now - at <= JAM_WINDOW)
+            result[map] += JAM_STEP;
+    }
+    return result;
+}
+
 knowledge::queue_map brain::queues() const
 {
     auto now    = clock::now();
@@ -2393,8 +2427,9 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
         this->_visit.reset();
     }
 
-    auto keys            = this->experience_keys(bot);
-    auto visits          = this->_knowledge.search(bot.map(), bot.position(), bot.level(), this->queues());
+    auto keys = this->experience_keys(bot);
+    auto visits =
+        this->_knowledge.search(bot.map(), bot.position(), bot.level(), this->queues(), std::nullopt, this->detours());
     auto distances       = std::unordered_map<uint16_t, uint32_t>{};
     auto candidates      = std::vector<std::pair<double, const knowledge::hunting_ground*>>{};
     auto sparse          = std::vector<std::pair<double, const knowledge::hunting_ground*>>{};
@@ -2732,9 +2767,10 @@ const tutorial::step* brain::find_step(const game_bot& bot) const
 std::optional<knowledge::npc_spot> brain::nearest(const game_bot&                         bot,
                                                   const std::vector<knowledge::npc_spot>& spots) const
 {
-    auto visits = this->_knowledge.search(bot.map(), bot.position(), bot.level(), this->queues());
-    auto found  = std::optional<knowledge::npc_spot>{};
-    auto best   = std::numeric_limits<uint64_t>::max();
+    auto visits =
+        this->_knowledge.search(bot.map(), bot.position(), bot.level(), this->queues(), std::nullopt, this->detours());
+    auto found = std::optional<knowledge::npc_spot>{};
+    auto best  = std::numeric_limits<uint64_t>::max();
     for (auto& spot : spots)
     {
         auto visit = visits.find(spot.map);
@@ -4313,6 +4349,8 @@ async::task<void> brain::yield(game_bot& bot)
     detail["from"].append(from.y);
     auto cornered = cramped(bot.position());
     if (cornered)
+        this->blocked(bot.map());
+    if (cornered)
         this->_cornered = std::pair{bot.map(), clock::now() + YIELD_RETRY};
     else
         this->_cornered.reset();
@@ -4332,9 +4370,9 @@ async::task<brain::result> brain::travel(game_bot& bot, uint16_t map, const poin
     {
         auto current = this->_knowledge.distances(bot.map(), bot.position(), bot.level());
         auto found   = current.find(map);
-        auto best =
-            found != current.end() ? static_cast<double>(found->second) : std::numeric_limits<double>::infinity();
-        auto input = std::string{};
+        auto best    = found != current.end() ? static_cast<double>(found->second) + this->jam(bot.map()) * JAM_STEP
+                                              : std::numeric_limits<double>::infinity();
+        auto input   = std::string{};
         for (auto& [direction, dsl] : root->cardinal)
         {
             auto gate   = fb::model::dsl::map(dsl.params);
@@ -4371,7 +4409,8 @@ async::task<brain::result> brain::travel(game_bot& bot, uint16_t map, const poin
     detail["from"] = bot.map();
     if (bot.map() != map)
     {
-        auto route = this->_knowledge.route(bot.map(), bot.position(), map, bot.level(), this->queues());
+        auto route =
+            this->_knowledge.route(bot.map(), bot.position(), map, bot.level(), this->queues(), this->detours());
         if (route.has_value() == false)
         {
             this->report(bot, "travel", "NO_ROUTE", detail);
@@ -4400,6 +4439,7 @@ async::task<brain::result> brain::travel(game_bot& bot, uint16_t map, const poin
                 }
                 if (arrived == result::FAILED)
                 {
+                    this->blocked(bot.map());
                     this->_jammed.insert_or_assign(knowledge::gate_key(hop.map, hop.before),
                                                    clock::now() + GROUND_AVOID);
                     detail["gate"] = Json::Value{Json::arrayValue};
@@ -4473,7 +4513,10 @@ async::task<brain::result> brain::travel(game_bot& bot, uint16_t map, const poin
 
     auto walked = co_await this->walk(bot, target, range);
     if (walked == result::FAILED)
+    {
+        this->blocked(bot.map());
         this->report(bot, "travel", "TARGET_BLOCKED", detail);
+    }
     co_return walked;
 }
 

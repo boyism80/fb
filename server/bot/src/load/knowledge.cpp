@@ -631,7 +631,8 @@ std::unordered_map<uint16_t, knowledge::visit> knowledge::search(uint16_t       
                                                                  const point<uint16_t>&  position,
                                                                  uint8_t                 level,
                                                                  const queue_map&        queues,
-                                                                 std::optional<uint16_t> until) const
+                                                                 std::optional<uint16_t> until,
+                                                                 const detour_map&       detours) const
 {
     using node  = std::pair<uint32_t, uint16_t>;
     auto visits = std::unordered_map<uint16_t, visit>{
@@ -662,8 +663,10 @@ std::unordered_map<uint16_t, knowledge::visit> knowledge::search(uint16_t       
 
             auto steps = static_cast<uint32_t>(std::abs(hop.before.x - here.at.x) + std::abs(hop.before.y - here.at.y));
             auto queued = queues.find(knowledge::gate_key(current, hop.before));
-            auto next   = cost + steps + 1 + (queued != queues.end() ? queued->second : 0u);
-            auto known  = visits.find(hop.dest);
+            auto detour = detours.find(hop.dest);
+            auto next   = cost + steps + 1 + (queued != queues.end() ? queued->second : 0u) +
+                        (detour != detours.end() ? detour->second : 0u);
+            auto known = visits.find(hop.dest);
             if (known != visits.end() && known->second.cost <= next)
                 continue;
 
@@ -678,12 +681,13 @@ std::optional<std::vector<knowledge::warp>> knowledge::route(uint16_t           
                                                              const point<uint16_t>& position,
                                                              uint16_t               to,
                                                              uint8_t                level,
-                                                             const queue_map&       queues) const
+                                                             const queue_map&       queues,
+                                                             const detour_map&      detours) const
 {
     if (from == to)
         return std::vector<warp>{};
 
-    auto visits = this->search(from, position, level, queues, to);
+    auto visits = this->search(from, position, level, queues, to, detours);
     if (visits.contains(to) == false)
         return std::nullopt;
 

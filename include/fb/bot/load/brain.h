@@ -13,6 +13,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -605,6 +606,7 @@ private:
     std::optional<visit>                                       _visit;
     std::optional<std::pair<uint16_t, time_point>>             _cornered;
     std::unordered_map<uint64_t, time_point>                   _jammed;
+    std::deque<std::pair<uint16_t, time_point>>                _blocks;
     mutable std::pair<double, double>                          _powered{-1.0, 0.0};
     mutable time_point                                         _powered_at{};
     mutable std::pair<time_point, std::optional<std::pair<std::string, uint32_t>>> _shortage;
@@ -650,6 +652,9 @@ private:
     bool                                     dangerous(const game_bot& bot, const knowledge::prey& prey, const std::vector<std::string>& keys) const;
     double                                   power(const game_bot& bot, double seconds, const spellbook::effect* extra = nullptr) const;
     double                                   regen() const;
+    void                                     blocked(uint16_t map);
+    uint32_t                                 jam(uint16_t map) const;
+    knowledge::detour_map                    detours() const;
     knowledge::queue_map                     queues() const;
     double                                   worth(const game_bot& bot, const spellbook::lesson& lesson) const;
     std::vector<const spellbook::lesson*>    lessons(const game_bot& bot, uint8_t level) const;
