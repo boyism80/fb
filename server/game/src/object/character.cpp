@@ -1443,7 +1443,7 @@ void character::init()
 {
     this->_ping_state.enabled        = true;
     this->_ping_state.pong_received  = true;
-    this->_ping_state.last_ping_time = this->server.now();
+    this->_ping_state.last_ping_time = fb::model::datetime::utc_now();
     this->listener.on_character_init(*this);
 }
 
