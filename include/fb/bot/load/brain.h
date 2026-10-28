@@ -520,6 +520,7 @@ private:
     std::atomic<bool>                                          _running = false;
     std::atomic<int>                                           _goal    = -1;
     std::atomic<int>                                           _class   = -1;
+    std::atomic<int>                                           _level   = 0;
     bool                                                       _interrupted = false;
     std::array<time_point, GOAL_COUNT>                         _cooldowns{};
     std::array<uint32_t, GOAL_COUNT>                           _failed_streak{};
@@ -636,6 +637,7 @@ public:
     void                 check(game_bot& bot);
     std::optional<GOAL>  goal() const;
     std::optional<CLASS> cls() const;
+    uint8_t              level() const;
 
 private:
     // clang-format off

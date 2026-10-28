@@ -1696,6 +1696,7 @@ void brain::check(game_bot& bot)
 
     this->perceive(bot);
     this->_roster.update(bot.name(), bot.level());
+    this->_level = bot.level();
 
     auto checked = clock::now();
     if (this->_mp_since != time_point{} && this->_mp_seen < std::max(bot.base_mp(), bot.mp()))
@@ -1921,6 +1922,11 @@ std::optional<GOAL> brain::goal() const
         return std::nullopt;
 
     return static_cast<GOAL>(value);
+}
+
+uint8_t brain::level() const
+{
+    return static_cast<uint8_t>(this->_level.load());
 }
 
 std::optional<CLASS> brain::cls() const

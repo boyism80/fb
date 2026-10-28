@@ -15,6 +15,7 @@
 #include <format>
 #include <fstream>
 #include <functional>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <random>
@@ -274,6 +275,7 @@ async::task<void> game_bot_controller::on_metrics()
 {
     auto goals   = std::array<uint32_t, GOAL_COUNT>{};
     auto classes = std::array<uint32_t, CLASS_COUNT>{};
+    auto levels  = std::map<uint32_t, uint32_t>{};
     auto online  = uint32_t{0};
     {
         auto lock = std::lock_guard(this->_brains_mutex);
@@ -285,6 +287,8 @@ async::task<void> game_bot_controller::on_metrics()
 
             online++;
             goals[static_cast<size_t>(goal.value())]++;
+
+            levels[brain->level() / 10 * 10]++;
 
             auto cls = brain->cls();
             if (cls.has_value())
@@ -301,6 +305,11 @@ async::task<void> game_bot_controller::on_metrics()
     root["stuck"]   = static_cast<Json::UInt64>(this->_metrics.stuck.load());
     root["fights"]  = static_cast<Json::UInt64>(this->_experience.fights());
     root["learner"] = this->_learner.state();
+    root["levels"]  = Json::Value{Json::objectValue};
+    for (auto& [band, count] : levels)
+    {
+        root["levels"][std::to_string(band)] = count;
+    }
     this->_learner.save();
     for (size_t i = 0; i < GOAL_COUNT; i++)
     {

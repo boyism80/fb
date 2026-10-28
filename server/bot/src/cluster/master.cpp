@@ -514,7 +514,8 @@ Json::Value master::report(size_t points) const
         json["timeline"].append(run.timeline[static_cast<Json::ArrayIndex>(i)]);
     }
 
-    json["goals"] = Json::Value{Json::objectValue};
+    json["goals"]  = Json::Value{Json::objectValue};
+    json["levels"] = Json::Value{Json::objectValue};
     for (auto& [_, agent] : this->_agents)
     {
         if (agent.metrics["run_id"].asString() != run.id)
@@ -523,6 +524,11 @@ Json::Value master::report(size_t points) const
         for (auto& goal : agent.metrics["goals"].getMemberNames())
         {
             json["goals"][goal] = json["goals"].get(goal, 0).asUInt() + agent.metrics["goals"][goal].asUInt();
+        }
+
+        for (auto& band : agent.metrics["levels"].getMemberNames())
+        {
+            json["levels"][band] = json["levels"].get(band, 0).asUInt() + agent.metrics["levels"][band].asUInt();
         }
     }
     return json;

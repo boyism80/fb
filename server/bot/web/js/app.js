@@ -438,6 +438,22 @@ function renderLoad() {
     $('l-goals').innerHTML = '<div class="empty">아직 기록이 없습니다</div>';
   }
 
+  const levels = run && run.levels ? Object.entries(run.levels).sort((a, b) => Number(a[0]) - Number(b[0])) : [];
+  const tallest = Math.max(1, ...levels.map(l => l[1]));
+  if (levels.length) {
+    sync($('l-levels'), levels, l => l[0], () => {
+      const row = document.createElement('div');
+      row.innerHTML = '<span></span><span><b></b></span><span class="num"></span>';
+      return row;
+    }, (row, [band, value]) => {
+      row.firstElementChild.textContent = `Lv ${band}~${Number(band) + 9}`;
+      row.querySelector('b').style.width = `${value / tallest * 100}%`;
+      row.lastElementChild.textContent = num(value);
+    });
+  } else {
+    $('l-levels').innerHTML = '<div class="empty">아직 기록이 없습니다</div>';
+  }
+
   const counts = working.map(a => a.bots);
   if (counts.length) {
     const low = Math.min(...counts), high = Math.max(...counts), width = Math.max(1, Math.ceil((high - low + 1) / 12));
