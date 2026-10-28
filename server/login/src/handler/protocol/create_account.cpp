@@ -6,6 +6,7 @@
 
 #include <json/json.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <exception>
 #include <random>
@@ -51,25 +52,29 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
         static thread_local auto gen  = std::mt19937{std::random_device{}()};
         auto                     dist = std::uniform_int_distribution<uint32_t>{0, 0xFFFFFFFF};
 
-        auto   i         = dist(gen) % config<>("init:position").size();
-        auto   init_x    = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
-        auto   init_y    = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
-        auto   admin     = fb::config<bool>("admin_mode");
-        auto&& response2 = co_await this->server.http.post(
-            "internal",
-            "/account/init",
-            internal_reqs::InitCharacter{
-                world,
-                uid,
-                name,
-                pw,
-                fb::config<uint32_t>("init:hp:base") + dist(gen) % fb::config<uint32_t>("init:hp:range"), // hp
-                fb::config<uint32_t>("init:mp:base") + dist(gen) % fb::config<uint32_t>("init:mp:range"), // mp
-                fb::config<uint16_t>("init:map"),                                                         // map
-                init_x,                                                                                   // position_x
-                init_y,                                                                                   // position_y
-                static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER),                                   // admin
-            });
+        auto   i        = dist(gen) % config<>("init:position").size();
+        auto   init_x   = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
+        auto   init_y   = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
+        auto   admin    = fb::config<bool>("admin_mode");
+        auto   hp_base  = fb::config<uint32_t>("init:hp:base");
+        auto   hp_range = std::min(hp_base, fb::config<uint32_t>("init:hp:range"));
+        auto   mp_base  = fb::config<uint32_t>("init:mp:base");
+        auto   mp_range = std::min(mp_base, fb::config<uint32_t>("init:mp:range"));
+        auto&& response2 =
+            co_await this->server.http.post("internal",
+                                            "/account/init",
+                                            internal_reqs::InitCharacter{
+                                                world,
+                                                uid,
+                                                name,
+                                                pw,
+                                                hp_base - hp_range + dist(gen) % (hp_range * 2 + 1),    // hp
+                                                mp_base - mp_range + dist(gen) % (mp_range * 2 + 1),    // mp
+                                                fb::config<uint16_t>("init:map"),                       // map
+                                                init_x,                                                 // position_x
+                                                init_y,                                                 // position_y
+                                                static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER), // admin
+                                            });
 
         co_await this->server.threads.switching(weak);
 

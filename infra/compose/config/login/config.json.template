@@ -49,11 +49,11 @@
         ],
         "hp": {
             "base": 50,
-            "range": 10
+            "range": 5
         },
         "mp": {
-            "base": 50,
-            "range": 10
+            "base": 35,
+            "range": 5
         }
     },
     "name_size": {
