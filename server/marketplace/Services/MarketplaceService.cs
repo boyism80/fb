@@ -26,16 +26,16 @@ public class ListingWithPurchase
 
 public class MarketplaceService
 {
-    private readonly MarketplaceParcelService _parcelService;
+    private readonly MarketplaceParcelBackgroundService _parcelSender;
     private readonly Marketplace.Service.DbContext _dbContext;
     private readonly LogService _logService;
 
     public MarketplaceService(
-        MarketplaceParcelService parcelService,
+        MarketplaceParcelBackgroundService parcelSender,
         Marketplace.Service.DbContext dbContext,
         LogService logService)
     {
-        _parcelService = parcelService;
+        _parcelSender = parcelSender;
         _dbContext = dbContext;
         _logService = logService;
     }
@@ -359,8 +359,7 @@ public class MarketplaceService
         await _dbContext.MarketplaceParcel.CreateAsync(parcel, transaction);
 
         await transaction.CommitAsync();
-
-        await _parcelService.SendAsync(parcel);
+        _parcelSender.Wake();
 
         // Log successful cancellation
         await _logService.WriteAsync("marketplace_cancel_success", new
@@ -415,7 +414,6 @@ public class MarketplaceService
                 WHERE `id` IN @ListingIds
                   AND `status` = {ListingState.ACTIVE.Escape()}", parameters, transaction);
 
-            var parcels = new List<MarketplaceParcel>(listings.Count);
             foreach (var listing in listings)
             {
                 var parcel = new MarketplaceParcel
@@ -439,15 +437,10 @@ public class MarketplaceService
                     ]
                 };
                 await _dbContext.MarketplaceParcel.CreateAsync(parcel, transaction);
-                parcels.Add(parcel);
             }
 
             await transaction.CommitAsync();
-
-            foreach (var parcel in parcels)
-            {
-                await _parcelService.SendAsync(parcel);
-            }
+            _parcelSender.Wake();
 
             cleared += (uint)listings.Count;
         }
@@ -671,9 +664,7 @@ public class MarketplaceService
 
             await transaction.CommitAsync();
             finished = true;
-
-            await _parcelService.SendAsync(saleParcel);
-            await _parcelService.SendAsync(buyParcel);
+            _parcelSender.Wake();
 
             // Log successful purchase
             await _logService.WriteAsync("marketplace_purchase_success", new

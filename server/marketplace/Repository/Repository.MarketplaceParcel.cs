@@ -39,13 +39,12 @@ namespace Marketplace.Reepository
             await transaction.Connection.ExecuteAsync(sql, null, transaction);
         }
 
-        public async Task<List<MarketplaceParcel>> GetPendingAsync(TimeSpan minAge, int limit)
+        public async Task<List<MarketplaceParcel>> GetPendingAsync(int limit)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
             var sql = $"""
                 SELECT * FROM `marketplace_parcel`
                 WHERE `sent_date` IS NULL
-                  AND `created_date` < UTC_TIMESTAMP(3) - INTERVAL {(int)minAge.TotalSeconds} SECOND
                 ORDER BY `id`
                 LIMIT {limit}
                 """;

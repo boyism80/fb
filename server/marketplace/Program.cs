@@ -55,7 +55,8 @@ public class Program
 
         // Marketplace expire services
         builder.Services.AddHostedService<Marketplace.Services.MarketplaceExpireBackgroundService>();
-        builder.Services.AddHostedService<Marketplace.Services.MarketplaceParcelBackgroundService>();
+        builder.Services.AddSingleton<Marketplace.Services.MarketplaceParcelBackgroundService>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<Marketplace.Services.MarketplaceParcelBackgroundService>());
         builder.Services.AddAmqpListener<ReloadTablesHandler>();
 
         builder.Services.AddFbHealthChecks();
