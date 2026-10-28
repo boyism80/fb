@@ -2400,6 +2400,9 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.mp               = this->stat.mp();
     dto.base_mp          = this->stat.base_mp();
     dto.additional_mp    = 0;
+    dto.strength         = this->stat.base_str();
+    dto.dexterity        = this->stat.base_dex();
+    dto.intelligence     = this->stat.base_int();
     dto.weapon_color     = this->_weapon_color;
     dto.helmet_color     = std::nullopt;
     dto.armor_color      = this->_armor_color;

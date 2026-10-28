@@ -483,6 +483,9 @@ public struct Character : IFlatbufferObject
   public uint EvaluationPlaytime { get { int o = __p.__offset(96); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol.@internal.raw.EvaluatedTarget? EvaluatedTargets(int j) { int o = __p.__offset(98); return o != 0 ? (fb.protocol.@internal.raw.EvaluatedTarget?)(new fb.protocol.@internal.raw.EvaluatedTarget()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int EvaluatedTargetsLength { get { int o = __p.__offset(98); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public byte Strength { get { int o = __p.__offset(100); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte Dexterity { get { int o = __p.__offset(102); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte Intelligence { get { int o = __p.__offset(104); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol.@internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -532,8 +535,11 @@ public struct Character : IFlatbufferObject
       byte face = 0,
       ushort ridable_id = 0,
       uint evaluation_playtime = 0,
-      VectorOffset evaluated_targetsOffset = default(VectorOffset)) {
-    builder.StartTable(48);
+      VectorOffset evaluated_targetsOffset = default(VectorOffset),
+      byte strength = 0,
+      byte dexterity = 0,
+      byte intelligence = 0) {
+    builder.StartTable(51);
     Character.AddAdditionalMp(builder, additional_mp);
     Character.AddBaseMp(builder, base_mp);
     Character.AddMp(builder, mp);
@@ -571,6 +577,9 @@ public struct Character : IFlatbufferObject
     Character.AddReputation(builder, reputation);
     Character.AddColor(builder, color);
     Character.AddHair(builder, hair);
+    Character.AddIntelligence(builder, intelligence);
+    Character.AddDexterity(builder, dexterity);
+    Character.AddStrength(builder, strength);
     Character.AddFace(builder, face);
     Character.AddSpeed(builder, speed);
     Character.AddLevel(builder, level);
@@ -585,7 +594,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(48); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(51); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(1, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
@@ -644,6 +653,9 @@ public struct Character : IFlatbufferObject
   public static VectorOffset CreateEvaluatedTargetsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.EvaluatedTarget>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateEvaluatedTargetsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.EvaluatedTarget>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEvaluatedTargetsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddStrength(FlatBufferBuilder builder, byte strength) { builder.AddByte(48, strength, 0); }
+  public static void AddDexterity(FlatBufferBuilder builder, byte dexterity) { builder.AddByte(49, dexterity, 0); }
+  public static void AddIntelligence(FlatBufferBuilder builder, byte intelligence) { builder.AddByte(50, intelligence, 0); }
   public static Offset<fb.protocol.@internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.Character>(o);
@@ -704,6 +716,9 @@ static public class CharacterVerify
       && verifier.VerifyField(tablePos, 94 /*RidableId*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 96 /*EvaluationPlaytime*/, 4 /*uint*/, 4, false)
       && verifier.VerifyVectorOfTables(tablePos, 98 /*EvaluatedTargets*/, fb.protocol.@internal.raw.EvaluatedTargetVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 100 /*Strength*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 102 /*Dexterity*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 104 /*Intelligence*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

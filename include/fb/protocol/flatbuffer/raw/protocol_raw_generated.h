@@ -1318,7 +1318,10 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_FACE = 92,
     VT_RIDABLE_ID = 94,
     VT_EVALUATION_PLAYTIME = 96,
-    VT_EVALUATED_TARGETS = 98
+    VT_EVALUATED_TARGETS = 98,
+    VT_STRENGTH = 100,
+    VT_DEXTERITY = 102,
+    VT_INTELLIGENCE = 104
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -1464,6 +1467,15 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>> *evaluated_targets() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>> *>(VT_EVALUATED_TARGETS);
   }
+  uint8_t strength() const {
+    return GetField<uint8_t>(VT_STRENGTH, 0);
+  }
+  uint8_t dexterity() const {
+    return GetField<uint8_t>(VT_DEXTERITY, 0);
+  }
+  uint8_t intelligence() const {
+    return GetField<uint8_t>(VT_INTELLIGENCE, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -1535,6 +1547,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_EVALUATED_TARGETS) &&
            verifier.VerifyVector(evaluated_targets()) &&
            verifier.VerifyVectorOfTables(evaluated_targets()) &&
+           VerifyField<uint8_t>(verifier, VT_STRENGTH, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DEXTERITY, 1) &&
+           VerifyField<uint8_t>(verifier, VT_INTELLIGENCE, 1) &&
            verifier.EndTable();
   }
 };
@@ -1687,6 +1702,15 @@ struct CharacterBuilder {
   void add_evaluated_targets(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>>> evaluated_targets) {
     fbb_.AddOffset(Character::VT_EVALUATED_TARGETS, evaluated_targets);
   }
+  void add_strength(uint8_t strength) {
+    fbb_.AddElement<uint8_t>(Character::VT_STRENGTH, strength, 0);
+  }
+  void add_dexterity(uint8_t dexterity) {
+    fbb_.AddElement<uint8_t>(Character::VT_DEXTERITY, dexterity, 0);
+  }
+  void add_intelligence(uint8_t intelligence) {
+    fbb_.AddElement<uint8_t>(Character::VT_INTELLIGENCE, intelligence, 0);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1747,7 +1771,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint8_t face = 0,
     uint16_t ridable_id = 0,
     uint32_t evaluation_playtime = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>>> evaluated_targets = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>>> evaluated_targets = 0,
+    uint8_t strength = 0,
+    uint8_t dexterity = 0,
+    uint8_t intelligence = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_additional_mp(additional_mp);
   builder_.add_base_mp(base_mp);
@@ -1786,6 +1813,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_reputation(reputation);
   builder_.add_color(color);
   builder_.add_hair(hair);
+  builder_.add_intelligence(intelligence);
+  builder_.add_dexterity(dexterity);
+  builder_.add_strength(strength);
   builder_.add_face(face);
   builder_.add_speed(speed);
   builder_.add_level(level);
@@ -1849,7 +1879,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint8_t face = 0,
     uint16_t ridable_id = 0,
     uint32_t evaluation_playtime = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>> *evaluated_targets = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::EvaluatedTarget>> *evaluated_targets = nullptr,
+    uint8_t strength = 0,
+    uint8_t dexterity = 0,
+    uint8_t intelligence = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -1907,7 +1940,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       face,
       ridable_id,
       evaluation_playtime,
-      evaluated_targets__);
+      evaluated_targets__,
+      strength,
+      dexterity,
+      intelligence);
 }
 
 struct Marriage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

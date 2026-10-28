@@ -85,6 +85,9 @@ table Character {
     ridable_id: ushort = 1;
     evaluation_playtime: uint;
     evaluated_targets: [EvaluatedTarget];
+    strength: ubyte = 3;
+    dexterity: ubyte = 3;
+    intelligence: ubyte = 3;
 }
 
 table Marriage {

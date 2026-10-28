@@ -42,6 +42,9 @@ namespace Http.Model
         public ulong Mp { get; set; }
         public ulong BaseMp { get; set; }
         public ulong AdditionalMp { get; set; }
+        public byte Strength { get; set; } = 3;
+        public byte Dexterity { get; set; } = 3;
+        public byte Intelligence { get; set; } = 3;
         public byte? WeaponColor { get; set; }
         public byte? HelmetColor { get; set; }
         public byte? ArmorColor { get; set; }

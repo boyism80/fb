@@ -312,6 +312,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     ch->stat.hp(resp.character.hp, false);
     ch->stat.base_mp(resp.character.base_mp, false);
     ch->stat.mp(resp.character.mp, false);
+    ch->stat.base_str(resp.character.strength, false);
+    ch->stat.base_dex(resp.character.dexterity, false);
+    ch->stat.base_int(resp.character.intelligence, false);
     ch->stat.base_speed(resp.character.speed, false);
 
     auto thread = target_map->thread();
