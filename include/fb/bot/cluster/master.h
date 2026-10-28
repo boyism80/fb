@@ -92,6 +92,7 @@ private:
         clock::time_point                   started;
         double                              elapsed = 0.0;
         std::string                         client;
+        std::string                         target;
         uint32_t                            retry    = 1;
         uint32_t                            users    = 0;
         uint32_t                            rate     = 1;
@@ -133,6 +134,7 @@ private:
     Json::Value snapshot() const;
     Json::Value report(size_t points) const;
     Json::Value suites() const;
+    Json::Value targets() const;
     Json::Value history() const;
     Json::Value reload();
     Json::Value start(const Json::Value& body);

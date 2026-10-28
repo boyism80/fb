@@ -48,6 +48,7 @@ infra/k8s/config/fb-host.env
 
 # Local secrets (never commit)
 **/appsettings.Local.json
+server/bot/config/targets.local.json
 
 # C++ process logs (logs/YYYY-MM-DD-{server}.log)
 **/logs/*.log

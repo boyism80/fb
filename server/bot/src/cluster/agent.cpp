@@ -188,6 +188,11 @@ void agent::handle(const Json::Value& message)
             arguments.push_back("--client");
             arguments.push_back(message["client"].asString());
         }
+        if (message["target"].asString().empty() == false)
+        {
+            arguments.push_back("--target");
+            arguments.push_back(message["target"].asString());
+        }
         this->spawn(message["run_id"].asString(), arguments);
     }
     else if (type == "run_load")
@@ -215,6 +220,11 @@ void agent::handle(const Json::Value& message)
         {
             arguments.push_back("--client");
             arguments.push_back(message["client"].asString());
+        }
+        if (message["target"].asString().empty() == false)
+        {
+            arguments.push_back("--target");
+            arguments.push_back(message["target"].asString());
         }
         this->spawn(message["run_id"].asString(), arguments);
     }

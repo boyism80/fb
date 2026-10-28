@@ -46,6 +46,9 @@ int main(int argc, char** argv)
         "client",
         po::value<string>()->default_value(""),
         "Client profile for bots without one (550, 565, 651, 651:new). Empty uses client:version in the config")(
+        "target",
+        po::value<string>()->default_value(""),
+        "Server address (ip:port) that replaces ip and port in the config. Empty uses the config")(
         "set",
         po::value<vector<string>>()->composing(),
         "Override a config value (key:path=value), repeatable")(
@@ -104,7 +107,21 @@ int main(int argc, char** argv)
     auto& client_str  = vm["client"].as<string>();
     auto& role        = vm["role"].as<string>();
     auto  overrides   = vm.count("set") ? vm["set"].as<vector<string>>() : vector<string>{};
+    auto& target      = vm["target"].as<string>();
     auto  cluster     = vm["cluster"].as<bool>();
+    if (target.empty() == false)
+    {
+        auto split = target.rfind(':');
+        if (split == string::npos || split == 0 || split + 1 == target.size())
+        {
+            fb::console::puts("Invalid target: {}", target);
+            return -1;
+        }
+
+        overrides.push_back(std::format("ip=\"{}\"", target.substr(0, split)));
+        overrides.push_back(std::format("port={}", target.substr(split + 1)));
+    }
+
     if (client_str.empty() == false)
     {
         auto profile = fb::bot::client_profile::parse(client_str);

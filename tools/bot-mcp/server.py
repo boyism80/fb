@@ -66,15 +66,17 @@ def cluster_state() -> dict:
 
 
 @server.tool()
-def start_load(users: int, minutes: int = 10, offset: int = 0, rate: int = 1, client: str = '') -> dict:
-    """Start a load run on the cluster. minutes is the run length (0 runs until stop_run), offset is the bot account offset (fresh accounts need a new range)."""
-    return call('/api/runs', {'kind': 'load', 'users': users, 'duration': minutes, 'offset': offset, 'rate': rate, 'client': client})
+def start_load(users: int, minutes: int = 10, offset: int = 0, rate: int = 1, client: str = '', target: str = '') -> dict:
+    """Start a load run on the cluster. minutes is the run length (0 runs until stop_run), offset is the bot account offset (fresh accounts need a new range).
+    target is the gateway as ip:port; empty uses ip and port in the bot config."""
+    return call('/api/runs', {'kind': 'load', 'users': users, 'duration': minutes, 'offset': offset, 'rate': rate, 'client': client,
+                              'target': target})
 
 
 @server.tool()
-def start_integration(suites: list[str], retry: int = 1, client: str = '') -> dict:
-    """Start integration suites (names as listed by list_suites) on the cluster."""
-    return call('/api/runs', {'kind': 'integration', 'suites': suites, 'retry': retry, 'client': client})
+def start_integration(suites: list[str], retry: int = 1, client: str = '', target: str = '') -> dict:
+    """Start integration suites (names as listed by list_suites) on the cluster. target is the gateway as ip:port; empty uses the bot config."""
+    return call('/api/runs', {'kind': 'integration', 'suites': suites, 'retry': retry, 'client': client, 'target': target})
 
 
 @server.tool()
@@ -360,12 +362,13 @@ def health(window_seconds: int = 30) -> dict:
 
 @server.tool()
 def ramp_start(stages: str = '50,150,300,500', hold_minutes: float = 5, offset: int = 20000, rate: int = 5,
-               rtt_ms: float = 500, timeout_ratio: float = 0.05, cpu_percent: float = 90, label: str = '') -> dict:
+               rtt_ms: float = 500, timeout_ratio: float = 0.05, cpu_percent: float = 90, label: str = '',
+               target: str = '') -> dict:
     """Start a background ramp: raise bots stage by stage (1x speed expected in load.json), hold each stage, and on repeated
     health breaches scale back to the last good stage and stop. Progress goes to logs/learning/ramp/*.jsonl."""
     command = ['python', str(Path(__file__).with_name('ramp.py')), '--stages', stages, '--hold', str(hold_minutes),
                '--offset', str(offset), '--rate', str(rate), '--rtt', str(rtt_ms), '--timeouts', str(timeout_ratio),
-               '--cpu', str(cpu_percent), '--label', label]
+               '--cpu', str(cpu_percent), '--label', label, '--target', target]
     flags = getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0) | getattr(subprocess, 'DETACHED_PROCESS', 0)
     process = subprocess.Popen(command, cwd=str(Path(__file__).parent), creationflags=flags,
                                stdout=subprocess.DEVNULL, stderr=open(LOGS / 'learning' / 'ramp-error.log', 'a'))

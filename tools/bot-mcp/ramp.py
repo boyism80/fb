@@ -39,6 +39,7 @@ def main():
     parser.add_argument('--logins', type=int, default=20)
     parser.add_argument('--strikes', type=int, default=3)
     parser.add_argument('--label', default='')
+    parser.add_argument('--target', default='')
     args = parser.parse_args()
 
     limits = {'rtt_ms': args.rtt, 'timeout_ratio': args.timeouts, 'cpu_percent': args.cpu,
@@ -49,7 +50,7 @@ def main():
     write(path, {'kind': 'start', 'stages': stages, 'hold': args.hold, 'offset': args.offset, 'rate': args.rate,
                  'limits': limits, 'time': time.strftime('%Y-%m-%dT%H:%M:%S')})
 
-    started = server.start_load(users=stages[0], minutes=0, offset=args.offset, rate=args.rate)
+    started = server.start_load(users=stages[0], minutes=0, offset=args.offset, rate=args.rate, target=args.target)
     write(path, {'kind': 'run', 'response': started})
     if 'error' in started:
         write(path, {'kind': 'end', 'capacity': 0, 'reason': 'start failed'})

@@ -313,6 +313,9 @@ master::response master::route(const request& received)
     if (path == "/api/suites")
         return reply(http::status::ok, this->suites());
 
+    if (path == "/api/targets")
+        return reply(http::status::ok, this->targets());
+
     if (path == "/api/reload" && post)
     {
         auto result = this->reload();
@@ -481,6 +484,7 @@ Json::Value master::report(size_t points) const
     json["finished_at"] = run.finished_at;
     json["elapsed"]     = std::round(run.elapsed);
     json["client"]      = run.client;
+    json["target"]      = run.target;
     json["retry"]       = run.retry;
     json["users"]       = run.users;
     json["rate"]        = run.rate;
@@ -567,6 +571,38 @@ Json::Value master::suites() const
         }
     }
     return json;
+}
+
+Json::Value master::targets() const
+{
+    auto targets = std::vector<Json::Value>{};
+    for (auto path : {"config/targets.json", "config/targets.local.json"})
+    {
+        auto input = std::ifstream(path, std::ios::binary);
+        auto text  = std::string{std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
+        auto json  = Json::Value{};
+        if (link::decode(text, json) == false || json.isObject() == false || json["targets"].isArray() == false)
+            continue;
+
+        for (auto& target : json["targets"])
+        {
+            auto found = std::find_if(targets.begin(), targets.end(), [&target](const auto& existing) {
+                return existing["name"].asString() == target["name"].asString();
+            });
+            if (found != targets.end())
+                *found = target;
+            else
+                targets.push_back(target);
+        }
+    }
+
+    auto result       = Json::Value{};
+    result["targets"] = Json::Value{Json::arrayValue};
+    for (auto& target : targets)
+    {
+        result["targets"].append(target);
+    }
+    return result;
 }
 
 Json::Value master::history() const
@@ -723,6 +759,7 @@ Json::Value master::start(const Json::Value& body)
     run.started_at = master::now("{:%Y-%m-%dT%H:%M:%SZ}");
     run.started    = clock::now();
     run.client     = body["client"].asString();
+    run.target     = body["target"].asString();
     if (run.kind == "integration")
     {
         run.retry = body.get("retry", 1).asUInt();
@@ -886,6 +923,7 @@ void master::assign(agent_entry& agent, const std::vector<std::string>& names)
     message["type"]      = "run_suites";
     message["run_id"]    = run.id;
     message["client"]    = run.client;
+    message["target"]    = run.target;
     message["seat_base"] = lease != this->_leases.end() ? lease->second.seat_base : 0;
     message["suites"]    = Json::Value{Json::arrayValue};
     for (auto& name : names)
@@ -993,6 +1031,7 @@ void master::rebalance()
             message["process"] = lease != this->_leases.end() ? lease->second.process : 0;
             message["offset"]  = run.offset;
             message["client"]  = run.client;
+            message["target"]  = run.target;
             agent.link->send(message);
             agent.busy  = true;
             agent.users = share;
