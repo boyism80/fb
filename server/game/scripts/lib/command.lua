@@ -1821,8 +1821,10 @@ M.functions = {
             end
 
             local success = me:send_system_mail(title, contents, expire_date)
-            if success then
+            if success == true then
                 me:message("시스템 메일이 성공적으로 전송되었습니다.", MESSAGE_TYPE.BROWN)
+            elseif success == nil then
+                me:message("시스템 메일 전송 결과를 확인하지 못했습니다. 메일 목록을 확인한 뒤 다시 보내세요.", MESSAGE_TYPE.BROWN)
             else
                 me:message("시스템 메일 전송에 실패했습니다.", MESSAGE_TYPE.BROWN)
             end

@@ -6808,14 +6808,19 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
         }
     }
 
-    auto success  = std::make_shared<bool>(false);
+    auto world    = ch->world();
+    auto sender   = ch->id;
+    auto success  = std::make_shared<std::optional<bool>>(std::nullopt);
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success     = co_await server.system_mail.create(ch->world(), ch->id, title, contents, expire_date);
+        *success     = co_await server.system_mail.create(world, sender, title, contents, expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*success);
+        if (success->has_value())
+            lua->pushboolean(success->value());
+        else
+            lua->pushnil();
         co_return 1;
     };
     return builder.run();

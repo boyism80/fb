@@ -68,22 +68,29 @@ service::system_mail::system_mail(fb::game::server& server) :
     _sending(send_coroutine())
 { }
 
-async::task<bool> service::system_mail::create(uint32_t                          world,
-                                               uint32_t                          sender,
-                                               std::string_view                  title,
-                                               std::string_view                  contents,
-                                               const std::optional<std::string>& expire_date)
+async::task<std::optional<bool>> service::system_mail::create(uint32_t                          world,
+                                                              uint32_t                          sender,
+                                                              std::string_view                  title,
+                                                              std::string_view                  contents,
+                                                              const std::optional<std::string>& expire_date)
 {
-    auto&& resp = co_await this->server.http.post(
-        "internal",
-        "/mail/system",
-        internal_reqs::WriteSystemMail{world,
-                                       sender,
-                                       std::string(title),
-                                       std::string(contents),
-                                       expire_date.has_value() ? expire_date.value() : std::string{}});
-
-    co_return resp.error == 0;
+    try
+    {
+        auto&& resp = co_await this->server.http.post(
+            "internal",
+            "/mail/system",
+            internal_reqs::WriteSystemMail{world,
+                                           sender,
+                                           std::string(title),
+                                           std::string(contents),
+                                           expire_date.has_value() ? expire_date.value() : std::string{}});
+        co_return resp.error == 0;
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("WriteSystemMail request failed for sender {}: {}", sender, e.what());
+    }
+    co_return std::nullopt;
 }
 
 async::task<void> service::system_mail::send()
