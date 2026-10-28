@@ -920,6 +920,7 @@ void roster::update(const std::string& name, uint8_t level)
 void roster::remove(const std::string& name)
 {
     auto lock = std::lock_guard(this->_mutex);
+    this->_grouped.erase(name);
     if (this->_levels.erase(name) == 0)
         return;
 
@@ -928,6 +929,27 @@ void roster::remove(const std::string& name)
     event["op"]   = "remove";
     event["name"] = fb::UTF8(name, fb::PLATFORM::WINDOWS);
     this->_journal.record(std::move(event));
+}
+
+void roster::group(const std::string& name, bool joined)
+{
+    auto lock    = std::lock_guard(this->_mutex);
+    auto changed = joined ? this->_grouped.insert(name).second : this->_grouped.erase(name) > 0;
+    if (changed == false)
+        return;
+
+    auto event      = Json::Value{};
+    event["kind"]   = "roster";
+    event["op"]     = "group";
+    event["name"]   = fb::UTF8(name, fb::PLATFORM::WINDOWS);
+    event["joined"] = joined;
+    this->_journal.record(std::move(event));
+}
+
+bool roster::grouped(const std::string& name) const
+{
+    auto lock = std::lock_guard(this->_mutex);
+    return this->_grouped.contains(name);
 }
 
 fb::bot::cluster::journal& roster::journal()
@@ -939,10 +961,24 @@ void roster::apply(const Json::Value& event)
 {
     auto lock = std::lock_guard(this->_mutex);
     auto name = fb::CP949(event["name"].asString(), fb::PLATFORM::WINDOWS);
-    if (event["op"].asString() == "update")
+    auto op   = event["op"].asString();
+    if (op == "update")
+    {
         this->_levels.insert_or_assign(name, static_cast<uint8_t>(event["level"].asUInt()));
+    }
+    else if (op == "group" && event["joined"].asBool())
+    {
+        this->_grouped.insert(name);
+    }
+    else if (op == "group")
+    {
+        this->_grouped.erase(name);
+    }
     else
+    {
         this->_levels.erase(name);
+        this->_grouped.erase(name);
+    }
 }
 
 std::optional<uint8_t> roster::level(const std::string& name) const
@@ -1571,9 +1607,11 @@ void brain::perceive(game_bot& bot)
         if (kind == "GROUP_JOINED")
         {
             this->_group_ready = true;
+            this->_roster.group(bot.name(), true);
         }
         else if (kind == "GROUP_LEFT")
         {
+            this->_roster.group(bot.name(), false);
             this->_grouped    = false;
             this->_leader_map = 0xFFFF;
             this->_leader.clear();
@@ -5809,7 +5847,7 @@ async::task<brain::result> brain::group(game_bot& bot)
         auto gap   = level.has_value() ? std::abs(static_cast<int>(level.value()) - static_cast<int>(bot.level()))
                                        : this->_job.group_gap + 1;
         if (user.cls == static_cast<uint8_t>(CLASS::POET) && user.name != bot.name() && gap < closest &&
-            (tried == this->_group_tries.end() || now >= tried->second))
+            this->_roster.grouped(user.name) == false && (tried == this->_group_tries.end() || now >= tried->second))
         {
             partner = user.name;
             closest = gap;

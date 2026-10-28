@@ -359,12 +359,15 @@ class roster
 private:
     mutable std::mutex                       _mutex;
     std::unordered_map<std::string, uint8_t> _levels;
+    std::unordered_set<std::string>          _grouped;
     cluster::journal                         _journal;
 
 public:
     void                   update(const std::string& name, uint8_t level);
     void                   remove(const std::string& name);
+    void                   group(const std::string& name, bool joined);
     std::optional<uint8_t> level(const std::string& name) const;
+    bool                   grouped(const std::string& name) const;
     cluster::journal&      journal();
     void                   apply(const Json::Value& event);
 };
