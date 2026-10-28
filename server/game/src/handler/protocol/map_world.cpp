@@ -2,7 +2,6 @@
 
 #include <fb/game/server.h>
 
-#include <algorithm>
 #include <tuple>
 
 using table = fb::model::table;
@@ -37,7 +36,7 @@ async::task<bool> map_world<V>::handle(fb::socket<character>& session, game_reqs
     if (before == nullptr || after == nullptr)
         co_return true;
 
-    if (request.after != request.before && std::ranges::find(before->links, request.after) == before->links.end())
+    if (before->group != after->group)
         co_return true;
 
     if (ch->map() == this->server.maps[after->map])
