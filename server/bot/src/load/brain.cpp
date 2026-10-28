@@ -103,6 +103,8 @@ constexpr auto GROUP_RETRY         = std::chrono::minutes(2);
 constexpr auto FOLLOW_RANGE        = 3;
 constexpr auto SUPPORT_RATIO       = 0.5;
 constexpr auto SUPPORT_IDLE        = std::chrono::milliseconds(500);
+constexpr auto LOOT_YIELD          = std::chrono::seconds(10);
+constexpr auto PILES_LIMIT         = 256u;
 constexpr auto MIN_DELAY           = std::chrono::milliseconds(10);
 constexpr auto MOVE_SETTLE         = std::chrono::milliseconds(200);
 constexpr auto FAILED_STREAK_CAP   = 3u;
@@ -3213,7 +3215,8 @@ async::task<brain::result> brain::farm(game_bot&                        bot,
                     continue;
 
                 if (full.contains(entry.look) == false && distance(entry.position) <= ITEM_LOOT_RANGE &&
-                    (item.has_value() == false || distance(entry.position) < distance(item->position)))
+                    (item.has_value() == false || distance(entry.position) < distance(item->position)) &&
+                    this->claims(bot, entry.position))
                     item = entry;
             }
             else
@@ -4348,6 +4351,38 @@ void brain::regroup(game_bot& bot)
     }
 }
 
+bool brain::claims(const game_bot& bot, const point<uint16_t>& position)
+{
+    auto mate = this->_partner.empty() ? this->_leader : this->_partner;
+    if (this->_grouped == false || mate.empty())
+        return true;
+
+    auto first  = std::numeric_limits<uint32_t>::max();
+    auto beside = false;
+    for (auto& [oid, entry] : bot.sight.entries())
+    {
+        if (entry.look > ITEM_LOOK_MIN && entry.position == position)
+            first = std::min(first, oid);
+        else if (entry.name == mate)
+            beside = true;
+    }
+
+    if (first == std::numeric_limits<uint32_t>::max())
+        return false;
+
+    auto now     = clock::now();
+    auto sighted = this->_piles.try_emplace(first, now).first->second;
+    if (this->_piles.size() > PILES_LIMIT)
+    {
+        std::erase_if(this->_piles, [&bot](const auto& pile) {
+            return bot.sight.entries().contains(pile.first) == false;
+        });
+    }
+
+    auto turn = this->_partner.empty() ? 1u : 0u;
+    return first % 2 == turn || beside == false || now - sighted > LOOT_YIELD;
+}
+
 const questbook::quest* brain::choose_quest(const game_bot& bot) const
 {
     auto now = clock::now();
@@ -4856,15 +4891,76 @@ async::task<brain::result> brain::follow(game_bot& bot)
     }
     else
     {
+        auto now  = clock::now();
+        auto pile = std::optional<game_bot::sight::entry>{};
+        auto gap  = [&bot](const point<uint16_t>& position) {
+            return std::abs(bot.position().x - position.x) + std::abs(bot.position().y - position.y);
+        };
         for (auto& [oid, entry] : bot.sight.entries())
         {
+            auto avoided    = this->_avoided_targets.find(oid);
+            auto unpickable = this->_unpickable.find(entry.look);
             if (entry.name == this->_leader)
                 this->_leader_position = entry.position;
+            else if (entry.look > ITEM_LOOK_MIN && gap(entry.position) <= ITEM_LOOT_RANGE &&
+                     (avoided == this->_avoided_targets.end() || now >= avoided->second) &&
+                     (unpickable == this->_unpickable.end() || now >= unpickable->second) &&
+                     (pile.has_value() == false || gap(entry.position) < gap(pile->position)) &&
+                     this->_knowledge.warp_at(bot.map(), entry.position) == false && this->claims(bot, entry.position))
+                pile = entry;
         }
 
-        if (co_await this->conjure(bot, 0) == false)
+        if (co_await this->conjure(bot, 0))
+        {
+            co_return result::SUCCEEDED;
+        }
+        else if (pile.has_value())
+        {
+            auto outcome = co_await this->walk(bot, pile->position, 0);
+            if (outcome == result::SUCCEEDED)
+            {
+                auto since  = clock::now();
+                auto before = bot.items();
+                auto cash   = bot.money();
+                auto oid    = pile->oid;
+                bot.send(*bot.make<game_reqs::loot>(true));
+                auto reason = co_await this->expect(
+                    bot,
+                    since,
+                    {"HOLD_FULL", "INVENTORY_FULL", "DROP_WARMTH"},
+                    [&bot, &before, cash, oid]() {
+                        return bot.sight.entries().contains(oid) == false || bot.money() != cash ||
+                               bot.items().size() != before.size() ||
+                               std::equal(before.begin(),
+                                          before.end(),
+                                          bot.items().begin(),
+                                          [](const auto& lhs, const auto& rhs) {
+                                              return lhs.first == rhs.first && lhs.second.count == rhs.second.count;
+                                          }) == false;
+                    },
+                    ACTION_TIMEOUT);
+
+                auto detail     = Json::Value{};
+                detail["look"]  = pile->look;
+                detail["group"] = true;
+                detail["share"] = true;
+                this->report(bot, "loot", reason, detail);
+
+                if (reason == "HOLD_FULL")
+                    this->_unpickable.insert_or_assign(pile->look, clock::now() + UNPICKABLE_AVOID);
+                else if (reason == "INVENTORY_FULL")
+                    this->_sell_urgent = true;
+            }
+
+            if (outcome != result::INTERRUPTED && bot.sight.entries().contains(pile->oid))
+                this->_avoided_targets.insert_or_assign(pile->oid, clock::now() + TARGET_AVOID);
+            co_return outcome;
+        }
+        else
+        {
             co_await bot.thread()->sleep(this->paced(SUPPORT_IDLE));
-        co_return result::SUCCEEDED;
+            co_return result::SUCCEEDED;
+        }
     }
 }
 

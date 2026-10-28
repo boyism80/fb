@@ -497,6 +497,7 @@ private:
     time_point                                                 _partner_seen;
     std::unordered_set<std::string>                            _wanted;
     std::unordered_map<std::string, time_point>                _group_tries;
+    std::unordered_map<uint32_t, time_point>                   _piles;
     uint32_t                                                   _opponent_damage = 0;
     // clang-format on
 
@@ -574,6 +575,7 @@ private:
     void                                     announce(game_bot& bot);
     void                                     advertise(game_bot& bot);
     void                                     regroup(game_bot& bot);
+    bool                                     claims(const game_bot& bot, const point<uint16_t>& position);
     bool                                     surplus(const game_bot& bot, const market::want& want, uint32_t need) const;
     async::task<result>                      trade(game_bot& bot);
     const questbook::quest*                  choose_quest(const game_bot& bot) const;
