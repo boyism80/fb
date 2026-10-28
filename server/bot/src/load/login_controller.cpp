@@ -112,14 +112,20 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
                 }
             }
 
+            delay = RETRY_DELAY_MIN;
             for (auto attempt = 0; entered == false && (exists == false || attempt < EXISTING_LOGIN_ATTEMPTS);
                  attempt++)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(*bot.make<login_reqs::login>(id, pw));
                 if (resp.type == 0x00)
+                {
                     entered = true;
+                }
                 else
-                    co_await thread->sleep(1000ms);
+                {
+                    co_await thread->sleep(delay);
+                    delay = std::min(delay * 2, RETRY_DELAY_MAX);
+                }
             }
         }
     }
