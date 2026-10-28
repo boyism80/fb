@@ -2294,6 +2294,13 @@ std::vector<const spellbook::lesson*> brain::lessons(const game_bot& bot, uint8_
     auto result = std::vector<std::pair<double, const spellbook::lesson*>>{};
     for (auto lesson : this->_spellbook.pending(cls, bot, level))
     {
+        auto blocked = std::any_of(lesson->names.begin(), lesson->names.end(), [this, now](const auto& name) {
+            auto found = this->_unlearnable.find(name);
+            return found != this->_unlearnable.end() && now < found->second;
+        });
+        if (blocked)
+            continue;
+
         auto value = this->worth(bot, *lesson);
         if (value > 0.0)
             result.push_back({value, lesson});
@@ -3729,7 +3736,14 @@ async::task<brain::result> brain::study(game_bot& bot)
     });
     this->report(bot, "learn", learned ? std::string{} : std::string{"NOT_LEARNED"}, detail);
     if (learned == false)
+    {
         this->_cooldowns[static_cast<size_t>(GOAL::LEARN)] = clock::now() + SHOP_AVOID;
+        for (auto& name : lesson->names)
+        {
+            this->_unlearnable.insert_or_assign(name, clock::now() + GROUND_AVOID);
+        }
+        this->_lessons.clear();
+    }
     co_return learned ? result::SUCCEEDED : result::FAILED;
 }
 
