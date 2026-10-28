@@ -35,4 +35,4 @@ COPY resources/meta/Meta.dat /app/Meta.dat
 COPY resources/meta/SObj.tbl /app/SObj.tbl
 
 WORKDIR /app
-CMD ["./game"]
+CMD ["sh", "-c", "ulimit -n 65536 && exec ./game"]
