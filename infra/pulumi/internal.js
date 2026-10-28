@@ -35,7 +35,7 @@ module.exports = {
         if (conf["unified-infra"] && conf["unified-infra"].mysql && conf["unified-infra"].mysql.port) {
             const unifiedMysql = conf["unified-infra"].mysql
             if (unifiedMysql) {
-                config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                config.ConnectionStrings.MySql["unified"] = `Server=mysql-unified;Port=${unifiedMysql.port.cluster};User ID=fb; Password=admin; Database=fb; Maximum Pool Size=20; Connection Idle Timeout=60`
             }
         }
 
@@ -63,13 +63,13 @@ module.exports = {
                 // Global connection
                 if (worldConf.mysql.global) {
                     const globalMysql = worldConf.mysql.global
-                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb`
+                    config.ConnectionStrings.MySql["worlds"][worldId]["global"] = `Server=mysql-${worldName}-global;Port=${globalMysql.port.cluster};User ID=fb; Password=admin; Database=fb; Maximum Pool Size=20; Connection Idle Timeout=60`
                 }
                 
                 // Data array (shard connections)
                 if (worldConf.mysql.data && Array.isArray(worldConf.mysql.data)) {
                     const dataArray = worldConf.mysql.data.map(mysqlConf => 
-                        `Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb`
+                        `Server=mysql-${worldName};Port=${mysqlConf.port.cluster};User ID=fb; Password=admin; Database=fb; Maximum Pool Size=20; Connection Idle Timeout=60`
                     )
                     if (dataArray.length > 0) {
                         config.ConnectionStrings.MySql["worlds"][worldId]["data"] = dataArray
@@ -238,7 +238,7 @@ module.exports = {
                     name: deployment.metadata.name,
                 },
                 minReplicas: 5,
-                maxReplicas: 30,
+                maxReplicas: 20,
                 metrics: [{
                     type: "Resource",
                     resource: {

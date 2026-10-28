@@ -106,6 +106,7 @@ module.exports = function () {
                                             conf: [
                                                 "--mysql-native-password=ON"
                                             ],
+                                            args: ["--max-connections=800"],
                                             ports: [
                                                 { containerPort: 3306, name: containerPortName, protocol: "TCP" },
                                             ],
@@ -258,6 +259,7 @@ module.exports = function () {
                                                 conf: [
                                                     "--mysql-native-password=ON"
                                                 ],
+                                                args: ["--max-connections=800"],
                                                 ports: [
                                                     { containerPort: 3306, name: containerPortName, protocol: "TCP" },
                                                 ],
@@ -538,6 +540,7 @@ module.exports = function () {
                                         conf: [
                                             "--mysql-native-password=ON"
                                         ],
+                                        args: ["--max-connections=800"],
                                         ports: [
                                             { containerPort: 3306, name: containerPortName, protocol: "TCP" },
                                         ],
