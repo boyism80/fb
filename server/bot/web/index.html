@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>봇 클러스터</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<script src="vendor/echarts.min.js"></script>
+</head>
+<body>
+<div class="bar">
+  <div class="logo"><b>FB</b> / BOT CLUSTER</div>
+  <div class="views">
+    <a data-view="integration">통합 테스트</a>
+    <a data-view="load">부하 테스트</a>
+    <a data-view="history">기록</a>
+  </div>
+  <div class="online off" id="online">Master 연결 중</div>
+</div>
+
+<section class="view" id="integration" hidden>
+<div class="page">
+  <div class="eyebrow">FB / scripts/integration/registry.lua</div>
+  <div class="title">
+    <div><h1>통합 테스트</h1><p class="lead">스위트를 이름과 label로 고르면, 병렬 스위트를 Agent의 빈 자리에 나눠 실행한 뒤 serial 스위트를 하나씩 실행합니다.</p></div>
+    <span class="status" id="i-status">IDLE</span>
+  </div>
+  <div class="notice" id="i-notice" hidden></div>
+  <div class="stats">
+    <div class="card stat"><div class="k">연결된 Agent</div><div class="v" id="i-agents">0</div><div class="s states" id="i-fleet"></div></div>
+    <div class="card stat"><div class="k">실행 중 Agent / 전체 자리</div><div class="v" id="i-seats">0</div><div class="s">스위트 묶음 하나가 Agent 한 대를 씀</div></div>
+    <div class="card stat"><div class="k">완료 스위트 / 선택</div><div class="v" id="i-progress">0</div><div class="meter"><i id="i-meter"></i><b id="i-meter-bad"></b></div><div class="s" id="i-progress-sub">-</div></div>
+    <div class="card stat"><div class="k">통과 / 실패</div><div class="v" id="i-result">0</div><div class="s" id="i-result-sub">-</div></div>
+    <div class="card stat"><div class="k">요청 / 실패</div><div class="v" id="i-requests">0</div><div class="s">응답을 기다린 패킷 합계</div></div>
+    <div class="card stat"><div class="k">경과</div><div class="v" id="i-elapsed">-</div><div class="s" id="i-started">-</div></div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="head"><h2>실행 설정</h2><span class="note">선택한 모든 스위트에 적용</span></div><div class="form">
+      <div class="two">
+        <div class="fld"><label for="i-client">클라이언트 버전</label><select class="in" id="i-client"><option value="">config 기본</option><option>550</option><option>565</option><option>651</option><option>651:new</option></select></div>
+        <div class="fld"><label for="i-retry">Agent 끊김 재시도</label><input class="in" id="i-retry" type="number" min="0" value="1"></div>
+      </div>
+      <p class="help">serial 스위트는 서버 전역 상태(결혼·마켓·보관함)를 쓰므로 병렬 단계가 끝난 뒤 클러스터 전체에서 하나씩 실행합니다.</p>
+      <p class="help">실행마다 Agent가 봇 프로세스를 새로 띄우므로 스크립트 변경은 다음 실행에 바로 반영됩니다. 스위트 목록이 바뀌면 다시 읽기를 누르세요.</p>
+      <div class="reload"><button class="btn sm" id="i-reload">스크립트·가중치 다시 읽기</button><span id="i-loaded"></span></div>
+      <div class="actions"><button class="btn go" id="i-start">실행</button><button class="btn" id="i-stop">중지</button></div>
+    </div></div>
+    <div class="card recent">
+      <div class="tabs" role="tablist" data-tabs="itab">
+        <button role="tab" data-tab="pick" aria-selected="true">스위트 선택<em id="i-tab-pick"></em></button>
+        <button role="tab" data-tab="plan" aria-selected="false">실행 계획<em id="i-tab-plan"></em></button>
+        <button role="tab" data-tab="agents" aria-selected="false">Agent<em id="i-tab-agents"></em></button>
+        <button role="tab" data-tab="results" aria-selected="false">요청 통계<em id="i-tab-results"></em></button>
+        <button role="tab" data-tab="errors" aria-selected="false">오류<em class="bad" id="i-tab-errors"></em></button>
+      </div>
+      <div class="panel" data-panel="itab:pick">
+        <div class="tools"><button class="btn sm" id="i-all">전체 선택</button><button class="btn sm" id="i-none">선택 해제</button><button class="btn sm" id="i-failed">실패만 다시 선택</button><input class="search" id="i-search" placeholder="스위트 이름 검색" aria-label="스위트 검색"></div>
+        <div class="labels" id="i-labels"></div>
+        <div class="tbl"><table><thead><tr><th>선택</th><th>순서 / 스위트</th><th>label</th><th class="num">봇</th><th>실행 방식</th></tr></thead><tbody id="i-suites"></tbody></table></div>
+        <div class="foot"><span>label을 누르면 그 label의 스위트를 모두 고르고, 모두 골라진 label을 다시 누르면 뺍니다</span><span>registry.lua 등록 순서</span></div>
+      </div>
+      <div class="panel" data-panel="itab:plan" hidden>
+        <div class="tbl"><table><thead><tr><th>단계</th><th>스위트</th><th>상태</th><th>Agent</th><th class="num">시도</th><th class="num">소요</th></tr></thead><tbody id="i-plan"></tbody></table></div>
+        <div class="foot"><span>병렬 스위트는 Agent 자리 수의 두 배씩 묶어 맡깁니다. serial 스위트는 하나가 끝나야 다음을 시작합니다.</span></div>
+      </div>
+      <div class="panel" data-panel="itab:agents" hidden data-fleet="ia" data-mode="integration"></div>
+      <div class="panel" data-panel="itab:results" hidden>
+        <div class="tbl"><table><thead><tr><th>이름</th><th class="num">요청</th><th class="num">실패</th><th class="num">평균</th><th class="num">p50</th><th class="num">p95</th><th class="num">p99</th><th class="num">최대</th></tr></thead><tbody id="i-stats"></tbody></table></div>
+        <div class="foot"><span>누적 · ms · 모든 Agent의 응답 시간 분포를 합친 값</span></div>
+      </div>
+      <div class="panel errs" data-panel="itab:errors" hidden id="i-errors"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="view" id="load" hidden>
+<div class="page">
+  <div class="eyebrow">FB / config/load.json</div>
+  <div class="title">
+    <div><h1>부하 테스트</h1><p class="lead">봇 수와 증가 속도를 Agent 용량 비율로 나눕니다. Agent가 들어오거나 나가면 남은 Agent끼리 다시 나눕니다.</p></div>
+    <span class="status" id="l-status">IDLE<i class="time" id="l-time"></i></span>
+  </div>
+  <div class="notice" id="l-notice" hidden></div>
+  <div class="stats">
+    <div class="card stat"><div class="k">연결된 Agent</div><div class="v" id="l-agents">0</div><div class="s states" id="l-fleet"></div></div>
+    <div class="card stat"><div class="k">접속 봇 / 목표 봇</div><div class="v" id="l-bots">0</div><div class="meter"><i id="l-meter"></i></div><div class="s" id="l-bots-sub">-</div></div>
+    <div class="card stat"><div class="k">초당 요청</div><div class="v" id="l-rps">0</div><div class="s" id="l-rps-sub">-</div></div>
+    <div class="card stat"><div class="k">실패율</div><div class="v" id="l-fail">0%</div><div class="s" id="l-fail-sub">-</div></div>
+    <div class="card stat"><div class="k">응답 시간 p95</div><div class="v" id="l-p95">-</div><div class="s" id="l-p95-sub">-</div></div>
+    <div class="card stat"><div class="k">분당 처치 / 사망</div><div class="v" id="l-kills">0</div><div class="s" id="l-kills-sub">-</div></div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="head"><h2>실행 설정</h2><span class="note">봇 수는 실행 중 변경 가능</span></div><div class="form">
+      <div class="two">
+        <div class="fld"><label for="l-users">봇 수</label><input class="in" id="l-users" type="number" min="1" value="100"></div>
+        <div class="fld"><label for="l-rate">초당 증가</label><input class="in" id="l-rate" type="number" min="1" value="5"></div>
+      </div>
+      <div class="two">
+        <div class="fld"><label for="l-cap">Agent당 상한</label><input class="in" id="l-cap" type="number" min="0" value="0"></div>
+        <div class="fld"><label for="l-duration">지속 시간 (분)</label><input class="in" id="l-duration" type="number" min="0" value="0"></div>
+      </div>
+      <div class="two">
+        <div class="fld"><label for="l-client">클라이언트 버전</label><select class="in" id="l-client"><option value="">config 기본</option><option>550</option><option>565</option><option>651</option><option>651:new</option></select></div>
+        <div class="fld"><label for="l-offset">계정 세트</label><input class="in" id="l-offset" type="number" min="0" value="0"></div>
+      </div>
+      <p class="help">Agent당 상한 0은 Agent가 알린 용량(--max-bots)을 씁니다. 지속 시간 0은 직접 중지할 때까지 실행합니다.</p>
+      <p class="help">계정 번호는 Master가 Agent마다 process × 1,000,000 범위로 발급하고, 계정 세트는 그 안의 오프셋입니다. 같은 세트는 지난 실행의 캐릭터(레벨·장비)를 이어 쓰고, 새 세트는 1레벨부터 시작합니다.</p>
+      <div class="reload"><button class="btn sm" id="l-reload">스크립트·가중치 다시 읽기</button><span id="l-loaded"></span></div>
+      <div class="actions"><button class="btn go" id="l-start">시작</button><button class="btn" id="l-stop">중지</button></div>
+    </div></div>
+    <div class="stack">
+      <div class="card recent"><div class="head"><h2>현황</h2><span class="note">2초 간격 · 최근 12분 · 전체 Agent 합계</span></div>
+        <div class="chart-grid">
+          <div><h3>초당 요청 · 실패<b id="c1-v">-</b></h3><div class="chart" id="c1"></div></div>
+          <div><h3>응답 시간 p50 · p95 · p99<b id="c2-v">-</b></h3><div class="chart" id="c2"></div></div>
+          <div><h3>접속 봇 · 연결된 Agent<b id="c3-v">-</b></h3><div class="chart" id="c3"></div></div>
+          <div><h3>분당 처치 · 사망<b id="c4-v">-</b></h3><div class="chart" id="c4"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tabs" role="tablist" data-tabs="ltab">
+          <button role="tab" data-tab="requests" aria-selected="true">요청별 통계<em id="l-tab-requests"></em></button>
+          <button role="tab" data-tab="agents" aria-selected="false">Agent<em id="l-tab-agents"></em></button>
+          <button role="tab" data-tab="goals" aria-selected="false">목표 분포</button>
+          <button role="tab" data-tab="errors" aria-selected="false">오류<em class="bad" id="l-tab-errors"></em></button>
+        </div>
+        <div class="panel" data-panel="ltab:requests">
+          <div class="tbl"><table><thead><tr><th>이름</th><th>종류</th><th class="num">횟수</th><th class="num">실패</th><th class="num">p50</th><th class="num">p95</th><th class="num">p99</th><th class="num">초당</th></tr></thead><tbody id="l-stats"></tbody></table></div>
+          <div class="foot"><span>누적 · ms · packet은 응답 대기 시간, goal은 목표 수행 시간, action은 횟수만 셉니다</span></div>
+        </div>
+        <div class="panel" data-panel="ltab:agents" hidden>
+          <div class="lead2">Agent별 봇 수 분포</div><div class="dist"><div class="dist-bars" id="l-dist"></div><div class="dist-axis" id="l-dist-axis"></div></div>
+          <div data-fleet="la" data-mode="load"></div>
+        </div>
+        <div class="panel" data-panel="ltab:goals" hidden><div class="goals" id="l-goals"></div></div>
+        <div class="panel" data-panel="ltab:errors" hidden>
+          <div class="tbl"><table><thead><tr><th>이름</th><th class="num">실패</th><th class="num">전체</th><th class="num">실패율</th></tr></thead><tbody id="l-errors"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="view" id="history" hidden>
+<div class="page">
+  <div class="eyebrow">FB / logs/runs</div>
+  <div class="title"><div><h1>실행 기록</h1><p class="lead">끝난 실행의 요약·요청 통계·타임라인을 다시 보고 내려받습니다.</p></div></div>
+  <div class="wide">
+    <div class="card"><div class="tbl history"><table><thead><tr><th>실행</th><th>종류</th><th>시작</th><th class="num">소요</th><th>결과</th></tr></thead><tbody id="h-runs"></tbody></table></div></div>
+    <div class="card" id="h-detail" hidden>
+      <div class="head"><div><h2 id="h-title"></h2><div class="sub" id="h-sub"></div></div><div class="downloads" id="h-files"></div></div>
+      <div class="chart-grid" id="h-charts">
+        <div><h3>초당 요청 · 실패</h3><div class="chart" id="h1"></div></div>
+        <div><h3>응답 시간 p50 · p95 · p99</h3><div class="chart" id="h2"></div></div>
+      </div>
+      <div class="tbl" id="h-suites-wrap"><table><thead><tr><th>스위트</th><th>상태</th><th>Agent</th><th class="num">시도</th><th class="num">소요</th></tr></thead><tbody id="h-suites"></tbody></table></div>
+      <div class="tbl"><table><thead><tr><th>이름</th><th class="num">횟수</th><th class="num">실패</th><th class="num">p50</th><th class="num">p95</th><th class="num">p99</th><th class="num">초당</th></tr></thead><tbody id="h-stats"></tbody></table></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="footer"><span>REGISTER → SELECT → PARALLEL → SERIAL → RESULTS</span><span id="footer-rev"></span></div>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -52,9 +52,10 @@ private:
         bool        success;
         std::string message;
     };
-    std::vector<test_result>              _test_results;
-    mutable std::mutex                    _results_mutex;
-    std::chrono::steady_clock::time_point _suite_start{};
+    std::vector<test_result>                                                         _test_results;
+    mutable std::mutex                                                               _results_mutex;
+    std::unordered_map<bot_integration_test*, std::chrono::steady_clock::time_point> _started;
+    std::chrono::steady_clock::time_point                                            _suite_start{};
 
     using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
     struct hook_entry

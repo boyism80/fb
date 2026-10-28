@@ -5,6 +5,7 @@
 #include <fb/bot/gateway_controller.h>
 #include <fb/gateway/protocol.h>
 
+#include <atomic>
 #include <cstdint>
 
 namespace fb::bot::load {
@@ -20,12 +21,14 @@ private:
     using bot_type = gateway_bot;
 
 private:
-    uint32_t _remained_count;
+    std::atomic<uint32_t> _target;
+    std::atomic<uint32_t> _spawned = 0;
 
 public:
     gateway_bot_controller(bot_container& container);
 
 private:
+    void              scale(uint32_t target);
     async::task<void> on_bot_spawn();
     async::task<void> on_welcome(gateway_bot& bot, const gateway_resp::welcome& response);
     async::task<void> on_crt(gateway_bot& bot, const gateway_resp::encryption& response);

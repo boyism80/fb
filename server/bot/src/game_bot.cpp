@@ -33,17 +33,7 @@ namespace game_resp = fb::protocol::game::response;
 
 game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id) :
     bot<game_bot>(bot_controller, id)
-{
-    this->_next_action_time = fb::model::datetime::utc_now();
-
-    this->pattern(&game_bot::pattern_chat, 250ms, 1000ms);
-    this->pattern(&game_bot::pattern_attack, 250ms, 1000ms);
-    this->pattern(&game_bot::pattern_direction, 250ms, 1000ms);
-    this->pattern(&game_bot::pattern_move, 250ms, 1000ms);
-    this->pattern(&game_bot::pattern_loot, 250ms, 1000ms);
-    this->pattern(&game_bot::pattern_emotion, 250ms, 1000ms);
-    // this->pattern(&game_bot::pattern_bulletin_sections, 250ms, 1000ms);
-}
+{ }
 
 game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const fb::stream& params) :
     game_bot(bot_controller, id)
@@ -528,6 +518,26 @@ void game_bot::set_title(std::string_view value)
     this->_title = std::string(value);
 }
 
+const std::string& game_bot::class_name() const
+{
+    return this->_class_name;
+}
+
+void game_bot::mark_info()
+{
+    this->_info_received = std::chrono::steady_clock::now();
+}
+
+std::chrono::steady_clock::time_point game_bot::info_received() const
+{
+    return this->_info_received;
+}
+
+void game_bot::set_class_name(std::string_view value)
+{
+    this->_class_name = std::string(value);
+}
+
 const std::string& game_bot::group_info() const
 {
     return this->_group_info;
@@ -847,126 +857,6 @@ async::task<void> game_bot::direction(DIRECTION direction, std::chrono::millisec
     }
 }
 
-async::task<void> game_bot::process_random_pattern(const fb::model::datetime& now)
-{
-    if (!this->_inited)
-        co_return;
-
-    if (now < this->_next_action_time)
-        co_return;
-
-    static thread_local auto gen  = std::mt19937(std::random_device{}());
-    auto                     dist = std::uniform_int_distribution<>(0, this->_pattern_params.size() - 1);
-
-    auto& pattern  = this->_pattern_params.at(dist(gen));
-    auto  datetime = fb::model::datetime{now};
-    co_await pattern.fn();
-
-    auto rand_term          = std::uniform_int_distribution<long long>(pattern.min.count(), pattern.max.count())(gen);
-    this->_next_action_time = datetime + std::chrono::steady_clock::duration(rand_term);
-}
-
-async::task<void> game_bot::pattern_chat()
-{
-    static thread_local auto gen      = std::mt19937(std::random_device{}());
-    static const auto        messages = std::vector<std::string>{"안녕하세요", "반갑습니다."};
-    auto                     dist     = std::uniform_int_distribution<>(0, messages.size() - 1);
-
-    auto& message = messages.at(dist(gen));
-    this->chat(message);
-    co_return;
-}
-
-async::task<void> game_bot::pattern_attack()
-{
-    this->send(*this->make<game_reqs::attack>());
-    co_return;
-}
-
-async::task<void> game_bot::pattern_direction()
-{
-    static const std::vector<DIRECTION> directions{DIRECTION::LEFT,
-                                                   DIRECTION::TOP,
-                                                   DIRECTION::RIGHT,
-                                                   DIRECTION::BOTTOM};
-    static thread_local auto            gen  = std::mt19937(std::random_device{}());
-    auto                                dist = std::uniform_int_distribution<>(0, directions.size() - 1);
-
-    auto direction = directions.at(dist(gen));
-    this->send(*this->make<game_reqs::direction>(direction));
-
-    // Update internal direction state
-    this->_direction = direction;
-
-    co_return;
-}
-
-async::task<void> game_bot::pattern_move()
-{
-    static const std::vector<DIRECTION> directions{DIRECTION::LEFT,
-                                                   DIRECTION::TOP,
-                                                   DIRECTION::RIGHT,
-                                                   DIRECTION::BOTTOM};
-    static thread_local auto            gen  = std::mt19937(std::random_device{}());
-    auto                                dist = std::uniform_int_distribution<>(0, directions.size() - 1);
-
-    auto direction = directions.at(dist(gen));
-    this->send(*this->make<game_reqs::move>(direction, 0, this->_position));
-
-    // Update internal direction state
-    this->_direction = direction;
-
-    switch (direction)
-    {
-    case DIRECTION::LEFT:
-        this->_position.x--;
-        break;
-
-    case DIRECTION::TOP:
-        this->_position.y--;
-        break;
-
-    case DIRECTION::RIGHT:
-        this->_position.x++;
-        break;
-
-    case DIRECTION::BOTTOM:
-        this->_position.y++;
-        break;
-    }
-    co_return;
-}
-
-async::task<void> game_bot::pattern_loot()
-{
-    this->send(*this->make<game_reqs::loot>(false));
-    co_return;
-}
-
-async::task<void> game_bot::pattern_emotion()
-{
-    static thread_local auto gen  = std::mt19937(std::random_device{}());
-    auto                     dist = std::uniform_int_distribution<>(0, 0xFF - 0x0B);
-
-    this->send(*this->make<game_reqs::emotion>((uint8_t)dist(gen)));
-    co_return;
-}
-
-async::task<void> game_bot::pattern_bulletin_sections()
-{
-    static thread_local auto gen  = std::mt19937(std::random_device{}());
-    auto                     dist = std::uniform_int_distribution<>(0, 1);
-
-    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::SECTIONS));
-
-    auto section = (uint32_t)dist(gen);
-    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLES, section));
-    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::ARTICLE, section, 0));
-    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
-    this->send(*this->make<game_reqs::bulletin>(BULLETIN_ACTION::DELETE, section, 0));
-    co_return;
-}
-
 // Simple item management method implementations
 void game_bot::update_item(uint8_t slot, std::string_view name, uint32_t count)
 {
@@ -1076,6 +966,20 @@ uint32_t game_bot::last_dialog(std::optional<integration::dialog_bot>&     dialo
     dialog     = this->_last_dialog;
     dialog_ext = this->_last_dialog_ext;
     return this->_dialog_seq;
+}
+
+void game_bot::record_users(const std::vector<game_bot::user_data>& users)
+{
+    auto lock = std::lock_guard(this->_record_mutex);
+    this->_users_seq++;
+    this->_users = users;
+}
+
+uint32_t game_bot::users(std::vector<game_bot::user_data>& users) const
+{
+    auto lock = std::lock_guard(this->_record_mutex);
+    users     = this->_users;
+    return this->_users_seq;
 }
 
 void game_bot::record_message(std::string_view text)

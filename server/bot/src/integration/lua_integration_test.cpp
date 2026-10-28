@@ -424,7 +424,7 @@ uint32_t lua_integration_test::peek_bot_count(const std::filesystem::path& scrip
     return count;
 }
 
-std::vector<lua_integration_test::discovered_script> lua_integration_test::discover_scripts()
+std::vector<lua_integration_test::discovered_script> lua_integration_test::catalog()
 {
     auto base_dir = find_integration_dir();
     if (base_dir.has_value() == false)
@@ -463,10 +463,28 @@ std::vector<lua_integration_test::discovered_script> lua_integration_test::disco
     result.reserve(context.scripts.size());
     for (auto& script : context.scripts)
     {
+        result.push_back(discovered_script{
+            .path       = std::move(script.path),
+            .serial     = script.serial,
+            .extra_slot = script.extra_slot,
+            .labels     = std::vector<std::string>(script.labels.begin(), script.labels.end()),
+        });
+    }
+    return result;
+}
+
+std::vector<lua_integration_test::discovered_script> lua_integration_test::discover_scripts()
+{
+    auto scripts = catalog();
+
+    std::vector<discovered_script> result;
+    result.reserve(scripts.size());
+    for (auto& script : scripts)
+    {
         // Tests named in --test run regardless of their label.
         if (g_only_tests.empty())
         {
-            if (script.labels.contains(g_test_label) == false)
+            if (std::find(script.labels.begin(), script.labels.end(), g_test_label) == script.labels.end())
                 continue;
         }
         else
@@ -485,11 +503,7 @@ std::vector<lua_integration_test::discovered_script> lua_integration_test::disco
                 continue;
         }
 
-        result.push_back(discovered_script{
-            .path       = std::move(script.path),
-            .serial     = script.serial,
-            .extra_slot = script.extra_slot,
-        });
+        result.push_back(std::move(script));
     }
     return result;
 }
@@ -833,6 +847,11 @@ std::string lua_integration_test::name() const
     return std::filesystem::path(this->_script_path).stem().string();
 }
 
+std::string lua_integration_test::key() const
+{
+    return std::filesystem::path(this->_script_path).stem().string();
+}
+
 generator<bot_integration_test::scenario_t> lua_integration_test::on_generate_scenario()
 {
     for (const auto& scenario : this->_suite.scenarios)
@@ -1089,7 +1108,7 @@ int builtin::integration_test::builtin_suite_slot(lua_State* L)
     if (test == nullptr)
         return 0;
 
-    lua_pushinteger(L, static_cast<lua_Integer>(test->suite_slot()));
+    lua_pushinteger(L, static_cast<lua_Integer>(fb::config<uint32_t>("cluster:seat_base", 0) + test->suite_slot()));
     return 1;
 }
 
@@ -1110,6 +1129,6 @@ int builtin::integration_test::builtin_extra_slot(lua_State* L)
         return 1;
     }
 
-    lua_pushinteger(L, static_cast<lua_Integer>(slot.value()));
+    lua_pushinteger(L, static_cast<lua_Integer>(fb::config<uint32_t>("cluster:seat_base", 0) + slot.value()));
     return 1;
 }

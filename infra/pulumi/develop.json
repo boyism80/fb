@@ -89,7 +89,8 @@
                 }
             },
             "login": {
-                "port": 30010
+                "port": 30010,
+                "admin_mode": true
             },
             "game": {
                 "containers": {
@@ -273,7 +274,8 @@
                 }
             },
             "login": {
-                "port": 30011
+                "port": 30011,
+                "admin_mode": true
             },
             "game": {
                 "containers": {

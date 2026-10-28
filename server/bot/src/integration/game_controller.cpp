@@ -70,33 +70,7 @@ void game_bot_controller::initialize()
     table::item->hook.build = [](const Json::Value& json) -> fb::model::item* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0xBFFF;
-
-        auto type = fb::model::build<ITEM_TYPE>(clone["type"]);
-        switch (type)
-        {
-        case ITEM_TYPE::STUFF:
-            return fb::model::build<fb::model::item*>(clone);
-        case ITEM_TYPE::CASH:
-            return fb::model::build<fb::model::cash*>(clone);
-        case ITEM_TYPE::CONSUME:
-            return fb::model::build<fb::model::consume*>(clone);
-        case ITEM_TYPE::WEAPON:
-            return fb::model::build<fb::model::weapon*>(clone);
-        case ITEM_TYPE::ARMOR:
-            return fb::model::build<fb::model::armor*>(clone);
-        case ITEM_TYPE::HELMET:
-            return fb::model::build<fb::model::helmet*>(clone);
-        case ITEM_TYPE::RING:
-            return fb::model::build<fb::model::ring*>(clone);
-        case ITEM_TYPE::SHIELD:
-            return fb::model::build<fb::model::shield*>(clone);
-        case ITEM_TYPE::AUXILIARY:
-            return fb::model::build<fb::model::auxiliary*>(clone);
-        case ITEM_TYPE::PACKAGE:
-            return fb::model::build<fb::model::pack*>(clone);
-        default:
-            return nullptr;
-        }
+        return build_item(clone);
     };
 
     async::awaitable_get(fb::model::loader(this->container).run());
@@ -315,6 +289,16 @@ async::task<void> game_bot_controller::run_one(bot_integration_test* test)
         co_await seat->switching();
 
         fb::logger::info("Starting test '{}' (suite_slot={})", test->name(), test->suite_slot());
+        {
+            auto lock            = std::lock_guard(this->_results_mutex);
+            this->_started[test] = std::chrono::steady_clock::now();
+        }
+
+        auto started    = Json::Value{};
+        started["type"] = "suite_started";
+        started["name"] = test->key();
+        this->container.link.send(started);
+
         test->prepare_ready_wait();
         co_await test->on_activated(*this);
         co_await test->wait_until_ready();
@@ -349,6 +333,7 @@ async::task<void> game_bot_controller::run_one(bot_integration_test* test)
 
 void game_bot_controller::on_test_complete(bot_integration_test* test, bool success)
 {
+    auto seconds = 0.0;
     {
         auto        lock = std::lock_guard(this->_results_mutex);
         test_result result;
@@ -356,7 +341,21 @@ void game_bot_controller::on_test_complete(bot_integration_test* test, bool succ
         result.success = success;
         result.message = success ? "PASSED" : "FAILED";
         this->_test_results.push_back(result);
+
+        auto started = this->_started.find(test);
+        if (started != this->_started.end())
+        {
+            seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started->second).count();
+            this->_started.erase(started);
+        }
     }
+
+    auto finished       = Json::Value{};
+    finished["type"]    = "suite_finished";
+    finished["name"]    = test->key();
+    finished["success"] = success;
+    finished["seconds"] = seconds;
+    this->container.link.send(finished);
 
     if (success)
         fb::logger::info(fb::console::color::light_green, "Test '{}' completed successfully", test->name());

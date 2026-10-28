@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <map>
 #include <memory>
@@ -19,6 +20,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -47,6 +49,7 @@ public:
     using spawned_monster_list_task = async::task<std::vector<spawned_monster_info>>;
     using game_bot_ptr_task         = async::task<std::shared_ptr<game_bot>>;
     using relative_positions_t      = std::vector<std::pair<int, int>>;
+    using user_data                 = fb::protocol::game::response::user_list::user_data;
     // clang-format on
 
     struct simple_item
@@ -88,19 +91,59 @@ public:
         { }
     };
 
-private:
-    typedef struct _pattern_params_tag
+    class sight
     {
-        std::function<async::task<void>()>  fn;
-        std::chrono::steady_clock::duration min;
-        std::chrono::steady_clock::duration max;
-    } pattern_params;
+    public:
+        struct entry
+        {
+            uint32_t        oid;
+            point<uint16_t> position;
+            uint16_t        look;
+            std::string     name;
+        };
+
+    private:
+        std::unordered_map<uint32_t, entry> _entries;
+
+    public:
+        void show(uint32_t oid, const point<uint16_t>& position, uint16_t look, std::string_view name = {});
+        void move(uint32_t oid, const point<uint16_t>& position);
+        void hide(uint32_t oid);
+        void clear();
+        const std::unordered_map<uint32_t, entry>& entries() const;
+    };
+
+    class events
+    {
+    public:
+        enum class TYPE : uint8_t
+        {
+            MESSAGE = 0,
+            CHAT    = 1,
+            HIT     = 2,
+        };
+
+        struct entry
+        {
+            TYPE        type;
+            uint32_t    oid;
+            std::string text;
+            uint32_t    value;
+            uint32_t    extra;
+        };
+
+    private:
+        mutable std::mutex _mutex;
+        std::deque<entry>  _entries;
+
+    public:
+        void               push(entry value);
+        std::vector<entry> take();
+    };
 
 private:
     // clang-format off
     bool                            _inited = false;
-    std::vector<pattern_params>     _pattern_params;
-    datetime                        _next_action_time = datetime::utc_now();
     uint16_t                        _map = 0xFFFF;
     std::optional<uint32_t>         _instance_slot;
     uint32_t                        _oid = 0;
@@ -146,6 +189,8 @@ private:
     std::string                     _clan_name;
     std::string                     _clan_title;
     std::string                     _title;
+    std::string                     _class_name;
+    std::chrono::steady_clock::time_point _info_received{};
     std::string                     _group_info;
     uint8_t                         _group_option = 0;
     uint32_t                        _remained_exp = 0;
@@ -157,23 +202,18 @@ private:
     std::optional<integration::dialog_bot>         _last_dialog;
     std::optional<integration::dialog_ext_bot>     _last_dialog_ext;
     std::vector<std::string>                       _messages;
+    std::vector<user_data>                         _users;
+    uint32_t                                       _users_seq = 0;
     // clang-format on
+
+public:
+    class sight  sight;
+    class events events;
 
 public:
     game_bot(bot_controller<game_bot>& bot_controller, uint32_t id);
     game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const fb::stream& params);
     ~game_bot();
-
-private:
-    template <typename Class> void pattern(async::task<void> (Class::*fn)(),
-                                           const std::chrono::steady_clock::duration& min,
-                                           const std::chrono::steady_clock::duration& max)
-    {
-        this->_pattern_params.push_back(pattern_params{std::bind(fn, static_cast<Class*>(this)), min, max});
-    }
-
-public:
-    async::task<void> process_random_pattern(const fb::model::datetime& now);
 
 public:
     // clang-format off
@@ -267,6 +307,10 @@ public:
     void                                      set_clan_title(std::string_view value);
     const std::string&                        title() const;
     void                                      set_title(std::string_view value);
+    const std::string&                        class_name() const;
+    void                                      set_class_name(std::string_view value);
+    void                                      mark_info();
+    std::chrono::steady_clock::time_point     info_received() const;
     const std::string&                        group_info() const;
     void                                      set_group_info(std::string_view value);
     uint8_t                                   group_option() const;
@@ -291,13 +335,6 @@ public:
     async::task<void>                         change_hp(uint32_t hp, std::chrono::milliseconds timeout);
     async::task<void>                         change_mp(uint32_t mp, std::chrono::milliseconds timeout);
     async::task<void>                         direction(DIRECTION direction, std::chrono::milliseconds timeout);
-    async::task<void>                         pattern_chat();
-    async::task<void>                         pattern_attack();
-    async::task<void>                         pattern_direction();
-    async::task<void>                         pattern_move();
-    async::task<void>                         pattern_loot();
-    async::task<void>                         pattern_emotion();
-    async::task<void>                         pattern_bulletin_sections();
     // clang-format on
 
 public:
@@ -318,6 +355,8 @@ public:
     uint32_t                              last_dialog(std::optional<integration::dialog_bot>& dialog, std::optional<integration::dialog_ext_bot>& dialog_ext) const;
     void                                  record_message(std::string_view text);
     std::vector<std::string>              take_messages();
+    void                                  record_users(const std::vector<user_data>& users);
+    uint32_t                              users(std::vector<user_data>& users) const;
     void                                  chat(std::string_view message);
     async::task<void>                     create_item(std::string_view item_name, uint32_t count, std::chrono::milliseconds timeout);
     async::task<simple_npc>               create_npc(std::string_view npc_name, std::chrono::milliseconds timeout);

@@ -17,6 +17,36 @@
 
 using namespace fb::bot;
 
+fb::model::item* game_bot_controller::build_item(const Json::Value& json)
+{
+    auto type = fb::model::build<ITEM_TYPE>(json["type"]);
+    switch (type)
+    {
+    case ITEM_TYPE::STUFF:
+        return fb::model::build<fb::model::item*>(json);
+    case ITEM_TYPE::CASH:
+        return fb::model::build<fb::model::cash*>(json);
+    case ITEM_TYPE::CONSUME:
+        return fb::model::build<fb::model::consume*>(json);
+    case ITEM_TYPE::WEAPON:
+        return fb::model::build<fb::model::weapon*>(json);
+    case ITEM_TYPE::ARMOR:
+        return fb::model::build<fb::model::armor*>(json);
+    case ITEM_TYPE::HELMET:
+        return fb::model::build<fb::model::helmet*>(json);
+    case ITEM_TYPE::RING:
+        return fb::model::build<fb::model::ring*>(json);
+    case ITEM_TYPE::SHIELD:
+        return fb::model::build<fb::model::shield*>(json);
+    case ITEM_TYPE::AUXILIARY:
+        return fb::model::build<fb::model::auxiliary*>(json);
+    case ITEM_TYPE::PACKAGE:
+        return fb::model::build<fb::model::pack*>(json);
+    default:
+        return nullptr;
+    }
+}
+
 game_bot_controller::game_bot_controller(bot_container& container) :
     bot_controller<game_bot>(container)
 {
@@ -69,6 +99,14 @@ game_bot_controller::game_bot_controller(bot_container& container) :
         return this->on_internal_info(bot, response);
     });
     this->bind(&game_bot_controller::on_ping);
+    this->bind<game_resp::update_hp>([](game_bot& bot, game_resp::update_hp& response) -> async::task<void> {
+        bot.events.push({game_bot::events::TYPE::HIT, response.oid, {}, response.damage, response.percent});
+        co_return;
+    });
+    this->bind<game_resp::user_list>([](game_bot& bot, game_resp::user_list& response) -> async::task<void> {
+        bot.record_users(response.users);
+        co_return;
+    });
 
     integration::protocol_registry::register_all();
     // Shared opcodes (bulletin 0x31, dialog 0x2F/0x30, trade 0x42) need the
@@ -104,6 +142,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config<V>& response)
 {
     bot.set_map(response.id);
+    bot.sight.clear();
     co_return;
 }
 
@@ -160,6 +199,7 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp
     // }
 
     bot.record_message(response.text);
+    bot.events.push({game_bot::events::TYPE::MESSAGE, 0, response.text, static_cast<uint32_t>(response.type), 0});
 
     if (response.type == MESSAGE_TYPE::NOTIFY)
     {
@@ -168,8 +208,13 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp
         if (boost::xpressive::regex_search(response.text, what, regex) == false)
             co_return;
 
+        static const auto suffix = std::string{"\"에 대한 응답입니다."};
+        auto              text   = what["msg"].str();
+        if (text.size() >= suffix.size() && text.compare(text.size() - suffix.size(), suffix.size(), suffix) == 0)
+            co_return;
+
         auto id  = what["id"].str();
-        auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
+        auto msg = std::format("\"{}{}", text, suffix);
         bot.send(*bot.make<game_reqs::whisper>(id, msg));
     }
 
@@ -199,6 +244,8 @@ async::task<void> game_bot_controller::on_spell_remove(game_bot& bot, const game
 
 async::task<void> game_bot_controller::on_chat(game_bot& bot, const game_resp::chat& response)
 {
+    bot.events.push(
+        {game_bot::events::TYPE::CHAT, response.oid, response.text, static_cast<uint32_t>(response.type), 0});
     co_return;
 }
 
@@ -227,10 +274,33 @@ async::task<void> game_bot_controller::on_position(game_bot& bot, const game_res
 
 async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::move& response)
 {
-    if (bot.oid() != response.id)
-        co_return;
+    if (bot.oid() == response.id)
+    {
+        bot.set_position(response.position);
+    }
+    else
+    {
+        auto position = response.position;
+        switch (response.direction)
+        {
+        case DIRECTION::LEFT:
+            position.x--;
+            break;
 
-    bot.set_position(response.position);
+        case DIRECTION::TOP:
+            position.y--;
+            break;
+
+        case DIRECTION::RIGHT:
+            position.x++;
+            break;
+
+        case DIRECTION::BOTTOM:
+            position.y++;
+            break;
+        }
+        bot.sight.move(response.id, position);
+    }
     co_return;
 }
 
@@ -286,7 +356,7 @@ async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp:
 
 async::task<void> game_bot_controller::on_hide(game_bot& bot, const game_resp::hide& response)
 {
-    // Hide events are for other players disappearing, not relevant for bot's own state
+    bot.sight.hide(response.oid);
     co_return;
 }
 
@@ -296,6 +366,10 @@ async::task<void> game_bot_controller::on_die(game_bot& bot, const game_resp::di
     if (bot.oid() == response.oid)
     {
         bot.set_dead(true);
+    }
+    else
+    {
+        bot.sight.hide(response.oid);
     }
     co_return;
 }
@@ -319,6 +393,13 @@ async::task<void> game_bot_controller::on_update_cc(game_bot& bot, const game_re
 template <fb::protocol::CLIENT_VERSION V>
 async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update<V>& response)
 {
+    for (auto& object : response.objects_data)
+    {
+        if (object.oid == bot.oid())
+            continue;
+
+        bot.sight.show(object.oid, point<uint16_t>(object.x, object.y), object.look);
+    }
     co_return;
 }
 
@@ -346,6 +427,8 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
     bot.set_group_info(response.group_info);
     bot.set_group_option(response.group_option);
     bot.set_remained_exp(response.remained_exp);
+    bot.set_class_name(response.class_name);
+    bot.mark_info();
     co_return;
 }
 

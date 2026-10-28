@@ -641,7 +641,28 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
             }
         });
     }
-    co_return co_await context->task();
+
+    auto& stats   = target->controller.container.stats;
+    auto  name    = protocol != nullptr ? stats.name(typeid(*protocol)) : std::format("wait:0x{:02X}", response_opcode);
+    auto  started = std::chrono::steady_clock::now();
+    auto  error   = std::exception_ptr{};
+    try
+    {
+        auto response = co_await context->task();
+        stats.add(name,
+                  std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count(),
+                  false);
+        co_return response;
+    }
+    catch (...)
+    {
+        error = std::current_exception();
+    }
+
+    stats.add(name,
+              std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count(),
+              true);
+    std::rethrow_exception(error);
 }
 
 template <typename BotType>

@@ -5,6 +5,10 @@
 #include <fb/bot/login_controller.h>
 #include <fb/login/protocol.h>
 
+#include <atomic>
+#include <cstdint>
+#include <vector>
+
 namespace fb::bot::load {
 
 namespace login_resp = fb::protocol::login::response;
@@ -16,6 +20,10 @@ class login_bot_controller : public fb::bot::login_bot_controller
 private:
     using super    = fb::bot::login_bot_controller;
     using bot_type = login_bot;
+
+private:
+    std::vector<wchar_t>  _syllables;
+    std::atomic<uint32_t> _next_account;
 
 public:
     login_bot_controller(bot_container& container);

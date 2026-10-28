@@ -1,0 +1,2752 @@
+{
+ "classes": {
+  "ROGUE": {
+   "npc": 20,
+   "spells": [
+    {
+     "names": [
+      "성황령"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "비영사천문"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "누리의기원"
+     ],
+     "level": 8,
+     "money": 30,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      }
+     ]
+    },
+    {
+     "names": [
+      "대지의기원"
+     ],
+     "level": 12,
+     "money": 40,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      }
+     ]
+    },
+    {
+     "names": [
+      "누리의빛"
+     ],
+     "level": 12,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "금수"
+     ],
+     "level": 14,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "누리의힘"
+     ],
+     "level": 15,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "뱀고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "대지의빛"
+     ],
+     "level": 17,
+     "money": 150,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "뱀고기",
+       "count": 30
+      }
+     ]
+    },
+    {
+     "names": [
+      "화염주",
+      "백열주",
+      "자무주",
+      "뢰진주"
+     ],
+     "level": 18,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 30
+      }
+     ]
+    },
+    {
+     "names": [
+      "동해의기원"
+     ],
+     "level": 20,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "호랑이고기",
+       "count": 5
+      }
+     ]
+    },
+    {
+     "names": [
+      "무영보법"
+     ],
+     "level": 24,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "경수"
+     ],
+     "level": 25,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "호랑이고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "바다의빛"
+     ],
+     "level": 28,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "호랑이고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "이중공격"
+     ],
+     "level": 30,
+     "money": 300,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 150
+      },
+      {
+       "name": "호랑이고기",
+       "count": 30
+      }
+     ]
+    },
+    {
+     "names": [
+      "야수"
+     ],
+     "level": 33,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "여우모피",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "투명"
+     ],
+     "level": 34,
+     "money": 400,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 200
+      },
+      {
+       "name": "호랑이고기",
+       "count": 20
+      },
+      {
+       "name": "철도",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "출두"
+     ],
+     "level": 35,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "호랑이고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "화영열주",
+      "백령주",
+      "자영무주",
+      "뢰격주"
+     ],
+     "level": 36,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "호랑이고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "비영승보"
+     ],
+     "level": 38,
+     "money": 400,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 180
+      },
+      {
+       "name": "호랑이고기",
+       "count": 40
+      }
+     ]
+    },
+    {
+     "names": [
+      "맹수"
+     ],
+     "level": 40,
+     "money": 400,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "웅담",
+       "count": 20
+      },
+      {
+       "name": "호랑이고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "망각"
+     ],
+     "level": 43,
+     "money": 400,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "웅담",
+       "count": 20
+      },
+      {
+       "name": "호랑이고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "귀환"
+     ],
+     "level": 45,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      }
+     ]
+    },
+    {
+     "names": [
+      "천공의기원"
+     ],
+     "level": 48,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "웅담",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "필살검무"
+     ],
+     "level": 50,
+     "money": 1000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 200
+      },
+      {
+       "name": "철도",
+       "count": 1
+      },
+      {
+       "name": "자호의가죽",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "소환"
+     ],
+     "level": 53,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "자호의가죽",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "names": [
+      "삼중공격"
+     ],
+     "level": 56,
+     "money": 1000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 180
+      },
+      {
+       "name": "야월도",
+       "count": 1
+      },
+      {
+       "name": "자호의가죽",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "화열참주",
+      "백열참주",
+      "자천무주",
+      "뢰격참주"
+     ],
+     "level": 58,
+     "money": 800,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 130
+      }
+     ]
+    },
+    {
+     "names": [
+      "노획"
+     ],
+     "level": 65,
+     "money": 2000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 130
+      },
+      {
+       "name": "철검",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "진화열참주",
+      "진백열참주",
+      "진자천무주",
+      "진뢰격참주"
+     ],
+     "level": 75,
+     "money": 4000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 180
+      },
+      {
+       "name": "철단도",
+       "count": 1
+      },
+      {
+       "name": "호박",
+       "count": 5
+      }
+     ]
+    },
+    {
+     "names": [
+      "흡성대법"
+     ],
+     "level": 80,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 190
+      },
+      {
+       "name": "진호박",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "운기"
+     ],
+     "level": 90,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 190
+      },
+      {
+       "name": "진호박",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "사자후도적"
+     ],
+     "level": 99,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 200
+      },
+      {
+       "name": "진호박",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "분신"
+     ],
+     "level": 99,
+     "money": 6000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 200
+      },
+      {
+       "name": "진호박",
+       "count": 20
+      },
+      {
+       "name": "가시철단도",
+       "count": 1
+      }
+     ]
+    }
+   ]
+  },
+  "WARRIOR": {
+   "npc": 22,
+   "spells": [
+    {
+     "names": [
+      "성황령"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "비영사천문"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "누리의기원"
+     ],
+     "level": 10,
+     "money": 30,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      }
+     ]
+    },
+    {
+     "names": [
+      "대지의기원"
+     ],
+     "level": 15,
+     "money": 40,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "사슴고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "이중공격"
+     ],
+     "level": 18,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      }
+     ]
+    },
+    {
+     "names": [
+      "신의축복"
+     ],
+     "level": 23,
+     "money": 80,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      }
+     ]
+    },
+    {
+     "names": [
+      "후면공격"
+     ],
+     "level": 25,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "뱀고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "측면공격"
+     ],
+     "level": 30,
+     "money": 150,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "뱀고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "삼중공격"
+     ],
+     "level": 32,
+     "money": 300,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "호랑이고기",
+       "count": 15
+      }
+     ]
+    },
+    {
+     "names": [
+      "하늘의기원"
+     ],
+     "level": 35,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "웅담",
+       "count": 30
+      }
+     ]
+    },
+    {
+     "names": [
+      "신검합일"
+     ],
+     "level": 45,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "여우모피",
+       "count": 10
+      },
+      {
+       "name": "철도",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "백호령"
+     ],
+     "level": 50,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "자호의가죽",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "names": [
+      "유인"
+     ],
+     "level": 54,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "자호의가죽",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "names": [
+      "사중공격"
+     ],
+     "level": 62,
+     "money": 900,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      }
+     ]
+    },
+    {
+     "names": [
+      "건곤대나이"
+     ],
+     "level": 63,
+     "money": 1500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "현철중검",
+       "count": 2
+      },
+      {
+       "name": "호박",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "검신검귀"
+     ],
+     "level": 65,
+     "money": 1500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "철도",
+       "count": 1
+      },
+      {
+       "name": "자호의가죽",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "대력검신"
+     ],
+     "level": 78,
+     "money": 3000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "현철중검",
+       "count": 1
+      },
+      {
+       "name": "호박",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "오중공격"
+     ],
+     "level": 80,
+     "money": 3500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      }
+     ]
+    },
+    {
+     "names": [
+      "사자후전사"
+     ],
+     "level": 99,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "진호박",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "동귀어진"
+     ],
+     "level": 99,
+     "money": 10000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "환두대도",
+       "count": 1
+      },
+      {
+       "name": "진호박",
+       "count": 20
+      }
+     ]
+    }
+   ]
+  },
+  "MAGE": {
+   "npc": 24,
+   "spells": [
+    {
+     "names": [
+      "성황령"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "비영사천문"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "누리의기원"
+     ],
+     "level": 5,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "화염주",
+      "백열주",
+      "자무주",
+      "뢰진주"
+     ],
+     "level": 6,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "대지의기원"
+     ],
+     "level": 8,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "무장"
+     ],
+     "level": 10,
+     "money": 80,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 60
+      }
+     ]
+    },
+    {
+     "names": [
+      "귀환"
+     ],
+     "level": 14,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "바다의기원"
+     ],
+     "level": 16,
+     "money": 70,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "화영열주",
+      "백령주",
+      "자영무주",
+      "뢰격주"
+     ],
+     "level": 16,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      }
+     ]
+    },
+    {
+     "names": [
+      "누리의힘"
+     ],
+     "level": 17,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      }
+     ]
+    },
+    {
+     "names": [
+      "동해의기원"
+     ],
+     "level": 18,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "대지의힘"
+     ],
+     "level": 19,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "뱀고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "출두"
+     ],
+     "level": 20,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "뱀고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "하늘의기원"
+     ],
+     "level": 24,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 30
+      },
+      {
+       "name": "곰가죽",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "해독"
+     ],
+     "level": 25,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 60
+      },
+      {
+       "name": "녹용",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "천공의기원"
+     ],
+     "level": 27,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "녹용",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "소환"
+     ],
+     "level": 30,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "뱀고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "활력"
+     ],
+     "level": 31,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 60
+      }
+     ]
+    },
+    {
+     "names": [
+      "화열참주",
+      "백열참주",
+      "자천무주",
+      "뢰격참주"
+     ],
+     "level": 31,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "호랑이고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "보호"
+     ],
+     "level": 32,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "호랑이고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "공력증강"
+     ],
+     "level": 34,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      }
+     ]
+    },
+    {
+     "names": [
+      "구름의기원"
+     ],
+     "level": 36,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "여우모피",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "야수"
+     ],
+     "level": 40,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "여우모피",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "퇴마주"
+     ],
+     "level": 43,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "여우모피",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "진화열참주",
+      "진백열참주",
+      "진자천무주",
+      "진뢰격참주"
+     ],
+     "level": 45,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "철도",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "맹수"
+     ],
+     "level": 50,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      }
+     ]
+    },
+    {
+     "names": [
+      "중독"
+     ],
+     "level": 53,
+     "money": 2000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "좋은뱀고기",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "저주"
+     ],
+     "level": 55,
+     "money": 250,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "자호의가죽",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "마비"
+     ],
+     "level": 58,
+     "money": 300,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "자호의가죽",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "절망"
+     ],
+     "level": 62,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "호박",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "혼돈"
+     ],
+     "level": 65,
+     "money": 600,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 90
+      },
+      {
+       "name": "호박",
+       "count": 2
+      },
+      {
+       "name": "해골죽장",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "극진화열참주",
+      "극진백열참주",
+      "극진자천무주",
+      "극진뢰격참주"
+     ],
+     "level": 85,
+     "money": 2000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "진호박",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "names": [
+      "사자후술사"
+     ],
+     "level": 99,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      }
+     ]
+    },
+    {
+     "names": [
+      "헬파이어"
+     ],
+     "level": 99,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "진호박",
+       "count": 10
+      },
+      {
+       "name": "대마령봉",
+       "count": 1
+      }
+     ]
+    }
+   ]
+  },
+  "POET": {
+   "npc": 26,
+   "spells": [
+    {
+     "names": [
+      "성황령"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "비영사천문"
+     ],
+     "level": 0,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "누리의기원"
+     ],
+     "level": 5,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 10
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "바다의기원"
+     ],
+     "level": 6,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 20
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "화염주",
+      "백열주",
+      "자무주",
+      "뢰진주"
+     ],
+     "level": 12,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 20
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "공력증강"
+     ],
+     "level": 14,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 20
+      },
+      {
+       "name": "토끼고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "해독"
+     ],
+     "level": 15,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "뱀고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "천공의기원"
+     ],
+     "level": 18,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "무장"
+     ],
+     "level": 22,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 60
+      },
+      {
+       "name": "뱀고기",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "보호"
+     ],
+     "level": 24,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      }
+     ]
+    },
+    {
+     "names": [
+      "퇴마주"
+     ],
+     "level": 25,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 60
+      }
+     ]
+    },
+    {
+     "names": [
+      "차폐"
+     ],
+     "level": 27,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "자호의가죽",
+       "count": 5
+      }
+     ]
+    },
+    {
+     "names": [
+      "구름의기원"
+     ],
+     "level": 30,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 40
+      },
+      {
+       "name": "뱀고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "출두"
+     ],
+     "level": 30,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "천공의희원"
+     ],
+     "level": 33,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 30
+      }
+     ]
+    },
+    {
+     "names": [
+      "귀환"
+     ],
+     "level": 35,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "소환"
+     ],
+     "level": 38,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      }
+     ]
+    },
+    {
+     "names": [
+      "활력"
+     ],
+     "level": 39,
+     "money": 100,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "시력회복"
+     ],
+     "level": 40,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "태양의기원"
+     ],
+     "level": 45,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 20
+      },
+      {
+       "name": "웅담",
+       "count": 1
+      },
+      {
+       "name": "동동주",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "파혼술"
+     ],
+     "level": 53,
+     "money": 200,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      }
+     ]
+    },
+    {
+     "names": [
+      "구름의희원"
+     ],
+     "level": 55,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 60
+      },
+      {
+       "name": "여우모피",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "심안투영"
+     ],
+     "level": 58,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "철도",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "혼마술"
+     ],
+     "level": 60,
+     "money": 1000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "호박",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "names": [
+      "공력주입"
+     ],
+     "level": 65,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 70
+      },
+      {
+       "name": "자호의가죽",
+       "count": 5
+      }
+     ]
+    },
+    {
+     "names": [
+      "소혼강신"
+     ],
+     "level": 68,
+     "money": 800,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "자호의가죽",
+       "count": 2
+      },
+      {
+       "name": "적호의가죽",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "지진"
+     ],
+     "level": 74,
+     "money": 500,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "호박",
+       "count": 5
+      }
+     ]
+    },
+    {
+     "names": [
+      "태양의희원"
+     ],
+     "level": 80,
+     "money": 800,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "진호박",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "생명의기원"
+     ],
+     "level": 83,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "빨간시약",
+       "count": 1
+      },
+      {
+       "name": "진호박",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "금강불체"
+     ],
+     "level": 85,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "호박",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "무력화"
+     ],
+     "level": 88,
+     "money": 800,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "해골죽장",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "환마술"
+     ],
+     "level": 95,
+     "money": 27000,
+     "materials": [
+      {
+       "name": "황금호박",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "names": [
+      "사자후도사"
+     ],
+     "level": 99,
+     "money": 5000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "진호박",
+       "count": 20
+      }
+     ]
+    },
+    {
+     "names": [
+      "부활"
+     ],
+     "level": 99,
+     "money": 10000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 200
+      },
+      {
+       "name": "빨간시약",
+       "count": 2
+      },
+      {
+       "name": "진호박",
+       "count": 5
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "spells": {
+  "비영사천문": {
+   "mp": 30,
+   "role": "TRAVEL",
+   "id": 1,
+   "type": "INPUT"
+  },
+  "성황령": {
+   "mp": 0,
+   "role": "TRAVEL",
+   "id": 2,
+   "type": "INPUT"
+  },
+  "출두": {
+   "mp": 30,
+   "role": "GOTO",
+   "id": 3,
+   "type": "INPUT"
+  },
+  "소환": {
+   "mp": 30,
+   "role": "CALL",
+   "id": 4,
+   "type": "INPUT"
+  },
+  "귀환": {
+   "mp": 30,
+   "role": "TRAVEL",
+   "id": 5,
+   "type": "NORMAL"
+  },
+  "사자후전사": {
+   "mp": 0,
+   "role": "SHOUT",
+   "id": 9,
+   "type": "INPUT"
+  },
+  "사자후도적": {
+   "mp": 0,
+   "role": "SHOUT",
+   "id": 10,
+   "type": "INPUT"
+  },
+  "사자후술사": {
+   "mp": 0,
+   "role": "SHOUT",
+   "id": 11,
+   "type": "INPUT"
+  },
+  "사자후도사": {
+   "mp": 0,
+   "role": "SHOUT",
+   "id": 12,
+   "type": "INPUT"
+  },
+  "신검합일": {
+   "mp": 60,
+   "role": "ENCHANT",
+   "id": 1001,
+   "type": "INPUT"
+  },
+  "검신검귀": {
+   "mp": 60,
+   "role": "ENCHANT",
+   "id": 1002,
+   "type": "INPUT"
+  },
+  "대력검신": {
+   "mp": 60,
+   "role": "ENCHANT",
+   "id": 1003,
+   "type": "INPUT"
+  },
+  "유인": {
+   "mp": 50,
+   "role": "TAUNT",
+   "id": 1004,
+   "type": "TARGET"
+  },
+  "신의축복": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 600,
+   "self": true,
+   "exclusive": false,
+   "id": 1005,
+   "type": "NORMAL"
+  },
+  "후면공격": {
+   "mp": 90,
+   "role": "BUFF",
+   "buff_time": 625,
+   "self": true,
+   "exclusive": false,
+   "id": 1006,
+   "type": "NORMAL"
+  },
+  "측면공격": {
+   "mp": 90,
+   "role": "BUFF",
+   "buff_time": 625,
+   "self": true,
+   "exclusive": false,
+   "id": 1007,
+   "type": "NORMAL"
+  },
+  "백호령": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 600,
+   "self": true,
+   "exclusive": false,
+   "id": 1008,
+   "type": "NORMAL"
+  },
+  "이중공격": {
+   "mp": 60,
+   "role": "BUFF",
+   "buff_time": 600,
+   "self": true,
+   "exclusive": true,
+   "id": 1009,
+   "type": "NORMAL"
+  },
+  "삼중공격": {
+   "mp": 60,
+   "role": "BUFF",
+   "buff_time": 600,
+   "self": true,
+   "exclusive": true,
+   "id": 1010,
+   "type": "NORMAL"
+  },
+  "사중공격": {
+   "mp": 150,
+   "role": "BUFF",
+   "buff_time": 600,
+   "self": true,
+   "exclusive": true,
+   "id": 1011,
+   "type": "NORMAL"
+  },
+  "오중공격": {
+   "mp": 200,
+   "role": "BUFF",
+   "buff_time": 600,
+   "self": true,
+   "exclusive": true,
+   "id": 1012,
+   "type": "NORMAL"
+  },
+  "건곤대나이": {
+   "mp": 40,
+   "role": "STRIKE",
+   "id": 1014,
+   "type": "NORMAL"
+  },
+  "동귀어진": {
+   "mp": 10,
+   "role": "STRIKE",
+   "id": 1015,
+   "type": "NORMAL"
+  },
+  "누리의빛": {
+   "mp": 30,
+   "role": "INSPECT",
+   "id": 2001,
+   "type": "NORMAL"
+  },
+  "금수": {
+   "mp": 30,
+   "role": "DISGUISE",
+   "id": 2002,
+   "type": "INPUT"
+  },
+  "대지의빛": {
+   "mp": 30,
+   "role": "INSPECT",
+   "id": 2003,
+   "type": "TARGET"
+  },
+  "경수": {
+   "mp": 30,
+   "role": "DISGUISE",
+   "id": 2004,
+   "type": "INPUT"
+  },
+  "바다의빛": {
+   "mp": 30,
+   "role": "INSPECT",
+   "id": 2005,
+   "type": "TARGET"
+  },
+  "야수": {
+   "mp": 30,
+   "role": "DISGUISE",
+   "id": 2006,
+   "type": "INPUT"
+  },
+  "맹수": {
+   "mp": 30,
+   "role": "DISGUISE",
+   "id": 2007,
+   "type": "INPUT"
+  },
+  "노획": {
+   "mp": 30,
+   "role": "LOOT",
+   "id": 2008,
+   "type": "NORMAL"
+  },
+  "망각": {
+   "mp": 60,
+   "role": "ESCAPE",
+   "id": 2009,
+   "type": "TARGET"
+  },
+  "누리의힘": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 180,
+   "self": true,
+   "exclusive": false,
+   "id": 2010,
+   "type": "NORMAL"
+  },
+  "무영보법": {
+   "mp": 0,
+   "role": "NONE",
+   "id": 2011,
+   "type": "NORMAL"
+  },
+  "투명": {
+   "mp": 0,
+   "role": "BUFF",
+   "buff_time": 180,
+   "self": true,
+   "exclusive": false,
+   "id": 2012,
+   "type": "NORMAL"
+  },
+  "분신": {
+   "mp": 0,
+   "role": "BUFF",
+   "buff_time": 625,
+   "self": true,
+   "exclusive": false,
+   "id": 2013,
+   "type": "NORMAL"
+  },
+  "비영승보": {
+   "mp": 0,
+   "role": "AMBUSH",
+   "id": 2015,
+   "type": "NORMAL"
+  },
+  "필살검무": {
+   "mp": 0,
+   "role": "STRIKE",
+   "id": 2016,
+   "type": "NORMAL"
+  },
+  "흡성대법": {
+   "mp": 60,
+   "role": "ATTACK",
+   "damage": 3000,
+   "id": 2017,
+   "type": "TARGET"
+  },
+  "운기": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 11,
+   "self": true,
+   "exclusive": false,
+   "trigger": "MANA",
+   "id": 2024,
+   "type": "NORMAL"
+  },
+  "대지의힘": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 5,
+   "self": false,
+   "exclusive": false,
+   "id": 3001,
+   "type": "TARGET"
+  },
+  "화염주": {
+   "mp": 120,
+   "role": "ATTACK",
+   "damage": 320,
+   "id": 3002,
+   "type": "TARGET"
+  },
+  "자무주": {
+   "mp": 120,
+   "role": "ATTACK",
+   "damage": 320,
+   "id": 3003,
+   "type": "TARGET"
+  },
+  "백열주": {
+   "mp": 120,
+   "role": "ATTACK",
+   "damage": 320,
+   "id": 3004,
+   "type": "TARGET"
+  },
+  "뢰진주": {
+   "mp": 120,
+   "role": "ATTACK",
+   "damage": 320,
+   "id": 3005,
+   "type": "TARGET"
+  },
+  "화영열주": {
+   "mp": 180,
+   "role": "ATTACK",
+   "damage": 530,
+   "id": 3006,
+   "type": "TARGET"
+  },
+  "자영무주": {
+   "mp": 180,
+   "role": "ATTACK",
+   "damage": 530,
+   "id": 3007,
+   "type": "TARGET"
+  },
+  "백령주": {
+   "mp": 180,
+   "role": "ATTACK",
+   "damage": 530,
+   "id": 3008,
+   "type": "TARGET"
+  },
+  "뢰격주": {
+   "mp": 180,
+   "role": "ATTACK",
+   "damage": 530,
+   "id": 3009,
+   "type": "TARGET"
+  },
+  "화열참주": {
+   "mp": 250,
+   "role": "ATTACK",
+   "damage": 740,
+   "id": 3010,
+   "type": "TARGET"
+  },
+  "자천무주": {
+   "mp": 250,
+   "role": "ATTACK",
+   "damage": 740,
+   "id": 3011,
+   "type": "TARGET"
+  },
+  "백열참주": {
+   "mp": 250,
+   "role": "ATTACK",
+   "damage": 740,
+   "id": 3012,
+   "type": "TARGET"
+  },
+  "뢰격참주": {
+   "mp": 250,
+   "role": "ATTACK",
+   "damage": 740,
+   "id": 3013,
+   "type": "TARGET"
+  },
+  "진화열참주": {
+   "mp": 330,
+   "role": "ATTACK",
+   "damage": 1950,
+   "id": 3014,
+   "type": "TARGET"
+  },
+  "진자천무주": {
+   "mp": 330,
+   "role": "ATTACK",
+   "damage": 1950,
+   "id": 3015,
+   "type": "TARGET"
+  },
+  "진백열참주": {
+   "mp": 330,
+   "role": "ATTACK",
+   "damage": 1950,
+   "id": 3016,
+   "type": "TARGET"
+  },
+  "진뢰격참주": {
+   "mp": 330,
+   "role": "ATTACK",
+   "damage": 1950,
+   "id": 3017,
+   "type": "TARGET"
+  },
+  "극진화열참주": {
+   "mp": 360,
+   "role": "ATTACK",
+   "damage": 3580,
+   "id": 3018,
+   "type": "TARGET"
+  },
+  "극진자천무주": {
+   "mp": 360,
+   "role": "ATTACK",
+   "damage": 3580,
+   "id": 3019,
+   "type": "TARGET"
+  },
+  "극진백열참주": {
+   "mp": 360,
+   "role": "ATTACK",
+   "damage": 3580,
+   "id": 3020,
+   "type": "TARGET"
+  },
+  "극진뢰격참주": {
+   "mp": 360,
+   "role": "ATTACK",
+   "damage": 3580,
+   "id": 3021,
+   "type": "TARGET"
+  },
+  "헬파이어": {
+   "mp": 0,
+   "role": "ATTACK",
+   "damage": 0,
+   "id": 3043,
+   "type": "TARGET"
+  },
+  "저주": {
+   "mp": 30,
+   "role": "DEBUFF",
+   "buff_time": 185,
+   "id": 3051,
+   "type": "TARGET"
+  },
+  "마비": {
+   "mp": 80,
+   "role": "DEBUFF",
+   "buff_time": 20,
+   "id": 3052,
+   "type": "TARGET"
+  },
+  "절망": {
+   "mp": 80,
+   "role": "DEBUFF",
+   "buff_time": 10,
+   "id": 3053,
+   "type": "TARGET"
+  },
+  "혼돈": {
+   "mp": 0,
+   "role": "NONE",
+   "id": 3054,
+   "type": "TARGET"
+  },
+  "중독": {
+   "mp": 30,
+   "role": "DEBUFF",
+   "buff_time": 30,
+   "id": 3059,
+   "type": "TARGET"
+  },
+  "소혼강신": {
+   "mp": 30,
+   "role": "SUMMON",
+   "id": 4001,
+   "type": "INPUT"
+  },
+  "공력증강": {
+   "mp": 30,
+   "role": "CHARGE",
+   "id": 4002,
+   "type": "NORMAL"
+  },
+  "무장": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 180,
+   "self": false,
+   "exclusive": false,
+   "id": 4003,
+   "type": "TARGET"
+  },
+  "보호": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 180,
+   "self": false,
+   "exclusive": false,
+   "id": 4004,
+   "type": "TARGET"
+  },
+  "차폐": {
+   "mp": 100,
+   "role": "BUFF",
+   "buff_time": 21,
+   "self": true,
+   "exclusive": false,
+   "id": 4005,
+   "type": "NORMAL"
+  },
+  "시력회복": {
+   "mp": 40,
+   "role": "CURE",
+   "cure": "절망",
+   "id": 4006,
+   "type": "TARGET"
+  },
+  "파혼술": {
+   "mp": 30,
+   "role": "CURE",
+   "cure": "혼마술",
+   "id": 4007,
+   "type": "TARGET"
+  },
+  "심안투영": {
+   "mp": 30,
+   "role": "BUFF",
+   "buff_time": 600,
+   "self": true,
+   "exclusive": false,
+   "id": 4008,
+   "type": "NORMAL"
+  },
+  "혼마술": {
+   "mp": 40,
+   "role": "DEBUFF",
+   "buff_time": 425,
+   "id": 4009,
+   "type": "TARGET"
+  },
+  "공력주입": {
+   "mp": 0,
+   "role": "TRANSFER",
+   "id": 4010,
+   "type": "TARGET"
+  },
+  "금강불체": {
+   "mp": 600,
+   "role": "BUFF",
+   "buff_time": 12,
+   "self": true,
+   "exclusive": false,
+   "trigger": "EMERGENCY",
+   "id": 4011,
+   "type": "NORMAL"
+  },
+  "무력화": {
+   "mp": 500,
+   "role": "DISPEL",
+   "id": 4012,
+   "type": "TARGET"
+  },
+  "환마술": {
+   "mp": 0,
+   "role": "NONE",
+   "id": 4013,
+   "type": "NORMAL"
+  },
+  "부활": {
+   "mp": 0,
+   "role": "REVIVE",
+   "id": 4014,
+   "type": "TARGET"
+  },
+  "퇴마주": {
+   "mp": 30,
+   "role": "CURE",
+   "cure": "저주",
+   "id": 4022,
+   "type": "TARGET"
+  },
+  "해독": {
+   "mp": 30,
+   "role": "CURE",
+   "cure": "중독",
+   "id": 4023,
+   "type": "TARGET"
+  },
+  "활력": {
+   "mp": 30,
+   "role": "CURE",
+   "cure": "마비",
+   "id": 4024,
+   "type": "TARGET"
+  },
+  "누리의기원": {
+   "mp": 30,
+   "role": "HEAL",
+   "hp": 50,
+   "self": true,
+   "id": 4025,
+   "type": "NORMAL"
+  },
+  "바다의기원": {
+   "mp": 50,
+   "role": "HEAL",
+   "hp": 100,
+   "self": true,
+   "id": 4026,
+   "type": "NORMAL"
+  },
+  "대지의기원": {
+   "mp": 50,
+   "role": "HEAL",
+   "hp": 50,
+   "self": false,
+   "id": 4027,
+   "type": "TARGET"
+  },
+  "동해의기원": {
+   "mp": 30,
+   "role": "HEAL",
+   "hp": 100,
+   "self": false,
+   "id": 4028,
+   "type": "TARGET"
+  },
+  "하늘의기원": {
+   "mp": 120,
+   "role": "HEAL",
+   "hp": 200,
+   "self": true,
+   "id": 4029,
+   "type": "NORMAL"
+  },
+  "천공의기원": {
+   "mp": 100,
+   "role": "HEAL",
+   "hp": 200,
+   "self": false,
+   "id": 4030,
+   "type": "TARGET"
+  },
+  "천공의희원": {
+   "mp": 200,
+   "role": "HEAL",
+   "hp": 200,
+   "self": false,
+   "id": 4031,
+   "type": "TARGET"
+  },
+  "구름의기원": {
+   "mp": 120,
+   "role": "HEAL",
+   "hp": 500,
+   "self": false,
+   "id": 4032,
+   "type": "TARGET"
+  },
+  "구름의희원": {
+   "mp": 480,
+   "role": "HEAL",
+   "hp": 500,
+   "self": false,
+   "id": 4033,
+   "type": "TARGET"
+  },
+  "태양의기원": {
+   "mp": 240,
+   "role": "HEAL",
+   "hp": 1000,
+   "self": false,
+   "id": 4034,
+   "type": "TARGET"
+  },
+  "태양의희원": {
+   "mp": 960,
+   "role": "HEAL",
+   "hp": 1000,
+   "self": false,
+   "id": 4035,
+   "type": "TARGET"
+  },
+  "생명의기원": {
+   "mp": 300,
+   "role": "HEAL",
+   "hp": 5000,
+   "self": false,
+   "id": 4036,
+   "type": "TARGET"
+  },
+  "지진": {
+   "mp": 580,
+   "role": "AREA",
+   "damage": 1500,
+   "id": 4042,
+   "type": "TARGET"
+  }
+ }
+}

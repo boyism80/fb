@@ -158,6 +158,11 @@ async::task<void> bot_integration_test::wait_until_ready()
     timer->cancel();
 }
 
+std::string bot_integration_test::key() const
+{
+    return this->name();
+}
+
 void bot_integration_test::suite_slot(uint32_t slot)
 {
     this->_suite_slot = slot;

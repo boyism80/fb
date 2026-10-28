@@ -12,8 +12,11 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <string_view>
 #include <thread>
+#include <vector>
 
 using namespace std::chrono_literals;
 
@@ -26,12 +29,40 @@ inline void display_spawned_bots(const fb::bot::bot_container& container)
 }
 
 template <fb::bot::test_mode Mode>
-int run_bot_test(std::string_view config_path)
+int run_bot_test(std::string_view config_path, const std::vector<std::string>& overrides, bool cluster)
 {
     if (!fb::init_config(config_path))
     {
         fb::console::puts("Failed to initialize config system with file: {}", config_path);
         return -1;
+    }
+
+    for (auto& entry : overrides)
+    {
+        auto split = entry.find('=');
+        if (split == std::string::npos)
+        {
+            fb::console::puts("Invalid --set value: {}", entry);
+            return -1;
+        }
+
+        auto  key    = entry.substr(0, split);
+        auto  text   = entry.substr(split + 1);
+        auto  value  = Json::Value{};
+        auto  reader = std::unique_ptr<Json::CharReader>(Json::CharReaderBuilder{}.newCharReader());
+        auto  errors = std::string{};
+        auto* node   = &fb::config_root();
+        auto  stream = std::istringstream{key};
+        auto  part   = std::string{};
+        while (std::getline(stream, part, ':'))
+        {
+            node = &(*node)[part];
+        }
+
+        if (reader->parse(text.data(), text.data() + text.size(), &value, &errors))
+            *node = value;
+        else
+            *node = text;
     }
 
     using guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
@@ -46,13 +77,43 @@ int run_bot_test(std::string_view config_path)
     container->set_gateway_bot_controller(bot_controller_factory<Mode>::create_gateway_controller(*container));
     container->set_login_bot_controller(bot_controller_factory<Mode>::create_login_controller(*container));
     container->set_game_bot_controller(bot_controller_factory<Mode>::create_game_controller(*container));
+    if (cluster)
+    {
+        container->link.enable();
+        container->link.on("stop", [container, &io_context](const Json::Value&) {
+            boost::asio::post(io_context, [container]() {
+                container->exit();
+            });
+        });
+    }
     container->initialize();
 
     fb::console::set_mode(fb::console::mode::plain);
 
+    if (cluster)
+    {
+        boost::asio::co_spawn(
+            io_context,
+            [container]() -> boost::asio::awaitable<void> {
+                auto timer = boost::asio::steady_timer(co_await boost::asio::this_coro::executor);
+                while (container->running())
+                {
+                    timer.expires_after(2s);
+                    co_await timer.async_wait(boost::asio::use_awaitable);
+
+                    auto message       = Json::Value{};
+                    message["type"]    = "stats";
+                    message["entries"] = container->stats.take();
+                    message["bots"]    = static_cast<Json::UInt>(container->game->bot_count());
+                    container->link.send(message);
+                }
+            },
+            boost::asio::detached);
+    }
+
     auto exit           = false;
     auto display_thread = std::unique_ptr<std::thread>();
-    if (bot_controller_factory<Mode>::should_create_display_thread())
+    if (cluster == false && bot_controller_factory<Mode>::should_create_display_thread())
     {
         display_thread = std::make_unique<std::thread>([&exit, container]() {
             while (!exit)
@@ -90,6 +151,15 @@ int run_bot_test(std::string_view config_path)
     exit = true;
     if (display_thread)
         display_thread->join();
+
+    if (cluster)
+    {
+        auto message       = Json::Value{};
+        message["type"]    = "stats";
+        message["entries"] = container->stats.take();
+        message["bots"]    = 0;
+        container->link.send(message);
+    }
 
     if constexpr (Mode == fb::bot::test_mode::INTEGRATION_TEST)
     {

@@ -2,6 +2,8 @@
 #define __BOT_CONTAINER_H__
 
 #include <fb/bot/bot.h>
+#include <fb/bot/cluster/link.h>
+#include <fb/bot/cluster/stats.h>
 #include <fb/thread_container.h>
 
 #include <atomic>
@@ -39,6 +41,8 @@ public:
     std::shared_ptr<gateway_bot_controller> gateway;
     std::shared_ptr<login_bot_controller>   login;
     std::shared_ptr<game_bot_controller>    game;
+    cluster::stats                          stats;
+    cluster::link                           link;
 
 public:
     bot_container(boost::asio::io_context& context, uint32_t thread_count);

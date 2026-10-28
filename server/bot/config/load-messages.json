@@ -1,0 +1,4932 @@
+{
+ "messages": [
+  {
+   "kind": "COUNT_SHORT",
+   "text": "갯수가 모자라는데요?",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NOT_ENOUGH_ITEM_COUNT",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "COUNT_SHORT",
+   "text": "그만큼 가지고 있지 않습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "DISGUISE_FORBIDDEN",
+   "text": "변신 중에는 할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_DISGUISE"
+   ]
+  },
+  {
+   "kind": "DROP_WARMTH",
+   "text": "죽은 자의 온기가 남아있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_DEATH_PENALTY_WARMTH"
+   ]
+  },
+  {
+   "kind": "EQUIP_BROKEN",
+   "text": "{}의 내구도가 다 닳았습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_DURABILITY_EXHAUSTED"
+   ],
+   "pattern": "^(.+?)의 내구도가 다 닳았습니다\\.$"
+  },
+  {
+   "kind": "EQUIP_DENIED",
+   "text": "너무 무겁습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_TOO_HEAVY"
+   ]
+  },
+  {
+   "kind": "EQUIP_DENIED",
+   "text": "레벨이 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_LEVEL_INSUFFICIENT"
+   ]
+  },
+  {
+   "kind": "EQUIP_DENIED",
+   "text": "민첩함이 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_DEXTERITY_INSUFFICIENT"
+   ]
+  },
+  {
+   "kind": "EQUIP_DENIED",
+   "text": "입을 수 없는 물건입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_INVALID_TYPE",
+    "MESSAGE_CANNOT_EQUIP_ITEM"
+   ]
+  },
+  {
+   "kind": "EQUIP_DENIED",
+   "text": "지능이 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_INTELLIGENCE_INSUFFICIENT"
+   ]
+  },
+  {
+   "kind": "EQUIP_DENIED",
+   "text": "착용할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_CANNOT_EQUIP"
+   ]
+  },
+  {
+   "kind": "EQUIP_DURABILITY",
+   "text": "{}의 내구도가 {}% 남았습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_DURABILITY_REMAINING"
+   ],
+   "pattern": "^(.+?)의 내구도가 (.+?)% 남았습니다\\.$"
+  },
+  {
+   "kind": "EXP_GAINED",
+   "text": "경험치가 {}({}%) 올랐습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXP_GAINED"
+   ],
+   "pattern": "^경험치가 (.+?)\\((.+?)%\\) 올랐습니다\\.$"
+  },
+  {
+   "kind": "EXP_LOST",
+   "text": "경험치를 {} 잃었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXP_LOST"
+   ],
+   "pattern": "^경험치를 (.+?) 잃었습니다\\.$"
+  },
+  {
+   "kind": "GHOST_FORBIDDEN",
+   "text": "귀신은 할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_GHOST"
+   ]
+  },
+  {
+   "kind": "GROUP_DENIED",
+   "text": "{}님은 이미 그룹 참여 중입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_ALREADY_JOINED"
+   ],
+   "pattern": "^(.+?)님은 이미 그룹 참여 중입니다\\.$"
+  },
+  {
+   "kind": "GROUP_DENIED",
+   "text": "그룹장만 할 수 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_NOT_OWNER"
+   ]
+  },
+  {
+   "kind": "GROUP_DENIED",
+   "text": "이미 그룹 참여중입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ALREADY_JOINED_GROUP"
+   ]
+  },
+  {
+   "kind": "GROUP_DENIED",
+   "text": "자리가 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_FULL_MEMBER"
+   ]
+  },
+  {
+   "kind": "GROUP_DISABLED",
+   "text": "그룹 거부 상태입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_DISABLED_MINE"
+   ]
+  },
+  {
+   "kind": "GROUP_JOINED",
+   "text": "{}님 그룹에 참여",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_JOINED"
+   ],
+   "pattern": "^(.+?)님 그룹에 참여$"
+  },
+  {
+   "kind": "GROUP_JOINED",
+   "text": "그룹에 참여했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_JOINED_SUCCESS"
+   ]
+  },
+  {
+   "kind": "GROUP_LEFT",
+   "text": "{}님이 그룹에서 추방당했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_MEMBER_KICKED"
+   ],
+   "pattern": "^(.+?)님이 그룹에서 추방당했습니다\\.$"
+  },
+  {
+   "kind": "GROUP_LEFT",
+   "text": "{}님이 그룹에서 탈퇴했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_MEMBER_LEFT"
+   ],
+   "pattern": "^(.+?)님이 그룹에서 탈퇴했습니다\\.$"
+  },
+  {
+   "kind": "GROUP_LEFT",
+   "text": "그룹 탈퇴",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_LEFT_SUCCESS"
+   ]
+  },
+  {
+   "kind": "GROUP_LEFT",
+   "text": "그룹 해체",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_DISBANDED"
+   ]
+  },
+  {
+   "kind": "GROUP_LEFT",
+   "text": "그룹에서 추방당했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_KICKED"
+   ]
+  },
+  {
+   "kind": "GROUP_NONE",
+   "text": "가입된 그룹이 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ]
+  },
+  {
+   "kind": "GROUP_NONE",
+   "text": "그룹 없음.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_NONE"
+   ]
+  },
+  {
+   "kind": "GROUP_NONE",
+   "text": "그룹에 참여하지 않았습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_NOT_JOINED"
+   ]
+  },
+  {
+   "kind": "GROUP_SELF",
+   "text": "자기 자신과는 그룹할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CANNOT_GROUP_SELF"
+   ]
+  },
+  {
+   "kind": "GROUP_TARGET_DISABLED",
+   "text": "상대방이 그룹 거부 상태입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_DISABLED_TARGET"
+   ]
+  },
+  {
+   "kind": "HOLD_FULL",
+   "text": "더 이상 가질 수 없습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE",
+    "MESSAGE_ITEM_FULL",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "HOLD_FULL",
+   "text": "더 이상 돈을 가질 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MONEY_FULL"
+   ]
+  },
+  {
+   "kind": "HOLD_FULL",
+   "text": "돈이 너무 많습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "HOLD_FULL",
+   "text": "소지금이 너무 많습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_HAVE_MUCH_MONEY",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "HUMAN_FORBIDDEN",
+   "text": "인간은 쓸 수 없음이니...",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/2.lua"
+   ]
+  },
+  {
+   "kind": "INVENTORY_FULL",
+   "text": "공간이 부족합니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "INVENTORY_FULL",
+   "text": "소지품이 가득 찼습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/1.lua"
+   ]
+  },
+  {
+   "kind": "INVENTORY_FULL",
+   "text": "소지품이 꽉 찼습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_INVENTORY_OVERFLOW"
+   ]
+  },
+  {
+   "kind": "ITEM_RECEIVED",
+   "text": "%s 받았습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/castle_npc.lua"
+   ],
+   "pattern": "^(.+?) 받았습니다\\.$"
+  },
+  {
+   "kind": "LEVEL_UP",
+   "text": "레벨이 올랐습니다",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_LEVEL_UP"
+   ]
+  },
+  {
+   "kind": "MONEY_RECEIVED",
+   "text": "{}님이 {}전을 주었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MONEY_GIVE"
+   ],
+   "pattern": "^(.+?)님이 (.+?)전을 주었습니다\\.$"
+  },
+  {
+   "kind": "MONEY_RECEIVED",
+   "text": "금전 %d전 받았습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/castle_npc.lua"
+   ],
+   "pattern": "^금전 (.+?)전 받았습니다\\.$"
+  },
+  {
+   "kind": "MONEY_SHORT",
+   "text": "돈이 모자랍니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NOT_ENOUGH_MONEY",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "MOVE_DENIED",
+   "text": "그곳으로는 이동할 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/10529.lua"
+   ]
+  },
+  {
+   "kind": "MOVE_DENIED",
+   "text": "그곳으로는 출두할 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/3.lua"
+   ]
+  },
+  {
+   "kind": "MOVE_DENIED",
+   "text": "나 자신을 출두할 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/3.lua"
+   ]
+  },
+  {
+   "kind": "MOVE_DENIED",
+   "text": "들어갈 수 없습니다...",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/chilsung_entrance.lua",
+    "server/game/scripts/map/1763.lua"
+   ]
+  },
+  {
+   "kind": "MOVE_DENIED",
+   "text": "이동할 수 없는 공간입니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/10529.lua",
+    "server/game/scripts/spell/3.lua"
+   ]
+  },
+  {
+   "kind": "NOT_OWNED",
+   "text": "%s 가지고 있지 않습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) 가지고 있지 않습니다\\.$"
+  },
+  {
+   "kind": "NOT_OWNED",
+   "text": "가지고 있지 않습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_OWNED",
+   "text": "가지고 있지 않은데요",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_HAVE_NO_ITEM",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_OWNED",
+   "text": "가지고 있지도 않으면서...",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_NO_HAVE_ITEM"
+   ]
+  },
+  {
+   "kind": "NOT_REPAIRABLE",
+   "text": "%s 고칠 수 없습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) 고칠 수 없습니다\\.$"
+  },
+  {
+   "kind": "NOT_REPAIRABLE",
+   "text": "고칠 물건이 없습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NOT_ANY_REPAIRABLE",
+    "MESSAGE_ITEM_NOT_REPAIRABLE",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_REPAIRABLE",
+   "text": "고칠 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_CANNOT_REPAIR"
+   ]
+  },
+  {
+   "kind": "NOT_REPAIRABLE",
+   "text": "이미 고쳐져 있습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_ALREADY_REPAIRED",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_STORED",
+   "text": "그런 물건은 맡고 있지 않습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NO_ITEM_DEPOSITED",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_STORED",
+   "text": "그런 물품은 맡아두고 있지 않습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NOT_DEPOSITED_THIS_ITEM",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_STORED",
+   "text": "그만큼 맡고 있지 않습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_STORED",
+   "text": "그만큼 맡기지 않았습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NOT_DEPOSITED_ENOUGH",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_STORED",
+   "text": "맡긴 물건이 없습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NO_ANY_DEPOSITED",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NOT_STORED",
+   "text": "맡아둔 돈이 없습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_NOT_DEPOSITED_MONEY",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "NO_HP",
+   "text": "체력이 부족합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/113.lua",
+    "server/game/scripts/spell/114.lua",
+    "server/game/scripts/spell/115.lua",
+    "server/game/scripts/spell/116.lua",
+    "server/game/scripts/spell/117.lua"
+   ]
+  },
+  {
+   "kind": "NO_MP",
+   "text": "마력이 모자랍니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ]
+  },
+  {
+   "kind": "NO_MP",
+   "text": "마력이 부족합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/3094.lua",
+    "server/game/scripts/item/3096.lua",
+    "server/game/scripts/lib/spell.lua",
+    "server/game/scripts/spell/1018.lua",
+    "server/game/scripts/spell/1019.lua"
+   ]
+  },
+  {
+   "kind": "REPAIRED",
+   "text": "거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "REPAIRED",
+   "text": "고치는데 %s전이 들었습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^고치는데 (.+?)전이 들었습니다\\.$"
+  },
+  {
+   "kind": "REQUIRE_CLASS",
+   "text": "직업을 선택해야 합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_REQUIRE_CLASS"
+   ]
+  },
+  {
+   "kind": "RETRIEVED",
+   "text": "%s %d개 돌려드렸습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)개 돌려드렸습니다\\.$"
+  },
+  {
+   "kind": "RETRIEVED",
+   "text": "%s 돌려드렸습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) 돌려드렸습니다\\.$"
+  },
+  {
+   "kind": "RETRIEVED",
+   "text": "금전 %d전을 돌려드렸습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^금전 (.+?)전을 돌려드렸습니다\\.$"
+  },
+  {
+   "kind": "REVIVE_ACCEPTED",
+   "text": "너의 정성에 감복하여 살려줄터이니 잠시 기다려라....",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "REVIVE_REFUSED",
+   "text": "곱게 빌어도 살려줄까 말까 하는데...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "REVIVE_REFUSED",
+   "text": "그런 마음가짐으로 생명을 얻겠느냐?",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "RIDING_FORBIDDEN",
+   "text": "말을 타고는 할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_RIDDING"
+   ]
+  },
+  {
+   "kind": "SERVER_NOT_READY",
+   "text": "비바람이 휘몰아치고 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_NOT_READY_GAME_SERVER"
+   ]
+  },
+  {
+   "kind": "SHOP_BOUGHT_FROM_ME",
+   "text": "%s %d개를 %d전에 샀습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)개를 (.+?)전에 샀습니다\\.$"
+  },
+  {
+   "kind": "SHOP_BOUGHT_FROM_ME",
+   "text": "%s %d전에 샀습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)전에 샀습니다\\.$"
+  },
+  {
+   "kind": "SHOP_NOT_BUY",
+   "text": "그런 물건은 안 삽니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_NOT_BUY",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "SHOP_NOT_SELL",
+   "text": "그런 물건은 안 팝니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_NOT_SELL",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "SHOP_SOLD_TO_ME",
+   "text": "%s %d개를 %d전에 팔았습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)개를 (.+?)전에 팔았습니다\\.$"
+  },
+  {
+   "kind": "SHOP_SOLD_TO_ME",
+   "text": "%s %d전에 팔았습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)전에 팔았습니다\\.$"
+  },
+  {
+   "kind": "SPELL_ALREADY",
+   "text": "이미 걸려있습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/3094.lua",
+    "server/game/scripts/item/3096.lua",
+    "server/game/scripts/item/9050.lua",
+    "server/game/scripts/lib/spell.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_AREA_DENIED",
+   "text": "마력이 미치지 않습니다.",
+   "channels": [
+    "const",
+    "lua"
+   ],
+   "origins": [
+    "MESSAGE_SPELL_DISABLED_AREA",
+    "server/game/scripts/spell/3.lua",
+    "server/game/scripts/spell/4.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "%s %s 가합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/10004.lua"
+   ],
+   "pattern": "^(.+?) (.+?) 가합니다\\.$"
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "%s %s 걸었습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ],
+   "pattern": "^(.+?) (.+?) 걸었습니다\\.$"
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "%s 외웠습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua",
+    "server/game/scripts/spell/3.lua",
+    "server/game/scripts/spell/4.lua",
+    "server/game/scripts/spell/4002.lua",
+    "server/game/scripts/spell/4012.lua"
+   ],
+   "pattern": "^(.+?) 외웠습니다\\.$"
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "%s가 청룡마령참을 가합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/7013.lua"
+   ],
+   "pattern": "^(.+?)가 청룡마령참을 가합니다\\.$"
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "%s님이 %s 가합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua",
+    "server/game/scripts/spell/10004.lua"
+   ],
+   "pattern": "^(.+?)님이 (.+?) 가합니다\\.$"
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "%s님이 %s 걸었습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ],
+   "pattern": "^(.+?)님이 (.+?) 걸었습니다\\.$"
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "%s님이 %s 외워주셨습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua",
+    "server/game/scripts/spell/4012.lua"
+   ],
+   "pattern": "^(.+?)님이 (.+?) 외워주셨습니다\\.$"
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "다리밟기 외웠습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/map/10945.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "비영승보를 외웠습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/2015.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "사자후도사를 외웠습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/12.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "사자후도적을 외웠습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/10.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "사자후술사를 외웠습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/11.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_CAST",
+   "text": "사자후전사를 외웠습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/9.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_DELAY",
+   "text": "{}초 후에 사용할 수 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_SPELL_DELAY"
+   ],
+   "pattern": "^(.+?)초 후에 사용할 수 있습니다\\.$"
+  },
+  {
+   "kind": "SPELL_FAILED",
+   "text": "%s 실패",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/2022.lua"
+   ],
+   "pattern": "^(.+?) 실패$"
+  },
+  {
+   "kind": "SPELL_FAILED",
+   "text": "마법이 실패했습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_FAILED",
+   "text": "정신집중에 실패하였습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4002.lua"
+   ]
+  },
+  {
+   "kind": "SPELL_RESISTED",
+   "text": "걸리지 않습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua",
+    "server/game/scripts/spell/1004.lua",
+    "server/game/scripts/spell/15.lua",
+    "server/game/scripts/spell/2009.lua",
+    "server/game/scripts/spell/2017.lua"
+   ]
+  },
+  {
+   "kind": "STORED",
+   "text": "%s %d개 맡았습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)개 맡았습니다\\.$"
+  },
+  {
+   "kind": "STORED",
+   "text": "%s 맡았습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) 맡았습니다\\.$"
+  },
+  {
+   "kind": "STORED",
+   "text": "금전 %d전을 맡았습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^금전 (.+?)전을 맡았습니다\\.$"
+  },
+  {
+   "kind": "STORE_FULL",
+   "text": "%s 맡을 수 없습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) 맡을 수 없습니다\\.$"
+  },
+  {
+   "kind": "STORE_FULL",
+   "text": "더 이상 맡길 수 없습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_CANNOT_DEPOSITE_MORE",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "STORE_FULL",
+   "text": "더 이상 맡을 수 없습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "TARGET_INVALID",
+   "text": "대상을 찾을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_CANNOT_FIND_TARGET"
+   ]
+  },
+  {
+   "kind": "TARGET_INVALID",
+   "text": "대상이 보이지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_PARTNER_INVISIBLE"
+   ]
+  },
+  {
+   "kind": "TARGET_INVALID",
+   "text": "대상이 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/113.lua",
+    "server/game/scripts/spell/114.lua",
+    "server/game/scripts/spell/115.lua",
+    "server/game/scripts/spell/116.lua",
+    "server/game/scripts/spell/117.lua"
+   ]
+  },
+  {
+   "kind": "TARGET_INVALID",
+   "text": "대상이 올바르지 않습니다.",
+   "channels": [
+    "const",
+    "lua"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_INVALID_TARGET",
+    "server/game/scripts/lib/spell.lua",
+    "server/game/scripts/spell/4038.lua"
+   ]
+  },
+  {
+   "kind": "TARGET_INVALID",
+   "text": "앞에 대상이 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/9050.lua"
+   ]
+  },
+  {
+   "kind": "TRADE_DONE",
+   "text": "교환에 성공했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_SUCCESS"
+   ]
+  },
+  {
+   "kind": "TRADE_FAILED",
+   "text": "{}님과 너무 멀리 떨어져 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_PARTNER_TOO_FAR"
+   ],
+   "pattern": "^(.+?)님과 너무 멀리 떨어져 있습니다\\.$"
+  },
+  {
+   "kind": "TRADE_FAILED",
+   "text": "{}님은 교환 거부 상태입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_REFUSED_BY_PARTNER"
+   ],
+   "pattern": "^(.+?)님은 교환 거부 상태입니다\\.$"
+  },
+  {
+   "kind": "TRADE_FAILED",
+   "text": "{}님은 이미 교환 중입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_PARTNER_ALREADY_TRADING"
+   ],
+   "pattern": "^(.+?)님은 이미 교환 중입니다\\.$"
+  },
+  {
+   "kind": "TRADE_FAILED",
+   "text": "교환 거부 상태입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_REFUSED_BY_ME"
+   ]
+  },
+  {
+   "kind": "TRADE_FAILED",
+   "text": "교환에 실패했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_FAILED"
+   ]
+  },
+  {
+   "kind": "TRADE_FAILED",
+   "text": "내가 교환을 취소했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_CANCELLED_BY_ME"
+   ]
+  },
+  {
+   "kind": "TRADE_FAILED",
+   "text": "상대방이 교환을 취소했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_CANCELLED_BY_PARTNER"
+   ]
+  },
+  {
+   "kind": "WARP_DENIED",
+   "text": "감히 접근할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_WARP_CANNOT_ACCESS"
+   ]
+  },
+  {
+   "kind": "WHISPER_DENIED",
+   "text": "%s님은 현재 바람의나라에 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/3.lua",
+    "server/game/scripts/spell/4.lua"
+   ],
+   "pattern": "^(.+?)님은 현재 바람의나라에 없습니다\\.$"
+  },
+  {
+   "kind": "WHISPER_DENIED",
+   "text": "{}님은 귓속말 거부 상태입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_WHISPER_DISABLED_TARGET"
+   ],
+   "pattern": "^(.+?)님은 귓속말 거부 상태입니다\\.$"
+  },
+  {
+   "kind": "WHISPER_DENIED",
+   "text": "{}님은 바람의나라에 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_USER_NOT_LOGIN"
+   ],
+   "pattern": "^(.+?)님은 바람의나라에 없습니다\\.$"
+  },
+  {
+   "kind": "WHISPER_DENIED",
+   "text": "귓속말을 할 수 없는 지역입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_WHISPER_DISABLED_AREA"
+   ]
+  },
+  {
+   "kind": "WHISPER_DENIED",
+   "text": "당신은 귓속말 거부 상태입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_WHISPER_DISABLED_MINE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "%s %d개 맡고 있습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)개 맡고 있습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s %d전에 사고 있습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)전에 사고 있습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s %d전에 팔고 있습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) (.+?)전에 팔고 있습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s 무기가 아닙니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) 무기가 아닙니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s 별칭을 부여할 수 없습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?) 별칭을 부여할 수 없습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s 푸른 빛으로 빛납니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ],
+   "pattern": "^(.+?) 푸른 빛으로 빛납니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s: [%s]님. %s 나왔습니다.%s",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?): \\[(.+?)\\]님\\. (.+?) 나왔습니다\\.(.+?)$"
+  },
+  {
+   "kind": "",
+   "text": "%s: [%s]님. 금전이 부족하시네요. 10전을 가져오세요.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?): \\[(.+?)\\]님\\. 금전이 부족하시네요\\. 10전을 가져오세요\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s님은 현재 접속 중이 아닙니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/10529.lua"
+   ],
+   "pattern": "^(.+?)님은 현재 접속 중이 아닙니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "%s의 이름을 %s 변경했습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^(.+?)의 이름을 (.+?) 변경했습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 NPC 스폰 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 NPC 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_NPC_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 게시판 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_BULLETIN_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 구매 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_BUY_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 도어 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_DOOR_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 드롭 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_DROP_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 맵 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_MAP_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 몹 스폰 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 몹 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_MOB_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 스펠 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_SPELL_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 아이템 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_ITEM_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 워프 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_WARP_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 월드맵 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_WORLD_MAP_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 정규표현식 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_REGEX_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 조합 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_ITEM_MIX_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 클래스 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_CLASS_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [100%] 총 %d개의 판매 정보를 읽었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_SELL_ALL_LOADED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] NPC 스폰 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_NPC_SPAWN_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] NPC 스폰 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] NPC 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_NPC_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] NPC 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 게시판 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_BULLETIN_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 게시판 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 구매 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_BUY_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 구매 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 도어 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_DOOR_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 도어 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 드롭 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_DROP_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 드롭 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 맵 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_MAP_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 맵 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 몹 스폰 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_MOB_SPAWN_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 몹 스폰 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 몹 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_MOB_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 몹 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 스펠 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_SPELL_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 스펠 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 아이템 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_ITEM_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 아이템 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 워프 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_WARP_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 워프 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 월드맵 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_WORLD_MAP_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 월드맵 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 정규표현식 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_REGEX_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 정규표현식 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 조합 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_ITEM_MIX_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 조합 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 클래스 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_CLASS_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 클래스 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "* [{:0.2f}%] 판매 정보를 읽었습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_SELL_LOADED"
+   ],
+   "pattern": "^\\* \\[\\{:0\\.2f\\}%\\] 판매 정보를 읽었습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "NPC {}를 배치할 수 없습니다. {} 맵이 로드되지 않았습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_NPC_SPAWN_FAILED"
+   ],
+   "pattern": "^NPC (.+?)를 배치할 수 없습니다\\. (.+?) 맵이 로드되지 않았습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "NPC의 방향이 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_NPC_DIRECTION"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "NPC의 위치가 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_NPC_POSITION"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "PK보호!",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "[:보조1  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_LEFT_AUX"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "[친구] {}님이 접속하셨습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_FRIEND_LOGIN"
+   ],
+   "pattern": "^\\[친구\\] (.+?)님이 접속하셨습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "]:보조2  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_RIGHT_AUX"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "a:갑옷  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_ARMOR"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "client version: ",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "done",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "h:머리  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_HELMET"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "invalid selected",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/npc/0.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "l:왼손  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_LEFT_HAND"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "popup_input result: %s",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ],
+   "pattern": "^popup_input result: (.+?)$"
+  },
+  {
+   "kind": "",
+   "text": "r:오른손  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_RIGHT_HAND"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "s:방패  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_SHIELD"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "ui mode: ",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "w:무기  :",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_PART_WEAPON"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "{} {}개가 {}전에 판매되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_SALE_MESSAGE"
+   ],
+   "pattern": "^(.+?) (.+?)개가 (.+?)전에 판매되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} {}개가 만료되어 반환되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_EXPIRED_MESSAGE"
+   ],
+   "pattern": "^(.+?) (.+?)개가 만료되어 반환되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} {}개가 만료되어 반환되었습니다. 등록 수수료 {}전이 함께 반환되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_EXPIRED_MESSAGE_WITH_FEE"
+   ],
+   "pattern": "^(.+?) (.+?)개가 만료되어 반환되었습니다\\. 등록 수수료 (.+?)전이 함께 반환되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} {}개를 {}전에 구매하셨습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_PURCHASE_MESSAGE"
+   ],
+   "pattern": "^(.+?) (.+?)개를 (.+?)전에 구매하셨습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} {}개를 {}전에 구매하셨습니다. 요청한 수량보다 적게 구매되어 {}전이 환불되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_PURCHASE_REFUND_MESSAGE"
+   ],
+   "pattern": "^(.+?) (.+?)개를 (.+?)전에 구매하셨습니다\\. 요청한 수량보다 적게 구매되어 (.+?)전이 환불되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} 깨졌습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_BROKEN"
+   ],
+   "pattern": "^(.+?) 깨졌습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} 문파가 해체되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_DISBANDED"
+   ],
+   "pattern": "^(.+?) 문파가 해체되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} 문파에 가입되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_JOINED_SUCCESS"
+   ],
+   "pattern": "^(.+?) 문파에 가입되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{} 해제",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_SPELL_UNBUFF"
+   ],
+   "pattern": "^(.+?) 해제$"
+  },
+  {
+   "kind": "",
+   "text": "{}님의 문파 직책이 {}에서 {}로 변경되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ROLE_CHANGED_DETAILED"
+   ],
+   "pattern": "^(.+?)님의 문파 직책이 (.+?)에서 (.+?)로 변경되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{}님의 인품을 내렸습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_LOWERED"
+   ],
+   "pattern": "^(.+?)님의 인품을 내렸습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{}님의 인품을 올렸습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_RAISED"
+   ],
+   "pattern": "^(.+?)님의 인품을 올렸습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{}님이 {} {}개 주었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_GIVE_MULTIPLE"
+   ],
+   "pattern": "^(.+?)님이 (.+?) (.+?)개 주었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{}님이 {} 주었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_GIVE_SINGLE"
+   ],
+   "pattern": "^(.+?)님이 (.+?) 주었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{}님이 문파에 가입했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_MEMBER_JOINED"
+   ],
+   "pattern": "^(.+?)님이 문파에 가입했습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{}님이 문파에서 추방당했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_MEMBER_KICKED"
+   ],
+   "pattern": "^(.+?)님이 문파에서 추방당했습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "{}님이 문파에서 탈퇴했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_MEMBER_LEFT"
+   ],
+   "pattern": "^(.+?)님이 문파에서 탈퇴했습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "가능한 동물",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4001.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "간부",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ROLE_OFFICER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "갑옷 강도  {}  {} S  {}",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EQUIPMENT_STAT_ARMOR"
+   ],
+   "pattern": "^갑옷 강도  (.+?)  (.+?) S  (.+?)$"
+  },
+  {
+   "kind": "",
+   "text": "같은 사람은 하루에 한 번만 평가할 수 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_ALREADY_EVALUATED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "갯수가 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_INVALID_COUNT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 구매",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_PURCHASE_REFUND_TITLE",
+    "MESSAGE_MARKETPLACE_PURCHASE_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 구매 결과를 확인하고 있습니다. 확인이 끝나면 자동으로 반영됩니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_PURCHASE_PENDING"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 구매 복구",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 구매가 실패했습니다. 돈이 통합보관함으로 반환되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록 ID 할당에 실패했습니다. (에러코드: {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_ALLOCATE_LISTING_ID"
+   ],
+   "pattern": "^거래소 등록 ID 할당에 실패했습니다\\. \\(에러코드: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록 결과를 확인하고 있습니다. 확인이 끝나면 자동으로 반영됩니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_PENDING"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록 만료",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_EXPIRED_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록 복구",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록 처리 중인 아이템입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_ITEM_LOCKED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록 취소",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_CANCELLED_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록 취소에 실패했습니다. (에러코드: {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_TO_CANCEL_LISTING"
+   ],
+   "pattern": "^거래소 등록 취소에 실패했습니다\\. \\(에러코드: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록이 실패했습니다. 아이템이 통합보관함으로 반환되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 등록이 취소되었습니다. 아이템이 통합보관함으로 반환되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_CANCELLED_MESSAGE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소 판매",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_SALE_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "거래소에 등록할 수 없는 아이템입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_ITEM_NOT_TRADEABLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "게시글 내용이 너무 깁니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_BULLETIN_TOO_LONG_CONTENTS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "게시글 작성 실패",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_WRITE_BULLETIN_FAILED",
+    "MESSAGE_BULLETIN_WRITE_FAILED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "게시글 제목이 너무 깁니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_BULLETIN_TOO_LONG_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "게시글이 존재하지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_BULLETIN_ARTICLE_NOT_EXIST"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "결혼하지 않아 사용할 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/10529.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "계정이 정지되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_BANNED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "교차 서버를 찾을 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "교환 중에는 할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_BLOCKED_WHILE_TRADING"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "교환이 불가능한 아이템입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "교환중이 아닙니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_NOT_TRADING"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "구매할 수 없는 물품입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_NOT_AVAILABLE_FOR_PURCHASE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "국가가 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLIENT_NATION_INVALID"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "권한이 부족합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "권한이 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_BULLETIN_NOT_AUTH"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "그게 뭐야?",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_INVALID_ITEM_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "그대 이름은 청룡일지다...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1033.lua",
+    "server/game/scripts/mob/1095.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "그렇게 바꿀 수 없습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_INVALID_WEAPON_NAME",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "그렇게나 많이요?",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TOO_MANY_COUNT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "그룹원",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_GROUP_MEMBERS_HEADER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "그토록 살고 싶은가...추악한 인간들이여...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1170.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "글을 작성하였습니다",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_BULLETIN_WRITE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "글이 삭제되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_BULLETIN_SUCCESS_DELETE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "금전 %d전을 맡아두고 있습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ],
+   "pattern": "^금전 (.+?)전을 맡아두고 있습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "기존 암호화 동일합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "뀌익 끼익 칙칙",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1117.lua",
+    "server/game/scripts/mob/1118.lua",
+    "server/game/scripts/mob/338.lua",
+    "server/game/scripts/mob/340.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "나 유성지가 쉽게 당할것 같으냐!!?",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1129.lua",
+    "server/game/scripts/mob/1322.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "나 자신을 소환할 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "나 청의태자의 이름으로 말하노니...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1033.lua",
+    "server/game/scripts/mob/1095.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "나의 죽음으로... 한 층 더 가까와졌음을.. 어리석은 인간들이... 어찌 알겠는가...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1167.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "남은 수량이 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_INSUFFICIENT_STOCK"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "내가 이정도로 죽을것 같으냐!!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1035.lua",
+    "server/game/scripts/mob/1048.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "네 포효를 적에게 발산하라!!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1033.lua",
+    "server/game/scripts/mob/1095.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "노획",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/spell/2008.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "누군가 당신의 인품을 내렸습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_LOWERED_BY_OTHER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "누군가 당신의 인품을 올렸습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_RAISED_BY_OTHER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "다른 플레이어가 거절하여 대기를 이어갑니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^다른 플레이어가 거절하여 대기를 이어갑니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "대상 문파를 찾을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_TARGET_NOT_FOUND"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "더 이상 물품을 등록할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_LIMIT_EXCEEDED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "더 이상 줄 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_CANNOT_GIVE_ANYMORE",
+    "MESSAGE_MONEY_CANNOT_GIVE_ANYMORE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "던질 수 없는 물건입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_CANNOT_THROW_ITEM"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "도감 %d개를 해금했습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ],
+   "pattern": "^도감 (.+?)개를 해금했습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "돈을 버렸습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MONEY_DROP"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "돈이 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "동맹 문파와는 적대 관계를 맺을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_ENEMY_ALLY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "동맹을 맺은 문파가 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_NOT_ALLIED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "등록 기간이 끝난 물품입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_EXPIRED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "등록 물품 조회에 실패했습니다. (에러코드: {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_TO_GET_LISTINGS"
+   ],
+   "pattern": "^등록 물품 조회에 실패했습니다\\. \\(에러코드: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "등록 수수료가 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY_FOR_LISTING_FEE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "등록된 물품을 찾을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_NOT_FOUND"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "등록완료, 이어하기를 선택하세요.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_SUCCESS_REGISTER_ACCOUNT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "등록할 수 없는 물건입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_CANNOT_REGISTER_ITEM"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "만료일: {}",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_BAN_EXPIRE_DATE"
+   ],
+   "pattern": "^만료일: (.+?)$"
+  },
+  {
+   "kind": "",
+   "text": "만료일: 영구정지",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_BAN_PERMANENT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "만에 바람으로...",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_LOGIN_ELAPSED_SUFFIX"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "만월늑대인간: 훌륭하군...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1128.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "말에 타고 있지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_RIDE_UNRIDE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "말에 탔습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_RIDE_ON"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "말에서 내렸습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_RIDE_OFF"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "맡긴 돈이 없습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "매치 참여를 수락했습니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^매치 참여를 수락했습니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "매치가 시작되었습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/match/1.lua",
+    "server/game/scripts/match/2.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "매치가 제안되었습니다. %d초 안에 수락해 주세요. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^매치가 제안되었습니다\\. (.+?)초 안에 수락해 주세요\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "매치가 종료되었습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/match/1.lua",
+    "server/game/scripts/match/2.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "매치가 취소되었습니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^매치가 취소되었습니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "매치를 거절했습니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^매치를 거절했습니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "매치메이킹 대기를 시작했습니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^매치메이킹 대기를 시작했습니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "매치메이킹 대기를 취소했습니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^매치메이킹 대기를 취소했습니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "맵 데이터가 올바르지 않습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MAP_INVALID_DATA"
+   ],
+   "pattern": "^맵 데이터가 올바르지 않습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "맵 데이터를 읽을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "맵 블록 데이터를 읽을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "맵 정보 없음",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/5005.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "맵 타일 메모리를 할당할 수 없습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MAP_TILE_ALLOCATION_FAILED"
+   ],
+   "pattern": "^맵 타일 메모리를 할당할 수 없습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "메일이 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_NOT_FOUND_MAIL"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "몇 개를 돌려받을지 말씀해 주세요.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "몇 개를 맡길지 말씀해 주세요.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "몸을 씻었습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/map/1763.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "몹 공격 타입을 확인할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_MOB_OFFENSIVE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "몹 크기 형식을 확인할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_MOB_SIZE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "무기의 푸른빛이 사라집니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "무력화 실패",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4012.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문 사이에 누군가 있습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문원",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ROLE_MATE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문을 닫았습니다.",
+   "channels": [
+    "const",
+    "lua"
+   ],
+   "origins": [
+    "MESSAGE_DOOR_CLOSE",
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문을 열었습니다.",
+   "channels": [
+    "const",
+    "lua"
+   ],
+   "origins": [
+    "MESSAGE_DOOR_OPEN",
+    "MESSAGE_DOOR_UNLOCK",
+    "server/game/scripts/interaction.lua",
+    "server/game/scripts/item/20211.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문을 잠궜습니다.",
+   "channels": [
+    "const",
+    "lua"
+   ],
+   "origins": [
+    "MESSAGE_DOOR_LOCK",
+    "server/game/scripts/item/20211.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문이 잠겼습니다.",
+   "channels": [
+    "const",
+    "lua"
+   ],
+   "origins": [
+    "MESSAGE_DOOR_LOCKED",
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문주",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ROLE_MASTER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문주는 축출할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_KICK_MASTER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파 권한이 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_NO_PRIVILEGE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파 마스터는 탈퇴할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_LEAVE_MASTER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파 인원이 가득 찼습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_FULL_MEMBER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파 직책이 변경되었습니다. ({} -> {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ROLE_CHANGED"
+   ],
+   "pattern": "^문파 직책이 변경되었습니다\\. \\((.+?) -> (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "문파 칭호가 너무 짧습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_TITLE_TOO_SHORT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파 칭호가 변경되지 않았습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_TITLE_NOT_CHANGED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파에 가입하지 않았습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_NOT_JOINED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파에 다른 멤버가 존재합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_MEMBER_EXISTS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파에서 추방당했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_KICKED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파에서 탈퇴했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_LEFT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "문파자금 %d전 찾았습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/castle_npc.lua"
+   ],
+   "pattern": "^문파자금 (.+?)전 찾았습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "뭐래는거야..",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_INVALID_ITEM_COUNT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "뭘 고쳐줘?",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_REPAIR_INVALID_NAME",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "뭘 돌려줘?",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "뭘 맡아줘?",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "뭘 사?",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_INVALID_BUY_ITEM_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "뭘 팔아?",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_INVALID_SELL_ITEM"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "받는 사람의 우편함이 가득 찼습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MAIL_BOX_FULL"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "백열장이 아닙니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1434.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "버릴 수 없는 물건입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_CANNOT_DROP_ITEM"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "변경됐다리",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "변신 가능한 동물",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/spell.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "본인이 등록한 물품이 아닙니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_NOT_LISTING_OWNER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "부문주",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ROLE_DEPUTY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "분",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_LOGIN_ELAPSED_MINUTES"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "비밀번호가 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_INVALID_PASSWORD"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "비밀번호를 여러 번 틀렸습니다. 잠시 후 다시 시도해 주세요.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_LOCKED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "사용법: /도감 <group_id> <slot> [onoff]",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "사용할 수 없는 문파 이름입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_NAME_INVALID"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "사용할 수 없는 문파 칭호입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_TITLE_INVALID"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "사유: {}",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_BAN_REASON"
+   ],
+   "pattern": "^사유: (.+?)$"
+  },
+  {
+   "kind": "",
+   "text": "상대 문파는 이미 동맹을 맺은 문파가 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_TARGET_ALREADY_ALLIED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "상대가 매치를 거절했거나 이미 종료된 매치입니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "상대가 응답하지 않아 대기를 이어갑니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^상대가 응답하지 않아 대기를 이어갑니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "상대방의 인벤토리가 가득 찼습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_TARGET_INVENTORY_FULL"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "상대방이 돈을 받을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MONEY_TARGET_CANNOT_RECEIVE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "상대방이 확인을 눌렀습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_NOTIFY_LOCK_TO_PARTNER"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "상호 친구가 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_FRIEND_CHAT_NO_MUTUAL"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "생년월일이 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_INVALID_BIRTHDAY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "생명의 소중함을 그렇게 가르쳤거늘...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "생즉시공 공즉시생",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "서버 점검 중입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MAINTENANCE_IN_PROGRESS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "선택된 아이템이 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_NOT_SELECTED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "설정을 변경하지 못했습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_OPTION_UPDATE_FAILED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성 내부에서 퇴장되었습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/castle.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성 소유권이 변경되어 %s 회수되었습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/castle.lua"
+   ],
+   "pattern": "^성 소유권이 변경되어 (.+?) 회수되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "성공하였습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MIX_SUCCESS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성별을 확인할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_SEX"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성별이 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLIENT_GENDER_INVALID"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성의 상황이 바뀌었습니다. 다시 시도해 주세요.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/warp/castle.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성주(99레벨)만 팔괘방에 들어갈 수 있습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/warp/castle.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성주나 동맹만 지하수로에 들어갈 수 있습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/warp/castle.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성주나 동맹만 팔괘방에 들어갈 수 있습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/warp/castle.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "성주는 99레벨 이상만 지하수로에 들어갈 수 있습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/warp/castle.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "섹션이 존재하지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_BULLETIN_SECTION_NOT_EXIST"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "소환할 수 없는 공간입니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "수호신이 올바르지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLIENT_DIVINE_BEAST_INVALID"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "시간",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_LOGIN_ELAPSED_HOURS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "실패",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4011.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "실패하였습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MIX_FAILED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "아~싸~ 적심토다!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/quest.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "아~싸~ 적심토다! 근데, 10꾸러미나 들고 있으려니 너무 무겁네. 더이상은 못들 것 같다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/quest.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "아이템 검색에 실패했습니다. (에러코드: {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_TO_SEARCH_ITEMS"
+   ],
+   "pattern": "^아이템 검색에 실패했습니다\\. \\(에러코드: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "아이템 구매에 실패했습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM_WITH_ERROR"
+   ],
+   "pattern": "^아이템 구매에 실패했습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "아이템 구매에 실패했습니다. (에러코드: {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM"
+   ],
+   "pattern": "^아이템 구매에 실패했습니다\\. \\(에러코드: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "아이템 데스 패널티를 확인할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_DEATH_PENALTY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "아이템 등록에 실패했습니다. ({})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM_WITH_ERROR"
+   ],
+   "pattern": "^아이템 등록에 실패했습니다\\. \\((.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "아이템 등록에 실패했습니다. (에러코드: {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_FAILED_TO_LIST_ITEM"
+   ],
+   "pattern": "^아이템 등록에 실패했습니다\\. \\(에러코드: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "아이템 수량이 부족합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_INSUFFICIENT_ITEM_COUNT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "아이템이 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_NOT_FOUND_ITEM"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "안녕하세요",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/npc/445.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "알 수 없는 에러",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_UNKNOWN_ERROR"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "알 수 없는 에러가 발생했습니다. (에러코드 : {})",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_UNKNOWN_ERROR_WITH_CODE"
+   ],
+   "pattern": "^알 수 없는 에러가 발생했습니다\\. \\(에러코드 : (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "암호가 단순합니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_SIMPLE_PASSWORD"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "암호는 4자 이상 8자 이하",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_PASSWORD_SIZE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "앞에 소환할 수 있는 사람이 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/item/4001.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "어리석은 인간들이여...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1173.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "엇! 그런데, 이 빛은 뭐지? 그리고, 이 따뜻한 기운은...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/quest.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "여신의 축복이 주변의 적들로부터 당신을 보호합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/quest.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "여의주의 힘을 받은 용이여..",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1033.lua",
+    "server/game/scripts/mob/1095.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "영은 생을 얻을지어니..",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/castle_npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "영은 생을 얻을지어니...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "예상 종료 시간: {}",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MAINTENANCE_END_TIME"
+   ],
+   "pattern": "^예상 종료 시간: (.+?)$"
+  },
+  {
+   "kind": "",
+   "text": "예언컨데... 인간은 스스로 멸하리라...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1164.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "예의 바른 놈. 잘 살거라.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "올바르지 않은 맵입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MAP_INVALID"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "올바르지 않은 명령입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ERROR_UNKNOWN"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "올바르지 않은 몹 이름입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_MOB_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "올바르지 않은 아이템 이름입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_ITEM_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "우리에게 양식을 다오",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1228.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "우편을 보냈습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MAIL_SENT"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "윽! 눈부셔!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/quest.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "응답 시간이 초과되어 대기가 종료되었습니다. (유형: %d)",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ],
+   "pattern": "^응답 시간이 초과되어 대기가 종료되었습니다\\. \\(유형: (.+?)\\)$"
+  },
+  {
+   "kind": "",
+   "text": "이 순간이..너희들의 기억속에서..지워지는 날..다시 오리라...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1162.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이 지역에는 더 이상 소환할 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4001.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이곳으로는 소환할 수 없습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/spell/4.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이대로 죽을 성 싶으냐!!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1026.lua",
+    "server/game/scripts/mob/1141.lua",
+    "server/game/scripts/mob/1323.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이름이 길거나 적합하지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_INVALID_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이름이 너무 깁니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_WEAPON_NAME_TOO_LONG",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이름이 너무 짧습니다.",
+   "channels": [
+    "const",
+    "npc"
+   ],
+   "origins": [
+    "MESSAGE_WEAWPON_NAME_TOO_SHORT",
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 끝난 매치입니다. 원래 있던 곳으로 돌아갑니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MATCH_ALREADY_CLOSED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 동맹을 맺은 문파가 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ALREADY_ALLIED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 등록이 취소된 물품입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_ALREADY_CANCELLED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 적대 관계인 문파입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_ALREADY_ENEMY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 접속중입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_ALREADY_LOGIN"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 존재하는 이름입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_ALREADY_EXISTS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 종료된 매치입니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/interaction.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 타고 있습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_RIDE_ALREADY_RIDE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이미 판매된 물품입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_LISTING_ALREADY_SOLD"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "이제야... 모든...준비가...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1163.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "인생의 뜻을 모르고 있구나..",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "인품 평가권을 얻었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_EVALUATION_GAINED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "인품 평가권이 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_NO_EVALUATION"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "일",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_LOGIN_ELAPSED_DAYS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "잉어 잡았습니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/map/10951.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "자기 자신은 축출할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_KICK_SELF"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "자기 자신은 평가할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_REPUTATION_SELF"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "자기 자신의 문파와는 동맹을 맺을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_ALLY_SELF"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "자기 자신의 문파와는 적대 관계를 맺을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_ENEMY_SELF"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "자기 자신의 직책은 변경할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_CHANGE_ROLE_SELF"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "잘못된 직책입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_INVALID_ROLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "적대 관계가 아닌 문파입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_NOT_ENEMY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "적대 문파와는 동맹을 맺을 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_CANNOT_ALLY_ENEMY"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "정성이 부족하구나...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/npc.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "조합할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_NO_RECIPE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "존재하지 않는 NPC입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_NPC_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "존재하지 않는 맵입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ASSET_INVALID_MAP_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "존재하지 않는 유저입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_INVALID_USER_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "존재하지 않는 이름입니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ACCOUNT_NOT_FOUND_NAME"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "좋아 좋아!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1434.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "주사위 [%d]나왔습니다.",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ],
+   "pattern": "^주사위 \\[(.+?)\\]나왔습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "줄 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ITEM_CANNOT_GIVE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "쮜이이이이이이익",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1119.lua",
+    "server/game/scripts/mob/1120.lua",
+    "server/game/scripts/mob/343.lua",
+    "server/game/scripts/mob/344.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "청룡마령참!!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1033.lua",
+    "server/game/scripts/mob/1095.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "청심초를 구했다!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/quest.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "칠성당에 입장합니다.",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/chilsung_entrance.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "캐릭터가 만료되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_CHARACTER_EXPIRED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "코가닌자\\",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1127.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "크롸롸!!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1049.lua",
+    "server/game/scripts/mob/1050.lua",
+    "server/game/scripts/mob/1096.lua",
+    "server/game/scripts/mob/1097.lua",
+    "server/game/scripts/mob/1098.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "크르르...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1177.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "클라이언트 버전이 맞지 않습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLIENT_VERSION_MISMATCH"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "클랜 이미 있음",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_ALREADY_JOINED_CLAN"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "클랜명이 이미 존재함",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_CLAN_NAME_ALREADY_EXISTS"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "클랜이 없음",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_NOT_JOINED_CLAN"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "타일 : %d\\n오브젝트 : %d\\n블록 : %s",
+   "channels": [
+    "lua"
+   ],
+   "origins": [
+    "server/game/scripts/lib/command.lua"
+   ],
+   "pattern": "^타일 : (.+?)\\\\n오브젝트 : (.+?)\\\\n블록 : (.+?)$"
+  },
+  {
+   "kind": "",
+   "text": "탈 것이 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_EXCEPTION_NO_CONVEYANCE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "통합보관함에 '{}' 보상이 추가되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_STORAGE_BOX_REWARD_ADDED"
+   ],
+   "pattern": "^통합보관함에 '(.+?)' 보상이 추가되었습니다\\.$"
+  },
+  {
+   "kind": "",
+   "text": "통합보관함에 보상이 추가되었습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "폭뢰부활!!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1047.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "폭염왕: 크아아악!! 아직 주어진 사명을 다하지 못했건만...",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1121.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "해당 인덱스에 아이템이 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_MARKETPLACE_ITEM_NOT_FOUND_AT_INDEX"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "확인을 누른 뒤에는 변경할 수 없습니다.",
+   "channels": [
+    "const"
+   ],
+   "origins": [
+    "MESSAGE_TRADE_ALREADY_LOCKED"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "흐아압 !!",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/mob/1129.lua"
+   ]
+  },
+  {
+   "kind": "",
+   "text": "희한한 문양이 새겨진 방패로군. 범상치 않아 보이는데?",
+   "channels": [
+    "npc"
+   ],
+   "origins": [
+    "server/game/scripts/lib/quest.lua"
+   ]
+  }
+ ]
+}

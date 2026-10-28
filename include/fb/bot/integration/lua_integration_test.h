@@ -73,9 +73,10 @@ private:
 public:
     struct discovered_script
     {
-        std::filesystem::path path;
-        bool                  serial{false};
-        bool                  extra_slot{false};
+        std::filesystem::path    path;
+        bool                     serial{false};
+        bool                     extra_slot{false};
+        std::vector<std::string> labels;
     };
 
     lua_integration_test(game_bot_controller&  controller,
@@ -84,6 +85,7 @@ public:
                          bool                  extra_slot = false);
     ~lua_integration_test() override;
 
+    static std::vector<discovered_script> catalog();
     static std::vector<discovered_script> discover_scripts();
     static uint32_t                       peek_bot_count(const std::filesystem::path& script_path);
     static void                           select(std::vector<std::string> names, std::string label);
@@ -98,6 +100,7 @@ public:
     async::task<void> do_sleep(std::chrono::milliseconds duration);
 
     std::string name() const override;
+    std::string key() const override;
 
     fb::bot::client_profile profile(uint32_t slot) const override;
     async::task<void>       on_activated(game_bot_controller& controller) override;

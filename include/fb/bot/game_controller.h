@@ -108,6 +108,8 @@ private:
 protected:
     game_bot_controller(bot_container& container);
 
+    static fb::model::item* build_item(const Json::Value& json);
+
 public:
     virtual ~game_bot_controller() = default;
     virtual void initialize()      = 0;
@@ -149,23 +151,27 @@ private:
     async::task<void> on_show(game_bot& bot, const game_resp::show<V>& response)
     {
         if (bot.oid() != 0 && bot.oid() != response.oid)
-            co_return;
-
-        bot.set_position(point<uint16_t>(response.x, response.y));
-        bot.set_direction(static_cast<DIRECTION>(response.direction));
-        bot.set_disguised(response.disguised);
-        bot.set_gender(response.gender);
-        bot.set_state(response.state);
-        bot.set_look(response.look);
-        bot.set_color(response.color);
-        bot.set_armor_dress(response.armor_dress);
-        bot.set_armor_color(response.armor_color);
-        bot.set_weapon_dress(response.weapon_dress);
-        bot.set_weapon_color(response.weapon_color);
-        bot.set_shield_dress(response.shield_dress);
-        bot.set_shield_color(response.shield_color);
-        bot.set_head_marker(response.head_marker);
-        bot.set_name(response.name);
+        {
+            bot.sight.show(response.oid, point<uint16_t>(response.x, response.y), response.look, response.name);
+        }
+        else
+        {
+            bot.set_position(point<uint16_t>(response.x, response.y));
+            bot.set_direction(static_cast<DIRECTION>(response.direction));
+            bot.set_disguised(response.disguised);
+            bot.set_gender(response.gender);
+            bot.set_state(response.state);
+            bot.set_look(response.look);
+            bot.set_color(response.color);
+            bot.set_armor_dress(response.armor_dress);
+            bot.set_armor_color(response.armor_color);
+            bot.set_weapon_dress(response.weapon_dress);
+            bot.set_weapon_color(response.weapon_color);
+            bot.set_shield_dress(response.shield_dress);
+            bot.set_shield_color(response.shield_color);
+            bot.set_head_marker(response.head_marker);
+            bot.set_name(response.name);
+        }
         co_return;
     }
     template <fb::protocol::CLIENT_VERSION V>

@@ -135,6 +135,7 @@ public:
     virtual async::task<bool>              check_should_skip();
     async::task<bool>                      execute();
     virtual std::string                    name() const = 0;
+    virtual std::string                    key() const;
 
     void                    suite_slot(uint32_t slot);
     uint32_t                suite_slot() const;
