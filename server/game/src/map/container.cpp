@@ -376,7 +376,8 @@ void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::sha
 async::task<void> map::container::cleanup()
 {
     auto maps_division = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::game::map>>>{};
-    for (const auto& map : *this->snapshot())
+    auto snapshot      = this->snapshot();
+    for (const auto& map : *snapshot)
     {
         if (map->loaded() == false)
             continue;
@@ -424,7 +425,8 @@ async::task<void> map::container::cleanup()
 
 std::shared_ptr<fb::game::map> map::container::name2map(std::string_view name) const
 {
-    for (const auto& map : *this->snapshot())
+    auto snapshot = this->snapshot();
+    for (const auto& map : *snapshot)
     {
         if (map->model().name == name)
             return map;

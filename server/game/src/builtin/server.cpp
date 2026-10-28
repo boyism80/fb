@@ -1208,8 +1208,9 @@ int builtin::server::builtin_maps(lua_State* L)
 
     auto& srv = static_cast<fb::game::server&>(lua->executor);
     lua->new_table();
-    auto i = 1;
-    for (auto& map : *srv.maps.snapshot())
+    auto i        = 1;
+    auto snapshot = srv.maps.snapshot();
+    for (auto& map : *snapshot)
     {
         lua->pushobject(map);
         lua_rawseti(L, -2, i++);

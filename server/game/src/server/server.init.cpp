@@ -207,7 +207,8 @@ async::task<void> fb::game::server::init_thread_params()
         maps_division.insert({thread, std::vector<std::shared_ptr<fb::game::map>>{}});
     }
 
-    for (const auto& map : *this->maps.snapshot())
+    auto snapshot = this->maps.snapshot();
+    for (const auto& map : *snapshot)
     {
         auto thread = this->threads.modular(map->id);
         maps_division[thread].push_back(map);
@@ -373,7 +374,8 @@ void fb::game::server::init_amqp_handlers()
 async::task<void> fb::game::server::init_map_scripts()
 {
     auto async_tasks = std::vector<async::task<void>>();
-    for (const auto& map : *this->maps.snapshot())
+    auto snapshot    = this->maps.snapshot();
+    for (const auto& map : *snapshot)
     {
         if (map->active == false || map->loaded() == false)
             continue;
