@@ -43,14 +43,14 @@ const std::vector<endpoint>& server::entrypoints() const
     return this->_entrypoints;
 }
 
-const fb::stream& server::endpoint_bytes(const fb::socket<fb::gateway::session>& session) const
+const fb::stream& server::endpoint_bytes() const
 {
-    return this->lan(session) ? this->_lan_endpoint_bytes : this->_endpoint_bytes;
+    return this->_endpoint_bytes;
 }
 
-uint32_t server::endpoint_crc(const fb::socket<fb::gateway::session>& session) const
+uint32_t server::endpoint_crc() const
 {
-    return this->lan(session) ? this->_lan_endpoint_crc : this->_endpoint_crc;
+    return this->_endpoint_crc;
 }
 
 void server::load_entries()
@@ -65,24 +65,9 @@ void server::load_entries()
                                               (*i)["port"].asInt()));
     }
 
-    auto serialize = [](const std::vector<endpoint>& entries, fb::stream& bytes, uint32_t& crc) {
-        auto writer = fb::stream_writer<big_endian>(bytes);
-        fb::protocol::gateway::response::server_list(entries).serialize(writer);
-        crc = bytes.crc();
-    };
-
-    serialize(this->_entrypoints, this->_endpoint_bytes, this->_endpoint_crc);
-
-    auto lan = std::vector<endpoint>();
-    for (const auto& entry : this->_entrypoints)
-    {
-        auto address = this->lan_endpoint(entry.port);
-        if (address.has_value())
-            lan.push_back(endpoint(entry.name, entry.desc, address->first, address->second));
-    }
-
-    if (lan.empty() == false)
-        serialize(lan, this->_lan_endpoint_bytes, this->_lan_endpoint_crc);
+    auto writer = fb::stream_writer<big_endian>(this->_endpoint_bytes);
+    fb::protocol::gateway::response::server_list(this->_entrypoints).serialize(writer);
+    this->_endpoint_crc = this->_endpoint_bytes.crc();
 }
 
 async::task<void> server::on_start()

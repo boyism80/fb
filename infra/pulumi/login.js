@@ -20,7 +20,6 @@ module.exports = function () {
                     transfer_secret: conf.transfer_secret,
                     ip: conf.host,
                     port: worldConf.login.port,
-                    lan: conf.lan,
                     thread: {
                         logic: 32,
                         io: 12
@@ -137,7 +136,6 @@ module.exports = function () {
                                         },
                                         ports: [
                                             { containerPort: worldConf.login.port, name: `login-${index}` },
-                                            { containerPort: worldConf.login.port + conf.lan.offset, name: `login-lan-${index}` },
                                         ],
                                         readinessProbe: {
                                             tcpSocket: {
@@ -185,13 +183,7 @@ module.exports = function () {
                     name: `login-${worldName}`,
                     port: worldConf.login.port,
                     targetPort: `login-${index}`,
-                    nodePort: worldConf.login.port
-                })
-                ports.push({
-                    name: `login-${worldName}-lan`,
-                    port: worldConf.login.port + conf.lan.offset,
-                    targetPort: `login-lan-${index}`,
-                    nodePort: worldConf.login.port + conf.lan.offset
+                    nodePort: worldConf.login.port 
                 })
 
                 index++

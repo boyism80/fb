@@ -60,7 +60,6 @@ module.exports = function () {
                     delay: 5,
                     ip: conf.host,
                     port: game.port,
-                    lan: conf.lan,
                     thread: {
                         logic: 32,
                         io: 12
@@ -115,7 +114,6 @@ module.exports = function () {
                 })
 
                 const portName = `game-${index}`
-                const lanPortName = `game-lan-${index}`
                 const labels = { app: "game" }
                 if (game.world == null)
                     labels.game = game.resourceName
@@ -162,7 +160,6 @@ module.exports = function () {
                                         },
                                         ports: [
                                             { containerPort: game.port, name: portName },
-                                            { containerPort: game.port + conf.lan.offset, name: lanPortName },
                                         ],
                                         readinessProbe: {
                                             tcpSocket: {
@@ -210,12 +207,6 @@ module.exports = function () {
                     port: game.port,
                     targetPort: portName,
                     nodePort: game.port
-                })
-                ports.push({
-                    name: `${game.resourceName}-lan`,
-                    port: game.port + conf.lan.offset,
-                    targetPort: lanPortName,
-                    nodePort: game.port + conf.lan.offset
                 })
 
                 index++

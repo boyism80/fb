@@ -1,9 +1,5 @@
 {
     "transfer_secret": "c049fb55e1a0e6ba3793653f57ddbeeffc2956dbb950f518",
-    "lan": {
-        "ip": "192.168.0.180",
-        "offset": 2000
-    },
     "worlds": {
         "world-1": {
             "id": 1,

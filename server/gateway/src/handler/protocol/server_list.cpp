@@ -33,7 +33,7 @@ async::task<bool> server_list<V>::handle(fb::socket<fb::gateway::session>& sessi
 
     case 0x01:
     {
-        this->server.send(session, this->server.endpoint_bytes(session));
+        this->server.send(session, this->server.endpoint_bytes());
         co_return true;
     }
 

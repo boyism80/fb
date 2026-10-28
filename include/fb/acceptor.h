@@ -88,10 +88,6 @@ private:
     std::condition_variable _exit_cv;
     bool                    _exit_requested = false;
 
-    std::optional<boost::asio::ip::tcp::acceptor> _lan;
-    uint32_t                                      _lan_ip     = 0;
-    uint16_t                                      _lan_offset = 0;
-
 protected:
     socket_container_sync _sockets;
 
@@ -103,21 +99,9 @@ protected:
         http(*this, http_max_concurrent),
         lua(static_cast<fb::async_executor&>(*this))
     {
-        auto lan_ip = fb::config<std::optional<std::string>>("lan:ip");
-        if (lan_ip.has_value())
-        {
-            this->_lan_ip     = inet_addr(this->ipv4(lan_ip.value()).c_str());
-            this->_lan_offset = fb::config<uint16_t>("lan:offset");
-            this->_lan.emplace(context,
-                               boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port + this->_lan_offset));
-        }
-
-        auto        lan_port = this->_lan.has_value() ? static_cast<uint16_t>(port + this->_lan_offset) : uint16_t(0);
-        static auto flag     = std::once_flag{};
-        std::call_once(flag, [port, lan_port] {
+        static auto flag = std::once_flag{};
+        std::call_once(flag, [port] {
             console::puts("Listen port : {}", port);
-            if (lan_port != 0)
-                console::puts("LAN listen port : {}", lan_port);
         });
     }
 
@@ -422,12 +406,12 @@ private:
         }
     }
 
-    void accept(boost::asio::ip::tcp::acceptor& listener)
+    void accept()
     {
         auto socket_ptr = std::make_shared<fb::socket<T>>(*this,
                                                           std::bind_front(&acceptor::on_socket_received, this),
                                                           std::bind_front(&acceptor::on_socket_closed, this));
-        listener.async_accept(*socket_ptr, [this, &listener, socket_ptr](boost::system::error_code error) mutable {
+        this->async_accept(*socket_ptr, [this, socket_ptr](boost::system::error_code error) mutable {
             if (this->_running == false)
             {
                 socket_ptr->close();
@@ -446,11 +430,11 @@ private:
 
                 auto& context = static_cast<boost::asio::io_context&>(*this);
                 auto  timer   = std::make_shared<boost::asio::steady_timer>(context, ACCEPT_RETRY_DELAY);
-                timer->async_wait([this, &listener, timer](const boost::system::error_code& ec) {
+                timer->async_wait([this, timer](const boost::system::error_code& ec) {
                     if (ec || this->_running == false)
                         return;
 
-                    this->accept(listener);
+                    this->accept();
                 });
             }
             else
@@ -469,7 +453,7 @@ private:
                     socket_ptr->close();
                 }
 
-                this->accept(listener);
+                this->accept();
             }
         });
     }
@@ -496,33 +480,9 @@ private:
     }
 
 public:
-    bool lan(const fb::socket<T>& socket) const
-    {
-        if (this->_lan.has_value() == false)
-            return false;
-
-        auto socket_error   = boost::system::error_code();
-        auto listener_error = boost::system::error_code();
-        auto local          = socket.local_endpoint(socket_error);
-        auto listening      = this->_lan->local_endpoint(listener_error);
-        return socket_error.failed() == false && listener_error.failed() == false && local.port() == listening.port();
-    }
-
-    std::optional<std::pair<uint32_t, uint16_t>> lan_endpoint(uint16_t port) const
-    {
-        if (this->_lan.has_value() == false)
-            return std::nullopt;
-
-        return std::pair<uint32_t, uint16_t>{this->_lan_ip, static_cast<uint16_t>(port + this->_lan_offset)};
-    }
-
-public:
     [[nodiscard]] async::task<void>
     transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
     {
-        if (this->lan(socket))
-            std::tie(ip, port) = this->lan_endpoint(port).value();
-
         auto& encryption = socket.encryption();
         auto  params     = fb::stream();
         {
@@ -552,9 +512,6 @@ public:
                                              uint8_t                         host,
                                              const fb::stream&               parameter)
     {
-        if (this->lan(socket))
-            std::tie(ip, port) = this->lan_endpoint(port).value();
-
         auto& encryption = socket.encryption();
         auto  header     = fb::stream();
         {
@@ -696,9 +653,7 @@ public:
             this->_running = true;
             // Sync boundary between main thread and async-cpp (startup loaders / Lua init).
             async::awaitable_get(this->on_start());
-            this->accept(*this);
-            if (this->_lan.has_value())
-                this->accept(this->_lan.value());
+            this->accept();
 
             for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
             {
@@ -879,8 +834,6 @@ private:
         auto ec        = boost::system::error_code();
         this->_running = false;
         this->cancel(ec);
-        if (this->_lan.has_value())
-            this->_lan->cancel(ec);
         // Sync boundary between main/shutdown thread and async-cpp (save, drain queues).
         try
         {
@@ -937,8 +890,6 @@ private:
 
         this->threads.exit();
         this->close(ec);
-        if (this->_lan.has_value())
-            this->_lan->close(ec);
 
         static_cast<boost::asio::io_context&>(*this).stop();
     }

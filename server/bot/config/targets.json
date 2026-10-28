@@ -4,11 +4,6 @@
 			"name": "local",
 			"label": "로컬",
 			"address": "127.0.0.1:3001"
-		},
-		{
-			"name": "remote-lan",
-			"label": "원격 (사설 IP)",
-			"address": "192.168.0.180:32000"
 		}
 	]
 }

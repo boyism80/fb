@@ -16,7 +16,6 @@ module.exports = function () {
                 name: `gateway`,
                 ip:  conf.host,
                 port: conf.gateway.port,
-                lan: conf.lan,
                 thread: {
                     logic: 12,
                     io: 12
@@ -117,7 +116,6 @@ module.exports = function () {
                                     },
                                     ports: [
                                         { containerPort: conf.gateway.port, name: `gateway` },
-                                        { containerPort: conf.gateway.port + conf.lan.offset, name: `gateway-lan` },
                                     ],
                                     readinessProbe: {
                                         tcpSocket: {
@@ -169,15 +167,9 @@ module.exports = function () {
                 spec: {
                     type: "NodePort",
                     ports: [{
-                        name: `gateway`,
                         port: conf.gateway.port,
                         targetPort: `gateway`,
-                        nodePort: conf.gateway.port
-                    }, {
-                        name: `gateway-lan`,
-                        port: conf.gateway.port + conf.lan.offset,
-                        targetPort: `gateway-lan`,
-                        nodePort: conf.gateway.port + conf.lan.offset
+                        nodePort: conf.gateway.port 
                     }],
                     selector: {
                         app: "gateway",
