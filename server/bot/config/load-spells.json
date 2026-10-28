@@ -1035,6 +1035,22 @@
      "names": [
       "귀환"
      ],
+     "level": 13,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 30
+      }
+     ]
+    },
+    {
+     "names": [
+      "화염주'첨",
+      "백열주'첨",
+      "자무주'첨",
+      "뢰진주'첨"
+     ],
      "level": 14,
      "money": 0,
      "materials": [
@@ -1136,6 +1152,26 @@
     {
      "names": [
       "하늘의기원"
+     ],
+     "level": 23,
+     "money": 50,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 50
+      },
+      {
+       "name": "뱀고기",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "화영열주'첨",
+      "백령주'첨",
+      "자영무주'첨",
+      "뢰격주'첨"
      ],
      "level": 24,
      "money": 50,
@@ -1267,6 +1303,30 @@
     {
      "names": [
       "구름의기원"
+     ],
+     "level": 35,
+     "money": 0,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "웅담",
+       "count": 10
+      },
+      {
+       "name": "여우모피",
+       "count": 10
+      }
+     ]
+    },
+    {
+     "names": [
+      "화열참주'첨",
+      "백열참주'첨",
+      "자천무주'첨",
+      "뢰격참주'첨"
      ],
      "level": 36,
      "money": 100,
@@ -1403,6 +1463,26 @@
      "names": [
       "절망"
      ],
+     "level": 60,
+     "money": 400,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 80
+      },
+      {
+       "name": "호박",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "진화열참주'첨",
+      "진백열참주'첨",
+      "진자천무주'첨",
+      "진뢰격참주'첨"
+     ],
      "level": 62,
      "money": 500,
      "materials": [
@@ -1443,6 +1523,26 @@
       "극진백열참주",
       "극진자천무주",
       "극진뢰격참주"
+     ],
+     "level": 74,
+     "money": 2000,
+     "materials": [
+      {
+       "name": "도토리",
+       "count": 100
+      },
+      {
+       "name": "진호박",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "names": [
+      "극진화열참주'첨",
+      "극진백열참주'첨",
+      "극진자천무주'첨",
+      "극진뢰격참주'첨"
      ],
      "level": 85,
      "money": 2000,
@@ -2485,6 +2585,126 @@
    "damage": 3580,
    "id": 3021,
    "type": "TARGET"
+  },
+  "화염주'첨": {
+   "mp": 180,
+   "role": "OTHER",
+   "id": 3022,
+   "type": "NORMAL"
+  },
+  "자무주'첨": {
+   "mp": 180,
+   "role": "OTHER",
+   "id": 3023,
+   "type": "NORMAL"
+  },
+  "백열주'첨": {
+   "mp": 180,
+   "role": "OTHER",
+   "id": 3024,
+   "type": "NORMAL"
+  },
+  "뢰진주'첨": {
+   "mp": 180,
+   "role": "OTHER",
+   "id": 3025,
+   "type": "NORMAL"
+  },
+  "화영열주'첨": {
+   "mp": 250,
+   "role": "OTHER",
+   "id": 3026,
+   "type": "NORMAL"
+  },
+  "자영무주'첨": {
+   "mp": 250,
+   "role": "OTHER",
+   "id": 3027,
+   "type": "NORMAL"
+  },
+  "백령주'첨": {
+   "mp": 250,
+   "role": "OTHER",
+   "id": 3028,
+   "type": "NORMAL"
+  },
+  "뢰격주'첨": {
+   "mp": 250,
+   "role": "OTHER",
+   "id": 3029,
+   "type": "NORMAL"
+  },
+  "화열참주'첨": {
+   "mp": 330,
+   "role": "OTHER",
+   "id": 3030,
+   "type": "NORMAL"
+  },
+  "자천무주'첨": {
+   "mp": 330,
+   "role": "OTHER",
+   "id": 3031,
+   "type": "NORMAL"
+  },
+  "백열참주'첨": {
+   "mp": 330,
+   "role": "OTHER",
+   "id": 3032,
+   "type": "NORMAL"
+  },
+  "뢰격참주'첨": {
+   "mp": 330,
+   "role": "OTHER",
+   "id": 3033,
+   "type": "NORMAL"
+  },
+  "진화열참주'첨": {
+   "mp": 400,
+   "role": "OTHER",
+   "id": 3034,
+   "type": "NORMAL"
+  },
+  "진자천무주'첨": {
+   "mp": 400,
+   "role": "OTHER",
+   "id": 3035,
+   "type": "NORMAL"
+  },
+  "진백열참주'첨": {
+   "mp": 400,
+   "role": "OTHER",
+   "id": 3036,
+   "type": "NORMAL"
+  },
+  "진뢰격참주'첨": {
+   "mp": 400,
+   "role": "OTHER",
+   "id": 3037,
+   "type": "NORMAL"
+  },
+  "극진화열참주'첨": {
+   "mp": 470,
+   "role": "OTHER",
+   "id": 3038,
+   "type": "NORMAL"
+  },
+  "극진자천무주'첨": {
+   "mp": 470,
+   "role": "OTHER",
+   "id": 3039,
+   "type": "NORMAL"
+  },
+  "극진백열참주'첨": {
+   "mp": 470,
+   "role": "OTHER",
+   "id": 3040,
+   "type": "NORMAL"
+  },
+  "극진뢰격참주'첨": {
+   "mp": 470,
+   "role": "OTHER",
+   "id": 3041,
+   "type": "NORMAL"
   },
   "헬파이어": {
    "mp": 0,

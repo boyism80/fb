@@ -8,22 +8,23 @@ SCRIPTS = ROOT / 'server' / 'game' / 'scripts'
 SPELL_JSON = ROOT / 'server' / 'game' / 'json' / 'spell.json'
 OUTPUT = ROOT / 'server' / 'bot' / 'config' / 'load-spells.json'
 
-KEY = re.compile(r"^\s*\[(?:'(?P<name>[^']+)'|spell\.divine_beast_spell\(me:divine_beast\(\),\s*(?P<beast>\d+)\))\]\s*=\s*\{\s*$")
+KEY = re.compile(r"^\s*\[(?:'(?P<name>[^']+)'|spell\.(?P<helper>divine_beast_\w*spell)\(me:divine_beast\(\),\s*(?P<beast>\d+)\))\]\s*=\s*\{\s*$")
 LEVEL = re.compile(r"\['level'\]\s*=\s*(\d+)")
 MATERIAL = re.compile(r"\['name'\]\s*=\s*'([^']+)',\s*\['count'\]\s*=\s*(\d+)")
 GUILD = re.compile(r"npc\.basic_class\(me,\s*npc_obj,\s*CLASS\.(\w+),\s*spells\)")
 LOCAL = re.compile(r"local\s+(\w+)\s*=\s*(\d+)")
-BEAST = re.compile(r"index == (\d+) then\s*return '([^']+)'")
+BEAST = re.compile(r"index == (\d+) then\s*return (?:'([^']+)'|\"([^\"]+)\")")
 CURE = re.compile(r"you:unbuff\('([^']+)'\)")
 CAST = re.compile(r"^\s*on_cast\s*=\s*function", re.M)
 
 
 def divine_beast_names():
     text = (SCRIPTS / 'lib' / 'spell.lua').read_text(encoding='utf-8')
-    body = text.split('function M.divine_beast_spell', 1)[1].split('function M.', 1)[0]
     names = {}
-    for index, name in BEAST.findall(body):
-        names.setdefault(int(index), []).append(name)
+    for helper in re.findall(r"function M\.(divine_beast_\w*spell)\(", text):
+        body = text.split(f'function M.{helper}(', 1)[1].split('function M.', 1)[0]
+        for index, single, double in BEAST.findall(body):
+            names.setdefault(helper, {}).setdefault(int(index), []).append(single or double)
     return names
 
 
@@ -46,7 +47,7 @@ def guilds(beasts):
                 if key.group('name'):
                     current = {'names': [key.group('name')]}
                 else:
-                    current = {'names': beasts[int(key.group('beast'))]}
+                    current = {'names': beasts[key.group('helper')][int(key.group('beast'))]}
                 spells.append(current)
                 continue
 
