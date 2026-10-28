@@ -688,6 +688,7 @@ private:
     static std::string                       stack_name(const std::string& name);
     std::unordered_map<std::string, uint32_t> owned(const game_bot& bot) const;
     std::vector<std::pair<std::string, uint32_t>> sellable(const game_bot& bot) const;
+    std::vector<uint8_t>                     junk(const game_bot& bot) const;
     bool                                     overstocked(const game_bot& bot) const;
     bool                                     underfunded(const game_bot& bot) const;
     async::task<result>                      sell(game_bot& bot);

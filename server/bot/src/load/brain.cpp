@@ -2029,7 +2029,7 @@ double brain::score(GOAL goal, const game_bot& bot) const
         return ghost == false &&
                        (this->_sell_urgent || bot.items().size() >= this->_supplies.sell_slots ||
                         this->overstocked(bot) || this->underfunded(bot)) &&
-                       this->sellable(bot).empty() == false
+                       (this->sellable(bot).empty() == false || this->junk(bot).empty() == false)
                    ? this->_persona.sell
                    : 0.0;
 
@@ -3337,6 +3337,36 @@ std::vector<std::pair<std::string, uint32_t>> brain::sellable(const game_bot& bo
     return items;
 }
 
+std::vector<uint8_t> brain::junk(const game_bot& bot) const
+{
+    auto result   = std::vector<uint8_t>{};
+    auto reserved = this->reserved(bot);
+    for (auto& [slot, owned] : bot.items())
+    {
+        auto name  = brain::stack_name(owned.name);
+        auto model = table::item->name2item(name);
+        if (model == nullptr || model->trade == false || dynamic_cast<const fb::model::equipment*>(model) != nullptr)
+            continue;
+
+        if (this->_knowledge.price(name) > 0 || this->held(bot, name, reserved) > 0 || name == this->_job.item)
+            continue;
+
+        auto tutorial =
+            std::any_of(this->_tutorial.steps.begin(), this->_tutorial.steps.end(), [&name](const auto& step) {
+                return step.item == name || step.target == name;
+            });
+        auto quest =
+            std::any_of(this->_questbook.quests.begin(), this->_questbook.quests.end(), [&name](const auto& quest) {
+                return quest.consumes.contains(name) || quest.rewards.contains(name);
+            });
+        if (tutorial || quest)
+            continue;
+
+        result.push_back(slot);
+    }
+    return result;
+}
+
 std::unordered_map<std::string, uint32_t> brain::reserved(const game_bot& bot) const
 {
     auto result = std::unordered_map<std::string, uint32_t>{};
@@ -3418,7 +3448,28 @@ uint32_t brain::held(const game_bot&                                  bot,
 
 async::task<brain::result> brain::sell(game_bot& bot)
 {
+    auto discarded = this->junk(bot);
+    for (auto slot = discarded.rbegin(); slot != discarded.rend(); slot++)
+    {
+        auto found = bot.items().find(*slot);
+        if (found == bot.items().end())
+            continue;
+
+        auto detail    = Json::Value{};
+        detail["item"] = fb::UTF8(found->second.name, fb::PLATFORM::WINDOWS);
+        auto model     = table::item->name2item(brain::stack_name(found->second.name));
+        if (model != nullptr)
+            this->_unpickable.insert_or_assign(static_cast<uint16_t>(model->look + ITEM_LOOK_MIN), time_point::max());
+        co_await bot.drop_item(*slot, true, ACTION_TIMEOUT);
+        this->report(bot, "discard", std::string{}, detail);
+    }
+
     auto items = this->sellable(bot);
+    if (items.empty() && discarded.empty() == false)
+    {
+        this->_sell_urgent = false;
+        co_return result::SUCCEEDED;
+    }
     auto names = std::vector<std::string>{};
     for (auto& [name, _] : items)
     {
