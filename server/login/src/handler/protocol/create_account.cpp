@@ -1,6 +1,7 @@
 #include <fb/login/handler/protocol/create_account.h>
 
 #include <fb/encoding.h>
+#include <fb/logger.h>
 #include <fb/login/exception.h>
 #include <fb/model/model.h>
 
@@ -9,9 +10,11 @@
 #include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <optional>
 #include <random>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 
 using namespace fb::login::handler::protocol;
 
@@ -38,7 +41,27 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
         auto pw   = std::string(request.pw);
 
         this->server.assert_new_account(name, pw);
-        auto   world = fb::config<uint32_t>("world");
+        auto world        = fb::config<uint32_t>("world");
+        auto previous_uid = session_data->pending_uid;
+        if (previous_uid.has_value())
+        {
+            session_data->pending_uid.reset();
+            session_data->pk = -1;
+            session_data->name.clear();
+            try
+            {
+                std::ignore =
+                    co_await this->server.http.post("internal",
+                                                    "/account/release-name",
+                                                    internal_reqs::ReserveName{world, "", previous_uid.value()});
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("failed to release name reservation {} ({})", previous_uid.value(), e.what());
+            }
+            co_await this->server.threads.switching(weak);
+        }
+
         auto&& response1 =
             co_await this->server.http.post("internal", "/account/reserve", internal_reqs::ReserveName{world, name, 0});
         co_await this->server.threads.switching(weak);

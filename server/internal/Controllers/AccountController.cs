@@ -186,6 +186,45 @@ namespace Internal.Controllers
                 commandType: CommandType.StoredProcedure);
             return new Response.ReserveName { Success = refreshed == 1, Uid = request.Uid };
         }
+
+        [HttpPost("release-name")]
+        public async Task<Response.ReserveName> ReleaseName(Request.ReserveName request)
+        {
+            if (request.World == 0)
+            {
+                return new Response.ReserveName { Success = false, Uid = request.Uid };
+            }
+
+            try
+            {
+                await using var conn = _dbContext.GetUnifiedConnection();
+                await conn.OpenAsync();
+                await using var transaction = await conn.BeginTransactionAsync();
+                var held = await conn.QuerySingleOrDefaultAsync<uint?>(
+                    """
+                    SELECT `id` FROM `name_registry`
+                    WHERE `id` = @id AND `world` = @world AND `reserved_at` IS NOT NULL
+                    FOR UPDATE
+                    """,
+                    new { id = request.Uid, world = request.World },
+                    transaction);
+                if (held == null)
+                {
+                    await transaction.RollbackAsync();
+                    return new Response.ReserveName { Success = false, Uid = request.Uid };
+                }
+
+                _dbContext.Character.Delete(request.World, new CharacterKey { Id = request.Uid });
+                await _dbContext.SaveChangesAsync();
+                await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id = request.Uid }, transaction);
+                await transaction.CommitAsync();
+                return new Response.ReserveName { Success = true, Uid = request.Uid };
+            }
+            catch (Exception)
+            {
+                return new Response.ReserveName { Success = false, Uid = request.Uid };
+            }
+        }
         [HttpPost("init")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {

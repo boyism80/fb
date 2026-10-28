@@ -25,9 +25,11 @@ namespace Internal.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                var full = false;
                 try
                 {
-                    var deleted = await DeleteExpiredAsync();
+                    var (found, deleted) = await DeleteExpiredAsync();
+                    full = found >= RowLimit;
                     if (deleted > 0)
                     {
                         _logger.LogInformation("Deleted {Count} expired name reservations", deleted);
@@ -38,11 +40,14 @@ namespace Internal.Services
                     _logger.LogWarning(e, "Failed to delete expired name reservations");
                 }
 
-                await Task.Delay(ProcessingInterval, stoppingToken);
+                if (full == false)
+                {
+                    await Task.Delay(ProcessingInterval, stoppingToken);
+                }
             }
         }
 
-        private async Task<int> DeleteExpiredAsync()
+        private async Task<(int Found, int Deleted)> DeleteExpiredAsync()
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
@@ -86,7 +91,7 @@ namespace Internal.Services
                 deleted++;
             }
 
-            return deleted;
+            return (ids.Count, deleted);
         }
     }
 }
