@@ -165,6 +165,7 @@ tr.pick:hover td { background: var(--line-soft); }
 .goals { padding: 16px 18px; display: grid; gap: 7px; }
 .goals div { display: grid; grid-template-columns: 103px minmax(0, 1fr) 57px; gap: 12px; align-items: center; font: 12px var(--mono); }
 .goals b { display: block; height: 7px; background: var(--accent); border-radius: 2px; }
+.goals div.empty { display: block; }
 .tabs button em:empty { display: none; }
 .reload { flex-direction: column; align-items: stretch; gap: 7px; }
 .reload .btn { width: 100%; }
