@@ -5884,6 +5884,10 @@ async::task<brain::result> brain::group(game_bot& bot)
     {
         this->_group_ready = false;
     }
+    else if (reason == "GROUP_DENIED")
+    {
+        this->_roster.group(partner.value(), true);
+    }
 
     auto detail       = Json::Value{};
     detail["partner"] = fb::UTF8(partner.value(), fb::PLATFORM::WINDOWS);
