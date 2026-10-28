@@ -23,11 +23,14 @@ test_suite {
                 names[ctx:bot(i):name()] = true
             end
 
+            local steps      = {}
             local promotions = model.promotions()
             for i, promotion in ipairs(promotions) do
                 local bot = ctx:bot(i - 1)
                 bot:change_class(promotion.name)
+                bot:chat("/레벨바꾸기 99")
                 counts[promotion.cls] = (counts[promotion.cls] or 0) + 1
+                steps[bot:name()]     = promotion.step
             end
 
             -- change_class is fire-and-forget (/직업바꾸기 has no waitable class-name response).
@@ -48,6 +51,9 @@ test_suite {
                 if names[user.name] then
                     names[user.name] = nil
                     counts[user.cls] = counts[user.cls] - 1
+                end
+                if steps[user.name] ~= nil and steps[user.name] ~= user.promotion then
+                    return false
                 end
             end
 

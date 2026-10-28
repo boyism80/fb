@@ -2249,9 +2249,6 @@ void marshal_lua_game_resp__user_list(lua_State* L, const fb::protocol::header& 
         lua->pushstring("promotion");
         lua->pushinteger(user.promotion);
         lua->settable(-3);
-        lua->pushstring("level");
-        lua->pushinteger(user.level);
-        lua->settable(-3);
         lua->pushstring("color");
         lua->pushinteger(user.color);
         lua->settable(-3);

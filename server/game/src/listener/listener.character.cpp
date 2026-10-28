@@ -4,6 +4,7 @@
 #include <fb/protocol/client_version.h>
 #include <macro.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <ctime>
 #include <list>
@@ -13,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -306,11 +308,11 @@ async::task<void> listener_impl::on_show_user_list(character& ch)
 {
     using user_data = game_resp::user_list::user_data;
 
-    auto users  = std::make_shared<std::vector<user_data>>();
+    auto ranked = std::make_shared<std::vector<std::tuple<uint8_t, uint64_t, user_data>>>();
     auto mutex  = std::make_shared<std::mutex>();
     auto viewer = ch.shared_from_this_as<character>();
 
-    co_await this->server.characters.foreach_async([users, mutex, viewer](auto& other) -> async::task<void> {
+    co_await this->server.characters.foreach_async([ranked, mutex, viewer](auto& other) -> async::task<void> {
         if (other->hidden(*viewer))
             co_return;
 
@@ -318,18 +320,35 @@ async::task<void> listener_impl::on_show_user_list(character& ch)
         entry.nation    = static_cast<uint8_t>(other->nation());
         entry.cls       = static_cast<uint8_t>(other->cls());
         entry.promotion = other->promotion();
-        entry.level     = other->level();
         entry.color     = (other.get() == viewer.get()) ? static_cast<uint8_t>(0x88) : static_cast<uint8_t>(0x0F);
         entry.name      = other->name();
 
         {
             auto lock = std::lock_guard(*mutex);
-            users->push_back(std::move(entry));
+            ranked->emplace_back(other->level(), other->stat.base_hp() + other->stat.base_mp() * 2, std::move(entry));
         }
         co_return;
     });
 
-    ch.send(game_resp::user_list(std::move(*users)));
+    std::sort(ranked->begin(), ranked->end(), [](const auto& lhs, const auto& rhs) {
+        const auto& [lhs_level, lhs_power, lhs_user] = lhs;
+        const auto& [rhs_level, rhs_power, rhs_user] = rhs;
+        if (lhs_level != rhs_level)
+            return lhs_level > rhs_level;
+        else if (lhs_power != rhs_power)
+            return lhs_power > rhs_power;
+        else
+            return lhs_user.name < rhs_user.name;
+    });
+
+    auto users = std::vector<user_data>();
+    users.reserve(ranked->size());
+    for (auto& rank : *ranked)
+    {
+        users.push_back(std::move(std::get<user_data>(rank)));
+    }
+
+    ch.send(game_resp::user_list(std::move(users)));
 }
 
 void listener_impl::on_show_bulletin(character& ch)

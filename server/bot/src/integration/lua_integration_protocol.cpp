@@ -98,6 +98,9 @@ static int lua_model_promotions(lua_State* L)
             lua.pushstring("cls");
             lua.pushinteger(static_cast<lua_Integer>(static_cast<uint8_t>(cls)));
             lua.settable(-3);
+            lua.pushstring("step");
+            lua.pushinteger(promotion.step);
+            lua.settable(-3);
             lua.settable(-3);
         }
     }

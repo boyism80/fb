@@ -65,7 +65,6 @@ public:
         uint8_t     nation;
         uint8_t     cls;
         uint8_t     promotion;
-        uint8_t     level;
         uint8_t     color;
         std::string name;
     };

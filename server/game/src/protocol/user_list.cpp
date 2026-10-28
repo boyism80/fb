@@ -52,7 +52,7 @@ void user_list::serialize(fb::stream_writer<big_endian>& writer) const
     {
         auto before = entries.size();
         entry_writer.write<uint8_t>(0x10 * user.nation + user.cls);
-        entry_writer.write<uint8_t>(0x10 * user.promotion + user.level);
+        entry_writer.write<uint8_t>(0x10 * user.promotion);
         entry_writer.write<uint8_t>(user.color);
         entry_writer.write<std::string, uint8_t>(user.name);
         if (head_size + entries.size() > fb::socket<>::MAX_PAYLOAD_SIZE)
@@ -88,12 +88,9 @@ void user_list::deserialize(fb::stream_reader<big_endian>& reader)
         user.nation          = nation_cls / 0x10;
         user.cls             = nation_cls % 0x10;
 
-        auto promotion_level = reader.read<uint8_t>();
-        user.promotion       = promotion_level / 0x10;
-        user.level           = promotion_level % 0x10;
-
-        user.color = reader.read<uint8_t>();
-        user.name  = reader.read<std::string, uint8_t>();
+        user.promotion = reader.read<uint8_t>() / 0x10;
+        user.color     = reader.read<uint8_t>();
+        user.name      = reader.read<std::string, uint8_t>();
         this->users.push_back(user);
     }
 }
