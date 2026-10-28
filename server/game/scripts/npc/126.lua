@@ -2,12 +2,15 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 local function run_dialogs(me, npc, messages)
-    for i, msg in ipairs(messages) do
-        local prev = (i > 1)
-        local next = (i < #messages)
-        local b = me:dialog(npc, msg, { prev = prev, next = next })
-        if b == DIALOG_RESULT.QUIT or b == DIALOG_RESULT.PREV then
+    local i = 1
+    while i <= #messages do
+        local b = me:dialog(npc, messages[i], { prev = i > 1, next = i < #messages })
+        if b == DIALOG_RESULT.QUIT then
             return false
+        elseif b == DIALOG_RESULT.PREV then
+            i = math.max(1, i - 1)
+        else
+            i = i + 1
         end
     end
     return true

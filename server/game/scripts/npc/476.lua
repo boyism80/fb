@@ -2,12 +2,15 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 local function run_dialogs(me, npc, messages)
-    for i, msg in ipairs(messages) do
-        local prev = (i > 1)
-        local next = (i < #messages)
-        local b = me:dialog(npc, msg, { prev = prev, next = next })
-        if b == DIALOG_RESULT.QUIT or b == DIALOG_RESULT.PREV then
+    local i = 1
+    while i <= #messages do
+        local b = me:dialog(npc, messages[i], { prev = i > 1, next = i < #messages })
+        if b == DIALOG_RESULT.QUIT then
             return false
+        elseif b == DIALOG_RESULT.PREV then
+            i = math.max(1, i - 1)
+        else
+            i = i + 1
         end
     end
     return true
@@ -84,12 +87,14 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         return true
     end
     if sel == 1 then
-        run_dialogs(me, npc, {
-            "우리편이 맞다. 우리편이 맞다.",
-            "그래그래, 참 착하게 생겼다. 참 착하게 생겼다.",
-            "너는 우리편이니까, 우리 부탁을 들어줄거야, 그렇지? 그렇지?",
-            "맞아맞아. 틀림없이 들어줄거야.",
-        })
+        if not run_dialogs(me, npc, {
+                "우리편이 맞다. 우리편이 맞다.",
+                "그래그래, 참 착하게 생겼다. 참 착하게 생겼다.",
+                "너는 우리편이니까, 우리 부탁을 들어줄거야, 그렇지? 그렇지?",
+                "맞아맞아. 틀림없이 들어줄거야.",
+            }) then
+            return true
+        end
     end
     sel, btn = me:list(npc, "인성초들이 뚫어질듯 이쪽을 바라보며 묻는다. '도와줄꺼지?'", {
         "잠깐만, 우리 숨 좀 돌리지 않을래?",
@@ -153,28 +158,28 @@ local function handle_jingogyun_1(me, npc, q_jingo)
                 "너무 힘들어. 힘들지",
                 "(인성초들이 슬픈 얼굴로 연거푸 한숨을 내쉰다.)",
             })
-        else
-            return
         end
         return true
     end
-    if sel == 3 then
-        run_dialogs(me, npc, {
-            "대단해! 역시 화화와 진인랑의 친구다워!",
-            "그래, 정말 대단해! 정말 대단해! 이런 인간은 참 오랜만이야!",
-            "정말이지 용감한 사람이야. 폭염왕을 쓰러뜨리게 되면 역사에 길이 남을거야.",
-            "우리에게 탄생의 씨앗을 가져다줘. 해바라기 씨앗중에 섞여서 태어나는 씨앗이야.",
-            "그걸 구분해낼 수 있는건 화화 뿐이지.",
-            "귀여운 화화만이 할 수 있는 일이지. 오로지 화화만이 할 수 있는 일이야.",
-            "동료는 많고 많을수록 좋아. 탄생의 씨앗 10개를 구해줘.",
-            "특별한 씨앗 10개! 10개! 10개!",
-        })
+    if sel == 2 then
+        if not run_dialogs(me, npc, {
+                "대단해! 역시 화화와 진인랑의 친구다워!",
+                "그래, 정말 대단해! 정말 대단해! 이런 인간은 참 오랜만이야!",
+                "정말이지 용감한 사람이야. 폭염왕을 쓰러뜨리게 되면 역사에 길이 남을거야.",
+                "우리에게 탄생의 씨앗을 가져다줘. 해바라기 씨앗중에 섞여서 태어나는 씨앗이야.",
+                "그걸 구분해낼 수 있는건 화화 뿐이지.",
+                "귀여운 화화만이 할 수 있는 일이지. 오로지 화화만이 할 수 있는 일이야.",
+                "동료는 많고 많을수록 좋아. 탄생의 씨앗 10개를 구해줘.",
+                "특별한 씨앗 10개! 10개! 10개!",
+            }) then
+            return true
+        end
         if q_jingo then
             q_jingo:step(2)
         end
         return true
     end
-    if sel == 4 then
+    if sel == 3 then
         run_dialogs(me, npc, {
             "들었어? 도와준다고 했어. 나중에 도와준다고 했다.",
             "나도 들었어. 나중에 꼭 도와준다고 했어.",
