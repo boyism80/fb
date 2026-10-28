@@ -612,6 +612,7 @@ private:
     std::unordered_map<uint64_t, time_point>                   _jammed;
     std::deque<std::pair<uint16_t, time_point>>                _blocks;
     std::unordered_map<std::string, time_point>                _unlearnable;
+    std::unordered_set<uint32_t>                               _skipped;
     mutable std::pair<double, double>                          _powered{-1.0, 0.0};
     mutable time_point                                         _powered_at{};
     mutable std::pair<time_point, std::optional<std::pair<std::string, uint32_t>>> _shortage;

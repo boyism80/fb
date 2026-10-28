@@ -1773,6 +1773,7 @@ void brain::check(game_bot& bot)
         entry["nation"]           = bot.nation();
         entry["crowd"]            = this->_crowd.count(bot.map(), bot.name());
         entry["jam"]              = this->jam(bot.map());
+        entry["skipped_full"]     = static_cast<Json::UInt64>(this->_skipped.size());
         entry["persona"]          = this->_persona.name;
         entry["distance"]         = this->_persona.distance;
         entry["learning"]         = this->_persona.learning;
@@ -4132,6 +4133,9 @@ async::task<brain::result> brain::farm(game_bot&                        bot,
                     this->_knowledge.warp_at(bot.map(), entry.position) ||
                     trapped.contains(static_cast<uint32_t>((entry.position.y << 16) | entry.position.x)))
                     continue;
+
+                if (full.contains(entry.look) && distance(entry.position) <= ITEM_LOOT_RANGE)
+                    this->_skipped.insert(oid);
 
                 if (full.contains(entry.look) == false && distance(entry.position) <= ITEM_LOOT_RANGE &&
                     (item.has_value() == false || distance(entry.position) < distance(item->position)) &&
