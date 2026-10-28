@@ -157,6 +157,7 @@ private:
     std::atomic<double> _exp_multiplier;
     std::atomic<double> _drop_rate_multiplier;
     const double        _rezen_multiplier;
+    const bool          _exp_limited;
 
 public:
     fb::log_collector                                      log;
@@ -261,6 +262,7 @@ public:
     double                                               drop_rate_multiplier() const;
     void                                                 drop_rate_multiplier(double value);
     double                                               rezen_multiplier() const;
+    bool                                                 exp_limited() const;
     const fb::model::mob*                                collection_mob(uint32_t mob_id) const;
     const fb::model::mob*                                collection_mob(const fb::meta_dat_collection_item& item) const;
     // clang-format on

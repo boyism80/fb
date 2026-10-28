@@ -1143,6 +1143,7 @@ void experience::configure(const Json::Value& json)
     this->_level_band      = static_cast<uint8_t>(std::max(1u, json.get("level_band", 10).asUInt()));
     this->_multiplier      = json.get("exp_multiplier", 1.0).asDouble();
     this->_drop_multiplier = json.get("drop_multiplier", 1.0).asDouble();
+    this->_limited         = json.get("exp_limit", true).asBool();
     for (auto& name : json["skills"].getMemberNames())
     {
         auto& skills = this->_skills[enum_parse<CLASS>(name)];
@@ -1157,6 +1158,12 @@ double experience::multiplier() const
 {
     auto lock = std::lock_guard(this->_mutex);
     return this->_multiplier;
+}
+
+bool experience::limited() const
+{
+    auto lock = std::lock_guard(this->_mutex);
+    return this->_limited;
 }
 
 double experience::drop_multiplier() const
@@ -2399,7 +2406,7 @@ std::optional<knowledge::hunting_ground> brain::select_ground(const game_bot&   
     auto dps = this->power(bot, std::chrono::duration<double>(HUNT_SLICE).count());
     auto cls = this->_knowledge.find_class(bot.class_name()).value_or(CLASS::NONE);
     auto cap = std::numeric_limits<double>::infinity();
-    if (table::ability[cls].contains(bot.level() + 1))
+    if (this->_experience.limited() && table::ability[cls].contains(bot.level() + 1))
         cap = table::ability[cls][bot.level()].exp / 100.0 * 3.3 * multiplier + 1;
 
     auto max_hp = static_cast<double>(std::max<uint32_t>(std::max(bot.base_hp(), bot.hp()), 1));

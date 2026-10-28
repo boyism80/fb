@@ -64,6 +64,7 @@
 		"level_band": 10,
 		"exp_multiplier": 100.0,
 		"drop_multiplier": 100.0,
+		"exp_limit": false,
 		"skills": {
 			"WARRIOR": [
 				"건곤대나이"

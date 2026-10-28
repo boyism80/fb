@@ -442,12 +442,14 @@ private:
     uint64_t                                            _fights          = 0;
     double                                              _multiplier      = 1.0;
     double                                              _drop_multiplier = 1.0;
+    bool                                                _limited         = true;
     cluster::journal                                    _journal;
 
 public:
     void                     configure(const Json::Value& json);
     double                   multiplier() const;
     double                   drop_multiplier() const;
+    bool                     limited() const;
     std::vector<std::string> keys(const game_bot& bot, CLASS cls) const;
     void                     add(const std::vector<std::string>& keys, const fight& value);
     std::optional<record>    find(const std::vector<std::string>& keys, const std::string& mob) const;

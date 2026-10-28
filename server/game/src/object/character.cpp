@@ -345,7 +345,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
 uint64_t character::limited_exp(uint64_t exp) const
 {
-    if (this->max_level())
+    if (this->max_level() || this->server.exp_limited() == false)
         return exp;
 
     auto range         = table::ability[this->_class][this->_level].exp;

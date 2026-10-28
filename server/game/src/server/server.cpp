@@ -504,3 +504,8 @@ double fb::game::server::rezen_multiplier() const
 {
     return this->_rezen_multiplier;
 }
+
+bool fb::game::server::exp_limited() const
+{
+    return this->_exp_limited;
+}

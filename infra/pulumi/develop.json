@@ -3,7 +3,8 @@
     "game": {
         "exp_multiplier": 100.0,
         "drop_rate_multiplier": 100.0,
-        "rezen_multiplier": 20.0
+        "rezen_multiplier": 20.0,
+        "exp_limit": false
     },
     "worlds": {
         "world-1": {

@@ -453,7 +453,8 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::optional<uint32_t>>("world")),
     _exp_multiplier(fb::config<double>("exp_multiplier")),
     _drop_rate_multiplier(fb::config<double>("drop_rate_multiplier")),
-    _rezen_multiplier(fb::config<std::optional<double>>("rezen_multiplier").value_or(1.0))
+    _rezen_multiplier(fb::config<std::optional<double>>("rezen_multiplier").value_or(1.0)),
+    _exp_limited(fb::config<std::optional<bool>>("exp_limit").value_or(true))
 { }
 
 fb::game::server::~server()
