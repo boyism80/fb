@@ -202,45 +202,39 @@ public sealed class TicketQueue<TMember>
             remaining = candidates.Where(ticket => ticket.Id != required.Id).ToList();
         }
 
-        return BuildTeamRecursive(team, remaining, targetMembers);
-    }
-
-    private List<Ticket<TMember>> BuildTeamRecursive(List<Ticket<TMember>> team, List<Ticket<TMember>> remaining, int targetMembers)
-    {
-        var currentMembers = team.Sum(ticket => ticket.Members.Count);
-        if (currentMembers == targetMembers)
-        {
-            return team;
-        }
-
-        if (currentMembers > targetMembers)
+        var needed = targetMembers - team.Sum(ticket => ticket.Members.Count);
+        if (needed < 0)
         {
             return null;
         }
 
-        var needed = targetMembers - currentMembers;
-        if (remaining.Sum(ticket => ticket.Members.Count) < needed)
+        var reachable = new bool[remaining.Count + 1, needed + 1];
+        reachable[remaining.Count, 0] = true;
+        for (var i = remaining.Count - 1; i >= 0; i--)
+        {
+            var size = remaining[i].Members.Count;
+            for (var sum = 0; sum <= needed; sum++)
+            {
+                reachable[i, sum] = reachable[i + 1, sum] || (sum >= size && reachable[i + 1, sum - size]);
+            }
+        }
+
+        if (reachable[0, needed] == false)
         {
             return null;
         }
 
-        foreach (var next in remaining)
+        for (var i = 0; needed > 0; i++)
         {
-            if (next.Members.Count > needed)
+            var size = remaining[i].Members.Count;
+            if (size <= needed && reachable[i + 1, needed - size])
             {
-                continue;
-            }
-
-            var newTeam = team.Append(next).ToList();
-            var newRemaining = remaining.Where(ticket => ticket.Id != next.Id).ToList();
-            var result = BuildTeamRecursive(newTeam, newRemaining, targetMembers);
-            if (result != null)
-            {
-                return result;
+                team.Add(remaining[i]);
+                needed -= size;
             }
         }
 
-        return null;
+        return team;
     }
 
     private void RemoveFromBucket(Ticket<TMember> ticket)
