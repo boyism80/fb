@@ -181,8 +181,8 @@ module.exports = function () {
                                             timeoutSeconds: 3,
                                             failureThreshold: 3
                                         },
-                                        command: ["./game"],
-                                        args: ["-c", "config.json"],
+                                        command: ["sh", "-c"],
+                                        args: ["ulimit -n 65536 && exec ./game -c config.json"],
                                         volumeMounts: [{
                                             name: "config-volume",
                                             mountPath: "/app/config.json",
