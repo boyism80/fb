@@ -14,6 +14,7 @@ local MSG_STARTED = "공성전을 시작했습니다"
 local MSG_ENDED = "공성전 종료: " .. BEAST
 local MSG_NOT_ENDED = "진행 중인 공성전이 없습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
+local MSG_DEFENDER = "수성측"
 
 local GATE_NPC = "백호성문지기"
 local GATE_OPTION = BEAST .. "성 입장"
@@ -321,6 +322,76 @@ test_suite({
                         a:money()
                     )
                 )
+            end
+            return true
+        end,
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(1)
+
+            if run_step(a, "map_active", "lost_heart_map", tostring(HEART_MAP)) == false then
+                log("debug", "Siege lost save test skipped: the heart map does not run on this host")
+                return true
+            end
+            if run_step(b, "verify_siege", "lost_owned_b", BEAST, "false", "mine") == false then
+                return fail("B's clan does not own the castle before the lost save check")
+            end
+
+            if command(a, "/공성시작 " .. BEAST, MSG_STARTED) == false then
+                return fail("could not start the siege for the lost save check")
+            end
+            if
+                run_step(
+                    b,
+                    "move_to_map",
+                    "lost_b_aside",
+                    tostring(HEART_MAP),
+                    tostring(THRONE_X + 2),
+                    tostring(THRONE_Y + 2)
+                ) == false
+            then
+                return fail("could not move B off the throne")
+            end
+            if
+                run_step(
+                    a,
+                    "move_to_map",
+                    "lost_a_throne",
+                    tostring(HEART_MAP),
+                    tostring(THRONE_X),
+                    tostring(THRONE_Y)
+                ) == false
+            then
+                return fail("could not move A to the throne")
+            end
+
+            a:chat("/HTTP장애 /castle/owner lost")
+            ctx:sleep(300)
+            if command(a, "/공성종료", MSG_NOT_ENDED) == false then
+                return fail("the siege ended although the owner response was lost")
+            end
+            if run_step(a, "verify_siege", "lost_kept", BEAST, "true", "not_mine") == false then
+                return fail("the siege did not stay active after the lost response")
+            end
+
+            a:chat("/HTTP장애 /castle/owner off")
+            ctx:sleep(300)
+            if run_step(a, "destroy_clan", "lost_destroy_a") == false then
+                return fail("could not destroy A's clan")
+            end
+
+            a:take_messages()
+            if command(a, "/공성종료", MSG_ENDED) == false then
+                return fail("the retried end did not finish the siege after the winner was destroyed")
+            end
+            for _, text in ipairs(a:take_messages()) do
+                if text:find(MSG_DEFENDER, 1, true) ~= nil then
+                    return fail("the castle was announced as returned to the defender: " .. text)
+                end
+            end
+            if run_step(b, "verify_siege", "lost_no_owner", BEAST, "false", "none") == false then
+                return fail("the siege host still keeps an owner although the stored owner was cleared")
             end
             return true
         end,

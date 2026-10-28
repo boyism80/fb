@@ -975,9 +975,14 @@ return {
         end
 
         local clan = me:clan()
-        local mine = clan ~= nil and entity:owner_clan() == clan:id()
+        local owner_id = entity:owner_clan()
         local actual_active = tostring(entity:siege_active())
-        local actual_owner = mine and 'mine' or 'not_mine'
+        local actual_owner = 'not_mine'
+        if owner == 'none' and owner_id == nil then
+            actual_owner = 'none'
+        elseif clan ~= nil and owner_id == clan:id() then
+            actual_owner = 'mine'
+        end
         if actual_active == active and actual_owner == owner then
             report(me, true, step)
         else
@@ -985,6 +990,11 @@ return {
                 string.format('active=%s owner=%s, expected active=%s owner=%s', actual_active, actual_owner, active,
                     owner))
         end
+    end,
+
+    destroy_clan = function(me, step)
+        local err = me:destroy_clan()
+        report(me, err == nil, step, err and tostring(err) or '')
     end,
 
     verify_state_machine = function(me, step)

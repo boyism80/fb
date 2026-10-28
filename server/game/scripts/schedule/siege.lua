@@ -95,12 +95,13 @@ local function end_siege(divine_beast)
         map:set_timer(SAVE_RETRY_MS, TIMER_PATH, info.end_func, { once = true, name = info.timer })
         return false, string.format('%s의성 새 성주를 저장하지 못해 잠시 뒤 다시 종료합니다.', info.name)
     else
+        local owner_id = castle:owner_clan()
         if winner_id ~= nil and winner_id ~= previous_owner_id then
             local winner = id2clan(winner_id)
             local winner_name = winner and winner:name() or ''
             broadcast(string.format('[정보] %s 문파가 %s의성을 탈환합니다.', winner_name, info.name), MESSAGE_TYPE.WORLD)
-        elseif previous_owner_id ~= nil then
-            local owner_clan = id2clan(previous_owner_id)
+        elseif owner_id ~= nil then
+            local owner_clan = id2clan(owner_id)
             local owner_name = owner_clan and owner_clan:name() or ''
             broadcast(string.format('[정보] %s의성이 수성측 %s문파에게 돌아갑니다.', info.name, owner_name), MESSAGE_TYPE.WORLD)
         end

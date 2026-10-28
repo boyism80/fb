@@ -197,30 +197,69 @@ castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
         fb::logger::warn("castle: failed to persist owner {} for divine_beast {} ({})", winner.value(), id, e.what());
     }
 
+    auto expected = std::optional<uint32_t>{};
+    auto stored   = std::optional<std::optional<uint32_t>>{};
+    if (rejected)
+    {
+        {
+            auto guard = co_await this->enter_write(id);
+            if (guard.value() == nullptr)
+                co_return std::make_pair(siege_end_result::NOT_ACTIVE, std::optional<uint32_t>{});
+
+            expected = guard.value()->owner_clan_id();
+        }
+
+        try
+        {
+            auto fetched = co_await this->fetch(id);
+            if (fetched != nullptr)
+                stored = fetched->owner_clan_id();
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("castle: failed to reload owner for divine_beast {} ({})", id, e.what());
+        }
+    }
+
+    auto replaced = false;
     {
         auto guard = co_await this->enter_write(id);
         if (guard.value() == nullptr)
             co_return std::make_pair(siege_end_result::NOT_ACTIVE, std::optional<uint32_t>{});
 
         auto& castle = guard.value();
-        if (rejected)
+        if (rejected && stored.has_value())
         {
+            if (castle->owner_clan_id() == expected && stored.value() != expected)
+            {
+                castle->owner_clan_id(stored.value());
+                replaced = true;
+            }
             castle->clear_siege();
-            co_return std::make_pair(siege_end_result::ENDED, std::optional<uint32_t>{});
         }
-
-        if (saved == false)
+        else if (saved)
+        {
+            castle->owner_clan_id(new_owner);
+            castle->clear_siege();
+        }
+        else
         {
             castle->siege_winner(winner);
             castle->siege_ending(false);
             co_return std::make_pair(siege_end_result::SAVE_FAILED, winner);
         }
-
-        castle->owner_clan_id(new_owner);
-        castle->clear_siege();
     }
 
-    if (previous_owner != new_owner)
-        this->on_owner_changed(divine_beast, previous_owner);
-    co_return std::make_pair(siege_end_result::ENDED, winner);
+    if (rejected)
+    {
+        if (replaced)
+            this->on_owner_changed(divine_beast, expected);
+        co_return std::make_pair(siege_end_result::ENDED, std::optional<uint32_t>{});
+    }
+    else
+    {
+        if (previous_owner != new_owner)
+            this->on_owner_changed(divine_beast, previous_owner);
+        co_return std::make_pair(siege_end_result::ENDED, winner);
+    }
 }
