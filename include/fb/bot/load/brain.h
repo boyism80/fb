@@ -493,6 +493,7 @@ private:
         double            travel = 0.0;
         double            hunted = 0.0;
         uint32_t          gained = 0;
+        bool              failed = false;
     };
 
 private:
@@ -602,6 +603,7 @@ private:
     std::unordered_map<std::string, std::pair<double, double>> _observed;
     std::optional<visit>                                       _visit;
     std::optional<std::pair<uint16_t, time_point>>             _cornered;
+    std::unordered_map<uint64_t, time_point>                   _jammed;
     mutable std::pair<double, double>                          _powered{-1.0, 0.0};
     mutable time_point                                         _powered_at{};
     mutable std::pair<time_point, std::optional<std::pair<std::string, uint32_t>>> _shortage;
@@ -646,6 +648,7 @@ private:
     bool                                     dangerous(const game_bot& bot, const knowledge::prey& prey, const std::vector<std::string>& keys) const;
     double                                   power(const game_bot& bot, double seconds, const spellbook::effect* extra = nullptr) const;
     double                                   regen() const;
+    knowledge::queue_map                     queues() const;
     double                                   worth(const game_bot& bot, const spellbook::lesson& lesson) const;
     std::vector<const spellbook::lesson*>    lessons(const game_bot& bot, uint8_t level) const;
     uint32_t                                 healing(const game_bot& bot, const supplies::remedy& remedy) const;
