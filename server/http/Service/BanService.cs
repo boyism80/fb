@@ -134,9 +134,6 @@ namespace Http.Service
             // Check if ban is expired
             if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.UtcNow)
             {
-                _dbContext.Ban.Delete(world, userId.Value);
-                await _dbContext.SaveChangesAsync();
-                _logger.LogInformation("Expired ban removed for user {Name} (ID: {UserId}) in world {World}", name, userId.Value, world);
                 return null;
             }
 

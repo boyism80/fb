@@ -171,6 +171,10 @@ namespace AdminTool.Services
             }
 
             var ban = await _dbContext.Ban.Get(world, userId.Value);
+            if (ban != null && ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.UtcNow)
+            {
+                ban = null;
+            }
 
             return new UserDetail
             {
@@ -264,7 +268,7 @@ namespace AdminTool.Services
                         "SELECT COUNT(*) FROM `user` WHERE `role` >= @minRole AND `deleted` = 0",
                         new { minRole = (byte)Fb.Model.EnumValue.Role.Moderator });
                     stats.BannedCount += await conn.QuerySingleAsync<int>(
-                        "SELECT COUNT(*) FROM `ban` WHERE `deleted` = 0");
+                        "SELECT COUNT(*) FROM `ban` WHERE `deleted` = 0 AND (`expire_date` IS NULL OR `expire_date` > UTC_TIMESTAMP())");
                 }
             }
             catch (Exception ex)
@@ -320,7 +324,7 @@ namespace AdminTool.Services
                         `reason` AS BanReason,
                         `expire_date` AS BanExpireDate
                     FROM `ban`
-                    WHERE `user` IN ({string.Join(',', idList)}) AND `deleted` = 0
+                    WHERE `user` IN ({string.Join(',', idList)}) AND `deleted` = 0 AND (`expire_date` IS NULL OR `expire_date` > UTC_TIMESTAMP())
                     """);
 
                 foreach (var row in rows)
