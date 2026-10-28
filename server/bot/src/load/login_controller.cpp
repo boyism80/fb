@@ -7,6 +7,8 @@
 #include <fb/config.h>
 #include <fb/encoding.h>
 
+#include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <exception>
 #include <iostream>
@@ -48,6 +50,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
     };
 
     constexpr auto EXISTING_LOGIN_ATTEMPTS = 5;
+    constexpr auto RETRY_DELAY_MIN         = std::chrono::milliseconds(1000);
+    constexpr auto RETRY_DELAY_MAX         = std::chrono::milliseconds(30000);
 
     auto pw = fb::config<std::string>("load:password", "admin123");
 
@@ -59,6 +63,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
         {
             auto id     = name(this->_next_account++);
             auto exists = false;
+            auto delay  = RETRY_DELAY_MIN;
             while (true)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(*bot.make<login_reqs::create>(id, pw));
@@ -79,7 +84,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
                     }
                 }
 
-                co_await thread->sleep(100ms);
+                co_await thread->sleep(delay);
+                delay = std::min(delay * 2, RETRY_DELAY_MAX);
             }
 
             if (exists == false)
@@ -92,6 +98,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
                 uint8_t nation       = std::uniform_int_distribution<>(1, 2)(gen);
                 uint8_t divine_beast = std::uniform_int_distribution<>(0, 3)(gen);
 
+                delay = RETRY_DELAY_MIN;
                 while (true)
                 {
                     auto&& resp = co_await bot.request<login_resp::message>(
@@ -100,7 +107,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
                     if (resp.type == 0x00)
                         break;
 
-                    co_await thread->sleep(100ms);
+                    co_await thread->sleep(delay);
+                    delay = std::min(delay * 2, RETRY_DELAY_MAX);
                 }
             }
 

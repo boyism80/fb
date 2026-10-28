@@ -57,62 +57,8 @@
 		}
 	},
 	"supplies": {
-		"sell_slots": 30,
-		"keeps": [
-			"낙랑의두루마리",
-			"초심자의"
-		],
-		"stocks": {
-			"도토리": 10,
-			"토끼고기": 20,
-			"돼지고기": 20,
-			"고기": 10,
-			"고기조각": 10
-		},
-		"heals": [
-			{
-				"item": "돼지고기",
-				"hp": 62
-			},
-			{
-				"item": "토끼고기",
-				"hp": 48
-			},
-			{
-				"item": "고기",
-				"hp": 10
-			},
-			{
-				"item": "고기조각",
-				"hp": 8
-			},
-			{
-				"item": "도토리",
-				"hp": 8
-			}
-		],
-		"drinks": [
-			{
-				"item": "동동주",
-				"mp": 30
-			}
-		],
-		"restocks": [
-			{
-				"item": "토끼고기",
-				"count": 20
-			},
-			{
-				"item": "노란비서",
-				"count": 2,
-				"unless": "귀환"
-			},
-			{
-				"item": "동동주",
-				"count": 1,
-				"caster": true
-			}
-		]
+		"catalog": "config/load-items.json",
+		"sell_slots": 30
 	},
 	"experience": {
 		"level_band": 10,
@@ -132,40 +78,7 @@
 	},
 	"spells": {
 		"catalog": "config/load-spells.json",
-		"lookahead": 5,
-		"weights": {
-			"HEAL": 3.0,
-			"ATTACK": 3.0,
-			"AREA": 2.0,
-			"STRIKE": 2.5,
-			"AMBUSH": 2.0,
-			"ENCHANT": 1.5,
-			"BUFF": 2.0,
-			"DEBUFF": 1.5,
-			"CURE": 1.0,
-			"CHARGE": 2.5,
-			"TRAVEL": 2.0,
-			"GOTO": 1.2,
-			"ESCAPE": 0.5,
-			"SHOUT": 0.3,
-			"TAUNT": 0.0,
-			"LOOT": 0.0,
-			"CALL": 0.0,
-			"SUMMON": 0.0,
-			"TRANSFER": 0.0,
-			"REVIVE": 0.0,
-			"DISPEL": 0.0,
-			"DISGUISE": 0.0,
-			"INSPECT": 0.0,
-			"NONE": 0.0,
-			"OTHER": 0.0
-		},
-		"overrides": {
-			"성황령": 3.0,
-			"귀환": 2.5,
-			"동귀어진": 0.0
-		},
-		"skips": []
+		"lookahead": 5
 	},
 	"quests": {
 		"catalog": "config/load-quests.json",
@@ -188,6 +101,11 @@
 			245,
 			267
 		]
+	},
+	"spread": {
+		"distance": 4.0,
+		"explore": 3.0,
+		"risk": 2.0
 	},
 	"personas": [
 		{

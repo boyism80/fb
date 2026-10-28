@@ -84,6 +84,15 @@ def effect(text):
         info['damage'] = values.get('damage', 0)
     elif 'spell.attack_cast' in text:
         info['role'] = 'STRIKE'
+        cost = re.search(r"local\s+hp\s*=\s*me:hp\(\)\s*(?:\*\s*(\d+)\s*)?(?://\s*(\d+)|-\s*(\d+))?", text)
+        if cost is not None:
+            if cost.group(3):
+                info['hp_cost'] = 1.0
+            else:
+                info['hp_cost'] = int(cost.group(1) or 1) / int(cost.group(2) or 1)
+        scale = re.search(r"local\s+damage\s*=\s*me:hp\(\)\s*(?:\*\s*(\d+))?", text)
+        if scale is not None:
+            info['damage_hp'] = int(scale.group(1) or 1)
     elif 'spell.weapon_damage' in text:
         info['role'] = 'ENCHANT'
     elif 'spell.debuff_cast' in text:

@@ -2206,12 +2206,16 @@
   "건곤대나이": {
    "mp": 40,
    "role": "STRIKE",
+   "hp_cost": 0.6666666666666666,
+   "damage_hp": 1,
    "id": 1014,
    "type": "NORMAL"
   },
   "동귀어진": {
    "mp": 10,
    "role": "STRIKE",
+   "hp_cost": 1.0,
+   "damage_hp": 2,
    "id": 1015,
    "type": "NORMAL"
   },
@@ -2311,6 +2315,8 @@
   "필살검무": {
    "mp": 0,
    "role": "STRIKE",
+   "hp_cost": 0.5,
+   "damage_hp": 1,
    "id": 2016,
    "type": "NORMAL"
   },

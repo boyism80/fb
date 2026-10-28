@@ -1,0 +1,935 @@
+{
+ "도톨": {
+  "hp": 8,
+  "quest": true,
+  "id": 9,
+  "type": "CONSUME"
+ },
+ "초코바나나": {
+  "hp": 600,
+  "id": 3000,
+  "type": "CONSUME"
+ },
+ "새콤달콤구이": {
+  "hp": 800,
+  "id": 3005,
+  "type": "CONSUME"
+ },
+ "생명보존음료": {
+  "hp": 600,
+  "id": 3006,
+  "type": "CONSUME"
+ },
+ "생명보존반찬": {
+  "hp": 600,
+  "id": 3007,
+  "type": "CONSUME"
+ },
+ "생장촉진통구이": {
+  "hp": 600,
+  "id": 3008,
+  "type": "CONSUME"
+ },
+ "생장촉진음료": {
+  "hp": 600,
+  "id": 3009,
+  "type": "CONSUME"
+ },
+ "생장촉진반찬": {
+  "hp": 600,
+  "id": 3010,
+  "type": "CONSUME"
+ },
+ "달콤새콤구이": {
+  "hp": 600,
+  "id": 3012,
+  "type": "CONSUME"
+ },
+ "생명보존통구이": {
+  "hp": 600,
+  "id": 3013,
+  "type": "CONSUME"
+ },
+ "도토리": {
+  "hp": 8,
+  "id": 3014,
+  "type": "CONSUME"
+ },
+ "고기조각": {
+  "hp": 8,
+  "id": 3015,
+  "type": "CONSUME"
+ },
+ "고기": {
+  "hp": 10,
+  "id": 3016,
+  "type": "CONSUME"
+ },
+ "돼지고기": {
+  "hp": 62,
+  "id": 3017,
+  "type": "CONSUME"
+ },
+ "토끼고기": {
+  "hp": 48,
+  "id": 3018,
+  "type": "CONSUME"
+ },
+ "쥐고기": {
+  "hp": 28,
+  "id": 3019,
+  "type": "CONSUME"
+ },
+ "뱀고기": {
+  "hp": 54,
+  "id": 3020,
+  "type": "CONSUME"
+ },
+ "여우고기": {
+  "hp": 18,
+  "id": 3021,
+  "type": "CONSUME"
+ },
+ "여우모피": {
+  "hp": 18,
+  "id": 3022,
+  "type": "CONSUME"
+ },
+ "곰가죽": {
+  "hp": 18,
+  "id": 3023,
+  "type": "CONSUME"
+ },
+ "호랑이가죽": {
+  "hp": 18,
+  "id": 3024,
+  "type": "CONSUME"
+ },
+ "호랑이고기": {
+  "hp": 32,
+  "id": 3025,
+  "type": "CONSUME"
+ },
+ "적호의가죽": {
+  "hp": 18,
+  "id": 3026,
+  "type": "CONSUME"
+ },
+ "닭고기": {
+  "hp": 78,
+  "id": 3027,
+  "type": "CONSUME"
+ },
+ "자호의가죽": {
+  "hp": 18,
+  "id": 3028,
+  "type": "CONSUME"
+ },
+ "말고기": {
+  "hp": 108,
+  "id": 3029,
+  "type": "CONSUME"
+ },
+ "쇠고기": {
+  "hp": 108,
+  "id": 3030,
+  "type": "CONSUME"
+ },
+ "녹용": {
+  "hp": 148,
+  "id": 3031,
+  "type": "CONSUME"
+ },
+ "웅담": {
+  "hp": 500,
+  "id": 3032,
+  "type": "CONSUME"
+ },
+ "참수박": {
+  "hp": 312,
+  "id": 3033,
+  "type": "CONSUME"
+ },
+ "인삼": {
+  "hp": 12,
+  "id": 3034,
+  "type": "CONSUME"
+ },
+ "산삼": {
+  "hp": 12,
+  "id": 3035,
+  "type": "CONSUME"
+ },
+ "진호의가죽": {
+  "hp": 18,
+  "id": 3036,
+  "type": "CONSUME"
+ },
+ "사슴고기": {
+  "hp": 20,
+  "id": 3037,
+  "type": "CONSUME"
+ },
+ "산돼지고기": {
+  "hp": 78,
+  "id": 3038,
+  "type": "CONSUME"
+ },
+ "숲돼지고기": {
+  "hp": 148,
+  "id": 3039,
+  "type": "CONSUME"
+ },
+ "뱀꼬리": {
+  "hp": 78,
+  "id": 3040,
+  "type": "CONSUME"
+ },
+ "이리고기": {
+  "hp": 78,
+  "id": 3043,
+  "type": "CONSUME"
+ },
+ "감자": {
+  "hp": 50,
+  "id": 3044,
+  "type": "CONSUME"
+ },
+ "고구마": {
+  "hp": 100,
+  "id": 3045,
+  "type": "CONSUME"
+ },
+ "야자수액": {
+  "hp": 5,
+  "id": 3046,
+  "type": "CONSUME"
+ },
+ "구운감자": {
+  "hp": 100,
+  "id": 3047,
+  "type": "CONSUME"
+ },
+ "구운고구마": {
+  "hp": 150,
+  "id": 3048,
+  "type": "CONSUME"
+ },
+ "좋은뱀고기": {
+  "hp": 100,
+  "id": 3049,
+  "type": "CONSUME"
+ },
+ "활력충전통구이": {
+  "hp": 600,
+  "id": 3050,
+  "type": "CONSUME"
+ },
+ "활력충전음료": {
+  "hp": 600,
+  "id": 3051,
+  "type": "CONSUME"
+ },
+ "환약": {
+  "hp": 10,
+  "id": 3053,
+  "type": "CONSUME"
+ },
+ "환상의도시락": {
+  "hp": 600,
+  "id": 3054,
+  "type": "CONSUME"
+ },
+ "포도": {
+  "hp": 5,
+  "id": 3055,
+  "type": "CONSUME"
+ },
+ "파수다지오": {
+  "hp": 10,
+  "id": 3056,
+  "type": "CONSUME"
+ },
+ "초보도시락": {
+  "hp": 600,
+  "id": 3057,
+  "type": "CONSUME"
+ },
+ "전설의도시락": {
+  "hp": 600,
+  "id": 3058,
+  "type": "CONSUME"
+ },
+ "인어의심장": {
+  "hp": 100,
+  "id": 3059,
+  "type": "CONSUME"
+ },
+ "열대땅콩": {
+  "hp": 30,
+  "id": 3060,
+  "type": "CONSUME"
+ },
+ "오도독망고과편": {
+  "hp": 800,
+  "id": 3061,
+  "type": "CONSUME"
+ },
+ "영양통구이": {
+  "hp": 600,
+  "id": 3062,
+  "type": "CONSUME"
+ },
+ "영양음료": {
+  "hp": 600,
+  "id": 3063,
+  "type": "CONSUME"
+ },
+ "영양반찬": {
+  "hp": 600,
+  "id": 3064,
+  "type": "CONSUME"
+ },
+ "산해진미": {
+  "stat": true,
+  "id": 3065,
+  "type": "CONSUME"
+ },
+ "상어의심장": {
+  "hp": 500,
+  "id": 3066,
+  "type": "CONSUME"
+ },
+ "식용벌레": {
+  "hp": 30,
+  "id": 3067,
+  "type": "CONSUME"
+ },
+ "실패한요리": {
+  "hp": 5,
+  "id": 3068,
+  "type": "CONSUME"
+ },
+ "박쥐고기": {
+  "hp": 58,
+  "id": 3070,
+  "type": "CONSUME"
+ },
+ "백두웅담": {
+  "hp": 650,
+  "id": 3071,
+  "type": "CONSUME"
+ },
+ "복어의심장": {
+  "hp": 150,
+  "id": 3072,
+  "type": "CONSUME"
+ },
+ "바다거북의알": {
+  "hp": 500,
+  "id": 3073,
+  "type": "CONSUME"
+ },
+ "바나나": {
+  "hp": 30,
+  "id": 3074,
+  "type": "CONSUME"
+ },
+ "망고": {
+  "hp": 5,
+  "id": 3076,
+  "type": "CONSUME"
+ },
+ "다랑어살코기": {
+  "hp": 30,
+  "id": 3079,
+  "type": "CONSUME"
+ },
+ "노회": {
+  "hp": 30,
+  "id": 3080,
+  "type": "CONSUME"
+ },
+ "늑대고기": {
+  "hp": 30,
+  "id": 3081,
+  "type": "CONSUME"
+ },
+ "궁극의도시락": {
+  "hp": 600,
+  "id": 3082,
+  "type": "CONSUME"
+ },
+ "기분전환음료": {
+  "hp": 600,
+  "id": 3083,
+  "type": "CONSUME"
+ },
+ "기분전환반찬": {
+  "hp": 600,
+  "id": 3084,
+  "type": "CONSUME"
+ },
+ "끔찍한요리": {
+  "hp": 5,
+  "id": 3085,
+  "type": "CONSUME"
+ },
+ "1차도시락": {
+  "hp": 100,
+  "id": 3087,
+  "type": "CONSUME"
+ },
+ "2차도시락": {
+  "hp": 100,
+  "id": 3088,
+  "type": "CONSUME"
+ },
+ "3차도시락": {
+  "hp": 100,
+  "id": 3089,
+  "type": "CONSUME"
+ },
+ "4차도시락": {
+  "hp": 100,
+  "id": 3090,
+  "type": "CONSUME"
+ },
+ "노란시약": {
+  "hp": 50,
+  "id": 3091,
+  "type": "CONSUME"
+ },
+ "파란시약": {
+  "hp": 100,
+  "id": 3092,
+  "type": "CONSUME"
+ },
+ "보라시약": {
+  "hp": 200,
+  "id": 3093,
+  "type": "CONSUME"
+ },
+ "갈색시약": {
+  "buff": true,
+  "id": 3094,
+  "type": "CONSUME"
+ },
+ "빨간시약": {
+  "hp_ratio": 0.3333333333333333,
+  "id": 3095,
+  "type": "CONSUME"
+ },
+ "초록시약": {
+  "buff": true,
+  "id": 3096,
+  "type": "CONSUME"
+ },
+ "맑은시약": {
+  "hp_full": true,
+  "id": 3099,
+  "type": "CONSUME"
+ },
+ "마법의시약": {
+  "mp_full": true,
+  "id": 3100,
+  "type": "CONSUME"
+ },
+ "구기자": {
+  "hp": 300,
+  "id": 3101,
+  "type": "CONSUME"
+ },
+ "비둘기고기": {
+  "hp": 150,
+  "id": 3102,
+  "type": "CONSUME"
+ },
+ "동충하초": {
+  "hp": 15,
+  "id": 3103,
+  "type": "CONSUME"
+ },
+ "토깽이변신시약": {
+  "unknown": true,
+  "id": 3104,
+  "type": "CONSUME"
+ },
+ "암흑왕변신시약": {
+  "unknown": true,
+  "id": 3105,
+  "type": "CONSUME"
+ },
+ "청의태자변신시약": {
+  "unknown": true,
+  "id": 3106,
+  "type": "CONSUME"
+ },
+ "잔치떡": {
+  "hp": 500,
+  "id": 3107,
+  "type": "CONSUME"
+ },
+ "팔과탕": {
+  "hp": 1000,
+  "mp": 1000,
+  "id": 4026,
+  "type": "CONSUME"
+ },
+ "자양강장요리": {
+  "stat": true,
+  "id": 10247,
+  "type": "CONSUME"
+ },
+ "의태시약": {
+  "buff": true,
+  "id": 9050,
+  "type": "CONSUME"
+ },
+ "수단": {
+  "hp": 200,
+  "id": 21006,
+  "type": "CONSUME"
+ },
+ "건단": {
+  "hp": 200,
+  "id": 21007,
+  "type": "CONSUME"
+ },
+ "상화병": {
+  "hp": 200,
+  "id": 21008,
+  "type": "CONSUME"
+ },
+ "밀전병": {
+  "hp": 200,
+  "id": 21009,
+  "type": "CONSUME"
+ },
+ "소금": {
+  "hp": 1,
+  "id": 60069,
+  "type": "CONSUME"
+ },
+ "낙랑의두루마리1": {
+  "unknown": true,
+  "id": 1,
+  "type": "STUFF"
+ },
+ "낙랑의두루마리2": {
+  "quest": true,
+  "id": 2,
+  "type": "STUFF"
+ },
+ "낙랑의두루마리3": {
+  "quest": true,
+  "id": 3,
+  "type": "STUFF"
+ },
+ "낙랑의두루마리4": {
+  "quest": true,
+  "id": 4,
+  "type": "STUFF"
+ },
+ "낙랑의두루마리5": {
+  "quest": true,
+  "id": 5,
+  "type": "STUFF"
+ },
+ "낙랑의두루마리6": {
+  "unknown": true,
+  "id": 6,
+  "type": "STUFF"
+ },
+ "낙랑의두루마리7": {
+  "quest": true,
+  "id": 7,
+  "type": "STUFF"
+ },
+ "낙랑의두루마리8": {
+  "unknown": true,
+  "id": 8,
+  "type": "STUFF"
+ },
+ "노란비서": {
+  "warp": "RETURN",
+  "id": 4000,
+  "type": "STUFF"
+ },
+ "소환비서": {
+  "unknown": true,
+  "id": 4001,
+  "type": "STUFF"
+ },
+ "장안성비서": {
+  "warp": "MAP",
+  "maps": [
+   "장안성주막"
+  ],
+  "id": 4002,
+  "type": "STUFF"
+ },
+ "부여성비서": {
+  "warp": "MAP",
+  "maps": [
+   "주막연실이네",
+   "주막연실언니네",
+   "주막연실이모네"
+  ],
+  "id": 4003,
+  "type": "STUFF"
+ },
+ "국내성비서": {
+  "warp": "MAP",
+  "maps": [
+   "주막왈숙네",
+   "왈숙언니네",
+   "왈숙이모네"
+  ],
+  "id": 4004,
+  "type": "STUFF"
+ },
+ "도삭산100층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산100층주막"
+  ],
+  "id": 4010,
+  "type": "STUFF"
+ },
+ "도삭산200층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산200층주막"
+  ],
+  "id": 4011,
+  "type": "STUFF"
+ },
+ "도삭산300층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산300층주막"
+  ],
+  "id": 4012,
+  "type": "STUFF"
+ },
+ "도삭산400층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산400층주막"
+  ],
+  "id": 4013,
+  "type": "STUFF"
+ },
+ "도삭산500층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산500층주막"
+  ],
+  "id": 4014,
+  "type": "STUFF"
+ },
+ "도삭산600층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산600층주막"
+  ],
+  "id": 4015,
+  "type": "STUFF"
+ },
+ "도삭산700층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산700층주막"
+  ],
+  "id": 4016,
+  "type": "STUFF"
+ },
+ "도삭산800층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산800층주막"
+  ],
+  "id": 4017,
+  "type": "STUFF"
+ },
+ "도삭산900층비서": {
+  "warp": "MAP",
+  "maps": [
+   "도삭산900층주막"
+  ],
+  "id": 4018,
+  "type": "STUFF"
+ },
+ "신부여성비서": {
+  "warp": "MAP",
+  "maps": [
+   "신부여성주막",
+   "신부여서쪽주막",
+   "신부여서쪽주막2"
+  ],
+  "id": 4025,
+  "type": "STUFF"
+ },
+ "낡은금고": {
+  "unknown": true,
+  "id": 20097,
+  "type": "STUFF"
+ },
+ "파란열쇠": {
+  "unknown": true,
+  "id": 20211,
+  "type": "STUFF"
+ },
+ "산신의보물지도": {
+  "quest": true,
+  "id": 10134,
+  "type": "STUFF"
+ },
+ "표신궁고문서1": {
+  "unknown": true,
+  "id": 10195,
+  "type": "STUFF"
+ },
+ "표신궁고문서2": {
+  "unknown": true,
+  "id": 10196,
+  "type": "STUFF"
+ },
+ "표신궁고문서3": {
+  "unknown": true,
+  "id": 10197,
+  "type": "STUFF"
+ },
+ "표신궁고문서4": {
+  "unknown": true,
+  "id": 10198,
+  "type": "STUFF"
+ },
+ "표신궁고문서5": {
+  "unknown": true,
+  "id": 10199,
+  "type": "STUFF"
+ },
+ "표신궁고문서6": {
+  "unknown": true,
+  "id": 10200,
+  "type": "STUFF"
+ },
+ "대장군의일기1": {
+  "unknown": true,
+  "id": 10201,
+  "type": "STUFF"
+ },
+ "대장군의일기2": {
+  "unknown": true,
+  "id": 10202,
+  "type": "STUFF"
+ },
+ "대장군의일기3": {
+  "unknown": true,
+  "id": 10203,
+  "type": "STUFF"
+ },
+ "대장군의일기4": {
+  "unknown": true,
+  "id": 10204,
+  "type": "STUFF"
+ },
+ "대장군의일기5": {
+  "unknown": true,
+  "id": 10205,
+  "type": "STUFF"
+ },
+ "대장군의일기6": {
+  "unknown": true,
+  "id": 10206,
+  "type": "STUFF"
+ },
+ "대장군의일기통합본": {
+  "unknown": true,
+  "id": 10208,
+  "type": "STUFF"
+ },
+ "낡은봉투": {
+  "unknown": true,
+  "id": 10248,
+  "type": "STUFF"
+ },
+ "낡은연애편지": {
+  "unknown": true,
+  "id": 10249,
+  "type": "STUFF"
+ },
+ "채집통 [0 마리]": {
+  "unknown": true,
+  "id": 12450,
+  "type": "STUFF"
+ },
+ "채집통 [1 마리]": {
+  "unknown": true,
+  "id": 12451,
+  "type": "STUFF"
+ },
+ "채집통 [2 마리]": {
+  "unknown": true,
+  "id": 12452,
+  "type": "STUFF"
+ },
+ "채집통 [3 마리]": {
+  "unknown": true,
+  "id": 12453,
+  "type": "STUFF"
+ },
+ "채집통 [4 마리]": {
+  "unknown": true,
+  "id": 12454,
+  "type": "STUFF"
+ },
+ "채집통 [5 마리]": {
+  "unknown": true,
+  "id": 12455,
+  "type": "STUFF"
+ },
+ "채집통 [6 마리]": {
+  "unknown": true,
+  "id": 12456,
+  "type": "STUFF"
+ },
+ "채집통 [7 마리]": {
+  "unknown": true,
+  "id": 12457,
+  "type": "STUFF"
+ },
+ "채집통 [8 마리]": {
+  "unknown": true,
+  "id": 12458,
+  "type": "STUFF"
+ },
+ "채집통 [9 마리]": {
+  "unknown": true,
+  "id": 12459,
+  "type": "STUFF"
+ },
+ "채집통 [10 마리]": {
+  "unknown": true,
+  "id": 12460,
+  "type": "STUFF"
+ },
+ "사랑호출기": {
+  "unknown": true,
+  "id": 10529,
+  "type": "STUFF"
+ },
+ "신국내성비서": {
+  "warp": "MAP",
+  "maps": [
+   "신국내북서주막",
+   "신국내북주막",
+   "신국내북동주막",
+   "신국내남서주막",
+   "신국내남주막",
+   "신국내남동주막"
+  ],
+  "id": 60029,
+  "type": "STUFF"
+ },
+ "동동주": {
+  "hp": -1,
+  "mp": 30,
+  "id": 2200,
+  "type": "PACKAGE"
+ },
+ "막걸리": {
+  "hp": -1,
+  "mp": 30,
+  "id": 2201,
+  "type": "PACKAGE"
+ },
+ "오십세주": {
+  "mp": 150,
+  "id": 2202,
+  "type": "PACKAGE"
+ },
+ "팔십세주": {
+  "mp": 150,
+  "id": 2203,
+  "type": "PACKAGE"
+ },
+ "백세주": {
+  "mp": 150,
+  "id": 2204,
+  "type": "PACKAGE"
+ },
+ "홍주": {
+  "mp": 300,
+  "id": 2205,
+  "type": "PACKAGE"
+ },
+ "이백세주": {
+  "mp": 150,
+  "id": 2206,
+  "type": "PACKAGE"
+ },
+ "삼백세주": {
+  "mp": 150,
+  "id": 2207,
+  "type": "PACKAGE"
+ },
+ "오백세주": {
+  "mp": 150,
+  "id": 2208,
+  "type": "PACKAGE"
+ },
+ "진백세주": {
+  "mp": 150,
+  "id": 2209,
+  "type": "PACKAGE"
+ },
+ "청심사주": {
+  "hp": 150,
+  "mp": 100,
+  "id": 2210,
+  "type": "PACKAGE"
+ },
+ "배추김치": {
+  "hp": 1000,
+  "id": 60072,
+  "type": "PACKAGE"
+ },
+ "총각김치": {
+  "hp": 1000,
+  "id": 60073,
+  "type": "PACKAGE"
+ },
+ "동치미": {
+  "hp": 1000,
+  "id": 60074,
+  "type": "PACKAGE"
+ },
+ "파김치": {
+  "hp": 1000,
+  "id": 60070,
+  "type": "PACKAGE"
+ },
+ "열무김치": {
+  "hp": 1000,
+  "id": 60075,
+  "type": "PACKAGE"
+ },
+ "국화주": {
+  "mp": 150,
+  "id": 60057,
+  "type": "PACKAGE"
+ },
+ "약신의물병": {
+  "mp": 150,
+  "id": 60058,
+  "type": "PACKAGE"
+ },
+ "설화의이슬": {
+  "mp": 500,
+  "id": 60064,
+  "type": "PACKAGE"
+ }
+}

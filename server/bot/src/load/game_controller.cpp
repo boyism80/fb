@@ -50,12 +50,17 @@ void game_bot_controller::initialize()
         {
             this->_personas.emplace_back(json);
         }
-        speed = root.get("speed", 1.0).asDouble();
+        this->_spread = root["spread"];
+        speed         = root.get("speed", 1.0).asDouble();
 
         this->_tutorial = tutorial(root["tutorial"]);
         this->_job      = job(root["job"]);
-        this->_supplies = supplies(root["supplies"]);
         this->_experience.configure(root["experience"]);
+
+        auto items_file = std::ifstream(root["supplies"].get("catalog", "config/load-items.json").asString());
+        auto items      = Json::Value{};
+        items_file >> items;
+        this->_supplies = supplies(items, root["supplies"]);
 
         auto catalog_file = std::ifstream(root["spells"].get("catalog", "config/load-spells.json").asString());
         auto catalog      = Json::Value{};
@@ -123,6 +128,7 @@ void game_bot_controller::initialize()
         this->_hazards.journal().enable();
         this->_market.journal().enable();
         this->_roster.journal().enable();
+        this->_crowd.journal().enable();
         this->_experience.journal().enable();
         this->container.link.on("sync", [this](const Json::Value& message) {
             for (auto& event : message["events"])
@@ -136,6 +142,8 @@ void game_bot_controller::initialize()
                     this->_market.apply(event);
                 else if (kind == "roster")
                     this->_roster.apply(event);
+                else if (kind == "crowd")
+                    this->_crowd.apply(event);
                 else if (kind == "fight")
                     this->_experience.apply(event);
             }
@@ -151,6 +159,7 @@ async::task<void> game_bot_controller::on_sync()
                           &this->_hazards.journal(),
                           &this->_market.journal(),
                           &this->_roster.journal(),
+                          &this->_crowd.journal(),
                           &this->_experience.journal()})
     {
         for (auto& event : journal->drain())
@@ -213,7 +222,7 @@ async::task<void> game_bot_controller::on_timer(const fb::model::datetime& now, 
                     auto random = std::mt19937(seed);
                     auto index  = std::discrete_distribution<size_t>(weights.begin(), weights.end())(random);
                     selected    = std::make_shared<brain>(*this->_knowledge,
-                                                       this->_personas.at(index),
+                                                       this->_personas.at(index).vary(this->_spread, random),
                                                        this->_tutorial,
                                                        this->_job,
                                                        this->_supplies,
@@ -223,6 +232,7 @@ async::task<void> game_bot_controller::on_timer(const fb::model::datetime& now, 
                                                        this->_hazards,
                                                        this->_market,
                                                        this->_roster,
+                                                       this->_crowd,
                                                        this->_experience,
                                                        this->_messages,
                                                        this->_trace,

@@ -27,6 +27,7 @@ public:
 private:
     std::unique_ptr<knowledge>                              _knowledge;
     std::vector<persona>                                    _personas;
+    Json::Value                                             _spread;
     tutorial                                                _tutorial;
     job                                                     _job;
     supplies                                                _supplies;
@@ -35,6 +36,7 @@ private:
     hazards                                                 _hazards;
     market                                                  _market;
     roster                                                  _roster;
+    crowd                                                   _crowd;
     std::vector<std::string>                                _setup;
     census                                                  _census;
     experience                                              _experience;

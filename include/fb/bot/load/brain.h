@@ -81,6 +81,7 @@ struct persona
     double                    abort_hp_ratio   = 0.3;
     double                    temperature      = 0.3;
     double                    money_weight     = 1.0;
+    double                    distance         = 1.0;
     std::chrono::milliseconds step_delay       = std::chrono::milliseconds(300);
     std::chrono::milliseconds attack_delay     = std::chrono::milliseconds(600);
     std::chrono::milliseconds attack_wait      = std::chrono::milliseconds(600);
@@ -89,7 +90,8 @@ struct persona
     persona() = default;
     persona(const Json::Value& json);
 
-    void accelerate(double factor);
+    void    accelerate(double factor);
+    persona vary(const Json::Value& spread, std::mt19937& random) const;
 };
 
 struct tutorial
@@ -136,23 +138,26 @@ struct job
 
 struct supplies
 {
-    struct restock
+    struct remedy
     {
         std::string item;
-        uint32_t    count = 0;
-        std::string unless;
-        bool        caster = false;
+        uint32_t    hp       = 0;
+        uint32_t    mp       = 0;
+        double      hp_ratio = 0.0;
+        double      mp_ratio = 0.0;
+
+        uint32_t healing(uint32_t max_hp) const;
+        uint32_t refill(uint32_t max_mp) const;
     };
 
-    std::vector<std::pair<std::string, uint32_t>> heals;
-    std::vector<std::pair<std::string, uint32_t>> drinks;
-    std::vector<std::string>                      keeps;
-    std::unordered_map<std::string, uint32_t>     stocks;
-    uint8_t                                       sell_slots = 40;
-    std::vector<restock>                          restocks;
+    std::vector<remedy>             remedies;
+    std::unordered_set<std::string> travels;
+    uint8_t                         sell_slots = 40;
 
     supplies() = default;
-    supplies(const Json::Value& json);
+    supplies(const Json::Value& catalog, const Json::Value& config);
+
+    const remedy* find(const std::string& item) const;
 };
 
 struct spellbook
@@ -210,19 +215,17 @@ struct spellbook
         bool        exclusive = false;
         TRIGGER     trigger   = TRIGGER::ALWAYS;
         std::string cure;
-        double      weight = 0.0;
+        double      hp_cost   = 0.0;
+        uint32_t    damage_hp = 0;
     };
 
     std::unordered_map<CLASS, guild>        guilds;
     std::unordered_map<std::string, effect> effects;
-    std::unordered_set<std::string>         skips;
     uint8_t                                 lookahead = 5;
 
     spellbook() = default;
     spellbook(const Json::Value& catalog, const Json::Value& config);
 
-    bool                       wanted(const lesson& lesson) const;
-    double                     weight(const lesson& lesson) const;
     std::vector<const lesson*> pending(CLASS cls, const game_bot& bot, uint8_t level) const;
     const effect*              find(const std::string& name) const;
 };
@@ -242,7 +245,8 @@ struct questbook
         std::vector<std::string>                  picks;
     };
 
-    std::vector<quest> quests;
+    std::vector<quest>                                               quests;
+    std::unordered_map<std::string, std::unordered_set<std::string>> hunts;
 
     questbook() = default;
     questbook(const Json::Value& catalog, const Json::Value& config);
@@ -276,6 +280,45 @@ private:
 public:
     bool                         add(uint16_t map, const point<uint16_t>& position);
     std::unordered_set<uint32_t> tiles(uint16_t map) const;
+    cluster::journal&            journal();
+    void                         apply(const Json::Value& event);
+};
+
+class crowd
+{
+private:
+    using clock = std::chrono::steady_clock;
+
+    struct presence
+    {
+        uint16_t          map = 0;
+        clock::time_point seen;
+    };
+
+    struct passage
+    {
+        uint16_t          map = 0;
+        point<uint16_t>   tile;
+        int64_t           asked = 0;
+        clock::time_point seen;
+    };
+
+private:
+    mutable std::mutex                             _mutex;
+    std::unordered_map<std::string, presence>      _presence;
+    std::unordered_map<std::string, presence>      _heading;
+    std::unordered_map<std::string, presence>      _shared;
+    mutable std::unordered_map<uint16_t, uint32_t> _tally;
+    mutable clock::time_point                      _tallied;
+    std::unordered_map<std::string, passage>       _passages;
+    cluster::journal                               _journal;
+
+public:
+    void                         see(const std::string& self, uint16_t map, const std::vector<std::string>& others);
+    void                         head(const std::string& self, uint16_t map);
+    uint32_t                     count(uint16_t map, const std::string& except) const;
+    void                         ask(const std::string& self, uint16_t map, const point<uint16_t>& tile);
+    std::vector<point<uint16_t>> passages(uint16_t map, const std::string& self) const;
     cluster::journal&            journal();
     void                         apply(const Json::Value& event);
 };
@@ -412,7 +455,7 @@ private:
 private:
     // clang-format off
     const knowledge&                                           _knowledge;
-    const persona&                                             _persona;
+    const persona                                              _persona;
     const tutorial&                                            _tutorial;
     const job&                                                 _job;
     const supplies&                                            _supplies;
@@ -422,6 +465,7 @@ private:
     hazards&                                                   _hazards;
     market&                                                    _market;
     roster&                                                    _roster;
+    crowd&                                                     _crowd;
     experience&                                                _experience;
     const messages&                                            _messages;
     trace&                                                     _trace;
@@ -471,6 +515,7 @@ private:
     uint16_t                                                   _sampled_map = 0xFFFF;
     uint32_t                                                   _sampled_hp  = 0;
     time_point                                                 _stated{};
+    time_point                                                 _crowded{};
     time_point                                                 _tutorial_grace{};
     mutable time_point                                         _quest_checked{};
     mutable const questbook::quest*                            _quest_choice = nullptr;
@@ -499,6 +544,18 @@ private:
     std::unordered_map<std::string, time_point>                _group_tries;
     std::unordered_map<uint32_t, time_point>                   _piles;
     uint32_t                                                   _opponent_damage = 0;
+    bool                                                       _fight_spells    = false;
+    time_point                                                 _struck{};
+    double                                                     _mp_gain         = 0.0;
+    double                                                     _mp_time         = 0.0;
+    uint32_t                                                   _mp_seen         = 0;
+    time_point                                                 _mp_since{};
+    time_point                                                 _drank{};
+    double                                                     _travel_seconds  = 0.0;
+    time_point                                                 _born{};
+    double                                                     _stay            = 0.0;
+    double                                                     _loss_rate       = 0.0;
+    std::unordered_map<std::string, std::pair<double, double>> _observed;
     // clang-format on
 
 public:
@@ -513,6 +570,7 @@ public:
           hazards&         hazards,
           market&          market,
           roster&          roster,
+          crowd&           crowd,
           experience&      experience,
           const messages&  messages,
           trace&           trace,
@@ -534,14 +592,22 @@ private:
     void                                     report(game_bot& bot, const char* action, const std::string& reason, Json::Value detail);
     double                                   score(GOAL goal, const game_bot& bot) const;
     bool                                     dangerous(const game_bot& bot, const knowledge::prey& prey, const std::vector<std::string>& keys) const;
+    double                                   power(const game_bot& bot, double seconds, const spellbook::effect* extra = nullptr) const;
+    double                                   regen() const;
+    double                                   worth(const game_bot& bot, const spellbook::lesson& lesson) const;
+    std::vector<const spellbook::lesson*>    lessons(const game_bot& bot, uint8_t level) const;
+    uint32_t                                 healing(const game_bot& bot, const supplies::remedy& remedy) const;
+    uint32_t                                 refill(const game_bot& bot, const supplies::remedy& remedy) const;
+    uint32_t                                 need(const game_bot& bot, const std::string& item) const;
     std::chrono::milliseconds                paced(std::chrono::milliseconds value) const;
     bool                                     harmful(const game_bot& bot, const knowledge::prey& prey, const std::vector<std::string>& keys) const;
     const knowledge::prey*                   find_prey(uint16_t map, uint16_t look, uint32_t oid) const;
     const knowledge::prey*                   identify(game_bot& bot, const knowledge::hunting_ground& ground, const game_bot::sight::entry& entry);
     std::pair<uint32_t, uint32_t>            safe_preys(const game_bot& bot, const knowledge::hunting_ground& ground, const std::vector<std::string>& keys) const;
-    std::optional<knowledge::hunting_ground> select_ground(const game_bot& bot);
+    std::optional<knowledge::hunting_ground> select_ground(const game_bot& bot, const std::unordered_set<std::string>& preys = {});
     async::task<void>                        retreat(game_bot& bot);
     std::optional<knowledge::hunting_ground> find_ground(const game_bot& bot, const std::string& suffix) const;
+    uint32_t                                 congestion(const game_bot& bot, const std::unordered_map<uint16_t, knowledge::visit>& visits, uint16_t map) const;
     const tutorial::step*                    find_step(const game_bot& bot) const;
     std::optional<knowledge::npc_spot>       nearest(const game_bot& bot, const std::vector<knowledge::npc_spot>& spots) const;
     async::task<result>                      revive(game_bot& bot);
@@ -559,7 +625,7 @@ private:
     async::task<result>                      sell(game_bot& bot);
     async::task<result>                      supply(game_bot& bot);
     async::task<result>                      buy(game_bot& bot, const std::string& item, uint32_t total, uint64_t keep = 0);
-    const supplies::restock*                 shortage(const game_bot& bot) const;
+    std::optional<std::pair<std::string, uint32_t>> shortage(const game_bot& bot) const;
     uint64_t                                 savings(const game_bot& bot) const;
     std::optional<uint64_t>                  tuition(const game_bot& bot, const spellbook::lesson& lesson) const;
     const spellbook::lesson*                 affordable(const game_bot& bot) const;
@@ -590,6 +656,7 @@ private:
     async::task<result>                      hunt(game_bot& bot);
     async::task<result>                      farm(game_bot& bot, const knowledge::hunting_ground& ground, std::chrono::seconds slice);
     async::task<result>                      wander(game_bot& bot);
+    async::task<void>                        yield(game_bot& bot);
     async::task<result>                      travel(game_bot& bot, uint16_t map, const point<uint16_t>& target, uint16_t range);
     async::task<result>                      walk(game_bot& bot, const point<uint16_t>& target, uint16_t range);
     async::task<result>                      fight(game_bot& bot, uint32_t oid);
