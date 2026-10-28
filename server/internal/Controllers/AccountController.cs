@@ -116,6 +116,11 @@ namespace Internal.Controllers
         [HttpPost("reserve")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
+            if (request.World == 0)
+            {
+                return new Response.ReserveName { Success = false, Uid = 0 };
+            }
+
             try
             {
                 await using var conn = _dbContext.GetUnifiedConnection();
@@ -140,8 +145,11 @@ namespace Internal.Controllers
                         return new Response.ReserveName { Success = false, Uid = 0 };
                     }
 
-                    _dbContext.Character.Delete(entry.World, new CharacterKey { Id = entry.Id });
-                    await _dbContext.SaveChangesAsync();
+                    if (entry.World != 0)
+                    {
+                        _dbContext.Character.Delete(entry.World, new CharacterKey { Id = entry.Id });
+                        await _dbContext.SaveChangesAsync();
+                    }
                     await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id = entry.Id }, transaction);
                 }
 

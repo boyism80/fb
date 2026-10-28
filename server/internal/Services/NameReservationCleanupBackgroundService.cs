@@ -75,8 +75,11 @@ namespace Internal.Services
                     continue;
                 }
 
-                dbContext.Character.Delete(world.Value, new CharacterKey { Id = id });
-                await dbContext.SaveChangesAsync();
+                if (world.Value != 0)
+                {
+                    dbContext.Character.Delete(world.Value, new CharacterKey { Id = id });
+                    await dbContext.SaveChangesAsync();
+                }
 
                 await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id }, transaction);
                 await transaction.CommitAsync();
