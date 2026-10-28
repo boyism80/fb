@@ -58,12 +58,19 @@ uint32_t rezen::map_id() const
     return map != nullptr ? map->id : 0;
 }
 
+fb::model::timespan rezen::interval() const
+{
+    auto multiplier = this->_server.rezen_multiplier();
+    auto base       = std::chrono::duration<double, std::micro>(std::chrono::microseconds(this->model().rezen));
+    return std::chrono::duration_cast<std::chrono::microseconds>(base / (multiplier > 0.0 ? multiplier : 1.0));
+}
+
 void rezen::decrease()
 {
     auto now = this->_server.now();
 
     if (!this->_respawn_time.has_value())
-        this->_respawn_time = now + this->model().rezen;
+        this->_respawn_time = now + this->interval();
     this->_count = std::max(0, this->_count - 1);
 }
 
@@ -143,7 +150,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     if (walkable.empty())
     {
         fb::logger::warn("rezen: no walkable tile in spawn area (map={}, mob={})", map->id, model.mob);
-        this->_respawn_time = now + model.rezen;
+        this->_respawn_time = now + this->interval();
         co_return;
     }
 

@@ -499,3 +499,8 @@ void fb::game::server::drop_rate_multiplier(double value)
 {
     this->_drop_rate_multiplier = value;
 }
+
+double fb::game::server::rezen_multiplier() const
+{
+    return this->_rezen_multiplier;
+}

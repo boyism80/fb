@@ -55,6 +55,7 @@ public:
     const table_ptr&                table() const;
     void                            table(const table_ptr& value);
     uint32_t                        map_id() const;
+    fb::model::timespan             interval() const;
     void                            decrease();
     [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
     void                            force_spawn(std::thread::id thread_id);

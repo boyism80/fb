@@ -1,5 +1,10 @@
 {
     "transfer_secret": "c049fb55e1a0e6ba3793653f57ddbeeffc2956dbb950f518",
+    "game": {
+        "exp_multiplier": 100.0,
+        "drop_rate_multiplier": 100.0,
+        "rezen_multiplier": 20.0
+    },
     "worlds": {
         "world-1": {
             "id": 1,

@@ -98,8 +98,9 @@ module.exports = function () {
                         level: ["info", "warn", "fatal"]
                     },
                     lazy_load_maps: game.world == null,
-                    exp_multiplier: 1.0,
-                    drop_rate_multiplier: 1.0,
+                    exp_multiplier: conf.game?.exp_multiplier ?? 1.0,
+                    drop_rate_multiplier: conf.game?.drop_rate_multiplier ?? 1.0,
+                    rezen_multiplier: conf.game?.rezen_multiplier ?? 1.0,
                     http: {
                         max_concurrent: 128
                     }
