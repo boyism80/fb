@@ -87,9 +87,6 @@ async::task<void> character_collections::try_unlock(uint32_t mob_id)
     if (ch == nullptr)
         co_return;
 
-    if (ch->client_version != fb::protocol::CLIENT_VERSION::v651)
-        co_return;
-
     if (ch->server.collection_mob(mob_id) == nullptr)
         co_return;
 
@@ -97,6 +94,9 @@ async::task<void> character_collections::try_unlock(uint32_t mob_id)
         co_return;
 
     if (this->unlock(mob_id) == false)
+        co_return;
+
+    if (ch->client_version != fb::protocol::CLIENT_VERSION::v651)
         co_return;
 
     auto* mob = ch->server.collection_mob(mob_id);
