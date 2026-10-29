@@ -292,7 +292,16 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
             this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
-            co_await this->server.save(*this);
+            if (co_await this->server.save(*this))
+            {
+                auto&& released = co_await this->server.http.post(
+                    self->weak_from_this_as<character>(),
+                    "internal",
+                    "/in-game/logout",
+                    internal_reqs::Logout{world, this->name(), fb::config<uint8_t>("id")});
+                if (released.success)
+                    this->hand_off();
+            }
 
             co_await this->listener.on_transfer(*this, *map, new_position, resp.ip, resp.port);
         }
@@ -393,6 +402,17 @@ bool character::abort_login()
 {
     auto expected = LOGIN_STATE::LOADING;
     return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::ABORTED);
+}
+
+bool character::hand_off()
+{
+    auto expected = LOGIN_STATE::LOADED;
+    return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::TRANSFERRED);
+}
+
+bool character::transferred() const
+{
+    return this->_login_state == LOGIN_STATE::TRANSFERRED;
 }
 
 ROLE character::role() const

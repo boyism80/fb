@@ -91,6 +91,7 @@ private:
         LOADING,
         LOADED,
         ABORTED,
+        TRANSFERRED,
     };
 
 public:
@@ -386,6 +387,8 @@ public:
     bool                                                      loaded() const;
     bool                                                      complete_login();
     bool                                                      abort_login();
+    bool                                                      hand_off();
+    bool                                                      transferred() const;
     ROLE                                                      role() const;
     uint32_t                                                  world() const;
     void                                                      role(ROLE value);

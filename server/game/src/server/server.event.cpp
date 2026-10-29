@@ -99,10 +99,11 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
 
     fb::logger::info("{} has disconnected.", ch->name());
 
-    auto thread = ch->thread();
-    auto world  = ch->world();
-    auto name   = ch->name();
-    auto saved  = false;
+    auto thread      = ch->thread();
+    auto world       = ch->world();
+    auto name        = ch->name();
+    auto transferred = ch->transferred();
+    auto saved       = false;
     try
     {
         if (this->running())
@@ -154,7 +155,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         socket.data(nullptr);
     }
 
-    if (saved)
+    if (saved && transferred == false)
     {
         try
         {
