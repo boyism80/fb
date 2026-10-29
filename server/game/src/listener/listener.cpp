@@ -17,7 +17,8 @@ using table = fb::model::table;
 namespace game_resp = fb::protocol::game::response;
 
 listener_impl::listener_impl(fb::game::server& server) :
-    server(server)
+    server(server),
+    _user_lists(server, USER_LIST_TTL)
 { }
 
 bool listener_impl::client_version_is(object& o, fb::protocol::CLIENT_VERSION ver)

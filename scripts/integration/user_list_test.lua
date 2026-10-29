@@ -36,34 +36,51 @@ test_suite {
             -- change_class is fire-and-forget (/직업바꾸기 has no waitable class-name response).
             ctx:sleep(2000)
 
-            local packet = ctx:bot(0):request(
-                resp.user_list,
-                protocol.user_list(),
-                function()
+            local matches = function(packet)
+                if packet == nil or packet == false or #packet.users < bot_count then
+                    return false
+                end
+
+                local missing = {}
+                for name in pairs(names) do
+                    missing[name] = true
+                end
+                local remaining = {}
+                for cls, count in pairs(counts) do
+                    remaining[cls] = count
+                end
+
+                for _, user in ipairs(packet.users) do
+                    if missing[user.name] then
+                        missing[user.name] = nil
+                        remaining[user.cls] = (remaining[user.cls] or 0) - 1
+                    end
+                    if steps[user.name] ~= nil and steps[user.name] ~= user.promotion then
+                        return false
+                    end
+                end
+
+                for _, count in pairs(remaining) do
+                    if count ~= 0 then
+                        return false
+                    end
+                end
+                return next(missing) == nil
+            end
+
+            for _ = 1, 7 do
+                local packet = ctx:bot(0):request(
+                    resp.user_list,
+                    protocol.user_list(),
+                    function()
+                        return true
+                    end)
+                if matches(packet) then
                     return true
-                end)
-
-            if #packet.users < bot_count then
-                return false
-            end
-
-            for _, user in ipairs(packet.users) do
-                if names[user.name] then
-                    names[user.name] = nil
-                    counts[user.cls] = counts[user.cls] - 1
                 end
-                if steps[user.name] ~= nil and steps[user.name] ~= user.promotion then
-                    return false
-                end
+                ctx:sleep(2000)
             end
-
-            for _, count in pairs(counts) do
-                if count ~= 0 then
-                    return false
-                end
-            end
-
-            return true
+            return false
         end,
     },
 }

@@ -2,7 +2,9 @@
 #define __LISTENER_H__
 
 #include <fb/game/character.h>
+#include <fb/timed_cache.h>
 
+#include <chrono>
 #include <cstdint>
 #include <list>
 #include <memory>
@@ -20,8 +22,25 @@ struct listener_t : public virtual character::listener_t, public virtual mob::li
 
 struct listener_impl : public listener_t
 {
+private:
+    struct user_list_entry
+    {
+        uint32_t    id;
+        ROLE        role;
+        bool        super_hide;
+        uint8_t     nation;
+        uint8_t     cls;
+        uint8_t     promotion;
+        std::string name;
+    };
+
+    static constexpr auto USER_LIST_TTL = std::chrono::seconds(10);
+
 public:
     fb::game::server& server;
+
+private:
+    fb::timed_cache<uint8_t, std::vector<user_list_entry>> _user_lists;
 
 public:
     listener_impl(fb::game::server& ctx);

@@ -308,47 +308,72 @@ async::task<void> listener_impl::on_show_user_list(character& ch)
 {
     using user_data = game_resp::user_list::user_data;
 
-    auto ranked = std::make_shared<std::vector<std::tuple<uint8_t, uint64_t, user_data>>>();
-    auto mutex  = std::make_shared<std::mutex>();
-    auto viewer = ch.shared_from_this_as<character>();
+    auto viewer  = ch.shared_from_this_as<character>();
+    auto entries = co_await this->_user_lists.get(0, [this]() -> async::task<std::vector<user_list_entry>> {
+        auto ranked = std::make_shared<std::vector<std::tuple<uint8_t, uint64_t, user_list_entry>>>();
+        auto mutex  = std::make_shared<std::mutex>();
 
-    co_await this->server.characters.foreach_async([ranked, mutex, viewer](auto& other) -> async::task<void> {
-        if (other->hidden(*viewer))
+        co_await this->server.characters.foreach_async([ranked, mutex](auto& other) -> async::task<void> {
+            auto entry = user_list_entry{
+                .id         = other->id,
+                .role       = other->role(),
+                .super_hide = other->super_hide(),
+                .nation     = static_cast<uint8_t>(other->nation()),
+                .cls        = static_cast<uint8_t>(other->cls()),
+                .promotion  = other->promotion(),
+                .name       = other->name(),
+            };
+
+            {
+                auto lock = std::lock_guard(*mutex);
+                ranked->emplace_back(other->level(),
+                                     other->stat.base_hp() + other->stat.base_mp() * 2,
+                                     std::move(entry));
+            }
             co_return;
+        });
 
-        auto entry      = user_data{};
-        entry.nation    = static_cast<uint8_t>(other->nation());
-        entry.cls       = static_cast<uint8_t>(other->cls());
-        entry.promotion = other->promotion();
-        entry.color     = (other.get() == viewer.get()) ? static_cast<uint8_t>(0x88) : static_cast<uint8_t>(0x0F);
-        entry.name      = other->name();
+        std::sort(ranked->begin(), ranked->end(), [](const auto& lhs, const auto& rhs) {
+            const auto& [lhs_level, lhs_power, lhs_user] = lhs;
+            const auto& [rhs_level, rhs_power, rhs_user] = rhs;
+            if (lhs_level != rhs_level)
+                return lhs_level > rhs_level;
+            else if (lhs_power != rhs_power)
+                return lhs_power > rhs_power;
+            else
+                return lhs_user.name < rhs_user.name;
+        });
 
+        auto sorted = std::vector<user_list_entry>();
+        sorted.reserve(ranked->size());
+        for (auto& rank : *ranked)
         {
-            auto lock = std::lock_guard(*mutex);
-            ranked->emplace_back(other->level(), other->stat.base_hp() + other->stat.base_mp() * 2, std::move(entry));
+            sorted.push_back(std::move(std::get<user_list_entry>(rank)));
         }
+        co_return sorted;
+    });
+
+    if (entries == nullptr)
         co_return;
-    });
 
-    std::sort(ranked->begin(), ranked->end(), [](const auto& lhs, const auto& rhs) {
-        const auto& [lhs_level, lhs_power, lhs_user] = lhs;
-        const auto& [rhs_level, rhs_power, rhs_user] = rhs;
-        if (lhs_level != rhs_level)
-            return lhs_level > rhs_level;
-        else if (lhs_power != rhs_power)
-            return lhs_power > rhs_power;
-        else
-            return lhs_user.name < rhs_user.name;
-    });
-
+    auto role  = viewer->role();
     auto users = std::vector<user_data>();
-    users.reserve(ranked->size());
-    for (auto& rank : *ranked)
+    users.reserve(entries->size());
+    for (auto& entry : *entries)
     {
-        users.push_back(std::move(std::get<user_data>(rank)));
+        if (entry.super_hide && entry.role > role)
+            continue;
+
+        users.push_back(user_data{
+            .nation    = entry.nation,
+            .cls       = entry.cls,
+            .promotion = entry.promotion,
+            .color     = entry.id == viewer->id ? static_cast<uint8_t>(0x88) : static_cast<uint8_t>(0x0F),
+            .name      = entry.name,
+        });
     }
 
-    ch.send(game_resp::user_list(std::move(users)));
+    viewer->send(game_resp::user_list(std::move(users)));
 }
 
 void listener_impl::on_show_bulletin(character& ch)
