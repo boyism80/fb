@@ -1627,7 +1627,10 @@ int builtin::character::exchange(lua_State* L,
         {
             *result = exchange_result::lack_cost;
         }
-        else if (invalid_reward || ch->spells.free_size() < reward_spells.size())
+        else if (invalid_reward || ch->spells.free_size() < reward_spells.size() ||
+                 std::ranges::any_of(reward_spells, [&](auto model) {
+                     return ch->spells.find(*model) != nullptr;
+                 }))
         {
             *result = exchange_result::lack_capacity;
         }

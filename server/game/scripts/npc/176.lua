@@ -128,6 +128,13 @@ return {
             return
         end
 
+        if me:spell('백열장') then
+            q:step(3)
+            me:push_achievement(26, '소림사의 비기를 배웠다.', 7, 1)
+            me:dialog(npc, '이미 백열장을 익히셨군요. 비단은 넣어두시고 고구려무도가에게 돌아가 보시지요. 나무아미타불..', { prev = false, next = false })
+            return
+        end
+
         if not me:has_items('고구려비단', 1) then
             me:dialog(npc, '아직 고구려비단을 못 사오신것 같군요.', { prev = false, next = false })
             return
