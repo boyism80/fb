@@ -782,11 +782,21 @@ bool mob::cover_blocks_move(const fb::game::map&        map,
                             const fb::model::point16_t& from,
                             const fb::model::point16_t& to) const
 {
-    for (const auto* pivot : {&from, &to})
+    if (map.sectors.loaded() == false)
+        return false;
+
+    auto sectors = map.sectors.nears(from);
+    for (const auto* sector_ptr : map.sectors.nears(to))
     {
-        for (auto& obj : map.nears(*pivot, OBJECT_TYPE::LIFE))
+        if (std::find(sectors.begin(), sectors.end(), sector_ptr) == sectors.end())
+            sectors.push_back(sector_ptr);
+    }
+
+    for (const auto* sector_ptr : sectors)
+    {
+        for (auto& obj : *sector_ptr)
         {
-            if (obj.get() == this)
+            if (obj.get() == this || obj->available() == false || obj->is(OBJECT_TYPE::LIFE) == false)
                 continue;
 
             auto life = std::static_pointer_cast<fb::game::life>(obj);

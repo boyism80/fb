@@ -269,22 +269,11 @@ std::vector<std::shared_ptr<fb::game::object>> sector::container::objects(const 
     {
         for (auto& obj : *sector_ptr)
         {
-            if (obj->available())
+            if (obj->available() && (type == OBJECT_TYPE::OBJECT || obj->is(type)))
                 result.push_back(obj);
         }
     }
-
-    if (type == OBJECT_TYPE::OBJECT)
-        return result;
-
-    auto filtered = std::vector<std::shared_ptr<fb::game::object>>();
-    std::copy_if(result.begin(),
-                 result.end(),
-                 std::back_inserter(filtered),
-                 [type](const std::shared_ptr<fb::game::object>& x) {
-                     return x->is(type);
-                 });
-    return filtered;
+    return result;
 }
 
 std::vector<std::shared_ptr<fb::game::object>> sector::container::objects(OBJECT_TYPE type) const

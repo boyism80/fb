@@ -965,6 +965,42 @@ return {
         report(me, true, step)
     end,
 
+    verify_cover_move = function(me, step, mob_name)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+
+        local x, y = me:position()
+        local cases = {
+            { label = 'into barrier', cover = true, dx = 2, direction = DIRECTION.LEFT, expected = false },
+            { label = 'away from adjacent', cover = true, dx = 1, direction = DIRECTION.RIGHT, expected = false },
+            { label = 'outside barrier', cover = true, dx = 3, direction = DIRECTION.RIGHT, expected = true },
+            { label = 'no cover', cover = false, dx = 2, direction = DIRECTION.LEFT, expected = true },
+        }
+        local mismatches = {}
+        for _, case in ipairs(cases) do
+            me:cover(case.cover)
+            local mob = map:spawn_mob(mob_name, x + case.dx, y, case.direction)
+            if mob == nil then
+                me:cover(false)
+                return report(me, false, step, 'cannot spawn ' .. tostring(mob_name))
+            end
+            local moved = mob:move(case.direction) == true
+            mob:destroy()
+            if moved ~= case.expected then
+                table.insert(mismatches, string.format('%s moved=%s', case.label, tostring(moved)))
+            end
+        end
+        me:cover(false)
+
+        if #mismatches == 0 then
+            report(me, true, step)
+        else
+            report(me, false, step, table.concat(mismatches, ','))
+        end
+    end,
+
     map_active = function(me, step, map_id)
         local map = id2map(tonumber(map_id))
         report(me, map ~= nil and map:active() == true, step)

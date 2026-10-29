@@ -85,6 +85,7 @@ private:
 protected:
     uint32_t                 _oid       = 0;
     uint32_t                 _model_id  = 0;
+    OBJECT_TYPE              _what      = OBJECT_TYPE::UNKNOWN;
     fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
     DIRECTION                _direction = DIRECTION::BOTTOM;
     map_ptr                  _map       = nullptr;

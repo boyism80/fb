@@ -32,6 +32,7 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
     listener(server.listener),
     _oid(params.id),
     _model_id(model.id),
+    _what(model.what()),
     _position(params.position),
     _direction(params.direction),
     _map(params.map),
@@ -84,7 +85,7 @@ uint8_t object::color() const
 
 OBJECT_TYPE object::what() const
 {
-    return this->model().what();
+    return this->_what;
 }
 
 void object::show()
