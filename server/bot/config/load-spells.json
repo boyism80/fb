@@ -39,6 +39,19 @@
     },
     {
      "names": [
+      "금강퇴"
+     ],
+     "level": 0,
+     "money": 50000,
+     "materials": [],
+     "npc": 251,
+     "picks": [
+      "바로 그 금강퇴를 배우고 싶습니다.",
+      "물론입니다. 어서 전수하여 주십시오."
+     ]
+    },
+    {
+     "names": [
       "누리의기원"
      ],
      "level": 8,
@@ -158,6 +171,32 @@
        "name": "호랑이고기",
        "count": 5
       }
+     ]
+    },
+    {
+     "names": [
+      "백열장"
+     ],
+     "level": 20,
+     "money": 10000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사백열장전수",
+      "좋습니다. 어서 가르쳐주십시오!"
+     ]
+    },
+    {
+     "names": [
+      "선풍각"
+     ],
+     "level": 20,
+     "money": 20000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사선풍각전수",
+      "좋습니다. 어서 가르쳐주십시오!"
      ]
     },
     {
@@ -621,6 +660,19 @@
     },
     {
      "names": [
+      "금강퇴"
+     ],
+     "level": 0,
+     "money": 50000,
+     "materials": [],
+     "npc": 251,
+     "picks": [
+      "바로 그 금강퇴를 배우고 싶습니다.",
+      "물론입니다. 어서 전수하여 주십시오."
+     ]
+    },
+    {
+     "names": [
       "누리의기원"
      ],
      "level": 10,
@@ -660,6 +712,32 @@
        "name": "도토리",
        "count": 80
       }
+     ]
+    },
+    {
+     "names": [
+      "백열장"
+     ],
+     "level": 20,
+     "money": 10000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사백열장전수",
+      "좋습니다. 어서 가르쳐주십시오!"
+     ]
+    },
+    {
+     "names": [
+      "선풍각"
+     ],
+     "level": 20,
+     "money": 20000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사선풍각전수",
+      "좋습니다. 어서 가르쳐주십시오!"
      ]
     },
     {
@@ -966,6 +1044,19 @@
     },
     {
      "names": [
+      "금강퇴"
+     ],
+     "level": 0,
+     "money": 50000,
+     "materials": [],
+     "npc": 251,
+     "picks": [
+      "바로 그 금강퇴를 배우고 싶습니다.",
+      "물론입니다. 어서 전수하여 주십시오."
+     ]
+    },
+    {
+     "names": [
       "누리의기원"
      ],
      "level": 5,
@@ -1147,6 +1238,32 @@
        "name": "뱀고기",
        "count": 20
       }
+     ]
+    },
+    {
+     "names": [
+      "백열장"
+     ],
+     "level": 20,
+     "money": 10000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사백열장전수",
+      "좋습니다. 어서 가르쳐주십시오!"
+     ]
+    },
+    {
+     "names": [
+      "선풍각"
+     ],
+     "level": 20,
+     "money": 20000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사선풍각전수",
+      "좋습니다. 어서 가르쳐주십시오!"
      ]
     },
     {
@@ -1632,6 +1749,19 @@
     },
     {
      "names": [
+      "금강퇴"
+     ],
+     "level": 0,
+     "money": 50000,
+     "materials": [],
+     "npc": 251,
+     "picks": [
+      "바로 그 금강퇴를 배우고 싶습니다.",
+      "물론입니다. 어서 전수하여 주십시오."
+     ]
+    },
+    {
+     "names": [
       "누리의기원"
      ],
      "level": 5,
@@ -1729,6 +1859,32 @@
        "name": "도토리",
        "count": 50
       }
+     ]
+    },
+    {
+     "names": [
+      "백열장"
+     ],
+     "level": 20,
+     "money": 10000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사백열장전수",
+      "좋습니다. 어서 가르쳐주십시오!"
+     ]
+    },
+    {
+     "names": [
+      "선풍각"
+     ],
+     "level": 20,
+     "money": 20000,
+     "materials": [],
+     "npc": 154,
+     "picks": [
+      "소림사선풍각전수",
+      "좋습니다. 어서 가르쳐주십시오!"
      ]
     },
     {
@@ -2183,6 +2339,13 @@
    "id": 5,
    "type": "NORMAL"
   },
+  "백열장": {
+   "mp": 80,
+   "role": "ATTACK",
+   "damage": 280,
+   "id": 6,
+   "type": "TARGET"
+  },
   "사자후전사": {
    "mp": 0,
    "role": "SHOUT",
@@ -2236,7 +2399,12 @@
    "role": "BUFF",
    "buff_time": 600,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {
+    "buff_hit": 3
+   },
    "boost": {
     "buff_hit": 3
    },
@@ -2248,7 +2416,10 @@
    "role": "BUFF",
    "buff_time": 625,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "id": 1006,
    "type": "NORMAL"
   },
@@ -2257,7 +2428,10 @@
    "role": "BUFF",
    "buff_time": 625,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "id": 1007,
    "type": "NORMAL"
   },
@@ -2266,7 +2440,12 @@
    "role": "BUFF",
    "buff_time": 600,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {
+    "buff_dam": 3
+   },
    "boost": {
     "buff_dam": 3
    },
@@ -2278,7 +2457,16 @@
    "role": "BUFF",
    "buff_time": 600,
    "self": true,
+   "others": false,
    "exclusive": true,
+   "excludes": [
+    "사중공격",
+    "삼중공격",
+    "오중공격"
+   ],
+   "stats": {
+    "damage_rate": 1000
+   },
    "boost": {
     "damage_rate": 1000
    },
@@ -2290,7 +2478,16 @@
    "role": "BUFF",
    "buff_time": 600,
    "self": true,
+   "others": false,
    "exclusive": true,
+   "excludes": [
+    "사중공격",
+    "오중공격",
+    "이중공격"
+   ],
+   "stats": {
+    "damage_rate": 2000
+   },
    "boost": {
     "damage_rate": 2000
    },
@@ -2302,7 +2499,16 @@
    "role": "BUFF",
    "buff_time": 600,
    "self": true,
+   "others": false,
    "exclusive": true,
+   "excludes": [
+    "삼중공격",
+    "오중공격",
+    "이중공격"
+   ],
+   "stats": {
+    "damage_rate": 3000
+   },
    "boost": {
     "damage_rate": 3000
    },
@@ -2314,7 +2520,16 @@
    "role": "BUFF",
    "buff_time": 600,
    "self": true,
+   "others": false,
    "exclusive": true,
+   "excludes": [
+    "사중공격",
+    "삼중공격",
+    "이중공격"
+   ],
+   "stats": {
+    "damage_rate": 4000
+   },
    "boost": {
     "damage_rate": 4000
    },
@@ -2396,7 +2611,12 @@
    "role": "BUFF",
    "buff_time": 180,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {
+    "buff_str": 3
+   },
    "boost": {
     "buff_str": 3
    },
@@ -2414,7 +2634,10 @@
    "role": "BUFF",
    "buff_time": 180,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "id": 2012,
    "type": "NORMAL"
   },
@@ -2423,7 +2646,10 @@
    "role": "BUFF",
    "buff_time": 625,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "id": 2013,
    "type": "NORMAL"
   },
@@ -2453,7 +2679,10 @@
    "role": "BUFF",
    "buff_time": 11,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "trigger": "MANA",
    "id": 2024,
    "type": "NORMAL"
@@ -2463,7 +2692,12 @@
    "role": "BUFF",
    "buff_time": 5,
    "self": false,
+   "others": true,
    "exclusive": false,
+   "excludes": [],
+   "stats": {
+    "buff_str": 3
+   },
    "boost": {
     "buff_str": 3
    },
@@ -2741,6 +2975,10 @@
    "mp": 30,
    "role": "DEBUFF",
    "buff_time": 185,
+   "stats": {
+    "buff_phydef": 30
+   },
+   "paralysis": false,
    "id": 3051,
    "type": "TARGET"
   },
@@ -2748,6 +2986,8 @@
    "mp": 80,
    "role": "DEBUFF",
    "buff_time": 20,
+   "stats": {},
+   "paralysis": true,
    "id": 3052,
    "type": "TARGET"
   },
@@ -2755,6 +2995,8 @@
    "mp": 80,
    "role": "DEBUFF",
    "buff_time": 10,
+   "stats": {},
+   "paralysis": false,
    "id": 3053,
    "type": "TARGET"
   },
@@ -2768,6 +3010,9 @@
    "mp": 30,
    "role": "DEBUFF",
    "buff_time": 30,
+   "stats": {},
+   "paralysis": false,
+   "dot": 0.05,
    "id": 3059,
    "type": "TARGET"
   },
@@ -2780,6 +3025,8 @@
   "공력증강": {
    "mp": 30,
    "role": "CHARGE",
+   "chance": 0.5,
+   "hp_cost": 0.4,
    "id": 4002,
    "type": "NORMAL"
   },
@@ -2788,7 +3035,12 @@
    "role": "BUFF",
    "buff_time": 180,
    "self": false,
+   "others": true,
    "exclusive": false,
+   "excludes": [],
+   "stats": {
+    "buff_phydef": -10
+   },
    "boost": {
     "buff_phydef": 10
    },
@@ -2800,7 +3052,12 @@
    "role": "BUFF",
    "buff_time": 180,
    "self": false,
+   "others": true,
    "exclusive": false,
+   "excludes": [],
+   "stats": {
+    "damage_derate": 1000
+   },
    "boost": {
     "damage_derate": 1000
    },
@@ -2812,7 +3069,10 @@
    "role": "BUFF",
    "buff_time": 21,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "id": 4005,
    "type": "NORMAL"
   },
@@ -2835,7 +3095,10 @@
    "role": "BUFF",
    "buff_time": 600,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "id": 4008,
    "type": "NORMAL"
   },
@@ -2843,6 +3106,10 @@
    "mp": 40,
    "role": "DEBUFF",
    "buff_time": 425,
+   "stats": {
+    "buff_phydef": 50
+   },
+   "paralysis": false,
    "id": 4009,
    "type": "TARGET"
   },
@@ -2857,7 +3124,10 @@
    "role": "BUFF",
    "buff_time": 12,
    "self": true,
+   "others": false,
    "exclusive": false,
+   "excludes": [],
+   "stats": {},
    "trigger": "EMERGENCY",
    "id": 4011,
    "type": "NORMAL"
@@ -3003,6 +3273,26 @@
    "damage": 1500,
    "id": 4042,
    "type": "TARGET"
+  },
+  "금강퇴": {
+   "mp": 0,
+   "role": "ATTACK",
+   "damage": 120,
+   "id": 113,
+   "type": "NORMAL"
+  },
+  "선풍각": {
+   "mp": 0,
+   "role": "NONE",
+   "id": 119,
+   "type": "TARGET"
+  }
+ },
+ "rules": {
+  "cast_rate": 10.0,
+  "hit_slope": 5.294117647058823,
+  "multipliers": {
+   "투명": 8
   }
  }
 }

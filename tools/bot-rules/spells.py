@@ -17,6 +17,47 @@ BEAST = re.compile(r"index == (\d+) then\s*return (?:'([^']+)'|\"([^\"]+)\")")
 CURE = re.compile(r"you:unbuff\('([^']+)'\)")
 CAST = re.compile(r"^\s*on_cast\s*=\s*function", re.M)
 BOOST = re.compile(r"me:(\w+)\(me:\1\(\)\s*\+\s*(\d+)\)")
+EXCHANGE = re.compile(r"me:exchange\(\{\s*\['money'\]\s*=\s*(\d+)\s*\},\s*\{\s*\['spell'\]\s*=\s*\{\s*[\"']([^\"']+)[\"']\s*\}\s*\}\)")
+MENU = re.compile(r"me:(?:pursuit|list)\(npc,\s*\"[^\"]*\",\s*\{(.*?)\}", re.S)
+OPTION = re.compile(r"[\"']([^\"']+)[\"']")
+BRANCH = re.compile(r"if sel == (\d+) then")
+GATE = re.compile(r"me:level\(\)\s*<\s*(\d+)")
+STAT = re.compile(r"me:(\w+)\(me:\1\(\)\s*([+-])\s*(\d+)\)")
+UNBUFF = re.compile(r"me:unbuff\('([^']+)'\)")
+DOT = re.compile(r"maxhp\(\)\s*\*\s*(\d+)\)\s*//\s*(\d+)")
+HANDLER = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'handler.h'
+INTERACTION = SCRIPTS / 'lib' / 'interaction.lua'
+
+
+def section(text, begin, end):
+    if begin not in text:
+        return ''
+    body = text.split(begin, 1)[1]
+    return body.split(end, 1)[0] if end in body else body
+
+
+def modifiers(text):
+    body = section(text, 'on_buff = function', 'on_unbuff')
+    stats = {}
+    for stat, sign, value in STAT.findall(body):
+        stats.setdefault(stat, int(value) if sign == '+' else -int(value))
+    return stats
+
+
+def rules():
+    handler = HANDLER.read_text(encoding='utf-8')
+    duration = int(re.search(r"DurationMs\s*=\s*(\d+)", handler).group(1))
+    limit = int(re.search(r"Limit\s*=\s*(\d+)", handler).group(1))
+    interaction = INTERACTION.read_text(encoding='utf-8')
+    front = section(interaction, "local function attack_hit_chance", "\nend\n")
+    front = front.split("else\n", 1)[1] if "facing == 'side'" in front else front
+    slope = re.search(r"return 10 \+ math\.floor\(\(hit \+ (\d+)\) \* (\d+) / (\d+)\)", interaction)
+    multipliers = {name: int(value) for name, value in re.findall(r"me:isbuff\('([^']+)'\) then\s*rate = rate \* (\d+)", interaction)}
+    return {'cast_rate': limit * 1000 / duration,
+            'hit_slope': int(slope.group(2)) / int(slope.group(3)),
+            'multipliers': multipliers}
+
+
 
 
 def divine_beast_names():
@@ -100,6 +141,11 @@ def effect(text):
     elif 'spell.debuff_cast' in text:
         info['role'] = 'DEBUFF'
         info['buff_time'] = values.get('buff_time', 0)
+        info['stats'] = modifiers(text)
+        info['paralysis'] = 'paralysis(true)' in text
+        dot = DOT.search(text)
+        if dot is not None:
+            info['dot'] = int(dot.group(1)) / int(dot.group(2))
     elif cure is not None:
         info['role'] = 'CURE'
         info['cure'] = cure.group(1)
@@ -129,7 +175,10 @@ def effect(text):
         info['role'] = 'BUFF'
         info['buff_time'] = values.get('buff_time', 0)
         info['self'] = 'buff_cast(me, me' in text
+        info['others'] = 'buff_cast(me, you' in text
         info['exclusive'] = 'me:unbuff(' in text
+        info['excludes'] = sorted(set(UNBUFF.findall(text)))
+        info['stats'] = modifiers(text)
         if 'me:invincible' in text:
             info['trigger'] = 'EMERGENCY'
         elif 'me:mp_up' in text:
@@ -139,6 +188,10 @@ def effect(text):
             info['boost'] = boosts
     elif 'spell.boolean_random' in text and 'me:maxmp' in text:
         info['role'] = 'CHARGE'
+        chance = re.search(r"local\s+percent\s*=\s*([\d.]+)", text)
+        info['chance'] = float(chance.group(1)) if chance else 0.0
+        cost = re.search(r"me:maxmp\(\)\s*\*\s*([\d.]+)\)", text)
+        info['hp_cost'] = float(cost.group(1)) if cost else 0.0
     elif 'root:cardinal' in text or 'root:revive' in text or 'me:mp_down' in text:
         info['role'] = 'TRAVEL'
     elif 'broadcast(' in text:
@@ -146,6 +199,35 @@ def effect(text):
     else:
         info['role'] = 'OTHER'
     return info
+
+
+def teachers():
+    result = []
+    for path in sorted((SCRIPTS / 'npc').glob('*.lua')):
+        text = path.read_text(encoding='utf-8')
+        menus = list(MENU.finditer(text))
+        if not menus:
+            continue
+
+        first = OPTION.findall(menus[0].group(1))
+        gate = GATE.search(text, 0, menus[0].start())
+        for exchange in EXCHANGE.finditer(text):
+            branches = list(BRANCH.finditer(text, 0, exchange.start()))
+            if not branches:
+                continue
+
+            confirms = [menu for menu in menus if branches[-1].end() < menu.start() < exchange.start()]
+            index = int(branches[-1].group(1)) - 1
+            if not confirms or index >= len(first):
+                continue
+
+            result.append({'names': [exchange.group(2)],
+                           'level': int(gate.group(1)) if gate else 0,
+                           'money': int(exchange.group(1)),
+                           'materials': [],
+                           'npc': int(path.stem),
+                           'picks': [first[index], OPTION.findall(confirms[-1].group(1))[0]]})
+    return result
 
 
 def spells(names):
@@ -170,11 +252,14 @@ def main():
 
     beasts = divine_beast_names()
     classes = guilds(beasts)
+    taught = teachers()
+    for guild in classes.values():
+        guild['spells'] = sorted(guild['spells'] + taught, key=lambda x: x['level'])
     names = {name for guild in classes.values() for spell in guild['spells'] for name in spell['names']}
-    catalog = {'classes': classes, 'spells': spells(names)}
+    catalog = {'classes': classes, 'spells': spells(names), 'rules': rules()}
     Path(args.output).write_text(json.dumps(catalog, ensure_ascii=False, indent=1), encoding='utf-8')
     counts = {name: len(guild['spells']) for name, guild in classes.items()}
-    print(f'classes={counts} spells={len(catalog["spells"])}')
+    print(f'classes={counts} spells={len(catalog["spells"])} taught={[spell["names"][0] for spell in taught]}')
 
 
 if __name__ == '__main__':

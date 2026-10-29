@@ -44,12 +44,13 @@ enum class GOAL : uint8_t
     RECLAIM  = 12,
     TRADE    = 13,
     QUEST    = 14,
+    EARN     = 15,
 };
 
-constexpr size_t GOAL_COUNT = 15;
+constexpr size_t GOAL_COUNT = 16;
 
 // clang-format off
-constexpr auto GOAL_NAMES = std::array<const char*, GOAL_COUNT>{"REVIVE", "REST", "TUTORIAL", "JOB", "SELL", "SUPPLY", "HUNT", "WANDER", "LEARN", "EQUIP", "GROUP", "FOLLOW", "RECLAIM", "TRADE", "QUEST"};
+constexpr auto GOAL_NAMES = std::array<const char*, GOAL_COUNT>{"REVIVE", "REST", "TUTORIAL", "JOB", "SELL", "SUPPLY", "HUNT", "WANDER", "LEARN", "EQUIP", "GROUP", "FOLLOW", "RECLAIM", "TRADE", "QUEST", "EARN"};
 // clang-format on
 constexpr size_t CLASS_COUNT = 5;
 
@@ -68,6 +69,7 @@ struct persona
     double                    group            = 1.6;
     double                    follow           = 2.2;
     double                    reclaim          = 1.8;
+    double                    earn             = 1.2;
     double                    trade            = 1.4;
     double                    quest            = 1.8;
     double                    wander           = 0.05;
@@ -196,6 +198,8 @@ struct spellbook
         uint8_t                                       level = 0;
         uint32_t                                      money = 0;
         std::vector<std::pair<std::string, uint32_t>> materials;
+        uint32_t                                      npc = 0;
+        std::vector<std::string>                      picks;
     };
 
     struct guild
@@ -206,25 +210,34 @@ struct spellbook
 
     struct effect
     {
-        uint32_t    id        = 0;
-        SPELL_TYPE  type      = SPELL_TYPE::NORMAL;
-        ROLE        role      = ROLE::OTHER;
-        uint32_t    mp        = 0;
-        uint32_t    hp        = 0;
-        uint32_t    damage    = 0;
-        uint32_t    buff_time = 0;
-        bool        self      = false;
-        bool        exclusive = false;
-        TRIGGER     trigger   = TRIGGER::ALWAYS;
-        std::string cure;
-        double      hp_cost   = 0.0;
-        uint32_t    damage_hp = 0;
-        uint32_t    rate      = 0;
+        uint32_t                                 id        = 0;
+        SPELL_TYPE                               type      = SPELL_TYPE::NORMAL;
+        ROLE                                     role      = ROLE::OTHER;
+        uint32_t                                 mp        = 0;
+        uint32_t                                 hp        = 0;
+        uint32_t                                 damage    = 0;
+        uint32_t                                 buff_time = 0;
+        bool                                     self      = false;
+        bool                                     exclusive = false;
+        TRIGGER                                  trigger   = TRIGGER::ALWAYS;
+        std::string                              cure;
+        double                                   hp_cost    = 0.0;
+        uint32_t                                 damage_hp  = 0;
+        uint32_t                                 rate       = 0;
+        bool                                     others     = false;
+        bool                                     paralysis  = false;
+        double                                   dot        = 0.0;
+        double                                   multiplier = 1.0;
+        double                                   chance     = 0.0;
+        std::unordered_map<std::string, int32_t> stats;
+        std::vector<std::string>                 excludes;
     };
 
     std::unordered_map<CLASS, guild>        guilds;
     std::unordered_map<std::string, effect> effects;
     uint8_t                                 lookahead = 5;
+    double                                  cast_rate = 0.0;
+    double                                  hit_slope = 0.0;
 
     spellbook() = default;
     spellbook(const Json::Value& catalog, const Json::Value& config);
@@ -244,7 +257,9 @@ struct questbook
         uint32_t                                  money = 0;
         std::unordered_map<std::string, uint32_t> rewards;
         uint32_t                                  reward_money = 0;
-        uint32_t                                  reward_exp   = 0;
+        std::vector<std::string>                  reward_spells;
+        std::vector<std::string>                  uses;
+        uint32_t                                  reward_exp = 0;
         std::vector<std::string>                  picks;
     };
 
@@ -447,6 +462,7 @@ private:
     uint64_t                                            _fights          = 0;
     double                                              _multiplier      = 1.0;
     double                                              _drop_multiplier = 1.0;
+    double                                              _drop_count      = 1.0;
     bool                                                _limited         = true;
     cluster::journal                                    _journal;
 
@@ -454,6 +470,7 @@ public:
     void                     configure(const Json::Value& json);
     double                   multiplier() const;
     double                   drop_multiplier() const;
+    double                   drop_count() const;
     bool                     limited() const;
     std::vector<std::string> keys(const game_bot& bot, CLASS cls) const;
     void                     add(const std::vector<std::string>& keys, const fight& value);
@@ -488,6 +505,29 @@ public:
 private:
     using clock      = std::chrono::steady_clock;
     using time_point = clock::time_point;
+
+    struct strength
+    {
+        double dps   = 0.0;
+        double guard = 1.0;
+        double heal  = 0.0;
+    };
+
+    struct ground_plan
+    {
+        double            stay = 0.0;
+        double            loss = 0.0;
+        learner::features input{};
+        double            base = 0.0;
+    };
+
+    struct appraisal
+    {
+        std::vector<std::pair<double, const knowledge::hunting_ground*>> candidates;
+        std::unordered_map<uint16_t, ground_plan>                        plans;
+        std::unordered_map<uint16_t, uint32_t>                           distances;
+        double                                                           best = 0.0;
+    };
 
     struct visit
     {
@@ -560,6 +600,7 @@ private:
     uint32_t                                                   _misfires  = 0;
     std::unordered_set<uint32_t>                               _quests_done;
     std::unordered_map<uint32_t, time_point>                   _quest_shun;
+    std::unordered_map<uint32_t, std::map<std::string, uint32_t>> _quest_stuck;
     std::unordered_map<uint32_t, uint32_t>                     _quest_stops;
     uint32_t                                                   _quest_active = 0;
     std::unordered_map<uint16_t, time_point>                   _hurt_maps;
@@ -577,6 +618,10 @@ private:
     bool                                                       _sell_urgent = false;
     bool                                                       _clearing    = false;
     double                                                     _dps         = -1.0;
+    double                                                     _miss_rate   = -1.0;
+    std::deque<time_point>                                     _casts;
+    bool                                                       _earning        = false;
+    bool                                                       _ground_earning = false;
     double                                                     _armor       = 1.0;
     time_point                                                 _escaped_until;
     std::unordered_map<std::string, time_point>                _spell_waits;
@@ -616,6 +661,7 @@ private:
     mutable std::pair<double, double>                          _powered{-1.0, 0.0};
     mutable time_point                                         _powered_at{};
     mutable std::pair<time_point, std::optional<std::pair<std::string, uint32_t>>> _shortage;
+    mutable double                                                                 _supply_gain = 0.0;
     mutable std::pair<time_point, std::optional<std::string>>                       _upgrade;
     mutable std::unordered_map<uint8_t, std::pair<time_point, std::vector<const spellbook::lesson*>>> _lessons;
     // clang-format on
@@ -673,6 +719,10 @@ private:
     const knowledge::prey*                   identify(game_bot& bot, const knowledge::hunting_ground& ground, const game_bot::sight::entry& entry);
     std::pair<uint32_t, uint32_t>            safe_preys(const game_bot& bot, const knowledge::hunting_ground& ground, const std::vector<std::string>& keys) const;
     std::optional<knowledge::hunting_ground> select_ground(const game_bot& bot, const std::unordered_set<std::string>& preys = {});
+    appraisal                                appraise(const game_bot& bot, const std::unordered_set<std::string>& preys);
+    strength                                 estimate(const game_bot& bot, double seconds, bool grouped, const spellbook::effect* extra = nullptr, double mana = 0.0) const;
+    static double                            defense(int32_t value);
+    void                                     adopt(const game_bot& bot, const knowledge::hunting_ground& ground, const appraisal& appraised, bool tracked);
     async::task<void>                        retreat(game_bot& bot);
     std::optional<knowledge::hunting_ground> find_ground(const game_bot& bot, const std::string& suffix) const;
     uint32_t                                 congestion(const game_bot& bot, const std::unordered_map<uint16_t, knowledge::visit>& visits, uint16_t map) const;
@@ -687,6 +737,8 @@ private:
     std::unordered_map<std::string, uint32_t> reserved(const game_bot& bot) const;
     static std::string                       stack_name(const std::string& name);
     std::unordered_map<std::string, uint32_t> owned(const game_bot& bot) const;
+    std::map<std::string, uint32_t>           footprint(const game_bot& bot, const questbook::quest& quest) const;
+    uint64_t                                  needs(const game_bot& bot, std::unordered_set<std::string>& missing) const;
     std::vector<std::pair<std::string, uint32_t>> sellable(const game_bot& bot) const;
     std::vector<uint8_t>                     junk(const game_bot& bot) const;
     bool                                     overstocked(const game_bot& bot) const;
@@ -726,7 +778,8 @@ private:
     async::task<result>                      farm(game_bot& bot, const knowledge::hunting_ground& ground, std::chrono::seconds slice);
     async::task<result>                      wander(game_bot& bot);
     async::task<void>                        yield(game_bot& bot);
-    async::task<result>                      travel(game_bot& bot, uint16_t map, const point<uint16_t>& target, uint16_t range);
+    async::task<result>                      earn(game_bot& bot);
+    async::task<result>                      travel(game_bot& bot, uint16_t map, const point<uint16_t>& target, uint16_t range, const std::function<bool()>& halt = {});
     async::task<result>                      walk(game_bot& bot, const point<uint16_t>& target, uint16_t range);
     async::task<result>                      fight(game_bot& bot, uint32_t oid);
     std::vector<std::string>                 experience_keys(const game_bot& bot) const;

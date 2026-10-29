@@ -330,7 +330,9 @@ knowledge::knowledge(const std::string&                  maps_path,
     auto mob_spawns = table::mob_spawn;
     for (auto& [id, entries] : mob_spawns)
     {
-        if (this->_grids.contains(static_cast<uint16_t>(id)) == false)
+        auto model = table::map->find(static_cast<uint16_t>(id));
+        if (this->_grids.contains(static_cast<uint16_t>(id)) == false || model == nullptr ||
+            (static_cast<uint32_t>(model->option) & static_cast<uint32_t>(MAP_OPTION::HUNTING_GROUND)) == 0)
             continue;
 
         auto ground    = hunting_ground{static_cast<uint16_t>(id), {}, {}};

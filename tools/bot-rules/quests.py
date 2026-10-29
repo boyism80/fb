@@ -103,6 +103,9 @@ def segments(text, known):
     return result
 
 
+SPELL_REWARD = re.compile(r"\['spell'\]\s*=\s*\{([^}]*)\}")
+
+
 def merge(target, items):
     for name, count in items.items():
         target[name] = max(target.get(name, 0), count)
@@ -134,6 +137,22 @@ def transforms():
             for source in cost:
                 edges.setdefault(source, set()).update(gain)
     return edges
+
+
+def uses():
+    result = {}
+    for path in sorted((SCRIPTS / 'item').glob('*.lua')):
+        text = path.read_text(encoding='utf-8')
+        names = dict(LOCAL.findall(text))
+        for parts in tables(text, 'exchange'):
+            if len(parts) != 2:
+                continue
+            cost, _, _ = table_items(parts[0], names)
+            for item in cost:
+                companions = {name: count for name, count in cost.items() if name != item}
+                if companions:
+                    merge(result.setdefault(item, {}), companions)
+    return result
 
 
 def derived(items, edges):
@@ -172,6 +191,10 @@ def analyze(entry, text, names, made):
             entry['money'] = max(entry['money'], money)
             entry['rewards']['money'] = max(entry['rewards']['money'], earned)
             entry['rewards']['exp'] = max(entry['rewards']['exp'], exp)
+            for spells in SPELL_REWARD.findall(parts[1]):
+                for spell in re.findall(r"['\"]([^'\"]+)['\"]", spells):
+                    if spell not in entry['rewards']['spells']:
+                        entry['rewards']['spells'].append(spell)
     for parts in tables(text, 'consume'):
         if parts:
             cost, money, _ = table_items(parts[0], names)
@@ -205,7 +228,7 @@ def build():
         quests[name] = {
             'id': number, 'name': name, 'npcs': [], 'starts': [], 'mobs': [], 'items': [], 'maps': [],
             'level': 0, 'requires': {}, 'consumes': {}, 'money': 0, 'steps': set(), 'picks': [],
-            'completes': False, 'rewards': {'items': {}, 'money': 0, 'exp': 0},
+            'completes': False, 'rewards': {'items': {}, 'money': 0, 'exp': 0, 'spells': []},
         }
 
     for kind, key in (('npc', 'npcs'), ('mob', 'mobs'), ('item', 'items'), ('map', 'maps')):
@@ -234,11 +257,13 @@ def build():
                         analyze(entry, part, names, made)
 
     edges = transforms()
+    needed = uses()
     result = []
     for entry in sorted(quests.values(), key=lambda value: value['id']):
         if not (entry['npcs'] or entry['mobs'] or entry['items'] or entry['maps']):
             continue
         entry['steps'] = sorted(entry['steps'])
+        entry['uses'] = {item: needed[item] for item in entry['rewards']['items'] if item in needed}
         inner = derived(set(entry['rewards']['items']) - set(entry['consumes']), edges)
         entry['consumes'] = {name: count for name, count in entry['consumes'].items() if name not in inner}
         entry['requires'] = {name: count for name, count in entry['requires'].items() if name not in inner}
