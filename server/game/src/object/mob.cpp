@@ -106,7 +106,10 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     auto& model       = this->model();
     auto  spawn_count = model.count - this->_count;
     if (spawn_count < 1)
+    {
+        this->_respawn_time.reset();
         co_return;
+    }
 
     // Reservoir-sample up to spawn_count tiles in one pass over the area (end is exclusive):
     // unoccupied tiles are placed first, then mobs overlap on tiles that were walkable before this spawn.

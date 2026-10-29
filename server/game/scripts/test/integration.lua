@@ -1783,6 +1783,50 @@ return {
         end
     end,
 
+    count_mobs = function(me, step, mob_id)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+
+        local id = tonumber(mob_id)
+        local count = 0
+        for _, obj in pairs(map:objects(OBJECT_TYPE.MOB)) do
+            if obj:model():id() == id and obj:hp() > 0 then
+                count = count + 1
+            end
+        end
+        report(me, true, step, 'count=' .. count)
+    end,
+
+    kill_mob = function(me, step, mob_id)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+
+        local id = tonumber(mob_id)
+        local oid = nil
+        for _, obj in pairs(map:objects(OBJECT_TYPE.MOB)) do
+            if obj:model():id() == id and obj:hp() > 0 then
+                oid = obj:oid()
+                break
+            end
+        end
+        if oid == nil then
+            return report(me, false, step, 'mob not found')
+        end
+
+        for _ = 1, 10 do
+            local mob = find_mob(me, oid)
+            if mob == nil or mob:hp() <= 0 then
+                return report(me, true, step)
+            end
+            me:damage_to(mob, mob:hp(), { critical = false, rate = 1.0, physical = true, fixed = true })
+        end
+        report(me, false, step, 'mob still alive')
+    end,
+
     verify_storage_grant_limit = function(me, step, bundle_name, single_name)
         local bundle = name2item(bundle_name)
         local single = name2item(single_name)
