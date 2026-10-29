@@ -297,6 +297,7 @@ table UnallyClan {
   host: uint;
   requester_uid: uint;
   clan: uint;
+  target_clan: uint;
 }
 
 table DeclareClanEnemy {

@@ -631,6 +631,18 @@ int builtin::clan::builtin_break_ally(lua_State* L)
     if (requester == nullptr)
         return 0;
 
+    std::optional<uint32_t> target_clan_id;
+    if (lua->is_number(3))
+        target_clan_id = static_cast<uint32_t>(lua->tointeger(3));
+    else if (auto other = lua->touserdata<fb::game::clan>(3); other != nullptr)
+        target_clan_id = other->id();
+
+    if (target_clan_id.has_value() == false)
+    {
+        lua->pushstring(_TEXT(MESSAGE_CLAN_TARGET_NOT_FOUND));
+        return 1;
+    }
+
     auto weak_ptr = requester->weak_from_this_as<fb::game::character>();
     auto error    = std::make_shared<std::optional<std::string>>();
     auto builder  = lua->new_co_builder();
@@ -643,7 +655,7 @@ int builtin::clan::builtin_break_ally(lua_State* L)
             if (shared_ptr == nullptr)
                 throw std::runtime_error("character is not alive");
 
-            co_await server.clans.break_ally(*shared_ptr);
+            co_await server.clans.break_ally(*shared_ptr, target_clan_id.value());
         }
         catch (std::exception& e)
         {

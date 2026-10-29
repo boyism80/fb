@@ -111,7 +111,7 @@ public:
     async::task<void>                set_title(character& changer, std::string_view title);
     async::task<void>                broadcast(uint32_t world, uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
     async::task<void>                request_ally(character& requester, uint32_t target_clan_id);
-    async::task<void>                break_ally(character& requester);
+    async::task<void>                break_ally(character& requester, uint32_t target_clan_id);
     async::task<void>                declare_enemy(character& requester, uint32_t target_clan_id);
     async::task<void>                end_enemy(character& requester, uint32_t target_clan_id);
     async::task<void>                on_error(uint32_t error);

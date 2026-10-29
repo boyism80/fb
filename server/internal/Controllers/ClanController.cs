@@ -1291,10 +1291,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNotMatched);
                 }
 
-                var alliedBefore = await _dbContext.ClanAlliance.Get(world, request.Clan) ??
-                    throw new LogicException(ErrorCode.ClanNotAllied);
-
-                await using var _2 = await LockClans(world, new[] { request.Clan, alliedBefore.AlliedClan });
+                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1312,9 +1309,9 @@ namespace Internal.Controllers
                 var alliance = await _dbContext.ClanAlliance.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.ClanNotAllied);
 
-                if (alliance.AlliedClan != alliedBefore.AlliedClan)
+                if (alliance.AlliedClan != request.TargetClan)
                 {
-                    throw new LogicException(ErrorCode.Unhandled);
+                    throw new LogicException(ErrorCode.ClanNotAllied);
                 }
 
                 var alliedClanId = alliance.AlliedClan;

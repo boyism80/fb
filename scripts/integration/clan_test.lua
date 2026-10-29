@@ -64,6 +64,7 @@ local MSG_NONE            = "없음"
 
 local MSG_ALLY_OK    = "동맹이 성공적으로 체결되었습니다"
 local MSG_UNALLY_OK  = "동맹파기가 완료되었습니다"
+local MSG_NOT_ALLIED = "동맹 관계가 아니오"
 local MSG_ENEMY_OK   = "적대관계 설정이 완료되었습니다"
 local MSG_UNENEMY_OK = "종전 협약이 완료되었습니다"
 
@@ -1038,6 +1039,53 @@ test_suite {
             end
 
             progress(a, "S11 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(2)
+            local c = ctx:bot(3)
+            progress(a, "S11b: UNALLY WRONG TARGET")
+
+            local msg, err = create_clan(c, c:name())
+            if msg == nil or msg:find(MSG_CREATE_OK, 1, true) == nil then
+                progress(c, "FAILED: create c " .. tostring(msg or err))
+                return false
+            end
+
+            local ok
+            ok, err = diplomacy_start(a, DIP_UNALLY)
+            if ok == false then
+                destroy_clan(c)
+                progress(a, "FAILED: " .. tostring(err))
+                return false
+            end
+            local packet = send_target_name_expect_normal(a, c:name())
+            local rejected = packet ~= nil and message_contains(packet, MSG_NOT_ALLIED)
+            if packet ~= nil then
+                dismiss_normal(a)
+            end
+            if rejected == false then
+                destroy_clan(c)
+                progress(a, "FAILED: unrelated master msg=" .. tostring(packet and packet.message))
+                return false
+            end
+
+            msg, err = fetch_info(a, INFO_ALLY)
+            if msg == nil or msg:find(b:name(), 1, true) == nil then
+                destroy_clan(c)
+                progress(a, "FAILED: ally lost after wrong target " .. tostring(msg or err))
+                return false
+            end
+
+            msg, err = destroy_clan(c)
+            if msg == nil or msg:find(MSG_DESTROY_OK, 1, true) == nil then
+                progress(c, "FAILED: cleanup destroy c " .. tostring(msg or err))
+                return false
+            end
+
+            progress(a, "S11b PASSED")
             return true
         end,
 

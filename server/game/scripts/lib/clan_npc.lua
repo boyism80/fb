@@ -286,12 +286,17 @@ local function clan_diplomacy(me, npc, clan)
             return
         end
 
+        if clan:allied_clan_id() ~= target_clan:id() then
+            me:dialog(npc, '그 문파와는 동맹 관계가 아니오.')
+            return
+        end
+
         request_diplomacy(me, npc, found, target_clan,
             string.format('%s 문파의 %s에게 동맹 파기 요청서를 보냈으니, 잠시만 기다려보시오.', target_clan:name(), found:name()),
             string.format('%s문파에서 동맹파기 요청이 들어왔습니다. 동맹을 파기 하시겠습니까? ', clan_name),
             string.format('<%s> 문파와 <%s> 문파의 동맹파기가 완료되었습니다.', clan_name, target_clan:name()),
             string.format('<%s> 문파와 <%s> 문파의 동맹파기가 완료되지 못했습니다.', clan_name, target_clan:name()),
-            function(c, target) return c:break_ally(me) end)
+            function(c, target) return c:break_ally(me, target) end)
     elseif selected == 3 then
         local found, target_clan = find_target_clan(me, npc, '선전포고 선언을 하실 상대 문파장의 이름을 말씀해 주시오.\n상대 문파의 문파장과 함께 와야 한다오.')
         if found == nil then

@@ -8108,7 +8108,8 @@ struct UnallyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 4,
     VT_HOST = 6,
     VT_REQUESTER_UID = 8,
-    VT_CLAN = 10
+    VT_CLAN = 10,
+    VT_TARGET_CLAN = 12
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -8122,12 +8123,16 @@ struct UnallyClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t clan() const {
     return GetField<uint32_t>(VT_CLAN, 0);
   }
+  uint32_t target_clan() const {
+    return GetField<uint32_t>(VT_TARGET_CLAN, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_REQUESTER_UID, 4) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
+           VerifyField<uint32_t>(verifier, VT_TARGET_CLAN, 4) &&
            verifier.EndTable();
   }
 };
@@ -8148,6 +8153,9 @@ struct UnallyClanBuilder {
   void add_clan(uint32_t clan) {
     fbb_.AddElement<uint32_t>(UnallyClan::VT_CLAN, clan, 0);
   }
+  void add_target_clan(uint32_t target_clan) {
+    fbb_.AddElement<uint32_t>(UnallyClan::VT_TARGET_CLAN, target_clan, 0);
+  }
   explicit UnallyClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -8164,8 +8172,10 @@ inline ::flatbuffers::Offset<UnallyClan> CreateUnallyClan(
     uint32_t world = 0,
     uint32_t host = 0,
     uint32_t requester_uid = 0,
-    uint32_t clan = 0) {
+    uint32_t clan = 0,
+    uint32_t target_clan = 0) {
   UnallyClanBuilder builder_(_fbb);
+  builder_.add_target_clan(target_clan);
   builder_.add_clan(clan);
   builder_.add_requester_uid(requester_uid);
   builder_.add_host(host);

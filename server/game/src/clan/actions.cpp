@@ -342,7 +342,7 @@ async::task<void> clan::container::request_ally(character& requester, uint32_t t
     co_await this->on_updated(resp);
 }
 
-async::task<void> clan::container::break_ally(character& requester)
+async::task<void> clan::container::break_ally(character& requester, uint32_t target_clan_id)
 {
     auto clan_id = requester.clan.id();
     if (clan_id.has_value() == false)
@@ -358,7 +358,7 @@ async::task<void> clan::container::break_ally(character& requester)
         if (member == nullptr || member->role != CLAN_ROLE::MASTER)
             throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
 
-        if (clan->allied_clan_id().has_value() == false)
+        if (clan->allied_clan_id() != target_clan_id)
             throw std::runtime_error(_TEXT(MESSAGE_CLAN_NOT_ALLIED));
     }
 
@@ -368,7 +368,7 @@ async::task<void> clan::container::break_ally(character& requester)
         weak,
         "internal",
         "/clan/unally",
-        internal_reqs::UnallyClan{world, fb::config<uint32_t>("id"), requester.id, clan_id.value()});
+        internal_reqs::UnallyClan{world, fb::config<uint32_t>("id"), requester.id, clan_id.value(), target_clan_id});
     co_await this->on_updated(resp);
 }
 

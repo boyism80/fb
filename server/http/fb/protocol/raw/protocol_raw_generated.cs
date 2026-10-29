@@ -6714,13 +6714,16 @@ public struct UnallyClan : IFlatbufferObject
   public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint RequesterUid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Clan { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint TargetClan { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.@internal.request.raw.UnallyClan> CreateUnallyClan(FlatBufferBuilder builder,
       uint world = 0,
       uint host = 0,
       uint requester_uid = 0,
-      uint clan = 0) {
-    builder.StartTable(4);
+      uint clan = 0,
+      uint target_clan = 0) {
+    builder.StartTable(5);
+    UnallyClan.AddTargetClan(builder, target_clan);
     UnallyClan.AddClan(builder, clan);
     UnallyClan.AddRequesterUid(builder, requester_uid);
     UnallyClan.AddHost(builder, host);
@@ -6728,11 +6731,12 @@ public struct UnallyClan : IFlatbufferObject
     return UnallyClan.EndUnallyClan(builder);
   }
 
-  public static void StartUnallyClan(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartUnallyClan(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
   public static void AddRequesterUid(FlatBufferBuilder builder, uint requesterUid) { builder.AddUint(2, requesterUid, 0); }
   public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(3, clan, 0); }
+  public static void AddTargetClan(FlatBufferBuilder builder, uint targetClan) { builder.AddUint(4, targetClan, 0); }
   public static Offset<fb.protocol.@internal.request.raw.UnallyClan> EndUnallyClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.UnallyClan>(o);
@@ -6749,6 +6753,7 @@ static public class UnallyClanVerify
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*RequesterUid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*Clan*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*TargetClan*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
