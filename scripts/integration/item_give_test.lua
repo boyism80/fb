@@ -400,5 +400,70 @@ test_suite {
             progress(bot1, "SCENARIO 7 PASSED")
             return true
         end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+            local slot = ctx:suite_slot()
+            local pos = bot2:position()
+            progress(bot1, "SCENARIO 8 START (give to a character standing on a floor item)")
+
+            progress(bot2, "DROP 도토리 ON OWN TILE")
+            bot2:create_item("도토리", 1)
+            bot2:drop_item(0, false)
+            ctx:sleep(DEFAULT_INTERVAL)
+            if bot2:has_item_by_name("도토리") then
+                progress(bot2, "FAILED: could not drop 도토리")
+                return false
+            end
+
+            progress(bot2, "LEAVE AND RETURN ONTO THE ITEM")
+            bot2:map_move("가상계", 7, 7, slot)
+            bot2:map_move("낙랑의방", pos[1], pos[2], slot)
+            local function returned()
+                local back = bot2:position()
+                return back[1] == pos[1] and back[2] == pos[2]
+            end
+            lib.wait.state(bot2, resp.position, returned)
+            if returned() == false then
+                progress(bot2, "FAILED: could not return onto the floor item")
+                return false
+            end
+
+            bot1:direction("RIGHT")
+            bot2:direction("LEFT")
+
+            progress(bot1, "GIVE 목도 -> bot2")
+            bot1:create_item("목도", 1)
+            bot1:request(
+                resp.item_remove,
+                protocol.give_item(0, false),
+                function(p)
+                    return p.index == 0
+                end)
+            lib.wait.state(bot2, resp.item_update, function()
+                return bot2:has_item_by_name("목도")
+            end)
+            if bot2:has_item_by_name("목도") == false then
+                progress(bot2, "FAILED: 목도 was not given to a character on a floor item")
+                return false
+            end
+
+            progress(bot1, "GIVE MONEY 100 -> bot2")
+            bot1:money(100)
+            bot1:request(resp.update_internal, protocol.give_money(100), function(packet)
+                return packet.ch_money == 0
+            end)
+            lib.wait.state(bot2, resp.update_internal, function()
+                return bot2:money() == 100
+            end)
+            if bot1:money() ~= 0 or bot2:money() ~= 100 then
+                progress(bot2, "FAILED: money was not given to a character on a floor item")
+                return false
+            end
+
+            progress(bot1, "SCENARIO 8 PASSED")
+            return true
+        end,
     },
 }

@@ -37,7 +37,7 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
     if (me->map() == nullptr)
         co_return true;
 
-    auto forward = me->forward();
+    auto forward = me->forward(OBJECT_TYPE::LIFE);
     if (forward == nullptr)
         co_return true;
 
