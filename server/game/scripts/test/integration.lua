@@ -1827,6 +1827,57 @@ return {
         report(me, false, step, 'mob still alive')
     end,
 
+    kill_spawned = function(me, step, mob_name, count)
+        local x, y = me:position()
+        for _ = 1, tonumber(count) do
+            local spawned = me:spawn_mob(mob_name, x, y, false)
+            if spawned == nil then
+                return report(me, false, step, 'spawn failed')
+            end
+            local oid = spawned:oid()
+            local killed = false
+            for _ = 1, 10 do
+                local mob = find_mob(me, oid)
+                if mob == nil or (mob:hp() or 0) <= 0 then
+                    killed = true
+                    break
+                end
+                me:damage_to(mob, mob:hp(), { critical = false, rate = 1.0, physical = true, fixed = true })
+            end
+            if killed == false then
+                return report(me, false, step, 'mob still alive')
+            end
+        end
+        report(me, true, step)
+    end,
+
+    verify_dropped_cash = function(me, step, expected_name, forbidden_name)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+
+        local x, y = me:position()
+        local expected = 0
+        local forbidden = 0
+        for _, obj in pairs(map:objects(OBJECT_TYPE.ITEM)) do
+            local ox, oy = obj:position()
+            if ox == x and oy == y then
+                local name = obj:model():name()
+                if name == expected_name then
+                    expected = expected + 1
+                elseif name == forbidden_name then
+                    forbidden = forbidden + 1
+                end
+            end
+        end
+        if expected == 0 or forbidden > 0 then
+            return report(me, false, step,
+                string.format('%s=%d %s=%d', expected_name, expected, forbidden_name, forbidden))
+        end
+        report(me, true, step)
+    end,
+
     verify_storage_grant_limit = function(me, step, bundle_name, single_name)
         local bundle = name2item(bundle_name)
         local single = name2item(single_name)

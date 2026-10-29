@@ -633,17 +633,25 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
             if (dropped == 0)
                 continue;
 
-            auto& goods    = table::item[params.id];
-            auto  capacity = goods.attr(ITEM_ATTRIBUTE::CASH)     ? dropped
-                             : goods.attr(ITEM_ATTRIBUTE::BUNDLE) ? std::max<uint32_t>(goods.capacity, 1)
-                                                                  : 1u;
-            while (dropped > 0)
+            auto& goods = table::item[params.id];
+            auto  total = static_cast<uint64_t>(dropped) * std::max<uint64_t>(params.count, 1);
+            if (goods.attr(ITEM_ATTRIBUTE::CASH))
             {
-                auto count  = std::min<uint32_t>({dropped, capacity, std::numeric_limits<uint16_t>::max()});
-                auto item   = goods.make(this->server, static_cast<uint16_t>(count));
+                auto item   = this->server.make<fb::game::cash>(total);
                 std::ignore = co_await item->map(map, position, {.notify = false});
                 oids.push_back(item->oid());
-                dropped -= count;
+            }
+            else
+            {
+                auto capacity = goods.attr(ITEM_ATTRIBUTE::BUNDLE) ? std::max<uint64_t>(goods.capacity, 1) : 1;
+                while (total > 0)
+                {
+                    auto count  = std::min<uint64_t>({total, capacity, std::numeric_limits<uint16_t>::max()});
+                    auto item   = goods.make(this->server, static_cast<uint16_t>(count));
+                    std::ignore = co_await item->map(map, position, {.notify = false});
+                    oids.push_back(item->oid());
+                    total -= count;
+                }
             }
         }
         break;
