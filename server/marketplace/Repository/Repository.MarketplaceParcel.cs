@@ -45,7 +45,8 @@ namespace Marketplace.Reepository
             var sql = $"""
                 SELECT * FROM `marketplace_parcel`
                 WHERE `sent_date` IS NULL
-                ORDER BY `id`
+                  AND (`next_attempt_date` IS NULL OR `next_attempt_date` <= UTC_TIMESTAMP(3))
+                ORDER BY `next_attempt_date`, `id`
                 LIMIT {limit}
                 """;
 
@@ -90,7 +91,9 @@ namespace Marketplace.Reepository
             await using var conn = _dbContext.GetUnifiedConnection();
             await conn.ExecuteAsync($"""
                 UPDATE `marketplace_parcel`
-                SET `attempts` = `attempts` + 1, `last_error` = {truncated.Escape()}
+                SET `next_attempt_date` = UTC_TIMESTAMP(3) + INTERVAL LEAST(30 * POW(2, LEAST(`attempts`, 10)), 600) SECOND,
+                    `attempts` = `attempts` + 1,
+                    `last_error` = {truncated.Escape()}
                 WHERE `external_ref` = {externalRef.Escape()} AND `sent_date` IS NULL
                 """);
         }
