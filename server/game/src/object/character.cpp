@@ -292,16 +292,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
             this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
-            if (co_await this->server.save(*this))
-            {
-                auto&& released = co_await this->server.http.post(
-                    self->weak_from_this_as<character>(),
-                    "internal",
-                    "/in-game/logout",
-                    internal_reqs::Logout{world, this->name(), fb::config<uint8_t>("id")});
-                if (released.success)
-                    this->hand_off();
-            }
+            co_await this->server.save(*this, true);
 
             co_await this->listener.on_transfer(*this, *map, new_position, resp.ip, resp.port);
         }

@@ -245,7 +245,7 @@ public:
     void                              send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
     async::task<void>                 save();
     async::task<void>                 save(fb::thread& thread);
-    async::task<bool>                 save(character& ch);
+    async::task<bool>                 save(character& ch, bool release = false);
     async::task<void>                 unload(character& ch);
     void                              sync_time();
     static uint8_t                    brightness_from_time(uint8_t hours, uint8_t minutes);

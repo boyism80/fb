@@ -4345,7 +4345,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         std::ignore = co_await ch->map(nullptr);
-        co_await ch->server.save(*ch);
+        co_await ch->server.save(*ch, true);
         co_await ch->listener.on_transfer(*ch, *map, position, ip_str, port, option);
         co_return;
     };
