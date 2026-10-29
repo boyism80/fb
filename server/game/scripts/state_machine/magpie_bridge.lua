@@ -463,6 +463,7 @@ local function run_ceremony(sm, map)
             if partners_ready(gyeonu, jiknyeo) then
                 run_meet_sequence(sm, map)
             else
+                clear_bridge_characters(map)
                 try_walk(sm, map, gyeonu, DIRECTION.LEFT, {
                     fail = '아아...',
                     walk = { '직녀...', '어디에 있소...', '보고싶소...' },

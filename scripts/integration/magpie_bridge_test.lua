@@ -8,6 +8,7 @@ local CHILSUNG_POS = { 10, 13 }
 local BRIDGE_MAP = "오작교"
 local BRIDGE_ID = 10957
 local BRIDGE_POS = { 88, 15 }
+local BLOCK_POS = { 70, 13 }
 local HOUSE_IDS = { [10958] = true, [10959] = true }
 local GOSA_LAST = "부디 기꺼운 마음으로 흠향하시옵소서."
 local BLESSING = "견우직녀축복"
@@ -174,6 +175,17 @@ test_suite({
                 == false
             then
                 return fail("the statues and partners did not appear after the bridge build")
+            end
+            if warp(a, BRIDGE_MAP, BRIDGE_ID, BLOCK_POS) == false then
+                return fail("could not stand on the bridge line in the partners' path")
+            end
+            if
+                wait_until(ctx, 30000, function()
+                    local pos = a:position()
+                    return pos[1] ~= BLOCK_POS[1] or pos[2] ~= BLOCK_POS[2]
+                end) == false
+            then
+                return fail("the ceremony did not clear a character standing on the bridge line")
             end
             if
                 wait_magpie(
