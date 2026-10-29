@@ -606,45 +606,44 @@ function M.goddess_dew_on_move(me)
             water = tonumber(parts[4]) or 0
         end
     end
-    if water >= TOTEM_WATER_MAX then
-        return
-    end
-
-    if check == 0 then
-        quest:param(string.format('%d,%d,1,%d', x, y, water))
-        return
-    end
-
-    quest:param(string.format('%d,%d,0,%d', x, y, water))
-
-    if x == stored_x and y == stored_y then
-        return
-    end
-
-    if math.random(1, 100) > 10 then
-        return
-    end
-
-    water = water + 1
-    quest:param(string.format('%d,%d,0,%d', x, y, water))
-
-    if water == TOTEM_WATER_MAX then
-        if me:mkitem(ITEM_DEW, 1) == nil then
+    if water < TOTEM_WATER_MAX then
+        if check == 0 then
+            quest:param(string.format('%d,%d,1,%d', x, y, water))
             return
         end
-        me:push_achievement(DEW_ACHIEVEMENT_ID, '여신의이슬을 만들었다.', 7, 16)
-        me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', { prev = false, next = true })
-        return
+
+        quest:param(string.format('%d,%d,0,%d', x, y, water))
+
+        if x == stored_x and y == stored_y then
+            return
+        end
+
+        if math.random(1, 100) > 10 then
+            return
+        end
+
+        water = water + 1
+        quest:param(string.format('%d,%d,0,%d', x, y, water))
+
+        if water < TOTEM_WATER_MAX then
+            if math.random(1, 10) <= 9 then
+                me:push_achievement(DEW_ACHIEVEMENT_ID, string.format('투명한 이슬을 %d개 구했다.', water), 7, 16)
+                me:dialog(nil, '투명한 이슬을 발견했다!\n\n조심조심... 투명한 이슬을 담자.', { prev = false, next = true })
+            else
+                water = water - 1
+                quest:param(string.format('%d,%d,0,%d', x, y, water))
+                me:dialog(nil, '아뿔사! 투명한 이슬을 흘려버렸다!', { prev = false, next = true })
+            end
+            return
+        end
     end
 
-    if math.random(1, 10) <= 9 then
-        me:push_achievement(DEW_ACHIEVEMENT_ID, string.format('투명한 이슬을 %d개 구했다.', water), 7, 16)
-        me:dialog(nil, '투명한 이슬을 발견했다!\n\n조심조심... 투명한 이슬을 담자.', { prev = false, next = true })
-    else
-        water = water - 1
-        quest:param(string.format('%d,%d,0,%d', x, y, water))
-        me:dialog(nil, '아뿔사! 투명한 이슬을 흘려버렸다!', { prev = false, next = true })
+    if me:mkitem(ITEM_DEW, 1) == nil then
+        me:message('소지품이 가득 차서 여신의 이슬을 담을 수 없다.')
+        return
     end
+    me:push_achievement(DEW_ACHIEVEMENT_ID, '여신의이슬을 만들었다.', 7, 16)
+    me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', { prev = false, next = true })
 end
 
 function M.manrihyang_seed_on_move(me)

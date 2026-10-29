@@ -843,6 +843,15 @@ return {
         report(me, true, step)
     end,
 
+    set_quest_param = function(me, step, id, param)
+        local q = me:quest(tonumber(id))
+        if q == nil then
+            return report(me, false, step, 'no quest ' .. tostring(id))
+        end
+        q:param(param)
+        report(me, true, step)
+    end,
+
     set_money = function(me, step, value)
         me:money(tonumber(value))
         report(me, true, step)
