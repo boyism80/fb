@@ -26,6 +26,12 @@ async::task<bool> map_world<V>::handle(fb::socket<character>& session, game_reqs
     if (opened.has_value() == false || opened->first != request.value || opened->second != request.before)
         co_return true;
 
+    if (ch->paralysis() || ch->cover())
+    {
+        ch->update_position();
+        co_return true;
+    }
+
     auto world_table = table::world;
     auto world       = world_table->find(request.value);
     if (world == nullptr)

@@ -1770,6 +1770,19 @@ return {
         report(me, args == nil, step, tostring(args))
     end,
 
+    set_restraint = function(me, step, kind, enabled)
+        local value = enabled == 'true'
+        if kind == 'paralysis' then
+            me:paralysis(value)
+            report(me, me:paralysis() == value, step)
+        elseif kind == 'cover' then
+            me:cover(value)
+            report(me, me:cover() == value, step)
+        else
+            report(me, false, step, 'unknown kind: ' .. tostring(kind))
+        end
+    end,
+
     cleanup = function(me, step)
         local map = me:map()
         if map ~= nil then
