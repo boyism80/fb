@@ -84,7 +84,28 @@ function M.handle(me, npc)
             limit = item_model:capacity()
         end
         if total > limit then
-            me:dialog(npc, string.format('%s 최대 %d개까지 보낼 수 있습니다.', name_with(item_name, '은', '는'), limit), { prev = false, next = true })
+            me:dialog(npc, string.format('%s 최대 %d개까지 보낼 수 있습니다.', name_with(item_name, '은', '는'), limit),
+                { prev = false, next = true })
+            goto REWARD_MENU
+        end
+
+        local slots = 0
+        for name, value in pairs(attachments['item']) do
+            if name ~= item_name then
+                if name2item(name):attr(ITEM_ATTRIBUTE.BUNDLE) then
+                    slots = slots + 1
+                else
+                    slots = slots + value
+                end
+            end
+        end
+        if item_model:attr(ITEM_ATTRIBUTE.BUNDLE) then
+            slots = slots + 1
+        else
+            slots = slots + total
+        end
+        if slots > MAX_ITEM_SLOTS then
+            me:dialog(npc, string.format('한 상자에는 아이템을 %d칸까지만 넣을 수 있습니다.', MAX_ITEM_SLOTS), { prev = false, next = true })
             goto REWARD_MENU
         end
 

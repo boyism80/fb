@@ -6878,6 +6878,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
     }
     else if (lua->is_table(5))
     {
+        auto counts = std::unordered_map<uint32_t, uint16_t>{};
         lua->pushstring("item");
         lua->rawget(5);
         if (lua->is_table(-1))
@@ -6895,7 +6896,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                         fb::logger::warn("storage_box: unknown item name '{}'", name);
                         unknown_item = true;
                     }
-                    else if (count > (model->attr(ITEM_ATTRIBUTE::BUNDLE) ? model->capacity : CONTAINER_CAPACITY))
+                    else if (count > std::numeric_limits<uint16_t>::max() - counts[model->id])
                     {
                         fb::logger::warn("storage_box: item '{}' count {} exceeds what one character can hold",
                                          name,
@@ -6904,7 +6905,8 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                     }
                     else if (count > 0)
                     {
-                        auto item_dsl = fb::model::dsl::item(model->id,
+                        counts[model->id] += static_cast<uint16_t>(count);
+                        auto item_dsl      = fb::model::dsl::item(model->id,
                                                              static_cast<uint32_t>(count),
                                                              std::nullopt,
                                                              std::nullopt,
@@ -6917,6 +6919,13 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
             }
         }
         lua->pop(1);
+
+        auto slots = fb::game::items::required_slots(counts);
+        if (slots.has_value() == false || slots.value() > CONTAINER_CAPACITY)
+        {
+            fb::logger::warn("storage_box: items need more slots than one character has");
+            unknown_item = true;
+        }
 
         lua->pushstring("money");
         lua->rawget(5);
@@ -7049,6 +7058,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
     }
     else if (lua->is_table(4))
     {
+        auto counts = std::unordered_map<uint32_t, uint16_t>{};
         lua->pushstring("item");
         lua->rawget(4);
         if (lua->is_table(-1))
@@ -7066,7 +7076,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
                         fb::logger::warn("storage_box: unknown item name '{}'", name);
                         unknown_item = true;
                     }
-                    else if (count > (model->attr(ITEM_ATTRIBUTE::BUNDLE) ? model->capacity : CONTAINER_CAPACITY))
+                    else if (count > std::numeric_limits<uint16_t>::max() - counts[model->id])
                     {
                         fb::logger::warn("storage_box: item '{}' count {} exceeds what one character can hold",
                                          name,
@@ -7075,7 +7085,8 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
                     }
                     else if (count > 0)
                     {
-                        auto item_dsl = fb::model::dsl::item(model->id,
+                        counts[model->id] += static_cast<uint16_t>(count);
+                        auto item_dsl      = fb::model::dsl::item(model->id,
                                                              static_cast<uint32_t>(count),
                                                              std::nullopt,
                                                              std::nullopt,
@@ -7088,6 +7099,13 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
             }
         }
         lua->pop(1);
+
+        auto slots = fb::game::items::required_slots(counts);
+        if (slots.has_value() == false || slots.value() > CONTAINER_CAPACITY)
+        {
+            fb::logger::warn("storage_box: items need more slots than one character has");
+            unknown_item = true;
+        }
 
         lua->pushstring("money");
         lua->rawget(4);

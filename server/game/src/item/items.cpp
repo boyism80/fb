@@ -1516,16 +1516,9 @@ bool items::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint64_t money) const
+std::optional<uint32_t> items::required_slots(const std::unordered_map<uint32_t, uint16_t>& items)
 {
-    auto owner = this->_owner.lock();
-    if (owner == nullptr)
-        return false;
-
-    if (owner->money_free_space() < money)
-        return false;
-
-    auto required_size = 0;
+    auto required_size = uint32_t{0};
     for (auto& [id, count] : items)
     {
         auto  item_table = table::item;
@@ -1538,11 +1531,26 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
         {
             // A bundle never takes a second slot, so more than one stack cannot be received at all.
             if (count > model.capacity)
-                return false;
+                return std::nullopt;
 
             required_size++;
         }
     }
+    return required_size;
+}
+
+bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint64_t money) const
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    if (owner->money_free_space() < money)
+        return false;
+
+    auto required_size = items::required_slots(items);
+    if (required_size.has_value() == false)
+        return false;
 
     auto free_size = this->free_size();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -1567,7 +1575,7 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
         free_size++;
     }
 
-    return free_size >= required_size;
+    return free_size >= required_size.value();
 }
 
 bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const

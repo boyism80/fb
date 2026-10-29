@@ -1839,16 +1839,16 @@ return {
 
         local capacity = bundle:capacity()
         local cases = {
-            { name = bundle_name, count = capacity + 1, expected = false },
-            { name = single_name, count = 53, expected = false },
-            { name = single_name, count = 65536, expected = false },
-            { name = bundle_name, count = capacity, expected = true },
+            { label = 'bundle over capacity', item = { [bundle_name] = capacity + 1 }, expected = false },
+            { label = 'single over slots', item = { [single_name] = 53 }, expected = false },
+            { label = 'single over uint16', item = { [single_name] = 65536 }, expected = false },
+            { label = 'mixed over slots', item = { [single_name] = 52, [bundle_name] = 1 }, expected = false },
+            { label = 'bundle at capacity', item = { [bundle_name] = capacity }, expected = true },
         }
         for _, case in ipairs(cases) do
-            local ok = me:send_storage_box(me:name(), 'integration', 'storage grant limit',
-                { item = { [case.name] = case.count } })
+            local ok = me:send_storage_box(me:name(), 'integration', 'storage grant limit', { item = case.item })
             if (ok == true) ~= case.expected then
-                return report(me, false, step, string.format('%s x%d returned %s', case.name, case.count, tostring(ok)))
+                return report(me, false, step, string.format('%s returned %s', case.label, tostring(ok)))
             end
         end
         report(me, true, step)

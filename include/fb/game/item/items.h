@@ -154,6 +154,7 @@ public:
     item_ptr                                        remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     item_ptr                                        remove(item_ptr item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     [[nodiscard]] async::task<void>                 remove_expired();
+    static std::optional<uint32_t>                  required_slots(const std::unordered_map<uint32_t, uint16_t>& items);
     bool                                            is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint64_t money = 0) const;
     bool                                            is_rewardable(const std::vector<fb::model::dsl>& items) const;
     [[nodiscard]] async::task<exchange_result>      exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint64_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint64_t reward_money, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::GIVE);
