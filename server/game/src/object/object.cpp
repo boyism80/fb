@@ -415,16 +415,12 @@ void object::update_sector()
     this->assert_thread();
 
     auto before = this->_sector;
-    auto after  = this->_map->sectors.at(this->_position);
+    auto after  = this->_map != nullptr ? this->_map->sectors.at(this->_position) : nullptr;
     if (before == after)
         return;
 
     if (before)
         before->erase(this->shared_from_this_as<object>());
-
-    this->_sector = nullptr;
-    if (this->_map == nullptr)
-        return;
 
     this->_sector = after;
     if (after)
@@ -645,6 +641,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         }
 
         co_await this->server.threads.switching(weak);
+        if (this->_map != map)
+            co_return false;
 
         // The instance may have started closing while this object was leaving its previous map.
         // Checking again on the map thread is enough: nothing below suspends before objects.push,
@@ -667,6 +665,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
             }
             map = source;
             co_await this->server.threads.switching(weak);
+            if (this->_map != map)
+                co_return false;
         }
 
         // Call listener for packet response
