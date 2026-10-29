@@ -18,7 +18,9 @@ return {
             elseif sel == 2 then
                 local btn = me:dialog(npc, "정령들이 화를 내고 있다. 아, 정령들이 집으로 삼는 토템들이 이 섬을 떠나는구나.",
                     { prev = false, next = false })
-                if btn == DIALOG_RESULT.QUIT then return end
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
                 dq:step(13)
                 me:dialog(npc, "보름달이 뜨면 정령들이 분노를 이기지 못하고 비명을 내지른다. 아아, 이를 어이해야 좋단 말이더냐.", { prev = false, next = false })
                 return
@@ -275,7 +277,7 @@ return {
                 '황혼의갑주를 주세요.(남자전사용)',
                 '여명의연갑을 주세요.(여자전사용)',
                 '황혼의활복을 주세요.(남자도적용)',
-                '여병의도복을 주세요.(여자도적용)',
+                '여명의도복을 주세요.(여자도적용)',
                 '황혼의도포를 주세요.(남자주술사용)',
                 '여명의치마를 주세요.(여자주술사용)',
                 '황혼의장삼을 주세요.(남자도사용)',
