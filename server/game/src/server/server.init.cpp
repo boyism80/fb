@@ -454,6 +454,8 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     _exp_multiplier(fb::config<double>("exp_multiplier")),
     _drop_rate_multiplier(fb::config<double>("drop_rate_multiplier")),
     _rezen_multiplier(fb::config<std::optional<double>>("rezen_multiplier").value_or(1.0)),
+    _drop_count_multiplier(
+        std::max<uint32_t>(1, fb::config<std::optional<uint32_t>>("drop_count_multiplier").value_or(1))),
     _exp_limited(fb::config<std::optional<bool>>("exp_limit").value_or(true))
 { }
 

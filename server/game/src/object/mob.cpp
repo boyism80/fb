@@ -628,13 +628,23 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
             auto                     params           = fb::model::dsl::item(dsl.params);
             auto                     multiplier       = this->server.drop_rate_multiplier();
             auto                     adjusted_percent = std::min(100.0, params.percent * multiplier);
-            auto                     roll             = std::uniform_real_distribution<double>(0.0, 100.0)(random);
-            if (!(roll < adjusted_percent))
+            auto                     rolls            = this->server.drop_count_multiplier();
+            auto dropped = std::binomial_distribution<uint32_t>(rolls, std::max(0.0, adjusted_percent) / 100.0)(random);
+            if (dropped == 0)
                 continue;
 
-            auto item   = table::item[params.id].make(this->server);
-            std::ignore = co_await item->map(map, position, {.notify = false});
-            oids.push_back(item->oid());
+            auto& goods    = table::item[params.id];
+            auto  capacity = goods.attr(ITEM_ATTRIBUTE::CASH)     ? dropped
+                             : goods.attr(ITEM_ATTRIBUTE::BUNDLE) ? std::max<uint32_t>(goods.capacity, 1)
+                                                                  : 1u;
+            while (dropped > 0)
+            {
+                auto count  = std::min<uint32_t>({dropped, capacity, std::numeric_limits<uint16_t>::max()});
+                auto item   = goods.make(this->server, static_cast<uint16_t>(count));
+                std::ignore = co_await item->map(map, position, {.notify = false});
+                oids.push_back(item->oid());
+                dropped -= count;
+            }
         }
         break;
         }

@@ -101,6 +101,7 @@ module.exports = function () {
                     exp_multiplier: conf.game?.exp_multiplier ?? 1.0,
                     drop_rate_multiplier: conf.game?.drop_rate_multiplier ?? 1.0,
                     rezen_multiplier: conf.game?.rezen_multiplier ?? 1.0,
+                    drop_count_multiplier: conf.game?.drop_count_multiplier ?? 1,
                     exp_limit: conf.game?.exp_limit ?? true,
                     http: {
                         max_concurrent: 128

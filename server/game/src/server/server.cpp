@@ -505,6 +505,11 @@ double fb::game::server::rezen_multiplier() const
     return this->_rezen_multiplier;
 }
 
+uint32_t fb::game::server::drop_count_multiplier() const
+{
+    return this->_drop_count_multiplier;
+}
+
 bool fb::game::server::exp_limited() const
 {
     return this->_exp_limited;

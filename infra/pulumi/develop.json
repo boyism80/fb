@@ -2,7 +2,8 @@
     "transfer_secret": "c049fb55e1a0e6ba3793653f57ddbeeffc2956dbb950f518",
     "game": {
         "exp_multiplier": 100.0,
-        "drop_rate_multiplier": 100.0,
+        "drop_rate_multiplier": 1.0,
+        "drop_count_multiplier": 100,
         "rezen_multiplier": 20.0,
         "exp_limit": false
     },
