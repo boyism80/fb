@@ -571,6 +571,7 @@ function M.goddess_dew_on_move(me)
     local ITEM_DEW = '여신의이슬'
     local DEW_ACHIEVEMENT_ID = 42
     local TOTEM_WATER_MAX = 50
+    local TOTEM_WATER_MADE = TOTEM_WATER_MAX + 1
 
     local quest = me:quest(M.QUEST_TOTEM_CLOTHES)
     if quest == nil or quest:completed() then
@@ -605,6 +606,9 @@ function M.goddess_dew_on_move(me)
             check = tonumber(parts[3]) or 0
             water = tonumber(parts[4]) or 0
         end
+    end
+    if water >= TOTEM_WATER_MADE then
+        return
     end
     if water < TOTEM_WATER_MAX then
         if check == 0 then
@@ -642,6 +646,7 @@ function M.goddess_dew_on_move(me)
         me:message('소지품이 가득 차서 여신의 이슬을 담을 수 없다.')
         return
     end
+    quest:param(string.format('%d,%d,0,%d', x, y, TOTEM_WATER_MADE))
     me:push_achievement(DEW_ACHIEVEMENT_ID, '여신의이슬을 만들었다.', 7, 16)
     me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', { prev = false, next = true })
 end

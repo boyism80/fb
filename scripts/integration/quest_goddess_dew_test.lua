@@ -20,14 +20,6 @@ test_suite({
     name = "Quest Goddess Dew Test",
     bot_count = 1,
 
-    should_skip = function(_ctx)
-        if localhost() then
-            log("debug", "Goddess dew test skipped on local host (폭염도 runs on another game server)")
-            return true
-        end
-        return false
-    end,
-
     on_scenario_finished = function(ctx)
         local bot = ctx:bot(0)
         qd.close(bot)
@@ -38,6 +30,11 @@ test_suite({
     scenarios = {
         function(ctx)
             local bot = ctx:bot(0)
+
+            if localhost() and check(bot, "verify_map_active", "dew_hosted", DEW_MAP) == false then
+                log("debug", "Goddess dew test skipped (폭염도 runs on another game server)")
+                return true
+            end
 
             bot:map_move(DEW_MAP, DEW_X, DEW_Y)
             local function arrived()
@@ -84,6 +81,16 @@ test_suite({
             end
             if check(bot, "verify_quest", "dew_quest", QUEST_TOTEM_CLOTHES, "1") == false then
                 return fail("the quest step changed while making %s", DEW_ITEM)
+            end
+
+            bot:clear_inventory()
+            bot:move("BOTTOM")
+            lib.wait.state(bot, resp.item_update, function()
+                return bot:has_item_by_name(DEW_ITEM)
+            end, 3000)
+            qd.close(bot)
+            if check(bot, "verify_items", "dew_once_items", DEW_ITEM .. "=0") == false then
+                return fail("%s was made again after the first one left the inventory", DEW_ITEM)
             end
             return true
         end,
