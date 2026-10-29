@@ -135,8 +135,6 @@
                     var authData = new AuthData
                     {
                         UserId = result.UserId.Value,
-                        UserName = result.UserName,
-                        Role = result.Role.Value.ToString(),
                         LoginWorld = world
                     };
                     await customProvider.MarkUserAsAuthenticated(authData);

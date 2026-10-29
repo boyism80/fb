@@ -582,6 +582,7 @@
 
     private async Task LoadCurrentUserRole()
     {
+        currentUserRole = Role.User;
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated != true)
             return;
@@ -687,7 +688,6 @@
         if (core == null)
             return;
 
-        var targetRole = core.Character.Role;
         var isSelf = IsSelfUser();
 
         if (!selectedWorld.HasValue)
@@ -716,7 +716,23 @@
 
         var newRole = (Role)newRoleInt;
 
-        var hasStandardPrivilege = (targetRole < currentUserRole || isSelf) && newRole <= currentUserRole;
+        await LoadCurrentUserRole();
+        if (currentUserRole < Role.Admin)
+        {
+            errorMessage = "Your admin role is no longer valid. Please log in again.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        var character = await dbContext.Character.Get(selectedWorld.Value, core.Character.Id);
+        if (character == null)
+        {
+            errorMessage = "Character not found.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        var hasStandardPrivilege = (character.Role < currentUserRole || isSelf) && newRole <= currentUserRole;
         if (!hasStandardPrivilege)
         {
             var providedSecret = roleModel.SecretKey?.Trim();
@@ -739,14 +755,6 @@
 
         try
         {
-            var character = await dbContext.Character.Get(selectedWorld.Value, core.Character.Id);
-            if (character == null)
-            {
-                errorMessage = "Character not found.";
-                CloseChangeRoleModal();
-                return;
-            }
-
             var oldRole = character.Role;
             character.Role = newRole;
             character.UpdatedDate = DateTime.UtcNow;
@@ -768,8 +776,6 @@
                     var authData = new AuthData
                     {
                         UserId = currentUserId,
-                        UserName = character.Name,
-                        Role = newRole.ToString(),
                         LoginWorld = loginWorld
                     };
                     await customProvider.MarkUserAsAuthenticated(authData);
@@ -807,6 +813,13 @@
     {
         if (core == null || !selectedWorld.HasValue)
             return;
+
+        await LoadCurrentUserRole();
+        if (currentUserRole < Role.Admin)
+        {
+            errorMessage = "Your admin role is no longer valid. Please log in again.";
+            return;
+        }
 
         isBanProcessing = true;
         errorMessage = null;
@@ -851,6 +864,13 @@
     {
         if (core == null || !selectedWorld.HasValue)
             return;
+
+        await LoadCurrentUserRole();
+        if (currentUserRole < Role.Admin)
+        {
+            errorMessage = "Your admin role is no longer valid. Please log in again.";
+            return;
+        }
 
         isBanProcessing = true;
         errorMessage = null;

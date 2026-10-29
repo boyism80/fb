@@ -9,6 +9,7 @@
 @inject IServiceScopeFactory ScopeFactory
 @inject AdminActivityLogService ActivityLog
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>아이템 지급 - FB Admin</PageTitle>
 
@@ -644,6 +645,13 @@
     {
         errorMessage = null;
         successMessage = null;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            errorMessage = "Your admin role is no longer valid. Please log in again.";
+            return;
+        }
 
         if (!model.IsGlobal && string.IsNullOrWhiteSpace(model.UserName))
         {
