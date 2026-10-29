@@ -52,12 +52,7 @@ void outbound_buffer::append(std::shared_ptr<fb::tcp_socket> endpoint, fb::strea
     }
 
     if (overflow)
-    {
-        boost::asio::post(endpoint->get_executor(), [endpoint]() {
-            auto ec = boost::system::error_code();
-            endpoint->close(ec);
-        });
-    }
+        fb::tcp_socket::close(endpoint);
 }
 
 void outbound_buffer::flush()

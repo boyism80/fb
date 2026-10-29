@@ -181,8 +181,7 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
             }
             catch (std::exception&)
             {
-                auto ec = boost::system::error_code();
-                session.close(ec);
+                session.close();
             }
         }
         co_return false;

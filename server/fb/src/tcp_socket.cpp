@@ -52,14 +52,19 @@ void tcp_socket::write(const std::shared_ptr<tcp_socket>& socket, fb::stream wir
     if (overflow)
     {
         // Close on the socket's executor; the in-flight write then fails and drops the rest of the queue.
-        boost::asio::post(socket->get_executor(), [socket]() {
-            auto ec = boost::system::error_code();
-            socket->close(ec);
-        });
+        tcp_socket::close(socket);
 
         if (handler != nullptr)
             handler(boost::asio::error::no_buffer_space, 0);
     }
+}
+
+void tcp_socket::close(const std::shared_ptr<tcp_socket>& socket)
+{
+    boost::asio::post(socket->get_executor(), [socket]() {
+        auto ec = boost::system::error_code();
+        socket->close(ec);
+    });
 }
 
 // Requires socket->_write_mutex to be held by the caller.
@@ -99,12 +104,7 @@ void tcp_socket::write_front(const std::shared_ptr<tcp_socket>& socket)
                                  }
 
                                  if (ec)
-                                 {
-                                     boost::asio::post(socket->get_executor(), [socket]() {
-                                         auto close_ec = boost::system::error_code();
-                                         socket->close(close_ec);
-                                     });
-                                 }
+                                     tcp_socket::close(socket);
 
                                  // Handlers run outside the lock because they may call write() again.
                                  if (completed != nullptr)

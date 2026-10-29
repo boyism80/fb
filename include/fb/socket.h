@@ -222,6 +222,15 @@ public:
         return promise->task();
     }
 
+    void close()
+    {
+        auto self = this->weak_from_this().lock();
+        if (self == nullptr)
+            return;
+
+        fb::tcp_socket::close(std::static_pointer_cast<fb::socket<T>>(self));
+    }
+
 public:
     std::string ip() const
     {

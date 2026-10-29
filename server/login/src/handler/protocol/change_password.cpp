@@ -119,8 +119,7 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
             }
             catch (std::exception&)
             {
-                auto ec = boost::system::error_code();
-                session.close(ec);
+                session.close();
             }
         }
         co_return false;

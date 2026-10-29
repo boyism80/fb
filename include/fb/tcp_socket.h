@@ -46,8 +46,11 @@ public:
 public:
     // Takes shared ownership so the socket outlives every in-flight async_write.
     static void write(const std::shared_ptr<tcp_socket>& socket, fb::stream wire, write_handler handler = nullptr);
+    static void close(const std::shared_ptr<tcp_socket>& socket);
 
 private:
+    using boost::asio::ip::tcp::socket::close;
+
     static void write_front(const std::shared_ptr<tcp_socket>& socket);
 };
 

@@ -375,9 +375,8 @@ private:
             co_await fb::async_await_task(this->on_connected(*socket_ptr), boost::asio::use_awaitable);
 
             // Every server binds session data on its first packet; drop connections that never send one.
-            auto& context     = static_cast<boost::asio::io_context&>(*this);
-            auto  login_timer = std::make_shared<boost::asio::steady_timer>(context, LOGIN_TIMEOUT);
-            auto  weak        = std::weak_ptr<fb::socket<T>>(socket_ptr);
+            auto login_timer = std::make_shared<boost::asio::steady_timer>(socket_ptr->get_executor(), LOGIN_TIMEOUT);
+            auto weak        = std::weak_ptr<fb::socket<T>>(socket_ptr);
             login_timer->async_wait([login_timer, weak](const boost::system::error_code& ec) {
                 if (ec)
                     return;
@@ -443,7 +442,7 @@ private:
                 try
                 {
                     // Drive cpp-async handshake on an Asio awaitable without blocking the IO thread.
-                    boost::asio::co_spawn(*this, this->serve(socket_ptr), boost::asio::detached);
+                    boost::asio::co_spawn(socket_ptr->get_executor(), this->serve(socket_ptr), boost::asio::detached);
                 }
                 catch (std::exception& e)
                 {
