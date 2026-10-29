@@ -1783,6 +1783,33 @@ return {
         end
     end,
 
+    verify_storage_grant_limit = function(me, step, bundle_name, single_name)
+        local bundle = name2item(bundle_name)
+        local single = name2item(single_name)
+        if bundle == nil or single == nil then
+            return report(me, false, step, 'unknown item')
+        end
+        if bundle:attr(ITEM_ATTRIBUTE.BUNDLE) ~= true or single:attr(ITEM_ATTRIBUTE.BUNDLE) == true then
+            return report(me, false, step, 'wrong item kind')
+        end
+
+        local capacity = bundle:capacity()
+        local cases = {
+            { name = bundle_name, count = capacity + 1, expected = false },
+            { name = single_name, count = 53, expected = false },
+            { name = single_name, count = 65536, expected = false },
+            { name = bundle_name, count = capacity, expected = true },
+        }
+        for _, case in ipairs(cases) do
+            local ok = me:send_storage_box(me:name(), 'integration', 'storage grant limit',
+                { item = { [case.name] = case.count } })
+            if (ok == true) ~= case.expected then
+                return report(me, false, step, string.format('%s x%d returned %s', case.name, case.count, tostring(ok)))
+            end
+        end
+        report(me, true, step)
+    end,
+
     cleanup = function(me, step)
         local map = me:map()
         if map ~= nil then

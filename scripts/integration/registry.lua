@@ -59,6 +59,7 @@ register_test("magpie_bridge_test", { serial = true, label = "script" })
 register_test("character_rule_test")
 register_test("warp_cost_test")
 register_test("worldmap_restraint_test")
+register_test("storage_grant_limit_test")
 register_test("user_list_cache_test", { serial = true })
 
 register_test("quest_clear_shield_test", { label = "script" })

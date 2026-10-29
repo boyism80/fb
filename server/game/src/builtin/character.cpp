@@ -6888,17 +6888,28 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                 if (lua->is_string(-2) && lua->is_number(-1))
                 {
                     auto name  = lua->tostring(-2);
-                    auto count = static_cast<uint32_t>(lua->tointeger(-1));
+                    auto count = lua->tointeger(-1);
                     auto model = table::item->name2item(name);
                     if (model == nullptr)
                     {
                         fb::logger::warn("storage_box: unknown item name '{}'", name);
                         unknown_item = true;
                     }
+                    else if (count > (model->attr(ITEM_ATTRIBUTE::BUNDLE) ? model->capacity : CONTAINER_CAPACITY))
+                    {
+                        fb::logger::warn("storage_box: item '{}' count {} exceeds what one character can hold",
+                                         name,
+                                         count);
+                        unknown_item = true;
+                    }
                     else if (count > 0)
                     {
-                        auto item_dsl =
-                            fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0, std::nullopt);
+                        auto item_dsl = fb::model::dsl::item(model->id,
+                                                             static_cast<uint32_t>(count),
+                                                             std::nullopt,
+                                                             std::nullopt,
+                                                             100.0,
+                                                             std::nullopt);
                         attachments.push_back(item_dsl.to_dsl());
                     }
                 }
@@ -7048,17 +7059,28 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
                 if (lua->is_string(-2) && lua->is_number(-1))
                 {
                     auto name  = lua->tostring(-2);
-                    auto count = static_cast<uint32_t>(lua->tointeger(-1));
+                    auto count = lua->tointeger(-1);
                     auto model = table::item->name2item(name);
                     if (model == nullptr)
                     {
                         fb::logger::warn("storage_box: unknown item name '{}'", name);
                         unknown_item = true;
                     }
+                    else if (count > (model->attr(ITEM_ATTRIBUTE::BUNDLE) ? model->capacity : CONTAINER_CAPACITY))
+                    {
+                        fb::logger::warn("storage_box: item '{}' count {} exceeds what one character can hold",
+                                         name,
+                                         count);
+                        unknown_item = true;
+                    }
                     else if (count > 0)
                     {
-                        auto item_dsl =
-                            fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0, std::nullopt);
+                        auto item_dsl = fb::model::dsl::item(model->id,
+                                                             static_cast<uint32_t>(count),
+                                                             std::nullopt,
+                                                             std::nullopt,
+                                                             100.0,
+                                                             std::nullopt);
                         attachments.push_back(item_dsl.to_dsl());
                     }
                 }

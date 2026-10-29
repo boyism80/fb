@@ -1580,8 +1580,12 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
         {
         case fb::model::enum_value::DSL::item:
         {
-            auto params        = fb::model::dsl::item(item.params);
-            buffer[params.id] += params.count;
+            auto  params = fb::model::dsl::item(item.params);
+            auto& count  = buffer[params.id];
+            if (params.count > static_cast<uint32_t>(std::numeric_limits<uint16_t>::max() - count))
+                return false;
+
+            count += static_cast<uint16_t>(params.count);
             break;
         }
         case fb::model::enum_value::DSL::money:

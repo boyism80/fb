@@ -1,5 +1,7 @@
 local M = {}
 
+local MAX_ITEM_SLOTS = 52
+
 local function parse_positive_number(raw)
     if raw == nil or raw == '' then
         return nil
@@ -63,7 +65,8 @@ function M.handle(me, npc)
             me:dialog(npc, '아이템 이름이 필요합니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
-        if name2item(item_name) == nil then
+        local item_model = name2item(item_name)
+        if item_model == nil then
             me:dialog(npc, '존재하지 않는 아이템입니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
@@ -75,7 +78,17 @@ function M.handle(me, npc)
             goto REWARD_MENU
         end
 
-        attachments['item'][item_name] = (attachments['item'][item_name] or 0) + count
+        local total = (attachments['item'][item_name] or 0) + count
+        local limit = MAX_ITEM_SLOTS
+        if item_model:attr(ITEM_ATTRIBUTE.BUNDLE) then
+            limit = item_model:capacity()
+        end
+        if total > limit then
+            me:dialog(npc, string.format('%s 최대 %d개까지 보낼 수 있습니다.', name_with(item_name, '은', '는'), limit), { prev = false, next = true })
+            goto REWARD_MENU
+        end
+
+        attachments['item'][item_name] = total
         goto REWARD_MENU
     elseif reward_sel == 2 then
         local count_raw = me:input(npc, '경험치를 입력하세요.')
