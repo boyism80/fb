@@ -300,6 +300,15 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
 
 bool map::movable(const object& object, const fb::model::point16_t& from, DIRECTION direction) const
 {
+    auto to = this->step(from, direction);
+    if (to.has_value() == false)
+        return false;
+
+    return this->movable(object, to.value());
+}
+
+std::optional<fb::model::point16_t> map::step(const fb::model::point16_t& from, DIRECTION direction) const
+{
     auto to         = from;
     auto leave_mask = uint8_t{0};
     auto enter_mask = uint8_t{0};
@@ -330,32 +339,27 @@ bool map::movable(const object& object, const fb::model::point16_t& from, DIRECT
         break;
 
     default:
-        return false;
+        return std::nullopt;
     }
 
     if (this->in_ground(from) == false)
-        return false;
+        return std::nullopt;
 
     if (this->in_ground(to) == false)
-        return false;
+        return std::nullopt;
 
     auto from_tile = (*this)(from.x, from.y);
     auto to_tile   = (*this)(to.x, to.y);
     if (from_tile == nullptr || to_tile == nullptr)
-        return false;
+        return std::nullopt;
 
     if ((this->server.sobj.collision(from_tile->object) & leave_mask) != 0)
-        return false;
+        return std::nullopt;
 
     if ((this->server.sobj.collision(to_tile->object) & enter_mask) != 0)
-        return false;
+        return std::nullopt;
 
-    return this->movable(object, to);
-}
-
-bool map::movable_forward(const object& object, uint16_t step) const
-{
-    return this->movable(object, object.position(), object.direction());
+    return to;
 }
 
 const fb::model::warp* map::warpable(const fb::model::point16_t& position) const

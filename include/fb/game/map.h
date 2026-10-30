@@ -106,42 +106,42 @@ private:
 
 public:
     // clang-format off
-    const fb::model::map&           model() const;
-    MAP_CONFIG_FLAG                 config_flag() const;
-    void                            config_flag(MAP_CONFIG_FLAG value);
-    bool                            pk_enabled() const;
-    uint64_t                        index(const fb::model::point16_t& p) const;
-    fb::model::point16_t            point(uint64_t i) const;
-    bool                            blocked(uint16_t x, uint16_t y) const;
-    bool                            block(uint16_t x, uint16_t y, bool option);
-    uint16_t                        width() const;
-    uint16_t                        height() const;
-    fb::model::size16_t             size() const;
-    bool                            loaded() const;
-    bool                            in_ground(const fb::model::point16_t position) const;
-    bool                            movable(const fb::model::point16_t& position, const std::function<bool(const object&)>& predicate) const;
-    bool                            movable(const object& object, const fb::model::point16_t position) const;
-    bool                            movable(const object& object, const fb::model::point16_t& from, DIRECTION direction) const;
-    bool                            movable_forward(const object& object, uint16_t step = 1) const;
-    const fb::model::warp*          warpable(const fb::model::point16_t& position) const;
-    bool                            is_active() const;
-    std::vector<object_ptr>         nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    std::vector<object_ptr>         belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    void                            bulk_update(const std::vector<uint32_t>& oids);
-    void                            rezen_force() const;
-    fb::thread*                     thread() const override;
-    virtual bool                    is_instance() const;
-    virtual std::shared_ptr<map>    source() const;
-    virtual uint32_t                slot() const;
-    virtual bool                    closing() const;
-    virtual void                    on_character_enter();
-    virtual void                    on_character_leave();
-    virtual bool                    begin_destroy();
-    uint32_t                        character_count() const;
-    bool                            spawnable_summon() const;
-    bool                            try_reserve_summon();
-    void                            release_summon();
-    async::task<bool>               kick(character& ch) const;
+    const fb::model::map&               model() const;
+    MAP_CONFIG_FLAG                     config_flag() const;
+    void                                config_flag(MAP_CONFIG_FLAG value);
+    bool                                pk_enabled() const;
+    uint64_t                            index(const fb::model::point16_t& p) const;
+    fb::model::point16_t                point(uint64_t i) const;
+    bool                                blocked(uint16_t x, uint16_t y) const;
+    bool                                block(uint16_t x, uint16_t y, bool option);
+    uint16_t                            width() const;
+    uint16_t                            height() const;
+    fb::model::size16_t                 size() const;
+    bool                                loaded() const;
+    bool                                in_ground(const fb::model::point16_t position) const;
+    bool                                movable(const fb::model::point16_t& position, const std::function<bool(const object&)>& predicate) const;
+    bool                                movable(const object& object, const fb::model::point16_t position) const;
+    bool                                movable(const object& object, const fb::model::point16_t& from, DIRECTION direction) const;
+    std::optional<fb::model::point16_t> step(const fb::model::point16_t& from, DIRECTION direction) const;
+    const fb::model::warp*              warpable(const fb::model::point16_t& position) const;
+    bool                                is_active() const;
+    std::vector<object_ptr>             nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>             belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    void                                bulk_update(const std::vector<uint32_t>& oids);
+    void                                rezen_force() const;
+    fb::thread*                         thread() const override;
+    virtual bool                        is_instance() const;
+    virtual std::shared_ptr<map>        source() const;
+    virtual uint32_t                    slot() const;
+    virtual bool                        closing() const;
+    virtual void                        on_character_enter();
+    virtual void                        on_character_leave();
+    virtual bool                        begin_destroy();
+    uint32_t                            character_count() const;
+    bool                                spawnable_summon() const;
+    bool                                try_reserve_summon();
+    void                                release_summon();
+    async::task<bool>                   kick(character& ch) const;
     // clang-format on
 
 public:

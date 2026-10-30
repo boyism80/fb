@@ -322,15 +322,34 @@ int builtin::map::builtin_movable(lua_State* L)
         if (obj->is(OBJECT_TYPE::CHARACTER))
             role = static_cast<character*>(obj.get())->role();
 
-        auto pos = position;
+        auto pos       = position;
+        auto direction = obj->direction();
         if (is_front)
-            pos = obj->front_position(step);
+            pos = obj->position();
 
         co_await server.threads.switching(map_weak);
 
         auto map_locked = map_weak.lock();
         if (map_locked == nullptr)
             co_return;
+
+        if (is_front)
+        {
+            auto ignore_objects = [](const fb::game::object&) {
+                return false;
+            };
+            for (auto i = 0; i < step; i++)
+            {
+                auto next = map_locked->step(pos, direction);
+                if (next.has_value() == false)
+                    co_return;
+
+                if (map_locked->movable(next.value(), ignore_objects) == false)
+                    co_return;
+
+                pos = next.value();
+            }
+        }
 
         *result = map_locked->movable(pos, [=](const auto& near_obj) -> bool {
             if (near_obj.is(OBJECT_TYPE::CHARACTER) == false)
