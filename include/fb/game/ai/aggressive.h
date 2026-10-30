@@ -11,9 +11,6 @@ private:
     using super    = ai;
     using datetime = fb::model::datetime;
 
-private:
-    datetime _target_lock_time = datetime::utc_now();
-
 public:
     // clang-format off
     [[nodiscard]] async::task<bool> execute(mob& mob_obj, const datetime& now) override;

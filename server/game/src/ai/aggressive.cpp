@@ -18,10 +18,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     {
         target = super::find_target_in_sight(mob_obj, now);
         if (target != nullptr)
-        {
-            mob_obj.target(target);
-            this->_target_lock_time = now;
-        }
+            super::lock_target(mob_obj, target, now);
     }
 
     if (target == nullptr)
@@ -35,10 +32,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     if (adjacent != nullptr && mob_obj.near_target(adjacent, attack_dir))
     {
         if (adjacent != target)
-        {
-            mob_obj.target(adjacent);
-            this->_target_lock_time = now;
-        }
+            super::lock_target(mob_obj, adjacent, now);
         mob_obj.direction(attack_dir);
         co_await mob_obj.attack();
     }

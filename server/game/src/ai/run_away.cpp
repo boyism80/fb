@@ -23,10 +23,7 @@ async::task<bool> run_away_ai::execute(mob& mob_obj, const datetime& now)
         // Try to find a new target in sight
         target = super::find_target_in_sight(mob_obj, now);
         if (target != nullptr)
-        {
-            mob_obj.target(target);
-            this->_target_lock_time = now;
-        }
+            super::lock_target(mob_obj, target, now);
     }
 
     if (target == nullptr)

@@ -100,10 +100,7 @@ void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime&
     // If we don't have a target or our target lock expired,
     // immediately switch to this attacker
     if (mob_obj.target() == nullptr || !this->should_maintain_target(mob_obj, now))
-    {
-        mob_obj.target(attacker);
-        this->_target_lock_time = now;
-    }
+        this->lock_target(mob_obj, attacker, now);
 }
 
 std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now)
@@ -275,6 +272,12 @@ bool ai::should_maintain_target(const mob& mob_obj, const datetime& now) const
 
     // Keep current target for at least TARGET_LOCK_DURATION
     return (now - this->_target_lock_time) <= TARGET_LOCK_DURATION;
+}
+
+void ai::lock_target(mob& mob_obj, std::shared_ptr<life> target, const datetime& now)
+{
+    mob_obj.target(target);
+    this->_target_lock_time = now;
 }
 
 void ai::record_damage(std::shared_ptr<life> attacker, const datetime& now)
