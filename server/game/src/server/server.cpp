@@ -187,7 +187,7 @@ uint8_t fb::game::server::brightness() const
 async::task<bool> fb::game::server::save(character& ch, bool release)
 {
     // Save overwrites items, spells, achievements and quests; a partially loaded character would wipe them.
-    if (ch.inited() == false || ch.loaded() == false)
+    if (ch.transferring() == false && (ch.inited() == false || ch.loaded() == false))
         co_return false;
 
     if (!fb::config<std::optional<uint32_t>>("world") && ch.matchmaker.has_return_point() == false)

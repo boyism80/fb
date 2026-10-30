@@ -4342,16 +4342,21 @@ int builtin::character::builtin_transfer_to(lua_State* L)
 
     auto ip_str   = std::string(ip);
     auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto started  = std::make_shared<bool>(false);
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
+        *started = ch->begin_transfer();
+        if (*started == false)
+            co_return;
+
         std::ignore = co_await ch->map(nullptr);
         co_await ch->server.save(*ch, true);
         co_await ch->listener.on_transfer(*ch, *map, position, ip_str, port, option);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(true);
+        lua->pushboolean(*started);
         co_return 1;
     };
     return builder.run();

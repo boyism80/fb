@@ -91,6 +91,7 @@ private:
         LOADING,
         LOADED,
         ABORTED,
+        TRANSFERRING,
         TRANSFERRED,
     };
 
@@ -387,7 +388,10 @@ public:
     bool                                                      loaded() const;
     bool                                                      complete_login();
     bool                                                      abort_login();
+    bool                                                      begin_transfer();
+    bool                                                      cancel_transfer();
     bool                                                      hand_off();
+    bool                                                      transferring() const;
     bool                                                      transferred() const;
     ROLE                                                      role() const;
     uint32_t                                                  world() const;

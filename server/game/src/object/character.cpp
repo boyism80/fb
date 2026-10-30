@@ -205,7 +205,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     if (this->_thread == nullptr)
         co_return true;
 
-    if (map != nullptr && this->transferred())
+    if (map != nullptr && (this->transferring() || this->transferred()))
         co_return false;
 
     this->assert_thread();
@@ -293,6 +293,9 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             if (options.before && co_await options.before() == false)
                 co_return false;
 
+            if (this->begin_transfer() == false)
+                co_return false;
+
             this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
             co_await this->server.save(*this, true);
@@ -301,6 +304,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         }
         catch (std::exception& e)
         {
+            this->cancel_transfer();
             this->update_map();
             this->show();
             this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
@@ -308,6 +312,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         }
         catch (boost::system::error_code& /*e*/)
         {
+            this->cancel_transfer();
             this->update_map();
             this->show();
             this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
@@ -378,7 +383,7 @@ bool character::inited() const
     if (this->_thread == nullptr)
         return false;
 
-    if (this->_login_state == LOGIN_STATE::TRANSFERRED)
+    if (this->_login_state == LOGIN_STATE::TRANSFERRING || this->_login_state == LOGIN_STATE::TRANSFERRED)
         return false;
 
     return true;
@@ -401,10 +406,27 @@ bool character::abort_login()
     return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::ABORTED);
 }
 
-bool character::hand_off()
+bool character::begin_transfer()
 {
     auto expected = LOGIN_STATE::LOADED;
+    return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::TRANSFERRING);
+}
+
+bool character::cancel_transfer()
+{
+    auto expected = LOGIN_STATE::TRANSFERRING;
+    return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
+}
+
+bool character::hand_off()
+{
+    auto expected = LOGIN_STATE::TRANSFERRING;
     return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::TRANSFERRED);
+}
+
+bool character::transferring() const
+{
+    return this->_login_state == LOGIN_STATE::TRANSFERRING;
 }
 
 bool character::transferred() const

@@ -847,12 +847,16 @@ async::task<bool> matchmaker::transfer_home()
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
             }
 
+            if (this->owner.begin_transfer() == false)
+                co_return false;
+
             std::ignore = co_await this->owner.map(nullptr);
             co_await this->owner.server.save(this->owner, true);
             co_await this->owner.listener.on_transfer(this->owner, *dest, position, resp.ip, resp.port);
         }
         catch (std::exception& e)
         {
+            this->owner.cancel_transfer();
             this->owner.update_map();
             this->owner.show();
             this->owner.listener.on_message(this->owner, e.what(), MESSAGE_TYPE::STATE);
@@ -861,6 +865,7 @@ async::task<bool> matchmaker::transfer_home()
         }
         catch (boost::system::error_code& /*e*/)
         {
+            this->owner.cancel_transfer();
             this->owner.update_map();
             this->owner.show();
             this->owner.listener.on_message(this->owner, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
