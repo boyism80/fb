@@ -28,33 +28,41 @@ return {
             return
         end
 
+        local root = map:model():root()
+        local cardinal = nil
+        if root ~= nil then
+            cardinal = root:cardinal(input)
+        end
+        if cardinal == nil then
+            me:message('이곳에서는 사용할 수 없습니다.')
+            return
+        end
+
+        local dest, left, top, right, bottom = table.unpack(cardinal)
+        math.randomseed(seed())
+        local x = math.random(left, right)
+        local y = math.random(top, bottom)
+
+        -- Preserve instance slot across cardinal warps. dest:name() alone
+        -- resolves to the source map and drops the caller's instance.
+        local target = dest
+        if map:instance() then
+            target = dest:instance(map:slot())
+        end
+        if target == nil then
+            me:message('이곳에서는 사용할 수 없습니다.')
+            return
+        end
+
         local mp = 30
         local effect = nil
         local sound = 1
-        if spell.cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
-            local root = map:model():root()
-            local cardinal = root:cardinal(input)
-            if cardinal == nil then
-                return
-            end
+        if not spell.cast(me, me, sp, { mp = mp, sound = sound, effect = effect }) then
+            return
+        end
 
-            local dest, left, top, right, bottom = table.unpack(cardinal)
-            math.randomseed(seed())
-            local x = math.random(left, right)
-            local y = math.random(top, bottom)
-
-            -- Preserve instance slot across cardinal warps. dest:name() alone
-            -- resolves to the source map and drops the caller's instance.
-            local target = dest
-            if map:instance() then
-                target = dest:instance(map:slot())
-                if target == nil then
-                    return
-                end
-            end
-
-            me:map(target, x, y)
-            me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
+        if me:map(target, x, y) ~= true then
+            me:mp_up(mp)
         end
     end,
 

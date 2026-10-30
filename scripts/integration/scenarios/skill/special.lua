@@ -307,7 +307,8 @@ local SPECIAL_SPELLS = {
                 end)
             state.packet = packet
 
-            if type(packet) ~= "table" or skill.is_cast_ready(packet.text, "비영사천문") == false then
+            local unavailable = type(packet) == "table" and packet.text == "이곳에서는 사용할 수 없습니다."
+            if type(packet) ~= "table" or (unavailable == false and skill.is_cast_ready(packet.text, "비영사천문") == false) then
                 slog("비영사천문: cast not ready: p.text=" .. tostring(type(packet) == "table" and packet.text))
                 bot_diag.dump(caster, "비영사천문:cast_not_ready")
                 return false
