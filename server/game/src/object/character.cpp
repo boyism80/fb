@@ -306,18 +306,12 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         }
         catch (std::exception& e)
         {
-            this->cancel_transfer();
-            this->update_map();
-            this->show();
-            this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
+            this->cancel_transfer(e.what());
             co_return false;
         }
         catch (boost::system::error_code& /*e*/)
         {
-            this->cancel_transfer();
-            this->update_map();
-            this->show();
-            this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+            this->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
             co_return false;
         }
     }
@@ -414,10 +408,13 @@ bool character::begin_transfer()
     return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::TRANSFERRING);
 }
 
-bool character::cancel_transfer()
+void character::cancel_transfer(std::string_view message)
 {
     auto expected = LOGIN_STATE::TRANSFERRING;
-    return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
+    std::ignore   = this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
+    this->update_map();
+    this->show();
+    this->listener.on_message(*this, message, MESSAGE_TYPE::STATE);
 }
 
 bool character::hand_off()

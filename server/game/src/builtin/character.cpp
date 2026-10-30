@@ -4350,9 +4350,22 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         if (*started == false)
             co_return;
 
-        std::ignore = co_await ch->map(nullptr);
-        co_await ch->server.save(*ch, true);
-        co_await ch->listener.on_transfer(*ch, *map, position, ip_str, port, option);
+        try
+        {
+            std::ignore = co_await ch->map(nullptr);
+            co_await ch->server.save(*ch, true);
+            co_await ch->listener.on_transfer(*ch, *map, position, ip_str, port, option);
+        }
+        catch (std::exception& e)
+        {
+            *started = false;
+            ch->cancel_transfer(e.what());
+        }
+        catch (boost::system::error_code& /*e*/)
+        {
+            *started = false;
+            ch->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

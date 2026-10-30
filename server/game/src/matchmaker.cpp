@@ -856,19 +856,13 @@ async::task<bool> matchmaker::transfer_home()
         }
         catch (std::exception& e)
         {
-            this->owner.cancel_transfer();
-            this->owner.update_map();
-            this->owner.show();
-            this->owner.listener.on_message(this->owner, e.what(), MESSAGE_TYPE::STATE);
+            this->owner.cancel_transfer(e.what());
             this->disconnect_after_failed_return();
             co_return false;
         }
         catch (boost::system::error_code& /*e*/)
         {
-            this->owner.cancel_transfer();
-            this->owner.update_map();
-            this->owner.show();
-            this->owner.listener.on_message(this->owner, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+            this->owner.cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
             this->disconnect_after_failed_return();
             co_return false;
         }

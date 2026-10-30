@@ -389,7 +389,7 @@ public:
     bool                                                      complete_login();
     bool                                                      abort_login();
     bool                                                      begin_transfer();
-    bool                                                      cancel_transfer();
+    void                                                      cancel_transfer(std::string_view message);
     bool                                                      hand_off();
     bool                                                      transferring() const;
     bool                                                      transferred() const;
