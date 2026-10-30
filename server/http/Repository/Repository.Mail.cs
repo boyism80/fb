@@ -297,18 +297,8 @@ namespace Http.Reepository
 
         public async Task<(Mail Mail, ushort Unread)> Write(uint world, string user, uint sender, string title, string contents)
         {
-            uint uid;
-            if (uint.TryParse(user, out var userId))
-            {
-                // User ID provided directly (for offline users)
-                uid = userId;
-            }
-            else
-            {
-                // Character name provided
-                uid = await _dbContext.Character.GetCharacterId(world, user) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-            }
+            var uid = await _dbContext.Character.GetCharacterId(world, user) ??
+                throw new LogicException(ErrorCode.NotFoundCharacter);
 
             await using var conn = _dbContext.GetShardConnection(world, uid);
             var dynamicParams = new DynamicParameters();
