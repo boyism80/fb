@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import sys
@@ -76,7 +77,7 @@ def notify(title, body):
         body = e.read().decode("utf-8", errors="replace")[:500]
         print("discord post failed: {} {}".format(e, body), file=sys.stderr, flush=True)
         return False
-    except urllib.error.URLError as e:
+    except Exception as e:
         print("discord post failed: {}".format(e), file=sys.stderr, flush=True)
         return False
 
@@ -201,43 +202,71 @@ def watch_kubernetes():
             time.sleep(RESTART_DELAY_SECONDS)
 
 
+def run_started_at(container):
+    started = container.attrs.get("State", {}).get("StartedAt", "")
+    try:
+        parsed = datetime.datetime.strptime(started[:19], "%Y-%m-%dT%H:%M:%S")
+        return int(parsed.replace(tzinfo=datetime.timezone.utc).timestamp())
+    except ValueError:
+        return None
+
+
+def check_docker_event(docker_client, event):
+    attrs = event.get("Actor", {}).get("Attributes", {})
+    service = attrs.get("com.docker.compose.service", "")
+    if service not in COMPOSE_SERVICES:
+        return
+
+    exit_code = attrs.get("exitCode", "")
+    if exit_code == "0":
+        return
+
+    container_id = event.get("id", "")
+    key = "{}:{}".format(container_id, event.get("timeNano", event.get("time", "")))
+    if key in seen:
+        return
+    seen.add(key)
+
+    log_text = ""
+    try:
+        container = docker_client.containers.get(container_id)
+        since = run_started_at(container)
+        if since is None:
+            raw = container.logs(stdout=True, stderr=True, tail=1000)
+        else:
+            raw = container.logs(stdout=True, stderr=True, tail=1000, since=since)
+        log_text = raw.decode("utf-8", errors="replace")
+    except Exception as e:
+        log_text = "failed to read logs: {}".format(e)
+
+    name = attrs.get("name", container_id)
+    title = "crash docker service={} name={} exit={} status={}".format(
+        service,
+        name,
+        exit_code or "unknown",
+        event.get("status", "unknown"),
+    )
+    notify(title, crash_excerpt(log_text))
+
+
 def watch_docker():
     import docker
 
-    docker_client = docker.from_env()
     print("watching docker container deaths (discord {})".format("enabled" if DISCORD_ENABLED else "disabled"), flush=True)
 
-    for event in docker_client.events(decode=True, filters={"type": "container", "event": ["die", "oom"]}):
-        attrs = event.get("Actor", {}).get("Attributes", {})
-        service = attrs.get("com.docker.compose.service", "")
-        if service not in COMPOSE_SERVICES:
-            continue
-
-        exit_code = attrs.get("exitCode", "")
-        if exit_code == "0":
-            continue
-
-        container_id = event.get("id", "")
-        key = "{}:{}:{}".format(container_id, event.get("status", ""), exit_code)
-        if key in seen:
-            continue
-        seen.add(key)
-
-        log_text = ""
+    last_time = None
+    while True:
         try:
-            container = docker_client.containers.get(container_id)
-            log_text = container.logs(stdout=True, stderr=True, tail=1000).decode("utf-8", errors="replace")
+            docker_client = docker.from_env()
+            for event in docker_client.events(
+                decode=True, since=last_time, filters={"type": "container", "event": "die"}
+            ):
+                if event.get("time") is not None:
+                    last_time = event.get("time")
+                check_docker_event(docker_client, event)
         except Exception as e:
-            log_text = "failed to read logs: {}".format(e)
-
-        name = attrs.get("name", container_id)
-        title = "crash docker service={} name={} exit={} status={}".format(
-            service,
-            name,
-            exit_code or "unknown",
-            event.get("status", "unknown"),
-        )
-        notify(title, crash_excerpt(log_text))
+            print("watch restarting: {}".format(e), file=sys.stderr, flush=True)
+            time.sleep(RESTART_DELAY_SECONDS)
 
 
 def main():

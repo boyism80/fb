@@ -350,6 +350,7 @@ services:
 
   crash-watch:
     profiles: [app]
+    restart: unless-stopped
     image: fb/crash-watch:local
     build:
       context: ../crash-watch
