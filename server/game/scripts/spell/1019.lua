@@ -15,6 +15,14 @@ return {
         local sound = 100
         local damage = me:hp() * 3
         local message = '쇄혼비무'
+        if me:is(OBJECT_TYPE.CHARACTER) then
+            local error = me:assert(STATE.GHOST, STATE.RIDING)
+            if error ~= nil then
+                me:message(error)
+                return
+            end
+        end
+
         if me:mp() < mp then
             me:message('마력이 부족합니다.')
             return false

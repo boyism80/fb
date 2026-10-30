@@ -1110,7 +1110,8 @@ end
 function M.failed_attack(me)
     local message = '허공난무 흐미 실패닷'
     me:chat(message, CHAT_TYPE.BLUE)
-    broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE.SHOUT, BROADCAST_TYPE.WORLD)
+    broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE.SHOUT, BROADCAST_TYPE.WORLD,
+        { respect_roar = true })
 end
 
 function M.weapon_damage(me, mp, message, damage)
