@@ -102,7 +102,12 @@ return {
             return
         end
 
-        if q:step() == 1 then
+        if q:step() == 2 and me:has_items('삼전신보탕', 1) then
+            me:dialog(npc, '삼전신보탕은 이미 만들어 주었네. 어서 아이 어머니에게 가져다주게.', { prev = false, next = false })
+            return
+        end
+
+        if q:step() == 1 or q:step() == 2 then
             local materials = { ['감초'] = 1, ['녹용'] = 1, ['국광'] = 1 }
             if not me:has_items(materials) then
                 me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.',
@@ -131,8 +136,10 @@ return {
                 me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', { prev = false, next = false })
                 return
             end
-            q:step(2)
-            me:push_achievement(36, '삼전보신탕을 만들었다.', 7, 1)
+            if q:step() == 1 then
+                q:step(2)
+                me:push_achievement(36, '삼전보신탕을 만들었다.', 7, 1)
+            end
             return
         end
 

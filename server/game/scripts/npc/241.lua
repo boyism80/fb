@@ -156,7 +156,7 @@ return {
             return
         end
 
-        if q:step() == 2 then
+        if q:step() == 2 or (q:step() == 3 and not me:has_items('청심사주', 1)) then
             local materials = { ['기린의피'] = 1, ['청심초'] = 5 }
             if not me:has_items(materials) then
                 me:dialog(npc, '재료가 모자라군.. 기린의피와 청심초 5뿌리만 있다면 이젠 정말 만들수 있을 것이네.', { prev = false, next = false })
@@ -184,8 +184,10 @@ return {
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청심사주', '을', '를') .. ' 줄 수 없네.', { prev = false, next = false })
                 return
             end
-            q:step(3)
-            me:push_achievement(40, '청심사주를 천선도사에게 전해주자.', 7, 20)
+            if q:step() == 2 then
+                q:step(3)
+                me:push_achievement(40, '청심사주를 천선도사에게 전해주자.', 7, 20)
+            end
             return
         end
 

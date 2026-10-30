@@ -195,9 +195,10 @@ function M.red_clay_on_move(me)
     end
 end
 
---- Chance to find 청심초 when moving on Namgyeong 1-10 (map id 957-966). Quest 192 step 1 or 2.
+--- Chance to find 청심초 when moving on Namgyeong 1-10 (map id 957-966). Quest 192 step 1 or 2, or step 3 without 청심사주.
 function M.cheongsimcho_on_move(me)
     local ITEM_CHEONGSIMCHO = '청심초'
+    local ITEM_CHEONGSIMSAJU = '청심사주'
     local CHEONGSIMCHO_MAX = 5
     local NAMGYEONG_MAP_ID_MIN = 957
     local NAMGYEONG_MAP_ID_MAX = 966
@@ -207,7 +208,10 @@ function M.cheongsimcho_on_move(me)
         return
     end
     local step = quest:step()
-    if step < 1 or step > 2 then
+    if step < 1 or step > 3 then
+        return
+    end
+    if step == 3 and me:has_items(ITEM_CHEONGSIMSAJU, 1) then
         return
     end
 
