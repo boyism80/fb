@@ -608,6 +608,7 @@ function M.goddess_dew_on_move(me)
         end
     end
     if water >= TOTEM_WATER_MADE then
+        quest:param(string.format('%d,%d,0,0', x, y))
         return
     end
     if water < TOTEM_WATER_MAX then
