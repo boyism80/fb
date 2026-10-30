@@ -6,6 +6,8 @@
 
 #include <cstdint>
 #include <format>
+#include <mutex>
+#include <optional>
 #include <tuple>
 #include <vector>
 
@@ -42,59 +44,67 @@ async::task<void> service::schedule::poll()
 
     co_await logic_thread->switching();
 
-    auto now       = this->server.now();
-    auto to_remove = std::vector<uint32_t>{};
-
-    for (auto& [schedule_index, next_execution] : this->_tasks)
+    auto now = this->server.now();
+    auto due = std::vector<uint32_t>{};
     {
-        if (now < next_execution)
-            continue;
-
-        if (schedule_index >= table::schedule.size())
+        auto lock = std::lock_guard(this->_mutex);
+        for (auto it = this->_tasks.begin(); it != this->_tasks.end();)
         {
-            fb::logger::warn(std::format("Schedule index {} out of range", schedule_index));
-            to_remove.push_back(schedule_index);
-            continue;
-        }
-
-        const auto& entry = table::schedule[schedule_index];
-        if (entry.script.empty() || entry.func.empty())
-        {
-            to_remove.push_back(schedule_index);
-            continue;
-        }
-
-        auto lua = this->server.lua.open(entry.script, entry.func);
-        if (lua)
-        {
-            try
+            auto& [schedule_index, next_execution] = *it;
+            if (now < next_execution)
             {
-                std::ignore = co_await lua->call(0);
+                ++it;
+                continue;
             }
-            catch (const std::exception& e)
-            {
-                fb::logger::warn("schedule {} {}:{} failed: {}", schedule_index, entry.script, entry.func, e.what());
-            }
-        }
 
-        if (entry.cron.has_value() && entry.cron->empty() == false)
-        {
+            if (schedule_index >= table::schedule.size())
+            {
+                fb::logger::warn(std::format("Schedule index {} out of range", schedule_index));
+                it = this->_tasks.erase(it);
+                continue;
+            }
+
+            const auto& entry = table::schedule[schedule_index];
+            if (entry.script.empty() || entry.func.empty())
+            {
+                it = this->_tasks.erase(it);
+                continue;
+            }
+
+            due.push_back(schedule_index);
+
             // Re-align from the fired slot so next time stays cron-accurate.
-            auto next_time = entry.next_execution(next_execution);
+            auto next_time = std::optional<fb::model::datetime>();
+            if (entry.cron.has_value() && entry.cron->empty() == false)
+                next_time = entry.next_execution(next_execution);
+
             if (next_time.has_value())
+            {
                 next_execution = next_time.value();
+                ++it;
+            }
             else
-                to_remove.push_back(schedule_index);
-        }
-        else
-        {
-            to_remove.push_back(schedule_index);
+            {
+                it = this->_tasks.erase(it);
+            }
         }
     }
 
-    for (auto schedule_index : to_remove)
+    for (auto schedule_index : due)
     {
-        this->_tasks.erase(schedule_index);
+        const auto& entry = table::schedule[schedule_index];
+        auto        lua   = this->server.lua.open(entry.script, entry.func);
+        if (!lua)
+            continue;
+
+        try
+        {
+            std::ignore = co_await lua->call(0);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("schedule {} {}:{} failed: {}", schedule_index, entry.script, entry.func, e.what());
+        }
     }
 
     co_return;

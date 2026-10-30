@@ -5,6 +5,7 @@
 #include <fb/model/datetime.h>
 
 #include <cstdint>
+#include <mutex>
 #include <unordered_map>
 
 namespace fb::game {
@@ -20,6 +21,7 @@ public:
 
 private:
     std::unordered_map<uint32_t, fb::model::datetime> _tasks;
+    std::mutex                                        _mutex;
 
 public:
     explicit schedule(fb::game::server& server);
