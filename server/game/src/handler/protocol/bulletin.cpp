@@ -4,6 +4,8 @@
 #include <fb/game/bulletin.h>
 #include <fb/game/mail_box.h>
 #include <fb/game/server.h>
+#include <fb/http_client.h>
+#include <fb/logger.h>
 
 #include <json/json.h>
 
@@ -118,6 +120,11 @@ async::task<void> bulletin<V>::handle_articles(character*               ch,
             ptr->bulletin.show(model, articles, flag);
         }
     }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("bulletin articles failed: {}", e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+    }
     catch (std::exception& e)
     {
         error = e.what();
@@ -181,6 +188,11 @@ async::task<void> bulletin<V>::handle_article(character*               ch,
             ptr->bulletin.show(article, flag);
         }
     }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("bulletin article failed: {}", e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+    }
     catch (std::exception& e)
     {
         error = e.what();
@@ -223,6 +235,11 @@ async::task<void> bulletin<V>::handle_write(character*               ch,
         log_data["section"]        = request.section;
         log_data["title"]          = UTF8(request.title, PLATFORM::WINDOWS);
         this->server.log.write("bulletin_write", log_data);
+    }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("bulletin write failed: {}", e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
     }
     catch (std::exception& e)
     {
@@ -278,6 +295,11 @@ async::task<void> bulletin<V>::handle_delete(character*               ch,
             this->server.log.write("bulletin_delete", log_data);
         }
     }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("bulletin delete failed: {}", e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+    }
     catch (std::exception& e)
     {
         error = e.what();
@@ -315,6 +337,11 @@ async::task<void> bulletin<V>::handle_mail(character*               ch,
             flag |= MAIL_BUTTON_ENABLE::NEW;
 
         ptr->mail_box.show(summaries, flag);
+    }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("mail list failed: {}", e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
     }
     catch (std::exception& e)
     {
@@ -357,6 +384,11 @@ async::task<void> bulletin<V>::handle_send_mail(character*               ch,
         log_data["receiver_name"] = UTF8(request.user, PLATFORM::WINDOWS);
         log_data["title"]         = UTF8(request.title, PLATFORM::WINDOWS);
         this->server.log.write("mail_write", log_data);
+    }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("mail send failed: {}", e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
     }
     catch (std::exception& e)
     {

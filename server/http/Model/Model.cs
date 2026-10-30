@@ -1329,6 +1329,7 @@ namespace Fb.Model.ConstValue
         public const string MessageMarketplaceItemNotTradeable = "거래소에 등록할 수 없는 아이템입니다.";
         public const string MessageMarketplaceNotListingOwner = "본인이 등록한 물품이 아닙니다.";
         public const string MessageMatchAlreadyClosed = "이미 끝난 매치입니다. 원래 있던 곳으로 돌아갑니다.";
+        public const string MessageRequestUnconfirmed = "요청 결과를 확인하지 못했습니다.";
         public const string MessageExceptionRidding = "말을 타고는 할 수 없습니다.";
         public const string MessageExceptionGhost = "귀신은 할 수 없습니다.";
         public const string MessageExceptionRequireClass = "직업을 선택해야 합니다.";

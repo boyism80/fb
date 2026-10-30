@@ -5,6 +5,8 @@
 #include <fb/game/group.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
+#include <fb/http_client.h>
+#include <fb/logger.h>
 #include <macro.h>
 
 #include <algorithm>
@@ -298,6 +300,11 @@ async::task<void> group::container::handle_action(character& actor, std::string_
             if (weak.expired() == false)
                 actor.message(_TEXT(MESSAGE_GROUP_NOT_OWNER));
         }
+    }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("group toggle for {} failed: {}", target_name_str, e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
     }
     catch (std::exception& e)
     {
