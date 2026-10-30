@@ -87,7 +87,8 @@
                     <span class="items-field-hint">비워두면 즉시 지급 · 예약 시각 10초 전까지 수정·취소 가능</span>
                 </div>
                 <div class="items-field items-col-8">
-                    <label class="items-label">
+                    <span class="items-label">신규 캐릭터</span>
+                    <label class="items-check">
                         <InputCheckbox @bind-Value="model.IncludeNewCharacters" />
                         지급 이후 생성된 캐릭터도 받음
                     </label>
@@ -208,7 +209,7 @@
                         <th class="col-detail">제목</th>
                         <th class="col-date">지급 시각</th>
                         <th class="col-date">만료일</th>
-                        <th>신규 캐릭터</th>
+                        <th class="col-nowrap">신규 캐릭터</th>
                         <th class="col-status">상태</th>
                         <th class="col-status">작업</th>
                     </tr>
@@ -221,7 +222,7 @@
                             <td class="col-detail" title="@box.Title">@box.Title · 첨부 @(box.Attachments.Count)건</td>
                             <td>@FormatLocal(box.SendDate)</td>
                             <td>@(box.ExpiredDate.HasValue ? FormatLocal(box.ExpiredDate.Value) : "없음")</td>
-                            <td>@(box.IncludeNewCharacters ? "포함" : "제외")</td>
+                            <td class="col-nowrap">@(box.IncludeNewCharacters ? "포함" : "제외")</td>
                             <td>
                                 <span class="items-status-badge">@(box.ReserveDate > DateTime.UtcNow ? "예약" : "지급 중")</span>
                             </td>

@@ -3998,6 +3998,19 @@ a.dashboard-card:hover,
     color: var(--text-secondary);
 }
 
+.items-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.5rem 0;
+    border: 1px solid transparent;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
 .items-input,
 .items-textarea {
     background: var(--bg-page);
@@ -4227,6 +4240,10 @@ a.dashboard-card:hover,
 
 .items-log-table .col-status {
     width: 16.666%;
+}
+
+.items-log-table .col-nowrap {
+    white-space: nowrap;
 }
 
 .items-status-badge {
