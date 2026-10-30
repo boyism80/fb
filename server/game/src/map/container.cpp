@@ -501,6 +501,9 @@ std::shared_ptr<fb::game::map> map::container::clone(const std::shared_ptr<fb::g
     if (source == nullptr)
         return nullptr;
 
+    if (fb::config<std::optional<uint32_t>>("world").has_value() == false)
+        return nullptr;
+
     auto root = source->is_instance() ? source->source() : source;
     if (root == nullptr)
         return nullptr;
@@ -629,8 +632,11 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
     if (dest == nullptr)
         return nullptr;
 
+    auto cross_server = fb::config<std::optional<uint32_t>>("world").has_value() == false;
+    auto user         = ch.role() == ROLE::USER;
+
     // Explicit instance target bypasses systemic routing.
-    if (dest->is_instance())
+    if (dest->is_instance() && (cross_server == false || user == false))
         return dest;
 
     auto session = ch.matchmaker.session();
@@ -639,8 +645,12 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
         auto inst = this->find(dest, session->slot());
         if (inst == nullptr)
             inst = this->create_instance(dest, session->slot());
-        if (inst != nullptr)
+        if (inst != nullptr || cross_server)
             return inst;
+    }
+    else if (cross_server)
+    {
+        return user ? nullptr : dest;
     }
 
     auto source = dest;

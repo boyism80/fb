@@ -213,7 +213,9 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     auto old_map      = this->_map;
     auto old_position = this->_position;
 
-    if (map != nullptr && this->_map != map && options.skip_instance_rule == false)
+    auto cross_server  = fb::config<std::optional<uint32_t>>("world").has_value() == false;
+    auto instance_rule = options.skip_instance_rule == false || (cross_server && this->role() == ROLE::USER);
+    if (map != nullptr && this->_map != map && instance_rule)
     {
         auto routed = this->server.maps.choice_entry(*this, map);
         if (routed == nullptr)
