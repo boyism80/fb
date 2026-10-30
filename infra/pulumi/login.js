@@ -195,6 +195,8 @@ module.exports = function () {
                     namespace: namespace.metadata.name,
                 },
                 spec: {
+                    // Known issue: without externalTrafficPolicy Local, NodePort traffic is SNATed to a node IP,
+                    // so password attempt limits see the node IP instead of the client IP.
                     type: "NodePort",
                     ports: ports,
                     selector: {

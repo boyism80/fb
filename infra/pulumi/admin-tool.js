@@ -342,8 +342,9 @@ module.exports = {
         const service = new k8s.core.v1.Service("admin-tool", {
             metadata: { name: "admin-tool", namespace: namespace.metadata.name },
             spec: {
+                // Known issue: without externalTrafficPolicy Local, NodePort traffic is SNATed to a node IP,
+                // so password attempt limits see the node IP instead of the client IP.
                 type: "NodePort",
-                externalTrafficPolicy: "Local",
                 ports: [{ 
                     name: "admin-tool",
                     port: adminToolConf.port.cluster,

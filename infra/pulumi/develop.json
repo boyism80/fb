@@ -1989,7 +1989,7 @@
         "replicas": 1,
         "port": {
             "cluster": 80,
-            "node": 30210
+            "node": 32000
         },
         "security": {
             "elevationSecret": "admin-tool-dev-secret"

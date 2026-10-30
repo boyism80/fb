@@ -68,7 +68,7 @@ kubectl -n fb get pods
 | Login | 30010 |
 | Game | 30030 |
 | Game (cross) | 30320, 30321, 30322 |
-| Admin Tool | 30210 |
+| Admin Tool | 32000 |
 | MySQL unified | 31000 |
 | Redis unified | 31010 |
 | RabbitMQ internal AMQP | 31020 |
