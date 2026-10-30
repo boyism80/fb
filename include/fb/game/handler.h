@@ -84,6 +84,7 @@
 #include <fb/game/handler/timer/evaluation_timer.h>
 #include <fb/game/handler/timer/expired_item_timer.h>
 #include <fb/game/handler/timer/gear_timer.h>
+#include <fb/game/handler/timer/ground_item_timer.h>
 #include <fb/game/handler/timer/heart_beat.h>
 #include <fb/game/handler/timer/maintenance_timer.h>
 #include <fb/game/handler/timer/matchmaking_timer.h>

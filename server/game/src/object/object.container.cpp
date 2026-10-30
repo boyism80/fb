@@ -1,5 +1,6 @@
 #include <fb/game/map.h>
 #include <fb/game/object.h>
+#include <fb/logger.h>
 #include <fb/thread.h>
 
 #include <cstdint>
@@ -41,6 +42,7 @@ uint32_t object::container::allocate_seq()
         return i;
     }
 
+    fb::logger::warn("map {} has no free object id ({} objects)", this->owner.model().id, this->_ptrs.size());
     return 0xFFFF;
 }
 

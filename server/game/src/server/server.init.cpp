@@ -316,6 +316,7 @@ void fb::game::server::init_timers()
     this->bind_thread_timer<fb::game::handler::timer::buff_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::expired_item_timer>(10s);
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::ground_item_timer>(10s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::unsettled_settle_timer>(
