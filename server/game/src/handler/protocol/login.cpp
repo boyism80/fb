@@ -356,7 +356,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
             ch->clan.id(clan->id());
     }
 
-    if (ch->map() == nullptr)
+    auto closed_match = request.match.has_value() && request.match->id != 0 && ch->matchmaker.session() == nullptr;
+    if (ch->map() == nullptr && closed_match == false)
     {
         auto entry    = target_map;
         auto position = std::make_optional(fb::model::point16_t(position_x, position_y));
@@ -497,14 +498,6 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
-
-    if (request.match.has_value() && request.match->id != 0 && ch->matchmaker.session() == nullptr)
-    {
-        co_await this->server.threads.switching(weak);
-        fb::logger::warn("Character {} reached closed match {}; sending home", ch->name(), request.match->id);
-        ch->message(_TEXT(MESSAGE_MATCH_ALREADY_CLOSED), MESSAGE_TYPE::STATE);
-        std::ignore = co_await ch->matchmaker.transfer_home();
-    }
     co_return ch;
 }
 
@@ -717,14 +710,22 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
     }
     this->server.log.write("login", log_data);
 
-    auto weak    = ch->template weak_from_this_as<character>();
-    auto builder = this->server.threads.new_builder(weak);
-    builder.func = [weak](auto&) -> async::task<void> {
+    auto weak     = ch->template weak_from_this_as<character>();
+    auto match_id = request.match.has_value() ? request.match->id : uint64_t{0};
+    auto builder  = this->server.threads.new_builder(weak);
+    builder.func  = [weak, match_id](auto&) -> async::task<void> {
         auto ptr = weak.lock();
         if (ptr == nullptr)
             co_return;
 
         co_await ptr->matchmaker.discard_leftover_ticket();
+        if (match_id != 0 && ptr->matchmaker.session() == nullptr)
+        {
+            fb::logger::warn("Character {} reached closed match {}; sending home", ptr->name(), match_id);
+            ptr->message(_TEXT(MESSAGE_MATCH_ALREADY_CLOSED), MESSAGE_TYPE::STATE);
+            if (co_await ptr->matchmaker.transfer_home() == false && ptr->loaded() && ptr->map() == nullptr)
+                ptr->matchmaker.disconnect_after_failed_return();
+        }
     };
     builder.enqueue();
 

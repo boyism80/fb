@@ -69,7 +69,6 @@ private:
     std::optional<uint32_t>                         _return_map;
     std::optional<fb::model::point16_t>             _return_position;
 
-    void disconnect_after_failed_return();
     void touch();
     void clear_pending_match_id();
     bool clear_pending_match_id_if(uint64_t match_id);
@@ -108,6 +107,7 @@ public:
     uint32_t                                 return_map() const;
     fb::model::point16_t                     return_position() const;
     [[nodiscard]] async::task<bool>          transfer_home();
+    void                                     disconnect_after_failed_return();
 };
 
 } // namespace fb::game

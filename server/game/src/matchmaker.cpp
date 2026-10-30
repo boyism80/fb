@@ -800,9 +800,6 @@ async::task<bool> matchmaker::transfer_home()
     }
     else
     {
-        if (this->owner.map() == nullptr)
-            co_return false;
-
         auto self    = this->owner.shared_from_this_as<character>();
         auto old_map = this->owner.map();
         try
