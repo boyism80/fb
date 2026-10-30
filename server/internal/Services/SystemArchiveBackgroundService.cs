@@ -90,8 +90,15 @@ namespace Internal.Services
 
             if (_lastSweeps.TryGetValue(world, out var lastSweep) == false || now - lastSweep >= SweepInterval)
             {
-                await SweepArchivedStorageBoxesAsync(dbContext, distributedLock, world);
-                _lastSweeps[world] = now;
+                try
+                {
+                    await SweepArchivedStorageBoxesAsync(dbContext, distributedLock, world);
+                    _lastSweeps[world] = now;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Failed to sweep archived system storage boxes for world {World}", world);
+                }
             }
 
             var boxes = (await dbContext.SystemStorageBox.GetAll(world))
