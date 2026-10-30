@@ -13,13 +13,12 @@ return {
 
         if you:is(OBJECT_TYPE.CHARACTER) then
             local title = you:title()
-            if title == nil then
-                title = ''
-            else
+            if title ~= '' then
                 title = string.format('%s\n', title)
             end
 
-            local message = string.format('%s %s 레벨 %d\n%s힘 : %d 민첩성 : %d 지능 : %d', you:class(), you:name(), you:level(),
+            local message = string.format('%s %s 레벨 %d\n%s힘 : %d 민첩성 : %d 지능 : %d',
+                class2name(you:class(), you:promotion()), you:name(), you:level(),
                 title, you:str(), you:dex(), you:int())
             local item_names = {}
             for _, item in pairs(you:items()) do
