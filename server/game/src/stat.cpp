@@ -766,6 +766,15 @@ void character_stat::recover(const fb::model::datetime& now)
     }
 }
 
+void character_stat::shift_recovery(const fb::model::timespan& delta)
+{
+    this->owner.assert_thread();
+    if (this->_hp_recovery_at.has_value())
+        this->_hp_recovery_at = this->_hp_recovery_at.value() + delta;
+    if (this->_mp_recovery_at.has_value())
+        this->_mp_recovery_at = this->_mp_recovery_at.value() + delta;
+}
+
 bool character_stat::natural_recovery() const
 {
     this->owner.assert_thread();

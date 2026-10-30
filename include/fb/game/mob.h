@@ -57,6 +57,7 @@ public:
     uint32_t                        map_id() const;
     fb::model::timespan             interval() const;
     void                            decrease();
+    void                            shift(const fb::model::timespan& delta);
     [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
     void                            force_spawn(std::thread::id thread_id);
     [[nodiscard]] async::task<void> despawn_all();

@@ -74,6 +74,12 @@ void rezen::decrease()
     this->_count = std::max(0, this->_count - 1);
 }
 
+void rezen::shift(const fb::model::timespan& delta)
+{
+    if (this->_respawn_time.has_value())
+        this->_respawn_time = this->_respawn_time.value() + delta;
+}
+
 async::task<void> rezen::spawn(std::thread::id thread_id)
 {
     auto map = this->_map.lock();

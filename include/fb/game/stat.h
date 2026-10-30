@@ -203,6 +203,7 @@ public:
     void             recover(const fb::model::datetime& now);
     bool             natural_recovery() const;
     void             natural_recovery(bool enabled);
+    void             shift_recovery(const fb::model::timespan& delta);
     uint64_t         damage(uint64_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
     // clang-format on
 };
