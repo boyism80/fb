@@ -486,7 +486,7 @@ namespace Internal.Controllers
                 {
                     await _rabbitMqService.NotifySavedAsync(new Response.UpdatedCastle
                     {
-                        Host = request.Host,
+                        Host = uint.MaxValue,
                         DivineBeast = divineBeast,
                         OwnerClanId = null,
                         Error = (uint)ErrorCode.None
