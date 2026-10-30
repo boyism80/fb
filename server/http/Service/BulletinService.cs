@@ -7,7 +7,10 @@ namespace Http.Service
 {
     public class BulletinService
     {
+        public const int MaxBatchSize = 100;
+
         private readonly ConcurrentDictionary<(uint World, uint Section), ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
+        private readonly ConcurrentDictionary<uint, SemaphoreSlim> _flushSignals = new();
         private readonly BulletinCacheService _cacheService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly LogService _logService;
@@ -36,7 +39,19 @@ namespace Http.Service
             var queue = _writeQueues.GetOrAdd((world, section), _ => new ConcurrentQueue<BulletinWriteRequest>());
             queue.Enqueue(request);
 
+            var signal = _flushSignals.GetOrAdd(world, _ => new SemaphoreSlim(0));
+            if (queue.Count >= MaxBatchSize && signal.CurrentCount == 0)
+            {
+                signal.Release();
+            }
+
             return request.CompletionSource.Task;
+        }
+
+        public Task<bool> WaitFlushAsync(uint world, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            var signal = _flushSignals.GetOrAdd(world, _ => new SemaphoreSlim(0));
+            return signal.WaitAsync(timeout, cancellationToken);
         }
 
         public async Task<int> Delete(uint world, uint section, uint id, uint user, bool ignoreOwner = false)

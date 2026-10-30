@@ -15,8 +15,6 @@ namespace Http.Service
 
         private static readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(1);
 
-        private static readonly int _maxBatchSize = 100;
-
         private sealed class BulletinSequenceRow
         {
             public uint Id { get; set; }
@@ -42,33 +40,44 @@ namespace Http.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Get world keys: DbContext uses ConnectionStrings:MySql:worlds:{world}:...
-            var worldKeys = _configuration.GetSection("ConnectionStrings:MySql:worlds")
-                .GetChildren()
-                .Select(x => x.Key)
-                .ToList();
+            var worlds = new List<uint>();
+            foreach (var worldKey in _configuration.GetSection("ConnectionStrings:MySql:worlds").GetChildren().Select(x => x.Key))
+            {
+                // Parse world key: "1", "2", etc. (must be numeric; bulletin uses per-world DB)
+                if (uint.TryParse(worldKey, out var world) && world != 0)
+                {
+                    worlds.Add(world);
+                }
+            }
 
+            await Task.WhenAll(worlds.Select(world => RunWorldAsync(world, stoppingToken)));
+        }
+
+        private async Task RunWorldAsync(uint world, CancellationToken stoppingToken)
+        {
+            var backlog = false;
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var worldKey in worldKeys)
+                try
                 {
-                    try
+                    if (backlog == false)
                     {
-                        // Parse world key: "1", "2", etc. (must be numeric; bulletin uses per-world DB)
-                        if (!uint.TryParse(worldKey, out var world) || world == 0)
-                        {
-                            continue;
-                        }
+                        await _bulletinService.WaitFlushAsync(world, _processingInterval, stoppingToken);
+                    }
 
-                        var writes = _bulletinService.DequeueBatch(world, _maxBatchSize);
-                        await ProcessWritesAsync(world, writes, stoppingToken);
-                        await Task.Delay(_processingInterval, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error processing bulletin operation batch for world {WorldKey}", worldKey);
-                    }
+                    var writes = _bulletinService.DequeueBatch(world, BulletinService.MaxBatchSize);
+                    backlog = writes.Values.Any(x => x.Count >= BulletinService.MaxBatchSize);
+                    await ProcessWritesAsync(world, writes, stoppingToken);
                 }
-                await Task.Delay(_processingInterval, stoppingToken);
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    backlog = false;
+                    _logger.LogError(ex, "Error processing bulletin operation batch for world {World}", world);
+                }
             }
         }
 
