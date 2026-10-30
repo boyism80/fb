@@ -122,6 +122,8 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
         if (attacker == nullptr)
             continue;
 
+        if (attacker == mob_obj.oblivion())
+            continue;
         if (!attacker->alive() || attacker->hidden(mob_obj) || !mob_obj.sight(*attacker))
             continue;
 
@@ -184,6 +186,8 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
         if (attacker == nullptr)
             continue;
 
+        if (attacker == mob_obj.oblivion())
+            continue;
         if (!attacker->alive() || attacker->hidden(mob_obj) || !mob_obj.sight(*attacker))
             continue;
 
