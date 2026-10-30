@@ -405,6 +405,11 @@ async::task<void> mob::action(fb::model::datetime now)
             co_return;
 
         this->_action_busy = false;
+        now                = this->server.now();
+        this->_action_time = now;
+        auto blinded       = ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT);
+        if (this->alive() == false || this->map() == nullptr || this->paralysis() || blinded)
+            co_return;
     }
 
     co_await this->AI(now);
