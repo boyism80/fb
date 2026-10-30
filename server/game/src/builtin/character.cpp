@@ -4352,7 +4352,8 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         try
         {
             std::ignore = co_await ch->map(nullptr);
-            co_await ch->server.save(*ch, true);
+            if (co_await ch->server.save(*ch, true) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
             co_await ch->listener.on_transfer(*ch, *map, position, ip_str, port, option);
         }
         catch (std::exception& e)

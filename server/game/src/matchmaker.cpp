@@ -851,7 +851,8 @@ async::task<bool> matchmaker::transfer_home()
                 co_return false;
 
             std::ignore = co_await this->owner.map(nullptr);
-            co_await this->owner.server.save(this->owner, true);
+            if (co_await this->owner.server.save(this->owner, true) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
             co_await this->owner.listener.on_transfer(this->owner, *dest, position, resp.ip, resp.port);
         }
         catch (std::exception& e)

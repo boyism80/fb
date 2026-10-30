@@ -300,7 +300,8 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
             this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
-            co_await this->server.save(*this, true);
+            if (co_await this->server.save(*this, true) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
             co_await this->listener.on_transfer(*this, *map, new_position, resp.ip, resp.port);
         }
@@ -415,6 +416,11 @@ void character::cancel_transfer(std::string_view message)
     this->update_map();
     this->show();
     this->listener.on_message(*this, message, MESSAGE_TYPE::STATE);
+    if (this->_map != nullptr)
+        return;
+
+    if (auto socket_ptr = this->socket_ptr(); socket_ptr != nullptr)
+        socket_ptr->close();
 }
 
 bool character::hand_off()
