@@ -1,6 +1,8 @@
 #include <fb/game/handler/protocol/whisper.h>
 
 #include <fb/game/server.h>
+#include <fb/http_client.h>
+#include <fb/logger.h>
 
 #include <exception>
 #include <optional>
@@ -40,6 +42,11 @@ async::task<bool> whisper<V>::handle(fb::socket<character>& session, game_reqs::
         co_await this->server.threads.switching(weak);
         if (weak.lock() == nullptr)
             co_return true;
+    }
+    catch (fb::http_error& e)
+    {
+        fb::logger::warn("whisper to {} failed: {}", request.name, e.what());
+        error = _TEXT(MESSAGE_CHAT_UNCONFIRMED);
     }
     catch (std::exception& e)
     {

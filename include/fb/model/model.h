@@ -3301,6 +3301,7 @@ public:
     inline static constexpr const char* MESSAGE_WHISPER_DISABLED_AREA = "귓속말을 할 수 없는 지역입니다.";
     inline static constexpr const char* MESSAGE_FRIEND_CHAT_NO_MUTUAL = "상호 친구가 없습니다.";
     inline static constexpr const char* MESSAGE_FRIEND_LOGIN = "[친구] {}님이 접속하셨습니다.";
+    inline static constexpr const char* MESSAGE_CHAT_UNCONFIRMED = "메시지 전달 여부를 확인하지 못했습니다.";
     inline static constexpr const char* MESSAGE_DOOR_OPEN = "문을 열었습니다.";
     inline static constexpr const char* MESSAGE_DOOR_CLOSE = "문을 닫았습니다.";
     inline static constexpr const char* MESSAGE_DOOR_LOCK = "문을 잠궜습니다.";
@@ -5041,6 +5042,8 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_FRIEND_CHAT_NO_MUTUAL");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_FRIEND_LOGIN).c_str());
     lua_setfield(lua, -2, "MESSAGE_FRIEND_LOGIN");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_CHAT_UNCONFIRMED).c_str());
+    lua_setfield(lua, -2, "MESSAGE_CHAT_UNCONFIRMED");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_DOOR_OPEN).c_str());
     lua_setfield(lua, -2, "MESSAGE_DOOR_OPEN");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_DOOR_CLOSE).c_str());

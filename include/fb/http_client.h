@@ -56,6 +56,12 @@ namespace fb {
 
 using namespace std::chrono_literals;
 
+class http_error : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+};
+
 class http_client
 {
 public:
@@ -221,9 +227,9 @@ private:
         co_return response_body_bytes(res);
     }
 
-    static std::runtime_error wrap_http_error(std::string_view operation, const std::exception& e)
+    static http_error wrap_http_error(std::string_view operation, const std::exception& e)
     {
-        return std::runtime_error(std::format("HTTP {} request failed: {}", operation, e.what()));
+        return http_error(std::format("HTTP {} request failed: {}", operation, e.what()));
     }
 
     static std::pair<std::string, std::string> split_absolute_url(std::string_view full_url)
@@ -298,7 +304,7 @@ private:
         }
         catch (...)
         {
-            throw std::runtime_error("HTTP GET request failed: Unknown error occurred");
+            throw http_error("HTTP GET request failed: Unknown error occurred");
         }
     }
 
@@ -335,7 +341,7 @@ private:
         }
         catch (...)
         {
-            throw std::runtime_error("HTTP POST request failed: Unknown error occurred");
+            throw http_error("HTTP POST request failed: Unknown error occurred");
         }
     }
 
@@ -448,8 +454,7 @@ public:
         if (fault == FAULT::UNREACHABLE)
         {
             co_await this->switching(thread, service);
-            throw std::runtime_error(
-                std::format("HTTP GET request failed: unreachable fault injected for {}", service));
+            throw http_error(std::format("HTTP GET request failed: unreachable fault injected for {}", service));
         }
 
         auto  service_str = std::string(service);
@@ -471,8 +476,7 @@ public:
         if (error)
             std::rethrow_exception(error);
         if (fault == FAULT::RESPONSE_LOST)
-            throw std::runtime_error(
-                std::format("HTTP GET request failed: response lost fault injected for {}", service));
+            throw http_error(std::format("HTTP GET request failed: response lost fault injected for {}", service));
         co_return std::move(*result);
     }
 
@@ -560,8 +564,7 @@ public:
         if (fault == FAULT::UNREACHABLE)
         {
             co_await this->switching(thread, service);
-            throw std::runtime_error(
-                std::format("HTTP POST request failed: unreachable fault injected for {}", service));
+            throw http_error(std::format("HTTP POST request failed: unreachable fault injected for {}", service));
         }
 
         auto  service_str = std::string(service);
@@ -583,8 +586,7 @@ public:
         if (held)
         {
             co_await this->switching(thread, service);
-            throw std::runtime_error(
-                std::format("HTTP POST request failed: request held for {}{}", service_str, path_str));
+            throw http_error(std::format("HTTP POST request failed: request held for {}{}", service_str, path_str));
         }
 
         auto result = std::optional<typename response_of<Request>::type>{};
@@ -602,8 +604,7 @@ public:
         if (error)
             std::rethrow_exception(error);
         if (fault == FAULT::RESPONSE_LOST)
-            throw std::runtime_error(
-                std::format("HTTP POST request failed: response lost fault injected for {}", service));
+            throw http_error(std::format("HTTP POST request failed: response lost fault injected for {}", service));
         co_return std::move(*result);
     }
 

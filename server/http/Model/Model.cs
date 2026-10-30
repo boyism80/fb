@@ -1228,6 +1228,7 @@ namespace Fb.Model.ConstValue
         public const string MessageWhisperDisabledArea = "귓속말을 할 수 없는 지역입니다.";
         public const string MessageFriendChatNoMutual = "상호 친구가 없습니다.";
         public const string MessageFriendLogin = "[친구] {}님이 접속하셨습니다.";
+        public const string MessageChatUnconfirmed = "메시지 전달 여부를 확인하지 못했습니다.";
         public const string MessageDoorOpen = "문을 열었습니다.";
         public const string MessageDoorClose = "문을 닫았습니다.";
         public const string MessageDoorLock = "문을 잠궜습니다.";
