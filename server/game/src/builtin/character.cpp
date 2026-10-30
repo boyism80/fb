@@ -7819,7 +7819,7 @@ int builtin::character::builtin_marry(lua_State* L)
     auto target = lua->touserdata<fb::game::character>(2);
     if (me == nullptr || target == nullptr)
     {
-        lua->pushstring("invalid character");
+        lua->pushstring("대상을 찾을 수 없습니다.");
         return 1;
     }
 
@@ -7832,7 +7832,7 @@ int builtin::character::builtin_marry(lua_State* L)
 
         if (me->world() != target->world())
         {
-            *error = "different world";
+            *error = "다른 서버 출신과는 결혼할 수 없습니다.";
             co_return;
         }
         auto my_map = me->map();
@@ -7851,22 +7851,22 @@ int builtin::character::builtin_marry(lua_State* L)
         const auto& tar_m = target->marriage();
         if (my_m.spouse_id.has_value())
         {
-            *error = "already married";
+            *error = "이미 결혼을 하셨습니다.";
             co_return;
         }
         if (tar_m.spouse_id.has_value())
         {
-            *error = "target already married";
+            *error = "이미 결혼한 상대와는 결혼을 할 수 없습니다.";
             co_return;
         }
         if (server.now() < my_m.remarriage_after)
         {
-            *error = "remarriage cooldown";
+            *error = "재혼 대기 시간이 지나지 않았습니다. 잠시 후에 다시 시도해 주세요.";
             co_return;
         }
         if (server.now() < tar_m.remarriage_after)
         {
-            *error = "target remarriage cooldown";
+            *error = "상대방은 아직 재혼할 수 없습니다.";
             co_return;
         }
 
@@ -7896,7 +7896,7 @@ int builtin::character::builtin_divorce(lua_State* L)
     auto me = lua->touserdata<fb::game::character>(1);
     if (me == nullptr)
     {
-        lua->pushstring("invalid character");
+        lua->pushstring("대상을 찾을 수 없습니다.");
         return 1;
     }
 
@@ -7909,7 +7909,7 @@ int builtin::character::builtin_divorce(lua_State* L)
         const auto& m      = me->marriage();
         if (!m.spouse_id.has_value())
         {
-            *error = "not married";
+            *error = "결혼을 한 사람만이 이혼을 할 수 있습니다.";
             co_return;
         }
 
@@ -7917,7 +7917,7 @@ int builtin::character::builtin_divorce(lua_State* L)
 
         if (spouse == nullptr)
         {
-            *error = "spouse not online";
+            *error = "배우자가 현재 접속 중이 아닙니다.";
             co_return;
         }
         auto my_map = me->map();
