@@ -130,6 +130,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"birthday",                     builtin::character::builtin_birthday},
 {"active",                       builtin::character::builtin_active},
 {"super_hide",                   builtin::character::builtin_super_hide},
+{"natural_recovery",             builtin::character::builtin_natural_recovery},
 {"divine_beast",                 builtin::character::builtin_divine_beast},
 {"reputation",                   builtin::character::builtin_reputation},
 {"evaluation",                   builtin::character::builtin_evaluation},
@@ -5212,6 +5213,50 @@ int builtin::character::builtin_super_hide(lua_State* L)
                 locked->super_hide(value);
             else
                 locked->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::character::builtin_natural_recovery(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto result   = std::make_shared<bool>(false);
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *result = ch->stat.natural_recovery();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*result);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = lua->toboolean(2);
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            ch->stat.natural_recovery(value);
+            co_return;
         };
         builder.resume = []() -> async::task<int> {
             co_return 0;

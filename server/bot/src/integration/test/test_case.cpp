@@ -406,6 +406,12 @@ async::task<void> bot_integration_test::on_initialize(game_bot_controller& contr
     {
         auto& bot = bots[i];
         co_await bot->map_move("낙랑의방", 6, 6, slot, DEFAULT_TIMEOUT);
+        std::ignore = co_await bot->request<game_resp::message>(
+            *bot->make<game_reqs::chat>(false, "/자연회복 끄기"),
+            [](auto& resp) -> bool {
+                return resp.text == "자연회복을 껐습니다.";
+            },
+            DEFAULT_TIMEOUT);
     }
 }
 

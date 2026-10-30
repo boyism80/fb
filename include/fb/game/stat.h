@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 #include <stdint.h>
@@ -154,6 +155,10 @@ private:
     uint8_t  _speed        = 0;
     uint64_t _regenerative = 0;
 
+    std::optional<fb::model::datetime> _hp_recovery_at   = std::nullopt;
+    std::optional<fb::model::datetime> _mp_recovery_at   = std::nullopt;
+    bool                               _natural_recovery = true;
+
 public:
     character& owner;
 
@@ -195,6 +200,9 @@ public:
     uint64_t         base_regenerative() const;
     void             equipment_on(const fb::model::equipment& model);
     void             equipment_off(const fb::model::equipment& model);
+    void             recover(const fb::model::datetime& now);
+    bool             natural_recovery() const;
+    void             natural_recovery(bool enabled);
     uint64_t         damage(uint64_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
     // clang-format on
 };

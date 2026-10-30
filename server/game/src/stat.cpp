@@ -717,6 +717,69 @@ uint64_t character_stat::base_regenerative() const
     return this->_regenerative;
 }
 
+void character_stat::recover(const fb::model::datetime& now)
+{
+    this->owner.assert_thread();
+    if (this->_natural_recovery == false || this->owner.state() == STATE::GHOST || this->owner.alive() == false)
+    {
+        this->_hp_recovery_at.reset();
+        this->_mp_recovery_at.reset();
+        return;
+    }
+
+    auto batch  = this->owner.batch_update();
+    auto hp     = this->hp();
+    auto max_hp = this->maxhp();
+    if (hp >= max_hp)
+    {
+        this->_hp_recovery_at.reset();
+    }
+    else if (this->_hp_recovery_at.has_value() == false)
+    {
+        this->_hp_recovery_at = now + fb::model::const_value::recovery::hp_interval;
+    }
+    else if ((now < this->_hp_recovery_at.value()) == false)
+    {
+        auto amount = static_cast<double>(max_hp) * fb::model::const_value::recovery::hp_rate *
+                      (100.0 + static_cast<double>(this->regenerative())) / 100.0;
+        auto gained = std::clamp<uint64_t>(static_cast<uint64_t>(amount), 1, max_hp - hp);
+        this->hp(hp + gained);
+        this->_hp_recovery_at = now + fb::model::const_value::recovery::hp_interval;
+    }
+
+    auto mp     = this->mp();
+    auto max_mp = this->maxmp();
+    if (mp >= max_mp)
+    {
+        this->_mp_recovery_at.reset();
+    }
+    else if (this->_mp_recovery_at.has_value() == false)
+    {
+        this->_mp_recovery_at = now + fb::model::const_value::recovery::mp_interval;
+    }
+    else if ((now < this->_mp_recovery_at.value()) == false)
+    {
+        auto amount = static_cast<double>(max_mp) * fb::model::const_value::recovery::mp_rate;
+        auto gained = std::clamp<uint64_t>(static_cast<uint64_t>(amount), 1, max_mp - mp);
+        this->mp(mp + gained);
+        this->_mp_recovery_at = now + fb::model::const_value::recovery::mp_interval;
+    }
+}
+
+bool character_stat::natural_recovery() const
+{
+    this->owner.assert_thread();
+    return this->_natural_recovery;
+}
+
+void character_stat::natural_recovery(bool enabled)
+{
+    this->owner.assert_thread();
+    this->_natural_recovery = enabled;
+    this->_hp_recovery_at.reset();
+    this->_mp_recovery_at.reset();
+}
+
 void character_stat::equipment_on(const fb::model::equipment& model)
 {
     this->owner.assert_thread();

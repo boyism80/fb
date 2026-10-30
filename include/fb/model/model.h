@@ -3137,6 +3137,21 @@ private:
 DECLARE_CONST_MOB_EXTENSION
 #endif
 }; // end of const 'mob'
+class recovery
+{
+public:
+    inline static const timespan& hp_interval = timespan("00.00:00:10");
+    inline static constexpr const double hp_rate = 0.005;
+    inline static const timespan& mp_interval = timespan("00.00:00:25");
+    inline static constexpr const double mp_rate = 0.02;
+
+private:
+    recovery() = default;
+    ~recovery() = default;
+#ifdef DECLARE_CONST_RECOVERY_EXTENSION
+DECLARE_CONST_RECOVERY_EXTENSION
+#endif
+}; // end of const 'recovery'
 class reputation
 {
 public:
@@ -4749,6 +4764,20 @@ inline void const_map<fb::model::const_value::mob>(lua_State* lua)
 }
 
 template <>
+inline void const_map<fb::model::const_value::recovery>(lua_State* lua)
+{
+    lua_newtable(lua);
+    lua_pushstring(lua, fb::model::const_value::recovery::hp_interval.to_string().c_str());
+    lua_setfield(lua, -2, "HP_INTERVAL");
+    lua_pushnumber(lua, static_cast<lua_Number>(fb::model::const_value::recovery::hp_rate));
+    lua_setfield(lua, -2, "HP_RATE");
+    lua_pushstring(lua, fb::model::const_value::recovery::mp_interval.to_string().c_str());
+    lua_setfield(lua, -2, "MP_INTERVAL");
+    lua_pushnumber(lua, static_cast<lua_Number>(fb::model::const_value::recovery::mp_rate));
+    lua_setfield(lua, -2, "MP_RATE");
+}
+
+template <>
 inline void const_map<fb::model::const_value::reputation>(lua_State* lua)
 {
     lua_newtable(lua);
@@ -5435,6 +5464,8 @@ inline static void map_const(lua_State* lua)
     lua_setfield(lua, -2, "MARKETPLACE");
     const_map<fb::model::const_value::mob>(lua);
     lua_setfield(lua, -2, "MOB");
+    const_map<fb::model::const_value::recovery>(lua);
+    lua_setfield(lua, -2, "RECOVERY");
     const_map<fb::model::const_value::reputation>(lua);
     lua_setfield(lua, -2, "REPUTATION");
     const_map<fb::model::const_value::script>(lua);

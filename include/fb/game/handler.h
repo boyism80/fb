@@ -91,6 +91,7 @@
 #include <fb/game/handler/timer/mob_action_timer.h>
 #include <fb/game/handler/timer/mob_respawn_timer.h>
 #include <fb/game/handler/timer/ping_timer.h>
+#include <fb/game/handler/timer/recovery_timer.h>
 #include <fb/game/handler/timer/save_timer.h>
 #include <fb/game/handler/timer/schedule_timer.h>
 #include <fb/game/handler/timer/soliloquy_timer.h>

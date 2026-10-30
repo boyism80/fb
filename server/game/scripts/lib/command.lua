@@ -1110,6 +1110,30 @@ M.functions = {
         end,
     },
 
+    ['자연회복'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '[켜기|끄기] - 자연회복 조회/설정',
+        ['command'] = function(me, args)
+            local value = table.unpack(args)
+            if value == nil then
+                if me:natural_recovery() then
+                    me:message('자연회복: 켜짐')
+                else
+                    me:message('자연회복: 꺼짐')
+                end
+            elseif value == '켜기' then
+                me:natural_recovery(true)
+                me:message('자연회복을 켰습니다.')
+            elseif value == '끄기' then
+                me:natural_recovery(false)
+                me:message('자연회복을 껐습니다.')
+            else
+                me:message('사용법: /자연회복 [켜기|끄기]')
+            end
+            return true
+        end,
+    },
+
     ['아이템생성'] = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '<아이템이름> [개수] [유효시간(초)] - 아이템 생성',

@@ -1086,6 +1086,14 @@ namespace Fb.Model.ConstValue
         public const uint Horse = 301;
     }
 
+    public static class Recovery
+    {
+        public static readonly TimeSpan HpInterval = TimeSpan.Parse("00:00:10");
+        public const double HpRate = 0.005;
+        public static readonly TimeSpan MpInterval = TimeSpan.Parse("00:00:25");
+        public const double MpRate = 0.02;
+    }
+
     public static class Reputation
     {
         public static readonly TimeSpan EvaluationInterval = TimeSpan.Parse("12:00:00");
