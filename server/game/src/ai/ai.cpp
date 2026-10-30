@@ -7,6 +7,7 @@
 #include <fb/game/ai/run_away.h>
 #include <fb/game/ai/stationary.h>
 #include <fb/game/character.h>
+#include <fb/game/clan.h>
 #include <fb/game/life.h>
 #include <fb/game/map.h>
 #include <fb/game/server.h>
@@ -262,6 +263,19 @@ bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attack
             auto map = mob_obj.map();
             if (map != nullptr && map->pk_enabled() == false)
                 return true;
+
+            auto& owner_clan    = owner->clan.id();
+            auto& attacker_clan = static_cast<character&>(*attacker).clan.id();
+            auto  siege         = map != nullptr && ENUM_IN(map->model().option, MAP_OPTION::SIEGE_CASTLE);
+            if (siege && owner_clan.has_value() && attacker_clan.has_value())
+            {
+                if (owner_clan.value() == attacker_clan.value())
+                    return true;
+
+                auto guard = mob_obj.server.clans.try_enter_read(owner_clan.value());
+                if (guard.has_value() && guard->value() != nullptr && guard->value()->is_allied(attacker_clan.value()))
+                    return true;
+            }
         }
     }
 

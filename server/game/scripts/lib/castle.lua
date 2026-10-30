@@ -121,7 +121,11 @@ function M.is_friendly_clan(me, you)
 end
 
 function M.blocks_siege_friendly_fire(me, you)
-    return M.map_siege_castle(me) and M.is_friendly_clan(me, you)
+    local attacker = me
+    if me ~= nil and me:is(OBJECT_TYPE.MOB) and me:owner() ~= nil then
+        attacker = me:owner()
+    end
+    return M.map_siege_castle(me) and M.is_friendly_clan(attacker, you)
 end
 
 local function is_owner_or_ally(me, owner_clan_id)
