@@ -85,7 +85,12 @@ return {
             return
         end
 
-        if q:step() == 2 then
+        if q:step() == 3 and me:has_items('화기삼동충초돈유합', 1) then
+            me:dialog(npc, '화기삼동충초돈유합은 이미 만들어 주었네. 어서 조왕의동생에게 가져다주게.', { prev = false, next = false })
+            return
+        end
+
+        if q:step() == 2 or q:step() == 3 then
             local materials = { ['동충하초'] = 1, ['인삼'] = 1, ['비둘기고기'] = 1, ['구기자'] = 1 }
             if not me:has_items(materials) then
                 me:dialog(npc, '아직 재료를 다 구하지 못했군. 재료는 동충하초,인삼,비둘기고기,구기자를 구해오게.', { prev = false, next = false })
@@ -109,12 +114,11 @@ return {
                 me:dialog(npc, '소지품이 가득 차서 화기삼동충초돈유합을 받을 수 없습니다.', { prev = false, next = false })
                 return
             end
-            q:step(3)
-            btn = me:dialog(npc, '자~ 다됐네. 귀환 음식이니 좋은 곳에 쓰도록 하게.', { prev = false, next = true })
-            if btn == DIALOG_RESULT.QUIT then
-                return
+            if q:step() == 2 then
+                q:step(3)
+                me:push_achievement(31, '돈유합의달인의 부탁을 들어주었다.', 7, 1)
             end
-            me:push_achievement(31, '돈유합의달인의 부탁을 들어주었다.', 7, 1)
+            me:dialog(npc, '자~ 다됐네. 귀환 음식이니 좋은 곳에 쓰도록 하게.', { prev = false, next = false })
             return
         end
     end

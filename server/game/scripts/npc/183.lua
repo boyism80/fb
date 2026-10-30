@@ -52,7 +52,7 @@ return {
         end
 
         local btn
-        if not me:has_items('화기삼동충초돈유합', 1) then
+        if q:step() ~= 3 or not me:has_items('화기삼동충초돈유합', 1) then
             ::NPC_183_0005::
             btn = me:dialog(npc, '아직 화기삼동충초돈유합을 구하지 못하셨나보군요.', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
