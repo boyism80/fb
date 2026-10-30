@@ -342,6 +342,13 @@ return {
                 me:dialog(npc, '동료의 가방에 빈 자리가 없다네.', { prev = false, next = false })
                 return
             end
+
+            me:dialog(npc, string.format('%s님에게 의사를 묻고 있습니다.', friend:name()), { immediate = true })
+            local agreed = friend:menu(npc, string.format('%s님과 함께 용왕굴에 가시겠습니까?', me:name()), { '예', '아니오' })
+            if agreed ~= 1 then
+                me:dialog(npc, string.format('%s님이 거절하셨습니다.', friend:name()), { prev = false, next = false })
+                return
+            end
         end
 
         button = me:dialog(npc, '그럼.. 행운을 빌겠네..', { prev = false, next = true })
@@ -356,6 +363,11 @@ return {
                 ['감룡의어금니'] = 1
             }) then
             me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = false })
+            return
+        end
+
+        if friend ~= nil and find_nearby_character(me, friend:name()) == nil then
+            me:dialog(npc, '동료가 근처에 없다네.', { prev = false, next = false })
             return
         end
 
