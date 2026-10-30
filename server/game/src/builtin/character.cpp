@@ -2051,14 +2051,13 @@ int builtin::character::builtin_assert(lua_State* L)
 
     auto argc = lua->argc();
     auto ch   = lua->touserdata<fb::game::character>(1);
-    auto size = lua->rawlen(2);
+    if (ch == nullptr)
+        return 0;
 
     if (argc == 1)
-    {
-        lua->pushboolean(true);
-        return 1;
-    }
+        return 0;
 
+    auto size   = lua->rawlen(2);
     auto values = std::vector<STATE>();
     if (lua->is_table(2))
     {
