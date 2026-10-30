@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 #include <memory>
 
 using namespace fb::game;
@@ -140,6 +141,8 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
         return best_target;
 
     // Otherwise check for any target in sight
+    auto mob_pos       = mob_obj.position();
+    auto best_distance = std::numeric_limits<int>::max();
     for (const auto& obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto potential_target = std::static_pointer_cast<life>(obj);
@@ -151,9 +154,15 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
         if (potential_target->hidden(mob_obj))
             continue;
 
-        // Take the first valid target in sight
-        best_target = potential_target;
-        break;
+        auto target_pos = potential_target->position();
+        auto dx         = std::abs(static_cast<int>(target_pos.x) - static_cast<int>(mob_pos.x));
+        auto dy         = std::abs(static_cast<int>(target_pos.y) - static_cast<int>(mob_pos.y));
+        auto distance   = dx + dy;
+        if (distance < best_distance)
+        {
+            best_distance = distance;
+            best_target   = potential_target;
+        }
     }
 
     return best_target;

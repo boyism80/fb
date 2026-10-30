@@ -505,10 +505,13 @@ bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& 
 {
     this->assert_thread();
 
+    if (target == nullptr || target->map() != this->map() || target->hidden(*this))
+        return false;
+
     for (int i = 0; i < 4; i++)
     {
         auto direction = DIRECTION(i);
-        if (this->side(direction, OBJECT_TYPE::LIFE) != target)
+        if (this->side_position(direction) != target->position())
             continue;
 
         out = direction;

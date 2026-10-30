@@ -31,8 +31,14 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     }
 
     DIRECTION attack_dir;
-    if (mob_obj.near_target(target, attack_dir))
+    auto      adjacent = mob_obj.near_target(target, attack_dir) ? target : super::find_target_in_range(mob_obj, now);
+    if (adjacent != nullptr && mob_obj.near_target(adjacent, attack_dir))
     {
+        if (adjacent != target)
+        {
+            mob_obj.target(adjacent);
+            this->_target_lock_time = now;
+        }
         mob_obj.direction(attack_dir);
         co_await mob_obj.attack();
     }
