@@ -738,10 +738,19 @@ async::task<void> match::container::join(character& ch, uint64_t match_id, uint3
     auto session = std::shared_ptr<match>{};
     {
         auto lock = std::lock_guard(this->_mutex);
-        auto it   = this->_sessions.find(match_id);
+        auto now  = std::chrono::steady_clock::now();
+        std::erase_if(this->_closed, [now](const auto& pair) {
+            return now - pair.second >= std::chrono::seconds(match::CLOSED_RETENTION_SECONDS);
+        });
+
+        auto it = this->_sessions.find(match_id);
         if (it != this->_sessions.end())
         {
             session = it->second;
+        }
+        else if (this->_closed.contains(match_id))
+        {
+            co_return;
         }
         else
         {
@@ -783,4 +792,5 @@ void match::container::remove(uint64_t match_id)
 {
     auto lock = std::lock_guard(this->_mutex);
     this->_sessions.erase(match_id);
+    this->_closed.insert_or_assign(match_id, std::chrono::steady_clock::now());
 }

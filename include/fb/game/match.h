@@ -41,6 +41,8 @@ public:
     // Upper bound for the waiting state; a script can replace it with match:wait.
     static constexpr uint32_t DEFAULT_WAIT_SECONDS = 60;
 
+    static constexpr uint32_t CLOSED_RETENTION_SECONDS = 3600;
+
 public:
     class team;
     class container;
@@ -128,10 +130,11 @@ public:
 class match::container
 {
 private:
-    server&                                              _server;
-    std::mutex                                           _mutex;
-    std::unordered_map<uint64_t, std::shared_ptr<match>> _sessions;
-    uint32_t                                             _next_slot = 1;
+    server&                                                             _server;
+    std::mutex                                                          _mutex;
+    std::unordered_map<uint64_t, std::shared_ptr<match>>                _sessions;
+    std::unordered_map<uint64_t, std::chrono::steady_clock::time_point> _closed;
+    uint32_t                                                            _next_slot = 1;
 
 public:
     explicit container(server& server);
