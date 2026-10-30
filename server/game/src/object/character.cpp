@@ -205,6 +205,9 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     if (this->_thread == nullptr)
         co_return true;
 
+    if (map != nullptr && this->transferred())
+        co_return false;
+
     this->assert_thread();
 
     auto old_map      = this->_map;
@@ -373,6 +376,9 @@ uint64_t character::normal_attack_damage(MOB_SIZE size) const
 bool character::inited() const
 {
     if (this->_thread == nullptr)
+        return false;
+
+    if (this->_login_state == LOGIN_STATE::TRANSFERRED)
         return false;
 
     return true;

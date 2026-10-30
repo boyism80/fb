@@ -5,6 +5,7 @@
 #include <macro.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <ctime>
 #include <list>
@@ -220,6 +221,23 @@ async::task<void> listener_impl::on_transfer(character&                  me,
                                        me.world(),
                                        option.host.value_or(map.model().host),
                                        stream);
+
+    constexpr auto transferred_socket_lifetime = std::chrono::seconds(10);
+
+    auto thread = me.thread();
+    if (thread != nullptr)
+    {
+        auto weak = me.weak_from_this_as<character>();
+        async::awaitable_then(thread->sleep(transferred_socket_lifetime), [weak](auto) {
+            auto ch = weak.lock();
+            if (ch == nullptr || ch->transferred() == false)
+                return;
+
+            auto socket = ch->socket_ptr();
+            if (socket != nullptr && socket->is_open())
+                socket->close();
+        });
+    }
 }
 
 void listener_impl::on_update_map(character& ch, const fb::game::map& map)
