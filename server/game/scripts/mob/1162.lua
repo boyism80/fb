@@ -28,6 +28,8 @@ return {
         if q == nil or q:step() ~= 6 then
             return
         end
-        me:mkitem('반고의심장', 1)
+        if me:mkitem('반고의심장', 1) == nil then
+            me:dialog(mob, '소지품이 가득 차서 반고의심장을 받을 수 없습니다.', { prev = false, next = false })
+        end
     end
 }

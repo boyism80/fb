@@ -25,7 +25,9 @@ return {
         if q == nil or q:step() ~= 1 then
             return
         end
-        me:mkitem('소호의증표', 1)
+        if me:mkitem('소호의증표', 1) == nil then
+            me:dialog(mob, '소지품이 가득 차서 소호의증표를 받을 수 없습니다.', { prev = false, next = false })
+        end
     end
 
     -- on_mob_attack = function(me, you)

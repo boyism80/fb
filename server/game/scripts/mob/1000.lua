@@ -17,7 +17,6 @@ return {
             return
         end
 
-        mob:chat('asd')
         local q = me:quest(quest.QUEST_DRAGON_KING)
         if q == nil or q:step() ~= 1 or q:progress() < 1 then
             return
@@ -27,7 +26,10 @@ return {
             return
         end
 
-        me:mkitem(item_doc, 1)
+        if me:mkitem(item_doc, 1) == nil then
+            me:dialog(mob, "소지품이 가득 차서 태자전음문서를 받을 수 없습니다.", { prev = false, next = false })
+            return
+        end
         me:push_achievement(19, "복어장군을 생포하였다!", 7, 1)
     end,
 
