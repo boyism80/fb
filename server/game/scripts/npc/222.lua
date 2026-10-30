@@ -89,9 +89,20 @@ local function marriage_npc(me, npc)
             return
         end
 
-        local spouse = id2ch(m.spouse_id)
-        if spouse == nil then
+        if id2ch(m.spouse_id) == nil then
             me:dialog(npc, m.spouse_name .. '님은 현재 접속 중이 아닙니다.')
+            return
+        end
+
+        local spouse = nil
+        for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
+            if ch:uid() == m.spouse_id then
+                spouse = ch
+                break
+            end
+        end
+        if spouse == nil then
+            me:dialog(npc, '배우자와 같은 곳에 있어야 이혼할 수 있습니다.')
             return
         end
 

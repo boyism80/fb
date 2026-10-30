@@ -671,60 +671,27 @@ test_suite {
             return true
         end,
 
-        {
-            parallel = {
-                [0] = {
-                    function(ctx)
-                        local a = ctx:bot(0)
-                        progress(a, "D1b: DIVORCE SPOUSE AWAY (requester)")
-                        g_parallel_msg = nil
-                        local ok, err = divorce_select(a)
-                        if ok == false then
-                            progress(a, "FAILED: " .. tostring(err))
-                            return false
-                        end
-                        local packet = divorce_wait_result(a)
-                        g_parallel_msg = packet and packet.message or nil
-                        if packet ~= nil then
-                            dismiss_normal(a)
-                        end
-                        return true
-                    end,
-                },
-                [1] = {
-                    function(ctx)
-                        local b = ctx:bot(1)
-                        progress(b, "D1b: DIVORCE SPOUSE AWAY (spouse)")
-                        g_partner_msg = nil
-                        local packet = wait_menu(b)
-                        if packet == nil then
-                            progress(b, "FAILED: menu missing")
-                            return false
-                        end
-                        packet = reply_menu_expect_normal(b, CONFIRM_YES)
-                        g_partner_msg = packet and packet.message or nil
-                        if packet ~= nil then
-                            dismiss_normal(b)
-                        end
-                        return true
-                    end,
-                },
-            },
-        },
-
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
+            progress(a, "D1b: DIVORCE SPOUSE AWAY")
+            local ok, err = divorce_select(a)
+            if ok == false then
+                restore_home(b, 1)
+                progress(a, "FAILED: " .. tostring(err))
+                return false
+            end
+            local packet = wait_normal(a)
+            local msg = packet and packet.message or nil
+            if packet ~= nil then
+                dismiss_normal(a)
+            end
             restore_home(b, 1)
-            if g_parallel_msg == nil or g_parallel_msg:find(MSG_DIVORCE_AWAY, 1, true) == nil then
-                progress(a, "FAILED: D1b requester msg=" .. tostring(g_parallel_msg))
+            if msg == nil or msg:find(MSG_DIVORCE_AWAY, 1, true) == nil then
+                progress(a, "FAILED: D1b requester msg=" .. tostring(msg))
                 return false
             end
-            if g_partner_msg == nil or g_partner_msg:find(MSG_DIVORCE_AWAY, 1, true) == nil then
-                progress(b, "FAILED: D1b spouse msg=" .. tostring(g_partner_msg))
-                return false
-            end
-            local ok, err = assert_spouse_info(a, b:name())
+            ok, err = assert_spouse_info(a, b:name())
             if ok == false then
                 progress(a, "FAILED: D1b still married " .. tostring(err))
                 return false
