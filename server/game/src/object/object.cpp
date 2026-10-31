@@ -611,11 +611,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         // here the character is on some map.
         // set map to null.
         auto before_position = fb::model::point16_t{resolved};
-        if (this->_map != nullptr)
-        {
-            before_position.x = std::min<uint16_t>(resolved.x, map->width() - 1);
-            before_position.y = std::min<uint16_t>(resolved.y, map->height() - 1);
-        }
+        before_position.x    = std::min<uint16_t>(resolved.x, map->width() - 1);
+        before_position.y    = std::min<uint16_t>(resolved.y, map->height() - 1);
 
         if (this->_map != nullptr)
         {
