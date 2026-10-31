@@ -37,6 +37,21 @@ namespace Http.Service
             end
             """;
 
+        private static readonly string DeleteScript = """
+            local raw = redis.call('hget', @key, @name)
+            if raw == false then
+                return 0
+            end
+
+            local session = cjson.decode(raw)
+            if tonumber(session['Host']) ~= tonumber(@host) then
+                return 0
+            end
+
+            redis.call('hdel', @key, @name)
+            return 1
+            """;
+
         private static readonly string SessionTtlRefreshScript = """
             local key = KEYS[1]
             local new_ttl = tonumber(ARGV[1])
@@ -124,30 +139,18 @@ namespace Http.Service
                 return;
             }
 
-            var conn = redis.Connection;
-
             if (host == null)
             {
-                await conn.HashDeleteAsync(key, name);
+                await redis.Connection.HashDeleteAsync(key, name);
             }
             else
             {
-                var raw = await conn.HashGetAsync(key, name);
-                if (raw.IsNull)
+                await redis.EvalAsync(DeleteScript, new
                 {
-                    return;
-                }
-
-                var session = JsonConvert.DeserializeObject<Session>(raw.ToString());
-                if (session == null || session.Host != host.Value)
-                {
-                    return;
-                }
-
-                var transaction = conn.CreateTransaction();
-                transaction.AddCondition(Condition.HashEqual(key, name, raw));
-                _ = transaction.HashDeleteAsync(key, name);
-                await transaction.ExecuteAsync();
+                    key = key,
+                    name = name,
+                    host = (int)host.Value
+                });
             }
             await RefreshTTL(world);
         }
