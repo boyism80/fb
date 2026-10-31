@@ -55,7 +55,7 @@ local function try_spawn_one(map, zone)
         local x = math.random(zone[1], zone[2])
         local y = math.random(zone[3], zone[4])
         if map:at(x, y, OBJECT_TYPE.ITEM) == nil and not map:block(x, y) then
-            local item = map:mkitem(ITEM_NAME, x, y)
+            local item = map:mkitem(ITEM_NAME, x, y, { lifetime = false })
             if item ~= nil then
                 return true
             end

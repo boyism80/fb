@@ -1102,8 +1102,9 @@ int builtin::map::builtin_mkitem(lua_State* L)
         return 1;
     }
 
-    uint16_t x = 0;
-    uint16_t y = 0;
+    uint16_t x          = 0;
+    uint16_t y          = 0;
+    auto     option_idx = 0;
     if (lua->is_table(3))
     {
         lua->rawgeti(3, 1);
@@ -1112,16 +1113,27 @@ int builtin::map::builtin_mkitem(lua_State* L)
         lua->rawgeti(3, 2);
         y = static_cast<uint16_t>(lua->tointeger(-1));
         lua->remove(-1);
+        option_idx = 4;
     }
     else if (lua->is_number(3) && lua->is_number(4))
     {
-        x = static_cast<uint16_t>(lua->tointeger(3));
-        y = static_cast<uint16_t>(lua->tointeger(4));
+        x          = static_cast<uint16_t>(lua->tointeger(3));
+        y          = static_cast<uint16_t>(lua->tointeger(4));
+        option_idx = 5;
     }
     else
     {
         lua->pushnil();
         return 1;
+    }
+
+    auto lifetime = true;
+    if (lua->argc() >= option_idx && lua->is_table(option_idx))
+    {
+        ::lua_getfield(*lua, option_idx, "lifetime");
+        if (lua->is_nil(-1) == false)
+            lifetime = lua->toboolean(-1);
+        lua->remove(-1);
     }
 
     auto item_holder = std::make_shared<std::shared_ptr<fb::game::item>>();
@@ -1132,7 +1144,7 @@ int builtin::map::builtin_mkitem(lua_State* L)
     builder.yield    = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         auto  item   = model->make(server);
-        if (co_await item->map(map_ptr, fb::model::point16_t{x, y}) == false)
+        if (co_await item->map(map_ptr, fb::model::point16_t{x, y}, {.ground_lifetime = lifetime}) == false)
             co_return;
 
         *item_holder = item;

@@ -47,6 +47,7 @@ struct map_options
     DESTROY_TYPE destroy_type       = DESTROY_TYPE::DEFAULT;
     bool         notify             = true;
     bool         skip_instance_rule = false;
+    bool         ground_lifetime    = true;
     map_callback before             = {};
     map_callback after              = {};
 };

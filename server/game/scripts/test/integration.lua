@@ -1983,6 +1983,53 @@ return {
         end
     end,
 
+    spawn_ground_items = function(me, step, kept_name, expiring_name)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+        local x, y = me:position()
+        local kept = map:mkitem(kept_name, x + 1, y, { lifetime = false })
+        local expiring = map:mkitem(expiring_name, x + 2, y)
+        if kept == nil or expiring == nil then
+            return report(me, false, step, 'cannot place the ground items')
+        end
+        report(me, true, step)
+    end,
+
+    verify_ground_items = function(me, step, kept_name, expiring_name)
+        local map = me:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+        local x, y = me:position()
+        local kept = false
+        local expiring = false
+        for _, item in pairs(map:objects(OBJECT_TYPE.ITEM)) do
+            local ix, iy = item:position()
+            if iy == y and ix == x + 1 and item:name() == kept_name then
+                kept = true
+            elseif iy == y and ix == x + 2 and item:name() == expiring_name then
+                expiring = true
+            end
+        end
+        if kept and not expiring then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('kept=%s expiring=%s', tostring(kept), tostring(expiring)))
+        end
+    end,
+
+    clear_ground_items = function(me, step)
+        local map = me:map()
+        if map ~= nil then
+            for _, item in pairs(map:objects(OBJECT_TYPE.ITEM)) do
+                item:destroy()
+            end
+        end
+        report(me, true, step)
+    end,
+
     cleanup = function(me, step)
         local map = me:map()
         if map ~= nil then

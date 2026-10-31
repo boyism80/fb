@@ -61,11 +61,12 @@ async::task<bool> item::map(std::shared_ptr<fb::game::map>      map,
                             std::optional<fb::model::point16_t> position,
                             map_options                         options)
 {
-    auto result = co_await object::map(map, position, std::move(options));
+    auto lifetime = options.ground_lifetime;
+    auto result   = co_await object::map(map, position, std::move(options));
     if (!result)
         co_return false;
 
-    if (map == nullptr)
+    if (map == nullptr || lifetime == false)
         this->_dropped_time = std::nullopt;
     else
         this->_dropped_time = this->server.now();
