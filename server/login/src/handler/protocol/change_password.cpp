@@ -85,6 +85,10 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
             session.data()->password_failures++;
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_LOCKED));
 
+        case ERROR_CODE::BIRTHDAY_LOCKED:
+            session.data()->password_failures++;
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_BIRTHDAY_LOCKED));
+
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp2.error_code));
         }

@@ -405,7 +405,7 @@ namespace Internal.Controllers
                 await _passwordAttempts.Succeed(world, request.Uid, request.Ip, attempt);
                 if (await _passwordAttempts.BirthdayLocked(world, request.Uid))
                 {
-                    throw new LogicException(ErrorCode.AccountLocked);
+                    throw new LogicException(ErrorCode.BirthdayLocked);
                 }
 
                 if (ch.Birth != request.Birthday)
