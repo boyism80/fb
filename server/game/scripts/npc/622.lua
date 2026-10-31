@@ -50,7 +50,7 @@ return {
             goto NPC_622_0003
         end
 
-        if sel >= 0 and sel <= 7 then
+        if sel >= 1 and sel <= 7 then
             local r = RECIPES_7[sel]
             ::NPC_622_0010::
             local d = me:dialog(npc, r.desc, { prev = false, next = true })

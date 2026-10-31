@@ -206,9 +206,10 @@ return {
             return
         end
 
-        if selected == 1 then
+        local choice = options[selected]
+        if choice == '황비연 퀘스트' then
             dojaeyoung_nobidocument(me, npc)
-        else
+        elseif choice == '약초 퀘스트' then
             dojaeyoung_herb_quest(me, npc)
         end
     end

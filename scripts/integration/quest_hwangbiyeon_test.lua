@@ -3,8 +3,9 @@
 -- 도재영 offers QUEST_DOJAEYOUNG_HERB (196) from QUEST_HWANGBIYEON step 2 on, or once 196 has
 -- started; the herb quest and its hand-off to 도성연(npc/108) are covered on the way.
 -- Expected values come from the NPC scripts.
-local lib = require("integration.lib")
-local qd  = require("integration.lib.quest_dialog")
+local lib      = require("integration.lib")
+local qd       = require("integration.lib.quest_dialog")
+local protocol = require("integration.protocol")
 
 local QUEST_HWANGBIYEON = 195
 local QUEST_HERB        = 196
@@ -109,6 +110,20 @@ test_suite {
                 return fail("도재영 step 1 flow broke")
             end
             press(bot, "NEXT")
+
+            if click(bot, "도재영", contains("무엇을 도와드릴까요")) == nil then
+                return fail("도재영 menu missing before the hidden pick")
+            end
+            local hidden = bot:request_dialog_ext(protocol.dialog("LIST", 0, "", 2, 0, "", "NEXT"), function()
+                return true
+            end, 3000)
+            if hidden ~= nil and hidden ~= false then
+                qd.close(bot)
+                return fail("도재영 answered a hidden menu pick")
+            end
+            if check(bot, "verify_quest", "herb_hidden_pick", QUEST_HERB, "none") == false then
+                return fail("a hidden menu pick started the herb quest")
+            end
 
             -- 상해주민: the bounty answer ends the talk; meeting him gives 노비문서 (step 2).
             dlg = click(bot, "상해주민", is_list)
