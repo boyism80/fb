@@ -1143,6 +1143,47 @@ bool root::dump(std::string_view path)
 
 bool root::validate(std::string_view path)
 {
+    auto before = this->loaded_packages();
+    auto valid  = this->execute_module(path);
+    for (const auto& name : this->loaded_packages())
+    {
+        if (before.contains(name) == false)
+            this->unload_package(name);
+    }
+
+    return valid;
+}
+
+std::unordered_set<std::string> root::loaded_packages()
+{
+    auto names = std::unordered_set<std::string>{};
+    lua_getglobal(*this, "package");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 1);
+        return names;
+    }
+
+    lua_getfield(*this, -1, "loaded");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 2);
+        return names;
+    }
+
+    lua_pushnil(*this);
+    while (lua_next(*this, -2) != 0)
+    {
+        if (lua_type(*this, -2) == LUA_TSTRING)
+            names.emplace(lua_tostring(*this, -2));
+        lua_pop(*this, 1);
+    }
+    lua_pop(*this, 2);
+    return names;
+}
+
+bool root::execute_module(std::string_view path)
+{
     auto path_str = std::string(path);
     if (luaL_loadfile(*this, path_str.c_str()) != LUA_OK)
     {

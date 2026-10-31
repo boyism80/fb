@@ -585,12 +585,14 @@ private:
     std::unordered_set<std::string> _lib_modules;
     int                             _loading = 0;
 
-    void       remember_lib_from_path(std::string_view path);
-    void       capture_loaded_libs();
-    void       unload_remembered_libs();
-    static int call_builtin(lua_State* ctx);
-    void       push_builtin(lua_CFunction fn);
-    void       set_builtins(const luaL_Reg* funcs);
+    void                            remember_lib_from_path(std::string_view path);
+    void                            capture_loaded_libs();
+    void                            unload_remembered_libs();
+    std::unordered_set<std::string> loaded_packages();
+    bool                            execute_module(std::string_view path);
+    static int                      call_builtin(lua_State* ctx);
+    void                            push_builtin(lua_CFunction fn);
+    void                            set_builtins(const luaL_Reg* funcs);
 
 public:
     friend class context;
