@@ -206,6 +206,29 @@ local function demote_admin(caster, target)
         return fail("demote: 잠복근무 did not hide")
     end
 
+    if run_step(target, "set_role", "demote_moderator", caster:name(), "1") ~= true then
+        return fail("demote: failed to lower caster role to moderator")
+    end
+    caster:sleep(200)
+    local moderator_cleared = run_step(target, "verify_demoted", "demote_moderator_cleared", caster:name()) == true
+    if run_step(target, "set_role", "demote_moderator_restore", caster:name(), "2") ~= true then
+        return fail("demote: failed to restore caster role after moderator")
+    end
+    if moderator_cleared == false then
+        caster:clear_all_spells()
+        return fail("demote: super_hide was not cleared for moderator")
+    end
+
+    slot = caster:learn_spell("잠복근무")
+    if slot == 0xFF then
+        return fail("demote: failed to relearn 잠복근무")
+    end
+    caster:send(protocol.spell_cast("NORMAL", slot, "", 0, { 0, 0 }))
+    caster:sleep(200)
+    if run_step(caster, "verify_super_hide", "demote_hide_again", "1") ~= true then
+        return fail("demote: 잠복근무 did not hide again")
+    end
+
     if run_step(target, "set_role", "demote_user", caster:name(), "0") ~= true then
         return fail("demote: failed to lower caster role")
     end

@@ -466,7 +466,7 @@ void character::role(ROLE value)
             this->spells.remove(i);
     }
 
-    if (value == ROLE::USER && this->_super_hide)
+    if (value < ROLE::ADMIN && this->_super_hide)
     {
         this->super_hide(false);
         if (this->_state == STATE::CLOACK)

@@ -278,11 +278,15 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     params.nation       = static_cast<NATION>(resp.character.nation);
     params.divine_beast = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
     params.super_hide   = resp.option.super_hide;
-    if (params.super_hide && params.role == ROLE::USER)
+    if (params.super_hide && params.role < ROLE::ADMIN)
     {
         params.super_hide = false;
         if (params.state == STATE::CLOACK)
             params.state = STATE::NORMAL;
+        std::ignore = this->server.http.post(
+            "internal",
+            "/in-game/option",
+            internal_reqs::SetOption{params.world, params.id, {{static_cast<uint8_t>(OPTION::SUPER_HIDE), false}}});
     }
     params.reputation          = resp.character.reputation;
     params.evaluation          = resp.character.evaluation;

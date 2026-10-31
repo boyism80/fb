@@ -2146,14 +2146,22 @@ int builtin::character::builtin_role(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            auto old = ch->role();
+            auto old    = ch->role();
+            auto hidden = ch->super_hide();
             ch->role(value);
+            auto& server = static_cast<fb::game::server&>(lua->executor);
+            if (hidden && ch->super_hide() == false)
+                std::ignore = server.http.post(
+                    "internal",
+                    "/in-game/option",
+                    fb::protocol::internal::request::SetOption{ch->world(),
+                                                               ch->id,
+                                                               {{static_cast<uint8_t>(OPTION::SUPER_HIDE), false}}});
             if (actor.empty() || old == value)
                 co_return;
 
-            auto& server = static_cast<fb::game::server&>(lua->executor);
-            auto  detail = std::format("{} -> {}", static_cast<int>(old), static_cast<int>(value));
-            std::ignore  = server.http.post("internal",
+            auto detail = std::format("{} -> {}", static_cast<int>(old), static_cast<int>(value));
+            std::ignore = server.http.post("internal",
                                            "/ops/notify",
                                            fb::protocol::internal::request::OpsNotify{"role_change",
                                                                                       "game",
