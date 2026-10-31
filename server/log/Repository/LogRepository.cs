@@ -83,7 +83,7 @@ namespace Log.Repository
                     var valueBytes = Encoding.UTF8.GetByteCount(value);
                     if (prefixBytes + valueBytes > MaxInsertBytes)
                     {
-                        throw new InvalidOperationException("A single log entry exceeds the INSERT size limit");
+                        throw new InvalidDataException("A single log entry exceeds the INSERT size limit");
                     }
 
                     if (values.Count > 0 && (values.Count >= MaxInsertRows || bytes + 2 + valueBytes > MaxInsertBytes))
@@ -109,32 +109,6 @@ namespace Log.Repository
                 _logger.LogError(ex, $"Failed to bulk insert logs for world {_world} shard {shard}");
                 throw;
             }
-        }
-
-        public async Task<bool> PingAsync()
-        {
-            var shardSize = _dbContext.GetShardDbSize(_world);
-            if (shardSize == 0)
-            {
-                return false;
-            }
-
-            for (var shard = 0; shard < shardSize; shard++)
-            {
-                try
-                {
-                    await using var conn = _dbContext.GetDataConnection(_world, shard);
-                    await conn.OpenAsync();
-                    await conn.ExecuteScalarAsync<int>("SELECT 1");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Log database shard {shard} of world {_world} is unreachable");
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private static LogEntry ParseLogEntry(JsonElement log)

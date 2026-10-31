@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MySqlConnector;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
@@ -21,6 +22,8 @@ namespace Log.Worker
         private IChannel _publisher;
         private readonly List<string> _queueNames = new();
         private static readonly TimeSpan ProcessInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan DeadReplayInterval = TimeSpan.FromMinutes(5);
+        private static readonly HashSet<int> DataErrorNumbers = new() { 1048, 1264, 1265, 1292, 1366, 1406, 3140 };
         private const int BatchSize = 8;
         private const string ExchangeName = "amq.direct";
         private const string DeadLetterExchangeName = "fb.log.dlx";
@@ -28,6 +31,7 @@ namespace Log.Worker
         private const string DeadLetterRouteExchangeName = "fb.log.dlx.route";
         private const string DeadQueueSuffix = ".dead";
         private readonly List<PendingMessage> _pending = new();
+        private DateTime _lastDeadReplay = DateTime.MinValue;
         private readonly uint _world;
         private readonly bool _crossLog;
 
@@ -424,12 +428,17 @@ namespace Log.Worker
             {
                 _logger.LogError(ex, $"Failed to bulk insert {logCount} log entries, inserting each message alone");
                 var failed = new List<PendingMessage>();
+                var rejected = new List<PendingMessage>();
                 foreach (var message in _pending)
                 {
                     try
                     {
                         await logRepository.BulkInsertAsync(message.Logs);
                         await AckAsync(message, cancellationToken);
+                    }
+                    catch (Exception e) when (e is InvalidDataException || (e is MySqlException mysql && DataErrorNumbers.Contains(mysql.Number)))
+                    {
+                        rejected.Add(message);
                     }
                     catch (Exception)
                     {
@@ -438,24 +447,26 @@ namespace Log.Worker
                 }
                 _pending.Clear();
 
-                if (failed.Count > 0 && await logRepository.PingAsync())
+                foreach (var message in rejected)
                 {
-                    foreach (var message in failed)
-                    {
-                        _logger.LogError($"Moving a log message that fails on a reachable database to {message.QueueName}{DeadQueueSuffix}");
-                        await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, message.QueueName, true, new BasicProperties(message.Properties), message.Body, cancellationToken);
-                        await AckAsync(message, cancellationToken);
-                    }
+                    _logger.LogError($"Moving a log message rejected by the database to {message.QueueName}{DeadQueueSuffix}");
+                    await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, message.QueueName, true, new BasicProperties(message.Properties), message.Body, cancellationToken);
+                    await AckAsync(message, cancellationToken);
                 }
-                else if (failed.Count > 0)
+
+                if (failed.Count > 0)
                 {
-                    _logger.LogWarning($"Log database is unreachable, holding {failed.Count} messages for retry");
+                    _logger.LogWarning($"Log database write failed, holding {failed.Count} messages for retry");
                     _pending.AddRange(failed);
                     return false;
                 }
             }
 
-            await ReplayDeadLettersAsync(logRepository, cancellationToken);
+            if (DateTime.UtcNow - _lastDeadReplay >= DeadReplayInterval)
+            {
+                await ReplayDeadLettersAsync(logRepository, cancellationToken);
+                _lastDeadReplay = DateTime.UtcNow;
+            }
             return batchFull;
         }
 
@@ -494,40 +505,22 @@ namespace Log.Worker
                         await AckAsync(message, cancellationToken);
                         replayed++;
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Keeping a log message that failed to replay in {QueueName}", deadQueueName);
                         failed.Add(message);
                     }
                 }
 
-                if (failed.Count > 0 && await logRepository.PingAsync())
+                foreach (var message in failed)
                 {
-                    foreach (var message in failed)
+                    try
                     {
-                        try
-                        {
-                            await logRepository.BulkInsertAsync(message.Logs);
-                            replayed++;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Dropping a log message that keeps failing on a reachable database: {Body}", Encoding.UTF8.GetString(message.Body));
-                        }
-                        await AckAsync(message, cancellationToken);
+                        await _channel.BasicNackAsync(message.DeliveryTag, multiple: false, requeue: true, cancellationToken);
                     }
-                }
-                else if (failed.Count > 0)
-                {
-                    foreach (var message in failed)
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            await _channel.BasicNackAsync(message.DeliveryTag, multiple: false, requeue: true, cancellationToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, $"Failed to requeue message to {deadQueueName}");
-                        }
+                        _logger.LogWarning(ex, $"Failed to requeue message to {deadQueueName}");
                     }
                 }
 
