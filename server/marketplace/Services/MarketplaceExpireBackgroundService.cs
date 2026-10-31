@@ -14,6 +14,7 @@ namespace Marketplace.Services
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
         private readonly HealthCheckService _health;
+        private readonly MarketplaceParcelBackgroundService _parcelSender;
         private readonly ILogger<MarketplaceExpireBackgroundService> _logger;
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
@@ -35,11 +36,13 @@ namespace Marketplace.Services
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
             HealthCheckService health,
+            MarketplaceParcelBackgroundService parcelSender,
             ILogger<MarketplaceExpireBackgroundService> logger)
         {
             _scopeFactory = scopeFactory;
             _redisService = redisService;
             _health = health;
+            _parcelSender = parcelSender;
             _logger = logger;
         }
 
@@ -70,11 +73,10 @@ namespace Marketplace.Services
                             // Create scope for service resolution
                             using var scope = _scopeFactory.CreateScope();
                             var dbContext = scope.ServiceProvider.GetRequiredService<Marketplace.Service.DbContext>();
-                            var parcelService = scope.ServiceProvider.GetRequiredService<MarketplaceParcelService>();
                             var logService = scope.ServiceProvider.GetRequiredService<LogService>();
 
                             // Process expired listings
-                            await ProcessExpiredListingsAsync(dbContext, parcelService, logService, stoppingToken);
+                            await ProcessExpiredListingsAsync(dbContext, logService, stoppingToken);
                         }
                         catch (Exception e)
                         {
@@ -103,7 +105,6 @@ namespace Marketplace.Services
 
         private async Task ProcessExpiredListingsAsync(
             Marketplace.Service.DbContext dbContext,
-            MarketplaceParcelService parcelService,
             LogService logService,
             CancellationToken cancellationToken)
         {
@@ -145,19 +146,17 @@ namespace Marketplace.Services
                 await conn.ExecuteAsync(updateSql, parameters, transaction);
 
                 // Return items with registration fee; the parcel rows commit together with the EXPIRED status
-                var parcels = new List<MarketplaceParcel>(expiredListings.Count);
                 foreach (var listing in expiredListings)
                 {
-                    parcels.Add(await CreateExpiredParcelAsync(listing, dbContext, transaction));
+                    await CreateExpiredParcelAsync(listing, dbContext, transaction);
                 }
 
                 await transaction.CommitAsync(cancellationToken);
                 committed = true;
+                _parcelSender.Wake();
 
-                for (var i = 0; i < expiredListings.Count; i++)
+                foreach (var listing in expiredListings)
                 {
-                    var listing = expiredListings[i];
-                    var sent = await parcelService.SendAsync(parcels[i]);
                     var totalPrice = listing.Price * listing.RemainingCount;
                     await logService.WriteAsync("marketplace_expired_listing_processed", new
                     {
@@ -166,8 +165,7 @@ namespace Marketplace.Services
                         item_model = listing.ItemModel,
                         remaining_count = listing.RemainingCount,
                         total_price = totalPrice,
-                        registration_fee = (ulong)(totalPrice * Fb.Model.ConstValue.Marketplace.ListingFee),
-                        sent
+                        registration_fee = (ulong)(totalPrice * Fb.Model.ConstValue.Marketplace.ListingFee)
                     });
                 }
 
@@ -191,7 +189,7 @@ namespace Marketplace.Services
             }
         }
 
-        private async Task<MarketplaceParcel> CreateExpiredParcelAsync(
+        private async Task CreateExpiredParcelAsync(
             MarketplaceListing listing,
             Marketplace.Service.DbContext dbContext,
             System.Data.IDbTransaction transaction)
@@ -241,7 +239,6 @@ namespace Marketplace.Services
                 Attachments = attachments
             };
             await dbContext.MarketplaceParcel.CreateAsync(parcel, transaction);
-            return parcel;
         }
     }
 }
