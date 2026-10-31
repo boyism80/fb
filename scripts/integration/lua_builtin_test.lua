@@ -21,6 +21,9 @@ test_suite {
             if script_step.run_script(bot, "test/integration", "verify_no_global_args", "no_global_args") ~= true then
                 return fail("a slash command left its arguments in a global")
             end
+            if script_step.run_script(bot, "test/integration", "verify_script_return", "script_return") ~= true then
+                return fail("obj:script lost the values of a script that waited")
+            end
             return true
         end,
     },

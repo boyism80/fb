@@ -1515,6 +1515,22 @@ return {
         report(me, raised, step, tostring(err))
     end,
 
+    return_values = function(me, value, wait)
+        if wait then
+            sleep(50)
+        end
+        return value, true
+    end,
+
+    verify_script_return = function(me, step)
+        local path = 'scripts/test/integration.lua'
+        local sync_value, sync_flag = me:script(path, 'return_values', 'sync', false)
+        local wait_value, wait_flag = me:script(path, 'return_values', 'wait', true)
+        local ok = sync_value == 'sync' and sync_flag == true and wait_value == 'wait' and wait_flag == true
+        report(me, ok, step, string.format('sync=%s,%s wait=%s,%s', tostring(sync_value), tostring(sync_flag),
+            tostring(wait_value), tostring(wait_flag)))
+    end,
+
     -- Takes count pieces by name the way an NPC sale or a quest does, even while trading.
     remove_items = function(me, step, name, count)
         local removed = me:rmitem(name, tonumber(count))
