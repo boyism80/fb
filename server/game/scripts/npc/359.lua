@@ -1,7 +1,9 @@
 -- npc: 장명주
 local enum = require('lib.enum')
+local quest = require('lib.quest')
+local festival = require('lib.festival')
 local function find_butterfly_item(me)
-    for n = 10, 0, -1 do
+    for n = 10, 1, -1 do
         local name = "채집통 [" .. n .. " 마리]"
         if me:has_items(name, 1) then
             return name
@@ -126,15 +128,29 @@ return {
                 end
                 me:dialog(npc, "그럼 부탁드립니다!! 기다릴께요!", { prev = false, next = false })
             else
+                local q = quest.get_annual(me, quest.QUEST_SAMJIT_HWAMYEON)
+                if q ~= nil and q:completed() then
+                    me:dialog(npc, "네.. 그러시군요.. 어쩔 수 없죠 뭐.", { prev = false, next = false })
+                    return
+                end
                 btn = me:dialog(npc, "네.. 그러시군요.. 어쩔 수 없죠 뭐.", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                local btn = me:dialog(npc, "그래도 화면은 드려야 되는데.. 저희가 만들어 둔거라도 드릴께요. 맛있게 드세요.", { prev = false, next = true })
+                btn = me:dialog(npc, "그래도 화면은 드려야 되는데.. 저희가 만들어 둔거라도 드릴께요. 맛있게 드세요.", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                me:mkitem("맛없는화면", 1)
+                q = q or me:start_quest(quest.QUEST_SAMJIT_HWAMYEON)
+                if q == nil then
+                    return
+                end
+                if me:mkitem("맛없는화면", 1) == nil then
+                    me:dialog(npc, "소지품이 가득 차서 화면을 받을 수 없어요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
+                    return
+                end
+                q:complete()
+                festival.mark_completed_year(q)
             end
         end
     end

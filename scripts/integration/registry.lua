@@ -64,6 +64,7 @@ register_test("rezen_force_test", { serial = true })
 register_test("storage_grant_limit_test")
 register_test("user_list_cache_test", { serial = true })
 register_test("mob_cash_drop_test")
+register_test("samjitnal_test", { serial = true, label = { "regular", "script" } })
 
 register_test("quest_clear_shield_test", { label = "script" })
 register_test("quest_lighthouse_test", { label = "script" })

@@ -1966,6 +1966,23 @@ return {
         report(me, true, step)
     end,
 
+    make_butterfly_jar = function(me, step, count)
+        local item = me:mkitem(string.format('채집통 [%d 마리]', tonumber(count)), 1)
+        report(me, item ~= nil, step)
+    end,
+
+    verify_butterfly_jar = function(me, step, count, expected)
+        local actual = 0
+        for _, item in pairs(me:items(string.format('채집통 [%d 마리]', tonumber(count))) or {}) do
+            actual = actual + item:count()
+        end
+        if actual == tonumber(expected) then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('jar %s count=%d expected=%s', count, actual, expected))
+        end
+    end,
+
     cleanup = function(me, step)
         local map = me:map()
         if map ~= nil then

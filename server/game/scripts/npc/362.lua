@@ -82,7 +82,11 @@ local function run_samjit(me, npc)
             return
         end
 
-        if me:mkitem({ ["나비채"] = 1, ["채집통 [0 마리]"] = 1 }) == nil then
+        local gift = { ["채집통 [0 마리]"] = 1 }
+        if not me:has_items("나비채", 1) then
+            gift["나비채"] = 1
+        end
+        if me:mkitem(gift) == nil then
             me:dialog(npc, "소지품이 가득 차서 드릴 수 없습니다.", { prev = false, next = false })
         end
         return

@@ -96,6 +96,7 @@ M.QUEST_KIMJANG = 269
 M.QUEST_BUDDHA_LANTERN = 270
 M.QUEST_YUDU_GOSA = 271
 M.QUEST_MAGPIE_BRIDGE = 272
+M.QUEST_SAMJIT_HWAMYEON = 273
 
 -- Festival quests that replay each lunar year.
 function M.get_annual(me, id)
