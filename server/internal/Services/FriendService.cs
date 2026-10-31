@@ -296,12 +296,20 @@ namespace Internal.Services
         private async Task<List<RedisDistributedLockHandle>> AcquireFriendLocks(uint world, SortedSet<uint> uids)
         {
             var locks = new List<RedisDistributedLockHandle>();
-            foreach (var uid in uids)
+            try
             {
-                locks.Add(await _distributedLock.Lock(world, Friend.DistributedLockKey(uid)));
-            }
+                foreach (var uid in uids)
+                {
+                    locks.Add(await _distributedLock.Lock(world, Friend.DistributedLockKey(uid)));
+                }
 
-            return locks;
+                return locks;
+            }
+            catch
+            {
+                await ReleaseLocks(locks);
+                throw;
+            }
         }
 
         private static async Task ReleaseLocks(List<RedisDistributedLockHandle> locks)
