@@ -42,9 +42,10 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                 if (ch == nullptr)
                     continue;
 
-                auto weak    = ch->weak_from_this_as<character>();
-                auto builder = this->server.threads.new_builder(weak);
-                builder.func = [weak, match_id, match_type, confirm_seconds](auto&) -> async::task<void> {
+                auto weak      = ch->weak_from_this_as<character>();
+                auto builder   = this->server.threads.new_builder(weak);
+                auto ticket_id = ticket.ticket_id;
+                builder.func   = [weak, match_id, match_type, confirm_seconds, ticket_id](auto&) -> async::task<void> {
                     auto ch = weak.lock();
                     if (ch == nullptr)
                         co_return;
@@ -52,6 +53,18 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                     if (ch->matchmaker.queued() == false)
                     {
                         co_await ch->matchmaker.decline(match_id, fb::game::matchmaker::initiator::SERVER);
+                        co_return;
+                    }
+
+                    auto current = ch->matchmaker.ticket_id();
+                    if (current.has_value() && current.value() != ticket_id)
+                    {
+                        fb::logger::warn(
+                            "matchmaking_proposed ignored match {} for ticket {} of character {} holding ticket {}",
+                            match_id,
+                            ticket_id,
+                            ch->id,
+                            current.value());
                         co_return;
                     }
 

@@ -276,7 +276,10 @@ public class MatchMaker<TMember>
             result = Dissolve(match, DissolveReason.Decline, memberId);
         }
 
-        await RaiseMatchDissolvedAsync(result, cancellationToken);
+        if (result != null)
+        {
+            await RaiseMatchDissolvedAsync(result, cancellationToken);
+        }
     }
 
     public MatchmakingStatus GetStatus(string memberId)
@@ -345,7 +348,7 @@ public class MatchMaker<TMember>
                 proposed.Add(new ProposedMatchResult<TMember>
                 {
                     Match = match,
-                    ConfirmDeadline = GetConfirmDeadline(match)
+                    ConfirmDeadline = DateTime.UtcNow.AddSeconds(Math.Max(1, _options.ConfirmTimeoutSeconds))
                 });
             }
 
@@ -358,7 +361,44 @@ public class MatchMaker<TMember>
         foreach (var item in proposed)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await RaiseMatchProposedAsync(item, cancellationToken);
+            var delivered = false;
+            try
+            {
+                await RaiseMatchProposedAsync(item, cancellationToken);
+                delivered = true;
+            }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogError(ex, "Match {MatchId} proposal was not delivered to every world", item.Match.Id);
+            }
+
+            DissolvedMatchResult<TMember> dissolved = null;
+            lock (_lock)
+            {
+                var match = item.Match;
+                match.Proposing = false;
+                if (match.DeferredDissolve != null)
+                {
+                    dissolved = match.DeferredDissolve;
+                    match.DeferredDissolve = null;
+                }
+                else if (_pendingMatches.ContainsKey(match.Id))
+                {
+                    if (delivered)
+                    {
+                        match.ProposedAt = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        dissolved = Dissolve(match, DissolveReason.Undelivered);
+                    }
+                }
+            }
+
+            if (dissolved != null)
+            {
+                await RaiseMatchDissolvedAsync(dissolved, cancellationToken);
+            }
         }
     }
 
@@ -539,9 +579,15 @@ public class MatchMaker<TMember>
         var outcomes = new List<TicketOutcome<TMember>>();
         foreach (var ticket in match.AllTickets)
         {
-            var hasFault = reason == DissolveReason.Decline
-                ? ticket.Members.Any(member => member.MemberId == decliningMemberId)
-                : ticket.Members.Any(member => !match.ConfirmedMemberIds.Contains(member.MemberId));
+            var hasFault = false;
+            if (reason == DissolveReason.Decline)
+            {
+                hasFault = ticket.Members.Any(member => member.MemberId == decliningMemberId);
+            }
+            else if (reason == DissolveReason.Timeout)
+            {
+                hasFault = ticket.Members.Any(member => !match.ConfirmedMemberIds.Contains(member.MemberId));
+            }
 
             outcomes.Add(new TicketOutcome<TMember>
             {
@@ -584,12 +630,19 @@ public class MatchMaker<TMember>
 
         _pendingMatches.Remove(match.Id);
         LogQueueState("dissolve");
-        return new DissolvedMatchResult<TMember>
+        var result = new DissolvedMatchResult<TMember>
         {
             Match = match,
             Reason = reason,
             Outcomes = outcomes
         };
+        if (match.Proposing)
+        {
+            match.DeferredDissolve = result;
+            return null;
+        }
+
+        return result;
     }
 
     private void ClearMemberTickets(ulong ticketId)
@@ -627,7 +680,6 @@ public class MatchMaker<TMember>
 
         foreach (var (matchType, queue) in _ticketQueues)
         {
-            var createdAt = DateTime.UtcNow;
             foreach (var match in queue.TryFormMatch())
             {
                 // The less populated of two random hosts; always taking the emptiest would pull every match there while the count lags.
@@ -649,7 +701,7 @@ public class MatchMaker<TMember>
                 }
                 match.Id = _ids.Next(host.Id);
                 match.Type = matchType;
-                match.CreatedAt = createdAt;
+                match.Proposing = true;
                 _pendingMatches[match.Id] = match;
                 results.Add(match);
             }
@@ -658,9 +710,9 @@ public class MatchMaker<TMember>
         return results;
     }
 
-    private DateTime GetConfirmDeadline(Match<TMember> match)
+    private DateTime? GetConfirmDeadline(Match<TMember> match)
     {
-        return match.CreatedAt.AddSeconds(Math.Max(1, _options.ConfirmTimeoutSeconds));
+        return match.ProposedAt?.AddSeconds(Math.Max(1, _options.ConfirmTimeoutSeconds));
     }
 
     private bool IsExpired(Match<TMember> match, DateTime utcNow)

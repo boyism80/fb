@@ -53,7 +53,10 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
             Teams = BuildTeams(args.Match)
         };
 
-        await PublishToWorldsAsync(args.Match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken);
+        if (!await PublishToWorldsAsync(args.Match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken))
+        {
+            throw new InvalidOperationException($"Failed to publish MatchProposed for match {args.Match.Id}");
+        }
     }
 
     private async Task OnMatchReadyAsync(
@@ -99,7 +102,7 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
         {
             MatchId = result.Match.Id,
             MatchType = result.Match.Type,
-            Reason = (byte)result.Reason,
+            Reason = (byte)(result.Reason == DissolveReason.Undelivered ? DissolveReason.Timeout : result.Reason),
             TicketOutcomes = result.Outcomes.Select(outcome => new fb.protocol.matchmaking.TicketOutcome
             {
                 TicketId = outcome.TicketId,

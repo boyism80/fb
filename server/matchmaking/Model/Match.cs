@@ -12,7 +12,11 @@ public class Match<TMember>
 
     public uint Type { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public bool Proposing { get; set; }
+
+    public DateTime? ProposedAt { get; set; }
+
+    public DissolvedMatchResult<TMember> DeferredDissolve { get; set; }
 
     public IReadOnlyList<IReadOnlyList<Ticket<TMember>>> Teams { get; }
 

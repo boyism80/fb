@@ -272,7 +272,8 @@ async::task<void> matchmaker::reconcile()
     auto  weak         = this->owner.weak_from_this_as<character>();
     this->_reconciling = true;
 
-    auto known = std::optional<bool>{};
+    auto known         = std::optional<bool>{};
+    auto stale_pending = false;
     try
     {
         auto&& status =
@@ -280,9 +281,14 @@ async::task<void> matchmaker::reconcile()
         if (status.error == 0)
         {
             if (ticket.has_value())
-                known = status.ticket_id == ticket->ticket_id;
+            {
+                known         = status.ticket_id == ticket->ticket_id;
+                stale_pending = pending.has_value() && status.pending_match_id != pending.value();
+            }
             else
+            {
                 known = status.pending_match_id == pending.value();
+            }
         }
     }
     catch (const std::exception& e)
@@ -303,7 +309,16 @@ async::task<void> matchmaker::reconcile()
     this->touch();
 
     if (known.value_or(true))
+    {
+        if (stale_pending && this->_pending_match_id == pending)
+        {
+            fb::logger::warn("matchmaking dropped stale pending match {} of character {}",
+                             pending.value(),
+                             character_id);
+            this->clear_pending_match_id();
+        }
         co_return;
+    }
 
     auto ticket_now = this->_ticket.has_value() ? std::optional<uint64_t>(this->_ticket->ticket_id) : std::nullopt;
     auto ticket_was = ticket.has_value() ? std::optional<uint64_t>(ticket->ticket_id) : std::nullopt;

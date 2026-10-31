@@ -28,7 +28,8 @@ public sealed class TicketRef
 public enum DissolveReason
 {
     Timeout,
-    Decline
+    Decline,
+    Undelivered
 }
 
 public sealed class TicketOutcome<TMember>
