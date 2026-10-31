@@ -1,5 +1,6 @@
 #include <fb/login/handler/protocol/complete.h>
 
+#include <fb/logger.h>
 #include <fb/login/exception.h>
 #include <fb/model/model.h>
 
@@ -77,8 +78,9 @@ async::task<bool> complete<V>::handle(fb::socket<fb::login::session>& session, l
     }
     catch (std::exception& e)
     {
+        fb::logger::warn("complete account failed: {}", e.what());
         if (weak.expired() == false)
-            session.send(response::message(e.what(), 0x0E));
+            session.send(response::message(_TEXT(MESSAGE_REQUEST_UNCONFIRMED), 0x0E));
     }
 
     co_return true;

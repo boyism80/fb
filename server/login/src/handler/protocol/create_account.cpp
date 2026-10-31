@@ -123,8 +123,9 @@ async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& sess
     }
     catch (std::exception& e)
     {
+        fb::logger::warn("create account failed: {}", e.what());
         if (weak.expired() == false)
-            session.send(response::message(e.what(), 0x0E));
+            session.send(response::message(_TEXT(MESSAGE_REQUEST_UNCONFIRMED), 0x0E));
     }
 
     co_return true;

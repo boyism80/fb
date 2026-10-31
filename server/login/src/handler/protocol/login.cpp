@@ -166,8 +166,9 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
     }
     catch (std::exception& e)
     {
+        fb::logger::warn("login failed: {}", e.what());
         if (weak.expired() == false)
-            session.send(response::message(e.what(), 0x0E));
+            session.send(response::message(_TEXT(MESSAGE_REQUEST_UNCONFIRMED), 0x0E));
     }
 
     // co_await is not allowed inside a catch block.

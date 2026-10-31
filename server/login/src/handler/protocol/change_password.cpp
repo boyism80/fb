@@ -1,6 +1,7 @@
 #include <fb/login/handler/protocol/change_password.h>
 
 #include <fb/encoding.h>
+#include <fb/logger.h>
 #include <fb/login/exception.h>
 
 #include <chrono>
@@ -104,8 +105,9 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
     }
     catch (std::exception& e)
     {
+        fb::logger::warn("change password failed: {}", e.what());
         if (weak.expired() == false)
-            session.send(response::message(e.what(), 0x0E));
+            session.send(response::message(_TEXT(MESSAGE_REQUEST_UNCONFIRMED), 0x0E));
     }
 
     // co_await is not allowed inside a catch block.
