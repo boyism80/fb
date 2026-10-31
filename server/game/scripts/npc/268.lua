@@ -54,6 +54,20 @@ return {
                 goto NPC_268_0010
             end
 
+            local duplicated = teammate:name() == me:name()
+            for _, teammate_name in ipairs(teammates) do
+                if teammate_name == teammate:name() then
+                    duplicated = true
+                end
+            end
+            if duplicated then
+                local btn = me:dialog(npc, '이미 확인한 동료입니다.', { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
+                goto NPC_268_0010
+            end
+
             if me:map() ~= teammate:map() then
                 local btn = me:dialog(npc, '다른 맵에 있습니다.', { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
@@ -74,7 +88,7 @@ return {
                 goto NPC_268_0010
             end
 
-            teammates[#teammates + 1] = teammate
+            teammates[#teammates + 1] = teammate:name()
         end
 
         local btn = me:dialog(npc, '그럼 보내주도록 하겠다.', { prev = false, next = true })
@@ -87,6 +101,19 @@ return {
             return
         end
 
+        local nearby = {}
+        for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
+            for _, teammate_name in ipairs(teammates) do
+                if ch:name() == teammate_name then
+                    nearby[#nearby + 1] = ch
+                end
+            end
+        end
+        if #nearby ~= #teammates then
+            me:dialog(npc, '근처에 없는 동료가 있다.', { prev = false, next = false })
+            return
+        end
+
         if not me:rmitem('동문열쇠', 1, ITEM_DELETE_TYPE.GIVE) then
             me:dialog(npc, '열쇠를 가지고 있지 않습니다.', { prev = false, next = false })
             return
@@ -94,7 +121,7 @@ return {
 
         -- The key stays consumed once any teammate got in.
         local entered = false
-        for _, teammate in ipairs(teammates) do
+        for _, teammate in ipairs(nearby) do
             if teammate:map(map, 13, 13) == true then
                 entered = true
             end
@@ -116,7 +143,7 @@ return {
             return false
         end
 
-        if selected == 2 then
+        if selected == 1 then
             me:dialog(npc, '확인했다. 그럼 잠시 기다리고 있도록 하여라.', { prev = false, next = false })
             return true
         else
