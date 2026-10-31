@@ -1141,6 +1141,43 @@ bool root::dump(std::string_view path)
     return true;
 }
 
+bool root::validate(std::string_view path)
+{
+    auto path_str = std::string(path);
+    if (luaL_loadfile(*this, path_str.c_str()) != LUA_OK)
+    {
+        const char* error = lua_tostring(*this, -1);
+        fb::logger::warn("invalid script {}: {}", path_str, error != nullptr ? error : "");
+        lua_pop(*this, 1);
+        return false;
+    }
+
+    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
+    {
+        const char* error = lua_tostring(*this, -1);
+        fb::logger::warn("invalid script {}: {}", path_str, error != nullptr ? error : "");
+        lua_pop(*this, 1);
+        return false;
+    }
+
+    auto valid = lua_istable(*this, -1);
+    lua_pop(*this, 1);
+    if (valid == false)
+        fb::logger::warn("invalid script {}: module must return a table", path_str);
+
+    return valid;
+}
+
+void root::invalidate_all()
+{
+    this->_bytecodes.clear();
+
+    lua_newtable(*this);
+    lua_setfield(*this, LUA_REGISTRYINDEX, MODULES_KEY);
+
+    this->unload_remembered_libs();
+}
+
 void root::invalidate(std::string_view path)
 {
     if (path.empty())
@@ -1607,22 +1644,72 @@ async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::s
             lib_modules.push_back(std::move(module));
     }
 
+    auto failures = std::vector<std::string>{};
     for (auto& [_, root] : this->_roots)
     {
         co_await root->switching();
-        for (const auto& disk : disk_paths)
+        if (lib_modules.empty())
         {
-            root->invalidate(disk);
+            for (const auto& disk : disk_paths)
+            {
+                root->invalidate(disk);
+            }
         }
-        for (const auto& module : lib_modules)
+        else
         {
-            root->unload_package(module);
+            root->invalidate_all();
+            for (const auto& module : lib_modules)
+            {
+                root->unload_package(module);
+            }
         }
+
         for (const auto& disk : disk_paths)
         {
             if (root->dump(disk) == false)
-                throw std::runtime_error(std::format("failed to reload script: {}", disk));
+                failures.push_back(disk);
         }
+    }
+
+    if (failures.empty() == false)
+    {
+        auto joined = std::string{};
+        for (const auto& failure : failures)
+        {
+            if (joined.empty() == false)
+                joined += ", ";
+            joined += failure;
+        }
+        throw std::runtime_error(std::format("failed to reload scripts: {}", joined));
+    }
+}
+
+async::task<void> fb::lua::context_pool::validate_scripts(const std::vector<std::string>& relative_paths)
+{
+    if (this->_roots.empty())
+        co_return;
+
+    auto& root = this->_roots.begin()->second;
+    co_await root->switching();
+
+    auto failures = std::vector<std::string>{};
+    for (const auto& relative : relative_paths)
+    {
+        auto disk = script_disk_path(relative);
+        if (root->validate(disk) == false)
+            failures.push_back(disk);
+    }
+
+    if (failures.empty() == false)
+    {
+        auto joined = std::string{};
+        for (const auto& failure : failures)
+        {
+            if (joined.empty() == false)
+                joined += ", ";
+            joined += failure;
+        }
+        throw std::runtime_error(std::format("invalid scripts: {}", joined));
     }
 }
 
