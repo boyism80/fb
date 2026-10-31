@@ -25,6 +25,8 @@ namespace Log.Worker
         private static readonly TimeSpan DeadReplayInterval = TimeSpan.FromMinutes(5);
         private static readonly HashSet<int> DataErrorNumbers = new() { 1048, 1264, 1265, 1292, 1366, 1406, 3140 };
         private const int BatchSize = 8;
+        private const int MaxDeadReplays = 288;
+        private const string ReplayCountHeader = "x-replay-count";
         private const string ExchangeName = "amq.direct";
         private const string DeadLetterExchangeName = "fb.log.dlx";
         private const string DeadLetterQueueName = "fb.log.dlq";
@@ -523,8 +525,29 @@ namespace Log.Worker
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Keeping a log message that failed to replay in {QueueName}", deadQueueName);
-                        failed.Add(message);
+                        if (await logRepository.PingAsync() == false)
+                        {
+                            _logger.LogWarning(ex, "Log database write failed, stopping replay of {QueueName}", deadQueueName);
+                            failed.Add(message);
+                            break;
+                        }
+
+                        var replays = ReplayCount(message.Properties) + 1;
+                        if (replays >= MaxDeadReplays)
+                        {
+                            _logger.LogError(ex, $"Dropping a log message from {deadQueueName} after {replays} failed replays: {Encoding.UTF8.GetString(message.Body)}");
+                            await AckAsync(message, cancellationToken);
+                            continue;
+                        }
+
+                        _logger.LogError(ex, "Keeping a log message that failed to replay in {QueueName} ({Replays}/{MaxReplays})", deadQueueName, replays, MaxDeadReplays);
+                        var properties = new BasicProperties(message.Properties);
+                        properties.Headers = new Dictionary<string, object>(message.Properties.Headers ?? new Dictionary<string, object>())
+                        {
+                            [ReplayCountHeader] = replays
+                        };
+                        await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, queueName, true, properties, message.Body, cancellationToken);
+                        await AckAsync(message, cancellationToken);
                     }
                 }
 
@@ -545,6 +568,21 @@ namespace Log.Worker
                     _logger.LogInformation($"Replayed {replayed} dead-lettered log messages from {deadQueueName}");
                 }
             }
+        }
+
+        private static int ReplayCount(IReadOnlyBasicProperties properties)
+        {
+            if (properties.Headers == null || !properties.Headers.TryGetValue(ReplayCountHeader, out var value))
+            {
+                return 0;
+            }
+
+            return value switch
+            {
+                int count => count,
+                long count => (int)Math.Min(count, int.MaxValue),
+                _ => 0
+            };
         }
 
         private async Task AckAsync(PendingMessage message, CancellationToken cancellationToken)
