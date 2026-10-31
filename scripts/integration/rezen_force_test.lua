@@ -23,6 +23,14 @@ test_suite {
     name      = "Rezen Force Test",
     bot_count = 1,
 
+    should_skip = function(_ctx)
+        if localhost() then
+            log("debug", "Rezen force test skipped on local host (the test map runs on another game server)")
+            return true
+        end
+        return false
+    end,
+
     scenarios = {
         function(ctx)
             local bot = ctx:bot(0)
