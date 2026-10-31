@@ -99,6 +99,7 @@ public:
             uint32_t        oid;
             point<uint16_t> position;
             uint16_t        look;
+            uint8_t         color;
             std::string     name;
         };
 
@@ -106,10 +107,12 @@ public:
         std::unordered_map<uint32_t, entry> _entries;
 
     public:
-        void show(uint32_t oid, const point<uint16_t>& position, uint16_t look, std::string_view name = {});
+        // clang-format off
+        void show(uint32_t oid, const point<uint16_t>& position, uint16_t look, uint8_t color, std::string_view name = {});
         void move(uint32_t oid, const point<uint16_t>& position);
         void hide(uint32_t oid);
         void clear();
+        // clang-format on
         const std::unordered_map<uint32_t, entry>& entries() const;
     };
 

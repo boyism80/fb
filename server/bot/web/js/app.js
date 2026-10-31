@@ -10,6 +10,8 @@ const PAGE = 12;
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = value => Number(value || 0).toLocaleString('ko-KR');
+const CLASSES = ['전사', '도적', '주술사', '도사'];
+const CLASS_KEY = { '전사': 'w', '도적': 'r', '주술사': 'm', '도사': 'p' };
 const clock = seconds => {
   const total = Math.max(0, Math.round(seconds || 0));
   const h = Math.floor(total / 3600), m = Math.floor(total / 60) % 60, s = total % 60;
@@ -92,6 +94,8 @@ const S = {
   loadRun: null,
   charts: {},
   fleets: {},
+  hunters: [],
+  hunt: { query: '', kind: 'all', classes: new Set(CLASSES), min: 0, max: 99, open: new Set(), more: new Set() },
 };
 
 async function api(path, body) {
@@ -421,6 +425,10 @@ function renderLoad() {
 
   const errors = rows.filter(r => r.failures > 0).sort((a, b) => b.failures - a.failures);
   $('l-tab-errors').textContent = errors.length || '';
+  $('l-grp-perf').textContent = errors.length || '';
+  S.hunters = run && run.hunters ? run.hunters : [];
+  renderHunt();
+  renderHosts(run && run.hosts ? run.hosts : {});
   $('l-errors').innerHTML = statsRows(errors.map(r => `<tr><td class="mono">${esc(r.name)}</td><td class="num bad">${num(r.failures)}</td><td class="num">${num(r.count)}</td><td class="num">${(r.failures / r.count * 100).toFixed(1)}%</td></tr>`).join(''), 4);
 
   const goals = run ? Object.entries(run.goals).sort((a, b) => b[1] - a[1]) : [];
@@ -624,6 +632,100 @@ function connect() {
   };
 }
 
+function tagged(bot) {
+  return `${esc(bot.name)} <span class="tag">${esc(bot.class || '평민')} ${bot.level}</span>`;
+}
+
+function renderHunt() {
+  const f = S.hunt;
+  const query = f.query.trim();
+  const crew = h => `${h.master} ${h.ground}`;
+  const sizes = {};
+  S.hunters.forEach(h => { if (h.master) sizes[crew(h)] = (sizes[crew(h)] || 0) + 1; });
+  const all = S.hunters.map(h => h.master && sizes[crew(h)] < 2 ? { ...h, master: '' } : h);
+  const shown = all.filter(h => (f.classes.has(h.class) || !CLASSES.includes(h.class)) && h.level >= f.min && h.level <= f.max &&
+    (!query || h.name.includes(query) || h.ground.includes(query)));
+  const visible = {};
+  shown.forEach(h => { if (h.master) visible[crew(h)] = (visible[crew(h)] || 0) + 1; });
+  const list = shown.map(h => h.master && visible[crew(h)] < 2 ? { ...h, master: '' } : h)
+    .filter(h => f.kind === 'all' || (f.kind === 'group') === !!h.master);
+  const masters = new Set(all.filter(h => h.master).map(h => h.master));
+  const grouped = all.filter(h => h.master).length;
+  $('l-tab-hunt').textContent = all.length || '';
+  $('l-grp-bots').textContent = all.length || '';
+  $('l-hunt-kinds').innerHTML = [['all', '전체'], ['group', '그룹'], ['solo', '솔로']]
+    .map(([k, label]) => `<button class="lbl${f.kind === k ? ' on' : ''}" data-kind="${k}">${label}</button>`).join('');
+  $('l-hunt-sum').textContent = `사냥 중 ${num(all.length)} · 그룹 ${num(masters.size)}개 (${num(grouped)}명) · 솔로 ${num(all.length - grouped)} · 사냥터 ${num(new Set(all.map(h => h.ground)).size)}곳`;
+  $('l-hunt-classes').innerHTML = CLASSES.map(c => `<button class="lbl${f.classes.has(c) ? ' on' : ''}" data-class="${esc(c)}">${esc(c)}</button>`).join('');
+
+  const grounds = new Map();
+  list.forEach(h => {
+    if (!grounds.has(h.ground))
+      grounds.set(h.ground, []);
+    grounds.get(h.ground).push(h);
+  });
+  if (!grounds.size) {
+    $('l-hunt').innerHTML = `<tr><td colspan="6"><div class="empty">${all.length ? '조건에 맞는 봇이 없습니다' : '지금 사냥터에서 사냥 중인 봇이 없습니다'}</div></td></tr>`;
+    return;
+  }
+
+  $('l-hunt').innerHTML = [...grounds.entries()].sort((a, b) => b[1].length - a[1].length).map(([ground, bots]) => {
+    const levels = bots.map(b => b.level);
+    const crews = new Map();
+    const solos = [];
+    bots.forEach(b => {
+      if (b.master) {
+        if (!crews.has(b.master))
+          crews.set(b.master, []);
+        crews.get(b.master).push(b);
+      } else {
+        solos.push(b);
+      }
+    });
+    const mix = CLASSES.map(c => [c, bots.filter(b => b.class === c).length]).filter(([, n]) => n).map(([c, n]) => `${c} ${n}`).join(' · ');
+    const open = f.open.has(ground);
+    const row = `<tr class="ground${open ? ' on' : ''}" data-ground="${esc(ground)}"><td>${esc(ground)}</td><td class="num">${num(bots.length)}</td>
+<td class="mono">${Math.min(...levels)}–${Math.max(...levels)}</td><td class="num">${crews.size}</td><td class="num">${solos.length}</td><td class="roles">${esc(mix)}</td></tr>`;
+    if (!open)
+      return row;
+
+    const lines = [...crews.entries()].sort((a, b) => b[1].length - a[1].length).map(([master, members]) => {
+      members.sort((a, b) => (b.name === master) - (a.name === master) || b.level - a.level);
+      const strikers = members.filter(m => m.class === '전사' || m.class === '도적').length;
+      const poets = members.filter(m => m.class === '도사').length;
+      const mages = members.filter(m => m.class === '주술사').length;
+      return `<div class="crew"><b>그룹 ${members.length}명 · 격수 ${strikers} : 도사 ${poets}${mages ? ` · 주술사 ${mages}` : ''}</b>
+${members.map(m => `<span>${tagged(m)}${m.name === master ? '<em>그룹장</em>' : ''}</span>`).join('')}</div>`;
+    });
+    if (solos.length) {
+      const shown = (f.more.has(ground) ? solos : solos.slice(0, 12)).sort((a, b) => b.level - a.level);
+      const rest = solos.length - shown.length;
+      lines.push(`<div class="crew"><b>솔로 ${solos.length}명</b>${shown.map(b => `<span>${tagged(b)}</span>`).join('')}${rest > 0 ? `<button class="more" data-more="${esc(ground)}">${rest}명 더 보기</button>` : ''}</div>`);
+    }
+    return `${row}<tr class="detail"><td colspan="6">${lines.join('')}</td></tr>`;
+  }).join('');
+}
+
+function renderHosts(hosts) {
+  const rows = Object.entries(hosts).filter(([id]) => Number(id) >= 0).sort((a, b) => b[1] - a[1] || Number(a[0]) - Number(b[0]));
+  const live = rows.filter(r => r[1] > 0).length;
+  $('l-tab-hosts').textContent = rows.length ? `${live}/${rows.length}` : '';
+  $('l-grp-infra').textContent = rows.length ? `${live}/${rows.length}` : '';
+  if (!rows.length) {
+    $('l-hosts').innerHTML = '<div class="empty">아직 기록이 없습니다</div>';
+    return;
+  }
+  const peak = Math.max(1, ...rows.map(r => r[1]));
+  $('l-hosts').innerHTML = rows.map(([id, count]) => {
+    const grounds = {};
+    S.hunters.filter(h => String(h.server) === id).forEach(h => grounds[h.ground] = (grounds[h.ground] || 0) + 1);
+    const ranked = Object.entries(grounds).sort((a, b) => b[1] - a[1]);
+    const tip = ranked.slice(0, 10).map(([g, n]) => `${g} ${n}명`).join('\n') || '사냥 중인 봇 없음';
+    const top = ranked.slice(0, 2).map(([g]) => g).join(', ');
+    return `<div title="${esc(tip)}"><span>game-world-1-${esc(id)}<small>${esc(top || (count ? '' : '접속 없음'))}</small></span><span><b style="width:${count / peak * 100}%"></b></span><span class="num">${num(count)}</span></div>`;
+  }).join('');
+}
+
 function bind() {
   document.querySelectorAll('[data-tabs]').forEach(bar => {
     const group = bar.dataset.tabs;
@@ -636,6 +738,43 @@ function bind() {
     });
   });
   document.querySelectorAll('[data-fleet]').forEach(host => S.fleets[host.dataset.fleet] = fleet(host, host.dataset.mode));
+  $('l-hunt').addEventListener('click', e => {
+    const head = e.target.closest('[data-ground]');
+    const more = e.target.closest('[data-more]');
+    if (head) {
+      const g = head.dataset.ground;
+      if (S.hunt.open.has(g))
+        S.hunt.open.delete(g);
+      else
+        S.hunt.open.add(g);
+    } else if (more) {
+      S.hunt.more.add(more.dataset.more);
+    } else {
+      return;
+    }
+    renderHunt();
+  });
+  $('l-hunt-classes').addEventListener('click', e => {
+    const button = e.target.closest('[data-class]');
+    if (!button)
+      return;
+    const c = button.dataset.class;
+    if (S.hunt.classes.has(c))
+      S.hunt.classes.delete(c);
+    else
+      S.hunt.classes.add(c);
+    renderHunt();
+  });
+  $('l-hunt-kinds').addEventListener('click', e => {
+    const button = e.target.closest('[data-kind]');
+    if (!button)
+      return;
+    S.hunt.kind = button.dataset.kind;
+    renderHunt();
+  });
+  $('l-hunt-search').addEventListener('input', e => { S.hunt.query = e.target.value; renderHunt(); });
+  $('l-hunt-min').addEventListener('input', e => { S.hunt.min = Number(e.target.value) || 0; renderHunt(); });
+  $('l-hunt-max').addEventListener('input', e => { S.hunt.max = e.target.value === '' ? 99 : Number(e.target.value); renderHunt(); });
   document.querySelectorAll('.views a').forEach(a => a.addEventListener('click', () => show(a.dataset.view)));
 
   const toggle = (names, on) => {

@@ -12,9 +12,13 @@ using namespace fb::bot;
 
 constexpr size_t EVENT_CAPACITY = 512;
 
-void game_bot::sight::show(uint32_t oid, const point<uint16_t>& position, uint16_t look, std::string_view name)
+void game_bot::sight::show(uint32_t               oid,
+                           const point<uint16_t>& position,
+                           uint16_t               look,
+                           uint8_t                color,
+                           std::string_view       name)
 {
-    this->_entries.insert_or_assign(oid, entry{oid, position, look, std::string(name)});
+    this->_entries.insert_or_assign(oid, entry{oid, position, look, color, std::string(name)});
 }
 
 void game_bot::sight::move(uint32_t oid, const point<uint16_t>& position)

@@ -123,26 +123,60 @@
           <div><h3>분당 처치 · 사망<b id="c4-v">-</b></h3><div class="chart" id="c4"></div></div>
         </div>
       </div>
-      <div class="card">
-        <div class="tabs" role="tablist" data-tabs="ltab">
+      <div class="card split">
+        <div class="side" role="tablist" aria-orientation="vertical" data-tabs="lgrp">
+          <button role="tab" data-tab="perf" aria-selected="true">성능<em class="bad" id="l-grp-perf"></em></button>
+          <button role="tab" data-tab="infra" aria-selected="false">인프라<em id="l-grp-infra"></em></button>
+          <button role="tab" data-tab="bots" aria-selected="false">봇 행동<em id="l-grp-bots"></em></button>
+        </div>
+        <div class="main">
+          <div class="panel" data-panel="lgrp:perf">
+        <div class="tabs sm" role="tablist" data-tabs="lperf">
           <button role="tab" data-tab="requests" aria-selected="true">요청별 통계<em id="l-tab-requests"></em></button>
-          <button role="tab" data-tab="agents" aria-selected="false">Agent<em id="l-tab-agents"></em></button>
-          <button role="tab" data-tab="goals" aria-selected="false">목표 분포</button>
-          <button role="tab" data-tab="levels" aria-selected="false">레벨 분포</button>
           <button role="tab" data-tab="errors" aria-selected="false">오류<em class="bad" id="l-tab-errors"></em></button>
         </div>
-        <div class="panel" data-panel="ltab:requests">
+        <div class="panel" data-panel="lperf:requests">
           <div class="tbl"><table><thead><tr><th>이름</th><th>종류</th><th class="num">횟수</th><th class="num">실패</th><th class="num">p50</th><th class="num">p95</th><th class="num">p99</th><th class="num">초당</th></tr></thead><tbody id="l-stats"></tbody></table></div>
           <div class="foot"><span>누적 · ms · packet은 응답 대기 시간, goal은 목표 수행 시간, action은 횟수만 셉니다</span></div>
         </div>
-        <div class="panel" data-panel="ltab:agents" hidden>
+        <div class="panel" data-panel="lperf:errors" hidden>
+          <div class="tbl"><table><thead><tr><th>이름</th><th class="num">실패</th><th class="num">전체</th><th class="num">실패율</th></tr></thead><tbody id="l-errors"></tbody></table></div>
+        </div>
+          </div>
+          <div class="panel" data-panel="lgrp:infra" hidden>
+        <div class="tabs sm" role="tablist" data-tabs="linfra">
+          <button role="tab" data-tab="agents" aria-selected="true">Agent<em id="l-tab-agents"></em></button>
+          <button role="tab" data-tab="hosts" aria-selected="false">서버 분포<em id="l-tab-hosts"></em></button>
+        </div>
+        <div class="panel" data-panel="linfra:agents">
           <div class="lead2">Agent별 봇 수 분포</div><div class="dist"><div class="dist-bars" id="l-dist"></div><div class="dist-axis" id="l-dist-axis"></div></div>
           <div data-fleet="la" data-mode="load"></div>
         </div>
-        <div class="panel" data-panel="ltab:goals" hidden><div class="goals" id="l-goals"></div></div>
-        <div class="panel" data-panel="ltab:levels" hidden><div class="goals" id="l-levels"></div></div>
-        <div class="panel" data-panel="ltab:errors" hidden>
-          <div class="tbl"><table><thead><tr><th>이름</th><th class="num">실패</th><th class="num">전체</th><th class="num">실패율</th></tr></thead><tbody id="l-errors"></tbody></table></div>
+        <div class="panel" data-panel="linfra:hosts" hidden>
+          <div class="lead2">게임 서버별 접속 봇(맵 데이터의 서버 번호 기준) · 접속 없는 서버도 표시 · 막대에 마우스를 올리면 그 서버의 사냥터별 인원</div>
+          <div class="goals hosts" id="l-hosts"></div>
+        </div>
+          </div>
+          <div class="panel" data-panel="lgrp:bots" hidden>
+        <div class="tabs sm" role="tablist" data-tabs="lbots">
+          <button role="tab" data-tab="hunt" aria-selected="true">사냥 현황<em id="l-tab-hunt"></em></button>
+          <button role="tab" data-tab="goals" aria-selected="false">목표 분포</button>
+          <button role="tab" data-tab="levels" aria-selected="false">레벨 분포</button>
+        </div>
+        <div class="panel" data-panel="lbots:hunt">
+          <div class="lead2" id="l-hunt-sum">-</div>
+          <div class="tools">
+            <span class="labels flat" id="l-hunt-kinds"></span>
+            <span class="labels flat" id="l-hunt-classes"></span>
+            <span class="hunt-level">레벨 <input class="in" id="l-hunt-min" type="number" min="0" max="99" value="0" aria-label="최소 레벨"> ~ <input class="in" id="l-hunt-max" type="number" min="0" max="99" value="99" aria-label="최대 레벨"></span>
+            <input class="search" id="l-hunt-search" placeholder="닉네임·사냥터 검색" aria-label="닉네임 또는 사냥터 검색">
+          </div>
+          <div class="tbl hunt"><table><thead><tr><th>사냥터</th><th class="num">인원</th><th>레벨</th><th class="num">그룹</th><th class="num">솔로</th><th>직업</th></tr></thead><tbody id="l-hunt"></tbody></table></div>
+          <div class="foot"><span>사냥 목표로 사냥터 맵에 들어와 있는 봇만 셉니다(이동 중 제외) · 행을 누르면 그룹과 솔로 목록을 펼칩니다</span></div>
+        </div>
+        <div class="panel" data-panel="lbots:goals" hidden><div class="goals" id="l-goals"></div></div>
+        <div class="panel" data-panel="lbots:levels" hidden><div class="goals" id="l-levels"></div></div>
+          </div>
         </div>
       </div>
     </div>

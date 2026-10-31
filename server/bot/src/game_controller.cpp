@@ -94,6 +94,9 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind<game_resp::item_update>([this](game_bot& bot, auto& response) {
         return this->on_item_update(bot, response);
     });
+    this->bind<game_resp::item_unequip>([this](game_bot& bot, auto& response) {
+        return this->on_item_unequip(bot, response);
+    });
     this->bind(&game_bot_controller::on_item_remove);
     this->bind<game_resp::internal_info>([this](game_bot& bot, auto& response) {
         return this->on_internal_info(bot, response);
@@ -330,10 +333,13 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
                       response.parameter.size(),
                       this->_transfer_contexts.size());
 
+    auto credential = bot.credential();
+    bot.credential(std::nullopt);
     bot.close();
 
     auto created = this->create(response.parameter);
     created->carry_over(bot);
+    created->credential(credential);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
     fb::logger::debug("bot transfer reconnect: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
@@ -398,7 +404,7 @@ async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp:
         if (object.oid == bot.oid())
             continue;
 
-        bot.sight.show(object.oid, point<uint16_t>(object.x, object.y), object.look);
+        bot.sight.show(object.oid, point<uint16_t>(object.x, object.y), object.look, object.color);
     }
     co_return;
 }

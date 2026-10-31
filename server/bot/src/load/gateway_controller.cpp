@@ -85,6 +85,23 @@ async::task<void> gateway_bot_controller::on_bot_spawn()
     co_return;
 }
 
+void gateway_bot_controller::relogin(const fb::bot::base_bot& source, const fb::bot::credential& credential)
+{
+    auto online = size_t{0};
+    this->container.game->read_bots([&online](const auto& entries) {
+        online = entries.size();
+    });
+    if (online > this->_target)
+        return;
+
+    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
+                                                   fb::config<uint16_t>("port"));
+    auto bot      = this->create();
+    bot->profile(source.profile());
+    bot->credential(credential);
+    bot->connect(endpoint);
+}
+
 async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const gateway_resp::welcome& response)
 {
     auto nation = static_cast<uint8_t>(fb::config<uint16_t>("client:nation", 0xD7));
@@ -111,6 +128,7 @@ async::task<void> gateway_bot_controller::on_transfer(gateway_bot& bot, const fb
 
     auto created = this->container.login->create(response.parameter);
     created->carry_over(bot);
+    created->credential(bot.credential());
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     created->connect(endpoint);

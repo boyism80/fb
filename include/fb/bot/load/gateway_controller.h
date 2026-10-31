@@ -36,6 +36,7 @@ private:
     async::task<void> on_transfer(gateway_bot& bot, const fb_resp::transfer& response);
 
 public:
+    void                      relogin(const fb::bot::base_bot& source, const fb::bot::credential& credential);
     void                      initialize() override;
     virtual async::task<void> on_bot_connected(gateway_bot& bot) override;
     virtual async::task<void> on_bot_disconnected(gateway_bot& bot) override;

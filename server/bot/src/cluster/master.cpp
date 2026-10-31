@@ -514,12 +514,24 @@ Json::Value master::report(size_t points) const
         json["timeline"].append(run.timeline[static_cast<Json::ArrayIndex>(i)]);
     }
 
-    json["goals"]  = Json::Value{Json::objectValue};
-    json["levels"] = Json::Value{Json::objectValue};
+    json["goals"]   = Json::Value{Json::objectValue};
+    json["levels"]  = Json::Value{Json::objectValue};
+    json["hunters"] = Json::Value{Json::arrayValue};
+    json["hosts"]   = Json::Value{Json::objectValue};
     for (auto& [_, agent] : this->_agents)
     {
         if (agent.metrics["run_id"].asString() != run.id)
             continue;
+
+        for (auto& hunter : points > 0 ? agent.metrics["hunters"] : Json::Value{Json::arrayValue})
+        {
+            json["hunters"].append(hunter);
+        }
+
+        for (auto& host : agent.metrics["hosts"].getMemberNames())
+        {
+            json["hosts"][host] = json["hosts"].get(host, 0).asUInt() + agent.metrics["hosts"][host].asUInt();
+        }
 
         for (auto& goal : agent.metrics["goals"].getMemberNames())
         {
@@ -1027,17 +1039,18 @@ void master::rebalance()
         }
         else if (share > 0)
         {
-            auto lease        = this->_leases.find(agent.key);
-            auto message      = Json::Value{};
-            message["type"]   = "run_load";
-            message["run_id"] = run.id;
-            message["users"]  = share;
-            message["rate"] =
-                std::max(1u, static_cast<uint32_t>(std::lround(static_cast<double>(run.rate) * share / run.users)));
-            message["process"] = lease != this->_leases.end() ? lease->second.process : 0;
-            message["offset"]  = run.offset;
-            message["client"]  = run.client;
-            message["target"]  = run.target;
+            auto lease          = this->_leases.find(agent.key);
+            auto pace           = static_cast<double>(run.rate) * share / run.users;
+            auto message        = Json::Value{};
+            message["type"]     = "run_load";
+            message["run_id"]   = run.id;
+            message["users"]    = share;
+            message["rate"]     = std::max(1u, static_cast<uint32_t>(std::lround(pace)));
+            message["interval"] = pace >= 1.0 ? 1000u : static_cast<uint32_t>(std::lround(1000.0 / pace));
+            message["process"]  = lease != this->_leases.end() ? lease->second.process : 0;
+            message["offset"]   = run.offset;
+            message["client"]   = run.client;
+            message["target"]   = run.target;
             agent.link->send(message);
             agent.busy  = true;
             agent.users = share;

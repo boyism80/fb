@@ -152,7 +152,11 @@ private:
     {
         if (bot.oid() != 0 && bot.oid() != response.oid)
         {
-            bot.sight.show(response.oid, point<uint16_t>(response.x, response.y), response.look, response.name);
+            bot.sight.show(response.oid,
+                           point<uint16_t>(response.x, response.y),
+                           response.look,
+                           response.color,
+                           response.name);
         }
         else
         {
@@ -165,13 +169,20 @@ private:
             bot.set_color(response.color);
             bot.set_armor_dress(response.armor_dress);
             bot.set_armor_color(response.armor_color);
-            bot.set_weapon_dress(response.weapon_dress);
+            bot.set_weapon_dress(response.weapon_dress == 0xFFFF ? 0 : response.weapon_dress);
             bot.set_weapon_color(response.weapon_color);
             bot.set_shield_dress(response.shield_dress);
             bot.set_shield_color(response.shield_color);
             bot.set_head_marker(response.head_marker);
             bot.set_name(response.name);
         }
+        co_return;
+    }
+    template <fb::protocol::CLIENT_VERSION V>
+    async::task<void> on_item_unequip(game_bot& bot, const game_resp::item_unequip<V>& response)
+    {
+        if (response.parts == EQUIPMENT_PARTS::WEAPON)
+            bot.set_weapon_dress(0);
         co_return;
     }
     template <fb::protocol::CLIENT_VERSION V>
@@ -187,7 +198,7 @@ private:
         bot.set_color(response.color);
         bot.set_armor_dress(response.armor_dress);
         bot.set_armor_color(response.armor_color);
-        bot.set_weapon_dress(response.weapon_dress);
+        bot.set_weapon_dress(response.weapon_dress == 0xFFFF ? 0 : response.weapon_dress);
         bot.set_weapon_color(response.weapon_color);
         bot.set_shield_dress(response.shield_dress);
         bot.set_shield_color(response.shield_color);

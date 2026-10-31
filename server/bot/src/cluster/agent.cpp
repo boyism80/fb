@@ -208,7 +208,7 @@ void agent::handle(const Json::Value& message)
             "--set",
             std::format("spawn_per_interval={}", std::max(1u, message["rate"].asUInt())),
             "--set",
-            "interval=1000",
+            std::format("interval={}", message.get("interval", 1000).asUInt()),
             "--set",
             std::format("load:process={}", message["process"].asUInt()),
             "--set",

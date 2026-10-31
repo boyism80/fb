@@ -119,12 +119,7 @@
 			"name": "hunter",
 			"ratio": 0.7,
 			"weights": {
-				"tutorial": 1.5,
-				"job": 1.4,
-				"sell": 1.3,
-				"supply": 1.2,
 				"hunt": 1.0,
-				"rest": 1.0,
 				"wander": 0.05,
 				"quest": 1.8
 			},
@@ -138,18 +133,13 @@
 			"abort_hp_ratio": 0.3,
 			"softmax_temperature": 0.3,
 			"step_delay_ms": 300,
-			"attack_delay_ms": 600
+			"attack_delay_ms": 500
 		},
 		{
 			"name": "careful",
 			"ratio": 0.2,
 			"weights": {
-				"tutorial": 1.5,
-				"job": 1.4,
-				"sell": 1.3,
-				"supply": 1.2,
 				"hunt": 0.8,
-				"rest": 1.2,
 				"wander": 0.1,
 				"quest": 1.8
 			},
@@ -163,18 +153,13 @@
 			"abort_hp_ratio": 0.5,
 			"softmax_temperature": 0.5,
 			"step_delay_ms": 350,
-			"attack_delay_ms": 700
+			"attack_delay_ms": 500
 		},
 		{
 			"name": "idler",
 			"ratio": 0.1,
 			"weights": {
-				"tutorial": 1.0,
-				"job": 0.9,
-				"sell": 1.0,
-				"supply": 0.9,
 				"hunt": 0.6,
-				"rest": 1.0,
 				"wander": 0.5,
 				"quest": 1.8
 			},
@@ -189,7 +174,7 @@
 			"abort_hp_ratio": 0.3,
 			"softmax_temperature": 1.0,
 			"step_delay_ms": 400,
-			"attack_delay_ms": 800
+			"attack_delay_ms": 500
 		}
 	],
 	"speed": 1

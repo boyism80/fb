@@ -2660,10 +2660,12 @@
    "type": "NORMAL"
   },
   "필살검무": {
-   "mp": 0,
+   "mp": 60,
    "role": "STRIKE",
    "hp_cost": 0.5,
    "damage_hp": 1,
+   "drain": true,
+   "damage_mp": 1,
    "id": 2016,
    "type": "NORMAL"
   },
@@ -2979,6 +2981,10 @@
     "buff_phydef": 30
    },
    "paralysis": false,
+   "blind": false,
+   "resists": [
+    "CURSE"
+   ],
    "id": 3051,
    "type": "TARGET"
   },
@@ -2988,6 +2994,10 @@
    "buff_time": 20,
    "stats": {},
    "paralysis": true,
+   "blind": false,
+   "resists": [
+    "PARALYSIS"
+   ],
    "id": 3052,
    "type": "TARGET"
   },
@@ -2997,6 +3007,11 @@
    "buff_time": 10,
    "stats": {},
    "paralysis": false,
+   "blind": true,
+   "resists": [
+    "DESPAIR",
+    "BLIND"
+   ],
    "id": 3053,
    "type": "TARGET"
   },
@@ -3012,6 +3027,10 @@
    "buff_time": 30,
    "stats": {},
    "paralysis": false,
+   "blind": false,
+   "resists": [
+    "POISON"
+   ],
    "dot": 0.05,
    "id": 3059,
    "type": "TARGET"
@@ -3026,6 +3045,7 @@
    "mp": 30,
    "role": "CHARGE",
    "chance": 0.5,
+   "chance_int": 0.00196078431372549,
    "hp_cost": 0.4,
    "id": 4002,
    "type": "NORMAL"
@@ -3110,6 +3130,8 @@
     "buff_phydef": 50
    },
    "paralysis": false,
+   "blind": false,
+   "resists": [],
    "id": 4009,
    "type": "TARGET"
   },
@@ -3290,9 +3312,21 @@
  },
  "rules": {
   "cast_rate": 10.0,
-  "hit_slope": 5.294117647058823,
   "multipliers": {
    "투명": 8
-  }
+  },
+  "splashes": {
+   "측면공격": {
+    "rate": 0.4,
+    "sides": 2
+   },
+   "후면공격": {
+    "rate": 0.5,
+    "sides": 1
+   }
+  },
+  "buff_tick": 1,
+  "back_attack": 2.0,
+  "socket_tps": 100
  }
 }

@@ -59,12 +59,13 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
     {
         auto thread  = bot.thread();
         auto entered = false;
+        auto relogin = bot.credential().has_value();
         while (entered == false)
         {
-            auto id     = name(this->_next_account++);
-            auto exists = false;
+            auto id     = relogin ? bot.credential()->id : name(this->_next_account++);
+            auto exists = relogin;
             auto delay  = RETRY_DELAY_MIN;
-            while (true)
+            while (relogin == false)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(*bot.make<login_reqs::create>(id, pw));
 
@@ -120,6 +121,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
                 if (resp.type == 0x00)
                 {
                     entered = true;
+                    bot.credential(fb::bot::credential{id, pw});
                 }
                 else
                 {
@@ -127,6 +129,9 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
                     delay = std::min(delay * 2, RETRY_DELAY_MAX);
                 }
             }
+
+            if (relogin && entered == false)
+                break;
         }
     }
     catch (std::exception& e)
@@ -143,6 +148,7 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
 
     auto created = this->container.game->create(response.parameter);
     created->carry_over(bot);
+    created->credential(bot.credential());
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     created->connect(endpoint);

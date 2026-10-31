@@ -3,6 +3,7 @@
 #include <fb/bot/load/game_controller.h>
 
 #include <algorithm>
+#include <cstdlib>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -912,12 +913,20 @@ bool game_bot::has_item_by_name(std::string_view name) const
 uint16_t game_bot::get_item_count_by_name(std::string_view name) const
 {
     auto name_str = std::string(name);
+    auto count    = uint32_t{0};
     for (const auto& [slot, item] : this->_items)
     {
-        if (item.name.find(name_str) != std::string::npos)
-            return item.count;
+        if (item.name.find(name_str) == std::string::npos)
+            continue;
+
+        auto open  = item.name.find('[');
+        auto close = item.name.find(']', open);
+        if (open != std::string::npos && close != std::string::npos)
+            count += static_cast<uint32_t>(std::strtoul(item.name.c_str() + open + 1, nullptr, 10));
+        else
+            count += item.count;
     }
-    return 0;
+    return static_cast<uint16_t>(std::min<uint32_t>(count, 0xFFFF));
 }
 
 uint8_t game_bot::get_item_slot_by_name(std::string_view name) const
@@ -1157,15 +1166,16 @@ game_bot::spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, s
 {
     auto monster_name_str = std::string(monster_name);
     auto expected_look    = table::mob->name2mob(monster_name_str)->look;
+    auto expected_color   = table::mob->name2mob(monster_name_str)->color;
 
     auto spawn_response = co_await this->request<game_resp::update>(
         *this->make<game_reqs::chat>(false, std::format("/몬스터생성 {} {} {}", monster_name_str, x, y)),
-        [expected_look](auto& resp) -> bool {
+        [expected_look, expected_color](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
 
             auto& mob = resp.objects_data.front();
-            return mob.look == expected_look;
+            return mob.look == expected_look && mob.color == expected_color;
         },
         timeout);
 
@@ -1186,13 +1196,14 @@ async::task<void> game_bot::spawn_monsters_bulk(std::string_view          monste
 {
     auto monster_name_str = std::string(monster_name);
     auto expected_look    = table::mob->name2mob(monster_name_str)->look;
+    auto expected_color   = table::mob->name2mob(monster_name_str)->color;
 
     std::ignore = co_await this->request<game_resp::update>(
         *this->make<game_reqs::chat>(false, std::format("/몬스터범위생성 {} {}", monster_name_str, range)),
-        [expected_look](auto& resp) -> bool {
+        [expected_look, expected_color](auto& resp) -> bool {
             for (const auto& mob : resp.objects_data)
             {
-                if (mob.look != expected_look)
+                if (mob.look != expected_look || mob.color != expected_color)
                     return false;
             }
             return true;
@@ -1207,6 +1218,7 @@ game_bot::spawn_monsters_relative(std::string_view                        monste
 {
     auto monster_name_str = std::string(monster_name);
     auto expected_look    = table::mob->name2mob(monster_name_str)->look;
+    auto expected_color   = table::mob->name2mob(monster_name_str)->color;
 
     auto                              caster_pos = this->position();
     std::vector<spawned_monster_info> spawned_monsters;
@@ -1219,11 +1231,11 @@ game_bot::spawn_monsters_relative(std::string_view                        monste
         auto spawn_response = co_await this->request<game_resp::update>(
             *this->make<game_reqs::chat>(false,
                                          std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)),
-            [expected_look, monster_x, monster_y](auto& resp) -> bool {
+            [expected_look, expected_color, monster_x, monster_y](auto& resp) -> bool {
                 if (resp.objects_data.empty())
                     return false;
                 auto& mob = resp.objects_data.front();
-                if (mob.look != expected_look)
+                if (mob.look != expected_look || mob.color != expected_color)
                     return false;
 
                 if (mob.x != monster_x)
@@ -1258,6 +1270,7 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(std::string_v
 {
     auto monster_name_str = std::string(monster_name);
     auto expected_look    = table::mob->name2mob(monster_name_str)->look;
+    auto expected_color   = table::mob->name2mob(monster_name_str)->color;
 
     auto caster_pos = this->position();
     auto monster_x  = caster_pos.x + relative_x;
@@ -1266,11 +1279,11 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(std::string_v
     auto spawn_response = co_await this->request<game_resp::update>(
         *this->make<game_reqs::chat>(false,
                                      std::format("/몬스터생성 {} {} {}", monster_name_str, monster_x, monster_y)),
-        [expected_look, monster_x, monster_y](auto& resp) -> bool {
+        [expected_look, expected_color, monster_x, monster_y](auto& resp) -> bool {
             if (resp.objects_data.empty())
                 return false;
             auto& mob = resp.objects_data.front();
-            if (mob.look != expected_look)
+            if (mob.look != expected_look || mob.color != expected_color)
                 return false;
 
             if (mob.x != monster_x)

@@ -26,7 +26,12 @@ STAT = re.compile(r"me:(\w+)\(me:\1\(\)\s*([+-])\s*(\d+)\)")
 UNBUFF = re.compile(r"me:unbuff\('([^']+)'\)")
 DOT = re.compile(r"maxhp\(\)\s*\*\s*(\d+)\)\s*//\s*(\d+)")
 HANDLER = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'handler.h'
+SPELL_HANDLER = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'game' / 'handler' / 'protocol' / 'spell_cast.h'
+ACCEPTOR = Path(__file__).resolve().parents[2] / 'include' / 'fb' / 'acceptor.h'
 INTERACTION = SCRIPTS / 'lib' / 'interaction.lua'
+ATTACK = SCRIPTS / 'interaction.lua'
+TIMERS = ROOT / 'server' / 'game' / 'src' / 'server' / 'server.init.cpp'
+LIFE = ROOT / 'server' / 'game' / 'src' / 'object' / 'life.cpp'
 
 
 def section(text, begin, end):
@@ -48,14 +53,26 @@ def rules():
     handler = HANDLER.read_text(encoding='utf-8')
     duration = int(re.search(r"DurationMs\s*=\s*(\d+)", handler).group(1))
     limit = int(re.search(r"Limit\s*=\s*(\d+)", handler).group(1))
+    own = re.search(r"protocol<[^,<>]+,\s*game_reqs::spell_cast<V>\s*,\s*(\d+)\s*,\s*(\d+)", SPELL_HANDLER.read_text(encoding='utf-8'))
+    if own is not None:
+        duration, limit = int(own.group(1)), int(own.group(2))
+    tps = re.search(r"MAX_TPS\s*=\s*(\d+)", ACCEPTOR.read_text(encoding='utf-8'))
     interaction = INTERACTION.read_text(encoding='utf-8')
-    front = section(interaction, "local function attack_hit_chance", "\nend\n")
-    front = front.split("else\n", 1)[1] if "facing == 'side'" in front else front
-    slope = re.search(r"return 10 \+ math\.floor\(\(hit \+ (\d+)\) \* (\d+) / (\d+)\)", interaction)
     multipliers = {name: int(value) for name, value in re.findall(r"me:isbuff\('([^']+)'\) then\s*rate = rate \* (\d+)", interaction)}
+    splashes = {}
+    for name, block in re.findall(r"if me:isbuff\('([^']+)'\) then\s*local points = \{\}(.*?)\n        end\n", ATTACK.read_text(encoding='utf-8'), re.S):
+        rate = re.search(r"lib\.damage\(me, obj, ([\d.]+)", block)
+        if rate is not None:
+            first = re.split(r"\n\s*else", block, maxsplit=1)[0]
+            splashes[name] = {'rate': float(rate.group(1)), 'sides': first.count('table.insert(points')}
+    back = re.search(r"target\.direction\(\) == this->direction\(\)\)\s*rate \*= ([\d.]+)f", LIFE.read_text(encoding='utf-8'))
+    tick = re.search(r"buff_timer>\((\d+)s\)", TIMERS.read_text(encoding='utf-8'))
     return {'cast_rate': limit * 1000 / duration,
-            'hit_slope': int(slope.group(2)) / int(slope.group(3)),
-            'multipliers': multipliers}
+            'multipliers': multipliers,
+            'splashes': splashes,
+            'buff_tick': int(tick.group(1)),
+            'back_attack': float(back.group(1)),
+            'socket_tps': int(tps.group(1))}
 
 
 
@@ -136,6 +153,12 @@ def effect(text):
         scale = re.search(r"local\s+damage\s*=\s*me:hp\(\)\s*(?:\*\s*(\d+))?", text)
         if scale is not None:
             info['damage_hp'] = int(scale.group(1) or 1)
+        drain = re.search(r"local\s+mp\s*=\s*math\.max\(me:mp\(\),\s*(\d+)\)", text)
+        if drain is not None:
+            info['mp'] = int(drain.group(1))
+            info['drain'] = True
+        if re.search(r"local\s+damage\s*=\s*me:hp\(\)[^\n]*\+\s*me:mp\(\)", text):
+            info['damage_mp'] = 1
     elif 'spell.weapon_damage' in text:
         info['role'] = 'ENCHANT'
     elif 'spell.debuff_cast' in text:
@@ -143,6 +166,8 @@ def effect(text):
         info['buff_time'] = values.get('buff_time', 0)
         info['stats'] = modifiers(text)
         info['paralysis'] = 'paralysis(true)' in text
+        info['blind'] = 'CROWD_CONTROL.SIGHT' in text
+        info['resists'] = re.findall(r"RESIST\.(\w+)", text)
         dot = DOT.search(text)
         if dot is not None:
             info['dot'] = int(dot.group(1)) / int(dot.group(2))
@@ -190,6 +215,9 @@ def effect(text):
         info['role'] = 'CHARGE'
         chance = re.search(r"local\s+percent\s*=\s*([\d.]+)", text)
         info['chance'] = float(chance.group(1)) if chance else 0.0
+        wisdom = re.search(r"local\s+percent\s*=\s*[\d.]+\s*\+\s*\(\(me:int\(\)\s*/\s*(\d+)\)\s*\*\s*([\d.]+)\)", text)
+        if wisdom is not None:
+            info['chance_int'] = float(wisdom.group(2)) / int(wisdom.group(1))
         cost = re.search(r"me:maxmp\(\)\s*\*\s*([\d.]+)\)", text)
         info['hp_cost'] = float(cost.group(1)) if cost else 0.0
     elif 'root:cardinal' in text or 'root:revive' in text or 'me:mp_down' in text:
