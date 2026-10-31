@@ -696,10 +696,10 @@ namespace Internal.Controllers
                     throw new Exception($"user {request.Master} is offline");
                 }
 
-                var targetSession = await _sessionService.Get(world, request.Member) ??
+                var targetUid = await _dbContext.Character.GetCharacterId(world, request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
+                var target = await _dbContext.Character.Get(world, targetUid) ??
                     throw new LogicException(ErrorCode.Offline);
 
                 // Lock in uid order to avoid a crossed-order deadlock with a
@@ -730,6 +730,11 @@ namespace Internal.Controllers
                 else
                 {
                     // Add member to group
+                    if (await _sessionService.Get(world, target.Name) == null)
+                    {
+                        throw new LogicException(ErrorCode.Offline);
+                    }
+
                     var memberSetting = await _dbContext.Option.Get(world, target.Id) ??
                         throw new Exception($"user option {request.Member} not found");
 
