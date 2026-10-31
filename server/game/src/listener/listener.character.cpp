@@ -81,11 +81,11 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
         sstream << "PK보호      ";
         break;
 
-    case OPTION::LOCK_WALK_SPEED:
-        if (me.client_version == fb::protocol::CLIENT_VERSION::v651)
-            sstream << "투구표시    ";
-        else
-            sstream << "이속고정    ";
+    case OPTION::VISIBLE_HELMET:
+        if (me.client_version != fb::protocol::CLIENT_VERSION::v651)
+            return;
+
+        sstream << "투구표시    ";
         break;
 
     default:

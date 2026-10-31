@@ -43,6 +43,7 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
         break;
 
     case OPTION::SUPER_HIDE:
+    case OPTION::VISIBLE_HELMET:
         break;
 
     default:

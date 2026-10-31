@@ -1386,7 +1386,7 @@ bool character::option(OPTION key) const
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::VISIBLE_HELMET))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     return this->_options[opt];
@@ -1397,7 +1397,7 @@ void character::option(OPTION key, bool value, bool notify)
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::VISIBLE_HELMET))
         return;
 
     if (this->_options[opt] == value)
@@ -1436,7 +1436,7 @@ bool character::option_toggle(OPTION key, bool notify)
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::VISIBLE_HELMET))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     this->option(key, !this->_options[opt], notify);

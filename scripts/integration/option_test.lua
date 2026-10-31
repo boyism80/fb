@@ -76,5 +76,24 @@ test_suite {
             end
             return true
         end,
+
+        function(ctx)
+            local bot = ctx:bot(0)
+            local expected = "false"
+            if run_step(bot, "verify_option", "helmet_before", "VISIBLE_HELMET", "true") then
+                expected = "true"
+            end
+
+            local packet = bot:request(resp.message, protocol.update_option("VISIBLE_HELMET", false), function(p)
+                return p.type == "STATE" and p.text:find(": O", 1, true) ~= nil
+            end)
+            if type(packet) == "table" then
+                return fail("option 0x0E from a non-6.51 client answered " .. tostring(packet.text))
+            end
+            if run_step(bot, "verify_option", "helmet_after", "VISIBLE_HELMET", expected) == false then
+                return fail("option 0x0E from a non-6.51 client changed the visible helmet setting")
+            end
+            return true
+        end,
     },
 }

@@ -244,7 +244,7 @@ private:
     ping_state_t                                     _ping_state;
     std::optional<std::pair<uint32_t, uint16_t>>     _world_map = std::nullopt;
     bool                                             _settling_death = false;
-    bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {1,};
+    bool                                             _options[static_cast<uint8_t>(OPTION::VISIBLE_HELMET) + 1] = {1,};
     // clang-format on
 
 public:

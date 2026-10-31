@@ -2558,36 +2558,6 @@ M.functions = {
         end,
     },
 
-    ['이속고정'] = {
-        ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '[on|off] - LOCK_WALK_SPEED(0x04) 조회/설정 (클라 스티키, off 후 재접 필요할 수 있음)',
-        ['command'] = function(me, args)
-            if #args == 0 then
-                local enabled = me:option(OPTION.LOCK_WALK_SPEED)
-                me:message(string.format("이속고정(LOCK_WALK_SPEED): %s", enabled and "ON" or "OFF"), MESSAGE_TYPE.BROWN)
-                return true
-            end
-
-            local arg = string.lower(tostring(args[1]))
-            local enabled = nil
-            if arg == 'on' or arg == '1' or arg == 'true' then
-                enabled = true
-            elseif arg == 'off' or arg == '0' or arg == 'false' then
-                enabled = false
-            else
-                me:message("사용법: /이속고정 [on|off]")
-                return true
-            end
-
-            me:option(OPTION.LOCK_WALK_SPEED, enabled)
-            me:message(string.format("이속고정(LOCK_WALK_SPEED): %s", enabled and "ON" or "OFF"), MESSAGE_TYPE.BROWN)
-            if not enabled then
-                me:message("클라 플래그는 스티키입니다. OFF가 반영되지 않으면 재접속하세요.", MESSAGE_TYPE.BROWN)
-            end
-            return true
-        end,
-    },
-
     ['이속'] = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '[0-5] (6.51 GM은 0-10) - 기본 이속(base_speed) 조회/설정',
