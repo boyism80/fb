@@ -1850,7 +1850,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         case DSL::gender:
         {
             auto params = fb::model::dsl::gender(dsl.params);
-            if (ENUM_IN(params.value, this->_gender) == false)
+            if (params.value != this->_gender)
                 return false;
         }
         break;
@@ -1890,9 +1890,10 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         case DSL::class_t:
         {
             auto params = fb::model::dsl::class_t(dsl.params);
-            if (ENUM_IN(params.value, this->_class) == false)
+            if (params.value != this->_class)
                 return false;
         }
+        break;
 
         case DSL::role:
         {
