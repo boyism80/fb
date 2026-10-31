@@ -22,7 +22,7 @@ namespace internal_reqs = fb::protocol::internal::request;
 
 template <fb::protocol::CLIENT_VERSION V>
 create_account<V>::create_account(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, login_reqs::create<V>>(server)
+    fb::handler::protocol<fb::login::server, login_reqs::create<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>

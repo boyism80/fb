@@ -15,7 +15,7 @@ namespace internal_reqs = fb::protocol::internal::request;
 
 template <fb::protocol::CLIENT_VERSION V>
 complete<V>::complete(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, login_reqs::complete<V>>(server)
+    fb::handler::protocol<fb::login::server, login_reqs::complete<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>

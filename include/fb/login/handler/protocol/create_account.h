@@ -9,7 +9,7 @@ namespace fb::login::handler::protocol {
 namespace login_reqs = fb::protocol::login::request;
 
 template <fb::protocol::CLIENT_VERSION V>
-class create_account : public fb::handler::protocol<fb::login::server, login_reqs::create<V>>
+class create_account : public fb::handler::protocol<fb::login::server, login_reqs::create<V>, 1000, 10, true>
 {
 public:
     create_account(fb::login::server& server);
