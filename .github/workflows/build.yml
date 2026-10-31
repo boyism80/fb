@@ -695,6 +695,10 @@ jobs:
         run: npm install
         working-directory: infra/pulumi
 
+      - name: Check NodePorts
+        run: node node-ports.js
+        working-directory: infra/pulumi
+
       - name: Shutdown server
         uses: pulumi/actions@v7
         env:

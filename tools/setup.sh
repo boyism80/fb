@@ -66,6 +66,12 @@ if ! pulumi config set --secret host "$EXTERNAL_IP"; then
   error_exit "Pulumi config set failed."
 fi
 
+echo "Checking NodePorts..."
+if ! node node-ports.js; then
+  popd > /dev/null
+  error_exit "NodePort check failed."
+fi
+
 # Destroy existing stack (if any) and then deploy the stack
 echo "Destroying existing Pulumi stack (if any)..."
 if ! pulumi down -y; then

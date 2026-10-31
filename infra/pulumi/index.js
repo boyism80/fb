@@ -14,6 +14,7 @@ const log = require('./log')
 const marketplace = require('./marketplace')
 const matchmaking = require('./matchmaking')
 const crashWatch = require('./crash-watch')
+const nodePorts = require('./node-ports')
 const fs = require('fs');
 const path = require('path')
 
@@ -27,6 +28,7 @@ const filePath = path.join(__dirname, 'develop.json')
 const content = fs.readFileSync(filePath, 'utf-8')
 const conf = JSON.parse(content)
 conf.host = new pulumi.Config().require('host')
+nodePorts.check(conf)
 
 // Filter out worlds with deploy === false
 if (conf.worlds) {
