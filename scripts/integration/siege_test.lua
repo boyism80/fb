@@ -7,6 +7,9 @@ local BEAST = "백호"
 local HEART_MAP = 2041
 local THRONE_X = 20
 local THRONE_Y = 8
+local SEWER_FLOOR_MAP = 2201
+local SEWER_FLOOR_X = 38
+local SEWER_FLOOR_Y = 6
 local MESSAGE_WAIT_MS = 15000
 
 local MSG_PREPARED = "공성준비 완료"
@@ -15,6 +18,7 @@ local MSG_ENDED = "공성전 종료: " .. BEAST
 local MSG_NOT_ENDED = "진행 중인 공성전이 없습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
 local MSG_DEFENDER = "수성측"
+local MSG_EVICTED = "성 내부에서 퇴장되었습니다."
 
 local GATE_NPC = "백호성문지기"
 local GATE_OPTION = BEAST .. "성 입장"
@@ -392,6 +396,42 @@ test_suite({
             end
             if run_step(b, "verify_siege", "lost_no_owner", BEAST, "false", "none") == false then
                 return fail("the siege host still keeps an owner although the stored owner was cleared")
+            end
+            return true
+        end,
+
+        function(ctx)
+            local a = ctx:bot(0)
+
+            if run_step(a, "map_active", "sewer_floor_map", tostring(SEWER_FLOOR_MAP)) == false then
+                log("debug", "Siege sewer floor test skipped: the sewer floor does not run on this host")
+                return true
+            end
+
+            a:take_messages()
+            run_step(
+                a,
+                "move_to_map",
+                "sewer_floor_enter",
+                tostring(SEWER_FLOOR_MAP),
+                tostring(SEWER_FLOOR_X),
+                tostring(SEWER_FLOOR_Y)
+            )
+            local evicted = false
+            local waited = 0
+            while evicted == false and waited < ENTER_WAIT_MS do
+                for _, text in ipairs(a:take_messages()) do
+                    if text:find(MSG_EVICTED, 1, true) ~= nil then
+                        evicted = true
+                    end
+                end
+                if evicted == false then
+                    ctx:sleep(500)
+                    waited = waited + 500
+                end
+            end
+            if evicted == false or a:map() == SEWER_FLOOR_MAP then
+                return fail("a character outside the owner clan stayed on the sewer floor")
             end
             return true
         end,

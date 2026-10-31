@@ -22,6 +22,10 @@ return {
         if me:role() < ROLE.ADMIN and map:instance() and (here == nil or here:id() ~= map:id()) then
             return me:message('그곳으로는 이동할 수 없습니다.')
         end
+        local castle_lib = require('lib.castle')
+        if not castle_lib.occupyable(me, map) then
+            return me:message('그곳으로는 이동할 수 없습니다.')
+        end
 
         local x, y = spouse:position()
         local direction = me:direction()

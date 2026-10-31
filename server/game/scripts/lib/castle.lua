@@ -213,14 +213,27 @@ function M.evict(me)
 end
 
 function M.evict_castle_maps(totem)
+    local maps = {}
     local suffixes = { '의눈', '의심장', '지하수로', '팔괘의방', '팔괘방' }
     for _, suffix in ipairs(suffixes) do
         local map = name2map(totem .. suffix)
         if map ~= nil then
-            local objs = map:objects(OBJECT_TYPE.CHARACTER)
-            for _, ch in pairs(objs) do
-                M.evict(ch)
-            end
+            table.insert(maps, map)
+        end
+    end
+
+    local floor = 1
+    local sewer_floor = name2map(totem .. '지하수로' .. floor .. '층')
+    while sewer_floor ~= nil do
+        table.insert(maps, sewer_floor)
+        floor = floor + 1
+        sewer_floor = name2map(totem .. '지하수로' .. floor .. '층')
+    end
+
+    for _, map in ipairs(maps) do
+        local objs = map:objects(OBJECT_TYPE.CHARACTER)
+        for _, ch in pairs(objs) do
+            M.evict(ch)
         end
     end
 end
