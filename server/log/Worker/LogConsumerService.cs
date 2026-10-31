@@ -449,16 +449,27 @@ namespace Log.Worker
 
                 foreach (var message in rejected)
                 {
-                    _logger.LogError($"Moving a log message rejected by the database to {message.QueueName}{DeadQueueSuffix}");
-                    await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, message.QueueName, true, new BasicProperties(message.Properties), message.Body, cancellationToken);
+                    _logger.LogError($"Dropping a log message from {message.QueueName} rejected by the database: {Encoding.UTF8.GetString(message.Body)}");
                     await AckAsync(message, cancellationToken);
                 }
 
                 if (failed.Count > 0)
                 {
-                    _logger.LogWarning($"Log database write failed, holding {failed.Count} messages for retry");
-                    _pending.AddRange(failed);
-                    return false;
+                    if (await logRepository.PingAsync())
+                    {
+                        foreach (var message in failed)
+                        {
+                            _logger.LogError($"Moving a log message that failed on a reachable database to {message.QueueName}{DeadQueueSuffix}");
+                            await _publisher.BasicPublishAsync(DeadLetterRouteExchangeName, message.QueueName, true, new BasicProperties(message.Properties), message.Body, cancellationToken);
+                            await AckAsync(message, cancellationToken);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Log database write failed, holding {failed.Count} messages for retry");
+                        _pending.AddRange(failed);
+                        return false;
+                    }
                 }
             }
 
@@ -504,6 +515,11 @@ namespace Log.Worker
                         await logRepository.BulkInsertAsync(message.Logs);
                         await AckAsync(message, cancellationToken);
                         replayed++;
+                    }
+                    catch (Exception ex) when (ex is InvalidDataException || (ex is MySqlException mysql && DataErrorNumbers.Contains(mysql.Number)))
+                    {
+                        _logger.LogError(ex, $"Dropping a log message from {deadQueueName} rejected by the database: {Encoding.UTF8.GetString(message.Body)}");
+                        await AckAsync(message, cancellationToken);
                     }
                     catch (Exception ex)
                     {
