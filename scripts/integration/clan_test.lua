@@ -46,14 +46,13 @@ local MSG_TITLE_OK        = "칭호를 새로 내걸었소"
 local MSG_TITLE_PRIV      = "문파 권한이 부족합니다"
 local MSG_TITLE_SHORT     = "문파 칭호가 너무 짧습니다"
 local MSG_TITLE_SAME      = "문파 칭호가 변경되지 않았습니다"
-local MSG_ERR_CODE_33     = "에러코드 : 33"
 local MSG_DESTROY_OK      = "문파 해체 수속이 처리되었소"
 local MSG_DESTROY_MEMBERS = "문파에 다른 멤버가 존재합니다"
 local MSG_NOT_NEAR        = "이 자리에 보이지 않아"
 local MSG_REJECTED        = "가 거절했습니다"
 local MSG_ACCEPTED        = "가입 수속이 처리되었소"
 local MSG_JOINED          = "문파에 가입되었습니다"
-local MSG_ALREADY         = "클랜 이미 있음"
+local MSG_ALREADY         = "이미 문파에 가입되어 있습니다"
 local MSG_LEAVE_OK        = "탈퇴 수속이 완료되었소"
 local MSG_LEAVE_MASTER    = "문파 마스터는 탈퇴할 수 없습니다"
 local MSG_KICK_OK         = "축출 수속이 처리되었소"
@@ -369,7 +368,6 @@ local function is_title_too_short(msg)
         return false
     end
     return msg:find(MSG_TITLE_SHORT, 1, true) ~= nil
-        or msg:find(MSG_ERR_CODE_33, 1, true) ~= nil
 end
 
 local function is_privilege_error(msg)
@@ -533,10 +531,15 @@ test_suite {
             local master = ctx:bot(0)
             progress(master, "S2: TITLE")
 
-            -- Use 1-byte title: UTF-8 Hangul ("가") is 3 bytes and bypasses local length < 2 check.
             local msg, err = change_title(master, "a")
             if is_title_too_short(msg) == false then
                 progress(master, "FAILED: short " .. tostring(msg or err))
+                return false
+            end
+
+            msg, err = change_title(master, "가")
+            if is_title_too_short(msg) == false then
+                progress(master, "FAILED: short hangul " .. tostring(msg or err))
                 return false
             end
 

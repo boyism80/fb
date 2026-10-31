@@ -9,6 +9,7 @@
 #include <fb/model/model.h>
 #include <macro.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <format>
 #include <optional>
@@ -136,6 +137,9 @@ async::task<void> clan::container::join_member(character& inviter, std::string_v
         "internal",
         "/clan/join",
         internal_reqs::JoinClan{world, fb::config<uint32_t>("id"), inviter.id, target_name_str});
+    if (resp.error == static_cast<uint32_t>(ERROR_CODE::OFFLINE))
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), target_name_str));
+
     co_await this->on_updated(resp);
 }
 
@@ -273,7 +277,11 @@ async::task<void> clan::container::set_title(character& changer, std::string_vie
         if (current_title.has_value() && current_title.value() == title_str)
             throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_NOT_CHANGED));
 
-        if (title_str.empty() == false && title_str.length() < 2)
+        auto title_utf8   = fb::UTF8(title_str, fb::PLATFORM::WINDOWS);
+        auto title_length = std::ranges::count_if(title_utf8, [](char c) {
+            return (static_cast<unsigned char>(c) & 0xC0) != 0x80;
+        });
+        if (title_str.empty() == false && title_length < 2)
             throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_TOO_SHORT));
 
         if (fb::CP949(title_str).length() > CLAN_TITLE_MAX ||

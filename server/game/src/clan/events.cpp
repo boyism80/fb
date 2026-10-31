@@ -148,6 +148,27 @@ async::task<void> clan::container::on_error(uint32_t error)
     case ERROR_CODE::CLAN_TARGET_NOT_FOUND:
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_TARGET_NOT_FOUND));
 
+    case ERROR_CODE::CLAN_TITLE_TOO_SHORT:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_TOO_SHORT));
+
+    case ERROR_CODE::CLAN_TITLE_NOT_CHANGED:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_NOT_CHANGED));
+
+    case ERROR_CODE::CLAN_ALREADY_JOINED:
+        throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
+
+    case ERROR_CODE::CLAN_MEMBER_EXISTS:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_MEMBER_EXISTS));
+
+    case ERROR_CODE::CLAN_CANNOT_ALLY_SELF:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ALLY_SELF));
+
+    case ERROR_CODE::CLAN_CANNOT_ENEMY_SELF:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ENEMY_SELF));
+
+    case ERROR_CODE::CANNOT_INVITE_SELF:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_INVITE_SELF));
+
     case ERROR_CODE::CLAN_NOT_MATCHED:
     case ERROR_CODE::NOT_FOUND_CLAN:
         throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
