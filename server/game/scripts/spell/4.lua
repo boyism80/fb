@@ -42,11 +42,15 @@ return {
         local mp = 30
         if spell.cast(me, nil, nil, { mp = mp }) then
             local new_x, new_y = spell.teleport_lookup(me, map, x, y, direction)
-            ch:map(map, new_x, new_y)
-            me:action(ACTION.CAST_SPELL, DURATION.SPELL)
-            me:sound(sound)
-            me:effect(effect)
-            me:message(string.format('%s 외웠습니다.', name_with(sp:name())))
+            if ch:map(map, new_x, new_y) == true then
+                me:action(ACTION.CAST_SPELL, DURATION.SPELL)
+                me:sound(sound)
+                me:effect(effect)
+                me:message(string.format('%s 외웠습니다.', name_with(sp:name())))
+            else
+                me:mp_up(mp)
+                me:message('소환에 실패했습니다.')
+            end
         end
     end,
 
