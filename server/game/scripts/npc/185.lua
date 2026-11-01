@@ -606,16 +606,26 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        if me:mkitem('대장군의일기겉표지', 1) == nil then
+            me:dialog(npc, '소지품이 가득 차서 대장군의일기겉표지를 받을 수 없습니다.', { prev = false, next = false })
+            return
+        end
         q:step(13)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '일기장을 전부 조합하자.', 7, 1)
-        if me:mkitem('대장군의일기겉표지', 1) then
-            me:dialog(npc, '여기 책 겉표지도 있으니 같이 조합하시면 될 거요!', { prev = false, next = false })
-        end
+        me:dialog(npc, '여기 책 겉표지도 있으니 같이 조합하시면 될 거요!', { prev = false, next = false })
         return
     end
 
     if step == 13 then
         if not me:has_items('대장군의일기통합본', 1) then
+            if not me:has_items('대장군의일기겉표지', 1) then
+                if me:mkitem('대장군의일기겉표지', 1) == nil then
+                    me:dialog(npc, '소지품이 가득 차서 대장군의일기겉표지를 받을 수 없습니다.', { prev = false, next = false })
+                    return
+                end
+                me:dialog(npc, '여기 책 겉표지도 있으니 같이 조합하시면 될 거요!', { prev = false, next = false })
+                return
+            end
             me:dialog(npc, '어서 조합해보시게. 겉표지와 같이 조합하면 될걸세!', { prev = false, next = false })
             return
         end
