@@ -566,7 +566,9 @@ function M.ghost_talisman_on_move(me)
         return
     end
 
-    me:rmitem('귀신퇴치부적', 1, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem('귀신퇴치부적', 1, ITEM_DELETE_TYPE.GIVE) then
+        return
+    end
     quest:inc_progress(1)
     me:dialog(nil, '이 바닥에 부적을 묻으면 귀신의 기운이 약간 약해질 것이다.', { prev = false, next = true })
 end

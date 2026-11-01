@@ -1,9 +1,32 @@
 -- npc: 안도
 local quest = require('lib.quest')
 
+local BURY_COUNT = 5
+local TALISMAN = '귀신퇴치부적'
+
+local function held_talismans(me)
+    local count = 0
+    for _, item in pairs(me:items(TALISMAN)) do
+        count = count + item:count()
+    end
+    return count
+end
+
+local function regrant_talismans(me, npc, q)
+    local missing = BURY_COUNT - q:progress() - held_talismans(me)
+    if missing <= 0 then
+        return false
+    end
+    if me:mkitem(TALISMAN, missing) == nil then
+        me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', { prev = false, next = false })
+        return true
+    end
+    me:dialog(npc, '부적이 모자란 모양이군. 여기 더 가져가게.', { prev = false, next = false })
+    return true
+end
+
 return {
     on_click = function(me, npc)
-        local BURY_COUNT = 5
         local ACHIEVEMENT_GHOST = 29
         local q = me:quest(quest.QUEST_GHOST)
         local btn, sel
@@ -48,6 +71,10 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
+            if me:mkitem(TALISMAN, BURY_COUNT) == nil then
+                me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', { prev = false, next = false })
+                return
+            end
             local q = me:start_quest(quest.QUEST_GHOST)
             if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = false })
@@ -55,10 +82,6 @@ return {
             end
             q:step(1)
             q:progress(0)
-            if me:mkitem('귀신퇴치부적', 5) == nil then
-                me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', { prev = false, next = false })
-                return
-            end
             me:push_achievement(ACHIEVEMENT_GHOST, '안도의 부탁을 들어주자. [1/2]', 7, 6)
             return
         end
@@ -70,6 +93,9 @@ return {
 
         if q:step() == 1 then
             if q:progress() < BURY_COUNT then
+                if regrant_talismans(me, npc, q) then
+                    return
+                end
                 me:dialog(npc, '아직 부적을 다 묻지 못한 것 같군.', { prev = false, next = false })
                 return
             end
@@ -123,6 +149,9 @@ return {
 
         if q:step() == 3 then
             if q:progress() < BURY_COUNT then
+                if regrant_talismans(me, npc, q) then
+                    return
+                end
                 me:dialog(npc, '아직 부적을 모두 묻지 못한 모양이군?', { prev = false, next = false })
                 return
             end
