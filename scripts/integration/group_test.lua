@@ -2,6 +2,8 @@ local lib      = require("integration.lib")
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
+local MESSAGE_GROUP_MEMBER_KICKED = "%s님이 그룹에서 추방당했습니다."
+
 local function progress(bot, message)
     local level = "debug"
     if message:find("FAILED", 1, true) ~= nil
@@ -167,6 +169,56 @@ test_suite {
             progress(leader, "SUCCESSFULLY FORMED NEW GROUP AFTER DISBAND")
 
             progress(leader, "GROUP SCENARIO 2 TEST COMPLETED SUCCESSFULLY")
+            return true
+        end,
+
+        function(ctx)
+            local leader = ctx:bot(0)
+            local member = ctx:bot(3)
+            local member_name = member:name()
+            progress(leader, "GROUP SCENARIO 3 TEST STARTED (KICK AN OFFLINE MEMBER)")
+
+            if leader:invite_group(member) == false then
+                progress(leader, "FAILED TO INVITE " .. member_name .. " TO GROUP")
+                return false
+            end
+
+            if member:logout() == false then
+                progress(leader, "FAILED: " .. member_name .. " COULD NOT LOG OUT")
+                return false
+            end
+
+            local kicked_text = string.format(MESSAGE_GROUP_MEMBER_KICKED, member_name)
+            local kicked = leader:request(
+                resp.message,
+                protocol.group(member_name),
+                function(packet)
+                    return packet.type == "STATE" and packet.text == kicked_text
+                end)
+            if type(kicked) ~= "table" then
+                progress(leader, "FAILED: THE OFFLINE MEMBER WAS NOT KICKED")
+                member:login()
+                return false
+            end
+            progress(leader, "KICKED THE OFFLINE MEMBER " .. member_name)
+
+            if member:login() == false then
+                progress(leader, "FAILED: " .. member_name .. " COULD NOT LOG IN AGAIN")
+                return false
+            end
+            member = ctx:bot(3)
+            lib.formation.arrange_in_line(ctx)
+
+            if leader:invite_group(member) == false then
+                progress(leader, "FAILED: THE KICKED MEMBER IS STILL IN THE GROUP AFTER RELOGIN")
+                return false
+            end
+            if lib.group.disband(leader) == false then
+                progress(leader, "FAILED TO DISBAND GROUP")
+                return false
+            end
+
+            progress(leader, "GROUP SCENARIO 3 TEST COMPLETED SUCCESSFULLY")
             return true
         end,
     },
