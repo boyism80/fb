@@ -418,6 +418,27 @@ table SetCastleOwner {
   owner_clan_id: uint?;
 }
 
+table StartCastleSiege {
+  world: uint;
+  host: uint;
+  divine_beast: ubyte;
+  siege_key: ulong;
+}
+
+table EndCastleSiege {
+  world: uint;
+  host: uint;
+  divine_beast: ubyte;
+  siege_id: ulong;
+  winner_clan_id: uint?;
+}
+
+table FinishCastleSiege {
+  world: uint;
+  host: uint;
+  divine_beast: ubyte;
+}
+
 table SetClanMoney {
   world: uint;
   host: uint;

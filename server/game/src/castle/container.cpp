@@ -41,9 +41,11 @@ async::task<castle::container::entity_ptr> castle::container::fetch(uint32_t id)
         if (entry.divine_beast != id)
             continue;
 
-        co_return this->_server.make<fb::game::castle>(
-            static_cast<fb::model::enum_value::DIVINE_BEAST>(entry.divine_beast),
-            entry.owner_clan_id);
+        auto castle =
+            this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(entry.divine_beast),
+                                                 entry.owner_clan_id);
+        castle->apply_siege(entry.siege_id, entry.siege_remaining, entry.siege_ended);
+        co_return castle;
     }
 
     co_return this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(id), std::nullopt);
@@ -79,6 +81,7 @@ async::task<void> castle::container::on_updated(const internal_resp::UpdatedCast
 
         previous = guard.value()->owner_clan_id();
         guard.value()->owner_clan_id(resp.owner_clan_id);
+        guard.value()->apply_siege(resp.siege_id, resp.siege_remaining, resp.siege_ended);
     }
 
     if (previous != resp.owner_clan_id)
@@ -113,18 +116,64 @@ void castle::container::on_owner_changed(fb::model::enum_value::DIVINE_BEAST div
         members);
 }
 
-async::task<void> castle::container::start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
-                                                 uint32_t                            duration_seconds)
+async::task<castle::siege_start_result> castle::container::start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
+                                                                       uint64_t                            siege_key)
 {
-    auto guard = co_await this->enter_write(static_cast<uint32_t>(divine_beast));
-    if (guard.value() == nullptr)
-        co_return;
+    auto world = fb::config<std::optional<uint32_t>>("world");
+    if (!world)
+        throw std::runtime_error("castle: no world to start a siege in");
 
-    guard.value()->start_siege(duration_seconds);
+    auto   id = static_cast<uint32_t>(divine_beast);
+    auto&& resp =
+        co_await this->_server.http.post("internal",
+                                         "/castle/siege/start",
+                                         fb::protocol::internal::request::StartCastleSiege{*world,
+                                                                                           fb::config<uint32_t>("id"),
+                                                                                           static_cast<uint8_t>(id),
+                                                                                           siege_key});
+    if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
+        throw std::runtime_error(std::format("castle: failed to start siege (error : {})", resp.error));
+
+    auto result = castle::siege_start_result{};
+    {
+        auto guard = co_await this->enter_write(id);
+        if (guard.value() == nullptr)
+            co_return result;
+
+        guard.value()->apply_siege(resp.siege_id, resp.siege_remaining, resp.siege_ended);
+        result.active    = guard.value()->siege_active();
+        result.remaining = guard.value()->siege_remaining_seconds().value_or(0);
+    }
+
+    result.started = resp.siege_started;
+    co_return result;
 }
 
-// The siege stays active until the new owner is saved or rejected, so a failed save can be retried with the same
-// winner.
+async::task<bool> castle::container::finish_siege(fb::model::enum_value::DIVINE_BEAST divine_beast)
+{
+    auto world = fb::config<std::optional<uint32_t>>("world");
+    if (!world)
+        co_return false;
+
+    auto   id = static_cast<uint32_t>(divine_beast);
+    auto&& resp =
+        co_await this->_server.http.post("internal",
+                                         "/castle/siege/finish",
+                                         fb::protocol::internal::request::FinishCastleSiege{*world,
+                                                                                            fb::config<uint32_t>("id"),
+                                                                                            static_cast<uint8_t>(id)});
+    if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
+        throw std::runtime_error(std::format("castle: failed to finish siege (error : {})", resp.error));
+
+    auto guard = co_await this->enter_write(id);
+    if (guard.value() == nullptr)
+        co_return false;
+
+    guard.value()->apply_siege(resp.siege_id, resp.siege_remaining, resp.siege_ended);
+    co_return guard.value()->siege_pending();
+}
+
+// The siege stays pending until internal records its end, so a failed save can be retried with the same winner.
 async::task<std::pair<castle::siege_end_result, std::optional<uint32_t>>>
 castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
                              const std::optional<uint32_t>&      winner_clan_id)
@@ -132,6 +181,7 @@ castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
     auto id             = static_cast<uint32_t>(divine_beast);
     auto previous_owner = std::optional<uint32_t>{};
     auto winner         = winner_clan_id;
+    auto siege_id       = uint64_t{0};
     {
         auto guard = co_await this->enter_write(id);
         if (guard.value() == nullptr)
@@ -139,127 +189,69 @@ castle::container::end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
 
         // Checking and claiming the end under one lock lets only one of a timer and a GM command end the siege.
         auto& castle = guard.value();
-        if (castle->siege_active() == false || castle->siege_ending())
+        if (castle->siege_pending() == false || castle->siege_ending())
             co_return std::make_pair(siege_end_result::NOT_ACTIVE, std::optional<uint32_t>{});
 
         if (castle->siege_winner().has_value())
             winner = castle->siege_winner();
 
         previous_owner = castle->owner_clan_id();
-        if (winner.has_value() == false || winner == previous_owner)
-        {
-            castle->clear_siege();
-            co_return std::make_pair(siege_end_result::ENDED, winner);
-        }
-
+        siege_id       = castle->siege_id().value();
         castle->siege_ending(true);
     }
 
-    auto world     = fb::config<std::optional<uint32_t>>("world");
-    auto saved     = false;
-    auto rejected  = false;
-    auto new_owner = std::optional<uint32_t>{};
+    auto world = fb::config<std::optional<uint32_t>>("world");
+    auto resp  = std::optional<internal_resp::UpdatedCastle>{};
     try
     {
         if (world)
         {
-            auto&& resp = co_await this->_server.http.post(
+            auto&& updated = co_await this->_server.http.post(
                 "internal",
-                "/castle/owner",
-                fb::protocol::internal::request::SetCastleOwner{*world,
+                "/castle/siege/end",
+                fb::protocol::internal::request::EndCastleSiege{*world,
                                                                 fb::config<uint32_t>("id"),
                                                                 static_cast<uint8_t>(id),
+                                                                siege_id,
                                                                 winner});
-            auto error = static_cast<fb::model::enum_value::ERROR_CODE>(resp.error);
-            if (error == fb::model::enum_value::ERROR_CODE::NONE)
-            {
-                saved     = true;
-                new_owner = resp.owner_clan_id;
-            }
-            else if (error == fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN)
-            {
-                rejected = true;
-                fb::logger::warn("castle: winner clan {} for divine_beast {} no longer exists, ending without winner",
-                                 winner.value(),
-                                 id);
-            }
+            if (static_cast<fb::model::enum_value::ERROR_CODE>(updated.error) ==
+                fb::model::enum_value::ERROR_CODE::NONE)
+                resp = updated;
             else
-            {
-                fb::logger::warn("castle: failed to persist owner {} for divine_beast {} (error : {})",
-                                 winner.value(),
+                fb::logger::warn("castle: failed to end siege {} for divine_beast {} (error : {})",
+                                 siege_id,
                                  id,
-                                 resp.error);
-            }
+                                 updated.error);
         }
     }
     catch (const std::exception& e)
     {
-        fb::logger::warn("castle: failed to persist owner {} for divine_beast {} ({})", winner.value(), id, e.what());
+        fb::logger::warn("castle: failed to end siege {} for divine_beast {} ({})", siege_id, id, e.what());
     }
 
-    auto expected = std::optional<uint32_t>{};
-    auto stored   = std::optional<std::optional<uint32_t>>{};
-    if (rejected)
-    {
-        {
-            auto guard = co_await this->enter_write(id);
-            if (guard.value() == nullptr)
-                co_return std::make_pair(siege_end_result::NOT_ACTIVE, std::optional<uint32_t>{});
-
-            expected = guard.value()->owner_clan_id();
-        }
-
-        try
-        {
-            auto fetched = co_await this->fetch(id);
-            if (fetched != nullptr)
-                stored = fetched->owner_clan_id();
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::warn("castle: failed to reload owner for divine_beast {} ({})", id, e.what());
-        }
-    }
-
-    auto replaced = false;
+    auto new_owner = std::optional<uint32_t>{};
     {
         auto guard = co_await this->enter_write(id);
         if (guard.value() == nullptr)
             co_return std::make_pair(siege_end_result::NOT_ACTIVE, std::optional<uint32_t>{});
 
         auto& castle = guard.value();
-        if (rejected && stored.has_value())
-        {
-            if (castle->owner_clan_id() == expected && stored.value() != expected)
-            {
-                castle->owner_clan_id(stored.value());
-                replaced = true;
-            }
-            castle->clear_siege();
-        }
-        else if (saved)
-        {
-            castle->owner_clan_id(new_owner);
-            castle->clear_siege();
-        }
-        else
+        if (resp.has_value() == false)
         {
             castle->siege_winner(winner);
             castle->siege_ending(false);
             co_return std::make_pair(siege_end_result::SAVE_FAILED, winner);
         }
+
+        castle->owner_clan_id(resp->owner_clan_id);
+        castle->apply_siege(resp->siege_id, resp->siege_remaining, resp->siege_ended);
+        castle->siege_ending(false);
+        new_owner = resp->owner_clan_id;
     }
 
-    if (rejected)
-    {
-        if (replaced)
-            this->on_owner_changed(divine_beast, expected);
-        co_return std::make_pair(siege_end_result::ENDED, std::optional<uint32_t>{});
-    }
-    else
-    {
-        if (previous_owner != new_owner)
-            this->on_owner_changed(divine_beast, previous_owner);
-        co_return std::make_pair(siege_end_result::ENDED, winner);
-    }
+    if (previous_owner != new_owner)
+        this->on_owner_changed(divine_beast, previous_owner);
+
+    auto taken = winner.has_value() && new_owner == winner ? winner : std::optional<uint32_t>{};
+    co_return std::make_pair(siege_end_result::ENDED, taken);
 }

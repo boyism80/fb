@@ -343,19 +343,31 @@ public struct Castle : IFlatbufferObject
 
   public byte DivineBeast { get { int o = __p.__offset(4); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public nullable.nullable_uint? OwnerClanId { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ulong? SiegeId { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint SiegeRemaining { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public bool SiegeEnded { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol.@internal.raw.Castle> CreateCastle(FlatBufferBuilder builder,
       byte divine_beast = 0,
-      Offset<nullable.nullable_uint> owner_clan_idOffset = default(Offset<nullable.nullable_uint>)) {
-    builder.StartTable(2);
+      Offset<nullable.nullable_uint> owner_clan_idOffset = default(Offset<nullable.nullable_uint>),
+      Offset<nullable.nullable_ulong> siege_idOffset = default(Offset<nullable.nullable_ulong>),
+      uint siege_remaining = 0,
+      bool siege_ended = false) {
+    builder.StartTable(5);
+    Castle.AddSiegeRemaining(builder, siege_remaining);
+    Castle.AddSiegeId(builder, siege_idOffset);
     Castle.AddOwnerClanId(builder, owner_clan_idOffset);
+    Castle.AddSiegeEnded(builder, siege_ended);
     Castle.AddDivineBeast(builder, divine_beast);
     return Castle.EndCastle(builder);
   }
 
-  public static void StartCastle(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartCastle(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(0, divineBeast, 0); }
   public static void AddOwnerClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> ownerClanIdOffset) { builder.AddOffset(1, ownerClanIdOffset.Value, 0); }
+  public static void AddSiegeId(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> siegeIdOffset) { builder.AddOffset(2, siegeIdOffset.Value, 0); }
+  public static void AddSiegeRemaining(FlatBufferBuilder builder, uint siegeRemaining) { builder.AddUint(3, siegeRemaining, 0); }
+  public static void AddSiegeEnded(FlatBufferBuilder builder, bool siegeEnded) { builder.AddBool(4, siegeEnded, false); }
   public static Offset<fb.protocol.@internal.raw.Castle> EndCastle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.Castle>(o);
@@ -370,6 +382,9 @@ static public class CastleVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*DivineBeast*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTable(tablePos, 6 /*OwnerClanId*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 8 /*SiegeId*/, nullable.nullable_ulongVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 10 /*SiegeRemaining*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*SiegeEnded*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -4279,6 +4294,77 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
+public struct EndCastleSiege : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static EndCastleSiege GetRootAsEndCastleSiege(ByteBuffer _bb) { return GetRootAsEndCastleSiege(_bb, new EndCastleSiege()); }
+  public static EndCastleSiege GetRootAsEndCastleSiege(ByteBuffer _bb, EndCastleSiege obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public EndCastleSiege __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public byte DivineBeast { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public ulong SiegeId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public nullable.nullable_uint? WinnerClanId { get { int o = __p.__offset(12); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+
+  public static Offset<fb.protocol.@internal.request.raw.EndCastleSiege> CreateEndCastleSiege(FlatBufferBuilder builder,
+      uint world = 0,
+      uint host = 0,
+      byte divine_beast = 0,
+      ulong siege_id = 0,
+      Offset<nullable.nullable_uint> winner_clan_idOffset = default(Offset<nullable.nullable_uint>)) {
+    builder.StartTable(5);
+    EndCastleSiege.AddSiegeId(builder, siege_id);
+    EndCastleSiege.AddWinnerClanId(builder, winner_clan_idOffset);
+    EndCastleSiege.AddHost(builder, host);
+    EndCastleSiege.AddWorld(builder, world);
+    EndCastleSiege.AddDivineBeast(builder, divine_beast);
+    return EndCastleSiege.EndEndCastleSiege(builder);
+  }
+
+  public static void StartEndCastleSiege(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(2, divineBeast, 0); }
+  public static void AddSiegeId(FlatBufferBuilder builder, ulong siegeId) { builder.AddUlong(3, siegeId, 0); }
+  public static void AddWinnerClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> winnerClanIdOffset) { builder.AddOffset(4, winnerClanIdOffset.Value, 0); }
+  public static Offset<fb.protocol.@internal.request.raw.EndCastleSiege> EndEndCastleSiege(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.request.raw.EndCastleSiege>(o);
+  }
+}
+
+
+static public class EndCastleSiegeVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*DivineBeast*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 10 /*SiegeId*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyTable(tablePos, 12 /*WinnerClanId*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.request.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
 public struct EndClanEnemy : IFlatbufferObject
 {
   private Table __p;
@@ -4405,6 +4491,67 @@ static public class EnterGroupVerify
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Master*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 10 /*Member*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.request.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
+public struct FinishCastleSiege : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static FinishCastleSiege GetRootAsFinishCastleSiege(ByteBuffer _bb) { return GetRootAsFinishCastleSiege(_bb, new FinishCastleSiege()); }
+  public static FinishCastleSiege GetRootAsFinishCastleSiege(ByteBuffer _bb, FinishCastleSiege obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public FinishCastleSiege __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public byte DivineBeast { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+
+  public static Offset<fb.protocol.@internal.request.raw.FinishCastleSiege> CreateFinishCastleSiege(FlatBufferBuilder builder,
+      uint world = 0,
+      uint host = 0,
+      byte divine_beast = 0) {
+    builder.StartTable(3);
+    FinishCastleSiege.AddHost(builder, host);
+    FinishCastleSiege.AddWorld(builder, world);
+    FinishCastleSiege.AddDivineBeast(builder, divine_beast);
+    return FinishCastleSiege.EndFinishCastleSiege(builder);
+  }
+
+  public static void StartFinishCastleSiege(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(2, divineBeast, 0); }
+  public static Offset<fb.protocol.@internal.request.raw.FinishCastleSiege> EndFinishCastleSiege(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.request.raw.FinishCastleSiege>(o);
+  }
+}
+
+
+static public class FinishCastleSiegeVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*DivineBeast*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -6606,6 +6753,72 @@ static public class ShutdownVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*Actor*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.request.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
+public struct StartCastleSiege : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static StartCastleSiege GetRootAsStartCastleSiege(ByteBuffer _bb) { return GetRootAsStartCastleSiege(_bb, new StartCastleSiege()); }
+  public static StartCastleSiege GetRootAsStartCastleSiege(ByteBuffer _bb, StartCastleSiege obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public StartCastleSiege __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public byte DivineBeast { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public ulong SiegeKey { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+
+  public static Offset<fb.protocol.@internal.request.raw.StartCastleSiege> CreateStartCastleSiege(FlatBufferBuilder builder,
+      uint world = 0,
+      uint host = 0,
+      byte divine_beast = 0,
+      ulong siege_key = 0) {
+    builder.StartTable(4);
+    StartCastleSiege.AddSiegeKey(builder, siege_key);
+    StartCastleSiege.AddHost(builder, host);
+    StartCastleSiege.AddWorld(builder, world);
+    StartCastleSiege.AddDivineBeast(builder, divine_beast);
+    return StartCastleSiege.EndStartCastleSiege(builder);
+  }
+
+  public static void StartStartCastleSiege(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
+  public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(2, divineBeast, 0); }
+  public static void AddSiegeKey(FlatBufferBuilder builder, ulong siegeKey) { builder.AddUlong(3, siegeKey, 0); }
+  public static Offset<fb.protocol.@internal.request.raw.StartCastleSiege> EndStartCastleSiege(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.request.raw.StartCastleSiege>(o);
+  }
+}
+
+
+static public class StartCastleSiegeVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*DivineBeast*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 10 /*SiegeKey*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11021,26 +11234,42 @@ public struct UpdatedCastle : IFlatbufferObject
   public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public byte DivineBeast { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public nullable.nullable_uint? OwnerClanId { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Error { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public nullable.nullable_ulong? SiegeId { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint SiegeRemaining { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public bool SiegeEnded { get { int o = __p.__offset(14); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool SiegeStarted { get { int o = __p.__offset(16); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public uint Error { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.UpdatedCastle> CreateUpdatedCastle(FlatBufferBuilder builder,
       uint host = 0,
       byte divine_beast = 0,
       Offset<nullable.nullable_uint> owner_clan_idOffset = default(Offset<nullable.nullable_uint>),
+      Offset<nullable.nullable_ulong> siege_idOffset = default(Offset<nullable.nullable_ulong>),
+      uint siege_remaining = 0,
+      bool siege_ended = false,
+      bool siege_started = false,
       uint error = 0) {
-    builder.StartTable(4);
+    builder.StartTable(8);
     UpdatedCastle.AddError(builder, error);
+    UpdatedCastle.AddSiegeRemaining(builder, siege_remaining);
+    UpdatedCastle.AddSiegeId(builder, siege_idOffset);
     UpdatedCastle.AddOwnerClanId(builder, owner_clan_idOffset);
     UpdatedCastle.AddHost(builder, host);
+    UpdatedCastle.AddSiegeStarted(builder, siege_started);
+    UpdatedCastle.AddSiegeEnded(builder, siege_ended);
     UpdatedCastle.AddDivineBeast(builder, divine_beast);
     return UpdatedCastle.EndUpdatedCastle(builder);
   }
 
-  public static void StartUpdatedCastle(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartUpdatedCastle(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(1, divineBeast, 0); }
   public static void AddOwnerClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> ownerClanIdOffset) { builder.AddOffset(2, ownerClanIdOffset.Value, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(3, error, 0); }
+  public static void AddSiegeId(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> siegeIdOffset) { builder.AddOffset(3, siegeIdOffset.Value, 0); }
+  public static void AddSiegeRemaining(FlatBufferBuilder builder, uint siegeRemaining) { builder.AddUint(4, siegeRemaining, 0); }
+  public static void AddSiegeEnded(FlatBufferBuilder builder, bool siegeEnded) { builder.AddBool(5, siegeEnded, false); }
+  public static void AddSiegeStarted(FlatBufferBuilder builder, bool siegeStarted) { builder.AddBool(6, siegeStarted, false); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(7, error, 0); }
   public static Offset<fb.protocol.@internal.response.raw.UpdatedCastle> EndUpdatedCastle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.UpdatedCastle>(o);
@@ -11056,7 +11285,11 @@ static public class UpdatedCastleVerify
       && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*DivineBeast*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTable(tablePos, 8 /*OwnerClanId*/, nullable.nullable_uintVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 10 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 10 /*SiegeId*/, nullable.nullable_ulongVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 12 /*SiegeRemaining*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*SiegeEnded*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 16 /*SiegeStarted*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 18 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -409,7 +409,8 @@ namespace Internal.Controllers
                     var castleRecord = await _dbContext.Castle.Get(world, divineBeast);
                     if (castleRecord?.OwnerClan == clan.Id)
                     {
-                        _dbContext.Castle.Set(world, new Castle { DivineBeast = divineBeast, OwnerClan = null });
+                        castleRecord.OwnerClan = null;
+                        _dbContext.Castle.Set(world, castleRecord);
                         clearedCastles.Add(divineBeast);
                     }
                 }

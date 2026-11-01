@@ -242,6 +242,9 @@ table CharacterRef {
 table Castle {
     divine_beast: ubyte;
     owner_clan_id: uint?;
+    siege_id: ulong?;
+    siege_remaining: uint;
+    siege_ended: bool = false;
 }
 
 enum ClanActionType : byte {

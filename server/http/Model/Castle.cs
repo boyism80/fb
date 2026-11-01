@@ -16,6 +16,10 @@ namespace Http.Model
     public class Castle : CastleKey, IModel
     {
         public uint? OwnerClan { get; set; }
+        public ulong? SiegeId { get; set; }
+        public ulong? SiegeKey { get; set; }
+        public DateTime? SiegeEndAt { get; set; }
+        public bool SiegeEnded { get; set; }
         public static string DistributedLockKey(byte divineBeast)
         {
             return $"fb:lock:castle:{divineBeast}";

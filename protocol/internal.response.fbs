@@ -388,6 +388,10 @@ table UpdatedCastle {
   host: uint;
   divine_beast: ubyte;
   owner_clan_id: uint?;
+  siege_id: ulong?;
+  siege_remaining: uint;
+  siege_ended: bool = false;
+  siege_started: bool = false;
   error: uint;
 }
 

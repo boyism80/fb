@@ -7,9 +7,6 @@ local BEAST = "백호"
 local HEART_MAP = 2041
 local THRONE_X = 20
 local THRONE_Y = 8
-local SEWER_FLOOR_MAP = 2201
-local SEWER_FLOOR_X = 38
-local SEWER_FLOOR_Y = 6
 local MESSAGE_WAIT_MS = 15000
 
 local MSG_PREPARED = "공성준비 완료"
@@ -17,8 +14,9 @@ local MSG_STARTED = "공성전을 시작했습니다"
 local MSG_ENDED = "공성전 종료: " .. BEAST
 local MSG_NOT_ENDED = "진행 중인 공성전이 없습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
+local MSG_ANNOUNCED = "의성 공성전이 시작되었습니다."
+local FINISH_WAIT_MS = 2500
 local MSG_DEFENDER = "수성측"
-local MSG_EVICTED = "성 내부에서 퇴장되었습니다."
 
 local GATE_NPC = "백호성문지기"
 local GATE_OPTION = BEAST .. "성 입장"
@@ -76,7 +74,7 @@ test_suite({
 
     on_scenario_finished = function(ctx)
         local bot = ctx:bot(0)
-        bot:chat("/HTTP장애 /castle/owner off")
+        bot:chat("/HTTP장애 /castle/siege/end off")
         bot:chat("/HTTP지연 internal 0")
         clear_fee_faults(bot)
     end,
@@ -118,7 +116,7 @@ test_suite({
                 return fail("could not move A to the throne")
             end
 
-            a:chat("/HTTP장애 /castle/owner on")
+            a:chat("/HTTP장애 /castle/siege/end on")
             ctx:sleep(300)
             a:take_messages()
             if command(a, "/공성종료", MSG_NOT_ENDED) == false then
@@ -133,7 +131,7 @@ test_suite({
                 return fail("the siege did not stay active after the failed save")
             end
 
-            a:chat("/HTTP장애 /castle/owner off")
+            a:chat("/HTTP장애 /castle/siege/end off")
             ctx:sleep(300)
             if command(a, "/공성종료", MSG_ENDED) == false then
                 return fail("the retried end did not finish the siege")
@@ -370,7 +368,7 @@ test_suite({
                 return fail("could not move A to the throne")
             end
 
-            a:chat("/HTTP장애 /castle/owner lost")
+            a:chat("/HTTP장애 /castle/siege/end lost")
             ctx:sleep(300)
             if command(a, "/공성종료", MSG_NOT_ENDED) == false then
                 return fail("the siege ended although the owner response was lost")
@@ -379,7 +377,7 @@ test_suite({
                 return fail("the siege did not stay active after the lost response")
             end
 
-            a:chat("/HTTP장애 /castle/owner off")
+            a:chat("/HTTP장애 /castle/siege/end off")
             ctx:sleep(300)
             if run_step(a, "destroy_clan", "lost_destroy_a") == false then
                 return fail("could not destroy A's clan")
@@ -403,35 +401,31 @@ test_suite({
         function(ctx)
             local a = ctx:bot(0)
 
-            if run_step(a, "map_active", "sewer_floor_map", tostring(SEWER_FLOOR_MAP)) == false then
-                log("debug", "Siege sewer floor test skipped: the sewer floor does not run on this host")
+            if run_step(a, "map_active", "round_heart_map", tostring(HEART_MAP)) == false then
+                log("debug", "Siege round test skipped: the heart map does not run on this host")
                 return true
+            end
+            if command(a, "/공성종료", "공성전") == false then
+                return fail("could not end the sieges left by the earlier scenarios")
             end
 
             a:take_messages()
-            run_step(
-                a,
-                "move_to_map",
-                "sewer_floor_enter",
-                tostring(SEWER_FLOOR_MAP),
-                tostring(SEWER_FLOOR_X),
-                tostring(SEWER_FLOOR_Y)
-            )
-            local evicted = false
-            local waited = 0
-            while evicted == false and waited < ENTER_WAIT_MS do
-                for _, text in ipairs(a:take_messages()) do
-                    if text:find(MSG_EVICTED, 1, true) ~= nil then
-                        evicted = true
-                    end
-                end
-                if evicted == false then
-                    ctx:sleep(500)
-                    waited = waited + 500
+            if run_step(a, "verify_siege_start_once", "round_start_once", BEAST) == false then
+                return fail("a repeated start key started the siege again")
+            end
+            ctx:sleep(500)
+            local announced = 0
+            for _, text in ipairs(a:take_messages()) do
+                if text:find(MSG_ANNOUNCED, 1, true) ~= nil then
+                    announced = announced + 1
                 end
             end
-            if evicted == false or a:map() == SEWER_FLOOR_MAP then
-                return fail("a character outside the owner clan stayed on the sewer floor")
+            if announced ~= 1 then
+                return fail(string.format("the siege start was announced %d times", announced))
+            end
+
+            if run_step(a, "verify_siege_finish_tick", "round_finish_tick", BEAST, tostring(FINISH_WAIT_MS)) == false then
+                return fail("a finished siege was not ended by the heart host tick")
             end
             return true
         end,

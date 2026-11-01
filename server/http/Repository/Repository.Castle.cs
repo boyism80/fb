@@ -38,15 +38,27 @@ namespace Http.Reepository
                 INSERT INTO `castle` (
                     `divine_beast`,
                     `owner_clan`,
+                    `siege_id`,
+                    `siege_key`,
+                    `siege_end_at`,
+                    `siege_ended`,
                     `created_date`,
                     `updated_date`)
                 VALUES (
                     {value.DivineBeast.Escape()},
                     {value.OwnerClan.Escape()},
+                    {value.SiegeId.Escape()},
+                    {value.SiegeKey.Escape()},
+                    {value.SiegeEndAt.Escape()},
+                    {value.SiegeEnded.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
                     `owner_clan`=VALUES(`owner_clan`),
+                    `siege_id`=VALUES(`siege_id`),
+                    `siege_key`=VALUES(`siege_key`),
+                    `siege_end_at`=VALUES(`siege_end_at`),
+                    `siege_ended`=VALUES(`siege_ended`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

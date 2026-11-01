@@ -1064,6 +1064,56 @@ return {
         end
     end,
 
+    verify_siege_start_once = function(me, step, beast)
+        local siege = require('schedule.siege')
+        local divine_beast = siege.NAME_TO_DIVINE_BEAST[beast]
+        local entity = divine_beast and castle(divine_beast) or nil
+        if entity == nil then
+            return report(me, false, step, 'no castle ' .. tostring(beast))
+        end
+
+        local key = now() * 1000 + 999
+        local first = siege.start_siege(divine_beast, key)
+        local repeated = siege.start_siege(divine_beast, key)
+        local active = entity:siege_active()
+        local ended = siege.end_siege(divine_beast)
+        local after_end = siege.start_siege(divine_beast, key)
+        local pending = entity:siege_pending()
+        if first == true and repeated == false and active == true and ended == true and after_end == false and pending == false then
+            report(me, true, step)
+        else
+            report(me, false, step, string.format('first=%s repeated=%s active=%s ended=%s after_end=%s pending=%s',
+                tostring(first), tostring(repeated), tostring(active), tostring(ended), tostring(after_end),
+                tostring(pending)))
+        end
+    end,
+
+    verify_siege_finish_tick = function(me, step, beast, wait_ms)
+        local siege = require('schedule.siege')
+        local divine_beast = siege.NAME_TO_DIVINE_BEAST[beast]
+        local entity = divine_beast and castle(divine_beast) or nil
+        if entity == nil then
+            return report(me, false, step, 'no castle ' .. tostring(beast))
+        end
+
+        local started = siege.start_siege(divine_beast)
+        if started ~= true then
+            return report(me, false, step, 'siege did not start')
+        end
+        local requested = entity:finish_siege()
+        if requested ~= true then
+            siege.end_siege(divine_beast)
+            return report(me, false, step, 'finish_siege=' .. tostring(requested))
+        end
+
+        sleep(tonumber(wait_ms) or 3000)
+        local pending = entity:siege_pending()
+        if pending then
+            siege.end_siege(divine_beast)
+        end
+        report(me, pending == false, step, 'pending=' .. tostring(pending))
+    end,
+
     destroy_clan = function(me, step)
         local err = me:destroy_clan()
         report(me, err == nil, step, err and tostring(err) or '')

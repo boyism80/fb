@@ -34,12 +34,22 @@ public:
         SAVE_FAILED,
     };
 
+    struct siege_start_result
+    {
+        bool     started   = false;
+        bool     active    = false;
+        uint32_t remaining = 0;
+    };
+
+    static constexpr auto SIEGE_GRACE = std::chrono::minutes(5);
+
 private:
     server&                               _server;
     fb::model::enum_value::DIVINE_BEAST   _divine_beast;
     std::optional<uint32_t>               _owner_clan_id;
-    bool                                  _siege_active = false;
+    std::optional<uint64_t>               _siege_id;
     std::chrono::steady_clock::time_point _siege_end_at{};
+    bool                                  _siege_ended  = false;
     bool                                  _siege_ending = false;
     std::optional<uint32_t>               _siege_winner;
 
@@ -58,9 +68,10 @@ public:
     const std::optional<uint32_t>&      owner_clan_id() const;
     void                                owner_clan_id(const std::optional<uint32_t>& value);
     bool                                siege_active() const;
+    bool                                siege_pending() const;
+    const std::optional<uint64_t>&      siege_id() const;
     std::optional<uint32_t>             siege_remaining_seconds() const;
-    void                                start_siege(uint32_t duration_seconds);
-    void                                clear_siege();
+    bool                                apply_siege(const std::optional<uint64_t>& id, uint32_t remaining, bool ended);
     bool                                siege_ending() const;
     void                                siege_ending(bool value);
     const std::optional<uint32_t>&      siege_winner() const;
@@ -83,7 +94,8 @@ public:
     // clang-format off
     async::task<void> load_all();
     async::task<void> on_updated(const fb::protocol::internal::response::UpdatedCastle& resp);
-    async::task<void> start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, uint32_t duration_seconds);
+    async::task<castle::siege_start_result> start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, uint64_t siege_key);
+    async::task<bool> finish_siege(fb::model::enum_value::DIVINE_BEAST divine_beast);
     async::task<std::pair<castle::siege_end_result, std::optional<uint32_t>>> end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, const std::optional<uint32_t>& winner_clan_id);
     // clang-format on
 };
