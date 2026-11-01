@@ -611,6 +611,7 @@ local function run_shark_report(me, npc)
         return
     end
     q:step(13)
+    q:progress(0)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "상어장군의 생포 임무를 받다. [2/2]", 7, 1)
     me:dialog(npc, "그래주겠나? 그럼 다시한번 부탁하네.", { prev = false, next = false })
 end
