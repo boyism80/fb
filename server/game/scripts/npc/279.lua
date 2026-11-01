@@ -60,6 +60,11 @@ return {
             goto NPC_279_0005
         end
 
+        if me:mkitem("노란비서", 20) == nil then
+            me:dialog(npc, "소지품이 가득 차서 노란비서를 줄 수 없습니다.", { prev = false, next = false })
+            return
+        end
+
         if q == nil then
             q = me:start_quest(quest.QUEST_BEGINNER_PATH)
             if q == nil then
@@ -69,11 +74,6 @@ return {
         end
         q:step(7)
         me:exp(me:exp() + 300)
-
-        if me:mkitem("노란비서", 20) == nil then
-            me:dialog(npc, "소지품이 가득 차서 노란비서를 줄 수 없습니다.", { prev = false, next = false })
-            return
-        end
 
         me:dialog(npc, "<노란비서>을 얻다!!!", { prev = false, next = false })
     end
