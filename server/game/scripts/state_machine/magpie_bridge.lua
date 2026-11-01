@@ -533,7 +533,11 @@ end
 
 return {
     on_init = function(sm)
-        if id2map(bridge.MAP_ID) == nil and id2map(bridge.CHILSUNG_MAP_ID) == nil then
+        local bridge_map = id2map(bridge.MAP_ID)
+        local chilsung = id2map(bridge.CHILSUNG_MAP_ID)
+        local bridge_active = bridge_map ~= nil and bridge_map:active() == true
+        local chilsung_active = chilsung ~= nil and chilsung:active() == true
+        if bridge_active == false and chilsung_active == false then
             return
         end
         reset(sm)
