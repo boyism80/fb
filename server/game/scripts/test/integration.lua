@@ -852,6 +852,30 @@ return {
         report(me, true, step)
     end,
 
+    set_quest_progress = function(me, step, id, value)
+        local q = me:quest(tonumber(id))
+        if q == nil then
+            return report(me, false, step, 'no quest ' .. tostring(id))
+        end
+        q:progress(tonumber(value))
+        report(me, true, step)
+    end,
+
+    verify_quest_progress = function(me, step, id, expected)
+        local q = me:quest(tonumber(id))
+        if q == nil then
+            return report(me, false, step, 'no quest ' .. tostring(id))
+        end
+        local actual = q:progress()
+        report(me, actual == tonumber(expected), step,
+            string.format('progress=%d expected=%s', actual, tostring(expected)))
+    end,
+
+    set_promotion = function(me, step, value)
+        me:promotion(tonumber(value))
+        report(me, me:promotion() == tonumber(value), step)
+    end,
+
     set_money = function(me, step, value)
         me:money(tonumber(value))
         report(me, true, step)

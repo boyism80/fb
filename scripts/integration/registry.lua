@@ -74,6 +74,7 @@ register_test("quest_goddess_dew_test", { serial = true, label = "script" })
 register_test("quest_hwangbiyeon_test", { label = "script" })
 register_test("quest_exchange_capacity_test", { label = "script" })
 register_test("quest_shark_bribe_test", { label = "script" })
+register_test("quest_regrant_test", { label = "script" })
 
 register_test("npc_explorer_test", { label = "explorer" })
 
