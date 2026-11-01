@@ -1,10 +1,13 @@
 using Fb.Model.EnumValue;
 using Http.Model;
+using Http.Util;
 
 namespace Http.Service
 {
     public class BanService
     {
+        public const int MaxReasonLength = 256;
+
         private readonly DbContext _dbContext;
         private readonly ILogger<BanService> _logger;
         private readonly LogService _logService;
@@ -23,6 +26,11 @@ namespace Http.Service
         {
             actor ??= string.Empty;
             source ??= string.Empty;
+
+            if (TextColumn.FitsUtf8mb3(reason, MaxReasonLength) == false)
+            {
+                throw new ArgumentException($"Ban reason must be at most {MaxReasonLength} characters without emoji.", nameof(reason));
+            }
 
             // Get user ID from name
             var row = await _dbContext.Character.GetCharacterRef(name) ??

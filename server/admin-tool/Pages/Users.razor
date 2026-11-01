@@ -882,6 +882,7 @@
     private class BanModel
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ban reason is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(BanService.MaxReasonLength, ErrorMessage = "Ban reason must be at most 256 characters")]
         public string Reason { get; set; } = string.Empty;
 
         public string Days { get; set; }
