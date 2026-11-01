@@ -2,6 +2,8 @@
 
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
+#include <fb/http_client.h>
+#include <fb/logger.h>
 #include <macro.h>
 
 #include <cstdint>
@@ -185,6 +187,11 @@ int builtin::clan::builtin_title(lua_State* L)
 
                 co_await server.clans.set_title(*shared_ptr, title);
             }
+            catch (fb::http_error& e)
+            {
+                fb::logger::warn("clan request failed: {}", e.what());
+                *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+            }
             catch (std::exception& e)
             {
                 *error = e.what();
@@ -250,6 +257,11 @@ int builtin::clan::builtin_join(lua_State* L)
 
             co_await server.clans.join_member(*shared_ptr, target_name);
         }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+        }
         catch (std::exception& e)
         {
             *error = e.what();
@@ -292,6 +304,11 @@ int builtin::clan::builtin_leave(lua_State* L)
                 throw std::runtime_error("leaver character is not alive");
 
             co_await server.clans.leave_member(*shared_ptr);
+        }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
         }
         catch (std::exception& e)
         {
@@ -337,6 +354,11 @@ int builtin::clan::builtin_kick(lua_State* L)
                 throw std::runtime_error("kicker character is not alive");
 
             co_await server.clans.kick_member(*shared_ptr, target);
+        }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
         }
         catch (std::exception& e)
         {
@@ -396,6 +418,11 @@ int builtin::clan::builtin_change_role(lua_State* L)
 
             co_await server.clans.change_role(*shared_ptr, target, role);
         }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+        }
         catch (std::exception& e)
         {
             *error = e.what();
@@ -452,6 +479,11 @@ int builtin::clan::builtin_message(lua_State* L)
                 throw std::runtime_error("no online clan member");
 
             co_await server.clans.broadcast(world, clan_id, message, type);
+        }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
         }
         catch (std::exception& e)
         {
@@ -602,6 +634,11 @@ int builtin::clan::builtin_request_ally(lua_State* L)
 
             co_await server.clans.request_ally(*shared_ptr, target_clan_id.value());
         }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+        }
         catch (std::exception& e)
         {
             *error = e.what();
@@ -656,6 +693,11 @@ int builtin::clan::builtin_break_ally(lua_State* L)
                 throw std::runtime_error("character is not alive");
 
             co_await server.clans.break_ally(*shared_ptr, target_clan_id.value());
+        }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
         }
         catch (std::exception& e)
         {
@@ -712,6 +754,11 @@ int builtin::clan::builtin_declare_enemy(lua_State* L)
 
             co_await server.clans.declare_enemy(*shared_ptr, target_clan_id.value());
         }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
+        }
         catch (std::exception& e)
         {
             *error = e.what();
@@ -766,6 +813,11 @@ int builtin::clan::builtin_end_enemy(lua_State* L)
                 throw std::runtime_error("character is not alive");
 
             co_await server.clans.end_enemy(*shared_ptr, target_clan_id.value());
+        }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("clan request failed: {}", e.what());
+            *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
         }
         catch (std::exception& e)
         {

@@ -3,6 +3,7 @@
 #include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <fb/http_client.h>
 #include <fb/logger.h>
 #include <fb/model/model.h>
 #include <macro.h>
@@ -24,6 +25,25 @@ using table = fb::model::table;
 namespace mp      = fb::protocol::matchmaking;
 namespace mp_reqs = mp::request;
 namespace mp_resp = mp::response;
+
+namespace {
+
+std::string matchmaking_error_message(fb::model::enum_value::ERROR_CODE code)
+{
+    switch (code)
+    {
+    case fb::model::enum_value::ERROR_CODE::MATCHMAKING_ALREADY_ENROLLED:
+        return _TEXT(MESSAGE_MATCHMAKING_ALREADY_ENROLLED);
+
+    case fb::model::enum_value::ERROR_CODE::MATCHMAKING_UNKNOWN_QUEUE:
+        return _TEXT(MESSAGE_MATCHMAKING_UNKNOWN_QUEUE);
+
+    default:
+        return std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), static_cast<uint32_t>(code));
+    }
+}
+
+} // namespace
 
 matchmaker::matchmaker(character& owner) :
     owner(owner)
@@ -375,7 +395,12 @@ async::task<void> matchmaker::dequeue(initiator by)
         // The service already dropped the ticket (leftover cleanup or a teammate's dequeue), which is the goal.
         if (code != fb::model::enum_value::ERROR_CODE::NONE &&
             code != fb::model::enum_value::ERROR_CODE::MATCHMAKING_REGISTRY_NOT_FOUND)
-            error = enum_tostring(code);
+            error = matchmaking_error_message(code);
+    }
+    catch (const fb::http_error& e)
+    {
+        fb::logger::warn("matchmaking dequeue request for character {} failed: {}", character_id, e.what());
+        error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
     }
     catch (const std::exception& e)
     {
@@ -544,7 +569,7 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
 
     auto match_type_enum = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
     if (table::matchmaking->contains(match_type_enum) == false)
-        throw std::runtime_error(enum_tostring(fb::model::enum_value::ERROR_CODE::MATCHMAKING_UNKNOWN_QUEUE));
+        throw std::runtime_error(_TEXT(MESSAGE_MATCHMAKING_UNKNOWN_QUEUE));
 
     auto  matchmaking_table  = table::matchmaking;
     auto& matchmaking_config = matchmaking_table[match_type_enum];
@@ -645,6 +670,11 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
             resp =
                 co_await server.http.post("matchmaking", "/matchmaking/enqueue", mp_reqs::Enqueue{match_type, members});
         }
+        catch (const fb::http_error& e)
+        {
+            fb::logger::warn("matchmaking enqueue request for character {} failed: {}", character_id, e.what());
+            http_error = std::make_exception_ptr(std::runtime_error(_TEXT(MESSAGE_REQUEST_UNCONFIRMED)));
+        }
         catch (...)
         {
             http_error = std::current_exception();
@@ -662,7 +692,7 @@ async::task<void> matchmaker::enqueue(uint32_t match_type)
     {
         co_await clear_enqueuing();
         co_await server.threads.switching(weak);
-        throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
+        throw std::runtime_error(matchmaking_error_message(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
     }
 
     // A participant who disconnected or left the group meanwhile had its enqueuing flag cleared by dequeue.
