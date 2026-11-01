@@ -194,50 +194,12 @@ namespace Marketplace.Services
             Marketplace.Service.DbContext dbContext,
             System.Data.IDbTransaction transaction)
         {
-            // Calculate registration fee that was paid when listing was created
-            var totalPrice = listing.Price * listing.RemainingCount;
-            var registrationFee = (ulong)(totalPrice * Fb.Model.ConstValue.Marketplace.ListingFee);
-
-            // Get item name for message
-            var itemName = "unknown item name";
-            if (Table.Item.TryGetValue(listing.ItemModel, out var model))
-            {
-                itemName = model.Name;
-            }
-
-            // Create attachments: item + registration fee refund
-            var attachments = new List<Fb.Model.Dsl>
-            {
-                new Fb.Model.Dsl.Item
-                {
-                    Id = listing.ItemModel,
-                    Count = listing.RemainingCount,
-                    Durability = listing.ItemDurability,
-                    CustomName = listing.ItemCustomName,
-                    Percent = 100.0,
-                    Uid = listing.ItemUid
-                }.ToDSL()
-            };
-
-            // Add registration fee refund
-            if (registrationFee > 0)
-            {
-                attachments.Add(new Fb.Model.Dsl.Money { Value = registrationFee }.ToDSL());
-            }
-
-            var message = registrationFee > 0
-                ? string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessageWithFee.ToCSharpFormat(), itemName, listing.RemainingCount, registrationFee)
-                : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
-
-            var parcel = new MarketplaceParcel
-            {
-                ExternalRef = $"marketplace:expire:{listing.Id}",
-                World = listing.World,
-                User = listing.SellerId,
-                Title = Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
-                Message = message,
-                Attachments = attachments
-            };
+            var parcel = ListingReturnParcel.WithFeeRefund(
+                listing,
+                $"marketplace:expire:{listing.Id}",
+                Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
+                Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage,
+                Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessageWithFee);
             await dbContext.MarketplaceParcel.CreateAsync(parcel, transaction);
         }
     }

@@ -416,31 +416,28 @@ public class MarketplaceService
 
             foreach (var listing in listings)
             {
-                var parcel = new MarketplaceParcel
-                {
-                    ExternalRef = $"marketplace:cancel:{listing.Id}",
-                    World = listing.World,
-                    User = listing.SellerId,
-                    Title = Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
-                    Message = Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
-                    Attachments =
-                    [
-                        new Fb.Model.Dsl.Item
-                        {
-                            Id = listing.ItemModel,
-                            Count = listing.RemainingCount,
-                            Durability = listing.ItemDurability,
-                            CustomName = listing.ItemCustomName,
-                            Percent = 100.0,
-                            Uid = listing.ItemUid
-                        }.ToDSL()
-                    ]
-                };
+                var parcel = ListingReturnParcel.WithFeeRefund(
+                    listing,
+                    $"marketplace:clear:{listing.Id}",
+                    Fb.Model.ConstValue.String.MessageMarketplaceListingClearedTitle,
+                    Fb.Model.ConstValue.String.MessageMarketplaceListingClearedMessage,
+                    Fb.Model.ConstValue.String.MessageMarketplaceListingClearedMessageWithFee);
                 await _dbContext.MarketplaceParcel.CreateAsync(parcel, transaction);
             }
 
             await transaction.CommitAsync();
             _parcelSender.Wake();
+
+            foreach (var listing in listings)
+            {
+                await _logService.WriteAsync("marketplace_clear_listing", new
+                {
+                    admin_id = adminId,
+                    listing_id = listing.Id,
+                    seller_id = listing.SellerId,
+                    refund = ListingReturnParcel.RegistrationFee(listing)
+                });
+            }
 
             cleared += (uint)listings.Count;
         }

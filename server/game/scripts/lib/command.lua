@@ -2500,7 +2500,7 @@ M.functions = {
 
     ['거래소초기화'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '- 거래소에 등록된 모든 물품을 등록 취소하고 판매자의 통합보관함으로 돌려보냅니다.',
+        ['usage'] = '- 거래소에 등록된 모든 물품을 등록 취소하고 등록 수수료와 함께 판매자의 통합보관함으로 돌려보냅니다.',
         ['command'] = function(me, args)
             local err, count = me:marketplace_clear()
             if err ~= nil then

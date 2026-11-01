@@ -64,6 +64,7 @@ local MSG_MIX_FAILED = "실패하였습니다"
 local MSG_INVENTORY_OVERFLOW = "소지품이 꽉 찼습니다"
 
 local STORAGE_CANCEL_TITLE = "거래소 등록 취소"
+local STORAGE_CLEAR_TITLE = "거래소 등록 취소(운영)"
 local STORAGE_PURCHASE_TITLE = "거래소 구매"
 local STORAGE_SALE_TITLE = "거래소 판매"
 local STORAGE_PURCHASE_RECOVERY_TITLE = "거래소 구매 복구"
@@ -2512,6 +2513,59 @@ test_suite({
             end
             cleanup_bot(a)
             progress(a, "C2 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "CL: OPERATOR CLEAR REFUNDS THE LISTING FEE")
+
+            cleanup_bot(a)
+            if prepare_weapon(a) == false then
+                progress(a, "FAILED: prepare weapon")
+                return false
+            end
+            local fee = listing_fee(1, WEAPON_LIST_PRICE)
+            a:money(fee + 1000)
+            local msg, err = list_item_flow(a, WEAPON_ITEM, 1, WEAPON_LIST_PRICE)
+            if msg == nil or msg:find(MSG_LIST_OK, 1, true) == nil then
+                progress(a, "FAILED: list before clear " .. tostring(msg or err))
+                return false
+            end
+
+            local cleared = a:request(resp.message, protocol.chat(false, "/거래소초기화"), function(p)
+                return p.text ~= nil and p.text:find(MSG_MARKET_CLEAR, 1, true) ~= nil
+            end)
+            if cleared == false or cleared == nil or cleared.text:find(MSG_MARKET_CLEAR_FAIL, 1, true) ~= nil then
+                progress(a, "FAILED: clear listings " .. tostring(cleared and cleared.text))
+                return false
+            end
+
+            local arrived, wait_err = wait_storage_title(ctx, a, STORAGE_CLEAR_TITLE)
+            if arrived == false then
+                progress(a, "FAILED: " .. tostring(wait_err))
+                return false
+            end
+            local before = a:money()
+            local received, recv_err = receive_storage(a, STORAGE_CLEAR_TITLE)
+            if received == false or a:has_item_by_name(WEAPON_ITEM) == false then
+                progress(a, "FAILED: cleared weapon not received " .. tostring(recv_err))
+                return false
+            end
+            local refunded = lib.wait.settle(ctx, function()
+                return a:money() == before + fee
+            end, function(attempt)
+                progress(a, string.format("fee refund not settled yet attempt=%d money=%d expected=%d",
+                    attempt, a:money(), before + fee))
+            end)
+            if refunded == false then
+                progress(a,
+                    string.format("FAILED: listing fee not refunded money=%d expected=%d", a:money(), before + fee))
+                return false
+            end
+
+            cleanup_bot(a)
+            progress(a, "CL PASSED")
             return true
         end,
     },
