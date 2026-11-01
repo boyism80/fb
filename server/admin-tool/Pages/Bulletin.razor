@@ -656,6 +656,12 @@
                 return;
             }
 
+            if (Http.Service.BulletinService.Storable(writeModel.Title, writeModel.Contents) == false)
+            {
+                errorMessage = "Title and contents cannot contain emoji or other 4-byte characters.";
+                return;
+            }
+
             var success = await BulletinService.Write(
                 selectedWorld.Value,
                 selectedBulletinSection.Value,
@@ -752,6 +758,12 @@
             if (!selectedWorld.HasValue)
             {
                 errorMessage = "World is not selected.";
+                return;
+            }
+
+            if (Http.Service.BulletinService.Storable(editModel.Title, editModel.Contents) == false)
+            {
+                errorMessage = "Title and contents cannot contain emoji or other 4-byte characters.";
                 return;
             }
 
@@ -979,7 +991,7 @@
         public string Title { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Contents is required")]
-        [StringLength(1000, ErrorMessage = "Contents must be 1000 characters or less")]
+        [StringLength(Http.Service.BulletinService.MaxContentsLength, ErrorMessage = "Contents must be 256 characters or less")]
         public string Contents { get; set; } = string.Empty;
     }
 
@@ -990,7 +1002,7 @@
         public string Title { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Contents is required")]
-        [StringLength(1000, ErrorMessage = "Contents must be 1000 characters or less")]
+        [StringLength(Http.Service.BulletinService.MaxContentsLength, ErrorMessage = "Contents must be 256 characters or less")]
         public string Contents { get; set; } = string.Empty;
 
         public bool IgnoreOwner { get; set; } = false;

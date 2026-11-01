@@ -1,5 +1,6 @@
 using Dapper;
 using Http.Model;
+using Http.Util;
 using System.Collections.Concurrent;
 using System.Data;
 
@@ -8,6 +9,8 @@ namespace Http.Service
     public class BulletinService
     {
         public const int MaxBatchSize = 100;
+        public const int MaxTitleLength = 64;
+        public const int MaxContentsLength = 256;
 
         private readonly ConcurrentDictionary<(uint World, uint Section), ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
         private readonly ConcurrentDictionary<uint, SemaphoreSlim> _flushSignals = new();
@@ -24,8 +27,18 @@ namespace Http.Service
             _logger = logger;
         }
 
+        public static bool Storable(string title, string contents)
+        {
+            return TextColumn.FitsUtf8mb3(title, MaxTitleLength) && TextColumn.FitsUtf8mb3(contents, MaxContentsLength);
+        }
+
         public Task<bool> Write(uint world, uint section, uint user, string title, string contents)
         {
+            if (Storable(title, contents) == false)
+            {
+                return Task.FromResult(false);
+            }
+
             var request = new BulletinWriteRequest
             {
                 Section = section,
@@ -177,6 +190,11 @@ namespace Http.Service
 
         public async Task<int> Update(uint world, uint section, uint id, uint user, string title, string contents, bool ignoreOwner = false)
         {
+            if (Storable(title, contents) == false)
+            {
+                return -4;
+            }
+
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
