@@ -2,6 +2,7 @@ using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using Http.Util;
 using System.Data;
 
 namespace Http.Reepository
@@ -122,8 +123,23 @@ namespace Http.Reepository
                 """;
         }
 
+        private static void AssertStorable(string title, string contents)
+        {
+            if (TextColumn.FitsEucKr(title, SystemMailTemplate.MaxTitleLength) == false)
+            {
+                throw new ArgumentException($"System mail title must be at most {SystemMailTemplate.MaxTitleLength} EUC-KR characters.", nameof(title));
+            }
+
+            if (TextColumn.FitsEucKr(contents, SystemMailTemplate.MaxContentsLength) == false)
+            {
+                throw new ArgumentException($"System mail contents must be at most {SystemMailTemplate.MaxContentsLength} EUC-KR characters.", nameof(contents));
+            }
+        }
+
         public async Task<SystemMail> Write(uint world, uint sender, string title, string contents, DateTime? reserveDate, DateTime? expireDate, bool includeNewCharacters)
         {
+            AssertStorable(title, contents);
+
             var query = @"
                 INSERT INTO system_mail (sender, title, contents, reserve_date, expire_date, include_new_characters, canceled, deleted, created_date, updated_date)
                 VALUES (@sender, @title, @contents, @reserveDate, @expireDate, @includeNewCharacters, 0, 0, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
@@ -156,6 +172,8 @@ namespace Http.Reepository
         // Returns false when the mail is gone or its reservation is too close to edit.
         public async Task<bool> Edit(uint world, uint id, string title, string contents, DateTime reserveDate, DateTime? expireDate, bool includeNewCharacters)
         {
+            AssertStorable(title, contents);
+
             var mail = await Get(world, id);
             var deadline = DateTime.UtcNow + EditLeadTime;
             if (mail == null || mail.Canceled || mail.ReserveDate == null || mail.ReserveDate <= deadline || reserveDate <= deadline)
