@@ -1,6 +1,17 @@
+local clan_fund = require('lib.clan_fund')
+
 local M = {}
 
 local ASSIGNABLE_ROLES = { CLAN_ROLE.MATE, CLAN_ROLE.OFFICER, CLAN_ROLE.DEPUTY }
+
+local function is_clan_master(me, clan)
+    for _, member in pairs(clan:members()) do
+        if member.role == CLAN_ROLE.MASTER and member.name == me:name() then
+            return true
+        end
+    end
+    return false
+end
 
 local function find_nearby_character(me, name)
     for _, ch in pairs(me:nears(OBJECT_TYPE.CHARACTER)) do
@@ -135,7 +146,8 @@ local function clan_info(me, npc, clan)
 end
 
 local function clan_operation(me, npc, clan)
-    local selected = me:list(npc, '어떤 문파 운영을 하시겠습니까?', { '문파칭호 부여', '문원 등용', '문원 축출', '직책 변경', '문파 공지', '문파 해체' })
+    local selected = me:list(npc, '어떤 문파 운영을 하시겠습니까?',
+        { '문파칭호 부여', '문원 등용', '문원 축출', '직책 변경', '문파 공지', '문파자금 출금', '문파 해체' })
     if selected == nil then
         return
     end
@@ -229,6 +241,12 @@ local function clan_operation(me, npc, clan)
             me:dialog(npc, error)
         end
     elseif selected == 6 then
+        if is_clan_master(me, clan) == false then
+            me:dialog(npc, '문주가 아니라면 찾을 수 없네.', { prev = false, next = false })
+            return
+        end
+        clan_fund.withdraw(me, npc, clan)
+    elseif selected == 7 then
         local yes_or_no = me:list(npc, string.format('%s 문파를 정말로 해체하시겠소? 되돌릴 수 없소.', clan:name()),
             { '예, 해체하겠습니다.', '아니오' })
         if yes_or_no ~= 1 then

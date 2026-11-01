@@ -9,19 +9,21 @@ local DIALOG_CLOSE_OID = 0xFFFFFFFD
 local DIALOG_NEXT      = 2
 
 local CAT_OPERATION = 2
-local OP_DESTROY    = 6
+local OP_WITHDRAW   = 6
+local OP_DESTROY    = 7
 local CONFIRM_YES   = 1
 
 local OPT_VAULT    = "문파자금"
 local OPT_DEPOSIT  = "문파자금 입금"
 local OPT_WITHDRAW = "문파자금 출금"
 
-local MSG_CREATE_OK   = "축하하오"
-local MSG_DESTROY_OK  = "문파 해체 수속이 처리되었소"
-local MSG_DEPOSIT_OK  = "문파자금에 입금했습니다"
-local MSG_DEPOSIT_NO  = "문파자금 입금에 실패했습니다"
-local MSG_WITHDRAW_OK = "잘 쓰시게나"
-local MSG_UNKNOWN     = "결과를 확인하지 못했습니다"
+local MSG_CREATE_OK     = "축하하오"
+local MSG_DESTROY_OK    = "문파 해체 수속이 처리되었소"
+local MSG_MONEY_REMAINS = "문파자금을 모두 찾은 뒤에 해체할 수 있습니다"
+local MSG_DEPOSIT_OK    = "문파자금에 입금했습니다"
+local MSG_DEPOSIT_NO    = "문파자금 입금에 실패했습니다"
+local MSG_WITHDRAW_OK   = "잘 쓰시게나"
+local MSG_UNKNOWN       = "결과를 확인하지 못했습니다"
 
 local MONEY_PATH = "/clan/money"
 local ABORT_PATH = "/clan/money/abort"
@@ -119,6 +121,29 @@ local function destroy_clan(bot, npc)
     packet = select_list(bot, CONFIRM_YES, "normal")
     if packet == nil then
         return nil, "destroy result missing"
+    end
+    dismiss_normal(bot)
+    return packet.message, nil
+end
+
+local function agent_withdraw(bot, npc, amount)
+    local packet = bot:request_dialog_ext(protocol.click(npc.oid), function(p)
+        return p.type == "list"
+    end)
+    if packet == nil then
+        return nil, "clan menu missing"
+    end
+    if select_list(bot, CAT_OPERATION, "list") == nil then
+        return nil, "operation menu missing"
+    end
+    if select_list(bot, OP_WITHDRAW, "input") == nil then
+        return nil, "agent withdraw input missing"
+    end
+    packet = bot:request_dialog_ext(protocol.dialog("INPUT", 0, tostring(amount), 0, 0, "", "NEXT"), function(p)
+        return p.type == "normal"
+    end)
+    if packet == nil then
+        return nil, "agent withdraw result missing"
     end
     dismiss_normal(bot)
     return packet.message, nil
@@ -468,15 +493,30 @@ test_suite {
             local a = ctx:bot(0)
             progress(a, "C6: TEARDOWN")
 
-            local msg, err = withdraw(a, AMOUNT)
-            if msg == nil or msg:find(MSG_WITHDRAW_OK, 1, true) == nil then
-                progress(a, "FAILED: final withdraw " .. tostring(msg or err))
-                return false
-            end
             remove_npc(a, g_sensei)
             g_sensei = nil
 
             local agent = spawn_npc(a, AGENT_NPC)
+            local msg, err = destroy_clan(a, agent)
+            if msg == nil or msg:find(MSG_MONEY_REMAINS, 1, true) == nil then
+                remove_npc(a, agent)
+                progress(a, "FAILED: destroy with money left " .. tostring(msg or err))
+                return false
+            end
+
+            local before = a:money()
+            msg, err = agent_withdraw(a, agent, AMOUNT)
+            if msg == nil or msg:find(MSG_WITHDRAW_OK, 1, true) == nil then
+                remove_npc(a, agent)
+                progress(a, "FAILED: agent withdraw " .. tostring(msg or err))
+                return false
+            end
+            if wait_money(ctx, a, before + AMOUNT) == false then
+                remove_npc(a, agent)
+                progress(a, string.format("FAILED: agent withdraw not paid money=%d", a:money()))
+                return false
+            end
+
             msg, err = destroy_clan(a, agent)
             remove_npc(a, agent)
             if msg == nil or msg:find(MSG_DESTROY_OK, 1, true) == nil then

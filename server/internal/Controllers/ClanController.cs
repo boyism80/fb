@@ -349,6 +349,11 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
                 }
 
+                if (clan.Money > 0)
+                {
+                    throw new LogicException(ErrorCode.ClanMoneyRemains);
+                }
+
                 _dbContext.ClanMember.Delete(world, master);
 
                 var oldTitle = clan.Title;

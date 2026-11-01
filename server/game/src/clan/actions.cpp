@@ -91,6 +91,9 @@ async::task<void> clan::container::destroy(character& me)
 
         if (member->name != me.name())
             throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
+
+        if (clan->money() > 0)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_MONEY_REMAINS));
     }
 
     auto   weak  = me.weak_from_this_as<character>();

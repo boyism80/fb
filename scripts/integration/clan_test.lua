@@ -19,7 +19,7 @@ local OP_INVITE  = 2
 local OP_KICK    = 3
 local OP_ROLE    = 4
 local OP_MESSAGE = 5
-local OP_DESTROY = 6
+local OP_DESTROY = 7
 
 -- clan_info submenu
 local INFO_CASTLE  = 1

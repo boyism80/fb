@@ -160,6 +160,9 @@ async::task<void> clan::container::on_error(uint32_t error)
     case ERROR_CODE::CLAN_MEMBER_EXISTS:
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_MEMBER_EXISTS));
 
+    case ERROR_CODE::CLAN_MONEY_REMAINS:
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_MONEY_REMAINS));
+
     case ERROR_CODE::CLAN_CANNOT_ALLY_SELF:
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ALLY_SELF));
 
