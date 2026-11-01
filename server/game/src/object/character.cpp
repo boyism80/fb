@@ -2817,7 +2817,8 @@ async::task<void> character::death_loss()
             }
         }
 
-        if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+        auto droppable = ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP) && model.trade;
+        if (droppable)
         {
             auto dropped = co_await this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
             if (dropped != nullptr)
@@ -2840,7 +2841,8 @@ async::task<void> character::death_loss()
             continue;
         }
 
-        if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+        auto droppable = ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP) && model.trade;
+        if (droppable)
         {
             this->items.equipment_off(parts);
             equipment->container(nullptr);

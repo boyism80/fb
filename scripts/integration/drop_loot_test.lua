@@ -1,6 +1,10 @@
-local lib      = require("integration.lib")
-local resp     = require("integration.response")
-local protocol = require("integration.protocol")
+local lib         = require("integration.lib")
+local resp        = require("integration.response")
+local protocol    = require("integration.protocol")
+local script_step = require("integration.lib.script_step")
+
+local UNTRADEABLE_DROP_ITEM   = "귀신퇴치부적"
+local UNTRADEABLE_DROP_WEAPON = "철또"
 
 local MESSAGE_ITEM_FULL                 = "더 이상 가질 수 없습니다."
 local MESSAGE_ITEM_DEATH_PENALTY_WARMTH = "죽은 자의 온기가 남아있습니다."
@@ -227,6 +231,71 @@ test_suite {
                 end)
 
             if bot1:inventory_size() > 0 then
+                return false
+            end
+
+            return true
+        end,
+
+        function(ctx)
+            log("debug", "Starting drop loot scenario 6 (untradeable items stay on death)")
+            local victim = ctx:bot(0)
+            local attacker = ctx:bot(1)
+
+            if script_step.run_script(attacker, "test/integration", "revive_with_hp", "drop_loot_revive", "1000") ~= true then
+                log("fatal", "Drop loot test: failed to revive the attacker")
+                return false
+            end
+            if lib.option.disable_pk_protect(attacker) == false or lib.option.disable_pk_protect(victim) == false then
+                log("fatal", "Drop loot test: failed to disable PK_PROTECT")
+                return false
+            end
+
+            local hell_slot = attacker:learn_spell("헬파이어")
+            if hell_slot == 0xFF then
+                log("fatal", "Drop loot test: failed to learn 헬파이어")
+                return false
+            end
+
+            attacker:setup_bot_stats(100000, 10000)
+            victim:setup_bot_stats(100000, 100000, 50)
+            victim:direction("BOTTOM")
+
+            victim:create_item("잔가지", 10)
+            victim:create_item(UNTRADEABLE_DROP_ITEM, 1)
+            victim:create_item(UNTRADEABLE_DROP_WEAPON, 1)
+
+            local weapon_slot = victim:item_slot(UNTRADEABLE_DROP_WEAPON)
+            victim:request(
+                resp.message,
+                protocol.item_active(weapon_slot),
+                function(packet)
+                    return string.find(packet.text, "w:무기  :", 1, true) == 1
+                end)
+
+            local pos = victim:position()
+            local killed = attacker:request(
+                resp.show,
+                protocol.spell_cast("TARGET", hell_slot, "", victim:oid(), pos),
+                function(packet)
+                    return packet.oid == victim:oid() and packet.state == "GHOST"
+                end)
+            if type(killed) ~= "table" then
+                log("fatal", "Drop loot test: the victim did not die")
+                return false
+            end
+
+            ctx:sleep(500)
+            if victim:item_count("잔가지") ~= 0 then
+                log("fatal", "Drop loot test: the tradeable death drop stayed in the inventory")
+                return false
+            end
+            if victim:item_count(UNTRADEABLE_DROP_ITEM) ~= 1 then
+                log("fatal", "Drop loot test: the untradeable inventory item left the inventory on death")
+                return false
+            end
+            if victim:item_count(UNTRADEABLE_DROP_WEAPON) ~= 1 then
+                log("fatal", "Drop loot test: the untradeable equipped weapon did not come back to the inventory")
                 return false
             end
 
