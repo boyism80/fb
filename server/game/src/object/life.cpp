@@ -6,6 +6,7 @@
 #include <fb/game/mob.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
+#include <random.h>
 
 #include <json/json.h>
 
@@ -446,7 +447,7 @@ bool life::calculate_critical(life& you) const
 #if defined DEBUG || defined _DEBUG
     return true;
 #else
-    return std::rand() % 100 < 20;
+    return random(0, 99) < 20;
 #endif
 }
 
@@ -457,7 +458,7 @@ bool life::calculate_miss(life& you) const
 #if defined DEBUG || defined _DEBUG
     return false;
 #else
-    return std::rand() % 3 == 0;
+    return random(0, 2) == 0;
 #endif
 }
 

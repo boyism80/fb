@@ -5,6 +5,7 @@
 #include <fb/game/map.h>
 #include <fb/game/server.h>
 #include <fb/thread.h>
+#include <random.h>
 
 #include <algorithm>
 #include <cmath>
@@ -172,7 +173,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
         // Paired with decrease() in ~mob.
         this->_count++;
 
-        mob->direction(DIRECTION(std::rand() % 4));
+        mob->direction(DIRECTION(std::uniform_int_distribution<int>(0, 3)(random)));
         mob->stat.heal(mob->stat.base_hp());
 
         auto position = fb::model::point16_t{};
@@ -529,7 +530,7 @@ bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& 
 async::task<bool> mob::move_step(const fb::model::point16_t& position)
 {
     this->assert_thread();
-    auto x_axis = bool(std::rand() % 2);
+    auto x_axis = random(0, 1) == 1;
     if (x_axis)
     {
         if (this->_position.x > position.x && co_await this->move(DIRECTION::LEFT))
@@ -584,7 +585,7 @@ uint64_t mob::normal_attack_damage(MOB_SIZE size) const
         return model.damage.max;
 
     auto difference = model.damage.max - model.damage.min;
-    return model.damage.min + (std::rand() % (difference + 1));
+    return model.damage.min + random<uint64_t>(0, difference);
 }
 
 void mob::kill(DESTROY_TYPE destroy_type)

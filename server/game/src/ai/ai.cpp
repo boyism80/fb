@@ -11,6 +11,7 @@
 #include <fb/game/life.h>
 #include <fb/game/map.h>
 #include <fb/game/server.h>
+#include <random.h>
 
 #include <cmath>
 #include <cstdint>
@@ -71,7 +72,7 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
         else
         {
             if (co_await mob_obj.move_step(target->position()) == false)
-                co_await mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
+                co_await mob_obj.move(DIRECTION(random(0, 3))); // Random move if can't step towards owner
         }
     }
     else
@@ -84,7 +85,7 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
         else
         {
             if (co_await mob_obj.move_step(owner->position()) == false)
-                co_await mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
+                co_await mob_obj.move(DIRECTION(random(0, 3))); // Random move if can't step towards owner
         }
     }
 
@@ -321,7 +322,7 @@ async::task<void> ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target
     if (map == nullptr)
         co_return;
 
-    auto repeat = std::rand() % 2;
+    auto repeat = random(0, 1);
     auto count  = repeat ? 2 : 1;
 
     constexpr DIRECTION all_dirs[] = {DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};

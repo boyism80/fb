@@ -1,6 +1,7 @@
 #include <fb/game/ai/none.h>
 
 #include <fb/game/mob.h>
+#include <random.h>
 
 #include <cstdlib>
 
@@ -21,7 +22,7 @@ async::task<bool> none_ai::execute(mob& mob_obj, const datetime& now)
     {
         // Clear target and move randomly when no target
         mob_obj.target(nullptr);
-        co_await mob_obj.move(DIRECTION(std::rand() % 4));
+        co_await mob_obj.move(DIRECTION(random(0, 3)));
         co_return true;
     }
 

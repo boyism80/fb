@@ -4,6 +4,7 @@
 #include <fb/game/map.h>
 #include <fb/game/server.h>
 #include <fb/logger.h>
+#include <random.h>
 
 #include <json/json.h>
 
@@ -1920,7 +1921,7 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
             co_await removed->destroy();
     }
 
-    auto  success = (std::rand() % 100) < found->percent;
+    auto  success = random(0, 99) < found->percent;
     auto& result  = success ? found->success : found->failed;
     for (auto& x : result)
     {

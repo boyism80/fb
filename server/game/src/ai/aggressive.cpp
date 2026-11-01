@@ -1,6 +1,7 @@
 #include <fb/game/ai/aggressive.h>
 
 #include <fb/game/mob.h>
+#include <random.h>
 
 #include <cstdlib>
 
@@ -23,7 +24,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
 
     if (target == nullptr)
     {
-        co_await mob_obj.move(DIRECTION(std::rand() % 4));
+        co_await mob_obj.move(DIRECTION(random(0, 3)));
         co_return true;
     }
 
@@ -39,7 +40,7 @@ async::task<bool> aggressive_ai::execute(mob& mob_obj, const datetime& now)
     else
     {
         if (co_await mob_obj.move_step(target->position()) == false)
-            co_await mob_obj.move(DIRECTION(std::rand() % 4));
+            co_await mob_obj.move(DIRECTION(random(0, 3)));
     }
 
     co_return true;

@@ -1,5 +1,7 @@
 #include <fb/encryption.h>
 
+#include <random.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -258,7 +260,7 @@ encryption encryption::generate()
 #if defined DEBUG || defined _DEBUG
     auto enc_type = 1;
 #else
-    auto enc_type = rand() % KEY_SIZE;
+    auto enc_type = random<uint32_t>(0, KEY_SIZE - 1);
 #endif
     uint8_t enc_key[KEY_SIZE] = {
         0,
@@ -272,7 +274,7 @@ encryption encryption::generate()
 #else
     for (int i = 0; i < KEY_SIZE; i++)
     {
-        enc_key[i] = rand() % 255 + 1;
+        enc_key[i] = static_cast<uint8_t>(random(1, 255));
     }
 #endif
 

@@ -11,6 +11,7 @@
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <macro.h>
+#include <random.h>
 
 #include <json/json.h>
 #include <json/writer.h>
@@ -366,13 +367,13 @@ uint64_t character::normal_attack_damage(MOB_SIZE size) const
 
     auto weapon = this->items.weapon();
     if (weapon == nullptr)
-        return 1 + std::rand() % 5;
+        return random(1, 5);
 
     auto& model = weapon->model();
     auto& range = size == MOB_SIZE::SMALL ? model.damage_small : model.damage_large;
     auto  min   = std::max<uint64_t>(1, range.min);
     auto  max   = std::max<uint64_t>(min, range.max);
-    return min + std::rand() % (max - min + 1) + this->_weapon_damage;
+    return random<uint64_t>(min, max) + this->_weapon_damage;
 }
 
 bool character::inited() const
@@ -975,8 +976,8 @@ bool character::level_up()
         this->stat.base_str(this->stat.base_str() + ability.strength);
         this->stat.base_int(this->stat.base_int() + ability.intelligence);
         this->stat.base_dex(this->stat.base_dex() + ability.dexterity);
-        this->stat.base_hp(this->stat.base_hp() + ability.hp + std::rand() % 10);
-        this->stat.base_mp(this->stat.base_mp() + ability.mp + std::rand() % 10);
+        this->stat.base_hp(this->stat.base_hp() + ability.hp + random(0, 9));
+        this->stat.base_mp(this->stat.base_mp() + ability.mp + random(0, 9));
         this->stat.hp(this->stat.base_hp());
         this->stat.mp(this->stat.base_mp());
     }
