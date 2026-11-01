@@ -7986,7 +7986,7 @@ int builtin::character::builtin_divorce(lua_State* L)
 
         auto spouse = server.characters.find(m.spouse_id.value());
 
-        if (spouse == nullptr)
+        if (spouse == nullptr || spouse->hidden(*me))
         {
             *error = "배우자가 현재 접속 중이 아닙니다.";
             co_return;

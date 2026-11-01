@@ -757,14 +757,16 @@ int builtin::server::builtin_id2ch(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto& srv = static_cast<fb::game::server&>(lua->executor);
-    auto  id  = static_cast<uint32_t>(lua->tointeger(1));
+    auto& srv    = static_cast<fb::game::server&>(lua->executor);
+    auto  argc   = lua->argc();
+    auto  id     = static_cast<uint32_t>(lua->tointeger(1));
+    auto  viewer = argc >= 2 ? lua->touserdata<fb::game::object>(2) : nullptr;
 
     character::container::character_ptr_t ch = srv.characters.find(id);
     if (ch == nullptr)
     {
         lua->pushnil();
-        return 0;
+        return 1;
     }
 
     auto weak      = ch->template weak_from_this_as<character>();
@@ -772,7 +774,11 @@ int builtin::server::builtin_id2ch(lua_State* L)
     auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
-        *ch_holder = weak.lock();
+        auto found = weak.lock();
+        if (found != nullptr && viewer != nullptr && found->hidden(*viewer))
+            found = nullptr;
+
+        *ch_holder = found;
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

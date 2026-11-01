@@ -9,7 +9,7 @@ return {
             return me:message('결혼하지 않아 사용할 수 없습니다.')
         end
 
-        local spouse = id2ch(m.spouse_id)
+        local spouse = id2ch(m.spouse_id, me)
         if spouse == nil then
             return me:message(string.format('%s님은 현재 접속 중이 아닙니다.', m.spouse_name))
         end

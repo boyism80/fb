@@ -89,7 +89,7 @@ local function marriage_npc(me, npc)
             return
         end
 
-        if id2ch(m.spouse_id) == nil then
+        if id2ch(m.spouse_id, me) == nil then
             me:dialog(npc, m.spouse_name .. '님은 현재 접속 중이 아닙니다.')
             return
         end
