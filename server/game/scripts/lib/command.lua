@@ -1197,17 +1197,17 @@ M.functions = {
 
     ['천상미궁셔플'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '[seed] - 천상미궁/PK천상미궁 워프 셔플 (seed 생략 시 now() 사용)',
+        ['usage'] = '[seed] - 천상미궁/PK천상미궁 워프 셔플 (seed 생략 시 무작위, PK천상미궁은 seed + 1 사용)',
         ['command'] = function(me, args)
-            local seed = args[1]
-            if seed ~= nil then
-                seed = tonumber(seed)
+            local value = args[1]
+            if value ~= nil then
+                value = tonumber(value)
             end
-            sky_maze.shuffle(seed)
-            sky_maze.pk_shuffle(seed)
+            sky_maze.shuffle(value)
+            sky_maze.pk_shuffle(value ~= nil and value + 1 or nil)
             local msg = "천상미궁 / PK천상미궁 워프 셔플 적용되었습니다."
-            if seed ~= nil then
-                msg = msg .. " (seed=" .. tostring(seed) .. ")"
+            if value ~= nil then
+                msg = msg .. " (seed=" .. tostring(value) .. ")"
             end
             me:message(msg, MESSAGE_TYPE.NOTIFY)
             return true

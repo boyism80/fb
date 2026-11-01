@@ -34,8 +34,8 @@ local function shuffle_array(arr, from_idx, to_idx)
     end
 end
 
-function M.shuffle(seed)
-    math.randomseed(seed or now() or os.time())
+function M.shuffle(value)
+    math.randomseed(value or seed())
     local arr = {}
     for i = 0, 26 do
         arr[i] = map_name_to_id(SKY_MAZE_NAMES[i + 1])
@@ -46,8 +46,8 @@ function M.shuffle(seed)
     end
 end
 
-function M.pk_shuffle(seed)
-    math.randomseed(seed or now() or os.time())
+function M.pk_shuffle(value)
+    math.randomseed(value or seed())
     local arr = {}
     for i = 0, 26 do
         arr[i] = map_name_to_id(PK_SKY_MAZE_NAMES[i + 1])
