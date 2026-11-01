@@ -1,6 +1,7 @@
 #ifndef __BOT_INTEGRATION_LUA_INTEGRATION_TEST_H__
 #define __BOT_INTEGRATION_LUA_INTEGRATION_TEST_H__
 
+#include <fb/bot/brain/brain.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/integration/test_case.h>
 #include <fb/lua.h>
@@ -69,6 +70,7 @@ private:
     std::string                                            _script_path;
     suite_def                                              _suite;
     std::unordered_map<uint8_t, std::vector<hook_binding>> _hook_refs;
+    std::vector<std::shared_ptr<fb::bot::brain>>           _brains;
 
 public:
     struct discovered_script
@@ -91,6 +93,8 @@ public:
     static void                           select(std::vector<std::string> names, std::string label);
 
     void capture_suite(lua_State* L, int table_index);
+
+    static int builtin_brain_new(lua_State* L);
 
     void push_ctx(fb::lua::context& ctx);
     void push_bot(fb::lua::context& ctx, std::shared_ptr<fb::bot::game_bot> bot);

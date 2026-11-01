@@ -51,6 +51,8 @@ private:
 
 protected:
     hook_container       _hooks;
+    bool                 _aborted       = false;
+    bool                 _interruptible = false;
     fb::async_executor&  _executor;
     base_bot_controller& _bot_controller;
     fb::thread*          _pinned_thread = nullptr;
@@ -77,11 +79,19 @@ public:
 protected:
     virtual bool on_encrypt(fb::stream& out);
     virtual bool on_wrap(fb::stream& out);
+    virtual bool accepts(const fb::protocol::header& packet) const;
 
 public:
-    void connect(const boost::asio::ip::tcp::endpoint& endpoint);
-    bool process_hooks(uint8_t opcode, fb::protocol::header& header);
-    bool remove_hook_by_context(uint8_t opcode, const void* context_ptr);
+    using fb::socket<void*>::send;
+    async::task<size_t> send(const fb::protocol::header& packet, bool encrypt = true, bool wrap = true);
+    void                connect(const boost::asio::ip::tcp::endpoint& endpoint);
+    bool                process_hooks(uint8_t opcode, fb::protocol::header& header);
+    bool                remove_hook_by_context(uint8_t opcode, const void* context_ptr);
+    void                abort_hooks();
+    void                interrupt_hooks();
+    void                interruptible(bool value);
+    bool                interruptible() const;
+    bool                aborted() const;
 
 public:
     virtual fb::thread* thread() const;
@@ -219,6 +229,26 @@ public:
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }
 
+        void complete_abort()
+        {
+            if (completed.exchange(true))
+                return;
+
+            if (timer)
+                timer->cancel();
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("connection closed")));
+        }
+
+        void complete_interrupt()
+        {
+            if (completed.exchange(true))
+                return;
+
+            if (timer)
+                timer->cancel();
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("interrupted")));
+        }
+
         async::task<std::shared_ptr<fb::protocol::header>> task()
         {
             return promise->task();
@@ -270,6 +300,16 @@ public:
         bool                                                                              encrypt = true,
         bool                                                                              wrap    = true,
         std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
+
+    async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>>
+    first_of(const std::vector<uint8_t>& opcodes,
+             const fb::protocol::header& protocol,
+             const fb::model::timespan&  timeout);
+    async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>>
+    first_of(const std::vector<uint8_t>&                                      opcodes,
+             const fb::protocol::header*                                      protocol,
+             const std::function<bool(uint8_t, const fb::protocol::header&)>& condition,
+             const fb::model::timespan&                                       timeout);
 
     template <typename ResponseType> async::task<ResponseType>
     request(std::shared_ptr<BotType>                             target,

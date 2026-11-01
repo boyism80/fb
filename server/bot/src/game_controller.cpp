@@ -1,5 +1,6 @@
 #include <fb/bot/game_controller.h>
 
+#include <fb/bot/brain/brain.h>
 #include <fb/bot/container.h>
 #include <fb/bot/integration/bulletin_bot.h>
 #include <fb/bot/integration/dialog_bot.h>
@@ -191,6 +192,7 @@ async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::
 template <fb::protocol::CLIENT_VERSION V>
 async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option<V>& response)
 {
+    bot.set_fast_move(response.fast_move);
     co_return;
 }
 
@@ -342,6 +344,8 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     created->credential(credential);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
+    if (auto attached = bot.attached(); attached != nullptr)
+        attached->transfer(bot, *created);
     fb::logger::debug("bot transfer reconnect: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,
@@ -375,7 +379,7 @@ async::task<void> game_bot_controller::on_die(game_bot& bot, const game_resp::di
     }
     else
     {
-        bot.sight.hide(response.oid);
+        bot.sight.die(response.oid);
     }
     co_return;
 }
@@ -405,6 +409,8 @@ async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp:
             continue;
 
         bot.sight.show(object.oid, point<uint16_t>(object.x, object.y), object.look, object.color);
+        if (object.look < game_bot::sight::ITEM_LOOK)
+            bot.notice("sight", object.oid);
     }
     co_return;
 }
@@ -434,6 +440,12 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
     bot.set_group_option(response.group_option);
     bot.set_remained_exp(response.remained_exp);
     bot.set_class_name(response.class_name);
+    auto accessories = std::vector<std::pair<uint16_t, uint8_t>>{};
+    for (auto& equipment : response.equipments)
+    {
+        accessories.emplace_back(equipment.look, equipment.color);
+    }
+    bot.set_accessories(std::move(accessories));
     bot.mark_info();
     co_return;
 }
@@ -550,6 +562,59 @@ async::task<std::shared_ptr<game_bot>> game_bot::wait_reconnect(const fb::model:
     }
 
     return promise->task();
+}
+
+async::task<std::shared_ptr<game_bot>> game_bot::follow(std::function<async::task<void>()> move,
+                                                        const fb::model::timespan&         timeout)
+{
+    auto  self       = this->shared_from_this_as<game_bot>();
+    auto& controller = static_cast<game_bot_controller&>(this->controller);
+    auto  promise    = std::make_shared<game_bot_controller::transfer_context::promise_type>();
+    auto  context =
+        std::make_shared<game_bot_controller::transfer_context>(promise,
+                                                                this->id,
+                                                                controller.weak_from_this_as<game_bot_controller>());
+    if (controller.register_transfer_context(context) == false)
+    {
+        co_await move();
+        co_return self;
+    }
+
+    auto error = std::exception_ptr{};
+    try
+    {
+        co_await move();
+    }
+    catch (...)
+    {
+        error = std::current_exception();
+    }
+
+    if (error == nullptr || this->aborted() == false)
+    {
+        controller.remove_transfer_context(this->id);
+        if (error != nullptr)
+            std::rethrow_exception(error);
+        co_return self;
+    }
+
+    if (timeout > 0s)
+    {
+        auto builder = this->thread()->new_builder<void>();
+        builder.func = [context, timeout](auto& thread) -> async::task<void> {
+            context->timer = thread.settimer(
+                [context](auto& datetime, auto thread_id) -> async::task<void> {
+                    context->complete_timeout();
+                    co_return;
+                },
+                timeout,
+                fb::timer::repeat_type::once);
+            co_return;
+        };
+        builder.enqueue();
+    }
+
+    co_return co_await context->task();
 }
 
 async::task<std::shared_ptr<game_bot>>

@@ -1,5 +1,6 @@
 #include <fb/bot/game_bot.h>
 
+#include <fb/bot/brain/brain.h>
 #include <fb/bot/load/game_controller.h>
 
 #include <algorithm>
@@ -109,6 +110,31 @@ void game_bot::inited(bool value)
     this->_inited = value;
 }
 
+bool game_bot::accepts(const fb::protocol::header& packet) const
+{
+    if (this->_brain.expired())
+        return true;
+
+    auto command =
+        fb::protocol::visit_client_version(this->client_version(), [&packet]<fb::protocol::CLIENT_VERSION V>() {
+            auto chat = dynamic_cast<const game_reqs::chat<V>*>(&packet);
+            return chat != nullptr && chat->message.starts_with('/');
+        });
+    if (command)
+        fb::logger::warn("bot={} command blocked while a brain is attached", this->name());
+    return command == false;
+}
+
+std::shared_ptr<brain> game_bot::attached() const
+{
+    return this->_brain.lock();
+}
+
+void game_bot::attached(const std::shared_ptr<brain>& value)
+{
+    this->_brain = value;
+}
+
 const fb::stream& game_bot::transfer_buffer() const
 {
     return this->_transfer_buffer;
@@ -173,6 +199,33 @@ bool game_bot::is_dead() const
 void game_bot::set_dead(bool value)
 {
     this->_dead = value;
+}
+
+void game_bot::notice(std::string_view kind, uint32_t oid)
+{
+    auto attached = this->attached();
+    if (attached != nullptr)
+        attached->notice(*this, kind, oid);
+}
+
+void game_bot::set_accessories(std::vector<std::pair<uint16_t, uint8_t>> value)
+{
+    this->_accessories = std::move(value);
+}
+
+const std::vector<std::pair<uint16_t, uint8_t>>& game_bot::accessories() const
+{
+    return this->_accessories;
+}
+
+void game_bot::forget_death()
+{
+    this->_last_death.reset();
+}
+
+const std::optional<game_bot::death_record>& game_bot::last_death() const
+{
+    return this->_last_death;
 }
 
 // Buff management method implementations
@@ -316,7 +369,23 @@ uint32_t game_bot::hp() const
 
 void game_bot::set_hp(uint32_t value)
 {
+    if (value == 0 && this->_hp > 0 && this->_state != STATE::GHOST)
+    {
+        auto record = death_record{this->map(), this->position(), std::chrono::steady_clock::now(), {}, this->money()};
+        for (auto& [_, item] : this->_items)
+        {
+            record.items[item.name] += item.count;
+        }
+        this->_dying = std::move(record);
+    }
+    else if (value > 0)
+    {
+        this->_dying.reset();
+    }
+    auto hit  = value < this->_hp;
     this->_hp = value;
+    if (hit)
+        this->notice("hit");
 }
 
 uint32_t game_bot::mp() const
@@ -406,7 +475,17 @@ STATE game_bot::state() const
 
 void game_bot::set_state(STATE value)
 {
+    auto died    = value == STATE::GHOST && this->_state != STATE::GHOST && this->_dying.has_value();
     this->_state = value;
+    if (died)
+    {
+        this->_last_death = std::move(this->_dying);
+        this->_dying.reset();
+        auto attached = this->attached();
+        if (attached != nullptr)
+            attached->die(*this);
+        this->notice("dead");
+    }
 }
 
 uint8_t game_bot::armor_dress() const
@@ -602,54 +681,62 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
     co_await this->thread()->sleep(delay);
 }
 
-async::task<void>
+async::task<std::shared_ptr<game_bot>>
 game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
+    auto self         = this->shared_from_this_as<game_bot>();
     auto map_name_str = std::string(map_name);
     auto command      = std::format("/맵이동 {} {} {}", map_name_str, x, y);
     auto map          = table::map->name2map(map_name_str);
     if (map == nullptr)
     {
-        co_return;
+        co_return self;
     }
     else if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y} &&
              this->_instance_slot.has_value() == false)
     {
-        co_return;
-    }
-    else if (this->_map != map->id)
-    {
-        std::ignore = co_await this->request<game_resp::map_config>(
-            *this->make<game_reqs::chat>(false, command),
-            [map](auto& resp) -> bool {
-                return resp.id == map->id;
-            },
-            timeout);
-    }
-    else
-    {
-        std::ignore = co_await this->request<game_resp::position>(
-            *this->make<game_reqs::chat>(false, command),
-            [x, y](auto& resp) -> bool {
-                return resp.abs.x == x && resp.abs.y == y;
-            },
-            timeout);
+        co_return self;
     }
 
-    this->_instance_slot.reset();
+    auto moved = co_await this->follow(
+        [this, map, command, x, y, timeout]() -> async::task<void> {
+            if (this->_map != map->id)
+            {
+                std::ignore = co_await this->request<game_resp::map_config>(
+                    *this->make<game_reqs::chat>(false, command),
+                    [map](auto& resp) -> bool {
+                        return resp.id == map->id;
+                    },
+                    timeout);
+            }
+            else
+            {
+                std::ignore = co_await this->request<game_resp::position>(
+                    *this->make<game_reqs::chat>(false, command),
+                    [x, y](auto& resp) -> bool {
+                        return resp.abs.x == x && resp.abs.y == y;
+                    },
+                    timeout);
+            }
+        },
+        timeout);
+
+    moved->_instance_slot.reset();
+    co_return moved;
 }
 
-async::task<void>
+async::task<std::shared_ptr<game_bot>>
 game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t slot, std::chrono::milliseconds timeout)
 {
+    auto self         = this->shared_from_this_as<game_bot>();
     auto map_name_str = std::string(map_name);
     auto command      = std::format("/맵이동 {} {} {} {}", map_name_str, x, y, slot);
     auto map          = table::map->name2map(map_name_str);
     if (map == nullptr)
-        co_return;
+        co_return self;
 
     if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y} && this->_instance_slot == slot)
-        co_return;
+        co_return self;
 
     // Same model.id + same coords but slot untracked/mismatch: server may be a no-op
     // (already on destination instance at that tile) and emit no 0x04. Nudge first so
@@ -669,26 +756,31 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
 
     // Instance and source share model.id, so map_config cannot prove slot entry.
     // Same-model moves still emit position (warp) or map_config+position (S->C / C->C).
-    if (this->_map != map->id)
-    {
-        std::ignore = co_await this->request<game_resp::map_config>(
-            *this->make<game_reqs::chat>(false, command),
-            [map](auto& resp) -> bool {
-                return resp.id == map->id;
-            },
-            timeout);
-    }
-    else
-    {
-        std::ignore = co_await this->request<game_resp::position>(
-            *this->make<game_reqs::chat>(false, command),
-            [x, y](auto& resp) -> bool {
-                return resp.abs.x == x && resp.abs.y == y;
-            },
-            timeout);
-    }
+    auto moved = co_await this->follow(
+        [this, map, command, x, y, timeout]() -> async::task<void> {
+            if (this->_map != map->id)
+            {
+                std::ignore = co_await this->request<game_resp::map_config>(
+                    *this->make<game_reqs::chat>(false, command),
+                    [map](auto& resp) -> bool {
+                        return resp.id == map->id;
+                    },
+                    timeout);
+            }
+            else
+            {
+                std::ignore = co_await this->request<game_resp::position>(
+                    *this->make<game_reqs::chat>(false, command),
+                    [x, y](auto& resp) -> bool {
+                        return resp.abs.x == x && resp.abs.y == y;
+                    },
+                    timeout);
+            }
+        },
+        timeout);
 
-    this->_instance_slot = slot;
+    moved->_instance_slot = slot;
+    co_return moved;
 }
 
 async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)

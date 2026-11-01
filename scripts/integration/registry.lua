@@ -76,3 +76,13 @@ register_test("quest_exchange_capacity_test", { label = "script" })
 register_test("quest_shark_bribe_test", { label = "script" })
 
 register_test("npc_explorer_test", { label = "explorer" })
+
+register_test("brain_scenario_test", { label = "scenario" })
+register_test("brain_tutorial_test", { label = "scenario" })
+register_test("brain_jump_test", { label = "scenario" })
+register_test("brain_blocked_test", { label = "scenario" })
+register_test("brain_revive_test", { label = "scenario" })
+register_test("brain_recover_test", { label = "scenario" })
+register_test("brain_danger_test", { label = "scenario" })
+register_test("brain_job_test", { label = "scenario" })
+register_test("brain_state_test", { label = "scenario" })

@@ -1,3 +1,4 @@
+#include <fb/bot/brain/brain.h>
 #include <fb/bot/builtin/game_bot.h>
 #include <fb/bot/game_controller.h>
 #include <fb/bot/integration/lua_integration_protocol.h>
@@ -21,6 +22,9 @@
 #include <vector>
 
 using namespace std::chrono_literals;
+
+namespace game_reqs = fb::protocol::game::request;
+namespace game_resp = fb::protocol::game::response;
 using namespace fb::bot::integration;
 using namespace fb::model::enum_value;
 using namespace fb::bot;
@@ -34,6 +38,7 @@ constexpr auto INTEGRATION_DEFAULT_TIMEOUT = 10s;
 #endif
 
 constexpr auto LOGOUT_DEFAULT_TIMEOUT = 10s;
+constexpr auto MAP_MOVE_TIMEOUT       = 30s;
 // Covers the login server's relogin retry window plus the gateway -> login -> game hops.
 constexpr auto LOGIN_DEFAULT_TIMEOUT = 60s;
 
@@ -197,6 +202,7 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"client_version",           builtin::game_bot::builtin_client_version},
     {"ui_mode",                  builtin::game_bot::builtin_ui_mode},
     {"slot",                     builtin::game_bot::builtin_slot},
+    {"brain",                    builtin::game_bot::builtin_brain},
     {"unread_opcodes",           builtin::game_bot::builtin_unread_opcodes},
     {"item_slot",                builtin::game_bot::builtin_item_slot},
     {"item_count",               builtin::game_bot::builtin_item_count},
@@ -373,6 +379,94 @@ int builtin::game_bot::builtin_ui_mode(lua_State* L)
 
     lua->pushstring(std::string(fb::protocol::to_string(bot->ui_mode())));
     return 1;
+}
+
+int builtin::game_bot::builtin_brain(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    auto next    = lua->touserdata<fb::bot::brain>(2);
+    auto profile = fb::bot::brain::profile{};
+    if (lua_istable(L, 3))
+    {
+        lua_getfield(L, 3, "seed");
+        profile.seed = static_cast<uint32_t>(lua_tointeger(L, -1));
+        lua_pop(L, 1);
+
+        lua_getfield(L, 3, "halt");
+        if (lua_istable(L, -1))
+        {
+            auto halt = fb::bot::brain::limit{};
+            lua_getfield(L, -1, "task");
+            halt.task = lua->tostring(-1);
+            lua_pop(L, 1);
+
+            lua_getfield(L, -1, "step");
+            halt.step = static_cast<uint8_t>(lua_tointeger(L, -1));
+            lua_pop(L, 1);
+            profile.halt = halt;
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, 3, "persona");
+        if (lua_istable(L, -1))
+        {
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0)
+            {
+                if (lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TNUMBER)
+                    profile.persona.insert_or_assign(lua->tostring(-2), lua_tonumber(L, -1));
+                lua_pop(L, 1);
+            }
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, 3, "memory");
+        if (lua_istable(L, -1))
+        {
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0)
+            {
+                if (lua_type(L, -2) == LUA_TSTRING)
+                    profile.memory.insert_or_assign(lua_tostring(L, -2), fb::lua::value::copy_data(L, -1));
+                lua_pop(L, 1);
+            }
+        }
+        lua_pop(L, 1);
+    }
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [bot, next, profile]() -> async::task<void> {
+        auto current = bot->attached();
+        if (current != nullptr)
+            co_await current->stop(*bot);
+        if (next != nullptr)
+        {
+            try
+            {
+                std::ignore = co_await bot->request_by_opcode(
+                    game_resp::internal_info<fb::protocol::CLIENT_VERSION::v550>::opcode,
+                    bot->make<game_reqs::self_info>().get(),
+                    [](const fb::protocol::header&) {
+                        return true;
+                    },
+                    INTEGRATION_DEFAULT_TIMEOUT);
+            }
+            catch (const std::exception&)
+            { }
+            next->attach(*bot, profile);
+        }
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::game_bot::builtin_slot(lua_State* L)
@@ -1224,16 +1318,23 @@ int builtin::game_bot::builtin_map_move(lua_State* L)
     if (lua_gettop(L) >= 5 && lua_isnil(L, 5) == false)
         slot = require_integer<uint32_t>(L, lua, 5);
 
+    auto weak_slot = fb::lua::luable::is_weak_userdata(*lua, 1)
+                         ? static_cast<std::weak_ptr<fb::lua::luable>*>(lua_touserdata(*lua, 1))
+                         : nullptr;
+    auto result    = std::make_shared<std::shared_ptr<fb::bot::game_bot>>();
+
     auto builder  = lua->new_co_builder();
-    builder.yield = [bot_ptr, map, x, y, slot]() -> async::task<void> {
+    builder.yield = [bot_ptr, map, x, y, slot, result]() -> async::task<void> {
         if (bot_ptr == nullptr)
             co_return;
         if (slot.has_value())
-            co_await bot_ptr->map_move(map, x, y, slot.value(), INTEGRATION_DEFAULT_TIMEOUT);
+            *result = co_await bot_ptr->map_move(map, x, y, slot.value(), MAP_MOVE_TIMEOUT);
         else
-            co_await bot_ptr->map_move(map, x, y, INTEGRATION_DEFAULT_TIMEOUT);
+            *result = co_await bot_ptr->map_move(map, x, y, MAP_MOVE_TIMEOUT);
     };
-    builder.resume = []() -> async::task<int> {
+    builder.resume = [bot_ptr, weak_slot, result]() -> async::task<int> {
+        if (weak_slot != nullptr && *result != nullptr && *result != bot_ptr)
+            *weak_slot = *result;
         co_return 0;
     };
     return builder.run();

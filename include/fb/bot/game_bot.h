@@ -29,6 +29,7 @@ namespace fb::bot {
 using namespace fb::model::enum_value;
 
 class game_bot_controller;
+class brain;
 template <typename ControllerType> class bot;
 
 struct spawned_monster_info
@@ -43,6 +44,10 @@ class game_bot : public bot<game_bot>
 public:
     LUA_PROTOTYPE
 
+protected:
+    bool accepts(const fb::protocol::header& packet) const override;
+
+public:
     // clang-format off
     using bot_controller_type       = game_bot_controller;
     using spawned_monster_task      = async::task<spawned_monster_info>;
@@ -80,6 +85,15 @@ public:
         { }
     };
 
+    struct death_record
+    {
+        uint16_t                                  map = 0;
+        point<uint16_t>                           at;
+        std::chrono::steady_clock::time_point     when;
+        std::unordered_map<std::string, uint32_t> items;
+        uint32_t                                  money = 0;
+    };
+
     struct simple_npc
     {
         const uint32_t    oid;
@@ -94,6 +108,8 @@ public:
     class sight
     {
     public:
+        static constexpr uint16_t ITEM_LOOK = 0xBFFF;
+
         struct entry
         {
             uint32_t        oid;
@@ -105,14 +121,17 @@ public:
 
     private:
         std::unordered_map<uint32_t, entry> _entries;
+        std::unordered_set<uint32_t>        _dead;
 
     public:
         // clang-format off
         void show(uint32_t oid, const point<uint16_t>& position, uint16_t look, uint8_t color, std::string_view name = {});
         void move(uint32_t oid, const point<uint16_t>& position);
         void hide(uint32_t oid);
+        void die(uint32_t oid);
         void clear();
         // clang-format on
+        bool                                       dead(uint32_t oid) const;
         const std::unordered_map<uint32_t, entry>& entries() const;
     };
 
@@ -147,6 +166,7 @@ public:
 private:
     // clang-format off
     bool                            _inited = false;
+    std::weak_ptr<brain>            _brain;
     uint16_t                        _map = 0xFFFF;
     std::optional<uint32_t>         _instance_slot;
     uint32_t                        _oid = 0;
@@ -159,6 +179,9 @@ private:
     uint16_t                        _look                 = 0;
     uint8_t                         _color                = 0;
     bool                            _dead                 = false;
+    std::optional<death_record>     _dying;
+    std::vector<std::pair<uint16_t, uint8_t>> _accessories;
+    std::optional<death_record>     _last_death;
     std::set<std::string>           _active_buffs;
     std::map<uint8_t, simple_item>  _items;
     std::map<uint8_t, simple_spell> _spells;
@@ -229,6 +252,8 @@ public:
     bool                                      has_position() const;
     bool                                      inited() const;
     void                                      inited(bool value);
+    std::shared_ptr<brain>                    attached() const;
+    void                                      attached(const std::shared_ptr<brain>& value);
     const fb::stream&                         transfer_buffer() const;
     uint32_t                                  transfer_from_bot_id() const;
     void                                      set_transfer_from_bot_id(uint32_t value);
@@ -242,6 +267,11 @@ public:
     void                                      set_color(uint8_t value);
     bool                                      is_dead() const;
     void                                      set_dead(bool value);
+    void                                      forget_death();
+    void                                      set_accessories(std::vector<std::pair<uint16_t, uint8_t>> value);
+    const std::vector<std::pair<uint16_t, uint8_t>>& accessories() const;
+    void                                      notice(std::string_view kind, uint32_t oid = 0);
+    const std::optional<death_record>&        last_death() const;
     const std::set<std::string>&              active_buffs() const;
     void                                      add_buff(std::string_view name);
     void                                      remove_buff(std::string_view name);
@@ -321,8 +351,8 @@ public:
     uint32_t                                  remained_exp() const;
     void                                      set_remained_exp(uint32_t value);
     async::task<void>                         move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 500ms);
-    async::task<void>                         map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
-    async::task<void>                         map_move(std::string_view            map_name,
+    game_bot_ptr_task                         map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
+    game_bot_ptr_task                         map_move(std::string_view            map_name,
                                                        uint16_t                    x,
                                                        uint16_t                    y,
                                                        uint32_t                    slot,
@@ -398,6 +428,7 @@ public:
 private:
     // Resolves with the bot that replaces this one once it has logged in on the new connection.
     game_bot_ptr_task wait_reconnect(const fb::model::timespan& timeout);
+    game_bot_ptr_task follow(std::function<async::task<void>()> move, const fb::model::timespan& timeout);
 };
 
 } // namespace fb::bot

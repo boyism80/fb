@@ -413,6 +413,7 @@ public:
 
         co_await thread->switching();
 
+        raw_bot.abort_hooks();
         if (bot_ptr != nullptr)
             co_await this->on_bot_disconnected(*bot_ptr);
 
@@ -572,6 +573,109 @@ bot<BotType>::bot(bot_controller<BotType>& bot_controller, uint32_t id) :
 { }
 
 template <typename BotType>
+async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>>
+bot<BotType>::first_of(const std::vector<uint8_t>& opcodes,
+                       const fb::protocol::header& protocol,
+                       const fb::model::timespan&  timeout)
+{
+    co_return co_await this->first_of(
+        opcodes,
+        &protocol,
+        [](uint8_t, const fb::protocol::header&) {
+            return true;
+        },
+        timeout);
+}
+
+template <typename BotType>
+async::task<std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>>
+bot<BotType>::first_of(const std::vector<uint8_t>&                                      opcodes,
+                       const fb::protocol::header*                                      protocol,
+                       const std::function<bool(uint8_t, const fb::protocol::header&)>& condition,
+                       const fb::model::timespan&                                       timeout)
+{
+    if (this->aborted())
+        throw std::runtime_error("connection closed");
+
+    auto self    = std::static_pointer_cast<BotType>(this->shared_from_this());
+    auto context = std::make_shared<request_erased_context>(self, opcodes.front());
+    auto chosen  = std::make_shared<uint8_t>(0);
+    auto weak    = std::weak_ptr<BotType>(self);
+    auto release = [weak, opcodes, context]() {
+        if (auto bot = weak.lock())
+        {
+            for (auto opcode : opcodes)
+            {
+                bot->remove_hook_by_context(opcode, context.get());
+            }
+        }
+    };
+
+    if (timeout > 0s)
+    {
+        auto builder = this->thread()->template new_builder<void>();
+        builder.func = [context, timeout, release](auto& thread) -> async::task<void> {
+            context->timer = thread.settimer(
+                [context, release](auto& datetime, auto thread_id) -> async::task<void> {
+                    release();
+                    context->complete_timeout();
+                    co_return;
+                },
+                timeout,
+                fb::timer::repeat_type::once);
+            co_return;
+        };
+        builder.enqueue();
+    }
+
+    for (auto opcode : opcodes)
+    {
+        static_cast<base_bot_controller&>(this->controller).bind_default(opcode);
+        if (this->_hooks.contains(opcode) == false)
+            this->_hooks.insert({opcode, {}});
+
+        this->_hooks[opcode].push_back(hook_params{
+            .condition =
+                [condition, opcode](const auto& header) {
+                    return condition(opcode, header);
+                },
+            .matched =
+                [context, chosen, release, opcode, version = this->client_version()](const auto& header) {
+                    *chosen = opcode;
+                    release();
+                    context->complete_success(bot_controller<BotType>::clone_response(opcode, header, version));
+                },
+            .aborted =
+                [context]() {
+                    context->complete_abort();
+                },
+            .context_ptr = context.get(),
+            .interrupted =
+                [context]() {
+                    context->complete_interrupt();
+                },
+            .interruptible = this->interruptible()});
+    }
+
+    if (protocol != nullptr)
+    {
+        async::awaitable_then(this->send(*protocol), [](auto result) {
+            try
+            {
+                result();
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+            }
+        });
+    }
+
+    auto response = co_await context->task();
+    co_return std::pair{*chosen, response};
+}
+
+template <typename BotType>
 async::task<std::shared_ptr<fb::protocol::header>>
 bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                                     target,
                                 uint8_t                                                      response_opcode,
@@ -583,6 +687,9 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                                 std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone)
 {
     static_cast<base_bot_controller&>(target->controller).bind_default(response_opcode);
+
+    if (target->aborted())
+        throw std::runtime_error("connection closed");
 
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context  = std::make_shared<request_erased_context>(self_ptr, response_opcode);
@@ -626,7 +733,16 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                             }
                             context->complete_success(std::move(response));
                         },
-                    .context_ptr = context.get()});
+                    .aborted =
+                        [context]() {
+                            context->complete_abort();
+                        },
+                    .context_ptr = context.get(),
+                    .interrupted =
+                        [context]() {
+                            context->complete_interrupt();
+                        },
+                    .interruptible = target->interruptible()});
 
     if (protocol != nullptr)
     {

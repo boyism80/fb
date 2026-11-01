@@ -2,6 +2,8 @@
 
 #include <async/awaitable_get.h>
 #include <async/awaitable_then.h>
+#include <fb/bot/brain/atlas.h>
+#include <fb/bot/brain/brain.h>
 #include <fb/bot/container.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/gateway_bot.h>
@@ -74,6 +76,7 @@ void game_bot_controller::initialize()
     };
 
     async::awaitable_get(fb::model::loader(this->container).run());
+    fb::bot::atlas::get();
 
     this->bind_timer(&game_bot_controller::on_timer, 1000ms);
 
@@ -592,6 +595,8 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     created->carry_over(bot);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
+    if (auto attached = bot.attached(); attached != nullptr)
+        attached->transfer(bot, *created);
     created->credential(bot.credential());
     this->move_owner(bot.id, created->id);
     fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",

@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <iterator>
 #include <utility>
+#include <vector>
 
 using namespace fb::bot;
 
@@ -62,6 +64,19 @@ bool base_bot::on_wrap(fb::stream& out)
     return this->encryption().wrap(out) != static_cast<uint32_t>(-1);
 }
 
+bool base_bot::accepts(const fb::protocol::header& packet) const
+{
+    return true;
+}
+
+async::task<size_t> base_bot::send(const fb::protocol::header& packet, bool encrypt, bool wrap)
+{
+    if (this->accepts(packet) == false)
+        co_return 0;
+
+    co_return co_await fb::socket<void*>::send(packet, encrypt, wrap);
+}
+
 bool base_bot::process_hooks(uint8_t opcode, fb::protocol::header& header)
 {
     this->assert_thread();
@@ -104,6 +119,59 @@ bool base_bot::remove_hook_by_context(uint8_t opcode, const void* context_ptr)
     }
 
     return false;
+}
+
+void base_bot::interrupt_hooks()
+{
+    this->assert_thread();
+
+    auto released = std::vector<hook_params>{};
+    for (auto& [_, entries] : this->_hooks)
+    {
+        auto split = std::stable_partition(entries.begin(), entries.end(), [](const auto& hook) {
+            return hook.interruptible == false;
+        });
+        std::move(split, entries.end(), std::back_inserter(released));
+        entries.erase(split, entries.end());
+    }
+
+    for (auto& hook : released)
+    {
+        if (hook.interrupted)
+            hook.interrupted();
+    }
+}
+
+void base_bot::interruptible(bool value)
+{
+    this->_interruptible = value;
+}
+
+bool base_bot::interruptible() const
+{
+    return this->_interruptible;
+}
+
+void base_bot::abort_hooks()
+{
+    this->assert_thread();
+
+    this->_aborted = true;
+    auto hooks     = std::move(this->_hooks);
+    this->_hooks.clear();
+    for (auto& [_, entries] : hooks)
+    {
+        for (auto& hook : entries)
+        {
+            if (hook.aborted)
+                hook.aborted();
+        }
+    }
+}
+
+bool base_bot::aborted() const
+{
+    return this->_aborted;
 }
 
 fb::thread* base_bot::thread() const

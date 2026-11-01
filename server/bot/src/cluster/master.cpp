@@ -884,22 +884,32 @@ void master::dispatch()
     auto& run = this->_run.value();
     if (run.kind == "integration" && run.state == "running")
     {
+        auto waiting = static_cast<size_t>(std::count_if(run.suites.begin(), run.suites.end(), [](const auto& suite) {
+            return suite.serial == false && suite.state == "pending";
+        }));
+        auto ready =
+            static_cast<size_t>(std::count_if(this->_agents.begin(), this->_agents.end(), [](const auto& pair) {
+                return pair.second.link != nullptr && pair.second.busy == false;
+            }));
         for (auto& [_, agent] : this->_agents)
         {
+            if (waiting == 0)
+                break;
             if (agent.link == nullptr || agent.busy)
                 continue;
 
+            auto share = std::min<size_t>(agent.seats, (waiting + ready - 1) / ready);
             auto names = std::vector<std::string>{};
             for (auto& suite : run.suites)
             {
-                if (names.size() >= agent.seats * 2)
+                if (names.size() >= share)
                     break;
                 if (suite.serial == false && suite.state == "pending")
                     names.push_back(suite.name);
             }
 
-            if (names.empty())
-                break;
+            waiting -= names.size();
+            ready--;
             this->assign(agent, names);
         }
 

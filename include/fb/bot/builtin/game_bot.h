@@ -29,6 +29,7 @@ struct game_bot
     static int builtin_client_version(lua_State* L);
     static int builtin_ui_mode(lua_State* L);
     static int builtin_slot(lua_State* L);
+    static int builtin_brain(lua_State* L);
     static int builtin_unread_opcodes(lua_State* L);
     static int builtin_item_slot(lua_State* L);
     static int builtin_item_count(lua_State* L);

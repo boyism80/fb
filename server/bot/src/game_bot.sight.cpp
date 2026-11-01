@@ -35,9 +35,21 @@ void game_bot::sight::hide(uint32_t oid)
     this->_entries.erase(oid);
 }
 
+void game_bot::sight::die(uint32_t oid)
+{
+    this->_entries.erase(oid);
+    this->_dead.insert(oid);
+}
+
 void game_bot::sight::clear()
 {
     this->_entries.clear();
+    this->_dead.clear();
+}
+
+bool game_bot::sight::dead(uint32_t oid) const
+{
+    return this->_dead.contains(oid);
 }
 
 const std::unordered_map<uint32_t, game_bot::sight::entry>& game_bot::sight::entries() const

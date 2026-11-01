@@ -65,7 +65,7 @@
         <div class="head"><h2>실행 중인 계획</h2><span class="note" id="i-plan-note">-</span></div>
         <div class="meter plan"><i id="i-plan-meter"></i><b id="i-plan-meter-bad"></b></div>
         <div class="tbl"><table><thead><tr><th>단계 / 순서</th><th>스위트</th><th>상태</th><th>Agent</th><th class="num">시도</th><th class="num">소요</th></tr></thead><tbody id="i-plan"></tbody></table></div>
-        <div class="foot"><span>병렬 스위트는 Agent 자리 수의 두 배씩 묶어 맡깁니다. serial 스위트는 하나가 끝나야 다음을 시작합니다.</span></div>
+        <div class="foot"><span>병렬 스위트는 쉬는 Agent에 고르게 나누되, 한 Agent에 자리 수보다 많이 맡기지 않습니다. serial 스위트는 하나가 끝나야 다음을 시작합니다.</span></div>
       </div>
       <div class="panel" data-panel="itab:agents" hidden data-fleet="ia" data-mode="integration"></div>
       <div class="panel" data-panel="itab:results" hidden>

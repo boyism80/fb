@@ -550,6 +550,7 @@ void lua_integration_test::init_lua()
     lua.build<fb::lua::luable>();
     lua.build<fb::bot::game_bot, fb::lua::luable>();
     lua.build<lua_integration_test, fb::lua::luable>();
+    lua.build<fb::bot::brain, fb::lua::luable>();
 
     // Register protocol metatables (request/response tokens — not luable types)
     lua_protocol::register_metatables((lua_State*)lua);
@@ -566,6 +567,29 @@ void lua_integration_test::init_lua()
     register_model_globals(lua);
     lua.build("log", fb::bot::builtin::integration_test::builtin_log);
     lua.build("localhost", lua_localhost);
+
+    auto* L = (lua_State*)lua;
+    lua_newtable(L);
+    lua_pushlightuserdata(L, this);
+    lua_pushcclosure(L, lua_integration_test::builtin_brain_new, 1);
+    lua_setfield(L, -2, "new");
+    lua_setglobal(L, "brain");
+}
+
+int lua_integration_test::builtin_brain_new(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto test = static_cast<lua_integration_test*>(lua_touserdata(L, lua_upvalueindex(1)));
+    if (test == nullptr)
+        return 0;
+
+    auto created = std::make_shared<fb::bot::brain>();
+    test->_brains.push_back(created);
+    lua->pushobject(created);
+    return 1;
 }
 
 void lua_integration_test::load_script()
@@ -924,6 +948,11 @@ async::task<void> lua_integration_test::on_parallel_scenario_finished(uint32_t i
 
 async::task<void> lua_integration_test::on_finished()
 {
+    for (auto& brain : this->_brains)
+    {
+        brain->release();
+    }
+    this->_brains.clear();
     this->clear_all_hooks();
 
     if (this->_suite.on_finished_ref != LUA_NOREF)

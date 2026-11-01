@@ -157,6 +157,8 @@ private:
                            response.look,
                            response.color,
                            response.name);
+            if (response.look < game_bot::sight::ITEM_LOOK)
+                bot.notice("sight", response.oid);
         }
         else
         {

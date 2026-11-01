@@ -1,6 +1,7 @@
 #include <fb/bot/load/game_controller.h>
 
 #include <async/awaitable_get.h>
+#include <fb/bot/brain/atlas.h>
 #include <fb/bot/container.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/load/gateway_controller.h>
@@ -25,8 +26,23 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
-    table::item->hook.build = &game_bot_controller::build_item;
+    table::npc->hook.build = [](const Json::Value& json) -> fb::model::npc* {
+        auto clone    = json;
+        clone["look"] = clone["look"].asUInt() + 0x7FFF;
+        return fb::model::build<fb::model::npc*>(clone);
+    };
+    table::mob->hook.build = [](const Json::Value& json) -> fb::model::mob* {
+        auto clone    = json;
+        clone["look"] = clone["look"].asUInt() + 0x7FFF;
+        return fb::model::build<fb::model::mob*>(clone);
+    };
+    table::item->hook.build = [](const Json::Value& json) -> fb::model::item* {
+        auto clone    = json;
+        clone["look"] = clone["look"].asUInt() + game_bot::sight::ITEM_LOOK;
+        return game_bot_controller::build_item(clone);
+    };
     async::awaitable_get(fb::model::loader(this->container).run());
+    fb::bot::atlas::get();
 
     this->bind_thread_timer(&game_bot_controller::on_timer, 100ms);
     this->bind_timer(&game_bot_controller::on_metrics,

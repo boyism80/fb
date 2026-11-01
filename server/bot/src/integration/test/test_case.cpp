@@ -404,8 +404,8 @@ async::task<void> bot_integration_test::on_initialize(game_bot_controller& contr
     auto slot = this->_suite_slot;
     for (int i = 0; i < bots.size(); i++)
     {
-        auto& bot = bots[i];
-        co_await bot->map_move("낙랑의방", 6, 6, slot, DEFAULT_TIMEOUT);
+        auto& bot   = bots[i];
+        std::ignore = co_await bot->map_move("낙랑의방", 6, 6, slot, DEFAULT_TIMEOUT);
         std::ignore = co_await bot->request<game_resp::message>(
             *bot->make<game_reqs::chat>(false, "/자연회복 끄기"),
             [](auto& resp) -> bool {

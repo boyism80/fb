@@ -318,8 +318,23 @@ function renderIntegration() {
 <td class="num">${num(r.avg)}</td><td class="num">${num(r.p50)}</td><td class="num">${num(r.p95)}</td><td class="num">${num(r.p99)}</td><td class="num">${num(r.max)}</td></tr>`).join(''), 8);
 
   $('i-tab-errors').textContent = failed.length || '';
-  $('i-errors').innerHTML = failed.length ? failed.map(s => `<details><summary><span class="bad">${SUITE_WORD[s.state]}</span><span>${esc(s.name)}</span><span class="faint">${esc(s.agent_name || '-')}</span></summary><pre class="log">${esc(s.log || '로그 없음')}</pre></details>`).join('')
-    : '<div class="empty">실패한 스위트가 없습니다</div>';
+  if (failed.length) {
+    sync($('i-errors'), failed, s => s.name, () => {
+      const item = document.createElement('details');
+      item.innerHTML = '<summary><span class="bad"></span><span></span><span class="faint"></span></summary><pre class="log"></pre>';
+      return item;
+    }, (item, s) => {
+      const parts = item.firstChild.children;
+      parts[0].textContent = SUITE_WORD[s.state];
+      parts[1].textContent = s.name;
+      parts[2].textContent = s.agent_name || '-';
+      const log = s.log || '로그 없음';
+      if (item.lastChild.textContent !== log)
+        item.lastChild.textContent = log;
+    });
+  } else {
+    $('i-errors').innerHTML = '<div class="empty">실패한 스위트가 없습니다</div>';
+  }
 
   if (S.catalog && S.catalog.revision !== state.revision)
     loadCatalog();
