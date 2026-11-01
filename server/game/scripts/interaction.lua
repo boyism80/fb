@@ -554,6 +554,10 @@ local function on_attack(me, additional_attack)
 end
 
 local function on_npc_chat(me, message, shout)
+    if me:trading() then
+        return false
+    end
+
     local map = me:map()
     if map == nil then
         return false

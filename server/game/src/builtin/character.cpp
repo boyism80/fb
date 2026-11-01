@@ -130,6 +130,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"birthday",                     builtin::character::builtin_birthday},
 {"active",                       builtin::character::builtin_active},
 {"super_hide",                   builtin::character::builtin_super_hide},
+{"trading",                      builtin::character::builtin_trading},
 {"natural_recovery",             builtin::character::builtin_natural_recovery},
 {"divine_beast",                 builtin::character::builtin_divine_beast},
 {"reputation",                   builtin::character::builtin_reputation},
@@ -5184,6 +5185,31 @@ int builtin::character::builtin_active(lua_State* L)
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_trading(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = ch->trade != nullptr;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
     };
     return builder.run();
 }

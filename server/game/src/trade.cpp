@@ -71,6 +71,9 @@ bool trade::begin(character& me, character& you)
         if (me.distance_sqrt(you) > 16)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR), you.name()));
 
+        me.dialog.cancel("trade");
+        you.dialog.cancel("trade");
+
         auto session = std::make_shared<trade>(me, you);
         me.trade     = session;
         you.trade    = session;

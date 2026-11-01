@@ -32,6 +32,13 @@ async::task<bool> click<V>::handle(fb::socket<character>& session, game_reqs::cl
     if (request.flag == game_reqs::click<V>::FLAG_OBJECT)
         ch->dialog.cancel("dialog cancelled");
 
+    auto menu = request.oid == 0xFFFFFFFF || request.oid == 0xFFFFFFFE;
+    if (menu && ch->trade != nullptr)
+    {
+        ch->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
+        co_return true;
+    }
+
     if (request.oid == 0xFFFFFFFF)
     {
         co_await handle_f1(ch);

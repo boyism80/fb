@@ -3,12 +3,17 @@ local resp        = require("integration.response")
 local protocol    = require("integration.protocol")
 local trade       = require("integration.lib.trade")
 local script_step = require("integration.lib.script_step")
+local qd          = require("integration.lib.quest_dialog")
 
-local MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE = "교환이 불가능한 아이템입니다."
-local MESSAGE_TRADE_CANCELLED_BY_ME      = "내가 교환을 취소했습니다."
-local MESSAGE_TRADE_SUCCESS              = "교환에 성공했습니다."
-local MESSAGE_TRADE_FAILED               = "교환에 실패했습니다."
-local MESSAGE_ITEM_FULL                  = "더 이상 가질 수 없습니다."
+local F1_OID = 0xFFFFFFFF
+local F1_STORAGE_OPTION = "통합보관함"
+
+local MESSAGE_TRADE_BLOCKED_WHILE_TRADING = "교환 중에는 할 수 없습니다."
+local MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE  = "교환이 불가능한 아이템입니다."
+local MESSAGE_TRADE_CANCELLED_BY_ME       = "내가 교환을 취소했습니다."
+local MESSAGE_TRADE_SUCCESS               = "교환에 성공했습니다."
+local MESSAGE_TRADE_FAILED                = "교환에 실패했습니다."
+local MESSAGE_ITEM_FULL                   = "더 이상 가질 수 없습니다."
 
 local function progress(bot, message)
     local level = "debug"
@@ -45,6 +50,7 @@ test_suite {
         for i = 0, ctx:bot_count() - 1 do
             local bot = ctx:bot(i)
             progress(bot, "CLEANUP INVENTORY")
+            qd.remove_npc(bot)
             bot:clear_inventory()
             bot:chat("/아이템삭제")
             bot:money(0)
@@ -419,6 +425,68 @@ test_suite {
             end
 
             progress(bot1, "SCENARIO 7 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 8 START (NPC work is blocked while trading)")
+
+            bot1:create_item("진호박", 5)
+            qd.use_npc(bot1, "왈숙네")
+
+            progress(bot1, "REQUEST TRADE -> bot2")
+            trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
+
+            progress(bot1, "F1 MENU WHILE TRADING (expect reject)")
+            local blocked = bot1:request(resp.message, protocol.click(F1_OID), function(packet)
+                return string.find(packet.text or "", MESSAGE_TRADE_BLOCKED_WHILE_TRADING, 1, true) ~= nil
+            end)
+            if type(blocked) ~= "table" then
+                progress(bot1, "FAILED: F1 menu opened while trading")
+                return false
+            end
+
+            progress(bot1, "SELL TO NPC BY CHAT WHILE TRADING (expect ignored)")
+            bot1:send(protocol.chat(false, "진호박 5개 판다"))
+            ctx:sleep(1000)
+            if bot1:item_count("진호박") ~= 5 or bot1:money() ~= 0 then
+                progress(bot1, string.format("FAILED: NPC chat sale ran while trading (진호박=%d money=%d)",
+                    bot1:item_count("진호박"), bot1:money()))
+                return false
+            end
+
+            trade.cancel(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_CANCELLED_BY_ME))
+
+            progress(bot1, "SELL TO NPC BY CHAT AFTER THE TRADE")
+            local sold = bot1:request(resp.update_internal, protocol.chat(false, "진호박 5개 판다"), function(packet)
+                return packet.ch_money > 0
+            end)
+            if type(sold) ~= "table" then
+                progress(bot1, "FAILED: the NPC chat sale does not work outside a trade either")
+                return false
+            end
+            qd.remove_npc(bot1)
+
+            progress(bot2, "OPEN F1 MENU, THEN bot1 REQUESTS A TRADE (the menu must close)")
+            if bot2:request_dialog(protocol.click(F1_OID), function(p) return p.type == "pursuit" end) == nil then
+                progress(bot2, "FAILED: F1 menu did not open")
+                return false
+            end
+            trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
+
+            local seq = bot2:last_dialog()
+            bot2:send(protocol.dialog("PURSUIT", 0, "", 0, 0, F1_STORAGE_OPTION))
+            ctx:sleep(1000)
+            if bot2:last_dialog() ~= seq then
+                progress(bot2, "FAILED: the F1 menu kept running after the trade started")
+                return false
+            end
+
+            trade.cancel(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_CANCELLED_BY_ME))
+
+            progress(bot1, "SCENARIO 8 PASSED")
             return true
         end,
     },
