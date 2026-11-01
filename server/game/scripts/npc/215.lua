@@ -101,6 +101,8 @@ return {
         local progress = q:progress()
         local tier = rewards[step]
         if tier == nil then
+            q:complete()
+            me:push_achievement(21, '만리장성 수리에 성공하다.', 7, 1)
             me:dialog(npc, '저번엔 정말 고마웠네. 당신과 같이 만리장성의 수리에 힘써주는 사람이 많아 만리장성이 점차 옛 모습을 되찾고 있네.',
                 { prev = false, next = false })
             return
@@ -117,7 +119,7 @@ return {
 
         local next_step = step + 1
         q:step(next_step)
-        if rewards[step] == nil then
+        if rewards[next_step] == nil then
             q:complete()
             me:push_achievement(21, '만리장성 수리에 성공하다.', 7, 1)
         end
