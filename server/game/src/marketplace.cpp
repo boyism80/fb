@@ -5,6 +5,8 @@
 #include <fb/game/item/weapon.h>
 #include <fb/game/server.h>
 #include <fb/game/storage.h>
+#include <fb/http_client.h>
+#include <fb/logger.h>
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <macro.h>
@@ -267,11 +269,21 @@ async::task<uint32_t> marketplace::clear()
 {
     this->_owner.assert_thread();
 
-    auto   weak = this->_owner.weak_from_this_as<fb::game::character>();
-    auto   req  = mp_reqs::ClearListings{this->_owner.id};
-    auto&& resp = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/clear-listings", req);
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
+    auto req  = mp_reqs::ClearListings{this->_owner.id};
+    auto resp = mp_resp::ClearListings{};
+    try
+    {
+        resp = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/clear-listings", req);
+    }
+    catch (const fb::http_error& e)
+    {
+        fb::logger::warn("marketplace clear request by {} failed: {}", this->_owner.name(), e.what());
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CLEAR_UNCONFIRMED));
+    }
+
     if (resp.error != 0)
-        throw std::runtime_error(std::format("error code {}", resp.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
 
     co_return resp.count;
 }
