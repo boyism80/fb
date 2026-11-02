@@ -37,6 +37,7 @@ namespace Http.Service
                 throw new LogicException(ErrorCode.NotFoundCharacter);
             world = row.World;
             var userId = row.Id;
+            await EnsureOutranks(actor, world, userId);
 
             // Calculate expire date
             DateTime? expireDate = days is > 0 ? DateTime.UtcNow.AddDays(days.Value) : null;
@@ -91,6 +92,7 @@ namespace Http.Service
                 throw new LogicException(ErrorCode.NotFoundCharacter);
             world = row.World;
             var userId = row.Id;
+            await EnsureOutranks(actor, world, userId);
 
             // Check if ban exists
             var ban = await _dbContext.Ban.Get(world, userId);
@@ -122,6 +124,20 @@ namespace Http.Service
                 UserId = userId,
                 World = world
             };
+        }
+
+
+        private async Task EnsureOutranks(string actor, uint world, uint targetId)
+        {
+            var target = await _dbContext.Character.Get(world, targetId) ??
+                throw new LogicException(ErrorCode.NotFoundCharacter);
+
+            var actorRef = await _dbContext.Character.GetCharacterRef(actor);
+            var actorCharacter = actorRef == null ? null : await _dbContext.Character.Get(actorRef.World, actorRef.Id);
+            if (actorCharacter == null || actorCharacter.Role <= target.Role)
+            {
+                throw new LogicException(ErrorCode.BanNoPrivilege);
+            }
         }
 
 

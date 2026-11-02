@@ -5,6 +5,7 @@
 #include <fb/encoding.h>
 #include <fb/lua.h>
 #include <fb/model/datetime.h>
+#include <macro.h>
 
 #include <boost/xpressive/xpressive.hpp>
 #include <json/json.h>
@@ -1330,6 +1331,8 @@ int builtin::server::builtin_ban(lua_State* L)
             auto&& resp = co_await server.ban(actor, name, reason, days);
             if (resp.error == 0)
                 *success = true;
+            else if (resp.error == static_cast<uint32_t>(fb::model::enum_value::ERROR_CODE::BAN_NO_PRIVILEGE))
+                *error = _TEXT(MESSAGE_BAN_NO_PRIVILEGE);
             else
                 *error = std::format("Ban failed with error code: {}", resp.error);
         }
@@ -1376,6 +1379,8 @@ int builtin::server::builtin_unban(lua_State* L)
             auto&& resp = co_await server.unban(actor, name);
             if (resp.error == 0)
                 *success = true;
+            else if (resp.error == static_cast<uint32_t>(fb::model::enum_value::ERROR_CODE::BAN_NO_PRIVILEGE))
+                *error = _TEXT(MESSAGE_BAN_NO_PRIVILEGE);
             else
                 *error = std::format("Unban failed with error code: {}", resp.error);
         }
