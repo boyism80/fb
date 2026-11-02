@@ -12,6 +12,7 @@ namespace Internal.Services
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<NameReservationCleanupBackgroundService> _logger;
+        private uint _after;
 
         public NameReservationCleanupBackgroundService(
             IServiceScopeFactory scopeFactory,
@@ -57,38 +58,50 @@ namespace Internal.Services
             var ids = (await conn.QueryAsync<uint>(
                 """
                 SELECT `id` FROM `name_registry`
-                WHERE `reserved_at` IS NOT NULL AND `reserved_at` < UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND
+                WHERE `reserved_at` IS NOT NULL AND `reserved_at` < UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND AND `id` > @after
+                ORDER BY `id`
                 LIMIT @limit
                 """,
-                new { threshold = ReservationThresholdSeconds, limit = RowLimit })).ToList();
+                new { threshold = ReservationThresholdSeconds, after = _after, limit = RowLimit })).ToList();
+            _after = ids.Count >= RowLimit ? ids[^1] : 0;
 
             var deleted = 0;
+            var failedWorlds = new HashSet<uint>();
             foreach (var id in ids)
             {
-                await using var transaction = await conn.BeginTransactionAsync();
-                var world = await conn.QuerySingleOrDefaultAsync<uint?>(
-                    """
-                    SELECT `world` FROM `name_registry`
-                    WHERE `id` = @id AND `reserved_at` IS NOT NULL AND `reserved_at` < UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND
-                    FOR UPDATE
-                    """,
-                    new { id, threshold = ReservationThresholdSeconds },
-                    transaction);
-                if (world == null)
+                var world = (uint?)null;
+                try
                 {
-                    await transaction.RollbackAsync();
-                    continue;
-                }
+                    await using var transaction = await conn.BeginTransactionAsync();
+                    world = await conn.QuerySingleOrDefaultAsync<uint?>(
+                        """
+                        SELECT `world` FROM `name_registry`
+                        WHERE `id` = @id AND `reserved_at` IS NOT NULL AND `reserved_at` < UTC_TIMESTAMP(3) - INTERVAL @threshold SECOND
+                        FOR UPDATE
+                        """,
+                        new { id, threshold = ReservationThresholdSeconds },
+                        transaction);
+                    if (world == null || failedWorlds.Contains(world.Value))
+                    {
+                        await transaction.RollbackAsync();
+                        continue;
+                    }
 
-                if (world.Value != 0)
+                    if (world.Value != 0)
+                    {
+                        dbContext.Character.Delete(world.Value, new CharacterKey { Id = id });
+                        await dbContext.SaveChangesAsync();
+                    }
+
+                    await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id }, transaction);
+                    await transaction.CommitAsync();
+                    deleted++;
+                }
+                catch (Exception e) when (world != null)
                 {
-                    dbContext.Character.Delete(world.Value, new CharacterKey { Id = id });
-                    await dbContext.SaveChangesAsync();
+                    failedWorlds.Add(world.Value);
+                    _logger.LogWarning(e, "Failed to delete expired name reservation {Id} in world {World}", id, world.Value);
                 }
-
-                await conn.ExecuteAsync("DELETE FROM `name_registry` WHERE `id` = @id", new { id }, transaction);
-                await transaction.CommitAsync();
-                deleted++;
             }
 
             return (ids.Count, deleted);
