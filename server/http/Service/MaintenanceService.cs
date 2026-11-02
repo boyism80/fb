@@ -8,6 +8,8 @@ namespace Http.Service
     public class MaintenanceService
     {
         private const string ScheduleKey = "fb:maintenance";
+        public const string NoticeKeyPrefix = "fb:maintenance:notice:";
+        public const uint NoticeHost = 0xFFFFFFFF;
 
         private static readonly double RecurringScheduleScore = ((DateTimeOffset)new DateTime(2099, 12, 31, 23, 59, 59, DateTimeKind.Utc)).ToUnixTimeSeconds();
 
@@ -245,6 +247,96 @@ namespace Http.Service
             start = windowStart;
             end = windowEnd;
             return true;
+        }
+
+        public static string NoticeClaimKey(string scheduleId, DateTime start, int minutes) => $"{NoticeKeyPrefix}{scheduleId}:{start.Ticks}:{minutes}";
+
+        public static string StartNotice(MaintenanceSchedule schedule, TimeSpan remain)
+        {
+            var remainMinutes = (int)Math.Ceiling(remain.TotalMinutes);
+            var when = remainMinutes >= 60 && remainMinutes % 60 == 0 ? $"{remainMinutes / 60}시간" : $"{remainMinutes}분";
+            return string.IsNullOrWhiteSpace(schedule.Title)
+                ? $"{when} 뒤 점검이 시작됩니다."
+                : $"{when} 뒤 점검이 시작됩니다. ({schedule.Title})";
+        }
+
+        public HashSet<string> NoticeRoutes(MaintenanceSchedule schedule)
+        {
+            var routes = new HashSet<string>();
+            foreach (var label in schedule.Labels)
+            {
+                if (label == MaintenanceLabel.All)
+                {
+                    foreach (var world in _redisService.GetConfiguredWorlds())
+                    {
+                        routes.Add(AmqpRoute.Home("global", world));
+                    }
+
+                    routes.Add(AmqpRoute.Home("global", null));
+                }
+                else if (label == MaintenanceLabel.Cross)
+                {
+                    routes.Add(AmqpRoute.Home("global", null));
+                }
+                else if (MaintenanceLabel.TryParseWorld(label, out var world))
+                {
+                    routes.Add(AmqpRoute.Home("global", world));
+                }
+            }
+            return routes;
+        }
+
+        public async Task<List<(string Route, string Text)>> Corrections(MaintenanceSchedule before, MaintenanceSchedule after)
+        {
+            var result = new List<(string Route, string Text)>();
+            var redis = _redisService.GetUnifiedConnection();
+            var noticeMinutes = before.NoticeMinutes.Where(x => x > 0).ToList();
+            if (redis == null || noticeMinutes.Count == 0)
+            {
+                return result;
+            }
+
+            var now = DateTime.UtcNow;
+            var start = FindNextStart(before, now, TimeSpan.FromMinutes(noticeMinutes.Max()));
+            if (start == null)
+            {
+                return result;
+            }
+
+            var sent = false;
+            foreach (var minutes in noticeMinutes)
+            {
+                sent = sent || await redis.Connection.KeyExistsAsync(NoticeClaimKey(before.Id, start.Value, minutes));
+            }
+            if (sent == false)
+            {
+                return result;
+            }
+
+            var beforeRoutes = NoticeRoutes(before);
+            var afterRoutes = after == null ? new HashSet<string>() : NoticeRoutes(after);
+            var unchanged = after != null && FindNextStart(after, now, start.Value - now) == start;
+            var title = string.IsNullOrWhiteSpace((after ?? before).Title) ? string.Empty : $" ({(after ?? before).Title})";
+            foreach (var route in beforeRoutes)
+            {
+                if (afterRoutes.Contains(route) == false)
+                {
+                    result.Add((route, $"예고한 점검이 취소되었습니다.{title}"));
+                }
+                else if (unchanged == false)
+                {
+                    result.Add((route, $"예고한 점검 시작 시각이 변경되었습니다.{title}"));
+                }
+            }
+
+            if (unchanged)
+            {
+                foreach (var route in afterRoutes.Where(x => beforeRoutes.Contains(x) == false))
+                {
+                    result.Add((route, StartNotice(after, start.Value - now)));
+                }
+            }
+            return result;
         }
 
         public static DateTime? FindNextStart(MaintenanceSchedule schedule, DateTime now, TimeSpan horizon)

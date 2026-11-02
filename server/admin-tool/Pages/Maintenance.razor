@@ -12,6 +12,7 @@
 @inject Http.Service.MaintenanceService MaintenanceService
 @inject RedisService RedisService
 @inject LogService LogService
+@inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<Maintenance> Logger
 @attribute [AuthorizeRole(Role.Admin)]
@@ -791,6 +792,7 @@
         try
         {
             var creating = editing == null;
+            var before = editing;
             var success = creating
                 ? await MaintenanceService.CreateMaintenanceSchedule(schedule)
                 : await MaintenanceService.UpdateMaintenanceSchedule(schedule, editingStarted);
@@ -798,6 +800,11 @@
             {
                 successMessage = creating ? "점검 일정을 등록했습니다." : "점검 일정을 수정했습니다.";
                 await WriteLog(creating ? "maintenance" : "maintenance_update", schedule);
+                if (creating == false)
+                {
+                    await SendCorrections(before, schedule);
+                }
+
                 ResetForm();
                 await LoadData();
             }
@@ -861,6 +868,7 @@
             {
                 successMessage = "점검 일정을 취소했습니다.";
                 await WriteLog("maintenance_cancel", schedule);
+                await SendCorrections(schedule, null);
                 if (editing?.Id == schedule.Id)
                     ResetForm();
                 await LoadData();
@@ -878,6 +886,28 @@
         finally
         {
             isProcessing = false;
+        }
+    }
+
+    private async Task SendCorrections(MaintenanceSchedule before, MaintenanceSchedule after)
+    {
+        try
+        {
+            foreach (var (route, text) in await MaintenanceService.Corrections(before, after))
+            {
+                await RabbitMqService.PublishAsync(new fb.protocol.@internal.response.Broadcast
+                {
+                    Message = text,
+                    Type = (byte)MessageType.Notify,
+                    Host = Http.Service.MaintenanceService.NoticeHost,
+                    Error = 0
+                }, AmqpRoute.Exchange, route);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to send maintenance correction notices");
+            errorMessage = $"정정 공지 전송 실패: {ex.Message}";
         }
     }
 

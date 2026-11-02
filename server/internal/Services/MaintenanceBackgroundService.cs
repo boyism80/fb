@@ -17,8 +17,6 @@ namespace Internal.Services
         private static readonly TimeSpan CleanupLockTtl = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan NoticeClaimRetention = TimeSpan.FromDays(1);
         private const string CleanupLockKey = "fb:maintenance:background:lock";
-        private const string NoticeKeyPrefix = "fb:maintenance:notice:";
-        private const uint NoticeHost = 0xFFFFFFFF;
 
         public MaintenanceBackgroundService(
             RedisService redisService,
@@ -79,48 +77,21 @@ namespace Internal.Services
 
                 var remain = start.Value - now;
                 var minutes = noticeMinutes.Where(x => remain <= TimeSpan.FromMinutes(x)).Min();
-                var claimKey = $"{NoticeKeyPrefix}{schedule.Id}:{start.Value.Ticks}:{minutes}";
+                var claimKey = MaintenanceService.NoticeClaimKey(schedule.Id, start.Value, minutes);
                 if (!await redis.Connection.StringSetAsync(claimKey, "1", remain + NoticeClaimRetention, When.NotExists))
                 {
                     continue;
                 }
 
-                var remainMinutes = (int)Math.Ceiling(remain.TotalMinutes);
-                var when = remainMinutes >= 60 && remainMinutes % 60 == 0 ? $"{remainMinutes / 60}시간" : $"{remainMinutes}분";
-                var text = string.IsNullOrWhiteSpace(schedule.Title)
-                    ? $"{when} 뒤 점검이 시작됩니다."
-                    : $"{when} 뒤 점검이 시작됩니다. ({schedule.Title})";
                 var message = new Response.Broadcast
                 {
-                    Message = text,
+                    Message = MaintenanceService.StartNotice(schedule, remain),
                     Type = (byte)MessageType.Notify,
-                    Host = NoticeHost,
+                    Host = MaintenanceService.NoticeHost,
                     Error = 0
                 };
 
-                var routes = new HashSet<string>();
-                foreach (var label in schedule.Labels)
-                {
-                    if (label == MaintenanceLabel.All)
-                    {
-                        foreach (var world in _redisService.GetConfiguredWorlds())
-                        {
-                            routes.Add(AmqpRoute.Home("global", world));
-                        }
-
-                        routes.Add(AmqpRoute.Home("global", null));
-                    }
-                    else if (label == MaintenanceLabel.Cross)
-                    {
-                        routes.Add(AmqpRoute.Home("global", null));
-                    }
-                    else if (MaintenanceLabel.TryParseWorld(label, out var world))
-                    {
-                        routes.Add(AmqpRoute.Home("global", world));
-                    }
-                }
-
-                foreach (var route in routes)
+                foreach (var route in _maintenanceService.NoticeRoutes(schedule))
                 {
                     await _rabbitMqService.PublishAsync(message, AmqpRoute.Exchange, route);
                 }
