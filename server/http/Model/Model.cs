@@ -550,7 +550,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "CLAN_MONEY_REMAINS")]
         ClanMoneyRemains = 88, 
         [EnumMember(Value = "BAN_NO_PRIVILEGE")]
-        BanNoPrivilege = 89
+        BanNoPrivilege = 89, 
+        [EnumMember(Value = "MAIL_TOO_LONG_TITLE")]
+        MailTooLongTitle = 90, 
+        [EnumMember(Value = "MAIL_TOO_LONG_CONTENTS")]
+        MailTooLongContents = 91
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1075,6 +1079,8 @@ namespace Fb.Model.ConstValue
         public const byte RequiredLevel = 20;
         public const byte CountPerPage = 20;
         public const ushort MaxCount = 32767;
+        public const byte TitleLength = 64;
+        public const ushort ContentsLength = 256;
     }
 
     public static class Marketplace
@@ -1175,6 +1181,8 @@ namespace Fb.Model.ConstValue
         public const string MessageBulletinWriteFailed = "게시글 작성 실패";
         public const string MessageMailSent = "우편을 보냈습니다.";
         public const string MessageMailBoxFull = "받는 사람의 우편함이 가득 찼습니다.";
+        public const string MessageMailTooLongTitle = "우편 제목이 너무 깁니다.";
+        public const string MessageMailTooLongContents = "우편 내용이 너무 깁니다.";
         public const string MessageLevelUp = "레벨이 올랐습니다";
         public const string MessageLoginElapsedDays = "일";
         public const string MessageLoginElapsedHours = "시간";

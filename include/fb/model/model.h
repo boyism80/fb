@@ -1380,7 +1380,9 @@ enum class ERROR_CODE
     CLAN_CANNOT_KICK_MASTER = 86, 
     BIRTHDAY_LOCKED = 87, 
     CLAN_MONEY_REMAINS = 88, 
-    BAN_NO_PRIVILEGE = 89
+    BAN_NO_PRIVILEGE = 89, 
+    MAIL_TOO_LONG_TITLE = 90, 
+    MAIL_TOO_LONG_CONTENTS = 91
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1477,7 +1479,9 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(std::string_view k)
         { "CLAN_CANNOT_KICK_MASTER", ERROR_CODE::CLAN_CANNOT_KICK_MASTER }, 
         { "BIRTHDAY_LOCKED", ERROR_CODE::BIRTHDAY_LOCKED }, 
         { "CLAN_MONEY_REMAINS", ERROR_CODE::CLAN_MONEY_REMAINS }, 
-        { "BAN_NO_PRIVILEGE", ERROR_CODE::BAN_NO_PRIVILEGE }
+        { "BAN_NO_PRIVILEGE", ERROR_CODE::BAN_NO_PRIVILEGE }, 
+        { "MAIL_TOO_LONG_TITLE", ERROR_CODE::MAIL_TOO_LONG_TITLE }, 
+        { "MAIL_TOO_LONG_CONTENTS", ERROR_CODE::MAIL_TOO_LONG_CONTENTS }
     };
 
     auto k_str = std::string(k);
@@ -1582,7 +1586,9 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::CLAN_CANNOT_KICK_MASTER, "CLAN_CANNOT_KICK_MASTER" }, 
         { ERROR_CODE::BIRTHDAY_LOCKED, "BIRTHDAY_LOCKED" }, 
         { ERROR_CODE::CLAN_MONEY_REMAINS, "CLAN_MONEY_REMAINS" }, 
-        { ERROR_CODE::BAN_NO_PRIVILEGE, "BAN_NO_PRIVILEGE" }
+        { ERROR_CODE::BAN_NO_PRIVILEGE, "BAN_NO_PRIVILEGE" }, 
+        { ERROR_CODE::MAIL_TOO_LONG_TITLE, "MAIL_TOO_LONG_TITLE" }, 
+        { ERROR_CODE::MAIL_TOO_LONG_CONTENTS, "MAIL_TOO_LONG_CONTENTS" }
     };
 
     auto i = enums.find(k);
@@ -3108,6 +3114,8 @@ public:
     inline static constexpr const uint8_t REQUIRED_LEVEL = 20;
     inline static constexpr const uint8_t COUNT_PER_PAGE = 20;
     inline static constexpr const uint16_t MAX_COUNT = 32767;
+    inline static constexpr const uint8_t TITLE_LENGTH = 64;
+    inline static constexpr const uint16_t CONTENTS_LENGTH = 256;
 
 private:
     mail() = default;
@@ -3250,6 +3258,8 @@ public:
     inline static constexpr const char* MESSAGE_BULLETIN_WRITE_FAILED = "게시글 작성 실패";
     inline static constexpr const char* MESSAGE_MAIL_SENT = "우편을 보냈습니다.";
     inline static constexpr const char* MESSAGE_MAIL_BOX_FULL = "받는 사람의 우편함이 가득 찼습니다.";
+    inline static constexpr const char* MESSAGE_MAIL_TOO_LONG_TITLE = "우편 제목이 너무 깁니다.";
+    inline static constexpr const char* MESSAGE_MAIL_TOO_LONG_CONTENTS = "우편 내용이 너무 깁니다.";
     inline static constexpr const char* MESSAGE_LEVEL_UP = "레벨이 올랐습니다";
     inline static constexpr const char* MESSAGE_LOGIN_ELAPSED_DAYS = "일";
     inline static constexpr const char* MESSAGE_LOGIN_ELAPSED_HOURS = "시간";
@@ -4081,6 +4091,10 @@ inline void enum_map<fb::model::enum_value::ERROR_CODE>(lua_State* lua)
     lua_setfield(lua, -2, "CLAN_MONEY_REMAINS");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::BAN_NO_PRIVILEGE));
     lua_setfield(lua, -2, "BAN_NO_PRIVILEGE");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::MAIL_TOO_LONG_TITLE));
+    lua_setfield(lua, -2, "MAIL_TOO_LONG_TITLE");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::MAIL_TOO_LONG_CONTENTS));
+    lua_setfield(lua, -2, "MAIL_TOO_LONG_CONTENTS");
     lua_setglobal(lua, "ERROR_CODE");
 }
 
@@ -4763,6 +4777,10 @@ inline void const_map<fb::model::const_value::mail>(lua_State* lua)
     lua_setfield(lua, -2, "COUNT_PER_PAGE");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::mail::MAX_COUNT));
     lua_setfield(lua, -2, "MAX_COUNT");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::mail::TITLE_LENGTH));
+    lua_setfield(lua, -2, "TITLE_LENGTH");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::mail::CONTENTS_LENGTH));
+    lua_setfield(lua, -2, "CONTENTS_LENGTH");
 }
 
 template <>
@@ -4951,6 +4969,10 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_MAIL_SENT");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MAIL_BOX_FULL).c_str());
     lua_setfield(lua, -2, "MESSAGE_MAIL_BOX_FULL");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MAIL_TOO_LONG_TITLE).c_str());
+    lua_setfield(lua, -2, "MESSAGE_MAIL_TOO_LONG_TITLE");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MAIL_TOO_LONG_CONTENTS).c_str());
+    lua_setfield(lua, -2, "MESSAGE_MAIL_TOO_LONG_CONTENTS");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_LEVEL_UP).c_str());
     lua_setfield(lua, -2, "MESSAGE_LEVEL_UP");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_LOGIN_ELAPSED_DAYS).c_str());

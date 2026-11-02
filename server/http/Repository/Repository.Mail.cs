@@ -297,6 +297,16 @@ namespace Http.Reepository
 
         public async Task<(Mail Mail, ushort Unread)> Write(uint world, string user, uint sender, string title, string contents)
         {
+            if ((title?.Length ?? 0) > Fb.Model.ConstValue.Mail.TitleLength)
+            {
+                throw new LogicException(ErrorCode.MailTooLongTitle);
+            }
+
+            if ((contents?.Length ?? 0) > Fb.Model.ConstValue.Mail.ContentsLength)
+            {
+                throw new LogicException(ErrorCode.MailTooLongContents);
+            }
+
             var uid = await _dbContext.Character.GetCharacterId(world, user) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
 
