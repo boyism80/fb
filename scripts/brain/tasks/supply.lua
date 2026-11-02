@@ -51,8 +51,11 @@ local function nearest(snap, query, kind, found)
     for _, offer in ipairs(found) do
         table.insert(names, offer.name)
     end
-    local base = table.concat({ score.signature(snap, ""), snap.world.map }, "|")
-    local key  = table.concat({ score.signature(snap), kind, table.concat(names, ",") }, "|")
+    local perilous = danger.perilous(snap, query)
+    local shunned  = danger.shunned(snap, query)
+    local base     = table.concat({ score.signature(snap, ""), snap.world.map, table.concat(shunned, ","), #perilous },
+        "|")
+    local key      = table.concat({ score.signature(snap), kind, table.concat(names, ",") }, "|")
     return memo.get(trips, snap.self.name, base, key, function()
         local maps = {}
         for _, offer in ipairs(found) do
@@ -60,9 +63,9 @@ local function nearest(snap, query, kind, found)
                 table.insert(maps, spot.map)
             end
         end
-        local route = #maps > 0 and query.route(maps, danger.perilous(snap, query), danger.shunned(snap, query)) or nil
-        return route ~= nil and { dest = route.dest, cost = route.cost } or false
-    end) or nil
+        local route = #maps > 0 and query.route(maps, perilous, shunned) or nil
+        return route ~= nil and { dest = route.dest, cost = route.cost } or nil
+    end)
 end
 
 local function sold(query, offer, map)
