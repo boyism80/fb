@@ -142,7 +142,7 @@ return {
             return
         end
         if selected == 1 then
-            do_jungki(me, npc, q, step)
+            do_jungki(me, npc)
             return
         end
         if selected == 2 then

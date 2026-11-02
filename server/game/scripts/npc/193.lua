@@ -9,10 +9,11 @@ local REWARD_600 = '수정해골'
 return {
     on_click = function(me, npc)
         local q = me:quest(quest.QUEST_WOOGAPUNG)
+        local btn
 
         if q == nil then
             ::NPC_193_0001::
-            local btn = me:dialog(npc, '내 호롱불이..내 호롱불..', { prev = false, next = true })
+            btn = me:dialog(npc, '내 호롱불이..내 호롱불..', { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

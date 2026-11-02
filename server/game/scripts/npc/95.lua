@@ -10,13 +10,14 @@ return {
         end
 
         local step = q:step()
+        local btn
         if step == 0 then
             ::NPC_95_0001::
             if me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 용사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네. 곳곳의 풍수를 살펴보면 만물이 있어야 할 자리를 지키지 못하고 있으며, 별자리마저 알 수 없는 형태로 일그러져버렸네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_95_0002::
-            local btn = me:dialog(npc,
+            btn = me:dialog(npc,
                 "천기를 살펴본 바로, 이 모든 현상들이 귀결되는 지점이 바로 '반고'의 신전이네. 반고 부활의 조짐일세. 이런 일을 행할 수 있는 이는 오제 뿐이리라네. 신선 세계 일에 관여치 않던 오제가 반고 부활의 의식을 진행하고 있는 것이지. 이 세상은 반고로부터 기인해 존재하게 되었지만, 반고와 현세는 공존할 수 없다네.",
                 { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then

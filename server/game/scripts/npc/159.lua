@@ -96,6 +96,7 @@ return {
             return
         end
 
+        local btn
         local sel = me:list(npc, '어쩐일이신가?', { '토끼의간을 구해야되는데..', '뇌진도를 드리겠습니다.' }, { prev = false })
         if sel == nil then
             return
@@ -103,7 +104,7 @@ return {
 
         if sel == 1 then
             ::NPC_159_0001::
-            local btn = me:dialog(npc, '음.. 거북장군에게서 토끼의간을 구해오라는 부탁을 받았단 말아지. 그런데 그 토끼는 정말 희귀한 토끼라네. 보통토끼와는 다르지',
+            btn = me:dialog(npc, '음.. 거북장군에게서 토끼의간을 구해오라는 부탁을 받았단 말아지. 그런데 그 토끼는 정말 희귀한 토끼라네. 보통토끼와는 다르지',
                 { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
