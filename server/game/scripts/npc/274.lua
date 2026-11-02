@@ -35,7 +35,7 @@ local function run_nation_change(me, npc)
     if lb4 == DIALOG_RESULT.PREV then
         goto NPC_274_0001
     end
-    if sel4 == 1 then
+    if sel4 ~= 1 then
         me:dialog(npc, "잘 가게...", { prev = false, next = false })
         return true
     end
