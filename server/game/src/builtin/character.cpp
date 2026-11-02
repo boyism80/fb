@@ -2940,8 +2940,18 @@ int builtin::character::builtin_push_achievement(lua_State* L)
         raw_color > fb::game::achievement::MAX_COLOR)
         return 0;
 
-    auto id    = static_cast<uint32_t>(lua->tointeger(2));
-    auto text  = lua->tostring(3);
+    if (lua_isinteger(L, 2) == false)
+        return 0;
+
+    auto raw_id = lua_tointeger(L, 2);
+    if (raw_id < 0 || raw_id > std::numeric_limits<uint32_t>::max())
+        return 0;
+
+    auto text = lua->tostring(3);
+    if (fb::cp949_length(text) > fb::game::achievement::MAX_TEXT_LENGTH)
+        return 0;
+
+    auto id    = static_cast<uint32_t>(raw_id);
     auto icon  = static_cast<uint8_t>(raw_icon);
     auto color = static_cast<uint16_t>(raw_color);
 

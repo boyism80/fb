@@ -278,6 +278,15 @@ bool is_hangul_syllable_bytes(uint8_t lead, uint8_t trail)
 
 } // namespace
 
+size_t fb::cp949_length(std::string_view cp949)
+{
+    auto length = size_t{0};
+    for (size_t i = 0; i < cp949.size(); ++length)
+    {
+        i += is_cp949_lead(static_cast<uint8_t>(cp949[i])) ? 2 : 1;
+    }
+    return length;
+}
 bool fb::assert_korean(std::string_view cp949, bool completed)
 {
     if (cp949.empty())

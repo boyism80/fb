@@ -1992,9 +1992,9 @@ M.functions = {
                 return true
             end
 
-            id = tonumber(id)
-            if id == nil or id < 0 then
-                me:message("업적 ID는 0 이상의 숫자여야 합니다.")
+            id = math.tointeger(tonumber(id))
+            if id == nil or id < 0 or id > 0xFFFFFFFF then
+                me:message("업적 ID는 0~4294967295 사이의 정수여야 합니다.")
                 return true
             end
 
@@ -2011,7 +2011,7 @@ M.functions = {
             end
 
             if me:push_achievement(id, text, icon, color) == nil then
-                me:message("업적을 더 추가할 수 없습니다.")
+                me:message("업적을 추가하지 못했습니다. 업적은 255개, 텍스트는 128자까지 넣을 수 있습니다.")
             end
             return true
         end,
