@@ -69,13 +69,20 @@ local function approach(brain, bot)
     end
     if #maps == 0 then
         return false, "NO_NPC"
-    elseif travel.go(brain, bot, { maps = maps }) == false then
-        return false, "UNREACHABLE"
+    end
+    local arrived, event = travel.go(brain, bot, { maps = maps })
+    if arrived == false then
+        return false, travel.yielded(event) and "ENGAGED" or "UNREACHABLE"
     end
     local range = math.min(combat.sight.x, combat.sight.y)
     for _, spot in ipairs(spots) do
-        if spot.map == bot:map() and travel.go(brain, bot, { map = spot.map, x = spot.x, y = spot.y, range = range }) then
-            return true
+        if spot.map == bot:map() then
+            local near, moved = travel.go(brain, bot, { map = spot.map, x = spot.x, y = spot.y, range = range })
+            if near then
+                return true
+            elseif travel.yielded(moved) then
+                return false, "ENGAGED"
+            end
         end
     end
     return false, "UNREACHABLE"
@@ -86,7 +93,7 @@ local function receive(brain, bot)
     if npc == nil then
         local reached, reason = approach(brain, bot)
         if reached == false then
-            return false, reason
+            return reason == "ENGAGED", reason
         end
         npc = brain:npc(bot, GIVER)
     end
@@ -113,51 +120,72 @@ local function weapon(brain, bot)
 end
 
 local function ground(brain, bot)
-    return read(brain, bot, 4) and travel.go(brain, bot, { names = grounds.beginner }) and read(brain, bot, 4) and
-        granted(bot, SCROLLS[5])
+    if read(brain, bot, 4) == false then
+        return false
+    end
+    local arrived, event = travel.go(brain, bot, { names = grounds.beginner })
+    if arrived == false then
+        return travel.yielded(event), event and event.type
+    end
+    return read(brain, bot, 4) and granted(bot, SCROLLS[5])
+end
+
+local function hunting(brain, bot, step, destination, goal)
+    if brain:recall(bot, "tutorial") ~= step then
+        if read(brain, bot, step) == false then
+            return false
+        end
+        brain:remember(bot, "tutorial", step)
+    end
+    local arrived, event = travel.go(brain, bot, destination)
+    if arrived == false then
+        return travel.yielded(event), event and event.type
+    end
+    local result, reason = hunt.step(brain, bot, goal)
+    if result == "PROGRESS" then
+        return true
+    elseif result == "FAILED" then
+        return false, reason
+    else
+        brain:remember(bot, "tutorial", nil)
+        return read(brain, bot, step) and granted(bot, SCROLLS[step + 1])
+    end
 end
 
 local function prey(brain, bot)
-    if read(brain, bot, 5) == false or travel.go(brain, bot, { maps = hunt.beginner(brain, bot, PREYS) }) == false then
-        return false
-    end
-
-    local counts = {}
+    local wanted = {}
     for _, name in ipairs(PREYS) do
-        counts[name] = 0
+        wanted[name] = true
     end
-    local hunted = hunt.go(brain, bot, {
+    return hunting(brain, bot, 5, { maps = hunt.beginner(brain, bot, PREYS) }, {
+        key    = "prey",
         names  = PREYS,
-        wants  = function(name)
-            return counts[name] ~= nil and counts[name] < PREY_GOAL
+        wants  = function(state, name)
+            return wanted[name] == true and (state.counts[name] or 0) < PREY_GOAL
         end,
-        killed = function(mob)
-            counts[mob.name] = counts[mob.name] + 1
+        killed = function(state, mob)
+            state.counts[mob.name] = (state.counts[mob.name] or 0) + 1
         end,
-        done   = function()
-            for _, count in pairs(counts) do
-                if count < PREY_GOAL then
+        done   = function(state)
+            for _, name in ipairs(PREYS) do
+                if (state.counts[name] or 0) < PREY_GOAL then
                     return false
                 end
             end
             return true
         end,
     })
-    return hunted and read(brain, bot, 5) and granted(bot, SCROLLS[6])
 end
 
 local function grow(brain, bot)
-    if read(brain, bot, 7) == false or travel.go(brain, bot, { names = grounds.beginner }) == false then
-        return false
-    end
-
     local names = {}
     for _, spawn in ipairs(brain:spawns(bot)) do
         names[spawn.name] = true
     end
-    local grown = hunt.go(brain, bot, {
+    return hunting(brain, bot, 7, { names = grounds.beginner }, {
+        key    = "grow",
         names  = nil,
-        wants  = function(name)
+        wants  = function(_, name)
             return names[name] ~= nil
         end,
         killed = function()
@@ -166,7 +194,6 @@ local function grow(brain, bot)
             return bot:level() >= LEVEL_GOAL
         end,
     })
-    return grown and read(brain, bot, 7) and granted(bot, SCROLLS[8])
 end
 
 local function quiz(brain, bot)
@@ -184,7 +211,15 @@ local function job(brain, bot)
             choice = index
         end
     end
-    return choice ~= nil and read(brain, bot, 8, { choice }) and bot:has_item_by_name(SCROLLS[8]) == false
+    if choice == nil then
+        return false, "NO_JOB"
+    elseif read(brain, bot, 8, { choice }) == false then
+        return false, "NO_SCROLL"
+    elseif bot:has_item_by_name(SCROLLS[8]) then
+        return false, "UNCHANGED"
+    else
+        return true
+    end
 end
 
 local STEPS = {

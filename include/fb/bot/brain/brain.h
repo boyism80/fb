@@ -16,6 +16,7 @@
 #include <exception>
 #include <functional>
 #include <thread>
+#include <type_traits>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -65,21 +66,11 @@ public:
         SAY      = 13,
     };
 
-    enum class NODE : uint8_t
+    enum class MANEUVER : uint8_t
     {
-        SELECTOR = 0,
-        SEQUENCE = 1,
-        CHECK    = 2,
-        HEAL     = 3,
-        POTION   = 4,
-        HURT     = 5,
-        BUFF     = 6,
-        SPELL    = 7,
-        MANA     = 8,
-        APPROACH = 9,
-        FACE     = 10,
-        OPENER   = 11,
-        SWING    = 12,
+        SWING = 0,
+        CAST  = 1,
+        USE   = 2,
     };
 
     enum class ROLE : uint8_t
@@ -154,32 +145,12 @@ public:
         std::vector<jump>            jumps;
     };
 
-    struct skill
+    struct maneuver
     {
-        uint8_t     slot  = 0;
-        uint32_t    mp    = 0;
-        uint32_t    floor = 0;
-        std::string name;
-    };
-
-    struct node
-    {
-        NODE              kind = NODE::SELECTOR;
-        std::vector<node> children;
-    };
-
-    struct tactic
-    {
-        uint32_t                 guard = 0;
-        std::vector<skill>       skills;
-        std::optional<skill>     heal;
-        std::optional<skill>     opener;
-        uint32_t                 mend = 0;
-        std::vector<std::string> potions;
-        std::vector<std::string> drinks;
-        bool                     melee = true;
-        std::vector<skill>       buffs;
-        std::optional<node>      tree;
+        MANEUVER    kind = MANEUVER::SWING;
+        uint8_t     slot = 0;
+        bool        self = false;
+        std::string item;
     };
 
     struct answer
@@ -197,6 +168,7 @@ public:
         uint32_t        oid = 0;
         atlas::position goal;
         uint32_t        count = 0;
+        uint16_t        dest  = 0;
     };
 
     struct pace
@@ -236,7 +208,8 @@ public:
         ROLE                                            role = ROLE::SOLO;
         time_point                                      since;
         std::vector<transition>                         history;
-        uint64_t                                        session = 0;
+        uint64_t                                        transitions = 0;
+        uint64_t                                        session     = 0;
         std::unordered_map<std::string, fb::lua::value> memory;
         std::optional<death>                            died;
         std::unordered_map<std::string, pace>           paces;
@@ -261,34 +234,45 @@ private:
     std::unordered_map<uint32_t, mind>                                                 _minds;
     std::unordered_map<std::string, mind>                                              _archive;
     uint64_t                                                                           _sessions = 0;
+    const bool                                                                         _recording;
     std::unordered_map<uint64_t, std::shared_ptr<async::task_completion_source<bool>>> _loops;
     boost::asio::thread_pool _workers{std::max(1u, std::thread::hardware_concurrency())};
     inline static std::mutex _ledger_mutex;
-    inline static std::unordered_map<std::string, std::string>                 _ledger;
-    inline static std::unordered_map<std::string, std::pair<uint16_t, double>> _occupancy;
+    inline static std::unordered_map<std::string, std::string>                          _ledger;
+    inline static std::unordered_map<std::string, std::pair<uint16_t, double>>          _occupancy;
+    inline static std::unordered_map<uint16_t, std::unordered_map<std::string, double>> _occupants;
 
 public:
-    brain()  = default;
+    explicit brain(bool recording = true);
     ~brain() = default;
 
 public:
-    void                attach(game_bot& bot, const profile& profile);
-    void                persona(uint32_t bot, const std::unordered_map<std::string, double>& values);
-    void                detach(game_bot& bot);
-    void                transfer(game_bot& from, game_bot& to);
-    async::task<void>   stop(game_bot& bot);
-    bool                active(uint32_t bot) const;
-    void                release();
-    std::optional<mind> find(uint32_t bot) const;
-    async::task<event>  walk(std::shared_ptr<game_bot> bot, const destination& destination, const detour& detour);
-    async::task<event>  attack(std::shared_ptr<game_bot> bot, uint32_t oid, const tactic& tactic);
-    async::task<bool>   synced(std::shared_ptr<game_bot> bot);
-    async::task<event>  talk(std::shared_ptr<game_bot>             bot,
-                             std::shared_ptr<fb::protocol::header> opening,
-                             std::vector<answer>                   answers);
-    void                act(uint32_t bot, std::string_view activity);
-    void                close(game_bot& bot);
-    bool                talking(const game_bot& bot) const;
+    void               attach(game_bot& bot, const profile& profile);
+    void               persona(uint32_t bot, const std::unordered_map<std::string, double>& values);
+    void               detach(game_bot& bot);
+    void               transfer(game_bot& from, game_bot& to);
+    async::task<void>  stop(game_bot& bot);
+    bool               active(uint32_t bot) const;
+    void               release();
+    async::task<event> walk(std::shared_ptr<game_bot> bot, const destination& destination, const detour& detour);
+    async::task<event> engage(std::shared_ptr<game_bot> bot, uint32_t oid, const maneuver& maneuver);
+    async::task<bool>  synced(std::shared_ptr<game_bot> bot);
+    async::task<event> talk(std::shared_ptr<game_bot>             bot,
+                            std::shared_ptr<fb::protocol::header> opening,
+                            std::vector<answer>                   answers);
+    void               act(uint32_t bot, std::string_view activity);
+    void               close(game_bot& bot);
+    bool               talking(const game_bot& bot) const;
+    template <typename Fn>
+    auto read(uint32_t bot, Fn&& fn) const -> std::optional<std::invoke_result_t<Fn, const mind&>>
+    {
+        auto lock  = std::lock_guard(this->_mutex);
+        auto found = this->_minds.find(bot);
+        if (found == this->_minds.end())
+            return std::nullopt;
+
+        return fn(found->second);
+    }
     template <typename T>
     async::task<T> offload(std::shared_ptr<game_bot> bot, std::function<T()> fn)
     {
@@ -308,7 +292,7 @@ public:
         co_return result;
     }
     void                       die(const game_bot& bot);
-    void                       bury(game_bot& bot);
+    void                       bury(game_bot& bot, const std::string& task);
     void                       tally(uint32_t bot, bool succeeded);
     void                       expect(uint32_t bot, std::chrono::milliseconds duration);
     bool                       stalled(uint32_t bot) const;
@@ -331,7 +315,7 @@ public:
     static const char*                           name(STATE value);
     static const char*                           name(ROLE value);
     static const char*                           name(ACTION value);
-    static const char*                           name(NODE value);
+    static const char*                           name(MANEUVER value);
     static void                                  bind(lua_State* L);
     static double                                seconds(time_point value);
     static std::string                           module(std::string_view task);
@@ -348,6 +332,7 @@ private:
     fb::lua::root&    scripts(game_bot& bot);
     bool              update(uint32_t bot, uint64_t session, const std::optional<decision>& next);
     bool              halted(uint32_t bot, const decision& decision) const;
+    static void       evict(const std::string& name);
 };
 
 } // namespace fb::bot

@@ -23,12 +23,15 @@ function M.arrive(ctx, index, name, timeout)
     return arrived, ctx:bot(index)
 end
 
-function M.settle(ctx, index, mind, timeout, predicate)
+function M.settle(ctx, index, mind, timeout, predicate, watch)
     local stuck = false
     local done  = M.within(ctx, timeout, function()
         local current = ctx:bot(index)
-        local state   = mind:state(current)
-        stuck         = state ~= nil and (state.failures >= FAIL_LIMIT or mind:observe(current).online == false)
+        if watch ~= nil then
+            watch(current)
+        end
+        local state = mind:state(current)
+        stuck       = state ~= nil and (state.failures >= FAIL_LIMIT or mind:observe(current).online == false)
         return stuck or (state ~= nil and predicate(current))
     end)
     return done and stuck == false

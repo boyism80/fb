@@ -778,6 +778,11 @@ int context::yield(int retc)
     return lua_yield(*this, retc);
 }
 
+void context::renew()
+{
+    this->_lease = std::make_shared<char>();
+}
+
 void context::release()
 {
     if (this->_running > 0)
@@ -825,22 +830,28 @@ async::task<std::optional<int>>
 fb::lua::context::co_builder::run_pipeline(fb::async_executor&                                 executor,
                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
                                            context*                                            lua_ptr,
+                                           std::weak_ptr<char>                                 lease,
                                            std::function<async::task<void>()>                  yield_fn,
                                            std::function<async::task<int>()>                   resume_fn)
 {
+    auto& initial = lua_ptr->_initial_thread;
+
     // Reject only; the owning guard returns the pool slot.
-    const auto abort_pipeline = [lua_ptr](const char* phase, std::exception_ptr error) {
+    const auto abort_pipeline = [lua_ptr, &lease](const char* phase, std::exception_ptr error) {
         try
         {
             std::rethrow_exception(error);
         }
         catch (const fb::lua::cancelled& e)
         {
-            lua_ptr->cancel(e.what());
+            if (lease.expired() == false)
+                lua_ptr->cancel(e.what());
         }
         catch (const std::exception& e)
         {
             fb::logger::fatal("lua co_builder {} error: {}", phase, e.what());
+            if (lease.expired())
+                return;
 
             auto error_text = std::string(e.what());
             // A lua_resume failure already reported from the script context. This path is the C++ failure around it.
@@ -851,6 +862,8 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
         catch (...)
         {
             fb::logger::fatal("lua co_builder {} error", phase);
+            if (lease.expired())
+                return;
 
             auto error_text = std::format("lua co_builder {} error", phase);
             lua_ptr->report_error(std::format("{}: {}", phase, error_text));
@@ -858,22 +871,15 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
         }
     };
 
-    if (weak.has_value())
+    auto phase = "thread switch";
+    auto error = std::exception_ptr{};
+    try
     {
-        try
-        {
+        if (weak.has_value())
             co_await executor.threads.switching(*weak);
-        }
-        catch (...)
-        {
-            abort_pipeline("thread switch", std::current_exception());
-            throw;
-        }
-    }
 
-    if (yield_fn)
-    {
-        try
+        phase = "yield";
+        if (yield_fn)
         {
             // Builtins capture the pivot as a raw pointer; pin it so a disconnect during yield cannot free it.
             // The pin is scoped here so the last release, if any, happens on the object's thread, not the Lua thread.
@@ -887,35 +893,34 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
 
             co_await yield_fn();
         }
-        catch (...)
-        {
-            abort_pipeline("yield", std::current_exception());
-            throw;
-        }
-    }
 
-    if (!resume_fn)
-        co_return std::nullopt;
+        if (!resume_fn)
+            co_return std::nullopt;
 
-    try
-    {
-        co_await lua_ptr->_initial_thread.switching();
-    }
-    catch (...)
-    {
-        abort_pipeline("lua thread switch", std::current_exception());
-        throw;
-    }
+        phase = "lua thread switch";
+        co_await initial.switching();
+        if (lease.expired())
+            co_return std::nullopt;
 
-    try
-    {
+        phase = "resume";
         co_return co_await resume_fn();
     }
     catch (...)
     {
-        abort_pipeline("resume", std::current_exception());
-        throw;
+        error = std::current_exception();
     }
+
+    try
+    {
+        co_await initial.switching();
+    }
+    catch (...)
+    {
+        std::rethrow_exception(error);
+    }
+
+    abort_pipeline(phase, error);
+    std::rethrow_exception(error);
 }
 
 fb::lua::context::co_builder::co_builder(context& lua, fb::async_executor& executor) :
@@ -939,11 +944,12 @@ int fb::lua::context::co_builder::run()
     int  sync_result = 0;
     auto lua_ptr     = &this->_lua;
 
+    auto lease     = std::weak_ptr<char>(this->_lua._lease);
     auto rejected  = false;
     auto immediate = async::awaitable_then_immediate(
-        run_pipeline(this->_executor, this->weak, lua_ptr, std::move(yield_fn), std::move(resume_fn)),
-        [lua_ptr, &sync_result, &rejected, has_resume](async::awaitable_result<std::optional<int>> result,
-                                                       bool                                        immediate) {
+        run_pipeline(this->_executor, this->weak, lua_ptr, lease, std::move(yield_fn), std::move(resume_fn)),
+        [lua_ptr, lease, &sync_result, &rejected, has_resume](async::awaitable_result<std::optional<int>> result,
+                                                              bool                                        immediate) {
             try
             {
                 auto n = result();
@@ -955,7 +961,7 @@ int fb::lua::context::co_builder::run()
 
                 if (immediate)
                     sync_result = *n;
-                else
+                else if (lease.expired() == false)
                     lua_ptr->resume(*n);
             }
             catch (const fb::lua::cancelled&)
@@ -1337,6 +1343,7 @@ void root::release(context& ctx)
         }
 
         lua_settop(ctx, 0);
+        ctx.renew();
         ctx.parent(nullptr);
         ctx.options(call_options{});
         ctx.clear_on_error();

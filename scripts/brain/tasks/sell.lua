@@ -1,16 +1,12 @@
 local buyers   = require("brain.data.buyers")
-local data     = require("brain.data.combat")
 local items    = require("brain.data.items")
 local teleport = require("brain.data.teleport")
 local bag      = require("brain.policies.bag")
-local danger   = require("brain.policies.danger")
 local gear     = require("brain.policies.gear")
 local near     = require("brain.policies.near")
 local value    = require("brain.policies.value")
 
 local M = {}
-
-local trips = {}
 
 local function movers()
     local found = {}
@@ -44,20 +40,15 @@ local function goods(snap, query)
     return found
 end
 
-local function trip(snap, query, good)
-    local key = table.concat({ snap.world.map, table.concat(good.npcs, ",") }, "|")
-    if trips[key] == nil then
-        local maps = {}
-        for _, spot in ipairs(query.npcs(good.npcs)) do
-            table.insert(maps, spot.map)
-        end
-        local route = #maps > 0 and query.route(maps, danger.perilous(snap, query), danger.shunned(snap, query)) or nil
-        trips[key] = route ~= nil and route.cost or false
+local function trip(snap, query, good, worth)
+    local maps = {}
+    for _, spot in ipairs(query.npcs(good.npcs)) do
+        table.insert(maps, spot.map)
     end
-    if trips[key] == false then
+    if #maps == 0 then
         return nil
     end
-    return trips[key] * (snap.pace.step or data.walk) * 2 / 1000
+    return value.detour(snap, query, { maps = maps }, worth)
 end
 
 local function lost(snap, yields, horizon, freed, sold)
@@ -73,11 +64,12 @@ local function lost(snap, yields, horizon, freed, sold)
     return loss
 end
 
-local function gain(snap, query, found, length)
-    local worth = value.baseline(snap, query)
-    local hunt  = worth.hunt
+local function gain(snap, query, found, route, worth)
+    local length = route ~= nil and route.time or 0
+    local risk   = route ~= nil and route.risk or 0
+    local hunt   = worth.hunt
     if hunt == nil or hunt.yields == nil or (hunt.loot or 0) <= 0 then
-        return -length * worth.value
+        return -length * worth.value - risk
     end
     local freed = 0
     local sold  = {}
@@ -88,7 +80,7 @@ local function gain(snap, query, found, length)
     local window = (math.max(0, snap.bag.capacity - snap.bag.used) + freed) / hunt.loot
     local stay   = lost(snap, hunt.yields, window, 0, {})
     local after  = lost(snap, hunt.yields, math.max(0, window - length), freed, sold)
-    return (stay - after) * worth.exchange - length * worth.value
+    return (stay - after) * worth.exchange - length * worth.value - risk
 end
 
 local function choose(snap, query)
@@ -99,19 +91,20 @@ local function choose(snap, query)
     if #found == 0 then
         return nil
     end
+    local worth = value.baseline(snap, query)
     for _, good in ipairs(found) do
         local spot = near.approach(snap, query, good.npcs)
         if spot ~= nil then
             return { kind = ACTION.SAY, text = string.format("%s 다 판다", good.name), lose = good.name },
-                math.max(0, gain(snap, query, found, 0))
+                math.max(0, gain(snap, query, found, nil, worth))
         end
     end
-    local good   = found[1]
-    local length = trip(snap, query, good)
-    if length == nil then
+    local good  = found[1]
+    local route = trip(snap, query, good, worth)
+    if route == nil then
         return nil
     end
-    local delta = gain(snap, query, found, length)
+    local delta = gain(snap, query, found, route, worth)
     if delta <= 0 then
         return nil
     end

@@ -10,6 +10,8 @@ namespace fb::bot::builtin {
 struct brain
 {
     static int builtin_state(lua_State* L);
+    static int builtin_stat(lua_State* L);
+    static int builtin_clock(lua_State* L);
     static int builtin_states(lua_State* L);
     static int builtin_progress(lua_State* L);
     static int builtin_npc(lua_State* L);
@@ -44,14 +46,13 @@ struct brain
     static int builtin_spawns(lua_State* L);
     static int builtin_native(lua_State* L);
     static int builtin_habitats(lua_State* L);
-    static int builtin_attack(lua_State* L);
+    static int builtin_engage(lua_State* L);
     static int builtin_cast(lua_State* L);
     static int builtin_aside(lua_State* L);
 
 private:
     static fb::bot::brain::destination read_destination(lua_State* L, int index);
     static fb::bot::brain::detour      read_detour(lua_State* L, int index);
-    static fb::bot::brain::node        read_node(lua_State* L, int index);
     static void                        push_mob(lua_State* L, const fb::model::mob& model);
 };
 

@@ -9,10 +9,22 @@ local value    = require("brain.policies.value")
 
 local M = {}
 
+local function ahead(snap, query)
+    local maps = { snap.world.map }
+    if snap.record.death ~= nil then
+        table.insert(maps, snap.record.death.map)
+    end
+    local dest = value.objective(snap, query).dest
+    for _, map in ipairs(dest ~= nil and (dest.maps or { dest.map }) or {}) do
+        table.insert(maps, map)
+    end
+    return maps
+end
+
 local function low(snap, query)
-    local threat = danger.threat(snap)
-    return (threat > 0 and snap.self.hp <= threat) or
-        snap.self.hp <= math.min(snap.self.max_hp - 1, ground.need(snap, query))
+    local threat = danger.threat(snap, ahead(snap, query))
+    return snap.self.hp < snap.self.max_hp and ((threat > 0 and snap.self.hp <= threat) or
+        snap.self.hp <= ground.need(snap, query))
 end
 
 local function dose(doses, deficit)
@@ -67,7 +79,7 @@ local function buffed(snap, name)
     return false
 end
 
-local function refill(snap)
+local function refill(snap, query)
     local least = recovery.least(snap)
     local mp    = snap.self.mp or 0
     if least == nil or mp >= least then
@@ -75,7 +87,8 @@ local function refill(snap)
     end
     local spells = recovery.spells(snap)
     local buffs  = combat.buffs(snap)
-    if spells.charge ~= nil and mp >= spells.charge.mp and snap.self.hp - buffs.charge.cost > danger.threat(snap) then
+    if spells.charge ~= nil and mp >= spells.charge.mp and
+        snap.self.hp - buffs.charge.cost > danger.threat(snap, ahead(snap, query)) then
         return { kind = ACTION.CAST, slot = spells.charge.slot }
     elseif spells.surge ~= nil and mp >= spells.surge.mp and buffed(snap, spells.surge.name) == false then
         return { kind = ACTION.CAST, slot = spells.surge.slot }
@@ -91,7 +104,7 @@ local function choose(snap, query)
     if snap.self.ghost then
         return nil
     end
-    return M.thank(snap, query) or mend(snap, query) or refill(snap)
+    return M.thank(snap, query) or mend(snap, query) or refill(snap, query)
 end
 
 function M.wanted(snap, query)
@@ -105,15 +118,10 @@ function M.value(snap, query)
     local gain   = 0
     local time   = action.kind == ACTION.CAST and cast or action.kind == ACTION.USE and cast or 0
     if M.thank(snap, query) == nil and mend(snap, query) == nil then
-        local full = ground.choose(snap, query, "REFILL")
-        local dry  = ground.choose(snap, query, "DRY")
-        local mp   = (snap.self.max_mp or 0) - (snap.self.mp or 0)
-        if full ~= nil and full.drain > 0 then
-            gain = (full.rate - (dry ~= nil and dry.rate or 0)) * mp / full.drain
-        end
+        gain = value.mana(snap, query) * ((snap.self.max_mp or 0) - (snap.self.mp or 0))
     else
-        local need    = math.max(danger.threat(snap), ground.need(snap, query), 1)
-        local deficit = math.max(0, need - snap.self.hp)
+        local need    = math.max(danger.threat(snap, ahead(snap, query)), ground.need(snap, query), 1)
+        local deficit = math.max(0, math.min(need, snap.self.max_hp) - snap.self.hp)
         local heal    = recovery.heal(snap)
         local doses   = recovery.doses(snap, "hp")
         local amount  = deficit

@@ -104,6 +104,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     });
     this->bind(&game_bot_controller::on_ping);
     this->bind<game_resp::update_hp>([](game_bot& bot, game_resp::update_hp& response) -> async::task<void> {
+        bot.sight.hurt(response.oid, response.percent);
         bot.events.push({game_bot::events::TYPE::HIT, response.oid, {}, response.damage, response.percent});
         co_return;
     });

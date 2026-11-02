@@ -48,6 +48,7 @@ public:
     std::string name(const std::type_info& type);
     void        add(const std::string& name, double ms, bool failed);
     void        count(const std::string& name, bool failed);
+    void        time(const std::string& name, double ms, bool failed);
     Json::Value take();
 };
 

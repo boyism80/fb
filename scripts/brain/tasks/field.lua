@@ -1,7 +1,8 @@
+local battle   = require("brain.policies.battle")
 local combat   = require("brain.policies.combat")
-local danger   = require("brain.policies.danger")
 local ground   = require("brain.policies.ground")
 local recovery = require("brain.policies.recovery")
+local value    = require("brain.policies.value")
 
 local M = {}
 
@@ -19,25 +20,22 @@ function M.castable(snap, query, mob)
     if least == nil or (snap.self.mp or 0) < least or snap.self.class == "WARRIOR" then
         return true
     end
-    return #combat.plan(snap, query, mob, danger.guard(mob)).skills > 0
+    for _, choice in ipairs(combat.options(snap, mob).offense) do
+        if choice.damage > 0 then
+            return true
+        end
+    end
+    return false
 end
 
-local function target(snap, query, names)
+function M.target(snap, query, names)
     local wanted = {}
     for _, name in ipairs(names) do
         wanted[name] = true
     end
-    local found = nil
-    local best  = nil
-    for _, mob in ipairs(snap.world.mobs) do
-        local cost = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y)
-        if wanted[mob.name] and danger.winnable(snap, query, mob) and M.castable(snap, query, mob) and
-            (best == nil or cost < best) then
-            found = mob
-            best  = cost
-        end
-    end
-    return found
+    return battle.target(snap, query, function(mob)
+        return wanted[mob.name] ~= nil and M.castable(snap, query, mob)
+    end)
 end
 
 local function area(snap, query, names)
@@ -54,8 +52,11 @@ local function area(snap, query, names)
 end
 
 function M.wanted(snap, query)
-    return snap.self.ghost == false and snap.self.class ~= "NONE" and snap.record.memory.order == nil and
-        (snap.persona or {}).hunt == 1 and ground.choose(snap, query) ~= nil
+    if snap.self.ghost then
+        return false
+    end
+    local objective = value.objective(snap, query)
+    return objective.task == "FIELD" and objective.dest ~= nil
 end
 
 function M.propose(snap, query)
@@ -68,14 +69,9 @@ function M.propose(snap, query)
 
     local floor  = best.floors[index]
     local occupy = { map = floor.map, rate = floor.kills }
-    local mob    = target(snap, query, floor.targets)
-    if mob ~= nil then
-        return {
-            kind = ACTION.ATTACK,
-            oid = mob.oid,
-            tactic = combat.plan(snap, query, mob, danger.guard(mob)),
-            occupy = occupy
-        }
+    local found  = M.target(snap, query, floor.targets)
+    if found ~= nil then
+        return battle.propose(found, { occupy = occupy })
     elseif #best.floors > 1 then
         local next = best.floors[index % #best.floors + 1]
         return { kind = ACTION.MOVE, dest = { maps = { next.map } }, occupy = occupy }

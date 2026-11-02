@@ -1,5 +1,6 @@
 local protocol = require("integration.protocol")
 local resp     = require("integration.response")
+local battle   = require("brain.policies.battle")
 local dialog   = require("brain.policies.dialog")
 local travel   = require("brain.policies.travel")
 local wait     = require("brain.policies.wait")
@@ -34,11 +35,12 @@ end
 local SKILLS = {
     [ACTION.MOVE]   = function(brain, bot, action)
         local arrived, event = travel.go(brain, bot, action.dest)
-        return arrived, event and event.type
+        return arrived or travel.yielded(event), event and event.type
     end,
     [ACTION.ATTACK] = function(brain, bot, action)
-        local event = brain:attack(bot, action.oid, action.tactic or {})
-        return event.type == "KILLED", event.type
+        local event = battle.step(brain, bot, action.oid, action)
+        local going = event.type == "STRUCK" or event.type == "DONE" or event.type == "REFUSED"
+        return event.type == "KILLED" or going, event.type
     end,
     [ACTION.TALK]   = function(brain, bot, action)
         local npc = action.npc ~= nil and brain:npc(bot, action.npc) or nil
@@ -89,7 +91,7 @@ local SKILLS = {
         if action.key ~= nil then
             brain:remember(bot, action.key, nil)
         else
-            brain:bury(bot)
+            brain:bury(bot, action.task)
         end
         return true
     end,
@@ -146,25 +148,16 @@ function M.run(brain, bot, action)
         return false, "UNKNOWN_ACTION"
     end
     if action.forget then
-        brain:bury(bot)
+        brain:bury(bot, "RECOVER")
     end
     if action.occupy ~= nil then
         brain:occupy(bot, action.occupy.map, action.occupy.rate)
-    end
-    if action.peril ~= nil then
-        local perils = brain:recall(bot, "perils") or {}
-        perils[tostring(action.peril.map)] = {
-            mob = action.peril.mob,
-            stats = action.peril.stats,
-            at = brain:observe(bot).now
-        }
-        brain:remember(bot, "perils", perils)
     end
     local done, reason = skill(brain, bot, action)
     if done and action.clear ~= nil and brain:active(bot) then
         brain:remember(bot, action.clear, nil)
     end
-    if done and action.tally ~= nil and brain:active(bot) then
+    if done and reason == "KILLED" and action.tally ~= nil and brain:active(bot) then
         local record = brain:recall(bot, action.tally)
         if record ~= nil then
             record.killed = (record.killed or 0) + 1

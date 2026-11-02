@@ -26,7 +26,6 @@ test_suite {
                 order    = { task = "GO", dest = { map = "국내성", x = 206, y = 107, range = 2 } },
                 tasks    = { "ORDER" },
                 finished = away,
-                keep     = true,
             })
         end,
         function(ctx)

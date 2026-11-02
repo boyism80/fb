@@ -1,6 +1,6 @@
 local grounds = require("brain.data.grounds")
 local hunting = require("brain.data.hunting")
-local combat  = require("brain.policies.combat")
+local battle  = require("brain.policies.battle")
 local danger  = require("brain.policies.danger")
 local score   = require("brain.policies.score")
 local value   = require("brain.policies.value")
@@ -22,24 +22,6 @@ local function habitats(query, names)
     return #preferred > 0 and preferred or others
 end
 
-local function prey(snap, query, order)
-    local wanted = {}
-    for _, name in ipairs(order.names) do
-        wanted[name] = true
-    end
-    local found = nil
-    local best  = nil
-    for _, mob in ipairs(snap.world.mobs) do
-        local cost = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y)
-        if wanted[mob.name] and danger.winnable(snap, query, mob) and field.castable(snap, query, mob) and
-            (best == nil or cost < best) then
-            found = mob
-            best  = cost
-        end
-    end
-    return found
-end
-
 local function hunt(snap, query, order)
     local spawns = query.spawns(snap.world.map, order.names)
     if #spawns == 0 then
@@ -49,15 +31,9 @@ local function hunt(snap, query, order)
         end
         return { kind = ACTION.MOVE, dest = { maps = maps } }
     end
-    local mob = prey(snap, query, order)
-    if mob ~= nil then
-        return {
-            kind = ACTION.ATTACK,
-            oid = mob.oid,
-            tactic = combat.plan(snap, query, mob, danger.guard(mob)),
-            tally =
-            "order"
-        }
+    local found = field.target(snap, query, order.names)
+    if found ~= nil then
+        return battle.propose(found, { tally = "order" })
     end
     local spot = nil
     local best = nil
@@ -87,18 +63,29 @@ local function journey(snap, query)
     return action, worth, trip
 end
 
+local names = nil
+
+local function named()
+    if names == nil then
+        names = {}
+        for _, mob in pairs(hunting.mobs) do
+            names[mob.name] = names[mob.name] or {}
+            table.insert(names[mob.name], mob)
+        end
+    end
+    return names
+end
+
 local function recovering(snap, query, order)
     if order.task ~= "HUNT" or rest.wanted(snap, query) == false then
         return false
     end
-    local wanted = {}
-    for _, name in ipairs(order.names) do
-        wanted[name] = true
-    end
     local rested = score.rested(snap)
-    for _, mob in pairs(hunting.mobs) do
-        if wanted[mob.name] and danger.winnable(snap, query, mob) == false and danger.winnable(rested, query, mob) then
-            return true
+    for _, name in ipairs(order.names) do
+        for _, mob in ipairs(named()[name] or {}) do
+            if danger.winnable(snap, query, mob) == false and danger.winnable(rested, query, mob) then
+                return true
+            end
         end
     end
     return false

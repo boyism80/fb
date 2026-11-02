@@ -4,7 +4,10 @@ local hunting  = require("brain.data.hunting")
 local magic    = require("brain.data.spells")
 local teleport = require("brain.data.teleport")
 local danger   = require("brain.policies.danger")
+local failure  = require("brain.policies.failure")
 local ground   = require("brain.policies.ground")
+local memo     = require("brain.policies.memo")
+local score    = require("brain.policies.score")
 
 local M = {}
 
@@ -39,14 +42,48 @@ local function exchange(snap, query)
     return best or 0
 end
 
+local baselines = setmetatable({}, { __mode = "k" })
+
 function M.baseline(snap, query)
-    local hunt = ground.choose(snap, query)
-    if hunt == nil or hunt.rate <= 0 then
-        return { value = 0, exchange = exchange(snap, query), rate = 0, income = 0 }
+    if baselines[snap] ~= nil then
+        return baselines[snap]
     end
-    local income = earnings(hunt.yields)
-    local rate   = income > 0 and hunt.rate / income or exchange(snap, query)
-    return { value = hunt.rate + rate * income, exchange = rate, rate = hunt.rate, income = income, hunt = hunt }
+    local hunt   = ground.choose(snap, query)
+    local result = nil
+    if hunt == nil or hunt.rate <= 0 then
+        result = { value = 0, exchange = exchange(snap, query), rate = 0, income = 0 }
+    else
+        local income  = earnings(hunt.yields)
+        local rate    = exchange(snap, query)
+        local horizon = ground.horizon(snap, hunt.rate)
+        if rate <= 0 and horizon < math.huge then
+            rate = hunt.rate * horizon / math.max(snap.self.money or 0, 1)
+        end
+        local liking = (snap.persona or {}).hunt or 1
+        result       = {
+            value = (hunt.rate + rate * income) * liking,
+            exchange = rate,
+            rate = hunt.rate,
+            income = income,
+            hunt = hunt
+        }
+    end
+    baselines[snap] = result
+    return result
+end
+
+function M.power(snap, query)
+    local ability = score.capability(snap, query)
+    return ability.dps.single * ability.ehp
+end
+
+function M.mana(snap, query)
+    local full = ground.choose(snap, query, "REFILL")
+    local dry  = ground.choose(snap, query, "DRY")
+    if full == nil or full.drain <= 0 then
+        return 0
+    end
+    return (full.rate - (dry ~= nil and dry.rate or 0)) / full.drain
 end
 
 function M.stay(snap, query, duration, worth)
@@ -60,21 +97,52 @@ function M.stay(snap, query, duration, worth)
     return danger.combine(chances) * danger.loss(snap, query, worth)
 end
 
+function M.spot(snap, query, point, worth)
+    local step    = snap.pace.step or data.walk
+    local dwell   = 1000 / magic.cast_rate
+    local range   = math.max(data.sight.x, data.sight.y)
+    local chances = {}
+    local seen    = {}
+    local function add(mob, x, y, weight)
+        local dx = math.abs(x - point.x)
+        local dy = math.abs(y - point.y)
+        if (mob.speed or 0) > 0 and dx <= data.sight.x and dy <= data.sight.y then
+            local distance = dx + dy
+            local inside   = math.max(0, range - distance) * step + dwell
+            local approach = math.max(0, distance - data.reach) * mob.speed
+            table.insert(chances, weight * danger.chance(snap, query, mob, inside - approach))
+        end
+    end
+    if point.map == snap.world.map then
+        for _, mob in ipairs(visible(snap, query)) do
+            seen[mob.id or mob.name] = true
+            add(mob, mob.x, mob.y, 1)
+        end
+    end
+    local perils = snap.record.memory.perils or {}
+    local peril  = perils[tostring(point.map)] or perils[point.map]
+    if type(peril) == "table" and type(peril.stats) == "table" and peril.stats.x ~= nil and
+        seen[peril.mob or peril.stats.name] == nil then
+        add(peril.stats, peril.stats.x, peril.stats.y, danger.weight(snap, peril))
+    end
+    return danger.combine(chances) * danger.loss(snap, query, worth)
+end
+
 function M.cost(snap, query, action, worth, duration)
     if action == nil then
         return 0
     elseif action.kind == ACTION.MOVE and action.dest ~= nil then
-        local trip = M.trip(snap, query, action.dest, worth)
+        local trip = M.detour(snap, query, action.dest, worth)
         return trip ~= nil and trip.cost or math.huge
     end
     local time = duration or 0
     return time / 1000 * worth.value + M.stay(snap, query, time, worth)
 end
 
-local function segments(snap, route, target)
+local function segments(origin, route, target)
     local found = {}
-    local map   = snap.world.map
-    local x, y  = snap.world.x, snap.world.y
+    local map   = origin.map
+    local x, y  = origin.x, origin.y
     for _, hop in ipairs(route.path or {}) do
         table.insert(found, { map = map, steps = math.abs(hop.x - x) + math.abs(hop.y - y) })
         map, x, y = hop.dest, hop.ax, hop.ay
@@ -131,22 +199,20 @@ end
 
 local routes = {}
 
-local function plans(snap, query, dest)
+local function plans(snap, query, dest, origin)
     local shunned = danger.shunned(snap, query)
-    local key     = table.concat({ snap.world.map, tostring(dest.map), table.concat(dest.maps or {}, ","),
-        table.concat(dest.names or {}, ","), table.concat(shunned, ","), #danger.perilous(snap, query) }, "|")
-    if routes[key] ~= nil then
-        return routes[key]
-    end
-    local where = { map = dest.map, maps = dest.maps, names = dest.names }
-    local found = {
-        { route = query.path(where, danger.perilous(snap, query), shunned), risky = false },
-        { route = query.path(where), risky = true },
-    }
-    if found[1].route ~= nil or found[2].route ~= nil then
-        routes[key] = found
-    end
-    return found
+    local base    = table.concat({ snap.world.map, table.concat(shunned, ","), #danger.perilous(snap, query) }, "|")
+    local key     = table.concat({ origin ~= nil and origin.map or "", tostring(dest.map),
+        table.concat(dest.maps or {}, ","), table.concat(dest.names or {}, ",") }, "|")
+    local where   = { map = dest.map, maps = dest.maps, names = dest.names }
+    local found   = memo.get(routes, snap.self.name, base, key, function()
+        local found = {
+            { route = query.path(where, danger.perilous(snap, query), shunned, origin), risky = false },
+            { route = query.path(where, nil, nil, origin), risky = true },
+        }
+        return (found[1].route ~= nil or found[2].route ~= nil) and found or nil
+    end)
+    return found or { { risky = false }, { risky = true } }
 end
 
 local function lands(snap, dest, targets)
@@ -198,25 +264,14 @@ local function leap(snap, dest)
     return false
 end
 
-function M.trip(snap, query, dest, worth)
+local function walk(snap, query, dest, worth, origin, best)
     local target = dest.x ~= nil and dest or nil
     local loss   = danger.loss(snap, query, worth)
     local step   = snap.pace.step or data.walk
-    local best   = nil
-    if target == nil and leap(snap, dest) then
-        local time = 1 / magic.cast_rate
-        best = {
-            cost = time * worth.value + M.stay(snap, query, time * 1000, worth),
-            time = time,
-            risk = 0,
-            decay = 0,
-            period = 0,
-            risky = false
-        }
-    end
-    for _, plan in ipairs(plans(snap, query, dest)) do
+    local start  = origin or { map = snap.world.map, x = snap.world.x, y = snap.world.y }
+    for _, plan in ipairs(plans(snap, query, dest, origin)) do
         if plan.route ~= nil then
-            local parts = segments(snap, plan.route, target)
+            local parts = segments(start, plan.route, target)
             local steps = 0
             for _, part in ipairs(parts) do
                 steps = steps + part.steps
@@ -239,6 +294,68 @@ function M.trip(snap, query, dest, worth)
         end
     end
     return best
+end
+
+function M.trip(snap, query, dest, worth)
+    local best = nil
+    if dest.x == nil and leap(snap, dest) then
+        local time = 1 / magic.cast_rate
+        best = {
+            cost = time * worth.value + M.stay(snap, query, time * 1000, worth),
+            time = time,
+            risk = 0,
+            decay = 0,
+            period = 0,
+            risky = false
+        }
+    end
+    return walk(snap, query, dest, worth, nil, best)
+end
+
+function M.objective(snap, query)
+    local order = snap.record.memory.order
+    if order ~= nil and snap.self.ghost == false and failure.remaining(snap, "ORDER") == 0 then
+        if order.task == "GO" then
+            return { task = "ORDER", dest = order.dest }
+        elseif order.task == "HUNT" then
+            local maps = {}
+            for _, habitat in ipairs(query.habitats(order.names or {})) do
+                table.insert(maps, habitat.id)
+            end
+            return { task = "ORDER", dest = #maps > 0 and { maps = maps } or nil }
+        end
+    end
+    local hunt = ground.choose(snap, query)
+    return { task = "FIELD", dest = hunt ~= nil and { maps = { hunt.floors[1].map } } or nil }
+end
+
+function M.detour(snap, query, dest, worth)
+    local trip = M.trip(snap, query, dest, worth)
+    local goal = M.objective(snap, query).dest
+    if trip == nil or trip.route == nil or goal == nil then
+        return trip
+    end
+    local arrival = {
+        map = trip.route.dest,
+        x = dest.x or trip.route.x or snap.world.x,
+        y = dest.y or trip.route.y or snap.world.y
+    }
+    local onward  = walk(snap, query, goal, worth, arrival)
+    local direct  = walk(snap, query, goal, worth)
+    if onward == nil or direct == nil then
+        return trip
+    end
+    local time = math.max(0, trip.time + onward.time - direct.time)
+    local risk = math.max(0, trip.risk + onward.risk - direct.risk)
+    return {
+        cost = time * worth.value + risk,
+        time = time,
+        risk = risk,
+        decay = trip.decay,
+        period = trip.period,
+        risky = trip.risky,
+        route = trip.route
+    }
 end
 
 function M.patience(trip, worth)

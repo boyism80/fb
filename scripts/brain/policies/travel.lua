@@ -1,5 +1,5 @@
 local combat   = require("brain.data.combat")
-local fight    = require("brain.policies.combat")
+local battle   = require("brain.policies.battle")
 local danger   = require("brain.policies.danger")
 local means    = require("brain.policies.means")
 local snapshot = require("brain.snapshot")
@@ -41,11 +41,18 @@ local function blocker(brain, bot, event)
     end
     local facts = query.bind(brain, bot)
     for _, mob in ipairs(snap.world.mobs) do
-        if mob.oid == event.oid and mob.hp ~= nil and danger.winnable(snap, facts, mob) then
-            return mob, snap, facts
+        if mob.oid == event.oid and mob.hp ~= nil then
+            local choice = battle.choose(snap, facts, mob)
+            if choice ~= nil then
+                return mob, { maneuver = choice.maneuver, key = choice.key, opener = choice.opener }
+            end
         end
     end
     return nil
+end
+
+function M.yielded(event)
+    return event ~= nil and event.type == "ENGAGED"
 end
 
 local function expect(brain, bot, destination, detour)
@@ -68,14 +75,13 @@ local function journey(brain, bot, destination, detour)
             log("debug", string.format("[brain:travel] bot=%s jumped by %s to map=%d %d,%d", bot:name(), event.detail,
                 event.map, event.x, event.y))
         elseif event.type == "OCCUPIED" and blocker(brain, bot, event) ~= nil then
-            local mob, snap, facts = blocker(brain, bot, event)
+            local mob, action = blocker(brain, bot, event)
             brain:remember(bot, "blocked", event.detail)
             log("debug", string.format("[brain:travel] bot=%s clears %s %d at map=%d %d,%d", bot:name(), mob.name,
                 event.oid, event.map, event.x, event.y))
-            local tactic = fight.plan(snap, facts, mob, danger.guard(mob))
-            local fought = brain:attack(bot, event.oid, tactic)
-            if fought.type == "HURT" then
-                return false, fought
+            local fought = battle.step(brain, bot, event.oid, action)
+            if fought.type == "STRUCK" or fought.type == "DONE" or fought.type == "REFUSED" then
+                return false, { type = "ENGAGED", map = event.map, x = event.x, y = event.y, oid = event.oid }
             end
         elseif event.type == "OCCUPIED" then
             local wait = patience(brain, bot, destination, detour, event)
@@ -95,6 +101,11 @@ local function journey(brain, bot, destination, detour)
         elseif event.type == "BLOCKED" and final == false and detour.wary then
             detour.wary  = false
             detour.avoid = {}
+        elseif event.type == "BOUNCED" and detour.bounced[event.dest] == nil then
+            log("debug", string.format("[brain:travel] bot=%s bounced off map=%d at map=%d %d,%d", bot:name(),
+                event.dest, event.map, event.x, event.y))
+            detour.bounced[event.dest] = true
+            table.insert(detour.shunned, event.dest)
         elseif event.type == "DENIED" or (event.type == "BLOCKED" and final == false) then
             table.insert(detour.closed, { map = event.map, x = event.x, y = event.y })
         elseif event.type == "NO_ROUTE" and #detour.closed > 0 then
@@ -150,7 +161,8 @@ function M.go(brain, bot, destination)
         avoid = avoid,
         wary = #avoid > 0,
         perilous = risky and {} or danger.perilous(snap, facts),
-        shunned = risky and {} or danger.shunned(snap, facts)
+        shunned = risky and {} or danger.shunned(snap, facts),
+        bounced = {}
     }
     expect(brain, bot, destination, detour)
     local arrived, event = journey(brain, bot, destination, detour)

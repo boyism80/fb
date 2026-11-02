@@ -54,8 +54,14 @@ function M.run(ctx, index, case)
     local died = ghost.die(ctx, index, case)
     ctx:bot(index):brain(mind, { seed = 1 })
 
+    local alive   = false
+    local again   = false
     local settled = died and expect.settle(ctx, index, mind, TIMEOUT, function(current)
         return current:state() ~= "GHOST" and mind:death(current) == nil
+    end, function(current)
+        local ghost = current:state() == "GHOST"
+        again       = again or (alive and ghost)
+        alive       = alive or ghost == false
     end)
 
     bot          = ctx:bot(index)
@@ -72,10 +78,11 @@ function M.run(ctx, index, case)
     end
     expect.release(ctx, index, mind, TIMEOUT)
     local cleared = ghost.clear(ctx, index)
-    local passed = cleared and settled and recovered and ((case.money or MONEY) > 0) == (money > 0) and bagged == 0 and
+    local kept    = case.guard ~= nil or ((case.money or MONEY) > 0) == (money > 0)
+    local passed  = cleared and settled and recovered and again == false and kept and bagged == 0 and
         (case.jump == "*" or jumped == case.jump)
-    local summary = string.format("died=%s settled=%s money=%d weapon_in_bag=%d jumped=%s history=%s", tostring(died),
-        tostring(settled), money, bagged, tostring(jumped), table.concat(lines, " -> "))
+    local summary = string.format("died=%s settled=%s again=%s money=%d weapon_in_bag=%d jumped=%s history=%s",
+        tostring(died), tostring(settled), tostring(again), money, bagged, tostring(jumped), table.concat(lines, " -> "))
     if passed then
         log("debug", string.format("[brain:recover:%s] SUCCESS %s", case.name, summary))
     else

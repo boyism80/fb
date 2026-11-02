@@ -4,7 +4,9 @@ local hunting  = require("brain.data.hunting")
 local magic    = require("brain.data.spells")
 local fight    = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
+local memo     = require("brain.policies.memo")
 local recovery = require("brain.policies.recovery")
+local survival = require("brain.policies.survival")
 local score    = require("brain.policies.score")
 
 local M = {}
@@ -59,41 +61,64 @@ function M.evaluate(snap, query, floor, ability)
     local kills   = 0
     local need    = 0
     local margin  = math.huge
-    local deadly  = false
+    local safe    = true
+    local deaths  = 0
     local targets = {}
     local drained = 0
     local taken   = 0
     local loot    = 0
     local yields  = {}
+    local entries = {}
+    local spent   = 0
+    local counted = 0
     for _, entry in ipairs(floor.mobs) do
         local mob = hunting.mobs[entry.id]
         if mob ~= nil then
-            deadly = deadly or danger.deadly(snap, query, mob)
-            local result = fight.fight(snap, query, mob, floor.density)
-            if result.margin > 0 and (mob.exp or 0) > 0 then
-                exp     = exp + entry.count * mob.exp
-                time    = time + entry.count * (result.time + rest(snap, result, ability, buffs))
-                kills   = kills + entry.count
-                need    = math.max(need, result.taken)
-                margin  = math.min(margin, result.margin)
-                drained = drained + entry.count * result.drained
-                taken   = taken + entry.count * result.taken
-                loot    = loot + entry.count * (mob.loot or 0)
-                for _, drop in ipairs(mob.drops or {}) do
-                    local found = yields[drop.name] or { rate = 0, capacity = drop.capacity }
-                    found.rate = found.rate + entry.count * drop.count * drop.chance
-                    yields[drop.name] = found
-                end
-                table.insert(targets, mob.name)
+            local result = fight.outcome(snap, query, mob, floor.density)
+            table.insert(entries, { mob = mob, count = entry.count, result = result })
+            if result.time < math.huge then
+                spent   = spent + entry.count * result.time
+                counted = counted + entry.count
             end
         end
+    end
+    local crowd = survival.crowd(snap, entries, counted > 0 and spent / counted or math.huge, 1)
+    for _, entry in ipairs(entries) do
+        local mob    = entry.mob
+        local result = entry.result
+        local ending = survival.ending(snap, result, crowd)
+        if mob.attack == "AGGRESSIVE" and fight.hits(mob) and ending <= 0 then
+            safe = false
+        end
+        if ending > 0 and (mob.exp or 0) > 0 then
+            local hurt = result.taken + crowd.pressure * result.time
+            exp        = exp + entry.count * mob.exp
+            time       = time +
+            entry.count * (result.time + rest(snap, { taken = hurt, drained = result.drained }, ability, buffs))
+            kills      = kills + entry.count
+            deaths     = deaths + entry.count * survival.burst(snap, crowd, result.time, (snap.self.hp + ending) / 2)
+            need       = math.max(need, hurt)
+            margin     = math.min(margin, ending / math.max(snap.self.max_hp, 1))
+            drained    = drained + entry.count * result.drained
+            taken      = taken + entry.count * hurt
+            loot       = loot + entry.count * (mob.loot or 0)
+            for _, drop in ipairs(mob.drops or {}) do
+                local found = yields[drop.name] or { rate = 0, capacity = drop.capacity }
+                found.rate = found.rate + entry.count * drop.count * drop.chance
+                yields[drop.name] = found
+            end
+            table.insert(targets, mob.name)
+        end
+    end
+    if time > 0 and deaths > 0 then
+        exp = exp - deaths * (danger.penalty(snap) + danger.revival(snap, query) * exp / time * 1000)
     end
     for _, entry in pairs(yields) do
         entry.rate = time > 0 and entry.rate / time * 1000 or 0
     end
     return {
         map     = floor.map,
-        safe    = deadly == false and #targets > 0,
+        safe    = safe and #targets > 0,
         rate    = time > 0 and exp / time * 1000 or 0,
         kills   = time > 0 and kills / time * 1000 or 0,
         supply  = floor.supply or 0,
@@ -129,8 +154,7 @@ local function sweep(snap, query, bundle, ability)
 end
 
 local function candidates(snap, query, mode)
-    local key = score.signature(snap, mode)
-    if cache[key] == nil then
+    return memo.get(cache, snap.self.name, score.signature(snap, ""), score.signature(snap, mode), function()
         local rested  = score.rested(snap, mode)
         local ability = score.capability(rested, query)
         local found   = {}
@@ -143,9 +167,8 @@ local function candidates(snap, query, mode)
                 break
             end
         end
-        cache[key] = found
-    end
-    return cache[key]
+        return found
+    end)
 end
 
 local function share(floor, query)
@@ -192,7 +215,7 @@ function M.reachable(snap, query, candidate)
     return candidate.reachable[key]
 end
 
-function M.choose(snap, query, mode)
+local function pick(snap, query, mode)
     local shunned = {}
     for _, map in ipairs(danger.shunned(snap, query)) do
         shunned[map] = true
@@ -223,6 +246,21 @@ function M.choose(snap, query, mode)
     return nil
 end
 
+local chosen = setmetatable({}, { __mode = "k" })
+
+function M.choose(snap, query, mode)
+    local cached = chosen[snap]
+    if cached == nil then
+        cached       = {}
+        chosen[snap] = cached
+    end
+    local key = mode or ""
+    if cached[key] == nil then
+        cached[key] = pick(snap, query, mode) or false
+    end
+    return cached[key] or nil
+end
+
 local names = nil
 
 function M.need(snap, query)
@@ -240,15 +278,13 @@ function M.need(snap, query)
             local mob = names[name]
             if mob ~= nil and fight.hits(mob) then
                 local worst = fight.mitigate(mob.damage, snap.self.phydef or 0, 0)
-                need        = math.max(need, fight.fight(rested, query, mob).taken, worst)
+                need        = math.max(need, fight.outcome(rested, query, mob).taken, worst)
             end
         end
         return need
-    elseif (snap.persona or {}).hunt == 1 then
+    else
         local best = M.choose(snap, query)
         return best ~= nil and best.need or 0
-    else
-        return 0
     end
 end
 

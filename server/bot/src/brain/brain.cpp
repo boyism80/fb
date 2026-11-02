@@ -1,5 +1,6 @@
 #include <fb/bot/brain/brain.h>
 
+#include <fb/bot/builtin/brain.h>
 #include <fb/bot/builtin/integration_test.h>
 #include <fb/bot/game_controller.h>
 #include <fb/bot/integration/lua_integration_model.h>
@@ -26,6 +27,10 @@ constexpr auto ALERT_MODULE    = "brain.policies.alert";
 constexpr auto DECIDE_MODULE   = "brain.decide";
 constexpr auto SKILLS_MODULE   = "brain.skills";
 constexpr auto OBSERVE_TIMEOUT = 5s;
+
+brain::brain(bool recording) :
+    _recording(recording)
+{ }
 
 void brain::attach(game_bot& bot, const profile& profile)
 {
@@ -184,16 +189,6 @@ void brain::release()
     this->_minds.clear();
 }
 
-std::optional<brain::mind> brain::find(uint32_t bot) const
-{
-    auto lock  = std::lock_guard(this->_mutex);
-    auto found = this->_minds.find(bot);
-    if (found == this->_minds.end())
-        return std::nullopt;
-
-    return found->second;
-}
-
 brain::snapshot brain::observe(const game_bot& bot)
 {
     auto result   = snapshot{};
@@ -243,36 +238,16 @@ const char* brain::name(ROLE value)
     return "";
 }
 
-const char* brain::name(NODE value)
+const char* brain::name(MANEUVER value)
 {
     switch (value)
     {
-    case NODE::SELECTOR:
-        return "SELECTOR";
-    case NODE::SEQUENCE:
-        return "SEQUENCE";
-    case NODE::CHECK:
-        return "CHECK";
-    case NODE::HEAL:
-        return "HEAL";
-    case NODE::POTION:
-        return "POTION";
-    case NODE::HURT:
-        return "HURT";
-    case NODE::BUFF:
-        return "BUFF";
-    case NODE::SPELL:
-        return "SPELL";
-    case NODE::MANA:
-        return "MANA";
-    case NODE::APPROACH:
-        return "APPROACH";
-    case NODE::FACE:
-        return "FACE";
-    case NODE::OPENER:
-        return "OPENER";
-    case NODE::SWING:
+    case MANEUVER::SWING:
         return "SWING";
+    case MANEUVER::CAST:
+        return "CAST";
+    case MANEUVER::USE:
+        return "USE";
     }
     return "";
 }
@@ -337,24 +312,12 @@ void brain::bind(lua_State* L)
     lua_setglobal(L, "ACTION");
 
     lua_newtable(L);
-    for (auto value : {NODE::SELECTOR,
-                       NODE::SEQUENCE,
-                       NODE::CHECK,
-                       NODE::HEAL,
-                       NODE::POTION,
-                       NODE::HURT,
-                       NODE::BUFF,
-                       NODE::SPELL,
-                       NODE::MANA,
-                       NODE::APPROACH,
-                       NODE::FACE,
-                       NODE::OPENER,
-                       NODE::SWING})
+    for (auto value : {MANEUVER::SWING, MANEUVER::CAST, MANEUVER::USE})
     {
         lua_pushinteger(L, static_cast<lua_Integer>(value));
         lua_setfield(L, -2, brain::name(value));
     }
-    lua_setglobal(L, "NODE");
+    lua_setglobal(L, "MANEUVER");
 }
 
 fb::lua::root& brain::scripts(game_bot& bot)
@@ -375,6 +338,7 @@ fb::lua::root& brain::scripts(game_bot& bot)
     integration::register_model_globals(lua);
     brain::bind(static_cast<lua_State*>(lua));
     lua.build("log", builtin::integration_test::builtin_log);
+    lua.build("clock", builtin::brain::builtin_clock);
     lua.package_path("../../scripts/?.lua");
     lua.package_path("../../scripts/?/init.lua");
     lua.package_path("scripts/?.lua");
@@ -586,26 +550,48 @@ void brain::release(const std::string& name)
     _ledger.erase(name);
 }
 
+void brain::evict(const std::string& name)
+{
+    auto previous = _occupancy.find(name);
+    if (previous == _occupancy.end())
+        return;
+
+    auto occupants = _occupants.find(previous->second.first);
+    if (occupants != _occupants.end())
+    {
+        occupants->second.erase(name);
+        if (occupants->second.empty())
+            _occupants.erase(occupants);
+    }
+    _occupancy.erase(previous);
+}
+
 void brain::occupy(const std::string& name, uint16_t map, double rate)
 {
     auto lock = std::lock_guard(_ledger_mutex);
+    brain::evict(name);
     _occupancy.insert_or_assign(name, std::pair{map, rate});
+    _occupants[map].insert_or_assign(name, rate);
 }
 
 void brain::vacate(const std::string& name)
 {
     auto lock = std::lock_guard(_ledger_mutex);
-    _occupancy.erase(name);
+    brain::evict(name);
 }
 
 double brain::demand(uint16_t map, const std::string& except)
 {
     auto lock  = std::lock_guard(_ledger_mutex);
+    auto found = _occupants.find(map);
     auto total = 0.0;
-    for (auto& [name, entry] : _occupancy)
+    if (found == _occupants.end())
+        return total;
+
+    for (auto& [name, rate] : found->second)
     {
-        if (name != except && entry.first == map)
-            total += entry.second;
+        if (name != except)
+            total += rate;
     }
     return total;
 }
@@ -767,13 +753,16 @@ void brain::measure(uint32_t bot, const std::string& action, std::chrono::millis
     pace.total += elapsed;
 }
 
-void brain::bury(game_bot& bot)
+void brain::bury(game_bot& bot, const std::string& task)
 {
     bot.forget_death();
     auto lock  = std::lock_guard(this->_mutex);
     auto found = this->_minds.find(bot.id);
-    if (found != this->_minds.end())
-        found->second.died.reset();
+    if (found == this->_minds.end())
+        return;
+
+    found->second.died.reset();
+    found->second.records.erase(task);
 }
 
 void brain::remember(uint32_t bot, const std::string& key, const std::optional<fb::lua::value>& value)
@@ -824,7 +813,8 @@ async::task<std::optional<brain::decision>> brain::think(std::shared_ptr<game_bo
     ctx->pushobject(this->shared_from_this_as<brain>());
     ctx->pushobject(bot);
 
-    auto result = std::optional<decision>{};
+    auto result  = std::optional<decision>{};
+    auto started = clock::now();
     try
     {
         auto base = lua_gettop(L) - 3;
@@ -879,6 +869,9 @@ async::task<std::optional<brain::decision>> brain::think(std::shared_ptr<game_bo
         fb::logger::fatal("brain: bot={} decide failed: {}", bot->name(), e.what());
         this->tally(bot->id, false);
     }
+    bot->controller.container.stats.add("brain:decide",
+                                        std::chrono::duration<double, std::milli>(clock::now() - started).count(),
+                                        false);
     co_return result;
 }
 
@@ -900,7 +893,8 @@ void brain::settle(const game_bot&           bot,
     }
 
     auto& entry    = records[task];
-    entry.failures = entry.failures + 1;
+    auto  grown    = entry.failures > 0 && entry.level != bot.level();
+    entry.failures = grown ? 1 : entry.failures + 1;
     fb::logger::debug("brain: bot_id={} {} failed ({}) x{}", bot.id, task, result.reason, entry.failures);
     entry.reason   = result.reason;
     entry.at       = clock::now();
@@ -1016,14 +1010,16 @@ bool brain::update(uint32_t bot, uint64_t session, const std::optional<decision>
     if (next.has_value())
     {
         auto& mind    = found->second;
-        auto  changed = mind.history.empty() || mind.current.state != next->state || mind.current.task != next->task ||
+        auto  changed = mind.transitions == 0 || mind.current.state != next->state || mind.current.task != next->task ||
                        mind.current.step != next->step || mind.current.kind != next->kind;
         if (changed)
         {
             auto now     = clock::now();
             mind.current = next.value();
             mind.since   = now;
-            mind.history.push_back(transition{next.value(), now});
+            mind.transitions++;
+            if (this->_recording)
+                mind.history.push_back(transition{next.value(), now});
             fb::logger::debug("brain: bot_id={} {}/{}/{} {} ({})",
                               bot,
                               brain::name(next->state),

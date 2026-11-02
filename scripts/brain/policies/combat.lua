@@ -1,8 +1,6 @@
-local combat = require("brain.data.combat")
-local items  = require("brain.data.items")
-local magic  = require("brain.data.spells")
-local trees  = require("brain.data.tree")
-local bag    = require("brain.policies.bag")
+local combat  = require("brain.data.combat")
+local hunting = require("brain.data.hunting")
+local magic   = require("brain.data.spells")
 
 local M = {}
 
@@ -160,13 +158,62 @@ function M.hits(mob)
     return HITTING[mob.attack] == true
 end
 
-function M.blow(snap, mob)
+function M.spread(snap, mob)
     if M.hits(mob) == false or mob.damage == nil then
-        return 0
+        return 0, 0
     end
-    local buffs = M.buffs(snap)
-    return M.mitigate(((mob.least or mob.damage) + mob.damage) / 2.0, (snap.self.phydef or 0) - buffs.phydef, 0) /
-        buffs.derate
+    local buffs   = M.buffs(snap)
+    local defense = (snap.self.phydef or 0) - buffs.phydef
+    return M.mitigate(mob.least or mob.damage, defense, 0) / buffs.derate,
+        M.mitigate(mob.damage, defense, 0) / buffs.derate
+end
+
+function M.blow(snap, mob)
+    local low, high = M.spread(snap, mob)
+    return (low + high) / 2.0
+end
+
+local function normal(z)
+    local t    = 1 / (1 + 0.3275911 * math.abs(z) / math.sqrt(2))
+    local tail = t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) *
+        math.exp(-z * z / 2) / 2
+    return z >= 0 and 1 - tail or tail
+end
+
+function M.reaches(count, low, high, hp)
+    if count <= 0 or high <= 0 then
+        return 0
+    elseif hp <= 0 or count == math.huge then
+        return 1
+    elseif count == 1 then
+        return high <= low and (high >= hp and 1 or 0) or math.max(0, math.min(1, (high - hp) / (high - low)))
+    end
+    local mean  = count * (low + high) / 2
+    local width = high - low
+    local sd    = math.sqrt(count * width * width / 12)
+    if sd <= 0 then
+        return mean >= hp and 1 or 0
+    end
+    return 1 - normal((hp - mean) / sd)
+end
+
+function M.lethal(snap, mob, window, hp)
+    local low, high = M.spread(snap, mob)
+    local speed     = mob.speed
+    if window <= 0 or high <= 0 or speed == nil or speed <= 0 then
+        return 0
+    elseif window == math.huge then
+        return 1
+    end
+    local count = window / speed
+    local whole = math.floor(count)
+    local part  = count - whole
+    return (1 - part) * M.reaches(whole, low, high, hp) + part * M.reaches(whole + 1, low, high, hp)
+end
+
+function M.gain(mob)
+    local known = hunting.mobs[mob.id]
+    return mob.exp or (known ~= nil and known.exp) or 0
 end
 
 function M.options(snap, mob)
@@ -215,10 +262,10 @@ local function landed(time, disable, speed, blow)
     if speed == nil or speed <= 0 then
         return 0
     end
-    return math.floor(math.max(0, time - disable) / speed) * blow
+    return math.max(0, time - disable) / speed * blow
 end
 
-function M.fight(snap, query, mob, density)
+function M.outcome(snap, query, mob, density)
     local cast  = 1000 / magic.cast_rate
     local mp    = snap.self.mp or 0
     local hp    = snap.self.hp
@@ -236,7 +283,7 @@ function M.fight(snap, query, mob, density)
     local blow    = M.blow(snap, mob)
     local buffs   = M.buffs(snap)
     local options = M.options(snap, mob)
-    local left    = mob.hp or 0
+    local left    = (mob.hp or 0) * (mob.ratio or 1)
     local opener  = best(options.strike, mp, "damage")
     if opener ~= nil and hp - opener.hp > blow then
         left  = left - opener.damage
@@ -261,7 +308,9 @@ function M.fight(snap, query, mob, density)
             taken = math.huge,
             healed = 0,
             drained = 0,
-            margin = -math.huge
+            margin = -math.huge,
+            p_die = M.lethal(snap, mob, math.huge, hp),
+            gain = 0
         }
     end
 
@@ -301,60 +350,8 @@ function M.fight(snap, query, mob, density)
         healed  = healed,
         drained = (snap.self.mp or 0) - mp,
         margin  = (hp + healed - taken) / math.max(snap.self.max_hp, 1),
-    }
-end
-
-function M.plan(snap, query, mob, guard)
-    local options = M.options(snap, mob)
-    local slots   = {}
-    for _, learned in ipairs(snap.spells or {}) do
-        slots[learned.name] = learned.slot
-    end
-    table.sort(options.offense, function(left, right)
-        return left.damage > right.damage
-    end)
-    local skills = {}
-    local least  = math.huge
-    for _, choice in ipairs(options.offense) do
-        if choice.damage > 0 then
-            table.insert(skills, { slot = slots[choice.name], mp = choice.mp })
-            least = math.min(least, choice.mp)
-        end
-    end
-    local heal            = best(options.heal, math.huge, "hp")
-    local potions, drinks = {}, {}
-    local refill          = 0
-    for name, count in pairs(bag.usable(snap)) do
-        local effect = count > 0 and items[name] or nil
-        if effect ~= nil and ((effect.hp or 0) > 0 or effect.hp_full or effect.hp_ratio) then
-            table.insert(potions, name)
-            refill = math.max(refill, effect.hp_full and snap.self.max_hp or
-                (effect.hp_ratio or 0) * snap.self.max_hp + math.max(0, effect.hp or 0))
-        end
-        if effect ~= nil and ((effect.mp or 0) > 0 or effect.mp_full or effect.mp_ratio) then
-            table.insert(drinks, name)
-        end
-    end
-    local blow   = M.blow(snap, mob)
-    local amount = heal ~= nil and heal.hp or refill
-    local strike = best(options.strike, math.huge, "damage")
-    local opener = nil
-    if strike ~= nil then
-        local cost = magic.spells[strike.name].hp_cost
-        local floor = cost ~= nil and cost < 1 and blow / (1 - cost) or strike.hp + blow
-        opener = { slot = slots[strike.name], mp = strike.mp, floor = math.ceil(floor) }
-    end
-    return {
-        guard   = guard,
-        skills  = skills,
-        opener  = opener,
-        heal    = heal ~= nil and { slot = slots[heal.name], mp = heal.mp } or nil,
-        mend    = amount > 0 and math.max(snap.self.max_hp - amount, blow) or 0,
-        potions = potions,
-        drinks  = drinks,
-        melee   = snap.self.class == "WARRIOR" or #skills == 0 or ((snap.self.mp or 0) < least and #drinks == 0),
-        buffs   = {},
-        tree    = trees.combat(),
+        p_die   = M.lethal(snap, mob, time - weak.disable, hp + healed),
+        gain    = M.gain(mob),
     }
 end
 

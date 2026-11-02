@@ -8,22 +8,24 @@ local tutorial = require("brain.tasks.tutorial")
 local M = {}
 
 local function gather(brain, bot)
-    if travel.go(brain, bot, { maps = hunt.beginner(brain, bot, job.offering.from) }) == false then
-        return false
+    local arrived, event = travel.go(brain, bot, { maps = hunt.beginner(brain, bot, job.offering.from) })
+    if arrived == false then
+        return travel.yielded(event), event and event.type
     end
 
     local wanted = {}
     for _, name in ipairs(job.offering.from) do
         wanted[name] = true
     end
-    return hunt.go(brain, bot, {
+    local result, reason = hunt.step(brain, bot, {
+        key    = "offering",
         names  = job.offering.from,
         loot   = { job.offering.name },
         full   = function()
             local seen = brain:observe(bot)
             return seen.bag >= seen.capacity
         end,
-        wants  = function(name)
+        wants  = function(_, name)
             return wanted[name] == true
         end,
         killed = function()
@@ -32,6 +34,7 @@ local function gather(brain, bot)
             return bot:item_count(job.offering.name) >= job.offering.count
         end,
     })
+    return result ~= "FAILED", reason
 end
 
 local function enlist(brain, bot, chosen)
@@ -41,8 +44,12 @@ local function enlist(brain, bot, chosen)
     for _, spot in ipairs(spots) do
         table.insert(maps, spot.map)
     end
-    if #maps == 0 or travel.go(brain, bot, { maps = maps }) == false then
+    if #maps == 0 then
         return false
+    end
+    local arrived, event = travel.go(brain, bot, { maps = maps })
+    if arrived == false then
+        return false, travel.yielded(event) and "ENGAGED" or nil
     end
 
     local spot = nil
@@ -51,8 +58,12 @@ local function enlist(brain, bot, chosen)
             spot = candidate
         end
     end
-    if spot == nil or travel.go(brain, bot, { map = spot.map, x = spot.x, y = spot.y, range = 1 }) == false then
+    if spot == nil then
         return false
+    end
+    local near, moved = travel.go(brain, bot, { map = spot.map, x = spot.x, y = spot.y, range = 1 })
+    if near == false then
+        return false, travel.yielded(moved) and "ENGAGED" or nil
     end
 
     local npc = brain:npc(bot, master)
@@ -81,11 +92,12 @@ function M.run(brain, bot)
         return false, "FULL"
     elseif bot:item_count(job.offering.name) < job.offering.count then
         return gather(brain, bot)
-    elseif enlist(brain, bot, chosen) then
-        career.settle(brain, bot)
-        return true
     else
-        return false
+        local joined, reason = enlist(brain, bot, chosen)
+        if joined then
+            career.settle(brain, bot)
+        end
+        return joined or reason == "ENGAGED", reason
     end
 end
 

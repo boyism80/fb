@@ -3,6 +3,7 @@ local items    = require("brain.data.items")
 local shops    = require("brain.data.shops")
 local danger   = require("brain.policies.danger")
 local ground   = require("brain.policies.ground")
+local memo     = require("brain.policies.memo")
 local near     = require("brain.policies.near")
 local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
@@ -50,8 +51,9 @@ local function nearest(snap, query, kind, found)
     for _, offer in ipairs(found) do
         table.insert(names, offer.name)
     end
-    local key = table.concat({ score.signature(snap), snap.world.map, kind, table.concat(names, ",") }, "|")
-    if trips[key] == nil then
+    local base = table.concat({ score.signature(snap, ""), snap.world.map }, "|")
+    local key  = table.concat({ score.signature(snap), kind, table.concat(names, ",") }, "|")
+    return memo.get(trips, snap.self.name, base, key, function()
         local maps = {}
         for _, offer in ipairs(found) do
             for _, spot in ipairs(query.npcs(offer.npcs)) do
@@ -59,9 +61,8 @@ local function nearest(snap, query, kind, found)
             end
         end
         local route = #maps > 0 and query.route(maps, danger.perilous(snap, query), danger.shunned(snap, query)) or nil
-        trips[key] = route ~= nil and { dest = route.dest, cost = route.cost } or false
-    end
-    return trips[key] or nil
+        return route ~= nil and { dest = route.dest, cost = route.cost } or false
+    end) or nil
 end
 
 local function sold(query, offer, map)
@@ -106,11 +107,11 @@ local function demand(snap, query, kind)
         (kind == "hp" and recovery.heal(snap) ~= nil) then
         return nil
     end
-    local key = table.concat({ score.signature(snap), snap.world.map, kind }, "|")
-    if needs[key] == nil then
-        needs[key] = evaluate(snap, query, kind) or false
-    end
-    return needs[key] or nil
+    local base = table.concat({ score.signature(snap, ""), snap.world.map }, "|")
+    local key  = table.concat({ score.signature(snap), kind }, "|")
+    return memo.get(needs, snap.self.name, base, key, function()
+        return evaluate(snap, query, kind) or false
+    end) or nil
 end
 
 local function plan(snap, query, kind)
@@ -157,28 +158,27 @@ local function plan(snap, query, kind)
     end
     local worth = value.baseline(snap, query)
     local spend = best.count * best.offer.price * worth.exchange
+    local path  = value.detour(snap, query, { maps = { route.dest } }, worth)
+    local risk  = path ~= nil and path.risk or 0
+    local spent = path ~= nil and path.time or trip * 2 / 1000
     local delta = 0
     if need.gain ~= nil then
-        delta = need.gain * best.length - need.base * trip * 2 / 1000 - spend
+        delta = need.gain * best.length - need.base * spent - spend - risk
     else
         local loss = danger.loss(snap, query, worth)
-        delta = loss * math.max(0, 1 - held / math.max(need.crisis, 1)) - worth.value * trip * 2 / 1000 - spend
+        delta = loss * math.max(0, 1 - held / math.max(need.crisis, 1)) - worth.value * spent - spend - risk
     end
     if delta <= 0 then
         return nil
     end
-    local hold = need.usage ~= nil and need.usage > 0 and held / need.usage * 1000 or 0
-    return { choice = best.offer, count = best.count, early = hold < trip, held = held, delta = delta }
+    return { choice = best.offer, count = best.count, delta = delta }
 end
 
 local function order(snap, query)
     for _, kind in ipairs({ "mp", "hp" }) do
         local found = plan(snap, query, kind)
         if found ~= nil then
-            local spot = near.approach(snap, query, found.choice.npcs)
-            if found.held <= 0 or found.early or spot ~= nil then
-                return found.choice, found.count, found.delta
-            end
+            return found.choice, found.count, found.delta
         end
     end
     return nil

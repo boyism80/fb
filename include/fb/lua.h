@@ -339,6 +339,7 @@ private:
     std::string                           _script_path;
     std::function<void(std::string_view)> _on_error;
     std::optional<std::weak_ptr<luable>>  _actor; // first argument of the script call (`me`)
+    std::shared_ptr<char>                 _lease = std::make_shared<char>();
 
     void finish_resume();
 
@@ -508,6 +509,7 @@ public:
     void                resume(int argc, int* n = nullptr);
     int                 yield(int retc);
     void                release();
+    void                renew();
     void                reject(std::string_view message);
     void                cancel(std::string_view reason);
     void                drop(std::string_view message = "lua context dropped");
@@ -541,6 +543,7 @@ public:
         static async::task<std::optional<int>> run_pipeline(fb::async_executor& executor,
                                                             std::optional<std::weak_ptr<fb::thread_switchable>> weak,
                                                             context*                                            lua_ptr,
+                                                            std::weak_ptr<char>                                 lease,
                                                             std::function<async::task<void>()> yield_fn,
                                                             std::function<async::task<int>()>  resume_fn);
 

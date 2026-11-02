@@ -59,6 +59,14 @@ public:
         uint16_t count = 0;
     };
 
+    struct dweller
+    {
+        size_t      order = 0;
+        uint16_t    map   = 0;
+        position    at;
+        std::string name;
+    };
+
     struct plan
     {
         uint16_t          dest = 0;
@@ -100,6 +108,9 @@ private:
     std::unordered_map<uint16_t, std::vector<warp>>             _warps;
     std::unordered_map<uint16_t, std::unordered_set<uint32_t>>  _warp_tiles;
     std::unordered_map<uint16_t, std::vector<spawn>>            _spawns;
+    std::unordered_map<std::string, std::vector<uint16_t>>      _habitats;
+    std::unordered_map<uint16_t, size_t>                        _ranks;
+    std::unordered_map<std::string, std::vector<dweller>>       _dwellers;
 
 private:
     atlas(const std::string& maps_path, const fb::sobj_tbl_file& sobj);
@@ -117,23 +128,25 @@ public:
     const std::vector<spawn>&                               spawns(uint16_t map) const;
     const std::unordered_map<uint16_t, std::vector<spawn>>& spawns() const;
     std::optional<uint32_t>                                 mob(uint16_t map, uint16_t look, uint8_t color) const;
-    bool                reaches(uint16_t map, const position& from, const position& gate) const;
-    std::optional<plan> route(uint16_t                            from,
-                              const position&                     at,
-                              const std::unordered_set<uint16_t>& targets,
-                              uint8_t                             level,
-                              const std::unordered_set<uint64_t>& closed,
-                              const std::unordered_set<uint32_t>& perilous,
-                              const std::unordered_set<uint16_t>& shunned) const;
-    std::optional<leap> shortcut(uint16_t                            from,
-                                 const position&                     at,
-                                 const std::unordered_set<uint16_t>& targets,
-                                 const std::optional<position>&      goal,
-                                 uint8_t                             level,
-                                 const std::unordered_set<uint64_t>& closed,
-                                 const std::unordered_set<uint32_t>& perilous,
-                                 const std::unordered_set<uint16_t>& shunned,
-                                 const std::vector<teleport>&        teleports) const;
+    std::vector<uint16_t> habitats(const std::unordered_set<std::string>& names) const;
+    std::vector<dweller>  dwellers(const std::unordered_set<std::string>& names) const;
+    bool                  reaches(uint16_t map, const position& from, const position& gate) const;
+    std::optional<plan>   route(uint16_t                            from,
+                                const position&                     at,
+                                const std::unordered_set<uint16_t>& targets,
+                                uint8_t                             level,
+                                const std::unordered_set<uint64_t>& closed,
+                                const std::unordered_set<uint32_t>& perilous,
+                                const std::unordered_set<uint16_t>& shunned) const;
+    std::optional<leap>   shortcut(uint16_t                            from,
+                                   const position&                     at,
+                                   const std::unordered_set<uint16_t>& targets,
+                                   const std::optional<position>&      goal,
+                                   uint8_t                             level,
+                                   const std::unordered_set<uint64_t>& closed,
+                                   const std::unordered_set<uint32_t>& perilous,
+                                   const std::unordered_set<uint16_t>& shunned,
+                                   const std::vector<teleport>&        teleports) const;
     std::optional<std::vector<DIRECTION>>
     path(uint16_t map, const position& from, const position& to, uint16_t range, const blocked_func& blocked) const;
 };

@@ -1,4 +1,6 @@
-local magic = require("brain.data.spells")
+local magic  = require("brain.data.spells")
+local ground = require("brain.policies.ground")
+local value  = require("brain.policies.value")
 
 local M = {}
 
@@ -27,13 +29,28 @@ local function valued(name, data)
         echoed(name)
 end
 
-local function hunting(snap)
+local function hunting(snap, query)
     local order = snap.record.memory.order
-    return (snap.persona or {}).hunt == 1 or (order ~= nil and order.task == "HUNT")
+    return (order ~= nil and order.task == "HUNT") or (snap.self.class ~= "NONE" and ground.choose(snap, query) ~= nil)
 end
 
-local function wanted(snap)
-    if snap.self.ghost or hunting(snap) == false then
+local function worth(snap, query, name, data)
+    local spells = {}
+    for _, spell in ipairs(snap.spells or {}) do
+        if spell.name ~= name then
+            table.insert(spells, spell)
+        end
+    end
+    local without = setmetatable({ spells = spells }, { __index = snap })
+    local power   = value.power(snap, query)
+    local lost    = power > 0 and 1 - value.power(without, query) / power or 0
+    local rate    = value.baseline(snap, query).value
+    local cast    = 1 / magic.cast_rate
+    return rate * (lost * (data.buff_time or 0) - cast) - value.mana(snap, query) * (data.mp or 0)
+end
+
+local function wanted(snap, query)
+    if snap.self.ghost or hunting(snap, query) == false then
         return nil
     end
     local active = {}
@@ -56,20 +73,27 @@ local function wanted(snap)
                 blocked     = blocked or active[other] ~= nil or
                     (learned[other] ~= nil and rival ~= nil and ((rival.boost or {}).damage_rate or 0) > rate)
             end
-            if blocked == false and (best == nil or name < best.name) then
-                best = { name = name, slot = slot }
+            if blocked == false then
+                local gain = worth(snap, query, name, data)
+                if best == nil or gain > best.value or (gain == best.value and name < best.name) then
+                    best = { name = name, slot = slot, value = gain }
+                end
             end
         end
     end
     return best
 end
 
-function M.wanted(snap)
-    return wanted(snap) ~= nil
+function M.wanted(snap, query)
+    return wanted(snap, query) ~= nil
 end
 
-function M.propose(snap)
-    local choice = wanted(snap)
+function M.value(snap, query)
+    return wanted(snap, query).value
+end
+
+function M.propose(snap, query)
+    local choice = wanted(snap, query)
     return { kind = ACTION.CAST, slot = choice.slot, buff = choice.name }
 end
 

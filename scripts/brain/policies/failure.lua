@@ -4,10 +4,10 @@ local PERMANENT = { DENIED = true, REFUSED = true, FULL = true }
 
 function M.remaining(snap, task)
     local record = snap.record.failures[task]
-    if record == nil then
+    if record == nil or record.level ~= snap.self.level then
         return 0
     elseif PERMANENT[record.reason] then
-        return (record.map ~= snap.world.map or record.level ~= snap.self.level) and 0 or nil
+        return record.map ~= snap.world.map and 0 or nil
     else
         return math.max(0, record.duration * 2 ^ (record.failures - 1) - record.age)
     end

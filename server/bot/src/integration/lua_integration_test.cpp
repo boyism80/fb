@@ -587,7 +587,15 @@ int lua_integration_test::builtin_brain_new(lua_State* L)
     if (test == nullptr)
         return 0;
 
-    auto created = std::make_shared<fb::bot::brain>();
+    auto recording = true;
+    if (lua_istable(L, 1))
+    {
+        lua_getfield(L, 1, "record");
+        recording = lua_isnil(L, -1) || lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+
+    auto created = std::make_shared<fb::bot::brain>(recording);
     test->_brains.push_back(created);
     lua->pushobject(created);
     return 1;

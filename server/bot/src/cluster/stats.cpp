@@ -168,6 +168,15 @@ void stats::count(const std::string& name, bool failed)
         entry.failures++;
 }
 
+void stats::time(const std::string& name, double ms, bool failed)
+{
+    auto  lock  = std::lock_guard(this->_mutex);
+    auto& entry = this->_entries[name];
+    if (failed)
+        entry.failures++;
+    entry.add(ms);
+}
+
 Json::Value stats::take()
 {
     auto entries = std::map<std::string, entry>{};

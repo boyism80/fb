@@ -124,6 +124,7 @@ public:
             uint16_t        look;
             uint8_t         color;
             std::string     name;
+            uint8_t         percent = 100;
         };
 
     private:
@@ -134,6 +135,7 @@ public:
         // clang-format off
         void show(uint32_t oid, const point<uint16_t>& position, uint16_t look, uint8_t color, std::string_view name = {});
         void move(uint32_t oid, const point<uint16_t>& position);
+        void hurt(uint32_t oid, uint8_t percent);
         void hide(uint32_t oid);
         void die(uint32_t oid);
         void clear();

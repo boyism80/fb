@@ -18,7 +18,10 @@ void game_bot::sight::show(uint32_t               oid,
                            uint8_t                color,
                            std::string_view       name)
 {
-    this->_entries.insert_or_assign(oid, entry{oid, position, look, color, std::string(name)});
+    auto found   = this->_entries.find(oid);
+    auto percent = found != this->_entries.end() ? found->second.percent : uint8_t{100};
+    this->_entries.insert_or_assign(oid, entry{oid, position, look, color, std::string(name), percent});
+    this->_dead.erase(oid);
 }
 
 void game_bot::sight::move(uint32_t oid, const point<uint16_t>& position)
@@ -28,6 +31,15 @@ void game_bot::sight::move(uint32_t oid, const point<uint16_t>& position)
         return;
 
     found->second.position = position;
+}
+
+void game_bot::sight::hurt(uint32_t oid, uint8_t percent)
+{
+    auto found = this->_entries.find(oid);
+    if (found == this->_entries.end())
+        return;
+
+    found->second.percent = percent;
 }
 
 void game_bot::sight::hide(uint32_t oid)

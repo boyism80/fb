@@ -113,17 +113,14 @@ function M.unreachable(ctx, index)
         local record = mind:failure(ctx:bot(index), "ORDER")
         return record ~= nil and record.reason == "NO_ROUTE"
     end)
-    local quiet = expect.within(ctx, TIMEOUT, function()
-        local state = mind:state(ctx:bot(index))
-        return state ~= nil and state.reason == "idle"
-    end)
+    local first    = mind:failure(ctx:bot(index), "ORDER")
     ctx:sleep(UNREACHABLE_WATCH)
     local record  = mind:failure(ctx:bot(index), "ORDER")
-    local allowed = record ~= nil and 2 + math.log(UNREACHABLE_WATCH / math.max(record.duration, 1), 2) or 0
-    local passed  = recorded and quiet and record ~= nil and record.failures <= allowed
+    local retries = first ~= nil and record ~= nil and record.failures - first.failures or 0
+    local allowed = first ~= nil and 1 + math.log(UNREACHABLE_WATCH / math.max(first.duration, 1), 2) or 0
+    local passed  = recorded and record ~= nil and retries <= allowed
     return finish(ctx, index, mind, "unreachable", passed,
-        string.format("recorded=%s quiet=%s failures=%d allowed=%.1f", tostring(recorded), tostring(quiet),
-            record ~= nil and record.failures or 0, allowed))
+        string.format("recorded=%s retries=%d allowed=%.1f", tostring(recorded), retries, allowed))
 end
 
 function M.reattach(ctx, index)
@@ -195,16 +192,12 @@ function M.dialog(ctx, index)
     local oid  = quest.use_npc(bot, "좌성황")
     local mind = brain.new()
     ctx:bot(index):brain(mind, { seed = 1 })
-    local idle = expect.within(ctx, TIMEOUT, function()
-        local state = mind:state(ctx:bot(index))
-        return state ~= nil and state.reason == "idle"
-    end)
     ctx:bot(index):send(protocol.click(oid))
-    local closed = idle and expect.settle(ctx, index, mind, TIMEOUT, function(current)
+    local closed = expect.settle(ctx, index, mind, TIMEOUT, function(current)
         local _, tasks = history(mind, current)
         return tasks.DIALOG ~= nil and mind:observe(current).dialog == false
     end)
-    local passed = finish(ctx, index, mind, "dialog", closed, "idle=" .. tostring(idle) .. " closed=" .. tostring(closed))
+    local passed = finish(ctx, index, mind, "dialog", closed, "closed=" .. tostring(closed))
     quest.remove_npc(ctx:bot(index))
     return passed
 end
@@ -268,7 +261,7 @@ function M.pure(ctx, index)
         end,
     }
     local cases  = {
-        { expect = nil, snap = fake(function() end) },
+        { expect = { "FIELD", ACTION.MOVE }, snap = fake(function() end) },
         { expect = { "REVIVE", ACTION.TALK }, snap = fake(function(s) s.self.ghost = true end) },
         {
             expect = { "REVIVE", ACTION.MOVE },
@@ -278,7 +271,7 @@ function M.pure(ctx, index)
             end)
         },
         { expect = { "DIALOG", ACTION.TALK }, snap = fake(function(s) s.world.dialog = true end) },
-        { expect = nil, snap = fake(function(s) s.bag.used = 26 end) },
+        { expect = { "FIELD", ACTION.MOVE }, snap = fake(function(s) s.bag.used = 26 end) },
         {
             expect = { "DEFEND", ACTION.ATTACK },
             snap = fake(function(s)
@@ -326,9 +319,9 @@ function M.pure(ctx, index)
             end)
         },
         { expect = { "REST", ACTION.USE }, snap = drained(function(s) s.bag.items = { { name = "동동주", count = 2, slot = 1 } } end) },
-        { expect = nil, snap = drained(function() end) },
+        { expect = { "FIELD", ACTION.MOVE }, snap = drained(function() end) },
         { expect = { "SUPPLY", ACTION.SAY }, snap = drained(function(s) s.self.money = 1000 end) },
-        { expect = nil, snap = fake(function(s) s.self.money = 1000 end) },
+        { expect = { "FIELD", ACTION.MOVE }, snap = fake(function(s) s.self.money = 1000 end) },
         {
             expect = { "BUFF", ACTION.CAST },
             snap = fake(function(s)
@@ -363,14 +356,14 @@ function M.pure(ctx, index)
         combat.mitigate(100, 0, 0) == 100,
         combat.accuracy(12) == 1.0 and combat.accuracy(-5) == 0.1,
         combat.strike(held, armed, mob) > combat.strike(bare, facts, mob),
-        combat.fight(held, armed, mob).taken < combat.fight(bare, facts, mob).taken,
-        combat.fight(bare, facts, mob).margin < combat.fight(held, armed, mob).margin,
-        combat.fight(fake(function(s)
+        combat.outcome(held, armed, mob).taken < combat.outcome(bare, facts, mob).taken,
+        combat.outcome(bare, facts, mob).margin < combat.outcome(held, armed, mob).margin,
+        combat.outcome(fake(function(s)
             s.self.mp = 1000
             s.spells = { { slot = 1, name = "극진뢰격참주" } }
         end), facts, mob).time <
-        combat.fight(bare, facts, mob).time,
-        combat.fight(fake(function(s)
+        combat.outcome(bare, facts, mob).time,
+        combat.outcome(fake(function(s)
                 s.self.hp = 5
                 s.self.mp = 300
                 s.spells = { { slot = 1, name = "누리의기원" } }
@@ -434,11 +427,11 @@ function M.pure(ctx, index)
         combat.strike(learned({ "대력검신" }, true), armed, mob) > combat.strike(learned({}, true), armed, mob))
     table.insert(model, combat.strike(learned({ "분신" }), facts, mob) > combat.strike(base, facts, mob) * 1.9)
     table.insert(model, combat.strike(learned({ "측면공격" }), facts, mob, 0.5) > combat.strike(base, facts, mob, 0.5))
-    table.insert(model, combat.fight(learned({ "중독" }), facts, tough).time < combat.fight(base, facts, tough).time)
-    table.insert(model, combat.fight(learned({ "마비" }), facts, tough).taken < combat.fight(base, facts, tough).taken)
+    table.insert(model, combat.outcome(learned({ "중독" }), facts, tough).time < combat.outcome(base, facts, tough).time)
+    table.insert(model, combat.outcome(learned({ "마비" }), facts, tough).taken < combat.outcome(base, facts, tough).taken)
     table.insert(model,
         combat.buffs(learned({ "운기" })).surge ~= nil and combat.buffs(learned({ "금강불체" })).emergency ~= nil)
-    table.insert(model, combat.fight(ambush, facts, mob).swings < combat.fight(base, facts, mob).swings)
+    table.insert(model, combat.outcome(ambush, facts, mob).swings < combat.outcome(base, facts, mob).swings)
     table.insert(model, combat.blow(armored, mob) < combat.blow(base, mob))
     table.insert(model, combat.buffs(charger).charge ~= nil and combat.buffs(charger).charge.chance == 0.5 and
         combat.buffs(base).charge == nil)

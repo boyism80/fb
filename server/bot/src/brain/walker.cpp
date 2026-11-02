@@ -22,6 +22,9 @@ constexpr auto STEP_TIMEOUT = 5s;
 
 void brain::act(uint32_t bot, std::string_view activity)
 {
+    if (this->_recording == false)
+        return;
+
     auto lock  = std::lock_guard(this->_mutex);
     auto found = this->_minds.find(bot);
     if (found == this->_minds.end())
@@ -292,7 +295,8 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             if (failure == "TIMEOUT" && hop == false)
             {
                 std::ignore = co_await this->synced(bot);
-                corrected.insert(atlas::gate(map, next));
+                if (corrected.insert(atlas::gate(map, next)).second == false)
+                    co_return event{"BLOCKED", map, next};
                 replan = true;
             }
             else if (failure.empty() == false)
@@ -311,14 +315,12 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             {
                 if (hop)
                     co_return event{"DENIED", map, next};
-                corrected.insert(atlas::gate(map, next));
+                else if (corrected.insert(atlas::gate(map, next)).second == false)
+                    co_return event{"BLOCKED", map, next};
                 replan = true;
             }
             else
             {
-                if (visited.insert(map).second == false)
-                    co_return event{"LOOP", bot->map(), bot->position()};
-
                 try
                 {
                     std::ignore = co_await bot->request_by_opcode(
@@ -334,6 +336,12 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
                     if (bot->aborted())
                         co_return event{"TRANSFERRED", map, next};
                 }
+
+                if (hop && bot->map() == map && bot->position() == from)
+                    co_return event{"BOUNCED", map, from, "", 0, {}, 0, plan->hops.front().dest};
+                else if (visited.insert(map).second == false)
+                    co_return event{"LOOP", bot->map(), bot->position()};
+
                 corrected.clear();
                 this->measure(bot->id,
                               "hop",

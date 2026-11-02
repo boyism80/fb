@@ -1,3 +1,5 @@
+local profile = require("brain.profile")
+
 local M = {}
 
 function M.bind(brain, bot)
@@ -21,10 +23,13 @@ function M.bind(brain, bot)
             return brain:demand(bot, map)
         end,
         route = function(maps, perilous, shunned)
-            return brain:route(bot, { maps = maps }, { perilous = perilous or {}, shunned = shunned or {} })
+            return profile.wait(bot:name(), brain.route, brain, bot, { maps = maps },
+                { perilous = perilous or {}, shunned = shunned or {} })
         end,
-        path = function(dest, perilous, shunned)
-            return brain:route(bot, dest, { perilous = perilous or {}, shunned = shunned or {} })
+        path = function(dest, perilous, shunned, origin)
+            return profile.wait(bot:name(), brain.route, brain, bot, dest,
+                { perilous = perilous or {}, shunned = shunned or {} },
+                origin)
         end,
     }
 end

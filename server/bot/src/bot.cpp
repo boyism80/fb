@@ -75,6 +75,8 @@ async::task<size_t> base_bot::send(const fb::protocol::header& packet, bool encr
     if (this->accepts(packet) == false)
         co_return 0;
 
+    auto& stats = this->_bot_controller.container.stats;
+    stats.count(stats.name(typeid(packet)), false);
     co_return co_await fb::socket<void*>::send(packet, encrypt, wrap);
 }
 

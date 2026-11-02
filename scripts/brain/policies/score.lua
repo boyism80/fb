@@ -80,13 +80,26 @@ function M.signature(snap, mode)
     for _, slot in ipairs(snap.gear) do
         table.insert(gear, table.concat(slot.names, "+"))
     end
+    local active = {}
+    for _, name in ipairs(snap.buffs or {}) do
+        active[name] = true
+    end
     local spells = {}
+    local phydef = snap.self.phydef or 0
+    local hit    = snap.self.hit or 0
+    local dam    = snap.self.dam or 0
     for _, spell in ipairs(snap.spells or {}) do
         table.insert(spells, spell.name)
+        local data = magic.spells[spell.name]
+        if data ~= nil and data.role == "BUFF" and active[spell.name] then
+            local stats = data.stats or {}
+            phydef      = phydef - (stats.buff_phydef or 0)
+            hit         = hit - (stats.buff_hit or 0)
+            dam         = dam - (stats.buff_dam or 0)
+        end
     end
-    return table.concat({ snap.self.name or "", snap.self.level, snap.self.max_hp, snap.self.max_mp or 0,
-        snap.self.phydef or 0, snap.self.hit or 0, snap.self.dam or 0, table.concat(gear, ","),
-        table.concat(spells, ","), mode or recovery.reserve(snap) }, "|")
+    return table.concat({ snap.self.name or "", snap.self.level, snap.self.max_hp, snap.self.max_mp or 0, phydef, hit,
+        dam, table.concat(gear, ","), table.concat(spells, ","), mode or recovery.reserve(snap) }, "|")
 end
 
 function M.capability(snap, query)

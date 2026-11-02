@@ -1,13 +1,9 @@
-local data   = require("brain.data.combat")
-local danger = require("brain.policies.danger")
-local score  = require("brain.policies.score")
-local value  = require("brain.policies.value")
-local rest   = require("brain.tasks.rest")
+local value = require("brain.policies.value")
 
 local M = {}
 
 local WEARABLE = { WEAPON = true, ARMOR = true, HELMET = true, RING = true, SHIELD = true, AUXILIARY = true }
-local BARRED   = { BLOCKED = true, OCCUPIED = true, HURT = true }
+local BARRED   = { BLOCKED = true, OCCUPIED = true, UNSAFE = true }
 
 local function holding(snap)
     local counts = {}
@@ -50,40 +46,17 @@ local function missing(snap, death)
     return false
 end
 
-local function guard(snap, query, death)
-    if snap.world.map ~= death.map then
-        return nil
-    end
-    for _, mob in ipairs(snap.world.mobs) do
-        if mob.attack == "AGGRESSIVE" and mob.x ~= nil and math.abs(mob.x - death.x) <= data.sight.x and
-            math.abs(mob.y - death.y) <= data.sight.y and danger.winnable(snap, query, mob) == false then
-            return mob
-        end
-    end
-    return nil
-end
-
-local function waiting(snap, query, keeper)
-    return keeper ~= nil and danger.winnable(score.rested(snap), query, keeper) and rest.wanted(snap, query)
-end
-
-function M.wanted(snap, query)
-    if snap.self.ghost or snap.record.death == nil then
-        return false
-    end
-    return waiting(snap, query, guard(snap, query, snap.record.death)) == false
+function M.wanted(snap)
+    return snap.self.ghost == false and snap.record.death ~= nil
 end
 
 local function plan(snap, query)
     local death  = snap.record.death
-    local keeper = guard(snap, query, death)
     local worn   = spare(snap, death)
     local found  = piles(snap)
     local failed = snap.record.failures.RECOVER
     if worn ~= nil then
         return { kind = ACTION.EQUIP, item = worn }
-    elseif keeper ~= nil and danger.winnable(score.rested(snap), query, keeper) == false then
-        return { kind = ACTION.FORGET, peril = { map = death.map, mob = keeper.id, stats = keeper } }
     elseif death.left <= 0 or missing(snap, death) == false or (failed ~= nil and BARRED[failed.reason]) then
         return { kind = ACTION.FORGET }
     elseif snap.world.map ~= death.map or snap.world.x ~= death.x or snap.world.y ~= death.y then
@@ -104,7 +77,8 @@ local function profit(snap, query, action)
         local item = query.item(name)
         lost = lost + math.max(0, count - (counts[name] or 0)) * (item ~= nil and item.price or 0)
     end
-    return lost * worth.exchange - value.cost(snap, query, action, worth)
+    return lost * worth.exchange - value.cost(snap, query, action, worth) -
+        value.spot(snap, query, { map = death.map, x = death.x, y = death.y }, worth)
 end
 
 function M.propose(snap, query)

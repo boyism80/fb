@@ -3,30 +3,17 @@ local data     = require("brain.data.combat")
 local growth   = require("brain.data.growth")
 local hunting  = require("brain.data.hunting")
 local teleport = require("brain.data.teleport")
+local memo     = require("brain.policies.memo")
 local score    = require("brain.policies.score")
+local survival = require("brain.policies.survival")
 
 local M = {}
 
 local perils   = {}
 local revivals = {}
-local typical  = nil
 
 local function respawn(seen)
-    local mob = hunting.mobs[seen.mob]
-    if mob ~= nil and (mob.rezen or 0) > 0 then
-        return mob.rezen
-    end
-    if typical == nil then
-        local values = {}
-        for _, known in pairs(hunting.mobs) do
-            if (known.rezen or 0) > 0 then
-                table.insert(values, known.rezen)
-            end
-        end
-        table.sort(values)
-        typical = values[(#values + 1) // 2] or 0
-    end
-    return typical
+    return survival.respawn(hunting.mobs[seen.mob])
 end
 
 function M.period(seen)
@@ -42,15 +29,11 @@ function M.weight(snap, seen)
 end
 
 function M.chance(snap, query, mob, expose)
-    if expose <= 0 or M.winnable(snap, query, mob) then
+    if expose <= 0 then
         return 0
     end
-    local blow = combat.blow(snap, mob)
-    if blow <= 0 then
-        return 0
-    end
-    local die = snap.self.hp / blow * (mob.speed or data.swing)
-    return math.min(1, expose / math.max(die, 1))
+    local window = M.winnable(snap, query, mob) and math.min(expose, combat.outcome(snap, query, mob).time) or expose
+    return combat.lethal(snap, mob, window, snap.self.hp)
 end
 
 function M.revival(snap, query)
@@ -93,7 +76,19 @@ function M.combine(chances)
 end
 
 function M.winnable(snap, query, mob)
-    return combat.fight(snap, query, mob).margin > 0
+    local result = combat.outcome(snap, query, mob)
+    local crowd  = mob.oid ~= nil and survival.contact(snap, mob, result.time) or { pressure = 0 }
+    return survival.ending(snap, result, crowd) > 0
+end
+
+function M.penalty(snap)
+    local levels = growth[snap.self.class]
+    local now    = levels ~= nil and levels[snap.self.level] or nil
+    local after  = levels ~= nil and levels[snap.self.level + 1] or nil
+    if now == nil or after == nil then
+        return 0
+    end
+    return (after.exp - now.exp) * data.penalty.exp
 end
 
 function M.hostile(snap, query, mob)
@@ -114,8 +109,7 @@ function M.perilous(snap, query)
     if snap.self.ghost then
         return {}
     end
-    local key = score.signature(snap)
-    if perils[key] == nil then
+    return memo.get(perils, snap.self.name, score.signature(snap, ""), score.signature(snap), function()
         local found  = {}
         local rested = score.rested(snap)
         for id, mob in pairs(hunting.mobs) do
@@ -123,38 +117,45 @@ function M.perilous(snap, query)
                 table.insert(found, id)
             end
         end
-        perils[key] = found
-    end
-    return perils[key]
+        return found
+    end)
 end
+
+local shunning = setmetatable({}, { __mode = "k" })
 
 function M.shunned(snap, query)
     if snap.self.ghost then
         return {}
     end
-    local known  = hunting.mobs
-    local result = {}
-    for map, seen in pairs(snap.record.memory.perils or {}) do
-        local mob    = type(seen) == "table" and (known[seen.mob] or seen.stats) or nil
-        local id     = tonumber(map)
-        local recent = mob ~= nil and snap.now - seen.at < respawn(seen)
-        if mob ~= nil and ((recent and M.hostile(snap, query, mob)) or
-                (M.deadly(snap, query, mob) and query.native(id, mob.id))) then
-            table.insert(result, id)
+    if shunning[snap] == nil then
+        local known = hunting.mobs
+        local found = {}
+        for map, seen in pairs(snap.record.memory.perils or {}) do
+            local mob    = type(seen) == "table" and (known[seen.mob] or seen.stats) or nil
+            local id     = tonumber(map)
+            local recent = mob ~= nil and snap.now - seen.at < respawn(seen)
+            if mob ~= nil and ((recent and M.hostile(snap, query, mob)) or
+                    (M.deadly(snap, query, mob) and query.native(id, mob.id))) then
+                table.insert(found, id)
+            end
         end
+        shunning[snap] = found
     end
-    return result
+    return table.move(shunning[snap], 1, #shunning[snap], 1, {})
 end
 
-function M.guard(mob)
-    return combat.hits(mob) and mob.damage or 0
-end
-
-function M.threat(snap)
+function M.threat(snap, maps)
     local threat = 0
     for _, mob in ipairs(snap.world.mobs) do
         if mob.attack == "AGGRESSIVE" then
             threat = math.max(threat, combat.blow(snap, mob))
+        end
+    end
+    local perils = snap.record.memory.perils or {}
+    for _, map in ipairs(maps or { snap.world.map }) do
+        local seen = perils[tostring(map)] or perils[map]
+        if type(seen) == "table" and type(seen.stats) == "table" and seen.stats.attack == "AGGRESSIVE" then
+            threat = math.max(threat, M.weight(snap, seen) * combat.blow(snap, seen.stats))
         end
     end
     return threat

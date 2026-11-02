@@ -1,3 +1,5 @@
+local protocol = require("integration.protocol")
+local resp     = require("integration.response")
 local expect   = require("integration.lib.expect")
 local instance = require("integration.lib.instance")
 
@@ -8,9 +10,19 @@ local GROUND  = { map = "고구려왕초보사냥1", x = 9, y = 15, slot = 7 }
 local WEAPON  = "목도"
 local MAX_HP  = 1000
 local MAX_MP  = 1000
+local REVIVE  = 5000
 
 local function stage(ctx, index, case)
     local bot = ctx:bot(index)
+    if bot:state() == "GHOST" then
+        local revived = bot:request(resp.update_internal, protocol.chat(false, string.format("/체력바꾸기 %d", MAX_HP)),
+            function(packet)
+                return packet.ch_hp ~= nil and packet.ch_hp > 0
+            end, REVIVE)
+        if revived == nil or revived == false then
+            return nil
+        end
+    end
     bot:clear_inventory()
     bot:clear_all_spells()
     bot:change_class("전사")
@@ -58,7 +70,7 @@ function M.run(ctx, index, case)
     bot:brain(mind, { seed = 1, memory = { order = case.order } })
     local done = expect.settle(ctx, index, mind, TIMEOUT, function(current)
         ghost = ghost or current:state() == "GHOST"
-        return (case.keep or mind:recall(current, "order") == nil) and case.finished(current)
+        return mind:recall(current, "order") == nil and case.finished(current)
     end)
 
     bot          = ctx:bot(index)

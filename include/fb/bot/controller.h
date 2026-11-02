@@ -671,8 +671,31 @@ bot<BotType>::first_of(const std::vector<uint8_t>&                              
         });
     }
 
-    auto response = co_await context->task();
-    co_return std::pair{*chosen, response};
+    auto& stats   = this->controller.container.stats;
+    auto  name    = protocol != nullptr ? stats.name(typeid(*protocol)) : std::format("wait:0x{:02X}", opcodes.front());
+    auto  started = std::chrono::steady_clock::now();
+    auto  error   = std::exception_ptr{};
+    try
+    {
+        auto response = co_await context->task();
+        auto elapsed  = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+        if (protocol != nullptr)
+            stats.time(name, elapsed, false);
+        else
+            stats.add(name, elapsed, false);
+        co_return std::pair{*chosen, response};
+    }
+    catch (...)
+    {
+        error = std::current_exception();
+    }
+
+    auto elapsed = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+    if (protocol != nullptr)
+        stats.time(name, elapsed, true);
+    else
+        stats.add(name, elapsed, true);
+    std::rethrow_exception(error);
 }
 
 template <typename BotType>
@@ -765,9 +788,11 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
     try
     {
         auto response = co_await context->task();
-        stats.add(name,
-                  std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count(),
-                  false);
+        auto elapsed  = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+        if (protocol != nullptr)
+            stats.time(name, elapsed, false);
+        else
+            stats.add(name, elapsed, false);
         co_return response;
     }
     catch (...)
@@ -775,9 +800,11 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
         error = std::current_exception();
     }
 
-    stats.add(name,
-              std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count(),
-              true);
+    auto elapsed = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+    if (protocol != nullptr)
+        stats.time(name, elapsed, true);
+    else
+        stats.add(name, elapsed, true);
     std::rethrow_exception(error);
 }
 

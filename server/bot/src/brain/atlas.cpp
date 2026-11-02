@@ -197,7 +197,78 @@ atlas::atlas(const std::string& maps_path, const fb::sobj_tbl_file& sobj) :
         }
     }
 
+    auto mobs = table::mob;
+    for (auto& [map, entries] : this->_spawns)
+    {
+        this->_ranks.insert({map, this->_ranks.size()});
+        auto seen = std::unordered_set<std::string>{};
+        for (auto& entry : entries)
+        {
+            auto model = mobs->find(entry.mob);
+            if (model != nullptr && seen.insert(model->name).second)
+                this->_habitats[model->name].push_back(map);
+        }
+    }
+
+    auto npcs     = table::npc;
+    auto dwelling = table::npc_spawn;
+    auto order    = size_t{0};
+    for (auto& [map, entries] : dwelling)
+    {
+        for (auto& entry : entries)
+        {
+            auto model = npcs->find(entry.npc);
+            if (model != nullptr)
+            {
+                this->_dwellers[model->name].push_back(dweller{
+                    order,
+                    static_cast<uint16_t>(map),
+                    position{entry.position.x, entry.position.y},
+                    model->name
+                });
+            }
+            order++;
+        }
+    }
+
     fb::logger::info("brain atlas: warp_maps={} spawn_maps={}", this->_warps.size(), this->_spawns.size());
+}
+
+std::vector<uint16_t> atlas::habitats(const std::unordered_set<std::string>& names) const
+{
+    auto result = std::vector<uint16_t>{};
+    auto added  = std::unordered_set<uint16_t>{};
+    for (auto& name : names)
+    {
+        auto found = this->_habitats.find(name);
+        if (found == this->_habitats.end())
+            continue;
+
+        for (auto map : found->second)
+        {
+            if (added.insert(map).second)
+                result.push_back(map);
+        }
+    }
+    std::sort(result.begin(), result.end(), [this](uint16_t left, uint16_t right) {
+        return this->_ranks.at(left) < this->_ranks.at(right);
+    });
+    return result;
+}
+
+std::vector<atlas::dweller> atlas::dwellers(const std::unordered_set<std::string>& names) const
+{
+    auto result = std::vector<dweller>{};
+    for (auto& name : names)
+    {
+        auto found = this->_dwellers.find(name);
+        if (found != this->_dwellers.end())
+            result.insert(result.end(), found->second.begin(), found->second.end());
+    }
+    std::sort(result.begin(), result.end(), [](const dweller& left, const dweller& right) {
+        return left.order < right.order;
+    });
+    return result;
 }
 
 const atlas& atlas::get()

@@ -1,5 +1,4 @@
 local buyers  = require("brain.data.buyers")
-local data    = require("brain.data.combat")
 local hunting = require("brain.data.hunting")
 local items   = require("brain.data.items")
 local shops   = require("brain.data.shops")
@@ -48,7 +47,7 @@ local function pile(snap)
 end
 
 local function choose(snap)
-    if snap.self.ghost or (snap.persona or {}).hunt ~= 1 then
+    if snap.self.ghost then
         return nil
     end
     local item = pile(snap)
@@ -82,9 +81,9 @@ function M.value(snap, query)
         local price = buyers[name] ~= nil and buyers[name].price or shops[name] ~= nil and shops[name].price or 0
         total = total + price
     end
-    local step = snap.pace.step or data.walk
-    local walk = (math.abs(item.x - snap.world.x) + math.abs(item.y - snap.world.y)) * step / 1000
-    return total * worth.exchange - walk * worth.value
+    local move = { kind = ACTION.MOVE, dest = { map = snap.world.map, x = item.x, y = item.y, range = 0 } }
+    return total * worth.exchange - value.cost(snap, query, move, worth) -
+        value.spot(snap, query, { map = snap.world.map, x = item.x, y = item.y }, worth)
 end
 
 return M
