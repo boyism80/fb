@@ -12,7 +12,8 @@ local MESSAGE_WAIT_MS = 15000
 local MSG_PREPARED = "공성준비 완료"
 local MSG_STARTED = "공성전을 시작했습니다"
 local MSG_ENDED = "공성전 종료: " .. BEAST
-local MSG_NOT_ENDED = "진행 중인 공성전이 없습니다."
+local MSG_END_FAILED = "공성전 종료 실패: " .. BEAST
+local MSG_START_UNCONFIRMED = "공성시작 실패: 요청 결과를 확인하지 못했습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
 local MSG_ANNOUNCED = "의성 공성전이 시작되었습니다."
 local FINISH_WAIT_MS = 2500
@@ -100,6 +101,15 @@ test_suite({
                 return fail("could not prepare the clans")
             end
 
+            a:chat("/HTTP장애 /castle/siege/start on")
+            ctx:sleep(300)
+            local unconfirmed = command(a, "/공성시작 " .. BEAST, MSG_START_UNCONFIRMED)
+            a:chat("/HTTP장애 /castle/siege/start off")
+            ctx:sleep(300)
+            if unconfirmed == false then
+                return fail("an unreachable siege start did not say the result is unconfirmed")
+            end
+
             if command(a, "/공성시작 " .. BEAST, MSG_STARTED) == false then
                 return fail("could not start the siege")
             end
@@ -119,7 +129,7 @@ test_suite({
             a:chat("/HTTP장애 /castle/siege/end on")
             ctx:sleep(300)
             a:take_messages()
-            if command(a, "/공성종료", MSG_NOT_ENDED) == false then
+            if command(a, "/공성종료", MSG_END_FAILED) == false then
                 return fail("the siege ended although the owner was not saved")
             end
             for _, text in ipairs(a:take_messages()) do
@@ -370,7 +380,7 @@ test_suite({
 
             a:chat("/HTTP장애 /castle/siege/end lost")
             ctx:sleep(300)
-            if command(a, "/공성종료", MSG_NOT_ENDED) == false then
+            if command(a, "/공성종료", MSG_END_FAILED) == false then
                 return fail("the siege ended although the owner response was lost")
             end
             if run_step(a, "verify_siege", "lost_kept", BEAST, "true", "not_mine") == false then

@@ -1,8 +1,10 @@
 #include <fb/config.h>
 #include <fb/game/castle.h>
 #include <fb/game/server.h>
+#include <fb/http_client.h>
 #include <fb/logger.h>
 #include <fb/model/model.h>
+#include <macro.h>
 
 #include <cstdint>
 #include <exception>
@@ -123,16 +125,26 @@ async::task<castle::siege_start_result> castle::container::start_siege(fb::model
     if (!world)
         throw std::runtime_error("castle: no world to start a siege in");
 
-    auto   id = static_cast<uint32_t>(divine_beast);
-    auto&& resp =
-        co_await this->_server.http.post("internal",
-                                         "/castle/siege/start",
-                                         fb::protocol::internal::request::StartCastleSiege{*world,
-                                                                                           fb::config<uint32_t>("id"),
-                                                                                           static_cast<uint8_t>(id),
-                                                                                           siege_key});
+    auto id   = static_cast<uint32_t>(divine_beast);
+    auto resp = internal_resp::UpdatedCastle{};
+    try
+    {
+        resp = co_await this->_server.http.post(
+            "internal",
+            "/castle/siege/start",
+            fb::protocol::internal::request::StartCastleSiege{*world,
+                                                              fb::config<uint32_t>("id"),
+                                                              static_cast<uint8_t>(id),
+                                                              siege_key});
+    }
+    catch (const fb::http_error& e)
+    {
+        fb::logger::warn("castle {} siege start request failed: {}", id, e.what());
+        throw std::runtime_error(_TEXT(MESSAGE_REQUEST_UNCONFIRMED));
+    }
+
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
-        throw std::runtime_error(std::format("castle: failed to start siege (error : {})", resp.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
 
     auto result = castle::siege_start_result{};
     {
@@ -155,15 +167,25 @@ async::task<bool> castle::container::finish_siege(fb::model::enum_value::DIVINE_
     if (!world)
         co_return false;
 
-    auto   id = static_cast<uint32_t>(divine_beast);
-    auto&& resp =
-        co_await this->_server.http.post("internal",
-                                         "/castle/siege/finish",
-                                         fb::protocol::internal::request::FinishCastleSiege{*world,
-                                                                                            fb::config<uint32_t>("id"),
-                                                                                            static_cast<uint8_t>(id)});
+    auto id   = static_cast<uint32_t>(divine_beast);
+    auto resp = internal_resp::UpdatedCastle{};
+    try
+    {
+        resp = co_await this->_server.http.post(
+            "internal",
+            "/castle/siege/finish",
+            fb::protocol::internal::request::FinishCastleSiege{*world,
+                                                               fb::config<uint32_t>("id"),
+                                                               static_cast<uint8_t>(id)});
+    }
+    catch (const fb::http_error& e)
+    {
+        fb::logger::warn("castle {} siege finish request failed: {}", id, e.what());
+        throw std::runtime_error(_TEXT(MESSAGE_REQUEST_UNCONFIRMED));
+    }
+
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
-        throw std::runtime_error(std::format("castle: failed to finish siege (error : {})", resp.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
 
     auto guard = co_await this->enter_write(id);
     if (guard.value() == nullptr)

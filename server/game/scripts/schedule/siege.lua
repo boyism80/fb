@@ -124,20 +124,28 @@ end
 local function end_active_sieges()
     local ended = {}
     local requested = {}
+    local failed = {}
     for divine_beast, info in pairs(CASTLES) do
         local entity = castle(divine_beast)
         if entity ~= nil and entity:siege_pending() then
             if active_heart_map(info) ~= nil then
-                local ok = end_siege(divine_beast)
+                local ok, reason, save_failed = end_siege(divine_beast)
                 if ok then
                     table.insert(ended, info.name)
+                elseif save_failed then
+                    table.insert(failed, string.format('%s (%s)', info.name, reason))
                 end
-            elseif entity:finish_siege() ~= nil then
-                table.insert(requested, info.name)
+            else
+                local pending, reason = entity:finish_siege()
+                if pending == nil then
+                    table.insert(failed, string.format('%s (%s)', info.name, reason))
+                elseif pending then
+                    table.insert(requested, info.name)
+                end
             end
         end
     end
-    return ended, requested
+    return ended, requested, failed
 end
 
 local function has_heart_map()
