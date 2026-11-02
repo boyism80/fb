@@ -2350,6 +2350,11 @@ void character::award_exp(uint64_t exp)
         auto guard = this->server.groups.try_enter_read(group_id.value());
         if (guard.has_value() && guard->value() != nullptr)
             nears = guard->value()->nears(*map, this->position());
+
+        std::erase_if(nears, [](const auto& member) {
+            auto shared_ptr = member.lock();
+            return shared_ptr == nullptr || shared_ptr->alive() == false;
+        });
     }
 
     if (nears.empty())
