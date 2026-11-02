@@ -39,18 +39,21 @@
             <span class="material-symbols-outlined">check_circle</span>
             <span class="stitch-success-text">@successMessage</span>
         </div>
-        <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+        <button type="button" class="stitch-banner-dismiss stitch-success-dismiss"
+                @onclick="() => successMessage = null" aria-label="닫기">
             <span class="material-symbols-outlined">close</span>
         </button>
     </div>
 }
 
 <div class="items-target-tabs">
-    <button type="button" class="items-target-tab @(model.IsGlobal ? "selected" : null)" @onclick="() => SetGrantMode(true)">
+    <button type="button" class="items-target-tab @(model.IsGlobal ? "selected" : null)"
+            @onclick="() => SetGrantMode(true)">
         <span class="material-symbols-outlined">group</span>
         전체 지급
     </button>
-    <button type="button" class="items-target-tab @(!model.IsGlobal ? "selected" : null)" @onclick="() => SetGrantMode(false)">
+    <button type="button" class="items-target-tab @(!model.IsGlobal ? "selected" : null)"
+            @onclick="() => SetGrantMode(false)">
         <span class="material-symbols-outlined">person</span>
         유저 지급
     </button>
@@ -65,25 +68,29 @@
             {
                 <div class="items-field items-col-6">
                     <label for="userName" class="items-label">유저명</label>
-                    <InputText id="userName" class="form-control items-input" @bind-Value="model.UserName" placeholder="유저 닉네임 입력" />
+                    <InputText id="userName" class="form-control items-input" @bind-Value="model.UserName"
+                               placeholder="유저 닉네임 입력" />
                     <ValidationMessage For="@(() => model.UserName)" />
                 </div>
             }
             <div class="items-field @(model.IsGlobal ? "items-col-12" : "items-col-6")">
                 <label for="title" class="items-label">제목</label>
-                <InputText id="title" class="form-control items-input" @bind-Value="model.Title" placeholder="메일 제목 입력" />
+                <InputText id="title" class="form-control items-input" @bind-Value="model.Title"
+                           placeholder="메일 제목 입력" />
                 <ValidationMessage For="@(() => model.Title)" />
             </div>
             <div class="items-field items-col-12">
                 <label for="message" class="items-label">메시지</label>
-                <InputTextArea id="message" class="form-control items-textarea" rows="3" @bind-Value="model.Message" placeholder="유저에게 보낼 메시지" />
+                <InputTextArea id="message" class="form-control items-textarea" rows="3" @bind-Value="model.Message"
+                               placeholder="유저에게 보낼 메시지" />
                 <ValidationMessage For="@(() => model.Message)" />
             </div>
             @if (model.IsGlobal)
             {
                 <div class="items-field items-col-4">
                     <label for="reserveDate" class="items-label">예약 지급 (선택)</label>
-                    <InputDate Type="InputDateType.DateTimeLocal" id="reserveDate" class="form-control items-input" @bind-Value="model.ReserveDate" />
+                    <InputDate Type="InputDateType.DateTimeLocal" id="reserveDate" class="form-control items-input"
+                               @bind-Value="model.ReserveDate" />
                     <span class="items-field-hint">비워두면 즉시 지급 · 예약 시각 10초 전까지 수정·취소 가능</span>
                 </div>
                 <div class="items-field items-col-8">
@@ -102,10 +109,8 @@
                 <label class="items-label">아이템 검색</label>
                 <div class="items-search-wrap">
                     <span class="material-symbols-outlined items-search-icon">search</span>
-                    <input type="text" class="form-control items-input items-search-input"
-                           @bind="itemSearchText"
-                           @bind:event="oninput"
-                           @bind:after="HandleItemSearchInput"
+                    <input type="text" class="form-control items-input items-search-input" @bind="itemSearchText"
+                           @bind:event="oninput" @bind:after="HandleItemSearchInput"
                            @onkeydown="HandleItemSearchKeyDown"
                            @onfocus="() => showItemSuggestions = !string.IsNullOrWhiteSpace(itemSearchText) && filteredItems.Any()"
                            @onblur="() => Task.Delay(200).ContinueWith(_ => InvokeAsync(() => { showItemSuggestions = false; StateHasChanged(); }))"
@@ -135,7 +140,8 @@
             </div>
             <div class="items-field items-col-4">
                 <label class="items-label">수량</label>
-                <InputNumber class="form-control items-input" @bind-Value="itemQuantity" min="1" max="@(selectedItem?.Capacity ?? 1)" disabled="@(!canEditQuantity)" />
+                <InputNumber class="form-control items-input" @bind-Value="itemQuantity" min="1"
+                             max="@(selectedItem?.Capacity ?? 1)" disabled="@(!canEditQuantity)" />
             </div>
             <div class="items-field items-col-4">
                 <label class="items-label">골드 지급</label>
@@ -147,9 +153,18 @@
             </div>
             <div class="items-field items-col-12">
                 <div class="items-add-actions">
-                    <button type="button" class="items-add-btn" @onclick="AddItem" disabled="@(!canAddItem)">아이템 추가</button>
-                    <button type="button" class="items-add-btn" @onclick="AddMoney" disabled="@(moneyValue == null || moneyValue <= 0)">골드 추가</button>
-                    <button type="button" class="items-add-btn" @onclick="AddExp" disabled="@(expValue == null || expValue <= 0)">경험치 추가</button>
+                    <button type="button" class="items-add-btn" @onclick="AddItem" disabled="@(!canAddItem)">
+                        아이템
+                        추가
+                    </button>
+                    <button type="button" class="items-add-btn" @onclick="AddMoney"
+                            disabled="@(moneyValue == null || moneyValue <= 0)">
+                        골드 추가
+                    </button>
+                    <button type="button" class="items-add-btn" @onclick="AddExp"
+                            disabled="@(expValue == null || expValue <= 0)">
+                        경험치 추가
+                    </button>
                 </div>
             </div>
             <div class="items-field items-col-12">
@@ -162,7 +177,8 @@
                         {
                             <div class="items-attachment-chip">
                                 <span>@FormatAttachmentLabel(attachment)</span>
-                                <button type="button" class="items-chip-remove" @onclick="() => RemoveAttachment(index)" aria-label="제거">
+                                <button type="button" class="items-chip-remove" @onclick="() => RemoveAttachment(index)"
+                                        aria-label="제거">
                                     <span class="material-symbols-outlined">close</span>
                                 </button>
                             </div>
@@ -229,8 +245,14 @@
                             <td>
                                 @if (Editable(box))
                                 {
-                                    <button type="button" class="items-add-btn" @onclick="() => BeginEdit(box)" disabled="@isProcessing">수정</button>
-                                    <button type="button" class="items-add-btn" @onclick="() => CancelReservation(box)" disabled="@isProcessing">예약 취소</button>
+                                    <button type="button" class="items-add-btn" @onclick="() => BeginEdit(box)"
+                                            disabled="@isProcessing">
+                                        수정
+                                    </button>
+                                    <button type="button" class="items-add-btn" @onclick="() => CancelReservation(box)"
+                                            disabled="@isProcessing">
+                                        예약 취소
+                                    </button>
                                 }
                                 else
                                 {
@@ -372,8 +394,14 @@
         model.Title = box.Title;
         model.Message = box.Message;
         model.Attachments = box.Attachments.ToList();
-        model.ReserveDate = box.ReserveDate.HasValue ? DateTime.SpecifyKind(box.ReserveDate.Value, DateTimeKind.Utc).ToLocalTime() : null;
-        model.ExpiredDate = box.ExpiredDate.HasValue ? DateTime.SpecifyKind(box.ExpiredDate.Value, DateTimeKind.Utc).ToLocalTime() : null;
+        model.ReserveDate = box.ReserveDate.HasValue
+            ? DateTime.SpecifyKind(box.ReserveDate.Value,
+                DateTimeKind.Utc).ToLocalTime()
+            : null;
+        model.ExpiredDate = box.ExpiredDate.HasValue
+            ? DateTime.SpecifyKind(box.ExpiredDate.Value,
+                DateTimeKind.Utc).ToLocalTime()
+            : null;
         model.IncludeNewCharacters = box.IncludeNewCharacters;
         errorMessage = null;
         successMessage = null;
@@ -869,7 +897,8 @@
                     ReserveDate,
                     IncludeNewCharacters
                 });
-                var hash = System.Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(content)));
+                var hash =
+                    System.Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(content)));
                 return $"admin:{FormId:N}:{hash[..16]}";
             }
         }

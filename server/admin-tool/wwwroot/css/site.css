@@ -578,7 +578,8 @@
     flex-shrink: 0;
 }
 
-html, body {
+html,
+body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
     background-color: var(--bg-page);
     color: var(--text-primary);
@@ -596,25 +597,42 @@ html, body {
     box-sizing: border-box;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     color: var(--text-primary);
     font-weight: 600;
     margin-top: 0;
     margin-bottom: 0.5rem;
 }
 
-h1 { font-size: 1.5rem; }
-h2 { font-size: 1.25rem; }
-h3 { font-size: 1.125rem; }
+h1 {
+    font-size: 1.5rem;
+}
 
-h1:focus { outline: none; }
+h2 {
+    font-size: 1.25rem;
+}
 
-a, .btn-link {
+h3 {
+    font-size: 1.125rem;
+}
+
+h1:focus {
+    outline: none;
+}
+
+a,
+.btn-link {
     color: var(--accent-color);
     text-decoration: none;
 }
 
-a:hover, .btn-link:hover {
+a:hover,
+.btn-link:hover {
     opacity: 0.85;
 }
 
@@ -709,7 +727,8 @@ body .btn-secondary:hover {
 }
 
 /* Forms */
-.form-control, .form-select {
+.form-control,
+.form-select {
     background-color: var(--bg-input);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -717,7 +736,8 @@ body .btn-secondary:hover {
     font-size: 1rem;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
     background-color: var(--bg-input);
     border-color: var(--text-primary);
     color: var(--text-primary);
@@ -729,7 +749,8 @@ body .btn-secondary:hover {
     color: var(--text-muted);
 }
 
-.form-label, label {
+.form-label,
+label {
     color: var(--text-secondary);
     font-size: 1rem;
     margin-bottom: 0.25rem;
@@ -789,11 +810,11 @@ body .btn-secondary:hover {
     vertical-align: middle;
 }
 
-.table-striped > tbody > tr:nth-of-type(odd) > td {
+.table-striped>tbody>tr:nth-of-type(odd)>td {
     background-color: var(--table-stripe-bg);
 }
 
-.table-hover > tbody > tr:hover > td {
+.table-hover>tbody>tr:hover>td {
     background-color: var(--bg-hover);
     cursor: default;
 }
@@ -812,7 +833,10 @@ body .btn-secondary:hover {
     padding: 1rem 1rem;
 }
 
-.alert-danger, .alert-success, .alert-info, .alert-warning {
+.alert-danger,
+.alert-success,
+.alert-info,
+.alert-warning {
     background-color: var(--bg-card);
     border-color: var(--border-color);
     color: var(--text-primary);
@@ -826,7 +850,12 @@ body .btn-secondary:hover {
     padding: 0.2em 0.5em;
 }
 
-.bg-danger, .bg-success, .bg-secondary, .badge.bg-danger, .badge.bg-success, .badge.bg-secondary {
+.bg-danger,
+.bg-success,
+.bg-secondary,
+.badge.bg-danger,
+.badge.bg-success,
+.badge.bg-secondary {
     background-color: var(--btn-bg) !important;
     color: var(--text-secondary) !important;
 }
@@ -1272,7 +1301,7 @@ body .btn-secondary:hover {
     cursor: not-allowed;
 }
 
-.bulletin-action-link + .bulletin-action-link {
+.bulletin-action-link+.bulletin-action-link {
     margin-left: 0.5rem;
 }
 
@@ -1604,26 +1633,20 @@ button.text-link:disabled {
     pointer-events: none;
     background-color: var(--bg-page);
     background-image:
-        linear-gradient(
-            90deg,
+        linear-gradient(90deg,
             rgba(15, 15, 15, 0.15) 0%,
             rgba(15, 15, 15, 0.72) 42%,
             rgba(15, 15, 15, 0.94) 68%,
-            var(--bg-page) 100%
-        ),
-        linear-gradient(
-            180deg,
+            var(--bg-page) 100%),
+        linear-gradient(180deg,
             var(--bg-page) 0%,
             rgba(15, 15, 15, 0.35) 18%,
             rgba(15, 15, 15, 0.2) 50%,
             rgba(15, 15, 15, 0.88) 88%,
-            var(--bg-page) 100%
-        ),
-        radial-gradient(
-            ellipse 40% 55% at 18% 42%,
+            var(--bg-page) 100%),
+        radial-gradient(ellipse 40% 55% at 18% 42%,
             rgba(180, 120, 40, 0.07) 0%,
-            transparent 70%
-        ),
+            transparent 70%),
         url('/images/dash-hero-bg.png');
     background-position: center, center, center, left 38% center;
     background-size: cover, cover, cover, cover;
@@ -2928,7 +2951,8 @@ a.dashboard-card:hover,
     border-radius: 4px;
 }
 
-.modal-header, .modal-footer {
+.modal-header,
+.modal-footer {
     border-color: var(--border-color);
     padding: 1rem;
 }
@@ -2964,8 +2988,13 @@ a.dashboard-card:hover,
 }
 
 /* Utilities */
-.gap-2 { gap: 0.5rem !important; }
-.gap-3 { gap: 1rem !important; }
+.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.gap-3 {
+    gap: 1rem !important;
+}
 
 .container-fluid {
     padding: 0;
@@ -3279,7 +3308,7 @@ a.dashboard-card:hover,
 }
 
 .stitch-error-banner .material-symbols-outlined,
-.stitch-error-banner-content > span:last-child {
+.stitch-error-banner-content>span:last-child {
     color: var(--error-text);
 }
 
@@ -3480,7 +3509,7 @@ a.dashboard-card:hover,
     justify-content: space-between;
 }
 
-.stitch-terminal-header > span {
+.stitch-terminal-header>span {
     font-size: var(--font-size-metadata);
     color: var(--text-secondary);
 }
@@ -3980,6 +4009,7 @@ a.dashboard-card:hover,
 }
 
 @media (max-width: 768px) {
+
     .items-col-4,
     .items-col-6,
     .items-col-8 {
@@ -4652,10 +4682,10 @@ a.dashboard-card:hover,
     border-bottom: 1px solid var(--border-color);
 }
 
-.user-detail-page .stitch-form-card > .user-detail-card-body,
-.user-detail-page .stitch-form-card > .user-detail-card-content,
-.stitch-form-card > .user-detail-card-body,
-.stitch-form-card > .user-detail-card-content,
+.user-detail-page .stitch-form-card>.user-detail-card-body,
+.user-detail-page .stitch-form-card>.user-detail-card-content,
+.stitch-form-card>.user-detail-card-body,
+.stitch-form-card>.user-detail-card-content,
 .stitch-form-card .user-detail-card-content {
     padding: 1.25rem;
     box-sizing: border-box;
@@ -4900,10 +4930,10 @@ a.dashboard-card:hover,
 /* User detail card content — Stitch p-5; must win over stitch-form-card .card-body reset */
 .user-detail-card-content,
 .user-detail-card-body,
-.stitch-form-card > .user-detail-card-content,
+.stitch-form-card>.user-detail-card-content,
 .stitch-form-card .user-detail-card-content,
 .user-detail-dl.user-detail-card-content,
-.user-detail-page .stitch-form-card > .card-body {
+.user-detail-page .stitch-form-card>.card-body {
     padding: 1.25rem;
     box-sizing: border-box;
 }
