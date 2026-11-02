@@ -667,7 +667,7 @@ return {
         lib.any_action(me)
     end,
 
-    on_chat = function(me, message, shout)
+    on_chat = function(me, message)
         if string.sub(message, 1, 1) == '/' then
             message = string.sub(message, 2, string.len(message))
             local args = lib.string_split(message, ' ')
@@ -699,7 +699,6 @@ return {
             return cmd_func(me, args)
         end
 
-        on_npc_chat(me, message, shout)
         return false
     end,
 

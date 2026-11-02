@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 
 namespace game_reqs = fb::protocol::game::request;
 
@@ -41,6 +42,18 @@ async::task<bool> chat<V>::handle(fb::socket<character>& session, game_reqs::cha
         co_return true;
 
     handle_normal_chat(ch, request, map);
+
+    if (request.message.empty() || request.message[0] != '/')
+    {
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_npc_chat");
+        if (lua)
+        {
+            lua->pushobject(ch);
+            lua->pushstring(request.message);
+            lua->pushboolean(request.shout);
+            fb::lua::run_async(std::move(lua), 3);
+        }
+    }
     co_return true;
 }
 
@@ -66,8 +79,7 @@ async::task<bool> chat<V>::try_command(character* ch, std::weak_ptr<character> w
 
         lua->pushobject(ch);
         lua->pushstring(request.message);
-        lua->pushboolean(request.shout);
-        std::ignore = co_await lua->call(3);
+        std::ignore = co_await lua->call(2);
 
         // Read on owner thread before any switching; ~lua releases at block end.
         if (weak.expired() == false)
