@@ -818,6 +818,17 @@ void character::accumulate_evaluation_playtime(const fb::model::datetime& now)
     this->update(UPDATE_STATE_LEVEL::BASED);
 }
 
+void character::shift_evaluation(const fb::model::timespan& delta)
+{
+    this->assert_thread();
+
+    this->_evaluation.tick += delta;
+    for (auto& [target, evaluated_at] : this->_evaluation.targets)
+    {
+        evaluated_at += delta;
+    }
+}
+
 async::task<void> character::evaluate(std::string target_name, bool raise)
 {
     this->assert_thread();

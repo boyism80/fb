@@ -419,6 +419,7 @@ public:
     uint16_t                                                  evaluation() const;
     void                                                      evaluation(uint16_t value);
     void                                                      accumulate_evaluation_playtime(const fb::model::datetime& now);
+    void                                                      shift_evaluation(const fb::model::timespan& delta);
     [[nodiscard]] async::task<void>                           evaluate(std::string target_name, bool raise);
     uint8_t                                                   level() const;
     void                                                      level(uint8_t value);
