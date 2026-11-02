@@ -5,6 +5,7 @@ using Http;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using Internal.Services;
 using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
@@ -24,6 +25,7 @@ namespace Internal.Controllers
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
         private readonly SessionService _sessionService;
+        private readonly ClanService _clans;
         private readonly ILogger<ClanController> _logger;
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
@@ -31,6 +33,7 @@ namespace Internal.Controllers
             IMapper mapper,
             RedisDistributedLockService distributedLock,
             SessionService sessionService,
+            ClanService clans,
             ILogger<ClanController> logger)
         {
             _configuration = configuration;
@@ -39,6 +42,7 @@ namespace Internal.Controllers
             _mapper = mapper;
             _distributedLock = distributedLock;
             _sessionService = sessionService;
+            _clans = clans;
             _logger = logger;
         }
 
@@ -60,52 +64,12 @@ namespace Internal.Controllers
             }).ToList();
         }
 
-        private void Touch(uint world, params Clan[] clans)
+        private async Task<string> GetName(Character ch)
         {
-            var at = DateTime.UtcNow;
-            foreach (var clan in clans)
-            {
-                clan.UpdatedDate = at;
-                clan.Revision++;
-                _dbContext.Clan.Set(world, clan);
-            }
-        }
-
-        private sealed class ClanLocks : IAsyncDisposable
-        {
-            private readonly List<RedisDistributedLockHandle> _locks = new List<RedisDistributedLockHandle>();
-
-            public void Add(RedisDistributedLockHandle handle)
-            {
-                _locks.Add(handle);
-            }
-
-            public async ValueTask DisposeAsync()
-            {
-                for (var i = _locks.Count - 1; i >= 0; i--)
-                {
-                    await _locks[i].DisposeAsync();
-                }
-            }
-        }
-
-        // Every path that touches more than one clan locks them in id order so two such paths cannot deadlock.
-        private async Task<ClanLocks> LockClans(uint world, IEnumerable<uint> ids)
-        {
-            var locks = new ClanLocks();
-            try
-            {
-                foreach (var id in ids.Distinct().OrderBy(x => x))
-                {
-                    locks.Add(await _distributedLock.Lock(world, Clan.DistributedLockKey(id)));
-                }
-                return locks;
-            }
-            catch
-            {
-                await locks.DisposeAsync();
-                throw;
-            }
+            await using var conn = _dbContext.GetUnifiedConnection();
+            var name = await conn.QueryFirstOrDefaultAsync<string>(
+                "SELECT `name` FROM `name_registry` WHERE id = @id", new { id = ch.Id });
+            return name ?? ch.Name;
         }
 
         private async Task<Protocol.Clan> GetClanResponse(uint world, Clan clan)
@@ -192,15 +156,27 @@ namespace Internal.Controllers
         public async Task<Response.ClanDetails> Create(Request.CreateClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.GetUnifiedConnection();
-            await db.OpenAsync();
-            await using var trans = await db.BeginTransactionAsync();
-            var committed = false;
             try
             {
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(request.Master));
+
                 var ch = await _dbContext.Character.Get(world, request.Master) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
+                var sync = await _dbContext.CharacterRealtimeState.Get(world, ch.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, sync);
+                if (sync.Clan != null)
+                {
+                    throw new LogicException(ErrorCode.ClanAlreadyJoined);
+                }
+
+                var masterName = await GetName(ch);
+
+                await using var db = _dbContext.GetUnifiedConnection();
+                await db.OpenAsync();
+                await using var trans = await db.BeginTransactionAsync();
                 var existing = await db.QueryFirstOrDefaultAsync<uint?>(
                     @"SELECT id FROM clan_name WHERE name = @Name FOR UPDATE",
                     new { Name = request.Name },
@@ -217,25 +193,17 @@ namespace Internal.Controllers
                     transaction: trans
                 );
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(ch.Id));
                 await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(newClanId));
+                await trans.CommitAsync();
 
-                var sync = await _dbContext.CharacterRealtimeState.Get(world, ch.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                await _dbContext.CharacterRealtimeState.ClearStaleMembership(world, sync);
-                if (sync.Clan != null)
-                {
-                    throw new LogicException(ErrorCode.ClanAlreadyJoined);
-                }
-
-                var clan = _dbContext.Clan.Set(world, new Clan
+                var clan = new Clan
                 {
                     Id = newClanId,
                     Name = request.Name,
                     Title = null,
                     Revision = 1,
-                });
+                };
+                _clans.Touch(world, clan);
                 await _dbContext.Clan.SaveChangesAsync();
 
                 sync.Clan = clan.Id;
@@ -249,17 +217,23 @@ namespace Internal.Controllers
                     Role = (uint)ClanRole.Master
                 });
                 await _dbContext.ClanMember.SaveChangesAsync();
-                Touch(world, clan);
-                await _dbContext.Clan.SaveChangesAsync();
-                await trans.CommitAsync();
-                committed = true;
 
+                var protocolClan = _mapper.Map<Protocol.Clan>(clan);
+                protocolClan.Revision = clan.Revision;
                 var response = new Response.ClanDetails
                 {
                     Host = request.Host,
                     Action = Protocol.ClanDetailsAction.Create,
-                    Clan = await GetClanResponse(world, clan),
-                    Members = await GetClanMemberResponse(world, clan.Id),
+                    Clan = protocolClan,
+                    Members = new List<Protocol.ClanMember>
+                    {
+                        new Protocol.ClanMember
+                        {
+                            Uid = ch.Id,
+                            Name = masterName,
+                            Role = (uint)ClanRole.Master
+                        }
+                    },
                     Revision = clan.Revision,
                     Error = (uint)ErrorCode.None
                 };
@@ -269,7 +243,6 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                await trans.RollbackAsync();
                 return new Response.ClanDetails
                 {
                     Host = request.Host,
@@ -279,11 +252,6 @@ namespace Internal.Controllers
             }
             catch (Exception)
             {
-                if (committed == false)
-                {
-                    await trans.RollbackAsync();
-                }
-
                 return new Response.ClanDetails
                 {
                     Host = request.Host,
@@ -291,20 +259,11 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
-            finally
-            {
-                await db.CloseAsync();
-            }
         }
         [HttpPost("destroy")]
         public async Task<Response.DestroyClan> Destroy(Request.DestroyClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.GetUnifiedConnection();
-            await db.OpenAsync();
-            await using var trans = await db.BeginTransactionAsync();
-            var committed = false;
-            var castleLocks = new List<RedisDistributedLockHandle>();
             try
             {
                 await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(request.Master));
@@ -320,31 +279,24 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNotJoined);
                 }
 
-                var counterpartIds = (await _dbContext.ClanEnemy.Get(world, sync.Clan.Value)).Select(x => x.EnemyClan).ToList();
-                var alliedBefore = await _dbContext.ClanAlliance.Get(world, sync.Clan.Value);
-                if (alliedBefore != null)
-                {
-                    counterpartIds.Add(alliedBefore.AlliedClan);
-                }
-
-                await using var _2 = await LockClans(world, counterpartIds.Append(sync.Clan.Value));
+                var counterpartIds = await _clans.GetCounterparts(world, sync.Clan.Value);
+                await using var _2 = await _clans.LockClans(world, counterpartIds.Append(sync.Clan.Value));
 
                 var clan = await _dbContext.Clan.Get(world, sync.Clan.Value) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
 
                 var members = (await _dbContext.ClanMember.Get(world, clan.Id)).ToList();
-                if (members.Count != 1)
+                if (members.Count > 1)
                 {
                     throw new LogicException(ErrorCode.ClanMemberExists);
                 }
 
-                var master = members[0];
-                if (master.User != ch.Id)
+                if (members.Count == 1 && members[0].User != ch.Id)
                 {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
                 }
 
-                if (master.Role != (uint)ClanRole.Master)
+                if (members.Count == 1 && members[0].Role != (uint)ClanRole.Master)
                 {
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
                 }
@@ -354,155 +306,26 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanMoneyRemains);
                 }
 
-                _dbContext.ClanMember.Delete(world, master);
-
-                var oldTitle = clan.Title;
-                _dbContext.Clan.Delete(world, clan.Id);
-
-                var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
-                await using var _3 = alliance != null ? await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliance.AlliedClan)) : null;
-                var unallied = default(Clan);
-                if (alliance != null)
+                var actor = new Protocol.CharacterRef
                 {
-                    if (counterpartIds.Contains(alliance.AlliedClan) == false)
-                    {
-                        throw new LogicException(ErrorCode.Unhandled);
-                    }
+                    Uid = ch.Id,
+                    Name = await GetName(ch)
+                };
 
-                    _dbContext.ClanAlliance.Delete(world, clan.Id);
-                    _dbContext.ClanAlliance.Delete(world, alliance.AlliedClan);
-                    unallied = await _dbContext.Clan.Get(world, alliance.AlliedClan);
-                    if (unallied != null)
-                    {
-                        Touch(world, unallied);
-                    }
+                if (members.Count == 1)
+                {
+                    _dbContext.ClanMember.Delete(world, members[0]);
+                    await _dbContext.ClanMember.SaveChangesAsync();
                 }
-
-                var enemies = (await _dbContext.ClanEnemy.Get(world, clan.Id)).ToList();
-                var unenemies = new List<Clan>();
-                foreach (var enemy in enemies)
-                {
-                    if (counterpartIds.Contains(enemy.EnemyClan) == false)
-                    {
-                        throw new LogicException(ErrorCode.Unhandled);
-                    }
-
-                    _dbContext.ClanEnemy.Delete(world, enemy);
-                    var reverse = await _dbContext.ClanEnemy.Get(world, enemy.EnemyClan, clan.Id);
-                    if (reverse != null)
-                    {
-                        _dbContext.ClanEnemy.Delete(world, reverse);
-                    }
-
-                    var other = await _dbContext.Clan.Get(world, enemy.EnemyClan);
-                    if (other != null)
-                    {
-                        Touch(world, other);
-                        unenemies.Add(other);
-                    }
-                }
-
-                var clearedCastles = new List<byte>();
-                for (byte divineBeast = 0; divineBeast <= 3; divineBeast++)
-                {
-                    castleLocks.Add(await _distributedLock.Lock(world, Castle.DistributedLockKey(divineBeast)));
-                    var castleRecord = await _dbContext.Castle.Get(world, divineBeast);
-                    if (castleRecord?.OwnerClan == clan.Id)
-                    {
-                        castleRecord.OwnerClan = null;
-                        _dbContext.Castle.Set(world, castleRecord);
-                        clearedCastles.Add(divineBeast);
-                    }
-                }
-
-                await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
-                {
-                    id = clan.Id
-                }, transaction: trans, commandType: System.Data.CommandType.StoredProcedure);
-
-                var archived = clan.MoneyRequests
-                    .Select(x => new ClanMoneyRequestArchive { Clan = clan.Id, RequestId = x.Id, Applied = x.Applied })
-                    .ToArray();
-                if (archived.Length > 0)
-                {
-                    _dbContext.ClanMoneyRequestArchive.Set(world, archived);
-                    await _dbContext.ClanMoneyRequestArchive.SaveChangesAsync();
-                }
-
-                await _dbContext.ClanMember.SaveChangesAsync();
-                await _dbContext.SaveChangesAsync();
 
                 sync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, sync);
                 await _dbContext.CharacterRealtimeState.SaveChangesAsync();
-                await trans.CommitAsync();
-                committed = true;
 
-                var conn = _dbContext.GetUnifiedConnection();
-                var masterName = await conn.QueryFirstOrDefaultAsync<string>(
-                    $"SELECT `name` FROM `name_registry` WHERE id = {ch.Id}");
-
-                var response = new Response.DestroyClan
-                {
-                    Host = request.Host,
-                    ClanId = clan.Id,
-                    ClanName = clan.Name,
-                    Actor = new Protocol.CharacterRef
-                    {
-                        Uid = ch.Id,
-                        Name = masterName ?? ch.Name
-                    },
-                    Revision = clan.Revision + 1,
-                    Error = (uint)ErrorCode.None
-                };
-
-                await _rabbitMqService.NotifySavedAsync(response, "clan", request.World);
-
-                // The destroying game server gets no HTTP response for these clans, so no host may skip them.
-                if (unallied != null)
-                {
-                    await _rabbitMqService.NotifySavedAsync(new Response.UpdatedClan
-                    {
-                        Host = uint.MaxValue,
-                        Action = Protocol.ClanActionType.Unally,
-                        ClanId = unallied.Id,
-                        ClanName = unallied.Name,
-                        Revision = unallied.Revision,
-                        Actor = response.Actor,
-                        RelatedClanId = clan.Id,
-                        Error = (uint)ErrorCode.None
-                    }, "clan", request.World);
-                }
-                foreach (var other in unenemies)
-                {
-                    await _rabbitMqService.NotifySavedAsync(new Response.UpdatedClan
-                    {
-                        Host = uint.MaxValue,
-                        Action = Protocol.ClanActionType.Unenemy,
-                        ClanId = other.Id,
-                        ClanName = other.Name,
-                        Revision = other.Revision,
-                        Actor = response.Actor,
-                        RelatedClanId = clan.Id,
-                        Error = (uint)ErrorCode.None
-                    }, "clan", request.World);
-                }
-
-                foreach (var divineBeast in clearedCastles)
-                {
-                    await _rabbitMqService.NotifySavedAsync(new Response.UpdatedCastle
-                    {
-                        Host = uint.MaxValue,
-                        DivineBeast = divineBeast,
-                        OwnerClanId = null,
-                        Error = (uint)ErrorCode.None
-                    }, AmqpRoute.Exchange, AmqpRoute.Home("castle", request.World));
-                }
-                return response;
+                return await _clans.Remove(world, clan, counterpartIds, request.Host, actor);
             }
             catch (LogicException e)
             {
-                await trans.RollbackAsync();
                 return new Response.DestroyClan
                 {
                     Host = request.Host,
@@ -511,25 +334,11 @@ namespace Internal.Controllers
             }
             catch (Exception)
             {
-                if (committed == false)
-                {
-                    await trans.RollbackAsync();
-                }
-
                 return new Response.DestroyClan
                 {
                     Host = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
-            }
-            finally
-            {
-                foreach (var handle in castleLocks)
-                {
-                    await handle.DisposeAsync();
-                }
-
-                await db.CloseAsync();
             }
         }
         [HttpPost("title")]
@@ -579,7 +388,7 @@ namespace Internal.Controllers
 
                 var oldTitle = clan.Title;
                 clan.Title = request.Title;
-                Touch(world, clan);
+                _clans.Touch(world, clan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -697,7 +506,7 @@ namespace Internal.Controllers
                 _dbContext.CharacterRealtimeState.Set(world, inviteeSync);
                 await _dbContext.CharacterRealtimeState.SaveChangesAsync();
 
-                Touch(world, clan);
+                _clans.Touch(world, clan);
                 _dbContext.ClanMember.Set(world, new ClanMember
                 {
                     Clan = clan.Id,
@@ -794,7 +603,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
                 }
 
-                Touch(world, clan);
+                _clans.Touch(world, clan);
                 _dbContext.ClanMember.Delete(world, member);
                 await _dbContext.ClanMember.SaveChangesAsync();
                 await _dbContext.Clan.SaveChangesAsync();
@@ -928,7 +737,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
                 }
 
-                Touch(world, clan);
+                _clans.Touch(world, clan);
                 _dbContext.ClanMember.Delete(world, targetMember);
                 await _dbContext.ClanMember.SaveChangesAsync();
                 await _dbContext.Clan.SaveChangesAsync();
@@ -1116,7 +925,7 @@ namespace Internal.Controllers
 
                 // Update target's role
                 targetMember.Role = request.NewRole;
-                Touch(world, clan);
+                _clans.Touch(world, clan);
                 _dbContext.ClanMember.Set(world, targetMember);
 
                 await _dbContext.SaveChangesAsync();
@@ -1194,7 +1003,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanCannotAllySelf);
                 }
 
-                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
+                await using var _2 = await _clans.LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1230,7 +1039,7 @@ namespace Internal.Controllers
 
                 _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.Clan, AlliedClan = request.TargetClan });
                 _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.TargetClan, AlliedClan = request.Clan });
-                Touch(world, clan, targetClan);
+                _clans.Touch(world, clan, targetClan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -1297,7 +1106,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNotMatched);
                 }
 
-                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
+                await using var _2 = await _clans.LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1328,11 +1137,11 @@ namespace Internal.Controllers
                 var alliedClan = await _dbContext.Clan.Get(world, alliedClanId);
                 if (alliedClan != null)
                 {
-                    Touch(world, clan, alliedClan);
+                    _clans.Touch(world, clan, alliedClan);
                 }
                 else
                 {
-                    Touch(world, clan);
+                    _clans.Touch(world, clan);
                 }
 
                 await _dbContext.SaveChangesAsync();
@@ -1405,7 +1214,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanCannotEnemySelf);
                 }
 
-                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
+                await using var _2 = await _clans.LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1434,7 +1243,7 @@ namespace Internal.Controllers
 
                 _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.Clan, EnemyClan = request.TargetClan });
                 _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.TargetClan, EnemyClan = request.Clan });
-                Touch(world, clan, targetClan);
+                _clans.Touch(world, clan, targetClan);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -1536,7 +1345,7 @@ namespace Internal.Controllers
 
                 await ArchiveMoneyRequests(world, clan, DateTime.UtcNow);
                 clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = true, Date = DateTime.UtcNow });
-                Touch(world, clan);
+                _clans.Touch(world, clan);
                 await _dbContext.SaveChangesAsync();
 
                 var response = new Response.UpdatedClan
@@ -1606,7 +1415,7 @@ namespace Internal.Controllers
                 {
                     await ArchiveMoneyRequests(world, clan, DateTime.UtcNow);
                     clan.MoneyRequests.Add(new ClanMoneyRequest { Id = request.RequestId, Applied = false, Date = DateTime.UtcNow });
-                    Touch(world, clan);
+                    _clans.Touch(world, clan);
                     await _dbContext.SaveChangesAsync();
                 }
                 return new Response.AbortClanMoney
@@ -1683,7 +1492,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNotMatched);
                 }
 
-                await using var _2 = await LockClans(world, new[] { request.Clan, request.TargetClan });
+                await using var _2 = await _clans.LockClans(world, new[] { request.Clan, request.TargetClan });
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
                     throw new LogicException(ErrorCode.NotFoundClan);
@@ -1710,11 +1519,11 @@ namespace Internal.Controllers
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan);
                 if (targetClan != null)
                 {
-                    Touch(world, clan, targetClan);
+                    _clans.Touch(world, clan, targetClan);
                 }
                 else
                 {
-                    Touch(world, clan);
+                    _clans.Touch(world, clan);
                 }
 
                 await _dbContext.SaveChangesAsync();

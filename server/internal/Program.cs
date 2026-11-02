@@ -64,9 +64,11 @@ public class Program
         builder.Services.AddHostedService<Internal.Services.MaintenanceBackgroundService>();
         builder.Services.AddHostedService<Internal.Services.SystemArchiveBackgroundService>();
         builder.Services.AddHostedService<Internal.Services.NameReservationCleanupBackgroundService>();
+        builder.Services.AddHostedService<Internal.Services.ClanCleanupBackgroundService>();
         builder.Services.AddFbHealthChecks();
         builder.Services.AddScoped<StorageService>();
         builder.Services.AddScoped<Internal.Services.FriendService>();
+        builder.Services.AddScoped<Internal.Services.ClanService>();
 
         var app = builder.Build();
 
