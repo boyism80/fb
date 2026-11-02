@@ -29,7 +29,8 @@ local ip = redis.call('INCR', KEYS[1])
 if ip == 1 or ip == tonumber(ARGV[1]) then
     redis.call('PEXPIRE', KEYS[1], ARGV[2])
 end
-if redis.call('EXISTS', KEYS[3]) == 1 then
+local trusted = tonumber(redis.call('GET', KEYS[3]) or '-1')
+if trusted >= tonumber(redis.call('GET', KEYS[4]) or '0') then
     return 1
 end
 if tonumber(redis.call('GET', KEYS[2]) or '0') >= tonumber(ARGV[3]) then
@@ -49,7 +50,17 @@ if ARGV[3] == '1' and redis.call('EXISTS', KEYS[2]) == 1 then
     end
 end
 if ARGV[2] == '1' then
-    redis.call('SET', KEYS[3], '1', 'PX', ARGV[1])
+    local now = redis.call('TIME')
+    redis.call('SET', KEYS[3], string.format('%d', now[1] * 1000 + math.floor(now[2] / 1000)), 'PX', ARGV[1])
+end
+return 1";
+
+        private const string PasswordChangedScript = @"
+local now = redis.call('TIME')
+local changed = string.format('%d', now[1] * 1000 + math.floor(now[2] / 1000))
+redis.call('SET', KEYS[4], changed, 'PX', ARGV[1])
+if ARGV[2] == '1' then
+    redis.call('SET', KEYS[3], changed, 'PX', ARGV[1])
 end
 return 1";
 
@@ -70,7 +81,8 @@ return 1";
         [
             $"fb:account:pw-fail:{world}:{uid}:{ip}",
             $"fb:account:pw-fail:{world}:{uid}",
-            $"fb:account:pw-trust:{world}:{uid}:{ip}"
+            $"fb:account:pw-trust:{world}:{uid}:{ip}",
+            $"fb:account:pw-changed:{world}:{uid}"
         ];
 
         public async Task<PasswordAttempt> Begin(uint world, uint uid, string ip)
@@ -114,6 +126,24 @@ return 1";
                 (long)TrustedIpDuration.TotalMilliseconds,
                 trusted ? "1" : "0",
                 attempt == PasswordAttempt.Counted ? "1" : "0"
+            ]);
+        }
+
+        public async Task PasswordChanged(uint world, uint uid, string ip)
+        {
+            var trusted = string.IsNullOrEmpty(ip) == false;
+            ip = trusted ? ip : UnknownIp;
+            var keys = Keys(world, uid, ip);
+            var redis = _redisService.GetShardConnection(world, keys[1].ToString());
+            if (redis == null)
+            {
+                return;
+            }
+
+            await redis.EvalAsync(PasswordChangedScript, keys,
+            [
+                (long)TrustedIpDuration.TotalMilliseconds,
+                trusted ? "1" : "0"
             ]);
         }
 

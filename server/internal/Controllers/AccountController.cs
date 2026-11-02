@@ -418,6 +418,7 @@ namespace Internal.Controllers
                 ch.Pw = PasswordHash.Compute(request.After);
                 _dbContext.Character.Set(world, ch);
 
+                await _passwordAttempts.PasswordChanged(world, request.Uid, request.Ip);
                 await _dbContext.SaveChangesAsync();
 
                 // Log password change event
