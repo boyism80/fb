@@ -98,6 +98,8 @@ private:
 public:
     LUA_PROTOTYPE
 
+    static constexpr size_t MAX_TITLE_LENGTH = 32;
+
 public:
     struct listener_t;
     struct initial_params;
@@ -453,7 +455,7 @@ public:
     void                                                      init();
     void                                                      screen_refresh();
     const std::string&                                        title() const;
-    void                                                      title(std::string_view value);
+    bool                                                      title(std::string_view value);
     void                                                      assert_state(STATE value) const;
     void                                                      assert_state(const std::vector<STATE>& values) const;
     [[nodiscard]] async::task<bool>                           move(const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);

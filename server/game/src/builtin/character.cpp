@@ -3221,14 +3221,16 @@ int builtin::character::builtin_title(lua_State* L)
     {
         auto value    = lua->tostring(2);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto success  = std::make_shared<bool>(false);
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->title(value);
+            *success = ch->title(value);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*success);
+            co_return 1;
         };
         return builder.run();
     }

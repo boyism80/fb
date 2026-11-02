@@ -1640,12 +1640,15 @@ const std::string& character::title() const
     return this->_title;
 }
 
-void character::title(std::string_view value)
+bool character::title(std::string_view value)
 {
     this->assert_thread();
 
+    if (fb::cp949_length(value) > MAX_TITLE_LENGTH)
+        return false;
+
     if (this->_title == value)
-        return;
+        return true;
 
     auto old_title = this->_title;
     this->_title   = std::string(value);
@@ -1656,6 +1659,7 @@ void character::title(std::string_view value)
     log_data["old_title"]      = UTF8(old_title, PLATFORM::WINDOWS);
     log_data["new_title"]      = UTF8(this->_title, PLATFORM::WINDOWS);
     this->server.log.write("title_change", log_data);
+    return true;
 }
 
 void character::assert_state(STATE value) const

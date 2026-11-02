@@ -601,7 +601,9 @@ M.functions = {
                 me:message("사용법: /타이틀 <타이틀>")
                 return true
             end
-            me:title(value)
+            if me:title(value) ~= true then
+                me:message("칭호는 32자 이하로 입력하세요.")
+            end
             return true
         end,
     },
