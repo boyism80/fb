@@ -239,10 +239,19 @@ async::task<bool> marketplace::cancel(uint64_t id)
     log_data_before["listing_id"]   = static_cast<Json::UInt64>(id);
     this->_owner.server.log.write("marketplace_cancel", log_data_before);
 
-    auto   weak  = this->_owner.weak_from_this_as<fb::game::character>();
-    auto   world = this->_owner.world();
-    auto   req   = mp_reqs::Cancel{world, this->_owner.id, id};
-    auto&& resp  = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/cancel", req);
+    auto weak  = this->_owner.weak_from_this_as<fb::game::character>();
+    auto world = this->_owner.world();
+    auto req   = mp_reqs::Cancel{world, this->_owner.id, id};
+    auto resp  = mp_resp::Cancel{};
+    try
+    {
+        resp = co_await this->_owner.server.http.post(weak, "marketplace", "/marketplace/cancel", req);
+    }
+    catch (const fb::http_error& e)
+    {
+        fb::logger::warn("marketplace cancel request by {} failed: {}", this->_owner.name(), e.what());
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CANCEL_UNCONFIRMED));
+    }
 
     if (resp.error != 0)
     {
@@ -436,16 +445,25 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
 {
     this->_owner.assert_thread();
 
-    auto   weak = this->_owner.weak_from_this_as<fb::game::character>();
-    auto&& resp = co_await this->_owner.server.http.post(weak,
-                                                         "marketplace",
-                                                         "/marketplace/search",
-                                                         mp_reqs::Search{option.item_name,
-                                                                         option.min_price,
-                                                                         option.max_price,
-                                                                         option.seller_id,
-                                                                         option.sort_by,
-                                                                         option.page});
+    auto weak = this->_owner.weak_from_this_as<fb::game::character>();
+    auto resp = mp_resp::Search{};
+    try
+    {
+        resp = co_await this->_owner.server.http.post(weak,
+                                                      "marketplace",
+                                                      "/marketplace/search",
+                                                      mp_reqs::Search{option.item_name,
+                                                                      option.min_price,
+                                                                      option.max_price,
+                                                                      option.seller_id,
+                                                                      option.sort_by,
+                                                                      option.page});
+    }
+    catch (const fb::http_error& e)
+    {
+        fb::logger::warn("marketplace search request by {} failed: {}", this->_owner.name(), e.what());
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_UNAVAILABLE));
+    }
 
     if (resp.error != 0)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_SEARCH_ITEMS), resp.error));
@@ -495,11 +513,20 @@ async::task<std::vector<marketplace::listing>> marketplace::get_listings(const s
 
     auto weak = this->_owner.weak_from_this_as<fb::game::character>();
     // Call get_listings API to get all listing data (with optional buyer_id for purchase_info)
-    auto&& resp = co_await this->_owner.server.http.post(
-        weak,
-        "marketplace",
-        "/marketplace/get-listings",
-        mp_reqs::GetListings{listing_ids, buyer_id > 0 ? std::optional<uint32_t>(buyer_id) : std::nullopt});
+    auto resp = mp_resp::GetListings{};
+    try
+    {
+        resp = co_await this->_owner.server.http.post(
+            weak,
+            "marketplace",
+            "/marketplace/get-listings",
+            mp_reqs::GetListings{listing_ids, buyer_id > 0 ? std::optional<uint32_t>(buyer_id) : std::nullopt});
+    }
+    catch (const fb::http_error& e)
+    {
+        fb::logger::warn("marketplace get-listings request by {} failed: {}", this->_owner.name(), e.what());
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_UNAVAILABLE));
+    }
 
     if (resp.error != 0)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_GET_LISTINGS), resp.error));

@@ -62,6 +62,7 @@ local MSG_MARKET_CLEAR_FAIL = "거래소 초기화 실패"
 local MSG_MIX_SUCCESS = "성공하였습니다"
 local MSG_MIX_FAILED = "실패하였습니다"
 local MSG_INVENTORY_OVERFLOW = "소지품이 꽉 찼습니다"
+local MSG_MARKET_UNAVAILABLE = "거래소에 연결하지 못했습니다"
 
 local STORAGE_CANCEL_TITLE = "거래소 등록 취소"
 local STORAGE_CLEAR_TITLE = "거래소 등록 취소(운영)"
@@ -70,6 +71,7 @@ local STORAGE_SALE_TITLE = "거래소 판매"
 local STORAGE_PURCHASE_RECOVERY_TITLE = "거래소 구매 복구"
 
 local PURCHASE_PATH = "/marketplace/purchase"
+local SEARCH_PATH = "/marketplace/search"
 
 -- Shared across sequential/parallel scenario steps
 local g_list_msg = nil
@@ -1267,6 +1269,42 @@ test_suite({
             end
 
             progress(a, "M1 PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local a = ctx:bot(0)
+            progress(a, "M1b: SEARCH UNREACHABLE")
+
+            local packet, err = open_marketplace_menu(a)
+            if packet == nil then
+                progress(a, "FAILED: " .. tostring(err))
+                return false
+            end
+            packet = f1_select_pursuit(a, OPT_SEARCH, "input")
+            if packet == nil then
+                progress(a, "FAILED: search input missing")
+                return false
+            end
+
+            a:chat("/HTTP장애 " .. SEARCH_PATH .. " on")
+            packet = a:request_dialog_ext(protocol.dialog("INPUT", 0, WEAPON_ITEM, 0, 0, "", "NEXT"), function(p)
+                return p.type == "normal"
+            end, DIALOG_TIMEOUT_MS)
+            a:chat("/HTTP장애 " .. SEARCH_PATH .. " off")
+            dump_dialog(a, "search_unreachable", packet)
+            close_marketplace_menu(a)
+
+            if packet == nil or packet.message == nil then
+                progress(a, "FAILED: no dialog after an unreachable search")
+                return false
+            end
+            if packet.message:find(MSG_MARKET_UNAVAILABLE, 1, true) == nil or packet.message:find("HTTP", 1, true) ~= nil then
+                progress(a, "FAILED: unexpected search failure text=" .. packet.message)
+                return false
+            end
+
+            progress(a, "M1b PASSED")
             return true
         end,
 

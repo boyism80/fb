@@ -541,7 +541,7 @@ function M.cancel(me, npc)
 
     local cancel_error, cancel_result = me:marketplace_cancel(selected_listing.id)
     if cancel_error ~= nil then
-        local button = me:dialog(npc, '취소 실패: ' .. cancel_error, { prev = true, next = true })
+        local button = me:dialog(npc, cancel_error, { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
