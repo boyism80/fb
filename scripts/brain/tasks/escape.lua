@@ -1,20 +1,26 @@
-local danger   = require("brain.policies.danger")
 local teleport = require("brain.data.teleport")
-local travel   = require("brain.policies.travel")
+local danger   = require("brain.policies.danger")
+local value    = require("brain.policies.value")
 
 local M = {}
 
-function M.wanted(brain, bot, seen)
-    return seen.ghost == false and danger.fatal(brain, bot) ~= nil
+function M.wanted(snap, query)
+    return snap.self.ghost == false and danger.fatal(snap, query) ~= nil and teleport.returns[snap.self.nation] ~= nil
 end
 
-function M.run(brain, bot)
-    local refuges = teleport.returns[brain:observe(bot).nation]
-    if refuges == nil then
-        return false
-    end
-    local arrived, event = travel.go(brain, bot, { maps = refuges })
-    return arrived, event and event.type
+function M.propose(snap)
+    return {
+        kind = ACTION.MOVE,
+        dest = { maps = teleport.returns[snap.self.nation] },
+        forget = snap.record.death ~= nil
+    }
+end
+
+function M.value(snap, query)
+    local threat = danger.fatal(snap, query)
+    local worth  = value.baseline(snap, query)
+    local stay   = danger.chance(snap, query, threat, math.huge) * danger.loss(snap, query, worth)
+    return stay - value.cost(snap, query, M.propose(snap, query), worth)
 end
 
 return M

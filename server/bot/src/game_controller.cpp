@@ -439,6 +439,7 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
     bot.set_group_info(response.group_info);
     bot.set_group_option(response.group_option);
     bot.set_remained_exp(response.remained_exp);
+    bot.set_prowess({response.phydef, response.dam, response.hit});
     bot.set_class_name(response.class_name);
     auto accessories = std::vector<std::pair<uint16_t, uint8_t>>{};
     for (auto& equipment : response.equipments)

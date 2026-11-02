@@ -3,10 +3,14 @@ import json
 import re
 from pathlib import Path
 
+from lua import lua_value
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / 'server' / 'game' / 'scripts'
 ITEM_JSON = ROOT / 'server' / 'game' / 'json' / 'item.json'
 OUTPUT = ROOT / 'server' / 'bot' / 'config' / 'load-items.json'
+BRAIN = ROOT / 'scripts' / 'brain' / 'data' / 'items.lua'
+RECOVERY = ('hp', 'mp', 'hp_ratio', 'mp_ratio', 'hp_full', 'mp_full')
 
 ACTIVATED = re.compile(r"^(\s*)on_activated\s*=\s*function\(.*?\)\n(.*?)^\1end,?\s*$", re.M | re.S)
 HP_UP = re.compile(r"me:hp\(math\.min\(me:hp\(\)\s*\+\s*(\d+)")
@@ -63,6 +67,7 @@ def effect(body):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', default=str(OUTPUT))
+    parser.add_argument('--brain', default=str(BRAIN))
     args = parser.parse_args()
 
     table = json.loads(ITEM_JSON.read_text(encoding='utf-8'))
@@ -82,6 +87,13 @@ def main():
         result[item['name']] = info
 
     Path(args.output).write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding='utf-8')
+    lines = ['return {']
+    for name in sorted(result):
+        fields = {key: result[name][key] for key in RECOVERY if key in result[name]}
+        if fields:
+            lines.append(f'    [{lua_value(name)}] = {lua_value(fields)},')
+    lines.append('}')
+    Path(args.brain).write_text('\n'.join(lines) + '\n', encoding='utf-8', newline='\n')
     kinds = {}
     for info in result.values():
         for key in ('hp', 'mp', 'hp_ratio', 'mp_ratio', 'hp_full', 'mp_full', 'warp', 'buff', 'stat', 'quest', 'unknown'):

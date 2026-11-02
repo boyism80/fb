@@ -19,7 +19,6 @@ namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;
 
 constexpr auto STEP_TIMEOUT = 5s;
-constexpr auto RUSH_YIELD   = 1ms;
 
 void brain::act(uint32_t bot, std::string_view activity)
 {
@@ -40,27 +39,29 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
     constexpr auto CONFIRM  = game_resp::move_confirm<fb::protocol::CLIENT_VERSION::v550>::opcode;
     constexpr auto POSITION = game_resp::position::opcode;
     constexpr auto MAP      = game_resp::map_config<fb::protocol::CLIENT_VERSION::v550>::opcode;
-    constexpr auto WORLDS   = game_resp::map_worlds::opcode;
     constexpr auto OPTIONS  = game_resp::option<fb::protocol::CLIENT_VERSION::v550>::opcode;
+    constexpr auto WORLDS   = game_resp::map_worlds::opcode;
 
     auto& atlas     = atlas::get();
     auto  visited   = std::unordered_set<uint16_t>{};
     auto  corrected = std::unordered_set<uint64_t>{};
     auto  spent     = std::unordered_set<size_t>{};
     auto  checked   = std::optional<uint16_t>{};
-    if (bot->fast_move() != 0)
+    if (bot->fast_move().has_value() == false)
+        std::ignore = co_await this->synced(bot);
+    if (bot->fast_move().value_or(0) != 0)
     {
         try
         {
             std::ignore = co_await bot->first_of(
                 {OPTIONS},
                 *bot->make<game_reqs::update_option>(fb::model::enum_value::OPTION::FAST_MOVE, false),
-                STEP_TIMEOUT);
+                0s);
         }
         catch (const std::exception&)
         { }
     }
-    if (bot->fast_move() != 0)
+    if (bot->fast_move().value_or(1) != 0)
         co_return event{"FAST_MOVE", bot->map(), bot->position()};
 
     auto occupant = [&bot, &atlas](uint16_t map, const atlas::position& at, const atlas::position& target) {
@@ -102,7 +103,7 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
         auto plan  = co_await this->offload<std::optional<atlas::plan>>(
             bot,
             [&atlas, map, here, &destination, level, &detour]() {
-                return atlas.route(map, here, destination.maps, level, detour.closed);
+                return atlas.route(map, here, destination.maps, level, detour.closed, detour.perilous, detour.shunned);
             });
         if (plan.has_value() == false)
             co_return event{"NO_ROUTE", map, here};
@@ -129,7 +130,15 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             auto leap = co_await this->offload<std::optional<atlas::leap>>(
                 bot,
                 [&atlas, map, here, &destination, level, &detour, teleports]() {
-                    return atlas.shortcut(map, here, destination.maps, destination.at, level, detour.closed, teleports);
+                    return atlas.shortcut(map,
+                                          here,
+                                          destination.maps,
+                                          destination.at,
+                                          level,
+                                          detour.closed,
+                                          detour.perilous,
+                                          detour.shunned,
+                                          teleports);
                 });
             if (leap.has_value())
             {
@@ -228,109 +237,110 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             co_return blocker.value_or(event{"BLOCKED", map, target});
         }
 
-        auto direction = directions->front();
-        auto next      = atlas::forward(here, direction);
-        auto gate      = final == false && next == target;
-        if (next == target && occupied.contains(atlas::gate(map, next)))
+        auto route = std::vector<atlas::position>{};
+        auto at    = here;
+        for (auto direction : directions.value())
         {
-            auto blocker = occupant(map, next, target);
+            at = atlas::forward(at, direction);
+            route.push_back(at);
+        }
+        auto gate = final == false && route.back() == target;
+        if (route.back() == target && occupied.contains(atlas::gate(map, target)))
+        {
+            auto blocker = occupant(map, target, target);
             if (blocker.has_value())
                 co_return blocker.value();
         }
-        sent();
-        if (detour.rush && gate == false)
-        {
-            bot->send(*bot->make<game_reqs::move>(direction, 0, here));
-            bot->set_position(next);
-            this->progress(bot->id);
-            co_await bot->thread()->sleep(RUSH_YIELD);
-            continue;
-        }
 
-        auto step    = std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>{};
-        auto failure = std::string{};
-        auto started = clock::now();
-        try
+        auto replan = false;
+        for (auto index = size_t{0}; index < route.size() && replan == false; index++)
         {
-            step = co_await bot->first_of({CONFIRM, POSITION, MAP, WORLDS},
-                                          *bot->make<game_reqs::move>(direction, 0, here),
-                                          STEP_TIMEOUT);
-        }
-        catch (const std::exception&)
-        {
-            failure = bot->aborted() ? "TRANSFERRED" : this->active(bot->id) ? "TIMEOUT" : "INTERRUPTED";
-        }
+            if (this->active(bot->id) == false)
+                co_return event{"INTERRUPTED", map, bot->position()};
 
-        if (failure.empty() && step.first == WORLDS)
-        {
-            auto& hop = plan->hops.front();
-            if (gate && hop.world != atlas::NO_WORLD)
+            auto from    = bot->position();
+            auto next    = route[index];
+            auto hop     = gate && index + 1 == route.size();
+            auto step    = std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>{};
+            auto failure = std::string{};
+            auto started = clock::now();
+            sent();
+            try
             {
+                step = co_await bot->first_of({CONFIRM, POSITION, MAP, WORLDS},
+                                              *bot->make<game_reqs::move>(directions->at(index), 0, from),
+                                              STEP_TIMEOUT);
+                if (step.first == WORLDS && hop && plan->hops.front().world != atlas::NO_WORLD)
+                {
+                    auto& world = plan->hops.front();
+                    step        = co_await bot->first_of(
+                        {MAP},
+                        *bot->make<game_reqs::map_world>(world.world, world.world_from, world.world_to),
+                        STEP_TIMEOUT);
+                }
+                else if (step.first == WORLDS)
+                {
+                    failure = "OFF_ROUTE";
+                }
+            }
+            catch (const std::exception&)
+            {
+                failure = bot->aborted() ? "TRANSFERRED" : this->active(bot->id) ? "TIMEOUT" : "INTERRUPTED";
+            }
+            answered();
+
+            if (failure == "TIMEOUT" && hop == false)
+            {
+                std::ignore = co_await this->synced(bot);
+                corrected.insert(atlas::gate(map, next));
+                replan = true;
+            }
+            else if (failure.empty() == false)
+            {
+                co_return event{failure, map, next};
+            }
+            else if (step.first == CONFIRM)
+            {
+                bot->set_position(next);
+                this->measure(bot->id,
+                              "step",
+                              std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
+                this->progress(bot->id);
+            }
+            else if (step.first == POSITION)
+            {
+                if (hop)
+                    co_return event{"DENIED", map, next};
+                corrected.insert(atlas::gate(map, next));
+                replan = true;
+            }
+            else
+            {
+                if (visited.insert(map).second == false)
+                    co_return event{"LOOP", bot->map(), bot->position()};
+
                 try
                 {
-                    step = co_await bot->first_of(
-                        {MAP},
-                        *bot->make<game_reqs::map_world>(hop.world, hop.world_from, hop.world_to),
+                    std::ignore = co_await bot->request_by_opcode(
+                        POSITION,
+                        nullptr,
+                        [](const fb::protocol::header&) {
+                            return true;
+                        },
                         STEP_TIMEOUT);
                 }
                 catch (const std::exception&)
                 {
-                    failure = bot->aborted() ? "TRANSFERRED" : this->active(bot->id) ? "TIMEOUT" : "INTERRUPTED";
+                    if (bot->aborted())
+                        co_return event{"TRANSFERRED", map, next};
                 }
+                corrected.clear();
+                this->measure(bot->id,
+                              "hop",
+                              std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
+                this->progress(bot->id);
+                replan = true;
             }
-            else
-            {
-                failure = "OFF_ROUTE";
-            }
         }
-
-        answered();
-        if (failure.empty() == false)
-        {
-            co_return event{failure, map, next};
-        }
-        else if (step.first == CONFIRM)
-        {
-            bot->set_position(next);
-            this->measure(bot->id,
-                          "step",
-                          std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
-            this->progress(bot->id);
-        }
-        else if (step.first == POSITION)
-        {
-            if (gate)
-                co_return event{"DENIED", map, next};
-            corrected.insert(atlas::gate(map, next));
-        }
-        else
-        {
-            if (visited.insert(map).second == false)
-                co_return event{"LOOP", bot->map(), bot->position()};
-
-            try
-            {
-                std::ignore = co_await bot->request_by_opcode(
-                    POSITION,
-                    nullptr,
-                    [](const fb::protocol::header&) {
-                        return true;
-                    },
-                    STEP_TIMEOUT);
-            }
-            catch (const std::exception&)
-            {
-                if (bot->aborted())
-                    co_return event{"TRANSFERRED", map, next};
-            }
-            corrected.clear();
-            this->measure(bot->id,
-                          "hop",
-                          std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
-            this->progress(bot->id);
-        }
-
-        if (detour.pace > 0ms)
-            co_await bot->sleep(detour.pace);
     }
 }

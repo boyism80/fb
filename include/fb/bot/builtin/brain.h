@@ -20,7 +20,7 @@ struct brain
     static int builtin_walk(lua_State* L);
     static int builtin_remember(lua_State* L);
     static int builtin_npcs(lua_State* L);
-    static int builtin_ask(lua_State* L);
+    static int builtin_talk(lua_State* L);
     static int builtin_death(lua_State* L);
     static int builtin_bury(lua_State* L);
     static int builtin_inventory(lua_State* L);
@@ -37,14 +37,22 @@ struct brain
     static int builtin_reserve(lua_State* L);
     static int builtin_release(lua_State* L);
     static int builtin_reservations(lua_State* L);
+    static int builtin_occupy(lua_State* L);
+    static int builtin_demand(lua_State* L);
     static int builtin_recall(lua_State* L);
     static int builtin_mobs(lua_State* L);
     static int builtin_spawns(lua_State* L);
+    static int builtin_native(lua_State* L);
+    static int builtin_habitats(lua_State* L);
     static int builtin_attack(lua_State* L);
+    static int builtin_cast(lua_State* L);
+    static int builtin_aside(lua_State* L);
 
 private:
     static fb::bot::brain::destination read_destination(lua_State* L, int index);
     static fb::bot::brain::detour      read_detour(lua_State* L, int index);
+    static fb::bot::brain::node        read_node(lua_State* L, int index);
+    static void                        push_mob(lua_State* L, const fb::model::mob& model);
 };
 
 } // namespace fb::bot::builtin

@@ -24,7 +24,7 @@ test_suite {
                 start    = { x = 3, y = 3 },
                 offset   = { 6, 14 },
                 order    = { task = "GO", dest = { map = "국내성", x = 206, y = 107, range = 2 } },
-                tasks    = { "ORDER", "ESCAPE" },
+                tasks    = { "ORDER" },
                 finished = away,
                 keep     = true,
             })
@@ -34,7 +34,7 @@ test_suite {
                 name     = "rest_first",
                 hp       = 2,
                 order    = { task = "HUNT", names = { "다람쥐" }, count = 2 },
-                tasks    = { "REST", "ORDER" },
+                tasks    = { "ORDER" },
                 finished = anywhere,
             })
         end,
@@ -43,7 +43,6 @@ test_suite {
                 name     = "escape_walk",
                 hp       = 44,
                 monster  = "도삭산까만소",
-                tasks    = { "ESCAPE" },
                 finished = away,
             })
         end,

@@ -2,6 +2,7 @@
 
 #include <fb/bot/container.h>
 #include <fb/bot/controller.h>
+#include <fb/thread.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -77,10 +78,36 @@ async::task<size_t> base_bot::send(const fb::protocol::header& packet, bool encr
     co_return co_await fb::socket<void*>::send(packet, encrypt, wrap);
 }
 
+async::task<bool> base_bot::changed(std::chrono::milliseconds within)
+{
+    if (this->_aborted)
+        co_return false;
+
+    auto change = std::make_shared<async::task_completion_source<bool>>();
+    this->_changes.push_back(change);
+    auto timer = std::shared_ptr<fb::timer>{};
+    if (within > std::chrono::milliseconds{0})
+    {
+        timer = this->thread()->settimer(
+            [change](auto&, auto) -> async::task<void> {
+                auto failure = std::exception_ptr{};
+                std::ignore  = change->try_set_value(false, failure);
+                co_return;
+            },
+            within,
+            fb::timer::repeat_type::once);
+    }
+    auto result = co_await change->task();
+    if (timer != nullptr)
+        timer->cancel();
+    co_return result;
+}
+
 bool base_bot::process_hooks(uint8_t opcode, fb::protocol::header& header)
 {
     this->assert_thread();
 
+    auto matched = false;
     if (this->_hooks.contains(opcode))
     {
         auto& matched_hooks = this->_hooks.at(opcode);
@@ -93,11 +120,45 @@ bool base_bot::process_hooks(uint8_t opcode, fb::protocol::header& header)
             auto callback = i->matched;
             matched_hooks.erase(i);
             callback(header);
-            return true;
+            matched = true;
         }
     }
 
-    return false;
+    this->wake();
+    return matched;
+}
+
+async::task<void> base_bot::yield()
+{
+    auto turn    = std::make_shared<async::task_completion_source<bool>>();
+    auto builder = this->thread()->new_builder<void>();
+    builder.func = [turn](auto&) -> async::task<void> {
+        auto failure = std::exception_ptr{};
+        std::ignore  = turn->try_set_value(true, failure);
+        co_return;
+    };
+    builder.enqueue();
+    std::ignore = co_await turn->task();
+}
+
+void base_bot::wake(bool value)
+{
+    if (this->_changes.empty())
+        return;
+
+    auto changes = std::move(this->_changes);
+    this->_changes.clear();
+    auto thread  = this->thread();
+    auto builder = thread->new_builder<void>();
+    builder.func = [changes = std::move(changes), value](auto&) -> async::task<void> {
+        for (auto& change : changes)
+        {
+            auto failure = std::exception_ptr{};
+            std::ignore  = change->try_set_value(value, failure);
+        }
+        co_return;
+    };
+    builder.enqueue();
 }
 
 bool base_bot::remove_hook_by_context(uint8_t opcode, const void* context_ptr)
@@ -159,6 +220,7 @@ void base_bot::abort_hooks()
     this->_aborted = true;
     auto hooks     = std::move(this->_hooks);
     this->_hooks.clear();
+    this->wake(false);
     for (auto& [_, entries] : hooks)
     {
         for (auto& hook : entries)

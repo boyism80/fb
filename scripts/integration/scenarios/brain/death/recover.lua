@@ -1,9 +1,10 @@
+local gear   = require("integration.lib.gear")
 local expect = require("integration.lib.expect")
 local ghost  = require("integration.scenarios.brain.stage.ghost")
 
 local M = {}
 
-local TIMEOUT    = 240000
+local TIMEOUT    = 120000
 local GROUND     = { map = "고구려왕초보사냥1", x = 9, y = 15 }
 local WEAPON     = "목도"
 local MONEY      = 1000
@@ -12,7 +13,7 @@ local EQUIP_WAIT = 5000
 
 local function stage(ctx, index, case)
     local bot = ctx:bot(index)
-    bot:unequip("WEAPON")
+    gear.strip(bot, { "WEAPON" })
     bot:clear_inventory()
     bot:clear_all_spells()
     bot:change_class("전사")
@@ -50,8 +51,8 @@ function M.run(ctx, index, case)
     end
 
     local mind = brain.new()
-    local died = ghost.die(ctx, index, case.vanish)
-    ctx:bot(index):brain(mind, { seed = 1, persona = { rush = 1 } })
+    local died = ghost.die(ctx, index, case)
+    ctx:bot(index):brain(mind, { seed = 1 })
 
     local settled = died and expect.settle(ctx, index, mind, TIMEOUT, function(current)
         return current:state() ~= "GHOST" and mind:death(current) == nil
@@ -70,7 +71,8 @@ function M.run(ctx, index, case)
         recovered = recovered or entry.task == "RECOVER"
     end
     expect.release(ctx, index, mind, TIMEOUT)
-    local passed = settled and recovered and money == (case.money or MONEY) and bagged == 0 and
+    local cleared = ghost.clear(ctx, index)
+    local passed = cleared and settled and recovered and ((case.money or MONEY) > 0) == (money > 0) and bagged == 0 and
         (case.jump == "*" or jumped == case.jump)
     local summary = string.format("died=%s settled=%s money=%d weapon_in_bag=%d jumped=%s history=%s", tostring(died),
         tostring(settled), money, bagged, tostring(jumped), table.concat(lines, " -> "))

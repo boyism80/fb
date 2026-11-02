@@ -111,24 +111,29 @@ public:
     static position     landing(uint16_t map);
 
 public:
-    const grid*               find_grid(uint16_t map) const;
-    const std::vector<warp>&  warps(uint16_t map) const;
-    bool                      warp_at(uint16_t map, const position& at) const;
-    const std::vector<spawn>& spawns(uint16_t map) const;
-    std::optional<uint32_t>   mob(uint16_t map, uint16_t look, uint8_t color) const;
-    bool                      reaches(uint16_t map, const position& from, const position& gate) const;
-    std::optional<plan>       route(uint16_t                            from,
-                                    const position&                     at,
-                                    const std::unordered_set<uint16_t>& targets,
-                                    uint8_t                             level,
-                                    const std::unordered_set<uint64_t>& closed) const;
-    std::optional<leap>       shortcut(uint16_t                            from,
-                                       const position&                     at,
-                                       const std::unordered_set<uint16_t>& targets,
-                                       const std::optional<position>&      goal,
-                                       uint8_t                             level,
-                                       const std::unordered_set<uint64_t>& closed,
-                                       const std::vector<teleport>&        teleports) const;
+    const grid*                                             find_grid(uint16_t map) const;
+    const std::vector<warp>&                                warps(uint16_t map) const;
+    bool                                                    warp_at(uint16_t map, const position& at) const;
+    const std::vector<spawn>&                               spawns(uint16_t map) const;
+    const std::unordered_map<uint16_t, std::vector<spawn>>& spawns() const;
+    std::optional<uint32_t>                                 mob(uint16_t map, uint16_t look, uint8_t color) const;
+    bool                reaches(uint16_t map, const position& from, const position& gate) const;
+    std::optional<plan> route(uint16_t                            from,
+                              const position&                     at,
+                              const std::unordered_set<uint16_t>& targets,
+                              uint8_t                             level,
+                              const std::unordered_set<uint64_t>& closed,
+                              const std::unordered_set<uint32_t>& perilous,
+                              const std::unordered_set<uint16_t>& shunned) const;
+    std::optional<leap> shortcut(uint16_t                            from,
+                                 const position&                     at,
+                                 const std::unordered_set<uint16_t>& targets,
+                                 const std::optional<position>&      goal,
+                                 uint8_t                             level,
+                                 const std::unordered_set<uint64_t>& closed,
+                                 const std::unordered_set<uint32_t>& perilous,
+                                 const std::unordered_set<uint16_t>& shunned,
+                                 const std::vector<teleport>&        teleports) const;
     std::optional<std::vector<DIRECTION>>
     path(uint16_t map, const position& from, const position& to, uint16_t range, const blocked_func& blocked) const;
 };

@@ -1,34 +1,45 @@
-local protocol = require("integration.protocol")
-local resp     = require("integration.response")
-local travel   = require("brain.policies.travel")
-local wait     = require("brain.policies.wait")
+local data   = require("brain.data.combat")
+local danger = require("brain.policies.danger")
+local score  = require("brain.policies.score")
+local value  = require("brain.policies.value")
+local rest   = require("brain.tasks.rest")
 
 local M = {}
 
-local WEARABLE  = { WEAPON = true, ARMOR = true, HELMET = true, RING = true, SHIELD = true, AUXILIARY = true }
-local WEAR_WAIT = 3000
+local WEARABLE = { WEAPON = true, ARMOR = true, HELMET = true, RING = true, SHIELD = true, AUXILIARY = true }
+local BARRED   = { BLOCKED = true, OCCUPIED = true, HURT = true }
 
-local function holding(brain, bot)
+local function holding(snap)
     local counts = {}
-    for _, item in ipairs(brain:inventory(bot)) do
+    for _, item in ipairs(snap.bag.items) do
         counts[item.name] = (counts[item.name] or 0) + item.count
     end
     return counts
 end
 
-local function pile_at(brain, bot, tried)
-    local here = bot:position()
-    for _, item in ipairs(brain:items(bot)) do
-        if item.x == here[1] and item.y == here[2] and tried[item.oid] == nil then
-            return item
+local function piles(snap)
+    local result = {}
+    for _, item in ipairs(snap.world.items) do
+        if item.x == snap.world.x and item.y == snap.world.y then
+            table.insert(result, item.oid)
+        end
+    end
+    return result
+end
+
+local function spare(snap, death)
+    local counts = holding(snap)
+    for _, item in ipairs(snap.bag.items) do
+        if WEARABLE[item.type] and counts[item.name] > (death.items[item.name] or 0) then
+            return item.name
         end
     end
     return nil
 end
 
-function M.missing(brain, bot, death)
-    local counts = holding(brain, bot)
-    if bot:money() < death.money then
+local function missing(snap, death)
+    local counts = holding(snap)
+    if snap.self.money < death.money then
         return true
     end
     for name, count in pairs(death.items) do
@@ -39,51 +50,77 @@ function M.missing(brain, bot, death)
     return false
 end
 
-local function wear(brain, bot, death)
-    local counts = holding(brain, bot)
-    for _, item in ipairs(brain:inventory(bot)) do
-        if WEARABLE[item.type] and counts[item.name] > (death.items[item.name] or 0) then
-            wait.reply(bot, resp.message, protocol.item_active(item.slot), function(packet)
-                return packet.type == "STATE"
-            end, WEAR_WAIT)
-            counts[item.name] = counts[item.name] - 1
+local function guard(snap, query, death)
+    if snap.world.map ~= death.map then
+        return nil
+    end
+    for _, mob in ipairs(snap.world.mobs) do
+        if mob.attack == "AGGRESSIVE" and mob.x ~= nil and math.abs(mob.x - death.x) <= data.sight.x and
+            math.abs(mob.y - death.y) <= data.sight.y and danger.winnable(snap, query, mob) == false then
+            return mob
         end
     end
+    return nil
 end
 
-function M.wanted(brain, bot, seen)
-    return seen.ghost == false and brain:death(bot) ~= nil
+local function waiting(snap, query, keeper)
+    return keeper ~= nil and danger.winnable(score.rested(snap), query, keeper) and rest.wanted(snap, query)
 end
 
-function M.run(brain, bot)
-    local death = brain:death(bot)
-    if death == nil then
-        return true
+function M.wanted(snap, query)
+    if snap.self.ghost or snap.record.death == nil then
+        return false
     end
+    return waiting(snap, query, guard(snap, query, snap.record.death)) == false
+end
 
-    wear(brain, bot, death)
-    if death.left <= 0 or M.missing(brain, bot, death) == false then
-        brain:bury(bot)
-        return true
+local function plan(snap, query)
+    local death  = snap.record.death
+    local keeper = guard(snap, query, death)
+    local worn   = spare(snap, death)
+    local found  = piles(snap)
+    local failed = snap.record.failures.RECOVER
+    if worn ~= nil then
+        return { kind = ACTION.EQUIP, item = worn }
+    elseif keeper ~= nil and danger.winnable(score.rested(snap), query, keeper) == false then
+        return { kind = ACTION.FORGET, peril = { map = death.map, mob = keeper.id, stats = keeper } }
+    elseif death.left <= 0 or missing(snap, death) == false or (failed ~= nil and BARRED[failed.reason]) then
+        return { kind = ACTION.FORGET }
+    elseif snap.world.map ~= death.map or snap.world.x ~= death.x or snap.world.y ~= death.y then
+        return { kind = ACTION.MOVE, dest = { map = death.map, x = death.x, y = death.y, range = 0 } }
+    elseif #found > 0 then
+        return { kind = ACTION.PICK, oids = found }
+    else
+        return { kind = ACTION.FORGET }
     end
+end
 
-    local arrived, event = travel.go(brain, bot, { map = death.map, x = death.x, y = death.y, range = 0 })
-    if arrived == false and event ~= nil and event.type == "NO_ROUTE" then
-        brain:bury(bot)
-        return true
-    elseif arrived == false then
-        return false, event and event.type
+local function profit(snap, query, action)
+    local death  = snap.record.death
+    local worth  = value.baseline(snap, query)
+    local counts = holding(snap)
+    local lost   = math.max(0, death.money - snap.self.money)
+    for name, count in pairs(death.items) do
+        local item = query.item(name)
+        lost = lost + math.max(0, count - (counts[name] or 0)) * (item ~= nil and item.price or 0)
     end
-    local tried = {}
-    local pile  = pile_at(brain, bot, tried)
-    while brain:active(bot) and pile ~= nil do
-        tried[pile.oid] = true
-        brain:loot(bot)
-        pile = pile_at(brain, bot, tried)
+    return lost * worth.exchange - value.cost(snap, query, action, worth)
+end
+
+function M.propose(snap, query)
+    local action = plan(snap, query)
+    if action.kind ~= ACTION.FORGET and profit(snap, query, action) <= 0 then
+        return { kind = ACTION.FORGET }
     end
-    wear(brain, bot, death)
-    brain:bury(bot)
-    return true
+    return action
+end
+
+function M.value(snap, query)
+    local action = plan(snap, query)
+    if action.kind == ACTION.FORGET then
+        return 0
+    end
+    return math.max(0, profit(snap, query, action))
 end
 
 return M

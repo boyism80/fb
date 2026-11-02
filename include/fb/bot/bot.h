@@ -8,6 +8,8 @@
 #include <fb/protocol/client_version.h>
 #include <fb/socket.h>
 
+#include <async/task.h>
+#include <async/task_completion_source.h>
 #include <boost/endian/conversion.hpp>
 
 #include <atomic>
@@ -58,10 +60,11 @@ protected:
     fb::thread*          _pinned_thread = nullptr;
 
 private:
-    client_profile              _profile;
-    std::optional<uint32_t>     _slot;
-    mutable std::mutex          _unread_mutex;
-    std::map<uint8_t, uint32_t> _unread_opcodes;
+    client_profile                                                    _profile;
+    std::optional<uint32_t>                                           _slot;
+    mutable std::mutex                                                _unread_mutex;
+    std::map<uint8_t, uint32_t>                                       _unread_opcodes;
+    std::vector<std::shared_ptr<async::task_completion_source<bool>>> _changes;
 
 public:
     const uint32_t id;
@@ -86,6 +89,9 @@ public:
     async::task<size_t> send(const fb::protocol::header& packet, bool encrypt = true, bool wrap = true);
     void                connect(const boost::asio::ip::tcp::endpoint& endpoint);
     bool                process_hooks(uint8_t opcode, fb::protocol::header& header);
+    async::task<bool>   changed(std::chrono::milliseconds within = std::chrono::milliseconds{0});
+    void                wake(bool value = true);
+    async::task<void>   yield();
     bool                remove_hook_by_context(uint8_t opcode, const void* context_ptr);
     void                abort_hooks();
     void                interrupt_hooks();

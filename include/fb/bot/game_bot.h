@@ -73,6 +73,13 @@ public:
         uint32_t    get_price(const game_bot_controller& controller) const;
     };
 
+    struct prowess
+    {
+        int8_t phydef = 0;
+        int8_t dam    = 0;
+        int8_t hit    = 0;
+    };
+
     struct simple_spell
     {
         std::string name;
@@ -180,6 +187,7 @@ private:
     uint8_t                         _color                = 0;
     bool                            _dead                 = false;
     std::optional<death_record>     _dying;
+    std::chrono::steady_clock::time_point _struck;
     std::vector<std::pair<uint16_t, uint8_t>> _accessories;
     std::optional<death_record>     _last_death;
     std::set<std::string>           _active_buffs;
@@ -200,7 +208,7 @@ private:
     uint32_t                        _money         = 0;
     uint32_t                        _crowd_control = 0;
     uint8_t                         _mail_count    = 0;
-    uint8_t                         _fast_move     = 0;
+    std::optional<uint8_t>          _fast_move;
     uint8_t                         _disguised     = 0;
     GENDER                          _gender        = GENDER::MALE;
     STATE                           _state         = STATE::NORMAL;
@@ -220,6 +228,7 @@ private:
     std::string                     _group_info;
     uint8_t                         _group_option = 0;
     uint32_t                        _remained_exp = 0;
+    prowess                         _prowess;
 
     // Last dialog of either opcode (0x2F menu / 0x30 ext) and received message texts,
     // kept for tests that do not know which reply comes next.
@@ -300,6 +309,7 @@ public:
     void                                      set_dexterity(uint8_t value);
     uint32_t                                  hp() const;
     void                                      set_hp(uint32_t value);
+    std::chrono::steady_clock::time_point     struck() const;
     uint32_t                                  mp() const;
     void                                      set_mp(uint32_t value);
     uint32_t                                  exp() const;
@@ -310,7 +320,7 @@ public:
     void                                      set_crowd_control(uint32_t value);
     uint8_t                                   mail_count() const;
     void                                      set_mail_count(uint8_t value);
-    uint8_t                                   fast_move() const;
+    std::optional<uint8_t>                    fast_move() const;
     void                                      set_fast_move(uint8_t value);
     uint8_t                                   disguised() const;
     void                                      set_disguised(uint8_t value);
@@ -350,6 +360,8 @@ public:
     void                                      set_group_option(uint8_t value);
     uint32_t                                  remained_exp() const;
     void                                      set_remained_exp(uint32_t value);
+    const prowess&                            prowess() const;
+    void                                      set_prowess(const struct prowess& value);
     async::task<void>                         move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 500ms);
     game_bot_ptr_task                         map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
     game_bot_ptr_task                         map_move(std::string_view            map_name,

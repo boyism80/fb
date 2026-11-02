@@ -2,12 +2,12 @@ local expect = require("integration.lib.expect")
 
 local M = {}
 
-local TIMEOUT = 600000
+local TIMEOUT = 180000
 local STEPS   = 8
 
 function M.run(ctx, index)
     local mind = brain.new()
-    ctx:bot(index):brain(mind, { persona = { rush = 1 }, seed = 1 })
+    ctx:bot(index):brain(mind, { seed = 1 })
     local finished = expect.settle(ctx, index, mind, TIMEOUT, function(current)
         return mind:observe(current).class ~= "NONE"
     end)

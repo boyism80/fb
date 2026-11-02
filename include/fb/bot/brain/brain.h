@@ -7,6 +7,7 @@
 #include <fb/model/model.h>
 
 #include <async/task.h>
+#include <async/task_completion_source.h>
 #include <boost/asio/post.hpp>
 #include <boost/asio/thread_pool.hpp>
 
@@ -46,6 +47,41 @@ public:
         PROGRESS = 5,
     };
 
+    enum class ACTION : uint8_t
+    {
+        TASK     = 0,
+        CONTINUE = 1,
+        HOLD     = 2,
+        MOVE     = 3,
+        ATTACK   = 4,
+        TALK     = 5,
+        READ     = 6,
+        USE      = 7,
+        PICK     = 8,
+        EQUIP    = 9,
+        WAIT     = 10,
+        FORGET   = 11,
+        CAST     = 12,
+        SAY      = 13,
+    };
+
+    enum class NODE : uint8_t
+    {
+        SELECTOR = 0,
+        SEQUENCE = 1,
+        CHECK    = 2,
+        HEAL     = 3,
+        POTION   = 4,
+        HURT     = 5,
+        BUFF     = 6,
+        SPELL    = 7,
+        MANA     = 8,
+        APPROACH = 9,
+        FACE     = 10,
+        OPENER   = 11,
+        SWING    = 12,
+    };
+
     enum class ROLE : uint8_t
     {
         SOLO   = 0,
@@ -65,10 +101,13 @@ public:
 
     struct decision
     {
-        STATE       state = STATE::PREPARE;
-        std::string task;
-        uint8_t     step = 0;
-        std::string reason;
+        STATE                     state = STATE::PREPARE;
+        std::string               task;
+        uint8_t                   step = 0;
+        std::string               reason;
+        ACTION                    kind = ACTION::TASK;
+        fb::lua::value            action;
+        std::chrono::milliseconds revisit{0};
     };
 
     struct transition
@@ -110,16 +149,43 @@ public:
     {
         std::unordered_set<uint64_t> closed;
         std::unordered_set<uint64_t> avoid;
-        std::chrono::milliseconds    pace{0};
+        std::unordered_set<uint32_t> perilous;
+        std::unordered_set<uint16_t> shunned;
         std::vector<jump>            jumps;
-        bool                         rush = false;
+    };
+
+    struct skill
+    {
+        uint8_t     slot  = 0;
+        uint32_t    mp    = 0;
+        uint32_t    floor = 0;
+        std::string name;
+    };
+
+    struct node
+    {
+        NODE              kind = NODE::SELECTOR;
+        std::vector<node> children;
     };
 
     struct tactic
     {
-        uint32_t                  guard = 0;
-        std::chrono::milliseconds swing{0};
-        std::chrono::milliseconds pace{0};
+        uint32_t                 guard = 0;
+        std::vector<skill>       skills;
+        std::optional<skill>     heal;
+        std::optional<skill>     opener;
+        uint32_t                 mend = 0;
+        std::vector<std::string> potions;
+        std::vector<std::string> drinks;
+        bool                     melee = true;
+        std::vector<skill>       buffs;
+        std::optional<node>      tree;
+    };
+
+    struct answer
+    {
+        uint16_t    index = 0;
+        std::string name;
     };
 
     struct event
@@ -186,18 +252,20 @@ public:
         std::chrono::milliseconds                       waited{0};
         std::chrono::milliseconds                       budget{0};
         std::vector<std::string>                        activities;
+        uint32_t                                        closed = 0;
     };
 
 private:
-    std::unordered_map<fb::thread*, std::unique_ptr<fb::lua::root>> _scripts;
-    mutable std::mutex                                              _mutex;
-    std::unordered_map<uint32_t, mind>                              _minds;
-    std::unordered_map<std::string, mind>                           _archive;
-    uint64_t                                                        _sessions = 0;
-    std::unordered_set<uint64_t>                                    _loops;
+    std::unordered_map<fb::thread*, std::unique_ptr<fb::lua::root>>                    _scripts;
+    mutable std::mutex                                                                 _mutex;
+    std::unordered_map<uint32_t, mind>                                                 _minds;
+    std::unordered_map<std::string, mind>                                              _archive;
+    uint64_t                                                                           _sessions = 0;
+    std::unordered_map<uint64_t, std::shared_ptr<async::task_completion_source<bool>>> _loops;
     boost::asio::thread_pool _workers{std::max(1u, std::thread::hardware_concurrency())};
     inline static std::mutex _ledger_mutex;
-    inline static std::unordered_map<std::string, std::string> _ledger;
+    inline static std::unordered_map<std::string, std::string>                 _ledger;
+    inline static std::unordered_map<std::string, std::pair<uint16_t, double>> _occupancy;
 
 public:
     brain()  = default;
@@ -214,7 +282,13 @@ public:
     std::optional<mind> find(uint32_t bot) const;
     async::task<event>  walk(std::shared_ptr<game_bot> bot, const destination& destination, const detour& detour);
     async::task<event>  attack(std::shared_ptr<game_bot> bot, uint32_t oid, const tactic& tactic);
+    async::task<bool>   synced(std::shared_ptr<game_bot> bot);
+    async::task<event>  talk(std::shared_ptr<game_bot>             bot,
+                             std::shared_ptr<fb::protocol::header> opening,
+                             std::vector<answer>                   answers);
     void                act(uint32_t bot, std::string_view activity);
+    void                close(game_bot& bot);
+    bool                talking(const game_bot& bot) const;
     template <typename T>
     async::task<T> offload(std::shared_ptr<game_bot> bot, std::function<T()> fn)
     {
@@ -246,6 +320,9 @@ public:
     std::optional<std::string> pick(uint32_t bot, const std::vector<std::pair<std::string, double>>& weights);
     static void                reserve(const std::string& name, const std::string& value);
     static void                release(const std::string& name);
+    static void                occupy(const std::string& name, uint16_t map, double rate);
+    static void                vacate(const std::string& name);
+    static double              demand(uint16_t map, const std::string& except);
     static std::unordered_map<std::string, uint32_t> reservations(const std::string& except);
     void measure(uint32_t bot, const std::string& action, std::chrono::milliseconds elapsed);
     void remember(uint32_t bot, const std::string& key, const std::optional<fb::lua::value>& value);
@@ -253,6 +330,9 @@ public:
     static snapshot                              observe(const game_bot& bot);
     static const char*                           name(STATE value);
     static const char*                           name(ROLE value);
+    static const char*                           name(ACTION value);
+    static const char*                           name(NODE value);
+    static void                                  bind(lua_State* L);
     static double                                seconds(time_point value);
     static std::string                           module(std::string_view task);
     static std::optional<STATE>                  parse(std::string_view value);

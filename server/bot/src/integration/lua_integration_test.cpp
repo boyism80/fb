@@ -569,6 +569,7 @@ void lua_integration_test::init_lua()
     lua.build("localhost", lua_localhost);
 
     auto* L = (lua_State*)lua;
+    fb::bot::brain::bind(L);
     lua_newtable(L);
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, lua_integration_test::builtin_brain_new, 1);

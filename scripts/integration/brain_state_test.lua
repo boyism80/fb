@@ -17,5 +17,14 @@ test_suite {
         function(ctx)
             return cases.reattach(ctx, 0)
         end,
+        function(ctx)
+            return cases.snapshot(ctx, 0)
+        end,
+        function(ctx)
+            return cases.dialog(ctx, 0)
+        end,
+        function(ctx)
+            return cases.pure(ctx, 0)
+        end,
     },
 }

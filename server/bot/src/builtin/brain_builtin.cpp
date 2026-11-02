@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <deque>
 #include <chrono>
 #include <exception>
 #include <string>
@@ -20,8 +21,7 @@ using namespace std::chrono_literals;
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;
 
-constexpr auto DIALOG_TIMEOUT = 3s;
-constexpr auto LOOT_TIMEOUT   = 3s;
+constexpr auto LOOT_TIMEOUT = 3s;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
@@ -36,7 +36,7 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"walk",     builtin::brain::builtin_walk},
     {"remember", builtin::brain::builtin_remember},
     {"npcs",     builtin::brain::builtin_npcs},
-    {"ask",      builtin::brain::builtin_ask},
+    {"talk",     builtin::brain::builtin_talk},
     {"death",    builtin::brain::builtin_death},
     {"bury",     builtin::brain::builtin_bury},
     {"inventory", builtin::brain::builtin_inventory},
@@ -53,8 +53,14 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"reserve",  builtin::brain::builtin_reserve},
     {"release",  builtin::brain::builtin_release},
     {"reservations", builtin::brain::builtin_reservations},
+    {"occupy",       builtin::brain::builtin_occupy},
+    {"demand",       builtin::brain::builtin_demand},
     {"recall",   builtin::brain::builtin_recall},
     {"mobs",     builtin::brain::builtin_mobs},
+    {"native",     builtin::brain::builtin_native},
+    {"cast",       builtin::brain::builtin_cast},
+    {"aside",      builtin::brain::builtin_aside},
+    {"habitats",   builtin::brain::builtin_habitats},
     {"spawns",   builtin::brain::builtin_spawns},
     {"attack",   builtin::brain::builtin_attack},
 END_LUA_EXTENSION; // clang-format on
@@ -293,6 +299,18 @@ int builtin::brain::builtin_observe(lua_State* L)
     lua->pushstring("capacity");
     lua->pushinteger(fb::game::CONTAINER_CAPACITY);
     lua->settable(-3);
+    lua->pushstring("dialog");
+    lua->pushboolean(brain->talking(*bot));
+    lua->settable(-3);
+    lua->pushstring("phydef");
+    lua->pushinteger(bot->prowess().phydef);
+    lua->settable(-3);
+    lua->pushstring("dam");
+    lua->pushinteger(bot->prowess().dam);
+    lua->settable(-3);
+    lua->pushstring("hit");
+    lua->pushinteger(bot->prowess().hit);
+    lua->settable(-3);
     if (mind.has_value() && mind->jumped.empty() == false)
     {
         lua->pushstring("jumped");
@@ -305,10 +323,53 @@ int builtin::brain::builtin_observe(lua_State* L)
     lua->pushstring("max_hp");
     lua->pushinteger(bot->base_hp());
     lua->settable(-3);
-    lua->pushstring("regen");
-    lua->pushinteger(std::chrono::duration_cast<std::chrono::milliseconds>(
-                         static_cast<std::chrono::microseconds>(fb::model::const_value::recovery::hp_interval))
-                         .count());
+    lua->pushstring("mp");
+    lua->pushinteger(bot->mp());
+    lua->settable(-3);
+    lua->pushstring("max_mp");
+    lua->pushinteger(bot->base_mp());
+    lua->settable(-3);
+    lua->pushstring("money");
+    lua->pushinteger(bot->money());
+    lua->settable(-3);
+    lua->pushstring("exp");
+    lua->pushinteger(bot->exp());
+    lua->settable(-3);
+    lua->pushstring("buffs");
+    lua->new_table();
+    auto buff = lua_Integer{1};
+    for (auto& name : bot->active_buffs())
+    {
+        lua->pushstring(name);
+        lua_rawseti(L, -2, buff++);
+    }
+    lua->settable(-3);
+    lua->pushstring("spells");
+    lua->new_table();
+    auto spell = lua_Integer{1};
+    for (auto& [slot, learned] : bot->spells())
+    {
+        lua->new_table();
+        lua->pushstring("slot");
+        lua->pushinteger(slot);
+        lua->settable(-3);
+        lua->pushstring("name");
+        lua->pushstring(learned.name);
+        lua->settable(-3);
+        lua_rawseti(L, -2, spell++);
+    }
+    lua->settable(-3);
+    if (bot->struck() != std::chrono::steady_clock::time_point{})
+    {
+        lua->pushstring("struck");
+        lua->pushinteger(
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - bot->struck())
+                .count());
+        lua->settable(-3);
+    }
+    lua->pushstring("now");
+    lua->pushinteger(
+        std::chrono::duration_cast<std::chrono::milliseconds>(fb::bot::brain::clock::now().time_since_epoch()).count());
     lua->settable(-3);
     lua->pushstring("pace");
     lua->new_table();
@@ -389,6 +450,27 @@ fb::bot::brain::destination builtin::brain::read_destination(lua_State* L, int i
     return result;
 }
 
+fb::bot::brain::node builtin::brain::read_node(lua_State* L, int index)
+{
+    auto result = fb::bot::brain::node{};
+    index       = lua_absindex(L, index);
+    lua_getfield(L, index, "kind");
+    result.kind = static_cast<fb::bot::brain::NODE>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+    lua_getfield(L, index, "children");
+    if (lua_istable(L, -1))
+    {
+        for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) == LUA_TTABLE; i++)
+        {
+            result.children.push_back(builtin::brain::read_node(L, -1));
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
+    return result;
+}
+
 fb::bot::brain::detour builtin::brain::read_detour(lua_State* L, int index)
 {
     auto lua    = fb::lua::get(L);
@@ -420,12 +502,28 @@ fb::bot::brain::detour builtin::brain::read_detour(lua_State* L, int index)
         lua_pop(L, 1);
     }
 
-    lua_getfield(L, index, "pace");
-    result.pace = std::chrono::milliseconds(lua_tointeger(L, -1));
+    lua_getfield(L, index, "perilous");
+    if (lua_istable(L, -1))
+    {
+        for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) != LUA_TNIL; i++)
+        {
+            result.perilous.insert(static_cast<uint32_t>(lua_tointeger(L, -1)));
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+    }
     lua_pop(L, 1);
 
-    lua_getfield(L, index, "rush");
-    result.rush = lua_toboolean(L, -1);
+    lua_getfield(L, index, "shunned");
+    if (lua_istable(L, -1))
+    {
+        for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) != LUA_TNIL; i++)
+        {
+            result.shunned.insert(static_cast<uint16_t>(lua_tointeger(L, -1)));
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+    }
     lua_pop(L, 1);
 
     lua_getfield(L, index, "jumps");
@@ -513,7 +611,8 @@ int builtin::brain::builtin_route(lua_State* L)
         auto here  = bot->position();
         auto level = bot->level();
         *result = co_await brain->offload<std::optional<atlas::plan>>(bot, [map, here, destination, level, detour]() {
-            return atlas::get().route(map, here, destination.maps, level, detour.closed);
+            return atlas::get()
+                .route(map, here, destination.maps, level, detour.closed, detour.perilous, detour.shunned);
         });
     };
     builder.resume = [lua, result]() -> async::task<int> {
@@ -532,6 +631,33 @@ int builtin::brain::builtin_route(lua_State* L)
         lua->settable(-3);
         lua->pushstring("hops");
         lua->pushinteger(static_cast<lua_Integer>(result->value().hops.size()));
+        lua->settable(-3);
+        lua->pushstring("path");
+        lua->new_table();
+        auto index = lua_Integer{1};
+        for (auto& hop : result->value().hops)
+        {
+            lua->new_table();
+            lua->pushstring("map");
+            lua->pushinteger(hop.map);
+            lua->settable(-3);
+            lua->pushstring("x");
+            lua->pushinteger(hop.before.x);
+            lua->settable(-3);
+            lua->pushstring("y");
+            lua->pushinteger(hop.before.y);
+            lua->settable(-3);
+            lua->pushstring("dest");
+            lua->pushinteger(hop.dest);
+            lua->settable(-3);
+            lua->pushstring("ax");
+            lua->pushinteger(hop.after.x);
+            lua->settable(-3);
+            lua->pushstring("ay");
+            lua->pushinteger(hop.after.y);
+            lua->settable(-3);
+            lua_rawseti(static_cast<lua_State*>(*lua), -2, index++);
+        }
         lua->settable(-3);
         lua->pushstring("x");
         lua->pushinteger(result->value().arrival.x);
@@ -612,36 +738,47 @@ int builtin::brain::builtin_npcs(lua_State* L)
     return 1;
 }
 
-int builtin::brain::builtin_ask(lua_State* L)
+int builtin::brain::builtin_talk(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
         return 0;
 
     auto bot = lua->touserdata<fb::bot::game_bot>(2);
     if (bot == nullptr)
         return 0;
 
-    auto request = fb::bot::integration::lua_protocol::to_request(L, 3, bot->client_version());
-    if (request == nullptr)
-        return 0;
+    auto opening = lua_isnil(L, 3) ? std::shared_ptr<fb::protocol::header>{}
+                                   : fb::bot::integration::lua_protocol::to_request(L, 3, bot->client_version());
 
-    auto answered = std::make_shared<bool>(false);
-    auto builder  = lua->new_co_builder();
-    builder.yield = [bot, request, answered]() -> async::task<void> {
-        try
+    auto answers = std::vector<fb::bot::brain::answer>{};
+    if (lua_istable(L, 4))
+    {
+        for (auto index = lua_Integer{1}; lua_rawgeti(L, 4, index) != LUA_TNIL; index++)
         {
-            std::ignore = co_await bot->first_of(
-                {fb::bot::integration::dialog_bot::opcode, fb::bot::integration::dialog_ext_bot::opcode},
-                *request,
-                DIALOG_TIMEOUT);
-            *answered = true;
+            auto chosen = fb::bot::brain::answer{};
+            if (lua_type(L, -1) == LUA_TSTRING)
+                chosen.name = lua->tostring(-1);
+            else
+                chosen.index = static_cast<uint16_t>(lua_tointeger(L, -1));
+            answers.push_back(chosen);
+            lua_pop(L, 1);
         }
-        catch (const std::exception&)
-        { }
+        lua_pop(L, 1);
+    }
+
+    auto result   = std::make_shared<fb::bot::brain::event>();
+    auto builder  = lua->new_co_builder();
+    builder.yield = [brain, bot, opening, answers, result]() -> async::task<void> {
+        brain->act(bot->id, "talk");
+        *result = co_await brain->talk(bot, opening, answers);
     };
-    builder.resume = [lua, answered]() -> async::task<int> {
-        lua->pushboolean(*answered);
+    builder.resume = [lua, result]() -> async::task<int> {
+        lua->pushstring(result->type);
         co_return 1;
     };
     return builder.run();
@@ -1043,6 +1180,24 @@ int builtin::brain::builtin_item(lua_State* L)
         lua->pushstring("damage");
         lua_pushnumber(L, (weapon->damage_small.min + weapon->damage_small.max) / 2.0);
         lua->settable(-3);
+        lua->pushstring("small");
+        lua->new_table();
+        lua->pushstring("min");
+        lua->pushinteger(weapon->damage_small.min);
+        lua->settable(-3);
+        lua->pushstring("max");
+        lua->pushinteger(weapon->damage_small.max);
+        lua->settable(-3);
+        lua->settable(-3);
+        lua->pushstring("large");
+        lua->new_table();
+        lua->pushstring("min");
+        lua->pushinteger(weapon->damage_large.min);
+        lua->settable(-3);
+        lua->pushstring("max");
+        lua->pushinteger(weapon->damage_large.max);
+        lua->settable(-3);
+        lua->settable(-3);
     }
     return 1;
 }
@@ -1213,6 +1368,34 @@ int builtin::brain::builtin_reservations(lua_State* L)
     return 1;
 }
 
+int builtin::brain::builtin_occupy(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    fb::bot::brain::occupy(bot->name(), static_cast<uint16_t>(lua_tointeger(L, 3)), lua_tonumber(L, 4));
+    return 0;
+}
+
+int builtin::brain::builtin_demand(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    lua_pushnumber(L, fb::bot::brain::demand(static_cast<uint16_t>(lua_tointeger(L, 3)), bot->name()));
+    return 1;
+}
+
 int builtin::brain::builtin_recall(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -1226,6 +1409,20 @@ int builtin::brain::builtin_recall(lua_State* L)
     auto bot = lua->touserdata<fb::bot::game_bot>(2);
     if (bot == nullptr)
         return 0;
+
+    if (lua_isstring(L, 3) == false)
+    {
+        auto mind = brain->find(bot->id);
+        lua->new_table();
+        for (auto& [key, remembered] :
+             mind.has_value() ? mind->memory : std::unordered_map<std::string, fb::lua::value>{})
+        {
+            lua->pushstring(key);
+            remembered.push(*lua);
+            lua->settable(-3);
+        }
+        return 1;
+    }
 
     auto value = brain->recall(bot->id, std::string(lua_tostring(L, 3)));
     if (value.has_value())
@@ -1327,22 +1524,108 @@ int builtin::brain::builtin_mobs(lua_State* L)
         lua->pushinteger(entry.position.y);
         lua->settable(-3);
         if (model != nullptr)
+            builtin::brain::push_mob(L, *model);
+        lua_rawseti(L, -2, index++);
+    }
+    return 1;
+}
+
+void builtin::brain::push_mob(lua_State* L, const fb::model::mob& model)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    lua->pushstring("hp");
+    lua->pushinteger(model.hp);
+    lua->settable(-3);
+    lua->pushstring("damage");
+    lua->pushinteger(model.damage.max);
+    lua->settable(-3);
+    lua->pushstring("least");
+    lua->pushinteger(model.damage.min);
+    lua->settable(-3);
+    lua->pushstring("size");
+    lua->pushstring(fb::model::enum_value::enum_tostring(model.size));
+    lua->settable(-3);
+    lua->pushstring("defense");
+    lua->pushinteger(model.defensive_physical);
+    lua->settable(-3);
+    lua->pushstring("ward");
+    lua->pushinteger(model.defensive_magical);
+    lua->settable(-3);
+    lua->pushstring("resists");
+    lua->new_table();
+    for (auto& [kind, value] : model.resist)
+    {
+        lua->pushstring(fb::model::enum_value::enum_tostring(kind));
+        lua_pushnumber(L, value);
+        lua->settable(-3);
+    }
+    lua->settable(-3);
+    lua->pushstring("attack");
+    lua->pushstring(fb::model::enum_value::enum_tostring(model.attack_type));
+    lua->settable(-3);
+    lua->pushstring("speed");
+    lua->pushinteger(
+        std::chrono::duration_cast<std::chrono::milliseconds>(static_cast<std::chrono::microseconds>(model.speed))
+            .count());
+    lua->settable(-3);
+}
+
+int builtin::brain::builtin_native(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto  map    = static_cast<uint16_t>(lua_tointeger(L, 3));
+    auto  mob    = static_cast<uint32_t>(lua_tointeger(L, 4));
+    auto& spawns = atlas::get().spawns(map);
+    lua->pushboolean(std::any_of(spawns.begin(), spawns.end(), [mob](const atlas::spawn& spawn) {
+        return spawn.mob == mob;
+    }));
+    return 1;
+}
+
+int builtin::brain::builtin_habitats(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto names = std::unordered_set<std::string>{};
+    if (lua_istable(L, 3))
+    {
+        for (auto i = lua_Integer{1}; lua_rawgeti(L, 3, i) == LUA_TSTRING; i++)
         {
-            lua->pushstring("hp");
-            lua->pushinteger(model->hp);
-            lua->settable(-3);
-            lua->pushstring("damage");
-            lua->pushinteger(model->damage.max);
-            lua->settable(-3);
-            lua->pushstring("attack");
-            lua->pushstring(fb::model::enum_value::enum_tostring(model->attack_type));
-            lua->settable(-3);
-            lua->pushstring("speed");
-            lua->pushinteger(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                 static_cast<std::chrono::microseconds>(model->speed))
-                                 .count());
-            lua->settable(-3);
+            names.insert(lua->tostring(-1));
+            lua_pop(L, 1);
         }
+        lua_pop(L, 1);
+    }
+
+    auto mobs  = fb::model::table::mob;
+    auto maps  = fb::model::table::map;
+    auto index = lua_Integer{1};
+    lua->new_table();
+    for (auto& [map, spawns] : atlas::get().spawns())
+    {
+        auto lives = std::any_of(spawns.begin(), spawns.end(), [&mobs, &names](const atlas::spawn& spawn) {
+            auto model = mobs->find(spawn.mob);
+            return model != nullptr && names.contains(model->name);
+        });
+        auto model = maps->find(map);
+        if (lives == false || model == nullptr)
+            continue;
+
+        lua->new_table();
+        lua->pushstring("id");
+        lua->pushinteger(map);
+        lua->settable(-3);
+        lua->pushstring("name");
+        lua->pushstring(model->name);
+        lua->settable(-3);
         lua_rawseti(L, -2, index++);
     }
     return 1;
@@ -1372,7 +1655,8 @@ int builtin::brain::builtin_spawns(lua_State* L)
     auto mobs  = fb::model::table::mob;
     auto index = lua_Integer{1};
     lua->new_table();
-    for (auto& spawn : atlas::get().spawns(bot->map()))
+    auto map = lua_isinteger(L, 4) ? static_cast<uint16_t>(lua_tointeger(L, 4)) : bot->map();
+    for (auto& spawn : atlas::get().spawns(map))
     {
         auto model = mobs->find(spawn.mob);
         if (model == nullptr || (names.empty() == false && names.contains(model->name) == false))
@@ -1416,11 +1700,74 @@ int builtin::brain::builtin_attack(lua_State* L)
     {
         lua_getfield(L, 4, "guard");
         tactic.guard = static_cast<uint32_t>(lua_tointeger(L, -1));
-        lua_getfield(L, 4, "swing");
-        tactic.swing = std::chrono::milliseconds(lua_tointeger(L, -1));
-        lua_getfield(L, 4, "pace");
-        tactic.pace = std::chrono::milliseconds(lua_tointeger(L, -1));
-        lua_pop(L, 3);
+        lua_pop(L, 1);
+
+        auto read = [L](int index) {
+            auto skill = fb::bot::brain::skill{};
+            lua_getfield(L, index, "slot");
+            skill.slot = static_cast<uint8_t>(lua_tointeger(L, -1));
+            lua_getfield(L, index - 1, "mp");
+            skill.mp = static_cast<uint32_t>(lua_tointeger(L, -1));
+            lua_getfield(L, index - 2, "floor");
+            skill.floor = static_cast<uint32_t>(lua_tointeger(L, -1));
+            lua_getfield(L, index - 3, "name");
+            if (lua_type(L, -1) == LUA_TSTRING)
+                skill.name = fb::lua::get(L)->tostring(-1);
+            lua_pop(L, 4);
+            return skill;
+        };
+        for (auto [field, skills] : {
+                 std::pair{"skills", &tactic.skills},
+                 std::pair{"buffs",  &tactic.buffs }
+        })
+        {
+            lua_getfield(L, 4, field);
+            if (lua_istable(L, -1))
+            {
+                for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) == LUA_TTABLE; i++)
+                {
+                    skills->push_back(read(-1));
+                    lua_pop(L, 1);
+                }
+                lua_pop(L, 1);
+            }
+            lua_pop(L, 1);
+        }
+        lua_getfield(L, 4, "tree");
+        if (lua_istable(L, -1))
+            tactic.tree = builtin::brain::read_node(L, -1);
+        lua_pop(L, 1);
+        lua_getfield(L, 4, "heal");
+        if (lua_istable(L, -1))
+            tactic.heal = read(-1);
+        lua_pop(L, 1);
+        lua_getfield(L, 4, "opener");
+        if (lua_istable(L, -1))
+            tactic.opener = read(-1);
+        lua_pop(L, 1);
+        lua_getfield(L, 4, "mend");
+        tactic.mend = static_cast<uint32_t>(lua_tointeger(L, -1));
+        lua_pop(L, 1);
+        for (auto [field, names] : {
+                 std::pair{"potions", &tactic.potions},
+                 std::pair{"drinks",  &tactic.drinks }
+        })
+        {
+            lua_getfield(L, 4, field);
+            if (lua_istable(L, -1))
+            {
+                for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) == LUA_TSTRING; i++)
+                {
+                    names->push_back(lua->tostring(-1));
+                    lua_pop(L, 1);
+                }
+                lua_pop(L, 1);
+            }
+            lua_pop(L, 1);
+        }
+        lua_getfield(L, 4, "melee");
+        tactic.melee = lua_isnil(L, -1) || lua_toboolean(L, -1);
+        lua_pop(L, 1);
     }
     auto result = std::make_shared<fb::bot::brain::event>();
 
@@ -1455,4 +1802,113 @@ int builtin::brain::builtin_attack(lua_State* L)
         co_return 1;
     };
     return builder.run();
+}
+
+int builtin::brain::builtin_cast(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    auto slot    = static_cast<uint8_t>(lua_tointeger(L, 3));
+    auto target  = lua_isnoneornil(L, 4) ? bot->oid() : static_cast<uint32_t>(lua_tointeger(L, 4));
+    auto at      = lua_isnoneornil(L, 5) ? bot->position()
+                                         : fb::model::point<uint16_t>{static_cast<uint16_t>(lua_tointeger(L, 5)),
+                                                                      static_cast<uint16_t>(lua_tointeger(L, 6))};
+    auto learned = bot->get_spell(slot);
+    auto cast    = learned.has_value();
+    if (cast)
+    {
+        bot->send(*bot->make<game_reqs::spell_cast>(static_cast<fb::model::enum_value::SPELL_TYPE>(learned->type),
+                                                    slot,
+                                                    std::string{},
+                                                    target,
+                                                    at));
+        brain->act(bot->id, "cast");
+        brain->progress(bot->id);
+    }
+
+    lua->pushboolean(cast);
+    return 1;
+}
+
+int builtin::brain::builtin_aside(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    using DIRECTION = fb::model::enum_value::DIRECTION;
+    auto& atlas     = atlas::get();
+    auto  map       = bot->map();
+    auto  here      = bot->position();
+    auto  grid      = atlas.find_grid(map);
+    auto  beside    = [&atlas, map](const atlas::position& at) {
+        return std::any_of(atlas.warps(map).begin(), atlas.warps(map).end(), [&at](const atlas::warp& warp) {
+            return std::max(std::abs(warp.before.x - at.x), std::abs(warp.before.y - at.y)) <= 1;
+        });
+    };
+    if (grid == nullptr || beside(here) == false)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto occupied = std::unordered_set<uint64_t>{};
+    auto crowded  = false;
+    for (auto& [_, entry] : bot->sight.entries())
+    {
+        if (entry.look >= game_bot::sight::ITEM_LOOK)
+            continue;
+        occupied.insert(atlas::gate(map, entry.position));
+        crowded = crowded || std::max(std::abs(entry.position.x - here.x), std::abs(entry.position.y - here.y)) <= 1;
+    }
+    if (crowded == false)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto seen  = std::unordered_set<uint64_t>{atlas::gate(map, here)};
+    auto queue = std::deque<atlas::position>{here};
+    while (queue.empty() == false)
+    {
+        auto at = queue.front();
+        queue.pop_front();
+        auto key = atlas::gate(map, at);
+        if (at != here && beside(at) == false && occupied.contains(key) == false)
+        {
+            lua->new_table();
+            lua->pushstring("x");
+            lua->pushinteger(at.x);
+            lua->settable(-3);
+            lua->pushstring("y");
+            lua->pushinteger(at.y);
+            lua->settable(-3);
+            return 1;
+        }
+
+        for (auto direction : {DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM, DIRECTION::LEFT})
+        {
+            if (grid->passable(at, direction) == false)
+                continue;
+            auto next = atlas::forward(at, direction);
+            if (seen.insert(atlas::gate(map, next)).second && grid->movable(next))
+                queue.push_back(next);
+        }
+    }
+    lua->pushnil();
+    return 1;
 }

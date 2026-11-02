@@ -347,6 +347,11 @@ const std::vector<atlas::spawn>& atlas::spawns(uint16_t map) const
     return found != this->_spawns.end() ? found->second : empty;
 }
 
+const std::unordered_map<uint16_t, std::vector<atlas::spawn>>& atlas::spawns() const
+{
+    return this->_spawns;
+}
+
 std::optional<uint32_t> atlas::mob(uint16_t map, uint16_t look, uint8_t color) const
 {
     auto mobs = table::mob;
@@ -396,8 +401,18 @@ std::optional<atlas::plan> atlas::route(uint16_t                            from
                                         const position&                     at,
                                         const std::unordered_set<uint16_t>& targets,
                                         uint8_t                             level,
-                                        const std::unordered_set<uint64_t>& closed) const
+                                        const std::unordered_set<uint64_t>& closed,
+                                        const std::unordered_set<uint32_t>& perilous,
+                                        const std::unordered_set<uint16_t>& shunned) const
 {
+    auto deadly = [this, &perilous, &targets](uint16_t map) {
+        auto& spawns = this->spawns(map);
+        return targets.contains(map) == false &&
+               std::any_of(spawns.begin(), spawns.end(), [&perilous](const spawn& spawn) {
+                   return perilous.contains(spawn.mob);
+               });
+    };
+
     struct visit
     {
         uint32_t    cost;
@@ -422,7 +437,7 @@ std::optional<atlas::plan> atlas::route(uint16_t                            from
         if (cost > here.cost)
             continue;
 
-        if (targets.contains(current))
+        if (targets.contains(current) && shunned.contains(current) == false)
         {
             reached = current;
             break;
@@ -431,6 +446,7 @@ std::optional<atlas::plan> atlas::route(uint16_t                            from
         for (auto& hop : this->warps(current))
         {
             if (level < hop.min_level || level > hop.max_level || closed.contains(atlas::gate(current, hop.before)) ||
+                (deadly(hop.dest) || shunned.contains(hop.dest) && targets.contains(hop.dest) == false) ||
                 this->reaches(current, here.at, hop.before) == false)
                 continue;
 
@@ -492,10 +508,12 @@ std::optional<atlas::leap> atlas::shortcut(uint16_t                            f
                                            const std::optional<position>&      goal,
                                            uint8_t                             level,
                                            const std::unordered_set<uint64_t>& closed,
+                                           const std::unordered_set<uint32_t>& perilous,
+                                           const std::unordered_set<uint16_t>& shunned,
                                            const std::vector<teleport>&        teleports) const
 {
     auto total = [&](uint16_t map, const position& start) -> std::optional<uint32_t> {
-        auto plan = this->route(map, start, targets, level, closed);
+        auto plan = this->route(map, start, targets, level, closed, perilous, shunned);
         if (plan.has_value() == false)
             return std::nullopt;
 

@@ -4,7 +4,7 @@ local resp     = require("integration.response")
 
 local M = {}
 
-local TIMEOUT       = 240000
+local TIMEOUT       = 120000
 local START         = { map = "국내성", x = 15, y = 107 }
 local OFFERING      = "도토리"
 local INFO_WAIT     = 3000
@@ -51,12 +51,11 @@ function M.run(ctx, index, case)
     end
 
     local mind = brain.new()
-    bot:brain(mind, { seed = 1, persona = { rush = 1 }, memory = { population = case.population } })
+    bot:brain(mind, { seed = 1, memory = { population = case.population } })
     local held = false
     local joined = expect.settle(ctx, index, mind, TIMEOUT, function(current)
-        for _, entry in ipairs(mind:states(current) or {}) do
-            held = held or entry.task == "HOLD"
-        end
+        local record = mind:failure(current, "JOB")
+        held         = held or (record ~= nil and record.reason == "FULL")
         if case.stuck then
             return held
         end

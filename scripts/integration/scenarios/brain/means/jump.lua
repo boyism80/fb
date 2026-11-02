@@ -45,7 +45,7 @@ function M.run(ctx, index, case)
 
     local mp   = bot:mp()
     local mind = brain.new()
-    bot:brain(mind, { seed = 1, persona = { rush = 1 }, memory = { order = { task = "GO", dest = case.dest } } })
+    bot:brain(mind, { seed = 1, memory = { order = { task = "GO", dest = case.dest } } })
     local done = expect.settle(ctx, index, mind, TIMEOUT, function(current)
         return mind:recall(current, "order") == nil
     end)

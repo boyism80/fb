@@ -18,5 +18,8 @@ test_suite {
         function(ctx)
             return recover.run(ctx, 0, { name = "vanished", vanish = true, money = 0 })
         end,
+        function(ctx)
+            return recover.run(ctx, 0, { name = "guarded", guard = "도삭산까만소", money = 0 })
+        end,
     },
 }

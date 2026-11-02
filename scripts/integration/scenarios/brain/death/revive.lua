@@ -3,7 +3,8 @@ local ghost  = require("integration.scenarios.brain.stage.ghost")
 
 local M = {}
 
-local TIMEOUT = 180000
+local TIMEOUT = 120000
+local SLOT    = 9
 
 local function stage(ctx, index, case)
     local bot = ctx:bot(index)
@@ -22,7 +23,8 @@ local function stage(ctx, index, case)
             return nil
         end
     end
-    if ghost.die(ctx, index) == false then
+    ctx:bot(index):map_move(case.start.map, case.start.x, case.start.y)
+    if ghost.die(ctx, index, { slot = SLOT }) == false then
         return nil
     end
     return ctx:bot(index)
@@ -36,7 +38,7 @@ function M.run(ctx, index, case)
     end
 
     local mind = brain.new()
-    bot:brain(mind, { seed = 1, persona = { rush = 1 } })
+    bot:brain(mind, { seed = 1 })
     local revived = expect.settle(ctx, index, mind, TIMEOUT, function(current)
         return current:state() ~= "GHOST"
     end)

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -19,10 +20,11 @@ namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;
 using namespace std::chrono_literals;
 
-constexpr auto BRAIN_TICK      = 100ms;
+constexpr auto RETRY_FLOOR     = 100ms;
 constexpr auto STALL_FACTOR    = 2;
 constexpr auto ALERT_MODULE    = "brain.policies.alert";
 constexpr auto DECIDE_MODULE   = "brain.decide";
+constexpr auto SKILLS_MODULE   = "brain.skills";
 constexpr auto OBSERVE_TIMEOUT = 5s;
 
 void brain::attach(game_bot& bot, const profile& profile)
@@ -54,6 +56,7 @@ void brain::attach(game_bot& bot, const profile& profile)
             found.died = bot.last_death();
         found.random.seed(profile.seed != 0 ? profile.seed : bot.id);
     }
+    this->close(bot);
     bot.attached(self);
     this->start(shared, session);
 }
@@ -75,34 +78,53 @@ void brain::transfer(game_bot& from, game_bot& to)
         this->_minds.erase(found);
         this->_minds.insert_or_assign(to.id, std::move(moved));
     }
+    this->close(to);
     if (from.attached().get() == this)
         from.attached(nullptr);
     to.attached(self);
     this->start(shared, session);
 }
 
+void brain::close(game_bot& bot)
+{
+    auto menu  = std::optional<integration::dialog_bot>{};
+    auto ext   = std::optional<integration::dialog_ext_bot>{};
+    auto seq   = bot.last_dialog(menu, ext);
+    auto lock  = std::lock_guard(this->_mutex);
+    auto found = this->_minds.find(bot.id);
+    if (found != this->_minds.end())
+        found->second.closed = seq;
+}
+
+bool brain::talking(const game_bot& bot) const
+{
+    auto menu  = std::optional<integration::dialog_bot>{};
+    auto ext   = std::optional<integration::dialog_ext_bot>{};
+    auto seq   = bot.last_dialog(menu, ext);
+    auto lock  = std::lock_guard(this->_mutex);
+    auto found = this->_minds.find(bot.id);
+    return found != this->_minds.end() && seq != found->second.closed;
+}
+
 async::task<void> brain::stop(game_bot& bot)
 {
-    auto session = std::optional<uint64_t>{};
+    auto finished = std::shared_ptr<async::task_completion_source<bool>>{};
     {
         auto lock  = std::lock_guard(this->_mutex);
         auto found = this->_minds.find(bot.id);
         if (found != this->_minds.end())
-            session = found->second.session;
+        {
+            auto loop = this->_loops.find(found->second.session);
+            if (loop != this->_loops.end())
+                finished = loop->second;
+        }
     }
     this->detach(bot);
-    if (session.has_value() == false)
+    if (finished == nullptr)
         co_return;
 
-    while (true)
-    {
-        {
-            auto lock = std::lock_guard(this->_mutex);
-            if (this->_loops.contains(session.value()) == false)
-                break;
-        }
-        co_await bot.sleep(BRAIN_TICK);
-    }
+    bot.wake();
+    std::ignore = co_await finished->task();
 }
 
 bool brain::active(uint32_t bot) const
@@ -117,7 +139,7 @@ void brain::start(const std::shared_ptr<game_bot>& bot, uint64_t session)
     fb::logger::debug("brain: start bot_id={} session={}", bot->id, session);
     {
         auto lock = std::lock_guard(this->_mutex);
-        this->_loops.insert(session);
+        this->_loops.insert_or_assign(session, std::make_shared<async::task_completion_source<bool>>());
     }
     auto self    = this->shared_from_this_as<brain>();
     auto builder = bot->thread()->new_builder<void>();
@@ -138,6 +160,7 @@ void brain::detach(game_bot& bot)
             this->_minds.erase(found);
         }
     }
+    brain::vacate(bot.name());
     if (bot.attached().get() == this)
         bot.attached(nullptr);
 }
@@ -220,6 +243,120 @@ const char* brain::name(ROLE value)
     return "";
 }
 
+const char* brain::name(NODE value)
+{
+    switch (value)
+    {
+    case NODE::SELECTOR:
+        return "SELECTOR";
+    case NODE::SEQUENCE:
+        return "SEQUENCE";
+    case NODE::CHECK:
+        return "CHECK";
+    case NODE::HEAL:
+        return "HEAL";
+    case NODE::POTION:
+        return "POTION";
+    case NODE::HURT:
+        return "HURT";
+    case NODE::BUFF:
+        return "BUFF";
+    case NODE::SPELL:
+        return "SPELL";
+    case NODE::MANA:
+        return "MANA";
+    case NODE::APPROACH:
+        return "APPROACH";
+    case NODE::FACE:
+        return "FACE";
+    case NODE::OPENER:
+        return "OPENER";
+    case NODE::SWING:
+        return "SWING";
+    }
+    return "";
+}
+
+const char* brain::name(ACTION value)
+{
+    switch (value)
+    {
+    case ACTION::TASK:
+        return "TASK";
+    case ACTION::CONTINUE:
+        return "CONTINUE";
+    case ACTION::HOLD:
+        return "HOLD";
+    case ACTION::MOVE:
+        return "MOVE";
+    case ACTION::ATTACK:
+        return "ATTACK";
+    case ACTION::TALK:
+        return "TALK";
+    case ACTION::READ:
+        return "READ";
+    case ACTION::USE:
+        return "USE";
+    case ACTION::PICK:
+        return "PICK";
+    case ACTION::EQUIP:
+        return "EQUIP";
+    case ACTION::WAIT:
+        return "WAIT";
+    case ACTION::FORGET:
+        return "FORGET";
+    case ACTION::CAST:
+        return "CAST";
+    case ACTION::SAY:
+        return "SAY";
+    }
+    return "";
+}
+
+void brain::bind(lua_State* L)
+{
+    lua_newtable(L);
+    for (auto value : {ACTION::TASK,
+                       ACTION::CONTINUE,
+                       ACTION::HOLD,
+                       ACTION::MOVE,
+                       ACTION::ATTACK,
+                       ACTION::TALK,
+                       ACTION::READ,
+                       ACTION::USE,
+                       ACTION::PICK,
+                       ACTION::EQUIP,
+                       ACTION::WAIT,
+                       ACTION::FORGET,
+                       ACTION::CAST,
+                       ACTION::SAY})
+    {
+        lua_pushinteger(L, static_cast<lua_Integer>(value));
+        lua_setfield(L, -2, brain::name(value));
+    }
+    lua_setglobal(L, "ACTION");
+
+    lua_newtable(L);
+    for (auto value : {NODE::SELECTOR,
+                       NODE::SEQUENCE,
+                       NODE::CHECK,
+                       NODE::HEAL,
+                       NODE::POTION,
+                       NODE::HURT,
+                       NODE::BUFF,
+                       NODE::SPELL,
+                       NODE::MANA,
+                       NODE::APPROACH,
+                       NODE::FACE,
+                       NODE::OPENER,
+                       NODE::SWING})
+    {
+        lua_pushinteger(L, static_cast<lua_Integer>(value));
+        lua_setfield(L, -2, brain::name(value));
+    }
+    lua_setglobal(L, "NODE");
+}
+
 fb::lua::root& brain::scripts(game_bot& bot)
 {
     auto thread = bot.thread();
@@ -236,6 +373,7 @@ fb::lua::root& brain::scripts(game_bot& bot)
     integration::lua_protocol::register_metatables(static_cast<lua_State*>(lua));
     integration::lua_protocol::register_modules(lua);
     integration::register_model_globals(lua);
+    brain::bind(static_cast<lua_State*>(lua));
     lua.build("log", builtin::integration_test::builtin_log);
     lua.package_path("../../scripts/?.lua");
     lua.package_path("../../scripts/?/init.lua");
@@ -294,12 +432,13 @@ double brain::seconds(time_point value)
 
 async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
 {
+    [[maybe_unused]] auto self = this->shared_from_this_as<brain>();
     while (bot->aborted() == false)
     {
-        co_await bot->thread()->switching();
-        if (bot->inited() == false)
+        co_await bot->yield();
+        if (bot->inited() == false || bot->map() == 0xFFFF)
         {
-            co_await bot->thread()->sleep(BRAIN_TICK);
+            std::ignore = co_await bot->changed();
             continue;
         }
 
@@ -323,7 +462,9 @@ async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
         if (this->update(bot->id, session, next) == false)
             break;
 
-        if (next.has_value() && next->task.empty() == false && this->halted(bot->id, next.value()) == false)
+        auto progressed = false;
+        if (next.has_value() && next->task.empty() == false && next->kind != ACTION::CONTINUE &&
+            next->kind != ACTION::HOLD && this->halted(bot->id, next.value()) == false)
         {
             {
                 auto lock  = std::lock_guard(this->_mutex);
@@ -348,6 +489,7 @@ async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
                 }
             }
 
+            progressed = interrupted || result.succeeded;
             if (interrupted == false)
             {
                 this->tally(bot->id, result.succeeded);
@@ -358,11 +500,49 @@ async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
             }
         }
 
-        co_await bot->thread()->sleep(BRAIN_TICK);
+        if (progressed == false)
+            std::ignore = co_await bot->changed(next.has_value() ? next->revisit : std::chrono::milliseconds{0});
     }
 
-    auto lock = std::lock_guard(this->_mutex);
-    this->_loops.erase(session);
+    auto finished = std::shared_ptr<async::task_completion_source<bool>>{};
+    {
+        auto lock  = std::lock_guard(this->_mutex);
+        auto found = this->_loops.find(session);
+        if (found != this->_loops.end())
+        {
+            finished = found->second;
+            this->_loops.erase(found);
+        }
+    }
+    if (finished != nullptr)
+    {
+        auto builder = bot->thread()->new_builder<void>();
+        builder.func = [finished](auto&) -> async::task<void> {
+            auto failure = std::exception_ptr{};
+            std::ignore  = finished->try_set_value(true, failure);
+            co_return;
+        };
+        builder.enqueue();
+    }
+}
+
+async::task<bool> brain::synced(std::shared_ptr<game_bot> bot)
+{
+    try
+    {
+        std::ignore = co_await bot->request_by_opcode(
+            game_resp::internal_info<fb::protocol::CLIENT_VERSION::v550>::opcode,
+            bot->make<game_reqs::self_info>().get(),
+            [](const fb::protocol::header&) {
+                return true;
+            },
+            OBSERVE_TIMEOUT);
+        co_return true;
+    }
+    catch (const std::exception&)
+    {
+        co_return false;
+    }
 }
 
 void brain::die(const game_bot& bot)
@@ -404,6 +584,30 @@ void brain::release(const std::string& name)
 {
     auto lock = std::lock_guard(_ledger_mutex);
     _ledger.erase(name);
+}
+
+void brain::occupy(const std::string& name, uint16_t map, double rate)
+{
+    auto lock = std::lock_guard(_ledger_mutex);
+    _occupancy.insert_or_assign(name, std::pair{map, rate});
+}
+
+void brain::vacate(const std::string& name)
+{
+    auto lock = std::lock_guard(_ledger_mutex);
+    _occupancy.erase(name);
+}
+
+double brain::demand(uint16_t map, const std::string& except)
+{
+    auto lock  = std::lock_guard(_ledger_mutex);
+    auto total = 0.0;
+    for (auto& [name, entry] : _occupancy)
+    {
+        if (name != except && entry.first == map)
+            total += entry.second;
+    }
+    return total;
 }
 
 std::unordered_map<std::string, uint32_t> brain::reservations(const std::string& except)
@@ -644,6 +848,15 @@ async::task<std::optional<brain::decision>> brain::think(std::shared_ptr<game_bo
             next.reason = ctx->tostring(-1);
             lua_pop(L, 1);
 
+            lua_getfield(L, -1, "kind");
+            next.kind = static_cast<ACTION>(lua_tointeger(L, -1));
+            lua_pop(L, 1);
+
+            lua_getfield(L, -1, "revisit");
+            next.revisit = std::chrono::milliseconds(static_cast<int64_t>(std::ceil(lua_tonumber(L, -1))));
+            lua_pop(L, 1);
+            next.action = fb::lua::value::copy_data(L, -1);
+
             if (state.has_value())
             {
                 next.state = state.value();
@@ -691,7 +904,7 @@ void brain::settle(const game_bot&           bot,
     fb::logger::debug("brain: bot_id={} {} failed ({}) x{}", bot.id, task, result.reason, entry.failures);
     entry.reason   = result.reason;
     entry.at       = clock::now();
-    entry.duration = std::max(elapsed, std::chrono::duration_cast<std::chrono::milliseconds>(BRAIN_TICK));
+    entry.duration = std::max(elapsed, std::chrono::duration_cast<std::chrono::milliseconds>(RETRY_FLOOR));
     entry.map      = bot.map();
     entry.level    = bot.level();
 }
@@ -754,7 +967,7 @@ async::task<brain::outcome> brain::perform(std::shared_ptr<game_bot> bot, const 
 
     auto ctx    = fb::lua::context::guard{raw};
     auto L      = static_cast<lua_State*>(*ctx);
-    auto module = brain::module(decision.task);
+    auto module = decision.kind == ACTION::TASK ? brain::module(decision.task) : std::string{SKILLS_MODULE};
     lua_getglobal(L, "require");
     lua_pushstring(L, module.c_str());
     if (lua_pcall(L, 1, 1, 0) != LUA_OK)
@@ -766,7 +979,10 @@ async::task<brain::outcome> brain::perform(std::shared_ptr<game_bot> bot, const 
     lua_getfield(L, -1, "run");
     ctx->pushobject(this->shared_from_this_as<brain>());
     ctx->pushobject(bot);
-    lua_pushinteger(L, decision.step);
+    if (decision.kind == ACTION::TASK)
+        lua_pushinteger(L, decision.step);
+    else
+        decision.action.push(*ctx);
 
     auto result = outcome{};
     try
@@ -801,18 +1017,19 @@ bool brain::update(uint32_t bot, uint64_t session, const std::optional<decision>
     {
         auto& mind    = found->second;
         auto  changed = mind.history.empty() || mind.current.state != next->state || mind.current.task != next->task ||
-                       mind.current.step != next->step;
+                       mind.current.step != next->step || mind.current.kind != next->kind;
         if (changed)
         {
             auto now     = clock::now();
             mind.current = next.value();
             mind.since   = now;
             mind.history.push_back(transition{next.value(), now});
-            fb::logger::debug("brain: bot_id={} {}/{}/{} ({})",
+            fb::logger::debug("brain: bot_id={} {}/{}/{} {} ({})",
                               bot,
                               brain::name(next->state),
                               next->task,
                               next->step,
+                              brain::name(next->kind),
                               next->reason);
         }
     }

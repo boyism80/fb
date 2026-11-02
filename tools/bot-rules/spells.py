@@ -3,16 +3,21 @@ import json
 import re
 from pathlib import Path
 
+from lua import lua_value
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / 'server' / 'game' / 'scripts'
 SPELL_JSON = ROOT / 'server' / 'game' / 'json' / 'spell.json'
 OUTPUT = ROOT / 'server' / 'bot' / 'config' / 'load-spells.json'
+BRAIN = ROOT / 'scripts' / 'brain' / 'data' / 'spells.lua'
 
 KEY = re.compile(r"^\s*\[(?:'(?P<name>[^']+)'|spell\.(?P<helper>divine_beast_\w*spell)\(me:divine_beast\(\),\s*(?P<beast>\d+)\))\]\s*=\s*\{\s*$")
 LEVEL = re.compile(r"\['level'\]\s*=\s*(\d+)")
 MATERIAL = re.compile(r"\['name'\]\s*=\s*'([^']+)',\s*\['count'\]\s*=\s*(\d+)")
 GUILD = re.compile(r"npc\.basic_class\(me,\s*npc_obj,\s*CLASS\.(\w+),\s*spells\)")
 LOCAL = re.compile(r"local\s+(\w+)\s*=\s*(\d+)")
+FORMULA = re.compile(r"local\s+(damage|hp|mp)\s*=\s*([^\n]+)")
+RANDOM = re.compile(r"math\.random\((\d+),\s*(\d+)\)")
 BEAST = re.compile(r"index == (\d+) then\s*return (?:'([^']+)'|\"([^\"]+)\")")
 CURE = re.compile(r"you:unbuff\('([^']+)'\)")
 CAST = re.compile(r"^\s*on_cast\s*=\s*function", re.M)
@@ -65,11 +70,13 @@ def rules():
         if rate is not None:
             first = re.split(r"\n\s*else", block, maxsplit=1)[0]
             splashes[name] = {'rate': float(rate.group(1)), 'sides': first.count('table.insert(points')}
+    echoes = re.findall(r"me:isbuff\('([^']+)'\) and not additional_attack", ATTACK.read_text(encoding='utf-8'))
     back = re.search(r"target\.direction\(\) == this->direction\(\)\)\s*rate \*= ([\d.]+)f", LIFE.read_text(encoding='utf-8'))
     tick = re.search(r"buff_timer>\((\d+)s\)", TIMERS.read_text(encoding='utf-8'))
     return {'cast_rate': limit * 1000 / duration,
             'multipliers': multipliers,
             'splashes': splashes,
+            'echoes': echoes,
             'buff_tick': int(tick.group(1)),
             'back_attack': float(back.group(1)),
             'socket_tps': int(tps.group(1))}
@@ -126,17 +133,35 @@ def guilds(beasts):
     return result
 
 
+def formulas(text):
+    result = {}
+    for key, expression in FORMULA.findall(text):
+        expression = expression.split('--', 1)[0].strip()
+        if key in result or re.fullmatch(r"\d+", expression):
+            continue
+        expression = RANDOM.sub(lambda m: f"(({m.group(1)} + {m.group(2)}) / 2)", expression)
+        expression = expression.replace('me:hp()', 'me.hp').replace('me:mp()', 'me.mp')
+        if re.search(r"[:\[]|\bme:\w", expression):
+            continue
+        result[key] = expression
+    return result
+
+
 def effect(text):
     values = {key: int(value) for key, value in LOCAL.findall(text)}
     info = {'mp': values.get('mp', 0)}
+    found = formulas(text)
+    if found:
+        info['formula'] = found
     cure = CURE.search(text)
     if CAST.search(text) is None:
         info['role'] = 'NONE'
-    elif 'spell.heal(' in text:
+    elif 'spell.heal(' in text or 'spell.heal_group(' in text:
         info['role'] = 'HEAL'
         info['hp'] = values.get('hp', 0)
         info['self'] = 'spell.heal(me, me' in text
-    elif 'spell.damage_near_target' in text:
+        info['group'] = 'spell.heal_group(' in text
+    elif 'spell.damage_near_target' in text or 'spell.damage_near(' in text or 'spell.damage_area(' in text:
         info['role'] = 'AREA'
         info['damage'] = values.get('damage', 0)
     elif 'spell.damage(' in text:
@@ -161,6 +186,7 @@ def effect(text):
             info['damage_mp'] = 1
     elif 'spell.weapon_damage' in text:
         info['role'] = 'ENCHANT'
+        info['damage'] = values.get('dam', 0)
     elif 'spell.debuff_cast' in text:
         info['role'] = 'DEBUFF'
         info['buff_time'] = values.get('buff_time', 0)
@@ -206,8 +232,13 @@ def effect(text):
         info['stats'] = modifiers(text)
         if 'me:invincible' in text:
             info['trigger'] = 'EMERGENCY'
+            luck = re.search(r"math\.random\(\)\s*<\s*([\d.]+)", text)
+            info['chance'] = float(luck.group(1)) if luck else 1.0
         elif 'me:mp_up' in text:
             info['trigger'] = 'MANA'
+            surge = re.search(r"me:mp_up\(me:maxmp\(\)\s*//\s*(\d+)\)", text)
+            if surge is not None:
+                info['surge'] = 1 / int(surge.group(1))
         boosts = {stat: int(value) for stat, value in BOOST.findall(text)}
         if boosts:
             info['boost'] = boosts
@@ -273,9 +304,35 @@ def spells(names):
     return result
 
 
+def brain_data(catalog):
+    lines = ['return {']
+    lines.append(f"    cast_rate = {lua_value(catalog['rules']['cast_rate'])},")
+    lines.append(f"    multipliers = {lua_value(catalog['rules']['multipliers'])},")
+    lines.append(f"    back_attack = {lua_value(catalog['rules']['back_attack'])},")
+    lines.append(f"    buff_tick = {lua_value(catalog['rules']['buff_tick'])},")
+    lines.append(f"    splashes = {lua_value(catalog['rules']['splashes'])},")
+    lines.append(f"    echoes = {lua_value(catalog['rules']['echoes'])},")
+    lines.append('    spells    = {')
+    for name in sorted(catalog['spells']):
+        info = catalog['spells'][name]
+        fields = {key: info[key] for key in ('role', 'type', 'mp', 'damage', 'hp', 'self', 'others', 'group', 'hp_cost',
+                                            'damage_hp', 'damage_mp', 'drain', 'buff_time', 'boost', 'chance', 'chance_int',
+                                            'excludes', 'trigger', 'surge', 'stats', 'dot', 'paralysis', 'blind', 'resists')
+                  if key in info and info[key] not in ({}, [])}
+        formula = info.get('formula', {})
+        entries = [f'{key} = {lua_value(value)}' for key, value in fields.items() if key not in formula]
+        for key, expression in formula.items():
+            entries.append(f'{key} = function(me) return {expression} end')
+        lines.append(f'        [{lua_value(name)}] = {{ ' + ', '.join(entries) + ' },')
+    lines.append('    },')
+    lines.append('}')
+    return '\n'.join(lines) + '\n'
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', default=str(OUTPUT))
+    parser.add_argument('--brain', default=str(BRAIN))
     args = parser.parse_args()
 
     beasts = divine_beast_names()
@@ -286,6 +343,7 @@ def main():
     names = {name for guild in classes.values() for spell in guild['spells'] for name in spell['names']}
     catalog = {'classes': classes, 'spells': spells(names), 'rules': rules()}
     Path(args.output).write_text(json.dumps(catalog, ensure_ascii=False, indent=1), encoding='utf-8')
+    Path(args.brain).write_text(brain_data(catalog), encoding='utf-8', newline='\n')
     counts = {name: len(guild['spells']) for name, guild in classes.items()}
     print(f'classes={counts} spells={len(catalog["spells"])} taught={[spell["names"][0] for spell in taught]}')
 

@@ -1,4 +1,5 @@
 local expect      = require("integration.lib.expect")
+local instance    = require("integration.lib.instance")
 local script_step = require("integration.lib.script_step")
 
 local M = {}
@@ -22,12 +23,19 @@ local function place(ctx, index, x, y)
         end
     end
     ctx:bot(index):map_move(TOWN, x, y, SLOT)
+    if instance.inside(ctx:bot(index)) == false then
+        return nil
+    end
     return ctx:bot(index)
 end
 
 function M.run(ctx, index, other, case)
     local walker = place(ctx, index, START.x, START.y)
-    local guard  = walker and place(ctx, other, GATES[1].x, GATES[1].y)
+    local guard  = walker and place(ctx, other, GATES[1].x, GATES[1].y + 1)
+    if guard ~= nil then
+        script_step.run_script(guard, "test/integration", "remove_npc", 1, BLOCKER)
+        guard = place(ctx, other, GATES[1].x, GATES[1].y)
+    end
     if guard == nil then
         log("fatal", string.format("[brain:blocked:%s] FAILED stage", case.name))
         return false
@@ -42,7 +50,7 @@ function M.run(ctx, index, other, case)
     walker:clear_all_spells()
     local mind = brain.new()
     walker:brain(mind,
-        { seed = 1, persona = { rush = 1 }, memory = { order = { task = "GO", dest = { map = GROUND } } } })
+        { seed = 1, memory = { order = { task = "GO", dest = { map = GROUND } } } })
     if case.both then
         expect.within(ctx, TIMEOUT, function()
             return mind:recall(ctx:bot(index), "blocked") ~= nil
@@ -51,8 +59,7 @@ function M.run(ctx, index, other, case)
     end
 
     local arrived = expect.settle(ctx, index, mind, TIMEOUT, function(current)
-        local model = id2map(current:map())
-        return model ~= nil and model:name() == GROUND
+        return mind:recall(current, "order") == nil
     end)
     local blocked = mind:recall(ctx:bot(index), "blocked")
     expect.release(ctx, index, mind, TIMEOUT)

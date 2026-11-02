@@ -1,17 +1,20 @@
 local M = {}
 
-local PERMANENT = { NO_ROUTE = true, DENIED = true, REFUSED = true, FULL = true }
+local PERMANENT = { DENIED = true, REFUSED = true, FULL = true }
 
-function M.allowed(brain, bot, task)
-    local record = brain:failure(bot, task)
+function M.remaining(snap, task)
+    local record = snap.record.failures[task]
     if record == nil then
-        return true
+        return 0
     elseif PERMANENT[record.reason] then
-        local seen = brain:observe(bot)
-        return record.map ~= seen.map or record.level ~= seen.level
+        return (record.map ~= snap.world.map or record.level ~= snap.self.level) and 0 or nil
     else
-        return record.age >= record.duration * 2 ^ (record.failures - 1)
+        return math.max(0, record.duration * 2 ^ (record.failures - 1) - record.age)
     end
+end
+
+function M.allowed(snap, task)
+    return M.remaining(snap, task) == 0
 end
 
 return M

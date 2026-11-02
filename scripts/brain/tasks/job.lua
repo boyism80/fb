@@ -1,16 +1,14 @@
 local protocol = require("integration.protocol")
 local career   = require("brain.policies.job")
-local dialog   = require("brain.policies.dialog")
 local hunt     = require("brain.policies.hunt")
 local travel   = require("brain.policies.travel")
-local grounds  = require("brain.data.grounds")
 local job      = require("brain.data.job")
 local tutorial = require("brain.tasks.tutorial")
 
 local M = {}
 
 local function gather(brain, bot)
-    if travel.go(brain, bot, { names = grounds.beginner }) == false then
+    if travel.go(brain, bot, { maps = hunt.beginner(brain, bot, job.offering.from) }) == false then
         return false
     end
 
@@ -61,13 +59,13 @@ local function enlist(brain, bot, chosen)
     if npc == nil then
         return false
     end
-    dialog.converse(brain, bot, protocol.click(npc.oid), job.oath)
-    dialog.settled(bot)
+    brain:talk(bot, protocol.click(npc.oid), job.oath)
     return brain:observe(bot).class == chosen
 end
 
-function M.wanted(brain, bot, seen)
-    return seen.ghost == false and seen.class == "NONE" and seen.level >= job.level and tutorial.step(bot) == 0
+function M.wanted(snap)
+    return snap.self.ghost == false and snap.self.class == "NONE" and snap.self.level >= job.level and
+        tutorial.step(snap) == 0
 end
 
 function M.run(brain, bot)

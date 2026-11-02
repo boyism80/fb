@@ -1,8 +1,9 @@
-local expect = require("integration.lib.expect")
+local expect   = require("integration.lib.expect")
+local instance = require("integration.lib.instance")
 
 local M = {}
 
-local TIMEOUT = 240000
+local TIMEOUT = 120000
 local GROUND  = { map = "고구려왕초보사냥1", x = 9, y = 15, slot = 7 }
 local WEAPON  = "목도"
 local MAX_HP  = 1000
@@ -30,6 +31,9 @@ local function stage(ctx, index, case)
     local start = case.start or GROUND
     bot:map_move(GROUND.map, start.x, start.y, GROUND.slot)
     bot = ctx:bot(index)
+    if instance.inside(bot) == false then
+        return nil
+    end
     bot:chat("/몬스터제거")
     bot:chat("/리스폰")
     bot:set_max_hp_mp(MAX_HP, MAX_MP)
@@ -51,7 +55,7 @@ function M.run(ctx, index, case)
 
     local mind  = brain.new()
     local ghost = false
-    bot:brain(mind, { seed = 1, persona = { rush = 1 }, memory = { order = case.order } })
+    bot:brain(mind, { seed = 1, memory = { order = case.order } })
     local done = expect.settle(ctx, index, mind, TIMEOUT, function(current)
         ghost = ghost or current:state() == "GHOST"
         return (case.keep or mind:recall(current, "order") == nil) and case.finished(current)
@@ -71,7 +75,9 @@ function M.run(ctx, index, case)
     cleaner:map_move(GROUND.map, GROUND.x, GROUND.y)
     expect.arrive(ctx, index, GROUND.map, TIMEOUT)
     ctx:bot(index):map_move(GROUND.map, GROUND.x, GROUND.y, GROUND.slot)
-    ctx:bot(index):chat("/몬스터제거")
+    if instance.inside(ctx:bot(index)) then
+        ctx:bot(index):chat("/몬스터제거")
+    end
 
     local passed = done and ghost == false and jumped == case.jump
     for _, task in ipairs(case.tasks or {}) do

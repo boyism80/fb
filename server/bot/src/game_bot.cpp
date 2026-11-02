@@ -385,7 +385,15 @@ void game_bot::set_hp(uint32_t value)
     auto hit  = value < this->_hp;
     this->_hp = value;
     if (hit)
+    {
+        this->_struck = std::chrono::steady_clock::now();
         this->notice("hit");
+    }
+}
+
+std::chrono::steady_clock::time_point game_bot::struck() const
+{
+    return this->_struck;
 }
 
 uint32_t game_bot::mp() const
@@ -438,7 +446,7 @@ void game_bot::set_mail_count(uint8_t value)
     this->_mail_count = value;
 }
 
-uint8_t game_bot::fast_move() const
+std::optional<uint8_t> game_bot::fast_move() const
 {
     return this->_fast_move;
 }
@@ -646,6 +654,16 @@ uint32_t game_bot::remained_exp() const
 void game_bot::set_remained_exp(uint32_t value)
 {
     this->_remained_exp = value;
+}
+
+const struct game_bot::prowess& game_bot::prowess() const
+{
+    return this->_prowess;
+}
+
+void game_bot::set_prowess(const struct prowess& value)
+{
+    this->_prowess = value;
 }
 
 async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model::timespan& delay)

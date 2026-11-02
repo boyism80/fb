@@ -5,6 +5,7 @@ local travel   = require("brain.policies.travel")
 local hunt     = require("brain.policies.hunt")
 local wait     = require("brain.policies.wait")
 local career   = require("brain.policies.job")
+local combat   = require("brain.data.combat")
 local grounds  = require("brain.data.grounds")
 local job_data = require("brain.data.job")
 
@@ -47,8 +48,7 @@ local function read(brain, bot, step, answers)
     if slot == EMPTY_SLOT then
         return false
     end
-    dialog.converse(brain, bot, protocol.item_active(slot), answers or {})
-    dialog.settled(bot)
+    brain:talk(bot, protocol.item_active(slot), answers or {})
     return true
 end
 
@@ -61,14 +61,40 @@ local function use(brain, bot, name, count)
     return true
 end
 
+local function approach(brain, bot)
+    local spots = brain:npcs(bot, { GIVER })
+    local maps  = {}
+    for _, spot in ipairs(spots) do
+        table.insert(maps, spot.map)
+    end
+    if #maps == 0 then
+        return false, "NO_NPC"
+    elseif travel.go(brain, bot, { maps = maps }) == false then
+        return false, "UNREACHABLE"
+    end
+    local range = math.min(combat.sight.x, combat.sight.y)
+    for _, spot in ipairs(spots) do
+        if spot.map == bot:map() and travel.go(brain, bot, { map = spot.map, x = spot.x, y = spot.y, range = range }) then
+            return true
+        end
+    end
+    return false, "UNREACHABLE"
+end
+
 local function receive(brain, bot)
     local npc = brain:npc(bot, GIVER)
     if npc == nil then
-        return false
+        local reached, reason = approach(brain, bot)
+        if reached == false then
+            return false, reason
+        end
+        npc = brain:npc(bot, GIVER)
+    end
+    if npc == nil then
+        return false, "NO_NPC"
     end
 
-    dialog.converse(brain, bot, protocol.click(npc.oid), {})
-    dialog.settled(bot)
+    brain:talk(bot, protocol.click(npc.oid), {})
     return granted(bot, SCROLLS[1])
 end
 
@@ -92,7 +118,7 @@ local function ground(brain, bot)
 end
 
 local function prey(brain, bot)
-    if read(brain, bot, 5) == false then
+    if read(brain, bot, 5) == false or travel.go(brain, bot, { maps = hunt.beginner(brain, bot, PREYS) }) == false then
         return false
     end
 
@@ -121,7 +147,7 @@ local function prey(brain, bot)
 end
 
 local function grow(brain, bot)
-    if read(brain, bot, 7) == false then
+    if read(brain, bot, 7) == false or travel.go(brain, bot, { names = grounds.beginner }) == false then
         return false
     end
 
@@ -173,18 +199,23 @@ local STEPS = {
     [8] = job,
 }
 
-function M.step(bot)
+function M.step(snap)
+    local held = {}
+    for _, item in ipairs(snap.bag.items) do
+        held[item.name] = true
+    end
     local step = 0
     for index, name in ipairs(SCROLLS) do
-        if bot:has_item_by_name(name) then
+        if held[name] then
             step = index
         end
     end
     return step
 end
 
-function M.wanted(brain, bot, seen)
-    return seen.ghost == false and seen.class == "NONE" and (M.step(bot) > 0 or seen.level < job_data.level)
+function M.wanted(snap)
+    return snap.self.ghost == false and snap.self.class == "NONE" and
+        (M.step(snap) > 0 or snap.self.level < job_data.level)
 end
 
 function M.run(brain, bot, step)

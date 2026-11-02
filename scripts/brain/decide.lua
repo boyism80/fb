@@ -1,6 +1,9 @@
-local alert   = require("brain.policies.alert")
-local failure = require("brain.policies.failure")
-local states  = require("brain.data.states")
+local alert    = require("brain.policies.alert")
+local danger   = require("brain.policies.danger")
+local failure  = require("brain.policies.failure")
+local states   = require("brain.data.states")
+local query    = require("brain.query")
+local snapshot = require("brain.snapshot")
 
 local M = {}
 
@@ -8,31 +11,88 @@ local function module(name)
     return require("brain.tasks." .. string.lower(name))
 end
 
-function M.first(brain, bot, current)
-    local seen = brain:observe(bot)
+local function decision(snap, facts, state, name, task, revisit)
+    local result   = task.propose ~= nil and task.propose(snap, facts) or { kind = ACTION.TASK }
+    result.state   = state
+    result.task    = name
+    result.step    = task.step ~= nil and task.step(snap) or 0
+    result.reason  = name
+    result.revisit = revisit
+    return result
+end
+
+local function soonest(revisit, value)
+    if value == nil then
+        return revisit
+    end
+    return math.min(revisit or value, value)
+end
+
+function M.choose(snap, facts, current)
+    local revisit = nil
+    local passed  = false
+    local best    = nil
+    local held    = nil
+    local values  = {}
     for _, state in ipairs(states) do
         for _, name in ipairs(state.tasks) do
-            if name == current then
-                return nil
-            end
-
             local task = module(name)
-            if task.wanted(brain, bot, seen) and failure.allowed(brain, bot, name) then
-                return {
-                    state  = state.name,
-                    task   = name,
-                    step   = task.step ~= nil and task.step(bot) or 0,
-                    reason = name,
-                }
+            if task.wanted(snap, facts) then
+                local remaining = failure.remaining(snap, name)
+                if remaining == 0 and states.required[name] then
+                    if name == current or (passed and current ~= nil and states.required[current]) then
+                        return nil, revisit
+                    end
+                    return decision(snap, facts, state.name, name, task, revisit), revisit
+                elseif remaining == 0 then
+                    local delta = task.value ~= nil and task.value(snap, facts) or 0
+                    table.insert(values, string.format("%s=%.1f", name, delta))
+                    if name == current then
+                        held = delta
+                    elseif best == nil or delta > best.delta then
+                        best = { state = state.name, name = name, task = task, delta = delta }
+                    end
+                else
+                    revisit = soonest(revisit, remaining)
+                end
+            elseif task.revisit ~= nil then
+                revisit = soonest(revisit, task.revisit(snap, facts))
             end
+            passed = passed or name == current
         end
     end
-    return nil
+    if best ~= nil and best.delta < 0 and current == nil then
+        log("debug", string.format("[brain:decide] %s picks nothing", table.concat(values, " ")))
+    end
+    if best == nil or best.delta < 0 or (held ~= nil and best.delta <= held) or
+        (current ~= nil and states.required[current]) then
+        return nil, revisit
+    end
+    if #values > 1 then
+        log("debug", string.format("[brain:decide] %s picks %s", table.concat(values, " "), best.name))
+    end
+    return decision(snap, facts, best.state, best.name, best.task, revisit), revisit
+end
+
+function M.first(brain, bot, current)
+    local snap   = snapshot.take(brain, bot)
+    local facts  = query.bind(brain, bot)
+    local threat = snap.self.ghost == false and danger.fatal(snap, facts) or nil
+    if threat ~= nil then
+        log("debug", string.format("[brain:decide] peril %s attack=%s at map=%d %d,%d", tostring(threat.name),
+            tostring(threat.attack), snap.world.map, threat.x or -1, threat.y or -1))
+        local perils = snap.record.memory.perils or {}
+        perils[tostring(snap.world.map)] = { mob = threat.id, stats = threat, at = snap.now }
+        brain:remember(bot, "perils", perils)
+        snap.record.memory.perils = perils
+    end
+    alert.watch(brain, bot, snap, facts)
+    return M.choose(snap, facts, current)
 end
 
 function M.decide(brain, bot)
-    alert.watch(brain, bot)
-    return M.first(brain, bot, nil) or { state = "PREPARE", reason = "idle" }
+    local decision, revisit = M.first(brain, bot, nil)
+    return decision or { state = "PREPARE", reason = "idle", kind = ACTION.HOLD, revisit = revisit }
 end
 
 return M

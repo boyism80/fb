@@ -1,9 +1,27 @@
-local resp   = require("integration.response")
-local danger = require("brain.policies.danger")
-local travel = require("brain.policies.travel")
-local wait   = require("brain.policies.wait")
+local resp     = require("integration.response")
+local fight    = require("brain.policies.combat")
+local danger   = require("brain.policies.danger")
+local travel   = require("brain.policies.travel")
+local wait     = require("brain.policies.wait")
+local snapshot = require("brain.snapshot")
+local query    = require("brain.query")
+local grounds  = require("brain.data.grounds")
 
 local M = {}
+
+function M.beginner(brain, bot, names)
+    local beginner = {}
+    for _, name in ipairs(grounds.beginner) do
+        beginner[name] = true
+    end
+    local maps = {}
+    for _, habitat in ipairs(brain:habitats(bot, names)) do
+        if beginner[habitat.name] then
+            table.insert(maps, habitat.id)
+        end
+    end
+    return maps
+end
 
 local APPEAR_WAIT = 10000
 
@@ -44,7 +62,6 @@ function M.present(brain, bot, drop)
 end
 
 function M.go(brain, bot, goal)
-    local persona = brain:persona(bot)
     local skipped = {}
     local visited = {}
     local tried   = {}
@@ -58,10 +75,12 @@ function M.go(brain, bot, goal)
         local target = nil
         local best   = nil
         local risky  = false
-        for _, mob in ipairs(brain:mobs(bot)) do
+        local snap   = snapshot.take(brain, bot)
+        local facts  = query.bind(brain, bot)
+        for _, mob in ipairs(snap.world.mobs) do
             local cost   = math.abs(mob.x - x) + math.abs(mob.y - y)
             local wanted = goal.wants(mob.name) and skipped[mob.oid] == nil
-            local safe   = wanted and danger.winnable(brain, bot, mob)
+            local safe   = wanted and danger.winnable(snap, facts, mob)
             risky        = risky or (wanted and safe == false)
             if safe and (best == nil or cost < best) then
                 target = mob
@@ -79,10 +98,9 @@ function M.go(brain, bot, goal)
             log("debug", string.format("[brain:hunt] bot=%s too weak for visible prey", bot:name()))
             return false
         elseif target ~= nil then
-            local tactic = { guard = danger.guard(target), swing = persona.swing or 0, pace = persona.pace or 0 }
+            local tactic = fight.plan(snap, facts, target, danger.guard(target))
             local event  = brain:attack(bot, target.oid, tactic)
             if event.type == "KILLED" then
-                danger.learn(brain, bot, target, event.count)
                 goal.killed(target)
             elseif event.type == "LOST" or event.type == "UNREACHABLE" then
                 skipped[target.oid] = true
