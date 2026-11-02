@@ -423,6 +423,7 @@ table StartCastleSiege {
   host: uint;
   divine_beast: ubyte;
   siege_key: ulong;
+  announcement: string;
 }
 
 table EndCastleSiege {

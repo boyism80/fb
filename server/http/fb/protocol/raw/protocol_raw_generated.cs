@@ -6784,25 +6784,35 @@ public struct StartCastleSiege : IFlatbufferObject
   public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public byte DivineBeast { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public ulong SiegeKey { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public string Announcement { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetAnnouncementBytes() { return __p.__vector_as_span<byte>(12, 1); }
+#else
+  public ArraySegment<byte>? GetAnnouncementBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public byte[] GetAnnouncementArray() { return __p.__vector_as_array<byte>(12); }
 
   public static Offset<fb.protocol.@internal.request.raw.StartCastleSiege> CreateStartCastleSiege(FlatBufferBuilder builder,
       uint world = 0,
       uint host = 0,
       byte divine_beast = 0,
-      ulong siege_key = 0) {
-    builder.StartTable(4);
+      ulong siege_key = 0,
+      StringOffset announcementOffset = default(StringOffset)) {
+    builder.StartTable(5);
     StartCastleSiege.AddSiegeKey(builder, siege_key);
+    StartCastleSiege.AddAnnouncement(builder, announcementOffset);
     StartCastleSiege.AddHost(builder, host);
     StartCastleSiege.AddWorld(builder, world);
     StartCastleSiege.AddDivineBeast(builder, divine_beast);
     return StartCastleSiege.EndStartCastleSiege(builder);
   }
 
-  public static void StartStartCastleSiege(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartStartCastleSiege(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
   public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(2, divineBeast, 0); }
   public static void AddSiegeKey(FlatBufferBuilder builder, ulong siegeKey) { builder.AddUlong(3, siegeKey, 0); }
+  public static void AddAnnouncement(FlatBufferBuilder builder, StringOffset announcementOffset) { builder.AddOffset(4, announcementOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.request.raw.StartCastleSiege> EndStartCastleSiege(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.StartCastleSiege>(o);
@@ -6819,6 +6829,7 @@ static public class StartCastleSiegeVerify
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*DivineBeast*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 10 /*SiegeKey*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyString(tablePos, 12 /*Announcement*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

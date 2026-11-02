@@ -9660,7 +9660,8 @@ struct StartCastleSiege FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 4,
     VT_HOST = 6,
     VT_DIVINE_BEAST = 8,
-    VT_SIEGE_KEY = 10
+    VT_SIEGE_KEY = 10,
+    VT_ANNOUNCEMENT = 12
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -9674,12 +9675,17 @@ struct StartCastleSiege FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t siege_key() const {
     return GetField<uint64_t>(VT_SIEGE_KEY, 0);
   }
+  const ::flatbuffers::String *announcement() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ANNOUNCEMENT);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
            VerifyField<uint64_t>(verifier, VT_SIEGE_KEY, 8) &&
+           VerifyOffset(verifier, VT_ANNOUNCEMENT) &&
+           verifier.VerifyString(announcement()) &&
            verifier.EndTable();
   }
 };
@@ -9700,6 +9706,9 @@ struct StartCastleSiegeBuilder {
   void add_siege_key(uint64_t siege_key) {
     fbb_.AddElement<uint64_t>(StartCastleSiege::VT_SIEGE_KEY, siege_key, 0);
   }
+  void add_announcement(::flatbuffers::Offset<::flatbuffers::String> announcement) {
+    fbb_.AddOffset(StartCastleSiege::VT_ANNOUNCEMENT, announcement);
+  }
   explicit StartCastleSiegeBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -9716,13 +9725,32 @@ inline ::flatbuffers::Offset<StartCastleSiege> CreateStartCastleSiege(
     uint32_t world = 0,
     uint32_t host = 0,
     uint8_t divine_beast = 0,
-    uint64_t siege_key = 0) {
+    uint64_t siege_key = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> announcement = 0) {
   StartCastleSiegeBuilder builder_(_fbb);
   builder_.add_siege_key(siege_key);
+  builder_.add_announcement(announcement);
   builder_.add_host(host);
   builder_.add_world(world);
   builder_.add_divine_beast(divine_beast);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<StartCastleSiege> CreateStartCastleSiegeDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t host = 0,
+    uint8_t divine_beast = 0,
+    uint64_t siege_key = 0,
+    const char *announcement = nullptr) {
+  auto announcement__ = announcement ? _fbb.CreateString(announcement) : 0;
+  return fb::protocol::internal::request::raw::CreateStartCastleSiege(
+      _fbb,
+      world,
+      host,
+      divine_beast,
+      siege_key,
+      announcement__);
 }
 
 struct EndCastleSiege FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

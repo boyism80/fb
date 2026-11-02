@@ -124,6 +124,7 @@ int builtin::castle::builtin_start_siege(lua_State* L)
         return 0;
 
     auto siege_key    = static_cast<uint64_t>(lua->tointeger(2));
+    auto announcement = lua->tostring(3);
     auto divine_beast = castle->divine_beast();
     auto result       = std::make_shared<fb::game::castle::siege_start_result>();
     auto error        = std::make_shared<std::optional<std::string>>();
@@ -132,7 +133,7 @@ int builtin::castle::builtin_start_siege(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            *result = co_await server.castles.start_siege(divine_beast, siege_key);
+            *result = co_await server.castles.start_siege(divine_beast, siege_key, announcement);
         }
         catch (std::exception& e)
         {

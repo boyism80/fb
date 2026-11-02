@@ -53,13 +53,13 @@ local function start_siege(divine_beast, siege_key)
         return false, string.format('%s 성 정보를 찾을 수 없습니다.', info.name)
     end
 
-    local started, active, remaining = castle:start_siege(siege_key or (now() * 1000 + math.random(0, 999)))
+    local announcement = string.format('[정보] %s의성 공성전이 시작되었습니다.', info.name)
+    local started, active, remaining = castle:start_siege(siege_key or (now() * 1000 + math.random(0, 999)), announcement)
     if started == nil then
         return false, active
     end
 
     if started then
-        broadcast(string.format('[정보] %s의성 공성전이 시작되었습니다.', info.name), MESSAGE_TYPE.WORLD)
         return true, remaining
     end
 

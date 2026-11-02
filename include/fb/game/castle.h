@@ -94,7 +94,7 @@ public:
     // clang-format off
     async::task<void> load_all();
     async::task<void> on_updated(const fb::protocol::internal::response::UpdatedCastle& resp);
-    async::task<castle::siege_start_result> start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, uint64_t siege_key);
+    async::task<castle::siege_start_result> start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, uint64_t siege_key, std::string announcement);
     async::task<bool> finish_siege(fb::model::enum_value::DIVINE_BEAST divine_beast);
     async::task<std::pair<castle::siege_end_result, std::optional<uint32_t>>> end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, const std::optional<uint32_t>& winner_clan_id);
     // clang-format on

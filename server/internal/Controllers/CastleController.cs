@@ -172,6 +172,16 @@ namespace Internal.Controllers
 
                 var response = Updated(request.Host, castle, true);
                 await _rabbitMqService.NotifySavedAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
+                if (string.IsNullOrEmpty(request.Announcement) == false)
+                {
+                    await _rabbitMqService.NotifySavedAsync(new Response.Broadcast
+                    {
+                        Host = uint.MaxValue,
+                        Message = request.Announcement,
+                        Type = (byte)MessageType.World,
+                        Error = (uint)ErrorCode.None
+                    }, AmqpRoute.Exchange, AmqpRoute.Home("global", world));
+                }
                 return response;
             }
             catch (Exception)

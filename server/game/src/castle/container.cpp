@@ -119,7 +119,8 @@ void castle::container::on_owner_changed(fb::model::enum_value::DIVINE_BEAST div
 }
 
 async::task<castle::siege_start_result> castle::container::start_siege(fb::model::enum_value::DIVINE_BEAST divine_beast,
-                                                                       uint64_t                            siege_key)
+                                                                       uint64_t                            siege_key,
+                                                                       std::string                         announcement)
 {
     auto world = fb::config<std::optional<uint32_t>>("world");
     if (!world)
@@ -135,7 +136,8 @@ async::task<castle::siege_start_result> castle::container::start_siege(fb::model
             fb::protocol::internal::request::StartCastleSiege{*world,
                                                               fb::config<uint32_t>("id"),
                                                               static_cast<uint8_t>(id),
-                                                              siege_key});
+                                                              siege_key,
+                                                              announcement});
     }
     catch (const fb::http_error& e)
     {
