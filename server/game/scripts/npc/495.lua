@@ -72,10 +72,18 @@ return {
             local rank = current_rank()
             property("surviverun_rank", rank + 1)
             local prize_name = prize_for(rank)
-            if me:mkitem(prize_name, 1) == nil then
-                if property("surviverun_rank") == rank + 1 then
-                    property("surviverun_rank", rank)
-                end
+            local code = me:exchange(
+                { ['item'] = { ["서바이벌증표"] = 1 } },
+                { ['item'] = { [prize_name] = 1 } }
+            )
+            if code ~= enum.exchange_result.OK and property("surviverun_rank") == rank + 1 then
+                property("surviverun_rank", rank)
+            end
+            if code == enum.exchange_result.LACK_CAPACITY then
+                me:dialog(npc, "소지품이 가득 차서 상품을 드릴 수 없습니다. 소지품을 비우고 다시 말을 걸어 주세요.", { prev = false, next = false })
+                return
+            elseif code == enum.exchange_result.LACK_COST then
+                me:dialog(npc, "[서바이벌증표]가 없으시군요. 상품은 증표와 바꿔 드리고 있어요.", { prev = false, next = false })
             elseif rank ~= shown_rank then
                 me:message(string.format("%d등으로 완주하여 %s을(를) 받았습니다.", rank, prize_name), MESSAGE_TYPE.STATE)
             end
@@ -87,10 +95,6 @@ return {
         end
 
         if map_id == MAP_ID_LOBBY then
-            local game_start = property("survive_game_start")
-            local game_end = property("survive_game_end")
-            local now_ok = (game_start == nil and game_end == nil) or true
-
             if not me:has_items("서바이벌증표", 1) then
                 local sel, list_btn = me:list(npc, "[서바이벌증표]가 없으시군요. 이벤트에 참여하시려면, 서바이벌 증표가 필요해요.", {
                     "네. 하나만 만들어 주세요.",
@@ -135,24 +139,6 @@ return {
                 return
             end
 
-            if not now_ok then
-                local btn = me:dialog(npc, "지금은 이벤트 진행시간이 아닙니다. ", { prev = false, next = true })
-                if btn == DIALOG_RESULT.QUIT then
-                    return
-                end
-                local sel, list_btn = me:list(npc, "퇴장 하시겠습니까?", { "네. 퇴장합니다.", "아니오. 이따가요." }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT then
-                    return
-                end
-                if sel == 1 then
-                    local exit_map = name2map("부여성")
-                    if exit_map then
-                        me:map(exit_map, 70, 140)
-                    end
-                end
-                return
-            end
-
             local sel, list_btn = me:list(npc, "[서바이벌증표]를 가지고 있으시군요. 서바이벌 달리기에 참여하시겠습니까?", {
                 "네. 참여합니다.",
                 "아니오. 이따가요.",
@@ -191,15 +177,6 @@ return {
                     end
                 end
             end
-            return
-        end
-
-        local join_start = property("survive_join_start")
-        local join_end = property("survive_join_end")
-        local in_join = (join_start == nil and join_end == nil) or true
-
-        if not in_join then
-            me:dialog(npc, "현재는 참여 가능한 시간이 아닙니다. 자세한 내용은 공지사항(이벤트)을 참고해 주세요.", { prev = false, next = false })
             return
         end
 
