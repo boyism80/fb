@@ -3083,6 +3083,7 @@ class group
 {
 public:
     inline static constexpr const uint8_t MAX_MEMBER = 8;
+    inline static constexpr const double POET_EXP_BONUS = 0.1;
 
 private:
     group() = default;
@@ -4747,6 +4748,8 @@ inline void const_map<fb::model::const_value::group>(lua_State* lua)
     lua_newtable(lua);
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::group::MAX_MEMBER));
     lua_setfield(lua, -2, "MAX_MEMBER");
+    lua_pushnumber(lua, static_cast<lua_Number>(fb::model::const_value::group::POET_EXP_BONUS));
+    lua_setfield(lua, -2, "POET_EXP_BONUS");
 }
 
 template <>

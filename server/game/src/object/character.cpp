@@ -2358,7 +2358,17 @@ void character::award_exp(uint64_t exp)
     }
     else
     {
-        auto divide_exp = exp / nears.size();
+        auto poet = false;
+        if (nears.size() > 1)
+        {
+            poet = std::any_of(nears.begin(), nears.end(), [](const auto& member) {
+                auto shared_ptr = member.lock();
+                return shared_ptr != nullptr && shared_ptr->cls() == CLASS::POET;
+            });
+        }
+
+        auto bonus      = poet ? static_cast<double>(exp) * fb::model::const_value::group::POET_EXP_BONUS : 0.0;
+        auto divide_exp = static_cast<uint64_t>((static_cast<double>(exp) + bonus) / nears.size());
         for (auto& member : nears)
         {
             auto shared_ptr = member.lock();

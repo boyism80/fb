@@ -1062,6 +1062,7 @@ namespace Fb.Model.ConstValue
     public static class Group
     {
         public const byte MaxMember = 8;
+        public const double PoetExpBonus = 0.1;
     }
 
     public static class Item
