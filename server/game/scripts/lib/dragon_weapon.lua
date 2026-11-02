@@ -2,6 +2,10 @@ local server = require('lib.server')
 
 local M = {}
 
+local REPAIR_PRICE = 50
+local DAMAGED_PREFIX = '[손상]'
+local DAMAGED_REPAIR_RATE = 5
+
 local DRAGON_WEAPON_NAMES = {
     ['용마제일검'] = true,
     ['용마제이검'] = true,
@@ -48,6 +52,20 @@ local DRAGON_WEAPON_NAMES = {
     ['[손상]용겸제칠봉'] = true,
     ['[손상]용겸제팔봉'] = true,
 }
+
+function M.is_dragon_weapon(name)
+    return DRAGON_WEAPON_NAMES[name] == true
+end
+
+function M.repair_price(name)
+    if not M.is_dragon_weapon(name) then
+        return nil
+    elseif name:sub(1, #DAMAGED_PREFIX) == DAMAGED_PREFIX then
+        return REPAIR_PRICE * DAMAGED_REPAIR_RATE
+    else
+        return REPAIR_PRICE
+    end
+end
 
 function M.has_dragon_weapon(me)
     local weapon = me:weapon()

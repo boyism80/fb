@@ -1,4 +1,5 @@
 local enum = require('lib.enum')
+local dragon_weapon = require('lib.dragon_weapon')
 
 local M = {}
 
@@ -226,7 +227,7 @@ function M.repair(me, npc, name)
             return true
         end
 
-        if model:repair_price() == nil then
+        if model:repair_price() == nil or dragon_weapon.is_dragon_weapon(name) then
             npc:chat(string.format('%s 고칠 수 없습니다.', name_with(name)))
             return true
         end
@@ -240,14 +241,14 @@ function M.repair(me, npc, name)
     else
         for slot, item in pairs(me:items()) do
             local model = item:model()
-            if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil and model:durability() > item:durability() then
+            if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) and model:durability() > item:durability() then
                 table.insert(items, item)
             end
         end
 
         for parts, item in pairs(me:equipments()) do
             local model = item:model()
-            if model:repair_price() ~= nil and model:durability() > item:durability() then
+            if model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) and model:durability() > item:durability() then
                 table.insert(items, item)
             end
         end
@@ -787,7 +788,7 @@ function M.repairable_slots(me)
 
     for slot, item in pairs(items) do
         local model = item:model()
-        if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil then
+        if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) then
             local current = item:durability()
             local max = model:durability()
             if current < max then

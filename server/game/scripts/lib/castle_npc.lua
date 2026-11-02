@@ -3,6 +3,7 @@ local npc = require('lib.npc')
 local castle_lib = require('lib.castle')
 local clan_fund = require('lib.clan_fund')
 local enum = require('lib.enum')
+local dragon_weapon = require('lib.dragon_weapon')
 
 local M = {}
 
@@ -409,7 +410,8 @@ function M.repair_dragon_weapon(me, npc_obj)
     end
 
     local name = weapon:model():name()
-    if not name:find('용', 1, true) then
+    local unit_price = dragon_weapon.repair_price(name)
+    if unit_price == nil then
         me:dialog(npc_obj, '용무기만 수리할 수 있다네.', { prev = false, next = false })
         return
     end
@@ -422,7 +424,6 @@ function M.repair_dragon_weapon(me, npc_obj)
         return
     end
 
-    local unit_price = model:repair_price() or 0
     local price = math.floor(unit_price * (max_dur - cur_dur) * 2)
     if price < 1 then
         price = 1
