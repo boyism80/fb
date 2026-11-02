@@ -1379,7 +1379,8 @@ enum class ERROR_CODE
     STORAGE_BOX_EXPIRED = 85, 
     CLAN_CANNOT_KICK_MASTER = 86, 
     BIRTHDAY_LOCKED = 87, 
-    CLAN_MONEY_REMAINS = 88
+    CLAN_MONEY_REMAINS = 88, 
+    BAN_NO_PRIVILEGE = 89
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1475,7 +1476,8 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(std::string_view k)
         { "STORAGE_BOX_EXPIRED", ERROR_CODE::STORAGE_BOX_EXPIRED }, 
         { "CLAN_CANNOT_KICK_MASTER", ERROR_CODE::CLAN_CANNOT_KICK_MASTER }, 
         { "BIRTHDAY_LOCKED", ERROR_CODE::BIRTHDAY_LOCKED }, 
-        { "CLAN_MONEY_REMAINS", ERROR_CODE::CLAN_MONEY_REMAINS }
+        { "CLAN_MONEY_REMAINS", ERROR_CODE::CLAN_MONEY_REMAINS }, 
+        { "BAN_NO_PRIVILEGE", ERROR_CODE::BAN_NO_PRIVILEGE }
     };
 
     auto k_str = std::string(k);
@@ -1579,7 +1581,8 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::STORAGE_BOX_EXPIRED, "STORAGE_BOX_EXPIRED" }, 
         { ERROR_CODE::CLAN_CANNOT_KICK_MASTER, "CLAN_CANNOT_KICK_MASTER" }, 
         { ERROR_CODE::BIRTHDAY_LOCKED, "BIRTHDAY_LOCKED" }, 
-        { ERROR_CODE::CLAN_MONEY_REMAINS, "CLAN_MONEY_REMAINS" }
+        { ERROR_CODE::CLAN_MONEY_REMAINS, "CLAN_MONEY_REMAINS" }, 
+        { ERROR_CODE::BAN_NO_PRIVILEGE, "BAN_NO_PRIVILEGE" }
     };
 
     auto i = enums.find(k);
@@ -3414,6 +3417,9 @@ public:
     inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_CLEARED_TITLE = "거래소 등록 취소(운영)";
     inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_CLEARED_MESSAGE = "운영자가 거래소를 초기화해 {} {}개의 등록이 취소되었습니다.";
     inline static constexpr const char* MESSAGE_MARKETPLACE_LISTING_CLEARED_MESSAGE_WITH_FEE = "운영자가 거래소를 초기화해 {} {}개의 등록이 취소되었습니다. 등록 수수료 {}전이 함께 반환되었습니다.";
+    inline static constexpr const char* MESSAGE_MARKETPLACE_UNAVAILABLE = "거래소에 연결하지 못했습니다. 잠시 뒤 다시 시도하세요.";
+    inline static constexpr const char* MESSAGE_MARKETPLACE_CANCEL_UNCONFIRMED = "거래소 등록 취소 결과를 확인하지 못했습니다. 취소되었다면 아이템이 통합보관함으로 반환되니 잠시 뒤 다시 확인하세요.";
+    inline static constexpr const char* MESSAGE_BAN_NO_PRIVILEGE = "권한이 같거나 높은 운영자는 제재할 수 없습니다.";
     inline static constexpr const char* MESSAGE_EXCEPTION_RIDDING = "말을 타고는 할 수 없습니다.";
     inline static constexpr const char* MESSAGE_EXCEPTION_GHOST = "귀신은 할 수 없습니다.";
     inline static constexpr const char* MESSAGE_EXCEPTION_REQUIRE_CLASS = "직업을 선택해야 합니다.";
@@ -4073,6 +4079,8 @@ inline void enum_map<fb::model::enum_value::ERROR_CODE>(lua_State* lua)
     lua_setfield(lua, -2, "BIRTHDAY_LOCKED");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::CLAN_MONEY_REMAINS));
     lua_setfield(lua, -2, "CLAN_MONEY_REMAINS");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::BAN_NO_PRIVILEGE));
+    lua_setfield(lua, -2, "BAN_NO_PRIVILEGE");
     lua_setglobal(lua, "ERROR_CODE");
 }
 
@@ -5277,6 +5285,12 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_MARKETPLACE_LISTING_CLEARED_MESSAGE");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MARKETPLACE_LISTING_CLEARED_MESSAGE_WITH_FEE).c_str());
     lua_setfield(lua, -2, "MESSAGE_MARKETPLACE_LISTING_CLEARED_MESSAGE_WITH_FEE");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MARKETPLACE_UNAVAILABLE).c_str());
+    lua_setfield(lua, -2, "MESSAGE_MARKETPLACE_UNAVAILABLE");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MARKETPLACE_CANCEL_UNCONFIRMED).c_str());
+    lua_setfield(lua, -2, "MESSAGE_MARKETPLACE_CANCEL_UNCONFIRMED");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_BAN_NO_PRIVILEGE).c_str());
+    lua_setfield(lua, -2, "MESSAGE_BAN_NO_PRIVILEGE");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_EXCEPTION_RIDDING).c_str());
     lua_setfield(lua, -2, "MESSAGE_EXCEPTION_RIDDING");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_EXCEPTION_GHOST).c_str());

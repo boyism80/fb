@@ -548,7 +548,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "BIRTHDAY_LOCKED")]
         BirthdayLocked = 87, 
         [EnumMember(Value = "CLAN_MONEY_REMAINS")]
-        ClanMoneyRemains = 88
+        ClanMoneyRemains = 88, 
+        [EnumMember(Value = "BAN_NO_PRIVILEGE")]
+        BanNoPrivilege = 89
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1340,6 +1342,9 @@ namespace Fb.Model.ConstValue
         public const string MessageMarketplaceListingClearedTitle = "거래소 등록 취소(운영)";
         public const string MessageMarketplaceListingClearedMessage = "운영자가 거래소를 초기화해 {} {}개의 등록이 취소되었습니다.";
         public const string MessageMarketplaceListingClearedMessageWithFee = "운영자가 거래소를 초기화해 {} {}개의 등록이 취소되었습니다. 등록 수수료 {}전이 함께 반환되었습니다.";
+        public const string MessageMarketplaceUnavailable = "거래소에 연결하지 못했습니다. 잠시 뒤 다시 시도하세요.";
+        public const string MessageMarketplaceCancelUnconfirmed = "거래소 등록 취소 결과를 확인하지 못했습니다. 취소되었다면 아이템이 통합보관함으로 반환되니 잠시 뒤 다시 확인하세요.";
+        public const string MessageBanNoPrivilege = "권한이 같거나 높은 운영자는 제재할 수 없습니다.";
         public const string MessageExceptionRidding = "말을 타고는 할 수 없습니다.";
         public const string MessageExceptionGhost = "귀신은 할 수 없습니다.";
         public const string MessageExceptionRequireClass = "직업을 선택해야 합니다.";
