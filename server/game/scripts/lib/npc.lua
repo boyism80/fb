@@ -1422,7 +1422,9 @@ function M.basic_class(me, npc, class, spells)
                 elseif item:count() < 10 then
                     goto NPC_BASIC_CLASS_STOP
                 else
-                    me:rmitem('도토리', 10)
+                    if not me:rmitem('도토리', 10) then
+                        goto NPC_BASIC_CLASS_STOP
+                    end
                     me:class(class)
                     if me:dialog(npc, '자네는 이제 ' .. class_name .. '으로써의 끝없는 길을 가게 되었네.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                         return

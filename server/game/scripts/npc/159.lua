@@ -139,8 +139,11 @@ return {
             me:dialog(npc, '뇌진도가 없지 않은가?', { prev = false, next = false })
             return
         end
+        if not me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '뇌진도가 없지 않은가?', { prev = false, next = false })
+            return
+        end
         q:step(2)
-        me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE)
         me:push_achievement(ACHIEVEMENT_RABBIT_CATCH, '토깽이를 생포하자.', 7, 1)
         ::NPC_159_0005::
         btn = me:dialog(npc, '그 토끼가 출현하는 곳은 다름 아닌 한두고개라네.. 나도 한두고개에서 깊숙히 안들어가봐서 깊숙한 곳에서도 출현할지 어떨지는 모르겠네만',

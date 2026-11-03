@@ -20,7 +20,10 @@ return {
             me:dialog(npc, '소환에 필요한 재료가 부족합니다.', { prev = false, next = false })
             return
         end
-        me:rmitem(items, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem(items, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '소환에 필요한 재료가 부족합니다.', { prev = false, next = false })
+            return
+        end
         local x, y = npc:position()
         npc:destroy()
         me:spawn_mob('파괴왕', x, y, false)

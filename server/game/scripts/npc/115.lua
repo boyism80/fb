@@ -71,7 +71,10 @@ local function cultural_property_quest(me, npc)
             me:dialog(npc, name_with(item_name, '이', '가') .. ' 없는데?', { prev = false, next = false })
             return
         end
-        me:rmitem(item_name, 1, ITEM_DELETE_TYPE.GIVE)
+        if not me:rmitem(item_name, 1, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, name_with(item_name, '이', '가') .. ' 없는데?', { prev = false, next = false })
+            return
+        end
         q:inc_progress(1)
         me:push_achievement(33, string.format('문화재보호공무원에게 토템을 %d개 가져다 주었다.', q:progress()), 7, 1)
         me:dialog(npc, '수고했네. 계속 힘내주게.', { prev = false, next = false })

@@ -337,7 +337,9 @@ function M.greatwall_repair_on_move(me)
         return
     end
 
-    me:rmitem('벽돌', 1, ITEM_DELETE_TYPE.GIVE)
+    if not me:rmitem('벽돌', 1, ITEM_DELETE_TYPE.GIVE) then
+        return
+    end
     if math.random(1, 100) <= 70 then
         quest:inc_progress(1)
         me:push_achievement(GREATWALL_ACHIEVEMENT_ID, string.format('만리장성을 %d번 고치다.', quest:progress()), 7, 1)
@@ -721,7 +723,7 @@ function M.manrihyang_seed_on_move(me)
         return
     end
 
-    if me:rmitem(ITEM_SEED, 1, ITEM_DELETE_TYPE.GIVE) == nil then
+    if not me:rmitem(ITEM_SEED, 1, ITEM_DELETE_TYPE.GIVE) then
         return
     end
 

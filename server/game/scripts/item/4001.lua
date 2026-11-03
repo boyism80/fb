@@ -8,9 +8,11 @@ return {
             return
         end
 
+        if not me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE) then
+            return
+        end
         local x, y = me:position()
         front:position(x, y)
-        me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
     end,
 
     -- on_deactivated = function(me, item)
