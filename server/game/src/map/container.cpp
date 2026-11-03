@@ -645,29 +645,39 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
         auto inst = this->find(dest, session->slot());
         if (inst == nullptr)
             inst = this->create_instance(dest, session->slot());
-        if (inst != nullptr || cross_server)
+        if (inst != nullptr)
             return inst;
+        if (cross_server)
+            throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_UNAVAILABLE));
     }
     else if (cross_server)
     {
-        return user ? nullptr : dest;
+        if (user)
+            throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_NEED_MATCH));
+        return dest;
     }
 
     auto source = dest;
+    auto routed = source;
     switch (source->model().instance_rule)
     {
-    case fb::model::enum_value::INSTANCE_RULE_TYPE::NONE:
-        return source;
-
     case fb::model::enum_value::INSTANCE_RULE_TYPE::CAPACITY:
-        return this->choice_by_capacity(source);
+        routed = this->choice_by_capacity(source);
+        break;
 
     case fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP:
-        return this->choice_by_group(ch, source);
+        if (ch.group.id().has_value() == false)
+            throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_NEED_GROUP));
+        routed = this->choice_by_group(ch, source);
+        break;
 
     default:
-        return source;
+        break;
     }
+
+    if (routed == nullptr)
+        throw std::runtime_error(_TEXT(MESSAGE_MAP_ENTRY_UNAVAILABLE));
+    return routed;
 }
 
 async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& map)

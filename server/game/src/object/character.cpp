@@ -219,10 +219,14 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     auto instance_rule = options.skip_instance_rule == false || (cross_server && this->role() == ROLE::USER);
     if (map != nullptr && this->_map != map && instance_rule)
     {
-        auto routed = this->server.maps.choice_entry(*this, map);
-        if (routed == nullptr)
+        auto routed = std::shared_ptr<fb::game::map>();
+        try
         {
-            this->listener.on_message(*this, "그룹에 가입해야 입장할 수 있습니다.", MESSAGE_TYPE::STATE);
+            routed = this->server.maps.choice_entry(*this, map);
+        }
+        catch (std::exception& e)
+        {
+            this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
             co_return false;
         }
         map = routed;
