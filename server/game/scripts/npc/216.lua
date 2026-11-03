@@ -92,6 +92,9 @@ return {
 
         local current = q:progress()
         local paid = math.min(current, progress)
+        if selected == 2 then
+            paid = current
+        end
         money = paid * REWARD_PER_BAG
         if money > me:money_free_space() then
             me:dialog(npc, '돈이 너무 많아 보상을 줄 수가 없네.', { prev = false, next = false })
