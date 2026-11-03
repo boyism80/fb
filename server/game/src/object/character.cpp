@@ -2892,7 +2892,8 @@ async::task<void> character::death_loss()
     if (table::ability->contains(cls) && table::ability[cls].contains(level) && table::ability[cls].contains(level - 1))
     {
         auto penalty = uint64_t(table::ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
-        auto gained  = this->exp() - table::ability->stacked_exp(cls, level - 1);
+        auto base    = table::ability->stacked_exp(cls, level - 1);
+        auto gained  = this->exp() > base ? this->exp() - base : uint64_t{0};
 
         penalty = std::min(gained, penalty);
         if (penalty > 0)
