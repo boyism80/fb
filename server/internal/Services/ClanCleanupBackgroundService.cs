@@ -2,6 +2,7 @@ using Dapper;
 using Http.Model;
 using Http.Service;
 using Protocol = fb.protocol.@internal;
+using Response = fb.protocol.@internal.response;
 
 namespace Internal.Services
 {
@@ -12,15 +13,18 @@ namespace Internal.Services
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
+        private readonly RabbitMqService _rabbitMqService;
         private readonly ILogger<ClanCleanupBackgroundService> _logger;
 
         public ClanCleanupBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
+            RabbitMqService rabbitMqService,
             ILogger<ClanCleanupBackgroundService> logger)
         {
             _scopeFactory = scopeFactory;
             _redisService = redisService;
+            _rabbitMqService = rabbitMqService;
             _logger = logger;
         }
 
@@ -108,13 +112,18 @@ namespace Internal.Services
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
             var distributedLock = scope.ServiceProvider.GetRequiredService<RedisDistributedLockService>();
 
-            var named = new List<uint>();
+            var names = new Dictionary<uint, string>();
             await using (var unified = dbContext.GetUnifiedConnection())
             {
-                named.AddRange(await unified.QueryAsync<uint>(
-                    "SELECT `id` FROM `clan_name` WHERE `world` = @world",
-                    new { world }));
+                foreach (var row in await unified.QueryAsync<(uint Id, string Name)>(
+                    "SELECT `id`, `name` FROM `clan_name` WHERE `world` = @world",
+                    new { world }))
+                {
+                    names[row.Id] = row.Name;
+                }
             }
+
+            var named = names.Keys.ToList();
 
             var existing = new HashSet<uint>();
             foreach (var (conn, idList) in dbContext.GetShardConnections(world, named))
@@ -136,6 +145,16 @@ namespace Internal.Services
                     {
                         continue;
                     }
+
+                    await _rabbitMqService.NotifySavedAsync(new Response.DestroyClan
+                    {
+                        Host = uint.MaxValue,
+                        ClanId = id,
+                        ClanName = names[id],
+                        Actor = new Protocol.CharacterRef { Uid = 0, Name = string.Empty },
+                        Revision = ulong.MaxValue,
+                        Error = (uint)Fb.Model.EnumValue.ErrorCode.None
+                    }, "clan", world);
 
                     await using var unified = dbContext.GetUnifiedConnection();
                     await unified.ExecuteAsync("USP_CLAN_NAME_DELETE", new

@@ -14,14 +14,17 @@ namespace Internal.Services
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly ILogger<ClanService> _logger;
 
         public ClanService(DbContext dbContext,
             RabbitMqService rabbitMqService,
-            RedisDistributedLockService distributedLock)
+            RedisDistributedLockService distributedLock,
+            ILogger<ClanService> logger)
         {
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
             _distributedLock = distributedLock;
+            _logger = logger;
         }
 
         public sealed class ClanLocks : IAsyncDisposable
@@ -158,14 +161,6 @@ namespace Internal.Services
                 _dbContext.Clan.Delete(world, clan.Id);
                 await _dbContext.Clan.SaveChangesAsync();
 
-                await using (var db = _dbContext.GetUnifiedConnection())
-                {
-                    await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
-                    {
-                        id = clan.Id
-                    }, commandType: System.Data.CommandType.StoredProcedure);
-                }
-
                 var response = new Response.DestroyClan
                 {
                     Host = host,
@@ -217,6 +212,19 @@ namespace Internal.Services
                         OwnerClanId = null,
                         Error = (uint)ErrorCode.None
                     }, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
+                }
+
+                try
+                {
+                    await using var db = _dbContext.GetUnifiedConnection();
+                    await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
+                    {
+                        id = clan.Id
+                    }, commandType: System.Data.CommandType.StoredProcedure);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Failed to remove the name of destroyed clan {Id} in world {World}", clan.Id, world);
                 }
                 return response;
             }
