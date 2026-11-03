@@ -147,17 +147,10 @@ local function run_spirit_summon_shark_weapon(me, npc)
     end
 
     if step == 2 then
-        local items = { '게집게', '게등껍질', '문어다리', '해마꼬리', '산삼' }
-        for _, name in ipairs(items) do
-            if not me:has_items(name, 1) then
-                me:dialog(npc, '보약의 재료를 구하지 못한건가? 용왕님께 지어드렸던 보약의 재료와 산삼 한뿌리 가져오시게나.', { prev = false, next = false })
-                return
-            end
-        end
-        for _, name in ipairs(items) do
-            if not me:rmitem(name, 1, ITEM_DELETE_TYPE.GIVE) then
-                return
-            end
+        local items = { ['게집게'] = 1, ['게등껍질'] = 1, ['문어다리'] = 1, ['해마꼬리'] = 1, ['산삼'] = 1 }
+        if not me:rmitem(items, ITEM_DELETE_TYPE.GIVE) then
+            me:dialog(npc, '보약의 재료를 구하지 못한건가? 용왕님께 지어드렸던 보약의 재료와 산삼 한뿌리 가져오시게나.', { prev = false, next = false })
+            return
         end
         q:step(3)
         me:push_achievement(24, '한빙장의 부탁을 들어주었다.', 7, 1)
