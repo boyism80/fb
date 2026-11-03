@@ -124,6 +124,23 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     return equipment;
 }
 
+bool items::warm(const fb::game::item& item) const
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return false;
+
+    auto death_uid = item.death_uid();
+    if (death_uid.has_value() == false || death_uid.value() == owner->id)
+        return false;
+
+    auto& drop_time = item.dropped_time();
+    if (drop_time.has_value() == false)
+        return false;
+
+    return owner->server.now() - drop_time.value() < fb::model::const_value::death_penalty::warmth_time;
+}
+
 async::task<uint8_t> items::add(std::shared_ptr<item> item)
 {
     auto&& result = co_await this->add(std::vector<std::shared_ptr<fb::game::item>>{item});
@@ -141,25 +158,19 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
 
     auto indices = std::vector<uint8_t>();
     auto updates = std::unordered_map<uint8_t, std::shared_ptr<item>>();
+    auto warned  = false;
 
     for (auto& item : items)
     {
         if (item == nullptr)
             continue;
 
-        auto death_uid = item->death_uid();
-        if (death_uid.has_value() && death_uid.value() != owner->id)
+        if (this->warm(*item))
         {
-            auto& drop_time = item->dropped_time();
-            if (drop_time.has_value())
-            {
-                auto diff = owner->server.now() - drop_time.value();
-                if (diff < fb::model::const_value::death_penalty::warmth_time)
-                {
-                    owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
-                    break;
-                }
-            }
+            if (warned == false)
+                owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
+            warned = true;
+            continue;
         }
 
         auto& model = item->model();
@@ -1305,7 +1316,10 @@ async::task<void> items::loot(bool boost)
         }
         else
         {
-            std::ignore = co_await this->add(belows.front());
+            auto found  = std::find_if(belows.begin(), belows.end(), [this](const auto& below) {
+                return this->warm(*below) == false;
+            });
+            std::ignore = co_await this->add(found != belows.end() ? *found : belows.front());
         }
     }
     catch (std::exception& e)
