@@ -279,6 +279,7 @@ namespace Http.Reepository
             var existing = await GetByExternalRef(world, externalRef);
             if (existing != null)
             {
+                await EvictBoxes(world, existing.User);
                 return existing;
             }
 
@@ -318,10 +319,16 @@ namespace Http.Reepository
                 UpdatedDate = DateTime.UtcNow
             };
 
-            Set(world, box);
-            await SaveChangesAsync();
-
+            await EvictBoxes(world, user);
             return box;
+        }
+
+        private async Task EvictBoxes(uint world, uint? user)
+        {
+            if (await Evict(world, new SystemStorageBoxKey { Id = 0, User = user }) == false)
+            {
+                throw new InvalidOperationException("System storage boxes still have pending write-backs.");
+            }
         }
     }
 }

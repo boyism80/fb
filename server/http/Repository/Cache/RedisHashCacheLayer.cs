@@ -107,6 +107,18 @@ namespace Http.Reepository.Cache
             return 0
             """;
 
+        private static readonly string EvictHashKeyScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+
+            if redis.call('HEXISTS', COUNT_REFS, CACHE_KEY) == 1 then
+                return 0
+            end
+
+            redis.call('DEL', CACHE_KEY)
+            return 1
+            """;
+
         private static readonly string RemoveFieldsPendingWriteBackScript = """
             local CACHE_KEY = KEYS[1]
             local COUNT_REFS = KEYS[2]
@@ -188,6 +200,20 @@ namespace Http.Reepository.Cache
                 [redisKey, new RedisKey(Const.ReferenceCountKey)]);
 
             return (RedisCacheLookupStatus)int.Parse(result.ToString());
+        }
+
+        public async Task<bool> EvictAsync(Service.Redis redis, RedisKey cacheKey)
+        {
+            if (redis == null)
+            {
+                return true;
+            }
+
+            var result = await redis.EvalAsync(
+                EvictHashKeyScript,
+                [cacheKey, new RedisKey(Const.ReferenceCountKey)]);
+
+            return int.Parse(result.ToString()) != 0;
         }
 
         public async Task<bool> WriteBackAsync(Service.Redis redis, RedisKey cacheKey, IEnumerable<TModel> values)

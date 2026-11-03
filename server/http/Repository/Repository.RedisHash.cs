@@ -178,6 +178,20 @@ namespace Http.Reepository
             return result;
         }
 
+        protected async Task<bool> Evict(uint world, TKey key)
+        {
+            await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
+
+            var redisKey = key.GetRedisKey();
+            if (await _redis.EvictAsync(_redis.GetConnection(world, key.GetHash()), redisKey) == false)
+            {
+                return false;
+            }
+
+            _local.Remove(redisKey);
+            return true;
+        }
+
         public void Delete(uint world, IReadOnlyList<TModel> values)
         {
             if (values == null || values.Count == 0)
