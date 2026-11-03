@@ -62,22 +62,26 @@ void internal_info<V>::serialize_header(fb::stream_writer<big_endian>& writer) c
             sstream << "배우자: " << marriage.spouse_name << std::endl;
 
         auto& group_id = this->ch.group.id();
+        auto  shown    = false;
         if (group_id.has_value())
         {
-            auto  guard = this->ch.server.groups.enter_read(group_id.value());
-            auto& group = guard.value();
-            sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
-            auto master_name = group->master();
-            for (auto& member : group->members())
+            auto guard = this->ch.server.groups.try_enter_read(group_id.value());
+            if (guard.has_value() && guard->value() != nullptr)
             {
-                if (member != master_name)
-                    sstream << "    " << member << std::endl;
+                auto& group = guard->value();
+                sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
+                auto master_name = group->master();
+                for (auto& member : group->members())
+                {
+                    if (member != master_name)
+                        sstream << "    " << member << std::endl;
+                }
+                shown = true;
             }
         }
-        else
-        {
+
+        if (shown == false)
             sstream << _TEXT(MESSAGE_GROUP_NONE);
-        }
         writer.template write<std::string>(sstream.str());
     }
 

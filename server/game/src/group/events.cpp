@@ -392,9 +392,9 @@ async::task<void> group::container::reset_member(character& ch, std::string mess
 {
     ch.assert_thread();
 
-    co_await ch.matchmaker.dequeue(matchmaker::initiator::SERVER);
     ch.group.reset();
     this->clear_portraits(ch);
+    co_await ch.matchmaker.dequeue(matchmaker::initiator::SERVER);
     ch.message(message, MESSAGE_TYPE::STATE);
 
     auto map = ch.map();

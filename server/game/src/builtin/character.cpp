@@ -2561,8 +2561,9 @@ int builtin::character::builtin_group(lua_State* L)
             auto group_id = shared->group.id();
             if (group_id.has_value())
             {
-                auto guard    = server.groups.enter_read(group_id.value());
-                *group_holder = guard.value();
+                auto guard = server.groups.try_enter_read(group_id.value());
+                if (guard.has_value())
+                    *group_holder = guard->value();
             }
         };
         builder.resume = [=]() -> async::task<int> {
@@ -2593,8 +2594,9 @@ int builtin::character::builtin_group(lua_State* L)
             *group_id  = gid;
             if (gid.has_value())
             {
-                auto guard    = server.groups.enter_read(gid.value());
-                *group_holder = guard.value();
+                auto guard = server.groups.try_enter_read(gid.value());
+                if (guard.has_value())
+                    *group_holder = guard->value();
             }
             co_return;
         };
