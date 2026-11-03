@@ -71,6 +71,11 @@ local function run_helmet_craft(me, npc)
 
     local seolbim = pick_seolbim(me)
     local chilseok = pick_chilseok(me)
+    if seolbim == nil or chilseok == nil then
+        me:dialog(npc, "세시풍습 아이템 12가지를 모두 모아 오셔야 합니다.", { prev = false, next = false })
+        return
+    end
+
     local cost = {
         [seolbim] = 1,
         [chilseok] = 1,
