@@ -2,7 +2,9 @@
 
 #include <random.h>
 
+#include <algorithm>
 #include <cctype>
+#include <cerrno>
 #include <codecvt>
 #include <cstddef>
 #include <cstdint>
@@ -45,7 +47,29 @@ std::string fb::cp949(std::string_view utf8)
     char*  dst      = dst_vec.data();
 
     iconv_t cd = iconv_open("CP949", "UTF-8");
-    iconv(cd, &src, &src_size, &dst, &dst_size);
+    while (src_size > 0)
+    {
+        if (iconv(cd, &src, &src_size, &dst, &dst_size) != static_cast<size_t>(-1))
+            break;
+
+        if (errno != EILSEQ && errno != EINVAL)
+            break;
+
+        auto lead = static_cast<uint8_t>(*src);
+        auto skip = size_t{1};
+        if (lead >= 0xF0)
+            skip = 4;
+        else if (lead >= 0xE0)
+            skip = 3;
+        else if (lead >= 0xC0)
+            skip = 2;
+
+        skip      = std::min(skip, src_size);
+        src      += skip;
+        src_size -= skip;
+        *dst++    = '?';
+        dst_size--;
+    }
     iconv_close(cd);
 
     return std::string(dst_vec.data());
@@ -78,7 +102,19 @@ std::string fb::utf8(std::string_view cp949)
     char*  dst      = dst_vec.data();
 
     iconv_t cd = iconv_open("UTF-8", "CP949");
-    iconv(cd, &src, &src_size, &dst, &dst_size);
+    while (src_size > 0)
+    {
+        if (iconv(cd, &src, &src_size, &dst, &dst_size) != static_cast<size_t>(-1))
+            break;
+
+        if (errno != EILSEQ && errno != EINVAL)
+            break;
+
+        src++;
+        src_size--;
+        *dst++ = '?';
+        dst_size--;
+    }
     iconv_close(cd);
 
     return std::string(dst_vec.data());
