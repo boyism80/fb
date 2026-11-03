@@ -269,7 +269,7 @@ namespace Internal.Controllers
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            await _logService.WriteAsync("account_create", new
+            await _logService.WriteAsync("account_init", new
             {
                 account_name = request.Name,
                 uid = request.Uid

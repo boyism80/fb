@@ -204,7 +204,7 @@ namespace Internal.Controllers
                     var uid = await _dbContext.Character.GetCharacterId(world, request.Name);
                     if (uid.HasValue)
                     {
-                        await _logService.WriteAsync("game_server_entry", new
+                        await _logService.WriteAsync("game_server_transfer", new
                         {
                             account_name = request.Name,
                             uid = uid.Value,
