@@ -32,7 +32,7 @@ function M.revive(me, npc, discourteous)
         end
         npc:chat('영은 생을 얻을지어니...')
         me:state(STATE.NORMAL)
-        me:hp(50)
+        me:hp(CONST.DEATH_PENALTY.REVIVE_HP)
     end
     return true
 end
@@ -1682,7 +1682,7 @@ function M.revive_oath(me, npc)
         return
     end
     me:state(STATE.NORMAL)
-    me:hp(50)
+    me:hp(CONST.DEATH_PENALTY.REVIVE_HP)
 end
 
 function M.boss_challenge_gate(me, npc)

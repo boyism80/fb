@@ -3071,6 +3071,7 @@ public:
     inline static constexpr const double exp = 0.05;
     inline static constexpr const double durability = 0.01;
     inline static const timespan& warmth_time = timespan("00.00:30:00");
+    inline static constexpr const uint32_t revive_hp = 50;
 
 private:
     death_penalty() = default;
@@ -4743,6 +4744,8 @@ inline void const_map<fb::model::const_value::death_penalty>(lua_State* lua)
     lua_setfield(lua, -2, "DURABILITY");
     lua_pushstring(lua, fb::model::const_value::death_penalty::warmth_time.to_string().c_str());
     lua_setfield(lua, -2, "WARMTH_TIME");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::death_penalty::revive_hp));
+    lua_setfield(lua, -2, "REVIVE_HP");
 }
 
 template <>

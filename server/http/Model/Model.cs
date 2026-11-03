@@ -1057,6 +1057,7 @@ namespace Fb.Model.ConstValue
         public const double Exp = 0.05;
         public const double Durability = 0.01;
         public static readonly TimeSpan WarmthTime = TimeSpan.Parse("00:30:00");
+        public const uint ReviveHp = 50;
     }
 
     public static class Group
