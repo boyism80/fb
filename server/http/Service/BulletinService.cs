@@ -9,8 +9,8 @@ namespace Http.Service
     public class BulletinService
     {
         public const int MaxBatchSize = 100;
-        public const int MaxTitleLength = 64;
-        public const int MaxContentsLength = 256;
+        public const int MaxTitleLength = Fb.Model.ConstValue.Bulletin.TitleLength;
+        public const int MaxContentsLength = Fb.Model.ConstValue.Bulletin.ContentsLength;
 
         private readonly ConcurrentDictionary<(uint World, uint Section), ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
         private readonly ConcurrentDictionary<uint, SemaphoreSlim> _flushSignals = new();

@@ -3041,6 +3041,8 @@ class bulletin
 public:
     inline static constexpr const uint16_t MAX_ID = 32767;
     inline static constexpr const uint16_t RETAIN_COUNT = 31743;
+    inline static constexpr const uint8_t TITLE_LENGTH = 64;
+    inline static constexpr const uint16_t CONTENTS_LENGTH = 256;
 
 private:
     bulletin() = default;
@@ -4708,6 +4710,10 @@ inline void const_map<fb::model::const_value::bulletin>(lua_State* lua)
     lua_setfield(lua, -2, "MAX_ID");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::bulletin::RETAIN_COUNT));
     lua_setfield(lua, -2, "RETAIN_COUNT");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::bulletin::TITLE_LENGTH));
+    lua_setfield(lua, -2, "TITLE_LENGTH");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::bulletin::CONTENTS_LENGTH));
+    lua_setfield(lua, -2, "CONTENTS_LENGTH");
 }
 
 template <>

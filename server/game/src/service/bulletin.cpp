@@ -1,5 +1,6 @@
 #include <fb/game/service/bulletin.h>
 
+#include <fb/encoding.h>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
@@ -123,10 +124,10 @@ service::bulletin::write(character& ch, uint16_t section, std::string_view title
 {
     this->assert_auth(ch, section);
 
-    if (title.length() > 64)
+    if (fb::text_length(title) > fb::model::const_value::bulletin::TITLE_LENGTH)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_TITLE));
 
-    if (contents.length() > 256)
+    if (fb::text_length(contents) > fb::model::const_value::bulletin::CONTENTS_LENGTH)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_CONTENTS));
 
     auto   world = ch.world();

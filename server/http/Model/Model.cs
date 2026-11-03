@@ -1041,6 +1041,8 @@ namespace Fb.Model.ConstValue
     {
         public const ushort MaxId = 32767;
         public const ushort RetainCount = 31743;
+        public const byte TitleLength = 64;
+        public const ushort ContentsLength = 256;
     }
 
     public static class Clan
