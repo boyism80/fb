@@ -7,9 +7,12 @@ local decide   = require("brain.decide")
 local combat   = require("brain.policies.combat")
 local score    = require("brain.policies.score")
 local ground   = require("brain.policies.ground")
+local battle   = require("brain.policies.battle")
+local hunting  = require("brain.data.hunting")
 local query    = require("brain.query")
 local profiles = require("integration.scenarios.brain.state.profiles")
 local resp     = require("integration.response")
+local option   = require("integration.lib.option")
 
 local M = {}
 
@@ -76,11 +79,11 @@ function M.idle(ctx, index)
     end
     local mind = brain.new()
     ctx:bot(index):brain(mind, { seed = 1 })
-    local idle = expect.within(ctx, TIMEOUT, function()
-        local state = mind:state(ctx:bot(index))
-        return state ~= nil and state.reason == "idle"
+    local busy = expect.within(ctx, TIMEOUT, function()
+        local _, tasks = history(mind, ctx:bot(index))
+        return tasks.FIELD ~= nil
     end)
-    return finish(ctx, index, mind, "idle", idle, "idle=" .. tostring(idle))
+    return finish(ctx, index, mind, "idle", busy, "field=" .. tostring(busy))
 end
 
 function M.equip(ctx, index)
@@ -247,6 +250,9 @@ function M.pure(ctx, index)
         habitats = function()
             return { { id = 2, name = "부여왕초보사냥1" } }
         end,
+        reach = function()
+            return setmetatable({}, { __index = function() return true end })
+        end,
         route = function()
             return { cost = 1, dest = 1 }
         end,
@@ -258,6 +264,12 @@ function M.pure(ctx, index)
         end,
         demand = function()
             return 0
+        end,
+        roster = function()
+            return {}
+        end,
+        ally = function()
+            return nil
         end,
     }
     local cases  = {
@@ -705,6 +717,7 @@ local SLOTS          = { "WEAPON", "ARMOR", "HELMET" }
 local PROFILE_TOP    = 5
 local PROFILE_REPEAT = 20
 local PROFILE_SETTLE = 2000
+local PROFILE_MONEY  = 100000
 
 local function dress(ctx, index, profile)
     local bot = ctx:bot(index)
@@ -716,6 +729,7 @@ local function dress(ctx, index, profile)
     bot:chat(string.format("/힘바꾸기 %d", profile.str))
     bot:chat(string.format("/지력바꾸기 %d", profile.int))
     bot:chat(string.format("/민첩바꾸기 %d", profile.dex))
+    bot:chat(string.format("/금전 %d", PROFILE_MONEY))
     bot:set_max_hp_mp(profile.hp, profile.mp)
     bot:set_current_hp_mp(profile.hp, profile.mp)
     bot:learn_spells(profile.spells)
@@ -737,13 +751,8 @@ function M.profiles(ctx, index)
     end
     local passed = true
     for _, profile in ipairs(profiles) do
-        local bot  = dress(ctx, index, profile)
-        local mind = brain.new()
-        bot:brain(mind, { seed = 1, persona = { hunt = 1 } })
-        expect.within(ctx, TIMEOUT, function()
-            return mind:state(ctx:bot(index)) ~= nil
-        end)
-        local current = ctx:bot(index)
+        local current = dress(ctx, index, profile)
+        local mind    = brain.new()
         local snap    = snapshot.take(mind, current)
         local facts   = query.bind(mind, current)
         local ability = score.capability(score.rested(snap), facts)
@@ -774,10 +783,292 @@ function M.profiles(ctx, index)
         end
         log("debug", string.format("[brain:state:profiles] %s decide=%.1fms", profile.name,
             (mind:observe(current).now - started) / PROFILE_REPEAT))
-        expect.release(ctx, index, mind, TIMEOUT)
     end
     log(passed and "debug" or "fatal", string.format("[brain:state:profiles] %s", passed and "SUCCESS" or "FAILED"))
     return passed
+end
+
+local PARTIES = {
+    { "warrior63" }, { "warrior63nogg" }, { "rogue50" }, { "mage60" }, { "mage35" }, { "poet65" }, { "poet50" },
+    { "warrior63", "poet65" }, { "warrior63nogg", "poet65" }, { "rogue50", "poet65" }, { "mage60", "poet65" },
+    { "warrior63", "rogue50", "poet65" }, { "warrior63", "poet50" }, { "rogue50", "poet50" }, { "warrior10", "poet18" },
+    { "rogue20", "poet18" },
+}
+
+local function named(name)
+    for _, mob in pairs(hunting.mobs) do
+        if mob.name == name then
+            return mob
+        end
+    end
+    return nil
+end
+
+function M.parties(ctx, index)
+    if stage(ctx, index) == nil then
+        return false
+    end
+    local snaps = {}
+    local facts = nil
+    local mind  = brain.new()
+    for _, profile in ipairs(profiles) do
+        local current       = dress(ctx, index, profile)
+        snaps[profile.name] = snapshot.take(mind, current)
+        facts               = query.bind(mind, current)
+        local ability       = score.capability(score.rested(snaps[profile.name]), facts)
+        log("debug", string.format(
+            "[brain:party] ability %s single=%.1f melee=%.1f burst=%.0f ehp=%.0f self=%.1f others=%.1f refill=%.1f/%.1f",
+            profile.name, ability.dps.single, ability.dps.melee, ability.burst, ability.ehp, ability.hps.self,
+            ability.hps.others, ability.refill.hp, ability.refill.mp))
+    end
+    local passed = true
+    for _, party in ipairs(PARTIES) do
+        local members = {}
+        local solos   = {}
+        for _, name in ipairs(party) do
+            local snap = snaps[name]
+            table.insert(members, snap)
+            local solo = ground.choose(snap, facts, ground.mode(snap))
+            table.insert(solos, string.format("%s=%s:%.2f", name, solo ~= nil and solo.name or "nil",
+                solo ~= nil and solo.rate or 0))
+        end
+        local best, front = ground.party(members, facts, "SUPPLY")
+        local finish      = best ~= nil and best.floors[#best.floors] or nil
+        passed            = passed and best ~= nil
+        log(best ~= nil and "debug" or "fatal", string.format(
+            "[brain:party] %s best=%s floors=%d rate=%.2f deaths=%.4f/h front=%s margin=%.2f targets=%s solo=%s",
+            table.concat(party, "+"), best ~= nil and best.name or "nil", best ~= nil and #best.floors or 0,
+            best ~= nil and best.rate or 0, best ~= nil and best.deaths * 3600 or 0, party[front],
+            best ~= nil and best.margin or 0, finish ~= nil and table.concat(finish.targets, ",") or "",
+            table.concat(solos, " ")))
+        local mob = finish ~= nil and named(finish.targets[1]) or nil
+        if mob ~= nil then
+            for position, snap in ipairs(members) do
+                local ok, choice = pcall(battle.choose, snap, facts, mob)
+                log("debug", string.format("[brain:party] %s %s vs %s picks %s", table.concat(party, "+"),
+                    party[position], mob.name, ok and choice ~= nil and (choice.kind .. ":" .. choice.key) or
+                    tostring(choice)))
+            end
+        end
+    end
+    log(passed and "debug" or "fatal", string.format("[brain:party] %s", passed and "SUCCESS" or "FAILED"))
+    return passed
+end
+
+local GROUP_WATCH = 180000
+
+local function profiled(name)
+    for _, profile in ipairs(profiles) do
+        if profile.name == name then
+            return profile
+        end
+    end
+    return nil
+end
+
+local function members(text)
+    local names = {}
+    local first = true
+    for line in string.gmatch(text or "", "[^\n]+") do
+        local name = first == false and string.match(line, "^%s+%*?%s*(%S+)%s*$") or nil
+        if name ~= nil then
+            names[name] = true
+        end
+        first = false
+    end
+    return names
+end
+
+local function gather(ctx, count, arrivals)
+    local probe = brain.new()
+    local snaps = {}
+    for slot = 0, count - 1 do
+        table.insert(snaps, snapshot.take(probe, ctx:bot(slot)))
+    end
+    local facts = query.bind(probe, ctx:bot(0))
+    local plan  = ground.party(snaps, facts)
+    if plan == nil then
+        return nil
+    end
+    local floor = plan.floors[1]
+    local spots = facts.spawns(floor.map, floor.targets)
+    local model = id2map(floor.map)
+    if model == nil or #spots == 0 then
+        return nil
+    end
+    for slot = 0, arrivals - 1 do
+        ctx:bot(slot):map_move(model:name(), spots[1].x, spots[1].y)
+        if expect.arrive(ctx, slot, model:name(), TIMEOUT) == false then
+            return nil
+        end
+    end
+    return plan
+end
+
+function M.group(ctx, names, arrivals)
+    local minds = {}
+    for index, name in ipairs(names) do
+        local slot = index - 1
+        if stage(ctx, slot) == nil then
+            return false
+        end
+        dress(ctx, slot, profiled(name))
+        option.set_option(ctx:bot(slot), "GROUP", true, "그룹허가")
+    end
+    local plan = (arrivals or 0) > 0 and gather(ctx, #names, arrivals) or nil
+    if (arrivals or 0) > 0 and plan == nil then
+        log("fatal", string.format("[brain:group] %s FAILED gather", table.concat(names, "+")))
+        return false
+    end
+    for index = 1, #names do
+        local slot   = index - 1
+        minds[index] = brain.new()
+        ctx:bot(slot):brain(minds[index], { seed = index, persona = { hunt = 1 } })
+    end
+    local function linked()
+        for index = 1, #names do
+            local seen = members(minds[index]:observe(ctx:bot(index - 1)).group)
+            for other = 1, #names do
+                if other ~= index and seen[ctx:bot(other - 1):name()] == nil then
+                    return false
+                end
+            end
+        end
+        return true
+    end
+    local formed   = expect.within(ctx, TIMEOUT, linked)
+    local together = nil
+    local split    = 0
+    local died     = 0
+    local ghosts   = {}
+    local broken   = false
+    local watched  = 0
+    while formed and watched < GROUP_WATCH do
+        local maps     = {}
+        local count    = 0
+        local fighting = false
+        for index = 1, #names do
+            local current = ctx:bot(index - 1)
+            if maps[current:map()] == nil then
+                maps[current:map()] = true
+                count               = count + 1
+            end
+            local ghost = current:state() == "GHOST"
+            if ghost and ghosts[index] ~= true then
+                died = died + 1
+            end
+            ghosts[index] = ghost
+            for _, activity in ipairs(minds[index]:activities(current) or {}) do
+                fighting = fighting or activity == "attack" or activity == "cast" or activity == "swing"
+            end
+        end
+        if together == nil and fighting then
+            together = count == 1
+        end
+        if count > 1 then
+            split = split + 1
+        end
+        broken = broken or linked() == false
+        ctx:sleep(1000)
+        watched = watched + 1000
+    end
+    for index = 1, #names do
+        expect.release(ctx, index - 1, minds[index], TIMEOUT)
+    end
+    local passed = formed and together == true and broken == false
+    log(passed and "debug" or "fatal", string.format(
+        "[brain:group] %s %s plan=%s formed=%s together=%s broken=%s died=%d split=%d watched=%ds",
+        table.concat(names, "+"), passed and "SUCCESS" or "FAILED", plan ~= nil and plan.name or "-",
+        tostring(formed), tostring(together), tostring(broken), died, split, watched // 1000))
+    return passed
+end
+
+local MEASURE_WATCH = 120000
+
+function M.measure(ctx, names)
+    local passed = true
+    for _, name in ipairs(names) do
+        if stage(ctx, 0) == nil then
+            return false
+        end
+        local bot     = dress(ctx, 0, profiled(name))
+        local mind    = brain.new()
+        local snap    = snapshot.take(mind, bot)
+        local facts   = query.bind(mind, bot)
+        local planned = ground.choose(snap, facts)
+        local floors  = {}
+        for _, floor in ipairs(planned ~= nil and planned.floors or {}) do
+            floors[floor.map] = true
+        end
+        bot:brain(mind, { seed = 1, persona = { hunt = 1 } })
+        local engaged = expect.within(ctx, TIMEOUT * 2, function()
+            return floors[ctx:bot(0):map()] == true
+        end)
+        if engaged then
+            ctx:bot(0):request(resp.internal_info, protocol.self_info(), function() return true end, TIMEOUT)
+        end
+        local current = ctx:bot(0)
+        local seen    = mind:observe(current)
+        local level   = seen.level
+        local exp     = seen.exp or 0
+        local died    = 0
+        local ghost   = false
+        local watched = 0
+        local stayed  = 0
+        while engaged and watched < MEASURE_WATCH do
+            ctx:sleep(1000)
+            watched = watched + 1000
+            if floors[ctx:bot(0):map()] == true then
+                stayed = stayed + 1
+            end
+            local now = ctx:bot(0):state() == "GHOST"
+            if now and ghost == false then
+                died = died + 1
+            end
+            ghost = now
+        end
+        current    = ctx:bot(0)
+        seen       = mind:observe(current)
+        local gain = (seen.exp or 0) - exp
+        local map  = id2map(current:map())
+        expect.release(ctx, 0, mind, TIMEOUT)
+        passed = passed and engaged
+        log(engaged and "debug" or "fatal", string.format(
+            "[brain:measure] %s planned=%s rate=%.2f measured=%.2f died=%d stayed=%ds level=%d->%d map=%s engaged=%s",
+            name, planned ~= nil and planned.name or "nil", planned ~= nil and planned.rate or 0,
+            gain / (MEASURE_WATCH / 1000), died, stayed, level, seen.level, map ~= nil and map:name() or "?",
+            tostring(engaged)))
+    end
+    return passed
+end
+
+function M.learn(ctx, index, name, spell, materials, money)
+    if stage(ctx, index) == nil then
+        return false
+    end
+    local bot  = dress(ctx, index, profiled(name))
+    local slot = bot:spell_slot(spell)
+    if slot ~= 0xFF then
+        bot:chat(string.format("/마법지우기 %d", slot))
+    end
+    for _, material in ipairs(materials) do
+        for _ = 1, material.split and material.count or 1 do
+            ctx:bot(index):create_item(material.name, material.split and 1 or material.count)
+        end
+    end
+    bot = ctx:bot(index)
+    for _, material in ipairs(materials) do
+        log("debug", string.format("[brain:state:learn] %s held=%d", material.name, bot:item_count(material.name)))
+    end
+    bot:chat(string.format("/금전 %d", money))
+    local mind = brain.new()
+    ctx:bot(index):brain(mind, { seed = 1, persona = { hunt = 1 } })
+    local learned = expect.settle(ctx, index, mind, TIMEOUT * 2, function(current)
+        return current:spell_slot(spell) ~= 0xFF
+    end)
+    local _, tasks = history(mind, ctx:bot(index))
+    return finish(ctx, index, mind, "learn", learned and tasks.LEARN ~= nil,
+        string.format("learned=%s spell=%s", tostring(learned), spell))
 end
 
 return M

@@ -3,6 +3,7 @@ local hunting = require("brain.data.hunting")
 local items   = require("brain.data.items")
 local shops   = require("brain.data.shops")
 local bag     = require("brain.policies.bag")
+local danger  = require("brain.policies.danger")
 local near    = require("brain.policies.near")
 local value   = require("brain.policies.value")
 
@@ -82,8 +83,9 @@ function M.value(snap, query)
         total = total + price
     end
     local move = { kind = ACTION.MOVE, dest = { map = snap.world.map, x = item.x, y = item.y, range = 0 } }
-    return total * worth.exchange - value.cost(snap, query, move, worth) -
-        value.spot(snap, query, { map = snap.world.map, x = item.x, y = item.y }, worth)
+    local peril = value.peril(snap, query, { map = snap.world.map, x = item.x, y = item.y })
+    return (1 - peril) * total * worth.exchange - value.cost(snap, query, move, worth) -
+        peril * danger.loss(snap, query, worth)
 end
 
 return M

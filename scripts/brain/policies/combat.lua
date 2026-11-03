@@ -1,3 +1,4 @@
+local balance = require("brain.data.balance")
 local combat  = require("brain.data.combat")
 local hunting = require("brain.data.hunting")
 local magic   = require("brain.data.spells")
@@ -51,7 +52,12 @@ local function weapon(snap, query)
     return nil
 end
 
+local boosts = setmetatable({}, { __mode = "k" })
+
 function M.buffs(snap)
+    if boosts[snap] ~= nil then
+        return boosts[snap]
+    end
     local result = { rate = 0, hit = 0, dam = 0, phydef = 0, derate = 1, opener = 1, echo = 1, splash = 0, enchant = 0 }
     local ambush = false
     local echoes = {}
@@ -100,39 +106,71 @@ function M.buffs(snap)
     if ambush then
         result.opener = result.opener * magic.back_attack
     end
+    boosts[snap] = result
     return result
 end
 
 function M.debuffs(snap, mob)
     local result = { defense = 0, dot = 0, dot_time = 0, disable = 0, mp = 0, casts = 0 }
-    for _, learned in ipairs(snap.spells or {}) do
-        local data = magic.spells[learned.name]
-        if data ~= nil and data.role == "DEBUFF" then
-            local chance = 1
-            for _, kind in ipairs(data.resists or {}) do
-                chance = chance * (1 - resist(mob, kind))
-            end
-            local time = (data.buff_time or 0) * 1000 * chance
-            local used = false
-            if (data.stats or {}).buff_phydef ~= nil and data.stats.buff_phydef * chance > result.defense then
-                result.defense = data.stats.buff_phydef * chance
-                used           = true
-            end
-            if data.dot ~= nil and data.dot * chance > result.dot then
-                result.dot      = data.dot * chance
-                result.dot_time = (data.buff_time or 0) * 1000
-                used            = true
-            end
-            if (data.paralysis or data.blind) and time > result.disable then
-                result.disable = time
-                used           = true
-            end
-            if used then
-                result.mp    = result.mp + (data.mp or 0)
-                result.casts = result.casts + 1
+    local function apply(name, cost)
+        local data = magic.spells[name]
+        if data == nil or data.role ~= "DEBUFF" then
+            return
+        end
+        local chance = 1
+        for _, kind in ipairs(data.resists or {}) do
+            chance = chance * (1 - resist(mob, kind))
+        end
+        local time = (data.buff_time or 0) * 1000 * chance
+        local used = false
+        if (data.stats or {}).buff_phydef ~= nil and data.stats.buff_phydef * chance > result.defense then
+            result.defense = data.stats.buff_phydef * chance
+            used           = true
+        end
+        if data.dot ~= nil and data.dot * chance > result.dot then
+            result.dot      = data.dot * chance
+            result.dot_time = (data.buff_time or 0) * 1000
+            used            = true
+        end
+        if (data.paralysis or data.blind) and time > result.disable then
+            result.disable = time
+            used           = true
+        end
+        if used and cost then
+            result.mp    = result.mp + (data.mp or 0)
+            result.casts = result.casts + 1
+        end
+    end
+    for name in pairs(mob.applied or {}) do
+        apply(name, false)
+    end
+    for name in pairs(mob.assist or {}) do
+        apply(name, false)
+    end
+    if mob.applied == nil then
+        for _, learned in ipairs(snap.spells or {}) do
+            if (mob.assist or {})[learned.name] == nil then
+                apply(learned.name, true)
             end
         end
     end
+    return result
+end
+
+function M.lasting(name, at, now)
+    local spell = magic.spells[name]
+    return type(at) ~= "number" or spell == nil or now - at < (spell.buff_time or 0) * 1000
+end
+
+function M.exposed(mob, weak)
+    if weak.defense == 0 then
+        return mob
+    end
+    local result = {}
+    for key, entry in pairs(mob) do
+        result[key] = entry
+    end
+    result.defense = (mob.defense or 0) + weak.defense
     return result
 end
 
@@ -258,6 +296,39 @@ local function best(choices, mp, field)
     return found
 end
 
+local function volley(options, mp, left)
+    local casts = 0
+    local spell = best(options.offense, mp, "damage")
+    while spell ~= nil and left > 0 do
+        local count = math.ceil(left / spell.damage)
+        if spell.mp > 0 then
+            count = math.min(count, math.floor(mp / spell.mp))
+        end
+        left  = left - count * spell.damage
+        mp    = mp - count * spell.mp
+        casts = casts + count
+        spell = best(options.offense, mp, "damage")
+    end
+    return left, mp, casts
+end
+
+function M.plain(options, mp, left, cast, melee)
+    local casts = 0
+    left, mp, casts = volley(options, mp, left)
+    local time = casts * cast
+    if left > 0 then
+        if melee <= 0 then
+            return math.huge
+        end
+        time = time + left / melee
+    end
+    return time
+end
+
+function M.opener(snap, mob)
+    return best(M.options(snap, mob).strike, snap.self.mp or 0, "damage")
+end
+
 local function landed(time, disable, speed, blow)
     if speed == nil or speed <= 0 then
         return 0
@@ -265,8 +336,28 @@ local function landed(time, disable, speed, blow)
     return math.max(0, time - disable) / speed * blow
 end
 
-function M.outcome(snap, query, mob, density)
-    local cast  = 1000 / magic.cast_rate
+function M.interval()
+    return 1000 / math.min(balance.cast_rate, magic.cast_rate)
+end
+
+function M.cast(snap)
+    return math.max(M.interval(), (snap.pace or {}).cast or 0)
+end
+
+function M.cooldown(snap)
+    local casted = snap.self.casted
+    if casted == nil then
+        return 0
+    end
+    return math.max(0, M.interval() - casted)
+end
+
+function M.casting(action)
+    return action.kind == ACTION.CAST or (action.maneuver ~= nil and action.maneuver.kind == MANEUVER.CAST)
+end
+
+function M.outcome(snap, query, mob, density, aid)
+    local cast  = M.cast(snap)
     local mp    = snap.self.mp or 0
     local hp    = snap.self.hp
     local time  = 0
@@ -279,27 +370,42 @@ function M.outcome(snap, query, mob, density)
     time  = time + weak.casts * cast
     casts = casts + weak.casts
 
-    local strike  = M.strike(snap, query, mob, density, weak.defense)
+    local exposed = M.exposed(mob, weak)
+    local strike  = M.strike(snap, query, exposed, density)
     local blow    = M.blow(snap, mob)
     local buffs   = M.buffs(snap)
-    local options = M.options(snap, mob)
+    local options = M.options(snap, exposed)
     local left    = (mob.hp or 0) * (mob.ratio or 1)
     local opener  = best(options.strike, mp, "damage")
-    if opener ~= nil and hp - opener.hp > blow then
+    local spent   = 0
+    local rival   = left / math.max(M.plain(options, mp, left, cast, strike / combat.swing), 1e-9)
+    local repays  = opener ~= nil and (opener.hp <= 0 or
+        (aid or 0) > 0 and opener.damage / math.max(rival, 1e-9) >= opener.hp / aid)
+    if opener ~= nil and repays and hp - opener.hp > blow then
         left  = left - opener.damage
         mp    = mp - opener.mp
         hp    = hp - opener.hp
+        spent = opener.hp
         time  = time + cast
         casts = casts + 1
     end
-    local spell = best(options.offense, mp, "damage")
-    while spell ~= nil and left > 0 do
-        left  = left - spell.damage
-        mp    = mp - spell.mp
-        time  = time + cast
-        casts = casts + 1
-        spell = best(options.offense, mp, "damage")
+    if (aid or 0) > 0 and opener ~= nil and opener.hp > 0 and opener.damage > 0 and left > 0 then
+        local period = math.max(cast, opener.hp / aid)
+        if opener.damage / period > rival then
+            local count = math.ceil(left / opener.damage)
+            if opener.mp > 0 then
+                count = math.min(count, math.floor(mp / opener.mp))
+            end
+            left  = left - count * opener.damage
+            mp    = mp - count * opener.mp
+            time  = time + count * period
+            casts = casts + count
+        end
     end
+    local volleys     = 0
+    left, mp, volleys = volley(options, mp, left)
+    time              = time + volleys * cast
+    casts             = casts + volleys
     if left > 0 and strike <= 0 and weak.dot <= 0 then
         return {
             swings = math.huge,
@@ -327,14 +433,14 @@ function M.outcome(snap, query, mob, density)
         swings       = math.ceil((during + after) * melee / math.max(strike, 1e-9))
         time         = time + during + after
     end
-    local taken  = landed(time, weak.disable, mob.speed, blow)
+    local taken  = landed(time, weak.disable, mob.speed, blow) + spent
     local healed = 0
     local heal   = best(options.heal, mp, "hp")
     while heal ~= nil and heal.mp > 0 and taken - healed >= hp do
         healed = healed + heal.hp
         mp     = mp - heal.mp
         time   = time + cast
-        taken  = landed(time, weak.disable, mob.speed, blow)
+        taken  = landed(time, weak.disable, mob.speed, blow) + spent
         heal   = best(options.heal, mp, "hp")
     end
     local guard = buffs.emergency
@@ -347,6 +453,7 @@ function M.outcome(snap, query, mob, density)
         casts   = casts,
         time    = time,
         taken   = taken,
+        spent   = spent,
         healed  = healed,
         drained = (snap.self.mp or 0) - mp,
         margin  = (hp + healed - taken) / math.max(snap.self.max_hp, 1),

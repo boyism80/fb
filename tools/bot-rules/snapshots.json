@@ -1,0 +1,17 @@
+{
+    "seed": 1,
+    "count": 20000,
+    "classes": ["WARRIOR", "ROGUE", "MAGE", "POET"],
+    "job_level": 5,
+    "band": 10,
+    "spell_halflife": 4,
+    "gear_bias": 3.0,
+    "empty": { "WEAPON": 0.02, "ARMOR": 0.05, "SHIELD": 0.7, "HELMET": 0.3, "RING": 0.5, "AUXILIARY": 0.6 },
+    "money_ratio": 0.01,
+    "money_sigma": 1.0,
+    "full": 0.7,
+    "potion_kinds": 2,
+    "potion_mean": 20,
+    "grouping": 0.5,
+    "female": 0.5
+}

@@ -57,7 +57,7 @@ function M.run(ctx, index, case)
     local alive   = false
     local again   = false
     local settled = died and expect.settle(ctx, index, mind, TIMEOUT, function(current)
-        return current:state() ~= "GHOST" and mind:death(current) == nil
+        return current:state() ~= "GHOST" and mind:death(current) == nil and current:item_count(WEAPON) == 0
     end, function(current)
         local ghost = current:state() == "GHOST"
         again       = again or (alive and ghost)

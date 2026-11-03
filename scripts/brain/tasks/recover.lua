@@ -1,4 +1,5 @@
-local value = require("brain.policies.value")
+local danger = require("brain.policies.danger")
+local value  = require("brain.policies.value")
 
 local M = {}
 
@@ -77,8 +78,9 @@ local function profit(snap, query, action)
         local item = query.item(name)
         lost = lost + math.max(0, count - (counts[name] or 0)) * (item ~= nil and item.price or 0)
     end
-    return lost * worth.exchange - value.cost(snap, query, action, worth) -
-        value.spot(snap, query, { map = death.map, x = death.x, y = death.y }, worth)
+    local peril = value.peril(snap, query, { map = death.map, x = death.x, y = death.y })
+    return (1 - peril) * lost * worth.exchange - value.cost(snap, query, action, worth) -
+        peril * danger.loss(snap, query, worth)
 end
 
 function M.propose(snap, query)

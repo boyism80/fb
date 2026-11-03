@@ -12,6 +12,7 @@
 #include <deque>
 #include <chrono>
 #include <exception>
+#include <format>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -31,10 +32,12 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"states",   builtin::brain::builtin_states},
     {"progress", builtin::brain::builtin_progress},
     {"npc",      builtin::brain::builtin_npc},
+    {"ally",     builtin::brain::builtin_ally},
     {"persona",  builtin::brain::builtin_persona},
     {"active",   builtin::brain::builtin_active},
     {"observe",  builtin::brain::builtin_observe},
     {"route",    builtin::brain::builtin_route},
+    {"reach",    builtin::brain::builtin_reach},
     {"walk",     builtin::brain::builtin_walk},
     {"remember", builtin::brain::builtin_remember},
     {"npcs",     builtin::brain::builtin_npcs},
@@ -57,6 +60,8 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"reservations", builtin::brain::builtin_reservations},
     {"occupy",       builtin::brain::builtin_occupy},
     {"demand",       builtin::brain::builtin_demand},
+    {"post",         builtin::brain::builtin_post},
+    {"roster",       builtin::brain::builtin_roster},
     {"recall",   builtin::brain::builtin_recall},
     {"mobs",     builtin::brain::builtin_mobs},
     {"native",     builtin::brain::builtin_native},
@@ -257,6 +262,41 @@ int builtin::brain::builtin_npc(lua_State* L)
     return 1;
 }
 
+int builtin::brain::builtin_ally(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    auto name = lua->tostring(3);
+    for (auto& [_, entry] : bot->sight.entries())
+    {
+        if (entry.name != name)
+            continue;
+
+        lua->new_table();
+        lua->pushstring("oid");
+        lua->pushinteger(entry.oid);
+        lua->settable(-3);
+        lua->pushstring("x");
+        lua->pushinteger(entry.position.x);
+        lua->settable(-3);
+        lua->pushstring("y");
+        lua->pushinteger(entry.position.y);
+        lua->settable(-3);
+        lua->pushstring("percent");
+        lua->pushinteger(entry.percent);
+        lua->settable(-3);
+        return 1;
+    }
+    lua->pushnil();
+    return 1;
+}
+
 int builtin::brain::builtin_persona(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -316,12 +356,13 @@ int builtin::brain::builtin_observe(lua_State* L)
     if (bot == nullptr)
         return 0;
 
-    auto seen  = fb::bot::brain::observe(*bot);
-    auto found = brain->read(bot->id, [](const fb::bot::brain::mind& mind) {
-        return std::pair{mind.jumped, mind.paces};
+    auto seen                    = fb::bot::brain::observe(*bot);
+    auto found                   = brain->read(bot->id, [](const fb::bot::brain::mind& mind) {
+        return std::tuple{mind.jumped, mind.paces, mind.casted};
     });
-    auto [jumped, paces] =
-        found.value_or(std::pair{std::string{}, std::unordered_map<std::string, fb::bot::brain::pace>{}});
+    auto [jumped, paces, casted] = found.value_or(std::tuple{std::string{},
+                                                             std::unordered_map<std::string, fb::bot::brain::pace>{},
+                                                             std::optional<fb::bot::brain::clock::time_point>{}});
     lua->new_table();
     lua->pushstring("level");
     lua->pushinteger(seen.level);
@@ -334,6 +375,11 @@ int builtin::brain::builtin_observe(lua_State* L)
     lua->settable(-3);
     lua->pushstring("ghost");
     lua->pushboolean(seen.ghost);
+    lua->settable(-3);
+    lua->pushstring("cloaked");
+    lua->pushboolean(bot->state() == fb::model::enum_value::STATE::CLOACK ||
+                     bot->state() == fb::model::enum_value::STATE::HALF_CLOACK ||
+                     bot->state() == fb::model::enum_value::STATE::ADV_CLOACK);
     lua->settable(-3);
     lua->pushstring("map");
     lua->pushinteger(seen.map);
@@ -352,6 +398,12 @@ int builtin::brain::builtin_observe(lua_State* L)
     lua->settable(-3);
     lua->pushstring("dialog");
     lua->pushboolean(brain->talking(*bot));
+    lua->settable(-3);
+    lua->pushstring("group");
+    lua->pushstring(bot->group_info());
+    lua->settable(-3);
+    lua->pushstring("grouping");
+    lua->pushboolean(bot->group_option() != 0);
     lua->settable(-3);
     lua->pushstring("phydef");
     lua->pushinteger(bot->prowess().phydef);
@@ -415,6 +467,14 @@ int builtin::brain::builtin_observe(lua_State* L)
         lua->pushstring("struck");
         lua->pushinteger(
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - bot->struck())
+                .count());
+        lua->settable(-3);
+    }
+    if (casted.has_value())
+    {
+        lua->pushstring("casted");
+        lua->pushinteger(
+            std::chrono::duration_cast<std::chrono::milliseconds>(fb::bot::brain::clock::now() - casted.value())
                 .count());
         lua->settable(-3);
     }
@@ -616,6 +676,64 @@ fb::bot::brain::detour builtin::brain::read_detour(lua_State* L, int index)
     return result;
 }
 
+int builtin::brain::builtin_reach(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot    = lua->touserdata<fb::bot::game_bot>(2);
+    auto detour = builtin::brain::read_detour(L, 3);
+    auto origin = std::optional<std::pair<uint16_t, atlas::position>>{};
+    auto level  = std::optional<uint8_t>{};
+    if (lua_istable(L, 4))
+    {
+        lua_getfield(L, 4, "map");
+        lua_getfield(L, 4, "x");
+        lua_getfield(L, 4, "y");
+        origin = std::pair{
+            static_cast<uint16_t>(lua_tointeger(L, -3)),
+            atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)), static_cast<uint16_t>(lua_tointeger(L, -1)))};
+        lua_pop(L, 3);
+        if (lua_getfield(L, 4, "level"); lua_isinteger(L, -1))
+            level = static_cast<uint8_t>(lua_tointeger(L, -1));
+        lua_pop(L, 1);
+    }
+    if (bot == nullptr && (origin.has_value() == false || level.has_value() == false))
+        return 0;
+
+    auto result   = std::make_shared<std::unordered_set<uint16_t>>();
+    auto builder  = lua->new_co_builder();
+    builder.yield = [brain, bot, detour, origin, level, result]() -> async::task<void> {
+        auto map  = origin.has_value() ? origin->first : bot->map();
+        auto here = origin.has_value() ? origin->second : atlas::position(bot->position());
+        auto rank = level.has_value() ? level.value() : bot->level();
+        if (bot == nullptr)
+        {
+            *result = atlas::get().reach(map, here, rank, detour.closed, detour.perilous, detour.shunned);
+            co_return;
+        }
+        *result = co_await brain->offload<std::unordered_set<uint16_t>>(bot, [map, here, rank, detour]() {
+            return atlas::get().reach(map, here, rank, detour.closed, detour.perilous, detour.shunned);
+        });
+    };
+    builder.resume = [lua, result]() -> async::task<int> {
+        lua->new_table();
+        for (auto map : *result)
+        {
+            lua->pushinteger(map);
+            lua->pushboolean(true);
+            lua->settable(-3);
+        }
+        co_return 1;
+    };
+    return builder.run();
+}
+
 int builtin::brain::builtin_route(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -626,14 +744,12 @@ int builtin::brain::builtin_route(lua_State* L)
     if (brain == nullptr)
         return 0;
 
-    auto bot = lua->touserdata<fb::bot::game_bot>(2);
-    if (bot == nullptr)
-        return 0;
-
+    auto bot         = lua->touserdata<fb::bot::game_bot>(2);
     auto destination = builtin::brain::read_destination(L, 3);
     auto detour      = builtin::brain::read_detour(L, 4);
     auto result      = std::make_shared<std::optional<atlas::plan>>();
     auto origin      = std::optional<std::pair<uint16_t, atlas::position>>{};
+    auto level       = std::optional<uint8_t>{};
     if (lua_istable(L, 5))
     {
         lua_getfield(L, 5, "map");
@@ -643,16 +759,27 @@ int builtin::brain::builtin_route(lua_State* L)
             static_cast<uint16_t>(lua_tointeger(L, -3)),
             atlas::position(static_cast<uint16_t>(lua_tointeger(L, -2)), static_cast<uint16_t>(lua_tointeger(L, -1)))};
         lua_pop(L, 3);
+        if (lua_getfield(L, 5, "level"); lua_isinteger(L, -1))
+            level = static_cast<uint8_t>(lua_tointeger(L, -1));
+        lua_pop(L, 1);
     }
+    if (bot == nullptr && (origin.has_value() == false || level.has_value() == false))
+        return 0;
 
     auto builder  = lua->new_co_builder();
-    builder.yield = [brain, bot, destination, detour, origin, result]() -> async::task<void> {
-        auto map   = origin.has_value() ? origin->first : bot->map();
-        auto here  = origin.has_value() ? origin->second : atlas::position(bot->position());
-        auto level = bot->level();
-        *result = co_await brain->offload<std::optional<atlas::plan>>(bot, [map, here, destination, level, detour]() {
+    builder.yield = [brain, bot, destination, detour, origin, level, result]() -> async::task<void> {
+        auto map  = origin.has_value() ? origin->first : bot->map();
+        auto here = origin.has_value() ? origin->second : atlas::position(bot->position());
+        auto rank = level.has_value() ? level.value() : bot->level();
+        if (bot == nullptr)
+        {
+            *result =
+                atlas::get().route(map, here, destination.maps, rank, detour.closed, detour.perilous, detour.shunned);
+            co_return;
+        }
+        *result = co_await brain->offload<std::optional<atlas::plan>>(bot, [map, here, destination, rank, detour]() {
             return atlas::get()
-                .route(map, here, destination.maps, level, detour.closed, detour.perilous, detour.shunned);
+                .route(map, here, destination.maps, rank, detour.closed, detour.perilous, detour.shunned);
         });
     };
     builder.resume = [lua, result]() -> async::task<int> {
@@ -908,16 +1035,32 @@ int builtin::brain::builtin_inventory(lua_State* L)
     lua->new_table();
     for (auto& [slot, item] : bot->items())
     {
-        auto model = models->name2item(item.name);
+        auto name  = item.name;
+        auto count = static_cast<uint32_t>(item.count);
+        auto open  = name.find('[');
+        auto close = open != std::string::npos ? name.find(']', open) : std::string::npos;
+        if (open != std::string::npos && close != std::string::npos)
+        {
+            count = static_cast<uint32_t>(std::strtoul(name.c_str() + open + 1, nullptr, 10));
+            name  = name.substr(0, open);
+            while (name.empty() == false && name.back() == ' ')
+            {
+                name.pop_back();
+            }
+        }
+        auto suffix = std::format(" {}개", count);
+        if (name.size() > suffix.size() && name.ends_with(suffix))
+            name.resize(name.size() - suffix.size());
+        auto model = models->name2item(name);
         lua->new_table();
         lua->pushstring("slot");
         lua->pushinteger(slot);
         lua->settable(-3);
         lua->pushstring("name");
-        lua->pushstring(item.name);
+        lua->pushstring(name);
         lua->settable(-3);
         lua->pushstring("count");
-        lua->pushinteger(item.count);
+        lua->pushinteger(count);
         lua->settable(-3);
         lua->pushstring("type");
         lua->pushstring(model != nullptr ? fb::model::enum_value::enum_tostring(model->type) : "");
@@ -948,17 +1091,20 @@ int builtin::brain::builtin_loot(lua_State* L)
             auto           refusal =
                 std::unordered_set<std::string>{fb::model::const_value::string::MESSAGE_ITEM_FULL,
                                                 fb::model::const_value::string::MESSAGE_ITEM_DEATH_PENALTY_WARMTH};
+            constexpr auto SYNCED = game_resp::internal_info<fb::protocol::CLIENT_VERSION::v550>::opcode;
+            bot->send(*bot->make<game_reqs::loot>(true));
             auto answer = co_await bot->first_of(
-                {ITEM, game_resp::update<fb::protocol::CLIENT_VERSION::v550>::opcode, MESSAGE},
-                bot->make<game_reqs::loot>(true).get(),
+                {ITEM, game_resp::update<fb::protocol::CLIENT_VERSION::v550>::opcode, MESSAGE, SYNCED},
+                bot->make<game_reqs::self_info>().get(),
                 [bot, money, refusal](uint8_t opcode, const fb::protocol::header& header) {
                     if (opcode == MESSAGE)
                         return refusal.contains(static_cast<const game_resp::message&>(header).text);
                     else
-                        return opcode == ITEM || bot->money() != money;
+                        return opcode == game_resp::internal_info<fb::protocol::CLIENT_VERSION::v550>::opcode ||
+                               opcode == ITEM || bot->money() != money;
                 },
                 LOOT_TIMEOUT);
-            *picked = answer.first != MESSAGE;
+            *picked = answer.first != MESSAGE && answer.first != SYNCED;
         }
         catch (const std::exception&)
         { }
@@ -1420,6 +1566,49 @@ int builtin::brain::builtin_occupy(lua_State* L)
     return 0;
 }
 
+int builtin::brain::builtin_post(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    fb::bot::brain::post(bot->name(), bot->map(), fb::lua::value::copy_data(L, 3));
+    return 0;
+}
+
+int builtin::brain::builtin_roster(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr)
+        return 0;
+
+    lua->new_table();
+    auto index = lua_Integer{1};
+    for (auto& [name, entry] : fb::bot::brain::roster(bot->name()))
+    {
+        lua->new_table();
+        lua->pushstring("name");
+        lua->pushstring(name);
+        lua->settable(-3);
+        lua->pushstring("map");
+        lua->pushinteger(entry.map);
+        lua->settable(-3);
+        lua->pushstring("profile");
+        entry.profile.push(*lua);
+        lua->settable(-3);
+        lua_rawseti(L, -2, index++);
+    }
+    return 1;
+}
+
 int builtin::brain::builtin_demand(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -1678,7 +1867,7 @@ int builtin::brain::builtin_spawns(lua_State* L)
         return 0;
 
     auto bot = lua->touserdata<fb::bot::game_bot>(2);
-    if (bot == nullptr)
+    if (bot == nullptr && lua_isinteger(L, 4) == false)
         return 0;
 
     auto names = std::unordered_set<std::string>{};
@@ -1747,7 +1936,10 @@ int builtin::brain::builtin_engage(lua_State* L)
         lua_getfield(L, 4, "item");
         if (lua_type(L, -1) == LUA_TSTRING)
             maneuver.item = lua->tostring(-1);
-        lua_pop(L, 4);
+        lua_getfield(L, 4, "cost");
+        if (lua_isnumber(L, -1))
+            maneuver.cost = static_cast<int32_t>(lua_tointeger(L, -1));
+        lua_pop(L, 5);
     }
     auto result = std::make_shared<fb::bot::brain::event>();
 
@@ -1813,6 +2005,7 @@ int builtin::brain::builtin_cast(lua_State* L)
                                                     target,
                                                     at));
         brain->act(bot->id, "cast");
+        brain->casting(bot->id);
         brain->progress(bot->id);
     }
 

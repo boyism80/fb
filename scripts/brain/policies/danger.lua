@@ -3,6 +3,7 @@ local data     = require("brain.data.combat")
 local growth   = require("brain.data.growth")
 local hunting  = require("brain.data.hunting")
 local teleport = require("brain.data.teleport")
+local escort   = require("brain.policies.escort")
 local memo     = require("brain.policies.memo")
 local score    = require("brain.policies.score")
 local survival = require("brain.policies.survival")
@@ -75,10 +76,31 @@ function M.combine(chances)
     return 1 - survive
 end
 
-function M.winnable(snap, query, mob)
-    local result = combat.outcome(snap, query, mob)
-    local crowd  = mob.oid ~= nil and survival.contact(snap, mob, result.time) or { pressure = 0 }
-    return survival.ending(snap, result, crowd) > 0
+local verdicts = setmetatable({}, { __mode = "k" })
+
+local function team(snap, query, crew)
+    if crew == false then
+        return nil
+    end
+    return crew or escort.present(snap, query)
+end
+
+function M.winnable(snap, query, mob, crew)
+    local helpers       = team(snap, query, crew)
+    local key           = helpers ~= nil and helpers.key or ""
+    verdicts[snap]      = verdicts[snap] or {}
+    verdicts[snap][key] = verdicts[snap][key] or setmetatable({}, { __mode = "k" })
+    local cached        = verdicts[snap][key]
+    if cached[mob] == nil then
+        local context = escort.context(snap, query, mob, helpers)
+        local result  = survival.fight(snap, query, mob, context)
+        if mob.oid ~= nil then
+            context.crowd = survival.contact(snap, mob, result.time)
+            result        = survival.fight(snap, query, mob, context)
+        end
+        cached[mob] = result.ending > 0
+    end
+    return cached[mob]
 end
 
 function M.penalty(snap)
@@ -95,8 +117,8 @@ function M.hostile(snap, query, mob)
     return mob.attack == "AGGRESSIVE" and M.winnable(snap, query, mob) == false
 end
 
-function M.deadly(snap, query, mob)
-    if mob.attack ~= "AGGRESSIVE" or M.winnable(snap, query, mob) then
+function M.deadly(snap, query, mob, crew)
+    if mob.attack ~= "AGGRESSIVE" or M.winnable(snap, query, mob, crew) then
         return false
     end
     local step   = snap.pace.step or data.walk
@@ -105,15 +127,17 @@ function M.deadly(snap, query, mob)
     return chases or lethal
 end
 
-function M.perilous(snap, query)
+function M.perilous(snap, query, crew)
     if snap.self.ghost then
         return {}
     end
-    return memo.get(perils, snap.self.name, score.signature(snap, ""), score.signature(snap), function()
+    local helpers = team(snap, query, crew)
+    local key     = score.signature(snap) .. (helpers ~= nil and helpers.key or "")
+    return memo.get(perils, snap.self.name, score.signature(snap, ""), key, function()
         local found  = {}
         local rested = score.rested(snap)
         for id, mob in pairs(hunting.mobs) do
-            if M.deadly(rested, query, mob) then
+            if M.deadly(rested, query, mob, helpers or false) then
                 table.insert(found, id)
             end
         end

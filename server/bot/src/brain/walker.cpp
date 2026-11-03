@@ -35,6 +35,14 @@ void brain::act(uint32_t bot, std::string_view activity)
         activities.emplace_back(activity);
 }
 
+void brain::casting(uint32_t bot)
+{
+    auto lock  = std::lock_guard(this->_mutex);
+    auto found = this->_minds.find(bot);
+    if (found != this->_minds.end())
+        found->second.casted = clock::now();
+}
+
 async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
                                       const destination&        destination,
                                       const detour&             detour)

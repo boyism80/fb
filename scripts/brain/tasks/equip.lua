@@ -1,5 +1,5 @@
+local combat = require("brain.policies.combat")
 local gear   = require("brain.policies.gear")
-local ground = require("brain.policies.ground")
 local value  = require("brain.policies.value")
 
 local M = {}
@@ -36,7 +36,7 @@ function M.value(snap, query)
     if ratio <= 0 or worth.value <= 0 then
         return 0
     end
-    return ratio * worth.value * ground.horizon(snap, worth.rate)
+    return ratio * worth.value * combat.cast(snap) / 1000
 end
 
 function M.propose(snap, query)

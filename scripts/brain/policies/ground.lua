@@ -1,9 +1,9 @@
 local combat   = require("brain.data.combat")
 local growth   = require("brain.data.growth")
 local hunting  = require("brain.data.hunting")
-local magic    = require("brain.data.spells")
 local fight    = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
+local escort   = require("brain.policies.escort")
 local memo     = require("brain.policies.memo")
 local recovery = require("brain.policies.recovery")
 local survival = require("brain.policies.survival")
@@ -35,7 +35,7 @@ local function rest(snap, result, ability, buffs)
     local charge = buffs.charge
     local time   = 0
     local taken  = result.taken
-    local cast   = 1000 / magic.cast_rate
+    local cast   = fight.cast(snap)
     local drink  = dose(snap, "mp")
     local food   = dose(snap, "hp")
     if result.drained > 0 and charge ~= nil and charge.chance > 0 then
@@ -54,7 +54,7 @@ local function rest(snap, result, ability, buffs)
     return time
 end
 
-function M.evaluate(snap, query, floor, ability)
+function M.evaluate(snap, query, floor, ability, crew)
     local buffs   = fight.buffs(snap)
     local exp     = 0
     local time    = 0
@@ -74,29 +74,33 @@ function M.evaluate(snap, query, floor, ability)
     for _, entry in ipairs(floor.mobs) do
         local mob = hunting.mobs[entry.id]
         if mob ~= nil then
-            local result = fight.outcome(snap, query, mob, floor.density)
-            table.insert(entries, { mob = mob, count = entry.count, result = result })
+            local context = escort.context(snap, query, mob, crew, floor.density, ability.refill.hp)
+            local result  = survival.fight(snap, query, mob, context)
+            table.insert(entries, { mob = mob, count = entry.count, result = result, context = context })
             if result.time < math.huge then
                 spent   = spent + entry.count * result.time
                 counted = counted + entry.count
             end
         end
     end
-    local crowd = survival.crowd(snap, entries, counted > 0 and spent / counted or math.huge, 1)
+    local size  = crew ~= nil and crew.size or 1
+    local crowd = survival.crowd(snap, entries, counted > 0 and spent / counted or math.huge, size, floor.density)
+    local split = crew ~= nil and (1 + math.max(crew.bonus, combat.group.bonus[snap.self.class] or 0)) / size or 1
     for _, entry in ipairs(entries) do
-        local mob    = entry.mob
-        local result = entry.result
-        local ending = survival.ending(snap, result, crowd)
+        local mob           = entry.mob
+        entry.context.crowd = crowd
+        local result        = survival.fight(snap, query, mob, entry.context)
+        local ending        = result.ending
         if mob.attack == "AGGRESSIVE" and fight.hits(mob) and ending <= 0 then
             safe = false
         end
         if ending > 0 and (mob.exp or 0) > 0 then
-            local hurt = result.taken + crowd.pressure * result.time
-            exp        = exp + entry.count * mob.exp
+            local hurt = math.max(0, result.taken - result.healed)
+            exp        = exp + entry.count * mob.exp * split
             time       = time +
-            entry.count * (result.time + rest(snap, { taken = hurt, drained = result.drained }, ability, buffs))
+                entry.count * (result.time + rest(snap, { taken = hurt, drained = result.drained }, ability, buffs))
             kills      = kills + entry.count
-            deaths     = deaths + entry.count * survival.burst(snap, crowd, result.time, (snap.self.hp + ending) / 2)
+            deaths     = deaths + entry.count * result.p_die
             need       = math.max(need, hurt)
             margin     = math.min(margin, ending / math.max(snap.self.max_hp, 1))
             drained    = drained + entry.count * result.drained
@@ -121,11 +125,13 @@ function M.evaluate(snap, query, floor, ability)
         safe    = safe and #targets > 0,
         rate    = time > 0 and exp / time * 1000 or 0,
         kills   = time > 0 and kills / time * 1000 or 0,
+        deaths  = time > 0 and deaths / time * 1000 or 0,
         supply  = floor.supply or 0,
         need    = need,
         margin  = margin,
         targets = targets,
         drain   = time > 0 and drained / time * 1000 or 0,
+        spend   = kills > 0 and drained / kills or 0,
         wear    = time > 0 and taken / time * 1000 or 0,
         loot    = time > 0 and loot / time * 1000 or 0,
         yields  = yields,
@@ -141,10 +147,10 @@ function M.horizon(snap, rate)
     return math.max(0, next.exp - (snap.self.exp or 0)) / rate
 end
 
-local function sweep(snap, query, bundle, ability)
+local function sweep(snap, query, bundle, ability, crew)
     local floors = {}
     for _, floor in ipairs(bundle.floors) do
-        local result = M.evaluate(snap, query, floor, ability)
+        local result = M.evaluate(snap, query, floor, ability, crew)
         if result.safe == false or result.rate <= 0 then
             break
         end
@@ -153,15 +159,41 @@ local function sweep(snap, query, bundle, ability)
     return floors
 end
 
-local function candidates(snap, query, mode)
-    return memo.get(cache, snap.self.name, score.signature(snap, ""), score.signature(snap, mode), function()
+local reaches = {}
+local sweeps  = {}
+
+local function slot(snap, crew)
+    return (snap.self.name or "") .. (snap.hypothesis or "") .. (crew ~= nil and crew.key or "")
+end
+
+local function reach(snap, query, crew)
+    snap          = snap.actual or snap
+    local shunned = danger.shunned(snap, query)
+    local base    = table.concat({ snap.world.map, snap.self.level, score.signature(snap), table.concat(shunned, ",") },
+        "|")
+    return memo.get(reaches, slot(snap, crew), base, "", function()
+        return query.reach(danger.perilous(snap, query, crew or false), shunned) or {}
+    end), base
+end
+
+local function candidates(snap, query, mode, crew)
+    local known, context = reach(snap, query, crew)
+    local owner          = slot(snap, crew)
+    local base           = score.signature(snap, "")
+    local signature      = score.signature(snap, mode)
+    return memo.get(cache, owner, base, signature .. "|" .. context, function()
         local rested  = score.rested(snap, mode)
         local ability = score.capability(rested, query)
         local found   = {}
         for index = bound(rested), 1, -1 do
-            local floors = sweep(rested, query, hunting.bundles[index], ability)
-            if #floors > 0 then
-                table.insert(found, { bundle = hunting.bundles[index], floors = floors })
+            local bundle = hunting.bundles[index]
+            if known[bundle.floors[1].map] then
+                local floors = memo.get(sweeps, owner, base, signature .. "|" .. index, function()
+                    return sweep(rested, query, bundle, ability, crew)
+                end)
+                if #floors > 0 then
+                    table.insert(found, { bundle = bundle, floors = floors })
+                end
             end
             if #found >= combat.candidates then
                 break
@@ -180,15 +212,19 @@ local function share(floor, query)
     return floor.rate * effective / floor.kills
 end
 
-function M.ranked(snap, query, mode)
+function M.ranked(snap, query, mode, crew)
     local ranked = {}
-    for _, candidate in ipairs(candidates(snap, query, mode)) do
+    for _, candidate in ipairs(candidates(snap, query, mode, crew)) do
         local finish = 1
         local rate   = 0
+        local supply = 0
+        local raw    = 0
         for index, floor in ipairs(candidate.floors) do
-            local value = share(floor, query)
-            if value > rate then
-                rate   = value
+            supply    = supply + share(floor, query)
+            raw       = math.max(raw, floor.rate)
+            local lap = math.min(raw, supply)
+            if lap > rate then
+                rate   = lap
                 finish = index
             end
         end
@@ -202,25 +238,16 @@ function M.ranked(snap, query, mode)
     return ranked
 end
 
-function M.reachable(snap, query, candidate)
-    candidate.reachable = candidate.reachable or {}
-    local shunned       = danger.shunned(snap, query)
-    local key           = snap.world.map
-    for _, map in ipairs(shunned) do
-        key = key .. "|" .. tostring(map)
-    end
-    if candidate.reachable[key] == nil then
-        candidate.reachable[key] = query.route({ candidate.floors[1].map }, danger.perilous(snap, query), shunned) ~= nil
-    end
-    return candidate.reachable[key]
+function M.reachable(snap, query, candidate, crew)
+    return reach(snap, query, crew)[candidate.floors[1].map] == true
 end
 
-local function pick(snap, query, mode)
+local function pick(snap, query, mode, crew)
     local shunned = {}
     for _, map in ipairs(danger.shunned(snap, query)) do
         shunned[map] = true
     end
-    for _, entry in ipairs(M.ranked(snap, query, mode)) do
+    for _, entry in ipairs(M.ranked(snap, query, mode, crew)) do
         local candidate = entry.candidate
         local floors    = {}
         for index = 1, entry.finish do
@@ -229,7 +256,7 @@ local function pick(snap, query, mode)
             end
             table.insert(floors, candidate.floors[index])
         end
-        if #floors > 0 and M.reachable(snap, query, candidate) then
+        if #floors > 0 and M.reachable(snap, query, candidate, crew) then
             return {
                 name   = candidate.bundle.name,
                 floors = floors,
@@ -237,9 +264,11 @@ local function pick(snap, query, mode)
                 need   = floors[#floors].need,
                 margin = floors[#floors].margin,
                 drain  = floors[#floors].drain,
+                spend  = floors[#floors].spend,
                 wear   = floors[#floors].wear,
                 loot   = floors[#floors].loot,
                 yields = floors[#floors].yields,
+                deaths = floors[#floors].deaths,
             }
         end
     end
@@ -248,17 +277,48 @@ end
 
 local chosen = setmetatable({}, { __mode = "k" })
 
-function M.choose(snap, query, mode)
+function M.choose(snap, query, mode, crew)
     local cached = chosen[snap]
     if cached == nil then
         cached       = {}
         chosen[snap] = cached
     end
-    local key = mode or ""
+    local key = (mode or "") .. (crew ~= nil and crew.key or "")
     if cached[key] == nil then
-        cached[key] = pick(snap, query, mode) or false
+        cached[key] = pick(snap, query, mode, crew) or false
     end
     return cached[key] or nil
+end
+
+function M.crew(members, query)
+    return escort.crew(members, query)
+end
+
+function M.mode(snap)
+    return recovery.potable(snap) and "REFILL" or nil
+end
+
+function M.party(members, query, mode)
+    local front = 1
+    local ehp   = -math.huge
+    for index, member in ipairs(members) do
+        local ability = score.capability(member, query)
+        if ability.ehp > ehp then
+            front = index
+            ehp   = ability.ehp
+        end
+    end
+    local others = {}
+    for index, member in ipairs(members) do
+        if index ~= front then
+            table.insert(others, member)
+        end
+    end
+    local lead = members[front]
+    if mode == "SUPPLY" then
+        mode = M.mode(lead)
+    end
+    return M.choose(lead, query, mode, #others > 0 and M.crew(others, query) or nil), front
 end
 
 local names = nil

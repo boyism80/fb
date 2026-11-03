@@ -1064,18 +1064,24 @@ void game_bot::remove_buffs()
 
 void game_bot::record_dialog(const integration::dialog_bot& dialog)
 {
-    auto lock = std::lock_guard(this->_record_mutex);
-    this->_dialog_seq++;
-    this->_last_dialog = dialog;
-    this->_last_dialog_ext.reset();
+    {
+        auto lock = std::lock_guard(this->_record_mutex);
+        this->_dialog_seq++;
+        this->_last_dialog = dialog;
+        this->_last_dialog_ext.reset();
+    }
+    this->notice("dialog");
 }
 
 void game_bot::record_dialog(const integration::dialog_ext_bot& dialog)
 {
-    auto lock = std::lock_guard(this->_record_mutex);
-    this->_dialog_seq++;
-    this->_last_dialog.reset();
-    this->_last_dialog_ext = dialog;
+    {
+        auto lock = std::lock_guard(this->_record_mutex);
+        this->_dialog_seq++;
+        this->_last_dialog.reset();
+        this->_last_dialog_ext = dialog;
+    }
+    this->notice("dialog");
 }
 
 uint32_t game_bot::last_dialog(std::optional<integration::dialog_bot>&     dialog,

@@ -1,6 +1,9 @@
 local alert    = require("brain.policies.alert")
+local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
+local escort   = require("brain.policies.escort")
 local failure  = require("brain.policies.failure")
+local party    = require("brain.policies.party")
 local states   = require("brain.data.states")
 local profile  = require("brain.profile")
 local query    = require("brain.query")
@@ -15,9 +18,12 @@ local function module(name)
 end
 
 local function decision(snap, facts, state, name, task, revisit)
-    local result   = task.propose ~= nil and
+    local result = task.propose ~= nil and
         profile.measure(snap.self.name, "propose:" .. name, task.propose, snap, facts) or
         { kind = ACTION.TASK }
+    if combat.casting(result) and combat.cooldown(snap) > 0 then
+        result = { kind = ACTION.HOLD }
+    end
     result.state   = state
     result.task    = name
     result.step    = task.step ~= nil and task.step(snap) or 0
@@ -52,8 +58,8 @@ function M.choose(snap, facts, current)
                     return decision(snap, facts, state.name, name, task, revisit), revisit
                 elseif remaining == 0 then
                     local delta = task.value ~= nil and
-                    profile.measure(snap.self.name, "value:" .. name, task.value, snap,
-                        facts) or 0
+                        profile.measure(snap.self.name, "value:" .. name, task.value, snap,
+                            facts) or 0
                     table.insert(values, string.format("%s=%.1f", name, delta))
                     if name == current then
                         held = delta
@@ -92,9 +98,18 @@ function M.choose(snap, facts, current)
 end
 
 function M.first(brain, bot, current)
-    local owner  = bot:name()
-    local snap   = profile.measure(owner, "snapshot", snapshot.take, brain, bot)
-    local facts  = query.bind(brain, bot)
+    local owner = bot:name()
+    local snap  = profile.measure(owner, "snapshot", snapshot.take, brain, bot)
+    local facts = query.bind(brain, bot)
+    brain:post(bot, party.profile(snap, facts))
+    local apart = #(snap.party or {}) > 0 and escort.complete(snap, facts) == false
+    if apart and snap.record.memory.apart == nil then
+        brain:remember(bot, "apart", snap.now)
+        snap.record.memory.apart = snap.now
+    elseif apart == false and snap.record.memory.apart ~= nil then
+        brain:remember(bot, "apart", nil)
+        snap.record.memory.apart = nil
+    end
     local threat = snap.self.ghost == false and profile.measure(owner, "fatal", danger.fatal, snap, facts) or nil
     if threat ~= nil then
         log("debug", string.format("[brain:decide] peril %s attack=%s at map=%d %d,%d", tostring(threat.name),

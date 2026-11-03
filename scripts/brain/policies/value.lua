@@ -1,12 +1,13 @@
 local buyers   = require("brain.data.buyers")
 local data     = require("brain.data.combat")
 local hunting  = require("brain.data.hunting")
-local magic    = require("brain.data.spells")
 local teleport = require("brain.data.teleport")
+local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
 local failure  = require("brain.policies.failure")
 local ground   = require("brain.policies.ground")
 local memo     = require("brain.policies.memo")
+local party    = require("brain.policies.party")
 local score    = require("brain.policies.score")
 
 local M = {}
@@ -48,7 +49,7 @@ function M.baseline(snap, query)
     if baselines[snap] ~= nil then
         return baselines[snap]
     end
-    local hunt   = ground.choose(snap, query)
+    local hunt   = party.plan(snap, query)
     local result = nil
     if hunt == nil or hunt.rate <= 0 then
         result = { value = 0, exchange = exchange(snap, query), rate = 0, income = 0 }
@@ -72,9 +73,13 @@ function M.baseline(snap, query)
     return result
 end
 
+local powers = {}
+
 function M.power(snap, query)
-    local ability = score.capability(snap, query)
-    return ability.dps.single * ability.ehp
+    return memo.get(powers, snap.self.name, "", score.signature(snap, ""), function()
+        local ability = score.capability(score.rested(snap), query)
+        return ability.dps.single * ability.ehp
+    end)
 end
 
 function M.mana(snap, query)
@@ -97,9 +102,9 @@ function M.stay(snap, query, duration, worth)
     return danger.combine(chances) * danger.loss(snap, query, worth)
 end
 
-function M.spot(snap, query, point, worth)
+function M.peril(snap, query, point)
     local step    = snap.pace.step or data.walk
-    local dwell   = 1000 / magic.cast_rate
+    local dwell   = combat.cast(snap)
     local range   = math.max(data.sight.x, data.sight.y)
     local chances = {}
     local seen    = {}
@@ -125,7 +130,7 @@ function M.spot(snap, query, point, worth)
         seen[peril.mob or peril.stats.name] == nil then
         add(peril.stats, peril.stats.x, peril.stats.y, danger.weight(snap, peril))
     end
-    return danger.combine(chances) * danger.loss(snap, query, worth)
+    return danger.combine(chances)
 end
 
 function M.cost(snap, query, action, worth, duration)
@@ -299,7 +304,7 @@ end
 function M.trip(snap, query, dest, worth)
     local best = nil
     if dest.x == nil and leap(snap, dest) then
-        local time = 1 / magic.cast_rate
+        local time = combat.cast(snap) / 1000
         best = {
             cost = time * worth.value + M.stay(snap, query, time * 1000, worth),
             time = time,
@@ -325,7 +330,7 @@ function M.objective(snap, query)
             return { task = "ORDER", dest = #maps > 0 and { maps = maps } or nil }
         end
     end
-    local hunt = ground.choose(snap, query)
+    local hunt = party.plan(snap, query)
     return { task = "FIELD", dest = hunt ~= nil and { maps = { hunt.floors[1].map } } or nil }
 end
 

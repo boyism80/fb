@@ -1,4 +1,5 @@
 local items = require("brain.data.items")
+local shops = require("brain.data.shops")
 local magic = require("brain.data.spells")
 local bag   = require("brain.policies.bag")
 local fight = require("brain.policies.combat")
@@ -77,7 +78,7 @@ function M.rates(snap)
     local max   = snap.self.max_mp or 0
     local mp    = 0
     if buffs.charge ~= nil then
-        mp = math.max(mp, buffs.charge.chance * max * magic.cast_rate)
+        mp = math.max(mp, buffs.charge.chance * max * 1000 / fight.cast(snap))
     end
     if buffs.surge ~= nil then
         mp = math.max(mp, buffs.surge.rate * max)
@@ -85,15 +86,38 @@ function M.rates(snap)
     local hp   = 0
     local heal = M.heal(snap)
     if heal ~= nil and heal.mp <= 0 then
-        hp = heal.hp * magic.cast_rate
+        hp = heal.hp * 1000 / fight.cast(snap)
     elseif heal ~= nil then
-        hp = heal.hp * math.min(magic.cast_rate, mp / heal.mp)
+        hp = heal.hp * math.min(1000 / fight.cast(snap), mp / heal.mp)
     end
     return { hp = hp, mp = mp }
 end
 
 function M.sustains(snap)
     return M.rates(snap).mp > 0 or #M.doses(snap, "mp") > 0
+end
+
+function M.potable(snap)
+    if M.rates(snap).mp > 0 then
+        return false
+    end
+    local options = fight.options(snap, NEUTRAL)
+    local needed  = false
+    for _, kind in ipairs({ "offense", "strike" }) do
+        for _, choice in ipairs(options[kind]) do
+            needed = needed or (choice.damage > 0 and choice.mp > 0)
+        end
+    end
+    if needed == false then
+        return false
+    end
+    for name, shop in pairs(shops) do
+        local effect = items[name]
+        if effect ~= nil and M.restored(snap, effect, "mp") > 0 and shop.price <= (snap.self.money or 0) then
+            return true
+        end
+    end
+    return false
 end
 
 function M.reserve(snap)

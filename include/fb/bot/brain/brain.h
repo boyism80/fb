@@ -64,6 +64,8 @@ public:
         FORGET   = 11,
         CAST     = 12,
         SAY      = 13,
+        INVITE   = 14,
+        LEAVE    = 15,
     };
 
     enum class MANEUVER : uint8_t
@@ -145,11 +147,18 @@ public:
         std::vector<jump>            jumps;
     };
 
+    struct listing
+    {
+        uint16_t       map = 0;
+        fb::lua::value profile;
+    };
+
     struct maneuver
     {
         MANEUVER    kind = MANEUVER::SWING;
         uint8_t     slot = 0;
         bool        self = false;
+        int32_t     cost = -1;
         std::string item;
     };
 
@@ -217,6 +226,8 @@ public:
         std::string                                     jumped;
         std::mt19937                                    random;
         std::string                                     performing;
+        ACTION                                          acting = ACTION::TASK;
+        std::vector<std::pair<std::string, uint32_t>>   missed;
         bool                                            interrupted = false;
         bool                                            alarming    = false;
         struct concern                                  concern;
@@ -225,6 +236,7 @@ public:
         std::chrono::milliseconds                       waited{0};
         std::chrono::milliseconds                       budget{0};
         std::vector<std::string>                        activities;
+        std::optional<clock::time_point>                casted;
         uint32_t                                        closed = 0;
     };
 
@@ -241,6 +253,7 @@ private:
     inline static std::unordered_map<std::string, std::string>                          _ledger;
     inline static std::unordered_map<std::string, std::pair<uint16_t, double>>          _occupancy;
     inline static std::unordered_map<uint16_t, std::unordered_map<std::string, double>> _occupants;
+    inline static std::unordered_map<std::string, listing>                              _roster;
 
 public:
     explicit brain(bool recording = true);
@@ -261,6 +274,7 @@ public:
                             std::shared_ptr<fb::protocol::header> opening,
                             std::vector<answer>                   answers);
     void               act(uint32_t bot, std::string_view activity);
+    void               casting(uint32_t bot);
     void               close(game_bot& bot);
     bool               talking(const game_bot& bot) const;
     template <typename Fn>
@@ -307,7 +321,9 @@ public:
     static void                occupy(const std::string& name, uint16_t map, double rate);
     static void                vacate(const std::string& name);
     static double              demand(uint16_t map, const std::string& except);
-    static std::unordered_map<std::string, uint32_t> reservations(const std::string& except);
+    static void                post(const std::string& name, uint16_t map, fb::lua::value profile);
+    static std::vector<std::pair<std::string, listing>> roster(const std::string& except);
+    static std::unordered_map<std::string, uint32_t>    reservations(const std::string& except);
     void measure(uint32_t bot, const std::string& action, std::chrono::milliseconds elapsed);
     void remember(uint32_t bot, const std::string& key, const std::optional<fb::lua::value>& value);
     std::optional<fb::lua::value>                recall(uint32_t bot, const std::string& key) const;

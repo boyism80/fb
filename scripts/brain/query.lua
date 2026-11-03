@@ -22,6 +22,16 @@ function M.bind(brain, bot)
         demand = function(map)
             return brain:demand(bot, map)
         end,
+        roster = function()
+            return brain:roster(bot)
+        end,
+        ally = function(name)
+            return brain:ally(bot, name)
+        end,
+        reach = function(perilous, shunned)
+            return profile.wait(bot:name(), brain.reach, brain, bot,
+                { perilous = perilous or {}, shunned = shunned or {} })
+        end,
         route = function(maps, perilous, shunned)
             return profile.wait(bot:name(), brain.route, brain, bot, { maps = maps },
                 { perilous = perilous or {}, shunned = shunned or {} })

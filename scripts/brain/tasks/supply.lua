@@ -5,6 +5,7 @@ local danger   = require("brain.policies.danger")
 local ground   = require("brain.policies.ground")
 local memo     = require("brain.policies.memo")
 local near     = require("brain.policies.near")
+local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
 local value    = require("brain.policies.value")
@@ -84,6 +85,18 @@ local function evaluate(snap, query, kind)
         end
         local refill = ground.choose(snap, query, "REFILL")
         local dry    = ground.choose(snap, query, "DRY")
+        local team   = party.members(snap)
+        if #team > 0 then
+            local members = { snap }
+            for _, member in ipairs(team) do
+                table.insert(members, member)
+            end
+            local full, front = ground.party(members, query, "REFILL")
+            if front == 1 then
+                refill = full
+                dry    = (ground.party(members, query, "DRY"))
+            end
+        end
         if refill == nil or refill.drain <= 0 then
             return nil
         end
@@ -111,7 +124,11 @@ local function demand(snap, query, kind)
         return nil
     end
     local base = table.concat({ score.signature(snap, ""), snap.world.map }, "|")
-    local key  = table.concat({ score.signature(snap), kind }, "|")
+    local team = {}
+    for _, member in ipairs(party.members(snap)) do
+        table.insert(team, score.signature(member, ""))
+    end
+    local key = table.concat({ score.signature(snap), kind, table.concat(team, ";") }, "|")
     return memo.get(needs, snap.self.name, base, key, function()
         return evaluate(snap, query, kind) or false
     end) or nil

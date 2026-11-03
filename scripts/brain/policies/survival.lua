@@ -30,68 +30,94 @@ local function pressure(snap, mob)
     return combat.blow(snap, mob) / mob.speed
 end
 
-function M.crowd(snap, entries, time, fighters)
+function M.crowd(snap, entries, time, fighters, density)
     local arrival = 0
     local present = 0
-    local weight  = 0
+    local total   = 0
     local burden  = 0
-    local worst   = nil
     for _, entry in ipairs(entries) do
         local mob = entry.mob
+        total     = total + entry.count
         if mob.attack == "AGGRESSIVE" and combat.hits(mob) then
-            local period  = M.respawn(mob)
-            arrival       = arrival + (period > 0 and entry.count / period or 0)
-            present       = present + entry.count
-            weight        = weight + entry.count
-            burden        = burden + entry.count * pressure(snap, mob)
-            local _, high = combat.spread(snap, mob)
-            if worst == nil or high > worst.high then
-                worst = { mob = mob, high = high }
-            end
+            local period = M.respawn(mob)
+            arrival      = arrival + (period > 0 and entry.count / period or 0)
+            present      = present + entry.count
+            burden       = burden + entry.count * pressure(snap, mob)
         end
     end
-    local result = { states = { 1 }, extra = 0, pressure = 0, worst = worst }
+    local result = { extra = 0, pressure = 0 }
     if present == 0 or time == nil or time <= 0 or time == math.huge then
         return result
     end
-    local load     = arrival * time / math.max(fighters or 1, 1)
-    local capacity = math.min(present, 4 * math.max(fighters or 1, 1))
-    local states   = {}
-    local total    = 0
+    local tiles    = (2 * data.sight.x + 1) * (2 * data.sight.y + 1)
+    local standing = (density or 0) * tiles * present / math.max(total, 1)
+    local load     = (arrival * time + standing) / math.max(fighters or 1, 1)
+    local capacity = math.min(present, data.adjacent * math.max(fighters or 1, 1))
+    local weights  = {}
+    local sum      = 0
     for n = 0, capacity do
-        states[n + 1] = load ^ n
-        total         = total + states[n + 1]
+        weights[n + 1] = load ^ n
+        sum            = sum + weights[n + 1]
     end
-    local extra = 0
     for n = 0, capacity do
-        states[n + 1] = states[n + 1] / total
-        extra         = extra + states[n + 1] * math.max(n - 1, 0)
+        result.extra = result.extra + weights[n + 1] / sum * math.max(n - 1, 0)
     end
-    result.states   = states
-    result.load     = load
-    result.extra    = extra
-    result.pressure = extra * burden / math.max(weight, 1)
+    result.pressure = result.extra * burden / present
     return result
 end
 
-function M.ending(snap, result, crowd)
-    if result.time == math.huge then
-        return -math.huge
+local function assisted(mob, assist)
+    if assist == nil or next(assist) == nil then
+        return mob
     end
-    return snap.self.hp + result.healed - result.taken - crowd.pressure * result.time
+    local result = {}
+    for key, entry in pairs(mob) do
+        result[key] = entry
+    end
+    result.assist = assist
+    return result
 end
 
-function M.burst(snap, crowd, time, hp)
-    local worst = crowd.worst
-    if worst == nil or worst.mob.speed == nil or worst.mob.speed <= 0 or time <= 0 then
-        return 0
+function M.fight(snap, query, mob, context)
+    local result = combat.outcome(snap, query, assisted(mob, context.assist), context.density, context.aid)
+    local spent  = result.spent or 0
+    if (context.speed or 0) > 0 then
+        local own   = result.time < math.huge and 1 / result.time or 0
+        local kill  = 1 / (own + context.speed)
+        local share = own > 0 and kill / result.time or 0
+        local hurt  = (result.taken - spent) * share
+        if own == 0 and combat.hits(mob) and (mob.speed or 0) > 0 then
+            hurt = combat.blow(snap, mob) / mob.speed * kill
+        end
+        result = { time = kill, taken = hurt + spent, healed = result.healed * share, drained = result.drained * share }
     end
-    local low, high = combat.spread(snap, worst.mob)
-    local round     = 0
-    for index, chance in ipairs(crowd.states) do
-        round = round + chance * combat.reaches(math.max(index - 1, 1), low, high, hp)
+    local time  = result.time
+    local crowd = context.crowd or { pressure = 0, extra = 0 }
+    if time == math.huge then
+        return {
+            time = time,
+            taken = math.huge,
+            healed = 0,
+            drained = result.drained,
+            spent = spent,
+            ending = -math.huge,
+            p_die = 1
+        }
     end
-    return 1 - (1 - round) ^ (time / worst.mob.speed)
+    local taken     = result.taken + crowd.pressure * time
+    local healed    = math.min(taken, result.healed + (context.support or 0) * time / 1000)
+    local low, high = combat.spread(snap, mob)
+    local average   = (low + high) / 2
+    local hits      = average > 0 and (taken - spent) / average or 0
+    return {
+        time    = time,
+        taken   = taken,
+        healed  = healed,
+        drained = result.drained,
+        spent   = spent,
+        ending  = snap.self.hp + healed - taken,
+        p_die   = combat.reaches(hits, low, high, snap.self.hp + healed - spent),
+    }
 end
 
 function M.contact(snap, mob, time)
@@ -107,7 +133,12 @@ function M.contact(snap, mob, time)
             burden         = burden + share * pressure(snap, seen)
         end
     end
-    return { states = { 1 }, extra = extra, pressure = burden }
+    local room = data.adjacent - 1
+    if extra > room then
+        burden = burden * room / extra
+        extra  = room
+    end
+    return { extra = extra, pressure = burden }
 end
 
 return M

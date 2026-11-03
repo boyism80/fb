@@ -39,6 +39,9 @@ local SKILLS = {
     end,
     [ACTION.ATTACK] = function(brain, bot, action)
         local event = battle.step(brain, bot, action.oid, action)
+        if event.type == "KILLED" then
+            log("debug", string.format("[brain:kill] bot=%s key=%s", bot:name(), tostring(action.key)))
+        end
         local going = event.type == "STRUCK" or event.type == "DONE" or event.type == "REFUSED"
         return event.type == "KILLED" or going, event.type
     end,
@@ -126,6 +129,31 @@ local SKILLS = {
         elseif bot:hp() == hp and bot:mp() == mp then
             return false, "UNCHANGED"
         end
+        return true
+    end,
+    [ACTION.INVITE] = function(brain, bot, action)
+        wait.reply(bot, resp.message, protocol.group(action.name), function(packet)
+            return packet.text ~= nil and string.find(packet.text, action.name, 1, true) ~= nil
+        end, WEAR_WAIT)
+        synced(bot)
+        local text = brain:observe(bot).group or ""
+        if string.find(text, action.name, 1, true) == nil then
+            return false, "REFUSED"
+        end
+        return true
+    end,
+    [ACTION.LEAVE]  = function(brain, bot, action)
+        wait.reply(bot, resp.message, protocol.group(bot:name()), function(packet)
+            return packet.text ~= nil
+        end, WEAR_WAIT)
+        synced(bot)
+        local text = brain:observe(bot).group or ""
+        for _, name in ipairs(action.names or {}) do
+            if string.find(text, name, 1, true) ~= nil then
+                return false, "REFUSED"
+            end
+        end
+        brain:remember(bot, "left", { names = action.names, at = brain:observe(bot).now, waited = action.waited })
         return true
     end,
     [ACTION.SAY]    = function(brain, bot, action)

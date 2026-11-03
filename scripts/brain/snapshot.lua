@@ -15,9 +15,47 @@ local function failures(brain, bot)
     return result
 end
 
+local function grouped(text)
+    local names  = {}
+    local leader = nil
+    local first  = true
+    for line in string.gmatch(text or "", "[^\n]+") do
+        local name = first == false and string.match(line, "^%s+%*?%s*(%S+)%s*$") or nil
+        if name ~= nil then
+            table.insert(names, name)
+            if string.find(line, "*", 1, true) ~= nil then
+                leader = name
+            end
+        end
+        first = false
+    end
+    return names, leader
+end
+
+local function party(brain, bot, names)
+    local wanted = {}
+    for _, name in ipairs(names) do
+        wanted[name] = true
+    end
+    local found = {}
+    for _, entry in ipairs(brain:roster(bot)) do
+        if wanted[entry.name] and type(entry.profile) == "table" then
+            table.insert(found, entry.profile)
+        end
+    end
+    return found
+end
+
 function M.take(brain, bot)
-    local seen     = brain:observe(bot)
-    local position = bot:position()
+    local seen           = brain:observe(bot)
+    local position       = bot:position()
+    local names          = {}
+    local listed, leader = grouped(seen.group)
+    for _, name in ipairs(listed) do
+        if name ~= bot:name() then
+            table.insert(names, name)
+        end
+    end
     return {
         self    = {
             name      = bot:name(),
@@ -37,6 +75,9 @@ function M.take(brain, bot)
             dam       = seen.dam,
             hit       = seen.hit,
             struck    = seen.struck,
+            casted    = seen.casted,
+            grouping  = seen.grouping,
+            cloaked   = seen.cloaked,
         },
         buffs   = seen.buffs,
         spells  = seen.spells,
@@ -61,6 +102,9 @@ function M.take(brain, bot)
         pace    = seen.pace,
         now     = seen.now,
         persona = brain:persona(bot),
+        group   = names,
+        leader  = leader,
+        party   = party(brain, bot, names),
     }
 end
 

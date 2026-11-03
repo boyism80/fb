@@ -1,5 +1,5 @@
 local data     = require("brain.data.combat")
-local magic    = require("brain.data.spells")
+local battle   = require("brain.policies.battle")
 local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
 local ground   = require("brain.policies.ground")
@@ -24,7 +24,7 @@ end
 local function low(snap, query)
     local threat = danger.threat(snap, ahead(snap, query))
     return snap.self.hp < snap.self.max_hp and ((threat > 0 and snap.self.hp <= threat) or
-        snap.self.hp <= ground.need(snap, query))
+        snap.self.hp <= ground.need(snap, query) or snap.self.hp <= battle.need(snap, query))
 end
 
 local function dose(doses, deficit)
@@ -82,7 +82,9 @@ end
 local function refill(snap, query)
     local least = recovery.least(snap)
     local mp    = snap.self.mp or 0
-    if least == nil or mp >= least then
+    local plan  = ground.choose(snap, query)
+    local need  = math.min(snap.self.max_mp or 0, math.max(least or 0, plan ~= nil and plan.spend or 0))
+    if least == nil or mp >= need then
         return nil
     end
     local spells = recovery.spells(snap)
@@ -114,13 +116,14 @@ end
 function M.value(snap, query)
     local action = choose(snap, query)
     local worth  = value.baseline(snap, query)
-    local cast   = 1000 / magic.cast_rate
+    local cast   = combat.cast(snap)
     local gain   = 0
     local time   = action.kind == ACTION.CAST and cast or action.kind == ACTION.USE and cast or 0
     if M.thank(snap, query) == nil and mend(snap, query) == nil then
         gain = value.mana(snap, query) * ((snap.self.max_mp or 0) - (snap.self.mp or 0))
     else
-        local need    = math.max(danger.threat(snap, ahead(snap, query)), ground.need(snap, query), 1)
+        local need    = math.max(danger.threat(snap, ahead(snap, query)), ground.need(snap, query),
+            battle.need(snap, query), 1)
         local deficit = math.max(0, math.min(need, snap.self.max_hp) - snap.self.hp)
         local heal    = recovery.heal(snap)
         local doses   = recovery.doses(snap, "hp")

@@ -20,7 +20,8 @@ function M.value(snap, query)
     local threat = danger.fatal(snap, query)
     local worth  = value.baseline(snap, query)
     local stay   = danger.chance(snap, query, threat, math.huge) * danger.loss(snap, query, worth)
-    return stay - value.cost(snap, query, M.propose(snap, query), worth)
+    local trip   = value.trip(snap, query, M.propose(snap, query).dest, worth)
+    return stay - (trip ~= nil and trip.cost or math.huge)
 end
 
 return M

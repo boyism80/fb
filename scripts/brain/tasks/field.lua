@@ -1,6 +1,8 @@
+local data     = require("brain.data.combat")
 local battle   = require("brain.policies.battle")
 local combat   = require("brain.policies.combat")
-local ground   = require("brain.policies.ground")
+local escort   = require("brain.policies.escort")
+local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
 local value    = require("brain.policies.value")
 
@@ -59,11 +61,28 @@ function M.wanted(snap, query)
     return objective.task == "FIELD" and objective.dest ~= nil
 end
 
+local function gather(snap, query, best, index)
+    if snap.leader == snap.self.name then
+        local gate = best.gate or best.floors[1].map
+        if index == nil and snap.world.map ~= gate then
+            return { kind = ACTION.MOVE, dest = { maps = { gate } } }
+        end
+        return { kind = ACTION.HOLD }
+    end
+    local lead = party.leader(snap)
+    if lead == nil or lead.world.x == nil then
+        return { kind = ACTION.HOLD }
+    end
+    local range = math.min(data.sight.x, data.sight.y)
+    return { kind = ACTION.MOVE, dest = { map = lead.world.map, x = lead.world.x, y = lead.world.y, range = range } }
+end
+
 function M.propose(snap, query)
-    local verdict = ground.ready(snap, query)
-    local best    = verdict.best
-    local index   = position(snap, best.floors)
-    if index == nil then
+    local best  = party.plan(snap, query)
+    local index = position(snap, best.floors)
+    if #(snap.party or {}) > 0 and escort.complete(snap, query) == false then
+        return gather(snap, query, best, index)
+    elseif index == nil then
         return { kind = ACTION.MOVE, dest = { maps = { best.floors[1].map } } }
     end
 

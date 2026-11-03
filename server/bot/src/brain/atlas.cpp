@@ -550,6 +550,80 @@ std::optional<atlas::plan> atlas::route(uint16_t                            from
     return result;
 }
 
+std::unordered_set<uint16_t> atlas::reach(uint16_t                            from,
+                                          const position&                     at,
+                                          uint8_t                             level,
+                                          const std::unordered_set<uint64_t>& closed,
+                                          const std::unordered_set<uint32_t>& perilous,
+                                          const std::unordered_set<uint16_t>& shunned) const
+{
+    auto deadly = [this, &perilous](uint16_t map) {
+        auto& spawns = this->spawns(map);
+        return std::any_of(spawns.begin(), spawns.end(), [&perilous](const spawn& spawn) {
+            return perilous.contains(spawn.mob);
+        });
+    };
+
+    struct visit
+    {
+        uint32_t cost;
+        position at;
+    };
+
+    using node  = std::pair<uint32_t, uint16_t>;
+    auto exits  = std::array{DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
+    auto visits = std::unordered_map<uint16_t, visit>{
+        {from, visit{0, at}}
+    };
+    auto result = std::unordered_set<uint16_t>{};
+    auto open   = std::priority_queue<node, std::vector<node>, std::greater<node>>{};
+    open.push({0, from});
+    while (open.empty() == false)
+    {
+        auto [cost, current] = open.top();
+        open.pop();
+
+        auto here = visits.at(current);
+        if (cost > here.cost)
+            continue;
+
+        if (shunned.contains(current) == false)
+            result.insert(current);
+
+        for (auto& hop : this->warps(current))
+        {
+            if (level < hop.min_level || level > hop.max_level || closed.contains(atlas::gate(current, hop.before)) ||
+                this->reaches(current, here.at, hop.before) == false)
+                continue;
+
+            auto landing = this->find_grid(hop.dest);
+            if (landing == nullptr || std::none_of(exits.begin(), exits.end(), [&](auto direction) {
+                    return landing->passable(hop.after, direction);
+                }))
+                continue;
+
+            if (shunned.contains(hop.dest))
+                continue;
+
+            if (deadly(hop.dest))
+            {
+                result.insert(hop.dest);
+                continue;
+            }
+
+            auto steps = static_cast<uint32_t>(std::abs(hop.before.x - here.at.x) + std::abs(hop.before.y - here.at.y));
+            auto next  = cost + steps + 1;
+            auto known = visits.find(hop.dest);
+            if (known != visits.end() && known->second.cost <= next)
+                continue;
+
+            visits.insert_or_assign(hop.dest, visit{next, hop.after});
+            open.push({next, hop.dest});
+        }
+    }
+    return result;
+}
+
 atlas::position atlas::landing(uint16_t map)
 {
     auto model = fb::model::table::map->find(map);

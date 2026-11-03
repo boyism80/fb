@@ -412,6 +412,17 @@ async::task<void> bot_integration_test::on_initialize(game_bot_controller& contr
                 return resp.text == "자연회복을 껐습니다.";
             },
             DEFAULT_TIMEOUT);
+        for (auto attempt = 0; attempt < 2; attempt++)
+        {
+            auto&& toggled = co_await bot->request<game_resp::message>(
+                *bot->make<game_reqs::update_option>(fb::model::enum_value::OPTION::GROUP, false),
+                [](auto& resp) -> bool {
+                    return resp.text.find("그룹허가") != std::string::npos;
+                },
+                DEFAULT_TIMEOUT);
+            if (toggled.text.find(": OFF") != std::string::npos)
+                break;
+        }
     }
 }
 

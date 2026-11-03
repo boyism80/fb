@@ -1,4 +1,5 @@
 local magic  = require("brain.data.spells")
+local combat = require("brain.policies.combat")
 local ground = require("brain.policies.ground")
 local value  = require("brain.policies.value")
 
@@ -45,7 +46,7 @@ local function worth(snap, query, name, data)
     local power   = value.power(snap, query)
     local lost    = power > 0 and 1 - value.power(without, query) / power or 0
     local rate    = value.baseline(snap, query).value
-    local cast    = 1 / magic.cast_rate
+    local cast    = combat.cast(snap) / 1000
     return rate * (lost * (data.buff_time or 0) - cast) - value.mana(snap, query) * (data.mp or 0)
 end
 

@@ -8,6 +8,10 @@ return {
     bare       = { min = 1, max = 5 },
     hit        = { min = 10, max = 100, front = 12, floor = -5 },
     reach      = 1,
+    adjacent   = 4,
+    natural    = { hp = 0.005 / 10, mp = 0.02 / 25 },
     sight      = { x = 8, y = 7 },
     shrine     = { npcs = { "좌성황", "우성황", "공성성황", "성황할머니" }, limit = 100, words = "감사합니다" },
+    group      = { bonus = { POET = 0.1 } },
+    party      = { scan = 4 },
 }

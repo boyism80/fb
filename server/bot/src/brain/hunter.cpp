@@ -62,7 +62,8 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
         if (learned.has_value() == false)
             co_return event{"REFUSED", map, here};
 
-        auto mp = bot->mp();
+        auto mp      = bot->mp();
+        auto casting = clock::now();
         if (maneuver.self == false)
             face();
         bot->send(*bot->make<game_reqs::spell_cast>(static_cast<fb::model::enum_value::SPELL_TYPE>(learned->type),
@@ -71,11 +72,13 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
                                                     maneuver.self ? bot->oid() : oid,
                                                     maneuver.self ? here : target));
         this->act(bot->id, "cast");
+        this->casting(bot->id);
         this->progress(bot->id);
         std::ignore = co_await this->synced(bot);
+        this->measure(bot->id, "cast", std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - casting));
         if (auto ended = check(); ended.has_value())
             co_return ended.value();
-        co_return event{bot->mp() < mp ? "DONE" : "REFUSED", map, here};
+        co_return event{bot->mp() < mp || maneuver.cost == 0 ? "DONE" : "REFUSED", map, here};
     }
     else if (maneuver.kind == MANEUVER::USE)
     {

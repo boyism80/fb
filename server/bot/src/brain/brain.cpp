@@ -284,6 +284,10 @@ const char* brain::name(ACTION value)
         return "CAST";
     case ACTION::SAY:
         return "SAY";
+    case ACTION::INVITE:
+        return "INVITE";
+    case ACTION::LEAVE:
+        return "LEAVE";
     }
     return "";
 }
@@ -304,7 +308,9 @@ void brain::bind(lua_State* L)
                        ACTION::WAIT,
                        ACTION::FORGET,
                        ACTION::CAST,
-                       ACTION::SAY})
+                       ACTION::SAY,
+                       ACTION::INVITE,
+                       ACTION::LEAVE})
     {
         lua_pushinteger(L, static_cast<lua_Integer>(value));
         lua_setfield(L, -2, brain::name(value));
@@ -422,6 +428,12 @@ async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
             { }
         }
 
+        {
+            auto lock  = std::lock_guard(this->_mutex);
+            auto found = this->_minds.find(bot->id);
+            if (found != this->_minds.end())
+                found->second.missed.clear();
+        }
         auto next = bot->level() > 0 && bot->class_name().empty() == false ? co_await this->think(bot) : std::nullopt;
         if (this->update(bot->id, session, next) == false)
             break;
@@ -430,14 +442,23 @@ async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
         if (next.has_value() && next->task.empty() == false && next->kind != ACTION::CONTINUE &&
             next->kind != ACTION::HOLD && this->halted(bot->id, next.value()) == false)
         {
+            auto missed = std::vector<std::pair<std::string, uint32_t>>{};
             {
                 auto lock  = std::lock_guard(this->_mutex);
                 auto found = this->_minds.find(bot->id);
                 if (found != this->_minds.end())
+                {
                     found->second.performing = next->task;
+                    found->second.acting     = next->kind;
+                    missed                   = std::exchange(found->second.missed, {});
+                }
             }
 
             bot->interruptible(true);
+            for (auto& [kind, oid] : missed)
+            {
+                this->notice(*bot, kind, oid);
+            }
             auto started = clock::now();
             auto result  = co_await this->perform(bot, next.value());
             bot->interruptible(false);
@@ -450,6 +471,7 @@ async::task<void> brain::run(std::shared_ptr<game_bot> bot, uint64_t session)
                     interrupted               = found->second.interrupted;
                     found->second.interrupted = false;
                     found->second.performing.clear();
+                    found->second.acting = ACTION::TASK;
                 }
             }
 
@@ -578,6 +600,25 @@ void brain::vacate(const std::string& name)
 {
     auto lock = std::lock_guard(_ledger_mutex);
     brain::evict(name);
+    _roster.erase(name);
+}
+
+void brain::post(const std::string& name, uint16_t map, fb::lua::value profile)
+{
+    auto lock = std::lock_guard(_ledger_mutex);
+    _roster.insert_or_assign(name, listing{map, std::move(profile)});
+}
+
+std::vector<std::pair<std::string, brain::listing>> brain::roster(const std::string& except)
+{
+    auto lock   = std::lock_guard(_ledger_mutex);
+    auto result = std::vector<std::pair<std::string, listing>>{};
+    for (auto& [name, entry] : _roster)
+    {
+        if (name != except)
+            result.emplace_back(name, entry);
+    }
+    return result;
 }
 
 double brain::demand(uint16_t map, const std::string& except)
@@ -643,12 +684,23 @@ void brain::notice(game_bot& bot, std::string_view kind, uint32_t oid)
     {
         auto lock  = std::lock_guard(this->_mutex);
         auto found = this->_minds.find(bot.id);
-        if (found == this->_minds.end() || found->second.performing.empty() || found->second.interrupted ||
-            found->second.alarming)
+        if (found == this->_minds.end() || found->second.interrupted)
             return;
 
         auto& mind = found->second;
+        if (mind.performing.empty() || mind.alarming)
+        {
+            auto event = std::pair{std::string(kind), oid};
+            if (std::ranges::find(mind.missed, event) == mind.missed.end())
+                mind.missed.push_back(std::move(event));
+            return;
+        }
+
         if (kind == "hit" && bot.hp() > mind.concern.hp)
+            return;
+
+        if (kind == "dialog" && mind.acting != ACTION::MOVE && mind.acting != ACTION::ATTACK &&
+            mind.acting != ACTION::PICK && mind.acting != ACTION::CAST && mind.acting != ACTION::WAIT)
             return;
 
         if (kind == "sight")
@@ -712,6 +764,7 @@ async::task<void> brain::alarm(std::shared_ptr<game_bot> bot, std::string task, 
     }
 
     auto interrupt = false;
+    auto missed    = std::vector<std::pair<std::string, uint32_t>>{};
     {
         auto lock  = std::lock_guard(this->_mutex);
         auto found = this->_minds.find(bot->id);
@@ -721,6 +774,8 @@ async::task<void> brain::alarm(std::shared_ptr<game_bot> bot, std::string task, 
             interrupt              = reason.empty() == false && found->second.performing == task;
             if (interrupt)
                 found->second.interrupted = true;
+            else if (found->second.performing.empty() == false)
+                missed = std::exchange(found->second.missed, {});
         }
     }
 
@@ -728,6 +783,10 @@ async::task<void> brain::alarm(std::shared_ptr<game_bot> bot, std::string task, 
     {
         fb::logger::debug("brain: bot_id={} interrupt {} by {} ({})", bot->id, task, reason, kind);
         bot->interrupt_hooks();
+    }
+    for (auto& [event, oid] : missed)
+    {
+        this->notice(*bot, event, oid);
     }
 }
 

@@ -10,11 +10,11 @@ local M = {}
 
 local NEUTRAL = { defense = 0, ward = 0, resists = {}, size = "SMALL" }
 
-local function sustained(choice, field, regen)
+local function sustained(choice, field, regen, rate)
     if choice == nil or choice[field] <= 0 then
         return 0
     end
-    local paced = choice[field] * magic.cast_rate
+    local paced = choice[field] * rate
     if choice.mp <= 0 then
         return paced
     end
@@ -106,6 +106,7 @@ function M.capability(snap, query)
     local options = fight.options(snap, NEUTRAL)
     local refill  = recovery.rates(snap)
     local regen   = refill.mp
+    local rate    = 1000 / fight.cast(snap)
     local melee   = fight.strike(snap, query, NEUTRAL) * 1000 / combat.swing
     local single  = strongest(options.offense, "damage", function(choice)
         return magic.spells[choice.name].role == "ATTACK"
@@ -127,15 +128,15 @@ function M.capability(snap, query)
 
     return {
         dps      = {
-            single = melee + sustained(single, "damage", regen),
-            area   = sustained(area, "damage", regen),
+            single = melee + sustained(single, "damage", regen, rate),
+            area   = sustained(area, "damage", regen, rate),
             melee  = melee,
         },
         burst    = math.max(opener ~= nil and opener.damage or 0, nuke),
         ehp      = snap.self.hp / guard,
         hps      = {
-            self   = sustained(heal, "hp", regen),
-            others = sustained(others, "hp", regen),
+            self   = sustained(heal, "hp", regen, rate),
+            others = sustained(others, "hp", regen, rate),
         },
         supply   = supplies(snap),
         refill   = refill,
