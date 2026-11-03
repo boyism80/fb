@@ -3,6 +3,8 @@ local siege = require('schedule.siege')
 
 local M = {}
 
+local QUEST_MAX_VALUE = 2147483647
+
 local function is_clan_master(me)
     local clan = me:clan()
     if clan == nil then
@@ -2098,9 +2100,9 @@ M.functions = {
                 me:message("사용법: /퀘스트완료 <ID>")
                 return true
             end
-            id = tonumber(id)
-            if not id or id < 0 then
-                me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+            id = math.tointeger(tonumber(id))
+            if not id or id < 0 or id > QUEST_MAX_VALUE then
+                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
                 return true
             end
 
@@ -2127,19 +2129,19 @@ M.functions = {
                 return true
             end
 
-            id = tonumber(id)
-            if not id or id < 0 then
-                me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+            id = math.tointeger(tonumber(id))
+            if not id or id < 0 or id > QUEST_MAX_VALUE then
+                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
                 return true
             end
-            step = tonumber(step)
-            if step == nil or step < 0 then
-                me:message("스텝은 0 이상의 숫자여야 합니다.")
+            step = math.tointeger(tonumber(step))
+            if step == nil or step < 0 or step > QUEST_MAX_VALUE then
+                me:message(string.format("스텝은 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
                 return true
             end
-            progress = tonumber(progress)
-            if progress == nil or progress < 0 then
-                me:message("진행도는 0 이상의 숫자여야 합니다.")
+            progress = math.tointeger(tonumber(progress))
+            if progress == nil or progress < 0 or progress > QUEST_MAX_VALUE then
+                me:message(string.format("진행도는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
                 return true
             end
             param = tostring(param or '')
@@ -2153,7 +2155,9 @@ M.functions = {
             end
             quest:step(step)
             quest:progress(progress)
-            quest:param(param)
+            if not quest:param(param) then
+                me:message("파라미터는 255바이트까지 입력할 수 있습니다.")
+            end
             return true
         end,
     },
@@ -2168,9 +2172,9 @@ M.functions = {
                 return true
             end
 
-            id = tonumber(id)
-            if not id or id < 0 then
-                me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+            id = math.tointeger(tonumber(id))
+            if not id or id < 0 or id > QUEST_MAX_VALUE then
+                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
                 return true
             end
 
@@ -2189,14 +2193,14 @@ M.functions = {
                 me:message("사용법: /퀘스트진행 <ID> <진행도>")
                 return true
             end
-            id = tonumber(id)
-            value = tonumber(value)
-            if not id or id < 0 then
-                me:message("퀘스트 ID는 0 이상의 숫자여야 합니다.")
+            id = math.tointeger(tonumber(id))
+            value = math.tointeger(tonumber(value))
+            if not id or id < 0 or id > QUEST_MAX_VALUE then
+                me:message(string.format("퀘스트 ID는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
                 return true
             end
-            if not value or value < 0 then
-                me:message("진행도는 0 이상의 숫자여야 합니다.")
+            if not value or value < 0 or value > QUEST_MAX_VALUE then
+                me:message(string.format("진행도는 0~%d 사이의 정수여야 합니다.", QUEST_MAX_VALUE))
                 return true
             end
             local quest = me:quest(id)

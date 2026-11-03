@@ -6620,7 +6620,14 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
         return 1;
     }
 
-    auto id       = lua->tointeger(2);
+    auto raw_id = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{-1};
+    if (raw_id < 0 || raw_id > fb::game::quest::MAX_VALUE)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto id       = static_cast<uint32_t>(raw_id);
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto result   = std::make_shared<std::shared_ptr<fb::game::quest>>();
     auto builder  = lua->new_co_builder();
@@ -6732,7 +6739,14 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto id       = lua->tointeger(2);
+    auto raw_id = lua_isinteger(L, 2) ? lua_tointeger(L, 2) : lua_Integer{-1};
+    if (raw_id < 0 || raw_id > fb::game::quest::MAX_VALUE)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto id       = static_cast<uint32_t>(raw_id);
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto result   = std::make_shared<std::shared_ptr<fb::game::quest>>();
     auto builder  = lua->new_co_builder();
@@ -6769,9 +6783,11 @@ int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
     }
 
     std::optional<uint32_t> quest_id;
-    if (lua->is_number(2))
+    if (lua_isinteger(L, 2))
     {
-        quest_id = static_cast<uint32_t>(lua->tointeger(2));
+        auto raw_id = lua_tointeger(L, 2);
+        if (raw_id >= 0 && raw_id <= fb::game::quest::MAX_VALUE)
+            quest_id = static_cast<uint32_t>(raw_id);
     }
     else if (lua->is_userdata<fb::game::quest>(2))
     {

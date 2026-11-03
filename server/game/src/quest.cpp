@@ -37,14 +37,22 @@ uint32_t quest::step() const
     return this->_step;
 }
 
-void quest::step(uint32_t step)
+bool quest::step(uint32_t step)
 {
+    if (step > MAX_VALUE)
+        return false;
+
     this->_step = step;
+    return true;
 }
 
-void quest::progress(uint32_t progress)
+bool quest::progress(uint32_t progress)
 {
+    if (progress > MAX_VALUE)
+        return false;
+
     this->_progress = progress;
+    return true;
 }
 
 uint32_t quest::progress() const
@@ -73,6 +81,9 @@ bool quest::inc_progress(uint32_t value)
     if (owner == nullptr)
         return false;
 
+    if (value > MAX_VALUE - this->_progress)
+        return false;
+
     this->_progress += value;
     return true;
 }
@@ -84,6 +95,9 @@ bool quest::inc_step(uint32_t value)
 
     auto owner = this->owner.lock();
     if (owner == nullptr)
+        return false;
+
+    if (value > MAX_VALUE - this->_step)
         return false;
 
     this->_step     += value;
@@ -138,6 +152,9 @@ bool quests::start(uint32_t id)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
+        return false;
+
+    if (id > quest::MAX_VALUE)
         return false;
 
     if (this->contains(id))

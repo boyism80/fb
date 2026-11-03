@@ -5,6 +5,7 @@
 #include <fb/model/model.h>
 
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -26,7 +27,8 @@ private:
     std::string _param     = "";
 
 public:
-    static constexpr size_t MAX_PARAM_LENGTH = 255;
+    static constexpr size_t   MAX_PARAM_LENGTH = 255;
+    static constexpr uint32_t MAX_VALUE        = std::numeric_limits<int32_t>::max();
 
     uint32_t                           id;
     std::weak_ptr<fb::game::character> owner;
@@ -43,9 +45,9 @@ public:
 
 public:
     uint32_t    step() const;
-    void        step(uint32_t step);
+    bool        step(uint32_t step);
     uint32_t    progress() const;
-    void        progress(uint32_t progress);
+    bool        progress(uint32_t progress);
     std::string param() const;
     bool        param(std::string_view param);
     bool        inc_progress(uint32_t value = 1);
