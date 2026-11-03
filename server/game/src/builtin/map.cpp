@@ -322,10 +322,16 @@ int builtin::map::builtin_movable(lua_State* L)
         if (obj->is(OBJECT_TYPE::CHARACTER))
             role = static_cast<character*>(obj.get())->role();
 
-        auto pos       = position;
-        auto direction = obj->direction();
+        auto pos  = position;
+        auto path = std::vector<fb::model::point16_t>();
         if (is_front)
+        {
             pos = obj->position();
+            for (auto i = 1; i <= step; i++)
+            {
+                path.push_back(obj->front_position(i));
+            }
+        }
 
         co_await server.threads.switching(map_weak);
 
@@ -333,22 +339,15 @@ int builtin::map::builtin_movable(lua_State* L)
         if (map_locked == nullptr)
             co_return;
 
-        if (is_front)
+        auto ignore_objects = [](const fb::game::object&) {
+            return false;
+        };
+        for (auto& cell : path)
         {
-            auto ignore_objects = [](const fb::game::object&) {
-                return false;
-            };
-            for (auto i = 0; i < step; i++)
-            {
-                auto next = map_locked->step(pos, direction);
-                if (next.has_value() == false)
-                    co_return;
+            if (map_locked->movable(cell, ignore_objects) == false)
+                co_return;
 
-                if (map_locked->movable(next.value(), ignore_objects) == false)
-                    co_return;
-
-                pos = next.value();
-            }
+            pos = cell;
         }
 
         *result = map_locked->movable(pos, [=](const auto& near_obj) -> bool {
