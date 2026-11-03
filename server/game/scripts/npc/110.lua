@@ -64,21 +64,29 @@ return {
 
         if q:step() == 6 then
             local progress = q:progress()
-            if progress >= 1 and progress <= 9 then
-                me:dialog(npc, '정말 감사해요. 덕분에 도삭산이 많이 보기 좋아졌어요.', { prev = false, next = false })
+            if progress < 10 then
+                me:dialog(npc, '아직 많이 심지 못하셨군요..', { prev = false, next = false })
                 return
             end
+
+            local reward_name = '동인각'
+            local reward_count = 5
             if progress >= 1000 then
-                if me:mkitem('적막의목걸이', 1) == nil then
-                    me:dialog(npc, '소지품이 가득 차서 적막의목걸이를 받을 수 없어요.', { prev = false, next = false })
-                    return
-                end
-                q:step(7)
-                me:push_achievement(9, '도삭산 300층 퀘스트 완료', 7, 1)
-                me:dialog(npc, '흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..', { prev = false, next = false })
+                reward_name = '적막의목걸이'
+                reward_count = 1
+            elseif progress >= 100 then
+                reward_name = '은인각'
+                reward_count = 1
+            end
+
+            if me:mkitem(reward_name, reward_count) == nil then
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '을', '를') .. ' 받을 수 없어요.',
+                    { prev = false, next = false })
                 return
             end
-            me:dialog(npc, '아직 많이 심지 못하셨군요..', { prev = false, next = false })
+            q:step(7)
+            me:push_achievement(9, '도삭산 300층 퀘스트 완료', 7, 1)
+            me:dialog(npc, '흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..', { prev = false, next = false })
             return
         end
 

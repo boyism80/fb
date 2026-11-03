@@ -80,7 +80,7 @@ return {
                 return
             end
             ::NPC_108_0016::
-            btn = me:dialog(npc, '뫼롱씨는 내 생명의 은인이니 292층으로 가는 지름길로 보내주지.', { prev = true, next = true })
+            btn = me:dialog(npc, me:name() .. '씨는 내 생명의 은인이니 292층으로 가는 지름길로 보내주지.', { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_108_0015
             end
