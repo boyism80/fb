@@ -6873,9 +6873,15 @@ int builtin::character::builtin_transfer_clan_money(lua_State* L)
     if (ch == nullptr || clan == nullptr)
         return 0;
 
+    if (lua_isinteger(L, 3) == false || lua_isinteger(L, 4) == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
     auto clan_id     = clan->id();
-    auto clan_delta  = static_cast<int64_t>(lua->tointeger(3));
-    auto money_delta = static_cast<int64_t>(lua->tointeger(4));
+    auto clan_delta  = static_cast<int64_t>(lua_tointeger(L, 3));
+    auto money_delta = static_cast<int64_t>(lua_tointeger(L, 4));
     auto weak        = ch->weak_from_this_as<fb::game::character>();
     auto result      = std::make_shared<std::optional<bool>>();
     auto builder     = lua->new_co_builder();
