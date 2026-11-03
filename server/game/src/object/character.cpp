@@ -1649,7 +1649,7 @@ bool character::title(std::string_view value)
 {
     this->assert_thread();
 
-    if (fb::cp949_length(value) > MAX_TITLE_LENGTH)
+    if (fb::text_length(value) > MAX_TITLE_LENGTH)
         return false;
 
     if (this->_title == value)

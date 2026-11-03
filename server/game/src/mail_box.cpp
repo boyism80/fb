@@ -74,10 +74,10 @@ void mail_box::mark_system_mail(uint32_t system_mail_id)
 
 async::task<void> mail_box::send(std::string_view to, std::string_view title, std::string_view contents)
 {
-    if (fb::cp949_length(title) > fb::model::const_value::mail::TITLE_LENGTH)
+    if (fb::text_length(title) > fb::model::const_value::mail::TITLE_LENGTH)
         throw std::runtime_error(_TEXT(MESSAGE_MAIL_TOO_LONG_TITLE));
 
-    if (fb::cp949_length(contents) > fb::model::const_value::mail::CONTENTS_LENGTH)
+    if (fb::text_length(contents) > fb::model::const_value::mail::CONTENTS_LENGTH)
         throw std::runtime_error(_TEXT(MESSAGE_MAIL_TOO_LONG_CONTENTS));
 
     auto&  server       = this->owner.server;

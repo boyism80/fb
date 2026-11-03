@@ -2950,7 +2950,7 @@ int builtin::character::builtin_push_achievement(lua_State* L)
         return 0;
 
     auto text = lua->tostring(3);
-    if (fb::cp949_length(text) > fb::game::achievement::MAX_TEXT_LENGTH)
+    if (fb::text_length(text) > fb::game::achievement::MAX_TEXT_LENGTH)
         return 0;
 
     auto id    = static_cast<uint32_t>(raw_id);
