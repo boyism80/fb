@@ -158,6 +158,10 @@ function M.deposit_money(me, npc, money)
     if money == nil then
         money = my_money
     end
+    if math.type(money) ~= 'integer' then
+        npc:chat('돈이 모자랍니다.')
+        return true
+    end
 
     if money == 0 then
         return true
@@ -181,6 +185,10 @@ function M.withdraw_money(me, npc, money)
     local deposited = me:deposited_money()
     if money == nil then
         money = deposited
+    end
+    if math.type(money) ~= 'integer' then
+        npc:chat('그만큼 맡기지 않았습니다.')
+        return true
     end
 
     if money == 0 then
