@@ -9,7 +9,10 @@ return {
             local param = q:param() or ""
             local solved = param:match("^%d+,%d+,(%d+)$")
             if solved == "1" then
-                me:mkitem("담배", 1)
+                if me:mkitem("담배", 1) == nil then
+                    me:dialog(npc, "소지품이 가득 차서 담배를 줄 수 없네.", { prev = false, next = false })
+                    return
+                end
                 q:param("")
                 local btn = me:dialog(npc, "이야, 고맙네 고마워! 자네 덕분에 여자죄수의 큰 코를 납작하게 눌러 버릴 수 있었다네!",
                     { prev = false, next = false })
