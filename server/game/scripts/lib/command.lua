@@ -1511,13 +1511,13 @@ M.functions = {
             percent = math.max(0, math.min(100, percent))
             for parts, equipment in pairs(me:equipments()) do
                 local model = equipment:model()
-                equipment:durability(model:durability() * (percent / 100.0))
+                equipment:durability(math.floor(model:durability() * percent / 100))
             end
 
             for _, item in pairs(me:items()) do
                 local model = item:model()
                 if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) then
-                    item:durability(model:durability() * (percent / 100.0))
+                    item:durability(math.floor(model:durability() * percent / 100))
                 end
             end
             return true
