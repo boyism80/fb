@@ -302,6 +302,10 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     params.client_version = request.client_version;
     params.ui_mode        = request.ui_mode;
 
+    auto revive = !fb::config<std::optional<uint32_t>>("world") && params.state == STATE::GHOST;
+    if (revive)
+        params.state = STATE::NORMAL;
+
     auto ch   = this->server.template make<character>(params);
     auto weak = ch->template weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
@@ -313,7 +317,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     }
     ch->items.deposited(resp.character.deposited_money);
     ch->stat.base_hp(resp.character.base_hp, false);
-    ch->stat.hp(resp.character.hp, false);
+    ch->stat.hp(revive ? std::max<uint64_t>(resp.character.hp, fb::model::const_value::death_penalty::revive_hp)
+                       : resp.character.hp,
+                false);
     ch->stat.base_mp(resp.character.base_mp, false);
     ch->stat.mp(resp.character.mp, false);
     ch->stat.base_str(resp.character.strength, false);

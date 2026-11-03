@@ -2511,7 +2511,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.speed            = this->stat.base_speed();
     dto.reputation       = this->_reputation;
     dto.evaluation       = this->_evaluation.score;
-    if (this->matchmaker.has_return_point() && this->_state == STATE::GHOST)
+    if (!fb::config<std::optional<uint32_t>>("world") && this->_state == STATE::GHOST)
     {
         dto.state = static_cast<uint8_t>(STATE::NORMAL);
         dto.hp    = std::max<uint64_t>(dto.hp, fb::model::const_value::death_penalty::revive_hp);
