@@ -17,6 +17,7 @@
 #include <json/writer.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -2840,7 +2841,8 @@ async::task<void> character::death_loss()
         {
             auto  equipment       = std::static_pointer_cast<fb::game::equipment>(item);
             auto& equipment_model = equipment->model();
-            auto  penalty         = equipment_model.durability * fb::model::const_value::death_penalty::durability;
+            auto  penalty         = static_cast<uint32_t>(
+                std::ceil(equipment_model.durability * fb::model::const_value::death_penalty::durability));
             if (equipment->durability_down(penalty))
             {
                 this->items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
@@ -2862,8 +2864,9 @@ async::task<void> character::death_loss()
         if (equipment == nullptr)
             continue;
 
-        auto& model   = equipment->model();
-        auto  penalty = model.durability * fb::model::const_value::death_penalty::durability;
+        auto& model = equipment->model();
+        auto  penalty =
+            static_cast<uint32_t>(std::ceil(model.durability * fb::model::const_value::death_penalty::durability));
         if (equipment->durability_down(penalty))
         {
             this->items.equipment_off(parts);
