@@ -186,14 +186,33 @@ local function run_chuseok(me, npc)
             me:dialog(npc, "벌초를 하지 않으셨네요? 절 속이시면 안돼죠..", { prev = false, next = false })
             return true
         end
+        local given = quest.get_annual(me, quest.QUEST_CHUSEOK_OLGESIMNI)
+        if given ~= nil and given:completed() then
+            me:dialog(npc, "올해 올게심니는 이미 드렸어요.", { prev = false, next = false })
+            return true
+        end
         local btn = me:dialog(npc, "수고하셨어요. 올게심니를 드릴께요.. 매달마다 특정 아이템을 하나씩 모아서 1년동안 모으시면 좋을일이 생길꺼에요. 추석엔 올게심니에요.",
             { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return true
         end
+        if not festival.is('추석') then
+            return true
+        end
+        given = quest.get_annual(me, quest.QUEST_CHUSEOK_OLGESIMNI)
+        if given ~= nil and given:completed() then
+            return true
+        end
         if me:mkitem("올게심니", 1) == nil then
             me:dialog(npc, "소지품이 가득 차서 올게심니를 줄 수 없습니다.", { prev = false, next = false })
             return true
+        end
+        if given == nil then
+            given = me:start_quest(quest.QUEST_CHUSEOK_OLGESIMNI)
+        end
+        if given ~= nil then
+            given:complete()
+            festival.mark_completed_year(given)
         end
         q:progress(0)
         return true

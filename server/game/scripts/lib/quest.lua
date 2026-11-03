@@ -98,6 +98,7 @@ M.QUEST_YUDU_GOSA = 271
 M.QUEST_MAGPIE_BRIDGE = 272
 M.QUEST_SAMJIT_HWAMYEON = 273
 M.QUEST_JUNGYANG_SPRING = 274
+M.QUEST_CHUSEOK_OLGESIMNI = 275
 
 -- Festival quests that replay each lunar year.
 function M.get_annual(me, id)
