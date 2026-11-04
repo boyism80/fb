@@ -9,20 +9,24 @@ return {
             return
         end
 
+        local button, sel, list_btn
         if not me:has_items("종이쪽지", 1) then
-            me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", { prev = false, next = false })
-            return
+            button = me:dialog(npc, "제 친구가 보내셨다고요? 쪽지는 없지만, 그 친구 이야기를 아시는 걸 보니 믿겠습니다.", { prev = false, next = true })
+            if button == DIALOG_RESULT.QUIT then
+                return
+            end
+            goto NPC_544_0002
         end
 
         ::NPC_544_0000::
-        local button = me:dialog(npc, "오! 이 종이쪽지는 제친구로부터의 편지군요! 이친구 아직도 잘 살아있나요? 이 친구가 없었다면 전 이미 이세상에 없을겁니다.",
+        button = me:dialog(npc, "오! 이 종이쪽지는 제친구로부터의 편지군요! 이친구 아직도 잘 살아있나요? 이 친구가 없었다면 전 이미 이세상에 없을겁니다.",
             { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
         ::NPC_544_0001::
-        local sel, list_btn = me:list(npc, "이런 고마울데가...", {
+        sel, list_btn = me:list(npc, "이런 고마울데가...", {
             "편지 여기있습니다.",
             "전 다른일이 있어서...",
         }, { prev = true })
@@ -52,17 +56,16 @@ return {
             goto NPC_544_0002
         end
 
-        local required = { ["종이쪽지"] = 1 }
+        local required = {}
+        if me:has_items("종이쪽지", 1) then
+            required["종이쪽지"] = 1
+        end
         local code = me:exchange(
             { ['item'] = required },
             { ['item'] = { ["천상복숭아"] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
-            if not me:has_items("종이쪽지", 1) then
-                me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", { prev = false, next = false })
-            else
-                me:dialog(npc, "종이쪽지가 없지 않은가.", { prev = false, next = false })
-            end
+            me:dialog(npc, "종이쪽지가 없지 않은가.", { prev = false, next = false })
             return
         end
         if code == enum.exchange_result.LACK_CAPACITY then

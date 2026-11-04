@@ -161,6 +161,14 @@ end
 return {
     on_click = function(me, npc)
         local q = me:quest(quest.QUEST_PAMASPIRI)
+        if q and q:step() == 3 and not q:completed() and not me:has_items("꿀사탕", 1) then
+            if me:mkitem("꿀사탕", 1) == nil then
+                me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", { prev = false, next = false })
+                return
+            end
+            me:dialog(npc, "사탕을 잃어버리셨어요? 여기 다시 드릴께요.", { prev = false, next = false })
+            return
+        end
         if q and q:step() == 2 and not q:completed() then
             ::NPC_235_0001::
             local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." },
