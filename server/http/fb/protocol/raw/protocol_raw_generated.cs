@@ -345,15 +345,21 @@ public struct Castle : IFlatbufferObject
   public nullable.nullable_uint? OwnerClanId { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_ulong? SiegeId { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint SiegeRemaining { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public bool SiegeEnded { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public uint SiegeActiveRemaining { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public bool SiegeEnded { get { int o = __p.__offset(14); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public ulong Revision { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.@internal.raw.Castle> CreateCastle(FlatBufferBuilder builder,
       byte divine_beast = 0,
       Offset<nullable.nullable_uint> owner_clan_idOffset = default(Offset<nullable.nullable_uint>),
       Offset<nullable.nullable_ulong> siege_idOffset = default(Offset<nullable.nullable_ulong>),
       uint siege_remaining = 0,
-      bool siege_ended = false) {
-    builder.StartTable(5);
+      uint siege_active_remaining = 0,
+      bool siege_ended = false,
+      ulong revision = 0) {
+    builder.StartTable(7);
+    Castle.AddRevision(builder, revision);
+    Castle.AddSiegeActiveRemaining(builder, siege_active_remaining);
     Castle.AddSiegeRemaining(builder, siege_remaining);
     Castle.AddSiegeId(builder, siege_idOffset);
     Castle.AddOwnerClanId(builder, owner_clan_idOffset);
@@ -362,12 +368,14 @@ public struct Castle : IFlatbufferObject
     return Castle.EndCastle(builder);
   }
 
-  public static void StartCastle(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartCastle(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(0, divineBeast, 0); }
   public static void AddOwnerClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> ownerClanIdOffset) { builder.AddOffset(1, ownerClanIdOffset.Value, 0); }
   public static void AddSiegeId(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> siegeIdOffset) { builder.AddOffset(2, siegeIdOffset.Value, 0); }
   public static void AddSiegeRemaining(FlatBufferBuilder builder, uint siegeRemaining) { builder.AddUint(3, siegeRemaining, 0); }
-  public static void AddSiegeEnded(FlatBufferBuilder builder, bool siegeEnded) { builder.AddBool(4, siegeEnded, false); }
+  public static void AddSiegeActiveRemaining(FlatBufferBuilder builder, uint siegeActiveRemaining) { builder.AddUint(4, siegeActiveRemaining, 0); }
+  public static void AddSiegeEnded(FlatBufferBuilder builder, bool siegeEnded) { builder.AddBool(5, siegeEnded, false); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(6, revision, 0); }
   public static Offset<fb.protocol.@internal.raw.Castle> EndCastle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.raw.Castle>(o);
@@ -384,7 +392,9 @@ static public class CastleVerify
       && verifier.VerifyTable(tablePos, 6 /*OwnerClanId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 8 /*SiegeId*/, nullable.nullable_ulongVerify.Verify, false)
       && verifier.VerifyField(tablePos, 10 /*SiegeRemaining*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*SiegeEnded*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 12 /*SiegeActiveRemaining*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*SiegeEnded*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 16 /*Revision*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -2326,30 +2336,28 @@ public struct SavePayload : IFlatbufferObject
   public SavePayload __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public fb.protocol.@internal.raw.Character? Character { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol.@internal.raw.Character?)(new fb.protocol.@internal.raw.Character()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public fb.protocol.@internal.raw.Marriage? Marriage { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.raw.Marriage?)(new fb.protocol.@internal.raw.Marriage()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public fb.protocol.@internal.raw.Item? Items(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol.@internal.raw.Item?)(new fb.protocol.@internal.raw.Item()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int ItemsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol.@internal.raw.Spell? Spells(int j) { int o = __p.__offset(10); return o != 0 ? (fb.protocol.@internal.raw.Spell?)(new fb.protocol.@internal.raw.Spell()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int SpellsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol.@internal.raw.MatchmakingSkill? MatchmakingSkills(int j) { int o = __p.__offset(12); return o != 0 ? (fb.protocol.@internal.raw.MatchmakingSkill?)(new fb.protocol.@internal.raw.MatchmakingSkill()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int MatchmakingSkillsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol.@internal.raw.Achievement? Achievements(int j) { int o = __p.__offset(14); return o != 0 ? (fb.protocol.@internal.raw.Achievement?)(new fb.protocol.@internal.raw.Achievement()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int AchievementsLength { get { int o = __p.__offset(14); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol.@internal.raw.Quest? Quests(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol.@internal.raw.Quest?)(new fb.protocol.@internal.raw.Quest()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int QuestsLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol.@internal.raw.CollectionUnlock? CollectionUnlocks(int j) { int o = __p.__offset(18); return o != 0 ? (fb.protocol.@internal.raw.CollectionUnlock?)(new fb.protocol.@internal.raw.CollectionUnlock()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int CollectionUnlocksLength { get { int o = __p.__offset(18); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public long SnapshotTime { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetLong(o + __p.bb_pos) : (long)0; } }
-  public fb.protocol.@internal.raw.UnsettledRequest? UnsettledRequests(int j) { int o = __p.__offset(22); return o != 0 ? (fb.protocol.@internal.raw.UnsettledRequest?)(new fb.protocol.@internal.raw.UnsettledRequest()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int UnsettledRequestsLength { get { int o = __p.__offset(22); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol.@internal.raw.Escrow? Escrows(int j) { int o = __p.__offset(24); return o != 0 ? (fb.protocol.@internal.raw.Escrow?)(new fb.protocol.@internal.raw.Escrow()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int EscrowsLength { get { int o = __p.__offset(24); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol.@internal.raw.StorageBox? StorageBoxes(int j) { int o = __p.__offset(26); return o != 0 ? (fb.protocol.@internal.raw.StorageBox?)(new fb.protocol.@internal.raw.StorageBox()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int StorageBoxesLength { get { int o = __p.__offset(26); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.Item? Items(int j) { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.raw.Item?)(new fb.protocol.@internal.raw.Item()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int ItemsLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.Spell? Spells(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol.@internal.raw.Spell?)(new fb.protocol.@internal.raw.Spell()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int SpellsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.MatchmakingSkill? MatchmakingSkills(int j) { int o = __p.__offset(10); return o != 0 ? (fb.protocol.@internal.raw.MatchmakingSkill?)(new fb.protocol.@internal.raw.MatchmakingSkill()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int MatchmakingSkillsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.Achievement? Achievements(int j) { int o = __p.__offset(12); return o != 0 ? (fb.protocol.@internal.raw.Achievement?)(new fb.protocol.@internal.raw.Achievement()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int AchievementsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.Quest? Quests(int j) { int o = __p.__offset(14); return o != 0 ? (fb.protocol.@internal.raw.Quest?)(new fb.protocol.@internal.raw.Quest()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int QuestsLength { get { int o = __p.__offset(14); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.CollectionUnlock? CollectionUnlocks(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol.@internal.raw.CollectionUnlock?)(new fb.protocol.@internal.raw.CollectionUnlock()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int CollectionUnlocksLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public long SnapshotTime { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetLong(o + __p.bb_pos) : (long)0; } }
+  public fb.protocol.@internal.raw.UnsettledRequest? UnsettledRequests(int j) { int o = __p.__offset(20); return o != 0 ? (fb.protocol.@internal.raw.UnsettledRequest?)(new fb.protocol.@internal.raw.UnsettledRequest()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int UnsettledRequestsLength { get { int o = __p.__offset(20); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.Escrow? Escrows(int j) { int o = __p.__offset(22); return o != 0 ? (fb.protocol.@internal.raw.Escrow?)(new fb.protocol.@internal.raw.Escrow()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int EscrowsLength { get { int o = __p.__offset(22); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.@internal.raw.StorageBox? StorageBoxes(int j) { int o = __p.__offset(24); return o != 0 ? (fb.protocol.@internal.raw.StorageBox?)(new fb.protocol.@internal.raw.StorageBox()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int StorageBoxesLength { get { int o = __p.__offset(24); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol.@internal.raw.SavePayload> CreateSavePayload(FlatBufferBuilder builder,
       Offset<fb.protocol.@internal.raw.Character> characterOffset = default(Offset<fb.protocol.@internal.raw.Character>),
-      Offset<fb.protocol.@internal.raw.Marriage> marriageOffset = default(Offset<fb.protocol.@internal.raw.Marriage>),
       VectorOffset itemsOffset = default(VectorOffset),
       VectorOffset spellsOffset = default(VectorOffset),
       VectorOffset matchmaking_skillsOffset = default(VectorOffset),
@@ -2360,7 +2368,7 @@ public struct SavePayload : IFlatbufferObject
       VectorOffset unsettled_requestsOffset = default(VectorOffset),
       VectorOffset escrowsOffset = default(VectorOffset),
       VectorOffset storage_boxesOffset = default(VectorOffset)) {
-    builder.StartTable(12);
+    builder.StartTable(11);
     SavePayload.AddSnapshotTime(builder, snapshot_time);
     SavePayload.AddStorageBoxes(builder, storage_boxesOffset);
     SavePayload.AddEscrows(builder, escrowsOffset);
@@ -2371,64 +2379,62 @@ public struct SavePayload : IFlatbufferObject
     SavePayload.AddMatchmakingSkills(builder, matchmaking_skillsOffset);
     SavePayload.AddSpells(builder, spellsOffset);
     SavePayload.AddItems(builder, itemsOffset);
-    SavePayload.AddMarriage(builder, marriageOffset);
     SavePayload.AddCharacter(builder, characterOffset);
     return SavePayload.EndSavePayload(builder);
   }
 
-  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(12); }
+  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(11); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
-  public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
-  public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(2, itemsOffset.Value, 0); }
+  public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(1, itemsOffset.Value, 0); }
   public static VectorOffset CreateItemsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Item>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateItemsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Item>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.Item>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Item>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartItemsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddSpells(FlatBufferBuilder builder, VectorOffset spellsOffset) { builder.AddOffset(3, spellsOffset.Value, 0); }
+  public static void AddSpells(FlatBufferBuilder builder, VectorOffset spellsOffset) { builder.AddOffset(2, spellsOffset.Value, 0); }
   public static VectorOffset CreateSpellsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Spell>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Spell>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.Spell>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Spell>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartSpellsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddMatchmakingSkills(FlatBufferBuilder builder, VectorOffset matchmakingSkillsOffset) { builder.AddOffset(4, matchmakingSkillsOffset.Value, 0); }
+  public static void AddMatchmakingSkills(FlatBufferBuilder builder, VectorOffset matchmakingSkillsOffset) { builder.AddOffset(3, matchmakingSkillsOffset.Value, 0); }
   public static VectorOffset CreateMatchmakingSkillsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.MatchmakingSkill>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateMatchmakingSkillsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.MatchmakingSkill>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateMatchmakingSkillsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.MatchmakingSkill>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateMatchmakingSkillsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.MatchmakingSkill>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartMatchmakingSkillsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddAchievements(FlatBufferBuilder builder, VectorOffset achievementsOffset) { builder.AddOffset(5, achievementsOffset.Value, 0); }
+  public static void AddAchievements(FlatBufferBuilder builder, VectorOffset achievementsOffset) { builder.AddOffset(4, achievementsOffset.Value, 0); }
   public static VectorOffset CreateAchievementsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Achievement>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Achievement>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.Achievement>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Achievement>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartAchievementsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddQuests(FlatBufferBuilder builder, VectorOffset questsOffset) { builder.AddOffset(6, questsOffset.Value, 0); }
+  public static void AddQuests(FlatBufferBuilder builder, VectorOffset questsOffset) { builder.AddOffset(5, questsOffset.Value, 0); }
   public static VectorOffset CreateQuestsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Quest>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Quest>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.Quest>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Quest>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartQuestsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddCollectionUnlocks(FlatBufferBuilder builder, VectorOffset collectionUnlocksOffset) { builder.AddOffset(7, collectionUnlocksOffset.Value, 0); }
+  public static void AddCollectionUnlocks(FlatBufferBuilder builder, VectorOffset collectionUnlocksOffset) { builder.AddOffset(6, collectionUnlocksOffset.Value, 0); }
   public static VectorOffset CreateCollectionUnlocksVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CollectionUnlock>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.CollectionUnlock>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.CollectionUnlock>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.CollectionUnlock>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartCollectionUnlocksVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddSnapshotTime(FlatBufferBuilder builder, long snapshotTime) { builder.AddLong(8, snapshotTime, 0); }
-  public static void AddUnsettledRequests(FlatBufferBuilder builder, VectorOffset unsettledRequestsOffset) { builder.AddOffset(9, unsettledRequestsOffset.Value, 0); }
+  public static void AddSnapshotTime(FlatBufferBuilder builder, long snapshotTime) { builder.AddLong(7, snapshotTime, 0); }
+  public static void AddUnsettledRequests(FlatBufferBuilder builder, VectorOffset unsettledRequestsOffset) { builder.AddOffset(8, unsettledRequestsOffset.Value, 0); }
   public static VectorOffset CreateUnsettledRequestsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.UnsettledRequest>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateUnsettledRequestsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.UnsettledRequest>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateUnsettledRequestsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.UnsettledRequest>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateUnsettledRequestsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.UnsettledRequest>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartUnsettledRequestsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddEscrows(FlatBufferBuilder builder, VectorOffset escrowsOffset) { builder.AddOffset(10, escrowsOffset.Value, 0); }
+  public static void AddEscrows(FlatBufferBuilder builder, VectorOffset escrowsOffset) { builder.AddOffset(9, escrowsOffset.Value, 0); }
   public static VectorOffset CreateEscrowsVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Escrow>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Escrow>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.Escrow>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateEscrowsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.@internal.raw.Escrow>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEscrowsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddStorageBoxes(FlatBufferBuilder builder, VectorOffset storageBoxesOffset) { builder.AddOffset(11, storageBoxesOffset.Value, 0); }
+  public static void AddStorageBoxes(FlatBufferBuilder builder, VectorOffset storageBoxesOffset) { builder.AddOffset(10, storageBoxesOffset.Value, 0); }
   public static VectorOffset CreateStorageBoxesVector(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.@internal.raw.StorageBox>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
@@ -2447,17 +2453,16 @@ static public class SavePayloadVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyTable(tablePos, 4 /*Character*/, fb.protocol.@internal.raw.CharacterVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 6 /*Marriage*/, fb.protocol.@internal.raw.MarriageVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 8 /*Items*/, fb.protocol.@internal.raw.ItemVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 10 /*Spells*/, fb.protocol.@internal.raw.SpellVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 12 /*MatchmakingSkills*/, fb.protocol.@internal.raw.MatchmakingSkillVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 14 /*Achievements*/, fb.protocol.@internal.raw.AchievementVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 16 /*Quests*/, fb.protocol.@internal.raw.QuestVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 18 /*CollectionUnlocks*/, fb.protocol.@internal.raw.CollectionUnlockVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 20 /*SnapshotTime*/, 8 /*long*/, 8, false)
-      && verifier.VerifyVectorOfTables(tablePos, 22 /*UnsettledRequests*/, fb.protocol.@internal.raw.UnsettledRequestVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 24 /*Escrows*/, fb.protocol.@internal.raw.EscrowVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 26 /*StorageBoxes*/, fb.protocol.@internal.raw.StorageBoxVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 6 /*Items*/, fb.protocol.@internal.raw.ItemVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 8 /*Spells*/, fb.protocol.@internal.raw.SpellVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 10 /*MatchmakingSkills*/, fb.protocol.@internal.raw.MatchmakingSkillVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 12 /*Achievements*/, fb.protocol.@internal.raw.AchievementVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 14 /*Quests*/, fb.protocol.@internal.raw.QuestVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 16 /*CollectionUnlocks*/, fb.protocol.@internal.raw.CollectionUnlockVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 18 /*SnapshotTime*/, 8 /*long*/, 8, false)
+      && verifier.VerifyVectorOfTables(tablePos, 20 /*UnsettledRequests*/, fb.protocol.@internal.raw.UnsettledRequestVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 22 /*Escrows*/, fb.protocol.@internal.raw.EscrowVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 24 /*StorageBoxes*/, fb.protocol.@internal.raw.StorageBoxVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -4294,6 +4299,78 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
+public struct Divorce : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static Divorce GetRootAsDivorce(ByteBuffer _bb) { return GetRootAsDivorce(_bb, new Divorce()); }
+  public static Divorce GetRootAsDivorce(ByteBuffer _bb, Divorce obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public Divorce __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Spouse { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string RemarriageAfter { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetRemarriageAfterBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetRemarriageAfterBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetRemarriageAfterArray() { return __p.__vector_as_array<byte>(10); }
+
+  public static Offset<fb.protocol.@internal.request.raw.Divorce> CreateDivorce(FlatBufferBuilder builder,
+      uint world = 0,
+      uint user = 0,
+      uint spouse = 0,
+      StringOffset remarriage_afterOffset = default(StringOffset)) {
+    builder.StartTable(4);
+    Divorce.AddRemarriageAfter(builder, remarriage_afterOffset);
+    Divorce.AddSpouse(builder, spouse);
+    Divorce.AddUser(builder, user);
+    Divorce.AddWorld(builder, world);
+    return Divorce.EndDivorce(builder);
+  }
+
+  public static void StartDivorce(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
+  public static void AddSpouse(FlatBufferBuilder builder, uint spouse) { builder.AddUint(2, spouse, 0); }
+  public static void AddRemarriageAfter(FlatBufferBuilder builder, StringOffset remarriageAfterOffset) { builder.AddOffset(3, remarriageAfterOffset.Value, 0); }
+  public static Offset<fb.protocol.@internal.request.raw.Divorce> EndDivorce(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.request.raw.Divorce>(o);
+  }
+}
+
+
+static public class DivorceVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Spouse*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 10 /*RemarriageAfter*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.request.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
 public struct EndCastleSiege : IFlatbufferObject
 {
   private Table __p;
@@ -5594,6 +5671,78 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
+public struct Marry : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static Marry GetRootAsMarry(ByteBuffer _bb) { return GetRootAsMarry(_bb, new Marry()); }
+  public static Marry GetRootAsMarry(ByteBuffer _bb, Marry obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public Marry __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Spouse { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string RemarriageAfter { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetRemarriageAfterBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetRemarriageAfterBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetRemarriageAfterArray() { return __p.__vector_as_array<byte>(10); }
+
+  public static Offset<fb.protocol.@internal.request.raw.Marry> CreateMarry(FlatBufferBuilder builder,
+      uint world = 0,
+      uint user = 0,
+      uint spouse = 0,
+      StringOffset remarriage_afterOffset = default(StringOffset)) {
+    builder.StartTable(4);
+    Marry.AddRemarriageAfter(builder, remarriage_afterOffset);
+    Marry.AddSpouse(builder, spouse);
+    Marry.AddUser(builder, user);
+    Marry.AddWorld(builder, world);
+    return Marry.EndMarry(builder);
+  }
+
+  public static void StartMarry(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
+  public static void AddSpouse(FlatBufferBuilder builder, uint spouse) { builder.AddUint(2, spouse, 0); }
+  public static void AddRemarriageAfter(FlatBufferBuilder builder, StringOffset remarriageAfterOffset) { builder.AddOffset(3, remarriageAfterOffset.Value, 0); }
+  public static Offset<fb.protocol.@internal.request.raw.Marry> EndMarry(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.request.raw.Marry>(o);
+  }
+}
+
+
+static public class MarryVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Spouse*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 10 /*RemarriageAfter*/, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.request.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
 public struct MatchTransfer : IFlatbufferObject
 {
   private Table __p;
@@ -6784,35 +6933,25 @@ public struct StartCastleSiege : IFlatbufferObject
   public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public byte DivineBeast { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public ulong SiegeKey { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
-  public string Announcement { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetAnnouncementBytes() { return __p.__vector_as_span<byte>(12, 1); }
-#else
-  public ArraySegment<byte>? GetAnnouncementBytes() { return __p.__vector_as_arraysegment(12); }
-#endif
-  public byte[] GetAnnouncementArray() { return __p.__vector_as_array<byte>(12); }
 
   public static Offset<fb.protocol.@internal.request.raw.StartCastleSiege> CreateStartCastleSiege(FlatBufferBuilder builder,
       uint world = 0,
       uint host = 0,
       byte divine_beast = 0,
-      ulong siege_key = 0,
-      StringOffset announcementOffset = default(StringOffset)) {
-    builder.StartTable(5);
+      ulong siege_key = 0) {
+    builder.StartTable(4);
     StartCastleSiege.AddSiegeKey(builder, siege_key);
-    StartCastleSiege.AddAnnouncement(builder, announcementOffset);
     StartCastleSiege.AddHost(builder, host);
     StartCastleSiege.AddWorld(builder, world);
     StartCastleSiege.AddDivineBeast(builder, divine_beast);
     return StartCastleSiege.EndStartCastleSiege(builder);
   }
 
-  public static void StartStartCastleSiege(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartStartCastleSiege(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
   public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(2, divineBeast, 0); }
   public static void AddSiegeKey(FlatBufferBuilder builder, ulong siegeKey) { builder.AddUlong(3, siegeKey, 0); }
-  public static void AddAnnouncement(FlatBufferBuilder builder, StringOffset announcementOffset) { builder.AddOffset(4, announcementOffset.Value, 0); }
   public static Offset<fb.protocol.@internal.request.raw.StartCastleSiege> EndStartCastleSiege(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.StartCastleSiege>(o);
@@ -6829,7 +6968,6 @@ static public class StartCastleSiegeVerify
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*DivineBeast*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 10 /*SiegeKey*/, 8 /*ulong*/, 8, false)
-      && verifier.VerifyString(tablePos, 12 /*Announcement*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11247,9 +11385,11 @@ public struct UpdatedCastle : IFlatbufferObject
   public nullable.nullable_uint? OwnerClanId { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_ulong? SiegeId { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint SiegeRemaining { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public bool SiegeEnded { get { int o = __p.__offset(14); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public bool SiegeStarted { get { int o = __p.__offset(16); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public uint Error { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint SiegeActiveRemaining { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public bool SiegeEnded { get { int o = __p.__offset(16); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool SiegeStarted { get { int o = __p.__offset(18); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public ulong Revision { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public uint Error { get { int o = __p.__offset(22); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.UpdatedCastle> CreateUpdatedCastle(FlatBufferBuilder builder,
       uint host = 0,
@@ -11257,11 +11397,15 @@ public struct UpdatedCastle : IFlatbufferObject
       Offset<nullable.nullable_uint> owner_clan_idOffset = default(Offset<nullable.nullable_uint>),
       Offset<nullable.nullable_ulong> siege_idOffset = default(Offset<nullable.nullable_ulong>),
       uint siege_remaining = 0,
+      uint siege_active_remaining = 0,
       bool siege_ended = false,
       bool siege_started = false,
+      ulong revision = 0,
       uint error = 0) {
-    builder.StartTable(8);
+    builder.StartTable(10);
+    UpdatedCastle.AddRevision(builder, revision);
     UpdatedCastle.AddError(builder, error);
+    UpdatedCastle.AddSiegeActiveRemaining(builder, siege_active_remaining);
     UpdatedCastle.AddSiegeRemaining(builder, siege_remaining);
     UpdatedCastle.AddSiegeId(builder, siege_idOffset);
     UpdatedCastle.AddOwnerClanId(builder, owner_clan_idOffset);
@@ -11272,15 +11416,17 @@ public struct UpdatedCastle : IFlatbufferObject
     return UpdatedCastle.EndUpdatedCastle(builder);
   }
 
-  public static void StartUpdatedCastle(FlatBufferBuilder builder) { builder.StartTable(8); }
+  public static void StartUpdatedCastle(FlatBufferBuilder builder) { builder.StartTable(10); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(1, divineBeast, 0); }
   public static void AddOwnerClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> ownerClanIdOffset) { builder.AddOffset(2, ownerClanIdOffset.Value, 0); }
   public static void AddSiegeId(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> siegeIdOffset) { builder.AddOffset(3, siegeIdOffset.Value, 0); }
   public static void AddSiegeRemaining(FlatBufferBuilder builder, uint siegeRemaining) { builder.AddUint(4, siegeRemaining, 0); }
-  public static void AddSiegeEnded(FlatBufferBuilder builder, bool siegeEnded) { builder.AddBool(5, siegeEnded, false); }
-  public static void AddSiegeStarted(FlatBufferBuilder builder, bool siegeStarted) { builder.AddBool(6, siegeStarted, false); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(7, error, 0); }
+  public static void AddSiegeActiveRemaining(FlatBufferBuilder builder, uint siegeActiveRemaining) { builder.AddUint(5, siegeActiveRemaining, 0); }
+  public static void AddSiegeEnded(FlatBufferBuilder builder, bool siegeEnded) { builder.AddBool(6, siegeEnded, false); }
+  public static void AddSiegeStarted(FlatBufferBuilder builder, bool siegeStarted) { builder.AddBool(7, siegeStarted, false); }
+  public static void AddRevision(FlatBufferBuilder builder, ulong revision) { builder.AddUlong(8, revision, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(9, error, 0); }
   public static Offset<fb.protocol.@internal.response.raw.UpdatedCastle> EndUpdatedCastle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.UpdatedCastle>(o);
@@ -11298,9 +11444,11 @@ static public class UpdatedCastleVerify
       && verifier.VerifyTable(tablePos, 8 /*OwnerClanId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 10 /*SiegeId*/, nullable.nullable_ulongVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*SiegeRemaining*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 14 /*SiegeEnded*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyField(tablePos, 16 /*SiegeStarted*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyField(tablePos, 18 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*SiegeActiveRemaining*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*SiegeEnded*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 18 /*SiegeStarted*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 20 /*Revision*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 22 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11552,6 +11700,67 @@ static public class UpdatedGroupVerify
       && verifier.VerifyTable(tablePos, 18 /*DeletedMember*/, fb.protocol.@internal.raw.CharacterRefVerify.Verify, false)
       && verifier.VerifyField(tablePos, 20 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 22 /*Revision*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyTableEnd(tablePos);
+  }
+}
+
+}
+
+// <auto-generated>
+//  automatically generated by the FlatBuffers compiler, do not modify
+// </auto-generated>
+
+namespace fb.protocol.@internal.response.raw
+{
+
+using global::System;
+using global::System.Collections.Generic;
+using global::Google.FlatBuffers;
+
+public struct UpdatedMarriage : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
+  public static UpdatedMarriage GetRootAsUpdatedMarriage(ByteBuffer _bb) { return GetRootAsUpdatedMarriage(_bb, new UpdatedMarriage()); }
+  public static UpdatedMarriage GetRootAsUpdatedMarriage(ByteBuffer _bb, UpdatedMarriage obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public UpdatedMarriage __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public fb.protocol.@internal.raw.Marriage? User { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol.@internal.raw.Marriage?)(new fb.protocol.@internal.raw.Marriage()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public fb.protocol.@internal.raw.Marriage? Spouse { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.@internal.raw.Marriage?)(new fb.protocol.@internal.raw.Marriage()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+
+  public static Offset<fb.protocol.@internal.response.raw.UpdatedMarriage> CreateUpdatedMarriage(FlatBufferBuilder builder,
+      Offset<fb.protocol.@internal.raw.Marriage> userOffset = default(Offset<fb.protocol.@internal.raw.Marriage>),
+      Offset<fb.protocol.@internal.raw.Marriage> spouseOffset = default(Offset<fb.protocol.@internal.raw.Marriage>),
+      uint error = 0) {
+    builder.StartTable(3);
+    UpdatedMarriage.AddError(builder, error);
+    UpdatedMarriage.AddSpouse(builder, spouseOffset);
+    UpdatedMarriage.AddUser(builder, userOffset);
+    return UpdatedMarriage.EndUpdatedMarriage(builder);
+  }
+
+  public static void StartUpdatedMarriage(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddUser(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Marriage> userOffset) { builder.AddOffset(0, userOffset.Value, 0); }
+  public static void AddSpouse(FlatBufferBuilder builder, Offset<fb.protocol.@internal.raw.Marriage> spouseOffset) { builder.AddOffset(1, spouseOffset.Value, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
+  public static Offset<fb.protocol.@internal.response.raw.UpdatedMarriage> EndUpdatedMarriage(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<fb.protocol.@internal.response.raw.UpdatedMarriage>(o);
+  }
+}
+
+
+static public class UpdatedMarriageVerify
+{
+  static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
+  {
+    return verifier.VerifyTableStart(tablePos)
+      && verifier.VerifyTable(tablePos, 4 /*User*/, fb.protocol.@internal.raw.MarriageVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 6 /*Spouse*/, fb.protocol.@internal.raw.MarriageVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

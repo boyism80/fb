@@ -423,7 +423,6 @@ table StartCastleSiege {
   host: uint;
   divine_beast: ubyte;
   siege_key: ulong;
-  announcement: string;
 }
 
 table EndCastleSiege {
@@ -472,4 +471,18 @@ table OpsNotify {
 table CheckBan {
   world: uint;
   name: string;
+}
+
+table Marry {
+  world: uint;
+  user: uint;
+  spouse: uint;
+  remarriage_after: string;
+}
+
+table Divorce {
+  world: uint;
+  user: uint;
+  spouse: uint;
+  remarriage_after: string;
 }

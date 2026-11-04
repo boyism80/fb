@@ -390,8 +390,10 @@ table UpdatedCastle {
   owner_clan_id: uint?;
   siege_id: ulong?;
   siege_remaining: uint;
+  siege_active_remaining: uint;
   siege_ended: bool = false;
   siege_started: bool = false;
+  revision: ulong;
   error: uint;
 }
 
@@ -418,4 +420,10 @@ table CheckBan {
   banned: bool;
   reason: string;
   expire_date: string?;
+}
+
+table UpdatedMarriage {
+  user: fb.protocol.internal.Marriage;
+  spouse: fb.protocol.internal.Marriage;
+  error: uint;
 }

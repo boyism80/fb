@@ -321,6 +321,12 @@ struct OpsNotifyBuilder;
 struct CheckBan;
 struct CheckBanBuilder;
 
+struct Marry;
+struct MarryBuilder;
+
+struct Divorce;
+struct DivorceBuilder;
+
 }  // namespace raw
 }  // namespace request
 
@@ -509,6 +515,9 @@ struct OpsNotifyBuilder;
 
 struct CheckBan;
 struct CheckBanBuilder;
+
+struct UpdatedMarriage;
+struct UpdatedMarriageBuilder;
 
 }  // namespace raw
 }  // namespace response
@@ -3740,7 +3749,9 @@ struct Castle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_OWNER_CLAN_ID = 6,
     VT_SIEGE_ID = 8,
     VT_SIEGE_REMAINING = 10,
-    VT_SIEGE_ENDED = 12
+    VT_SIEGE_ACTIVE_REMAINING = 12,
+    VT_SIEGE_ENDED = 14,
+    VT_REVISION = 16
   };
   uint8_t divine_beast() const {
     return GetField<uint8_t>(VT_DIVINE_BEAST, 0);
@@ -3754,8 +3765,14 @@ struct Castle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t siege_remaining() const {
     return GetField<uint32_t>(VT_SIEGE_REMAINING, 0);
   }
+  uint32_t siege_active_remaining() const {
+    return GetField<uint32_t>(VT_SIEGE_ACTIVE_REMAINING, 0);
+  }
   bool siege_ended() const {
     return GetField<uint8_t>(VT_SIEGE_ENDED, 0) != 0;
+  }
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3765,7 +3782,9 @@ struct Castle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SIEGE_ID) &&
            verifier.VerifyTable(siege_id()) &&
            VerifyField<uint32_t>(verifier, VT_SIEGE_REMAINING, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SIEGE_ACTIVE_REMAINING, 4) &&
            VerifyField<uint8_t>(verifier, VT_SIEGE_ENDED, 1) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -3786,8 +3805,14 @@ struct CastleBuilder {
   void add_siege_remaining(uint32_t siege_remaining) {
     fbb_.AddElement<uint32_t>(Castle::VT_SIEGE_REMAINING, siege_remaining, 0);
   }
+  void add_siege_active_remaining(uint32_t siege_active_remaining) {
+    fbb_.AddElement<uint32_t>(Castle::VT_SIEGE_ACTIVE_REMAINING, siege_active_remaining, 0);
+  }
   void add_siege_ended(bool siege_ended) {
     fbb_.AddElement<uint8_t>(Castle::VT_SIEGE_ENDED, static_cast<uint8_t>(siege_ended), 0);
+  }
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(Castle::VT_REVISION, revision, 0);
   }
   explicit CastleBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -3806,8 +3831,12 @@ inline ::flatbuffers::Offset<Castle> CreateCastle(
     ::flatbuffers::Offset<nullable::nullable_uint> owner_clan_id = 0,
     ::flatbuffers::Offset<nullable::nullable_ulong> siege_id = 0,
     uint32_t siege_remaining = 0,
-    bool siege_ended = false) {
+    uint32_t siege_active_remaining = 0,
+    bool siege_ended = false,
+    uint64_t revision = 0) {
   CastleBuilder builder_(_fbb);
+  builder_.add_revision(revision);
+  builder_.add_siege_active_remaining(siege_active_remaining);
   builder_.add_siege_remaining(siege_remaining);
   builder_.add_siege_id(siege_id);
   builder_.add_owner_clan_id(owner_clan_id);
@@ -4585,23 +4614,19 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SavePayloadBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_CHARACTER = 4,
-    VT_MARRIAGE = 6,
-    VT_ITEMS = 8,
-    VT_SPELLS = 10,
-    VT_MATCHMAKING_SKILLS = 12,
-    VT_ACHIEVEMENTS = 14,
-    VT_QUESTS = 16,
-    VT_COLLECTION_UNLOCKS = 18,
-    VT_SNAPSHOT_TIME = 20,
-    VT_UNSETTLED_REQUESTS = 22,
-    VT_ESCROWS = 24,
-    VT_STORAGE_BOXES = 26
+    VT_ITEMS = 6,
+    VT_SPELLS = 8,
+    VT_MATCHMAKING_SKILLS = 10,
+    VT_ACHIEVEMENTS = 12,
+    VT_QUESTS = 14,
+    VT_COLLECTION_UNLOCKS = 16,
+    VT_SNAPSHOT_TIME = 18,
+    VT_UNSETTLED_REQUESTS = 20,
+    VT_ESCROWS = 22,
+    VT_STORAGE_BOXES = 24
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
-  }
-  const fb::protocol::internal::raw::Marriage *marriage() const {
-    return GetPointer<const fb::protocol::internal::raw::Marriage *>(VT_MARRIAGE);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *>(VT_ITEMS);
@@ -4637,8 +4662,6 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
            verifier.VerifyTable(character()) &&
-           VerifyOffset(verifier, VT_MARRIAGE) &&
-           verifier.VerifyTable(marriage()) &&
            VerifyOffset(verifier, VT_ITEMS) &&
            verifier.VerifyVector(items()) &&
            verifier.VerifyVectorOfTables(items()) &&
@@ -4677,9 +4700,6 @@ struct SavePayloadBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_character(::flatbuffers::Offset<fb::protocol::internal::raw::Character> character) {
     fbb_.AddOffset(SavePayload::VT_CHARACTER, character);
-  }
-  void add_marriage(::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage) {
-    fbb_.AddOffset(SavePayload::VT_MARRIAGE, marriage);
   }
   void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items) {
     fbb_.AddOffset(SavePayload::VT_ITEMS, items);
@@ -4725,7 +4745,6 @@ struct SavePayloadBuilder {
 inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>> matchmaking_skills = 0,
@@ -4747,7 +4766,6 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
   builder_.add_matchmaking_skills(matchmaking_skills);
   builder_.add_spells(spells);
   builder_.add_items(items);
-  builder_.add_marriage(marriage);
   builder_.add_character(character);
   return builder_.Finish();
 }
@@ -4755,7 +4773,6 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
 inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>> *matchmaking_skills = nullptr,
@@ -4778,7 +4795,6 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
   return fb::protocol::internal::raw::CreateSavePayload(
       _fbb,
       character,
-      marriage,
       items__,
       spells__,
       matchmaking_skills__,
@@ -9660,8 +9676,7 @@ struct StartCastleSiege FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 4,
     VT_HOST = 6,
     VT_DIVINE_BEAST = 8,
-    VT_SIEGE_KEY = 10,
-    VT_ANNOUNCEMENT = 12
+    VT_SIEGE_KEY = 10
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -9675,17 +9690,12 @@ struct StartCastleSiege FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t siege_key() const {
     return GetField<uint64_t>(VT_SIEGE_KEY, 0);
   }
-  const ::flatbuffers::String *announcement() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_ANNOUNCEMENT);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
            VerifyField<uint64_t>(verifier, VT_SIEGE_KEY, 8) &&
-           VerifyOffset(verifier, VT_ANNOUNCEMENT) &&
-           verifier.VerifyString(announcement()) &&
            verifier.EndTable();
   }
 };
@@ -9706,9 +9716,6 @@ struct StartCastleSiegeBuilder {
   void add_siege_key(uint64_t siege_key) {
     fbb_.AddElement<uint64_t>(StartCastleSiege::VT_SIEGE_KEY, siege_key, 0);
   }
-  void add_announcement(::flatbuffers::Offset<::flatbuffers::String> announcement) {
-    fbb_.AddOffset(StartCastleSiege::VT_ANNOUNCEMENT, announcement);
-  }
   explicit StartCastleSiegeBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -9725,32 +9732,13 @@ inline ::flatbuffers::Offset<StartCastleSiege> CreateStartCastleSiege(
     uint32_t world = 0,
     uint32_t host = 0,
     uint8_t divine_beast = 0,
-    uint64_t siege_key = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> announcement = 0) {
+    uint64_t siege_key = 0) {
   StartCastleSiegeBuilder builder_(_fbb);
   builder_.add_siege_key(siege_key);
-  builder_.add_announcement(announcement);
   builder_.add_host(host);
   builder_.add_world(world);
   builder_.add_divine_beast(divine_beast);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<StartCastleSiege> CreateStartCastleSiegeDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    uint32_t host = 0,
-    uint8_t divine_beast = 0,
-    uint64_t siege_key = 0,
-    const char *announcement = nullptr) {
-  auto announcement__ = announcement ? _fbb.CreateString(announcement) : 0;
-  return fb::protocol::internal::request::raw::CreateStartCastleSiege(
-      _fbb,
-      world,
-      host,
-      divine_beast,
-      siege_key,
-      announcement__);
 }
 
 struct EndCastleSiege FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -10279,6 +10267,180 @@ inline ::flatbuffers::Offset<CheckBan> CreateCheckBanDirect(
       _fbb,
       world,
       name__);
+}
+
+struct Marry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MarryBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_WORLD = 4,
+    VT_USER = 6,
+    VT_SPOUSE = 8,
+    VT_REMARRIAGE_AFTER = 10
+  };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  uint32_t spouse() const {
+    return GetField<uint32_t>(VT_SPOUSE, 0);
+  }
+  const ::flatbuffers::String *remarriage_after() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REMARRIAGE_AFTER);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SPOUSE, 4) &&
+           VerifyOffset(verifier, VT_REMARRIAGE_AFTER) &&
+           verifier.VerifyString(remarriage_after()) &&
+           verifier.EndTable();
+  }
+};
+
+struct MarryBuilder {
+  typedef Marry Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Marry::VT_WORLD, world, 0);
+  }
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(Marry::VT_USER, user, 0);
+  }
+  void add_spouse(uint32_t spouse) {
+    fbb_.AddElement<uint32_t>(Marry::VT_SPOUSE, spouse, 0);
+  }
+  void add_remarriage_after(::flatbuffers::Offset<::flatbuffers::String> remarriage_after) {
+    fbb_.AddOffset(Marry::VT_REMARRIAGE_AFTER, remarriage_after);
+  }
+  explicit MarryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Marry> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Marry>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Marry> CreateMarry(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t user = 0,
+    uint32_t spouse = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> remarriage_after = 0) {
+  MarryBuilder builder_(_fbb);
+  builder_.add_remarriage_after(remarriage_after);
+  builder_.add_spouse(spouse);
+  builder_.add_user(user);
+  builder_.add_world(world);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Marry> CreateMarryDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t user = 0,
+    uint32_t spouse = 0,
+    const char *remarriage_after = nullptr) {
+  auto remarriage_after__ = remarriage_after ? _fbb.CreateString(remarriage_after) : 0;
+  return fb::protocol::internal::request::raw::CreateMarry(
+      _fbb,
+      world,
+      user,
+      spouse,
+      remarriage_after__);
+}
+
+struct Divorce FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef DivorceBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_WORLD = 4,
+    VT_USER = 6,
+    VT_SPOUSE = 8,
+    VT_REMARRIAGE_AFTER = 10
+  };
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
+  }
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  uint32_t spouse() const {
+    return GetField<uint32_t>(VT_SPOUSE, 0);
+  }
+  const ::flatbuffers::String *remarriage_after() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REMARRIAGE_AFTER);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SPOUSE, 4) &&
+           VerifyOffset(verifier, VT_REMARRIAGE_AFTER) &&
+           verifier.VerifyString(remarriage_after()) &&
+           verifier.EndTable();
+  }
+};
+
+struct DivorceBuilder {
+  typedef Divorce Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Divorce::VT_WORLD, world, 0);
+  }
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(Divorce::VT_USER, user, 0);
+  }
+  void add_spouse(uint32_t spouse) {
+    fbb_.AddElement<uint32_t>(Divorce::VT_SPOUSE, spouse, 0);
+  }
+  void add_remarriage_after(::flatbuffers::Offset<::flatbuffers::String> remarriage_after) {
+    fbb_.AddOffset(Divorce::VT_REMARRIAGE_AFTER, remarriage_after);
+  }
+  explicit DivorceBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Divorce> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Divorce>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Divorce> CreateDivorce(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t user = 0,
+    uint32_t spouse = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> remarriage_after = 0) {
+  DivorceBuilder builder_(_fbb);
+  builder_.add_remarriage_after(remarriage_after);
+  builder_.add_spouse(spouse);
+  builder_.add_user(user);
+  builder_.add_world(world);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Divorce> CreateDivorceDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t user = 0,
+    uint32_t spouse = 0,
+    const char *remarriage_after = nullptr) {
+  auto remarriage_after__ = remarriage_after ? _fbb.CreateString(remarriage_after) : 0;
+  return fb::protocol::internal::request::raw::CreateDivorce(
+      _fbb,
+      world,
+      user,
+      spouse,
+      remarriage_after__);
 }
 
 }  // namespace raw
@@ -14593,9 +14755,11 @@ struct UpdatedCastle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_OWNER_CLAN_ID = 8,
     VT_SIEGE_ID = 10,
     VT_SIEGE_REMAINING = 12,
-    VT_SIEGE_ENDED = 14,
-    VT_SIEGE_STARTED = 16,
-    VT_ERROR = 18
+    VT_SIEGE_ACTIVE_REMAINING = 14,
+    VT_SIEGE_ENDED = 16,
+    VT_SIEGE_STARTED = 18,
+    VT_REVISION = 20,
+    VT_ERROR = 22
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -14612,11 +14776,17 @@ struct UpdatedCastle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t siege_remaining() const {
     return GetField<uint32_t>(VT_SIEGE_REMAINING, 0);
   }
+  uint32_t siege_active_remaining() const {
+    return GetField<uint32_t>(VT_SIEGE_ACTIVE_REMAINING, 0);
+  }
   bool siege_ended() const {
     return GetField<uint8_t>(VT_SIEGE_ENDED, 0) != 0;
   }
   bool siege_started() const {
     return GetField<uint8_t>(VT_SIEGE_STARTED, 0) != 0;
+  }
+  uint64_t revision() const {
+    return GetField<uint64_t>(VT_REVISION, 0);
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -14630,8 +14800,10 @@ struct UpdatedCastle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SIEGE_ID) &&
            verifier.VerifyTable(siege_id()) &&
            VerifyField<uint32_t>(verifier, VT_SIEGE_REMAINING, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SIEGE_ACTIVE_REMAINING, 4) &&
            VerifyField<uint8_t>(verifier, VT_SIEGE_ENDED, 1) &&
            VerifyField<uint8_t>(verifier, VT_SIEGE_STARTED, 1) &&
+           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -14656,11 +14828,17 @@ struct UpdatedCastleBuilder {
   void add_siege_remaining(uint32_t siege_remaining) {
     fbb_.AddElement<uint32_t>(UpdatedCastle::VT_SIEGE_REMAINING, siege_remaining, 0);
   }
+  void add_siege_active_remaining(uint32_t siege_active_remaining) {
+    fbb_.AddElement<uint32_t>(UpdatedCastle::VT_SIEGE_ACTIVE_REMAINING, siege_active_remaining, 0);
+  }
   void add_siege_ended(bool siege_ended) {
     fbb_.AddElement<uint8_t>(UpdatedCastle::VT_SIEGE_ENDED, static_cast<uint8_t>(siege_ended), 0);
   }
   void add_siege_started(bool siege_started) {
     fbb_.AddElement<uint8_t>(UpdatedCastle::VT_SIEGE_STARTED, static_cast<uint8_t>(siege_started), 0);
+  }
+  void add_revision(uint64_t revision) {
+    fbb_.AddElement<uint64_t>(UpdatedCastle::VT_REVISION, revision, 0);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(UpdatedCastle::VT_ERROR, error, 0);
@@ -14683,11 +14861,15 @@ inline ::flatbuffers::Offset<UpdatedCastle> CreateUpdatedCastle(
     ::flatbuffers::Offset<nullable::nullable_uint> owner_clan_id = 0,
     ::flatbuffers::Offset<nullable::nullable_ulong> siege_id = 0,
     uint32_t siege_remaining = 0,
+    uint32_t siege_active_remaining = 0,
     bool siege_ended = false,
     bool siege_started = false,
+    uint64_t revision = 0,
     uint32_t error = 0) {
   UpdatedCastleBuilder builder_(_fbb);
+  builder_.add_revision(revision);
   builder_.add_error(error);
+  builder_.add_siege_active_remaining(siege_active_remaining);
   builder_.add_siege_remaining(siege_remaining);
   builder_.add_siege_id(siege_id);
   builder_.add_owner_clan_id(owner_clan_id);
@@ -14999,6 +15181,69 @@ inline ::flatbuffers::Offset<CheckBan> CreateCheckBanDirect(
       banned,
       reason__,
       expire_date__);
+}
+
+struct UpdatedMarriage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef UpdatedMarriageBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_USER = 4,
+    VT_SPOUSE = 6,
+    VT_ERROR = 8
+  };
+  const fb::protocol::internal::raw::Marriage *user() const {
+    return GetPointer<const fb::protocol::internal::raw::Marriage *>(VT_USER);
+  }
+  const fb::protocol::internal::raw::Marriage *spouse() const {
+    return GetPointer<const fb::protocol::internal::raw::Marriage *>(VT_SPOUSE);
+  }
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_USER) &&
+           verifier.VerifyTable(user()) &&
+           VerifyOffset(verifier, VT_SPOUSE) &&
+           verifier.VerifyTable(spouse()) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct UpdatedMarriageBuilder {
+  typedef UpdatedMarriage Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_user(::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> user) {
+    fbb_.AddOffset(UpdatedMarriage::VT_USER, user);
+  }
+  void add_spouse(::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> spouse) {
+    fbb_.AddOffset(UpdatedMarriage::VT_SPOUSE, spouse);
+  }
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(UpdatedMarriage::VT_ERROR, error, 0);
+  }
+  explicit UpdatedMarriageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<UpdatedMarriage> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<UpdatedMarriage>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<UpdatedMarriage> CreateUpdatedMarriage(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> user = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> spouse = 0,
+    uint32_t error = 0) {
+  UpdatedMarriageBuilder builder_(_fbb);
+  builder_.add_error(error);
+  builder_.add_spouse(spouse);
+  builder_.add_user(user);
+  return builder_.Finish();
 }
 
 }  // namespace raw
