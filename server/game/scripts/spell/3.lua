@@ -35,13 +35,17 @@ return {
             local x, y = ch:position()
             local direction = me:direction()
             local new_x, new_y, direction = spell.teleport_lookup(me, map, x, y, direction)
-            me:map(map, new_x, new_y, {
+            local moved = me:map(map, new_x, new_y, {
                 after = {
                     script = 'scripts/spell/3.lua',
                     func = 'on_arrive',
                     args = { sp:name(), direction, sound, effect },
                 },
             })
+            if moved ~= true then
+                me:mp_up(mp)
+                me:message('출두에 실패했습니다.')
+            end
         end
     end,
 
