@@ -752,6 +752,23 @@ int builtin::server::builtin_siege_active(lua_State* L)
     return 1;
 }
 
+int builtin::server::builtin_refresh_castles(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto& srv = static_cast<fb::game::server&>(lua->executor);
+        co_await srv.castles.refresh();
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
 int builtin::server::builtin_id2ch(lua_State* L)
 {
     auto lua = fb::lua::get(L);

@@ -549,12 +549,9 @@ M.functions = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 진행 중인 신수성 공성전 종료',
         ['command'] = function(me, args)
-            local ended, requested, failed = siege.end_active_sieges()
-            if #ended == 0 and #requested == 0 and #failed == 0 then
+            local requested, failed = siege.end_active_sieges()
+            if #requested == 0 and #failed == 0 then
                 me:message("진행 중인 공성전이 없습니다.", MESSAGE_TYPE.BROWN)
-            end
-            if #ended > 0 then
-                me:message(string.format("공성전 종료: %s", table.concat(ended, ', ')), MESSAGE_TYPE.BROWN)
             end
             if #requested > 0 then
                 me:message(string.format("공성전 종료 요청: %s (성 서버에서 곧 종료됩니다)", table.concat(requested, ', ')),

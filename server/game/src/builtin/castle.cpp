@@ -17,6 +17,7 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(castle, "fb.game.castle")
 {"divine_beast",        builtin::castle::builtin_divine_beast},
 {"owner_clan",          builtin::castle::builtin_owner_clan},
+{"siege_id",            builtin::castle::builtin_siege_id},
 {"siege_active",        builtin::castle::builtin_siege_active},
 {"siege_pending",       builtin::castle::builtin_siege_pending},
 {"siege_end_time",      builtin::castle::builtin_siege_end_time},
@@ -55,6 +56,25 @@ int builtin::castle::builtin_owner_clan(lua_State* L)
         lua->pushnil();
     else
         lua->pushinteger(guard->value()->owner_clan_id().value());
+    return 1;
+}
+
+int builtin::castle::builtin_siege_id(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto castle = lua->touserdata<fb::game::castle>(1);
+    if (castle == nullptr)
+        return 0;
+
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  guard = srv.castles.try_enter_read(castle->id());
+    if (guard.has_value() == false || guard->value() == nullptr || guard->value()->siege_id().has_value() == false)
+        lua->pushnil();
+    else
+        lua->pushinteger(static_cast<lua_Integer>(guard->value()->siege_id().value()));
     return 1;
 }
 
@@ -123,8 +143,7 @@ int builtin::castle::builtin_start_siege(lua_State* L)
     if (castle == nullptr)
         return 0;
 
-    auto siege_key    = static_cast<uint64_t>(lua->tointeger(2));
-    auto announcement = lua->tostring(3);
+    auto siege_key    = lua->touint64(2);
     auto divine_beast = castle->divine_beast();
     auto result       = std::make_shared<fb::game::castle::siege_start_result>();
     auto error        = std::make_shared<std::optional<std::string>>();
@@ -133,7 +152,7 @@ int builtin::castle::builtin_start_siege(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            *result = co_await server.castles.start_siege(divine_beast, siege_key, announcement);
+            *result = co_await server.castles.start_siege(divine_beast, siege_key);
         }
         catch (std::exception& e)
         {
@@ -210,14 +229,14 @@ int builtin::castle::builtin_end_siege(lua_State* L)
         winner_clan_id = static_cast<uint32_t>(lua->tointeger(2));
 
     auto divine_beast = castle->divine_beast();
-    auto result       = std::make_shared<std::pair<fb::game::castle::siege_end_result, std::optional<uint32_t>>>();
+    auto result       = std::make_shared<fb::game::castle::siege_end_result>();
     auto builder      = lua->new_co_builder();
     builder.yield     = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         *result      = co_await server.castles.end_siege(divine_beast, winner_clan_id);
     };
     builder.resume = [=]() -> async::task<int> {
-        switch (result->first)
+        switch (*result)
         {
         case fb::game::castle::siege_end_result::ENDED:
             lua->pushstring("ended");
@@ -231,12 +250,7 @@ int builtin::castle::builtin_end_siege(lua_State* L)
             lua->pushstring("not_active");
             break;
         }
-
-        if (result->second.has_value())
-            lua->pushinteger(result->second.value());
-        else
-            lua->pushnil();
-        co_return 2;
+        co_return 1;
     };
     return builder.run();
 }

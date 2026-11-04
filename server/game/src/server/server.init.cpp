@@ -144,6 +144,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("id2clan", builtin::server::builtin_id2clan);
         lua.build("castle", builtin::server::builtin_castle);
         lua.build("siege_active", builtin::server::builtin_siege_active);
+        lua.build("refresh_castles", builtin::server::builtin_refresh_castles);
         lua.build("broadcast", builtin::server::builtin_broadcast);
         lua.build("assert_alive", builtin::server::builtin_assert_alive);
         lua.build("pursuit_sell", builtin::server::builtin_pursuit_sell);

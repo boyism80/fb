@@ -11,12 +11,13 @@ local MESSAGE_WAIT_MS = 15000
 
 local MSG_PREPARED = "공성준비 완료"
 local MSG_STARTED = "공성전을 시작했습니다"
-local MSG_ENDED = "공성전 종료: " .. BEAST
-local MSG_END_FAILED = "공성전 종료 실패: " .. BEAST
+local MSG_REQUESTED = "공성전 종료 요청: " .. BEAST
 local MSG_START_UNCONFIRMED = "공성시작 실패: 요청 결과를 확인하지 못했습니다."
 local MSG_RECAPTURED = "의성을 탈환합니다."
 local MSG_ANNOUNCED = "의성 공성전이 시작되었습니다."
 local FINISH_WAIT_MS = 2500
+local TICK_WAIT_MS = 2500
+local END_WAIT_MS = "15000"
 local MSG_DEFENDER = "수성측"
 
 local GATE_NPC = "백호성문지기"
@@ -93,6 +94,7 @@ test_suite({
             if command(a, "/공성종료", "공성전") == false then
                 return fail("could not end the sieges left by other suites")
             end
+            ctx:sleep(TICK_WAIT_MS)
 
             if
                 command(a, "/공성준비", MSG_PREPARED) == false
@@ -129,9 +131,10 @@ test_suite({
             a:chat("/HTTP장애 /castle/siege/end on")
             ctx:sleep(300)
             a:take_messages()
-            if command(a, "/공성종료", MSG_END_FAILED) == false then
-                return fail("the siege ended although the owner was not saved")
+            if command(a, "/공성종료", MSG_REQUESTED) == false then
+                return fail("the end was not requested")
             end
+            ctx:sleep(TICK_WAIT_MS)
             for _, text in ipairs(a:take_messages()) do
                 if text:find(MSG_RECAPTURED, 1, true) ~= nil then
                     return fail("a recapture was announced although the owner was not saved")
@@ -143,7 +146,7 @@ test_suite({
 
             a:chat("/HTTP장애 /castle/siege/end off")
             ctx:sleep(300)
-            if command(a, "/공성종료", MSG_ENDED) == false then
+            if run_step(a, "wait_siege_ended", "siege_retried_end", BEAST, END_WAIT_MS) == false then
                 return fail("the retried end did not finish the siege")
             end
             if run_step(a, "verify_siege", "siege_owned_a", BEAST, "false", "mine") == false then
@@ -183,24 +186,18 @@ test_suite({
             a:take_messages()
             a:send(protocol.chat(false, "/공성종료"))
             a:send(protocol.chat(false, "/공성종료"))
-            ctx:sleep(5000)
+            ctx:sleep(6000)
             a:chat("/HTTP지연 internal 0")
+            ctx:sleep(TICK_WAIT_MS)
 
             local recaptured = 0
-            local ended = 0
             for _, text in ipairs(a:take_messages()) do
                 if text:find(MSG_RECAPTURED, 1, true) ~= nil then
                     recaptured = recaptured + 1
                 end
-                if text:find(MSG_ENDED, 1, true) ~= nil then
-                    ended = ended + 1
-                end
             end
             if recaptured ~= 1 then
                 return fail(string.format("the recapture was announced %d times", recaptured))
-            end
-            if ended ~= 1 then
-                return fail(string.format("the ending command answered %d times", ended))
             end
             if run_step(b, "verify_siege", "siege_owned_b", BEAST, "false", "mine") == false then
                 return fail("B's clan does not own the castle after the racing ends")
@@ -249,8 +246,11 @@ test_suite({
                 return fail(string.format("A paid the entrance fee: money=%d expected=%d", a:money(), ENTRY_MONEY))
             end
 
-            if command(b, "/공성종료", MSG_ENDED) == false then
+            if command(b, "/공성종료", MSG_REQUESTED) == false then
                 return fail("could not end the siege after the gate check")
+            end
+            if run_step(b, "wait_siege_ended", "gate_ended", BEAST, END_WAIT_MS) == false then
+                return fail("the siege did not end after the gate check")
             end
             return true
         end,
@@ -380,28 +380,36 @@ test_suite({
 
             a:chat("/HTTP장애 /castle/siege/end lost")
             ctx:sleep(300)
-            if command(a, "/공성종료", MSG_END_FAILED) == false then
-                return fail("the siege ended although the owner response was lost")
-            end
-            if run_step(a, "verify_siege", "lost_kept", BEAST, "true", "not_mine") == false then
-                return fail("the siege did not stay active after the lost response")
-            end
-
-            a:chat("/HTTP장애 /castle/siege/end off")
-            ctx:sleep(300)
-            if run_step(a, "destroy_clan", "lost_destroy_a") == false then
-                return fail("could not destroy A's clan")
-            end
-
             a:take_messages()
-            if command(a, "/공성종료", MSG_ENDED) == false then
-                return fail("the retried end did not finish the siege after the winner was destroyed")
+            if command(a, "/공성종료", MSG_REQUESTED) == false then
+                return fail("the end was not requested")
             end
+            if run_step(a, "wait_siege_ended", "lost_ended", BEAST, END_WAIT_MS) == false then
+                return fail("the update did not end the siege although only the response was lost")
+            end
+            a:chat("/HTTP장애 /castle/siege/end off")
+            ctx:sleep(TICK_WAIT_MS)
+
+            local recaptured = 0
             for _, text in ipairs(a:take_messages()) do
+                if text:find(MSG_RECAPTURED, 1, true) ~= nil then
+                    recaptured = recaptured + 1
+                end
                 if text:find(MSG_DEFENDER, 1, true) ~= nil then
                     return fail("the castle was announced as returned to the defender: " .. text)
                 end
             end
+            if recaptured ~= 1 then
+                return fail(string.format("the recapture after a lost response was announced %d times", recaptured))
+            end
+            if run_step(a, "verify_siege", "lost_owned_a", BEAST, "false", "mine") == false then
+                return fail("A's clan does not own the castle after the lost response")
+            end
+
+            if run_step(a, "destroy_clan", "lost_destroy_a") == false then
+                return fail("could not destroy A's clan")
+            end
+            ctx:sleep(1000)
             if run_step(b, "verify_siege", "lost_no_owner", BEAST, "false", "none") == false then
                 return fail("the siege host still keeps an owner although the stored owner was cleared")
             end
@@ -418,12 +426,13 @@ test_suite({
             if command(a, "/공성종료", "공성전") == false then
                 return fail("could not end the sieges left by the earlier scenarios")
             end
+            ctx:sleep(TICK_WAIT_MS)
 
             a:take_messages()
             if run_step(a, "verify_siege_start_once", "round_start_once", BEAST) == false then
                 return fail("a repeated start key started the siege again")
             end
-            ctx:sleep(500)
+            ctx:sleep(TICK_WAIT_MS)
             local announced = 0
             for _, text in ipairs(a:take_messages()) do
                 if text:find(MSG_ANNOUNCED, 1, true) ~= nil then

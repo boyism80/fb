@@ -18,6 +18,12 @@ namespace Http.Reepository
             return await base.Get(world, new CastleKey { DivineBeast = divineBeast });
         }
 
+        public Castle Save(uint world, Castle castle)
+        {
+            castle.Revision++;
+            return Set(world, castle);
+        }
+
         protected override string OnSelect(CastleKey key)
         {
             return $"""
@@ -42,6 +48,7 @@ namespace Http.Reepository
                     `siege_key`,
                     `siege_end_at`,
                     `siege_ended`,
+                    `revision`,
                     `created_date`,
                     `updated_date`)
                 VALUES (
@@ -51,6 +58,7 @@ namespace Http.Reepository
                     {value.SiegeKey.Escape()},
                     {value.SiegeEndAt.Escape()},
                     {value.SiegeEnded.Escape()},
+                    {value.Revision.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
@@ -59,6 +67,7 @@ namespace Http.Reepository
                     `siege_key`=VALUES(`siege_key`),
                     `siege_end_at`=VALUES(`siege_end_at`),
                     `siege_ended`=VALUES(`siege_ended`),
+                    `revision`=VALUES(`revision`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

@@ -9,6 +9,11 @@ using Response = fb.protocol.@internal.response;
 
 namespace Internal.Controllers
 {
+    // Known limits of this design (internal owns the siege state, the game hosts only request and report):
+    // - The siege length follows UtcNow here, not the adjusted game clock, so /시간가속 does not shorten a siege.
+    // - A round whose heart host never reports stays unended but inactive after SiegeGrace, until the next start.
+    // - A report that arrives after SiegeGrace ends the round without changing the owner.
+    // - Clan destruction also writes the owner (ClanService.Remove); that keeps the clan reference valid and is intended.
     [ApiController]
     [Route("castle")]
     public class CastleController : ControllerBase
@@ -16,7 +21,6 @@ namespace Internal.Controllers
         private static readonly byte[] AllDivineBeasts = { 0, 1, 2, 3 };
         private const int MinSiegeSeconds = 1800;
         private const int MaxSiegeSeconds = 3600;
-        public static readonly TimeSpan SiegeGrace = TimeSpan.FromMinutes(5);
 
         private readonly DbContext _dbContext;
         private readonly RabbitMqService _rabbitMqService;
@@ -29,37 +33,6 @@ namespace Internal.Controllers
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
             _distributedLock = distributedLock;
-        }
-
-        private static bool SiegeActive(Castle castle, DateTime now)
-        {
-            return castle.SiegeId.HasValue && castle.SiegeEnded == false && castle.SiegeEndAt.HasValue && castle.SiegeEndAt.Value + SiegeGrace > now;
-        }
-
-        private static uint SiegeRemaining(Castle castle, DateTime now)
-        {
-            if (castle.SiegeEndAt.HasValue == false || castle.SiegeEndAt.Value <= now)
-            {
-                return 0;
-            }
-
-            return (uint)Math.Ceiling((castle.SiegeEndAt.Value - now).TotalSeconds);
-        }
-
-        private static Response.UpdatedCastle Updated(uint host, Castle castle, bool started = false)
-        {
-            var now = DateTime.UtcNow;
-            return new Response.UpdatedCastle
-            {
-                Host = host,
-                DivineBeast = castle.DivineBeast,
-                OwnerClanId = castle.OwnerClan,
-                SiegeId = castle.SiegeId,
-                SiegeRemaining = SiegeRemaining(castle, now),
-                SiegeEnded = castle.SiegeEnded,
-                SiegeStarted = started,
-                Error = (uint)ErrorCode.None
-            };
         }
 
         private async Task<Castle> Load(uint world, byte divineBeast)
@@ -82,8 +55,10 @@ namespace Internal.Controllers
                         DivineBeast = divineBeast,
                         OwnerClanId = castle?.OwnerClan,
                         SiegeId = castle?.SiegeId,
-                        SiegeRemaining = castle != null ? SiegeRemaining(castle, now) : 0,
-                        SiegeEnded = castle?.SiegeEnded ?? false
+                        SiegeRemaining = castle?.SiegeRemaining(now) ?? 0,
+                        SiegeActiveRemaining = castle?.SiegeActiveRemaining(now) ?? 0,
+                        SiegeEnded = castle?.SiegeEnded ?? false,
+                        Revision = castle?.Revision ?? 0
                     });
                 }
 
@@ -122,11 +97,11 @@ namespace Internal.Controllers
 
                 var castle = await Load(world, request.DivineBeast);
                 castle.OwnerClan = request.OwnerClanId;
-                _dbContext.Castle.Set(world, castle);
+                _dbContext.Castle.Save(world, castle);
 
                 await _dbContext.SaveChangesAsync();
 
-                var response = Updated(request.Host, castle);
+                var response = castle.ToUpdated(request.Host);
                 await _rabbitMqService.NotifySavedAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
                 return response;
             }
@@ -158,30 +133,20 @@ namespace Internal.Controllers
 
                 var now = DateTime.UtcNow;
                 var castle = await Load(world, request.DivineBeast);
-                if (castle.SiegeKey == request.SiegeKey || SiegeActive(castle, now))
+                if (castle.SiegeKey == request.SiegeKey || castle.SiegeActive(now))
                 {
-                    return Updated(request.Host, castle);
+                    return castle.ToUpdated(request.Host);
                 }
 
                 castle.SiegeId = (castle.SiegeId ?? 0) + 1;
                 castle.SiegeKey = request.SiegeKey;
                 castle.SiegeEndAt = now.AddSeconds(Random.Shared.Next(MinSiegeSeconds, MaxSiegeSeconds + 1));
                 castle.SiegeEnded = false;
-                _dbContext.Castle.Set(world, castle);
+                _dbContext.Castle.Save(world, castle);
                 await _dbContext.SaveChangesAsync();
 
-                var response = Updated(request.Host, castle, true);
+                var response = castle.ToUpdated(request.Host, true);
                 await _rabbitMqService.NotifySavedAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
-                if (string.IsNullOrEmpty(request.Announcement) == false)
-                {
-                    await _rabbitMqService.NotifySavedAsync(new Response.Broadcast
-                    {
-                        Host = uint.MaxValue,
-                        Message = request.Announcement,
-                        Type = (byte)MessageType.World,
-                        Error = (uint)ErrorCode.None
-                    }, AmqpRoute.Exchange, AmqpRoute.Home("global", world));
-                }
                 return response;
             }
             catch (Exception)
@@ -208,18 +173,18 @@ namespace Internal.Controllers
                 var castle = await Load(world, request.DivineBeast);
                 if (castle.SiegeId != request.SiegeId || castle.SiegeEnded)
                 {
-                    return Updated(request.Host, castle);
+                    return castle.ToUpdated(request.Host);
                 }
 
-                if (winnerExists)
+                if (winnerExists && castle.SiegeActive(DateTime.UtcNow))
                 {
                     castle.OwnerClan = request.WinnerClanId;
                 }
                 castle.SiegeEnded = true;
-                _dbContext.Castle.Set(world, castle);
+                _dbContext.Castle.Save(world, castle);
                 await _dbContext.SaveChangesAsync();
 
-                var response = Updated(request.Host, castle);
+                var response = castle.ToUpdated(request.Host);
                 await _rabbitMqService.NotifySavedAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
                 return response;
             }
@@ -243,16 +208,16 @@ namespace Internal.Controllers
 
                 var now = DateTime.UtcNow;
                 var castle = await Load(world, request.DivineBeast);
-                if (SiegeActive(castle, now) == false || castle.SiegeEndAt <= now)
+                if (castle.SiegeActive(now) == false || castle.SiegeEndAt <= now)
                 {
-                    return Updated(request.Host, castle);
+                    return castle.ToUpdated(request.Host);
                 }
 
                 castle.SiegeEndAt = now;
-                _dbContext.Castle.Set(world, castle);
+                _dbContext.Castle.Save(world, castle);
                 await _dbContext.SaveChangesAsync();
 
-                var response = Updated(request.Host, castle);
+                var response = castle.ToUpdated(request.Host);
                 await _rabbitMqService.NotifySavedAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
                 return response;
             }

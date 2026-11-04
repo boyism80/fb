@@ -1064,6 +1064,20 @@ return {
         end
     end,
 
+    wait_siege_ended = function(me, step, beast, wait_ms)
+        local divine_beast = require('schedule.siege').NAME_TO_DIVINE_BEAST[beast]
+        local entity = divine_beast and castle(divine_beast) or nil
+        if entity == nil then
+            return report(me, false, step, 'no castle ' .. tostring(beast))
+        end
+
+        local deadline = now() + (tonumber(wait_ms) or 15000) // 1000
+        while entity:siege_pending() and now() < deadline do
+            sleep(200)
+        end
+        report(me, entity:siege_pending() == false, step)
+    end,
+
     verify_siege_start_once = function(me, step, beast)
         local siege = require('schedule.siege')
         local divine_beast = siege.NAME_TO_DIVINE_BEAST[beast]

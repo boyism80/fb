@@ -134,7 +134,7 @@ namespace Internal.Services
                     }
                 }
 
-                var clearedCastles = new List<byte>();
+                var clearedCastles = new List<Castle>();
                 for (byte divineBeast = 0; divineBeast <= 3; divineBeast++)
                 {
                     castleLocks.Add(await _distributedLock.Lock(world, Castle.DistributedLockKey(divineBeast)));
@@ -142,8 +142,8 @@ namespace Internal.Services
                     if (castleRecord?.OwnerClan == clan.Id)
                     {
                         castleRecord.OwnerClan = null;
-                        _dbContext.Castle.Set(world, castleRecord);
-                        clearedCastles.Add(divineBeast);
+                        _dbContext.Castle.Save(world, castleRecord);
+                        clearedCastles.Add(castleRecord);
                     }
                 }
 
@@ -203,15 +203,9 @@ namespace Internal.Services
                     }, "clan", world);
                 }
 
-                foreach (var divineBeast in clearedCastles)
+                foreach (var castleRecord in clearedCastles)
                 {
-                    await _rabbitMqService.NotifySavedAsync(new Response.UpdatedCastle
-                    {
-                        Host = uint.MaxValue,
-                        DivineBeast = divineBeast,
-                        OwnerClanId = null,
-                        Error = (uint)ErrorCode.None
-                    }, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
+                    await _rabbitMqService.NotifySavedAsync(castleRecord.ToUpdated(uint.MaxValue), AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
                 }
 
                 try
