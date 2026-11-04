@@ -5,7 +5,21 @@ local MESSAGE_GROUP_DISBANDED = "그룹 해체"
 
 local M = {}
 
+function M.allow(ctx)
+    for i = 0, ctx:bot_count() - 1 do
+        for _ = 1, 2 do
+            local r = ctx:bot(i):request(resp.message, protocol.update_option("GROUP", false), function(packet)
+                return packet.type == "STATE" and packet.text:find("그룹허가") ~= nil
+            end)
+            if type(r) == "table" and r.text:find(": ON", 1, true) ~= nil then
+                break
+            end
+        end
+    end
+end
+
 function M.form(ctx)
+    M.allow(ctx)
     local caster = ctx:bot(0)
     for i = 1, ctx:bot_count() - 1 do
         local target = ctx:bot(i)

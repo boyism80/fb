@@ -406,6 +406,7 @@ test_suite {
             local d = ctx:bot(3)
             local e = ctx:bot(4)
 
+            lib.group.allow(ctx)
             progress(e, "STEP 0: GIVE E A CLAN SWORD")
             if lib.script_step.run_script(e, "test/integration", "set_state", "CLAN_SWORD_GIVE", "i=주작의검=1") ~= true then
                 return abort_remaining(e, "FAILED: GIVE CLAN SWORD")
