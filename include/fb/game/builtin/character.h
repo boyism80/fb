@@ -82,7 +82,6 @@ struct character
     static int builtin_rmspell(lua_State* L);
     static int builtin_world(lua_State* L);
     static int builtin_world_map(lua_State* L);
-    static int builtin_save_return_point(lua_State* L);
     static int builtin_save(lua_State* L);
     static int builtin_return_point(lua_State* L);
     static int builtin_transfer_home(lua_State* L);

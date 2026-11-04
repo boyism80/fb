@@ -786,8 +786,6 @@ return {
 
     on_matchmaking_ready = function(me, match_id, match_type, match_team)
         matchmaking_clear_timer(me)
-        me:save_return_point()
-        me:save()
         local dest = match_transfer(match_id)
         if dest == nil then
             me:message('교차 서버를 찾을 수 없습니다.', MESSAGE_TYPE.STATE)

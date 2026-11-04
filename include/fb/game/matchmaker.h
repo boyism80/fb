@@ -102,6 +102,7 @@ public:
     std::shared_ptr<fb::game::match>         session() const;
     void                                     session(std::shared_ptr<fb::game::match> value);
     void                                     save_return_point();
+    void                                     clear_return_point();
     void                                     restore_return_point(uint32_t map, const fb::model::point16_t& position);
     bool                                     has_return_point() const;
     uint32_t                                 return_map() const;

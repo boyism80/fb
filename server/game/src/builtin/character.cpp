@@ -119,7 +119,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"rmspell",                      builtin::character::builtin_rmspell},
 {"world",                        builtin::character::builtin_world},
 {"world_map",                    builtin::character::builtin_world_map},
-{"save_return_point",            builtin::character::builtin_save_return_point},
 {"save",                         builtin::character::builtin_save},
 {"return_point",                 builtin::character::builtin_return_point},
 {"transfer_home",                builtin::character::builtin_transfer_home},
@@ -4191,19 +4190,6 @@ int builtin::character::builtin_save(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_save_return_point(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    ch->matchmaker.save_return_point();
-    return 0;
-}
-
 int builtin::character::builtin_return_point(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -4372,6 +4358,9 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         if (*started == false)
             co_return;
 
+        if (option.match.has_value())
+            ch->matchmaker.save_return_point();
+
         try
         {
             std::ignore = co_await ch->map(nullptr);
@@ -4382,11 +4371,15 @@ int builtin::character::builtin_transfer_to(lua_State* L)
         catch (std::exception& e)
         {
             *started = false;
+            if (option.match.has_value())
+                ch->matchmaker.clear_return_point();
             ch->cancel_transfer(e.what());
         }
         catch (boost::system::error_code& /*e*/)
         {
             *started = false;
+            if (option.match.has_value())
+                ch->matchmaker.clear_return_point();
             ch->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
         }
         co_return;

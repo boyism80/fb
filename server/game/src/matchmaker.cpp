@@ -796,6 +796,13 @@ void matchmaker::save_return_point()
     this->_return_position = this->owner.position();
 }
 
+void matchmaker::clear_return_point()
+{
+    this->owner.assert_thread();
+    this->_return_map      = std::nullopt;
+    this->_return_position = std::nullopt;
+}
+
 void matchmaker::restore_return_point(uint32_t map, const fb::model::point16_t& position)
 {
     this->owner.assert_thread();
