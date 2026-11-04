@@ -15,7 +15,7 @@ return {
         end
 
         local q = me:quest(quest.QUEST_RABBIT_LIVER)
-        if q == nil or q:step() ~= 2 then
+        if q == nil or q:completed() or q:step() ~= 2 then
             return
         end
         if me:has_items({ [ITEM_RABBIT_LIVER] = 1 }) then

@@ -72,7 +72,7 @@ local function run_rabbit_liver_quest(me, npc)
         return
     end
 
-    if not me:has_items(RABBIT_LIVER_ITEM, 1) then
+    if q:step() ~= 2 or not me:has_items(RABBIT_LIVER_ITEM, 1) then
         me:dialog(npc, '아직 토끼의간을 구하시지 못하셨군요..', { prev = false, next = false })
         return
     end

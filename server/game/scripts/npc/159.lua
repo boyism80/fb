@@ -135,6 +135,10 @@ return {
                 { prev = false, next = false })
             return
         end
+        if q:completed() or q:step() ~= 1 then
+            me:dialog(npc, '뇌진도는 이미 받았네.', { prev = false, next = false })
+            return
+        end
         if not me:has_items(ITEM_NEURAEJINDO, 1) then
             me:dialog(npc, '뇌진도가 없지 않은가?', { prev = false, next = false })
             return
