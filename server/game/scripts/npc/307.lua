@@ -105,6 +105,14 @@ return {
                 return
             end
             if pn >= 3 then
+                if q:step() == 2 and not me:has_items("용궁의보물", 1) then
+                    if me:mkitem("용궁의보물", 1) == nil then
+                        me:dialog(npc, "소지품이 가득 차서 용궁의보물을 드리지 못합니다.", { prev = false, next = false })
+                        return
+                    end
+                    me:dialog(npc, "잃어버렸단 말이오? 다시 드릴 테니 이번엔 잘 챙기시오.", { prev = false, next = false })
+                    return
+                end
                 me:dialog(npc, "아무한테도 말하지 말아주시오.", { prev = false, next = false })
                 return
             end

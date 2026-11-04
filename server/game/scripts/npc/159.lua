@@ -12,7 +12,11 @@ local function run_cidequest_jangdol(me, npc)
         return
     end
     local pn = (q and q:progress()) or 0
-    if me:has_items(ITEM_NEURAEJINDO, 1) then
+    if pn == 2 then
+        me:dialog(npc, "그 친구는 부여미궁 어딘가에 있다고 하더군...", { prev = false, next = false })
+        return
+    end
+    if pn == 1 and me:has_items(ITEM_NEURAEJINDO, 1) then
         local btn = me:dialog(npc, "오. 뇌진도를 가지고 왔구만.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -22,10 +26,6 @@ local function run_cidequest_jangdol(me, npc)
         end
         q:progress(2)
         me:dialog(npc, "사실 그 보물은 방천화극을 팔고 있던 내 친구가 들고 가는 것을 보았네.\n\n그러니 그 친구에게 찾아가 보시게나.", { prev = false, next = false })
-        return
-    end
-    if pn == 2 then
-        me:dialog(npc, "그 친구는 부여미궁 어딘가에 있다고 하더군...", { prev = false, next = false })
         return
     end
     local list_1, b1 = me:list(npc, "음...", { "혹시 용왕님의 보물에 대해 알고 계신가요?" }, { prev = false })
