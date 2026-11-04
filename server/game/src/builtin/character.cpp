@@ -7942,29 +7942,31 @@ int builtin::character::builtin_marry(lua_State* L)
         return 0;
 
     auto me     = lua->touserdata<fb::game::character>(1);
-    auto target = lua->touserdata<fb::game::character>(2);
-    if (me == nullptr || target == nullptr)
+    auto spouse = lua->touserdata<fb::game::character>(2);
+    if (me == nullptr || spouse == nullptr)
     {
         lua->pushstring("대상을 찾을 수 없습니다.");
         return 1;
     }
 
-    auto weak     = me->weak_from_this_as<fb::game::character>();
-    auto error    = std::make_shared<std::optional<std::string>>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
+    auto weak        = me->weak_from_this_as<fb::game::character>();
+    auto target_weak = spouse->weak_from_this_as<fb::game::character>();
+    auto error       = std::make_shared<std::optional<std::string>>();
+    auto builder     = lua->new_co_builder();
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
 
+        auto target = target_weak.lock();
+        auto my_map = me->map();
+        if (target == nullptr || me->thread() != target->thread() || my_map == nullptr || my_map != target->map())
+        {
+            *error = "상대와 같은 곳에 있어야 결혼할 수 있습니다.";
+            co_return;
+        }
         if (me->world() != target->world())
         {
             *error = "다른 서버 출신과는 결혼할 수 없습니다.";
-            co_return;
-        }
-        auto my_map = me->map();
-        if (me->thread() != target->thread() || my_map == nullptr || my_map != target->map())
-        {
-            *error = "상대와 같은 곳에 있어야 결혼할 수 있습니다.";
             co_return;
         }
         if (me->gender() == target->gender())
