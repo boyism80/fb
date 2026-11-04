@@ -4,6 +4,7 @@ local festival = require('lib.festival')
 
 local TILE_MIN = 10238
 local TILE_MAX = 10240
+local ITEM_NET_ID = 242
 
 return {
     on_map_move = function(me)
@@ -31,7 +32,7 @@ return {
         end
 
         local weapon = me:weapon()
-        if weapon == nil or weapon:name() ~= '그물' then
+        if weapon == nil or weapon:model():id() ~= ITEM_NET_ID then
             me:dialog(nil, '앗... 잉어를 발견했는데 그물이 없어서 놓쳐버렸다!', { prev = false, next = false })
             return
         end

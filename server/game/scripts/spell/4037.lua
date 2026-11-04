@@ -3,13 +3,13 @@
 local spell = require('lib.spell')
 
 local WEAPON_DELAY_PERCENT = {
-    ['용겸제삼봉'] = 10,
-    ['용겸제사봉'] = 15,
-    ['용겸제오봉'] = 20,
-    ['용겸제육봉'] = 25,
-    ['용겸제칠봉'] = 30,
-    ['용겸제팔봉'] = 35,
-    ['용겸제구봉'] = 40,
+    [278] = 10,
+    [279] = 15,
+    [280] = 20,
+    [281] = 25,
+    [282] = 30,
+    [283] = 35,
+    [284] = 40,
 }
 
 return {
@@ -22,7 +22,7 @@ return {
         if me:is(OBJECT_TYPE.CHARACTER) then
             local weapon = me:weapon()
             if weapon ~= nil then
-                local pct = WEAPON_DELAY_PERCENT[weapon:name()]
+                local pct = WEAPON_DELAY_PERCENT[weapon:model():id()]
                 if pct ~= nil then
                     delay = delay - delay * pct // 100
                 end

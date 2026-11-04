@@ -2,28 +2,23 @@
 -- 헬파이어 캐스팅
 local spell = require('lib.spell')
 
+local WEAPON_DELAY_REDUCTION = {
+    [269] = 1,
+    [270] = 1,
+    [271] = 2,
+    [272] = 2,
+    [273] = 3,
+    [274] = 3,
+    [275] = 4,
+}
+
 return {
     on_cast = function(me, you, sp)
         local delay = 7
         if me:is(OBJECT_TYPE.CHARACTER) then
             local weapon = me:weapon()
             if weapon ~= nil then
-                local name = weapon:name()
-                if name == '용랑제삼봉' then
-                    delay = delay - 1
-                elseif name == '용랑제사봉' then
-                    delay = delay - 1
-                elseif name == '용랑제오봉' then
-                    delay = delay - 2
-                elseif name == '용랑제육봉' then
-                    delay = delay - 2
-                elseif name == '용랑제칠봉' then
-                    delay = delay - 3
-                elseif name == '용랑제팔봉' then
-                    delay = delay - 3
-                elseif name == '용랑제구봉' then
-                    delay = delay - 4
-                end
+                delay = delay - (WEAPON_DELAY_REDUCTION[weapon:model():id()] or 0)
             end
         end
 
