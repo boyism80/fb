@@ -53,3 +53,4 @@ server/bot/config/targets.local.json
 # C++ process logs (logs/YYYY-MM-DD-{server}.log)
 **/logs/*.log
 logs/
+scripts/sim/world/lane_plan.lua

@@ -11,6 +11,9 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
+import predict
+import sim
+
 ROOT = Path(__file__).resolve().parents[2]
 BOT = ROOT / 'server' / 'bot'
 LOGS = BOT / 'logs'
@@ -438,6 +441,93 @@ def config_set(path: str, value: object) -> dict:
         parent[key] = value
     DATA.write_text(json.dumps(document, ensure_ascii=False, indent='\t') + '\n', encoding='utf-8')
     return {'path': path, 'before': before, 'after': value}
+
+
+@server.tool()
+def predict_diff(since_minutes: float = 30, minimum: int = 10, tolerance: float = 0.5, window_seconds: float = 30,
+                 limit: int = 20) -> dict:
+    """Brain forecast against actual outcome from logs/brain/*.jsonl: per class, level band, mob and opener skill the
+    fight time, damage taken, casts, swings and deaths (flags when off by more than tolerance), per ground the kill and
+    exp rates against the forecast, and A->B->A decision flips within window_seconds."""
+    return predict.report(LOGS / 'brain', since_minutes, minimum, tolerance, window_seconds, limit)
+
+
+@server.tool()
+def fight_samples(since_minutes: float = 30, cls: str = '', mob: str = '', opener: str = '', limit: int = 5) -> list:
+    """Raw fight records (forecast, actual uses and the step timeline) filtered by class, mob and opener skill."""
+    return predict.samples(LOGS / 'brain', since_minutes, cls or None, mob or None, opener or None, limit)
+
+
+@server.tool()
+def sim_start(teams: list[str] | None = None, seeds: list[int] | None = None, solo: bool = True, lanes: int = 24, minutes: int = 0, profile: bool = False, trace: bool = False) -> dict:
+    """Start the offline world sim on the local cluster (never the remote server). teams defaults to every roster team; minutes 0 keeps the roster duration. Returns immediately; follow with sim_result."""
+    return sim.start(teams, seeds if seeds is not None else [0, 1, 2], solo, lanes, minutes, profile=profile, trace=trace)
+
+
+@server.tool()
+def sim_result(run_id: str, baseline: str = '') -> dict:
+    """Progress, per-team kills/exp/deaths by seed, solo totals and script errors of a sim run; baseline adds per-team changes against another run."""
+    return sim.result(run_id, baseline)
+
+
+@server.tool()
+def sim_overview(run_id: str, team: str = '', seed: int | None = None) -> list:
+    """Per-bot diagnosis of team runs (team is a regex): seconds by task, flees with cause, supply trips, grounds with kills and exp, key spell casts."""
+    return sim.overview(run_id, team, seed)
+
+
+@server.tool()
+def sim_timeline(run_id: str, team: str, seed: int, bot: str = '', since: float = 0, until: float = 1e9, limit: int = 120, merged: bool = True) -> list | dict:
+    """Actions of one team and seed between two sim seconds; merged joins runs of the same task and map, unmerged lists every action with hp and mp."""
+    return sim.timeline(run_id, team, seed, bot, since, until, limit, merged)
+
+
+@server.tool()
+def sim_deaths(run_id: str, last: int = 20) -> list:
+    """Every team death in a sim run with the bot's last actions."""
+    return sim.deaths(run_id, last)
+
+
+@server.tool()
+def sim_decisions(run_id: str, bot: str, hp_low: int = 0, hp_high: int = 10 ** 9, mp_low: int = 0, mp_high: int = 10 ** 9, mob: str = '', limit: int = 20) -> list:
+    """Battle candidate values the brain logged for a bot, filtered by hp, mp and mob, evenly sampled to limit."""
+    return sim.decisions(run_id, bot, hp_low, hp_high, mp_low, mp_high, mob, limit)
+
+
+@server.tool()
+def sim_profile(run_id: str, limit: int = 30) -> dict:
+    """Per-function calls and CPU seconds of a sim run started with profile=True."""
+    return sim.profile_of(run_id, limit)
+
+
+@server.tool()
+def sim_why(run_id: str, team: str, seed: int, kind: str = 'why', bot: str = '', limit: int = 10) -> list | dict:
+    """Decision inputs a sim recorded: kind why gives each flee with fight estimates alone, with crew and rested against the ground forecast; kind plan gives the ground ranking at every plan change."""
+    return sim.why(run_id, team, seed, kind, bot, limit)
+
+
+@server.tool()
+def sim_brief(run_id: str, baseline: str = '') -> list:
+    """One-line-per-team result of a world run: exp, kills, deaths, change against baseline, speed and death trails."""
+    return sim.brief(run_id, baseline)
+
+
+@server.tool()
+def sim_usage(run_id: str, team: str = '') -> list:
+    """Per bot skill counts and strike use by HP (below 50%, at or above 90%). team is a regex."""
+    return sim.usage(run_id, team)
+
+
+@server.tool()
+def sim_places(run_id: str, team: str, seed: int) -> list:
+    """Per bot seconds by map and by task and reason, with the ground plans chosen."""
+    return sim.places(run_id, team, seed)
+
+
+@server.tool()
+def sim_calibration(run_id: str, team: str = '') -> list:
+    """Forecast against actual damage and time of won fights per team and class."""
+    return sim.calibration(run_id, team)
 
 
 if __name__ == '__main__':

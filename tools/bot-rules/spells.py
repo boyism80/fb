@@ -167,6 +167,12 @@ def effect(text):
     elif 'spell.damage(' in text:
         info['role'] = 'ATTACK'
         info['damage'] = values.get('damage', 0)
+        if 'me:front(' in text:
+            info['front'] = True
+        if 'hp_cost' in values and 'me:hp(me:hp() - hp_cost)' in text:
+            info['hp_spend'] = values['hp_cost']
+        if re.search(r"if\s+you:maxhp\(\)\s*>\s*damage\s+then", text):
+            info['limit'] = values.get('damage', 0)
     elif 'spell.attack_cast' in text:
         info['role'] = 'STRIKE'
         cost = re.search(r"local\s+hp\s*=\s*me:hp\(\)\s*(?:\*\s*(\d+)\s*)?(?://\s*(\d+)|-\s*(\d+))?", text)
@@ -317,7 +323,8 @@ def brain_data(catalog):
         info = catalog['spells'][name]
         fields = {key: info[key] for key in ('role', 'type', 'mp', 'damage', 'hp', 'self', 'others', 'group', 'hp_cost',
                                             'damage_hp', 'damage_mp', 'drain', 'buff_time', 'boost', 'chance', 'chance_int',
-                                            'excludes', 'trigger', 'surge', 'stats', 'dot', 'paralysis', 'blind', 'resists')
+                                            'excludes', 'trigger', 'surge', 'stats', 'dot', 'paralysis', 'blind', 'resists', 'front',
+                                            'hp_spend', 'limit')
                   if key in info and info[key] not in ({}, [])}
         formula = info.get('formula', {})
         entries = [f'{key} = {lua_value(value)}' for key, value in fields.items() if key not in formula]

@@ -1,8 +1,12 @@
-local data    = require("brain.data.combat")
-local hunting = require("brain.data.hunting")
-local combat  = require("brain.policies.combat")
+local data     = require("brain.data.combat")
+local hunting  = require("brain.data.hunting")
+local magic    = require("brain.data.spells")
+local combat   = require("brain.policies.combat")
+local recovery = require("brain.policies.recovery")
 
 local M = {}
+
+local NEUTRAL = { defense = 0, ward = 0, resists = {}, size = "SMALL" }
 
 local typical = nil
 
@@ -27,7 +31,8 @@ local function pressure(snap, mob)
     if combat.hits(mob) == false or mob.speed == nil or mob.speed <= 0 then
         return 0
     end
-    return combat.blow(snap, mob) / mob.speed
+    local behind = ((magic.back_attack or 1) - 1) / math.max(data.adjacent - 1, 1)
+    return combat.blow(snap, mob) / mob.speed * (1 + behind)
 end
 
 function M.crowd(snap, entries, time, fighters, density)
@@ -39,7 +44,7 @@ function M.crowd(snap, entries, time, fighters, density)
         local mob = entry.mob
         total     = total + entry.count
         if mob.attack == "AGGRESSIVE" and combat.hits(mob) then
-            local period = M.respawn(mob)
+            local period = M.respawn(mob) / data.rezen
             arrival      = arrival + (period > 0 and entry.count / period or 0)
             present      = present + entry.count
             burden       = burden + entry.count * pressure(snap, mob)
@@ -52,7 +57,7 @@ function M.crowd(snap, entries, time, fighters, density)
     local tiles    = (2 * data.sight.x + 1) * (2 * data.sight.y + 1)
     local standing = (density or 0) * tiles * present / math.max(total, 1)
     local load     = (arrival * time + standing) / math.max(fighters or 1, 1)
-    local capacity = math.min(present, data.adjacent * math.max(fighters or 1, 1))
+    local capacity = math.min(present, data.adjacent)
     local weights  = {}
     local sum      = 0
     for n = 0, capacity do
@@ -78,8 +83,9 @@ local function assisted(mob, assist)
     return result
 end
 
-function M.fight(snap, query, mob, context)
-    local result = combat.outcome(snap, query, assisted(mob, context.assist), context.density, context.aid)
+function M.core(snap, query, mob, context)
+    local result = combat.outcome(snap, query, assisted(mob, context.assist), context.density, context.aid,
+        context.crowd ~= nil and context.crowd.extra or nil)
     local spent  = result.spent or 0
     if (context.speed or 0) > 0 then
         local own   = result.time < math.huge and 1 / result.time or 0
@@ -91,6 +97,11 @@ function M.fight(snap, query, mob, context)
         end
         result = { time = kill, taken = hurt + spent, healed = result.healed * share, drained = result.drained * share }
     end
+    return { time = result.time, taken = result.taken, healed = result.healed, drained = result.drained, spent = spent }
+end
+
+function M.settle(snap, mob, context, result)
+    local spent = result.spent or 0
     local time  = result.time
     local crowd = context.crowd or { pressure = 0, extra = 0 }
     if time == math.huge then
@@ -104,8 +115,33 @@ function M.fight(snap, query, mob, context)
             p_die = 1
         }
     end
-    local taken     = result.taken + crowd.pressure * time
-    local healed    = math.min(taken, result.healed + (context.support or 0) * time / 1000)
+    local taken  = result.taken + crowd.pressure * time
+    local healed = math.min(taken, result.healed + (context.support or 0) * time / 1000)
+    local left   = (snap.self.mp or 0) - (result.drained or 0)
+    local mend   = nil
+    for _, choice in ipairs(combat.options(snap, NEUTRAL).heal) do
+        if choice.hp > 0 and choice.mp > 0 and (mend == nil or choice.hp / choice.mp > mend.hp / mend.mp) then
+            mend = choice
+        end
+    end
+    while mend ~= nil and taken - healed >= snap.self.hp and left >= mend.mp do
+        healed = healed + mend.hp
+        left   = left - mend.mp
+    end
+    local doses = recovery.doses(snap, "hp")
+    local flow  = time > 0 and taken / time or 0
+    local cast  = combat.cast(snap)
+    for index = #doses, 1, -1 do
+        local dose = doses[index]
+        local net  = dose.amount - flow * cast
+        if taken - healed >= snap.self.hp and net > 0 then
+            local count = math.min(dose.count, math.ceil((taken - healed - snap.self.hp + 1) / net))
+            healed      = healed + dose.amount * count
+            taken       = taken + flow * cast * count
+            time        = time + cast * count
+        end
+    end
+    healed          = math.min(taken, healed)
     local low, high = combat.spread(snap, mob)
     local average   = (low + high) / 2
     local hits      = average > 0 and (taken - spent) / average or 0
@@ -120,17 +156,86 @@ function M.fight(snap, query, mob, context)
     }
 end
 
+local function drinks(snap)
+    local stock = 0
+    local count = 0
+    local room  = recovery.ceiling(snap) - (snap.self.mp or 0)
+    for _, dose in ipairs(recovery.doses(snap, "mp")) do
+        for _ = 1, dose.count do
+            if stock >= room then
+                break
+            end
+            stock = stock + dose.amount
+            count = count + 1
+        end
+    end
+    return math.min(stock, room), count
+end
+
+local function engage(snap, query, mob, context)
+    return M.settle(snap, mob, context, M.core(snap, query, mob, context))
+end
+
+function M.fight(snap, query, mob, context)
+    local result = engage(snap, query, mob, context)
+    if result.ending > 0 or recovery.rates(snap).mp > 0 then
+        return result
+    end
+    local stock, count = drinks(snap)
+    if stock <= 0 then
+        return result
+    end
+    local delay   = count * combat.cast(snap)
+    local hurt    = (combat.hits(mob) and (mob.speed or 0) > 0 and combat.blow(snap, mob) / mob.speed or 0) * delay
+    local drunk   = setmetatable({
+        self = setmetatable({ hp = snap.self.hp - hurt, mp = (snap.self.mp or 0) + stock },
+            { __index = snap.self })
+    }, { __index = snap })
+    local refined = hurt < snap.self.hp and engage(drunk, query, mob, context) or nil
+    if refined == nil or refined.ending <= result.ending then
+        return result
+    end
+    refined.time  = refined.time + delay
+    refined.taken = refined.taken + hurt
+    return refined
+end
+
+local approaching = setmetatable({}, { __mode = "k" })
+
+local function approach(snap)
+    local world = snap.world
+    local byspell = approaching[world]
+    if byspell == nil then
+        byspell = setmetatable({}, { __mode = "k" })
+        approaching[world] = byspell
+    end
+    local buffs = combat.buffs(snap)
+    local found = byspell[buffs]
+    if found == nil or found.phydef ~= snap.self.phydef then
+        found = { phydef = snap.self.phydef }
+        for _, seen in ipairs(world.mobs or {}) do
+            if seen.x ~= nil and seen.attack == "AGGRESSIVE" and combat.hits(seen) and (seen.speed or 0) > 0 then
+                local distance = math.abs(seen.x - world.x) + math.abs(seen.y - world.y)
+                table.insert(found, {
+                    oid = seen.oid,
+                    reached = math.max(0, distance - data.reach) * seen.speed,
+                    pressure = pressure(snap, seen)
+                })
+            end
+        end
+        byspell[buffs] = found
+    end
+    return found
+end
+
 function M.contact(snap, mob, time)
     local burden = 0
     local extra  = 0
-    for _, seen in ipairs(snap.world.mobs or {}) do
-        if seen.oid ~= mob.oid and seen.x ~= nil and seen.attack == "AGGRESSIVE" and combat.hits(seen) and
-            (seen.speed or 0) > 0 then
-            local distance = math.abs(seen.x - snap.world.x) + math.abs(seen.y - snap.world.y)
-            local reached  = math.max(0, distance - data.reach) * seen.speed
-            local share    = time == math.huge and 1 or time > 0 and math.max(0, time - reached) / time or 0
-            extra          = extra + share
-            burden         = burden + share * pressure(snap, seen)
+    for _, seen in ipairs(approach(snap)) do
+        if seen.oid ~= mob.oid then
+            local share = time == math.huge and 1 or time > 0 and math.max(0, time - seen.reached) / time or 0
+            extra       = extra + share
+            burden      = burden + share * seen.pressure
         end
     end
     local room = data.adjacent - 1

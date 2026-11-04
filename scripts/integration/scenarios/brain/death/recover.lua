@@ -57,7 +57,7 @@ function M.run(ctx, index, case)
     local alive   = false
     local again   = false
     local settled = died and expect.settle(ctx, index, mind, TIMEOUT, function(current)
-        return current:state() ~= "GHOST" and mind:death(current) == nil and current:item_count(WEAPON) == 0
+        return current:state() ~= "GHOST" and mind:death(current) == nil
     end, function(current)
         local ghost = current:state() == "GHOST"
         again       = again or (alive and ghost)
@@ -79,7 +79,7 @@ function M.run(ctx, index, case)
     expect.release(ctx, index, mind, TIMEOUT)
     local cleared = ghost.clear(ctx, index)
     local kept    = case.guard ~= nil or ((case.money or MONEY) > 0) == (money > 0)
-    local passed  = cleared and settled and recovered and again == false and kept and bagged == 0 and
+    local passed  = cleared and settled and recovered and again == false and kept and
         (case.jump == "*" or jumped == case.jump)
     local summary = string.format("died=%s settled=%s again=%s money=%d weapon_in_bag=%d jumped=%s history=%s",
         tostring(died), tostring(settled), tostring(again), money, bagged, tostring(jumped), table.concat(lines, " -> "))

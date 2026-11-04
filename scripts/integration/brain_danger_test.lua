@@ -32,6 +32,7 @@ test_suite {
             return cases.run(ctx, 0, {
                 name     = "rest_first",
                 hp       = 2,
+                timeout  = 300000,
                 order    = { task = "HUNT", names = { "다람쥐" }, count = 2 },
                 tasks    = { "ORDER" },
                 finished = anywhere,

@@ -95,51 +95,54 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
         co_return event{"DONE", map, here};
     }
 
-    while (true)
+    if (std::abs(target.x - here.x) + std::abs(target.y - here.y) != 1)
     {
+        auto moved = co_await this->walk(bot, destination{{map}, target, 1}, detour{});
+        if (moved.type == "BLOCKED" || moved.type == "NO_ROUTE")
+            co_return event{"UNREACHABLE", map, target};
+        else if (moved.type != "ARRIVED")
+            co_return moved;
+
         if (auto ended = check(); ended.has_value())
             co_return ended.value();
 
-        if (std::abs(target.x - here.x) + std::abs(target.y - here.y) != 1)
-        {
-            auto moved = co_await this->walk(bot, destination{{map}, target, 1}, detour{});
-            if (moved.type == "BLOCKED" || moved.type == "NO_ROUTE")
-                co_return event{"UNREACHABLE", map, target};
-            else if (moved.type != "ARRIVED")
-                co_return moved;
-        }
-        else
-        {
-            face();
-            auto swing   = bot->make<game_reqs::attack>();
-            auto failure = std::string{};
-            auto started = clock::now();
-            try
-            {
-                std::ignore = co_await bot->request_by_opcode(
-                    game_resp::action::opcode,
-                    swing.get(),
-                    [me = bot->oid()](const fb::protocol::header& header) {
-                        return static_cast<const game_resp::action&>(header).oid == me;
-                    },
-                    SWING_TIMEOUT);
-            }
-            catch (const std::exception&)
-            {
-                failure = bot->aborted() ? "TRANSFERRED" : this->active(bot->id) ? "TIMEOUT" : "INTERRUPTED";
-            }
-            if (failure.empty() == false)
-                co_return event{failure, map, here};
-
-            swings++;
-            this->act(bot->id, "swing");
-            this->measure(bot->id,
-                          "swing",
-                          std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
-            this->progress(bot->id);
-        }
-
         if (bot->hp() < hp)
             co_return event{"STRUCK", bot->map(), bot->position(), {}, oid, target, swings};
+
+        co_return event{"APPROACHED", bot->map(), bot->position(), {}, oid, target, swings};
     }
+
+    face();
+    auto swing   = bot->make<game_reqs::attack>();
+    auto failure = std::string{};
+    auto started = clock::now();
+    try
+    {
+        std::ignore = co_await bot->request_by_opcode(
+            game_resp::action::opcode,
+            swing.get(),
+            [me = bot->oid()](const fb::protocol::header& header) {
+                return static_cast<const game_resp::action&>(header).oid == me;
+            },
+            SWING_TIMEOUT);
+    }
+    catch (const std::exception&)
+    {
+        failure = bot->aborted() ? "TRANSFERRED" : this->active(bot->id) ? "TIMEOUT" : "INTERRUPTED";
+    }
+    if (failure.empty() == false)
+        co_return event{failure, map, here};
+
+    swings++;
+    this->act(bot->id, "swing");
+    this->measure(bot->id, "swing", std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
+    this->progress(bot->id);
+
+    if (auto ended = check(); ended.has_value())
+        co_return ended.value();
+
+    if (bot->hp() < hp)
+        co_return event{"STRUCK", bot->map(), bot->position(), {}, oid, target, swings};
+
+    co_return event{"DONE", bot->map(), bot->position(), {}, oid, target, swings};
 }

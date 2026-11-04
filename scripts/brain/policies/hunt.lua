@@ -108,7 +108,7 @@ function M.step(brain, bot, goal)
             goal.killed(state, found.mob)
         elseif event.type == "LOST" or event.type == "UNREACHABLE" then
             state.skipped[tostring(found.mob.oid)] = true
-        elseif event.type ~= "STRUCK" and event.type ~= "DONE" and event.type ~= "REFUSED" then
+        elseif battle.going(event.type) == false then
             log("debug", string.format("[brain:hunt] bot=%s stopped %s", bot:name(), event.type))
             return "FAILED", event.type
         end

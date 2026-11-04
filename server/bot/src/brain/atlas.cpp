@@ -193,7 +193,12 @@ atlas::atlas(const std::string& maps_path, const fb::sobj_tbl_file& sobj) :
     {
         for (auto& entry : entries)
         {
-            this->_spawns[static_cast<uint16_t>(id)].push_back(spawn{entry.mob, entry.begin, entry.end, entry.count});
+            this->_spawns[static_cast<uint16_t>(id)].push_back(
+                spawn{entry.mob,
+                      entry.begin,
+                      entry.end,
+                      entry.count,
+                      static_cast<uint64_t>(static_cast<std::chrono::milliseconds>(entry.rezen).count())});
         }
     }
 

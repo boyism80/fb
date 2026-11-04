@@ -10,11 +10,15 @@ local M = {}
 
 local NEUTRAL = { defense = 0, ward = 0, resists = {}, size = "SMALL" }
 
-local function sustained(choice, field, regen, rate)
+local function sustained(choice, field, regen, rate, recovered)
     if choice == nil or choice[field] <= 0 then
         return 0
     end
     local paced = choice[field] * rate
+    local spend = -(choice.hp or 0)
+    if spend > 0 and field == "damage" then
+        paced = math.min(paced, choice[field] * (recovered or 0) / spend)
+    end
     if choice.mp <= 0 then
         return paced
     end
@@ -69,13 +73,84 @@ local function mobility(snap)
     return found
 end
 
+local recovers = setmetatable({}, { __mode = "k" })
+local WEARABLE = { WEAPON = true, ARMOR = true, HELMET = true, RING = true, SHIELD = true, AUXILIARY = true }
+
+function M.recovered(snap, query)
+    local death = snap.record ~= nil and snap.record.death or nil
+    if death == nil or (death.left or 0) <= 0 then
+        return snap
+    end
+    if recovers[snap] ~= nil then
+        return recovers[snap]
+    end
+    local counts = {}
+    local items  = {}
+    for _, item in ipairs(snap.bag.items) do
+        counts[item.name] = (counts[item.name] or 0) + item.count
+        table.insert(items, item)
+    end
+    for name, count in pairs(death.items or {}) do
+        local lacking = count - (counts[name] or 0)
+        if lacking > 0 then
+            table.insert(items, { name = name, count = lacking })
+        end
+    end
+    local self = {}
+    for key, entry in pairs(snap.self) do
+        self[key] = entry
+    end
+    self.money = math.max(snap.self.money or 0, death.money or 0)
+    local held = {}
+    for key, entry in pairs(snap.bag) do
+        held[key] = entry
+    end
+    held.items = items
+    local worn = {}
+    local used = {}
+    for _, slot in ipairs(snap.gear or {}) do
+        table.insert(worn, slot)
+        used[slot.type] = true
+    end
+    for name in pairs(death.items or {}) do
+        local model = query ~= nil and query.item(name) or nil
+        local kind  = model ~= nil and model.type or nil
+        if kind ~= nil and WEARABLE[kind] and used[kind] == nil and (counts[name] or 0) == 0 then
+            table.insert(worn, { type = kind, names = { name } })
+            used[kind] = true
+        end
+    end
+    local result = setmetatable({ self = self, bag = held, gear = worn }, { __index = snap })
+    recovers[snap] = result
+    return result
+end
+
 function M.rested(snap, mode)
-    local mp   = (mode or recovery.reserve(snap)) == "REFILL" and snap.self.max_mp or 0
+    local mp   = (mode or recovery.reserve(snap)) == "REFILL" and recovery.ceiling(snap) or 0
     local full = setmetatable({ hp = snap.self.max_hp, mp = mp }, { __index = snap.self })
     return setmetatable({ self = full }, { __index = snap })
 end
 
+local signatures = setmetatable({}, { __mode = "k" })
+
+local compute_signature = nil
+
 function M.signature(snap, mode)
+    local known = signatures[snap]
+    if known == nil then
+        known = {}
+        signatures[snap] = known
+    end
+    local key   = mode or false
+    local found = known[key]
+    if found == nil then
+        found = compute_signature(snap, mode)
+        known[key] = found
+    end
+    return found
+end
+
+compute_signature = function(snap, mode)
     local gear = {}
     for _, slot in ipairs(snap.gear) do
         table.insert(gear, table.concat(slot.names, "+"))
@@ -103,33 +178,35 @@ function M.signature(snap, mode)
 end
 
 function M.capability(snap, query)
-    local options = fight.options(snap, NEUTRAL)
-    local refill  = recovery.rates(snap)
-    local regen   = refill.mp
-    local rate    = 1000 / fight.cast(snap)
-    local melee   = fight.strike(snap, query, NEUTRAL) * 1000 / combat.swing
-    local single  = strongest(options.offense, "damage", function(choice)
+    local options   = fight.options(snap, NEUTRAL)
+    local refill    = recovery.rates(snap)
+    local regen     = refill.mp
+    local recovered = refill.hp + combat.natural.hp * snap.self.max_hp
+    local rate      = 1000 / fight.cast(snap)
+    local melee     = fight.strike(snap, query, NEUTRAL) * 1000 / combat.swing
+    local single    = strongest(options.offense, "damage", function(choice)
         return magic.spells[choice.name].role == "ATTACK"
     end)
-    local area    = strongest(options.offense, "damage", function(choice)
+    local area      = strongest(options.offense, "damage", function(choice)
         return magic.spells[choice.name].role == "AREA"
     end)
-    local heal    = strongest(options.heal, "hp", function()
+    local heal      = strongest(options.heal, "hp", function()
         return true
     end)
-    local others  = strongest(options.heal, "hp", function(choice)
+    local others    = strongest(options.heal, "hp", function(choice)
         return choice.others
     end)
-    local opener  = strongest(options.strike, "damage", function()
+    local opener    = strongest(options.strike, "damage", function()
         return true
     end)
-    local nuke    = single ~= nil and single.mp > 0 and math.floor((snap.self.mp or 0) / single.mp) * single.damage or 0
-    local guard   = fight.mitigate(100, snap.self.phydef or 0, 0) / 100
+    local nuke      = single ~= nil and single.mp > 0 and math.floor((snap.self.mp or 0) / single.mp) * single.damage or
+        0
+    local guard     = fight.mitigate(100, snap.self.phydef or 0, 0) / 100
 
     return {
         dps      = {
-            single = melee + sustained(single, "damage", regen, rate),
-            area   = sustained(area, "damage", regen, rate),
+            single = melee + sustained(single, "damage", regen, rate, recovered),
+            area   = sustained(area, "damage", regen, rate, recovered),
             melee  = melee,
         },
         burst    = math.max(opener ~= nil and opener.damage or 0, nuke),

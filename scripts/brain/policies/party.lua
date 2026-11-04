@@ -2,6 +2,7 @@ local combat = require("brain.data.combat")
 local danger = require("brain.policies.danger")
 local escort = require("brain.policies.escort")
 local ground = require("brain.policies.ground")
+local score  = require("brain.policies.score")
 
 local M = {}
 
@@ -19,23 +20,38 @@ local function summary(plan)
     for _, floor in ipairs(plan.floors) do
         table.insert(floors, { map = floor.map, targets = floor.targets })
     end
-    return { name = plan.name, rate = plan.rate, floors = floors, yields = plan.yields, gate = plan.gate }
+    return { name = plan.name, rate = plan.rate, pain = plan.pain, peak = plan.peak, floors = floors, yields = plan
+    .yields, gate = plan.gate }
 end
 
-function M.profile(snap, query)
+local function arrival(snap, query, decision)
+    if #(snap.group or {}) == 0 or decision == nil or decision.kind ~= ACTION.MOVE or decision.dest == nil then
+        return nil
+    end
+    local route = query.route(decision.dest.maps or { decision.dest.map })
+    return route ~= nil and snap.now + route.cost * (snap.pace.step or combat.walk) or nil
+end
+
+function M.profile(snap, query, decision)
     local grouped = #(snap.group or {}) > 0
+    local base    = score.recovered(snap, query)
     return {
-        self    = snap.self,
+        self    = base.self,
         spells  = snap.spells,
-        gear    = snap.gear,
+        gear    = base.gear,
         buffs   = snap.buffs,
-        bag     = snap.bag,
+        bag     = base.bag,
         pace    = snap.pace,
         world   = { map = snap.world.map, x = snap.world.x, y = snap.world.y },
         now     = snap.now,
         grouped = grouped,
+        fled    = snap.record.memory.fled,
+        task    = decision ~= nil and decision.task or nil,
+        heading = decision ~= nil and decision.task == "FIELD" and decision.kind == ACTION.MOVE and decision.dest ~= nil and
+            (decision.dest.maps or { decision.dest.map }) or nil,
+        arrives = arrival(snap, query, decision),
         battle  = grouped and snap.record.memory.battle or nil,
-        plan    = grouped and snap.leader == snap.self.name and summary(M.plan(snap, query)) or nil,
+        plan    = grouped and snap.leader == snap.self.name and summary(M.plan(base, query)) or nil,
     }
 end
 
@@ -76,7 +92,7 @@ function M.gate(snap, query, plan, team)
         end
         previous = map
     end
-    return first
+    return maps[#maps - 1] or first
 end
 
 function M.feasible(snap, query, plan, team)
@@ -108,6 +124,8 @@ function M.offer(snap, query)
     if offers[snap] ~= nil then
         return offers[snap] or nil
     end
+    local origin = snap
+    snap         = score.recovered(snap, query)
     local mine   = solo(snap, query)
     local nearby = {}
     local parted = snap.record.memory.left
@@ -148,7 +166,7 @@ function M.offer(snap, query)
             end
         end
     end
-    offers[snap] = best or false
+    offers[origin] = best or false
     return best
 end
 
@@ -161,6 +179,10 @@ function M.members(snap)
         members[snap] = found
     end
     return members[snap]
+end
+
+function M.known(snap)
+    return #M.members(snap) >= #(snap.group or {})
 end
 
 function M.plan(snap, query)
@@ -180,7 +202,9 @@ function M.plan(snap, query)
         for _, member in ipairs(members) do
             table.insert(team, member)
         end
-        local plan = ground.party(team, query, "SUPPLY")
+        local commit = snap.record.memory.commit
+        local plan   = commit ~= nil and ground.hold(team, query, commit) or nil
+        plan         = plan or ground.party(team, query, "SUPPLY")
         if plan ~= nil then
             local copy = {}
             for key, entry in pairs(plan) do

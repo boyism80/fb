@@ -10,6 +10,8 @@ local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
 local value    = require("brain.policies.value")
 
+local learn = require("brain.tasks.learn")
+
 local M = {}
 
 local trips = {}
@@ -19,6 +21,10 @@ local function carried(snap, kind)
     local total = 0
     for _, dose in ipairs(recovery.doses(snap, kind)) do
         total = total + dose.amount * dose.count
+    end
+    local heal = recovery.heal(snap)
+    if kind == "hp" and heal ~= nil and heal.hp > 0 and heal.mp > 0 then
+        total = total + heal.hp / heal.mp * (snap.self.mp or 0)
     end
     return total
 end
@@ -80,8 +86,11 @@ end
 
 local function evaluate(snap, query, kind)
     if kind == "mp" then
-        if recovery.least(snap) == nil or recovery.rates(snap).mp > 0 then
+        if recovery.least(snap) == nil then
             return nil
+        elseif recovery.rates(snap).mp > 0 then
+            local spare = recovery.ignition(snap)
+            return spare > 0 and { crisis = spare, stock = recovery.spare(snap), loot = 0 } or nil
         end
         local refill = ground.choose(snap, query, "REFILL")
         local dry    = ground.choose(snap, query, "DRY")
@@ -108,19 +117,25 @@ local function evaluate(snap, query, kind)
             level = ground.horizon(snap, refill.rate)
         }
     end
-    if recovery.heal(snap) ~= nil then
-        return nil
-    end
     local best = ground.choose(snap, query)
     if best == nil or best.need <= 0 then
         return nil
     end
-    return { crisis = best.need, loot = best.loot }
+    local team  = party.members(snap)
+    local aid   = #team > 0 and ground.crew(team, query).heal or 0
+    local rates = recovery.rates(snap)
+    local mend  = recovery.heal(snap)
+    local own   = mend ~= nil and mend.mp > 0 and mend.hp * math.max(0, rates.mp - best.drain) / mend.mp or rates.hp
+    if own + aid >= best.wear then
+        return nil
+    end
+    local last  = best.floors[#best.floors]
+    local floor = math.max(best.need * (1 + (last ~= nil and last.crowd or 0)), best.peak or 0)
+    return { crisis = floor, stock = math.max(floor, best.wear * ground.horizon(snap, best.rate)), loot = best.loot }
 end
 
 local function demand(snap, query, kind)
-    if (kind == "mp" and (recovery.least(snap) == nil or recovery.rates(snap).mp > 0)) or
-        (kind == "hp" and recovery.heal(snap) ~= nil) then
+    if kind == "mp" and (recovery.least(snap) == nil or (recovery.rates(snap).mp > 0 and recovery.spare(snap) <= 0)) then
         return nil
     end
     local base = table.concat({ score.signature(snap, ""), snap.world.map }, "|")
@@ -136,7 +151,8 @@ end
 
 local function plan(snap, query, kind)
     local found = offers(snap, kind)
-    if #found == 0 or snap.bag.capacity - snap.bag.used <= 1 then
+    local margin = kind == "mp" and 2 or 0
+    if #found == 0 or snap.bag.capacity - snap.bag.used <= margin then
         return nil
     end
     local need = demand(snap, query, kind)
@@ -147,27 +163,40 @@ local function plan(snap, query, kind)
     if route == nil then
         return nil
     end
-    local free  = snap.bag.capacity - snap.bag.used - 1
-    local money = snap.self.money or 0
-    local step  = snap.pace.step or data.walk
-    local trip  = route.cost * step
-    local held  = carried(snap, kind)
-    local best  = nil
+    local free   = snap.bag.capacity - snap.bag.used - margin
+    local money  = snap.self.money or 0
+    local step   = snap.pace.step or data.walk
+    local trip   = route.cost * step
+    local held   = carried(snap, kind)
+    local best   = nil
+    local lesson = learn.pending(snap, query)
     for _, offer in ipairs(found) do
         if sold(query, offer, route.dest) then
             local amount = 0
             local length = 0
             if need.crisis ~= nil then
-                amount = math.max(0, need.crisis - held)
+                amount = math.max(0, (need.stock or need.crisis) - held)
                 length = math.huge
             else
                 local slots = need.loot + need.usage / offer.slot
                 local bag   = slots > 0 and free / slots or 0
-                length      = math.min(bag, need.level)
+                length      = math.min(bag, need.level or math.huge)
                 amount      = math.max(0, need.usage * length - held)
             end
-            local count = math.min(math.ceil(amount / offer.each), offer.capacity, math.floor(money / offer.price),
-                free * offer.capacity)
+            local owned = 0
+            for _, item in ipairs(snap.bag.items) do
+                if item.name == offer.name then
+                    owned = owned + item.count
+                end
+            end
+            local budget = money
+            if lesson ~= nil and (lesson.net > danger.loss(snap, query, value.baseline(snap, query)) or
+                    held + (money - lesson.price) / offer.price * offer.each >= (need.crisis or 0)) then
+                budget = money - lesson.price
+            end
+            local count = math.min(math.ceil(amount / offer.each),
+                offer.capacity > 1 and offer.capacity - owned or offer.capacity,
+                math.floor(budget / offer.price), free * offer.capacity)
             if count > 0 and (best == nil or offer.unit < best.unit) then
                 best = { offer = offer, count = count, length = length, amount = amount, unit = offer.unit }
             end
@@ -180,13 +209,20 @@ local function plan(snap, query, kind)
     local spend = best.count * best.offer.price * worth.exchange
     local path  = value.detour(snap, query, { maps = { route.dest } }, worth)
     local risk  = path ~= nil and path.risk or 0
-    local spent = path ~= nil and path.time or trip * 2 / 1000
+    local spent = (path ~= nil and path.time or trip * 2 / 1000) * (1 + #party.members(snap))
     local delta = 0
     if need.gain ~= nil then
         delta = need.gain * best.length - need.base * spent - spend - risk
+    elseif kind == "mp" and recovery.spells(snap).charge ~= nil and (snap.self.mp or 0) + held < recovery.spells(snap).charge.mp then
+        local dry   = ground.choose(snap, query, "DRY")
+        local base  = dry ~= nil and dry.rate or 0
+        local short = math.max(0, recovery.spells(snap).charge.mp - (snap.self.mp or 0) - held)
+        local wait  = short / math.max(data.natural.mp * (snap.self.max_mp or 0), 1)
+        delta       = math.max(0, worth.rate - base) * math.max(0, wait - spent) - base * spent - spend - risk
     else
-        local loss = danger.loss(snap, query, worth)
-        delta = loss * math.max(0, 1 - held / math.max(need.crisis, 1)) - worth.value * spent - spend - risk
+        local loss   = danger.loss(snap, query, worth)
+        local target = route.dest == snap.world.map and (need.stock or need.crisis) or need.crisis
+        delta        = loss * math.max(0, 1 - held / math.max(target, 1)) - worth.value * spent - spend - risk
     end
     if delta <= 0 then
         return nil
@@ -203,6 +239,8 @@ local function order(snap, query)
     end
     return nil
 end
+
+M.order = order
 
 function M.wanted(snap, query)
     if snap.self.ghost then

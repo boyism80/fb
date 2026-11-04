@@ -39,17 +39,23 @@ function M.keep(snap)
 end
 
 function M.room(snap, name, capacity, freed)
-    local free = math.max(0, snap.bag.capacity - snap.bag.used) + (freed or 0)
-    local room = free * capacity
+    local free  = math.max(0, snap.bag.capacity - snap.bag.used) + (freed or 0)
+    local stack = nil
     for _, item in ipairs(snap.bag.items) do
-        if item.name == name then
-            room = room + math.max(0, capacity - item.count)
+        if item.name == name and capacity > 1 then
+            stack = (stack or 0) + math.max(0, capacity - item.count)
         end
     end
-    return room
+    return stack or free * capacity
 end
 
+local usables = setmetatable({}, { __mode = "k" })
+
 function M.usable(snap)
+    local known = usables[snap.bag]
+    if known ~= nil and known.now == snap.now and known.used == snap.bag.used and known.level == snap.self.level then
+        return known.found
+    end
     local keep  = M.keep(snap)
     local found = {}
     for _, item in ipairs(snap.bag.items) do
@@ -59,6 +65,7 @@ function M.usable(snap)
     for name, count in pairs(found) do
         found[name] = math.max(0, count - (keep[name] or 0))
     end
+    usables[snap.bag] = { now = snap.now, used = snap.bag.used, level = snap.self.level, found = found }
     return found
 end
 

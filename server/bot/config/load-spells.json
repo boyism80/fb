@@ -2689,6 +2689,7 @@
    "mp": 60,
    "role": "ATTACK",
    "damage": 3000,
+   "limit": 3000,
    "id": 2017,
    "type": "TARGET"
   },
@@ -3357,6 +3358,8 @@
    "mp": 0,
    "role": "ATTACK",
    "damage": 120,
+   "front": true,
+   "hp_spend": 120,
    "id": 113,
    "type": "NORMAL"
   },

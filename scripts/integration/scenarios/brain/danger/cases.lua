@@ -68,7 +68,7 @@ function M.run(ctx, index, case)
     local mind  = brain.new()
     local ghost = false
     bot:brain(mind, { seed = 1, memory = { order = case.order } })
-    local done = expect.settle(ctx, index, mind, TIMEOUT, function(current)
+    local done = expect.settle(ctx, index, mind, case.timeout or TIMEOUT, function(current)
         ghost = ghost or current:state() == "GHOST"
         return mind:recall(current, "order") == nil and case.finished(current)
     end)

@@ -9,10 +9,12 @@ end
 
 function M.approach(snap, query, names)
     local maps    = {}
+    local spots   = {}
     local nearest = nil
     local best    = nil
     for _, spot in ipairs(query.npcs(names)) do
         table.insert(maps, spot.map)
+        spots[spot.map] = spots[spot.map] or spot
         local cost = math.abs(spot.x - snap.world.x) + math.abs(spot.y - snap.world.y)
         if spot.map == snap.world.map and (best == nil or cost < best) then
             nearest = spot
@@ -25,7 +27,7 @@ function M.approach(snap, query, names)
         local range = math.min(data.sight.x, data.sight.y)
         return nil, { kind = ACTION.MOVE, dest = { map = nearest.map, x = nearest.x, y = nearest.y, range = range } }
     elseif #maps > 0 then
-        return nil, { kind = ACTION.MOVE, dest = { maps = maps } }
+        return nil, { kind = ACTION.MOVE, dest = { maps = maps, spots = spots } }
     end
     return nil, nil
 end

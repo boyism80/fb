@@ -24,13 +24,15 @@ local function capacity(name)
 end
 
 local function worth(snap, names)
-    local keep = bag.keep(snap)
+    local keep  = bag.keep(snap)
+    local found = false
     for _, name in ipairs(names) do
-        if (buyers[name] ~= nil or items[name] ~= nil or keep[name] ~= nil) and bag.room(snap, name, capacity(name)) > 0 then
-            return true
+        if bag.room(snap, name, capacity(name)) <= 0 then
+            return false
         end
+        found = found or buyers[name] ~= nil or items[name] ~= nil or keep[name] ~= nil
     end
-    return false
+    return found
 end
 
 local function pile(snap)

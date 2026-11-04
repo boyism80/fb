@@ -10,17 +10,20 @@ local presents = setmetatable({}, { __mode = "k" })
 
 function M.member(profile)
     return {
-        self   = profile.self,
-        spells = profile.spells or {},
-        gear   = profile.gear or {},
-        buffs  = profile.buffs or {},
-        bag    = profile.bag or { items = {}, used = 0, capacity = 0 },
-        pace   = profile.pace or {},
-        world  = { map = profile.world.map, x = profile.world.x, y = profile.world.y, mobs = {}, items = {} },
-        record = { failures = {}, memory = {} },
-        now    = profile.now,
-        plan   = profile.plan,
-        battle = profile.battle,
+        self    = profile.self,
+        spells  = profile.spells or {},
+        gear    = profile.gear or {},
+        buffs   = profile.buffs or {},
+        bag     = profile.bag or { items = {}, used = 0, capacity = 0 },
+        pace    = profile.pace or {},
+        world   = { map = profile.world.map, x = profile.world.x, y = profile.world.y, mobs = {}, items = {} },
+        record  = { failures = {}, memory = { fled = profile.fled } },
+        now     = profile.now,
+        plan    = profile.plan,
+        battle  = profile.battle,
+        heading = profile.heading,
+        arrives = profile.arrives,
+        task    = profile.task,
     }
 end
 
@@ -45,8 +48,19 @@ function M.crew(members, query)
             end
         end
     end
+    local wards = {}
+    for _, member in ipairs(members) do
+        for _, learned in ipairs(member.spells or {}) do
+            local data = magic.spells[learned.name]
+            if data ~= nil and data.role == "BUFF" and data.self == false and data.others == true and data.boost ~= nil then
+                table.insert(wards, learned.name)
+            end
+        end
+    end
+    table.sort(wards)
     return {
         members = members,
+        wards   = wards,
         assist  = assist,
         size    = #members + 1,
         heals   = heals,
@@ -59,8 +73,17 @@ end
 
 local function near(snap, member)
     local world = member.world
-    return member.self ~= nil and member.self.ghost == false and world.map == snap.world.map and world.x ~= nil and
-        math.abs(world.x - snap.world.x) <= combat.sight.x and math.abs(world.y - snap.world.y) <= combat.sight.y
+    if member.self == nil or member.self.ghost or world.map ~= snap.world.map or world.x == nil then
+        return false
+    end
+    local staying = member.heading == nil
+    for _, map in ipairs(member.heading or {}) do
+        staying = staying or map == snap.world.map
+    end
+    if staying == false then
+        return false
+    end
+    return math.abs(world.x - snap.world.x) <= combat.sight.x and math.abs(world.y - snap.world.y) <= combat.sight.y
 end
 
 function M.present(snap, query)
@@ -80,6 +103,45 @@ end
 function M.complete(snap, query)
     local crew = M.present(snap, query)
     return #(snap.party or {}) > 0 and crew ~= nil and #crew.members == #snap.party
+end
+
+local function arriving(snap, member)
+    local coming = false
+    for _, map in ipairs(member.heading or {}) do
+        coming = coming or map == snap.world.map
+    end
+    if coming == false or member.arrives == nil or member.self == nil or member.self.ghost then
+        return false
+    end
+    return member.task == "FIELD" and
+    member.arrives + 2 * combat.adjacent * (member.pace.step or combat.walk) >= snap.now
+end
+
+local gaps = {}
+
+local function nearby(snap, query, member)
+    local world = member.world
+    if member.task == "ESCAPE" or member.self.ghost or world.map == nil or world.map == snap.world.map or world.x == nil then
+        return false
+    end
+    local key = table.concat({ world.map, world.x // combat.sight.x, world.y // combat.sight.y, snap.world.map }, "|")
+    if gaps[key] == nil then
+        local route = query.path({ maps = { snap.world.map } }, {}, {},
+            { map = world.map, x = world.x, y = world.y, level = member.self.level })
+        gaps[key]   = route ~= nil and route.cost or math.huge
+    end
+    return gaps[key] <= 2 * combat.sight.x
+end
+
+function M.gathering(snap, query)
+    local found = {}
+    for _, profile in ipairs(snap.party or {}) do
+        local member = M.member(profile)
+        if near(snap, member) or arriving(snap, member) or nearby(snap, query, member) then
+            table.insert(found, member)
+        end
+    end
+    return #found > 0 and M.crew(found, query) or nil
 end
 
 local function arrange(snap, query, mob, crew, density, own, share)

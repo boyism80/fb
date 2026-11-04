@@ -4,15 +4,20 @@
 #include <fb/bot/integration/dialog_bot.h>
 #include <fb/bot/integration/dialog_ext_bot.h>
 #include <fb/bot/integration/lua_integration_protocol.h>
+#include <fb/encoding.h>
 #include <fb/game/inventory.h>
 #include <fb/lua.h>
+#include <json/json.h>
 
 #include <algorithm>
 #include <array>
 #include <deque>
 #include <chrono>
 #include <exception>
+#include <filesystem>
 #include <format>
+#include <fstream>
+#include <mutex>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -53,6 +58,9 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"activities", builtin::brain::builtin_activities},
     {"failure",  builtin::brain::builtin_failure},
     {"expect",   builtin::brain::builtin_expect},
+    {"trace",    builtin::brain::builtin_trace},
+    {"grid",     builtin::brain::builtin_grid},
+    {"steps",    builtin::brain::builtin_steps},
     {"worn",     builtin::brain::builtin_worn},
     {"item",     builtin::brain::builtin_item},
     {"reserve",  builtin::brain::builtin_reserve},
@@ -72,6 +80,91 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"engage",   builtin::brain::builtin_engage},
     {"stat",     builtin::brain::builtin_stat},
 END_LUA_EXTENSION; // clang-format on
+
+namespace {
+
+bool valid_utf8(std::string_view value)
+{
+    auto index = size_t(0);
+    while (index < value.size())
+    {
+        auto lead   = static_cast<unsigned char>(value[index]);
+        auto length = lead < 0x80 ? 1 : (lead >> 5) == 0x6 ? 2 : (lead >> 4) == 0xE ? 3 : (lead >> 3) == 0x1E ? 4 : 0;
+        if (length == 0 || index + length > value.size())
+            return false;
+        for (auto next = index + 1; next < index + length; next++)
+        {
+            if ((static_cast<unsigned char>(value[next]) >> 6) != 0x2)
+                return false;
+        }
+        index += length;
+    }
+    return true;
+}
+
+std::string text(std::string_view value)
+{
+    return valid_utf8(value) ? std::string(value) : fb::utf8(value);
+}
+
+Json::Value traced(lua_State* L, int index, int depth = 0)
+{
+    index = lua_absindex(L, index);
+    if (depth > 12)
+        return Json::Value();
+    switch (lua_type(L, index))
+    {
+    case LUA_TBOOLEAN:
+        return Json::Value(lua_toboolean(L, index) != 0);
+    case LUA_TNUMBER:
+        if (lua_isinteger(L, index))
+            return Json::Value(static_cast<Json::Int64>(lua_tointeger(L, index)));
+        return Json::Value(lua_tonumber(L, index));
+    case LUA_TSTRING:
+    {
+        auto size  = size_t(0);
+        auto value = lua_tolstring(L, index, &size);
+        return Json::Value(text(std::string_view(value, size)));
+    }
+    case LUA_TTABLE:
+    {
+        auto length = lua_rawlen(L, index);
+        auto count  = size_t(0);
+        lua_pushnil(L);
+        while (lua_next(L, index) != 0)
+        {
+            count++;
+            lua_pop(L, 1);
+        }
+        if (length > 0 && length == count)
+        {
+            auto result = Json::Value(Json::arrayValue);
+            for (auto position = lua_Integer(1); position <= static_cast<lua_Integer>(length); position++)
+            {
+                lua_rawgeti(L, index, position);
+                result.append(traced(L, -1, depth + 1));
+                lua_pop(L, 1);
+            }
+            return result;
+        }
+        auto result = Json::Value(Json::objectValue);
+        lua_pushnil(L);
+        while (lua_next(L, index) != 0)
+        {
+            lua_pushvalue(L, -2);
+            auto key = std::string(lua_tostring(L, -1));
+            lua_pop(L, 1);
+            result[text(key)] = traced(L, -1, depth + 1);
+            lua_pop(L, 1);
+        }
+        return result;
+    }
+    default:
+        return Json::Value();
+    }
+}
+
+} // namespace
 
 int builtin::brain::builtin_stat(lua_State* L)
 {
@@ -706,7 +799,28 @@ int builtin::brain::builtin_reach(lua_State* L)
     if (bot == nullptr && (origin.has_value() == false || level.has_value() == false))
         return 0;
 
-    auto result   = std::make_shared<std::unordered_set<uint16_t>>();
+    auto result = std::make_shared<std::unordered_set<uint16_t>>();
+    auto push   = [lua, result]() -> int {
+        lua->new_table();
+        for (auto map : *result)
+        {
+            lua->pushinteger(map);
+            lua->pushboolean(true);
+            lua->settable(-3);
+        }
+        return 1;
+    };
+    if (bot == nullptr)
+    {
+        *result = atlas::get().reach(origin->first,
+                                     origin->second,
+                                     level.value(),
+                                     detour.closed,
+                                     detour.perilous,
+                                     detour.shunned);
+        return push();
+    }
+
     auto builder  = lua->new_co_builder();
     builder.yield = [brain, bot, detour, origin, level, result]() -> async::task<void> {
         auto map  = origin.has_value() ? origin->first : bot->map();
@@ -721,15 +835,8 @@ int builtin::brain::builtin_reach(lua_State* L)
             return atlas::get().reach(map, here, rank, detour.closed, detour.perilous, detour.shunned);
         });
     };
-    builder.resume = [lua, result]() -> async::task<int> {
-        lua->new_table();
-        for (auto map : *result)
-        {
-            lua->pushinteger(map);
-            lua->pushboolean(true);
-            lua->settable(-3);
-        }
-        co_return 1;
+    builder.resume = [push]() -> async::task<int> {
+        co_return push();
     };
     return builder.run();
 }
@@ -766,27 +873,11 @@ int builtin::brain::builtin_route(lua_State* L)
     if (bot == nullptr && (origin.has_value() == false || level.has_value() == false))
         return 0;
 
-    auto builder  = lua->new_co_builder();
-    builder.yield = [brain, bot, destination, detour, origin, level, result]() -> async::task<void> {
-        auto map  = origin.has_value() ? origin->first : bot->map();
-        auto here = origin.has_value() ? origin->second : atlas::position(bot->position());
-        auto rank = level.has_value() ? level.value() : bot->level();
-        if (bot == nullptr)
-        {
-            *result =
-                atlas::get().route(map, here, destination.maps, rank, detour.closed, detour.perilous, detour.shunned);
-            co_return;
-        }
-        *result = co_await brain->offload<std::optional<atlas::plan>>(bot, [map, here, destination, rank, detour]() {
-            return atlas::get()
-                .route(map, here, destination.maps, rank, detour.closed, detour.perilous, detour.shunned);
-        });
-    };
-    builder.resume = [lua, result]() -> async::task<int> {
+    auto push = [lua, result]() -> int {
         if (result->has_value() == false)
         {
             lua->pushnil();
-            co_return 1;
+            return 1;
         }
 
         lua->new_table();
@@ -832,7 +923,38 @@ int builtin::brain::builtin_route(lua_State* L)
         lua->pushstring("y");
         lua->pushinteger(result->value().arrival.y);
         lua->settable(-3);
-        co_return 1;
+        return 1;
+    };
+    if (bot == nullptr)
+    {
+        *result = atlas::get().route(origin->first,
+                                     origin->second,
+                                     destination.maps,
+                                     level.value(),
+                                     detour.closed,
+                                     detour.perilous,
+                                     detour.shunned);
+        return push();
+    }
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [brain, bot, destination, detour, origin, level, result]() -> async::task<void> {
+        auto map  = origin.has_value() ? origin->first : bot->map();
+        auto here = origin.has_value() ? origin->second : atlas::position(bot->position());
+        auto rank = level.has_value() ? level.value() : bot->level();
+        if (bot == nullptr)
+        {
+            *result =
+                atlas::get().route(map, here, destination.maps, rank, detour.closed, detour.perilous, detour.shunned);
+            co_return;
+        }
+        *result = co_await brain->offload<std::optional<atlas::plan>>(bot, [map, here, destination, rank, detour]() {
+            return atlas::get()
+                .route(map, here, destination.maps, rank, detour.closed, detour.perilous, detour.shunned);
+        });
+    };
+    builder.resume = [push]() -> async::task<int> {
+        co_return push();
     };
     return builder.run();
 }
@@ -1238,6 +1360,42 @@ int builtin::brain::builtin_failure(lua_State* L)
     return 1;
 }
 
+int builtin::brain::builtin_trace(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(2);
+    if (bot == nullptr || lua_istable(L, 3) == false)
+        return 0;
+
+    auto entry   = traced(L, 3);
+    entry["bot"] = text(bot->name());
+    entry["t"]   = std::format("{:%Y-%m-%dT%H:%M:%S}",
+                             std::chrono::floor<std::chrono::milliseconds>(std::chrono::system_clock::now()));
+
+    auto writer           = Json::StreamWriterBuilder();
+    writer["indentation"] = "";
+    writer["emitUTF8"]    = true;
+    auto        line      = Json::writeString(writer, entry);
+    static auto mutex     = std::mutex();
+    static auto file      = std::ofstream();
+    auto        guard     = std::lock_guard(mutex);
+    if (file.is_open() == false)
+    {
+        std::filesystem::create_directories("logs/brain");
+        file.open(std::format("logs/brain/{}.jsonl", std::chrono::system_clock::now().time_since_epoch().count()),
+                  std::ios::app | std::ios::binary);
+    }
+    file << line << std::endl;
+    return 0;
+}
+
 int builtin::brain::builtin_expect(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -1361,6 +1519,12 @@ int builtin::brain::builtin_item(lua_State* L)
     auto weapon = dynamic_cast<const fb::model::weapon*>(model);
     if (weapon != nullptr)
     {
+        lua->pushstring("dress");
+        lua->pushinteger(weapon->dress);
+        lua->settable(-3);
+        lua->pushstring("sound");
+        lua->pushinteger(weapon->sound);
+        lua->settable(-3);
         lua->pushstring("damage");
         lua_pushnumber(L, (weapon->damage_small.min + weapon->damage_small.max) / 2.0);
         lua->settable(-3);
@@ -1856,6 +2020,159 @@ int builtin::brain::builtin_habitats(lua_State* L)
         lua->pushstring(model->name);
         lua->settable(-3);
         lua_rawseti(L, -2, index++);
+    }
+    return 1;
+}
+
+int builtin::brain::builtin_grid(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr || lua_isinteger(L, 2) == false)
+        return 0;
+
+    auto  map   = static_cast<uint16_t>(lua_tointeger(L, 2));
+    auto& world = atlas::get();
+    auto  grid  = world.find_grid(map);
+    if (grid == nullptr)
+        return 0;
+
+    auto blocked = std::string(grid->blocked.size(), char{0});
+    for (auto i = size_t{0}; i < grid->blocked.size(); i++)
+        blocked[i] = grid->blocked[i] ? 1 : 0;
+
+    lua->new_table();
+    lua->pushstring("width");
+    lua->pushinteger(grid->width);
+    lua->settable(-3);
+    lua->pushstring("height");
+    lua->pushinteger(grid->height);
+    lua->settable(-3);
+    lua->pushstring("blocked");
+    lua_pushlstring(L, blocked.data(), blocked.size());
+    lua->settable(-3);
+    lua->pushstring("collisions");
+    lua_pushlstring(L, reinterpret_cast<const char*>(grid->collisions.data()), grid->collisions.size());
+    lua->settable(-3);
+    auto model = fb::model::table::map->find(map);
+    lua->pushstring("option");
+    lua->pushinteger(model != nullptr ? static_cast<lua_Integer>(model->option) : 0);
+    lua->settable(-3);
+    lua->pushstring("spawns");
+    lua->new_table();
+    auto index = lua_Integer{1};
+    for (auto& spawn : world.spawns(map))
+    {
+        lua->new_table();
+        lua->pushstring("mob");
+        lua->pushinteger(spawn.mob);
+        lua->settable(-3);
+        lua->pushstring("x0");
+        lua->pushinteger(spawn.begin.x);
+        lua->settable(-3);
+        lua->pushstring("y0");
+        lua->pushinteger(spawn.begin.y);
+        lua->settable(-3);
+        lua->pushstring("x1");
+        lua->pushinteger(spawn.end.x);
+        lua->settable(-3);
+        lua->pushstring("y1");
+        lua->pushinteger(spawn.end.y);
+        lua->settable(-3);
+        lua->pushstring("count");
+        lua->pushinteger(spawn.count);
+        lua->settable(-3);
+        lua->pushstring("rezen");
+        lua->pushinteger(static_cast<lua_Integer>(spawn.rezen));
+        lua->settable(-3);
+        lua_rawseti(L, -2, index++);
+    }
+    lua->settable(-3);
+    return 1;
+}
+
+int builtin::brain::builtin_steps(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr || lua_isinteger(L, 2) == false || lua_istable(L, 5) == false)
+        return 0;
+
+    auto grid = atlas::get().find_grid(static_cast<uint16_t>(lua_tointeger(L, 2)));
+    if (grid == nullptr)
+        return 0;
+
+    struct goal
+    {
+        int32_t x     = 0;
+        int32_t y     = 0;
+        int32_t range = 0;
+    };
+
+    auto goals = std::vector<goal>{};
+    for (auto i = lua_Integer{1}; lua_rawgeti(L, 5, i) == LUA_TTABLE; i++)
+    {
+        lua_getfield(L, -1, "x");
+        lua_getfield(L, -2, "y");
+        lua_getfield(L, -3, "range");
+        goals.push_back(goal{static_cast<int32_t>(lua_tointeger(L, -3)),
+                             static_cast<int32_t>(lua_tointeger(L, -2)),
+                             static_cast<int32_t>(lua_tointeger(L, -1))});
+        lua_pop(L, 4);
+    }
+    lua_pop(L, 1);
+
+    auto found = std::vector<int64_t>(goals.size(), -1);
+    auto left  = goals.size();
+    auto start =
+        atlas::position(static_cast<uint16_t>(lua_tointeger(L, 3)), static_cast<uint16_t>(lua_tointeger(L, 4)));
+    auto size   = static_cast<size_t>(grid->width) * grid->height;
+    auto steps  = std::vector<int32_t>(size, -1);
+    auto queue  = std::vector<atlas::position>{};
+    auto settle = [&goals, &found, &left](const atlas::position& at, int32_t distance) {
+        for (auto i = size_t{0}; i < goals.size(); i++)
+        {
+            if (found[i] >= 0)
+                continue;
+            auto gap = std::abs(goals[i].x - at.x) + std::abs(goals[i].y - at.y);
+            if (gap <= goals[i].range && (gap > 0 || goals[i].range == 0))
+            {
+                found[i] = distance;
+                left--;
+            }
+        }
+    };
+    if (start.x < grid->width && start.y < grid->height)
+    {
+        steps[static_cast<size_t>(start.y) * grid->width + start.x] = 0;
+        queue.push_back(start);
+        settle(start, 0);
+    }
+    for (auto head = size_t{0}; head < queue.size() && left > 0; head++)
+    {
+        auto at       = queue[head];
+        auto distance = steps[static_cast<size_t>(at.y) * grid->width + at.x];
+        for (auto direction :
+             {atlas::DIRECTION::TOP, atlas::DIRECTION::RIGHT, atlas::DIRECTION::BOTTOM, atlas::DIRECTION::LEFT})
+        {
+            if (grid->passable(at, direction) == false)
+                continue;
+            auto next  = atlas::forward(at, direction);
+            auto index = static_cast<size_t>(next.y) * grid->width + next.x;
+            if (steps[index] >= 0)
+                continue;
+            steps[index] = distance + 1;
+            queue.push_back(next);
+            settle(next, distance + 1);
+        }
+    }
+
+    lua->new_table();
+    for (auto i = size_t{0}; i < found.size(); i++)
+    {
+        if (found[i] >= 0)
+            lua->pushinteger(found[i]);
+        else
+            lua_pushboolean(L, 0);
+        lua_rawseti(L, -2, static_cast<lua_Integer>(i + 1));
     }
     return 1;
 }

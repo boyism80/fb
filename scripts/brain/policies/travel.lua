@@ -80,7 +80,8 @@ local function journey(brain, bot, destination, detour)
             log("debug", string.format("[brain:travel] bot=%s clears %s %d at map=%d %d,%d", bot:name(), mob.name,
                 event.oid, event.map, event.x, event.y))
             local fought = battle.step(brain, bot, event.oid, action)
-            if fought.type == "STRUCK" or fought.type == "DONE" or fought.type == "REFUSED" then
+            if fought.type ~= "KILLED" then
+                log("debug", string.format("[brain:travel] bot=%s clearing ended %s", bot:name(), fought.type))
                 return false, { type = "ENGAGED", map = event.map, x = event.x, y = event.y, oid = event.oid }
             end
         elseif event.type == "OCCUPIED" then

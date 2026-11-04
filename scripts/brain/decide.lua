@@ -1,3 +1,4 @@
+local data     = require("brain.data.combat")
 local alert    = require("brain.policies.alert")
 local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
@@ -8,10 +9,12 @@ local states   = require("brain.data.states")
 local profile  = require("brain.profile")
 local query    = require("brain.query")
 local snapshot = require("brain.snapshot")
+local trace    = require("brain.trace")
 
 local M = {}
 
 local stalls = {}
+local picks  = {}
 
 local function module(name)
     return require("brain.tasks." .. string.lower(name))
@@ -21,8 +24,10 @@ local function decision(snap, facts, state, name, task, revisit)
     local result = task.propose ~= nil and
         profile.measure(snap.self.name, "propose:" .. name, task.propose, snap, facts) or
         { kind = ACTION.TASK }
-    if combat.casting(result) and combat.cooldown(snap) > 0 then
-        result = { kind = ACTION.HOLD }
+    local cooldown = combat.casting(result) and combat.cooldown(snap) or 0
+    if cooldown > 0 then
+        result  = { kind = ACTION.HOLD }
+        revisit = math.min(revisit or cooldown, cooldown)
     end
     result.state   = state
     result.task    = name
@@ -39,12 +44,13 @@ local function soonest(revisit, value)
     return math.min(revisit or value, value)
 end
 
-function M.choose(snap, facts, current)
+function M.choose(snap, facts, current, sink)
     local revisit = nil
     local passed  = false
     local best    = nil
     local held    = nil
     local values  = {}
+    local numbers = {}
     local blocked = {}
     for _, state in ipairs(states) do
         for _, name in ipairs(state.tasks) do
@@ -60,7 +66,10 @@ function M.choose(snap, facts, current)
                     local delta = task.value ~= nil and
                         profile.measure(snap.self.name, "value:" .. name, task.value, snap,
                             facts) or 0
-                    table.insert(values, string.format("%s=%.1f", name, delta))
+                    if data.trace then
+                        table.insert(values, string.format("%s=%.1f", name, delta))
+                    end
+                    numbers[name] = delta < math.huge and delta > -math.huge and delta or (delta > 0 and 1e300 or -1e300)
                     if name == current then
                         held = delta
                     elseif best == nil or delta > best.delta then
@@ -84,24 +93,99 @@ function M.choose(snap, facts, current)
             table.concat(blocked, " ")))
     end
     stalls[owner] = stalled or nil
-    if best ~= nil and best.delta < 0 and current == nil then
+    if data.trace and best ~= nil and best.delta < 0 and current == nil then
         log("debug", string.format("[brain:decide] %s picks nothing", table.concat(values, " ")))
     end
     if best == nil or best.delta < 0 or (held ~= nil and best.delta <= held) or
         (current ~= nil and states.required[current]) then
         return nil, revisit
     end
-    if #values > 1 then
+    if data.trace and #values > 1 then
         log("debug", string.format("[brain:decide] %s picks %s", table.concat(values, " "), best.name))
     end
+    if sink ~= nil and picks[owner] ~= best.name then
+        picks[owner] = best.name
+        trace.decide(sink.brain, sink.bot, snap, numbers, best.name, current)
+    end
     return decision(snap, facts, best.state, best.name, best.task, revisit), revisit
+end
+
+function M.fleeing(snap, decision)
+    if decision == nil or decision.fleeing == nil then
+        return nil
+    end
+    snap.record.memory.fleeing = decision.fleeing
+    return decision.fleeing
+end
+
+function M.warded(snap, decision)
+    if decision == nil or decision.ward == nil then
+        return nil
+    end
+    local warded = snap.record.memory.warded or {}
+    warded[decision.ward] = snap.now
+    snap.record.memory.warded = warded
+    return warded
+end
+
+function M.flee(snap, decision)
+    if decision == nil or decision.task ~= "ESCAPE" or snap.self.ghost or danger.floor(snap.world.map) == false then
+        return nil
+    end
+    if decision.proven == false then
+        return nil
+    end
+    for _, member in ipairs(party.members(snap)) do
+        if member.world.map ~= snap.world.map then
+            return nil
+        end
+    end
+    local fled = snap.record.memory.fled or {}
+    local key  = tostring(snap.world.map)
+    local mine = danger.power(snap)
+    if type(fled[key]) == "table" and fled[key].power == mine then
+        return nil
+    end
+    fled[key] = { power = mine, at = snap.now }
+    snap.record.memory.fled = fled
+    return fled
+end
+
+function M.commit(snap, facts)
+    local memory = snap.record.memory
+    if #(snap.group or {}) == 0 then
+        return memory.commit ~= nil or memory.swept ~= nil, nil, nil
+    end
+    if party.known(snap) == false then
+        return false, memory.commit, memory.swept
+    end
+    local plan  = party.plan(snap, facts)
+    local name  = snap.leader == snap.self.name and (plan ~= nil and plan.name or nil) or memory.commit
+    local swept = memory.swept
+    if plan ~= nil and (swept == nil or swept.name ~= plan.name) then
+        swept = { name = plan.name, floors = {} }
+    end
+    return name ~= memory.commit or swept ~= memory.swept, name, swept
+end
+
+function M.sweep(snap, decision)
+    local swept = snap.record.memory.swept
+    if swept == nil or decision == nil or decision.kind ~= ACTION.ATTACK or
+        swept.floors[tostring(snap.world.map)] ~= nil or decision.occupy == nil or decision.occupy.map ~= snap.world.map then
+        return nil
+    end
+    local copy = { name = swept.name, floors = {} }
+    for key, value in pairs(swept.floors) do
+        copy.floors[key] = value
+    end
+    copy.floors[tostring(snap.world.map)] = true
+    return copy
 end
 
 function M.first(brain, bot, current)
     local owner = bot:name()
     local snap  = profile.measure(owner, "snapshot", snapshot.take, brain, bot)
     local facts = query.bind(brain, bot)
-    brain:post(bot, party.profile(snap, facts))
     local apart = #(snap.party or {}) > 0 and escort.complete(snap, facts) == false
     if apart and snap.record.memory.apart == nil then
         brain:remember(bot, "apart", snap.now)
@@ -120,7 +204,32 @@ function M.first(brain, bot, current)
         snap.record.memory.perils = perils
     end
     profile.measure(owner, "alert", alert.watch, brain, bot, snap, facts)
-    return M.choose(snap, facts, current)
+    local changed, commit, swept = M.commit(snap, facts)
+    if changed then
+        brain:remember(bot, "commit", commit)
+        brain:remember(bot, "swept", swept)
+        snap.record.memory.commit = commit
+        snap.record.memory.swept  = swept
+    end
+    local decision, revisit = M.choose(snap, facts, current, { brain = brain, bot = bot })
+    brain:post(bot, party.profile(snap, facts, decision))
+    local fled = M.flee(snap, decision)
+    if fled ~= nil then
+        brain:remember(bot, "fled", fled)
+    end
+    local swept = M.sweep(snap, decision)
+    if swept ~= nil then
+        brain:remember(bot, "swept", swept)
+    end
+    local warded = M.warded(snap, decision)
+    if warded ~= nil then
+        brain:remember(bot, "warded", warded)
+    end
+    local fleeing = M.fleeing(snap, decision)
+    if fleeing ~= nil then
+        brain:remember(bot, "fleeing", fleeing)
+    end
+    return decision, revisit
 end
 
 function M.decide(brain, bot)

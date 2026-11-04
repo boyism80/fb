@@ -1,6 +1,7 @@
 local protocol = require("integration.protocol")
 local resp     = require("integration.response")
 local battle   = require("brain.policies.battle")
+local trace    = require("brain.trace")
 local dialog   = require("brain.policies.dialog")
 local travel   = require("brain.policies.travel")
 local wait     = require("brain.policies.wait")
@@ -42,8 +43,7 @@ local SKILLS = {
         if event.type == "KILLED" then
             log("debug", string.format("[brain:kill] bot=%s key=%s", bot:name(), tostring(action.key)))
         end
-        local going = event.type == "STRUCK" or event.type == "DONE" or event.type == "REFUSED"
-        return event.type == "KILLED" or going, event.type
+        return event.type == "KILLED" or event.type == "UNREACHABLE" or battle.going(event.type), event.type
     end,
     [ACTION.TALK]   = function(brain, bot, action)
         local npc = action.npc ~= nil and brain:npc(bot, action.npc) or nil
@@ -54,6 +54,12 @@ local SKILLS = {
         local talked  = brain:talk(bot, opening, action.answers or {})
         if talked ~= "DONE" and talked ~= "UNANSWERED" then
             return false, talked
+        end
+        if action.spell ~= nil then
+            synced(bot)
+            if bot:spell_slot(action.spell) == EMPTY_SLOT then
+                return false, "UNCHANGED"
+            end
         end
         return settled(brain, bot, action.expect)
     end,
@@ -109,6 +115,9 @@ local SKILLS = {
         end, WEAR_WAIT)
         synced(bot)
         if worn == nil or bot:item_count(action.item) >= count then
+            local refused = brain:recall(bot, "refused") or {}
+            refused[action.item] = bot:level()
+            brain:remember(bot, "refused", refused)
             return false, "REFUSED"
         end
         return true
@@ -182,6 +191,7 @@ function M.run(brain, bot, action)
         brain:occupy(bot, action.occupy.map, action.occupy.rate)
     end
     local done, reason = skill(brain, bot, action)
+    trace.act(brain, bot, action, done, reason)
     if done and action.clear ~= nil and brain:active(bot) then
         brain:remember(bot, action.clear, nil)
     end

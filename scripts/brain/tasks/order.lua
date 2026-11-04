@@ -1,11 +1,12 @@
+local data    = require("brain.data.combat")
 local grounds = require("brain.data.grounds")
 local hunting = require("brain.data.hunting")
 local battle  = require("brain.policies.battle")
+local combat  = require("brain.policies.combat")
 local danger  = require("brain.policies.danger")
 local score   = require("brain.policies.score")
 local value   = require("brain.policies.value")
 local field   = require("brain.tasks.field")
-local rest    = require("brain.tasks.rest")
 
 local M = {}
 
@@ -35,11 +36,12 @@ local function hunt(snap, query, order)
     if found ~= nil then
         return battle.propose(found, { tally = "order" })
     end
-    local spot = nil
-    local best = nil
+    local spot  = nil
+    local best  = nil
+    local range = math.min(data.sight.x, data.sight.y)
     for _, spawn in ipairs(spawns) do
         local cost = math.abs(spawn.x - snap.world.x) + math.abs(spawn.y - snap.world.y)
-        if cost > 0 and (best == nil or cost < best) then
+        if cost > range and (best == nil or cost < best) then
             spot = spawn
             best = cost
         end
@@ -53,7 +55,7 @@ local function hunt(snap, query, order)
         end
         return #others > 0 and { kind = ACTION.MOVE, dest = { maps = others } } or { kind = ACTION.HOLD }
     end
-    return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = spot.x, y = spot.y, range = 0 } }
+    return { kind = ACTION.MOVE, dest = { map = snap.world.map, x = spot.x, y = spot.y, range = range } }
 end
 
 local function journey(snap, query)
@@ -77,15 +79,23 @@ local function named()
 end
 
 local function recovering(snap, query, order)
-    if order.task ~= "HUNT" or rest.wanted(snap, query) == false then
+    if order.task ~= "HUNT" then
         return false
     end
     local rested = score.rested(snap)
     for _, name in ipairs(order.names) do
+        local least = math.huge
+        local weak  = nil
         for _, mob in ipairs(named()[name] or {}) do
-            if danger.winnable(snap, query, mob) == false and danger.winnable(rested, query, mob) then
-                return true
+            local spike = combat.hits(mob) and combat.spike(snap, { { mob = mob, count = 1 } }) or 0
+            if spike < least then
+                least = spike
+                weak  = mob
             end
+        end
+        if weak ~= nil and snap.self.hp < snap.self.max_hp and (snap.self.hp <= least or
+                (danger.winnable(snap, query, weak) == false and danger.winnable(rested, query, weak))) then
+            return true
         end
     end
     return false

@@ -1,16 +1,29 @@
 local M = {}
 
+local WAYS = 64
+
 function M.get(store, owner, base, key, compute)
-    local slot   = owner or ""
-    local bucket = store[slot]
-    if bucket == nil or bucket.base ~= base then
-        bucket      = { base = base, entries = {} }
-        store[slot] = bucket
+    local slot = owner or ""
+    local ways = store[slot]
+    if ways == nil then
+        ways = { count = 0, buckets = {}, older = {} }
+        store[slot] = ways
     end
-    if bucket.entries[key] == nil then
-        bucket.entries[key] = compute()
+    local bucket = ways.buckets[base]
+    if bucket == nil then
+        if ways.count >= WAYS then
+            ways.older   = ways.buckets
+            ways.buckets = {}
+            ways.count   = 0
+        end
+        bucket = ways.older[base] or {}
+        ways.buckets[base] = bucket
+        ways.count = ways.count + 1
     end
-    return bucket.entries[key]
+    if bucket[key] == nil then
+        bucket[key] = compute()
+    end
+    return bucket[key]
 end
 
 return M

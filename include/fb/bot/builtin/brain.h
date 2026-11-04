@@ -36,6 +36,9 @@ struct brain
     static int builtin_failure(lua_State* L);
     static int builtin_activities(lua_State* L);
     static int builtin_expect(lua_State* L);
+    static int builtin_trace(lua_State* L);
+    static int builtin_grid(lua_State* L);
+    static int builtin_steps(lua_State* L);
     static int builtin_worn(lua_State* L);
     static int builtin_item(lua_State* L);
     static int builtin_reserve(lua_State* L);

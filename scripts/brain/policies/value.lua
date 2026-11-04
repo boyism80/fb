@@ -1,6 +1,8 @@
 local buyers   = require("brain.data.buyers")
 local data     = require("brain.data.combat")
 local hunting  = require("brain.data.hunting")
+local items    = require("brain.data.items")
+local shops    = require("brain.data.shops")
 local teleport = require("brain.data.teleport")
 local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
@@ -8,6 +10,7 @@ local failure  = require("brain.policies.failure")
 local ground   = require("brain.policies.ground")
 local memo     = require("brain.policies.memo")
 local party    = require("brain.policies.party")
+local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
 
 local M = {}
@@ -80,6 +83,19 @@ function M.power(snap, query)
         local ability = score.capability(score.rested(snap), query)
         return ability.dps.single * ability.ehp
     end)
+end
+
+function M.refill(snap, query, worth)
+    local regen = recovery.rates(snap).mp + data.natural.mp * (snap.self.max_mp or 0)
+    local price = regen > 0 and worth.value / regen or math.huge
+    for name, shop in pairs(shops) do
+        local effect   = items[name]
+        local restored = effect ~= nil and recovery.restored(snap, effect, "mp") or 0
+        if restored > 0 then
+            price = math.min(price, shop.price / restored * worth.exchange)
+        end
+    end
+    return price < math.huge and price or 0
 end
 
 function M.mana(snap, query)
@@ -158,6 +174,26 @@ local function segments(origin, route, target)
     return found
 end
 
+local nativity = {}
+
+local function natives(perilous, query, map)
+    local key = table.concat(perilous, ",")
+    if nativity.key ~= key then
+        nativity = { key = key, maps = {} }
+    end
+    local known = nativity.maps[map]
+    if known == nil then
+        known = {}
+        for _, id in ipairs(perilous) do
+            if query.native(map, id) then
+                table.insert(known, { mob = hunting.mobs[id], weight = 1 })
+            end
+        end
+        nativity.maps[map] = known
+    end
+    return known
+end
+
 local function threats(snap, query, map)
     local found = {}
     if map == snap.world.map then
@@ -165,10 +201,8 @@ local function threats(snap, query, map)
             table.insert(found, { mob = mob, weight = 1 })
         end
     else
-        for _, id in ipairs(danger.perilous(snap, query)) do
-            if query.native(map, id) then
-                table.insert(found, { mob = hunting.mobs[id], weight = 1 })
-            end
+        for _, entry in ipairs(natives(danger.perilous(snap, query), query, map)) do
+            table.insert(found, entry)
         end
     end
     local seen = (snap.record.memory.perils or {})[tostring(map)] or (snap.record.memory.perils or {})[map]
@@ -215,7 +249,7 @@ local function plans(snap, query, dest, origin)
             { route = query.path(where, danger.perilous(snap, query), shunned, origin), risky = false },
             { route = query.path(where, nil, nil, origin), risky = true },
         }
-        return (found[1].route ~= nil or found[2].route ~= nil) and found or nil
+        return (found[1].route ~= nil or found[2].route ~= nil) and found or false
     end)
     return found or { { risky = false }, { risky = true } }
 end
@@ -236,13 +270,13 @@ local function lands(snap, dest, targets)
     end
     for _, target in ipairs(targets) do
         if wanted[target] ~= nil then
-            return true
+            return target
         end
     end
-    return false
+    return nil
 end
 
-local function leap(snap, dest)
+function M.leap(snap, dest)
     local known = {}
     for _, learned in ipairs(snap.spells or {}) do
         known[learned.name] = true
@@ -250,20 +284,24 @@ local function leap(snap, dest)
     for _, spell in ipairs(teleport.spells) do
         local ready = known[spell.name] and (spell.ghost == true) == snap.self.ghost and
             (snap.self.mp or 0) >= (spell.mp or 0)
-        if ready and lands(snap, dest, spell.returns and teleport.returns[snap.self.nation] or spell.to) then
-            return true
+        local land  = ready and lands(snap, dest, spell.returns and teleport.returns[snap.self.nation] or spell.to) or
+        nil
+        if land ~= nil then
+            return { spell = spell, land = land }
         end
     end
     if snap.self.ghost then
-        return false
+        return nil
     end
     local held = {}
     for _, item in ipairs(snap.bag.items) do
         held[item.name] = true
     end
     for _, item in ipairs(teleport.items) do
-        if held[item.name] and lands(snap, dest, item.returns and teleport.returns[snap.self.nation] or item.to) then
-            return true
+        local land = held[item.name] and
+        lands(snap, dest, item.returns and teleport.returns[snap.self.nation] or item.to) or nil
+        if land ~= nil then
+            return { item = item, land = land }
         end
     end
     return false
@@ -303,9 +341,11 @@ end
 
 function M.trip(snap, query, dest, worth)
     local best = nil
-    if dest.x == nil and leap(snap, dest) then
+    local jump = dest.x == nil and M.leap(snap, dest) or nil
+    if jump ~= nil then
         local time = combat.cast(snap) / 1000
         best = {
+            route = type(jump.land) == "number" and { dest = jump.land } or nil,
             cost = time * worth.value + M.stay(snap, query, time * 1000, worth),
             time = time,
             risk = 0,
@@ -337,20 +377,28 @@ end
 function M.detour(snap, query, dest, worth)
     local trip = M.trip(snap, query, dest, worth)
     local goal = M.objective(snap, query).dest
-    if trip == nil or trip.route == nil or goal == nil then
+    if trip == nil or goal == nil or (trip.route == nil and dest.x == nil) then
         return trip
     end
+    local route   = trip.route or {}
+    local spot    = dest.spots ~= nil and dest.spots[route.dest] or nil
     local arrival = {
-        map = trip.route.dest,
-        x = dest.x or trip.route.x or snap.world.x,
-        y = dest.y or trip.route.y or snap.world.y
+        map = route.dest or dest.map or snap.world.map,
+        x = dest.x or (spot ~= nil and spot.x) or route.x or snap.world.x,
+        y = dest.y or (spot ~= nil and spot.y) or route.y or snap.world.y
     }
-    local onward  = walk(snap, query, goal, worth, arrival)
-    local direct  = walk(snap, query, goal, worth)
+    local inside  = 0
+    if spot ~= nil and route.x ~= nil and route.y ~= nil then
+        local range = math.min(data.sight.x, data.sight.y)
+        local steps = math.abs(spot.x - route.x) + math.abs(spot.y - route.y)
+        inside      = math.max(0, steps - range) * (snap.pace.step or data.walk) / 1000
+    end
+    local onward = walk(snap, query, goal, worth, arrival)
+    local direct = walk(snap, query, goal, worth)
     if onward == nil or direct == nil then
         return trip
     end
-    local time = math.max(0, trip.time + onward.time - direct.time)
+    local time = math.max(0, trip.time + inside + onward.time - direct.time)
     local risk = math.max(0, trip.risk + onward.risk - direct.risk)
     return {
         cost = time * worth.value + risk,

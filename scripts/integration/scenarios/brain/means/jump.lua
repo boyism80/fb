@@ -49,6 +49,7 @@ function M.run(ctx, index, case)
     local landed  = nil
     local here    = nil
     local spent   = 0
+    local held    = {}
     local items   = {}
     local seen    = false
     local cleared = false
@@ -64,11 +65,16 @@ function M.run(ctx, index, case)
             landed = model
             here   = current:position()
         end
+        if cleared == false and pending then
+            for _, name in ipairs(case.items or {}) do
+                held[name] = current:item_count(name)
+            end
+        end
         if cleared == false and seen and pending == false then
             cleared = true
             spent   = mp - current:mp()
             for _, name in ipairs(case.items or {}) do
-                items[name] = current:item_count(name)
+                items[name] = case.use == false and held[name] or current:item_count(name)
             end
         end
     end)

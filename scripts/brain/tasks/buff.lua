@@ -1,7 +1,9 @@
-local magic  = require("brain.data.spells")
-local combat = require("brain.policies.combat")
-local ground = require("brain.policies.ground")
-local value  = require("brain.policies.value")
+local magic    = require("brain.data.spells")
+local aid      = require("brain.tasks.aid")
+local combat   = require("brain.policies.combat")
+local recovery = require("brain.policies.recovery")
+local ground   = require("brain.policies.ground")
+local value    = require("brain.policies.value")
 
 local M = {}
 
@@ -65,8 +67,8 @@ local function wanted(snap, query)
     local best = nil
     for name, slot in pairs(learned) do
         local data = magic.spells[name]
-        if data ~= nil and data.role == "BUFF" and data.trigger == nil and valued(name, data) and active[name] == nil and
-            (snap.self.mp or 0) >= (data.mp or 0) then
+        if data ~= nil and data.role == "BUFF" and data.self ~= false and data.trigger == nil and valued(name, data) and active[name] == nil and
+            recovery.free(snap) >= (data.mp or 0) then
             local blocked = false
             local rate    = (data.boost or {}).damage_rate or 0
             for _, other in ipairs(data.excludes or {}) do
@@ -79,6 +81,17 @@ local function wanted(snap, query)
                 if best == nil or gain > best.value or (gain == best.value and name < best.name) then
                     best = { name = name, slot = slot, value = gain }
                 end
+            end
+        end
+    end
+    local rate = value.baseline(snap, query)
+    for name, slot in pairs(learned) do
+        local data = magic.spells[name]
+        if combat.warding(name) and combat.warded(snap.buffs, name) == false and
+            recovery.free(snap) >= (data.mp or 0) then
+            local gain = aid.ward(snap, query, snap, name, rate)
+            if best == nil or gain > best.value or (gain == best.value and name < best.name) then
+                best = { name = name, slot = slot, value = gain }
             end
         end
     end

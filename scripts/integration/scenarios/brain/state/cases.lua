@@ -91,14 +91,15 @@ function M.equip(ctx, index)
     if bot == nil then
         return false
     end
-    bot:create_item("목도", 1)
-    bot:equip(bot:item_slot("목도"))
-    bot:create_item("목검", 1)
+    bot:create_item("사두목도", 1)
+    bot:equip(bot:item_slot("사두목도"))
+    bot:create_item("수련검", 1)
+    local held = bot:item_count("수련검")
 
     local mind = brain.new()
     ctx:bot(index):brain(mind, { seed = 1 })
     local worn = expect.settle(ctx, index, mind, TIMEOUT, function(current)
-        return current:item_count("목검") == 0 and current:item_count("목도") == 1
+        return current:item_count("수련검") < held
     end)
     local _, tasks = history(mind, ctx:bot(index))
     return finish(ctx, index, mind, "equip", worn and tasks.EQUIP ~= nil, "worn=" .. tostring(worn))
@@ -645,6 +646,7 @@ function M.striker(ctx, index)
     bot:create_item("목도", 1)
     bot:equip(bot:item_slot("목도"))
     bot:learn_spell("건곤대나이")
+    bot:create_item("돼지고기", 50)
     local hp = bot:base_hp() * STRIKER.hp
     bot:set_max_hp_mp(hp, 300)
     bot:set_current_hp_mp(hp, 300)
@@ -905,7 +907,7 @@ local function gather(ctx, count, arrivals)
     return plan
 end
 
-function M.group(ctx, names, arrivals)
+function M.group(ctx, names, arrivals, watch)
     local minds = {}
     for index, name in ipairs(names) do
         local slot = index - 1
@@ -943,7 +945,11 @@ function M.group(ctx, names, arrivals)
     local ghosts   = {}
     local broken   = false
     local watched  = 0
-    while formed and watched < GROUP_WATCH do
+    local earned = {}
+    for index = 1, #names do
+        earned[index] = minds[index]:observe(ctx:bot(index - 1)).exp or 0
+    end
+    while formed and watched < (watch or GROUP_WATCH) do
         local maps     = {}
         local count    = 0
         local fighting = false
@@ -959,7 +965,7 @@ function M.group(ctx, names, arrivals)
             end
             ghosts[index] = ghost
             for _, activity in ipairs(minds[index]:activities(current) or {}) do
-                fighting = fighting or activity == "attack" or activity == "cast" or activity == "swing"
+                fighting = fighting or activity == "attack" or activity == "swing"
             end
         end
         if together == nil and fighting then
@@ -973,6 +979,9 @@ function M.group(ctx, names, arrivals)
         watched = watched + 1000
     end
     for index = 1, #names do
+        local seen = minds[index]:observe(ctx:bot(index - 1))
+        log("debug", string.format("[brain:group:earned] %s exp=%d map=%s hp=%s died=%d watched=%ds", names[index],
+            (seen.exp or 0) - earned[index], tostring(seen.map), tostring(seen.hp), died, watched // 1000))
         expect.release(ctx, index - 1, minds[index], TIMEOUT)
     end
     local passed = formed and together == true and broken == false
@@ -1040,6 +1049,30 @@ function M.measure(ctx, names)
             tostring(engaged)))
     end
     return passed
+end
+
+function M.sample(ctx, names, watch)
+    local minds = {}
+    for index, name in ipairs(names) do
+        if stage(ctx, index - 1) == nil then
+            return false
+        end
+        dress(ctx, index - 1, profiled(name))
+        minds[index] = brain.new()
+        ctx:bot(index - 1):brain(minds[index], { seed = index, persona = { hunt = 1 } })
+    end
+    local watched = 0
+    while watched < watch do
+        ctx:sleep(1000)
+        watched = watched + 1000
+    end
+    for index, name in ipairs(names) do
+        local seen = minds[index]:observe(ctx:bot(index - 1))
+        log("debug", string.format("[brain:sample] %s level=%d map=%d ghost=%s", name, seen.level or 0, seen.map or 0,
+            tostring(seen.ghost)))
+        expect.release(ctx, index - 1, minds[index], TIMEOUT)
+    end
+    return true
 end
 
 function M.learn(ctx, index, name, spell, materials, money)

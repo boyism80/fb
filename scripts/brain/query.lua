@@ -25,6 +25,9 @@ function M.bind(brain, bot)
         roster = function()
             return brain:roster(bot)
         end,
+        steps = function(map, x, y, goals)
+            return brain:steps(map, x, y, goals)
+        end,
         ally = function(name)
             return brain:ally(bot, name)
         end,

@@ -5,6 +5,7 @@ local hunting  = require("brain.data.hunting")
 local teleport = require("brain.data.teleport")
 local escort   = require("brain.policies.escort")
 local memo     = require("brain.policies.memo")
+local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
 local survival = require("brain.policies.survival")
 
@@ -92,7 +93,7 @@ function M.winnable(snap, query, mob, crew)
     verdicts[snap][key] = verdicts[snap][key] or setmetatable({}, { __mode = "k" })
     local cached        = verdicts[snap][key]
     if cached[mob] == nil then
-        local context = escort.context(snap, query, mob, helpers)
+        local context = escort.context(snap, query, mob, helpers, nil, recovery.rates(snap).hp)
         local result  = survival.fight(snap, query, mob, context)
         if mob.oid ~= nil then
             context.crowd = survival.contact(snap, mob, result.time)
@@ -133,7 +134,7 @@ function M.perilous(snap, query, crew)
     end
     local helpers = team(snap, query, crew)
     local key     = score.signature(snap) .. (helpers ~= nil and helpers.key or "")
-    return memo.get(perils, snap.self.name, score.signature(snap, ""), key, function()
+    return memo.get(perils, (snap.self.name or "") .. (snap.hypothesis or ""), score.signature(snap, ""), key, function()
         local found  = {}
         local rested = score.rested(snap)
         for id, mob in pairs(hunting.mobs) do
@@ -146,6 +147,33 @@ function M.perilous(snap, query, crew)
 end
 
 local shunning = setmetatable({}, { __mode = "k" })
+
+local floors = nil
+
+function M.floor(map)
+    if floors == nil then
+        floors = {}
+        for _, bundle in ipairs(hunting.bundles) do
+            for _, floor in ipairs(bundle.floors) do
+                floors[floor.map] = true
+            end
+        end
+    end
+    return floors[map] == true
+end
+
+function M.power(snap)
+    local gear = {}
+    for _, slot in ipairs(snap.gear or {}) do
+        table.insert(gear, table.concat(slot.names or {}, "+"))
+    end
+    local spells = {}
+    for _, spell in ipairs(snap.spells or {}) do
+        table.insert(spells, spell.name)
+    end
+    table.sort(spells)
+    return table.concat({ snap.self.level or 0, table.concat(gear, ","), table.concat(spells, ",") }, "|")
+end
 
 function M.shunned(snap, query)
     if snap.self.ghost then
@@ -161,6 +189,12 @@ function M.shunned(snap, query)
             if mob ~= nil and ((recent and M.hostile(snap, query, mob)) or
                     (M.deadly(snap, query, mob) and query.native(id, mob.id))) then
                 table.insert(found, id)
+            end
+        end
+        local power = M.power(snap)
+        for map, entry in pairs(snap.record.memory.fled or {}) do
+            if type(entry) == "table" and entry.power == power then
+                table.insert(found, tonumber(map))
             end
         end
         shunning[snap] = found
@@ -186,9 +220,10 @@ function M.threat(snap, maps)
 end
 
 function M.fatal(snap, query)
+    local crew = escort.gathering(snap, query) or false
     for _, mob in ipairs(snap.world.mobs) do
         local near = mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1
-        if M.deadly(snap, query, mob) or (near and mob.attack == "AGGRESSIVE" and M.winnable(snap, query, mob) == false) then
+        if M.deadly(snap, query, mob, crew) or (near and mob.attack == "AGGRESSIVE" and M.winnable(snap, query, mob, crew) == false) then
             return mob
         end
     end

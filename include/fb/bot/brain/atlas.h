@@ -57,6 +57,7 @@ public:
         position begin;
         position end;
         uint16_t count = 0;
+        uint64_t rezen = 0;
     };
 
     struct dweller
