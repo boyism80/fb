@@ -18,5 +18,10 @@ namespace Http.Model
         public DateTime RemarriageAfter { get; set; } = DateTime.UtcNow;
 
         public uint DivorceCount { get; set; }
+
+        public static string DistributedLockKey(uint uid)
+        {
+            return $"fb:lock:marriage:{uid}";
+        }
     }
 }

@@ -28,9 +28,9 @@ struct marriage
         divorce_count(divorce_count)
     { }
 
-    marriage() = delete;
+    explicit marriage(const fb::protocol::internal::Marriage& row);
 
-    fb::protocol::internal::Marriage to_protocol() const;
+    marriage() = delete;
 };
 
 } // namespace fb::game

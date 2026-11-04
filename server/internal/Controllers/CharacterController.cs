@@ -71,11 +71,22 @@ namespace Internal.Controllers
                 {
                     Uid = uid,
                 });
+            await using var marriageLock = await _distributedLock.Lock(world, Http.Model.Marriage.DistributedLockKey(uid));
             var marriageData = await _dbContext.Marriage.Get(world, uid) ??
                 _dbContext.Marriage.Set(world, new Http.Model.Marriage
                 {
                     CharacterId = uid,
                 });
+
+            if (marriageData.SpouseId.HasValue)
+            {
+                var spouseMarriage = await _dbContext.Marriage.Get(world, marriageData.SpouseId.Value);
+                if (spouseMarriage?.SpouseId != uid)
+                {
+                    marriageData.SpouseId = null;
+                    _dbContext.Marriage.Set(world, marriageData);
+                }
+            }
 
             var spouseName = string.Empty;
             if (marriageData.SpouseId.HasValue)
@@ -356,10 +367,9 @@ namespace Internal.Controllers
             var unsettledTask = _dbContext.UnsettledRequest.GetMany(world, characterIds);
             var escrowTask = _dbContext.Escrow.GetMany(world, characterIds);
             var storageBoxTask = _dbContext.StorageBox.GetMany(world, characterIds);
-            var marriageCreatedTask = _dbContext.Marriage.GetCreatedDates(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                collectionUnlocksTask, unsettledTask, escrowTask, storageBoxTask, marriageCreatedTask);
+                collectionUnlocksTask, unsettledTask, escrowTask, storageBoxTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -370,7 +380,6 @@ namespace Internal.Controllers
             var unsettledByOwner = await unsettledTask;
             var escrowsByOwner = await escrowTask;
             var storageBoxesByOwner = await storageBoxTask;
-            var marriageCreated = await marriageCreatedTask;
 
             foreach (var data in payloads)
             {
@@ -380,10 +389,7 @@ namespace Internal.Controllers
                     throw new Exception($"Character not found: {characterId}");
                 }
 
-                DateTime? createdDate = marriageCreated.TryGetValue(characterId, out var existingMarriageCreated)
-                    ? existingMarriageCreated
-                    : null;
-                ReplaceSnapshot(world, data, existingCharacter, createdDate,
+                ReplaceSnapshot(world, data, existingCharacter,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
@@ -399,7 +405,6 @@ namespace Internal.Controllers
             uint world,
             Protocol.SavePayload data,
             Character existingCharacter,
-            DateTime? marriageCreatedDate,
             IReadOnlyList<Item> existingItems,
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
@@ -415,16 +420,6 @@ namespace Internal.Controllers
             ch.Pw = existingCharacter.Pw;
             ch.SnapshotTime = data.SnapshotTime;
             _dbContext.Character.Set(world, ch);
-
-            var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
-            marriage.CharacterId = characterId;
-            if (marriageCreatedDate.HasValue)
-            {
-                marriage.CreatedDate = marriageCreatedDate.Value;
-            }
-
-            marriage.UpdatedDate = DateTime.UtcNow;
-            _dbContext.Marriage.Set(world, marriage);
 
             var items = _mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>());
             // Escrow rows move between slots and the inventory in one save, so removal and upsert must land together.

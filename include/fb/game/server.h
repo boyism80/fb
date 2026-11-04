@@ -84,6 +84,8 @@ REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastGroup, fb::protocol:
 REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal::response::Login)
 REGISTER_RESPONSE(fb::protocol::internal::request::CheckBan, fb::protocol::internal::response::CheckBan)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
+REGISTER_RESPONSE(fb::protocol::internal::request::Marry, fb::protocol::internal::response::UpdatedMarriage)
+REGISTER_RESPONSE(fb::protocol::internal::request::Divorce, fb::protocol::internal::response::UpdatedMarriage)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMails, fb::protocol::internal::response::WriteMails)
 REGISTER_RESPONSE(fb::protocol::internal::request::SendSystemMail, fb::protocol::internal::response::SendSystemMail)

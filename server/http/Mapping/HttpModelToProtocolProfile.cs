@@ -86,14 +86,6 @@ namespace Http.Mapping
                 .ForMember(x => x.SpouseName, x => x.Ignore())
                 .ForMember(x => x.RemarriageAfter, x => x.MapFrom(u => u.RemarriageAfter.ToString("yyyy-MM-dd HH:mm:ss")));
 
-            CreateMap<Protocol.Marriage, Http.Model.Marriage>()
-                .ForMember(x => x.CharacterId, x => x.Ignore())
-                .ForMember(x => x.CreatedDate, x => x.Ignore())
-                .ForMember(x => x.UpdatedDate, x => x.Ignore())
-                .ForMember(x => x.RemarriageAfter, x => x.MapFrom(src => string.IsNullOrWhiteSpace(src.RemarriageAfter)
-                    ? DateTime.UtcNow
-                    : ParseUtc(src.RemarriageAfter)));
-
             CreateMap<Http.Model.Bulletin, Protocol.Article>()
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
 

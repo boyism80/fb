@@ -333,7 +333,6 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
             .count();
 
     return internal::SavePayload(ch.to_protocol(),
-                                 ch.marriage().to_protocol(),
                                  items,
                                  spells,
                                  matchmaking_skills,
