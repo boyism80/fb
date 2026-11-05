@@ -11,6 +11,7 @@ return {
         exp_limit = false,
         latency = 100,
         step = 60,
+        transfer = 4500,
         output = "logs/brain-sim",
     },
     team = {
@@ -21,6 +22,7 @@ return {
         exp_limit = false,
         latency = 100,
         step = 60,
+        transfer = 4500,
         acts = true,
         together = true,
         output = "logs/brain-sim/team",
@@ -76,6 +78,14 @@ return {
             {
                 name = "profile 63+65",
                 ground = {},
+                members = {
+                    { class = "WARRIOR", profile = "warrior63" },
+                    { class = "POET", profile = "poet65" },
+                },
+            },
+            {
+                name = "profile 63+65 west",
+                ground = { bundle = "서쪽해안가" },
                 members = {
                     { class = "WARRIOR", profile = "warrior63" },
                     { class = "POET", profile = "poet65" },

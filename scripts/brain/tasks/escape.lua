@@ -147,6 +147,11 @@ local function threat(snap, query)
     local cohort  = escort.gathering(snap, query)
     local coming  = cohort ~= nil and (present == nil or #cohort.members > #present.members)
     local found   = coming == false and pressing(snap, query) or nil
+    local refill  = combat.buffs(snap).charge
+    if found ~= nil and refill ~= nil and snap.self.hp > refill.cost + 2 * battle.burst(snap) and
+        recoverable(snap, query, found.mob) then
+        found = nil
+    end
     if found ~= nil then
         return found.mob, (found.choice.plan or {}).p_die or 0, "PRESSING"
     end
@@ -190,12 +195,27 @@ local function rally(snap, query, mob)
     return found
 end
 
+local function regroup(snap, query)
+    local plan = #(snap.party or {}) > 0 and party.plan(snap, query) or nil
+    if plan == nil or plan.gate == nil or plan.gate == snap.world.map then
+        return nil
+    end
+    return { maps = { plan.gate } }
+end
+
 function M.wanted(snap, query)
     return snap.self.ghost == false and teleport.returns[snap.self.nation] ~= nil and threat(snap, query) ~= nil
 end
 
 function M.propose(snap, query)
     local mob, _, cause = threat(snap, query)
+    if data.journal then
+        local crew = escort.present(snap, query)
+        log("debug", string.format("[brain:escape] bot=%s map=%s hp=%s/%s mp=%s cause=%s mob=%s dmg=%s adjacent=%.0f crew=%d party=%d",
+            snap.self.name or "", tostring(snap.world.map), tostring(snap.self.hp), tostring(snap.self.max_hp),
+            tostring(snap.self.mp), tostring(cause), tostring(mob ~= nil and mob.name), tostring(mob ~= nil and mob.damage),
+            battle.burst(snap), crew ~= nil and #crew.members or 0, #(snap.party or {})))
+    end
     local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and rally(snap, query, mob) or nil
     return {
         kind = ACTION.MOVE,
@@ -207,7 +227,7 @@ function M.propose(snap, query)
         } or nil,
         proven = meet == nil and cause == "FATAL" and
             danger.winnable(score.rested(snap), query, mob) == false,
-        dest = meet or { maps = teleport.returns[snap.self.nation] },
+        dest = meet or regroup(snap, query) or { maps = teleport.returns[snap.self.nation] },
         forget = snap.record.death ~= nil
     }
 end

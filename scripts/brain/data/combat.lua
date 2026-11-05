@@ -6,6 +6,7 @@ return {
     bucket     = 0.25,
     window     = 8,
     trace      = false,
+    journal    = false,
     dam        = 0.25,
     critical   = { chance = 0.2, factor = 2 },
     bare       = { min = 1, max = 5 },

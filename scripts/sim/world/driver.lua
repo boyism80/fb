@@ -821,6 +821,11 @@ function Actor:travel(dest)
     local destination, x, y = route.dest, route.x, route.y
     if exit ~= nil and exit.dest ~= nil and exit.ax ~= nil then
         destination, x, y = exit.dest, exit.ax, exit.ay
+        self.transit = true
+        local gap = self.options.transfer or 0
+        self:advance(gap)
+        engine.rest(self.me, gap)
+        self.transit = false
     else
         self.transit = true
         local remaining = math.max(0, route.cost * self.pace.step - spent)

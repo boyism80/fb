@@ -386,7 +386,7 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         local plenty = combat.buffs(snap).charge
         local ahead  = recovery.heal(snap)
         local fresh  = { hp = hp, mp = mp }
-        if entry.kind ~= "CHARGE" and plenty ~= nil and ahead ~= nil and mp >= plenty.mp and mp < ahead.mp + plenty.mp and
+        if entry.kind == "HEAL" and plenty ~= nil and ahead ~= nil and mp >= plenty.mp and mp < ahead.mp + plenty.mp and
             hp > plenty.cost + 2 * M.burst(snap) then
             fresh  = {
                 hp = hp - plenty.chance * plenty.cost,

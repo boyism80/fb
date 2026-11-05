@@ -64,6 +64,22 @@ local function expect(brain, bot, destination, detour)
     brain:expect(bot, step)
 end
 
+local SIDES = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
+
+local function sidestep(brain, bot, event, detour)
+    local here = bot:position()
+    if here[1] ~= event.x or here[2] ~= event.y then
+        return false
+    end
+    for _, side in ipairs(SIDES) do
+        local moved = brain:walk(bot, { map = event.map, x = event.x + side[1], y = event.y + side[2], range = 0 }, detour)
+        if moved.type == "ARRIVED" then
+            return true
+        end
+    end
+    return false
+end
+
 local function journey(brain, bot, destination, detour)
     while brain:active(bot) do
         detour.jumps = means.jumps(brain, bot)
@@ -99,6 +115,9 @@ local function journey(brain, bot, destination, detour)
             elseif moved == false then
                 table.insert(detour.avoid, { map = event.map, x = event.x, y = event.y })
             end
+        elseif event.type == "BLOCKED" and final == false and sidestep(brain, bot, event, detour) then
+            log("debug", string.format("[brain:travel] bot=%s stepped off gate at map=%d %d,%d", bot:name(), event.map,
+                event.x, event.y))
         elseif event.type == "BLOCKED" and final == false and detour.wary then
             detour.wary  = false
             detour.avoid = {}

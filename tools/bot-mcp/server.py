@@ -525,6 +525,18 @@ def sim_places(run_id: str, team: str, seed: int) -> list:
 
 
 @server.tool()
+def sim_packets(run_id: str, limit: int = 12) -> list:
+    """Real packets sent per type for a run, separated from internal decide timers, with decide cpu and wait times."""
+    return sim.packets(run_id, limit)
+
+
+@server.tool()
+def sim_online(run_id: str, limit: int = 40) -> list:
+    """Per bot map sequence, task counts, flee causes and earned exp of a run against a real server."""
+    return sim.online(run_id, limit)
+
+
+@server.tool()
 def sim_calibration(run_id: str, team: str = '') -> list:
     """Forecast against actual damage and time of won fights per team and class."""
     return sim.calibration(run_id, team)

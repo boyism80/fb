@@ -448,9 +448,69 @@ def scenario_failures(run_id):
     return lines
 
 
+def packets(run_id, limit=12):
+    record = call(f'/api/runs/{run_id}')
+    elapsed = max(record.get('elapsed') or 1, 1)
+    entries = record.get('stats') or []
+    groups = collections.Counter()
+    for entry in entries:
+        groups[entry['name'].split(':')[0]] += entry['count']
+    sent = sorted((entry for entry in entries if entry['name'].split(':')[0] in ('game', 'login', 'gateway')),
+                  key=lambda entry: -entry['count'])
+    total = sum(entry['count'] for entry in sent)
+    lines = [f'elapsed={elapsed} groups={groups.most_common()} sent={total} per_second={total / elapsed:.1f}']
+    for entry in sent[:limit]:
+        lines.append(f"{entry['name']} n={entry['count']} {100 * entry['count'] / max(total, 1):.1f}% p50={entry.get('p50')}")
+    for entry in entries:
+        if entry['name'] in ('decide:cpu', 'decide:wait', 'brain:decide'):
+            lines.append(f"{entry['name']} avg={entry.get('avg')} p50={entry.get('p50')} p95={entry.get('p95')} p99={entry.get('p99')}")
+    return lines
+
+
+def online(run_id, limit=40):
+    lines = []
+    for path in glob.glob(os.path.join(LOGS, run_id + '-rel-*.log')):
+        with open(path, 'rb') as log:
+            for raw in log:
+                if b'[brain:travel]' in raw or b'brain: ' in raw or b'group:earned' in raw or b'brain:group]' in raw or                         b'[brain:escape]' in raw or b'[brain:plan]' in raw:
+                    lines.append(ANSI.sub('', raw.decode('utf-8', 'replace')).rstrip())
+    lines.sort()
+    bots = {}
+    for line in lines:
+        match = re.search(r'bot=(\S+) (?:route at|stopped \S+ at|jumped by \S+ to) map=(\d+)', line)
+        if match:
+            seq = bots.setdefault(match.group(1), [])
+            if not seq or seq[-1][1] != match.group(2):
+                seq.append((line[22:30], match.group(2), 'jumped' in line))
+    output = []
+    for bot, seq in bots.items():
+        output.append(f"{bot[:4]} hops={len(seq)} jumps={sum(1 for hop in seq if hop[2])} " +
+                      ' '.join(f"{hop[0]}:{hop[1]}{'*' if hop[2] else ''}" for hop in seq[:limit]))
+    tasks = collections.Counter()
+    for line in lines:
+        match = re.search(r'brain: bot_id=\d+ \w+/(\w*)/\d+ (\w+)', line)
+        if match:
+            tasks[f'{match.group(1)}:{match.group(2)}'] += 1
+    output.append(f'tasks {tasks.most_common(14)}')
+    causes = collections.Counter()
+    first = []
+    for line in lines:
+        match = re.search(r'\[brain:escape\] .*map=(\d+) hp=(\S+) mp=(\S+) cause=(\S+) mob=(\S+) dmg=(\S+) adjacent=(\S+) crew=(\d+)', line)
+        if match:
+            causes[(match.group(4), match.group(5), match.group(1))] += 1
+            if match.group(4) != 'FLEEING' and len(first) < 24:
+                first.append(line[22:30] + ' ' + ' '.join(match.groups()))
+        elif '[brain:plan]' in line:
+            first.append(line[22:30] + ' ' + line[line.find('[brain:plan]') + 13:][:60])
+    output.append(f'causes {causes.most_common(12)}')
+    output.extend(first)
+    output.extend(line[32:200] for line in lines if 'group:earned' in line or 'brain:group]' in line)
+    return output
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['start', 'wait', 'result', 'scenarios', 'brief', 'usage', 'places', 'overview', 'timeline', 'deaths', 'decisions',
+    parser.add_argument('command', choices=['start', 'wait', 'result', 'packets', 'online', 'scenarios', 'brief', 'usage', 'places', 'overview', 'timeline', 'deaths', 'decisions',
                                             'calibration', 'profile', 'why', 'plan'])
     parser.add_argument('--run', default='')
     parser.add_argument('--baseline', default='')
@@ -477,6 +537,10 @@ def main():
         output = result(args.run, args.baseline)
     elif args.command == 'scenarios':
         output = scenarios(args.teams, args.target) if args.teams else scenario_failures(args.run)
+    elif args.command == 'packets':
+        output = packets(args.run)
+    elif args.command == 'online':
+        output = online(args.run)
     elif args.command == 'brief':
         output = brief(args.run, args.baseline)
     elif args.command == 'usage':

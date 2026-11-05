@@ -91,6 +91,11 @@ function M.wanted(snap, query)
     end
     local plan = party.plan(snap, query)
     local crew = escort.present(snap, query)
+    if data.journal and plan ~= nil and snap.record.memory.traced ~= plan.name then
+        snap.record.memory.traced = plan.name
+        log("debug", string.format("[brain:plan] bot=%s map=%s plan=%s rate=%.0f party=%d", snap.self.name or "",
+            tostring(snap.world.map), plan.name, plan.rate, #(snap.party or {})))
+    end
     local hp   = snap.self.hp + (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
     return snap.self.hp >= snap.self.max_hp or hp > (plan ~= nil and plan.peak or 0)
 end
