@@ -150,11 +150,9 @@ end
 
 local CLASSES = { ["전사"] = "WARRIOR", ["도적"] = "ROGUE", ["주술사"] = "MAGE", ["도사"] = "POET" }
 
-local STARTER    = "천부연의도포"
-local STARTER_HP = 200
-local START      = { map = 22, x = 16, y = 103 }
+local START = { map = 22, x = 16, y = 103 }
 
-local function dressed(records, name, money)
+local function dressed(records, name, money, mind)
     local spec = nil
     for _, entry in ipairs(require("integration.scenarios.brain.state.profiles")) do
         if entry.name == name then
@@ -181,11 +179,19 @@ local function dressed(records, name, money)
     end
     local gear = {}
     for _, slot in ipairs(base.gear) do
-        local worn = spec.gear[slot.type] or (slot.type == "ARMOR" and STARTER) or nil
+        local worn = spec.gear[slot.type] or nil
         table.insert(gear, { type = slot.type, names = worn ~= nil and { worn } or {} })
     end
-    me.max_hp, me.hp = me.max_hp + STARTER_HP, me.hp
-    me.hit, me.dam, me.phydef = 1, 1, 0
+    me.hit, me.dam, me.phydef = 0, 0, 0
+    for _, slot in ipairs(gear) do
+        local model = slot.names[1] ~= nil and mind:item(slot.names[1]) or nil
+        if model ~= nil then
+            me.phydef = me.phydef - (model.defense or 0)
+            me.hit    = me.hit + (model.hit or 0)
+            me.dam    = me.dam + (model.bonus or 0)
+            me.max_hp = me.max_hp + (model.hp or 0)
+        end
+    end
     local snap = {}
     for key, entry in pairs(base) do
         snap[key] = entry
@@ -245,8 +251,8 @@ function M.teams(options)
         local profiles = {}
         local missing  = nil
         for _, want in ipairs(team.members) do
-            local snap = want.profile ~= nil and dressed(data.records, want.profile, want.money or 100000) or
-            find(data.records, want, taken, mind)
+            local snap = want.profile ~= nil and dressed(data.records, want.profile, want.money or 100000, mind) or
+                find(data.records, want, taken, mind)
             if snap == nil then
                 missing = want.class
                 break

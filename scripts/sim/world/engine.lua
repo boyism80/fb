@@ -321,6 +321,17 @@ function World:award(character, exp)
     end
     character.exp       = character.exp + value
     character.stats.exp = character.stats.exp + value
+    character.gained    = (character.gained or 0) + value
+    character.origin    = character.origin or character.level
+    while table[character.level + 1] ~= nil and table[character.origin] ~= nil and
+        character.gained >= table[character.level + 1].exp - table[character.origin].exp do
+        local now, after = table[character.level], table[character.level + 1]
+        character.max_hp = character.max_hp + after.hp - now.hp
+        character.max_mp = character.max_mp + after.mp - now.mp
+        character.hp     = character.max_hp
+        character.mp     = character.max_mp
+        character.level  = character.level + 1
+    end
 end
 
 local function distance(a, b)

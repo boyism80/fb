@@ -292,6 +292,28 @@ function M.pure(ctx, index)
                 s.world.mobs  = { {
                     oid = 9,
                     name = "다람쥐",
+                    exp = 1000,
+                    x = 11,
+                    y = 10,
+                    hp = 15,
+                    damage = 2,
+                    least = 1,
+                    speed = 2000,
+                    attack = "RETALIATE",
+                    size = "SMALL",
+                    defense = 0,
+                    resists = {}
+                } }
+            end)
+        },
+        {
+            expect = { "FIELD", ACTION.MOVE },
+            snap = fake(function(s)
+                s.self.struck = 100
+                s.world.mobs  = { {
+                    oid = 9,
+                    name = "다람쥐",
+                    exp = 10,
                     x = 11,
                     y = 10,
                     hp = 15,
@@ -721,6 +743,13 @@ local PROFILE_REPEAT = 20
 local PROFILE_SETTLE = 2000
 local PROFILE_MONEY  = 100000
 
+local function fitted(bot, name)
+    if name ~= nil and bot:gender() == "FEMALE" then
+        return (string.gsub(name, "남자", "여자"))
+    end
+    return name
+end
+
 local function dress(ctx, index, profile)
     local bot = ctx:bot(index)
     gear.strip(bot, SLOTS)
@@ -736,15 +765,34 @@ local function dress(ctx, index, profile)
     bot:set_current_hp_mp(profile.hp, profile.mp)
     bot:learn_spells(profile.spells)
     for _, slot in ipairs(SLOTS) do
-        local name = profile.gear[slot]
+        local name = fitted(ctx:bot(index), profile.gear[slot])
         if name ~= nil then
-            bot:create_item(name, 1)
-            bot:equip(bot:item_slot(name))
+            ctx:bot(index):create_item(name, 1)
+            expect.within(ctx, PROFILE_SETTLE, function()
+                return ctx:bot(index):item_count(name) > 0
+            end)
+            ctx:bot(index):equip(ctx:bot(index):item_slot(name))
+            expect.within(ctx, PROFILE_SETTLE, function()
+                return ctx:bot(index):item_count(name) == 0
+            end)
         end
     end
     ctx:sleep(PROFILE_SETTLE)
     ctx:bot(index):request(resp.internal_info, protocol.self_info(), function() return true end, TIMEOUT)
-    return ctx:bot(index)
+    local current = ctx:bot(index)
+    local wearing = {}
+    for _, slot in ipairs(brain.new():worn(current)) do
+        wearing[slot.type] = slot.names[1]
+    end
+    for _, slot in ipairs(SLOTS) do
+        local name = fitted(current, profile.gear[slot])
+        if name ~= nil and wearing[slot] ~= name then
+            log("debug",
+                string.format("[brain:dress] %s %s wanted=%s worn=%s held=%d level=%d str=%s", profile.name, slot, name,
+                    tostring(wearing[slot]), current:item_count(name), current:level(), tostring(profile.str)))
+        end
+    end
+    return current
 end
 
 function M.profiles(ctx, index)
@@ -965,7 +1013,7 @@ function M.group(ctx, names, arrivals, watch)
     local ghosts   = {}
     local broken   = false
     local watched  = 0
-    local earned = {}
+    local earned   = {}
     for index = 1, #names do
         earned[index] = minds[index]:observe(ctx:bot(index - 1)).exp or 0
     end

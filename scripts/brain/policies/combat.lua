@@ -515,6 +515,26 @@ function M.cooldown(snap)
     return math.max(0, M.interval() - casted)
 end
 
+function M.backswing(snap)
+    local swung = ((snap.record or {}).memory or {}).swung
+    if swung == nil then
+        return 0
+    end
+    return math.max(0, math.min(combat.swing, combat.swing - (snap.now - swung)))
+end
+
+function M.swinging(snap, action)
+    if action.kind ~= ACTION.ATTACK or action.maneuver == nil or action.maneuver.kind ~= MANEUVER.SWING then
+        return false
+    end
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.oid == action.oid and mob.x ~= nil then
+            return math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1
+        end
+    end
+    return false
+end
+
 function M.casting(action)
     return action.kind == ACTION.CAST or (action.maneuver ~= nil and action.maneuver.kind == MANEUVER.CAST)
 end

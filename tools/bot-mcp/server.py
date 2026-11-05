@@ -531,6 +531,18 @@ def sim_packets(run_id: str, limit: int = 12) -> list:
 
 
 @server.tool()
+def sim_rules(run_id: str, team: str = '') -> list:
+    """Absolute rule audit of a sim run per bot: strikes, charge, drinks, mage debuffs, rogue moves, time apart. team is a regex."""
+    return sim.rules(run_id, team)
+
+
+@server.tool()
+def sim_online_rules(run_id: str) -> list:
+    """The same rule audit from [brain:act] journal lines of a run against a real server."""
+    return sim.online_rules(run_id)
+
+
+@server.tool()
 def sim_online(run_id: str, limit: int = 40) -> list:
     """Per bot map sequence, task counts, flee causes and earned exp of a run against a real server."""
     return sim.online(run_id, limit)

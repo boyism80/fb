@@ -1466,8 +1466,7 @@ int builtin::brain::builtin_worn(lua_State* L)
                 continue;
 
             auto matched = entry.dress ? equipment->dress == entry.value && model.color == entry.color
-                                       : model.look - fb::bot::game_bot::sight::ITEM_LOOK == entry.value &&
-                                             model.color == entry.color;
+                                       : model.look == entry.value && model.color == entry.color;
             if (matched == false)
                 continue;
 

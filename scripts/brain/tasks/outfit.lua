@@ -48,7 +48,7 @@ local function dressed(snap, query, kind, name)
     table.insert(slots, { type = kind, names = { name } })
     local was = old or nil
     local me  = setmetatable({
-        phydef = (snap.self.phydef or 0) + stat(query, name, "defense") - stat(query, was, "defense"),
+        phydef = (snap.self.phydef or 0) - stat(query, name, "defense") + stat(query, was, "defense"),
         max_hp = snap.self.max_hp + stat(query, name, "hp") - stat(query, was, "hp"),
         hit    = (snap.self.hit or 0) + stat(query, name, "hit") - stat(query, was, "hit"),
         dam    = (snap.self.dam or 0) + stat(query, name, "bonus") - stat(query, was, "bonus"),
@@ -154,8 +154,11 @@ function M.pending(snap, query)
     if M.wanted(snap, query) == false then
         return nil
     end
-    return { gain = plan(snap, query).gain, trip = value.cost(snap, query, M.propose(snap, query),
-        value.baseline(snap, query)) }
+    return {
+        gain = plan(snap, query).gain,
+        trip = value.cost(snap, query, M.propose(snap, query),
+            value.baseline(snap, query))
+    }
 end
 
 function M.propose(snap, query)

@@ -1,12 +1,16 @@
+local balance = require("brain.data.balance")
+
 return {
-    swing      = 600,
+    swing      = 1000 / balance.swing_rate,
     walk       = 500,
+    stride     = 50,
     penalty    = { exp = 0.05, durability = 0.01 },
     candidates = 1000,
     bucket     = 0.25,
     window     = 8,
     trace      = false,
     journal    = false,
+    transfer   = 4500,
     dam        = 0.25,
     critical   = { chance = 0.2, factor = 2 },
     bare       = { min = 1, max = 5 },

@@ -4,6 +4,7 @@ local teleport = require("brain.data.teleport")
 local bag      = require("brain.policies.bag")
 local gear     = require("brain.policies.gear")
 local near     = require("brain.policies.near")
+local party    = require("brain.policies.party")
 local value    = require("brain.policies.value")
 
 local M = {}
@@ -106,6 +107,9 @@ local function choose(snap, query)
     end
     local delta = gain(snap, query, found, route, worth)
     if delta <= 0 then
+        return nil
+    end
+    if #party.members(snap) > 0 then
         return nil
     end
     local _, move = near.approach(snap, query, good.npcs)

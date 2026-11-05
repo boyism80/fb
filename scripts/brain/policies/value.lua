@@ -291,7 +291,7 @@ function M.leap(snap, dest)
         local ready = known[spell.name] and (spell.ghost == true) == snap.self.ghost and
             (snap.self.mp or 0) >= (spell.mp or 0)
         local land  = ready and lands(snap, dest, spell.returns and teleport.returns[snap.self.nation] or spell.to) or
-        nil
+            nil
         if land ~= nil then
             return { spell = spell, land = land }
         end
@@ -305,7 +305,7 @@ function M.leap(snap, dest)
     end
     for _, item in ipairs(teleport.items) do
         local land = held[item.name] and
-        lands(snap, dest, item.returns and teleport.returns[snap.self.nation] or item.to) or nil
+            lands(snap, dest, item.returns and teleport.returns[snap.self.nation] or item.to) or nil
         if land ~= nil then
             return { item = item, land = land }
         end
@@ -349,7 +349,7 @@ function M.trip(snap, query, dest, worth)
     local best = nil
     local jump = dest.x == nil and M.leap(snap, dest) or nil
     if jump ~= nil then
-        local time = combat.cast(snap) / 1000
+        local time = (combat.cast(snap) + data.transfer) / 1000
         best = {
             route = type(jump.land) == "number" and { dest = jump.land } or nil,
             cost = time * worth.value + M.stay(snap, query, time * 1000, worth),

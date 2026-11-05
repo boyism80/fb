@@ -1,12 +1,12 @@
+local combat   = require("brain.data.combat")
 local teleport = require("brain.data.teleport")
 
 local M = {}
 
-local REQUEST_COST = 1
-
-function M.jumps(brain, bot)
+function M.jumps(brain, bot, urgent)
     local seen  = brain:observe(bot)
     local jumps = {}
+    local cost  = (urgent or seen.ghost) and 1 or math.ceil(combat.transfer / ((seen.pace or {}).step or combat.stride))
     for _, spell in ipairs(teleport.spells) do
         local ready = bot:spell_slot(spell.name) ~= 0xFF and (spell.ghost == true) == seen.ghost and
             bot:mp() >= (spell.mp or 0)
@@ -16,7 +16,7 @@ function M.jumps(brain, bot)
                 via    = spell.via,
                 to     = spell.returns and teleport.returns[seen.nation] or spell.to,
                 inputs = spell.inputs,
-                cost   = REQUEST_COST,
+                cost   = cost,
             })
         end
     end
@@ -28,7 +28,7 @@ function M.jumps(brain, bot)
                     item = item.name,
                     via  = item.via,
                     to   = item.returns and teleport.returns[seen.nation] or item.to,
-                    cost = REQUEST_COST,
+                    cost = cost,
                 })
             end
         end

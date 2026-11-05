@@ -135,6 +135,7 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
 
     swings++;
     this->act(bot->id, "swing");
+    std::ignore = co_await this->synced(bot);
     this->measure(bot->id, "swing", std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
     this->progress(bot->id);
 

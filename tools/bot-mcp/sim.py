@@ -22,6 +22,7 @@ BATTLE = re.compile(r'\[brain:battle\] bot=(\S+) hp=(\d+) mp=(\d+) mob=(\S*) (.*
 FAILED = re.compile(r'failed: .*|lua error.*')
 ALL_TEAMS = ['WA+PO', 'RO+PO', 'WA9+PO', 'WA63+PO65', 'WA+PO 세작', 'RO+PO 세작', 'WA+PO 흉가', 'RO+PO 흉가',
              'profile 63+65', 'MA', 'PO', 'RO', 'WA']
+DRINKS = ('동동주', '막걸리', '백세주', '오십세주', '팔십세주', '홍주', '파란시약')
 STRIKES = ('건곤대나이', '필살검무')
 WATCHED = ('보호', '무장', '공력증강', '건곤대나이', '필살검무', '투명', '비영승보', '혼마술', '마비', '절망', '중독')
 
@@ -42,7 +43,7 @@ def write_plan(teams, seeds, solo, lanes, minutes, profile=False, trace=False):
 
 
 def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=24, minutes=0, target=LOCAL, profile=False, trace=False):
-    state = call('/api/state').get('run', {})
+    state = call('/api/state').get('run') or {}
     if state.get('state') == 'running':
         return {'error': 'a run is active', 'run': state.get('id')}
     teams = ALL_TEAMS if teams is None else teams
@@ -54,7 +55,7 @@ def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=24, minutes=0, target=LO
 
 
 def progress(run_id):
-    state = call('/api/state').get('run', {})
+    state = call('/api/state').get('run') or {}
     if state.get('id') != run_id:
         return {'state': 'finished'}
     suites = state.get('suites', [])
@@ -448,6 +449,116 @@ def scenario_failures(run_id):
     return lines
 
 
+def audit_rows(bot_class, rows, died=False):
+    keys = collections.Counter()
+    top_hp = max((row['hp'] for row in rows), default=1)
+    top_mp = max((row['mp'] for row in rows), default=1)
+    report = {'class': bot_class, 'died': died}
+    swings_after = []
+    run = None
+    for row in rows:
+        key = row.get('key') or row.get('item') or row.get('spell')
+        if key:
+            keys[key] += 1
+        if key in STRIKES:
+            if run is not None:
+                swings_after.append(run)
+            run = 0
+        elif key == 'SWING' and run is not None:
+            run += 1
+    strikes = [row for row in rows if (row.get('key') or row.get('spell')) in STRIKES]
+    report['strike'] = len(strikes)
+    report['strike_low_hp'] = sum(1 for row in strikes if row['hp'] / max(top_hp, 1) < 0.5)
+    report['strike_mp_ratio'] = round(sum(row['mp'] / max(top_mp, 1) for row in strikes) / len(strikes), 2) if strikes else None
+    report['swing'] = keys['SWING']
+    report['swings_between_strikes'] = round(sum(swings_after) / len(swings_after), 1) if swings_after else None
+    if bot_class in ('POET', 'MAGE'):
+        drinks = [row for row in rows if row.get('item') in DRINKS]
+        report['charge'] = keys['CHARGE'] + keys['공력증강']
+        report['drink'] = len(drinks)
+        report['drink_above_cost'] = sum(1 for row in drinks if row['mp'] >= 30)
+        report['geumgang'] = keys['금강퇴']
+    if bot_class == 'POET':
+        report['honma'] = keys['혼마술']
+    if bot_class == 'MAGE':
+        for name in ('마비', '절망', '중독', '저주'):
+            report[name] = keys[name]
+        report['first'] = sum(count for name, count in keys.items() if "'첨" in name)
+    if bot_class == 'ROGUE':
+        report['invisible'] = keys['투명']
+        report['ambush'] = keys['비영승보']
+    if bot_class == 'WARRIOR':
+        report['self_heal'] = sum(count for name, count in keys.items() if '기원' in name)
+    return report
+
+
+def apart_ratio(first, second, start, end, step=5000):
+    apart = total = 0
+    i = j = 0
+    now = start
+    while now < end:
+        while i + 1 < len(first) and first[i + 1][0] <= now:
+            i += 1
+        while j + 1 < len(second) and second[j + 1][0] <= now:
+            j += 1
+        total += 1
+        apart += first[i][1] != second[j][1]
+        now += step
+    return round(apart / max(total, 1), 2)
+
+
+def rules(run_id, team=''):
+    pattern = re.compile(team) if team else None
+    output = []
+    for (name, seed), data in sorted(episodes(run_id).items()):
+        if name == 'solo' or (pattern is not None and pattern.search(name) is None):
+            continue
+        maps = []
+        for entry in [row for row in data if row.get('kind') == 'episode']:
+            acts = [row for row in data if row.get('kind') == 'act' and row['bot'] == entry['bot']]
+            report = audit_rows(entry['class'], [row for row in acts if row.get('hp') is not None], entry.get('died'))
+            report['team'] = f'{name}/{seed}'
+            report['exp_m'] = millions(entry.get('exp') or 0)
+            report['kills'] = (entry.get('stats') or {}).get('kills')
+            maps.append([(row['t'], row['map']) for row in acts])
+            output.append(report)
+        if len(maps) == 2 and maps[0] and maps[1]:
+            start = max(maps[0][0][0], maps[1][0][0])
+            end = min(maps[0][-1][0], maps[1][-1][0])
+            output.append({'team': f'{name}/{seed}', 'apart_ratio': apart_ratio(maps[0], maps[1], start, end)})
+    return output
+
+
+def online_rules(run_id):
+    bots = {}
+    pattern = re.compile(r'bot=(\S+) class=(\S+) t=(\S+) map=(\S+) task=(\S+) kind=(\S+) key=(\S+) item=(\S+) spell=(\S+) mob=(\S+) hp=(\d+)/\d+ mp=(\d+)/\d+')
+    none = lambda value: None if value in ('nil', 'false') else value
+    lines = []
+    for path in glob.glob(os.path.join(LOGS, run_id + '-rel-*.log')):
+        with open(path, 'rb') as log:
+            for raw in log:
+                if b'[brain:act]' in raw:
+                    lines.append(ANSI.sub('', raw.decode('utf-8', 'replace')).rstrip())
+    lines.sort()
+    for line in lines:
+        match = pattern.search(line)
+        if match is None:
+            continue
+        bot, cls, t, map_, task, _, key, item, spell, _, hp, mp = match.groups()
+        bots.setdefault((bot, cls), []).append({'t': float(t), 'map': int(map_), 'task': task, 'key': none(key),
+                                                 'item': none(item), 'spell': none(spell), 'hp': int(hp), 'mp': int(mp)})
+    output = []
+    for (bot, cls), rows_ in bots.items():
+        report = audit_rows(cls, rows_)
+        report['bot'] = bot[:4]
+        report['tasks'] = dict(collections.Counter(row['task'] for row in rows_).most_common(8))
+        output.append(report)
+    if len(bots) == 2:
+        first, second = [[(row['t'], row['map']) for row in rows_] for rows_ in bots.values()]
+        output.append({'apart_ratio': apart_ratio(first, second, max(first[0][0], second[0][0]), min(first[-1][0], second[-1][0]))})
+    return output
+
+
 def packets(run_id, limit=12):
     record = call(f'/api/runs/{run_id}')
     elapsed = max(record.get('elapsed') or 1, 1)
@@ -501,7 +612,7 @@ def online(run_id, limit=40):
             if match.group(4) != 'FLEEING' and len(first) < 24:
                 first.append(line[22:30] + ' ' + ' '.join(match.groups()))
         elif '[brain:plan]' in line:
-            first.append(line[22:30] + ' ' + line[line.find('[brain:plan]') + 13:][:60])
+            first.append(line[22:30] + ' ' + line[line.find('[brain:plan]') + 13:][:220])
     output.append(f'causes {causes.most_common(12)}')
     output.extend(first)
     output.extend(line[32:200] for line in lines if 'group:earned' in line or 'brain:group]' in line)
@@ -510,7 +621,7 @@ def online(run_id, limit=40):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['start', 'wait', 'result', 'packets', 'online', 'scenarios', 'brief', 'usage', 'places', 'overview', 'timeline', 'deaths', 'decisions',
+    parser.add_argument('command', choices=['start', 'wait', 'result', 'rules', 'online-rules', 'packets', 'online', 'scenarios', 'brief', 'usage', 'places', 'overview', 'timeline', 'deaths', 'decisions',
                                             'calibration', 'profile', 'why', 'plan'])
     parser.add_argument('--run', default='')
     parser.add_argument('--baseline', default='')
@@ -537,6 +648,10 @@ def main():
         output = result(args.run, args.baseline)
     elif args.command == 'scenarios':
         output = scenarios(args.teams, args.target) if args.teams else scenario_failures(args.run)
+    elif args.command == 'rules':
+        output = rules(args.run, args.team)
+    elif args.command == 'online-rules':
+        output = online_rules(args.run)
     elif args.command == 'packets':
         output = packets(args.run)
     elif args.command == 'online':

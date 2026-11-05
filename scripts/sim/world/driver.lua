@@ -321,21 +321,24 @@ function Actor:members()
 end
 
 function Actor:snapshot()
-    local me       = self.me
-    local base     = self.base
-    local self_    = copy(base.self)
-    self_.hp       = me.hp
-    self_.mp       = me.mp
-    self_.exp      = me.exp
-    self_.money    = self.money
-    self_.ghost    = me.dead
-    self_.struck   = me.struck ~= nil and self.clock - me.struck or nil
-    self_.casted   = self.casted ~= nil and self.clock - self.casted or nil
-    self_.cloaked  = self:cloaked()
-    self_.phydef   = me.phydef
-    self_.hit      = me.hit_value
-    self_.dam      = me.dam_value
-    local failures = {}
+    local me         = self.me
+    local base       = self.base
+    base.self.level  = me.level or base.self.level
+    base.self.max_hp = me.max_hp
+    base.self.max_mp = me.max_mp
+    local self_      = copy(base.self)
+    self_.hp         = me.hp
+    self_.mp         = me.mp
+    self_.exp        = me.exp
+    self_.money      = self.money
+    self_.ghost      = me.dead
+    self_.struck     = me.struck ~= nil and self.clock - me.struck or nil
+    self_.casted     = self.casted ~= nil and self.clock - self.casted or nil
+    self_.cloaked    = self:cloaked()
+    self_.phydef     = me.phydef
+    self_.hit        = me.hit_value
+    self_.dam        = me.dam_value
+    local failures   = {}
     for task, record in pairs(self.failures) do
         failures[task] = {
             failures = record.failures,
@@ -654,7 +657,7 @@ function Actor:equip(name)
     base.self         = copy(base.self)
     base.self.max_hp  = base.self.max_hp + delta("hp")
     self.me.max_hp    = self.me.max_hp + delta("hp")
-    self.me.phydef    = (self.me.phydef or 0) + delta("defense")
+    self.me.phydef    = (self.me.phydef or 0) - delta("defense")
     self.me.hit_value = (self.me.hit_value or 0) + delta("hit")
     self.me.dam_value = (self.me.dam_value or 0) + delta("bonus")
     self.base         = base
@@ -1000,8 +1003,13 @@ function Actor:think()
     self.session.profiles[self] = party.profile(snap, bound, decision)
     if self.options.acts then
         if decision ~= nil and decision.task == "ESCAPE" and decision.cause ~= nil then
-            self:emit({ kind = "why", cause = decision.cause, map = snap.world.map, detail = why.escape(snap, bound,
-                decision) })
+            self:emit({
+                kind = "why",
+                cause = decision.cause,
+                map = snap.world.map,
+                detail = why.escape(snap, bound,
+                    decision)
+            })
         end
         local plan = party.plan(snap, bound)
         local name = plan ~= nil and plan.name or ""
@@ -1026,6 +1034,10 @@ function Actor:think()
     local fleeing = decide.fleeing(snap, decision)
     if fleeing ~= nil then
         self.memory.fleeing = fleeing
+    end
+    local swung = decide.swung(snap, decision)
+    if swung ~= nil then
+        self.memory.swung = swung
     end
     return decision, revisit
 end

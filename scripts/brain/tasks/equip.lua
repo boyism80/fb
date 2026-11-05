@@ -1,6 +1,7 @@
-local combat = require("brain.policies.combat")
-local gear   = require("brain.policies.gear")
-local value  = require("brain.policies.value")
+local outfits = require("brain.data.outfits")
+local combat  = require("brain.policies.combat")
+local gear    = require("brain.policies.gear")
+local value   = require("brain.policies.value")
 
 local M = {}
 
@@ -16,7 +17,8 @@ local function best(snap, query)
     local refused = snap.record.memory.refused or {}
     for _, item in ipairs(snap.bag.items) do
         local better, value = gear.upgrade(query, item, current)
-        if better and (refused[item.name] or 0) < snap.self.level and (found == nil or value > found.value) then
+        local outfit        = outfits[item.name]
+        if better and (outfit == nil or outfit.gender == nil or outfit.gender == snap.self.gender) and (refused[item.name] or 0) < snap.self.level and (found == nil or value > found.value) then
             found = { slot = item.slot, name = item.name, type = item.type, value = value }
         end
     end

@@ -24,10 +24,47 @@ local function decision(snap, facts, state, name, task, revisit)
     local result = task.propose ~= nil and
         profile.measure(snap.self.name, "propose:" .. name, task.propose, snap, facts) or
         { kind = ACTION.TASK }
-    local cooldown = combat.casting(result) and combat.cooldown(snap) or 0
+    local cooldown = combat.casting(result) and combat.cooldown(snap) or
+        (combat.swinging(snap, result) and combat.backswing(snap)) or 0
     if cooldown > 0 then
         result  = { kind = ACTION.HOLD }
         revisit = math.min(revisit or cooldown, cooldown)
+    end
+    if data.journal then
+        local spell = nil
+        for _, learned in ipairs(snap.spells or {}) do
+            local slot = result.slot or (result.maneuver ~= nil and result.maneuver.slot) or nil
+            if slot ~= nil and learned.slot == slot then
+                spell = learned.name
+            end
+        end
+        local seen, close, far = 0, 0, 0
+        for _, mob in ipairs(snap.world.mobs or {}) do
+            if mob.x ~= nil then
+                seen = seen + 1
+                if math.abs(mob.x - snap.world.x) > data.sight.x or math.abs(mob.y - snap.world.y) > data.sight.y then
+                    far = far + 1
+                end
+                if math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
+                    close = close + 1
+                end
+            end
+        end
+        local partner = "-"
+        for _, member in ipairs(party.members(snap)) do
+            local ally = facts.ally(member.self.name)
+            partner = string.format("%s:%s:%s:%s", tostring(member.world.map),
+                member.world.x ~= nil and
+                math.abs(member.world.x - snap.world.x) + math.abs(member.world.y - snap.world.y) or "?",
+                ally ~= nil and tostring(ally.percent) or "unseen", tostring(member.self.hp))
+        end
+        log("debug",
+            string.format(
+                "[brain:act] bot=%s class=%s t=%s map=%s task=%s kind=%s key=%s item=%s spell=%s mob=%s hp=%s/%s mp=%s/%s exp=%s seen=%d close=%d far=%d lv=%s partner=%s",
+                snap.self.name or "", tostring(snap.self.class), tostring(snap.now), tostring(snap.world.map), name,
+                tostring(result.kind), tostring(result.key), tostring(result.item), tostring(spell), tostring(result.mob),
+                tostring(snap.self.hp), tostring(snap.self.max_hp), tostring(snap.self.mp), tostring(snap.self.max_mp),
+                tostring(snap.self.exp), seen, close, far, tostring(snap.self.level), partner))
     end
     result.state   = state
     result.task    = name
@@ -86,6 +123,11 @@ function M.choose(snap, facts, current, sink)
             passed = passed or name == current
         end
     end
+    if data.journal and numbers.DEFEND ~= nil and #party.members(snap) > 0 then
+        log("debug", string.format("[brain:values] class=%s t=%s hp=%s mp=%s AID=%s DEFEND=%s REST=%s ESCAPE=%s",
+            tostring(snap.self.class), tostring(snap.now), tostring(snap.self.hp), tostring(snap.self.mp),
+            tostring(numbers.AID), tostring(numbers.DEFEND), tostring(numbers.REST), tostring(numbers.ESCAPE)))
+    end
     local owner   = snap.self.name or ""
     local stalled = best == nil and current == nil and #blocked > 0
     if stalled and stalls[owner] == nil then
@@ -108,6 +150,14 @@ function M.choose(snap, facts, current, sink)
         trace.decide(sink.brain, sink.bot, snap, numbers, best.name, current)
     end
     return decision(snap, facts, best.state, best.name, best.task, revisit), revisit
+end
+
+function M.swung(snap, decision)
+    if decision == nil or combat.swinging(snap, decision) == false then
+        return nil
+    end
+    snap.record.memory.swung = snap.now
+    return snap.now
 end
 
 function M.fleeing(snap, decision)
@@ -228,6 +278,10 @@ function M.first(brain, bot, current)
     local fleeing = M.fleeing(snap, decision)
     if fleeing ~= nil then
         brain:remember(bot, "fleeing", fleeing)
+    end
+    local swung = M.swung(snap, decision)
+    if swung ~= nil then
+        brain:remember(bot, "swung", swung)
     end
     return decision, revisit
 end

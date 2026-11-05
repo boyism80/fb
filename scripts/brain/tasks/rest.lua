@@ -29,9 +29,9 @@ local function low(snap, query)
     local crew   = escort.present(snap, query)
     local hp     = snap.self.hp + (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
     return snap.self.hp < snap.self.max_hp and
-    ((snap.record.death == nil and snap.self.hp <= data.shrine.limit) or (threat > 0 and hp <= threat) or
-        hp <= battle.reachable(snap) or hp <= (plan ~= nil and plan.peak or 0) or
-        hp <= ground.need(snap, query) or hp <= battle.need(snap, query))
+        ((snap.record.death == nil and snap.self.hp <= data.shrine.limit) or (threat > 0 and hp <= threat) or
+            hp <= battle.reachable(snap) or hp <= (plan ~= nil and plan.peak or 0) or
+            hp <= ground.need(snap, query) or hp <= battle.need(snap, query))
 end
 
 local function dose(doses, deficit)
@@ -191,8 +191,10 @@ function M.value(snap, query)
     if M.thank(snap, query) == nil and mend(snap, query) == nil then
         gain = value.mana(snap, query) * math.max(0, recovery.ceiling(snap) - (snap.self.mp or 0))
     else
+        local plan    = party.plan(snap, query)
         local need    = math.max(danger.threat(snap, ahead(snap, query)), ground.need(snap, query),
-            battle.need(snap, query), snap.self.hp <= data.shrine.limit and data.shrine.limit + 1 or 1)
+            battle.need(snap, query), battle.reachable(snap), plan ~= nil and plan.peak or 0,
+            snap.self.hp <= data.shrine.limit and data.shrine.limit + 1 or 1)
         local deficit = math.max(0, math.min(need, snap.self.max_hp) - snap.self.hp)
         local heal    = recovery.heal(snap)
         local doses   = recovery.doses(snap, "hp")

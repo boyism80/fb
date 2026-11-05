@@ -731,8 +731,8 @@ std::optional<atlas::leap> atlas::shortcut(uint16_t                            f
             if (teleport.to.empty())
                 continue;
 
-            auto sum = uint64_t{0};
-            auto all = true;
+            auto worst = uint32_t{0};
+            auto all   = true;
             for (auto dest : teleport.to)
             {
                 auto after = total(dest, atlas::landing(dest));
@@ -741,10 +741,10 @@ std::optional<atlas::leap> atlas::shortcut(uint16_t                            f
                     all = false;
                     break;
                 }
-                sum += after.value();
+                worst = std::max(worst, after.value());
             }
             if (all)
-                offer(index, CARDINAL::EAST, teleport.to.front(), static_cast<uint32_t>(sum / teleport.to.size()));
+                offer(index, CARDINAL::EAST, teleport.to.front(), worst);
         }
     }
     return best;

@@ -41,6 +41,32 @@ local function price(member, mana, worth)
     return regen > 0 and worth.value / regen or math.huge
 end
 
+local function pressure(snap, member, window)
+    local total = 0
+    if member.world.map ~= snap.world.map or member.world.x == nil then
+        return total
+    end
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil and combat.hits(mob) and (mob.speed or 0) > 0 and
+            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
+            local _, high = combat.spread(member, mob)
+            total = total + high * window / mob.speed
+        end
+    end
+    return total
+end
+
+local function rescue(snap, query, member, current, restored, heal, worth)
+    if heal.hp <= 0 then
+        return 0
+    end
+    local missing = (member.self.max_hp or 0) - current
+    local blows   = pressure(snap, member, missing / heal.hp * combat.cast(snap))
+    local before  = math.min(1, blows / math.max(current, 1))
+    local after   = math.min(1, blows / math.max(current + restored, 1))
+    return (before - after) * danger.loss(member, query, worth)
+end
+
 local function heals(snap, query, slots, worth)
     local found   = {}
     local loss    = danger.loss(snap, query, worth)
@@ -61,14 +87,16 @@ local function heals(snap, query, slots, worth)
                     local wasted   = math.min(heal.hp, member.self.max_hp or 0) - restored
                     local shared   = member.battle
                     local engaged  = type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] ~= nil
-                    local saved    = engaged and (restored - wasted) / math.max(member.self.max_hp, 1) * loss or
+                    local hunt     = party.plan(snap, query)
+                    local fuel     = hunt ~= nil and (hunt.pain or 0) > 0 and hunt.rate / hunt.pain or 0
+                    local saved    = engaged and (restored - wasted) * ((loss / math.max(member.self.max_hp, 1)) + fuel) or
                         (restored - wasted) * price(member, mana, worth)
                     table.insert(found, {
                         oid = ally.oid,
                         slot = slots[heal.name],
                         key = heal.name,
                         cost = heal.mp,
-                        value = saved - heal.mp * mana,
+                        value = saved + rescue(snap, query, member, current, restored, heal, worth) - heal.mp * mana,
                     })
                 end
             end

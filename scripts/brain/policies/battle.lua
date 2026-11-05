@@ -338,7 +338,7 @@ local function candidates(snap, facts, mob, state, reachable)
         add({
             key = "SWING",
             kind = "SWING",
-            time = swing,
+            time = swing + (adjacent and combat.backswing(snap) or 0),
             damage = strike * cloak,
             extra = splashed(snap, mob, strike),
             approach = true,
@@ -468,7 +468,7 @@ local function lasting(snap, name, at)
     end
     local spell = magic.spells[name]
     return spell == nil or (spell.paralysis ~= true and spell.blind ~= true) or snap.self.struck == nil or
-    snap.self.struck > snap.now - at
+        snap.self.struck > snap.now - at
 end
 
 local function remembered(snap, mob)
@@ -543,8 +543,10 @@ function M.choose(snap, facts, mob, reachable)
         local key  = kindred(snap, mob, flag)
         local same = key ~= nil and bysnap[key] or nil
         if same == nil then
-            same = { choice = evaluate(snap, facts, mob, reachable) or false,
-                ending = endings[snap] ~= nil and endings[snap][mob.oid or mob.name] or nil }
+            same = {
+                choice = evaluate(snap, facts, mob, reachable) or false,
+                ending = endings[snap] ~= nil and endings[snap][mob.oid or mob.name] or nil
+            }
             if key ~= nil then
                 bysnap[key] = same
             end

@@ -211,10 +211,13 @@ function M.propose(snap, query)
     local mob, _, cause = threat(snap, query)
     if data.journal then
         local crew = escort.present(snap, query)
-        log("debug", string.format("[brain:escape] bot=%s map=%s hp=%s/%s mp=%s cause=%s mob=%s dmg=%s adjacent=%.0f crew=%d party=%d",
-            snap.self.name or "", tostring(snap.world.map), tostring(snap.self.hp), tostring(snap.self.max_hp),
-            tostring(snap.self.mp), tostring(cause), tostring(mob ~= nil and mob.name), tostring(mob ~= nil and mob.damage),
-            battle.burst(snap), crew ~= nil and #crew.members or 0, #(snap.party or {})))
+        log("debug",
+            string.format(
+                "[brain:escape] bot=%s map=%s hp=%s/%s mp=%s cause=%s mob=%s dmg=%s adjacent=%.0f crew=%d party=%d",
+                snap.self.name or "", tostring(snap.world.map), tostring(snap.self.hp), tostring(snap.self.max_hp),
+                tostring(snap.self.mp), tostring(cause), tostring(mob ~= nil and mob.name),
+                tostring(mob ~= nil and mob.damage),
+                battle.burst(snap), crew ~= nil and #crew.members or 0, #(snap.party or {})))
     end
     local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and rally(snap, query, mob) or nil
     return {
@@ -227,7 +230,7 @@ function M.propose(snap, query)
         } or nil,
         proven = meet == nil and cause == "FATAL" and
             danger.winnable(score.rested(snap), query, mob) == false,
-        dest = meet or regroup(snap, query) or { maps = teleport.returns[snap.self.nation] },
+        dest = meet or regroup(snap, query) or { maps = teleport.returns[snap.self.nation], urgent = true },
         forget = snap.record.death ~= nil
     }
 end

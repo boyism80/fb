@@ -8,6 +8,8 @@ local value    = require("brain.policies.value")
 
 local M = {}
 
+local journaled = {}
+
 local function position(snap, floors)
     for index, floor in ipairs(floors) do
         if floor.map == snap.world.map then
@@ -91,12 +93,41 @@ function M.wanted(snap, query)
     end
     local plan = party.plan(snap, query)
     local crew = escort.present(snap, query)
-    if data.journal and plan ~= nil and snap.record.memory.traced ~= plan.name then
-        snap.record.memory.traced = plan.name
-        log("debug", string.format("[brain:plan] bot=%s map=%s plan=%s rate=%.0f party=%d", snap.self.name or "",
-            tostring(snap.world.map), plan.name, plan.rate, #(snap.party or {})))
+    if data.journal and plan ~= nil and journaled[snap.self.name or ""] ~= plan.name then
+        journaled[snap.self.name or ""] = plan.name
+        local others = {}
+        for _, member in ipairs(party.members(snap)) do
+            table.insert(others, string.format("%s:%s/%s:%s:%s", member.self.level, member.self.hp, member.self.mp,
+                tostring(member.world.map), table.concat(member.buffs or {}, "+")))
+        end
+        log("debug",
+            string.format("[brain:plan] bot=%s lv=%s map=%s plan=%s rate=%.0f hp=%s mp=%s commit=%s buffs=%s others=%s",
+                snap.self.name or "", tostring(snap.self.level), tostring(snap.world.map), plan.name, plan.rate,
+                tostring(snap.self.hp), tostring(snap.self.mp), tostring(snap.record.memory.commit),
+                table.concat(snap.buffs or {}, "+"), table.concat(others, ";")))
+        local worn = {}
+        for _, slot in ipairs(snap.gear or {}) do
+            table.insert(worn, slot.names[1])
+        end
+        local held = {}
+        for _, item in ipairs(snap.bag.items or {}) do
+            table.insert(held, item.name .. "x" .. item.count)
+        end
+        local learned = 0
+        for _ in ipairs(snap.spells or {}) do
+            learned = learned + 1
+        end
+        log("debug",
+            string.format(
+                "[brain:plan] detail max=%s/%s str=%s dex=%s int=%s hit=%s dam=%s def=%s money=%s spells=%d step=%s swing=%s demand=%s gear=%s bag=%s",
+                tostring(snap.self.max_hp), tostring(snap.self.max_mp), tostring(snap.self.str), tostring(snap.self.dex),
+                tostring(snap.self.int),
+                tostring(snap.self.hit), tostring(snap.self.dam), tostring(snap.self.phydef), tostring(snap.self.money),
+                learned,
+                tostring(snap.pace.step), tostring(snap.pace.swing), tostring(query.demand(plan.floors[1].map)),
+                table.concat(worn, ","), table.concat(held, ",")))
     end
-    local hp   = snap.self.hp + (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
+    local hp = snap.self.hp + (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
     return snap.self.hp >= snap.self.max_hp or hp > (plan ~= nil and plan.peak or 0)
 end
 
@@ -169,7 +200,8 @@ local function gather(snap, query, best, index)
         for _, floor in ipairs(best.floors) do
             onplan = onplan or floor.map == lead.world.map
         end
-        return { kind = ACTION.MOVE, dest = { maps = { onplan and lead.world.map or gate } } }
+        local meet = onplan and lead.world.map or gate
+        return { kind = ACTION.MOVE, dest = { maps = { meet ~= snap.world.map and meet or lead.world.map } } }
     end
     local arrived = lead.heading == nil
     for _, map in ipairs(lead.heading or {}) do

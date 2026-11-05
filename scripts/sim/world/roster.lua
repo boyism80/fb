@@ -84,6 +84,23 @@ return {
                 },
             },
             {
+                name = "profile 50+65 form",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "ROGUE", profile = "rogue50" },
+                    { class = "POET", profile = "poet65" },
+                },
+            },
+            {
+                name = "profile mage60",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "MAGE", profile = "mage60" },
+                },
+            },
+            {
                 name = "profile 63+65 west",
                 ground = { bundle = "서쪽해안가" },
                 members = {
@@ -93,7 +110,8 @@ return {
             },
             {
                 name = "profile 63+65 form",
-                ground = { form = true },
+                drops = true,
+                ground = { form = true, map = 22 },
                 members = {
                     { class = "WARRIOR", profile = "warrior63" },
                     { class = "POET", profile = "poet65" },
