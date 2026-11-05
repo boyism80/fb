@@ -907,6 +907,26 @@ local function gather(ctx, count, arrivals)
     return plan
 end
 
+function M.swarm(ctx, names, count, watch)
+    local minds = {}
+    for slot = 0, count - 1 do
+        if stage(ctx, slot) == nil then
+            return false
+        end
+        dress(ctx, slot, profiled(names[slot % #names + 1]))
+    end
+    for slot = 0, count - 1 do
+        minds[slot] = brain.new()
+        ctx:bot(slot):brain(minds[slot], { seed = slot + 1, persona = { hunt = 1 } })
+    end
+    ctx:sleep(watch)
+    for slot = 0, count - 1 do
+        expect.release(ctx, slot, minds[slot], TIMEOUT)
+    end
+    log("debug", string.format("[brain:swarm] SUCCESS bots=%d watched=%ds", count, watch // 1000))
+    return true
+end
+
 function M.group(ctx, names, arrivals, watch)
     local minds = {}
     for index, name in ipairs(names) do
