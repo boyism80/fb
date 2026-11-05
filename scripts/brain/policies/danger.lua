@@ -90,18 +90,23 @@ function M.winnable(snap, query, mob, crew)
     local helpers       = team(snap, query, crew)
     local key           = helpers ~= nil and helpers.key or ""
     verdicts[snap]      = verdicts[snap] or {}
-    verdicts[snap][key] = verdicts[snap][key] or setmetatable({}, { __mode = "k" })
+    verdicts[snap][key] = verdicts[snap][key] or {}
     local cached        = verdicts[snap][key]
-    if cached[mob] == nil then
+    local slot          = mob
+    if mob.id ~= nil and mob.x ~= nil then
+        slot = table.concat({ mob.id, mob.ratio or 1,
+            math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) }, "|")
+    end
+    if cached[slot] == nil then
         local context = escort.context(snap, query, mob, helpers, nil, recovery.rates(snap).hp)
         local result  = survival.fight(snap, query, mob, context)
         if mob.oid ~= nil then
             context.crowd = survival.contact(snap, mob, result.time)
             result        = survival.fight(snap, query, mob, context)
         end
-        cached[mob] = result.ending > 0
+        cached[slot] = result.ending > 0
     end
-    return cached[mob]
+    return cached[slot]
 end
 
 function M.penalty(snap)
@@ -134,7 +139,7 @@ function M.perilous(snap, query, crew)
     end
     local helpers = team(snap, query, crew)
     local key     = score.signature(snap) .. (helpers ~= nil and helpers.key or "")
-    return memo.get(perils, (snap.self.name or "") .. (snap.hypothesis or ""), score.signature(snap, ""), key, function()
+    return memo.get(perils, (snap.self.class or "") .. (snap.self.level or 0) .. (snap.hypothesis or ""), score.signature(snap, ""), key, function()
         local found  = {}
         local rested = score.rested(snap)
         for id, mob in pairs(hunting.mobs) do
@@ -219,7 +224,17 @@ function M.threat(snap, maps)
     return threat
 end
 
+local fatals = setmetatable({}, { __mode = "k" })
+
 function M.fatal(snap, query)
+    if fatals[snap] ~= nil then
+        return fatals[snap] or nil
+    end
+    fatals[snap] = M.lethal_mob(snap, query) or false
+    return fatals[snap] or nil
+end
+
+function M.lethal_mob(snap, query)
     local crew = escort.gathering(snap, query) or false
     for _, mob in ipairs(snap.world.mobs) do
         local near = mob.x ~= nil and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) <= 1

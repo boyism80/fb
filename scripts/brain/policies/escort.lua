@@ -133,7 +133,12 @@ local function nearby(snap, query, member)
     return gaps[key] <= 2 * combat.sight.x
 end
 
+local gathered = setmetatable({}, { __mode = "k" })
+
 function M.gathering(snap, query)
+    if gathered[snap] ~= nil then
+        return gathered[snap] or nil
+    end
     local found = {}
     for _, profile in ipairs(snap.party or {}) do
         local member = M.member(profile)
@@ -141,7 +146,8 @@ function M.gathering(snap, query)
             table.insert(found, member)
         end
     end
-    return #found > 0 and M.crew(found, query) or nil
+    gathered[snap] = #found > 0 and M.crew(found, query) or false
+    return gathered[snap] or nil
 end
 
 local function arrange(snap, query, mob, crew, density, own, share)

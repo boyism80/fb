@@ -299,7 +299,7 @@ local reaches = {}
 local sweeps  = {}
 
 local function slot(snap, crew)
-    return (snap.self.name or "") .. (snap.hypothesis or "") .. (crew ~= nil and crew.key or "")
+    return (snap.self.class or "") .. (snap.self.level or 0) .. (snap.hypothesis or "") .. (crew ~= nil and crew.key or "")
 end
 
 local function reach(snap, query, crew)

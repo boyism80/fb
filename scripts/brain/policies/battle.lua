@@ -87,7 +87,13 @@ local function splashed(snap, mob, damage)
     return found
 end
 
+local bursts = setmetatable({}, { __mode = "k" })
+
 function M.burst(snap)
+    local known = bursts[snap]
+    if known ~= nil then
+        return known
+    end
     local attackers = {}
     for _, other in ipairs(snap.world.mobs or {}) do
         if other.x ~= nil and combat.hits(other) and
@@ -95,16 +101,24 @@ function M.burst(snap)
             table.insert(attackers, { mob = other, count = 1 })
         end
     end
-    return #attackers > 0 and combat.spike(snap, attackers) or 0
+    known = #attackers > 0 and combat.spike(snap, attackers) or 0
+    bursts[snap] = known
+    return known
 end
 
+local reaches = setmetatable({}, { __mode = "k" })
+
 function M.reachable(snap)
+    if reaches[snap] ~= nil then
+        return reaches[snap]
+    end
     local worst = 0
     for _, other in ipairs(snap.world.mobs or {}) do
         if combat.hits(other) then
             worst = math.max(worst, combat.spike(snap, { { mob = other, count = 1 } }))
         end
     end
+    reaches[snap] = worst
     return worst
 end
 
@@ -491,10 +505,32 @@ local SAMPLE   = 5
 
 local chosen = setmetatable({}, { __mode = "k" })
 
+local function kindred(snap, mob, flag)
+    if mob.x == nil or mob.id == nil then
+        return nil
+    end
+    local distance = math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y)
+    local memory   = snap.record.memory.battle
+    if distance <= 1 or (memory ~= nil and memory.oid == mob.oid) then
+        return nil
+    end
+    for _, profile in ipairs(snap.party or {}) do
+        if type(profile.battle) == "table" and profile.battle.oid == mob.oid then
+            return nil
+        end
+    end
+    for _, name in ipairs(snap.buffs or {}) do
+        if (magic.splashes or {})[name] ~= nil then
+            return nil
+        end
+    end
+    return table.concat({ mob.id, mob.ratio or 1, distance, tostring(flag) }, "|")
+end
+
 function M.choose(snap, facts, mob, reachable)
     local bysnap = chosen[snap]
     if bysnap == nil then
-        bysnap = setmetatable({}, { __mode = "k" })
+        bysnap = {}
         chosen[snap] = bysnap
     end
     local byreach = bysnap[mob]
@@ -504,7 +540,19 @@ function M.choose(snap, facts, mob, reachable)
     end
     local flag = reachable == nil and "any" or reachable
     if byreach[flag] == nil then
-        byreach[flag] = evaluate(snap, facts, mob, reachable) or false
+        local key  = kindred(snap, mob, flag)
+        local same = key ~= nil and bysnap[key] or nil
+        if same == nil then
+            same = { choice = evaluate(snap, facts, mob, reachable) or false,
+                ending = endings[snap] ~= nil and endings[snap][mob.oid or mob.name] or nil }
+            if key ~= nil then
+                bysnap[key] = same
+            end
+        else
+            endings[snap] = endings[snap] or {}
+            endings[snap][mob.oid or mob.name] = same.ending
+        end
+        byreach[flag] = same.choice
     end
     return byreach[flag] or nil
 end

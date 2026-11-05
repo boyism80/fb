@@ -15,13 +15,19 @@ local score    = require("brain.policies.score")
 
 local M = {}
 
+local sighted = setmetatable({}, { __mode = "k" })
+
 local function visible(snap, query)
+    if sighted[snap] ~= nil then
+        return sighted[snap]
+    end
     local found = {}
     for _, mob in ipairs(snap.world.mobs) do
         if mob.attack == "AGGRESSIVE" and mob.x ~= nil and danger.winnable(snap, query, mob) == false then
             table.insert(found, mob)
         end
     end
+    sighted[snap] = found
     return found
 end
 
