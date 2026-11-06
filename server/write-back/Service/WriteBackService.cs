@@ -140,19 +140,18 @@ namespace WriteBack.Service
                 _logger.LogWarning(ex, "Error closing RabbitMQ connection");
             }
 
-            _logger.LogInformation("All write-back workers stopped for world {World}, all messages processed", _world);
+            _logger.LogInformation("All write-back workers stopped for world {World}; unprocessed messages stay in the queue", _world);
         }
 
         private async Task OnWorkAsync(int db, CancellationToken stoppingToken)
         {
             var queueName = Http.Service.WriteBackService.GetWriteBackQueueName(_world, db);
             var shardSize = _redisService.GetShardSize(_world);
-            var continuous = true;
             IChannel channel = null;
 
             try
             {
-                while (continuous || !stoppingToken.IsCancellationRequested)
+                while (!stoppingToken.IsCancellationRequested)
                 {
                     // The broker closes a channel that holds unacked deliveries past consumer_timeout, and a channel
                     // closed by the broker is not recovered by the client.
@@ -219,8 +218,6 @@ namespace WriteBack.Service
                                 await channel.BasicAckAsync(result.DeliveryTag, false, stoppingToken);
                             }
                         }
-
-                        continuous = entryList.Count == BulkSize;
 
                         if (entryList.Count == 0)
                         {
@@ -347,6 +344,11 @@ namespace WriteBack.Service
             // skipping ahead or requeueing would let an older row land after a newer one.
             // Once the channel is closed the broker has requeued every unacked delivery of the batch, so running,
             // recording or releasing this entry here would repeat it when the delivery comes back.
+            if (stoppingToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
             var retryDelay = TimeSpan.FromSeconds(1);
             Exception failure = null;
             while (true)
@@ -393,7 +395,7 @@ namespace WriteBack.Service
                 _logger.LogError(failure, "Write-back entry failed for world {World} db {Db}", _world, db);
                 try
                 {
-                    await WriteBackFailureRecorder.RecordAsync(logConn, _world, db, entry, failure, stoppingToken);
+                    await WriteBackFailureRecorder.RecordAsync(logConn, _world, db, entry, failure, CancellationToken.None);
                 }
                 catch (Exception logEx)
                 {
@@ -433,7 +435,7 @@ namespace WriteBack.Service
 
             try
             {
-                await channel.BasicAckAsync(deliveryTag, false, stoppingToken);
+                await channel.BasicAckAsync(deliveryTag, false, CancellationToken.None);
             }
             catch (Exception ex)
             {
