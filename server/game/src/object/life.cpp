@@ -465,8 +465,8 @@ bool life::calculate_miss(life& you) const
 uint64_t life::calculate_damage(uint64_t value, const life& target, bool critical, float rate, bool physical) const
 {
     this->assert_thread();
-    auto def               = physical ? target.stat.phydef() : target.stat.magdef();
-    auto n                 = (100 - def) / 10;
+    auto def = physical ? static_cast<int>(target.stat.phydef()) : -static_cast<int>(target.stat.magdef());
+    auto n   = (100 - def) / 10;
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
     auto damage            = value - static_cast<uint64_t>(defensive_percent * (value / 100.0f));
 
