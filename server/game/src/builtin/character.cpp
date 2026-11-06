@@ -43,6 +43,47 @@ namespace internal_reqs = fb::protocol::internal::request;
 namespace internal_resp = fb::protocol::internal::response;
 using table             = fb::model::table;
 
+namespace {
+
+std::optional<uint64_t> storage_box_amount(lua_State* L, int index, const char* key, bool& invalid)
+{
+    lua_pushstring(L, key);
+    lua_rawget(L, index);
+    auto amount = std::optional<uint64_t>{};
+    if (lua_isnil(L, -1) == false)
+    {
+        auto value = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 0;
+        if (value > 0)
+            amount = static_cast<uint64_t>(value);
+        else
+            invalid = true;
+    }
+    lua_pop(L, 1);
+    return amount;
+}
+
+int storage_box_rejected(lua_State* L)
+{
+    lua_pushboolean(L, false);
+    lua_pushnil(L);
+    lua_pushstring(L, "invalid");
+    return 3;
+}
+
+void push_storage_box_result(lua_State*                             L,
+                             service::system_storage::create_result result,
+                             const std::string&                     external_ref)
+{
+    lua_pushboolean(L, result == service::system_storage::create_result::created);
+    lua_pushstring(L, external_ref.c_str());
+    if (result == service::system_storage::create_result::not_found)
+        lua_pushstring(L, "not_found");
+    else
+        lua_pushnil(L);
+}
+
+} // namespace
+
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"__eq",                         builtin::object::builtin_eq},
@@ -6951,24 +6992,15 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
 
     auto user_name = lua->tostring(2);
     if (user_name.empty())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+        return storage_box_rejected(*lua);
 
     auto title = lua->tostring(3);
     if (title.empty())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+        return storage_box_rejected(*lua);
 
     auto message = lua->tostring(4);
     if (message.empty())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+        return storage_box_rejected(*lua);
 
     auto attachments  = std::vector<fb::model::dsl>{};
     auto unknown_item = false;
@@ -7036,32 +7068,15 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
             unknown_item = true;
         }
 
-        lua->pushstring("money");
-        lua->rawget(5);
-        if (lua->is_number(-1))
-        {
-            auto money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
-            if (money > 0)
-                attachments.push_back(fb::model::dsl::money(money).to_dsl());
-        }
-        lua->pop(1);
+        if (auto money = storage_box_amount(*lua, 5, "money", unknown_item))
+            attachments.push_back(fb::model::dsl::money(*money).to_dsl());
 
-        lua->pushstring("exp");
-        lua->rawget(5);
-        if (lua->is_number(-1))
-        {
-            auto exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
-            if (exp > 0)
-                attachments.push_back(fb::model::dsl::exp(exp).to_dsl());
-        }
-        lua->pop(1);
+        if (auto exp = storage_box_amount(*lua, 5, "exp", unknown_item))
+            attachments.push_back(fb::model::dsl::exp(*exp).to_dsl());
     }
 
     if (unknown_item || attachments.empty())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+        return storage_box_rejected(*lua);
 
     auto expire_date = std::optional<std::string>{std::nullopt};
     if (argc >= 6 && lua->is_nil(6) == false && lua->is_string(6))
@@ -7075,8 +7090,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
             }
             catch (const std::exception&)
             {
-                lua->pushboolean(false);
-                return 1;
+                return storage_box_rejected(*lua);
             }
         }
     }
@@ -7090,8 +7104,9 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
             external_ref = value;
     }
 
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto success  = std::make_shared<bool>(false);
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+    auto result =
+        std::make_shared<service::system_storage::create_result>(service::system_storage::create_result::unknown);
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=, &server]() -> async::task<void> {
@@ -7109,18 +7124,17 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
             if (expire_date.has_value())
                 box.expire_date = fb::model::datetime(expire_date.value());
             ptr->storage_box.add({box});
-            *success = true;
+            *result = service::system_storage::create_result::created;
         }
         else
         {
-            *success = co_await server.system_storage
-                           .create(ptr->world(), user_name, external_ref, title, message, attachments, expire_date);
+            *result = co_await server.system_storage
+                          .create(ptr->world(), user_name, external_ref, title, message, attachments, expire_date);
         }
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*success);
-        lua->pushstring(external_ref);
-        co_return 2;
+        push_storage_box_result(*lua, *result, external_ref);
+        co_return 3;
     };
     return builder.run();
 }
@@ -7138,17 +7152,11 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
 
     auto title = lua->tostring(2);
     if (title.empty())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+        return storage_box_rejected(*lua);
 
     auto message = lua->tostring(3);
     if (message.empty())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+        return storage_box_rejected(*lua);
 
     auto attachments  = std::vector<fb::model::dsl>{};
     auto unknown_item = false;
@@ -7216,32 +7224,15 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
             unknown_item = true;
         }
 
-        lua->pushstring("money");
-        lua->rawget(4);
-        if (lua->is_number(-1))
-        {
-            auto money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
-            if (money > 0)
-                attachments.push_back(fb::model::dsl::money(money).to_dsl());
-        }
-        lua->pop(1);
+        if (auto money = storage_box_amount(*lua, 4, "money", unknown_item))
+            attachments.push_back(fb::model::dsl::money(*money).to_dsl());
 
-        lua->pushstring("exp");
-        lua->rawget(4);
-        if (lua->is_number(-1))
-        {
-            auto exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
-            if (exp > 0)
-                attachments.push_back(fb::model::dsl::exp(exp).to_dsl());
-        }
-        lua->pop(1);
+        if (auto exp = storage_box_amount(*lua, 4, "exp", unknown_item))
+            attachments.push_back(fb::model::dsl::exp(*exp).to_dsl());
     }
 
     if (unknown_item || attachments.empty())
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+        return storage_box_rejected(*lua);
 
     auto expire_date = std::optional<std::string>{std::nullopt};
     if (argc >= 5 && lua->is_nil(5) == false && lua->is_string(5))
@@ -7255,8 +7246,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
             }
             catch (const std::exception&)
             {
-                lua->pushboolean(false);
-                return 1;
+                return storage_box_rejected(*lua);
             }
         }
     }
@@ -7270,17 +7260,17 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
             external_ref = value;
     }
 
-    auto world    = ch->world();
-    auto success  = std::make_shared<bool>(false);
+    auto world = ch->world();
+    auto result =
+        std::make_shared<service::system_storage::create_result>(service::system_storage::create_result::unknown);
     auto builder  = lua->new_co_builder();
     builder.yield = [=, &server]() -> async::task<void> {
-        *success =
+        *result =
             co_await server.system_storage.create(world, "", external_ref, title, message, attachments, expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*success);
-        lua->pushstring(external_ref);
-        co_return 2;
+        push_storage_box_result(*lua, *result, external_ref);
+        co_return 3;
     };
     return builder.run();
 }

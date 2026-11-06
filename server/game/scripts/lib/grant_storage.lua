@@ -6,11 +6,20 @@ local function parse_positive_number(raw)
     if raw == nil or raw == '' then
         return nil
     end
-    local n = tonumber(raw)
-    if n == nil or n <= 0 or n ~= math.floor(n) then
+    local n = math.tointeger(tonumber(raw))
+    if n == nil or n <= 0 then
         return nil
     end
     return n
+end
+
+local function add_amount(me, npc, attachments, key, count, label)
+    if count > math.maxinteger - attachments[key] then
+        me:dialog(npc, string.format('%s 최대 %d까지 보낼 수 있습니다.', name_with(label, '은', '는'), math.maxinteger),
+            { prev = false, next = true })
+        return
+    end
+    attachments[key] = attachments[key] + count
 end
 
 function M.handle(me, npc)
@@ -118,7 +127,7 @@ function M.handle(me, npc)
             me:dialog(npc, '잘못된 경험치입니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
-        attachments['exp'] = attachments['exp'] + count
+        add_amount(me, npc, attachments, 'exp', count, '경험치')
         goto REWARD_MENU
     elseif reward_sel == 3 then
         local count_raw = me:input(npc, '금전을 입력하세요.')
@@ -127,7 +136,7 @@ function M.handle(me, npc)
             me:dialog(npc, '잘못된 금전입니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
-        attachments['money'] = attachments['money'] + count
+        add_amount(me, npc, attachments, 'money', count, '금전')
         goto REWARD_MENU
     elseif reward_sel ~= 4 then
         return true
@@ -156,15 +165,22 @@ function M.handle(me, npc)
 
     local ok = false
     local external_ref = nil
+    local reason = nil
     ::SEND::
+    local ref = nil
     if is_global then
-        ok, external_ref = me:send_system_storage_box(title, message, payload, nil, external_ref)
+        ok, ref, reason = me:send_system_storage_box(title, message, payload, nil, external_ref)
     else
-        ok, external_ref = me:send_storage_box(user_name, title, message, payload, nil, external_ref)
+        ok, ref, reason = me:send_storage_box(user_name, title, message, payload, nil, external_ref)
     end
+    external_ref = ref or external_ref
 
     if ok then
         me:dialog(npc, '지급이 완료되었습니다.', { prev = false, next = true })
+    elseif reason == 'not_found' then
+        me:dialog(npc, string.format('%s 캐릭터가 없어 지급하지 못했습니다.', user_name or ''), { prev = false, next = true })
+    elseif reason == 'invalid' then
+        me:dialog(npc, '보상 구성이 잘못되어 지급하지 못했습니다.', { prev = false, next = true })
     else
         local retry_sel, retry_btn = me:pursuit(npc, '지급 결과를 확인하지 못했습니다. 같은 지급을 다시 보낼까요?', { '예', '아니오' })
         if retry_btn ~= DIALOG_RESULT.QUIT and retry_sel == 1 then

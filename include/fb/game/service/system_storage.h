@@ -28,6 +28,14 @@ namespace fb::game::service {
 
 class system_storage
 {
+public:
+    enum class create_result
+    {
+        created,
+        not_found,
+        unknown,
+    };
+
 private:
     static system_storage_box from_system_storage_dto(const fb::protocol::internal::SystemStorageBox& dto);
     static storage_box::entry from_storage_box_dto(const fb::protocol::internal::StorageBox& dto);
@@ -50,7 +58,7 @@ public:
 
 public:
     // clang-format off
-    async::task<bool> create(uint32_t world, std::string_view user_name, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
+    async::task<create_result> create(uint32_t world, std::string_view user_name, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
     async::task<void> sync(character& ch);
     async::task<void> distribute();
     void              join(uint32_t user);

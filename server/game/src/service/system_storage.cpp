@@ -177,13 +177,14 @@ async::task<void> service::system_storage::sync(character& ch)
     co_return;
 }
 
-async::task<bool> service::system_storage::create(uint32_t                           world,
-                                                  std::string_view                   user_name,
-                                                  std::string_view                   external_ref,
-                                                  std::string_view                   title,
-                                                  std::string_view                   message,
-                                                  const std::vector<fb::model::dsl>& attachments,
-                                                  const std::optional<std::string>&  expire_date)
+async::task<service::system_storage::create_result>
+service::system_storage::create(uint32_t                           world,
+                                std::string_view                   user_name,
+                                std::string_view                   external_ref,
+                                std::string_view                   title,
+                                std::string_view                   message,
+                                const std::vector<fb::model::dsl>& attachments,
+                                const std::optional<std::string>&  expire_date)
 {
     const auto name    = user_name.empty() ? std::nullopt : std::make_optional(std::string(user_name));
     const auto request = internal_reqs::WriteSystemStorageBox{world,
@@ -198,15 +199,17 @@ async::task<bool> service::system_storage::create(uint32_t                      
     {
         auto&& resp = co_await this->server.http.post("internal", "/storage/system", request);
         if (resp.error == 0)
-            co_return true;
+            co_return create_result::created;
 
         fb::logger::warn("WriteSystemStorageBox failed for {} ({}): error {}", user_name, external_ref, resp.error);
+        if (static_cast<ERROR_CODE>(resp.error) == ERROR_CODE::NOT_FOUND_CHARACTER)
+            co_return create_result::not_found;
     }
     catch (const std::exception& e)
     {
         fb::logger::warn("WriteSystemStorageBox request failed for {} ({}): {}", user_name, external_ref, e.what());
     }
-    co_return false;
+    co_return create_result::unknown;
 }
 
 async::task<void> service::system_storage::distribute()
