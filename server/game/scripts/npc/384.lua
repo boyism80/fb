@@ -2,6 +2,15 @@
 local BAEKYEOL_PRICE = 100000
 local SEONPUNG_PRICE = 200000
 
+local function has_spell(me, spell_name)
+    for _, spell in pairs(me:spells() or {}) do
+        if spell:model():name() == spell_name then
+            return true
+        end
+    end
+    return false
+end
+
 return {
     on_click = function(me, npc)
         ::NPC_384_0001::
@@ -61,6 +70,10 @@ return {
                 goto NPC_384_0006
             end
             if sel2 == 1 then
+                if has_spell(me, "백열장") == false then
+                    me:dialog(npc, "자네는 백열장을 배운 적이 없지 않은가?", { prev = false, next = false })
+                    return
+                end
                 if me:money() < BAEKYEOL_PRICE then
                     me:dialog(npc, "뭔가? 자네는 시주할 금액이 없는 것 같은데?", { prev = false, next = false })
                     return
@@ -92,6 +105,10 @@ return {
                 goto NPC_384_0008
             end
             if sel2 == 1 then
+                if has_spell(me, "선풍각") == false then
+                    me:dialog(npc, "자네는 선풍각을 배운 적이 없지 않은가?", { prev = false, next = false })
+                    return
+                end
                 if me:money() < SEONPUNG_PRICE then
                     me:dialog(npc, "뭔가? 자네는 시주할 금액이 없는 것 같은데?", { prev = false, next = false })
                     return
