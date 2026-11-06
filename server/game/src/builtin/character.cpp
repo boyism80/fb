@@ -594,7 +594,15 @@ int builtin::character::builtin_money(lua_State* L)
     }
     else
     {
-        auto value    = lua->touint64(2);
+        auto isnum = 0;
+        auto raw   = lua_tointegerx(*lua, 2, &isnum);
+        if (isnum == 0 || raw < 0)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
+        auto value    = static_cast<uint64_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -602,8 +610,9 @@ int builtin::character::builtin_money(lua_State* L)
             ch->money(value);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }

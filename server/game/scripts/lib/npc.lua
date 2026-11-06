@@ -1378,15 +1378,14 @@ function M.basic_class(me, npc, class, spells)
                 goto NPC_BASIC_CLASS_000
             end
 
+            if me:dialog(npc, '그럼, 너의 소원을 들어주겠노라', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+                return
+            end
             if me:money() < 5000 then
                 if me:dialog(npc, '예끼 이놈! 감히 돈도 없으면서 날 찾아와?', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
                 goto NPC_BASIC_CLASS_000
-            end
-
-            if me:dialog(npc, '그럼, 너의 소원을 들어주겠노라', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
-                return
             end
             me:money(me:money() - 5000)
             me:title(title)
