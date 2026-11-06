@@ -4,12 +4,11 @@ namespace Fb.Model
 {
     public static class AbilityStackedExp
     {
-        private static readonly Dictionary<Class, Dictionary<byte, ulong>> Cache = new();
+        private static volatile IReadOnlyDictionary<Class, Dictionary<byte, ulong>> Cache = new Dictionary<Class, Dictionary<byte, ulong>>();
 
         public static void BuildCache()
         {
-            Cache.Clear();
-
+            var next = new Dictionary<Class, Dictionary<byte, ulong>>();
             var intra = new Dictionary<Class, Dictionary<byte, ulong>>();
 
             foreach (var (cls, levels) in Table.Ability)
@@ -30,7 +29,7 @@ namespace Fb.Model
             {
                 if (cls == Class.None)
                 {
-                    Cache[cls] = classIntra;
+                    next[cls] = classIntra;
                     continue;
                 }
 
@@ -45,10 +44,12 @@ namespace Fb.Model
                     }
                 }
 
-                Cache[cls] = classIntra.ToDictionary(
+                next[cls] = classIntra.ToDictionary(
                     kvp => kvp.Key,
                     kvp => noneBase + kvp.Value);
             }
+
+            Cache = next;
         }
 
         public static ulong GetStackedExp(Class cls, byte level)

@@ -12,6 +12,7 @@ namespace AdminTool.Services
         private static readonly object Sync = new();
         private static int? _cachedTotal;
         private static string _cachedPath;
+        private static object _cachedMobs;
 
         public static int GetCollectionMobTotalCount()
         {
@@ -27,14 +28,16 @@ namespace AdminTool.Services
 
                 lock (Sync)
                 {
+                    var mobs = Table.Mob;
                     if (_cachedTotal.HasValue &&
-                        string.Equals(_cachedPath, path, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(_cachedPath, path, StringComparison.OrdinalIgnoreCase) &&
+                        ReferenceEquals(_cachedMobs, mobs))
                     {
                         return _cachedTotal.Value;
                     }
 
                     var names = ReadCollectionNames(path);
-                    var mobByName = BuildMobNameMap();
+                    var mobByName = BuildMobNameMap(mobs);
                     var matchedIds = new HashSet<uint>();
                     foreach (var name in names)
                     {
@@ -50,6 +53,7 @@ namespace AdminTool.Services
                     }
 
                     _cachedPath = path;
+                    _cachedMobs = mobs;
                     _cachedTotal = matchedIds.Count;
                     return _cachedTotal.Value;
                 }
@@ -80,10 +84,10 @@ namespace AdminTool.Services
             return null;
         }
 
-        private static Dictionary<string, uint> BuildMobNameMap()
+        private static Dictionary<string, uint> BuildMobNameMap(Table.MobTable mobs)
         {
             var map = new Dictionary<string, uint>(StringComparer.Ordinal);
-            foreach (var pair in Table.Mob)
+            foreach (var pair in mobs)
             {
                 if (string.IsNullOrWhiteSpace(pair.Value?.Name))
                 {
