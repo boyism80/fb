@@ -173,7 +173,7 @@ compute_signature = function(snap, mode)
             dam         = dam - (stats.buff_dam or 0)
         end
     end
-    return table.concat({ snap.self.name or "", snap.self.level, snap.self.max_hp, snap.self.max_mp or 0, phydef, hit,
+    return table.concat({ snap.self.level, snap.self.max_hp, snap.self.max_mp or 0, phydef, hit,
         dam, table.concat(gear, ","), table.concat(spells, ","), mode or recovery.reserve(snap) }, "|")
 end
 

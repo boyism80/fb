@@ -70,13 +70,15 @@ local function plan(snap, query)
                 end
                 for _, name in ipairs(entry.names) do
                     if known[name] == nil then
-                        local reached = memo.get(taughts, snap.self.name, score.signature(snap, ""),
-                            name .. "|" .. (snap.now or 0) // data.rerank, function()
+                        local reached = memo.peek(taughts, snap.self.name, score.signature(snap, ""), name)
+                        if reached == nil and ground.affordable() then
+                            reached = memo.get(taughts, snap.self.name, score.signature(snap, ""), name, function()
                                 local after = ground.choose(lessons.taught(snap, name, entry), query)
                                 return after ~= nil and after.rate or 0
                             end)
-                        local gain    = math.max(0, reached - rate)
-                        local net     = -price * worth.exchange
+                        end
+                        local gain = math.max(0, (reached or 0) - rate)
+                        local net  = -price * worth.exchange
                         if gain > 0 then
                             net = net + gain * (#party.members(snap) > 0 and ground.horizon(snap, gain + rate) or
                                 ground.lifetime(snap, gain + rate))
@@ -95,6 +97,7 @@ local function plan(snap, query)
                                 gain = gain,
                                 own = missing.bought,
                                 price = entry.money + missing.price,
+                                fee = entry.money,
                                 span = ground.lifetime(snap, gain + rate)
                             }
                         end
@@ -121,7 +124,7 @@ local function plan(snap, query)
                 kinds             = kinds + 1
             end
         end
-        if price > (snap.self.money or 0) or kinds > (snap.bag.capacity or 0) - (snap.bag.used or #snap.bag.items) then
+        if price + best.fee > (snap.self.money or 0) or kinds > (snap.bag.capacity or 0) - (snap.bag.used or #snap.bag.items) then
             best.bought = best.own
         end
     end

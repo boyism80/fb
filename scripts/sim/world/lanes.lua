@@ -23,6 +23,7 @@ function M.run(lane)
                     seed_base = seed,
                     only = { [name] = true },
                     tag = index,
+                    exp_multiplier = plan.exp,
                     duration = plan.duration > 0 and plan.duration or roster.team.duration,
                 }))
             end
@@ -36,6 +37,7 @@ function M.run(lane)
                         only = { [profile] = true },
                         tag = index,
                         acts = plan.trace,
+                        exp_multiplier = plan.exp,
                         duration = plan.duration > 0 and plan.duration or roster.solo.duration,
                     }))
                 end

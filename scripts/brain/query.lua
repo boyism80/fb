@@ -3,6 +3,7 @@ local profile = require("brain.profile")
 local M = {}
 
 function M.bind(brain, bot)
+    local demands = {}
     return {
         npcs = function(names)
             return brain:npcs(bot, names)
@@ -20,7 +21,12 @@ function M.bind(brain, bot)
             return brain:spawns(bot, names, map)
         end,
         demand = function(map)
-            return brain:demand(bot, map)
+            local found = demands[map]
+            if found == nil then
+                found = brain:demand(bot, map)
+                demands[map] = found
+            end
+            return found
         end,
         roster = function()
             return brain:roster(bot)

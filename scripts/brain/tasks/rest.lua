@@ -80,9 +80,14 @@ local function edible(snap, query)
         return found
     end
     local time = combat.cast(snap) / 1000 * worth.value
+    local heal = recovery.heal(snap)
+    local each = price(snap, query)
+    if heal ~= nil and heal.hp > 0 then
+        each = math.max(each, heal.mp / heal.hp * value.spend(snap, query, nil))
+    end
     for _, entry in ipairs(recovery.doses(snap, "hp")) do
         local sale = buyers[entry.name] ~= nil and buyers[entry.name].price or 0
-        if entry.amount > hurt and entry.amount * price(snap, query) > sale * worth.exchange + time then
+        if entry.amount > hurt and entry.amount * each > sale * worth.exchange + time then
             table.insert(found, entry)
         end
     end
@@ -111,7 +116,12 @@ local function mend(snap, query)
     end
     local heal = recovery.mending(snap, snap.self.max_hp - snap.self.hp)
     local crew = escort.present(snap, query)
-    if heal ~= nil and heal.hp > (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000 then
+    local able = false
+    for _, member in ipairs(crew ~= nil and party.members(snap) or {}) do
+        local spell = recovery.heal(member)
+        able = able or (spell ~= nil and spell.hp > 0 and spell.mp <= (member.self.mp or 0))
+    end
+    if heal ~= nil and heal.hp > (able and crew.heal or 0) * combat.cast(snap) / 1000 then
         return { kind = ACTION.CAST, slot = heal.slot }
     end
     local doses = edible(snap, query)
@@ -219,24 +229,12 @@ local function refill(snap, query)
     return nil
 end
 
-local function choose(snap, query)
-    if snap.self.ghost then
-        return nil
-    end
-    return M.thank(snap, query) or mend(snap, query) or refill(snap, query)
-end
-
-function M.wanted(snap, query)
-    return choose(snap, query) ~= nil
-end
-
-function M.value(snap, query)
-    local action = choose(snap, query)
-    local worth  = value.baseline(snap, query)
-    local cast   = combat.cast(snap)
-    local gain   = 0
-    local time   = action.kind == ACTION.CAST and cast or action.kind == ACTION.USE and cast or 0
-    if M.thank(snap, query) == nil and mend(snap, query) == nil then
+local function worth_of(snap, query, action, healing)
+    local worth = value.baseline(snap, query)
+    local cast  = combat.cast(snap)
+    local gain  = 0
+    local time  = action.kind == ACTION.CAST and cast or action.kind == ACTION.USE and cast or 0
+    if healing == false then
         local deficit = math.max(0, recovery.ceiling(snap) - (snap.self.mp or 0))
         for _, entry in ipairs(action.kind == ACTION.USE and recovery.doses(snap, "mp") or {}) do
             if entry.name == action.item then
@@ -244,6 +242,9 @@ function M.value(snap, query)
             end
         end
         gain = value.mana(snap, query) * deficit
+        if low(snap, query) then
+            worth = { value = 0, exchange = worth.exchange, rate = worth.rate, income = worth.income }
+        end
     else
         local plan    = party.plan(snap, query)
         local need    = math.max(danger.threat(snap, ahead(snap, query)), ground.need(snap, query),
@@ -275,8 +276,47 @@ function M.value(snap, query)
     return gain - spent
 end
 
+local chosen = setmetatable({}, { __mode = "k" })
+
+local function choose(snap, query)
+    if chosen[snap] ~= nil then
+        return chosen[snap] or nil
+    end
+    local best = nil
+    if snap.self.ghost == false then
+        local rivals = {}
+        for _, entry in ipairs({
+            { action = M.thank(snap, query), healing = true, key = "thank" },
+            { action = mend(snap, query), healing = true, key = "mend" },
+            { action = refill(snap, query), healing = false, key = "refill" },
+        }) do
+            if entry.action ~= nil then
+                entry.value = worth_of(snap, query, entry.action, entry.healing)
+                table.insert(rivals, { key = entry.action.item or entry.key, value = entry.value })
+                if best == nil or entry.value > best.value then
+                    best = entry
+                end
+            end
+        end
+        if best ~= nil then
+            best.action.rivals = rivals
+            best.action.scale  = best.value
+        end
+    end
+    chosen[snap] = best or false
+    return best
+end
+
+function M.wanted(snap, query)
+    return choose(snap, query) ~= nil
+end
+
+function M.value(snap, query)
+    return choose(snap, query).value
+end
+
 function M.propose(snap, query)
-    return choose(snap, query)
+    return choose(snap, query).action
 end
 
 return M

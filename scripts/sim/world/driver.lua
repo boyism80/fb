@@ -1035,6 +1035,9 @@ function Actor:think()
     end
     local decision, revisit     = decide.choose(snap, bound, nil, nil)
     self.session.profiles[self] = party.profile(snap, bound, decision)
+    if self.options.acts and decide.offers[snap.self.name or ""] ~= nil then
+        self:emit({ kind = "offers", rows = decide.offers[snap.self.name or ""], map = self.active.map.id })
+    end
     if self.options.acts then
         if decision ~= nil and decision.task == "ESCAPE" and decision.cause ~= nil then
             self:emit({
@@ -1060,6 +1063,9 @@ function Actor:think()
     local swept = decide.sweep(snap, decision)
     if swept ~= nil then
         self.memory.swept = swept
+    end
+    if decision ~= nil and decision.shop ~= nil then
+        self.memory.shop = decision.shop
     end
     if decision ~= nil and decision.leg ~= nil then
         self.memory.leg = decision.leg
@@ -1238,6 +1244,7 @@ function M.ready(base, bound)
 end
 
 function M.session(mind, options)
+    require("brain.policies.ground").forget()
     return setmetatable({
         mind = mind,
         options = options,
@@ -1285,7 +1292,7 @@ function Session:join(profile, overrides, at)
         options = options,
         clock = self.clock,
         ends = options.duration,
-        memory = {},
+        memory = { lane = self.options.tag },
         failures = {},
         occupied = {},
         unsupported = {},

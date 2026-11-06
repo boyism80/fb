@@ -83,12 +83,27 @@ local function area(snap, query, names)
     return found
 end
 
+local function recoiling(snap, query, dest)
+    local fleeing = snap.record.memory.fleeing
+    if fleeing == nil or snap.now >= fleeing.ends or fleeing.map == snap.world.map or dest.maps == nil then
+        return false
+    end
+    local route = query.route(dest.maps)
+    local hop   = route ~= nil and route.path ~= nil and route.path[1] or nil
+    return hop ~= nil and hop.dest == fleeing.map
+end
+
+function M.revisit(snap)
+    local fleeing = snap.record.memory.fleeing
+    return fleeing ~= nil and fleeing.ends > snap.now and fleeing.ends - snap.now or nil
+end
+
 function M.wanted(snap, query)
     if snap.self.ghost then
         return false
     end
     local objective = value.objective(snap, query)
-    if objective.task ~= "FIELD" or objective.dest == nil then
+    if objective.task ~= "FIELD" or objective.dest == nil or recoiling(snap, query, objective.dest) then
         return false
     end
     local plan = party.plan(snap, query)
@@ -230,19 +245,27 @@ local function settled(snap)
     return true
 end
 
+local function claim(best, action)
+    local floor = best.floors[1]
+    if floor.kills ~= nil then
+        action.occupy = { map = floor.map, rate = floor.kills, name = best.name }
+    end
+    return action
+end
+
 function M.propose(snap, query)
     local best  = party.plan(snap, query)
     local index = position(snap, best.floors)
     if #(snap.party or {}) > 0 and (escort.complete(snap, query) == false or (index == nil and snap.leader ~= snap.self.name)) then
-        return gather(snap, query, best, index)
+        return claim(best, gather(snap, query, best, index))
     elseif index == nil and #(snap.party or {}) > 0 then
         local gate = best.gate or best.floors[1].map
         if snap.world.map ~= gate and gate ~= best.floors[1].map then
-            return { kind = ACTION.MOVE, dest = { maps = { gate } } }
+            return claim(best, { kind = ACTION.MOVE, dest = { maps = { gate } } })
         end
-        return stage(snap, query, { best.floors[1].map })
+        return claim(best, stage(snap, query, { best.floors[1].map }))
     elseif index == nil then
-        return { kind = ACTION.MOVE, dest = { maps = { best.floors[1].map } }, aim = best.name }
+        return claim(best, { kind = ACTION.MOVE, dest = { maps = { best.floors[1].map } }, aim = best.name })
     end
 
     local floor  = best.floors[index]

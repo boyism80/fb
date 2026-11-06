@@ -1012,7 +1012,7 @@ function M.group(ctx, names, arrivals, watch, base)
         return true
     end
     local formed   = expect.within(ctx, TIMEOUT, linked)
-    local together = nil
+    local together = false
     local split    = 0
     local died     = 0
     local ghosts   = {}
@@ -1041,9 +1041,7 @@ function M.group(ctx, names, arrivals, watch, base)
                 fighting = fighting or activity == "attack" or activity == "swing"
             end
         end
-        if together == nil and fighting then
-            together = count == 1
-        end
+        together = together or (fighting and count == 1)
         if count > 1 then
             split = split + 1
         end
@@ -1057,7 +1055,7 @@ function M.group(ctx, names, arrivals, watch, base)
             (seen.exp or 0) - earned[index], tostring(seen.map), tostring(seen.hp), died, watched // 1000))
         expect.release(ctx, base + index - 1, minds[index], TIMEOUT)
     end
-    local passed = formed and together == true and broken == false
+    local passed = formed and together and broken == false and split * 2000 < watched
     log(passed and "debug" or "fatal", string.format(
         "[brain:group] %s %s plan=%s formed=%s together=%s broken=%s died=%d split=%d watched=%ds",
         table.concat(names, "+"), passed and "SUCCESS" or "FAILED", plan ~= nil and plan.name or "-",

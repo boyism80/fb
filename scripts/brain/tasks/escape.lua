@@ -132,7 +132,12 @@ local function recoverable(snap, query, mob)
         return true
     end
     local mp, left = charged(snap)
-    return mp > (snap.self.mp or 0) and danger.winnable(state(snap, left, mp), query, mob)
+    if mp > (snap.self.mp or 0) and danger.winnable(state(snap, left, mp), query, mob) then
+        return true
+    end
+    local after        = state(snap, full, rest)
+    local topped, kept = charged(after)
+    return topped > rest and danger.winnable(state(snap, kept, topped), query, mob)
 end
 
 local function planned(snap, query, mob)
@@ -194,7 +199,10 @@ local function threat(snap, query)
     local cohort  = escort.gathering(snap, query)
     local coming  = cohort ~= nil and (present == nil or #cohort.members > #present.members)
     local found   = coming == false and pressing(snap, query) or nil
-    local refill  = combat.buffs(snap).charge
+    if found ~= nil and passing(snap, query, found.mob) then
+        found = nil
+    end
+    local refill = combat.buffs(snap).charge
     if found ~= nil and refill ~= nil and snap.self.hp > refill.cost + 2 * battle.burst(snap) and
         recoverable(snap, query, found.mob) then
         found = nil
@@ -268,6 +276,9 @@ function M.propose(snap, query)
     end
     local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and cause ~= "HEMMED" and
         rally(snap, query, mob) or nil
+    local last = snap.record.memory.fleeing
+    local again = last ~= nil and last.map == snap.world.map and cause ~= "FLEEING" and
+        (snap.now or 0) - last.ends < data.rerank
     return {
         kind = ACTION.MOVE,
         cause = cause ~= nil and (cause .. ":" .. tostring(mob.name)) or nil,
@@ -277,11 +288,14 @@ function M.propose(snap, query)
             ends = (snap.now or 0) + 2 * data.sight.x * (snap.pace.step or data.walk),
         } or nil,
         proven = meet == nil and ((cause == "FATAL" and
-            danger.winnable(score.rested(snap), query, mob) == false) or cause == "HEMMED"),
+            danger.winnable(score.rested(snap), query, mob) == false) or cause == "HEMMED" or again),
         hemmed = cause == "HEMMED",
-        dest = meet or regroup(snap, query) or
-            { maps = teleport.returns[snap.self.nation], urgent = cause == "IMMINENT" or cause == "HEMMED" or
-            escort.present(snap, query) == nil },
+        dest = meet or (cause ~= "HEMMED" and regroup(snap, query)) or
+            {
+                maps = teleport.returns[snap.self.nation],
+                urgent = cause == "IMMINENT" or cause == "HEMMED" or
+                    escort.present(snap, query) == nil
+            },
         forget = snap.record.death ~= nil
     }
 end
@@ -301,7 +315,10 @@ function M.value(snap, query)
     local _, chance, cause = threat(snap, query)
     local worth            = value.baseline(snap, query)
     local stay             = chance * danger.loss(snap, query, worth)
-    local trip             = value.trip(snap, query, M.propose(snap, query).dest, worth)
+    if cause == "HEMMED" then
+        stay = math.max(0, snap.now - (snap.record.memory.blocked.since or snap.now)) / 1000 * worth.value
+    end
+    local trip = value.trip(snap, query, M.propose(snap, query).dest, worth)
     if trip == nil then
         return -math.huge
     end

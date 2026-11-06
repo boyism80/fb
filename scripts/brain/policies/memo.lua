@@ -2,6 +2,15 @@ local M = {}
 
 local WAYS = 64
 
+function M.peek(store, owner, base, key)
+    local ways = store[owner or ""]
+    if ways == nil then
+        return nil
+    end
+    local bucket = ways.buckets[base] or ways.older[base]
+    return bucket ~= nil and bucket[key] or nil
+end
+
 function M.get(store, owner, base, key, compute)
     local slot = owner or ""
     local ways = store[slot]

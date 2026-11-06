@@ -30,6 +30,10 @@ function M.mitigate(value, defense, rate)
     return math.max(0, damage * (1.0 - (rate or 0)))
 end
 
+function M.resistance(ward)
+    return -math.max(-combat.defense_limit, math.min(combat.defense_limit, ward or 0))
+end
+
 function M.accuracy(hit)
     local rate = nil
     if hit >= combat.hit.front then
@@ -393,7 +397,7 @@ local function compute(snap, mob, extra)
     for _, learned in ipairs(snap.spells or {}) do
         local data = magic.spells[learned.name]
         if data ~= nil and OFFENSE[data.role] and (data.limit == nil or (mob.hp or 0) <= data.limit) then
-            local value = M.mitigate(amount(data.damage, me), mob.ward or 0, resist(mob, "MAGIC"))
+            local value = M.mitigate(amount(data.damage, me), M.resistance(mob.ward), resist(mob, "MAGIC"))
             local hits  = data.role == "AREA" and data.type == "NORMAL" and M.surrounding(extra) or 1
             table.insert(result.offense, {
                 name   = learned.name,

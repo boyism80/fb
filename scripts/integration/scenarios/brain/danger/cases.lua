@@ -91,7 +91,7 @@ function M.run(ctx, index, case)
         ctx:bot(index):chat("/몬스터제거")
     end
 
-    local passed = done and ghost == false and jumped == case.jump
+    local passed = done and ghost == false and (jumped == case.jump or (case.jump == nil and tasks.LEARN == true))
     for _, task in ipairs(case.tasks or {}) do
         passed = passed and tasks[task] == true
     end

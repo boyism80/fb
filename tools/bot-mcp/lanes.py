@@ -15,8 +15,9 @@ def main():
     parser.add_argument('--target', default=sim.TARGET)
     parser.add_argument('--limit', type=int, default=3600)
     parser.add_argument('--baseline', default='')
+    parser.add_argument('--exp', type=float)
     args = parser.parse_args()
-    started = sim.start(args.teams, args.seeds, args.solo, args.lanes, args.minutes, args.target)
+    started = sim.start(args.teams, args.seeds, args.solo, args.lanes, args.minutes, args.target, exp=args.exp)
     if 'error' in started:
         print(started)
         return

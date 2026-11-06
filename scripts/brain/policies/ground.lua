@@ -297,10 +297,29 @@ end
 
 local reaches = {}
 local sweeps  = {}
+local budget  = 1
+
+function M.refresh()
+    budget = 1
+end
+
+function M.forget()
+    for line in pairs(M.latest) do
+        M.latest[line] = nil
+    end
+end
+
+function M.affordable()
+    if budget <= 0 then
+        return false
+    end
+    budget = budget - 1
+    return true
+end
 
 local function slot(snap, crew)
     return (snap.self.class or "") ..
-    (snap.self.level or 0) .. (snap.hypothesis or "") .. (crew ~= nil and crew.key or "")
+        (snap.self.level or 0) .. (snap.hypothesis or "") .. (crew ~= nil and crew.key or "")
 end
 
 local function reach(snap, query, crew)
@@ -544,12 +563,26 @@ local function materials(snap, query, mode, crew, base)
 end
 
 local standings = {}
+local latest    = {}
+M.latest        = latest
 
 function M.ranked(snap, query, mode, crew)
     local _, context = reach(snap, query, crew)
     local period     = (snap.now or 0) // combat.rerank
     local key        = table.concat({ score.signature(snap, ""), score.signature(snap, mode), context }, "|")
-    return memo.get(standings, slot(snap, crew), period, key, function()
+    local owner      = slot(snap, crew)
+    local known      = memo.peek(standings, owner, period, key)
+    if known ~= nil then
+        return known
+    end
+    local line = table.concat(
+    { tostring(((snap.actual or snap).record.memory or {}).lane), snap.self.name or "", snap.hypothesis or "", mode or "",
+        tostring(crew ~= nil) }, "|")
+    local last = latest[line]
+    if last ~= nil and M.affordable() == false then
+        return last
+    end
+    local found = memo.get(standings, owner, period, key, function()
         local ranked = rank(snap, query, mode, crew, {})
         local worth  = materials(snap, query, mode, crew, ranked[1] ~= nil and ranked[1].rate or 0)
         if next(worth) == nil then
@@ -557,6 +590,8 @@ function M.ranked(snap, query, mode, crew)
         end
         return rank(snap, query, mode, crew, worth)
     end)
+    latest[line] = found
+    return found
 end
 
 function M.reachable(snap, query, candidate, crew)

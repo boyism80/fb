@@ -62,15 +62,22 @@ local function nearest(snap, query, kind, found)
     local shunned  = danger.shunned(snap, query)
     local base     = table.concat({ score.signature(snap, ""), snap.world.map, table.concat(shunned, ","), #perilous },
         "|")
-    local key      = table.concat({ score.signature(snap), kind, table.concat(names, ",") }, "|")
+    local shop     = snap.record.memory.shop
+    local kept     = shop ~= nil and (snap.now or 0) - shop.at < data.rerank and shop.map or nil
+    local key      = table.concat({ score.signature(snap), kind, table.concat(names, ","),
+        (snap.world.x or 0) // data.sight.x, (snap.world.y or 0) // data.sight.y, tostring(kept) }, "|")
     return memo.get(trips, snap.self.name, base, key, function()
-        local maps = {}
+        local maps  = {}
+        local route = nil
         for _, offer in ipairs(found) do
             for _, spot in ipairs(query.npcs(offer.npcs)) do
                 table.insert(maps, spot.map)
+                if spot.map == kept and route == nil then
+                    route = query.route({ kept }, perilous, shunned)
+                end
             end
         end
-        local route = #maps > 0 and query.route(maps, perilous, shunned) or nil
+        route = route or (#maps > 0 and query.route(maps, perilous, shunned)) or nil
         return route ~= nil and { dest = route.dest, cost = route.cost } or nil
     end)
 end
@@ -232,7 +239,7 @@ local function plan(snap, query, kind)
     if need.gain ~= nil then
         local shortage = best.amount / math.max(need.usage * best.length, 1)
         local cover    = held / math.max(need.usage, 1)
-        local urgency  = spent > 0 and math.max(0, math.min(1, 2 - cover / spent)) or 1
+        local urgency  = route.dest ~= snap.world.map and spent > 0 and math.max(0, math.min(1, 2 - cover / spent)) or 1
         delta          = need.gain * best.length * math.min(1, shortage) * urgency - need.base * spent - spend - risk
     elseif kind == "mp" and recovery.spells(snap).charge ~= nil and (snap.self.mp or 0) + held < recovery.spells(snap).charge.mp then
         local dry   = ground.choose(snap, query, "DRY")
@@ -258,17 +265,25 @@ local function plan(snap, query, kind)
     if delta <= 0 then
         return nil
     end
-    return { choice = best.offer, count = best.count, delta = delta }
+    return { choice = best.offer, count = best.count, delta = delta, dest = route.dest }
 end
 
 local function order(snap, query)
+    local best   = nil
+    local rivals = {}
     for _, kind in ipairs({ "mp", "hp" }) do
         local found = plan(snap, query, kind)
         if found ~= nil then
-            return found.choice, found.count, found.delta
+            table.insert(rivals, { key = found.choice.name, value = found.delta })
+        end
+        if found ~= nil and (best == nil or found.delta > best.delta) then
+            best = found
         end
     end
-    return nil
+    if best == nil then
+        return nil
+    end
+    return best.choice, best.count, best.delta, best.dest, rivals
 end
 
 M.order = order
@@ -287,10 +302,22 @@ function M.value(snap, query)
 end
 
 function M.propose(snap, query)
-    local choice, amount = order(snap, query)
-    local spot, move     = near.approach(snap, query, choice.npcs)
+    local choice, amount, delta, dest, rivals = order(snap, query)
+    local spot, move                          = near.approach(snap, query, choice.npcs)
     if spot ~= nil then
-        return { kind = ACTION.SAY, text = string.format("%s %d개 줘", choice.name, amount), gain = choice.name }
+        return {
+            kind = ACTION.SAY,
+            text = string.format("%s %d개 줘", choice.name, amount),
+            gain = choice.name,
+            rivals = rivals,
+            scale = delta
+        }
+    end
+    if move ~= nil and move.dest.maps ~= nil then
+        move.dest.maps = { dest }
+        move.shop      = { map = dest, at = snap.now or 0 }
+        move.rivals    = rivals
+        move.scale     = delta
     end
     return move or { kind = ACTION.HOLD }
 end

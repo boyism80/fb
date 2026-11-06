@@ -283,6 +283,7 @@ local function candidates(snap, facts, mob, state, reachable)
                 mp = 0
             end
             mp = math.min(mp, (snap.self.max_mp or 0) - (snap.self.mp or 0))
+            hp = math.min(hp, snap.self.max_hp - snap.self.hp)
             if hp > 0 or mp > 0 then
                 add({
                     key = name,
@@ -617,10 +618,11 @@ function evaluate(snap, facts, mob, reachable)
             local empty = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
             entry.value = math.min(entry.value, melee.value + direct - entry.mp * empty * value.sip(snap, facts, mob))
         elseif entry.kind == "USE" and melee ~= nil and (entry.hp or 0) <= 0 then
-            entry.value = math.min(entry.value,
-                melee.value - (entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)))
+            local gain = entry.survives and -(entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)) or 0
+            entry.value = math.min(entry.value, melee.value + gain)
         end
-        if last == nil or entry.value > last.value then
+        if (entry.kind ~= "CHARGE" or recovery.charged(snap) > combat.spike(snap, { { mob = mob, count = 1 } })) and
+            (last == nil or entry.value > last.value) then
             last = entry
         end
         ending = math.max(ending, left)
@@ -637,6 +639,12 @@ function evaluate(snap, facts, mob, reachable)
     endings[snap] = endings[snap] or {}
     endings[snap][mob.oid or mob.name] = ending
     best = best or last
+    if best ~= nil and (data.trace or data.journal) then
+        best.rivals = {}
+        for _, entry in ipairs(listed) do
+            table.insert(best.rivals, { key = entry.key, value = entry.value })
+        end
+    end
     if data.trace then
         log("debug", string.format("[brain:battle] bot=%s hp=%d mp=%d mob=%s %s picks %s", snap.self.name or "",
             snap.self.hp, snap.self.mp or 0, mob.name or "", table.concat(values, " "),
@@ -785,6 +793,8 @@ function M.propose(found, extra)
         mob = found.mob.name,
         mob_id = found.mob.id,
         forecast = found.forecast,
+        rivals = found.choice.rivals,
+        scale = found.choice.value,
     }
     for key, entry in pairs(extra or {}) do
         action[key] = entry

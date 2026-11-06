@@ -211,7 +211,7 @@ local function debuffs(snap, query, slots, worth)
                     local after = combat.outcome(member, query, copy(mob, { applied = copy(names, { [name] = true }) }),
                         nil, context.aid)
                     local saved = before.time < math.huge and
-                    math.max(0, before.time - after.time) / math.max(before.time, 1) or 0
+                        math.max(0, before.time - after.time) / math.max(before.time, 1) or 0
                     if saved > 0 then
                         table.insert(found, {
                             oid = mob.oid,
@@ -220,7 +220,7 @@ local function debuffs(snap, query, slots, worth)
                             debuff = name,
                             cost = cost or 0,
                             value = saved * combat.gain(mob) * (mob.ratio or 1) -
-                            (cost or 0) * value.spend(snap, query, mob),
+                                (cost or 0) * value.spend(snap, query, mob),
                         })
                     end
                 end
@@ -235,7 +235,7 @@ local function pending(snap, member, name, spell)
     return at ~= nil and snap.now - at < (spell.buff_time or 0) * 1000 and (member.now or 0) <= at
 end
 
-function M.ward(snap, query, target, name, worth)
+function M.ward(snap, query, target, name, worth, current)
     local spell  = magic.spells[name]
     local mana   = value.mana(snap, query)
     local plan   = party.plan(snap, query)
@@ -249,7 +249,10 @@ function M.ward(snap, query, target, name, worth)
     end
     local saved = math.max(pain, 1) * (spell.buff_time or 0) * share
     local cost  = (spell.mp or 0) * mana
-    return math.max(saved * price(target, mana, worth), share * danger.loss(target, query, worth)) - cost
+    local blows = pressure(snap, target, 2 * combat.cast(snap))
+    local hp    = math.max(current or target.self.hp or 0, 1)
+    local kept  = math.exp(-blows / hp)
+    return math.max(saved * price(target, mana, worth), share * danger.loss(target, query, worth)) * kept - cost
 end
 
 local function wards(snap, query, slots, worth)
@@ -268,7 +271,8 @@ local function wards(snap, query, slots, worth)
                         key = name,
                         ward = member.self.name .. "|" .. name,
                         cost = spell.mp or 0,
-                        value = M.ward(snap, query, member, name, worth),
+                        value = M.ward(snap, query, member, name, worth,
+                            (member.self.max_hp or 0) * (ally.percent or 100) / 100),
                     })
                 end
             end
@@ -288,13 +292,18 @@ local function plan(snap, query)
             slots[learned.name] = learned.slot
         end
         local worth = value.baseline(snap, query)
+        local rivals = {}
         for _, group in ipairs({ heals(snap, query, slots, worth), debuffs(snap, query, slots, worth),
             wards(snap, query, slots, worth) }) do
             for _, candidate in ipairs(group) do
+                table.insert(rivals, { key = candidate.key or "walk", value = candidate.value })
                 if best == nil or candidate.value > best.value then
                     best = candidate
                 end
             end
+        end
+        if best ~= nil then
+            best.rivals = rivals
         end
     end
     plans[snap] = best or false
@@ -313,14 +322,18 @@ function M.propose(snap, query)
     local found = plan(snap, query)
     if found.walk ~= nil then
         return {
+            rivals = found.rivals,
+            scale = found.value,
             kind = ACTION.MOVE,
             dest = { map = snap.world.map, x = found.walk.x, y = found.walk.y, range = math.min(data.sight.x, data.sight.y) },
         }
     end
     if found.self then
-        return { kind = ACTION.CAST, slot = found.slot, key = found.key }
+        return { kind = ACTION.CAST, slot = found.slot, key = found.key, rivals = found.rivals, scale = found.value }
     end
     return {
+        rivals   = found.rivals,
+        scale    = found.value,
         kind     = ACTION.ATTACK,
         oid      = found.oid,
         key      = found.key,

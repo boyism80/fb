@@ -33,21 +33,21 @@ def call(path, body=None):
     return json.loads(urllib.request.urlopen(request, timeout=30).read())
 
 
-def write_plan(teams, seeds, solo, lanes, minutes, profile=False, trace=False):
+def write_plan(teams, seeds, solo, lanes, minutes, profile=False, trace=False, exp=None):
     names = ', '.join(json.dumps(name, ensure_ascii=False) for name in teams)
     numbers = ', '.join(str(seed) for seed in seeds)
     with open(PLAN, 'w', encoding='utf-8', newline='\n') as plan:
         plan.write(f'return {{ lanes = {lanes}, seeds = {{ {numbers} }}, teams = {{ {names} }}, '
                    f'solo = {"true" if solo else "false"}, profile = {"true" if profile else "false"}, trace = {"true" if trace else "false"}, '
-                   f'duration = {minutes * 60000} }}\n')
+                   f'{"" if exp is None else f"exp = {exp}, "}duration = {minutes * 60000} }}\n')
 
 
-def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=24, minutes=0, target=TARGET, profile=False, trace=False):
+def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=24, minutes=0, target=TARGET, profile=False, trace=False, exp=None):
     state = call('/api/state').get('run') or {}
     if state.get('state') == 'running':
         return {'error': 'a run is active', 'run': state.get('id')}
     teams = ALL_TEAMS if teams is None else teams
-    write_plan(teams, seeds, solo, lanes, minutes, profile, trace)
+    write_plan(teams, seeds, solo, lanes, minutes, profile, trace, exp)
     suites = [f'brain_lane_{lane:02d}_test' for lane in range(1, lanes + 1)]
     run_id = call('/api/runs', {'kind': 'integration', 'suites': suites, 'retry': 1, 'client': '',
                                 'target': target})['id']
@@ -295,6 +295,19 @@ def timeline(run_id, team, seed, bot='', since=0.0, until=1e9, limit=120, merged
             del span['key']
         return spans[:limit]
     return [dict(describe(entry), bot=entry['bot']) for entry in acts][:limit]
+
+
+def offers(run_id, team, seed, bot='', since=0.0, until=1e9, limit=40):
+    data = episodes(run_id).get((team, seed))
+    if data is None:
+        return {'error': 'no such team and seed'}
+    lines = []
+    for entry in data:
+        if entry.get('kind') != 'offers' or (bot and entry.get('bot') != bot) or not since <= entry['t'] / 1000 <= until:
+            continue
+        parts = [f"{row['task']}/{row['action']}={round(row['value'])}" for row in entry['rows'][:12]]
+        lines.append(f"{entry['t'] / 1000:.1f} {entry.get('bot')} map={entry.get('map')} " + ' '.join(parts))
+    return lines[:limit]
 
 
 def deaths(run_id, last=20):
@@ -622,7 +635,7 @@ def online(run_id, limit=40):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('command', choices=['start', 'wait', 'result', 'rules', 'online-rules', 'packets', 'online', 'scenarios', 'brief', 'usage', 'places', 'overview', 'timeline', 'deaths', 'decisions',
-                                            'calibration', 'profile', 'why', 'plan'])
+                                            'calibration', 'profile', 'why', 'plan', 'offers'])
     parser.add_argument('--run', default='')
     parser.add_argument('--baseline', default='')
     parser.add_argument('--teams', nargs='*')
@@ -666,6 +679,8 @@ def main():
         output = overview(args.run, args.team, args.seed)
     elif args.command == 'timeline':
         output = timeline(args.run, args.team, args.seed, args.bot, args.since, args.until, merged=not args.raw)
+    elif args.command == 'offers':
+        output = offers(args.run, args.team, args.seed, args.bot, args.since, args.until)
     elif args.command == 'deaths':
         output = deaths(args.run)
     elif args.command == 'decisions':

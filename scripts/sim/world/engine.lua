@@ -211,7 +211,7 @@ function World:roll(object, size)
 end
 
 function World:calculate(attacker, value, target, critical, rate, physical)
-    local def     = physical and target.phydef or (target.magdef or 0)
+    local def     = physical and target.phydef or -math.max(-127, math.min(127, target.magdef or 0))
     local n       = truncate((100 - def) / 10)
     local percent = -125 + (n * (2 * 14.75 - (n - 1) / 2.0)) / 2.0
     local damage  = value - truncate(percent * (value / 100.0))

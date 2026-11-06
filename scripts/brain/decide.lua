@@ -4,6 +4,7 @@ local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
 local escort   = require("brain.policies.escort")
 local failure  = require("brain.policies.failure")
+local ground   = require("brain.policies.ground")
 local party    = require("brain.policies.party")
 local states   = require("brain.data.states")
 local profile  = require("brain.profile")
@@ -13,6 +14,10 @@ local trace    = require("brain.trace")
 local value    = require("brain.policies.value")
 
 local M = {}
+
+M.offers = {}
+
+local OFFERS = 8
 
 local stalls = {}
 local picks  = {}
@@ -41,6 +46,40 @@ local function idle(snap, facts, casting)
     return found, spare
 end
 
+local function describe(action)
+    if action == nil then
+        return "-"
+    end
+    local dest = action.dest
+    return tostring(action.key or action.item or action.text or action.buff or
+        (dest ~= nil and (dest.map or (dest.maps ~= nil and dest.maps[1]))) or action.kind)
+end
+
+local function listing(snap, facts, offered)
+    local rows = {}
+    for _, entry in ipairs(offered) do
+        local ok, action = pcall(entry.task.propose or function() return nil end, snap, facts)
+        action = ok and action or nil
+        table.insert(rows, { task = entry.name, value = entry.delta, action = describe(action) })
+        for _, rival in ipairs(action ~= nil and action.rivals or {}) do
+            if rival.key ~= (action.key or action.item) then
+                table.insert(rows, {
+                    task = entry.name,
+                    value = entry.delta + rival.value - (action.scale or entry.delta),
+                    action = tostring(rival.key)
+                })
+            end
+        end
+    end
+    table.sort(rows, function(left, right)
+        if left.value ~= right.value then
+            return left.value > right.value
+        end
+        return left.task .. left.action < right.task .. right.action
+    end)
+    return rows
+end
+
 local function decision(snap, facts, state, name, task, revisit)
     local result   = task.propose ~= nil and
         profile.measure(snap.self.name, "propose:" .. name, task.propose, snap, facts) or
@@ -53,7 +92,7 @@ local function decision(snap, facts, state, name, task, revisit)
         if action ~= nil then
             result, name, task = action, spare, module(spare)
         else
-            result  = { kind = ACTION.HOLD }
+            result  = { kind = ACTION.HOLD, pause = cooldown }
             revisit = math.min(revisit or cooldown, cooldown)
         end
     end
@@ -93,6 +132,8 @@ local function decision(snap, facts, state, name, task, revisit)
                 tostring(snap.self.hp), tostring(snap.self.max_hp), tostring(snap.self.mp), tostring(snap.self.max_mp),
                 tostring(snap.self.exp), seen, close, far, tostring(snap.self.level), partner, tostring(result.text)))
     end
+    result.rivals  = nil
+    result.scale   = nil
     result.state   = state
     result.task    = name
     result.step    = task.step ~= nil and task.step(snap) or 0
@@ -112,6 +153,7 @@ local function soonest(revisit, value)
 end
 
 function M.choose(snap, facts, current, sink)
+    ground.refresh()
     local revisit = nil
     local passed  = false
     local best    = nil
@@ -119,6 +161,7 @@ function M.choose(snap, facts, current, sink)
     local values  = {}
     local numbers = {}
     local blocked = {}
+    local offered = {}
     for _, state in ipairs(states) do
         for _, name in ipairs(state.tasks) do
             local task = module(name)
@@ -144,6 +187,9 @@ function M.choose(snap, facts, current, sink)
                         delta = delta + math.max(0, snap.now - errand.at) / 1000 * value.baseline(snap, facts).value
                     end
                     numbers[name] = delta < math.huge and delta > -math.huge and delta or (delta > 0 and 1e300 or -1e300)
+                    if delta > -math.huge then
+                        table.insert(offered, { name = name, task = task, delta = numbers[name] })
+                    end
                     if name == current then
                         held = delta
                     elseif best == nil or delta > best.delta then
@@ -165,7 +211,20 @@ function M.choose(snap, facts, current, sink)
             tostring(snap.self.class), tostring(snap.now), tostring(snap.self.hp), tostring(snap.self.mp),
             tostring(numbers.AID), tostring(numbers.DEFEND), tostring(numbers.REST), tostring(numbers.ESCAPE)))
     end
-    local owner   = snap.self.name or ""
+    local owner = snap.self.name or ""
+    if data.journal or data.trace then
+        M.offers[owner] = listing(snap, facts, offered)
+        if data.journal then
+            local parts = {}
+            for rank, row in ipairs(M.offers[owner]) do
+                if rank <= OFFERS then
+                    table.insert(parts, string.format("%s/%s=%.0f", row.task, row.action, row.value))
+                end
+            end
+            log("debug", string.format("[brain:offers] bot=%s t=%s map=%s %s", owner, tostring(snap.now),
+                tostring(snap.world.map), table.concat(parts, " ")))
+        end
+    end
     local stalled = best == nil and current == nil and #blocked > 0
     if stalled and stalls[owner] == nil then
         log("warn", string.format("[brain:anomaly] bot=%s stalled: every wanted task is backing off %s", owner,
@@ -279,7 +338,8 @@ function M.warded(snap, decision)
 end
 
 function M.flee(snap, decision)
-    if decision == nil or decision.task ~= "ESCAPE" or snap.self.ghost or danger.floor(snap.world.map) == false then
+    if decision == nil or decision.task ~= "ESCAPE" or snap.self.ghost or
+        (danger.floor(snap.world.map) == false and decision.hemmed ~= true) then
         return nil
     end
     if decision.proven == false then
@@ -412,6 +472,10 @@ function M.first(brain, bot, current)
     if remarked then
         brain:remember(bot, "marks", marks)
     end
+    if decision ~= nil and decision.shop ~= nil then
+        snap.record.memory.shop = decision.shop
+        brain:remember(bot, "shop", decision.shop)
+    end
     if decision ~= nil and decision.leg ~= nil then
         snap.record.memory.leg = decision.leg
         brain:remember(bot, "leg", decision.leg)
@@ -423,10 +487,25 @@ function M.first(brain, bot, current)
     return decision, revisit
 end
 
+local paused = {}
+
 function M.decide(brain, bot)
-    profile.start(bot:name())
+    local owner = bot:name()
+    local held  = paused[owner]
+    if held ~= nil then
+        local left = (held.ends - clock()) // 1000
+        if left > 0 and bot:hp() >= held.hp and bot:map() == held.map then
+            held.decision.revisit = left
+            return held.decision
+        end
+        paused[owner] = nil
+    end
+    profile.start(owner)
     local decision, revisit = M.first(brain, bot, nil)
-    profile.finish(brain, bot, bot:name())
+    profile.finish(brain, bot, owner)
+    if decision ~= nil and decision.pause ~= nil then
+        paused[owner] = { ends = clock() + decision.pause * 1000, hp = bot:hp(), map = bot:map(), decision = decision }
+    end
     return decision or { state = "PREPARE", reason = "idle", kind = ACTION.HOLD, revisit = revisit }
 end
 

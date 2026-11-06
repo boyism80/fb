@@ -116,11 +116,14 @@ local function plan(snap, query)
         local rate  = now ~= nil and now.rate or 0
         local base  = score.signature(snap)
         for kind, pick in pairs(snap.record.death == nil and picks(snap, query) or {}) do
-            local gain = memo.get(gains, snap.self.name, base, pick.name, function()
-                local after = ground.choose(dressed(snap, query, kind, pick.name), query)
-                return math.max(0, (after ~= nil and after.rate or 0) - rate)
-            end)
-            if gain > 0 then
+            local gain = memo.peek(gains, snap.self.name, base, pick.name)
+            if gain == nil and ground.affordable() then
+                gain = memo.get(gains, snap.self.name, base, pick.name, function()
+                    local after = ground.choose(dressed(snap, query, kind, pick.name), query)
+                    return math.max(0, (after ~= nil and after.rate or 0) - rate)
+                end)
+            end
+            if (gain or 0) > 0 then
                 local span = ground.horizon(snap, gain + rate)
                 local net  = gain * span - pick.outfit.price * worth.exchange
                 if best == nil or net > best.value or (net == best.value and pick.name < best.name) then
