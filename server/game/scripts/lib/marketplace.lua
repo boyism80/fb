@@ -258,7 +258,7 @@ function M.search(me, npc)
         end
     end
 
-    local show_total_confirm = use_buy_ui and purchase_count > 1
+    local show_total_confirm = purchase_count > 1
     if show_total_confirm or #warning_messages > 0 then
         local confirm_text = ''
         if #warning_messages > 0 then

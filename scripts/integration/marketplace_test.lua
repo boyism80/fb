@@ -663,12 +663,29 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
 
     if packet.type == "input" then
         progress(bot, "purchase send count=" .. tostring(purchase_count))
-        packet = bot:request_dialog_ext(
-            protocol.dialog("INPUT", 0, tostring(purchase_count), 0, 0, "", "NEXT"),
-            function(p)
-                return p.type == "normal"
+        if purchase_count > 1 then
+            packet = bot:request_dialog(
+                protocol.dialog("INPUT", 0, tostring(purchase_count), 0, 0, "", "NEXT"),
+                function(p)
+                    return p.type == "pursuit"
+                end
+            )
+            dump_dialog(bot, "purchase_total_confirm", packet)
+            if packet == nil or packet.message == nil or packet.message:find("총", 1, true) == nil then
+                return nil, "total confirm missing msg=" .. tostring(packet and packet.message)
             end
-        )
+            progress(bot, string.format("purchase total confirm YES money_cache=%d", bot:money()))
+            packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
+                return p.type == "normal" and p.message ~= nil
+            end)
+        else
+            packet = bot:request_dialog_ext(
+                protocol.dialog("INPUT", 0, tostring(purchase_count), 0, 0, "", "NEXT"),
+                function(p)
+                    return p.type == "normal"
+                end
+            )
+        end
         dump_dialog(bot, "purchase_after_count", packet)
         if packet == nil then
             return nil, "after count input missing"
