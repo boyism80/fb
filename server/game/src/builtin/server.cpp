@@ -1020,6 +1020,16 @@ int builtin::server::builtin_has_blocked_word(lua_State* L)
     return 1;
 }
 
+int builtin::server::builtin_filter_blocked_word(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    lua->pushstring(fb::model::table::blocked_word->filter(lua->tostring(1)));
+    return 1;
+}
+
 int builtin::server::builtin_cp949(lua_State* L)
 {
     auto lua = fb::lua::get(L);
