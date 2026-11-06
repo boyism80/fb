@@ -673,37 +673,32 @@ int builtin::character::builtin_item(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    if (lua->is_number(2))
+    if (lua->is_number(2) || lua->is_string(2) || lua->is_userdata<fb::model::item>(2))
     {
-        auto index = (uint8_t)lua->tointeger(2);
-        auto item  = ch->items[index];
-        if (item == nullptr)
-            lua->pushnil();
-        else
-            lua->pushobject(item);
-        return 1;
-    }
-
-    if (lua->is_string(2))
-    {
-        auto name = lua->tostring(2);
-        auto item = ch->items.find(name);
-        if (item == nullptr)
-            lua->pushnil();
-        else
-            lua->pushobject(item);
-        return 1;
-    }
-
-    if (lua->is_userdata<fb::model::item>(2))
-    {
-        auto model = lua->touserdata<fb::model::item>(2);
-        auto item  = ch->items.find(*model);
-        if (item == nullptr)
-            lua->pushnil();
-        else
-            lua->pushobject(item);
-        return 1;
+        auto index = lua->is_number(2) ? std::optional<uint8_t>(static_cast<uint8_t>(lua->tointeger(2))) : std::nullopt;
+        auto name  = index.has_value() == false && lua->is_string(2) ? lua->tostring(2) : std::string{};
+        auto model = index.has_value() == false && name.empty() ? lua->touserdata<fb::model::item>(2) : nullptr;
+        auto found = std::make_shared<std::shared_ptr<fb::game::item>>();
+        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            if (index.has_value())
+                *found = ch->items[index.value()];
+            else if (model != nullptr)
+                *found = ch->items.find(*model);
+            else
+                *found = ch->items.find(name);
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*found == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(*found);
+            co_return 1;
+        };
+        return builder.run();
     }
 
     // item dialog — yields a 1-based row index, same as list/menu/pursuit
