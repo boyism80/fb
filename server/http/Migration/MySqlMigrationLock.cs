@@ -28,6 +28,7 @@ namespace Http.Migration
             var builder = new MySqlConnectionStringBuilder(connectionString)
             {
                 AllowUserVariables = true,
+                DefaultCommandTimeout = 0,
             };
             var connection = new MySqlConnection(builder.ConnectionString);
             await connection.OpenAsync(cancellationToken);
