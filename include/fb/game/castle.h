@@ -42,16 +42,16 @@ public:
     };
 
 private:
-    server&                               _server;
-    fb::model::enum_value::DIVINE_BEAST   _divine_beast;
-    std::optional<uint32_t>               _owner_clan_id;
-    std::optional<uint64_t>               _siege_id;
-    std::chrono::steady_clock::time_point _siege_end_at{};
-    std::chrono::steady_clock::time_point _siege_active_until{};
-    uint64_t                              _revision     = 0;
-    bool                                  _siege_ended  = false;
-    bool                                  _siege_ending = false;
-    std::optional<uint32_t>               _siege_winner;
+    server&                                _server;
+    fb::model::enum_value::DIVINE_BEAST    _divine_beast;
+    std::optional<uint32_t>                _owner_clan_id;
+    std::optional<uint64_t>                _siege_id;
+    std::chrono::steady_clock::time_point  _siege_end_at{};
+    std::chrono::steady_clock::time_point  _siege_active_until{};
+    uint64_t                               _revision     = 0;
+    bool                                   _siege_ended  = false;
+    bool                                   _siege_ending = false;
+    std::optional<std::optional<uint32_t>> _siege_winner;
 
 public:
     // clang-format off
@@ -74,7 +74,7 @@ public:
     bool                                apply(uint64_t revision, const std::optional<uint32_t>& owner_clan_id, const std::optional<uint64_t>& siege_id, uint32_t remaining, uint32_t active_remaining, bool ended);
     bool                                siege_ending() const;
     void                                siege_ending(bool value);
-    const std::optional<uint32_t>&      siege_winner() const;
+    const std::optional<std::optional<uint32_t>>& siege_winner() const;
     void                                siege_winner(const std::optional<uint32_t>& value);
     // clang-format on
 };

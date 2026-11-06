@@ -118,12 +118,12 @@ void castle::siege_ending(bool value)
     this->_siege_ending = value;
 }
 
-const std::optional<uint32_t>& castle::siege_winner() const
+const std::optional<std::optional<uint32_t>>& castle::siege_winner() const
 {
     return this->_siege_winner;
 }
 
 void castle::siege_winner(const std::optional<uint32_t>& value)
 {
-    this->_siege_winner = value;
+    this->_siege_winner = std::make_optional(value);
 }

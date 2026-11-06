@@ -260,7 +260,7 @@ async::task<castle::siege_end_result> castle::container::end_siege(fb::model::en
             co_return siege_end_result::NOT_ACTIVE;
 
         if (castle->siege_winner().has_value())
-            winner = castle->siege_winner();
+            winner = castle->siege_winner().value();
 
         siege_id = castle->siege_id().value();
         castle->siege_ending(true);
