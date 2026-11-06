@@ -14,14 +14,12 @@ namespace Http.Service
 
         private readonly ConcurrentDictionary<(uint World, uint Section), ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
         private readonly ConcurrentDictionary<uint, SemaphoreSlim> _flushSignals = new();
-        private readonly BulletinCacheService _cacheService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly LogService _logService;
         private readonly ILogger<BulletinService> _logger;
 
-        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService logService, ILogger<BulletinService> logger)
+        public BulletinService(IServiceScopeFactory scopeFactory, LogService logService, ILogger<BulletinService> logger)
         {
-            _cacheService = cacheService;
             _scopeFactory = scopeFactory;
             _logService = logService;
             _logger = logger;
@@ -95,14 +93,10 @@ namespace Http.Service
                 return -4;
             }
 
-            // Delete from Redis cache if successful
             if (result == 1)
             {
                 try
                 {
-                    var generation = await GetGenerationAsync(world, section);
-                    await _cacheService.DeleteArticlesBatchAsync(world, generation, new List<(uint section, uint id)> { (section, id) });
-
                     await _logService.WriteAsync("bulletin_delete", new
                     {
                         world = world,
@@ -161,14 +155,10 @@ namespace Http.Service
                 }
             }
 
-            // Delete from Redis cache for all successfully deleted articles
             if (deletedIds.Any())
             {
                 try
                 {
-                    var generation = await GetGenerationAsync(world, section);
-                    await _cacheService.DeleteArticlesBatchAsync(world, generation, deletedIds);
-
                     await _logService.WriteAsync("bulletin_delete_batch", new
                     {
                         world = world,
@@ -226,18 +216,6 @@ namespace Http.Service
             {
                 try
                 {
-                    // The generation is read first: an article loaded after a renumber then lands under the older generation, which nobody reads.
-                    var generation = await GetGenerationAsync(world, section);
-                    var (article, _) = await LoadArticleFromDatabase(world, section, id);
-                    if (article != null)
-                    {
-                        await _cacheService.SetArticleAsync(world, section, generation, id, article);
-                    }
-                    else
-                    {
-                        await _cacheService.DeleteArticlesBatchAsync(world, generation, new List<(uint section, uint id)> { (section, id) });
-                    }
-
                     await _logService.WriteAsync("bulletin_update", new
                     {
                         world = world,
@@ -385,45 +363,9 @@ namespace Http.Service
             return articleList;
         }
 
-        public async Task<(Bulletin Article, bool Next)> GetArticleAsync(uint world, uint section, uint id)
+        public Task<(Bulletin Article, bool Next)> GetArticleAsync(uint world, uint section, uint id)
         {
-            bool? nextFlagFromLoader = null;
-
-            var generation = await GetGenerationAsync(world, section);
-            var article = await _cacheService.GetArticleAsync(
-                world,
-                section,
-                generation,
-                id,
-                async () =>
-                {
-                    var (dbArticle, next) = await LoadArticleFromDatabase(world, section, id);
-                    nextFlagFromLoader = next;
-                    return dbArticle;
-                });
-
-            if (article == null)
-            {
-                return (null, false);
-            }
-
-            var nextFlag = nextFlagFromLoader ?? await LoadNextFlagAsync(world, section, id);
-            return (article, nextFlag);
-        }
-
-        private Task<uint> GetGenerationAsync(uint world, uint section)
-        {
-            return _cacheService.GetGenerationAsync(world, section, async () =>
-            {
-                using var scope = _scopeFactory.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-
-                await using var conn = dbContext.GetShardConnection(world, section);
-                var generation = await conn.QueryFirstOrDefaultAsync<uint?>(
-                    "SELECT generation FROM bulletin_sequence WHERE `section` = @section",
-                    new { section });
-                return generation ?? 0;
-            });
+            return LoadArticleFromDatabase(world, section, id);
         }
 
         private async Task<(Bulletin Article, bool Next)> LoadArticleFromDatabase(uint world, uint section, uint id)
@@ -450,24 +392,6 @@ namespace Http.Service
             var next = await reader.ReadFirstAsync<bool>();
 
             return (dbArticle, next);
-        }
-
-        private async Task<bool> LoadNextFlagAsync(uint world, uint section, uint id)
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-
-            await using var conn = dbContext.GetShardConnection(world, section);
-            var dynamicParams = new DynamicParameters();
-            dynamicParams.Add("section", section);
-            dynamicParams.Add("article", id);
-            await using var reader = await conn.QueryMultipleAsync(
-                "USP_BULLETIN_GET",
-                dynamicParams,
-                commandType: CommandType.StoredProcedure);
-
-            await reader.ReadFirstOrDefaultAsync<Bulletin>();
-            return await reader.ReadFirstAsync<bool>();
         }
     }
 }

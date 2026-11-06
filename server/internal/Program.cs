@@ -56,7 +56,6 @@ public class Program
         builder.Services.AddScoped<CacheService>();
         builder.Services.AddSingleton<WriteBackService>();
         builder.Services.AddSingleton<Http.Service.BulletinService>();
-        builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
         builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
         builder.Services.AddAmqpListener<ShutdownHandler, ReloadTablesHandler>();
         builder.Services.AddHostedService<Http.Service.SessionTtlRefreshService>();

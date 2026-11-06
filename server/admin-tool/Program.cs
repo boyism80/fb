@@ -48,7 +48,6 @@ builder.Services.AddSingleton<ShutdownService>();
 builder.Services.AddScoped<CacheService>();
 builder.Services.AddSingleton<ServerStateService>();
 builder.Services.AddSingleton<Http.Service.BulletinService>();
-builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
 builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
 builder.Services.Configure<AdminTool.Options.TablePublishOptions>(
