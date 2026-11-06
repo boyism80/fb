@@ -1,6 +1,7 @@
 -- npc: 통통대감
 local quest = require('lib.quest')
 local enum = require('lib.enum')
+local npc_lib = require('lib.npc')
 
 return {
     on_click = function(me, npc)
@@ -41,6 +42,11 @@ return {
 
         local q = me:quest(quest.QUEST_TONGTONG)
         local lighthouse = me:quest(quest.QUEST_LIGHTHOUSE)
+
+        if q ~= nil and q:completed() and lighthouse ~= nil and not lighthouse:completed() and
+            npc_lib.reissue_quest_item(me, npc, '선장의일기3', { ['망치'] = 1 }, '망치를') then
+            return
+        end
 
         if lighthouse == nil or lighthouse:completed() or lighthouse:step() ~= 3 then
             me:dialog(npc, '....', { prev = false, next = false })

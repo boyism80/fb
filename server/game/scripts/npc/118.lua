@@ -1,6 +1,7 @@
 -- npc: 진진
 local quest = require('lib.quest')
 local enum = require('lib.enum')
+local npc_lib = require('lib.npc')
 
 return {
     on_click = function(me, npc)
@@ -173,6 +174,11 @@ return {
 
         local q = me:quest(quest.QUEST_JINJIN)
         local lighthouse = me:quest(quest.QUEST_LIGHTHOUSE)
+
+        if q ~= nil and lighthouse ~= nil and not lighthouse:completed() and
+            npc_lib.reissue_quest_item(me, npc, '선장의일기1', { ['초보도시락'] = 1 }, '초보도시락을') then
+            return
+        end
 
         if q == nil then
             if lighthouse == nil or lighthouse:completed() or lighthouse:step() ~= 1 then

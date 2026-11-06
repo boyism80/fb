@@ -1,5 +1,24 @@
 -- npc: 준준
 local quest = require('lib.quest')
+local npc_lib = require('lib.npc')
+
+local DIARY_TOTEM_COUNT = 5
+
+local function diary_totem_cost(me, totem_names)
+    local cost = {}
+    local remain = DIARY_TOTEM_COUNT
+    for _, name in ipairs(totem_names) do
+        local take = math.min(npc_lib.count_item_by_name(me, name), remain)
+        if take > 0 then
+            cost[name] = take
+            remain = remain - take
+        end
+    end
+    if remain > 0 then
+        return nil
+    end
+    return cost
+end
 
 local function cultural_property_quest(me, npc)
     local totem_names = { '번개의토템', '바람의토템', '대지의토템', '화염의토템' }
@@ -49,6 +68,20 @@ local function cultural_property_quest(me, npc)
             return
         end
         return
+    end
+
+    if q:step() >= 1 and lighthouse ~= nil and not lighthouse:completed() then
+        local cost = diary_totem_cost(me, totem_names)
+        if cost ~= nil then
+            if npc_lib.reissue_quest_item(me, npc, '선장의일기5', cost, '토템 다섯 개를') then
+                return
+            end
+        elseif not me:has_items('선장의일기5', 1) then
+            local button = me:dialog(npc, '선장의일기5를 잃어버리셨나요? 토템 다섯 개를 가져오시면 다시 드리겠습니다.', { prev = false, next = true })
+            if button == DIALOG_RESULT.QUIT then
+                return
+            end
+        end
     end
 
     if q:completed() then

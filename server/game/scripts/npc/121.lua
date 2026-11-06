@@ -1,11 +1,17 @@
 -- npc: 퉁퉁대감
 local quest = require('lib.quest')
 local enum = require('lib.enum')
+local npc_lib = require('lib.npc')
 
 return {
     on_click = function(me, npc)
         local q = me:quest(quest.QUEST_TUNGTUNG)
         local lighthouse = me:quest(quest.QUEST_LIGHTHOUSE)
+
+        if q ~= nil and q:completed() and lighthouse ~= nil and not lighthouse:completed() and
+            npc_lib.reissue_quest_item(me, npc, '선장의일기2', { ['호박'] = 10 }, '호박 열 개를') then
+            return
+        end
 
         if lighthouse == nil or lighthouse:completed() or lighthouse:step() ~= 2 then
             me:dialog(npc, '....', { prev = false, next = false })

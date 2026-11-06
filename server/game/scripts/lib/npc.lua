@@ -586,6 +586,32 @@ function M.count_item_by_name(me, item_name)
     return total
 end
 
+function M.reissue_quest_item(me, npc, name, cost, cost_text)
+    if me:has_items(name, 1) then
+        return false
+    end
+    local sel, btn = me:list(npc,
+        name_with(name, '을', '를') .. ' 잃어버리셨나요? ' .. cost_text .. ' 가져오시면 다시 드리겠습니다.',
+        { '네, 여기 있습니다.', '아니오.' })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+    if sel ~= 1 then
+        return false
+    end
+    local code = me:exchange({ ['item'] = cost }, { ['item'] = { [name] = 1 } })
+    if code == enum.exchange_result.LACK_COST then
+        me:dialog(npc, cost_text .. ' 가져오셔야 다시 드릴 수 있습니다.', { prev = false, next = false })
+        return true
+    end
+    if code == enum.exchange_result.LACK_CAPACITY then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(name, '을', '를') .. ' 드릴 수 없습니다.', { prev = false, next = false })
+        return true
+    end
+    me:dialog(npc, '여기 있습니다. 이번에는 잃어버리지 않도록 하십시오.', { prev = false, next = false })
+    return true
+end
+
 local function shop_continue(result)
     if result == nil then
         return false

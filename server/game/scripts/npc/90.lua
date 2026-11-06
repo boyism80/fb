@@ -1,6 +1,7 @@
 -- npc: 천성현
 local quest = require('lib.quest')
 local enum = require('lib.enum')
+local npc_lib = require('lib.npc')
 
 return {
     on_click = function(me, npc)
@@ -82,6 +83,9 @@ return {
         end
 
         if q:completed() then
+            if me:promotion() < 3 then
+                npc_lib.reissue_quest_item(me, npc, '천성현의증표', { ['암흑왕의봉인'] = 1 }, '암흑왕의봉인을')
+            end
             return
         end
 
