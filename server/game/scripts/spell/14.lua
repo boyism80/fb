@@ -7,6 +7,10 @@ local spell = require('lib.spell')
 return {
     on_cast = function(me, you, sp)
         local buff_time = 5
+        if you == nil or you:is(OBJECT_TYPE.ITEM) then
+            me:message('걸리지 않습니다.')
+            return
+        end
         if spell.buff_cast(me, me, sp) then
             local appearance = you:appearance()
             me:mimic(appearance)
