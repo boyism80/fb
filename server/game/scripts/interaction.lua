@@ -784,7 +784,7 @@ return {
         end
     end,
 
-    on_matchmaking_ready = function(me, match_id, match_type, match_team)
+    on_matchmaking_ready = function(me, match_id, match_type, match_team, match_expected, match_team_count)
         matchmaking_clear_timer(me)
         local dest = match_transfer(match_id)
         if dest == nil then
@@ -794,7 +794,9 @@ return {
         me:transfer_to(dest.ip, dest.port, dest.id, {
             match_id = match_id,
             match_type = match_type,
-            match_team = match_team
+            match_team = match_team,
+            match_expected = match_expected,
+            match_team_count = match_team_count
         })
     end,
 

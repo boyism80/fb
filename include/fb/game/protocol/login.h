@@ -26,7 +26,7 @@ enum class TRANSFER_PARAM : uint8_t
 /**
  * C2S game login (opcode 0x10). Echoed transfer blob:
  *   enc | key | from | client_version u16 | uid | name | flags u8 | sections | ticket
- * flags: MAP (world/map/xy), MATCH (match_id/match_type/team), UI_MODE (CLIENT_UI_MODE).
+ * flags: MAP (world/map/xy), MATCH (match_id/match_type/team/expected/team_count), UI_MODE (CLIENT_UI_MODE).
  * ticket: expire u32 | nonce u64 | tag (see fb/transfer_ticket.h). The client echoes the blob verbatim.
  */
 template <CLIENT_VERSION V>
@@ -49,9 +49,11 @@ public:
     struct match_param
     {
     public:
-        uint64_t id   = 0;
-        uint32_t type = 0;
-        uint32_t team = 0;
+        uint64_t id         = 0;
+        uint32_t type       = 0;
+        uint32_t team       = 0;
+        uint32_t expected   = 0;
+        uint32_t team_count = 0;
     };
 
     struct ticket_param

@@ -17088,7 +17088,9 @@ struct MatchReady FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_MATCH_ID = 4,
     VT_MATCH_TYPE = 6,
-    VT_TEAMS = 8
+    VT_TEAMS = 8,
+    VT_MEMBER_COUNT = 10,
+    VT_TEAM_COUNT = 12
   };
   uint64_t match_id() const {
     return GetField<uint64_t>(VT_MATCH_ID, 0);
@@ -17099,6 +17101,12 @@ struct MatchReady FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>> *teams() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>> *>(VT_TEAMS);
   }
+  uint32_t member_count() const {
+    return GetField<uint32_t>(VT_MEMBER_COUNT, 0);
+  }
+  uint32_t team_count() const {
+    return GetField<uint32_t>(VT_TEAM_COUNT, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_MATCH_ID, 8) &&
@@ -17106,6 +17114,8 @@ struct MatchReady FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_TEAMS) &&
            verifier.VerifyVector(teams()) &&
            verifier.VerifyVectorOfTables(teams()) &&
+           VerifyField<uint32_t>(verifier, VT_MEMBER_COUNT, 4) &&
+           VerifyField<uint32_t>(verifier, VT_TEAM_COUNT, 4) &&
            verifier.EndTable();
   }
 };
@@ -17123,6 +17133,12 @@ struct MatchReadyBuilder {
   void add_teams(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>>> teams) {
     fbb_.AddOffset(MatchReady::VT_TEAMS, teams);
   }
+  void add_member_count(uint32_t member_count) {
+    fbb_.AddElement<uint32_t>(MatchReady::VT_MEMBER_COUNT, member_count, 0);
+  }
+  void add_team_count(uint32_t team_count) {
+    fbb_.AddElement<uint32_t>(MatchReady::VT_TEAM_COUNT, team_count, 0);
+  }
   explicit MatchReadyBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -17138,9 +17154,13 @@ inline ::flatbuffers::Offset<MatchReady> CreateMatchReady(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t match_id = 0,
     uint32_t match_type = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>>> teams = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>>> teams = 0,
+    uint32_t member_count = 0,
+    uint32_t team_count = 0) {
   MatchReadyBuilder builder_(_fbb);
   builder_.add_match_id(match_id);
+  builder_.add_team_count(team_count);
+  builder_.add_member_count(member_count);
   builder_.add_teams(teams);
   builder_.add_match_type(match_type);
   return builder_.Finish();
@@ -17150,13 +17170,17 @@ inline ::flatbuffers::Offset<MatchReady> CreateMatchReadyDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t match_id = 0,
     uint32_t match_type = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>> *teams = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>> *teams = nullptr,
+    uint32_t member_count = 0,
+    uint32_t team_count = 0) {
   auto teams__ = teams ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::matchmaking::raw::MatchTeam>>(*teams) : 0;
   return fb::protocol::matchmaking::mq::raw::CreateMatchReady(
       _fbb,
       match_id,
       match_type,
-      teams__);
+      teams__,
+      member_count,
+      team_count);
 }
 
 struct MatchDissolved FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

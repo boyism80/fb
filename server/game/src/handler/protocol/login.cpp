@@ -346,7 +346,12 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     this->init_items(resp.items, *ch);
 
     if (request.match.has_value() && request.match->id != 0)
-        co_await this->server.matches.join(*ch, request.match->id, request.match->type, request.match->team);
+        co_await this->server.matches.join(*ch,
+                                           request.match->id,
+                                           request.match->type,
+                                           request.match->team,
+                                           request.match->expected,
+                                           request.match->team_count);
 
     if (resp.group.has_value())
     {

@@ -208,6 +208,8 @@ async::task<void> listener_impl::on_transfer(character&                  me,
         writer.write<uint64_t>(option.match->id);
         writer.write<uint32_t>(option.match->type);
         writer.write<uint32_t>(option.match->team);
+        writer.write<uint32_t>(option.match->expected);
+        writer.write<uint32_t>(option.match->team_count);
     }
     if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::UI_MODE))
         writer.write<uint8_t>(static_cast<uint8_t>(me.ui_mode));

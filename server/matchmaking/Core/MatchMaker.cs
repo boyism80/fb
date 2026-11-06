@@ -116,7 +116,7 @@ public class MatchMaker<TMember>
             ticket = new Ticket<TMember>(_ids.Next(0), matchType, DateTime.UtcNow, members.ToList());
             if (!_ticketQueues.TryGetValue(matchType, out var queue))
             {
-                queue = new TicketQueue<TMember>(matchmakingConfig, _options);
+                queue = new TicketQueue<TMember>(_options);
                 _ticketQueues[matchType] = queue;
             }
 
@@ -320,11 +320,12 @@ public class MatchMaker<TMember>
     public async Task TickMatchmakingAsync(IReadOnlyList<ServerStateService.ServerInfo> hosts, CancellationToken cancellationToken = default)
     {
         List<ProposedMatchResult<TMember>> proposed;
+        var unfit = new List<Ticket<TMember>>();
 
         lock (_lock)
         {
             proposed = new List<ProposedMatchResult<TMember>>();
-            foreach (var match in TryFormMatches(hosts))
+            foreach (var match in TryFormMatches(hosts, unfit))
             {
                 foreach (var ticket in match.AllTickets)
                 {
@@ -356,6 +357,11 @@ public class MatchMaker<TMember>
             {
                 LogQueueState("propose");
             }
+        }
+
+        foreach (var ticket in unfit)
+        {
+            await RaiseTicketRemovedAsync(ticket, cancellationToken);
         }
 
         foreach (var item in proposed)
@@ -668,19 +674,31 @@ public class MatchMaker<TMember>
         return queue.Remove(ticketId);
     }
 
-    private List<Match<TMember>> TryFormMatches(IReadOnlyList<ServerStateService.ServerInfo> hosts)
+    private List<Match<TMember>> TryFormMatches(IReadOnlyList<ServerStateService.ServerInfo> hosts, List<Ticket<TMember>> unfit)
     {
         var results = new List<Match<TMember>>();
 
-        // Without a live cross server nobody could host the match, so tickets stay queued.
-        if (hosts.Count == 0)
-        {
-            return results;
-        }
-
         foreach (var (matchType, queue) in _ticketQueues)
         {
-            foreach (var match in queue.TryFormMatch())
+            Table.Matchmaking.TryGetValue((Fb.Model.EnumValue.MatchType)matchType, out var config);
+            var removed = queue.RemoveWhere(ticket => config == null || ticket.Members.Count > config.MemberCount);
+            foreach (var ticket in removed)
+            {
+                ClearMemberTickets(ticket.Id);
+                _logger.LogWarning(
+                    "Ticket {TicketId} of match type {MatchType} no longer fits the matchmaking table and was removed",
+                    ticket.Id,
+                    matchType);
+            }
+            unfit.AddRange(removed);
+
+            // Without a live cross server nobody could host the match, so tickets stay queued.
+            if (config == null || hosts.Count == 0)
+            {
+                continue;
+            }
+
+            foreach (var match in queue.TryFormMatch(config))
             {
                 // The less populated of two random hosts; always taking the emptiest would pull every match there while the count lags.
                 ServerStateService.ServerInfo host;

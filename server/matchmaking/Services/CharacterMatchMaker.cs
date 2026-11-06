@@ -73,7 +73,9 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterTicketMember>
         {
             MatchId = match.Id,
             MatchType = match.Type,
-            Teams = BuildTeams(match)
+            Teams = BuildTeams(match),
+            MemberCount = match.MemberCount,
+            TeamCount = match.TeamCount
         };
 
         if (!await PublishToWorldsAsync(match.AllTickets.SelectMany(ticket => ticket.Members), message, cancellationToken))

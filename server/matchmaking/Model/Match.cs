@@ -3,12 +3,18 @@ namespace Matchmaking.Model;
 public class Match<TMember>
     where TMember : ITicketMember
 {
-    public Match(IReadOnlyList<IReadOnlyList<Ticket<TMember>>> teams)
+    public Match(IReadOnlyList<IReadOnlyList<Ticket<TMember>>> teams, uint memberCount, uint teamCount)
     {
         Teams = teams;
+        MemberCount = memberCount;
+        TeamCount = teamCount;
     }
 
     public ulong Id { get; set; }
+
+    public uint MemberCount { get; }
+
+    public uint TeamCount { get; }
 
     public uint Type { get; set; }
 

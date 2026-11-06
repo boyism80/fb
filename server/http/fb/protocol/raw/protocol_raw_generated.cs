@@ -13676,19 +13676,25 @@ public struct MatchReady : IFlatbufferObject
   public uint MatchType { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol.matchmaking.raw.MatchTeam? Teams(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol.matchmaking.raw.MatchTeam?)(new fb.protocol.matchmaking.raw.MatchTeam()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int TeamsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public uint MemberCount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint TeamCount { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.matchmaking.mq.raw.MatchReady> CreateMatchReady(FlatBufferBuilder builder,
       ulong match_id = 0,
       uint match_type = 0,
-      VectorOffset teamsOffset = default(VectorOffset)) {
-    builder.StartTable(3);
+      VectorOffset teamsOffset = default(VectorOffset),
+      uint member_count = 0,
+      uint team_count = 0) {
+    builder.StartTable(5);
     MatchReady.AddMatchId(builder, match_id);
+    MatchReady.AddTeamCount(builder, team_count);
+    MatchReady.AddMemberCount(builder, member_count);
     MatchReady.AddTeams(builder, teamsOffset);
     MatchReady.AddMatchType(builder, match_type);
     return MatchReady.EndMatchReady(builder);
   }
 
-  public static void StartMatchReady(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartMatchReady(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddMatchId(FlatBufferBuilder builder, ulong matchId) { builder.AddUlong(0, matchId, 0); }
   public static void AddMatchType(FlatBufferBuilder builder, uint matchType) { builder.AddUint(1, matchType, 0); }
   public static void AddTeams(FlatBufferBuilder builder, VectorOffset teamsOffset) { builder.AddOffset(2, teamsOffset.Value, 0); }
@@ -13697,6 +13703,8 @@ public struct MatchReady : IFlatbufferObject
   public static VectorOffset CreateTeamsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.matchmaking.raw.MatchTeam>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateTeamsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.matchmaking.raw.MatchTeam>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartTeamsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddMemberCount(FlatBufferBuilder builder, uint memberCount) { builder.AddUint(3, memberCount, 0); }
+  public static void AddTeamCount(FlatBufferBuilder builder, uint teamCount) { builder.AddUint(4, teamCount, 0); }
   public static Offset<fb.protocol.matchmaking.mq.raw.MatchReady> EndMatchReady(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.matchmaking.mq.raw.MatchReady>(o);
@@ -13712,6 +13720,8 @@ static public class MatchReadyVerify
       && verifier.VerifyField(tablePos, 4 /*MatchId*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 6 /*MatchType*/, 4 /*uint*/, 4, false)
       && verifier.VerifyVectorOfTables(tablePos, 8 /*Teams*/, fb.protocol.matchmaking.raw.MatchTeamVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 10 /*MemberCount*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*TeamCount*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

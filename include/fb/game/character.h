@@ -61,9 +61,11 @@ struct friend_entry
 
 struct transfer_match
 {
-    uint64_t id   = 0;
-    uint32_t type = 0;
-    uint32_t team = 0;
+    uint64_t id         = 0;
+    uint32_t type       = 0;
+    uint32_t team       = 0;
+    uint32_t expected   = 0;
+    uint32_t team_count = 0;
 };
 
 struct transfer_option

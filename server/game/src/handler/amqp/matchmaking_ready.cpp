@@ -17,6 +17,8 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
 {
     auto match_id   = message.match_id;
     auto match_type = message.match_type;
+    auto team_count = message.team_count;
+    auto expected   = message.member_count * message.team_count;
 
     for (uint32_t team_index = 0; team_index < static_cast<uint32_t>(message.teams.size()); ++team_index)
     {
@@ -31,7 +33,7 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
 
                 auto weak    = ch->weak_from_this_as<character>();
                 auto builder = this->server.threads.new_builder(weak);
-                builder.func = [ch, match_id, match_type, team_id](auto&) -> async::task<void> {
+                builder.func = [ch, match_id, match_type, team_id, expected, team_count](auto&) -> async::task<void> {
                     if (ch->matchmaker.on_ready(match_id) == false)
                         co_return;
 
@@ -53,7 +55,9 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                             lua->pushinteger(static_cast<lua_Integer>(match_id));
                             lua->pushinteger(match_type);
                             lua->pushinteger(team_id);
-                            std::ignore = co_await lua->call(4);
+                            lua->pushinteger(expected);
+                            lua->pushinteger(team_count);
+                            std::ignore = co_await lua->call(6);
                         }
                     }
                     co_return;

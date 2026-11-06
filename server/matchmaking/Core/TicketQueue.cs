@@ -7,15 +7,13 @@ namespace Matchmaking.Core;
 public sealed class TicketQueue<TMember>
     where TMember : ITicketMember
 {
-    private readonly Fb.Model.Matchmaking _config;
     private readonly MatchmakingOptions _options;
     private readonly SortedSet<Ticket<TMember>> _byCreatedAt = new();
     private readonly SortedDictionary<int, List<Ticket<TMember>>> _buckets = new();
     private readonly object _lock = new();
 
-    public TicketQueue(Fb.Model.Matchmaking config, MatchmakingOptions options)
+    public TicketQueue(MatchmakingOptions options)
     {
-        _config = config;
         _options = options;
         if (_options.SkillBucketWidth <= 0)
         {
@@ -91,18 +89,38 @@ public sealed class TicketQueue<TMember>
         }
     }
 
-    public List<Match<TMember>> TryFormMatch()
+    public List<Ticket<TMember>> RemoveWhere(Func<Ticket<TMember>, bool> predicate)
+    {
+        lock (_lock)
+        {
+            var removed = _byCreatedAt.Where(predicate).ToList();
+            foreach (var ticket in removed)
+            {
+                _byCreatedAt.Remove(ticket);
+                RemoveFromBucket(ticket);
+            }
+
+            return removed;
+        }
+    }
+
+    public List<Match<TMember>> TryFormMatch(Fb.Model.Matchmaking config)
     {
         lock (_lock)
         {
             var matches = new List<Match<TMember>>();
+            var membersPerMatch = (int)(config.MemberCount * config.TeamCount);
+            if (membersPerMatch <= 0)
+            {
+                return matches;
+            }
 
-            while (TotalMemberCount() >= MembersPerMatch)
+            while (TotalMemberCount() >= membersPerMatch)
             {
                 Match<TMember> match = null;
                 foreach (var anchor in _byCreatedAt)
                 {
-                    match = TryFormMatchWithAnchor(anchor);
+                    match = TryFormMatchWithAnchor(anchor, config);
                     if (match != null)
                     {
                         break;
@@ -122,7 +140,7 @@ public sealed class TicketQueue<TMember>
         }
     }
 
-    private Match<TMember> TryFormMatchWithAnchor(Ticket<TMember> anchor)
+    private Match<TMember> TryFormMatchWithAnchor(Ticket<TMember> anchor, Fb.Model.Matchmaking config)
     {
         var tolerance = GetSkillTolerance(anchor);
         var candidates = GetCandidatesInWindow(anchor, tolerance);
@@ -131,7 +149,7 @@ public sealed class TicketQueue<TMember>
             return null;
         }
 
-        var anchorTeam = TryBuildTeam(candidates, anchor, (int)_config.MemberCount);
+        var anchorTeam = TryBuildTeam(candidates, anchor, (int)config.MemberCount);
         if (anchorTeam == null)
         {
             return null;
@@ -140,10 +158,10 @@ public sealed class TicketQueue<TMember>
         var used = new HashSet<ulong>(anchorTeam.Select(ticket => ticket.Id));
         var teams = new List<IReadOnlyList<Ticket<TMember>>> { anchorTeam };
 
-        for (var teamIndex = 1; teamIndex < (int)_config.TeamCount; teamIndex++)
+        for (var teamIndex = 1; teamIndex < (int)config.TeamCount; teamIndex++)
         {
             var remaining = candidates.Where(ticket => !used.Contains(ticket.Id)).ToList();
-            var team = TryBuildTeam(remaining, required: null, (int)_config.MemberCount);
+            var team = TryBuildTeam(remaining, required: null, (int)config.MemberCount);
             if (team == null)
             {
                 return null;
@@ -156,7 +174,7 @@ public sealed class TicketQueue<TMember>
             }
         }
 
-        return new Match<TMember>(teams);
+        return new Match<TMember>(teams, config.MemberCount, config.TeamCount);
     }
 
     private List<Ticket<TMember>> GetCandidatesInWindow(Ticket<TMember> anchor, double tolerance)
@@ -275,6 +293,4 @@ public sealed class TicketQueue<TMember>
         var tolerance = _options.BaseSkillTolerance + (_options.SkillTolerancePerSecond * waitSeconds);
         return Math.Min(_options.MaxSkillTolerance, tolerance);
     }
-
-    private int MembersPerMatch => (int)(_config.MemberCount * _config.TeamCount);
 }

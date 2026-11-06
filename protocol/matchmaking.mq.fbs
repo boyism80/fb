@@ -13,6 +13,8 @@ table MatchReady {
     match_id: ulong;
     match_type: uint;
     teams: [fb.protocol.matchmaking.MatchTeam];
+    member_count: uint;
+    team_count: uint;
 }
 
 table MatchDissolved {

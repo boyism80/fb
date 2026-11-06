@@ -719,7 +719,12 @@ match::container::container(server& server) :
     _server(server)
 { }
 
-async::task<void> match::container::join(character& ch, uint64_t match_id, uint32_t match_type, uint32_t team)
+async::task<void> match::container::join(character& ch,
+                                         uint64_t   match_id,
+                                         uint32_t   match_type,
+                                         uint32_t   team,
+                                         uint32_t   expected,
+                                         uint32_t   team_count)
 {
     if (match_id == 0)
         co_return;
@@ -754,17 +759,8 @@ async::task<void> match::container::join(character& ch, uint64_t match_id, uint3
         }
         else
         {
-            auto expected   = uint32_t{1};
-            auto team_count = uint32_t{1};
-            auto type_enum  = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
-            if (table::matchmaking->contains(type_enum))
-            {
-                auto& row  = table::matchmaking[type_enum];
-                expected   = row.member_count * row.team_count;
-                team_count = row.team_count;
-                if (expected == 0)
-                    expected = 1;
-            }
+            expected   = std::max<uint32_t>(expected, 1);
+            team_count = std::max<uint32_t>(team_count, 1);
 
             auto slot = this->_next_slot++;
             if (slot == 0)

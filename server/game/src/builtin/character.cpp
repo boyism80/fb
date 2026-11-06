@@ -4331,6 +4331,16 @@ int builtin::character::builtin_transfer_to(lua_State* L)
             option.match->team = static_cast<uint32_t>(lua->tointeger(-1));
         }
         lua->remove(-1);
+
+        lua_getfield(*lua, 5, "match_expected");
+        lua_getfield(*lua, 5, "match_team_count");
+        if (lua->is_number(-2) && lua->is_number(-1))
+        {
+            option.match->expected   = static_cast<uint32_t>(std::max<lua_Integer>(0, lua->tointeger(-2)));
+            option.match->team_count = static_cast<uint32_t>(std::max<lua_Integer>(0, lua->tointeger(-1)));
+        }
+        lua->remove(-1);
+        lua->remove(-1);
     }
     else
     {
