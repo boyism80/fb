@@ -178,8 +178,10 @@ weather_type service::weather::reroll(uint32_t max_attempts)
     auto day   = static_cast<int>(time.day());
     auto hour  = static_cast<uint8_t>(time.hours());
 
-    auto _   = std::lock_guard(this->_mutex);
-    auto old = this->_current.load();
+    auto _                 = std::lock_guard(this->_mutex);
+    auto old               = this->_current.load();
+    auto original_segments = this->_segments;
+    auto original_day_key  = this->_day_key;
     for (uint32_t attempt = 0; attempt < max_attempts; ++attempt)
     {
         auto seed = static_cast<uint32_t>(day_key) * 1000u + attempt;
@@ -196,6 +198,8 @@ weather_type service::weather::reroll(uint32_t max_attempts)
         return type;
     }
 
+    this->_segments = std::move(original_segments);
+    this->_day_key  = original_day_key;
     return old;
 }
 
