@@ -52,6 +52,18 @@
 template <typename Request>
 struct response_of;
 
+#define REGISTER_REQUEST_TIMEOUT(Request, Seconds)            \
+    template <> struct request_timeout<Request>               \
+    {                                                         \
+        static constexpr std::chrono::seconds value{Seconds}; \
+    };
+
+template <typename Request>
+struct request_timeout
+{
+    static constexpr std::chrono::seconds value{5};
+};
+
 namespace fb {
 
 using namespace std::chrono_literals;
@@ -717,31 +729,32 @@ private:
 
         pending_task task = [this, promise, host, path, headers, body_vec]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
-            boost::asio::co_spawn(boost::asio::make_strand(ctx),
-                                  this->boost_post_raw_async(host, path, headers, std::chrono::seconds{5}, body_vec),
-                                  [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                      if (ep)
-                                      {
-                                          promise->set_exception(ep);
-                                          this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                          this->pump();
-                                          return;
-                                      }
-                                      try
-                                      {
-                                          auto reader        = fb::stream_reader<big_endian>(bytes);
-                                          auto protocol_type = reader.read<uint32_t>();
-                                          auto protocol_len  = reader.read<uint32_t>();
-                                          auto offset        = bytes.data() + sizeof(uint32_t) * 2;
-                                          promise->set_value(response_of<Request>::type::Deserialize(offset));
-                                      }
-                                      catch (...)
-                                      {
-                                          promise->set_exception(std::current_exception());
-                                      }
-                                      this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                      this->pump();
-                                  });
+            boost::asio::co_spawn(
+                boost::asio::make_strand(ctx),
+                this->boost_post_raw_async(host, path, headers, request_timeout<Request>::value, body_vec),
+                [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                    if (ep)
+                    {
+                        promise->set_exception(ep);
+                        this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                        this->pump();
+                        return;
+                    }
+                    try
+                    {
+                        auto reader        = fb::stream_reader<big_endian>(bytes);
+                        auto protocol_type = reader.read<uint32_t>();
+                        auto protocol_len  = reader.read<uint32_t>();
+                        auto offset        = bytes.data() + sizeof(uint32_t) * 2;
+                        promise->set_value(response_of<Request>::type::Deserialize(offset));
+                    }
+                    catch (...)
+                    {
+                        promise->set_exception(std::current_exception());
+                    }
+                    this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                    this->pump();
+                });
         };
 
         bool trigger;

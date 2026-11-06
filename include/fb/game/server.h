@@ -73,6 +73,8 @@ REGISTER_RESPONSE(fb::protocol::internal::request::FinishCastleSiege, fb::protoc
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
 REGISTER_RESPONSE(fb::protocol::internal::request::SaveBatch, fb::protocol::internal::response::BatchSave)
+REGISTER_REQUEST_TIMEOUT(fb::protocol::internal::request::Save, 30)
+REGISTER_REQUEST_TIMEOUT(fb::protocol::internal::request::SaveBatch, 30)
 REGISTER_RESPONSE(fb::protocol::internal::request::Broadcast, fb::protocol::internal::response::Broadcast)
 REGISTER_RESPONSE(fb::protocol::internal::request::FriendBroadcast, fb::protocol::internal::response::FriendBroadcast)
 REGISTER_RESPONSE(fb::protocol::internal::request::CreateGroup, fb::protocol::internal::response::GroupDetails)
