@@ -237,6 +237,14 @@ return {
         end
 
         if hwahwa_friend then
+            if jingo_step < 9 and not me:has_items("고균의영검", 1) and not me:has_items("진'고균의영검", 1) then
+                if me:mkitem("고균의영검", 1) == nil then
+                    me:dialog(npc, "소지품이 가득 차서 받을 수 없습니다.", { prev = false, next = false })
+                    return
+                end
+                me:dialog(npc, "선물 잃어버렸어? 다시 줄게!\n\n이번엔 꼭 잘 간직해~", { prev = false, next = false })
+                return
+            end
             me:dialog(npc, me:name() .. ", 잘 지내?", { prev = false, next = false })
             return
         end
