@@ -37,7 +37,8 @@ namespace Http.Service
                 throw new LogicException(ErrorCode.NotFoundCharacter);
             world = row.World;
             var userId = row.Id;
-            await EnsureOutranks(actor, world, userId);
+            var actorRole = await EnsureOutranks(actor, world, userId);
+            EnsureOutranksBan(actorRole, await _dbContext.Ban.Get(world, userId));
 
             // Calculate expire date
             DateTime? expireDate = days is > 0 ? DateTime.UtcNow.AddDays(days.Value) : null;
@@ -48,6 +49,7 @@ namespace Http.Service
                 User = userId,
                 Reason = reason,
                 ExpireDate = expireDate,
+                ActorRole = actorRole,
                 CreatedDate = DateTime.UtcNow,
                 UpdatedDate = DateTime.UtcNow
             };
@@ -92,7 +94,7 @@ namespace Http.Service
                 throw new LogicException(ErrorCode.NotFoundCharacter);
             world = row.World;
             var userId = row.Id;
-            await EnsureOutranks(actor, world, userId);
+            var actorRole = await EnsureOutranks(actor, world, userId);
 
             // Check if ban exists
             var ban = await _dbContext.Ban.Get(world, userId);
@@ -100,6 +102,7 @@ namespace Http.Service
             {
                 throw new LogicException(ErrorCode.NotFoundBan);
             }
+            EnsureOutranksBan(actorRole, ban);
 
             // Delete ban (soft delete)
             _dbContext.Ban.Delete(world, userId);
@@ -127,7 +130,7 @@ namespace Http.Service
         }
 
 
-        private async Task EnsureOutranks(string actor, uint world, uint targetId)
+        private async Task<Role> EnsureOutranks(string actor, uint world, uint targetId)
         {
             var target = await _dbContext.Character.Get(world, targetId) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -135,6 +138,26 @@ namespace Http.Service
             var actorRef = await _dbContext.Character.GetCharacterRef(actor);
             var actorCharacter = actorRef == null ? null : await _dbContext.Character.Get(actorRef.World, actorRef.Id);
             if (actorCharacter == null || actorCharacter.Role <= target.Role)
+            {
+                throw new LogicException(ErrorCode.BanNoPrivilege);
+            }
+
+            return actorCharacter.Role;
+        }
+
+        private static void EnsureOutranksBan(Role actorRole, Ban existing)
+        {
+            if (existing?.ActorRole == null)
+            {
+                return;
+            }
+
+            if (existing.ExpireDate.HasValue && existing.ExpireDate.Value <= DateTime.UtcNow)
+            {
+                return;
+            }
+
+            if (actorRole < existing.ActorRole.Value)
             {
                 throw new LogicException(ErrorCode.BanNoPrivilege);
             }

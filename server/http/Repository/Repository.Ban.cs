@@ -37,6 +37,7 @@ namespace Http.Reepository
                     `user`,
                     `reason`,
                     `expire_date`,
+                    `actor_role`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -44,12 +45,14 @@ namespace Http.Reepository
                     {value.User.Escape()},
                     {value.Reason.Escape()},
                     {value.ExpireDate.Escape()},
+                    {(value.ActorRole.HasValue ? ((byte)value.ActorRole.Value).ToString() : "NULL")},
                     0,
                     {value.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss").Escape()},
                     {value.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss").Escape()})
                 ON DUPLICATE KEY UPDATE
                     `reason` = VALUES(`reason`),
                     `expire_date` = VALUES(`expire_date`),
+                    `actor_role` = VALUES(`actor_role`),
                     `deleted` = 0,
                     `updated_date` = VALUES(`updated_date`);
                 """;
