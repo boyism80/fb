@@ -1,7 +1,10 @@
 #ifndef __FB_CRASH_H__
 #define __FB_CRASH_H__
 
+#include <atomic>
 #include <cstddef>
+#include <mutex>
+#include <string>
 
 #ifdef _WIN32
 #include <fb/windows.h>
@@ -12,21 +15,28 @@ namespace fb {
 class crash
 {
 private:
-    inline static char       _header[256]{};
-    inline static size_t     _header_len = 0;
-    inline static const char _end[]      = "*** END CRASH ***\n";
+    inline static char        _header[256]{};
+    inline static size_t      _header_len = 0;
+    inline static const char  _end[]      = "*** END CRASH ***\n";
+    inline static std::mutex  _rotate_mutex;
+    inline static std::string _kind;
+    inline static std::string _path;
 #ifdef _WIN32
-    inline static HANDLE _file = INVALID_HANDLE_VALUE;
-    inline static HANDLE _err  = INVALID_HANDLE_VALUE;
+    inline static std::atomic<HANDLE> _file          = INVALID_HANDLE_VALUE;
+    inline static HANDLE              _previous_file = INVALID_HANDLE_VALUE;
+    inline static HANDLE              _err           = INVALID_HANDLE_VALUE;
 #else
-    inline static int  _file_fd = -1;
-    inline static char _exe_path[512]{};
+    inline static std::atomic<int> _file_fd     = -1;
+    inline static int              _previous_fd = -1;
+    inline static char             _exe_path[512]{};
 #endif
 
 public:
     static void install(const char* service);
+    static void rotate();
 
 private:
+    static void open_daily();
     static void write_bytes(const void* data, size_t size);
 #ifdef _WIN32
     static void write_dump(EXCEPTION_POINTERS* info);

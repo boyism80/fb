@@ -1,5 +1,7 @@
 #include <fb/logger.h>
 
+#include <fb/crash.h>
+
 #include <atomic>
 #include <cstdio>
 #include <deque>
@@ -110,12 +112,14 @@ void fb::logger::writer_run()
 #endif
             if (fp == nullptr)
                 return;
+            std::fseek(fp, 0, SEEK_END);
             if (std::ftell(fp) == 0)
             {
                 static constexpr unsigned char bom[] = {0xEF, 0xBB, 0xBF};
                 std::fwrite(bom, 1, sizeof(bom), fp);
             }
             current = std::move(path);
+            fb::crash::rotate();
         }
 
         for (const auto& line : batch)

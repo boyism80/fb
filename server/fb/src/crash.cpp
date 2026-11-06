@@ -37,14 +37,16 @@ void fb::crash::write_bytes(const void* data, size_t size)
     DWORD written = 0;
     if (_err != INVALID_HANDLE_VALUE)
         WriteFile(_err, data, static_cast<DWORD>(size), &written, nullptr);
-    if (_file != INVALID_HANDLE_VALUE)
-        WriteFile(_file, data, static_cast<DWORD>(size), &written, nullptr);
+    auto file = _file.load();
+    if (file != INVALID_HANDLE_VALUE)
+        WriteFile(file, data, static_cast<DWORD>(size), &written, nullptr);
 #else
     if (size == 0)
         return;
     ::write(STDERR_FILENO, data, size);
-    if (_file_fd >= 0)
-        ::write(_file_fd, data, size);
+    auto fd = _file_fd.load();
+    if (fd >= 0)
+        ::write(fd, data, size);
 #endif
 }
 
@@ -156,8 +158,9 @@ void fb::crash::dump(const char* kind, size_t kind_len, EXCEPTION_POINTERS* info
     write_bytes(kind, kind_len);
     write_dump(info);
     write_bytes(_end, sizeof(_end) - 1);
-    if (_file != INVALID_HANDLE_VALUE)
-        FlushFileBuffers(_file);
+    auto file = _file.load();
+    if (file != INVALID_HANDLE_VALUE)
+        FlushFileBuffers(file);
     if (_err != INVALID_HANDLE_VALUE)
         FlushFileBuffers(_err);
 }
@@ -272,8 +275,9 @@ void fb::crash::write_dump()
 
     write_bytes("raw:\n", 5);
     backtrace_symbols_fd(frames, count, STDERR_FILENO);
-    if (_file_fd >= 0)
-        backtrace_symbols_fd(frames, count, _file_fd);
+    auto fd = _file_fd.load();
+    if (fd >= 0)
+        backtrace_symbols_fd(frames, count, fd);
 }
 
 void fb::crash::dump(const char* kind, size_t kind_len)
@@ -282,8 +286,9 @@ void fb::crash::dump(const char* kind, size_t kind_len)
     write_bytes(kind, kind_len);
     write_dump();
     write_bytes(_end, sizeof(_end) - 1);
-    if (_file_fd >= 0)
-        ::fsync(_file_fd);
+    auto fd = _file_fd.load();
+    if (fd >= 0)
+        ::fsync(fd);
     ::fsync(STDERR_FILENO);
 }
 #endif
@@ -356,6 +361,49 @@ void fb::crash::on_terminate()
     std::_Exit(1);
 }
 
+void fb::crash::open_daily()
+{
+    auto path = fb::logger::daily_path(_kind);
+    if (path == _path)
+        return;
+
+#ifdef _WIN32
+    auto file = CreateFileA(path.c_str(),
+                            FILE_APPEND_DATA,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE,
+                            nullptr,
+                            OPEN_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL,
+                            nullptr);
+    if (file == INVALID_HANDLE_VALUE)
+        return;
+
+    auto old = _file.exchange(file);
+    if (_previous_file != INVALID_HANDLE_VALUE)
+        CloseHandle(_previous_file);
+    _previous_file = old;
+#else
+    auto fd = ::open(path.c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
+    if (fd < 0)
+        return;
+
+    auto old = _file_fd.exchange(fd);
+    if (_previous_fd >= 0)
+        ::close(_previous_fd);
+    _previous_fd = old;
+#endif
+    _path = std::move(path);
+}
+
+void fb::crash::rotate()
+{
+    auto lock = std::lock_guard(_rotate_mutex);
+    if (_kind.empty())
+        return;
+
+    open_daily();
+}
+
 void fb::crash::install(const char* service)
 {
     static std::once_flag flag;
@@ -364,34 +412,23 @@ void fb::crash::install(const char* service)
         auto name = fb::config<std::string>("name", std::string{kind});
         if (name.empty())
             name = kind;
-        auto file = fb::logger::daily_path(kind);
 #ifdef _WIN32
         auto pid = static_cast<unsigned long>(GetCurrentProcessId());
         _err     = GetStdHandle(STD_ERROR_HANDLE);
+#else
+        auto pid = static_cast<long>(::getpid());
+#endif
         try
         {
             std::filesystem::create_directories("logs");
         }
         catch (...)
         { }
-        _file = CreateFileA(file.c_str(),
-                            FILE_APPEND_DATA,
-                            FILE_SHARE_READ | FILE_SHARE_WRITE,
-                            nullptr,
-                            OPEN_ALWAYS,
-                            FILE_ATTRIBUTE_NORMAL,
-                            nullptr);
-#else
-        auto pid = static_cast<long>(::getpid());
-        try
         {
-            std::filesystem::create_directories("logs");
+            auto lock = std::lock_guard(_rotate_mutex);
+            _kind     = kind;
+            open_daily();
         }
-        catch (...)
-        {
-        }
-        _file_fd = ::open(file.c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
-#endif
         _header_len = static_cast<size_t>(std::snprintf(_header,
                                                         sizeof(_header),
                                                         "*** FB CRASH ***\nservice=%s name=%s pid=%lu\n",
