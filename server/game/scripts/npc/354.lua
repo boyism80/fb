@@ -137,7 +137,9 @@ local function run_junghwa(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return true
     end
-    me:mkitem("깨진김장독", 1)
+    if me:mkitem("깨진김장독", 1) == nil then
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with('깨진김장독', '을', '를') .. ' 드릴 수 없습니다.', { prev = false, next = false })
+    end
     return true
 end
 
