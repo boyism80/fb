@@ -4,10 +4,13 @@
 #include <fb/gateway/protocol.h>
 #include <fb/log_collector.h>
 
+#include <charconv>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -107,6 +110,34 @@ async::task<bool> server::on_disconnected(fb::socket<session>& socket)
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.global"); // Shutdown: all servers
+}
+
+uint8_t server::id() const
+{
+    auto pod = std::getenv("FB_POD_NAME");
+    if (pod != nullptr)
+    {
+        auto name    = std::string_view(pod);
+        auto dash    = name.rfind('-');
+        auto ordinal = uint32_t{0};
+        if (dash != std::string_view::npos)
+        {
+            auto digits       = name.substr(dash + 1);
+            auto [end, error] = std::from_chars(digits.data(), digits.data() + digits.size(), ordinal);
+            if (error == std::errc{} && end == digits.data() + digits.size() && digits.empty() == false &&
+                ordinal <= std::numeric_limits<uint8_t>::max())
+                return static_cast<uint8_t>(ordinal);
+        }
+    }
+    return fb::acceptor<fb::gateway::session>::id();
+}
+
+std::string server::name() const
+{
+    auto pod = std::getenv("FB_POD_NAME");
+    if (pod != nullptr && pod[0] != '\0')
+        return pod;
+    return fb::acceptor<fb::gateway::session>::name();
 }
 
 async::task<void> server::update_status()

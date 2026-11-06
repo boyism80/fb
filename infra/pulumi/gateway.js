@@ -135,6 +135,10 @@ module.exports = function () {
                                         timeoutSeconds: 3,
                                         failureThreshold: 3
                                     },
+                                    env: [{
+                                        name: "FB_POD_NAME",
+                                        valueFrom: { fieldRef: { fieldPath: "metadata.name" } }
+                                    }],
                                     command: ["./gateway"],
                                     args: ["-c", "config.json"],
                                     volumeMounts: [{
