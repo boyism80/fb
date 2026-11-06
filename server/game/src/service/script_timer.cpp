@@ -139,8 +139,12 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
 
     co_await thread->switching();
 
-    if (this->server.maps.find(map_id) == nullptr)
+    auto owner = this->server.maps.find(map_id);
+    if (owner == nullptr || owner.get() != &map || map.closing())
         co_return std::nullopt;
+
+    auto weak_map = std::weak_ptr<fb::game::map>(owner);
+    owner.reset();
 
     auto id       = uint64_t{0};
     auto duration = fb::model::timespan(std::chrono::milliseconds(interval_ms));
@@ -153,21 +157,26 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
 
     auto* server = &this->server;
     auto  timer  = thread->settimer(
-        [server, id, map_id, path, func, repeat](const fb::model::datetime&, std::thread::id) -> async::task<void> {
+        [server, id, map_id, weak_map, path, func, repeat](const fb::model::datetime&,
+                                                           std::thread::id) -> async::task<void> {
             // Copy captures into the coroutine frame before any suspend. The
             // lambda object itself may be destroyed while lua->call is yielded.
             auto* srv         = server;
             auto  timer_id    = id;
             auto  mid         = map_id;
+            auto  target      = weak_map;
             auto  script_path = path;
             auto  script_func = func;
             auto  once        = (repeat == false);
             auto& timers      = srv->script_timers;
 
-            if (srv->maps.find(mid) == nullptr)
             {
-                timers.cancel(timer_id);
-                co_return;
+                auto current = target.lock();
+                if (current == nullptr || current->closing() || srv->maps.find(mid) != current)
+                {
+                    timers.cancel(timer_id);
+                    co_return;
+                }
             }
 
             auto lua = srv->lua.open(script_path, script_func);
@@ -181,19 +190,34 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
         duration,
         type);
 
+    auto closing = false;
     {
-        auto _       = std::lock_guard(this->_mutex);
-        auto entry   = entry_t{};
-        entry.id     = id;
-        entry.map_id = map_id;
-        entry.name   = name;
-        entry.path   = std::move(path);
-        entry.func   = std::move(func);
-        entry.repeat = repeat;
-        entry.timer  = timer;
+        auto _ = std::lock_guard(this->_mutex);
+        if (map.closing())
+        {
+            closing = true;
+        }
+        else
+        {
+            auto entry   = entry_t{};
+            entry.id     = id;
+            entry.map_id = map_id;
+            entry.name   = name;
+            entry.path   = std::move(path);
+            entry.func   = std::move(func);
+            entry.repeat = repeat;
+            entry.timer  = timer;
 
-        this->_by_id[id]                   = std::move(entry);
-        this->_by_key[key_t{map_id, name}] = id;
+            this->_by_id[id]                   = std::move(entry);
+            this->_by_key[key_t{map_id, name}] = id;
+        }
+    }
+
+    if (closing)
+    {
+        if (timer != nullptr)
+            timer->cancel();
+        co_return std::nullopt;
     }
 
     co_return id;

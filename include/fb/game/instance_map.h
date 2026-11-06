@@ -3,6 +3,7 @@
 
 #include <fb/game/map.h>
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 
@@ -14,7 +15,7 @@ private:
     std::shared_ptr<fb::game::map> _source;
     const uint32_t                 _slot;
     bool                           _activated  = false;
-    bool                           _closing    = false;
+    std::atomic<bool>              _closing    = false;
     bool                           _destroying = false;
 
 public:
