@@ -27,8 +27,10 @@ local function run_songpyeon_request(me, npc, q)
         end
     end
     if q and not q:completed() then
+        if q:step() < 1 then
+            q:progress(0)
+        end
         q:step(1)
-        q:progress(0)
         festival.stamp_lunar_year(q)
     end
 end
