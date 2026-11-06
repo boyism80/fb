@@ -74,6 +74,7 @@ void move::deserialize(fb::stream_reader<big_endian>& reader)
     this->position.x = reader.read<uint16_t>();
     this->position.y = reader.read<uint16_t>();
     this->direction  = (DIRECTION)reader.read<uint8_t>();
+    reader.read<uint8_t>();
 }
 #endif
 

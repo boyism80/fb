@@ -27,8 +27,11 @@ public:
     const uint16_t bgm;
     const uint8_t  volume;
 #else
+    AUDIO    audio = AUDIO::BGM;
     uint16_t bgm;
     uint8_t  volume = DEFAULT_VOLUME;
+    uint16_t sound  = 0;
+    uint32_t oid    = 0;
 #endif
 
 public:

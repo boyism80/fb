@@ -59,6 +59,7 @@ void direction::deserialize(fb::stream_reader<big_endian>& reader)
     header::deserialize(reader);
     this->oid   = reader.read<uint32_t>();
     this->value = (DIRECTION)reader.read<uint8_t>();
+    reader.read<uint8_t>();
 }
 #endif
 

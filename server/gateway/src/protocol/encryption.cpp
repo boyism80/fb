@@ -46,6 +46,7 @@ void encryption::deserialize(fb::stream_reader<big_endian>& reader)
     auto size    = reader.read<uint8_t>();
     auto iv      = std::make_unique<uint8_t[]>(size);
     reader.read(iv.get(), size);
+    reader.read<uint8_t>();
     this->cryptor = fb::encryption(pattern, iv.get());
 }
 #endif

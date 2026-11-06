@@ -1203,6 +1203,12 @@ void marshal_lua_game_resp__map_bgm(lua_State* L, const fb::protocol::header& he
     lua->pushstring("volume");
     lua->pushinteger(resp.volume);
     lua->settable(-3);
+    lua->pushstring("sound");
+    lua->pushinteger(resp.sound);
+    lua->settable(-3);
+    lua->pushstring("oid");
+    lua->pushinteger(resp.oid);
+    lua->settable(-3);
 }
 
 void marshal_lua_game_resp__map_bgm_stop(lua_State* L, const fb::protocol::header& header, fb::protocol::CLIENT_VERSION)

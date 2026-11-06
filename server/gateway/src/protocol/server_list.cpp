@@ -104,7 +104,33 @@ void server_list::serialize(fb::stream_writer<big_endian>& writer) const
 void server_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    auto count = reader.read<uint8_t>();
+    auto size       = reader.read<uint16_t>();
+    auto compressed = std::vector<uint8_t>(size);
+    reader.read(compressed.data(), size);
+    reader.read<uint8_t>();
+
+    auto formats = fb::stream(compressed.data(), size).decompress();
+    auto entries = fb::stream_reader<big_endian>(formats);
+    auto count   = entries.read<uint8_t>();
+    this->servers.clear();
+    for (uint8_t i = 0; i < count && entries.readable_size() > 0; i++)
+    {
+        entries.read<uint8_t>();
+        auto ip   = entries.read<uint32_t>();
+        auto port = entries.read<uint16_t>();
+        auto text = std::string();
+        while (entries.readable_size() > 0)
+        {
+            auto value = entries.read<uint8_t>();
+            if (value == 0)
+                break;
+            text.push_back(static_cast<char>(value));
+        }
+        auto split = text.find(';');
+        auto name  = split == std::string::npos ? text : text.substr(0, split);
+        auto desc  = split == std::string::npos ? std::string() : text.substr(split + 1);
+        this->servers.emplace_back(name, desc, ip, port);
+    }
 }
 #endif
 

@@ -4,6 +4,7 @@
 #include <fb/protocol/header.h>
 
 #include <cstdint>
+#include <string>
 
 namespace fb::protocol::gateway::response {
 
@@ -12,6 +13,10 @@ class welcome : public fb::protocol::header
 public:
     static constexpr uint8_t opcode  = 0x7E;
     static constexpr bool    decrypt = false;
+
+public:
+    uint8_t     code = 0;
+    std::string message;
 
 public:
     welcome() = default;

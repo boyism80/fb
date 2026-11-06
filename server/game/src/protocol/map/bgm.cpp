@@ -26,11 +26,30 @@ void map_bgm::serialize(fb::stream_writer<big_endian>& writer) const
 void map_bgm::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    reader.read<uint8_t>(); // AUDIO::BGM
-    reader.read<uint8_t>(); // TLV_SIZE_BGM
-    this->bgm = reader.read<uint16_t>();
-    reader.read<uint16_t>(); // bgm duplicate
-    this->volume = reader.read<uint8_t>();
+    this->audio = static_cast<AUDIO>(reader.read<uint8_t>());
+    reader.read<uint8_t>();
+    switch (this->audio)
+    {
+    case AUDIO::BGM:
+        this->bgm = reader.read<uint16_t>();
+        reader.read<uint16_t>(); // bgm duplicate
+        this->volume = reader.read<uint8_t>();
+        break;
+    case AUDIO::BGM_STOP:
+        this->bgm    = reader.read<uint16_t>();
+        this->volume = 0;
+        break;
+    case AUDIO::SOUND:
+        this->sound  = reader.read<uint16_t>();
+        this->volume = reader.read<uint8_t>();
+        reader.read<uint16_t>();
+        this->oid = reader.read<uint32_t>();
+        reader.read<uint16_t>();
+        reader.read<uint16_t>();
+        reader.read<uint16_t>();
+        reader.read<uint16_t>();
+        break;
+    }
 }
 #endif
 
