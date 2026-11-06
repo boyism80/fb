@@ -586,7 +586,13 @@ return {
             return report(me, false, step, 'missing')
         end
         local value = tonumber(role)
-        you:role(value)
+        if value == nil or value < 0 then
+            return report(me, false, step, 'invalid role')
+        end
+        if you:role() > me:role() or value > me:role() then
+            return report(me, false, step, 'role above caller')
+        end
+        you:role(value, me)
         if you:role() ~= value then
             return report(me, false, step, 'role mismatch')
         end

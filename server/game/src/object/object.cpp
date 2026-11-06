@@ -1,5 +1,6 @@
 #include <fb/game/object.h>
 
+#include <fb/config.h>
 #include <fb/game/character.h>
 #include <fb/game/map.h>
 #include <fb/game/server.h>
@@ -10,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <filesystem>
 #include <format>
 #include <iterator>
 #include <memory>
@@ -387,6 +389,13 @@ async::task<std::optional<std::vector<fb::lua::value>>> object::script(std::stri
 
     if (path.starts_with("scripts/") == false)
         path = std::format("scripts/{}", path);
+
+    path = std::filesystem::path(path).lexically_normal().generic_string();
+    if (path.starts_with("scripts/test/") && fb::config<bool>("integration_test", false) == false)
+    {
+        fb::logger::warn("script: {} is only allowed on integration test servers", path);
+        co_return std::nullopt;
+    }
 
     // No parent: completion must stay on the thread that resumes the child, not hop to the caller.
     auto lua = this->server.lua.open(path, func);

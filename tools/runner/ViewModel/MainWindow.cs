@@ -1430,6 +1430,7 @@ namespace Runner.ViewModel
                         level = new JArray("debug", "info", "warn", "fatal")
                     });
                     conf["lazy_load_maps"] = true;
+                    conf["integration_test"] = true;
                     conf["exp_multiplier"] = 100.0;
                     conf["drop_rate_multiplier"] = 100.0;
                     conf["http"] = JObject.FromObject(new
