@@ -1363,6 +1363,12 @@ function M.basic_class(me, npc, class, spells)
             if title == DIALOG_RESULT.PREV then
                 goto NPC_BASIC_CLASS_000
             end
+            if type(title) ~= 'string' or title == '' or has_blocked_word(title) then
+                if me:dialog(npc, '그런 칭호는 줄 수 없느니라.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
+                    return
+                end
+                goto NPC_BASIC_CLASS_000
+            end
 
             local confirm, confirm_btn = me:pursuit(npc, '그 칭호로 바꾸려면 금전 5000전을 바쳐야 하느니라. 네 소원을 이루겠느냐?', { '예', '아니오' })
             if confirm_btn == DIALOG_RESULT.QUIT then
