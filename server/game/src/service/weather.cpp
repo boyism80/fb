@@ -161,10 +161,11 @@ void service::weather::sync()
     }
 
     auto type = this->type_at_hour(static_cast<uint8_t>(time.hours()));
-    if (type == this->_current.load())
+    if (type == this->_scheduled)
         return;
 
-    this->_current = type;
+    this->_scheduled = type;
+    this->_current   = type;
     this->broadcast_outdoor(type);
 }
 
@@ -189,12 +190,20 @@ weather_type service::weather::reroll(uint32_t max_attempts)
         if (type == old)
             continue;
 
-        this->_current = type;
+        this->_scheduled = type;
+        this->_current   = type;
         this->broadcast_outdoor(type);
         return type;
     }
 
     return old;
+}
+
+void service::weather::set(weather_type type)
+{
+    auto _         = std::lock_guard(this->_mutex);
+    this->_current = type;
+    this->broadcast_outdoor(type);
 }
 
 weather_type service::weather::current() const

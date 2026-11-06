@@ -258,12 +258,12 @@ M.functions = {
                 me:message("사용법: /날씨 <날씨값>")
                 return true
             end
-            value = tonumber(value)
-            if not value or value < 0 then
-                me:message("날씨값은 0 이상의 숫자여야 합니다.")
+            value = math.tointeger(tonumber(value))
+            if value == nil or weather(value) ~= true then
+                me:message("날씨값은 0(맑음), 1(비), 2(눈), 3(새) 중 하나여야 합니다.")
                 return true
             end
-            weather(value)
+            me:message(string.format("이 서버의 날씨를 %d로 바꿨습니다. 다음 예정 날씨가 바뀌면 그 날씨로 돌아갑니다.", value))
             return true
         end,
     },

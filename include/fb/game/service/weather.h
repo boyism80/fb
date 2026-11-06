@@ -35,7 +35,8 @@ private:
 
     std::atomic<fb::model::enum_value::WEATHER_TYPE> _current = fb::model::enum_value::WEATHER_TYPE::NORMAL;
     std::mutex                                       _mutex;
-    int                                              _day_key = -1;
+    fb::model::enum_value::WEATHER_TYPE              _scheduled = fb::model::enum_value::WEATHER_TYPE::NORMAL;
+    int                                              _day_key   = -1;
     std::vector<segment>                             _segments;
 
     static weights                      weights_for(int month, int day);
@@ -48,6 +49,7 @@ public:
 
     void                                sync();
     fb::model::enum_value::WEATHER_TYPE reroll(uint32_t max_attempts = 64);
+    void                                set(fb::model::enum_value::WEATHER_TYPE type);
     fb::model::enum_value::WEATHER_TYPE current() const;
 };
 

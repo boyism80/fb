@@ -937,13 +937,18 @@ int builtin::server::builtin_weather(lua_State* L)
         return 0;
 
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
-    auto  value = (uint32_t)lua->tointeger(1);
+    auto  isnum = 0;
+    auto  value = lua_tointegerx(*lua, 1, &isnum);
+    if (isnum == 0 || value < static_cast<lua_Integer>(WEATHER_TYPE::NORMAL) ||
+        value > static_cast<lua_Integer>(WEATHER_TYPE::BIRD))
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
 
-    srv.characters.foreach_enqueue([value](auto& ch) -> async::task<void> {
-        ch->weather(WEATHER_TYPE(value));
-        co_return;
-    });
-    return 0;
+    srv.weather.set(static_cast<WEATHER_TYPE>(value));
+    lua->pushboolean(true);
+    return 1;
 }
 
 int builtin::server::builtin_weather_reroll(lua_State* L)
