@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 
-local function run_material_list(me, npc)
+local function run_material_list(me, npc, q)
     ::NPC_353_0008::
     local btn = me:dialog(npc,
         "동지집에 연이 있을텐데.. 동지집에 가서 수인이에게 연을 받아주시구요..\n\n칠석집엔 실패가 있을꺼에요.. 칠석집의 제 동생 주연이에게 실패를 받아오시구요..",
@@ -46,16 +46,18 @@ local function run_material_list(me, npc)
         goto NPC_353_0011
     end
     if sel == 1 then
-        run_material_list(me, npc)
+        run_material_list(me, npc, q)
         return
     end
     if sel ~= 2 then
         return
     end
 
-    local q = me:start_quest(quest.QUEST_BAEK_MONGYEON)
     if q == nil then
-        return
+        q = me:start_quest(quest.QUEST_BAEK_MONGYEON)
+        if q == nil then
+            return
+        end
     end
     q:step(1)
     require('lib.festival').stamp_lunar_year(q)
@@ -239,7 +241,7 @@ return {
                 return
             end
 
-            if q == nil then
+            if q == nil or (q:completed() == false and q:step() < 1) then
                 ::NPC_353_0007::
                 local sel2, list_btn2 = me:list(npc, "세시마을 대청소하는거.. 좀 도와주시겠어요?", { "네 도와드려야죠.", "저는 청소는 잘 못해서.." },
                     { prev = true })
@@ -259,7 +261,7 @@ return {
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                run_material_list(me, npc)
+                run_material_list(me, npc, q)
             else
                 local btn = me:dialog(npc,
                     "동지집에 연이 있을텐데.. 동지집에 가서 수인이에게 연을 받아주시구요..\n\n칠석집엔 실패가 있을꺼에요.. 칠석집의 제 동생 주연이에게 실패를 받아오시구요..",
