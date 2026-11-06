@@ -1080,10 +1080,12 @@ end
 
 function M.show_return_item_menu(me, npc)
     local list = {}
+    local entries = {}
     for _, stored_item in pairs(me:stored_item()) do
         local model = stored_item:model()
         local count = stored_item:count()
         table.insert(list, { model, count })
+        table.insert(entries, stored_item)
     end
 
     local selected = me:item(npc, '제가 맡고 있는 물건들입니다. 무엇을 찾으시겠습니까?', list)
@@ -1091,12 +1093,7 @@ function M.show_return_item_menu(me, npc)
         return
     end
 
-    local pair = list[selected]
-    if pair == nil then
-        return
-    end
-
-    local stored_item = me:stored_item(pair[1]:name())
+    local stored_item = entries[selected]
     if stored_item == nil then
         return DIALOG_RESULT.NEXT
     end
