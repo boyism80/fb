@@ -9,6 +9,7 @@ namespace Internal.Services
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan SweepInterval = TimeSpan.FromDays(1);
         private static readonly TimeSpan ArchiveExpiryMargin = TimeSpan.FromDays(1);
+        private const int ReceivedDeleteBatch = 5000;
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RedisService _redisService;
@@ -71,21 +72,13 @@ namespace Internal.Services
                 _logger.LogInformation("Archived {Count} system mails for world {World}", mails.Count, world);
             }
 
-            await using (var global = dbContext.GetGlobalConnection(world))
+            try
             {
-                var ids = (await global.QueryAsync<uint>(
-                    "SELECT `id` FROM `system_mail_archive` WHERE `purged` = 0 LIMIT 500")).ToArray();
-                if (ids.Length > 0)
-                {
-                    for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
-                    {
-                        await using var conn = dbContext.GetDataConnection(world, db);
-                        await conn.ExecuteAsync("DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @ids", new { ids });
-                    }
-
-                    await global.ExecuteAsync("UPDATE `system_mail_archive` SET `purged` = 1 WHERE `id` IN @ids", new { ids });
-                    _logger.LogInformation("Purged received records of {Count} archived system mails for world {World}", ids.Length, world);
-                }
+                await PurgeReceivedRecordsAsync(dbContext, world);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "Failed to purge received records of archived system mails for world {World}", world);
             }
 
             if (_lastSweeps.TryGetValue(world, out var lastSweep) == false || now - lastSweep >= SweepInterval)
@@ -116,6 +109,30 @@ namespace Internal.Services
                 await dbContext.SystemStorageBox.Archive(world, personal);
                 _logger.LogInformation("Archived {Count} personal system storage boxes for world {World}", personal.Count, world);
             }
+        }
+
+        private async Task PurgeReceivedRecordsAsync(DbContext dbContext, uint world)
+        {
+            await using var global = dbContext.GetGlobalConnection(world);
+            var ids = (await global.QueryAsync<uint>(
+                "SELECT `id` FROM `system_mail_archive` WHERE `purged` = 0 LIMIT 500")).ToArray();
+            if (ids.Length == 0)
+            {
+                return;
+            }
+
+            for (var db = 0; db < dbContext.GetShardDbSize(world); db++)
+            {
+                await using var conn = dbContext.GetDataConnection(world, db);
+                while (await conn.ExecuteAsync(
+                    "DELETE FROM `mail_system_received` WHERE `system_mail_id` IN @ids LIMIT @limit",
+                    new { ids, limit = ReceivedDeleteBatch }) > 0)
+                {
+                }
+            }
+
+            await global.ExecuteAsync("UPDATE `system_mail_archive` SET `purged` = 1 WHERE `id` IN @ids", new { ids });
+            _logger.LogInformation("Purged received records of {Count} archived system mails for world {World}", ids.Length, world);
         }
 
         private async Task SweepArchivedStorageBoxesAsync(DbContext dbContext, RedisDistributedLockService distributedLock, uint world)

@@ -8,6 +8,7 @@ namespace AdminTool.Services
 {
     public class GameDbResetService
     {
+        private const int UnifiedDeleteBatch = 5000;
         private static readonly HashSet<string> PreservedTables = new(StringComparer.OrdinalIgnoreCase)
         {
             "schema_migrations"
@@ -59,9 +60,24 @@ namespace AdminTool.Services
                         $"world-{world}-data-{i}");
                 }
 
-                var deletedUnifiedRows = await DeleteUnifiedWorldRowsAsync(world);
+                var deletedUnifiedRows = 0;
+                Exception unifiedFailure = null;
+                try
+                {
+                    deletedUnifiedRows = await DeleteUnifiedWorldRowsAsync(world);
+                }
+                catch (Exception ex)
+                {
+                    unifiedFailure = ex;
+                }
+
                 var clearedCacheKeys = await ClearWorldCacheAsync(world);
                 await _cacheService.ClearUserSessions(world);
+                if (unifiedFailure != null)
+                {
+                    _logger.LogError(unifiedFailure, "Game DB reset could not delete unified rows for world {World}", world);
+                    return GameDbResetResult.Fail($"공용 DB 행 삭제 중 오류: {unifiedFailure.Message}. 다시 실행하면 남은 행을 이어서 지웁니다.");
+                }
 
                 _logger.LogWarning(
                     "Game DB reset completed for world {World}. TruncatedTables={TruncatedTables}, DeletedUnifiedRows={DeletedUnifiedRows}, ClearedCacheKeys={ClearedCacheKeys}",
@@ -136,7 +152,14 @@ namespace AdminTool.Services
             var deleted = 0;
             foreach (var table in new[] { "name_registry", "clan_name", "marketplace_listing", "marketplace_listing_archive", "marketplace_purchase", "marketplace_parcel" })
             {
-                deleted += await connection.ExecuteAsync($"DELETE FROM `{table}` WHERE `world` = @world;", new { world });
+                int affected;
+                do
+                {
+                    affected = await connection.ExecuteAsync(
+                        $"DELETE FROM `{table}` WHERE `world` = @world LIMIT @limit;",
+                        new { world, limit = UnifiedDeleteBatch });
+                    deleted += affected;
+                } while (affected > 0);
             }
 
             _logger.LogInformation("Deleted {Count} unified rows for world {World}", deleted, world);
