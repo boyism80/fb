@@ -104,6 +104,53 @@ private:
     }
 };
 
+template <typename PivotT>
+class pivot_follow_awaiter
+{
+private:
+    pivot_switch_awaiter<PivotT> _switch;
+
+public:
+    explicit pivot_follow_awaiter(std::weak_ptr<PivotT> pivot) :
+        _switch(std::move(pivot))
+    { }
+
+    bool await_ready()
+    {
+        try
+        {
+            return this->_switch.await_ready();
+        }
+        catch (const std::runtime_error&)
+        {
+            return true;
+        }
+    }
+
+    bool await_suspend(std::coroutine_handle<> handle)
+    {
+        try
+        {
+            this->_switch.await_suspend(handle);
+            return true;
+        }
+        catch (const std::runtime_error&)
+        {
+            return false;
+        }
+    }
+
+    void await_resume() const
+    {
+        try
+        {
+            this->_switch.await_resume();
+        }
+        catch (const std::runtime_error&)
+        { }
+    }
+};
+
 class thread_container
 {
 public:
@@ -156,14 +203,9 @@ public:
         return pivot_switch_awaiter<PivotT>(std::move(pivot));
     }
 
-    template <typename PivotT> [[nodiscard]] async::task<void> follow(std::weak_ptr<PivotT> pivot)
+    template <typename PivotT> [[nodiscard]] pivot_follow_awaiter<PivotT> follow(std::weak_ptr<PivotT> pivot)
     {
-        try
-        {
-            co_await this->switching(std::move(pivot));
-        }
-        catch (const std::runtime_error&)
-        { }
+        return pivot_follow_awaiter<PivotT>(std::move(pivot));
     }
 
     void        settimer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,
