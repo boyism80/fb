@@ -71,6 +71,7 @@ namespace Log.Worker
                         try
                         {
                             var batchFull = await ProcessLogsAsync(stoppingToken);
+                            await ReplayDeadLettersIfDueAsync(stoppingToken);
                             if (batchFull)
                             {
                                 continue;
@@ -475,12 +476,26 @@ namespace Log.Worker
                 }
             }
 
-            if (DateTime.UtcNow - _lastDeadReplay >= DeadReplayInterval)
+            return batchFull;
+        }
+
+        private async Task ReplayDeadLettersIfDueAsync(CancellationToken cancellationToken)
+        {
+            if (_channel == null || DateTime.UtcNow - _lastDeadReplay < DeadReplayInterval)
             {
+                return;
+            }
+
+            try
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var logRepository = scope.ServiceProvider.GetRequiredService<LogRepository>();
                 await ReplayDeadLettersAsync(logRepository, cancellationToken);
+            }
+            finally
+            {
                 _lastDeadReplay = DateTime.UtcNow;
             }
-            return batchFull;
         }
 
         private async Task ReplayDeadLettersAsync(LogRepository logRepository, CancellationToken cancellationToken)
