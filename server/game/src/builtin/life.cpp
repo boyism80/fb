@@ -1602,7 +1602,7 @@ int builtin::life::builtin_base_phydef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_phydef_value = std::make_shared<int8_t>();
+    auto base_phydef_value = std::make_shared<int32_t>();
     auto weak              = obj->weak_from_this();
     auto builder           = lua->new_co_builder();
     builder.weak           = weak;
@@ -1629,7 +1629,7 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_phydef_value = std::make_shared<int8_t>();
+        auto buff_phydef_value = std::make_shared<int32_t>();
         auto weak              = obj->weak_from_this();
         auto builder           = lua->new_co_builder();
         builder.weak           = weak;
@@ -1650,7 +1650,7 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.buff_phydef(value);
+            obj->stat.buff_phydef(static_cast<int32_t>(value));
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1693,7 +1693,7 @@ int builtin::life::builtin_base_magdef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_magdef_value = std::make_shared<int8_t>();
+    auto base_magdef_value = std::make_shared<int32_t>();
     auto weak              = obj->weak_from_this();
     auto builder           = lua->new_co_builder();
     builder.weak           = weak;
@@ -1720,7 +1720,7 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_magdef_value = std::make_shared<int8_t>();
+        auto buff_magdef_value = std::make_shared<int32_t>();
         auto weak              = obj->weak_from_this();
         auto builder           = lua->new_co_builder();
         builder.weak           = weak;
@@ -1741,7 +1741,7 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.buff_magdef(value);
+            obj->stat.buff_magdef(static_cast<int32_t>(value));
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1811,7 +1811,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_dam_value = std::make_shared<int8_t>();
+        auto buff_dam_value = std::make_shared<int32_t>();
         auto weak           = obj->weak_from_this();
         auto builder        = lua->new_co_builder();
         builder.weak        = weak;
@@ -1832,7 +1832,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.buff_dam(static_cast<int8_t>(value));
+            obj->stat.buff_dam(static_cast<int32_t>(value));
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1902,7 +1902,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_hit_value = std::make_shared<int8_t>();
+        auto buff_hit_value = std::make_shared<int32_t>();
         auto weak           = obj->weak_from_this();
         auto builder        = lua->new_co_builder();
         builder.weak        = weak;
@@ -1923,7 +1923,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.buff_hit(static_cast<int8_t>(value));
+            obj->stat.buff_hit(static_cast<int32_t>(value));
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1993,7 +1993,7 @@ int builtin::life::builtin_buff_speed(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_speed_value = std::make_shared<int8_t>();
+        auto buff_speed_value = std::make_shared<int32_t>();
         auto weak             = obj->weak_from_this();
         auto builder          = lua->new_co_builder();
         builder.weak          = weak;
@@ -2014,7 +2014,7 @@ int builtin::life::builtin_buff_speed(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.buff_speed(static_cast<int8_t>(value));
+            obj->stat.buff_speed(static_cast<int32_t>(value));
             co_return;
         };
         builder.resume = []() -> async::task<int> {

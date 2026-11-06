@@ -170,61 +170,61 @@ void fb::game::stat::buff_int(uint8_t value)
     this->_buff_int = value;
 }
 
-int8_t fb::game::stat::buff_phydef() const
+int32_t fb::game::stat::buff_phydef() const
 {
     this->owner.assert_thread();
     return this->_buff_phydef;
 }
 
-void fb::game::stat::buff_phydef(int8_t value)
+void fb::game::stat::buff_phydef(int32_t value)
 {
     this->owner.assert_thread();
     this->_buff_phydef = value;
 }
 
-int8_t fb::game::stat::buff_magdef() const
+int32_t fb::game::stat::buff_magdef() const
 {
     this->owner.assert_thread();
     return this->_buff_magdef;
 }
 
-void fb::game::stat::buff_magdef(int8_t value)
+void fb::game::stat::buff_magdef(int32_t value)
 {
     this->owner.assert_thread();
     this->_buff_magdef = value;
 }
 
-int8_t fb::game::stat::buff_dam() const
+int32_t fb::game::stat::buff_dam() const
 {
     this->owner.assert_thread();
     return this->_buff_dam;
 }
 
-void fb::game::stat::buff_dam(int8_t value)
+void fb::game::stat::buff_dam(int32_t value)
 {
     this->owner.assert_thread();
     this->_buff_dam = value;
 }
 
-int8_t fb::game::stat::buff_hit() const
+int32_t fb::game::stat::buff_hit() const
 {
     this->owner.assert_thread();
     return this->_buff_hit;
 }
 
-void fb::game::stat::buff_hit(int8_t value)
+void fb::game::stat::buff_hit(int32_t value)
 {
     this->owner.assert_thread();
     this->_buff_hit = value;
 }
 
-int8_t fb::game::stat::buff_speed() const
+int32_t fb::game::stat::buff_speed() const
 {
     this->owner.assert_thread();
     return this->_buff_speed;
 }
 
-void fb::game::stat::buff_speed(int8_t value)
+void fb::game::stat::buff_speed(int32_t value)
 {
     this->owner.assert_thread();
     this->_buff_speed = value;
@@ -435,8 +435,8 @@ int8_t fb::game::stat::phydef() const
     this->owner.assert_thread();
     auto base = this->base_phydef();
     auto buff = this->buff_phydef();
-    auto sum  = (int16_t)base + (int16_t)buff;
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
+    auto sum  = static_cast<int32_t>(base) + buff;
+    return static_cast<int8_t>(std::max<int32_t>(-127, std::min<int32_t>(127, sum)));
 }
 
 int8_t fb::game::stat::magdef() const
@@ -444,26 +444,26 @@ int8_t fb::game::stat::magdef() const
     this->owner.assert_thread();
     auto base = this->base_magdef();
     auto buff = this->buff_magdef();
-    auto sum  = (int16_t)base + (int16_t)buff;
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
+    auto sum  = static_cast<int32_t>(base) + buff;
+    return static_cast<int8_t>(std::max<int32_t>(-127, std::min<int32_t>(127, sum)));
 }
 
 int8_t fb::game::stat::dam() const
 {
     this->owner.assert_thread();
-    auto base = static_cast<int16_t>(this->base_dam());
-    auto buff = static_cast<int16_t>(this->buff_dam());
+    auto base = static_cast<int32_t>(this->base_dam());
+    auto buff = this->buff_dam();
     auto sum  = base + buff;
-    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
+    return static_cast<int8_t>(std::max<int32_t>(-128, std::min<int32_t>(127, sum)));
 }
 
 int8_t fb::game::stat::hit() const
 {
     this->owner.assert_thread();
-    auto base = static_cast<int16_t>(this->base_hit());
-    auto buff = static_cast<int16_t>(this->buff_hit());
+    auto base = static_cast<int32_t>(this->base_hit());
+    auto buff = this->buff_hit();
     auto sum  = base + buff;
-    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
+    return static_cast<int8_t>(std::max<int32_t>(-128, std::min<int32_t>(127, sum)));
 }
 
 uint8_t fb::game::stat::base_speed() const
@@ -475,7 +475,7 @@ uint8_t fb::game::stat::base_speed() const
 uint8_t fb::game::stat::speed() const
 {
     this->owner.assert_thread();
-    auto sum = static_cast<int>(this->base_speed()) + static_cast<int>(this->buff_speed());
+    auto sum = static_cast<int>(this->base_speed()) + this->buff_speed();
     if (sum < 0)
         return 0;
     if (sum > 5)
@@ -581,7 +581,7 @@ void character_stat::base_int(uint8_t value, bool notify)
         this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
-void character_stat::base_phydef(int8_t value, bool notify)
+void character_stat::base_phydef(int32_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_phydef = value;
@@ -589,7 +589,7 @@ void character_stat::base_phydef(int8_t value, bool notify)
         this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
-void character_stat::base_magdef(int8_t value, bool notify)
+void character_stat::base_magdef(int32_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_magdef = value;
@@ -659,13 +659,13 @@ uint8_t character_stat::base_int() const
     return this->_int;
 }
 
-int8_t character_stat::base_phydef() const
+int32_t character_stat::base_phydef() const
 {
     this->owner.assert_thread();
     return this->_phydef;
 }
 
-int8_t character_stat::base_magdef() const
+int32_t character_stat::base_magdef() const
 {
     this->owner.assert_thread();
     return this->_magdef;
@@ -692,7 +692,7 @@ uint8_t character_stat::base_speed() const
 uint8_t character_stat::speed() const
 {
     this->owner.assert_thread();
-    auto sum = static_cast<int>(this->base_speed()) + static_cast<int>(fb::game::stat::buff_speed());
+    auto sum = static_cast<int>(this->base_speed()) + fb::game::stat::buff_speed();
     auto cap = this->speed_cap();
     if (sum < 0)
         return 0;
@@ -701,7 +701,7 @@ uint8_t character_stat::speed() const
     return static_cast<uint8_t>(sum);
 }
 
-void character_stat::buff_speed(int8_t value)
+void character_stat::buff_speed(int32_t value)
 {
     this->owner.assert_thread();
 
@@ -931,14 +931,14 @@ uint8_t mob_stat::base_int() const
     return 0;
 }
 
-int8_t mob_stat::base_phydef() const
+int32_t mob_stat::base_phydef() const
 {
     this->owner.assert_thread();
     auto& model = this->owner.model();
     return model.defensive_physical;
 }
 
-int8_t mob_stat::base_magdef() const
+int32_t mob_stat::base_magdef() const
 {
     this->owner.assert_thread();
     auto& model = this->owner.model();
