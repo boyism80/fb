@@ -380,7 +380,7 @@ function M.retrieve_item(me, npc, name, count)
         count = 1
     end
 
-    if count > me:item_free_space(model) then
+    if model:attr(ITEM_ATTRIBUTE.BUNDLE) and count > me:item_free_space(model) then
         npc:chat('더 이상 가질 수 없습니다.')
         return true
     end
