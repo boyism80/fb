@@ -9,6 +9,9 @@ namespace Http.Service
     {
         private const int QueueCapacity = 20000;
         private static readonly TimeSpan PublishTimeout = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan RetryInitialDelay = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan RetryMaxDelay = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan DrainDeadline = TimeSpan.FromSeconds(5);
 
         private readonly IConfiguration _configuration;
         private readonly ILogger<LogService> _logger;
@@ -62,11 +65,11 @@ namespace Http.Service
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _stopping.Cancel();
             _pending.Writer.TryComplete();
+            _stopping.CancelAfter(DrainDeadline);
             try
             {
-                await _run.WaitAsync(PublishTimeout, cancellationToken);
+                await _run.WaitAsync(cancellationToken);
             }
             catch (Exception)
             {
@@ -97,33 +100,52 @@ namespace Http.Service
 
         private async Task PublishLoop(CancellationToken stoppingToken)
         {
-            try
+            await foreach (var entry in _pending.Reader.ReadAllAsync(CancellationToken.None))
             {
-                await foreach (var entry in _pending.Reader.ReadAllAsync(stoppingToken))
+                if (await PublishUntilDoneAsync(entry, stoppingToken) == false)
                 {
-                    try
-                    {
-                        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-                        timeout.CancelAfter(PublishTimeout);
-                        await PublishAsync(entry, timeout.Token);
-                        Interlocked.Exchange(ref _publishFailures, 0);
-                    }
-                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                    {
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        var failures = Interlocked.Increment(ref _publishFailures);
-                        if (failures == 1 || failures % 100 == 0)
-                        {
-                            _logger?.LogWarning(ex, "Failed to publish log {EventType} ({Failures} consecutive failures)", entry.EventType, failures);
-                        }
-                    }
+                    _logger?.LogWarning("Abandoned {Count} log entries at shutdown", _pending.Reader.Count + 1);
+                    return;
                 }
             }
-            catch (OperationCanceledException)
+        }
+
+        private async Task<bool> PublishUntilDoneAsync(LogEntry entry, CancellationToken stoppingToken)
+        {
+            var delay = RetryInitialDelay;
+            while (true)
             {
+                try
+                {
+                    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                    timeout.CancelAfter(PublishTimeout);
+                    await PublishAsync(entry, timeout.Token);
+                    Interlocked.Exchange(ref _publishFailures, 0);
+                    return true;
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    var failures = Interlocked.Increment(ref _publishFailures);
+                    if (failures == 1 || failures % 100 == 0)
+                    {
+                        _logger?.LogWarning(ex, "Failed to publish log {EventType} ({Failures} consecutive failures, {Dropped} dropped)", entry.EventType, failures, Interlocked.Read(ref _dropped));
+                    }
+                }
+
+                try
+                {
+                    await Task.Delay(delay, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return false;
+                }
+
+                delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, RetryMaxDelay.Ticks));
             }
         }
 
