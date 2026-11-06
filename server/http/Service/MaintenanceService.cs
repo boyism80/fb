@@ -357,7 +357,7 @@ namespace Http.Service
             {
                 var start = day.Add(template.TimeOfDay);
                 var startUtc = ToUtc(start);
-                if (startUtc <= now || startUtc - now > horizon)
+                if (startUtc <= now || startUtc - now > horizon || startUtc < schedule.StartTime)
                 {
                     continue;
                 }
@@ -485,7 +485,13 @@ namespace Http.Service
                 MaintenanceRepeatType.Yearly => GetDatedWindowStart(template, now, duration, true),
                 _ => DateTime.MinValue
             };
-            return start == DateTime.MinValue ? start : ToUtc(start);
+            if (start == DateTime.MinValue)
+            {
+                return start;
+            }
+
+            var startUtc = ToUtc(start);
+            return startUtc < schedule.StartTime ? DateTime.MinValue : startUtc;
         }
 
         private static DateTime GetWindowEnd(MaintenanceSchedule schedule, DateTime windowStart)
