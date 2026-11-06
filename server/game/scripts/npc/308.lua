@@ -24,7 +24,9 @@ return {
         local reward = given and { ['item'] = { [given] = 1 } } or nil
         local code = me:exchange(
             { ['money'] = 250000 },
-            reward
+            reward,
+            nil,
+            { ['item'] = { [rewards[1]] = 1 } }
         )
         if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, me:name() .. "놈아 장사 하루이틀 해 보냐, 일단 돈 이십오만전을 주면 생각해 보겠다.", { prev = false, next = false })

@@ -151,7 +151,12 @@ struct character
     static int builtin_holyday_screen(lua_State* L);
 
 private:
-    static int exchange(lua_State* L, int cost_index, int reward_index, int delete_type_index, bool boolean_result);
+    static int exchange(lua_State* L,
+                        int        cost_index,
+                        int        reward_index,
+                        int        delete_type_index,
+                        int        reserve_index,
+                        bool       boolean_result);
     static int transfer_money(lua_State* L, bool deposit);
 };
 

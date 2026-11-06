@@ -48,10 +48,13 @@ return {
         end
 
         local r = math.random(1, 100)
-        local reward = (r < rate) and { ['item'] = { [ITEM_DRIED_CENTIPEDE] = 1 } } or nil
+        local success = { ['item'] = { [ITEM_DRIED_CENTIPEDE] = 1 } }
+        local reward = (r < rate) and success or nil
         local code = me:exchange(
             { ['item'] = { [ITEM_DEAD_CENTIPEDE] = count } },
-            reward
+            reward,
+            nil,
+            success
         )
         if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', { prev = false, next = false })

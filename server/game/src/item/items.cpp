@@ -1628,7 +1628,8 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
                                              uint64_t                                      cost_money,
                                              const std::unordered_map<uint32_t, uint16_t>& reward_items,
                                              uint64_t                                      reward_money,
-                                             ITEM_DELETE_TYPE                              delete_type)
+                                             ITEM_DELETE_TYPE                              delete_type,
+                                             const std::unordered_map<uint32_t, uint16_t>& reserve_items)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1690,53 +1691,57 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     if (owner->money_free_space() + cost_money < reward_money)
         co_return exchange_result::lack_capacity;
 
-    int required_size = 0;
-    for (auto& [id, count] : reward_items)
-    {
-        auto  item_table3  = table::item;
-        auto& model        = item_table3[id];
-        auto  capacity     = std::max<uint32_t>(model.capacity, 1);
-        required_size     += static_cast<int>((count + capacity - 1) / capacity);
-    }
-
-    int available_slots = effective_free_slots;
-    for (auto& [id, count] : reward_items)
-    {
-        auto  item_table4 = table::item;
-        auto& model       = item_table4[id];
-        if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-            continue;
-
-        auto existing = std::optional<uint32_t>{};
-        if (cost_items.contains(id))
+    auto fits = [&](const std::unordered_map<uint32_t, uint16_t>& rewards) {
+        int required_size = 0;
+        for (auto& [id, count] : rewards)
         {
-            auto it = simulated_bundle_remaining.find(id);
-            if (it != simulated_bundle_remaining.end())
-                existing = it->second;
-        }
-        else
-        {
-            auto space = this->free_space(model);
-            if (space < model.capacity)
-                existing = static_cast<uint32_t>(model.capacity - space);
+            auto  item_table3  = table::item;
+            auto& model        = item_table3[id];
+            auto  capacity     = std::max<uint32_t>(model.capacity, 1);
+            required_size     += static_cast<int>((count + capacity - 1) / capacity);
         }
 
-        // Without a stack to merge into, the bundle needs a free slot and must fit in one stack.
-        if (existing.has_value() == false)
+        int available_slots = effective_free_slots;
+        for (auto& [id, count] : rewards)
         {
-            if (model.capacity < count)
-                co_return exchange_result::lack_capacity;
+            auto  item_table4 = table::item;
+            auto& model       = item_table4[id];
+            if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+                continue;
 
-            continue;
+            auto existing = std::optional<uint32_t>{};
+            if (cost_items.contains(id))
+            {
+                auto it = simulated_bundle_remaining.find(id);
+                if (it != simulated_bundle_remaining.end())
+                    existing = it->second;
+            }
+            else
+            {
+                auto space = this->free_space(model);
+                if (space < model.capacity)
+                    existing = static_cast<uint32_t>(model.capacity - space);
+            }
+
+            // Without a stack to merge into, the bundle needs a free slot and must fit in one stack.
+            if (existing.has_value() == false)
+            {
+                if (model.capacity < count)
+                    return false;
+
+                continue;
+            }
+
+            if (model.capacity < existing.value() + count)
+                return false;
+
+            available_slots++;
         }
 
-        if (model.capacity < existing.value() + count)
-            co_return exchange_result::lack_capacity;
+        return available_slots >= required_size;
+    };
 
-        available_slots++;
-    }
-
-    if (available_slots < required_size)
+    if (fits(reward_items) == false || fits(reserve_items) == false)
         co_return exchange_result::lack_capacity;
 
     owner->money_reduce(cost_money);

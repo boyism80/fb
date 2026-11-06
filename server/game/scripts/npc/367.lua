@@ -135,14 +135,17 @@ local function run_bead_exchange(me, npc)
     local reward = (reward_count > 0) and { ['item'] = { [reward_item] = reward_count } } or nil
     local code = me:exchange(
         { ['item'] = { [bead_item] = count } },
-        reward
+        reward,
+        nil,
+        { ['item'] = { [reward_item] = count } }
     )
     if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", { prev = false, next = false })
         return
     end
     if code == enum.exchange_result.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_item, '을', '를') .. " 받을 수 없네.", { prev = false, next = false })
+        me:dialog(npc, "소지품에 자리가 모자라 " .. name_with(reward_item, '을', '를') .. " 받을 수 없네. 개수를 줄이거나 자리를 비우고 오게.",
+            { prev = false, next = false })
         return
     end
     me:push_achievement(ACHIEVEMENT_ANCIENT_RELIC, "고대유물 연구가를 도와주었다.", 7, 16)

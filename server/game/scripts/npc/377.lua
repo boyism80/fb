@@ -90,12 +90,13 @@ local function craft_yin_and_yang_blade(me, npc_obj)
     end
 
     local cost = { ['item'] = { [YIN_FRAGMENT] = 50, [YANG_FRAGMENT] = 50 } }
+    local success = { ['item'] = { ['음양도'] = 1 } }
     local reward = nil
     if math.random(1, 100) <= 60 then
-        reward = { ['item'] = { ['음양도'] = 1 } }
+        reward = success
     end
 
-    local code = me:exchange(cost, reward)
+    local code = me:exchange(cost, reward, nil, success)
     if code == enum.exchange_result.LACK_COST then
         local btn = me:dialog(npc_obj,
             "음과 양의 금속조각을 섞겠다고? 농담 말게나. 이 정도 양을 섞겠다고 난리를 치다가는 힘들여 모은 이 금속조각들을 전부 잃게 될 수도 있다네. 혹시 음과 양이 각각 50개 정도 있다면 모를까...",

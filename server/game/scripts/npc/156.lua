@@ -63,17 +63,14 @@ local function run_ice_sword(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return false
         end
-        if me:item_free_space(name2item(ITEM_ICE_SWORD)) < 1 then
-            me:dialog(npc, '소지품이 가득 차서 얼음칼을 받을 수 없네.', { prev = false, next = false })
-            return true
-        end
 
         local cost = { ['item'] = { [ITEM_ICE] = ICE_SWORD_COST } }
+        local success = { ['item'] = { [ITEM_ICE_SWORD] = 1 } }
         local reward = nil
         if math.random(1, 10) <= ICE_SWORD_SUCCESS_CHANCE then
-            reward = { ['item'] = { [ITEM_ICE_SWORD] = 1 } }
+            reward = success
         end
-        local code = me:exchange(cost, reward)
+        local code = me:exchange(cost, reward, nil, success)
         if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '얼음칼을 만들기 위해선 얼음 100개가 필요하네.', { prev = false, next = false })
             return true
