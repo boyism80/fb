@@ -414,12 +414,19 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
                 }
 
-                await _passwordAttempts.BirthdaySucceeded(world, request.Uid);
                 ch.Pw = PasswordHash.Compute(request.After);
                 _dbContext.Character.Set(world, ch);
-
-                await _passwordAttempts.PasswordChanged(world, request.Uid, request.Ip);
                 await _dbContext.SaveChangesAsync();
+
+                try
+                {
+                    await _passwordAttempts.BirthdaySucceeded(world, request.Uid);
+                    await _passwordAttempts.PasswordChanged(world, request.Uid, request.Ip);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Password of {Uid} in world {World} changed but its login trust was not reset", request.Uid, world);
+                }
 
                 // Log password change event
                 await _logService.WriteAsync("password_change", new
