@@ -91,6 +91,21 @@ console::console()
 console::~console()
 {
     newline();
+    restore_terminal();
+}
+
+void console::restore_terminal()
+{
+    auto _ = std::lock_guard(_mutex);
+    if (_system_tty == false || _terminal_restored)
+        return;
+
+    _terminal_restored = true;
+    std::cout << "\x1B[?25h" << std::flush;
+#ifndef _WIN32
+    echo();
+    endwin();
+#endif
 }
 
 bool console::is_tty()
@@ -109,6 +124,8 @@ void console::set_mode(console::mode new_mode)
     auto _ = std::lock_guard(_mutex);
     _mode  = new_mode;
     update_policy();
+    if (new_mode == mode::plain)
+        restore_terminal();
 }
 
 void console::update_policy()

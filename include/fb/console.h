@@ -133,7 +133,8 @@ private:
     inline static mode                 _mode = mode::tty; ///< User-configured output mode
     inline static policy_map           _policies;         ///< Policy instances by mode
     inline static console_policy*      _current_policy;   ///< Current active policy
-    inline static color_map            _color_codes = {
+    inline static bool                 _terminal_restored = false;
+    inline static color_map            _color_codes       = {
         {color::reset,         "\033[0m" },
         {color::black,         "\033[30m"},
         {color::red,           "\033[31m"},
@@ -162,6 +163,7 @@ public:
     static mode        get_mode();
     static void        set_mode(mode new_mode);
     static void        update_policy();
+    static void        restore_terminal();
     static std::string colorize(color color);
 
 public:
