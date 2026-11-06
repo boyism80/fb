@@ -25,6 +25,49 @@ local function pressing(snap, query)
     return pressed[snap] or nil
 end
 
+local function teleports(snap)
+    local known = {}
+    for _, learned in ipairs(snap.spells or {}) do
+        known[learned.name] = true
+    end
+    for _, spell in ipairs(teleport.spells) do
+        if known[spell.name] and (spell.ghost == true) == false and (spell.mp or 0) <= (snap.self.mp or 0) and
+            spell.via ~= "CARDINAL" then
+            return true
+        end
+    end
+    local held = {}
+    for _, item in ipairs(snap.bag.items or {}) do
+        held[item.name] = true
+    end
+    for _, item in ipairs(teleport.items) do
+        if held[item.name] then
+            return true
+        end
+    end
+    return false
+end
+
+local function hemmed(snap, query)
+    local blocked = snap.record.memory.blocked
+    if type(blocked) ~= "table" or teleports(snap) == false then
+        return nil
+    end
+    local plan = party.plan(snap, query)
+    for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
+        if floor.map == snap.world.map then
+            return nil
+        end
+    end
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil and combat.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 and
+            snap.now - blocked.at < combat.outcome(snap, query, mob).time then
+            return mob
+        end
+    end
+    return nil
+end
+
 local function lifted(snap)
     local best = snap.self.hp
     local heal = recovery.heal(snap)
@@ -143,6 +186,10 @@ local function threat(snap, query)
             end
         end
     end
+    local boxed = hemmed(snap, query)
+    if boxed ~= nil then
+        return boxed, 1, "HEMMED"
+    end
     local present = escort.present(snap, query)
     local cohort  = escort.gathering(snap, query)
     local coming  = cohort ~= nil and (present == nil or #cohort.members > #present.members)
@@ -219,7 +266,8 @@ function M.propose(snap, query)
                 tostring(mob ~= nil and mob.damage),
                 battle.burst(snap), crew ~= nil and #crew.members or 0, #(snap.party or {})))
     end
-    local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and rally(snap, query, mob) or nil
+    local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and cause ~= "HEMMED" and
+        rally(snap, query, mob) or nil
     return {
         kind = ACTION.MOVE,
         cause = cause ~= nil and (cause .. ":" .. tostring(mob.name)) or nil,
@@ -228,11 +276,25 @@ function M.propose(snap, query)
             name = mob.name,
             ends = (snap.now or 0) + 2 * data.sight.x * (snap.pace.step or data.walk),
         } or nil,
-        proven = meet == nil and cause == "FATAL" and
-            danger.winnable(score.rested(snap), query, mob) == false,
-        dest = meet or regroup(snap, query) or { maps = teleport.returns[snap.self.nation], urgent = true },
+        proven = meet == nil and ((cause == "FATAL" and
+            danger.winnable(score.rested(snap), query, mob) == false) or cause == "HEMMED"),
+        hemmed = cause == "HEMMED",
+        dest = meet or regroup(snap, query) or
+            { maps = teleport.returns[snap.self.nation], urgent = cause == "IMMINENT" or cause == "HEMMED" or
+            escort.present(snap, query) == nil },
         forget = snap.record.death ~= nil
     }
+end
+
+local function abandoned(snap, query, trip)
+    local plan = party.plan(snap, query)
+    local cost = 0
+    for _, member in ipairs(party.members(snap)) do
+        if member.world.map == snap.world.map and member.self.ghost == false and plan ~= nil then
+            cost = cost + (trip.time or 0) * plan.rate
+        end
+    end
+    return cost
 end
 
 function M.value(snap, query)
@@ -243,7 +305,7 @@ function M.value(snap, query)
     if trip == nil then
         return -math.huge
     end
-    return stay - (cause == "STRANDED" and trip.risk or trip.cost)
+    return stay - (cause == "STRANDED" and trip.risk or trip.cost) - abandoned(snap, query, trip)
 end
 
 return M

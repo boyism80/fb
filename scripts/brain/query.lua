@@ -31,6 +31,9 @@ function M.bind(brain, bot)
         ally = function(name)
             return brain:ally(bot, name)
         end,
+        warp = function(map, x, y)
+            return brain:warp_at(map, x, y)
+        end,
         reach = function(perilous, shunned)
             return profile.wait(bot:name(), brain.reach, brain, bot,
                 { perilous = perilous or {}, shunned = shunned or {} })

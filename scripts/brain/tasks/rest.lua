@@ -1,3 +1,4 @@
+local buyers   = require("brain.data.buyers")
 local data     = require("brain.data.combat")
 local battle   = require("brain.policies.battle")
 local combat   = require("brain.policies.combat")
@@ -34,6 +35,8 @@ local function low(snap, query)
             hp <= ground.need(snap, query) or hp <= battle.need(snap, query))
 end
 
+M.low = low
+
 local function dose(doses, deficit)
     for _, entry in ipairs(doses) do
         if entry.amount >= deficit then
@@ -59,22 +62,66 @@ function M.thank(snap, query)
     return near.approach(snap, query, data.shrine.npcs) ~= nil and thanks(snap) or nil
 end
 
+local price
+
+local healer
+
+local function edible(snap, query)
+    local worth = value.baseline(snap, query)
+    local hurt  = 0
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil and combat.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
+            local _, high = combat.spread(snap, mob)
+            hurt = hurt + high * combat.cast(snap) / math.max(mob.speed or 1, 1)
+        end
+    end
+    local found = {}
+    if hurt <= 0 and healer(snap, query) ~= nil then
+        return found
+    end
+    local time = combat.cast(snap) / 1000 * worth.value
+    for _, entry in ipairs(recovery.doses(snap, "hp")) do
+        local sale = buyers[entry.name] ~= nil and buyers[entry.name].price or 0
+        if entry.amount > hurt and entry.amount * price(snap, query) > sale * worth.exchange + time then
+            table.insert(found, entry)
+        end
+    end
+    return found
+end
+
+healer = function(snap, query)
+    local plan = party.plan(snap, query)
+    for _, member in ipairs(party.members(snap)) do
+        local heal   = recovery.heal(member)
+        local hunted = false
+        for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
+            hunted = hunted or floor.map == member.world.map
+        end
+        if member.self.ghost == false and member.world.map ~= snap.world.map and hunted == false and
+            heal ~= nil and heal.hp > 0 and heal.mp <= (member.self.mp or 0) then
+            return { kind = ACTION.MOVE, dest = { maps = { member.world.map } } }
+        end
+    end
+    return nil
+end
+
 local function mend(snap, query)
     if low(snap, query) == false then
         return nil
     end
     local heal = recovery.mending(snap, snap.self.max_hp - snap.self.hp)
-    if heal ~= nil then
+    local crew = escort.present(snap, query)
+    if heal ~= nil and heal.hp > (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000 then
         return { kind = ACTION.CAST, slot = heal.slot }
     end
-    local doses = recovery.doses(snap, "hp")
+    local doses = edible(snap, query)
     if #doses > 0 then
         return { kind = ACTION.USE, item = dose(doses, snap.self.max_hp - snap.self.hp) }
     end
     if snap.self.hp <= data.shrine.limit and snap.record.death == nil then
         return shrine(snap, query)
     end
-    return nil
+    return healer(snap, query)
 end
 
 local function buffed(snap, name)
@@ -86,7 +133,7 @@ local function buffed(snap, name)
     return false
 end
 
-local function price(snap, query)
+price = function(snap, query)
     local mana = value.mana(snap, query)
     local heal = recovery.heal(snap)
     if heal ~= nil and heal.hp > 0 then
@@ -113,7 +160,8 @@ local function charged(snap, query, spells, buffs)
     if charge == nil or mp < charge.mp then
         return nil
     end
-    local mana   = value.mana(snap, query)
+    local floor  = value.spend(snap, query, nil)
+    local mana   = floor + math.max(0, value.mana(snap, query) - floor) * (1 - mp / math.max(snap.self.max_mp or 1, 1))
     local gain   = mana * ((snap.self.max_mp or 0) - mp + charge.mp) * buffs.charge.chance
     local cost   = mana * charge.mp + price(snap, query) * buffs.charge.cost
     local after  = copy(snap, {
@@ -189,7 +237,13 @@ function M.value(snap, query)
     local gain   = 0
     local time   = action.kind == ACTION.CAST and cast or action.kind == ACTION.USE and cast or 0
     if M.thank(snap, query) == nil and mend(snap, query) == nil then
-        gain = value.mana(snap, query) * math.max(0, recovery.ceiling(snap) - (snap.self.mp or 0))
+        local deficit = math.max(0, recovery.ceiling(snap) - (snap.self.mp or 0))
+        for _, entry in ipairs(action.kind == ACTION.USE and recovery.doses(snap, "mp") or {}) do
+            if entry.name == action.item then
+                deficit = math.min(deficit, entry.amount)
+            end
+        end
+        gain = value.mana(snap, query) * deficit
     else
         local plan    = party.plan(snap, query)
         local need    = math.max(danger.threat(snap, ahead(snap, query)), ground.need(snap, query),
@@ -209,7 +263,16 @@ function M.value(snap, query)
             worth = { value = 0, exchange = worth.exchange, rate = worth.rate, income = worth.income }
         end
     end
-    return gain - value.cost(snap, query, action, worth, time)
+    local spent = value.cost(snap, query, action, worth, time)
+    if data.journal then
+        log("debug",
+            string.format(
+                "[brain:restval] bot=%s map=%s kind=%s item=%s gain=%.0f cost=%.0f mana=%.3f worth=%.0f hp=%s mp=%s ceiling=%s",
+                snap.self.name or "", tostring(snap.world.map), tostring(action.kind), tostring(action.item), gain, spent,
+                value.mana(snap, query),
+                worth.value, tostring(snap.self.hp), tostring(snap.self.mp), tostring(recovery.ceiling(snap))))
+    end
+    return gain - spent
 end
 
 function M.propose(snap, query)

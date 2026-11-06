@@ -6,6 +6,7 @@ local combat   = require("brain.policies.combat")
 local danger   = require("brain.policies.danger")
 local escort   = require("brain.policies.escort")
 local ground   = require("brain.policies.ground")
+local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
 local survival = require("brain.policies.survival")
 local value    = require("brain.policies.value")
@@ -163,6 +164,18 @@ local function mends(snap, facts, mp, hp)
     return stock >= hp and missing <= dose
 end
 
+local function gated(snap, facts, mob)
+    if facts.warp == nil then
+        return false
+    end
+    for _, side in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do
+        if facts.warp(snap.world.map, mob.x + side[1], mob.y + side[2]) then
+            return true
+        end
+    end
+    return false
+end
+
 local function candidates(snap, facts, mob, state, reachable)
     local target    = combat.exposed(mob, combat.debuffs(snap, copy(mob, { applied = state.applied })))
     local options   = combat.options(snap, target)
@@ -269,11 +282,12 @@ local function candidates(snap, facts, mob, state, reachable)
             if hp <= 0 and mp > 0 and charge ~= nil and (snap.self.mp or 0) >= charge.mp then
                 mp = 0
             end
+            mp = math.min(mp, (snap.self.max_mp or 0) - (snap.self.mp or 0))
             if hp > 0 or mp > 0 then
                 add({
                     key = name,
                     kind = "USE",
-                    time = swing,
+                    time = cast,
                     hp = hp,
                     mp = -mp,
                     price = model ~= nil and model.price or 0,
@@ -322,7 +336,8 @@ local function candidates(snap, facts, mob, state, reachable)
     end
     for name, slot in pairs(known) do
         local spell = magic.spells[name]
-        if cloak > 1 and spell ~= nil and spell.role == "AMBUSH" and (spell.mp or 0) <= (snap.self.mp or 0) and adjacent then
+        if cloak > 1 and spell ~= nil and spell.role == "AMBUSH" and (spell.mp or 0) <= (snap.self.mp or 0) and adjacent and
+            gated(snap, facts, mob) == false then
             add({
                 key = name,
                 kind = "CAST",
@@ -335,12 +350,13 @@ local function candidates(snap, facts, mob, state, reachable)
         end
     end
     if reachable ~= false then
+        local ready = adjacent == false or combat.backswing(snap) <= 0
         add({
             key = "SWING",
             kind = "SWING",
-            time = swing + (adjacent and combat.backswing(snap) or 0),
-            damage = strike * cloak,
-            extra = splashed(snap, mob, strike),
+            time = cast,
+            damage = ready and strike * cloak or 0,
+            extra = ready and splashed(snap, mob, strike) or {},
             approach = true,
             maneuver = { kind = MANEUVER.SWING }
         })
@@ -472,12 +488,17 @@ local function lasting(snap, name, at)
 end
 
 local function remembered(snap, mob)
-    local state  = { opened = false, refused = {}, applied = {} }
+    local state  = { opened = false, refused = {}, applied = combat.marks(snap, mob.oid) }
     local memory = snap.record.memory.battle
     if memory ~= nil and memory.oid == mob.oid then
         state.opened = memory.opened == true
         if memory.refused ~= nil then
             state.refused[memory.refused] = true
+        end
+        if memory.spot ~= nil and memory.spot.x == snap.world.x and memory.spot.y == snap.world.y then
+            for name in pairs(memory.denied or {}) do
+                state.refused[name] = true
+            end
         end
         for name, at in pairs(memory.applied or {}) do
             if lasting(snap, name, at) then
@@ -562,16 +583,43 @@ end
 function evaluate(snap, facts, mob, reachable)
     local baseline = value.baseline(snap, facts)
     local loss     = danger.loss(snap, facts, baseline)
-    local mana     = value.refill(snap, facts, baseline)
+    local mana     = value.spend(snap, facts, mob)
     local best     = nil
     local values   = {}
     local ending   = -math.huge
     local last     = nil
     local state    = remembered(snap, mob)
-    for _, entry in ipairs(candidates(snap, facts, mob, state, reachable)) do
+    local listed   = candidates(snap, facts, mob, state, reachable)
+    local melee    = nil
+    for _, entry in ipairs(listed) do
+        if entry.kind == "SWING" then
+            melee = entry
+            melee.applied = state.applied
+            local _
+            melee.value, _, _, melee.plan = estimate(snap, facts, mob, melee, baseline, loss, mana)
+        end
+    end
+    local share   = combat.gain(mob) / math.max(mob.hp or 1, 1)
+    local blocked = snap.record.memory.blocked
+    local hemmed  = melee ~= nil and type(blocked) == "table" and snap.now - blocked.at < melee.plan.time
+    local plan    = party.plan(snap, facts)
+    for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
+        hemmed = hemmed and floor.map ~= snap.world.map
+    end
+    for _, entry in ipairs(listed) do
         entry.applied = state.applied
         local left
-        entry.value, entry.survives, left, entry.plan = estimate(snap, facts, mob, entry, baseline, loss, mana)
+        entry.value, entry.survives, left, entry.plan = estimate(snap, facts, mob, entry, baseline, loss,
+            entry.kind == "STRIKE" and value.refill(snap, facts, baseline) or
+            entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
+        if entry.kind == "CAST" and melee ~= nil and hemmed == false and (entry.mp or 0) > 0 then
+            local direct = math.max(0, (entry.damage or 0) - (melee.damage or 0)) * share
+            local empty = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
+            entry.value = math.min(entry.value, melee.value + direct - entry.mp * empty * value.sip(snap, facts, mob))
+        elseif entry.kind == "USE" and melee ~= nil and (entry.hp or 0) <= 0 then
+            entry.value = math.min(entry.value,
+                melee.value - (entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)))
+        end
         if last == nil or entry.value > last.value then
             last = entry
         end
@@ -768,8 +816,16 @@ function M.settle(memory, blocked, oid, map, action, event, now, visible, moved)
         memory.applied[action.debuff] = now
     end
     memory.refused = event.type == "REFUSED" and action.key or nil
-    local kept     = {}
-    local count    = 0
+    if event.type == "REFUSED" and action.key ~= nil and action.maneuver.self ~= true then
+        local denied = {}
+        for name in pairs(memory.denied or {}) do
+            denied[name] = true
+        end
+        denied[action.key] = true
+        memory.denied = denied
+    end
+    local kept  = {}
+    local count = 0
     for key, entry in pairs(blocked or {}) do
         local mob = visible[key]
         if mob ~= nil and entry.map == map and mob.x == entry.x and mob.y == entry.y then
@@ -777,7 +833,7 @@ function M.settle(memory, blocked, oid, map, action, event, now, visible, moved)
             count     = count + 1
         end
     end
-    if event.type == "UNREACHABLE" and visible[tostring(oid)] ~= nil then
+    if (event.type == "UNREACHABLE" or event.type == "OCCUPIED") and visible[tostring(oid)] ~= nil then
         local mob           = visible[tostring(oid)]
         kept[tostring(oid)] = { map = map, x = mob.x, y = mob.y }
         count               = count + 1
@@ -797,6 +853,17 @@ function M.step(brain, bot, oid, action)
     trace.engage(brain, bot, oid, action, event.type)
     local memory, blocked = M.settle(brain:recall(bot, "battle"), brain:recall(bot, "unreachable"), oid, seen.map,
         action, event, brain:observe(bot).now, visible, before[1] ~= after[1] or before[2] ~= after[2])
+    if memory ~= nil and event.type == "REFUSED" then
+        memory.spot = { x = after[1], y = after[2] }
+    end
+    if data.journal and event.type == "REFUSED" then
+        local mob = visible[tostring(oid)]
+        log("debug",
+            string.format("[brain:refused] bot=%s key=%s at=%s,%s mob=%s %s,%s hp=%s mp=%s", bot:name(),
+                tostring(action.key),
+                tostring(after[1]), tostring(after[2]), tostring(mob ~= nil and mob.name), tostring(mob ~= nil and mob.x),
+                tostring(mob ~= nil and mob.y), tostring(mob ~= nil and mob.hp), tostring(bot:mp())))
+    end
     brain:remember(bot, "battle", memory)
     brain:remember(bot, "unreachable", blocked)
     return event

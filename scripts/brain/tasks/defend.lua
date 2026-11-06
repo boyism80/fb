@@ -3,6 +3,7 @@ local combat  = require("brain.policies.combat")
 local danger  = require("brain.policies.danger")
 local failure = require("brain.policies.failure")
 local party   = require("brain.policies.party")
+local aid     = require("brain.tasks.aid")
 local field   = require("brain.tasks.field")
 local value   = require("brain.policies.value")
 
@@ -36,7 +37,16 @@ local function passing(snap, query, mob, fight)
             return false
         end
     end
+    local blocked = snap.record.memory.blocked
+    if type(blocked) == "table" and snap.now - blocked.at < fight.time then
+        return false
+    end
     return fight.time > (mob.speed or 0) and combat.gain(mob) / math.max(fight.time, 1) * 1000 < plan.rate
+end
+
+local function marginal(found)
+    local mob = found.mob
+    return (found.choice.damage or 0) / math.max(mob.hp or 1, 1) * combat.gain(mob)
 end
 
 function M.value(snap, query)
@@ -47,7 +57,11 @@ function M.value(snap, query)
         return -1
     end
     local ignored = combat.lethal(snap, found.mob, fight.time, snap.self.hp)
-    return math.max(0, found.choice.value + ignored * danger.loss(snap, query, worth))
+    local gain    = found.choice.value
+    if gain > 0 and aid.wanted(snap, query) and aid.value(snap, query) > marginal(found) then
+        gain = math.min(gain, aid.value(snap, query) - 1)
+    end
+    return math.max(0, gain + ignored * danger.loss(snap, query, worth))
 end
 
 return M

@@ -2,6 +2,7 @@ local combat   = require("brain.data.combat")
 local battle   = require("brain.policies.battle")
 local danger   = require("brain.policies.danger")
 local means    = require("brain.policies.means")
+local party    = require("brain.policies.party")
 local snapshot = require("brain.snapshot")
 local query    = require("brain.query")
 local value    = require("brain.policies.value")
@@ -44,7 +45,8 @@ local function blocker(brain, bot, event)
         if mob.oid == event.oid and mob.hp ~= nil then
             local choice = battle.choose(snap, facts, mob)
             if choice ~= nil then
-                return mob, { maneuver = choice.maneuver, key = choice.key, opener = choice.opener }
+                return mob,
+                    { maneuver = choice.maneuver, key = choice.key, opener = choice.opener, debuff = choice.debuff }
             end
         end
     end
@@ -76,17 +78,20 @@ local function journey(brain, bot, destination, detour)
                 event.map, event.x, event.y))
         elseif event.type == "OCCUPIED" and blocker(brain, bot, event) ~= nil then
             local mob, action = blocker(brain, bot, event)
-            brain:remember(bot, "blocked", event.detail)
+            brain:remember(bot, "blocked", { detail = event.detail, at = snapshot.take(brain, bot).now })
             log("debug", string.format("[brain:travel] bot=%s clears %s %d at map=%d %d,%d", bot:name(), mob.name,
                 event.oid, event.map, event.x, event.y))
             local fought = battle.step(brain, bot, event.oid, action)
+            if action.maneuver.kind == MANEUVER.SWING then
+                brain:remember(bot, "swung", snapshot.take(brain, bot).now)
+            end
             if fought.type ~= "KILLED" then
                 log("debug", string.format("[brain:travel] bot=%s clearing ended %s", bot:name(), fought.type))
                 return false, { type = "ENGAGED", map = event.map, x = event.x, y = event.y, oid = event.oid }
             end
         elseif event.type == "OCCUPIED" then
             local wait = patience(brain, bot, destination, detour, event)
-            brain:remember(bot, "blocked", event.detail)
+            brain:remember(bot, "blocked", { detail = event.detail, at = snapshot.take(brain, bot).now })
             log("debug", string.format("[brain:travel] bot=%s blocked by %s %d at map=%d %d,%d wait=%dms", bot:name(),
                 event.detail, event.oid, event.map, event.x, event.y, wait))
             local target = event.x == event.gx and event.y == event.gy
@@ -161,7 +166,7 @@ function M.go(brain, bot, destination)
         closed = {},
         avoid = avoid,
         wary = #avoid > 0,
-        perilous = risky and {} or danger.perilous(snap, facts),
+        perilous = risky and {} or party.perilous(snap, facts),
         shunned = risky and {} or danger.shunned(snap, facts),
         bounced = {}
     }

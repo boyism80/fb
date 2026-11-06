@@ -43,7 +43,8 @@ local SKILLS = {
         if event.type == "KILLED" then
             log("debug", string.format("[brain:kill] bot=%s key=%s", bot:name(), tostring(action.key)))
         end
-        return event.type == "KILLED" or event.type == "UNREACHABLE" or battle.going(event.type), event.type
+        return event.type == "KILLED" or event.type == "UNREACHABLE" or event.type == "OCCUPIED" or
+        battle.going(event.type), event.type
     end,
     [ACTION.TALK]   = function(brain, bot, action)
         local npc = action.npc ~= nil and brain:npc(bot, action.npc) or nil
@@ -58,6 +59,9 @@ local SKILLS = {
         if action.spell ~= nil then
             synced(bot)
             if bot:spell_slot(action.spell) == EMPTY_SLOT then
+                local untaught = brain:recall(bot, "untaught") or {}
+                untaught[action.spell] = true
+                brain:remember(bot, "untaught", untaught)
                 return false, "UNCHANGED"
             end
         end
@@ -92,6 +96,17 @@ local SKILLS = {
             brain:loot(bot)
         end
         if bot:money() == money and carried(brain, bot) == before then
+            local stuck = {}
+            for _, oid in ipairs(action.oids or {}) do
+                stuck[tostring(oid)] = true
+            end
+            local known = brain:recall(bot, "stuck") or {}
+            for _, item in ipairs(brain:items(bot)) do
+                if known[tostring(item.oid)] then
+                    stuck[tostring(item.oid)] = true
+                end
+            end
+            brain:remember(bot, "stuck", stuck)
             return false, "UNCHANGED"
         end
         return true

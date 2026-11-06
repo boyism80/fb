@@ -20,8 +20,16 @@ local function summary(plan)
     for _, floor in ipairs(plan.floors) do
         table.insert(floors, { map = floor.map, targets = floor.targets })
     end
-    return { name = plan.name, rate = plan.rate, pain = plan.pain, peak = plan.peak, floors = floors, yields = plan
-    .yields, gate = plan.gate }
+    return {
+        name = plan.name,
+        rate = plan.rate,
+        pain = plan.pain,
+        peak = plan.peak,
+        floors = floors,
+        yields = plan
+            .yields,
+        gate = plan.gate
+    }
 end
 
 local function arrival(snap, query, decision)
@@ -51,6 +59,7 @@ function M.profile(snap, query, decision)
             (decision.dest.maps or { decision.dest.map }) or nil,
         arrives = arrival(snap, query, decision),
         battle  = grouped and snap.record.memory.battle or nil,
+        marks   = grouped and snap.record.memory.marks or nil,
         plan    = grouped and snap.leader == snap.self.name and summary(M.plan(base, query)) or nil,
     }
 end
@@ -63,6 +72,23 @@ local function hazards(team, query)
         end
     end
     return found
+end
+
+function M.perilous(snap, query)
+    local members = M.members(snap)
+    if #members == 0 then
+        return danger.perilous(snap, query)
+    end
+    local found = hazards(members, query)
+    for _, id in ipairs(danger.perilous(snap, query)) do
+        found[id] = true
+    end
+    local list = {}
+    for id in pairs(found) do
+        table.insert(list, id)
+    end
+    table.sort(list)
+    return list
 end
 
 function M.gate(snap, query, plan, team)
@@ -135,9 +161,11 @@ function M.offer(snap, query)
             recent[name] = true
         end
     end
+    local crew = snap.record.memory.crew
     for _, entry in ipairs(query.roster()) do
         local profile = entry.profile
         if type(profile) == "table" and recent[entry.name] == nil and profile.grouped == false and
+            (crew == nil or crew[entry.name]) and
             profile.self ~= nil and profile.self.grouping == true and profile.self.ghost == false and
             profile.self.class ~= "NONE" then
             table.insert(nearby, entry)
@@ -185,6 +213,8 @@ function M.known(snap)
     return #M.members(snap) >= #(snap.group or {})
 end
 
+local held = {}
+
 function M.plan(snap, query)
     local members = M.members(snap)
     if #members == 0 then
@@ -203,8 +233,22 @@ function M.plan(snap, query)
             table.insert(team, member)
         end
         local commit = snap.record.memory.commit
-        local plan   = commit ~= nil and ground.hold(team, query, commit) or nil
-        plan         = plan or ground.party(team, query, "SUPPLY")
+        local parts  = { (snap.now or 0) // combat.rerank, tostring(commit), table.concat(danger.shunned(snap, query),
+            ",") }
+        for _, member in ipairs(team) do
+            table.insert(parts, score.signature(member, ""))
+            table.insert(parts, tostring(member.self.ghost))
+        end
+        local key  = table.concat(parts, "|")
+        local kept = held[snap.self.name]
+        local plan = nil
+        if kept ~= nil and kept.key == key then
+            plan = kept.plan
+        else
+            plan = commit ~= nil and ground.hold(team, query, commit) or nil
+            plan = plan or ground.party(team, query, "SUPPLY")
+            held[snap.self.name] = { key = key, plan = plan }
+        end
         if plan ~= nil then
             local copy = {}
             for key, entry in pairs(plan) do

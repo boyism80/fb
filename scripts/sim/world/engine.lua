@@ -41,6 +41,7 @@ function M.new(options)
         mobs = {},
         killed = {},
         rezens = {},
+        births = {},
         characters = {},
         serial = 0,
         stats = { swings = 0, hits = 0, misses = 0, struck = 0, taken = 0, kills = 0, exp = 0 },
@@ -120,6 +121,7 @@ function World:spawn(rezen, x, y)
     rezen.alive = rezen.alive + 1
     self.map:enter(mob)
     self.mobs[mob.oid] = mob
+    table.insert(self.births, mob)
     return mob
 end
 
@@ -321,16 +323,17 @@ function World:award(character, exp)
     end
     character.exp       = character.exp + value
     character.stats.exp = character.stats.exp + value
-    character.gained    = (character.gained or 0) + value
-    character.origin    = character.origin or character.level
-    while table[character.level + 1] ~= nil and table[character.origin] ~= nil and
-        character.gained >= table[character.level + 1].exp - table[character.origin].exp do
+    while table[character.level + 1] ~= nil and character.exp >= table[character.level + 1].exp do
         local now, after = table[character.level], table[character.level + 1]
         character.max_hp = character.max_hp + after.hp - now.hp
         character.max_mp = character.max_mp + after.mp - now.mp
         character.hp     = character.max_hp
         character.mp     = character.max_mp
-        character.level  = character.level + 1
+        character.grown  = character.grown or { str = 0, int = 0, dex = 0 }
+        for _, key in ipairs({ "str", "int", "dex" }) do
+            character.grown[key] = character.grown[key] + after[key] - now[key]
+        end
+        character.level = character.level + 1
     end
 end
 

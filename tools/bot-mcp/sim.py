@@ -13,7 +13,7 @@ MASTER = os.environ.get('BOT_MASTER', 'http://127.0.0.1:8089')
 PLAN = os.path.join(ROOT, 'scripts', 'sim', 'world', 'lane_plan.lua')
 BOT = os.path.join(ROOT, 'server', 'bot')
 LOGS = os.path.join(BOT, 'logs', 'cluster')
-LOCAL = '127.0.0.1:3001'
+TARGET = '175.123.108.99:30000'
 ANSI = re.compile(r'\x1b\[[0-9;]*m')
 TEAM = re.compile(r'\[sim:team\] (.+?) seed=(\d+) (\w+) lv(\d+) died=(\w+).*?kills=(\d+) exp=(\d+)')
 SOLO = re.compile(r'\[sim:world\] (\w+) lv(\d+) ground=\S+ map=\d+ time=\d+s died=(\w+) left=\w+ kills=(\d+) exp=(\d+)')
@@ -42,7 +42,7 @@ def write_plan(teams, seeds, solo, lanes, minutes, profile=False, trace=False):
                    f'duration = {minutes * 60000} }}\n')
 
 
-def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=24, minutes=0, target=LOCAL, profile=False, trace=False):
+def start(teams=None, seeds=(0, 1, 2), solo=True, lanes=24, minutes=0, target=TARGET, profile=False, trace=False):
     state = call('/api/state').get('run') or {}
     if state.get('state') == 'running':
         return {'error': 'a run is active', 'run': state.get('id')}
@@ -418,7 +418,7 @@ def places(run_id, team, seed):
     return lines
 
 
-def scenarios(suites, target=LOCAL, limit=600, retry=0):
+def scenarios(suites, target=TARGET, limit=600, retry=0):
     run_id = call('/api/runs', {'kind': 'integration', 'suites': suites, 'retry': retry, 'client': '', 'target': target})['id']
     wait(run_id, limit)
     return scenario_failures(run_id)
@@ -636,7 +636,7 @@ def main():
     parser.add_argument('--raw', action='store_true')
     parser.add_argument('--lanes', type=int, default=24)
     parser.add_argument('--minutes', type=int, default=0)
-    parser.add_argument('--target', default=LOCAL)
+    parser.add_argument('--target', default=TARGET)
     parser.add_argument('--profile', action='store_true')
     parser.add_argument('--trace', action='store_true')
     args = parser.parse_args()

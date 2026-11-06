@@ -95,6 +95,36 @@ async::task<brain::event> brain::engage(std::shared_ptr<game_bot> bot, uint32_t 
         co_return event{"DONE", map, here};
     }
 
+    if (target == here)
+    {
+        auto& atlas = atlas::get();
+        auto  grid  = atlas.find_grid(map);
+        auto  aside = std::optional<atlas::position>{};
+        for (auto direction : {DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM})
+        {
+            auto next  = atlas::forward(here, direction);
+            auto taken = false;
+            for (auto& [_, entry] : bot->sight.entries())
+                taken = taken || (entry.look < game_bot::sight::ITEM_LOOK && entry.position == next);
+            if (grid != nullptr && grid->passable(here, direction) && taken == false &&
+                atlas.warp_at(map, next) == false)
+            {
+                aside = next;
+                break;
+            }
+        }
+        if (aside.has_value() == false)
+            co_return event{"UNREACHABLE", map, target};
+
+        auto moved = co_await this->walk(bot, destination{{map}, aside.value(), 0}, detour{});
+        if (moved.type == "BLOCKED" || moved.type == "NO_ROUTE")
+            co_return event{"UNREACHABLE", map, target};
+        else if (moved.type != "ARRIVED")
+            co_return moved;
+
+        co_return event{"APPROACHED", bot->map(), bot->position(), {}, oid, target, swings};
+    }
+
     if (std::abs(target.x - here.x) + std::abs(target.y - here.y) != 1)
     {
         auto moved = co_await this->walk(bot, destination{{map}, target, 1}, detour{});

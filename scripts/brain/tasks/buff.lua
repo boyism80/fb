@@ -49,7 +49,7 @@ local function worth(snap, query, name, data)
     local lost    = power > 0 and 1 - value.power(without, query) / power or 0
     local rate    = value.baseline(snap, query).value
     local cast    = combat.cast(snap) / 1000
-    return rate * (lost * (data.buff_time or 0) - cast) - value.mana(snap, query) * (data.mp or 0)
+    return rate * (lost * (data.buff_time or 0) - cast) - value.spend(snap, query) * (data.mp or 0)
 end
 
 local function wanted(snap, query)

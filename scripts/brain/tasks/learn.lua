@@ -1,19 +1,25 @@
 local buyers   = require("brain.data.buyers")
+local data     = require("brain.data.combat")
 local job      = require("brain.data.job")
 local learning = require("brain.data.learning")
 local outfits  = require("brain.data.outfits")
 local shops    = require("brain.data.shops")
 local combat   = require("brain.policies.combat")
 local ground   = require("brain.policies.ground")
+local party    = require("brain.policies.party")
 local lessons  = require("brain.policies.lessons")
+local memo     = require("brain.policies.memo")
 local near     = require("brain.policies.near")
+local rest     = require("brain.tasks.rest")
+local score    = require("brain.policies.score")
 local value    = require("brain.policies.value")
 
 local M = {}
 
 local LEARN_MENU = 2
 
-local plans = setmetatable({}, { __mode = "k" })
+local plans   = setmetatable({}, { __mode = "k" })
+local taughts = {}
 
 local function stocked(snap, query, missing)
     local kinds = 0
@@ -44,9 +50,16 @@ local function plan(snap, query)
         for _, learned in ipairs(snap.spells or {}) do
             known[learned.name] = true
         end
+        for name in pairs(snap.record.memory.untaught or {}) do
+            known[name] = true
+        end
         local worth = value.baseline(snap, query)
-        local now   = ground.choose(snap, query)
-        local rate  = now ~= nil and now.rate or 0
+        local rate  = 0
+        for _, entry in ipairs(ground.ranked(snap, query)) do
+            if ground.reachable(snap, query, entry.candidate) then
+                rate = math.max(rate, entry.rate)
+            end
+        end
         for _, entry in ipairs(learning[snap.self.class] or {}) do
             local ready, missing = affordable(snap, query, entry)
             if ready then
@@ -57,11 +70,16 @@ local function plan(snap, query)
                 end
                 for _, name in ipairs(entry.names) do
                     if known[name] == nil then
-                        local after = ground.choose(lessons.taught(snap, name, entry), query)
-                        local gain  = math.max(0, (after ~= nil and after.rate or 0) - rate)
-                        local net   = -price * worth.exchange
+                        local reached = memo.get(taughts, snap.self.name, score.signature(snap, ""),
+                            name .. "|" .. (snap.now or 0) // data.rerank, function()
+                                local after = ground.choose(lessons.taught(snap, name, entry), query)
+                                return after ~= nil and after.rate or 0
+                            end)
+                        local gain    = math.max(0, reached - rate)
+                        local net     = -price * worth.exchange
                         if gain > 0 then
-                            net = net + gain * ground.lifetime(snap, gain + rate)
+                            net = net + gain * (#party.members(snap) > 0 and ground.horizon(snap, gain + rate) or
+                                ground.lifetime(snap, gain + rate))
                         end
                         if net > 0 then
                             for item, count in pairs(entry.materials) do
@@ -94,9 +112,12 @@ local function plan(snap, query)
         local kinds = 0
         best.bought = {}
         for item, count in pairs(basket) do
-            if count > (held[item] or 0) then
-                best.bought[item] = count - (held[item] or 0)
-                price             = price + best.bought[item] * (shops[item] or outfits[item]).price
+            local source = shops[item] or outfits[item]
+            local limit  = math.max(source.capacity or 1, 1)
+            local target = limit > 1 and math.min(count, limit) or count
+            if target > (held[item] or 0) then
+                best.bought[item] = target - (held[item] or 0)
+                price             = price + best.bought[item] * source.price
                 kinds             = kinds + 1
             end
         end
@@ -104,16 +125,24 @@ local function plan(snap, query)
             best.bought = best.own
         end
     end
+    if data.journal and best ~= nil then
+        log("debug",
+            string.format("[brain:learn] bot=%s t=%s map=%s skill=%s net=%.0f gain=%.0f span=%.0f price=%s",
+                snap.self.name or "", tostring(snap.now),
+                tostring(snap.world.map), tostring(best.name), best.value, best.gain, best.span, tostring(best.price)))
+    end
     plans[snap] = best or false
     return best
 end
 
 function M.wanted(snap, query)
     local found = plan(snap, query)
-    if found == nil then
+    if found == nil or (#party.members(snap) > 0 and rest.low(snap, query)) then
         return false
     end
-    return found.value - value.cost(snap, query, M.propose(snap, query), value.baseline(snap, query)) > 0
+    local worth = value.baseline(snap, query)
+    local trip  = value.cost(snap, query, M.propose(snap, query), worth)
+    return found.value - trip * (1 + #party.members(snap)) > 0
 end
 
 function M.value(snap, query)
@@ -146,7 +175,7 @@ local function shopping(found)
         return nil
     end
     local source = shops[first] or outfits[first]
-    return first, math.min(found.bought[first], math.max(1, source.capacity or 1)), source.npcs
+    return first, source.capacity and source.capacity > 1 and found.bought[first] or 1, source.npcs
 end
 
 function M.propose(snap, query)

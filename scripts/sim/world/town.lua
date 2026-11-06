@@ -34,9 +34,13 @@ local function space(bag, name, capacity)
     for _, item in ipairs(bag.items) do
         if item.name == name then
             free = free + math.max(0, capacity - item.count)
+            if capacity > 1 then
+                return free
+            end
         end
     end
-    return free + math.max(0, (bag.capacity or 0) - (bag.used or 0)) * capacity
+    local slots = math.max(0, (bag.capacity or 0) - (bag.used or 0))
+    return free + (capacity > 1 and math.min(slots, 1) or slots) * capacity
 end
 
 local function add(bag, name, count, capacity, kind)

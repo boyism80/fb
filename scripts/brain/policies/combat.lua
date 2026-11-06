@@ -224,6 +224,31 @@ function M.lasting(name, at, now)
     return type(at) ~= "number" or spell == nil or now - at < (spell.buff_time or 0) * 1000
 end
 
+function M.marks(snap, oid)
+    local names = {}
+    local add   = function(marks)
+        for name, at in pairs((marks or {})[tostring(oid)] or {}) do
+            if M.lasting(name, at, snap.now) then
+                names[name] = true
+                for _, group in ipairs(combat.debuffs) do
+                    local inside = false
+                    for _, member in ipairs(group) do
+                        inside = inside or member == name
+                    end
+                    for _, member in ipairs(inside and group or {}) do
+                        names[member] = true
+                    end
+                end
+            end
+        end
+    end
+    add(snap.record.memory.marks)
+    for _, profile in ipairs(snap.party or {}) do
+        add(profile.marks)
+    end
+    return names
+end
+
 function M.exposed(mob, weak)
     if weak.defense == 0 then
         return mob

@@ -12,7 +12,7 @@ def main():
     parser.add_argument('--solo', action='store_true')
     parser.add_argument('--lanes', type=int, default=24)
     parser.add_argument('--minutes', type=int, default=0)
-    parser.add_argument('--target', default=sim.LOCAL)
+    parser.add_argument('--target', default=sim.TARGET)
     parser.add_argument('--limit', type=int, default=3600)
     parser.add_argument('--baseline', default='')
     args = parser.parse_args()

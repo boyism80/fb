@@ -109,6 +109,15 @@ return {
                 },
             },
             {
+                name = "profile swap",
+                drops = true,
+                ground = { form = true, map = 22 },
+                members = {
+                    { class = "WARRIOR", profile = "warrior63swap" },
+                    { class = "POET", profile = "poet65swap" },
+                },
+            },
+            {
                 name = "profile 63+65 form",
                 drops = true,
                 ground = { form = true, map = 22 },

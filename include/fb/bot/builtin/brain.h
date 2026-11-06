@@ -21,6 +21,7 @@ struct brain
     static int builtin_observe(lua_State* L);
     static int builtin_route(lua_State* L);
     static int builtin_reach(lua_State* L);
+    static int builtin_warp_at(lua_State* L);
     static int builtin_walk(lua_State* L);
     static int builtin_remember(lua_State* L);
     static int builtin_npcs(lua_State* L);

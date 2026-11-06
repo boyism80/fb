@@ -82,6 +82,123 @@ function M.baseline(snap, query)
     return result
 end
 
+local sinks = setmetatable({}, { __mode = "k" })
+
+local function sunk(snap, mob)
+    local known = sinks[snap]
+    if known == nil then
+        known = {}
+        sinks[snap] = known
+    end
+    local slot = mob ~= nil and (mob.oid or mob.name) or false
+    if known[slot] ~= nil then
+        return known[slot] or nil
+    end
+    local sink = nil
+    if mob ~= nil and (mob.hp or 0) > 0 then
+        for _, choice in ipairs(combat.options(snap, mob).strike) do
+            if (choice.mp or 0) > 0 and (choice.damage or 0) > 0 then
+                local each = choice.damage / choice.mp * combat.gain(mob) / mob.hp
+                sink = math.max(sink or each, each)
+            end
+        end
+    end
+    known[slot] = sink or false
+    return sink
+end
+
+local errands = {}
+
+local function errand(snap, query, name, npcs)
+    return memo.get(errands, snap.self.name, tostring(snap.world.map), name, function()
+        local maps = {}
+        for _, spot in ipairs(query.npcs(npcs)) do
+            table.insert(maps, spot.map)
+        end
+        local route = #maps > 0 and query.route(maps, danger.perilous(snap, query), danger.shunned(snap, query)) or nil
+        return route ~= nil and { seconds = 2 * route.cost * (snap.pace.step or data.walk) / 1000 } or
+        { seconds = math.huge }
+    end).seconds
+end
+
+local refills = setmetatable({}, { __mode = "k" })
+
+local function refilled(snap, query)
+    if refills[snap] ~= nil then
+        return refills[snap]
+    end
+    local worth = M.baseline(snap, query)
+    local regen = recovery.rates(snap).mp + data.natural.mp * (snap.self.max_mp or 0)
+    local price = regen > 0 and worth.value / regen or math.huge
+    local crew  = 1 + #party.members(snap)
+    for name, shop in pairs(shops) do
+        local effect   = items[name]
+        local restored = effect ~= nil and recovery.restored(snap, effect, "mp") or 0
+        if restored > 0 then
+            local uses  = math.max(shop.uses or 1, 1)
+            local stack = restored * uses * math.max(shop.capacity or 1, 1)
+            price       = math.min(price, shop.price / (restored * uses) * worth.exchange +
+                combat.cast(snap) / 1000 * worth.value / restored +
+                errand(snap, query, name, shop.npcs) * crew * worth.value / stack)
+        end
+    end
+    refills[snap] = price
+    return price
+end
+
+function M.spend(snap, query, mob)
+    local found = math.min(refilled(snap, query), sunk(snap, mob) or math.huge)
+    return found < math.huge and found or 0
+end
+
+function M.sip(snap, query, mob)
+    local found = M.spend(snap, query, mob)
+    local most  = 0
+    for _, item in ipairs(combat.buffs(snap).charge == nil and snap.bag.items or {}) do
+        local effect = items[item.name]
+        if effect ~= nil then
+            most = math.max(most, recovery.restored(snap, effect, "mp"))
+        end
+    end
+    if most <= 0 then
+        return found
+    end
+    return math.max(found, combat.cast(snap) / 1000 * M.baseline(snap, query).value / most)
+end
+
+function M.restock(snap, query, mob, restored)
+    local price = M.spend(snap, query, mob)
+    if restored <= 0 then
+        return price
+    end
+    local mp       = snap.self.mp or 0
+    local charging = combat.buffs(snap).charge
+    local floor    = 0
+    local sink     = price
+    if sunk(snap, mob) ~= nil then
+        floor = recovery.opening(snap) or 0
+        sink  = sunk(snap, mob)
+    elseif mob ~= nil and (mob.hp or 0) > 0 then
+        for _, choice in ipairs(combat.options(snap, mob).offense) do
+            if (choice.mp or 0) > 0 and (choice.damage or 0) > 0 then
+                local each = choice.damage / choice.mp * combat.gain(mob) / mob.hp
+                if each > price and each > sink then
+                    sink  = each
+                    floor = choice.mp
+                end
+            end
+        end
+    end
+    if charging ~= nil and charging.mp > 0 and mp < charging.mp then
+        local unlocked = charging.chance * ((snap.self.max_mp or 0) - mp) / charging.mp * price
+        if unlocked > sink then
+            floor = charging.mp
+            sink  = unlocked
+        end
+    end
+    return math.min(restored, math.max(0, floor - mp)) * sink / restored
+end
+
 local powers = {}
 
 function M.power(snap, query)
@@ -91,7 +208,12 @@ function M.power(snap, query)
     end)
 end
 
+local plains = setmetatable({}, { __mode = "k" })
+
 function M.refill(snap, query, worth)
+    if plains[snap] ~= nil then
+        return plains[snap]
+    end
     local regen = recovery.rates(snap).mp + data.natural.mp * (snap.self.max_mp or 0)
     local price = regen > 0 and worth.value / regen or math.huge
     for name, shop in pairs(shops) do
@@ -101,16 +223,61 @@ function M.refill(snap, query, worth)
             price = math.min(price, shop.price / restored * worth.exchange)
         end
     end
-    return price < math.huge and price or 0
+    plains[snap] = price < math.huge and price or 0
+    return plains[snap]
 end
 
+local manas = {}
+
 function M.mana(snap, query)
+    local period = (snap.now or 0) // data.rerank
+    local known  = manas[snap.self.name]
+    if known ~= nil and known.period == period then
+        return known.found
+    end
     local full = ground.choose(snap, query, "REFILL")
     local dry  = ground.choose(snap, query, "DRY")
-    if full == nil or full.drain <= 0 then
-        return 0
+    local team = party.members(snap)
+    if #team > 0 then
+        local members = { snap }
+        for _, member in ipairs(team) do
+            table.insert(members, member)
+        end
+        full = ground.party(members, query, "REFILL") or full
+        dry  = ground.party(members, query, "DRY") or dry
     end
-    return (full.rate - (dry ~= nil and dry.rate or 0)) / full.drain
+    local found = 0
+    if full ~= nil and full.drain > 0 then
+        found = math.max(0, (full.rate - (dry ~= nil and dry.rate or 0)) / full.drain)
+    end
+    manas[snap.self.name] = { period = period, found = found }
+    return found
+end
+
+function M.deserted(snap, query, action)
+    local worth = M.baseline(snap, query)
+    local cost  = 0
+    local away  = nil
+    for _, member in ipairs(party.members(snap)) do
+        if member.world.map == snap.world.map and member.world.x ~= nil and member.self.ghost == false then
+            local hits = 0
+            for _, mob in ipairs(snap.world.mobs or {}) do
+                if mob.x ~= nil and combat.hits(mob) and (mob.speed or 0) > 0 and
+                    math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
+                    hits = hits + combat.blow(member, mob) / mob.speed * 1000
+                end
+            end
+            if hits > 0 then
+                if away == nil then
+                    local trip = action ~= nil and action.dest ~= nil and M.trip(snap, query, action.dest, worth) or nil
+                    away = trip ~= nil and 2 * trip.time or combat.cast(snap) / 1000
+                end
+                cost = cost +
+                math.min(1, hits * away / math.max(member.self.hp or 1, 1)) * danger.loss(member, query, worth)
+            end
+        end
+    end
+    return cost
 end
 
 function M.stay(snap, query, duration, worth)
@@ -245,14 +412,15 @@ end
 local routes = {}
 
 local function plans(snap, query, dest, origin)
-    local shunned = danger.shunned(snap, query)
-    local base    = table.concat({ snap.world.map, table.concat(shunned, ","), #danger.perilous(snap, query) }, "|")
-    local key     = table.concat({ origin ~= nil and origin.map or "", tostring(dest.map),
+    local shunned  = danger.shunned(snap, query)
+    local perilous = party.perilous(snap, query)
+    local base     = table.concat({ snap.world.map, table.concat(shunned, ","), #perilous }, "|")
+    local key      = table.concat({ origin ~= nil and origin.map or "", tostring(dest.map),
         table.concat(dest.maps or {}, ","), table.concat(dest.names or {}, ",") }, "|")
-    local where   = { map = dest.map, maps = dest.maps, names = dest.names }
-    local found   = memo.get(routes, snap.self.name, base, key, function()
+    local where    = { map = dest.map, maps = dest.maps, names = dest.names }
+    local found    = memo.get(routes, snap.self.name, base, key, function()
         local found = {
-            { route = query.path(where, danger.perilous(snap, query), shunned, origin), risky = false },
+            { route = query.path(where, perilous, shunned, origin), risky = false },
             { route = query.path(where, nil, nil, origin), risky = true },
         }
         return (found[1].route ~= nil or found[2].route ~= nil) and found or false

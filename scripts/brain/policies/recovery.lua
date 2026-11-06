@@ -237,6 +237,13 @@ function M.stranded(snap)
     if heal ~= nil and heal.hp > 0 and heal.mp <= (snap.self.mp or 0) then
         return false
     end
+    local charge = fight.buffs(snap).charge
+    if heal ~= nil and heal.hp > 0 and charge ~= nil and charge.mp <= (snap.self.mp or 0) and charge.cost < snap.self.hp then
+        return false
+    end
+    if heal ~= nil and heal.hp > 0 and #M.doses(snap, "mp") > 0 then
+        return false
+    end
     local blow = 0
     for _, mob in ipairs(snap.world.mobs or {}) do
         if mob.x ~= nil and fight.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then

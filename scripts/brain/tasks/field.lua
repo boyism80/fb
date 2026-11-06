@@ -242,7 +242,7 @@ function M.propose(snap, query)
         end
         return stage(snap, query, { best.floors[1].map })
     elseif index == nil then
-        return { kind = ACTION.MOVE, dest = { maps = { best.floors[1].map } } }
+        return { kind = ACTION.MOVE, dest = { maps = { best.floors[1].map } }, aim = best.name }
     end
 
     local floor  = best.floors[index]
@@ -278,12 +278,26 @@ function M.propose(snap, query)
         return { kind = ACTION.HOLD, occupy = occupy }
     elseif #best.floors > 1 then
         local next = best.floors[index % #best.floors + 1]
+        local leg  = snap.record.memory.leg
+        if leg ~= nil and leg.name == best.name and leg.map ~= snap.world.map then
+            for _, entry in ipairs(best.floors) do
+                if entry.map == leg.map then
+                    next = entry
+                end
+            end
+        end
         if #(snap.party or {}) > 0 then
-            local action = stage(snap, query, { next.map })
+            local action  = stage(snap, query, { next.map })
             action.occupy = occupy
+            action.leg    = { name = best.name, map = next.map }
             return action
         end
-        return { kind = ACTION.MOVE, dest = { maps = { next.map } }, occupy = occupy }
+        return {
+            kind = ACTION.MOVE,
+            dest = { maps = { next.map } },
+            occupy = occupy,
+            leg = { name = best.name, map = next.map }
+        }
     end
     local spot = area(snap, query, floor.targets)
     if spot ~= nil then

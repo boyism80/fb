@@ -180,6 +180,20 @@ function Actor:advance(duration)
     self.clock = self.session.clock
 end
 
+local hosts = nil
+
+local function hosted(map)
+    if hosts == nil then
+        hosts = {}
+        for _, span in ipairs(require("sim.data.map_hosts")) do
+            for id = span[1], span[2] do
+                hosts[id] = span[3]
+            end
+        end
+    end
+    return hosts[map]
+end
+
 function Actor:enter(map, x, y)
     local world = self:main(function()
         return self.session:world(map)
@@ -211,6 +225,13 @@ function Actor:enter(map, x, y)
     end
     local spot    = spots[math.random(1, #spots)]
     self.me.world = world
+    self.known    = {}
+    self.born     = #world.births
+    if next(world.characters) == nil then
+        for oid, mob in pairs(world.mobs) do
+            self.known[oid] = { x = mob.x, y = mob.y }
+        end
+    end
     world:place(self.me, spot[1], spot[2])
     self.active = world
     self:publish()
@@ -258,15 +279,25 @@ end
 function Actor:visible()
     local found = {}
     local world = self.active
-    for _, mob in pairs(world.mobs) do
-        if world.map:sight(self.me, mob) then
+    for index = self.born + 1, #world.births do
+        local mob = world.births[index]
+        self.known[mob.oid] = { x = mob.x, y = mob.y }
+    end
+    self.born = #world.births
+    for oid, mob in pairs(world.mobs) do
+        local seen = world.map:sight(self.me, mob)
+        if seen then
+            self.known[oid] = { x = mob.x, y = mob.y }
+        end
+        local known = self.known[oid]
+        if known ~= nil then
             local entry = copy(mob.data)
             entry.drops = nil
             entry.oid   = mob.oid
             entry.id    = mob.data.id
             entry.name  = mob.data.name
-            entry.x     = mob.x
-            entry.y     = mob.y
+            entry.x     = known.x
+            entry.y     = known.y
             entry.ratio = mob.hp / mob.max_hp
             table.insert(found, entry)
         end
@@ -327,18 +358,21 @@ function Actor:snapshot()
     base.self.max_hp = me.max_hp
     base.self.max_mp = me.max_mp
     local self_      = copy(base.self)
-    self_.hp         = me.hp
-    self_.mp         = me.mp
-    self_.exp        = me.exp
-    self_.money      = self.money
-    self_.ghost      = me.dead
-    self_.struck     = me.struck ~= nil and self.clock - me.struck or nil
-    self_.casted     = self.casted ~= nil and self.clock - self.casted or nil
-    self_.cloaked    = self:cloaked()
-    self_.phydef     = me.phydef
-    self_.hit        = me.hit_value
-    self_.dam        = me.dam_value
-    local failures   = {}
+    for key, gained in pairs(me.grown or {}) do
+        self_[key] = (self_[key] or 0) + gained
+    end
+    self_.hp       = me.hp
+    self_.mp       = me.mp
+    self_.exp      = me.exp
+    self_.money    = self.money
+    self_.ghost    = me.dead
+    self_.struck   = me.struck ~= nil and self.clock - me.struck or nil
+    self_.casted   = self.casted ~= nil and self.clock - self.casted or nil
+    self_.cloaked  = self:cloaked()
+    self_.phydef   = me.phydef
+    self_.hit      = me.hit_value
+    self_.dam      = me.dam_value
+    local failures = {}
     for task, record in pairs(self.failures) do
         failures[task] = {
             failures = record.failures,
@@ -533,7 +567,7 @@ function Actor:sighted(oid)
     local mob   = world.mobs[oid]
     if mob == nil then
         return nil, world.killed[oid] and "KILLED" or "LOST"
-    elseif world.map:sight(self.me, mob) == false then
+    elseif world.map:sight(self.me, mob) == false and self.known[oid] == nil then
         return nil, "LOST"
     end
     return mob
@@ -825,7 +859,7 @@ function Actor:travel(dest)
     if exit ~= nil and exit.dest ~= nil and exit.ax ~= nil then
         destination, x, y = exit.dest, exit.ax, exit.ay
         self.transit = true
-        local gap = self.options.transfer or 0
+        local gap = hosted(self.active.map.id) ~= hosted(destination) and self.options.transfer or 0
         self:advance(gap)
         engine.rest(self.me, gap)
         self.transit = false
@@ -1027,6 +1061,12 @@ function Actor:think()
     if swept ~= nil then
         self.memory.swept = swept
     end
+    if decision ~= nil and decision.leg ~= nil then
+        self.memory.leg = decision.leg
+    end
+    if decision ~= nil and decision.aim ~= nil then
+        self.memory.aim = decision.aim
+    end
     local warded = decide.warded(snap, decision)
     if warded ~= nil then
         self.memory.warded = warded
@@ -1038,6 +1078,14 @@ function Actor:think()
     local swung = decide.swung(snap, decision)
     if swung ~= nil then
         self.memory.swung = swung
+    end
+    local changed, errand = decide.errand(snap, decision)
+    if changed then
+        self.memory.errand = errand
+    end
+    local remarked, marks = decide.mark(snap, decision)
+    if remarked then
+        self.memory.marks = marks
     end
     return decision, revisit
 end
@@ -1094,7 +1142,7 @@ function Actor:run()
                     text = action.text,
                     dest = action.dest,
                     item = action.item,
-                    key = action.key,
+                    key = action.key or action.buff,
                     mob = action.mob,
                     oid = action.oid,
                     name = action.name,

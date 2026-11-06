@@ -60,21 +60,50 @@ local function rescue(snap, query, member, current, restored, heal, worth)
     if heal.hp <= 0 then
         return 0
     end
-    local missing = (member.self.max_hp or 0) - current
-    local blows   = pressure(snap, member, missing / heal.hp * combat.cast(snap))
-    local before  = math.min(1, blows / math.max(current, 1))
-    local after   = math.min(1, blows / math.max(current + restored, 1))
-    return (before - after) * danger.loss(member, query, worth)
+    local blows = pressure(snap, member, 2 * combat.cast(snap))
+    if blows <= 0 then
+        return 0
+    end
+    return (math.exp(-current / blows) - math.exp(-(current + restored) / blows)) * danger.loss(member, query, worth)
+end
+
+local function convertible(member, mob)
+    local best = 0
+    for _, choice in ipairs(combat.options(member, mob).strike) do
+        if (choice.hp or 0) > 0 and (choice.damage or 0) > 0 then
+            best = math.max(best, choice.damage / choice.hp)
+        end
+    end
+    return best * combat.gain(mob) / math.max(mob.hp or 1, 1)
 end
 
 local function heals(snap, query, slots, worth)
     local found   = {}
-    local loss    = danger.loss(snap, query, worth)
-    local mana    = value.mana(snap, query)
+    local mana    = value.spend(snap, query, nil)
     local reserve = recovery.spare(snap)
     local seen    = targets(snap)
     for _, member in ipairs(party.members(snap)) do
-        local ally    = query.ally(member.self.name)
+        local ally = query.ally(member.self.name)
+        if ally == nil and member.self.ghost == false and member.world.map == snap.world.map and member.world.x ~= nil and
+            (member.self.hp or 0) < (member.self.max_hp or 0) then
+            local best = 0
+            for _, heal in ipairs(combat.options(snap, {}).heal) do
+                if heal.others and slots[heal.name] ~= nil then
+                    best = math.max(best, math.min(heal.hp, member.self.max_hp - member.self.hp))
+                end
+            end
+            local steps = math.abs(member.world.x - snap.world.x) + math.abs(member.world.y - snap.world.y)
+            if best > 0 and steps > 0 then
+                local hunted = member.battle
+                local target = type(hunted) == "table" and seen[hunted.oid] or nil
+                local fuel   = target ~= nil and convertible(member, target) or 0
+                table.insert(found, {
+                    walk = { x = member.world.x, y = member.world.y },
+                    value = best * fuel + rescue(snap, query, member, member.self.hp, best, { hp = best }, worth) -
+                        steps * (snap.pace.step or data.walk) / 1000 * worth.value,
+                })
+            end
+        end
         local current = ally ~= nil and ally.percent ~= nil and (member.self.max_hp or 0) * ally.percent / 100 or
             (member.self.hp or 0)
         local deficit = (member.self.max_hp or 0) - current
@@ -87,16 +116,16 @@ local function heals(snap, query, slots, worth)
                     local wasted   = math.min(heal.hp, member.self.max_hp or 0) - restored
                     local shared   = member.battle
                     local engaged  = type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] ~= nil
-                    local hunt     = party.plan(snap, query)
-                    local fuel     = hunt ~= nil and (hunt.pain or 0) > 0 and hunt.rate / hunt.pain or 0
-                    local saved    = engaged and (restored - wasted) * ((loss / math.max(member.self.max_hp, 1)) + fuel) or
+                    local fuel     = engaged and convertible(member, seen[shared.oid]) or 0
+                    local saved    = engaged and restored * fuel or
                         (restored - wasted) * price(member, mana, worth)
                     table.insert(found, {
                         oid = ally.oid,
                         slot = slots[heal.name],
                         key = heal.name,
                         cost = heal.mp,
-                        value = saved + rescue(snap, query, member, current, restored, heal, worth) - heal.mp * mana,
+                        value = saved + rescue(snap, query, member, current, restored, heal, worth) -
+                            heal.mp * value.spend(snap, query, engaged and seen[shared.oid] or nil),
                     })
                 end
             end
@@ -104,16 +133,22 @@ local function heals(snap, query, slots, worth)
     end
     local deficit = snap.self.max_hp - snap.self.hp
     if #found > 0 and deficit > 0 then
+        local crew    = escort.present(snap, query)
+        local helped  = (crew ~= nil and crew.heal or 0) * combat.cast(snap) / 1000
+        local shared  = (snap.record.memory.battle or {}).oid
+        local engaged = shared ~= nil and seen[shared] or nil
+        local fuel    = engaged ~= nil and convertible(snap, engaged) or 0
         for _, heal in ipairs(combat.options(snap, {}).heal) do
             if slots[heal.name] ~= nil and heal.mp + reserve <= (snap.self.mp or 0) then
-                local restored = math.min(deficit, heal.hp)
-                local share    = (2 * restored - math.min(heal.hp, snap.self.max_hp)) / math.max(snap.self.max_hp, 1)
+                local restored = math.max(0, math.min(deficit, heal.hp) - helped)
+                local saved    = engaged ~= nil and restored * fuel or restored * price(snap, mana, worth)
                 table.insert(found, {
                     self = true,
                     slot = slots[heal.name],
                     key = heal.name,
                     cost = heal.mp,
-                    value = share * loss - heal.mp * mana,
+                    value = saved + rescue(snap, query, snap, snap.self.hp, restored, heal, worth) -
+                        heal.mp * value.spend(snap, query, engaged),
                 })
             end
         end
@@ -122,7 +157,7 @@ local function heals(snap, query, slots, worth)
 end
 
 local function applied(snap, oid)
-    local names  = {}
+    local names  = combat.marks(snap, oid)
     local memory = snap.record.memory.battle
     if memory ~= nil and memory.oid == oid and memory.map == snap.world.map then
         for name, at in pairs(memory.applied or {}) do
@@ -151,8 +186,20 @@ local function debuffs(snap, query, slots, worth)
     local helper = escort.crew({ snap }, query)
     for _, member in ipairs(party.members(snap)) do
         local shared = member.battle
-        local mob    = type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] or nil
-        if mob ~= nil and member.self.ghost == false then
+        local list   = {}
+        local chosen = type(shared) == "table" and shared.map == snap.world.map and seen[shared.oid] or nil
+        if chosen ~= nil then
+            table.insert(list, chosen)
+        end
+        if member.world.map == snap.world.map and member.world.x ~= nil then
+            for _, near in ipairs(snap.world.mobs or {}) do
+                if near ~= chosen and near.x ~= nil and combat.hits(near) and
+                    math.abs(near.x - member.world.x) + math.abs(near.y - member.world.y) == 1 then
+                    table.insert(list, near)
+                end
+            end
+        end
+        for _, mob in ipairs(member.self.ghost == false and list or {}) do
             local names   = applied(snap, mob.oid)
             local context = escort.context(member, query, mob, helper, nil, 0)
             local before  = combat.outcome(member, query, copy(mob, { applied = names }), nil, context.aid)
@@ -163,7 +210,8 @@ local function debuffs(snap, query, slots, worth)
                     (cost or 0) <= recovery.free(snap) then
                     local after = combat.outcome(member, query, copy(mob, { applied = copy(names, { [name] = true }) }),
                         nil, context.aid)
-                    local saved = before.time < math.huge and math.max(0, before.time - after.time) or 0
+                    local saved = before.time < math.huge and
+                    math.max(0, before.time - after.time) / math.max(before.time, 1) or 0
                     if saved > 0 then
                         table.insert(found, {
                             oid = mob.oid,
@@ -171,7 +219,8 @@ local function debuffs(snap, query, slots, worth)
                             key = name,
                             debuff = name,
                             cost = cost or 0,
-                            value = saved / 1000 * worth.value - (cost or 0) * mana,
+                            value = saved * combat.gain(mob) * (mob.ratio or 1) -
+                            (cost or 0) * value.spend(snap, query, mob),
                         })
                     end
                 end
@@ -262,8 +311,14 @@ end
 
 function M.propose(snap, query)
     local found = plan(snap, query)
+    if found.walk ~= nil then
+        return {
+            kind = ACTION.MOVE,
+            dest = { map = snap.world.map, x = found.walk.x, y = found.walk.y, range = math.min(data.sight.x, data.sight.y) },
+        }
+    end
     if found.self then
-        return { kind = ACTION.CAST, slot = found.slot }
+        return { kind = ACTION.CAST, slot = found.slot, key = found.key }
     end
     return {
         kind     = ACTION.ATTACK,

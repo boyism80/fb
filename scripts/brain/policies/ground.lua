@@ -299,7 +299,8 @@ local reaches = {}
 local sweeps  = {}
 
 local function slot(snap, crew)
-    return (snap.self.class or "") .. (snap.self.level or 0) .. (snap.hypothesis or "") .. (crew ~= nil and crew.key or "")
+    return (snap.self.class or "") ..
+    (snap.self.level or 0) .. (snap.hypothesis or "") .. (crew ~= nil and crew.key or "")
 end
 
 local function reach(snap, query, crew)
@@ -485,7 +486,11 @@ local function rank(snap, query, mode, crew, worth)
                 { map = snap.world.map, x = snap.world.x or 0, y = snap.world.y or 0, level = snap.self.level })
             hops[key]   = route ~= nil and route.cost or math.huge
         end
-        if hops[key] < closest then
+        local aim = ((snap.actual or snap).record.memory or {}).aim
+        if aim == entry.candidate.bundle.name then
+            nearest = index
+            closest = -1
+        elseif hops[key] < closest then
             nearest = index
             closest = hops[key]
         end

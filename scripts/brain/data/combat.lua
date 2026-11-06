@@ -11,6 +11,7 @@ return {
     trace      = false,
     journal    = false,
     transfer   = 4500,
+    debuffs    = { { "혼마술", "저주", "귀염추혼소" } },
     dam        = 0.25,
     critical   = { chance = 0.2, factor = 2 },
     bare       = { min = 1, max = 5 },

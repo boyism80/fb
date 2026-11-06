@@ -173,6 +173,7 @@ local function dressed(records, name, money, mind)
     end
     me.level, me.hp, me.max_hp, me.mp, me.max_mp = spec.level, spec.hp, spec.hp, spec.mp, spec.mp
     me.str, me.int, me.dex, me.money = spec.str, spec.int, spec.dex, money
+    me.exp = 0
     local spells = {}
     for slot, spell in ipairs(spec.spells) do
         spells[slot] = { slot = slot, name = spell }

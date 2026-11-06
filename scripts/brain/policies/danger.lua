@@ -139,7 +139,8 @@ function M.perilous(snap, query, crew)
     end
     local helpers = team(snap, query, crew)
     local key     = score.signature(snap) .. (helpers ~= nil and helpers.key or "")
-    return memo.get(perils, (snap.self.class or "") .. (snap.self.level or 0) .. (snap.hypothesis or ""), score.signature(snap, ""), key, function()
+    return memo.get(perils, (snap.self.class or "") .. (snap.self.level or 0) .. (snap.hypothesis or ""),
+        score.signature(snap, ""), key, function()
         local found  = {}
         local rested = score.rested(snap)
         for id, mob in pairs(hunting.mobs) do
@@ -196,7 +197,7 @@ function M.shunned(snap, query)
                 table.insert(found, id)
             end
         end
-        local power = M.power(snap)
+        local power = M.power(snap.actual or snap)
         for map, entry in pairs(snap.record.memory.fled or {}) do
             if type(entry) == "table" and entry.power == power then
                 table.insert(found, tonumber(map))

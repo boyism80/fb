@@ -43,6 +43,7 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"observe",  builtin::brain::builtin_observe},
     {"route",    builtin::brain::builtin_route},
     {"reach",    builtin::brain::builtin_reach},
+    {"warp_at",  builtin::brain::builtin_warp_at},
     {"walk",     builtin::brain::builtin_walk},
     {"remember", builtin::brain::builtin_remember},
     {"npcs",     builtin::brain::builtin_npcs},
@@ -1412,6 +1413,18 @@ int builtin::brain::builtin_expect(lua_State* L)
 
     brain->expect(bot->id, std::chrono::milliseconds(lua_tointeger(L, 3)));
     return 0;
+}
+
+int builtin::brain::builtin_warp_at(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = static_cast<uint16_t>(lua_tointeger(L, 2));
+    auto at  = atlas::position(static_cast<uint16_t>(lua_tointeger(L, 3)), static_cast<uint16_t>(lua_tointeger(L, 4)));
+    lua_pushboolean(L, atlas::get().warp_at(map, at));
+    return 1;
 }
 
 int builtin::brain::builtin_worn(lua_State* L)

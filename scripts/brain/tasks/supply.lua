@@ -100,11 +100,8 @@ local function evaluate(snap, query, kind)
             for _, member in ipairs(team) do
                 table.insert(members, member)
             end
-            local full, front = ground.party(members, query, "REFILL")
-            if front == 1 then
-                refill = full
-                dry    = (ground.party(members, query, "DRY"))
-            end
+            refill = ground.party(members, query, "REFILL") or refill
+            dry    = ground.party(members, query, "DRY") or dry
         end
         if refill == nil or refill.drain <= 0 then
             return nil
@@ -156,10 +153,23 @@ local function plan(snap, query, kind)
         return nil
     end
     local need = demand(snap, query, kind)
+    if data.journal then
+        log("debug",
+            string.format("[brain:need] bot=%s map=%s kind=%s hp=%s mp=%s gain=%s base=%s crisis=%s stock=%s",
+                snap.self.name or "",
+                tostring(snap.world.map), kind, tostring(snap.self.hp), tostring(snap.self.mp),
+                tostring(need and need.gain),
+                tostring(need and need.base), tostring(need and need.crisis), tostring(need and need.stock)))
+    end
     if need == nil or (need.gain ~= nil and need.gain <= 0) then
         return nil
     end
     local route = nearest(snap, query, kind, found)
+    if data.journal and route == nil then
+        log("debug",
+            string.format("[brain:supplyend] bot=%s map=%s kind=%s reason=noroute", snap.self.name or "",
+                tostring(snap.world.map), kind))
+    end
     if route == nil then
         return nil
     end
@@ -202,6 +212,14 @@ local function plan(snap, query, kind)
             end
         end
     end
+    if data.journal and best == nil then
+        log("debug",
+            string.format(
+                "[brain:supplyend] bot=%s map=%s kind=%s reason=nooffer dest=%s free=%s money=%s held=%.0f usage=%s loot=%s level=%s",
+                snap.self.name or "", tostring(snap.world.map), kind, tostring(route.dest), tostring(free),
+                tostring(money), held,
+                tostring(need.usage), tostring(need.loot), tostring(need.level)))
+    end
     if best == nil then
         return nil
     end
@@ -212,7 +230,10 @@ local function plan(snap, query, kind)
     local spent = (path ~= nil and path.time or trip * 2 / 1000) * (1 + #party.members(snap))
     local delta = 0
     if need.gain ~= nil then
-        delta = need.gain * best.length - need.base * spent - spend - risk
+        local shortage = best.amount / math.max(need.usage * best.length, 1)
+        local cover    = held / math.max(need.usage, 1)
+        local urgency  = spent > 0 and math.max(0, math.min(1, 2 - cover / spent)) or 1
+        delta          = need.gain * best.length * math.min(1, shortage) * urgency - need.base * spent - spend - risk
     elseif kind == "mp" and recovery.spells(snap).charge ~= nil and (snap.self.mp or 0) + held < recovery.spells(snap).charge.mp then
         local dry   = ground.choose(snap, query, "DRY")
         local base  = dry ~= nil and dry.rate or 0
@@ -222,7 +243,17 @@ local function plan(snap, query, kind)
     else
         local loss   = danger.loss(snap, query, worth)
         local target = route.dest == snap.world.map and (need.stock or need.crisis) or need.crisis
-        delta        = loss * math.max(0, 1 - held / math.max(target, 1)) - worth.value * spent - spend - risk
+        local onhand = route.dest == snap.world.map and held or held + (kind == "mp" and (snap.self.mp or 0) or 0)
+        delta        = loss * math.max(0, 1 - onhand / math.max(target, 1)) - worth.value * spent - spend - risk
+    end
+    if data.journal then
+        log("debug",
+            string.format(
+                "[brain:supply] bot=%s t=%s map=%s kind=%s dest=%s item=%s count=%s delta=%.0f held=%.0f spent=%.1f gain=%s base=%s crisis=%s stock=%s hp=%s mp=%s",
+                snap.self.name or "", tostring(snap.now), tostring(snap.world.map), kind, tostring(route.dest),
+                best.offer.name, tostring(best.count), delta, held, spent,
+                tostring(need.gain), tostring(need.base), tostring(need.crisis), tostring(need.stock),
+                tostring(snap.self.hp), tostring(snap.self.mp)))
     end
     if delta <= 0 then
         return nil

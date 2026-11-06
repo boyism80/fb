@@ -975,10 +975,11 @@ function M.swarm(ctx, names, count, watch)
     return true
 end
 
-function M.group(ctx, names, arrivals, watch)
+function M.group(ctx, names, arrivals, watch, base)
+    base = base or 0
     local minds = {}
     for index, name in ipairs(names) do
-        local slot = index - 1
+        local slot = base + index - 1
         if stage(ctx, slot) == nil then
             return false
         end
@@ -990,16 +991,20 @@ function M.group(ctx, names, arrivals, watch)
         log("fatal", string.format("[brain:group] %s FAILED gather", table.concat(names, "+")))
         return false
     end
+    local crew = {}
     for index = 1, #names do
-        local slot   = index - 1
+        crew[ctx:bot(base + index - 1):name()] = true
+    end
+    for index = 1, #names do
+        local slot   = base + index - 1
         minds[index] = brain.new()
-        ctx:bot(slot):brain(minds[index], { seed = index, persona = { hunt = 1 } })
+        ctx:bot(slot):brain(minds[index], { seed = index, persona = { hunt = 1 }, memory = { crew = crew } })
     end
     local function linked()
         for index = 1, #names do
-            local seen = members(minds[index]:observe(ctx:bot(index - 1)).group)
+            local seen = members(minds[index]:observe(ctx:bot(base + index - 1)).group)
             for other = 1, #names do
-                if other ~= index and seen[ctx:bot(other - 1):name()] == nil then
+                if other ~= index and seen[ctx:bot(base + other - 1):name()] == nil then
                     return false
                 end
             end
@@ -1015,14 +1020,14 @@ function M.group(ctx, names, arrivals, watch)
     local watched  = 0
     local earned   = {}
     for index = 1, #names do
-        earned[index] = minds[index]:observe(ctx:bot(index - 1)).exp or 0
+        earned[index] = minds[index]:observe(ctx:bot(base + index - 1)).exp or 0
     end
     while formed and watched < (watch or GROUP_WATCH) do
         local maps     = {}
         local count    = 0
         local fighting = false
         for index = 1, #names do
-            local current = ctx:bot(index - 1)
+            local current = ctx:bot(base + index - 1)
             if maps[current:map()] == nil then
                 maps[current:map()] = true
                 count               = count + 1
@@ -1047,10 +1052,10 @@ function M.group(ctx, names, arrivals, watch)
         watched = watched + 1000
     end
     for index = 1, #names do
-        local seen = minds[index]:observe(ctx:bot(index - 1))
+        local seen = minds[index]:observe(ctx:bot(base + index - 1))
         log("debug", string.format("[brain:group:earned] %s exp=%d map=%s hp=%s died=%d watched=%ds", names[index],
             (seen.exp or 0) - earned[index], tostring(seen.map), tostring(seen.hp), died, watched // 1000))
-        expect.release(ctx, index - 1, minds[index], TIMEOUT)
+        expect.release(ctx, base + index - 1, minds[index], TIMEOUT)
     end
     local passed = formed and together == true and broken == false
     log(passed and "debug" or "fatal", string.format(
