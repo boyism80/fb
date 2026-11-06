@@ -70,45 +70,6 @@ int storage_box_rejected(lua_State* L)
     return 3;
 }
 
-template <typename Row>
-void apply_marriage(fb::game::server& server, const std::weak_ptr<fb::game::character>& weak, const Row& row)
-{
-    auto current = weak.lock();
-    if (current != nullptr && current->thread() == server.threads.current())
-    {
-        current->marriage(fb::game::marriage(row));
-        return;
-    }
-
-    auto update = server.threads.new_builder(weak);
-    update.func = [weak, row](auto&) -> async::task<void> {
-        auto locked = weak.lock();
-        if (locked != nullptr)
-            locked->marriage(fb::game::marriage(row));
-        co_return;
-    };
-    update.enqueue();
-}
-
-template <typename Request>
-async::task<std::optional<internal_resp::UpdatedMarriage>> post_marriage(fb::game::server& server,
-                                                                         std::string_view  path,
-                                                                         const Request&    request)
-{
-    for (auto attempt = 0; attempt < 2; attempt++)
-    {
-        try
-        {
-            co_return co_await server.http.post("internal", path, request);
-        }
-        catch (fb::http_error& e)
-        {
-            fb::logger::warn("{} request failed (attempt {}): {}", path, attempt + 1, e.what());
-        }
-    }
-    co_return std::nullopt;
-}
-
 void push_storage_box_result(lua_State*                             L,
                              service::system_storage::create_result result,
                              const std::string&                     external_ref)
@@ -8064,28 +8025,44 @@ int builtin::character::builtin_marry(lua_State* L)
             co_return;
         }
 
-        auto request = internal_reqs::Marry{me->world(), me->id, target->id, server.now().to_string()};
-        target.reset();
-        auto resp = co_await post_marriage(server, "/marriage/marry", request);
-        if (resp.has_value() == false)
+        auto resp = internal_resp::UpdatedMarriage{};
+        try
         {
+            resp = co_await server.http.post(
+                weak,
+                "internal",
+                "/marriage/marry",
+                internal_reqs::Marry{me->world(), me->id, target->id, server.now().to_string()});
+        }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("marry request failed: {}", e.what());
             *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
             co_return;
         }
 
-        if (resp->error == static_cast<uint32_t>(ERROR_CODE::ALREADY_MARRIED))
+        if (resp.error == static_cast<uint32_t>(ERROR_CODE::ALREADY_MARRIED))
         {
             *error = "이미 결혼을 하셨습니다.";
             co_return;
         }
-        if (resp->error != static_cast<uint32_t>(ERROR_CODE::NONE))
+        if (resp.error != static_cast<uint32_t>(ERROR_CODE::NONE))
         {
-            *error = std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp->error);
+            *error = std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error);
             co_return;
         }
 
-        apply_marriage(server, weak, resp->user);
-        apply_marriage(server, target_weak, resp->spouse);
+        me->marriage(fb::game::marriage(resp.user));
+
+        auto spouse_row    = resp.spouse;
+        auto spouse_update = server.threads.new_builder(target_weak);
+        spouse_update.func = [target_weak, spouse_row](auto&) -> async::task<void> {
+            auto locked = target_weak.lock();
+            if (locked != nullptr)
+                locked->marriage(fb::game::marriage(spouse_row));
+            co_return;
+        };
+        spouse_update.enqueue();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -8142,23 +8119,38 @@ int builtin::character::builtin_divorce(lua_State* L)
         now.add_days(7);
 
         auto spouse_weak = spouse->weak_from_this_as<fb::game::character>();
-        auto request     = internal_reqs::Divorce{me->world(), me->id, spouse->id, now.to_string()};
-        spouse.reset();
-        auto resp = co_await post_marriage(server, "/marriage/divorce", request);
-        if (resp.has_value() == false)
+        auto resp        = internal_resp::UpdatedMarriage{};
+        try
         {
+            resp = co_await server.http.post(weak,
+                                             "internal",
+                                             "/marriage/divorce",
+                                             internal_reqs::Divorce{me->world(), me->id, spouse->id, now.to_string()});
+        }
+        catch (fb::http_error& e)
+        {
+            fb::logger::warn("divorce request failed: {}", e.what());
             *error = _TEXT(MESSAGE_REQUEST_UNCONFIRMED);
             co_return;
         }
 
-        if (resp->error != static_cast<uint32_t>(ERROR_CODE::NONE))
+        if (resp.error != static_cast<uint32_t>(ERROR_CODE::NONE))
         {
-            *error = std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp->error);
+            *error = std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error);
             co_return;
         }
 
-        apply_marriage(server, weak, resp->user);
-        apply_marriage(server, spouse_weak, resp->spouse);
+        me->marriage(fb::game::marriage(resp.user));
+
+        auto spouse_row    = resp.spouse;
+        auto spouse_update = server.threads.new_builder(spouse_weak);
+        spouse_update.func = [spouse_weak, spouse_row](auto&) -> async::task<void> {
+            auto locked = spouse_weak.lock();
+            if (locked != nullptr)
+                locked->marriage(fb::game::marriage(spouse_row));
+            co_return;
+        };
+        spouse_update.enqueue();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
