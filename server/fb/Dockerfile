@@ -9,6 +9,7 @@ ARG RABBITMQ_REF=v0.14.0
 ARG ZLIB_REF=v1.2.9
 ARG CPP_ASYNC_REF=v1.1.3
 ARG BOOST_REF=boost-1.84.0
+ARG AHO_CORASICK_REF=b4fb360ef2764bf0cd22daaa62dd4bfd18b8ad0c
 
 RUN apt-get update -y
 RUN apt-get upgrade -y
@@ -61,9 +62,8 @@ WORKDIR /app
 RUN git clone --depth 1 --branch ${CPP_ASYNC_REF} https://github.com/boyism80/cpp-async /app/cpp-async
 RUN cp -r /app/cpp-async/include/async /usr/local/include/async
 
-# No pinned ref in update-modules.bat; tracks default branch.
 WORKDIR /app
-RUN git clone https://github.com/cjgdev/aho_corasick /app/aho_corasick
+RUN git clone https://github.com/cjgdev/aho_corasick /app/aho_corasick && git -C /app/aho_corasick checkout ${AHO_CORASICK_REF}
 RUN cp -r /app/aho_corasick/src/aho_corasick /usr/local/include/aho_corasick
 
 # No pinned ref in update-modules.bat; tracks default branch. Header-only.

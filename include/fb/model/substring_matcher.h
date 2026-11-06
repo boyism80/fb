@@ -8,8 +8,10 @@
 #include <aho_corasick/aho_corasick.hpp>
 
 #include <algorithm>
+#include <mutex>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace fb::model {
@@ -44,6 +46,7 @@ public:
         if (text.empty())
             return false;
 
+        this->build();
         auto emits = this->_trie.parse_text(std::string(text));
         return emits.empty() == false;
     }
@@ -53,6 +56,7 @@ public:
         if (message.empty())
             return {};
 
+        this->build();
         auto text  = std::string(message);
         auto emits = this->_trie.parse_text(text);
         if (emits.empty())
@@ -87,7 +91,16 @@ public:
     }
 
 private:
+    void build() const
+    {
+        std::call_once(this->_built, [this]() {
+            std::ignore = this->_trie.parse_text(std::string{});
+        });
+    }
+
+private:
     mutable aho_corasick::trie _trie;
+    mutable std::once_flag     _built;
     std::vector<std::string>   _replacements;
 };
 

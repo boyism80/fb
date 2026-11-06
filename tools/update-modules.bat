@@ -7,6 +7,7 @@ set RABBITMQ_REF=v0.14.0
 set ZLIB_REF=v1.2.9
 set CPP_ASYNC_REF=v1.1.3
 set BOOST_REF=boost-1.84.0
+set AHO_CORASICK_REF=b4fb360ef2764bf0cd22daaa62dd4bfd18b8ad0c
 
 mkdir library 2>nul
 PUSHD library
@@ -89,8 +90,7 @@ call :ensure_git_repo https://github.com/boyism80/cpp-async cpp-async %CPP_ASYNC
 ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h /MIR /NFL /NDL /NJH /NJS /NP
 if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
 
-REM No pinned ref; tracks default branch.
-call :ensure_git_repo https://github.com/cjgdev/aho_corasick aho_corasick
+call :ensure_git_repo https://github.com/cjgdev/aho_corasick aho_corasick %AHO_CORASICK_REF%
 ROBOCOPY aho_corasick\src\aho_corasick\ %DEST%\include\aho_corasick\ *.hpp /MIR /NFL /NDL /NJH /NJS /NP
 if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
 
