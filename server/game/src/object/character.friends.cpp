@@ -111,8 +111,12 @@ async::task<void> character::friends::broadcast(std::string_view message, MESSAG
     // Send on each friend's owning thread (same pattern as AMQP friend_message).
     if (locals.empty() == false)
     {
+        auto sender = this->_owner.id;
         this->_owner.server.characters.foreach_enqueue(
-            [message_str, type](std::shared_ptr<character>& ch) -> async::task<void> {
+            [message_str, type, mutual_only, sender](std::shared_ptr<character>& ch) -> async::task<void> {
+                if (mutual_only && ch->friends.is_mutual(sender) == false)
+                    co_return;
+
                 ch->message(message_str, type);
                 co_return;
             },
