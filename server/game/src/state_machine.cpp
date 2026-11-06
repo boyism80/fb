@@ -69,30 +69,20 @@ void state_machine::schedule(const std::string& id, uint32_t interval_ms, const 
     auto version = ++this->_next_version;
     auto weak    = this->weak_from_this_as<state_machine>();
     auto timer   = this->_thread.settimer(
-        [weak, id, hook, version, repeat](const fb::model::datetime&, std::thread::id) -> async::task<void> {
-            auto self       = weak.lock();
-            auto schedule   = id;
-            auto hook_name  = hook;
-            auto expected   = version;
-            auto repeatable = repeat;
+        [weak, id, hook, version](const fb::model::datetime&, std::thread::id) -> async::task<void> {
+            auto self      = weak.lock();
+            auto schedule  = id;
+            auto hook_name = hook;
+            auto expected  = version;
             if (self == nullptr)
                 co_return;
 
-            auto found = self->_schedules.find(schedule);
-            if (found == self->_schedules.end() || found->second.version != expected)
-                co_return;
-
-            if (repeatable == false)
-                self->_schedules.erase(found);
-            else if (self->_running)
-                co_return;
-
-            co_await self->invoke(hook_name, {});
+            co_await self->dispatch(pending_hook{hook_name, {}, std::make_pair(schedule, expected)});
         },
         fb::model::timespan(std::chrono::milliseconds(interval_ms)),
         repeat ? fb::timer::repeat_type::repeat : fb::timer::repeat_type::once);
 
-    this->_schedules.insert_or_assign(id, schedule_entry{version, timer});
+    this->_schedules.insert_or_assign(id, schedule_entry{.version = version, .timer = timer, .repeat = repeat});
 }
 
 void state_machine::cancel(const std::string& id)
@@ -121,22 +111,57 @@ void state_machine::call(std::string hook, std::vector<fb::lua::value> args)
 
 async::task<void> state_machine::invoke(std::string hook, std::vector<fb::lua::value> args)
 {
+    co_await this->dispatch(pending_hook{std::move(hook), std::move(args), std::nullopt});
+}
+
+async::task<void> state_machine::dispatch(pending_hook entry)
+{
     auto self = this->shared_from_this_as<state_machine>();
+    if (entry.schedule.has_value())
+    {
+        auto found = self->_schedules.find(entry.schedule->first);
+        if (found == self->_schedules.end() || found->second.version != entry.schedule->second)
+            co_return;
+
+        if (self->_running)
+        {
+            if (found->second.queued)
+                co_return;
+            found->second.queued = true;
+        }
+    }
+
     if (self->_running)
     {
-        self->_pending.push_back(pending_hook{std::move(hook), std::move(args)});
+        self->_pending.push_back(std::move(entry));
         co_return;
     }
 
     self->_running = true;
-    co_await self->run(hook, args);
+    co_await self->run_entry(entry);
     while (self->_pending.empty() == false)
     {
         auto next = std::move(self->_pending.front());
         self->_pending.pop_front();
-        co_await self->run(next.hook, next.args);
+        co_await self->run_entry(next);
     }
     self->_running = false;
+}
+
+async::task<void> state_machine::run_entry(const pending_hook& entry)
+{
+    if (entry.schedule.has_value())
+    {
+        auto found = this->_schedules.find(entry.schedule->first);
+        if (found == this->_schedules.end() || found->second.version != entry.schedule->second)
+            co_return;
+
+        found->second.queued = false;
+        if (found->second.repeat == false)
+            this->_schedules.erase(found);
+    }
+
+    co_await this->run(entry.hook, entry.args);
 }
 
 async::task<void> state_machine::run(const std::string& hook, const std::vector<fb::lua::value>& args)

@@ -13,6 +13,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace fb {
@@ -37,12 +38,15 @@ private:
     {
         uint64_t                   version = 0;
         std::shared_ptr<fb::timer> timer;
+        bool                       repeat = false;
+        bool                       queued = false;
     };
 
     struct pending_hook
     {
-        std::string                 hook;
-        std::vector<fb::lua::value> args;
+        std::string                                     hook;
+        std::vector<fb::lua::value>                     args;
+        std::optional<std::pair<std::string, uint64_t>> schedule;
     };
 
 private:
@@ -58,6 +62,8 @@ private:
     std::deque<pending_hook>                        _pending;
 
 private:
+    async::task<void> dispatch(pending_hook entry);
+    async::task<void> run_entry(const pending_hook& entry);
     async::task<void> run(const std::string& hook, const std::vector<fb::lua::value>& args);
 
 public:
