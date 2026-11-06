@@ -44,7 +44,7 @@ local SKILLS = {
             log("debug", string.format("[brain:kill] bot=%s key=%s", bot:name(), tostring(action.key)))
         end
         return event.type == "KILLED" or event.type == "UNREACHABLE" or event.type == "OCCUPIED" or
-        battle.going(event.type), event.type
+            battle.going(event.type), event.type
     end,
     [ACTION.TALK]   = function(brain, bot, action)
         local npc = action.npc ~= nil and brain:npc(bot, action.npc) or nil

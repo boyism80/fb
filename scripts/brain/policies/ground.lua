@@ -576,8 +576,9 @@ function M.ranked(snap, query, mode, crew)
         return known
     end
     local line = table.concat(
-    { tostring(((snap.actual or snap).record.memory or {}).lane), snap.self.name or "", snap.hypothesis or "", mode or "",
-        tostring(crew ~= nil) }, "|")
+        { tostring(((snap.actual or snap).record.memory or {}).lane), snap.self.name or "", snap.hypothesis or "", mode or
+        "",
+            tostring(crew ~= nil) }, "|")
     local last = latest[line]
     if last ~= nil and M.affordable() == false then
         return last

@@ -19,7 +19,7 @@ end
 function M.wanted(snap, query)
     local offer = party.offer(snap, query)
     return offer ~= nil and postponed(snap, query, offer, learn) == false and
-    postponed(snap, query, offer, outfit) == false
+        postponed(snap, query, offer, outfit) == false
 end
 
 function M.value(snap, query)

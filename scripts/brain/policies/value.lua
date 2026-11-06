@@ -117,7 +117,7 @@ local function errand(snap, query, name, npcs)
         end
         local route = #maps > 0 and query.route(maps, danger.perilous(snap, query), danger.shunned(snap, query)) or nil
         return route ~= nil and { seconds = 2 * route.cost * (snap.pace.step or data.walk) / 1000 } or
-        { seconds = math.huge }
+            { seconds = math.huge }
     end).seconds
 end
 
@@ -273,7 +273,7 @@ function M.deserted(snap, query, action)
                     away = trip ~= nil and 2 * trip.time or combat.cast(snap) / 1000
                 end
                 cost = cost +
-                math.min(1, hits * away / math.max(member.self.hp or 1, 1)) * danger.loss(member, query, worth)
+                    math.min(1, hits * away / math.max(member.self.hp or 1, 1)) * danger.loss(member, query, worth)
             end
         end
     end

@@ -183,7 +183,7 @@ function M.plan(snap, query)
         wear = plan.wear,
         need = plan.need,
         refill = refill ~= nil and { name = refill.name, rate = refill.rate, drain = refill.drain, need = refill.need } or
-        nil,
+            nil,
         dry = dry ~= nil and { name = dry.name, rate = dry.rate, drain = dry.drain, need = dry.need } or nil,
         order = choice ~= nil and { name = choice.name, count = count, delta = delta } or nil,
         least = recovery.least(snap),
@@ -272,7 +272,7 @@ function M.survey(snap, query)
         end
     end
     report.best = best ~= nil and
-    { name = best.name, rate = best.rate // 1, efficiency = best.efficiency, worst = best.worst } or nil
+        { name = best.name, rate = best.rate // 1, efficiency = best.efficiency, worst = best.worst } or nil
     table.sort(rows, function(left, right)
         return left.efficiency > right.efficiency
     end)

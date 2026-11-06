@@ -141,15 +141,15 @@ function M.perilous(snap, query, crew)
     local key     = score.signature(snap) .. (helpers ~= nil and helpers.key or "")
     return memo.get(perils, (snap.self.class or "") .. (snap.self.level or 0) .. (snap.hypothesis or ""),
         score.signature(snap, ""), key, function()
-        local found  = {}
-        local rested = score.rested(snap)
-        for id, mob in pairs(hunting.mobs) do
-            if M.deadly(rested, query, mob, helpers or false) then
-                table.insert(found, id)
+            local found  = {}
+            local rested = score.rested(snap)
+            for id, mob in pairs(hunting.mobs) do
+                if M.deadly(rested, query, mob, helpers or false) then
+                    table.insert(found, id)
+                end
             end
-        end
-        return found
-    end)
+            return found
+        end)
 end
 
 local shunning = setmetatable({}, { __mode = "k" })

@@ -114,7 +114,7 @@ local function arriving(snap, member)
         return false
     end
     return member.task == "FIELD" and
-    member.arrives + 2 * combat.adjacent * (member.pace.step or combat.walk) >= snap.now
+        member.arrives + 2 * combat.adjacent * (member.pace.step or combat.walk) >= snap.now
 end
 
 local gaps = {}
