@@ -39,7 +39,7 @@ module.exports = {
         const role = new k8s.rbac.v1.Role("crash-watch", {
             metadata: { name: "crash-watch", namespace: namespace.metadata.name },
             rules: [
-                { apiGroups: [""], resources: ["pods"], verbs: ["get", "list", "watch"] },
+                { apiGroups: [""], resources: ["pods"], verbs: ["get", "list", "watch", "patch"] },
                 { apiGroups: [""], resources: ["pods/log"], verbs: ["get"] },
             ],
         }, { dependsOn: dependsOn })
