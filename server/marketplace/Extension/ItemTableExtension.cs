@@ -1,14 +1,21 @@
 ﻿using Fb.Model;
+using System.Runtime.CompilerServices;
 
 namespace Marketplace.Extension;
 
 public static class ItemTableExtension
 {
-    private static readonly Lazy<SortedDictionary<string, uint>> _sortedItems = new Lazy<SortedDictionary<string, uint>>(
-        () =>
+    private static readonly ConditionalWeakTable<Table.ItemTable, NameIndex> _indexes = new();
+
+    private sealed class NameIndex
+    {
+        public readonly List<string> Keys;
+        public readonly List<uint> Ids;
+
+        public NameIndex(Table.ItemTable itemTable)
         {
-            var dict = new SortedDictionary<string, uint>();
-            foreach (var item in Table.Item.Values)
+            var dict = new SortedDictionary<string, uint>(StringComparer.Ordinal);
+            foreach (var item in itemTable.Values)
             {
                 if (item != null && !string.IsNullOrEmpty(item.Name))
                 {
@@ -16,26 +23,26 @@ public static class ItemTableExtension
                     dict[nameLower] = item.Id;
                 }
             }
-            return dict;
-        },
-        System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+            Keys = dict.Keys.ToList();
+            Ids = dict.Values.ToList();
+        }
+    }
 
     public static List<uint> NameToItemModelIds(this Table.ItemTable itemTable, string itemNamePrefix)
     {
-        var sortedItems = _sortedItems.Value;
+        var index = _indexes.GetValue(itemTable, table => new NameIndex(table));
 
         if (string.IsNullOrEmpty(itemNamePrefix))
         {
             // Empty prefix = return all item model IDs
-            return sortedItems.Values.ToList();
+            return index.Ids.ToList();
         }
 
         var result = new List<uint>();
         var prefixLower = itemNamePrefix.ToLower();
 
         // Use binary search for efficient prefix matching (similar to C++ lower_bound)
-        var keys = sortedItems.Keys.ToList();
-        var startIndex = keys.BinarySearch(prefixLower);
+        var startIndex = index.Keys.BinarySearch(prefixLower, StringComparer.Ordinal);
 
         // If exact match not found, BinarySearch returns bitwise complement of insertion point
         if (startIndex < 0)
@@ -44,20 +51,15 @@ public static class ItemTableExtension
         }
 
         // Find all items that start with prefix
-        for (int i = startIndex; i < keys.Count; i++)
+        for (int i = startIndex; i < index.Keys.Count; i++)
         {
-            var key = keys[i];
-            if (key.Length < prefixLower.Length)
-            {
-                continue;
-            }
-
-            if (key.Substring(0, prefixLower.Length) != prefixLower)
+            var key = index.Keys[i];
+            if (key.StartsWith(prefixLower, StringComparison.Ordinal) == false)
             {
                 break;
             }
 
-            result.Add(sortedItems[key]);
+            result.Add(index.Ids[i]);
         }
 
         return result;

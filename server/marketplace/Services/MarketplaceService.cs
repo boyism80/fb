@@ -748,6 +748,10 @@ public class MarketplaceService
         if (!string.IsNullOrEmpty(option.ItemName))
         {
             itemModelIds = Table.Item.NameToItemModelIds(option.ItemName);
+            if (itemModelIds.Count == 0)
+            {
+                return new MarketplaceSearchResult();
+            }
         }
 
         // Use transaction to ensure atomicity between search and count
