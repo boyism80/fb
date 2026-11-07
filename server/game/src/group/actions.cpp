@@ -241,7 +241,7 @@ group::container::broadcast(uint32_t world, uint64_t group_id, std::string_view 
     co_await this->on_broadcast(resp.group, std::move(resp.message), resp.type);
 }
 
-async::task<void> group::container::handle_action(character& actor, std::string_view target_name)
+async::task<bool> group::container::handle_action(character& actor, std::string_view target_name)
 {
     auto weak            = actor.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
@@ -309,4 +309,5 @@ async::task<void> group::container::handle_action(character& actor, std::string_
 
     if (error.has_value() && weak.expired() == false)
         actor.message(error.value(), MESSAGE_TYPE::STATE);
+    co_return error.has_value() == false;
 }

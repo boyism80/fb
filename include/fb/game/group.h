@@ -80,7 +80,7 @@ public:
     // clang-format off
     async::task<void> create(character& me, std::string_view target_name);
     async::task<void> destroy(character& me);
-    async::task<void> handle_action(character& actor, std::string_view target_name);
+    async::task<bool> handle_action(character& actor, std::string_view target_name);
     async::task<void> toggle_member(character& actor, std::string_view target_name);
     async::task<void> leave_member(character& leaver);
     async::task<void> broadcast(uint32_t world, uint64_t group_id, std::string_view message, MESSAGE_TYPE type);

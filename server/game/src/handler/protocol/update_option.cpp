@@ -54,13 +54,25 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
             auto group_id = ch->group.id();
             if (group_id.has_value())
             {
+                auto left = true;
                 try
                 {
-                    co_await this->server.groups.handle_action(*ch, ch->name());
+                    left = co_await this->server.groups.handle_action(*ch, ch->name());
                 }
                 catch (std::exception& e)
                 {
                     fb::logger::warn("update_option: groups.handle_action failed: {}", e.what());
+                }
+
+                auto ptr = weak.lock();
+                if (ptr == nullptr)
+                    co_return true;
+
+                if (left == false)
+                {
+                    ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
+                    ptr->update_option();
+                    co_return true;
                 }
             }
         }
@@ -136,9 +148,10 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
                 auto group_id = current->group.id();
                 if (group_id.has_value())
                 {
+                    auto left = true;
                     try
                     {
-                        co_await this->server.groups.handle_action(*current, current->name());
+                        left = co_await this->server.groups.handle_action(*current, current->name());
                     }
                     catch (std::exception& e)
                     {
@@ -148,6 +161,13 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
                     current = weak.lock();
                     if (current == nullptr)
                         co_return true;
+
+                    if (left == false)
+                    {
+                        current->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
+                        current->update_option();
+                        continue;
+                    }
                 }
             }
 
