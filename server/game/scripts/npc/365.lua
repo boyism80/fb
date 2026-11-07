@@ -4,6 +4,7 @@ local festival = require('lib.festival')
 
 return {
     on_click = function(me, npc)
+        ::NPC_365_0001::
         local btn = me:dialog(npc, "어서오오시게나... 자네는 무슨 일로 이곳까지 찾아오게 되었나?.", { prev = false, next = false })
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -18,8 +19,11 @@ return {
             "연등을 가지고 싶어요.",
             "연등에 들어가는 재료를 다 구해왔어요.",
         }, { prev = true })
-        if list_btn == DIALOG_RESULT.QUIT or list_btn == DIALOG_RESULT.PREV then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
+        end
+        if list_btn == DIALOG_RESULT.PREV then
+            goto NPC_365_0001
         end
         if sel == nil then
             return
