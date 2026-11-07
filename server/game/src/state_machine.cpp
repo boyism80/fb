@@ -77,7 +77,11 @@ void state_machine::schedule(const std::string& id, uint32_t interval_ms, const 
             if (self == nullptr)
                 co_return;
 
-            co_await self->dispatch(pending_hook{hook_name, {}, std::make_pair(schedule, expected)});
+            co_await self->dispatch(pending_hook{
+                hook_name,
+                  {},
+                schedule_ref{schedule, expected}
+            });
         },
         fb::model::timespan(std::chrono::milliseconds(interval_ms)),
         repeat ? fb::timer::repeat_type::repeat : fb::timer::repeat_type::once);
@@ -119,8 +123,8 @@ async::task<void> state_machine::dispatch(pending_hook entry)
     auto self = this->shared_from_this_as<state_machine>();
     if (entry.schedule.has_value())
     {
-        auto found = self->_schedules.find(entry.schedule->first);
-        if (found == self->_schedules.end() || found->second.version != entry.schedule->second)
+        auto found = self->_schedules.find(entry.schedule->id);
+        if (found == self->_schedules.end() || found->second.version != entry.schedule->version)
             co_return;
 
         if (self->_running)
@@ -152,8 +156,8 @@ async::task<void> state_machine::run_entry(const pending_hook& entry)
 {
     if (entry.schedule.has_value())
     {
-        auto found = this->_schedules.find(entry.schedule->first);
-        if (found == this->_schedules.end() || found->second.version != entry.schedule->second)
+        auto found = this->_schedules.find(entry.schedule->id);
+        if (found == this->_schedules.end() || found->second.version != entry.schedule->version)
             co_return;
 
         found->second.queued = false;

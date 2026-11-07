@@ -42,11 +42,17 @@ private:
         bool                       queued = false;
     };
 
+    struct schedule_ref
+    {
+        std::string id;
+        uint64_t    version = 0;
+    };
+
     struct pending_hook
     {
-        std::string                                     hook;
-        std::vector<fb::lua::value>                     args;
-        std::optional<std::pair<std::string, uint64_t>> schedule;
+        std::string                 hook;
+        std::vector<fb::lua::value> args;
+        std::optional<schedule_ref> schedule;
     };
 
 private:
