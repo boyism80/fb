@@ -289,11 +289,6 @@ const fb::model::timespan& buff::duration() const
     return this->_duration;
 }
 
-void buff::duration(const fb::model::timespan& value)
-{
-    this->_duration = value;
-}
-
 fb::model::timespan buff::remaining() const
 {
     auto elapsed = this->server.now() - this->start;
@@ -344,6 +339,19 @@ void buffs::discard_expired(uint32_t id)
     fb::logger::warn("buffs: discarded expired buff {} without on_unbuff", buff->model().name);
     this->_owner.listener.on_unbuff(this->_owner, *buff);
     this->erase(id);
+}
+
+bool buffs::renew(uint32_t id, uint32_t seconds)
+{
+    this->_owner.assert_thread();
+
+    auto buff = this->find(id);
+    if (buff == nullptr)
+        return false;
+
+    buff->remaining(std::chrono::seconds(seconds));
+    this->_owner.listener.on_buff(this->_owner, *buff);
+    return true;
 }
 
 bool buffs::contains(uint32_t id) const
@@ -400,10 +408,7 @@ async::task<std::shared_ptr<buff>> buffs::push_back(const fb::model::spell&     
     auto existing = this->find(model.id);
     if (existing != nullptr)
     {
-        auto expired = existing->remaining() <= 0ms;
-        existing->remaining(std::chrono::seconds(seconds));
-        if (expired)
-            this->_owner.listener.on_buff(this->_owner, *existing);
+        this->renew(model.id, seconds);
         co_return existing;
     }
 

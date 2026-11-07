@@ -52,9 +52,15 @@ int builtin::buff::builtin_time(lua_State* L)
             co_return;
 
         if (argc == 1)
+        {
             *remaining_ms = (std::max)(static_cast<int64_t>(locked->remaining().total_milliseconds()), int64_t(0));
-        else
-            locked->remaining(fb::model::timespan{std::chrono::seconds(seconds)});
+            co_return;
+        }
+
+        auto owner = locked->owner.lock();
+        if (owner != nullptr && owner->buffs.find(locked->model().id) == locked)
+            owner->buffs.renew(locked->model().id,
+                               static_cast<uint32_t>(std::clamp<lua_Integer>(seconds, 0, UINT32_MAX)));
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

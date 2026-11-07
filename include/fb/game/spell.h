@@ -92,6 +92,8 @@ class buff : public ::fb::lua::luable
 public:
     LUA_PROTOTYPE
 
+    friend class buffs;
+
 private:
     fb::model::timespan _duration;
     uint32_t            _model_id = 0;
@@ -112,10 +114,11 @@ public:
     // clang-format off
     const fb::model::spell&    model() const;
     const fb::model::timespan& duration() const;
-    void                       duration(const fb::model::timespan& value);
     fb::model::timespan        remaining() const;
-    void                       remaining(const fb::model::timespan& value);
     // clang-format on
+
+private:
+    void remaining(const fb::model::timespan& value);
 };
 
 class buffs : private std::unordered_map<uint32_t, std::shared_ptr<buff>>
@@ -151,6 +154,7 @@ public:
     bool                                             contains(uint32_t id) const;
     bool                                             contains(const fb::model::spell& model) const;
     void                                             discard_expired(uint32_t id);
+    bool                                             renew(uint32_t id, uint32_t seconds);
     [[nodiscard]] async::task<std::shared_ptr<buff>> push_back(const fb::model::spell& spell, uint32_t seconds, const std::shared_ptr<fb::game::object>& caster = nullptr);
     [[nodiscard]] async::task<bool>                  remove(uint32_t id);
     [[nodiscard]] async::task<bool>                  remove(const fb::model::spell& spell);
