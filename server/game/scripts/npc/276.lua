@@ -77,7 +77,7 @@ return {
                 return
             end
             q:step(2)
-            me:exp(me:exp() + 100)
+            me:add_exp(100)
             local btn = me:dialog(npc,
                 "제가 드린 도톨을 확인하시려면\n[i]를 눌러 아이템창을 열어보시면 된답니다.\n그리고 [e]키를 누른 뒤 도톨이 있는 알파벳을 쓰면 됩니다.\n\n아마 제가 드린 도톨이 a에 있을거에요.",
                 { prev = false, next = true })
@@ -96,7 +96,7 @@ return {
         end
 
         q:step(3)
-        me:exp(me:exp() + 100)
+        me:add_exp(100)
         local btn = me:dialog(npc, "정말 잘 하셨어요!.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

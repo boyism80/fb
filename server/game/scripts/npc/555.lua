@@ -74,7 +74,7 @@ return {
             end
         end
         q:step(7)
-        me:exp(me:exp() + 300)
+        me:add_exp(300)
 
         server.warp_to_return_map(me)
     end

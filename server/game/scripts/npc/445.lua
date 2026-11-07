@@ -60,7 +60,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            me:exp(me:exp() + 300)
+            me:add_exp(300)
             q:step(3)
             return
         end

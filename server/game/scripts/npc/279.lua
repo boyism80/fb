@@ -73,7 +73,7 @@ return {
             end
         end
         q:step(7)
-        me:exp(me:exp() + 300)
+        me:add_exp(300)
 
         me:dialog(npc, "<노란비서>을 얻다!!!", { prev = false, next = false })
     end

@@ -19,6 +19,7 @@ struct character
     static int builtin_money_free_space(lua_State* L);
     static int builtin_item_free_space(lua_State* L);
     static int builtin_exp(lua_State* L);
+    static int builtin_add_exp(lua_State* L);
     static int builtin_item(lua_State* L);
     static int builtin_item_by_uid(lua_State* L);
     static int builtin_items(lua_State* L);

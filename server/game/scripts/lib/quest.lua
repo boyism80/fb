@@ -1022,17 +1022,16 @@ function M.king_dialog(me, npc, opts)
         local mob_name = quest:param() or ''
         local mob_model = name2mob(mob_name)
         local base_exp = (mob_model ~= nil) and mob_model:exp() or 0
-        local rate = exp_multiplier()
-        local exp_amount = math.floor(base_exp * 10 * rate)
+        local exp_amount = math.floor(base_exp * 10)
         btn = me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치 ' .. tostring(exp_amount) .. ' 을 하사하십니다.',
             { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:exp(me:exp() + exp_amount)
         quest:step(0)
         quest:param('')
         quest:progress(0)
+        me:add_exp(exp_amount)
         me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치를 하사하셨소.', { prev = false, next = true })
     end
 end

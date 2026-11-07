@@ -91,10 +91,9 @@ return {
                 return
             end
 
-            local give_exp = math.floor(item.exp / exp_multiplier())
             local code = me:exchange(
                 { ['item'] = { [item.name] = 1 } },
-                { ['exp'] = give_exp }
+                { ['exp'] = item.exp }
             )
             if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, name_with(item.name, '이', '가') .. ' 없는데요?', { prev = false, next = false })

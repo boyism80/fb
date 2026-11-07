@@ -91,7 +91,7 @@ return {
             return
         end
         q:step(6)
-        me:exp(me:exp() + 200)
+        me:add_exp(200)
 
         local btn = me:dialog(npc, "갑옷은 방어력을 낮춰주는 역할을 하며, 방어력이 낮을수록 몬스터에게 입는 데미지가 줄어들게 됩니다.",
             { prev = false, next = true })

@@ -99,6 +99,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"money_free_space",             builtin::character::builtin_money_free_space},
 {"item_free_space",              builtin::character::builtin_item_free_space},
 {"exp",                          builtin::character::builtin_exp},
+{"add_exp",                      builtin::character::builtin_add_exp},
 {"item",                         builtin::character::builtin_item},
 {"item_by_uid",                  builtin::character::builtin_item_by_uid},
 {"items",                        builtin::character::builtin_items},
@@ -660,6 +661,31 @@ int builtin::character::builtin_exp(lua_State* L)
         };
         return builder.run();
     }
+}
+
+int builtin::character::builtin_add_exp(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto value    = static_cast<uint64_t>(std::max<lua_Integer>(0, lua->tointeger(2)));
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (value > 0)
+            ch->add_exp(value, false, true);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_item(lua_State* L)

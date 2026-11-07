@@ -151,7 +151,7 @@ return {
                     me:dialog(npc, "소지품이 가득 차서 선물을 줄 수 없습니다.", { prev = false, next = false })
                     return
                 end
-                me:exp(me:exp() + 300)
+                me:add_exp(300)
                 q:step(7)
                 local btn = me:dialog(npc, "이제 다음 방으로 이동하시면 됩니다. 제 윗쪽에 다음 건물의 입구가 있습니다.", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
