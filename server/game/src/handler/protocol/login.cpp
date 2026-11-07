@@ -333,11 +333,6 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     session.data(ch);
 
-    if (resp.group.has_value())
-        std::ignore = co_await this->server.groups.enter_write(resp.group.value());
-    if (resp.clan.has_value())
-        std::ignore = co_await this->server.clans.enter_write(resp.clan.value());
-
     // Others can reach the character as soon as it is on the map, so the slots are filled before that.
     for (const auto& escrow : resp.escrows)
     {
