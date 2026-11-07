@@ -15,5 +15,10 @@ namespace Http.Model
         public string Reason { get; set; }
         public DateTime? ExpireDate { get; set; }
         public Fb.Model.EnumValue.Role? ActorRole { get; set; }
+
+        public static string OperationLockKey(uint user)
+        {
+            return $"fb:lock:ban-op:{user}";
+        }
     }
 }

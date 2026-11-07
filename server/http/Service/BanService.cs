@@ -12,13 +12,15 @@ namespace Http.Service
         private readonly ILogger<BanService> _logger;
         private readonly LogService _logService;
         private readonly DiscordNotifier _discord;
+        private readonly RedisDistributedLockService _distributedLock;
 
-        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService, DiscordNotifier discord)
+        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService, DiscordNotifier discord, RedisDistributedLockService distributedLock)
         {
             _dbContext = dbContext;
             _logger = logger;
             _logService = logService;
             _discord = discord;
+            _distributedLock = distributedLock;
         }
 
 
@@ -37,24 +39,29 @@ namespace Http.Service
                 throw new LogicException(ErrorCode.NotFoundCharacter);
             world = row.World;
             var userId = row.Id;
-            var actorRole = await EnsureOutranks(actor, world, userId);
-            EnsureOutranksBan(actorRole, await _dbContext.Ban.Get(world, userId));
-
-            // Calculate expire date
-            DateTime? expireDate = days is > 0 ? DateTime.UtcNow.AddDays(days.Value) : null;
-
-            // Create or update ban
-            var ban = new Ban
+            DateTime? expireDate;
+            await using (await _distributedLock.Lock(world, Http.Model.Ban.OperationLockKey(userId)))
             {
-                User = userId,
-                Reason = reason,
-                ExpireDate = expireDate,
-                ActorRole = actorRole,
-                CreatedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow
-            };
+                var actorRole = await EnsureOutranks(actor, world, userId);
+                EnsureOutranksBan(actorRole, await _dbContext.Ban.Get(world, userId));
 
-            _dbContext.Ban.Set(world, ban);
+                // Calculate expire date
+                expireDate = days is > 0 ? DateTime.UtcNow.AddDays(days.Value) : null;
+
+                // Create or update ban
+                var ban = new Ban
+                {
+                    User = userId,
+                    Reason = reason,
+                    ExpireDate = expireDate,
+                    ActorRole = actorRole,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow
+                };
+
+                _dbContext.Ban.Set(world, ban);
+                await _dbContext.SaveChangesAsync();
+            }
 
             _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been banned by {Actor} ({Source}). Reason: {Reason}, Expire: {ExpireDate}",
                 name, userId, world, actor, source, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
@@ -94,18 +101,22 @@ namespace Http.Service
                 throw new LogicException(ErrorCode.NotFoundCharacter);
             world = row.World;
             var userId = row.Id;
-            var actorRole = await EnsureOutranks(actor, world, userId);
-
-            // Check if ban exists
-            var ban = await _dbContext.Ban.Get(world, userId);
-            if (ban == null)
+            await using (await _distributedLock.Lock(world, Http.Model.Ban.OperationLockKey(userId)))
             {
-                throw new LogicException(ErrorCode.NotFoundBan);
-            }
-            EnsureOutranksBan(actorRole, ban);
+                var actorRole = await EnsureOutranks(actor, world, userId);
 
-            // Delete ban (soft delete)
-            _dbContext.Ban.Delete(world, userId);
+                // Check if ban exists
+                var ban = await _dbContext.Ban.Get(world, userId);
+                if (ban == null)
+                {
+                    throw new LogicException(ErrorCode.NotFoundBan);
+                }
+                EnsureOutranksBan(actorRole, ban);
+
+                // Delete ban (soft delete)
+                _dbContext.Ban.Delete(world, userId);
+                await _dbContext.SaveChangesAsync();
+            }
 
             _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been unbanned by {Actor} ({Source}).", name, userId, world, actor, source);
 
