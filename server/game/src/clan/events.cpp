@@ -253,7 +253,6 @@ async::task<void> clan::container::on_create(uint32_t                           
     auto ptr = weak.lock();
     if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
     {
-        // A leave or kick handled since the create already removed the character, so it is not attached again.
         auto attached = false;
         try
         {
@@ -464,7 +463,6 @@ clan::container::on_join(uint32_t clan_id, std::optional<std::string> new_member
     auto attached = false;
     if (ptr != nullptr && this->_server.characters.find(ptr->id) == ptr)
     {
-        // A leave or kick handled since the join already removed the character, so it is not attached again.
         try
         {
             attached = this->write(clan_id, [weak, name = ptr->name()](auto& clan) {

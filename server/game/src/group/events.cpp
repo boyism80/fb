@@ -156,7 +156,6 @@ async::task<void> group::container::on_create(std::string                     ta
             if (this->_server.characters.find(ch->id) != ch)
                 co_return;
 
-            // A leave or kick handled since the create already removed the character, so it is not entered again.
             auto entered = false;
             try
             {
@@ -413,7 +412,6 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
         co_return false;
 
     // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
-    // A leave or kick handled since the enter already removed the character, so it is not entered again.
     auto entered = false;
     try
     {
