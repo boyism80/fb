@@ -5,12 +5,16 @@
 #include <fb/game/server.h>
 
 #include <cstdint>
+#include <utility>
 
 using namespace fb::game;
 using table = fb::model::table;
 
-door::door(const fb::game::map& map, const fb::model::door& model, const fb::model::point16_t& pivot, bool opened) :
-    map(map),
+door::door(std::weak_ptr<fb::game::map> map,
+           const fb::model::door&       model,
+           const fb::model::point16_t&  pivot,
+           bool                         opened) :
+    map(std::move(map)),
     pivot(pivot),
     _opened(opened),
     _model_id(model.id),
@@ -27,12 +31,16 @@ const fb::model::door& door::model() const
 
 bool door::toggle()
 {
+    auto map = this->map.lock();
+    if (map == nullptr)
+        return false;
+
     if (this->_opened)
     {
         for (int i = 0; i < this->width; i++)
         {
             auto position = fb::model::point16_t(static_cast<uint16_t>(this->pivot.x + i), this->pivot.y);
-            for (const auto& obj : this->map.belows(position, OBJECT_TYPE::OBJECT))
+            for (const auto& obj : map->belows(position, OBJECT_TYPE::OBJECT))
             {
                 // A super-hidden admin must not reveal their position by blocking the door.
                 if (obj->is(OBJECT_TYPE::ITEM) || obj->super_hide())
@@ -45,7 +53,7 @@ bool door::toggle()
 
     for (int i = 0; i < this->width; i++)
     {
-        auto tile = this->map(this->pivot.x + i, this->pivot.y);
+        auto tile = (*map)(this->pivot.x + i, this->pivot.y);
         if (tile == nullptr)
             return false;
 

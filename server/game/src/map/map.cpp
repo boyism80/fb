@@ -135,7 +135,8 @@ void map::update_door()
             {
                 if (door.matched(*this, pivot, &opened))
                 {
-                    auto ptr = std::make_shared<fb::game::door>(*this, door, pivot, opened);
+                    auto ptr =
+                        std::make_shared<fb::game::door>(this->weak_from_this_as<fb::game::map>(), door, pivot, opened);
                     this->doors.add(ptr);
 
                     found    = true;

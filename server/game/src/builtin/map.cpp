@@ -380,7 +380,7 @@ int builtin::map::builtin_door(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto door_ptr = std::make_shared<fb::game::door*>();
+    auto door_ptr = std::make_shared<std::shared_ptr<fb::game::door>>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -408,16 +408,16 @@ int builtin::map::builtin_doors(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    auto doors    = std::make_shared<std::vector<fb::game::door*>>();
+    auto doors    = std::make_shared<std::vector<std::shared_ptr<fb::game::door>>>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         // The container holds one entry per door tile, so a wide door appears several times.
-        for (const auto& entry : map->doors)
+        for (auto it = map->doors.cbegin(); it != map->doors.cend(); ++it)
         {
-            if (std::find(doors->begin(), doors->end(), &entry.second) == doors->end())
-                doors->push_back(&entry.second);
+            if (std::find(doors->begin(), doors->end(), it->second) == doors->end())
+                doors->push_back(it->second);
         }
         co_return;
     };

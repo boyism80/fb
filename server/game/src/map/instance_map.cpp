@@ -14,9 +14,7 @@ instance_map::instance_map(fb::game::server&                     server,
     map(server, id, source->model(), true),
     _source(source),
     _slot(slot)
-{
-    this->copy_tiles(*source);
-}
+{ }
 
 instance_map::~instance_map()
 { }

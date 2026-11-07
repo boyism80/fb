@@ -488,6 +488,21 @@ public:
         }
     }
 
+    template <typename T>
+    std::shared_ptr<T> lock_userdata(int offset)
+    {
+        static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
+
+        if (this->argc() < offset || lua_type(*this, offset) != LUA_TUSERDATA || this->is_userdata<T>(offset) == false)
+            return nullptr;
+
+        if (luable::is_weak_userdata(*this, offset) == false)
+            return nullptr;
+
+        auto shared = static_cast<std::weak_ptr<luable>*>(lua_touserdata(*this, offset))->lock();
+        return std::static_pointer_cast<T>(shared);
+    }
+
     bool is_string(int offset);
     bool is_obj(int offset);
     bool is_function(int offset);

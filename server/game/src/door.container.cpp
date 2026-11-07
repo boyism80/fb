@@ -48,7 +48,7 @@ void door::container::add(std::shared_ptr<door>& door)
     }
 }
 
-fb::game::door* door::container::find(const character& ch) const
+std::shared_ptr<fb::game::door> door::container::find(const character& ch) const
 {
     auto direction = ch.direction();
     auto position  = ch.position();
@@ -75,7 +75,7 @@ fb::game::door* door::container::find(const character& ch) const
     if (!this->contains(index))
         return nullptr;
 
-    return this->at(index).get();
+    return this->at(index);
 }
 
 door::container::iterator::iterator(const door::container::base_iterator& i, const container& container) :

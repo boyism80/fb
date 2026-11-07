@@ -460,6 +460,7 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
 
         auto id  = this->allocate_id(registry);
         auto map = std::make_shared<fb::game::instance_map>(this->server, id, slot, root);
+        map->copy_tiles(*root);
         registry.push(id, map);
         this->_sequence = std::max(this->_sequence, id + 1);
         this->register_slot(root->model().id, slot, map);

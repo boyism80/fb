@@ -31,12 +31,15 @@ private:
     uint32_t _model_id = 0;
 
 public:
-    const fb::game::map&       map;
-    const fb::model::point16_t pivot;
-    const uint16_t             width;
+    const std::weak_ptr<fb::game::map> map;
+    const fb::model::point16_t         pivot;
+    const uint16_t                     width;
 
 public:
-    door(const fb::game::map& map, const fb::model::door& model, const fb::model::point16_t& pivot, bool opened);
+    door(std::weak_ptr<fb::game::map> map,
+         const fb::model::door&       model,
+         const fb::model::point16_t&  pivot,
+         bool                         opened);
     door(const door&) = delete;
     ~door();
 
@@ -81,12 +84,12 @@ public:
     ~container();
 
 public:
-    iterator       begin();
-    iterator       end();
-    const_iterator begin() const;
-    const_iterator end() const;
-    void           add(std::shared_ptr<door>& door);
-    door*          find(const character& ch) const;
+    iterator              begin();
+    iterator              end();
+    const_iterator        begin() const;
+    const_iterator        end() const;
+    void                  add(std::shared_ptr<door>& door);
+    std::shared_ptr<door> find(const character& ch) const;
 };
 
 class door::container::iterator : public door::container::base_iterator
