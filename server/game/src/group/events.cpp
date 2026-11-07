@@ -153,44 +153,14 @@ async::task<void> group::container::on_create(std::string                     ta
     // Entering on the character's thread orders it with disconnect cleanup, which detaches by group_id.
     co_await this->_server.characters.foreach_async(
         [this, group_id, member_names](auto& ch) -> async::task<void> {
-            if (this->_server.characters.find(ch->id) != ch)
+            if (co_await this->enter_member(*ch, group_id) == false)
                 co_return;
 
-            auto entered = false;
-            try
-            {
-                entered =
-                    this->write(group_id,
-                                [weak = ch->template weak_from_this_as<character>(), name = ch->name()](auto& group) {
-                                    auto members = group != nullptr ? group->members() : std::vector<std::string>{};
-                                    if (std::find(members.begin(), members.end(), name) == members.end())
-                                        return false;
-
-                                    group->enter(weak);
-                                    return true;
-                                });
-            }
-            catch (const std::runtime_error&)
-            { }
-
-            if (entered == false)
-                co_return;
-
-            ch->group.id(group_id);
             for (const auto& name : member_names)
             {
                 if (name != ch->name())
                     ch->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), name), MESSAGE_TYPE::STATE);
             }
-            ch->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
-
-            // A member on another host was not checked before joining, so its solo ticket ends here.
-            if (ch->matchmaker.queued())
-            {
-                co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
-                ch->message("그룹에 들어가 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
-            }
-            co_return;
         },
         online);
 
