@@ -21,7 +21,7 @@ int builtin::door::builtin_toggle(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto door = lua->lock_userdata<fb::game::door>(1);
+    auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
 
@@ -68,7 +68,7 @@ int builtin::door::builtin_locked(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto door = lua->lock_userdata<fb::game::door>(1);
+    auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
 
@@ -98,7 +98,7 @@ int builtin::door::builtin_lock(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto door = lua->lock_userdata<fb::game::door>(1);
+    auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
 
@@ -130,7 +130,7 @@ int builtin::door::builtin_opened(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto door = lua->lock_userdata<fb::game::door>(1);
+    auto door = lua->touserdata<fb::game::door>(1);
     if (door == nullptr)
         return 0;
 

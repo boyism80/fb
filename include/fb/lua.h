@@ -118,26 +118,6 @@ struct is_shared_from_this_capable<T&> : is_shared_from_this_capable<T*>
 template <typename T>
 inline constexpr bool is_shared_from_this_capable_v = is_shared_from_this_capable<T>::value;
 
-template <typename T>
-struct can_shared_from_this
-{
-    template <typename U>
-    static constexpr bool check()
-    {
-        if constexpr (std::is_base_of_v<std::enable_shared_from_this<U>, U>)
-            return true;
-        else if constexpr (std::is_base_of_v<thread_switchable, U>)
-            return true;
-        else
-            return false;
-    }
-
-    static constexpr bool value = check<T>();
-};
-
-template <typename T>
-inline constexpr bool can_shared_from_this_v = can_shared_from_this<T>::value;
-
 class luable;
 class context;
 class root;
@@ -456,51 +436,25 @@ public:
     }
 
     template <typename T>
-    auto touserdata(int offset)
+    std::shared_ptr<T> touserdata(int offset)
     {
         // T is always a luable type (not pointer)
         static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
 
         // Return nullptr for invalid cases
         if (this->argc() < offset)
-            return std::conditional_t<can_shared_from_this_v<T>, std::shared_ptr<T>, T*>{nullptr};
+            return nullptr;
         else if (lua_type(*this, offset) != LUA_TUSERDATA)
-            return std::conditional_t<can_shared_from_this_v<T>, std::shared_ptr<T>, T*>{nullptr};
+            return nullptr;
         else if (this->is_userdata<T>(offset) == false)
-            return std::conditional_t<can_shared_from_this_v<T>, std::shared_ptr<T>, T*>{nullptr};
+            return nullptr;
 
         auto data = lua_touserdata(*this, offset);
         if (luable::is_weak_userdata(*this, offset))
-        {
-            auto shared = static_cast<std::weak_ptr<luable>*>(data)->lock();
-            if constexpr (can_shared_from_this_v<T>)
-                return std::static_pointer_cast<T>(shared);
-            else
-                return static_cast<T*>(shared.get());
-        }
-        else
-        {
-            auto raw = luable::raw_userdata(*this, offset);
-            if constexpr (can_shared_from_this_v<T>)
-                return std::shared_ptr<T>(std::shared_ptr<T>(), static_cast<T*>(raw)); // non-owning
-            else
-                return static_cast<T*>(raw);
-        }
-    }
+            return std::static_pointer_cast<T>(static_cast<std::weak_ptr<luable>*>(data)->lock());
 
-    template <typename T>
-    std::shared_ptr<T> lock_userdata(int offset)
-    {
-        static_assert(std::is_base_of_v<luable, T>, "T must inherit from luable");
-
-        if (this->argc() < offset || lua_type(*this, offset) != LUA_TUSERDATA || this->is_userdata<T>(offset) == false)
-            return nullptr;
-
-        if (luable::is_weak_userdata(*this, offset) == false)
-            return nullptr;
-
-        auto shared = static_cast<std::weak_ptr<luable>*>(lua_touserdata(*this, offset))->lock();
-        return std::static_pointer_cast<T>(shared);
+        auto raw = luable::raw_userdata(*this, offset);
+        return std::shared_ptr<T>(std::shared_ptr<T>(), static_cast<T*>(raw)); // non-owning
     }
 
     bool is_string(int offset);
