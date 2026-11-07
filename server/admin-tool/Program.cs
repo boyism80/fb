@@ -8,6 +8,7 @@ using Http.Worker;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
+ProcessExitLog.Install("admin-tool");
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Http.Model.ClanMoneyRequest>), new JsonTypeHandler());

@@ -66,8 +66,19 @@ void fb::logger::enqueue(std::string line)
             return;
 
         this->_queue.push_back(std::move(line));
+        this->_enqueued++;
     }
     this->_queue_cv.notify_one();
+}
+
+void fb::logger::flush(std::chrono::milliseconds timeout)
+{
+    auto& ist    = get();
+    auto  lock   = std::unique_lock(ist._queue_mutex);
+    auto  target = ist._enqueued;
+    ist._written_cv.wait_for(lock, timeout, [&ist, target] {
+        return ist._written >= target;
+    });
 }
 
 void fb::logger::writer_run()
@@ -128,6 +139,11 @@ void fb::logger::writer_run()
             std::fputc('\n', fp);
         }
         std::fflush(fp);
+        {
+            auto lock       = std::unique_lock(this->_queue_mutex);
+            this->_written += batch.size();
+        }
+        this->_written_cv.notify_all();
     }
 
     if (fp != nullptr)

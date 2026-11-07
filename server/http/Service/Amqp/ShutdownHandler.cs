@@ -24,6 +24,7 @@ namespace Http.Service.Amqp
         protected override async Task HandleAsync(Response.Shutdown message, CancellationToken cancellationToken)
         {
             _logger.LogWarning("Shutdown message received.");
+            ProcessExitLog.Write("WARN", "shutdown requested by AMQP fb.global");
 
             while (!cancellationToken.IsCancellationRequested)
             {

@@ -829,6 +829,7 @@ private:
         if (this->_running == false)
             return;
 
+        fb::logger::warn("shutting down");
         // Nothing below may throw before io_context.stop(), or run() would wait on join() forever.
         auto ec        = boost::system::error_code();
         this->_running = false;
@@ -873,6 +874,7 @@ private:
                              this->_disconnecting.load());
 
         this->teardown();
+        fb::logger::warn("shutdown finished");
     }
 
     // Stops accepting, timers, logic threads and the io_context without saving.

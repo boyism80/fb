@@ -10,6 +10,7 @@ namespace WriteBack
     {
         static async Task Main(string[] args)
         {
+            Http.Service.ProcessExitLog.Install("write-back");
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices(services =>
                 {

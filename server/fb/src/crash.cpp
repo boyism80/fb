@@ -4,6 +4,7 @@
 #include <fb/encoding.h>
 #include <fb/logger.h>
 
+#include <chrono>
 #include <csignal>
 #include <cstddef>
 #include <cstdio>
@@ -331,6 +332,24 @@ void fb::crash::on_abrt(int)
     dump("signal=SIGABRT\n", sizeof("signal=SIGABRT\n") - 1);
     std::_Exit(3);
 }
+
+BOOL WINAPI fb::crash::on_console_ctrl(DWORD type)
+{
+    auto reason = static_cast<const char*>(nullptr);
+    if (type == CTRL_CLOSE_EVENT)
+        reason = "console window closed";
+    else if (type == CTRL_LOGOFF_EVENT)
+        reason = "user logoff";
+    else if (type == CTRL_SHUTDOWN_EVENT)
+        reason = "system shutdown";
+
+    if (reason != nullptr)
+    {
+        fb::logger::fatal("process terminating: {}", reason);
+        fb::logger::flush(std::chrono::seconds(2));
+    }
+    return FALSE;
+}
 #endif
 
 void fb::crash::on_terminate()
@@ -352,6 +371,7 @@ void fb::crash::on_terminate()
     }
 
     fb::logger::fatal("terminate: {}", what);
+    fb::logger::flush(std::chrono::seconds(1));
 
     auto kind = std::format("terminate: {}\n", what);
 #ifdef _WIN32
@@ -458,6 +478,7 @@ void fb::crash::install(const char* service)
 #else
         SetUnhandledExceptionFilter(on_unhandled);
         std::signal(SIGABRT, on_abrt);
+        SetConsoleCtrlHandler(on_console_ctrl, TRUE);
 #endif
         std::set_terminate(on_terminate);
     });

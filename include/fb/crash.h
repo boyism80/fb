@@ -50,6 +50,7 @@ private:
 #else
     static LONG WINAPI on_unhandled(EXCEPTION_POINTERS* info);
     static void        on_abrt(int sig);
+    static BOOL WINAPI on_console_ctrl(DWORD type);
 #endif
     static void on_terminate();
 };

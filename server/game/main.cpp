@@ -81,6 +81,8 @@ int main(int argc, char* argv[])
         auto server     = std::make_shared<fb::game::server>(io_context, fb::config<uint16_t>("port"));
         auto signals    = boost::asio::signal_set(io_context, SIGINT, SIGTERM);
         signals.async_wait([&server](const boost::system::error_code& ec, int signal_number) {
+            if (!ec)
+                fb::logger::warn("shutdown requested by signal {}", signal_number);
             server->exit();
         });
 

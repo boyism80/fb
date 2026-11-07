@@ -16,6 +16,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        ProcessExitLog.Install("matchmaking");
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();

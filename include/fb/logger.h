@@ -8,8 +8,10 @@
 #include <boost/algorithm/string.hpp>
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <deque>
 #include <format>
@@ -40,6 +42,9 @@ private:
     std::deque<std::string> _queue;
     std::mutex              _queue_mutex;
     std::condition_variable _queue_cv;
+    std::condition_variable _written_cv;
+    uint64_t                _enqueued = 0;
+    uint64_t                _written  = 0;
     std::atomic<bool>       _stop{false};
     std::thread             _writer;
     static constexpr size_t _queue_limit = 4096;
@@ -65,6 +70,7 @@ private:
 
 public:
     static std::string daily_path(std::string_view service);
+    static void        flush(std::chrono::milliseconds timeout);
 
 public:
     template <class... Args> static fb::logger& debug(std::string_view fmt, Args&&... args);

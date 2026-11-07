@@ -12,6 +12,7 @@ namespace Log
     {
         static async Task Main(string[] args)
         {
+            ProcessExitLog.Install("log");
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>

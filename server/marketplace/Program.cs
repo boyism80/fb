@@ -11,6 +11,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        ProcessExitLog.Install("marketplace");
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Http.Model.Buff>), new JsonTypeHandler());

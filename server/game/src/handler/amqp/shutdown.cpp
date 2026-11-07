@@ -1,6 +1,7 @@
 #include <fb/game/handler/amqp/shutdown.h>
 
 #include <fb/game/server.h>
+#include <fb/logger.h>
 
 #include <cstdlib>
 
@@ -12,6 +13,7 @@ shutdown::shutdown(fb::game::server& server) :
 
 async::task<void> shutdown::handle(const internal_resp::Shutdown& message)
 {
+    fb::logger::warn("shutdown requested by AMQP fb.global");
     this->server.exit();
     co_return;
 }
