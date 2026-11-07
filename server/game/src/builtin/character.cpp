@@ -178,7 +178,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"divine_beast",                 builtin::character::builtin_divine_beast},
 {"reputation",                   builtin::character::builtin_reputation},
 {"evaluation",                   builtin::character::builtin_evaluation},
-{"teleport",                     builtin::character::builtin_teleport},
 {"dialog",                       builtin::character::builtin_dialog},
 {"list",                         builtin::character::builtin_list},
 {"input",                        builtin::character::builtin_input},
@@ -5562,83 +5561,6 @@ int builtin::character::builtin_evaluation(lua_State* L)
         co_return 1;
     };
     return builder.run();
-}
-
-int fb::game::builtin::character::builtin_teleport(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-    auto ch_weak = ch->weak_from_this_as<fb::game::character>();
-
-    auto target = lua->touserdata<fb::game::character>(2);
-    if (target == nullptr)
-        return 0;
-    auto target_weak = target->weak_from_this_as<fb::game::character>();
-
-    if (ch->thread() == target->thread())
-    {
-        auto success_holder = std::make_shared<bool>(false);
-        auto builder        = lua->new_co_builder();
-        builder.weak        = ch_weak;
-        builder.yield       = [=]() -> async::task<void> {
-            auto target_locked = target_weak.lock();
-            if (target_locked == nullptr)
-                co_return;
-
-            auto map = target_locked->map();
-            if (map == nullptr)
-                throw std::runtime_error("teleport target has no map");
-
-            auto ch_locked = ch_weak.lock();
-            if (ch_locked == nullptr)
-                co_return;
-
-            *success_holder = co_await ch_locked->map(map, target_locked->position());
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushboolean(*success_holder);
-            co_return 1;
-        };
-        return builder.run();
-    }
-    else
-    {
-        auto success_holder = std::make_shared<bool>(false);
-        auto builder        = lua->new_co_builder();
-        builder.weak        = target_weak;
-        builder.yield       = [=]() -> async::task<void> {
-            auto& server        = static_cast<fb::game::server&>(lua->executor);
-            auto  target_locked = target_weak.lock();
-            if (target_locked == nullptr)
-                co_return;
-
-            auto map = target_locked->map();
-            if (map == nullptr)
-                throw std::runtime_error("teleport target has no map");
-
-            auto position = target_locked->position();
-
-            co_await server.threads.switching(ch_weak);
-
-            auto ch_locked = ch_weak.lock();
-            if (ch_locked == nullptr)
-                co_return;
-
-            *success_holder = co_await ch_locked->map(map, position);
-            co_return;
-        };
-        builder.resume = [=]() -> async::task<int> {
-            lua->pushboolean(*success_holder);
-            co_return 1;
-        };
-        return builder.run();
-    }
 }
 
 int fb::game::builtin::character::builtin_dialog(lua_State* L)
