@@ -43,7 +43,12 @@ namespace Internal.Controllers
         [HttpGet("init/{world}/{uid}")]
         public async Task<Response.Init> Init(uint world, uint uid)
         {
-            var ch = await _dbContext.Character.Get(world, uid);
+            Http.Model.Character ch;
+            await using (await _distributedLock.Lock(world, Http.Model.Character.SaveLockKey(uid)))
+            {
+                ch = await _dbContext.Character.Get(world, uid);
+            }
+
             var items = await _dbContext.Item.Get(world, uid);
             var spells = await _dbContext.Spell.Get(world, uid);
             var matchmakingSkills = await _dbContext.MatchmakingSkill.Get(world, uid);

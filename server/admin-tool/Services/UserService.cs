@@ -12,17 +12,20 @@ namespace AdminTool.Services
         private readonly ILogger<UserService> _logger;
         private readonly RedisService _redisService;
         private readonly SessionService _sessionService;
+        private readonly RedisDistributedLockService _distributedLock;
 
         public UserService(
             DbContext dbContext,
             ILogger<UserService> logger,
             RedisService redisService,
-            SessionService sessionService)
+            SessionService sessionService,
+            RedisDistributedLockService distributedLock)
         {
             _dbContext = dbContext;
             _logger = logger;
             _redisService = redisService;
             _sessionService = sessionService;
+            _distributedLock = distributedLock;
         }
 
         public async Task<UserListResult> GetUsers(
@@ -217,6 +220,11 @@ namespace AdminTool.Services
 
         public async Task<bool> IsOnline(uint world, string userName)
         {
+            return await GetOnlineState(world, userName) == true;
+        }
+
+        public async Task<bool?> GetOnlineState(uint world, string userName)
+        {
             if (string.IsNullOrWhiteSpace(userName))
             {
                 return false;
@@ -228,7 +236,7 @@ namespace AdminTool.Services
                 if (redis == null)
                 {
                     _logger.LogWarning("Redis service instance is not available for IsOnline check.");
-                    return false;
+                    return null;
                 }
 
                 var key = new SessionKey().Key;
@@ -238,7 +246,20 @@ namespace AdminTool.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to check online status for user {UserName}", userName);
-                return false;
+                return null;
+            }
+        }
+
+        public async Task<IAsyncDisposable> TryLockCharacterSave(uint world, uint uid)
+        {
+            try
+            {
+                return await _distributedLock.Lock(world, Http.Model.Character.SaveLockKey(uid));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to lock character {Uid} for saving", uid);
+                return null;
             }
         }
 

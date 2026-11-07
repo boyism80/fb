@@ -657,12 +657,6 @@
         await using var scope = ScopeFactory.CreateAsyncScope();
         var userService = scope.ServiceProvider.GetRequiredService<UserService>();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-        if (await userService.IsOnline(selectedWorld.Value, selectedUser.Name))
-        {
-            errorMessage = "Cannot change role while the user is online. Please try again after they log out.";
-            CloseChangeRoleModal();
-            return;
-        }
 
         if (!int.TryParse(roleModel.NewRoleString, out var newRoleInt) || !Enum.IsDefined(typeof(Role), newRoleInt))
         {
@@ -677,6 +671,24 @@
         if (currentUserRole < Role.Admin)
         {
             errorMessage = "Your admin role is no longer valid. Please log in again.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        await using var saveLock = await userService.TryLockCharacterSave(selectedWorld.Value, selectedUser.Id);
+        if (saveLock == null)
+        {
+            errorMessage = "The character is busy. Please try again.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        var online = await userService.GetOnlineState(selectedWorld.Value, selectedUser.Name);
+        if (online != false)
+        {
+            errorMessage = online == true
+                ? "Cannot change role while the user is online. Please try again after they log out."
+                : "Cannot verify whether the user is online. Please try again.";
             CloseChangeRoleModal();
             return;
         }
