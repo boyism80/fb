@@ -256,14 +256,14 @@ async::task<castle::siege_end_result> castle::container::end_siege(fb::model::en
 
         // Checking and claiming the end under one lock lets only one of a timer and a GM command end the siege.
         auto& castle = guard.value();
-        if (castle->siege_pending() == false || castle->siege_ending())
+        if (castle->siege_pending() == false || castle->phase() == siege_phase::ENDING)
             co_return siege_end_result::NOT_ACTIVE;
 
-        if (castle->siege_winner().has_value())
-            winner = castle->siege_winner().value();
+        if (castle->phase() == siege_phase::END_FAILED)
+            winner = castle->siege_winner();
 
         siege_id = castle->siege_id().value();
-        castle->siege_ending(true);
+        castle->phase(siege_phase::ENDING);
     }
 
     auto world = fb::config<std::optional<uint32_t>>("world");
@@ -302,12 +302,15 @@ async::task<castle::siege_end_result> castle::container::end_siege(fb::model::en
     if (guard.value() == nullptr)
         co_return siege_end_result::NOT_ACTIVE;
 
-    guard.value()->siege_ending(false);
     if (resp.has_value() == false)
     {
+        guard.value()->phase(siege_phase::END_FAILED);
         guard.value()->siege_winner(winner);
         co_return siege_end_result::SAVE_FAILED;
     }
+
+    if (guard.value()->phase() == siege_phase::ENDING)
+        guard.value()->phase(siege_phase::RUNNING);
 
     co_return siege_end_result::ENDED;
 }

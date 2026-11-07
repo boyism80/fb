@@ -14,7 +14,9 @@ castle::castle(server&                             server,
                const std::optional<uint32_t>&      owner_clan_id) :
     _server(server),
     _divine_beast(divine_beast),
-    _owner_clan_id(owner_clan_id)
+    _owner_clan_id(owner_clan_id),
+    _siege_end_at(server.now()),
+    _siege_active_until(server.now())
 { }
 
 castle::castle(castle&& r) :
@@ -25,8 +27,7 @@ castle::castle(castle&& r) :
     _siege_end_at(r._siege_end_at),
     _siege_active_until(r._siege_active_until),
     _revision(r._revision),
-    _siege_ended(r._siege_ended),
-    _siege_ending(r._siege_ending),
+    _phase(r._phase),
     _siege_winner(r._siege_winner)
 { }
 
@@ -55,12 +56,12 @@ bool castle::siege_active() const
     if (this->siege_pending() == false)
         return false;
 
-    return std::chrono::steady_clock::now() < this->_siege_active_until;
+    return this->_server.now() < this->_siege_active_until;
 }
 
 bool castle::siege_pending() const
 {
-    return this->_siege_id.has_value() && this->_siege_ended == false;
+    return this->_siege_id.has_value() && this->_phase != siege_phase::ENDED;
 }
 
 const std::optional<uint64_t>& castle::siege_id() const
@@ -73,12 +74,12 @@ std::optional<uint32_t> castle::siege_remaining_seconds() const
     if (this->siege_pending() == false)
         return std::nullopt;
 
-    auto now = std::chrono::steady_clock::now();
+    auto now = this->_server.now();
     if (now >= this->_siege_end_at)
         return 0;
 
-    auto remaining = std::chrono::duration_cast<std::chrono::seconds>(this->_siege_end_at - now);
-    return static_cast<uint32_t>(remaining.count());
+    auto remaining = this->_siege_end_at - now;
+    return static_cast<uint32_t>(remaining.total_milliseconds() / 1000);
 }
 
 bool castle::apply(uint64_t                       revision,
@@ -91,39 +92,43 @@ bool castle::apply(uint64_t                       revision,
     if (revision < this->_revision)
         return false;
 
-    auto now        = std::chrono::steady_clock::now();
+    auto now        = this->_server.now();
     auto same_round = this->_siege_id == siege_id;
 
     this->_revision           = revision;
     this->_owner_clan_id      = owner_clan_id;
     this->_siege_id           = siege_id;
-    this->_siege_end_at       = now + std::chrono::seconds(remaining);
-    this->_siege_active_until = now + std::chrono::seconds(active_remaining);
-    this->_siege_ended        = ended;
-    if (same_round == false || ended)
+    this->_siege_end_at       = now + fb::model::timespan(std::chrono::seconds(remaining));
+    this->_siege_active_until = now + fb::model::timespan(std::chrono::seconds(active_remaining));
+    if (ended)
     {
-        this->_siege_ending = false;
+        this->_phase        = siege_phase::ENDED;
+        this->_siege_winner = std::nullopt;
+    }
+    else if (same_round == false || this->_phase == siege_phase::ENDED)
+    {
+        this->_phase        = siege_phase::RUNNING;
         this->_siege_winner = std::nullopt;
     }
     return true;
 }
 
-bool castle::siege_ending() const
+castle::siege_phase castle::phase() const
 {
-    return this->_siege_ending;
+    return this->_phase;
 }
 
-void castle::siege_ending(bool value)
+void castle::phase(siege_phase value)
 {
-    this->_siege_ending = value;
+    this->_phase = value;
 }
 
-const std::optional<std::optional<uint32_t>>& castle::siege_winner() const
+const std::optional<uint32_t>& castle::siege_winner() const
 {
     return this->_siege_winner;
 }
 
 void castle::siege_winner(const std::optional<uint32_t>& value)
 {
-    this->_siege_winner = std::make_optional(value);
+    this->_siege_winner = value;
 }

@@ -3,6 +3,7 @@
 
 #include <fb/game/lazy_container.h>
 #include <fb/lua.h>
+#include <fb/model/datetime.h>
 #include <fb/model/model.h>
 #include <fb/socket.h>
 
@@ -34,6 +35,14 @@ public:
         SAVE_FAILED,
     };
 
+    enum class siege_phase : uint8_t
+    {
+        RUNNING,
+        ENDING,
+        END_FAILED,
+        ENDED,
+    };
+
     struct siege_start_result
     {
         bool     started   = false;
@@ -42,16 +51,15 @@ public:
     };
 
 private:
-    server&                                _server;
-    fb::model::enum_value::DIVINE_BEAST    _divine_beast;
-    std::optional<uint32_t>                _owner_clan_id;
-    std::optional<uint64_t>                _siege_id;
-    std::chrono::steady_clock::time_point  _siege_end_at{};
-    std::chrono::steady_clock::time_point  _siege_active_until{};
-    uint64_t                               _revision     = 0;
-    bool                                   _siege_ended  = false;
-    bool                                   _siege_ending = false;
-    std::optional<std::optional<uint32_t>> _siege_winner;
+    server&                             _server;
+    fb::model::enum_value::DIVINE_BEAST _divine_beast;
+    std::optional<uint32_t>             _owner_clan_id;
+    std::optional<uint64_t>             _siege_id;
+    fb::model::datetime                 _siege_end_at;
+    fb::model::datetime                 _siege_active_until;
+    uint64_t                            _revision = 0;
+    siege_phase                         _phase    = siege_phase::RUNNING;
+    std::optional<uint32_t>             _siege_winner;
 
 public:
     // clang-format off
@@ -72,9 +80,9 @@ public:
     const std::optional<uint64_t>&      siege_id() const;
     std::optional<uint32_t>             siege_remaining_seconds() const;
     bool                                apply(uint64_t revision, const std::optional<uint32_t>& owner_clan_id, const std::optional<uint64_t>& siege_id, uint32_t remaining, uint32_t active_remaining, bool ended);
-    bool                                siege_ending() const;
-    void                                siege_ending(bool value);
-    const std::optional<std::optional<uint32_t>>& siege_winner() const;
+    siege_phase                         phase() const;
+    void                                phase(siege_phase value);
+    const std::optional<uint32_t>&      siege_winner() const;
     void                                siege_winner(const std::optional<uint32_t>& value);
     // clang-format on
 };
