@@ -37,7 +37,7 @@ int builtin::match::builtin_id(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -51,7 +51,7 @@ int builtin::match::builtin_type(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -65,7 +65,7 @@ int builtin::match::builtin_state(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -96,7 +96,7 @@ int builtin::match::builtin_wait(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -111,7 +111,7 @@ int builtin::match::builtin_duration(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -129,7 +129,7 @@ int builtin::match::builtin_remaining(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -143,7 +143,7 @@ int builtin::match::builtin_finish(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -160,9 +160,12 @@ int builtin::match::builtin_members(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
-        return 0;
+    {
+        lua->new_table();
+        return 1;
+    }
 
     auto members = session->members();
     lua->new_table();
@@ -180,7 +183,7 @@ int builtin::match::builtin_member_count(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -194,7 +197,7 @@ int builtin::match::builtin_expected(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -208,7 +211,7 @@ int builtin::match::builtin_map(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -227,7 +230,7 @@ int builtin::match::builtin_team(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
         return 0;
 
@@ -249,9 +252,12 @@ int builtin::match::builtin_teams(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto session = lua->touserdata<fb::game::match>(1);
+    auto session = lua->lock_userdata<fb::game::match>(1);
     if (session == nullptr)
-        return 0;
+    {
+        lua->new_table();
+        return 1;
+    }
 
     auto teams = session->teams();
     lua->new_table();
@@ -269,7 +275,7 @@ int builtin::match_team::builtin_id(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto team = lua->touserdata<fb::game::match::team>(1);
+    auto team = lua->lock_userdata<fb::game::match::team>(1);
     if (team == nullptr)
         return 0;
 
@@ -283,7 +289,7 @@ int builtin::match_team::builtin_leader(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto team = lua->touserdata<fb::game::match::team>(1);
+    auto team = lua->lock_userdata<fb::game::match::team>(1);
     if (team == nullptr)
         return 0;
 
@@ -301,9 +307,12 @@ int builtin::match_team::builtin_members(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto team = lua->touserdata<fb::game::match::team>(1);
+    auto team = lua->lock_userdata<fb::game::match::team>(1);
     if (team == nullptr)
-        return 0;
+    {
+        lua->new_table();
+        return 1;
+    }
 
     auto members = team->members();
     lua->new_table();

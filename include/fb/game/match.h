@@ -106,13 +106,13 @@ public:
     LUA_PROTOTYPE
 
 private:
-    match&                                _match;
+    std::weak_ptr<match>                  _match;
     const uint32_t                        _id;
     std::weak_ptr<character>              _leader;
     std::vector<std::weak_ptr<character>> _members;
 
 public:
-    team(match& match, uint32_t id);
+    team(std::weak_ptr<match> match, uint32_t id);
     team(const team&) = delete;
     team(team&&)      = delete;
     ~team()           = default;

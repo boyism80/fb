@@ -209,7 +209,7 @@ async::task<void> match::join(character& ch, uint32_t team)
         {
             auto& slot = this->_teams[team];
             if (slot == nullptr)
-                slot = std::make_shared<match::team>(*this, team);
+                slot = std::make_shared<match::team>(this->weak_from_this_as<match>(), team);
             slot->enter(ch);
         }
         start_wait = already == false && this->_state == MATCH_STATE::waiting && this->_timer == nullptr;
@@ -621,8 +621,8 @@ async::task<void> match::close()
     co_return;
 }
 
-match::team::team(match& match, uint32_t id) :
-    _match(match),
+match::team::team(std::weak_ptr<match> match, uint32_t id) :
+    _match(std::move(match)),
     _id(id)
 { }
 
@@ -644,13 +644,21 @@ bool match::team::contains(const character& ch) const
 
 std::shared_ptr<character> match::team::leader() const
 {
-    auto lock = std::lock_guard(this->_match._mutex);
+    auto session = this->_match.lock();
+    if (session == nullptr)
+        return nullptr;
+
+    auto lock = std::lock_guard(session->_mutex);
     return this->_leader.lock();
 }
 
 std::vector<std::shared_ptr<character>> match::team::members()
 {
-    auto lock   = std::lock_guard(this->_match._mutex);
+    auto session = this->_match.lock();
+    if (session == nullptr)
+        return {};
+
+    auto lock   = std::lock_guard(session->_mutex);
     auto result = std::vector<std::shared_ptr<character>>{};
     auto live   = std::vector<std::weak_ptr<character>>{};
     for (auto& weak : this->_members)
