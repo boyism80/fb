@@ -16,7 +16,9 @@ return {
             return
         end
 
-        local day = datetime().day
+        local now = datetime()
+        local day = now.day
+        local today = string.format('%04d-%02d-%02d', now.year, now.month, now.day)
         if day >= 1 and day <= 24 then
             ::NPC_336_0001::
             btn = me:dialog(npc, "저는 여러분에게 매일 다른 색깔의 도톨을 판매하고 있습니다.", { prev = false, next = true })
@@ -35,8 +37,7 @@ return {
             end
 
             local q = me:quest(quest.QUEST_TOLUI_DAY)
-            local last_day = (q and q:param() ~= "") and tonumber(q:param()) or 0
-            if last_day == day then
+            if q and q:param() == today then
                 me:dialog(npc, "오늘은 이미 도톨을 구입하셨군요! 내일 다시 오세요.", { prev = false, next = false })
                 return
             end
@@ -85,7 +86,7 @@ return {
                 return
             end
             if q then
-                q:param(tostring(day))
+                q:param(today)
             end
             me:dialog(npc, item_name .. " 받았습니다.", { prev = false, next = false })
             return
