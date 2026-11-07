@@ -307,7 +307,19 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
     }
 
     if (drop)
+    {
         this->erase(clan_id);
+        for (auto other_id : this->keys())
+        {
+            auto other = co_await this->enter_write(other_id);
+            if (other.holds_lock() == false || other.value() == nullptr)
+                continue;
+
+            if (other.value()->allied_clan_id() == clan_id)
+                other.value()->allied_clan_id(std::nullopt);
+            other.value()->remove_enemy_clan(clan_id);
+        }
+    }
 
     if (members.empty() == false)
     {
