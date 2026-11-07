@@ -119,7 +119,7 @@ local function pyosin_story(me, npc)
         end
         q:step(1)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서1을 구하자.', 7, 1)
-        me:money(me:money() + 5000)
+        me:exchange({}, { money = 5000 })
         return
     end
 
@@ -685,7 +685,7 @@ local function pyosin_story(me, npc)
 
         q:complete()
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁역사가의 부탁을 들어주다.', 6, 1)
-        me:money(me:money() + 100000)
+        me:exchange({}, { money = 100000 })
         return
     end
 end

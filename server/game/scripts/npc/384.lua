@@ -74,11 +74,10 @@ return {
                     me:dialog(npc, "자네는 백열장을 배운 적이 없지 않은가?", { prev = false, next = false })
                     return
                 end
-                if me:money() < BAEKYEOL_PRICE then
+                if me:consume({ money = BAEKYEOL_PRICE }) ~= true then
                     me:dialog(npc, "뭔가? 자네는 시주할 금액이 없는 것 같은데?", { prev = false, next = false })
                     return
                 end
-                me:money(me:money() - BAEKYEOL_PRICE)
                 me:rmspell("백열장")
                 btn = me:dialog(npc, "자... 그럼 자네의 백열장에 관한 기억을 지우겠네. 마하라반야... 움메움메...", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
@@ -109,11 +108,10 @@ return {
                     me:dialog(npc, "자네는 선풍각을 배운 적이 없지 않은가?", { prev = false, next = false })
                     return
                 end
-                if me:money() < SEONPUNG_PRICE then
+                if me:consume({ money = SEONPUNG_PRICE }) ~= true then
                     me:dialog(npc, "뭔가? 자네는 시주할 금액이 없는 것 같은데?", { prev = false, next = false })
                     return
                 end
-                me:money(me:money() - SEONPUNG_PRICE)
                 me:rmspell("선풍각")
                 btn = me:dialog(npc, "자... 그럼 자네의 선풍각에 관한 기억을 지우겠네. 마하라반야... 움메움메...", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then

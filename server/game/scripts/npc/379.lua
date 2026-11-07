@@ -254,7 +254,7 @@ return {
                     q:step(16)
                     q:complete()
                 end
-                me:money(me:money() + 100000)
+                me:exchange({}, { money = 100000 })
                 me:push_achievement(54, "명수사관 칭호를 획득!", 7, 16)
             else
                 me:dialog(npc, "준비중입니다.", { prev = false, next = false })

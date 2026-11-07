@@ -39,11 +39,10 @@ local function run_nation_change(me, npc)
         me:dialog(npc, "잘 가게...", { prev = false, next = false })
         return true
     end
-    if me:money() < cost then
+    if me:consume({ money = cost }) ~= true then
         me:dialog(npc, "저런, 재물이 모자라는군, 다음에 다시 오게나... 그럼...", { prev = false, next = false })
         return true
     end
-    me:money(me:money() - cost)
     me:nation(target_nation)
     btn = me:dialog(npc, "그대의 노고를 높이 사 상제께서 그대의 소원을 들어주셨네.", { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then

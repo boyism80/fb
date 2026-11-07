@@ -58,13 +58,11 @@ local function do_hair_style(me, npc)
         end
 
         if sel == 1 then
-            local money = me:money()
-            if money < price then
-                me:dialog(npc, '금액이 ' .. (price - money) .. '전 부족합니다.', { prev = false, next = false })
+            if me:consume({ money = price }) ~= true then
+                me:dialog(npc, '금액이 ' .. (price - me:money()) .. '전 부족합니다.', { prev = false, next = false })
                 return
             end
             me:hair(face)
-            me:money(money - price)
             me:dialog(npc, '선택하신 머리로 설정해 드렸습니다.', { prev = false, next = false })
             return
         end
@@ -108,14 +106,12 @@ local function do_hair_dye(me, npc)
 
     local color_index = choice
     local cost = DYE_OPTIONS[choice][2]
-    local money = me:money()
-    if money < cost then
-        me:dialog(npc, '금액이 ' .. (cost - money) .. '전 부족합니다.', { prev = false, next = false })
+    if me:consume({ money = cost }) ~= true then
+        me:dialog(npc, '금액이 ' .. (cost - me:money()) .. '전 부족합니다.', { prev = false, next = false })
         return
     end
 
     me:color(color_index)
-    me:money(money - cost)
     me:dialog(npc, '예쁘게 염색이 되었습니다~', { prev = false, next = false })
 end
 

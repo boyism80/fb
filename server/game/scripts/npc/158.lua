@@ -107,6 +107,11 @@ return {
                 return
             end
 
+            if me:consume({ money = price }) ~= true then
+                me:dialog(npc, '돈이 모자랍니다.')
+                return
+            end
+
             if index == 1 then
                 me:armor_color(10);
             elseif index == 2 then
@@ -118,13 +123,6 @@ return {
             else
             end
 
-            local money = me:money()
-            if money < price then
-                me:dialog(npc, '돈이 모자랍니다.')
-                return
-            end
-
-            me:money(money - price)
             ::NPC_158_0010::
             if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return

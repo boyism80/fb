@@ -1,5 +1,6 @@
 -- npc: 한상약
 local quest = require('lib.quest')
+local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
@@ -96,12 +97,11 @@ return {
             paid = current
         end
         money = paid * REWARD_PER_BAG
-        if money > me:money_free_space() then
+        if me:exchange({}, { money = money }) ~= enum.exchange_result.OK then
             me:dialog(npc, '돈이 너무 많아 보상을 줄 수가 없네.', { prev = false, next = false })
             return
         end
 
-        me:money(me:money() + money)
         q:progress(current - paid)
         if current - paid == 0 then
             me:erase_achievement(22)

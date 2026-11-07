@@ -408,15 +408,13 @@ local function run_change_face(me, npc)
             if me:dialog(npc, '그럼 네 얼굴을 그 모습을 고쳐주도록 하지.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return false
             end
-            local money = me:money()
-            if money < 1000000 then
+            if me:consume({ money = 1000000 }) ~= true then
                 if me:dialog(npc, '백만원이 없잖아 임마', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                     return false
                 end
                 return true
             end
             me:hair(hair)
-            me:money(money - 1000000)
             if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return false
             end

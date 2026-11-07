@@ -159,15 +159,20 @@ local function buy_clan_sword(me, npc_obj)
         return
     end
 
-    if me:mkitem(weapon_name, 1) == nil then
+    local code = me:exchange({ money = price }, { item = { [weapon_name] = 1 } })
+    if code == enum.exchange_result.LACK_COST then
+        button = me:dialog(npc_obj, '감히 어디서 거짓말인가!!', { prev = true, next = false })
+        if button == DIALOG_RESULT.PREV then
+            goto BUY_CONFIRM
+        end
+        return
+    elseif code ~= enum.exchange_result.OK then
         button = me:dialog(npc_obj, '소지품이 가득 찼습니다.', { prev = true, next = false })
         if button == DIALOG_RESULT.PREV then
             goto BUY_CONFIRM
         end
         return
     end
-
-    me:money(me:money() - price)
     button = me:dialog(npc_obj, '이 검은 극도로 강한 기운을 잡아놓아 무척이나 불안하다네.', { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
@@ -195,15 +200,14 @@ local function buy_secretary(me, npc_obj)
         me:dialog(npc_obj, '준비중인 물품입니다.', { prev = false, next = false })
         return
     end
-    if me:money() < price then
+    local code = me:exchange({ money = price }, { item = { [item_name] = 1 } })
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = false })
         return
-    end
-    if me:mkitem(item_name, 1) == nil then
+    elseif code ~= enum.exchange_result.OK then
         me:dialog(npc_obj, '공간이 부족합니다.', { prev = false, next = false })
         return
     end
-    me:money(me:money() - price)
     me:dialog(npc_obj, string.format('%s %d전에 팔았습니다.', name_with(item_name), price), { prev = false, next = false })
 end
 
@@ -389,11 +393,14 @@ function M.buy_clothes(me, npc_obj)
         return
     end
 
-    if me:mkitem(clothes_name, 1) == nil then
+    local code = me:exchange({ money = price }, { item = { [clothes_name] = 1 } })
+    if code == enum.exchange_result.LACK_COST then
+        me:dialog(npc_obj, '보유하신 금전이 부족하시군요.', { prev = false, next = false })
+        return
+    elseif code ~= enum.exchange_result.OK then
         me:dialog(npc_obj, '공간이 부족합니다.', { prev = false, next = false })
         return
     end
-    me:money(me:money() - price)
     me:message(string.format('%s 받았습니다.', clothes_name), MESSAGE_TYPE.NOTIFY)
     me:dialog(npc_obj, string.format('여기 %s을 드렸습니다. 잘 사용하시기 바랍니다...', clothes_name), { prev = false, next = false })
 end
@@ -450,11 +457,10 @@ function M.repair_dragon_weapon(me, npc_obj)
         me:dialog(npc_obj, '그 사이 무기 상태가 달라졌구먼. 다시 말해주게.', { prev = false, next = false })
         return
     end
-    if me:money() < cost then
+    if me:consume({ money = cost }) ~= true then
         me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = false })
         return
     end
-    me:money(me:money() - cost)
     current:durability(max_dur)
     me:dialog(npc_obj, '용무기를 수리했습니다.', { prev = false, next = false })
 end

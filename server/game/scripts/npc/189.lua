@@ -25,18 +25,14 @@ return {
                     return
                 end
 
-                local money = me:money()
-                if money < 100 then
+                local code = me:exchange({ money = 100 }, { item = { ['방송쿠폰'] = 1 } })
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, '방송쿠폰의 가격은 100 전 이라네. 돈이 부족한 것 아닌가?', { prev = false, next = false })
                     return
-                end
-
-                local item = me:mkitem('방송쿠폰', 1)
-                if item == nil then
+                elseif code ~= enum.exchange_result.OK then
                     me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = false })
                     return
                 end
-                me:money(money - 100)
                 me:dialog(npc, '운이 좋군. 잘 쓰시게...', { prev = false, next = false })
             end
             return

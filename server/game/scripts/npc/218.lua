@@ -1,5 +1,6 @@
 -- npc: 장안성대장간
 local npc = require('lib.npc')
+local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc_obj)
@@ -36,15 +37,14 @@ return {
             return
         end
         local black_flag_price = 5000
-        if me:money() < black_flag_price then
+        local code = me:exchange({ money = black_flag_price }, { item = { ['검정깃발'] = 1 } })
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = true })
             return
-        end
-        if me:mkitem('검정깃발', 1) == nil then
+        elseif code ~= enum.exchange_result.OK then
             me:dialog(npc_obj, '공간이 부족합니다.', { prev = false, next = true })
             return
         end
-        me:money(me:money() - black_flag_price)
         me:dialog(npc_obj, '검정깃발을 받았습니다.', { prev = false, next = false })
     end
 }

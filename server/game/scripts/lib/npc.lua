@@ -274,8 +274,7 @@ function M.repair(me, npc, name)
     end
 
     price = math.floor(price)
-    local money = me:money()
-    if price > money then
+    if price > 0 and me:consume({ money = price }) ~= true then
         npc:chat('돈이 모자랍니다.')
         return true
     end
@@ -289,7 +288,6 @@ function M.repair(me, npc, name)
         npc:chat('거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요.')
     else
         npc:chat(string.format('고치는데 %s전이 들었습니다.', price))
-        me:money(money - price)
     end
     return true
 end
@@ -330,16 +328,19 @@ function M.store_item(me, npc, name, count)
         count = 1
     end
 
-    if model:storage_fee() > me:money() then
+    local fee = model:storage_fee()
+    if fee > 0 and me:consume({ money = fee }) ~= true then
         npc:chat('돈이 모자랍니다.')
         return true
     end
 
     if me:store_item(item, count) == false then
+        if fee > 0 then
+            me:exchange({}, { money = fee })
+        end
         npc:chat('더 이상 맡을 수 없습니다.')
         return true
     end
-    me:money(me:money() - model:storage_fee())
     if count > 1 then
         npc:chat(string.format('%s %d개 맡았습니다.', name_with(name, '을', '를'), count))
     else
@@ -417,23 +418,15 @@ function M.sell_item(me, npc, name, count)
     end
 
     price = price * count
-    local money = me:money()
-    if price > money then
+    local code = me:exchange({ money = price }, { item = { [name] = count } })
+    if code == enum.exchange_result.LACK_COST then
         npc:chat('돈이 모자랍니다.')
         return false
-    end
-
-    if is_bundle and count > me:item_free_space(model) then
+    elseif code ~= enum.exchange_result.OK then
         npc:chat('더 이상 가질 수 없습니다.')
         return false
     end
 
-    if me:mkitem(name, count) == nil then
-        npc:chat('공간이 부족합니다.')
-        return false
-    end
-
-    me:money(money - price)
     local message = nil
     if count > 1 then
         npc:chat(string.format('%s %d개를 %d전에 팔았습니다.', name, count, price))
@@ -707,8 +700,11 @@ function M.show_buy_menu(me, npc)
         message = string.format('%s %d전에 파시겠습니까?', name_with(model:name()), price)
     end
     if me:menu(npc, message, { '네', '아니오' }) == 1 then
-        if me:rmitem(item, count, ITEM_DELETE_TYPE.SELL) then
-            me:money(me:money() + price)
+        local code = me:exchange({ item = { [model:name()] = count } }, { money = price }, ITEM_DELETE_TYPE.SELL)
+        if code == enum.exchange_result.LACK_COST then
+            return me:dialog(npc, '그만큼 가지고 있지 않습니다.', { prev = false, next = true })
+        elseif code == enum.exchange_result.LACK_CAPACITY then
+            return me:dialog(npc, '돈이 너무 많습니다.', { prev = false, next = true })
         end
     end
     return DIALOG_RESULT.NEXT
@@ -770,27 +766,20 @@ local function show_sell_catalog(me, npc, sell_id)
         price = price * count
     end
 
-    local money = me:money()
-    if price > money then
+    local code = me:exchange({ money = price }, { item = { [selected_name] = count } })
+    if code == enum.exchange_result.LACK_COST then
         return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
-    end
-
-    if is_bundle and count > me:item_free_space(item) then
+    elseif code ~= enum.exchange_result.OK then
         return me:dialog(npc, '더 이상 가질 수 없습니다.', { prev = false, next = true })
     end
 
-    if me:mkitem(selected_name, count) == nil then
-        return me:dialog(npc, '공간이 부족합니다.', { prev = false, next = true })
+    local message = nil
+    if count > 1 then
+        message = string.format('%s %d개를 %d전에 팔았습니다.', selected_name, count, price)
     else
-        me:money(money - price)
-        local message = nil
-        if count > 1 then
-            message = string.format('%s %d개를 %d전에 팔았습니다.', selected_name, count, price)
-        else
-            message = string.format('%s %d전에 팔았습니다.', name_with(selected_name), price)
-        end
-        return me:dialog(npc, message, { prev = false, next = true })
+        message = string.format('%s %d전에 팔았습니다.', name_with(selected_name), price)
     end
+    return me:dialog(npc, message, { prev = false, next = true })
 end
 
 function M.show_sell_menu(me, npc, categories)
@@ -877,16 +866,13 @@ function M.show_repair_menu(me, npc)
 
             local target_model = target:model()
             local cost = math.floor(target_model:repair_price() * (target_model:durability() - target:durability()))
-            local money = me:money()
             if cost > price then
                 return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.', { prev = false, next = true })
-            elseif cost > money then
+            elseif cost > 0 and me:consume({ money = cost }) ~= true then
                 return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
-            else
-                me:money(money - cost)
-                target:durability(target_model:durability())
-                return DIALOG_RESULT.NEXT
             end
+            target:durability(target_model:durability())
+            return DIALOG_RESULT.NEXT
         else
             return DIALOG_RESULT.NEXT
         end
@@ -927,20 +913,17 @@ function M.show_repair_all_menu(me, npc)
             end
             cost = math.floor(cost)
 
-            local money = me:money()
             if cost > price then
                 return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.')
-            elseif money < cost then
+            elseif cost > 0 and me:consume({ money = cost }) ~= true then
                 return me:dialog(npc, '돈이 모자랍니다.')
-            else
-                for slot, item in pairs(current) do
-                    local model = item:model()
-                    item:durability(model:durability())
-                end
-
-                me:money(money - cost)
-                return me:dialog(npc, '모두 고쳤습니다.')
             end
+
+            for slot, item in pairs(current) do
+                local model = item:model()
+                item:durability(model:durability())
+            end
+            return me:dialog(npc, '모두 고쳤습니다.')
         else
             return DIALOG_RESULT.NEXT
         end
@@ -1028,16 +1011,16 @@ function M.show_hold_item_menu(me, npc)
             return DIALOG_RESULT.NEXT
         end
 
-        if me:money() < storage_fee then
+        if me:consume({ money = storage_fee }) ~= true then
             return me:dialog(npc, '돈이 모자랍니다.')
         end
     end
 
     if me:store_item(item, count) == false then
+        if storage_fee > 0 then
+            me:exchange({}, { money = storage_fee })
+        end
         return me:dialog(npc, '더 이상 맡길 수 없습니다.', { prev = false, next = true })
-    end
-    if storage_fee > 0 then
-        me:money(me:money() - storage_fee)
     end
 
     if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
@@ -1378,14 +1361,15 @@ function M.basic_class(me, npc, class, spells)
             if me:dialog(npc, '그럼, 너의 소원을 들어주겠노라', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:money() < 5000 then
+            if me:consume({ money = 5000 }) ~= true then
                 if me:dialog(npc, '예끼 이놈! 감히 돈도 없으면서 날 찾아와?', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
                 goto NPC_BASIC_CLASS_000
             end
-            me:money(me:money() - 5000)
-            me:title(title)
+            if me:title(title) == false then
+                me:exchange({}, { money = 5000 })
+            end
             if me:dialog(npc, '칭호를 받았으니, 자신감을 가 지고 다니게나...', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                 return
             end
@@ -1742,12 +1726,11 @@ function M.yut_game(me, npc)
         end
     end
 
-    if me:money() < YUT_COST then
+    if me:consume({ money = YUT_COST }) ~= true then
         npc:chat(string.format('%s: [%s]님. 금전이 부족하시네요. 10전을 가져오세요.', npc:model():name(), me:name()))
         return
     end
 
-    me:money(me:money() - YUT_COST)
     local pae, again = yut_result()
     local plus = again and ' 한 번 더 던지세요.' or ''
     npc:chat(string.format('%s: [%s]님. %s 나왔습니다.%s', npc:model():name(), me:name(), pae, plus))
