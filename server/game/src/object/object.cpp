@@ -538,11 +538,54 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
     if (map != nullptr && position.has_value() == false)
         position = map->model().spawn_position();
 
-    auto  weak         = this->weak_from_this_as<object>();
-    auto& context      = this->server;
-    auto  resolved     = position.value_or(fb::model::point16_t{0, 0});
-    auto  destroy_type = options.destroy_type;
-    auto  notify       = options.notify;
+    if (map != nullptr && this->_moving.exchange(true))
+        co_return false;
+
+    auto from   = this->_map;
+    auto placed = co_await this->place(map, position, options);
+    if (map != nullptr)
+        this->_moving = false;
+
+    if (placed == false || map == nullptr)
+        co_return placed;
+
+    try
+    {
+        if (this->_map != from)
+        {
+            co_await this->invoke_map_character_hook(this->_map->model(), "on_map_enter");
+
+            // on_map_enter may call me:map() (e.g. castle evict), which switches this
+            // coroutine onto the destination thread. Re-anchor to the object's current
+            // thread before returning so the caller's assert_thread / name() stay valid.
+            co_await this->server.threads.switching(this->weak_from_this_as<object>());
+        }
+
+        if (options.after)
+        {
+            try
+            {
+                std::ignore = co_await options.after();
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("map after hook error: {}", e.what());
+            }
+        }
+    }
+    catch (...)
+    {
+        co_return false;
+    }
+    co_return true;
+}
+
+async::task<bool> object::place(map_ptr map, std::optional<fb::model::point16_t> position, map_options options)
+{
+    auto weak         = this->weak_from_this_as<object>();
+    auto resolved     = position.value_or(fb::model::point16_t{0, 0});
+    auto destroy_type = options.destroy_type;
+    auto notify       = options.notify;
     try
     {
         if (this->_map == map)
@@ -551,18 +594,6 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                 co_return false;
 
             this->position(resolved, true);
-
-            if (options.after)
-            {
-                try
-                {
-                    std::ignore = co_await options.after();
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::warn("map after hook error: {}", e.what());
-                }
-            }
             co_return true;
         }
 
@@ -699,25 +730,6 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                     continue;
 
                 obj->show(*this);
-            }
-        }
-
-        co_await this->invoke_map_character_hook(map->model(), "on_map_enter");
-
-        // on_map_enter may call me:map() (e.g. castle evict), which switches this
-        // coroutine onto the destination thread. Re-anchor to the object's current
-        // thread before returning so the caller's assert_thread / name() stay valid.
-        co_await this->server.threads.switching(weak);
-
-        if (options.after)
-        {
-            try
-            {
-                std::ignore = co_await options.after();
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::warn("map after hook error: {}", e.what());
             }
         }
         co_return true;

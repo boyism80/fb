@@ -298,11 +298,15 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
             }
 
-            if (options.before && co_await options.before() == false)
-                co_return false;
-
             if (this->begin_transfer() == false)
                 co_return false;
+
+            if (options.before && co_await options.before() == false)
+            {
+                auto expected = LOGIN_STATE::TRANSFERRING;
+                std::ignore   = this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
+                co_return false;
+            }
 
             this->dialog.cancel("transfer");
             std::ignore = co_await this->map(nullptr);
@@ -411,6 +415,9 @@ bool character::abort_login()
 
 bool character::begin_transfer()
 {
+    if (this->_moving)
+        return false;
+
     auto expected = LOGIN_STATE::LOADED;
     return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::TRANSFERRING);
 }

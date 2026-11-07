@@ -91,6 +91,7 @@ protected:
     DIRECTION                _direction = DIRECTION::BOTTOM;
     map_ptr                  _map       = nullptr;
     std::atomic<fb::thread*> _thread    = nullptr; // read from IO threads for packet dispatch
+    std::atomic<bool>        _moving    = false;
 
 public:
     listener_t&       listener;
@@ -112,6 +113,7 @@ public:
 private:
     // clang-format off
     void                             update_sector();
+    async::task<bool>                place(map_ptr map, std::optional<fb::model::point16_t> position, map_options options);
     async::task<void>                invoke_map_character_hook(const fb::model::map& map_model, std::string_view hook);
     static bool                      sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map);
     static fb::model::area<uint16_t> sight_area(const fb::model::point16_t& position, const map_ptr& map);
