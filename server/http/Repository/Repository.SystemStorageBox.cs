@@ -71,17 +71,17 @@ namespace Http.Reepository
                 new { seconds = (long)margin.TotalSeconds, limit });
         }
 
-        public async Task<List<(uint Id, string ExternalRef)>> GetArchivedMarketplace(uint world, uint afterId, int limit)
+        public async Task<List<(uint Id, string ExternalRef)>> GetArchived(uint world, string refPrefix, uint afterId, int limit)
         {
             await using var conn = _dbContext.GetGlobalConnection(world);
             var rows = await conn.QueryAsync<(uint Id, string ExternalRef)>(
                 """
                 SELECT `id` AS Id, `external_ref` AS ExternalRef FROM `system_storage_box_archive`
-                WHERE `id` > @afterId AND `external_ref` LIKE 'marketplace:%'
+                WHERE `id` > @afterId AND `external_ref` LIKE @pattern
                 ORDER BY `id`
                 LIMIT @limit;
                 """,
-                new { afterId, limit });
+                new { afterId, pattern = refPrefix + "%", limit });
             return rows.ToList();
         }
 

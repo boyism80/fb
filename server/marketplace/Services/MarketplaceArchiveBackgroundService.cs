@@ -12,11 +12,14 @@ namespace Marketplace.Services
         private readonly RedisService _redisService;
         private readonly HealthCheckService _health;
         private readonly ILogger<MarketplaceArchiveBackgroundService> _logger;
+        private DateTime _lastBoxCleanup = DateTime.MinValue;
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan Retention = Fb.Model.ConstValue.Marketplace.ExpireTime;
+        private static readonly TimeSpan BoxCleanupInterval = TimeSpan.FromDays(1);
         private const int BatchSize = 500;
+        private const string ParcelRefPrefix = "marketplace:";
         private const string LockKey = "fb:marketplace:archive:lock";
 
         private static readonly string AcquireLockScript = """
@@ -73,6 +76,15 @@ namespace Marketplace.Services
                             // Archive listings
                             await ArchiveListingsAsync(dbContext, logService, stoppingToken);
                             await DeleteSentParcelsAsync(dbContext, logService, stoppingToken);
+                            if (DateTime.UtcNow - _lastBoxCleanup >= BoxCleanupInterval)
+                            {
+                                await DeleteArchivedBoxesAsync(scope.ServiceProvider.GetRequiredService<Http.Service.DbContext>(),
+                                    dbContext,
+                                    scope.ServiceProvider.GetRequiredService<RedisDistributedLockService>(),
+                                    logService,
+                                    stoppingToken);
+                                _lastBoxCleanup = DateTime.UtcNow;
+                            }
                         }
                         catch (Exception e)
                         {
@@ -139,6 +151,50 @@ namespace Marketplace.Services
             }
 
             await logService.WriteAsync("marketplace_parcel_cleanup", new
+            {
+                deleted_count = deletedCount
+            });
+        }
+
+        private async Task DeleteArchivedBoxesAsync(
+            Http.Service.DbContext worldContext,
+            Marketplace.Service.DbContext dbContext,
+            RedisDistributedLockService distributedLock,
+            LogService logService,
+            CancellationToken cancellationToken)
+        {
+            var deletedCount = 0;
+            foreach (var world in _redisService.GetConfiguredWorlds())
+            {
+                try
+                {
+                    var afterId = 0u;
+                    List<(uint Id, string ExternalRef)> rows;
+                    do
+                    {
+                        rows = await worldContext.SystemStorageBox.GetArchived(world, ParcelRefPrefix, afterId, BatchSize);
+                        if (rows.Count == 0)
+                        {
+                            break;
+                        }
+
+                        afterId = rows[^1].Id;
+                        var parcels = await dbContext.MarketplaceParcel.ExistingRefsAsync(rows.Select(x => x.ExternalRef).ToArray());
+                        foreach (var row in rows.Where(x => parcels.Contains(x.ExternalRef) == false))
+                        {
+                            await using var _ = await distributedLock.Lock(world, StorageService.ExternalRefLockKey(row.ExternalRef));
+                            await worldContext.SystemStorageBox.DeleteArchived(world, row.Id);
+                            deletedCount++;
+                        }
+                    } while (rows.Count == BatchSize && cancellationToken.IsCancellationRequested == false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Failed to delete archived marketplace boxes for world {World}", world);
+                }
+            }
+
+            await logService.WriteAsync("marketplace_archived_box_cleanup", new
             {
                 deleted_count = deletedCount
             });

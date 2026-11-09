@@ -85,7 +85,7 @@ namespace Internal.Services
             {
                 try
                 {
-                    await SweepArchivedStorageBoxesAsync(dbContext, distributedLock, world);
+                    await SweepArchivedStorageBoxesAsync(dbContext, world);
                     _lastSweeps[world] = now;
                 }
                 catch (Exception e)
@@ -135,7 +135,7 @@ namespace Internal.Services
             _logger.LogInformation("Purged received records of {Count} archived system mails for world {World}", ids.Length, world);
         }
 
-        private async Task SweepArchivedStorageBoxesAsync(DbContext dbContext, RedisDistributedLockService distributedLock, uint world)
+        private async Task SweepArchivedStorageBoxesAsync(DbContext dbContext, uint world)
         {
             var deleted = 0;
             int count;
@@ -144,34 +144,6 @@ namespace Internal.Services
                 count = await dbContext.SystemStorageBox.DeleteExpiredArchive(world, ArchiveExpiryMargin, 1000);
                 deleted += count;
             } while (count == 1000);
-
-            var afterId = 0u;
-            List<(uint Id, string ExternalRef)> rows;
-            do
-            {
-                rows = await dbContext.SystemStorageBox.GetArchivedMarketplace(world, afterId, 500);
-                if (rows.Count == 0)
-                {
-                    break;
-                }
-
-                afterId = rows[^1].Id;
-                var refs = rows.Select(x => x.ExternalRef).ToArray();
-                HashSet<string> parcels;
-                await using (var unified = dbContext.GetUnifiedConnection())
-                {
-                    parcels = (await unified.QueryAsync<string>(
-                        "SELECT `external_ref` FROM `marketplace_parcel` WHERE `external_ref` IN @refs",
-                        new { refs })).ToHashSet();
-                }
-
-                foreach (var row in rows.Where(x => parcels.Contains(x.ExternalRef) == false))
-                {
-                    await using var _ = await distributedLock.Lock(world, StorageService.ExternalRefLockKey(row.ExternalRef));
-                    await dbContext.SystemStorageBox.DeleteArchived(world, row.Id);
-                    deleted++;
-                }
-            } while (rows.Count == 500);
 
             if (deleted > 0)
             {

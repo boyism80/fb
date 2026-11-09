@@ -62,6 +62,15 @@ namespace Marketplace.Reepository
                 """) > 0;
         }
 
+        public async Task<HashSet<string>> ExistingRefsAsync(IReadOnlyCollection<string> refs)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            var rows = await conn.QueryAsync<string>(
+                "SELECT `external_ref` FROM `marketplace_parcel` WHERE `external_ref` IN @refs",
+                new { refs });
+            return rows.ToHashSet();
+        }
+
         public async Task MarkSentAsync(string externalRef)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
