@@ -50,7 +50,8 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                     if (ch == nullptr)
                         co_return;
 
-                    if (co_await ch->matchmaker.on_proposed(match_id, ticket_id) == false)
+                    auto proposed = co_await ch->matchmaker.on_proposed(match_id, ticket_id);
+                    if (proposed == false)
                         co_return;
 
                     auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_proposed");
