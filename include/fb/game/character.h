@@ -399,6 +399,7 @@ public:
     bool                                     super_hide() const override final;
     bool                                     hidden() const override final;
     bool                                     hidden(const fb::game::object& target) const override final;
+    bool                                     hidden(ROLE role) const override final;
     std::shared_ptr<fb::game::appearance>    appearance() const override;
     bool                                     portrait() const override;
     // clang-format on
@@ -518,7 +519,6 @@ public:
     const fb::game::marriage&                                 marriage() const;
     void                                                      marriage(const fb::game::marriage& value);
     void                                                      super_hide(bool enabled);
-    bool                                                      hidden(ROLE role) const;
     void                                                      update_last_afk_time();
     fb::model::datetime&                                      last_afk_time();
     std::shared_ptr<fb::socket<character>>                    socket_ptr() const;

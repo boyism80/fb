@@ -944,7 +944,7 @@ async::task<void> character::evaluate(std::string target_name, bool raise)
     {
         co_await server.threads.switching(target_weak);
         target = target_weak.lock();
-        if (target != nullptr && target->inited() && (target->super_hide() == false || target->hidden(role) == false))
+        if (target != nullptr && target->inited() && target->hidden(role) == false)
         {
             visible     = true;
             target_name = target->name();
@@ -2895,20 +2895,20 @@ void character::super_hide(bool enabled)
 
 bool character::hidden() const
 {
-    return this->super_hide() && this->role() > ROLE::USER;
+    return this->hidden(ROLE::USER);
 }
 
 bool character::hidden(const fb::game::object& target) const
 {
     if (target.is(OBJECT_TYPE::CHARACTER))
-        return this->super_hide() && this->role() > static_cast<const fb::game::character&>(target).role();
+        return this->hidden(static_cast<const fb::game::character&>(target).role());
     else
         return this->hidden();
 }
 
 bool character::hidden(ROLE role) const
 {
-    return this->role() > role;
+    return this->super_hide() && this->role() > role;
 }
 
 void character::update_last_afk_time()

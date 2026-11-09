@@ -142,6 +142,7 @@ public:
     virtual bool                                            super_hide() const;
     virtual bool                                            hidden() const;
     virtual bool                                            hidden(const object& target) const;
+    virtual bool                                            hidden(ROLE role) const;
     virtual void                                            chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
     const fb::model::point16_t&                             position() const;
     virtual bool                                            position(uint16_t x, uint16_t y, bool refresh = false);

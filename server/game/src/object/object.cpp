@@ -129,6 +129,11 @@ bool object::hidden(const object& target) const
     return false;
 }
 
+bool object::hidden(ROLE role) const
+{
+    return this->hidden();
+}
+
 void object::on_init()
 { }
 

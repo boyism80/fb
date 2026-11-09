@@ -351,11 +351,7 @@ int builtin::map::builtin_movable(lua_State* L)
         }
 
         *result = map_locked->movable(pos, [=](const auto& near_obj) -> bool {
-            if (near_obj.is(OBJECT_TYPE::CHARACTER) == false)
-                return true;
-
-            auto& ch = static_cast<const character&>(near_obj);
-            return !ch.hidden(role);
+            return near_obj.hidden(role) == false;
         });
         co_return;
     };
