@@ -48,7 +48,7 @@ test_suite({
             if check(bot, "set_state", "dew_init", "clear;q=" .. QUEST_TOTEM_CLOTHES .. ":1;fill") == false then
                 return fail("could not start the quest with a full inventory")
             end
-            if check(bot, "set_quest_param", "dew_water", QUEST_TOTEM_CLOTHES, "0,0,0,50") == false then
+            if check(bot, "set_quest_progress", "dew_water", QUEST_TOTEM_CLOTHES, "50") == false then
                 return fail("could not set 50 drops of dew")
             end
 

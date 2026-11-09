@@ -116,6 +116,18 @@ local function string_split(self, delimiter)
     return interaction.string_split(self, delimiter)
 end
 
+function M.moved_two_steps(me, key)
+    local x, y = me:position()
+    local stored_x, stored_y, check = string.match(me:var(key) or '', '^(%d+),(%d+),(%d)$')
+    if check ~= '1' then
+        me:var(key, string.format('%d,%d,1', x, y))
+        return false
+    else
+        me:var(key, string.format('%d,%d,0', x, y))
+        return x ~= tonumber(stored_x) or y ~= tonumber(stored_y)
+    end
+end
+
 function M.red_clay_on_move(me)
     local RED_CLAY_ACHIEVEMENT_ID = 22
     local RED_CLAY_PARENT_MAP_NAMES = { ['고균도'] = true, ['가릉도'] = true, ['폭염도'] = true }
@@ -138,30 +150,7 @@ function M.red_clay_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local stored_x, stored_y, check
-    if param == nil or param == '' then
-        stored_x, stored_y, check = 0, 0, 0
-    else
-        local parts = string_split(param, ',')
-        if #parts ~= 3 then
-            stored_x, stored_y, check = 0, 0, 0
-        else
-            stored_x = tonumber(parts[1]) or 0
-            stored_y = tonumber(parts[2]) or 0
-            check = tonumber(parts[3]) or 0
-        end
-    end
-
-    if check == 0 then
-        quest:param(string.format('%d,%d,1', x, y))
-        return
-    end
-
-    quest:param(string.format('%d,%d,0', x, y))
-
-    if x == stored_x and y == stored_y then
+    if not M.moved_two_steps(me, 'red_clay_move') then
         return
     end
 
@@ -227,30 +216,7 @@ function M.cheongsimcho_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local stored_x, stored_y, check
-    if param == nil or param == '' then
-        stored_x, stored_y, check = 0, 0, 0
-    else
-        local parts = string_split(param, ',')
-        if #parts ~= 3 then
-            stored_x, stored_y, check = 0, 0, 0
-        else
-            stored_x = tonumber(parts[1]) or 0
-            stored_y = tonumber(parts[2]) or 0
-            check = tonumber(parts[3]) or 0
-        end
-    end
-
-    if check == 0 then
-        quest:param(string.format('%d,%d,1', x, y))
-        return
-    end
-
-    quest:param(string.format('%d,%d,0', x, y))
-
-    if x == stored_x and y == stored_y then
+    if not M.moved_two_steps(me, 'cheongsimcho_move') then
         return
     end
 
@@ -295,30 +261,7 @@ function M.greatwall_repair_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local stored_x, stored_y, check
-    if param == nil or param == '' then
-        stored_x, stored_y, check = 0, 0, 0
-    else
-        local parts = string_split(param, ',')
-        if #parts ~= 3 then
-            stored_x, stored_y, check = 0, 0, 0
-        else
-            stored_x = tonumber(parts[1]) or 0
-            stored_y = tonumber(parts[2]) or 0
-            check = tonumber(parts[3]) or 0
-        end
-    end
-
-    if check == 0 then
-        quest:param(string.format('%d,%d,1', x, y))
-        return
-    end
-
-    quest:param(string.format('%d,%d,0', x, y))
-
-    if x == stored_x and y == stored_y then
+    if not M.moved_two_steps(me, 'greatwall_repair_move') then
         return
     end
 
@@ -349,7 +292,7 @@ function M.greatwall_repair_on_move(me)
     end
 end
 
---- Chance to find 복건성태자 quest toys when moving. Quest 202 step 1. 복건성 -> 상아주사위, 상해1/2/3 -> 오색폭죽, 강서성 -> 청옥팽이. Param stores "x1,y1,c1,x2,y2,c2,x3,y3,c3" for the three regions.
+--- Chance to find 복건성태자 quest toys when moving. Quest 202 step 1. 복건성 -> 상아주사위, 상해1/2/3 -> 오색폭죽, 강서성 -> 청옥팽이.
 function M.crown_prince_toys_on_move(me)
     local quest = me:quest(M.QUEST_FIND_TOYS)
     if quest == nil or quest:step() ~= 1 then
@@ -385,39 +328,7 @@ function M.crown_prince_toys_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local parts = {}
-    if param == nil or param == '' then
-        for i = 1, 9 do
-            parts[i] = '0'
-        end
-    else
-        parts = string_split(param, ',')
-        if #parts ~= 9 then
-            for i = 1, 9 do
-                parts[i] = '0'
-            end
-        end
-    end
-
-    local base = (region - 1) * 3 + 1
-    local stored_x = tonumber(parts[base]) or 0
-    local stored_y = tonumber(parts[base + 1]) or 0
-    local check = tonumber(parts[base + 2]) or 0
-
-    if check == 0 then
-        parts[base] = tostring(x)
-        parts[base + 1] = tostring(y)
-        parts[base + 2] = '1'
-        quest:param(table.concat(parts, ','))
-        return
-    end
-
-    parts[base + 2] = '0'
-    quest:param(table.concat(parts, ','))
-
-    if x == stored_x and y == stored_y then
+    if not M.moved_two_steps(me, 'crown_prince_toys_move:' .. region) then
         return
     end
 
@@ -432,7 +343,7 @@ function M.crown_prince_toys_on_move(me)
     me:chat(msg)
 end
 
---- Chance to find 인삼/동충하초 when moving. Quest 204 (돈유합의달인) step 1 or 2. 국경지대 -> 인삼, 대방성입구 -> 동충하초. Param "x1,y1,c1,x2,y2,c2" for the two maps.
+--- Chance to find 인삼/동충하초 when moving. Quest 204 (돈유합의달인) step 1 or 2. 국경지대 -> 인삼, 대방성입구 -> 동충하초.
 function M.dongchung_insam_on_move(me)
     local quest = me:quest(M.QUEST_DONUHAP)
     if quest == nil then
@@ -468,39 +379,7 @@ function M.dongchung_insam_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local parts = {}
-    if param == nil or param == '' then
-        for i = 1, 6 do
-            parts[i] = '0'
-        end
-    else
-        parts = string_split(param, ',')
-        if #parts ~= 6 then
-            for i = 1, 6 do
-                parts[i] = '0'
-            end
-        end
-    end
-
-    local base = (region - 1) * 3 + 1
-    local stored_x = tonumber(parts[base]) or 0
-    local stored_y = tonumber(parts[base + 1]) or 0
-    local check = tonumber(parts[base + 2]) or 0
-
-    if check == 0 then
-        parts[base] = tostring(x)
-        parts[base + 1] = tostring(y)
-        parts[base + 2] = '1'
-        quest:param(table.concat(parts, ','))
-        return
-    end
-
-    parts[base + 2] = '0'
-    quest:param(table.concat(parts, ','))
-
-    if x == stored_x and y == stored_y then
+    if not M.moved_two_steps(me, 'dongchung_insam_move:' .. region) then
         return
     end
 
@@ -515,7 +394,7 @@ function M.dongchung_insam_on_move(me)
     me:chat(msg)
 end
 
---- Bury 귀신퇴치부적 in 귀기서린집 when moving. Quest 206 step 1 or 3. 10% chance on tile change: consume 1 부적, inc_progress(1). Param "x,y,check" for position.
+--- Bury 귀신퇴치부적 in 귀기서린집 when moving. Quest 206 step 1 or 3. 10% chance on tile change: consume 1 부적, inc_progress(1).
 function M.ghost_talisman_on_move(me)
     local quest = me:quest(M.QUEST_GHOST)
     if quest == nil then
@@ -539,30 +418,7 @@ function M.ghost_talisman_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local parts = {}
-    if param == nil or param == '' then
-        parts = { '0', '0', '0' }
-    else
-        parts = string_split(param, ',')
-        if #parts ~= 3 then
-            parts = { '0', '0', '0' }
-        end
-    end
-
-    local stored_x = tonumber(parts[1]) or 0
-    local stored_y = tonumber(parts[2]) or 0
-    local check = tonumber(parts[3]) or 0
-
-    if check == 0 then
-        quest:param(string.format('%d,%d,1', x, y))
-        return
-    end
-
-    quest:param(string.format('%d,%d,0', x, y))
-
-    if x == stored_x and y == stored_y then
+    if not M.moved_two_steps(me, 'ghost_talisman_move') then
         return
     end
 
@@ -602,35 +458,19 @@ function M.goddess_dew_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local stored_x, stored_y, check, water
-    if param == nil or param == '' then
-        stored_x, stored_y, check, water = 0, 0, 0, 0
-    else
-        local parts = string_split(param, ',')
-        if #parts ~= 4 then
-            stored_x, stored_y, check, water = 0, 0, 0, 0
-        else
-            stored_x = tonumber(parts[1]) or 0
-            stored_y = tonumber(parts[2]) or 0
-            check = tonumber(parts[3]) or 0
-            water = tonumber(parts[4]) or 0
-        end
+    local legacy = string_split(quest:param() or '', ',')
+    if #legacy == 4 then
+        quest:progress(tonumber(legacy[4]) or 0)
+        quest:param('')
     end
+
+    local water = quest:progress()
     if water >= TOTEM_WATER_MADE then
-        quest:param(string.format('%d,%d,0,0', x, y))
+        quest:progress(0)
         return
     end
     if water < TOTEM_WATER_MAX then
-        if check == 0 then
-            quest:param(string.format('%d,%d,1,%d', x, y, water))
-            return
-        end
-
-        quest:param(string.format('%d,%d,0,%d', x, y, water))
-
-        if x == stored_x and y == stored_y then
+        if not M.moved_two_steps(me, 'goddess_dew_move') then
             return
         end
 
@@ -639,7 +479,7 @@ function M.goddess_dew_on_move(me)
         end
 
         water = water + 1
-        quest:param(string.format('%d,%d,0,%d', x, y, water))
+        quest:progress(water)
 
         if water < TOTEM_WATER_MAX then
             if math.random(1, 10) <= 9 then
@@ -647,7 +487,7 @@ function M.goddess_dew_on_move(me)
                 me:dialog(nil, '투명한 이슬을 발견했다!\n\n조심조심... 투명한 이슬을 담자.', { prev = false, next = true })
             else
                 water = water - 1
-                quest:param(string.format('%d,%d,0,%d', x, y, water))
+                quest:progress(water)
                 me:dialog(nil, '아뿔사! 투명한 이슬을 흘려버렸다!', { prev = false, next = true })
             end
             return
@@ -658,7 +498,7 @@ function M.goddess_dew_on_move(me)
         me:message('소지품이 가득 차서 여신의 이슬을 담을 수 없다.')
         return
     end
-    quest:param(string.format('%d,%d,0,%d', x, y, TOTEM_WATER_MADE))
+    quest:progress(TOTEM_WATER_MADE)
     me:push_achievement(DEW_ACHIEVEMENT_ID, '여신의이슬을 만들었다.', 7, 16)
     me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', { prev = false, next = true })
 end
@@ -691,30 +531,7 @@ function M.manrihyang_seed_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local param = quest:param()
-    local stored_x, stored_y, check
-    if param == nil or param == '' then
-        stored_x, stored_y, check = 0, 0, 0
-    else
-        local parts = string_split(param, ',')
-        if #parts ~= 3 then
-            stored_x, stored_y, check = 0, 0, 0
-        else
-            stored_x = tonumber(parts[1]) or 0
-            stored_y = tonumber(parts[2]) or 0
-            check = tonumber(parts[3]) or 0
-        end
-    end
-
-    if check == 0 then
-        quest:param(string.format('%d,%d,1', x, y))
-        return
-    end
-
-    quest:param(string.format('%d,%d,0', x, y))
-
-    if x == stored_x and y == stored_y then
+    if not M.moved_two_steps(me, 'manrihyang_seed_move') then
         return
     end
 
@@ -774,16 +591,7 @@ function M.mountain_treasure_map_on_move(me)
         return
     end
 
-    local x, y = me:position()
-    local stored_x, stored_y, check = string.match(me:var('mountain_treasure_move') or '', '^(%d+),(%d+),(%d)$')
-
-    if check ~= '1' then
-        me:var('mountain_treasure_move', string.format('%d,%d,1', x, y))
-        return
-    end
-
-    me:var('mountain_treasure_move', string.format('%d,%d,0', x, y))
-    if x == tonumber(stored_x) and y == tonumber(stored_y) then
+    if not M.moved_two_steps(me, 'mountain_treasure_move') then
         return
     end
 
