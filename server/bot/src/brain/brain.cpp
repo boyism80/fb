@@ -771,8 +771,7 @@ void brain::notice(game_bot& bot, std::string_view kind, uint32_t oid)
 async::task<void> brain::alarm(std::shared_ptr<game_bot> bot, std::string task, std::string kind)
 {
     auto  reason = std::string{};
-    auto  opts   = fb::lua::call_options{.auto_resume_parent = false};
-    auto* raw    = this->scripts(*bot).pop(nullptr, opts);
+    auto* raw    = this->scripts(*bot).pop();
     if (raw != nullptr)
     {
         auto ctx = fb::lua::context::guard{raw};
@@ -892,8 +891,7 @@ std::optional<fb::lua::value> brain::recall(uint32_t bot, const std::string& key
 
 async::task<std::optional<brain::decision>> brain::think(std::shared_ptr<game_bot> bot)
 {
-    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
-    auto* raw  = this->scripts(*bot).pop(nullptr, opts);
+    auto* raw = this->scripts(*bot).pop();
     if (raw == nullptr)
         co_return std::nullopt;
 
@@ -1046,8 +1044,7 @@ bool brain::stalled(uint32_t bot) const
 
 async::task<brain::outcome> brain::perform(std::shared_ptr<game_bot> bot, const decision& decision)
 {
-    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
-    auto* raw  = this->scripts(*bot).pop(nullptr, opts);
+    auto* raw = this->scripts(*bot).pop();
     if (raw == nullptr)
         co_return outcome{false, "NO_CONTEXT"};
 

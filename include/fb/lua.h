@@ -123,11 +123,6 @@ class context;
 class root;
 class thread;
 
-struct call_options
-{
-    bool auto_resume_parent = true;
-};
-
 class cancelled : public std::runtime_error
 {
 public:
@@ -311,9 +306,7 @@ public:
     using promise_type = std::shared_ptr<async::task_completion_source<bool>>;
 
 private:
-    context*                              _parent = nullptr;
     promise_type                          _promise;
-    call_options                          _options;
     int                                   _running         = 0;
     bool                                  _release_pending = false;
     std::string                           _script_path;
@@ -334,7 +327,7 @@ public:
 
 protected:
     context(fb::async_executor& executor, lua_State* ctx, fb::thread& initial_thread);
-    context(fb::async_executor& executor, lua_State* ctx, context& owner, context* parent = nullptr);
+    context(fb::async_executor& executor, lua_State* ctx, context& owner);
     context(const context&) = delete;
     context(context&&)      = delete;
 
@@ -473,24 +466,20 @@ public:
     bool next(int offset);
 
 public:
-    int                 argc();
-    async::task<bool>   call(int argc, int* retc = nullptr);
-    void                resume(int argc, int* n = nullptr);
-    int                 yield(int retc);
-    void                release();
-    void                renew();
-    void                reject(std::string_view message);
-    void                cancel(std::string_view reason);
-    void                drop(std::string_view message = "lua context dropped");
-    void                parent(context* parent);
-    context*            parent() const;
-    void                options(call_options opts);
-    const call_options& options() const;
-    void                clear_script_path();
-    void                on_error(std::function<void(std::string_view)> handler);
-    void                clear_on_error();
-    void                report_error(std::string_view message);
-    std::string_view    script_path() const;
+    int               argc();
+    async::task<bool> call(int argc, int* retc = nullptr);
+    void              resume(int argc, int* n = nullptr);
+    int               yield(int retc);
+    void              release();
+    void              renew();
+    void              reject(std::string_view message);
+    void              cancel(std::string_view reason);
+    void              drop(std::string_view message = "lua context dropped");
+    void              clear_script_path();
+    void              on_error(std::function<void(std::string_view)> handler);
+    void              clear_on_error();
+    void              report_error(std::string_view message);
+    std::string_view  script_path() const;
 
 public:
     class co_builder
@@ -589,7 +578,7 @@ public:
     bool        has_module(std::string_view path);
     bool        store_module(lua_State* L, std::string_view path);
     bool        push_module(lua_State* L, std::string_view path);
-    context*    pop(context* parent, call_options options = {});
+    context*    pop();
     context*    get(lua_State* ctx);
     void        release(context& ctx);
     void        revoke(context& ctx);
@@ -671,12 +660,12 @@ public:
     context_pool& operator= (const context_pool&) = delete;
 
 private:
-    context* new_context(context* parent = nullptr, call_options options = {});
+    context* new_context();
 
 public:
     // clang-format off
-    context::guard      open(context* parent = nullptr, call_options options = {});
-    context::guard      open(std::string_view path, std::string_view func, context* parent = nullptr, call_options options = {});
+    context::guard      open();
+    context::guard      open(std::string_view path, std::string_view func);
     async::task<void>   dump(std::string_view path);
     async::task<void>   validate_scripts(const std::vector<std::string>& relative_paths);
     async::task<void>   reload_scripts(const std::vector<std::string>& relative_paths);
@@ -692,7 +681,7 @@ public:
     const int ref;
 
 public:
-    thread(fb::async_executor& executor, context& owner, context* parent, call_options options = {});
+    thread(fb::async_executor& executor, context& owner);
     thread(const thread& other) = delete;
     thread(thread&& ctx);
     ~thread();

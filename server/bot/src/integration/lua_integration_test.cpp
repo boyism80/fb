@@ -723,8 +723,7 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
     // to the pool (or is reused) after the scenario returns. Invoke on a fresh
     // context so MATCH_ENDED during a later yield cannot pcall a dead/yielded
     // thread.
-    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
-    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    auto* raw = this->_lua_root->pop();
     if (raw == nullptr)
         co_return;
 
@@ -798,8 +797,7 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
 
 async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 {
-    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
-    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    auto* raw = this->_lua_root->pop();
     if (raw == nullptr)
         co_return false;
 
@@ -834,8 +832,7 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 
 async::task<void> lua_integration_test::run_lua_void(int func_ref, std::optional<uint32_t> extra_arg)
 {
-    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
-    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    auto* raw = this->_lua_root->pop();
     if (raw == nullptr)
         co_return;
 

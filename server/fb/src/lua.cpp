@@ -68,11 +68,10 @@ context::context(fb::async_executor& executor, lua_State* ctx, fb::thread& initi
     _initial_thread(initial_thread)
 { }
 
-context::context(fb::async_executor& executor, lua_State* ctx, context& owner, context* parent) :
+context::context(fb::async_executor& executor, lua_State* ctx, context& owner) :
     _ctx(ctx),
     executor(executor),
     _initial_thread(owner._initial_thread),
-    _parent(parent),
     owner(&owner)
 { }
 
@@ -541,16 +540,6 @@ bool context::next(int offset)
     return lua_next(*this, offset) != 0;
 }
 
-void fb::lua::context::parent(context* parent)
-{
-    this->_parent = parent;
-}
-
-context* fb::lua::context::parent() const
-{
-    return this->_parent;
-}
-
 context::operator lua_State* () const
 {
     return this->_ctx;
@@ -567,16 +556,6 @@ async::task<bool> context::call(int argc, int* retc)
     this->_promise = promise;
     this->resume(argc, retc);
     return promise->task();
-}
-
-void fb::lua::context::options(call_options opts)
-{
-    this->_options = opts;
-}
-
-const call_options& fb::lua::context::options() const
-{
-    return this->_options;
 }
 
 void fb::lua::context::clear_script_path()
@@ -691,80 +670,17 @@ void fb::lua::context::resume(int argc, int* n)
         lua_pop(*this, 1);
         fb::logger::fatal(message);
 
-        auto promise            = promise_type{this->_promise};
-        this->_promise          = nullptr;
-        auto parent             = this->_parent;
-        auto auto_resume_parent = this->_options.auto_resume_parent;
-
-        if (parent != nullptr && lua_status(*parent) == LUA_YIELD && auto_resume_parent)
-        {
-            auto context = fb::execution_context::token();
-            async::awaitable_then(parent->_initial_thread.switching(),
-                                  [parent, context](async::awaitable_result<void> result) {
-                                      try
-                                      {
-                                          result();
-                                          fb::execution_context::pending(context);
-                                          parent->resume(0);
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          fb::logger::fatal("lua co_builder async completion error: {}", e.what());
-                                      }
-                                      catch (...)
-                                      {
-                                          fb::logger::fatal("lua co_builder async completion error: non-std exception");
-                                      }
-                                  });
-        }
+        auto promise   = promise_type{this->_promise};
+        this->_promise = nullptr;
         promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
         this->finish_resume();
     }
     else
     {
-        auto promise            = promise_type{this->_promise};
-        this->_promise          = nullptr;
-        auto parent             = this->_parent;
-        auto auto_resume_parent = this->_options.auto_resume_parent;
-        auto retc               = this->argc();
+        auto promise   = promise_type{this->_promise};
+        this->_promise = nullptr;
         if (n != nullptr)
-            *n = retc;
-
-        if (parent != nullptr)
-        {
-            auto  self  = static_cast<lua_State*>(*this);
-            auto  token = fb::execution_context::token();
-            auto* ctx   = this;
-            async::awaitable_then(
-                parent->_initial_thread.switching(),
-                [self, parent, retc, token, auto_resume_parent, ctx, promise](async::awaitable_result<void> result) {
-                    try
-                    {
-                        result();
-                        fb::execution_context::pending(token);
-
-                        if (auto_resume_parent)
-                            lua_xmove(self, *parent, retc);
-
-                        if (promise != nullptr)
-                            promise->set_value(true);
-
-                        if (auto_resume_parent && lua_status(*parent) == LUA_YIELD)
-                            parent->resume(retc);
-                    }
-                    catch (std::exception& e)
-                    {
-                        fb::logger::fatal("lua co_builder async completion error: {}", e.what());
-                    }
-                    catch (...)
-                    {
-                        fb::logger::fatal("lua co_builder async completion error: non-std exception");
-                    }
-
-                    ctx->finish_resume();
-                });
-            return;
-        }
+            *n = this->argc();
 
         if (promise != nullptr)
             promise->set_value(true);
@@ -1267,7 +1183,7 @@ void root::unload_package(std::string_view module_name)
     lua_pop(*this, 2);
 }
 
-context* root::pop(context* parent, call_options options)
+context* root::pop()
 {
     if (this->idle.empty() == false)
     {
@@ -1275,13 +1191,11 @@ context* root::pop(context* parent, call_options options)
         auto  key = (lua_State*)*ctx;
         this->busy.insert({key, std::move(ctx)});
         this->idle.erase(key);
-        this->busy[key]->parent(parent);
-        this->busy[key]->options(options);
         return this->busy[key].get();
     }
     else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
-        auto ptr = std::make_unique<fb::lua::thread>(this->executor, *this, parent, options);
+        auto ptr = std::make_unique<fb::lua::thread>(this->executor, *this);
         auto key = (lua_State*)*ptr.get();
 
         if (this->idle.contains(key) || this->busy.contains(key))
@@ -1344,8 +1258,6 @@ void root::release(context& ctx)
 
         lua_settop(ctx, 0);
         ctx.renew();
-        ctx.parent(nullptr);
-        ctx.options(call_options{});
         ctx.clear_on_error();
         ctx.clear_script_path();
 
@@ -1465,7 +1377,7 @@ fb::lua::context_pool::~context_pool()
     // std::unique_ptr handles cleanup automatically
 }
 
-context* fb::lua::context_pool::new_context(context* parent, call_options options)
+context* fb::lua::context_pool::new_context()
 {
     auto id = std::this_thread::get_id();
     if (this->_roots.contains(id) == false)
@@ -1474,18 +1386,17 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
         return nullptr;
     }
 
-    return this->_roots[id]->pop(parent, options);
+    return this->_roots[id]->pop();
 }
 
-context::guard fb::lua::context_pool::open(context* parent, call_options options)
+context::guard fb::lua::context_pool::open()
 {
-    return context::guard(this->new_context(parent, options));
+    return context::guard(this->new_context());
 }
 
-context::guard
-fb::lua::context_pool::open(std::string_view path, std::string_view func, context* parent, call_options options)
+context::guard fb::lua::context_pool::open(std::string_view path, std::string_view func)
 {
-    auto* ctx = this->new_context(parent, options);
+    auto* ctx = this->new_context();
     if (ctx == nullptr)
         return context::guard{};
 
@@ -1771,16 +1682,15 @@ context_pool::base_type::iterator fb::lua::context_pool::end()
     return this->_roots.end();
 }
 
-thread::thread(fb::async_executor& executor, context& owner, context* parent, call_options options) :
-    context(executor, ::lua_newthread(owner), owner, parent),
+thread::thread(fb::async_executor& executor, context& owner) :
+    context(executor, ::lua_newthread(owner), owner),
     ref(luaL_ref(owner, LUA_REGISTRYINDEX))
 {
-    this->options(options);
     lua_checkstack(*this, 10000);
 }
 
 thread::thread(thread&& ctx) :
-    context(ctx.executor, ctx._ctx, *ctx.owner, ctx.parent()),
+    context(ctx.executor, ctx._ctx, *ctx.owner),
     ref(ctx.ref)
 {
     lua_checkstack(*this, 10000);
