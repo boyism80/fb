@@ -439,7 +439,7 @@ int builtin::object::builtin_buff(lua_State* L)
     const fb::model::spell* model = nullptr;
     if (lua->is_userdata<fb::model::spell>(2))
     {
-        model = lua->touserdata<fb::model::spell>(2);
+        model = lua->touserdata<fb::model::spell>(2).get();
     }
     else if (lua->is_string(2))
     {

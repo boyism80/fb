@@ -114,11 +114,11 @@ int builtin::model::item::builtin_durability(lua_State* L)
     auto durability = uint32_t(0);
     if (model->attr(ITEM_ATTRIBUTE::PACK))
     {
-        durability = static_cast<fb::model::pack*>(model)->durability;
+        durability = static_cast<fb::model::pack*>(model.get())->durability;
     }
     else if (model->attr(ITEM_ATTRIBUTE::EQUIPMENT))
     {
-        durability = static_cast<fb::model::equipment*>(model)->durability;
+        durability = static_cast<fb::model::equipment*>(model.get())->durability;
     }
     else
     {
@@ -138,7 +138,7 @@ int builtin::model::item::builtin_repair_price(lua_State* L)
     auto model = lua->touserdata<fb::model::item>(1);
     if (model->attr(ITEM_ATTRIBUTE::EQUIPMENT))
     {
-        auto repair_price = static_cast<fb::model::equipment*>(model)->repair;
+        auto repair_price = static_cast<fb::model::equipment*>(model.get())->repair;
         if (repair_price.has_value())
             lua->pushnumber(repair_price.value());
         else
@@ -161,7 +161,7 @@ int builtin::model::item::builtin_rename_price(lua_State* L)
     auto model = lua->touserdata<fb::model::item>(1);
     if (model->attr(ITEM_ATTRIBUTE::WEAPON))
     {
-        auto rename_price = static_cast<fb::model::weapon*>(model)->rename;
+        auto rename_price = static_cast<fb::model::weapon*>(model.get())->rename;
         if (rename_price.has_value())
             lua->pushinteger(rename_price.value());
         else

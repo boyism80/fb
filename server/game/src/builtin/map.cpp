@@ -994,7 +994,7 @@ int builtin::map::builtin_spawn_mob(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::mob>(2))
     {
-        model = lua->touserdata<fb::model::mob>(2);
+        model = lua->touserdata<fb::model::mob>(2).get();
     }
 
     if (model == nullptr)

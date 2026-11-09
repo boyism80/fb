@@ -708,7 +708,7 @@ int builtin::character::builtin_item(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -735,7 +735,7 @@ int builtin::character::builtin_item(lua_State* L)
                 }
                 else if (lua->is_userdata<fb::model::item>(-1))
                 {
-                    item = lua->touserdata<fb::model::item>(-1);
+                    item = lua->touserdata<fb::model::item>(-1).get();
                 }
                 else
                 {
@@ -5364,7 +5364,7 @@ int builtin::character::builtin_delay(lua_State* L)
     auto model = (const fb::model::spell*)nullptr;
     if (lua->is_userdata<fb::model::spell>(2))
     {
-        model = lua->touserdata<fb::model::spell>(2);
+        model = lua->touserdata<fb::model::spell>(2).get();
     }
     else if (lua->is_userdata<fb::game::spell>(2))
     {
@@ -5789,7 +5789,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     if (lua->is_userdata<fb::game::object>(2))
         obj = lua->touserdata<fb::game::object>(2);
     else if (lua->is_userdata<fb::model::object>(2))
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     else if (lua->is_nil(2) == false)
         return 0;
 
@@ -5865,7 +5865,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else if (lua->is_table(2))
     {
@@ -5998,7 +5998,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -6134,7 +6134,7 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -6211,7 +6211,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -6286,7 +6286,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -6384,7 +6384,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -6415,7 +6415,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
         if (lua_rawget(L, -2) != LUA_TNIL)
         {
             if (lua->is_userdata<fb::model::item>(-1))
-                item_model = lua->touserdata<fb::model::item>(-1);
+                item_model = lua->touserdata<fb::model::item>(-1).get();
             else if (lua->is_string(-1))
                 item_model = table::item->name2item(lua->tostring(-1));
         }
@@ -6535,7 +6535,7 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -6606,7 +6606,7 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
@@ -6670,7 +6670,7 @@ int fb::game::builtin::character::builtin_dialog_0x30_10(lua_State* L)
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
-        model = lua->touserdata<fb::model::object>(2);
+        model = lua->touserdata<fb::model::object>(2).get();
     }
     else
     {
