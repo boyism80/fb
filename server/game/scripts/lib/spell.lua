@@ -169,6 +169,19 @@ function M.divine_beast_area_spell(divine_beast, index)
     end
 end
 
+function M.teleportable(caster, mover, map)
+    if map == nil then
+        return false
+    end
+
+    local here = mover:map()
+    if caster:role() < ROLE.ADMIN and map:instance() and (here == nil or here:id() ~= map:id()) then
+        return false
+    end
+
+    return castle.occupyable(mover, map)
+end
+
 function M.teleport_lookup(me, map, x, y, direction)
     math.randomseed(seed())
     local rand_x = nil
