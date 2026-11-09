@@ -1,7 +1,5 @@
 local M = {}
 
-local MAX_ITEM_SLOTS = 52
-
 local function parse_positive_number(raw)
     if raw == nil or raw == '' then
         return nil
@@ -88,37 +86,23 @@ function M.handle(me, npc)
         end
 
         local total = (attachments['item'][item_name] or 0) + count
-        local limit = MAX_ITEM_SLOTS
-        if item_model:attr(ITEM_ATTRIBUTE.BUNDLE) then
-            limit = item_model:capacity()
-        end
-        if total > limit then
-            me:dialog(npc, string.format('%s 최대 %d개까지 보낼 수 있습니다.', name_with(item_name, '은', '는'), limit),
-                { prev = false, next = true })
-            goto REWARD_MENU
-        end
-
-        local slots = 0
+        local items = {}
         for name, value in pairs(attachments['item']) do
-            if name ~= item_name then
-                if name2item(name):attr(ITEM_ATTRIBUTE.BUNDLE) then
-                    slots = slots + 1
-                else
-                    slots = slots + value
-                end
-            end
+            items[name] = value
         end
-        if item_model:attr(ITEM_ATTRIBUTE.BUNDLE) then
-            slots = slots + 1
-        else
-            slots = slots + total
-        end
-        if slots > MAX_ITEM_SLOTS then
-            me:dialog(npc, string.format('한 상자에는 아이템을 %d칸까지만 넣을 수 있습니다.', MAX_ITEM_SLOTS), { prev = false, next = true })
-            goto REWARD_MENU
-        end
+        items[item_name] = total
 
-        attachments['item'][item_name] = total
+        local fits, reason, limit = me:check_storage_box({ item = items })
+        if fits then
+            attachments['item'][item_name] = total
+        elseif reason == 'slots' then
+            me:dialog(npc, string.format('한 상자에는 아이템을 %d칸까지만 넣을 수 있습니다.', limit), { prev = false, next = true })
+        elseif reason == 'capacity' then
+            me:dialog(npc, string.format('%s 최대 %d개까지 보낼 수 있습니다.', name_with(item_name, '은', '는'), item_model:capacity()),
+                { prev = false, next = true })
+        else
+            me:dialog(npc, '잘못된 수량입니다.', { prev = false, next = true })
+        end
         goto REWARD_MENU
     elseif reward_sel == 2 then
         local count_raw = me:input(npc, '경험치를 입력하세요.')
@@ -168,18 +152,14 @@ function M.handle(me, npc)
     local reason = nil
     ::SEND::
     local ref = nil
-    if is_global then
-        ok, ref, reason = me:send_system_storage_box(title, message, payload, nil, external_ref)
-    else
-        ok, ref, reason = me:send_storage_box(user_name, title, message, payload, nil, external_ref)
-    end
+    ok, ref, reason = me:send_storage_box(user_name, title, message, payload, nil, external_ref)
     external_ref = ref or external_ref
 
     if ok then
         me:dialog(npc, '지급이 완료되었습니다.', { prev = false, next = true })
     elseif reason == 'not_found' then
         me:dialog(npc, string.format('%s 캐릭터가 없어 지급하지 못했습니다.', user_name or ''), { prev = false, next = true })
-    elseif reason == 'invalid' then
+    elseif reason ~= nil then
         me:dialog(npc, '보상 구성이 잘못되어 지급하지 못했습니다.', { prev = false, next = true })
     else
         local retry_sel, retry_btn = me:pursuit(npc, '지급 결과를 확인하지 못했습니다. 같은 지급을 다시 보낼까요?', { '예', '아니오' })

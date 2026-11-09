@@ -123,7 +123,7 @@ struct character
     static int builtin_transfer_clan_money(lua_State* L);
     static int builtin_send_system_mail(lua_State* L);
     static int builtin_send_storage_box(lua_State* L);
-    static int builtin_send_system_storage_box(lua_State* L);
+    static int builtin_check_storage_box(lua_State* L);
     static int builtin_storage_entries(lua_State* L);
     static int builtin_receive_storage_reward(lua_State* L);
     static int builtin_marketplace_list(lua_State* L);
@@ -155,19 +155,16 @@ struct character
     static int builtin_holyday_screen(lua_State* L);
 
 private:
-    using repair_entries = std::vector<std::pair<std::weak_ptr<fb::game::item>, double>>;
+    using repair_entries    = std::vector<std::pair<std::weak_ptr<fb::game::item>, double>>;
+    using storage_rejection = std::pair<std::string, uint32_t>;
 
-    static repair_entries          read_repair_entries(lua_State* L, int index);
-    static std::optional<uint64_t> repair_cost(fb::game::character&                               ch,
-                                               const repair_entries&                              entries,
-                                               std::vector<std::shared_ptr<fb::game::equipment>>& targets);
-    static int                     exchange(lua_State* L,
-                                            int        cost_index,
-                                            int        reward_index,
-                                            int        delete_type_index,
-                                            int        reserve_index,
-                                            bool       boolean_result);
-    static int                     transfer_money(lua_State* L, bool deposit);
+    // clang-format off
+    static std::optional<storage_rejection> read_storage_box(lua_State* L, int index, std::vector<fb::model::dsl>& attachments);
+    static repair_entries                   read_repair_entries(lua_State* L, int index);
+    static std::optional<uint64_t>          repair_cost(fb::game::character& ch, const repair_entries& entries, std::vector<std::shared_ptr<fb::game::equipment>>& targets);
+    static int                              exchange(lua_State* L, int cost_index, int reward_index, int delete_type_index, int reserve_index, bool boolean_result);
+    static int                              transfer_money(lua_State* L, bool deposit);
+    // clang-format on
 };
 
 } // namespace fb::game::builtin
