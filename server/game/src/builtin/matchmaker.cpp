@@ -248,7 +248,7 @@ int builtin::matchmaker::builtin_dequeue(lua_State* L)
 
         try
         {
-            co_await self->matchmaker.dequeue(fb::game::matchmaker::initiator::USER);
+            co_await self->matchmaker.dequeue();
         }
         catch (const std::exception& e)
         {
@@ -338,7 +338,7 @@ int builtin::matchmaker::builtin_decline(lua_State* L)
 
         try
         {
-            co_await self->matchmaker.decline(pending.value(), fb::game::matchmaker::initiator::USER);
+            co_await self->matchmaker.decline(pending.value());
         }
         catch (const std::exception& e)
         {

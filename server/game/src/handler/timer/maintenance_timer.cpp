@@ -90,8 +90,7 @@ async::task<void> maintenance_timer::handle()
             }
             else if (home && ch->matchmaker.ticket_id().has_value())
             {
-                co_await ch->matchmaker.dequeue(matchmaker::initiator::SERVER);
-                ch->message("교차 서버 점검으로 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
+                co_await ch->matchmaker.drop_ticket("교차 서버 점검으로 매치메이킹 대기가 취소되었습니다.");
             }
         });
     }

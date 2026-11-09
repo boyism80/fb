@@ -42,13 +42,6 @@ public:
 
     static constexpr auto RECONCILE_AFTER = std::chrono::seconds(60);
 
-    // USER failures are thrown back to the script; SERVER cleanups only log them and skip script callbacks.
-    enum class initiator : uint8_t
-    {
-        USER,
-        SERVER,
-    };
-
     character& owner;
 
 private:
@@ -69,10 +62,14 @@ private:
     std::optional<uint32_t>                         _return_map;
     std::optional<fb::model::point16_t>             _return_position;
 
-    void touch();
-    void clear_pending_match_id();
-    bool clear_pending_match_id_if(uint64_t match_id);
-    bool mark_ready(uint64_t match_id);
+    void                                    touch();
+    void                                    set_pending_match_id(uint64_t match_id);
+    std::optional<ticket_state>             take_ticket();
+    async::task<std::optional<std::string>> request_dequeue(ticket_state ticket);
+    async::task<void>                       notify_dequeued(ticket_state ticket, std::string reason);
+    void                                    clear_pending_match_id();
+    bool                                    clear_pending_match_id_if(uint64_t match_id);
+    bool                                    mark_ready(uint64_t match_id);
 
 public:
     explicit matchmaker(character& owner);
@@ -82,7 +79,7 @@ public:
     std::optional<matchmaking_skill>         get(uint32_t match_type) const;
     void                                     upsert(uint32_t match_type, double mu, double sigma);
     const std::optional<uint64_t>&           pending_match_id() const;
-    void                                     set_pending_match_id(uint64_t match_id);
+    async::task<bool>                        on_proposed(uint64_t match_id, uint64_t ticket_id);
     bool                                     on_ready(uint64_t match_id);
     bool                                     on_dissolved(uint64_t match_id, bool ticket_closed);
     bool                                     on_ticket_removed(uint64_t ticket_id);
@@ -93,12 +90,13 @@ public:
     void                                     set_ticket(uint32_t match_type, uint64_t ticket_id);
     void                                     clear_ticket();
     async::task<void>                        enqueue(uint32_t match_type);
-    async::task<void>                        dequeue(initiator by);
+    async::task<void>                        dequeue();
+    async::task<void>                        drop_ticket(std::string reason = {});
     async::task<void>                        discard_leftover_ticket();
     bool                                     reconcile_due(std::chrono::steady_clock::time_point now) const;
     async::task<void>                        reconcile();
     async::task<void>                        confirm(uint64_t match_id);
-    async::task<void>                        decline(uint64_t match_id, initiator by);
+    async::task<void>                        decline(uint64_t match_id);
     std::shared_ptr<fb::game::match>         session() const;
     void                                     session(std::shared_ptr<fb::game::match> value);
     void                                     save_return_point();

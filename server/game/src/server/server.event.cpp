@@ -135,7 +135,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     auto ptr = weak.lock();
     if (ptr != nullptr)
     {
-        co_await ptr->matchmaker.dequeue(matchmaker::initiator::SERVER);
+        co_await ptr->matchmaker.drop_ticket();
 
         // Log logout event
         auto log_data              = Json::Value();

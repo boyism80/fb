@@ -50,25 +50,8 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                     if (ch == nullptr)
                         co_return;
 
-                    if (ch->matchmaker.queued() == false)
-                    {
-                        co_await ch->matchmaker.decline(match_id, fb::game::matchmaker::initiator::SERVER);
+                    if (co_await ch->matchmaker.on_proposed(match_id, ticket_id) == false)
                         co_return;
-                    }
-
-                    auto current = ch->matchmaker.ticket_id();
-                    if (current.has_value() && current.value() != ticket_id)
-                    {
-                        fb::logger::warn(
-                            "matchmaking_proposed ignored match {} for ticket {} of character {} holding ticket {}",
-                            match_id,
-                            ticket_id,
-                            ch->id,
-                            current.value());
-                        co_return;
-                    }
-
-                    ch->matchmaker.set_pending_match_id(match_id);
 
                     auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_proposed");
                     if (lua)

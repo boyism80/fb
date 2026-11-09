@@ -355,34 +355,23 @@ async::task<void> matchmaker::reconcile()
     if (ticket.has_value() == false)
         co_return;
 
-    auto lua = server.lua.open("scripts/interaction.lua", "on_matchmaking_dequeue");
-    if (lua)
-    {
-        lua->pushobject(ptr);
-        lua->pushinteger(ticket->match_type);
-        lua->pushinteger(static_cast<lua_Integer>(ticket->ticket_id));
-        std::ignore = co_await fb::lua::call(std::move(lua), weak, 3);
-    }
+    co_await this->notify_dequeued(ticket.value(), {});
 }
 
-async::task<void> matchmaker::dequeue(initiator by)
+std::optional<matchmaker::ticket_state> matchmaker::take_ticket()
 {
-    this->owner.assert_thread();
+    // An enqueue still waiting for its response sees the cleared flag and cancels the ticket itself.
+    auto ticket = this->_ticket;
+    this->clear_ticket();
+    return ticket;
+}
 
-    if (this->_ticket.has_value() == false)
-    {
-        // An enqueue still waiting for its response sees the cleared flag and cancels the ticket itself.
-        this->clear_ticket();
-        co_return;
-    }
-
-    auto ticket       = this->_ticket.value();
+async::task<std::optional<std::string>> matchmaker::request_dequeue(ticket_state ticket)
+{
     auto world        = this->owner.world();
     auto character_id = this->owner.id;
     auto weak         = this->owner.weak_from_this_as<character>();
-    this->clear_ticket();
-
-    auto error = std::optional<std::string>{};
+    auto error        = std::optional<std::string>{};
     try
     {
         auto&& resp = co_await this->owner.server.http.post(
@@ -407,23 +396,55 @@ async::task<void> matchmaker::dequeue(initiator by)
         error = e.what();
     }
 
+    co_return error;
+}
+
+async::task<void> matchmaker::dequeue()
+{
+    this->owner.assert_thread();
+
+    auto ticket = this->take_ticket();
+    if (ticket.has_value() == false)
+        co_return;
+
+    auto weak  = this->owner.weak_from_this_as<character>();
+    auto error = co_await this->request_dequeue(ticket.value());
     if (weak.lock() == nullptr)
         co_return;
 
     if (error.has_value())
     {
-        if (by == initiator::USER)
-        {
-            this->set_ticket(ticket.match_type, ticket.ticket_id);
-            throw std::runtime_error(error.value());
-        }
-        else
-        {
-            fb::logger::warn("matchmaking dequeue failed for character {}: {}", character_id, error.value());
-        }
+        this->set_ticket(ticket->match_type, ticket->ticket_id);
+        throw std::runtime_error(error.value());
     }
 
-    auto ptr = weak.lock();
+    co_await this->notify_dequeued(ticket.value(), {});
+}
+
+async::task<void> matchmaker::drop_ticket(std::string reason)
+{
+    this->owner.assert_thread();
+
+    auto ticket = this->take_ticket();
+    if (ticket.has_value() == false)
+        co_return;
+
+    auto character_id = this->owner.id;
+    auto weak         = this->owner.weak_from_this_as<character>();
+    auto error        = co_await this->request_dequeue(ticket.value());
+    if (weak.lock() == nullptr)
+        co_return;
+
+    if (error.has_value())
+        fb::logger::warn("matchmaking dequeue failed for character {}: {}", character_id, error.value());
+
+    co_await this->notify_dequeued(ticket.value(), std::move(reason));
+}
+
+async::task<void> matchmaker::notify_dequeued(ticket_state ticket, std::string reason)
+{
+    auto weak = this->owner.weak_from_this_as<character>();
+    auto ptr  = weak.lock();
     if (ptr == nullptr)
         co_return;
 
@@ -433,7 +454,11 @@ async::task<void> matchmaker::dequeue(initiator by)
         lua->pushobject(ptr);
         lua->pushinteger(ticket.match_type);
         lua->pushinteger(static_cast<lua_Integer>(ticket.ticket_id));
-        std::ignore = co_await fb::lua::call(std::move(lua), weak, 3);
+        if (reason.empty())
+            lua->pushnil();
+        else
+            lua->pushstring(reason);
+        std::ignore = co_await fb::lua::call(std::move(lua), weak, 4);
     }
 }
 
@@ -483,7 +508,50 @@ async::task<void> matchmaker::confirm(uint64_t match_id)
     }
 }
 
-async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
+async::task<bool> matchmaker::on_proposed(uint64_t match_id, uint64_t ticket_id)
+{
+    this->owner.assert_thread();
+
+    if (this->queued() == false)
+    {
+        auto world        = this->owner.world();
+        auto character_id = this->owner.id;
+        auto weak         = this->owner.weak_from_this_as<character>();
+        this->clear_pending_match_id_if(match_id);
+        try
+        {
+            auto&& resp = co_await this->owner.server.http.post(weak,
+                                                                "matchmaking",
+                                                                "/matchmaking/decline",
+                                                                mp_reqs::Decline{match_id, world, character_id});
+            if (resp.error != 0)
+                fb::logger::warn("matchmaking decline failed for character {}: {}",
+                                 character_id,
+                                 enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, e.what());
+        }
+        co_return false;
+    }
+
+    auto current = this->ticket_id();
+    if (current.has_value() && current.value() != ticket_id)
+    {
+        fb::logger::warn("matchmaking_proposed ignored match {} for ticket {} of character {} holding ticket {}",
+                         match_id,
+                         ticket_id,
+                         this->owner.id,
+                         current.value());
+        co_return false;
+    }
+
+    this->set_pending_match_id(match_id);
+    co_return true;
+}
+
+async::task<void> matchmaker::decline(uint64_t match_id)
 {
     this->owner.assert_thread();
 
@@ -517,23 +585,13 @@ async::task<void> matchmaker::decline(uint64_t match_id, initiator by)
 
     if (error.has_value())
     {
-        if (by == initiator::USER)
-        {
-            // The user may retry, so the ticket comes back unless another one arrived meanwhile.
-            if (ticket.has_value() && this->_ticket.has_value() == false)
-                this->set_ticket(ticket->match_type, ticket->ticket_id);
-            if (pending && this->_pending_match_id.has_value() == false)
-                this->set_pending_match_id(match_id);
-            throw std::runtime_error(error.value());
-        }
-        else
-        {
-            fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, error.value());
-        }
+        // The user may retry, so the ticket comes back unless another one arrived meanwhile.
+        if (ticket.has_value() && this->_ticket.has_value() == false)
+            this->set_ticket(ticket->match_type, ticket->ticket_id);
+        if (pending && this->_pending_match_id.has_value() == false)
+            this->set_pending_match_id(match_id);
+        throw std::runtime_error(error.value());
     }
-
-    if (by == initiator::SERVER)
-        co_return;
 
     auto ptr = weak.lock();
     if (ptr == nullptr)

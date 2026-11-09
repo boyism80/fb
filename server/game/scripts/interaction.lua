@@ -744,9 +744,9 @@ return {
         me:message(string.format('매치메이킹 대기를 시작했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
     end,
 
-    on_matchmaking_dequeue = function(me, match_type, ticket_id)
+    on_matchmaking_dequeue = function(me, match_type, ticket_id, reason)
         matchmaking_clear_timer(me)
-        me:message(string.format('매치메이킹 대기를 취소했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+        me:message(reason or string.format('매치메이킹 대기를 취소했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
     end,
 
     on_matchmaking_decline = function(me, match_id, match_type)

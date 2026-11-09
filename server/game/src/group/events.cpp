@@ -363,7 +363,7 @@ async::task<void> group::container::reset_member(character& ch, std::string mess
 
     ch.group.reset();
     this->clear_portraits(ch);
-    co_await ch.matchmaker.dequeue(matchmaker::initiator::SERVER);
+    co_await ch.matchmaker.drop_ticket();
     ch.message(message, MESSAGE_TYPE::STATE);
 
     auto map = ch.map();
@@ -406,8 +406,7 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
     // A member on another host was not checked before joining, so its solo ticket ends here.
     if (ch.matchmaker.queued())
     {
-        co_await ch.matchmaker.dequeue(matchmaker::initiator::SERVER);
-        ch.message("그룹에 들어가 매치메이킹 대기가 취소되었습니다.", MESSAGE_TYPE::STATE);
+        co_await ch.matchmaker.drop_ticket("그룹에 들어가 매치메이킹 대기가 취소되었습니다.");
     }
     co_return true;
 }
