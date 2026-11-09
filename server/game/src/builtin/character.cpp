@@ -44,6 +44,13 @@ namespace internal_reqs = fb::protocol::internal::request;
 namespace internal_resp = fb::protocol::internal::response;
 using table             = fb::model::table;
 
+namespace {
+
+constexpr size_t WEAPON_ALIAS_MIN = 4;
+constexpr size_t WEAPON_ALIAS_MAX = 32;
+
+} // namespace
+
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"__eq",                         builtin::object::builtin_eq},
@@ -1367,32 +1374,57 @@ int builtin::character::builtin_rename_weapon(lua_State* L)
     // Checking the slot, paying and renaming in one yield leaves no gap for a give or drop to move the weapon.
     auto name     = lua->tostring(3);
     auto target   = item->weak_from_this_as<fb::game::item>();
-    auto result   = std::make_shared<std::optional<bool>>();
+    auto owned    = std::make_shared<bool>(false);
+    auto reason   = std::make_shared<std::optional<std::string>>();
     auto builder  = lua->new_co_builder();
     builder.weak  = ch->weak_from_this_as<fb::game::character>();
     builder.yield = [=]() -> async::task<void> {
         auto weapon = target.lock();
-        if (weapon == nullptr || ch->items.index(weapon) == 0xFF)
+        *owned      = weapon != nullptr && ch->items.index(weapon) != 0xFF;
+        if (*owned == false)
             co_return;
 
-        if (ch->money() < price.value())
+        auto cp949 = fb::CP949(name);
+        if (cp949.length() < WEAPON_ALIAS_MIN)
         {
-            *result = false;
+            *reason = "short";
+        }
+        else if (cp949.length() > WEAPON_ALIAS_MAX)
+        {
+            *reason = "long";
+        }
+        else if (fb::assert_korean(cp949) == false || fb::model::table::blocked_word->contains_substring(name) ||
+                 table::item->name2item(name) != nullptr)
+        {
+            *reason = "name";
+        }
+        else if (ch->money() < price.value())
+        {
+            *reason = "money";
         }
         else
         {
             ch->money_reduce(price.value());
             std::static_pointer_cast<fb::game::weapon>(weapon)->custom_name(name);
-            *result = true;
         }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        if (result->has_value() == false)
+        if (*owned == false)
+        {
             co_return 0;
-
-        lua->pushboolean(result->value());
-        co_return 1;
+        }
+        else if (reason->has_value())
+        {
+            lua->pushboolean(false);
+            lua->pushstring(reason->value());
+            co_return 2;
+        }
+        else
+        {
+            lua->pushboolean(true);
+            co_return 1;
+        }
     };
     return builder.run();
 }
