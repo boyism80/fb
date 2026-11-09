@@ -7,8 +7,9 @@ local WEAPON = "목도"
 local NAME   = "나의목도"
 local MONEY  = 1000
 
-local MSG_CHANGED = "장비가 바뀌었습니다"
-local MSG_RENAMED = "변경했습니다"
+local MSG_CHANGED  = "장비가 바뀌었습니다"
+local MSG_RENAMED  = "변경했습니다"
+local MSG_BAD_NAME = "사용할 수 없는 이름입니다"
 
 local function fail(message)
     log("fatal", "Weapon rename test: " .. message)
@@ -22,7 +23,7 @@ local function is_type(name)
 end
 
 -- Returns the inventory slot (1-based) once the cost confirm is shown, or nil.
-local function open_confirm(bot)
+local function open_confirm(bot, name)
     local oid = quest_dialog.use_npc(bot, NPC)
     if bot:request_dialog(protocol.click(oid), is_type("pursuit")) == nil then
         return nil, "the shop menu did not open"
@@ -35,7 +36,7 @@ local function open_confirm(bot)
     if bot:request_dialog(protocol.dialog("SLOT", 0, "", slot, 0, "", "NEXT"), is_type("input")) == nil then
         return nil, "the name input did not open"
     end
-    local confirm = bot:request_dialog(protocol.dialog("INPUT", 0, NAME, 0, 0, "", "NEXT"), function(p)
+    local confirm = bot:request_dialog(protocol.dialog("INPUT", 0, name or NAME, 0, 0, "", "NEXT"), function(p)
         return p.message ~= nil and p.message:find("정말 바꾸시겠습니까", 1, true) ~= nil
     end)
     if confirm == nil then
@@ -117,6 +118,30 @@ test_suite {
             ctx:sleep(300)
             if bot:money() ~= MONEY - 10 then
                 return fail(string.format("rename cost money=%d expected=%d", bot:money(), MONEY - 10))
+            end
+            return true
+        end,
+
+        function(ctx)
+            local bot = ctx:bot(0)
+            bot:clear_inventory()
+            bot:money(MONEY)
+            bot:create_item(WEAPON, 1)
+
+            local slot, err = open_confirm(bot, WEAPON)
+            if slot == nil then
+                return fail(err)
+            end
+
+            local answer = bot:request_dialog_ext(protocol.dialog("MENU", 0, "", 1, 0, "", "NEXT"),
+                quest_dialog.contains(MSG_BAD_NAME))
+            if answer == nil then
+                return fail("an item name was not refused as a weapon alias")
+            end
+
+            ctx:sleep(300)
+            if bot:money() ~= MONEY then
+                return fail(string.format("a refused alias was charged money=%d expected=%d", bot:money(), MONEY))
             end
             return true
         end,
