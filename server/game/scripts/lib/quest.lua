@@ -849,12 +849,43 @@ function M.mountain_treasure_fabric_on_move(me)
     me:dialog(nil, '산신의비단을 발견했다!', { prev = false, next = true })
 end
 
+M.KING_TARGETS = {
+    [M.QUEST_KING_GOGURYEO] = {
+        { max_level = 69, mobs = { '자호', '친자호', '구자호', '사마귀', '거미', '사마귀랑', '거미랑', '서현거미' } },
+        { max_level = 89, mobs = { '해골', '칼든해골', '날쌘해골', '쾌도해골', '자해골', '주해골', '지해골' } },
+        { mobs = { '몽달귀신', '독충', '빗자루귀신' } },
+    },
+    [M.QUEST_KING_BUYEO] = {
+        { max_level = 69, mobs = { '자호', '친자호', '구자호', '가재', '전갈', '전갈장', '가재장', '서현가재' } },
+        { max_level = 89, mobs = { '유령', '초급유령', '중급유령', '고급유령', '자령', '주령', '지령' } },
+        { mobs = { '처녀귀신', '달걀귀신', '불귀신' } },
+    },
+    [M.QUEST_KING_JANGAN] = {
+        { max_level = 70, mobs = { '녹살쾡이', '표황살쾡이', '외눈황천구', '외눈자천구', '흑혈후', '녹혈후', '흑선문후', '흡혈강시', '아기강시', '흑발강시' } },
+        { max_level = 85, mobs = { '선비평민', '선비검객', '흡혈강시', '아기강시', '흑발강시' } },
+        { mobs = { '선비평민', '선비검객', '흉노평민', '흉노무사', '흉노전사' } },
+    },
+}
+
+function M.king_targets(quest_id, level)
+    local brackets = M.KING_TARGETS[quest_id]
+    if brackets == nil then
+        return nil
+    end
+    for _, bracket in ipairs(brackets) do
+        if bracket.max_level == nil or level <= bracket.max_level then
+            return bracket.mobs
+        end
+    end
+    return nil
+end
+
 function M.king_on_mob_kill(me, mobs)
     if me == nil or mobs == nil or #mobs == 0 then
         return
     end
     local killed_name = mobs[1]:model():name()
-    for _, qid in ipairs({ 100, 101, 102 }) do
+    for qid in pairs(M.KING_TARGETS) do
         local quest = me:quest(qid)
         if quest ~= nil and quest:step() == 1 then
             local param = quest:param() or ''
@@ -912,7 +943,7 @@ function M.king_dialog(me, npc, opts)
         end
 
         local level = me:level()
-        local pool = opts.pool_fn(level)
+        local pool = M.king_targets(opts.quest_id, level)
         if pool == nil or #pool == 0 then
             me:dialog(npc, '임무를 부여할 수 없소.', { prev = false, next = true })
             return
