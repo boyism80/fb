@@ -84,49 +84,47 @@ local function gain(snap, query, found, route, worth)
     return (stay - after) * worth.exchange - length * worth.value - risk
 end
 
-local function choose(snap, query)
-    if snap.self.ghost or snap.record.memory.group ~= nil then
-        return nil
-    end
-    local found = goods(snap, query)
-    if #found == 0 then
-        return nil
-    end
-    local worth = value.baseline(snap, query)
-    for _, good in ipairs(found) do
-        local spot = near.approach(snap, query, good.npcs)
-        if spot ~= nil then
-            return { kind = ACTION.SAY, text = string.format("%s 다 판다", good.name), lose = good.name },
-                math.max(0, gain(snap, query, found, nil, worth))
+function M.has_goods(snap, query)
+    return #goods(snap, query) > 0
+end
+
+local function buyer_near(snap, query)
+    for _, good in ipairs(goods(snap, query)) do
+        if near.approach(snap, query, good.npcs) ~= nil then
+            return good
         end
     end
-    local good  = found[1]
-    local route = trip(snap, query, good, worth)
-    if route == nil then
-        return nil
-    end
-    local delta = gain(snap, query, found, route, worth)
-    if delta <= 0 then
-        return nil
-    end
-    if #party.members(snap) > 0 then
-        return nil
-    end
-    local _, move = near.approach(snap, query, good.npcs)
-    return move, delta
+    return nil
 end
 
-function M.wanted(snap, query)
-    return choose(snap, query) ~= nil
+function M.at_buyer(snap, query)
+    return buyer_near(snap, query) ~= nil
 end
 
-function M.propose(snap, query)
-    return (choose(snap, query))
+function M.sell(snap, query)
+    local good = buyer_near(snap, query)
+    return { kind = ACTION.SAY, text = string.format("%s 다 판다", good.name), lose = good.name }
 end
 
-function M.value(snap, query)
-    local _, delta = choose(snap, query)
-    return delta or 0
+function M.sell_worth(snap, query)
+    return math.max(0, gain(snap, query, goods(snap, query), nil, value.baseline(snap, query)))
+end
+
+local function route_to_buyer(snap, query)
+    return trip(snap, query, goods(snap, query)[1], value.baseline(snap, query))
+end
+
+function M.has_route(snap, query)
+    return route_to_buyer(snap, query) ~= nil
+end
+
+function M.walk_worth(snap, query)
+    return gain(snap, query, goods(snap, query), route_to_buyer(snap, query), value.baseline(snap, query))
+end
+
+function M.walk(snap, query)
+    local _, move = near.approach(snap, query, goods(snap, query)[1].npcs)
+    return move
 end
 
 return M

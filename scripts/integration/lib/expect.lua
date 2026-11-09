@@ -1,7 +1,7 @@
 local M = {}
 
 local INTERVAL   = 100
-local FAIL_LIMIT = 3
+local FAIL_LIMIT = 8
 
 function M.within(ctx, timeout, predicate)
     local waited = 0

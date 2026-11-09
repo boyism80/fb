@@ -123,11 +123,21 @@ public:
         std::unordered_map<std::string, fb::lua::value> memory;
     };
 
+    struct leash
+    {
+        std::unordered_set<std::string> names;
+        uint16_t                        x = 0;
+        uint16_t                        y = 0;
+    };
+
     struct destination
     {
         std::unordered_set<uint16_t>   maps;
         std::optional<atlas::position> at;
         uint16_t                       range = 0;
+        uint16_t                       steps = 0;
+        std::chrono::milliseconds      pace  = std::chrono::milliseconds{0};
+        std::optional<struct leash>    leash;
     };
 
     struct jump
@@ -145,6 +155,8 @@ public:
         std::unordered_set<uint32_t> perilous;
         std::unordered_set<uint16_t> shunned;
         std::vector<jump>            jumps;
+        std::optional<size_t>        leap;
+        atlas::CARDINAL              side = atlas::CARDINAL::EAST;
     };
 
     struct listing
@@ -207,6 +219,7 @@ public:
     struct concern
     {
         std::unordered_set<std::string> attacks;
+        std::unordered_set<std::string> crew;
         uint32_t                        hp = 0;
     };
 
@@ -253,6 +266,7 @@ private:
     inline static std::unordered_map<std::string, std::string>                          _ledger;
     inline static std::unordered_map<std::string, std::pair<uint16_t, double>>          _occupancy;
     inline static std::unordered_map<uint16_t, std::unordered_map<std::string, double>> _occupants;
+    inline static std::unordered_map<uint32_t, std::unordered_map<uint16_t, double>>    _foreign_occupants;
     inline static std::unordered_map<std::string, listing>                              _roster;
 
 public:
@@ -320,8 +334,10 @@ public:
     static void                release(const std::string& name);
     static void                occupy(const std::string& name, uint16_t map, double rate);
     static void                vacate(const std::string& name);
-    static double              demand(uint16_t map, const std::string& except);
-    static void                post(const std::string& name, uint16_t map, fb::lua::value profile);
+    static double              demand(uint16_t map, const std::unordered_set<std::string>& except);
+    static std::unordered_map<uint16_t, double> occupied();
+    static void occupied_elsewhere(uint32_t source, std::unordered_map<uint16_t, double> maps);
+    static void post(const std::string& name, uint16_t map, fb::lua::value profile);
     static std::vector<std::pair<std::string, listing>> roster(const std::string& except);
     static std::unordered_map<std::string, uint32_t>    reservations(const std::string& except);
     void measure(uint32_t bot, const std::string& action, std::chrono::milliseconds elapsed);

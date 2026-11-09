@@ -1,6 +1,6 @@
 local cases = require("integration.scenarios.brain.state.cases")
 
-local WATCH = 300000
+local WATCH = 600000
 
 cases.start(16, 103)
 

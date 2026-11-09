@@ -97,21 +97,32 @@ public:
         CARDINAL side  = CARDINAL::EAST;
         uint16_t dest  = 0;
         uint32_t cost  = 0;
+        position landing;
+    };
+
+    struct leap_options
+    {
+        std::optional<uint32_t> walk;
+        std::vector<leap>       options;
     };
 
     using blocked_func = std::function<bool(const position&)>;
 
 private:
-    std::string                                                 _maps_path;
-    fb::sobj_tbl_file                                           _sobj;
-    mutable std::mutex                                          _mutex;
-    mutable std::unordered_map<uint16_t, std::unique_ptr<grid>> _grids;
-    std::unordered_map<uint16_t, std::vector<warp>>             _warps;
-    std::unordered_map<uint16_t, std::unordered_set<uint32_t>>  _warp_tiles;
-    std::unordered_map<uint16_t, std::vector<spawn>>            _spawns;
-    std::unordered_map<std::string, std::vector<uint16_t>>      _habitats;
-    std::unordered_map<uint16_t, size_t>                        _ranks;
-    std::unordered_map<std::string, std::vector<dweller>>       _dwellers;
+    std::string           _maps_path;
+    fb::sobj_tbl_file     _sobj;
+    static constexpr auto ARRIVAL_CACHE_LIMIT = size_t{200000};
+
+    mutable std::mutex                                               _mutex;
+    mutable std::mutex                                               _arrivals_mutex;
+    mutable std::unordered_map<std::string, std::optional<uint32_t>> _arrivals;
+    mutable std::unordered_map<uint16_t, std::unique_ptr<grid>>      _grids;
+    std::unordered_map<uint16_t, std::vector<warp>>                  _warps;
+    std::unordered_map<uint16_t, std::unordered_set<uint32_t>>       _warp_tiles;
+    std::unordered_map<uint16_t, std::vector<spawn>>                 _spawns;
+    std::unordered_map<std::string, std::vector<uint16_t>>           _habitats;
+    std::unordered_map<uint16_t, size_t>                             _ranks;
+    std::unordered_map<std::string, std::vector<dweller>>            _dwellers;
 
 private:
     atlas(const std::string& maps_path, const fb::sobj_tbl_file& sobj);
@@ -145,15 +156,15 @@ public:
                                        const std::unordered_set<uint64_t>& closed,
                                        const std::unordered_set<uint32_t>& perilous,
                                        const std::unordered_set<uint16_t>& shunned) const;
-    std::optional<leap>          shortcut(uint16_t                            from,
-                                          const position&                     at,
-                                          const std::unordered_set<uint16_t>& targets,
-                                          const std::optional<position>&      goal,
-                                          uint8_t                             level,
-                                          const std::unordered_set<uint64_t>& closed,
-                                          const std::unordered_set<uint32_t>& perilous,
-                                          const std::unordered_set<uint16_t>& shunned,
-                                          const std::vector<teleport>&        teleports) const;
+    leap_options                 leaps(uint16_t                            from,
+                                       const position&                     at,
+                                       const std::unordered_set<uint16_t>& targets,
+                                       const std::optional<position>&      goal,
+                                       uint8_t                             level,
+                                       const std::unordered_set<uint64_t>& closed,
+                                       const std::unordered_set<uint32_t>& perilous,
+                                       const std::unordered_set<uint16_t>& shunned,
+                                       const std::vector<teleport>&        teleports) const;
     std::optional<std::vector<DIRECTION>>
     path(uint16_t map, const position& from, const position& to, uint16_t range, const blocked_func& blocked) const;
 };

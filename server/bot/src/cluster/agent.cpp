@@ -228,7 +228,7 @@ void agent::handle(const Json::Value& message)
         }
         this->spawn(message["run_id"].asString(), arguments);
     }
-    else if (type == "scale" || type == "sync")
+    else if (type == "scale" || type == "sync" || type == "occupied")
     {
         this->write(message);
     }

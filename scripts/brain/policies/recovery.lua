@@ -88,7 +88,7 @@ function M.free(snap)
                 table.insert(attackers, { mob = other, count = 1 })
             end
         end
-        local burst = #attackers > 0 and fight.spike(snap, attackers) or 0
+        local burst = #attackers > 0 and fight.imminent(snap, attackers) or 0
         left = math.max(0, left - math.max(0, charge.cost + 2 * burst - snap.self.hp) / heal.hp * heal.mp)
     end
     freed[snap] = left
@@ -134,6 +134,17 @@ function M.least(snap)
         end
     end
     return least
+end
+
+function M.prime(snap)
+    local best = nil
+    for _, choice in ipairs(fight.options(snap, NEUTRAL).offense) do
+        if choice.damage > 0 and choice.mp > 0 and choice.mp <= (snap.self.max_mp or 0) and
+            (best == nil or choice.damage > best.damage) then
+            best = choice
+        end
+    end
+    return best ~= nil and best.mp + M.spare(snap) or 0
 end
 
 function M.spells(snap)
@@ -291,6 +302,17 @@ function M.purchasable(snap, kind)
         local effect = items[name]
         if effect ~= nil and shop.price <= (snap.self.money or 0) then
             best = math.max(best, M.restored(snap, effect, kind))
+        end
+    end
+    return best
+end
+
+function M.carriable(snap, kind)
+    local best = 0
+    for name, shop in pairs(shops) do
+        local effect = items[name]
+        if effect ~= nil and shop.price <= (snap.self.money or 0) then
+            best = math.max(best, M.restored(snap, effect, kind) * (shop.uses or 1) * (shop.capacity or 1))
         end
     end
     return best

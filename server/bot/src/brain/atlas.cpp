@@ -652,15 +652,15 @@ atlas::position atlas::landing(uint16_t map)
     }
 }
 
-std::optional<atlas::leap> atlas::shortcut(uint16_t                            from,
-                                           const position&                     at,
-                                           const std::unordered_set<uint16_t>& targets,
-                                           const std::optional<position>&      goal,
-                                           uint8_t                             level,
-                                           const std::unordered_set<uint64_t>& closed,
-                                           const std::unordered_set<uint32_t>& perilous,
-                                           const std::unordered_set<uint16_t>& shunned,
-                                           const std::vector<teleport>&        teleports) const
+atlas::leap_options atlas::leaps(uint16_t                            from,
+                                 const position&                     at,
+                                 const std::unordered_set<uint16_t>& targets,
+                                 const std::optional<position>&      goal,
+                                 uint8_t                             level,
+                                 const std::unordered_set<uint64_t>& closed,
+                                 const std::unordered_set<uint32_t>& perilous,
+                                 const std::unordered_set<uint16_t>& shunned,
+                                 const std::vector<teleport>&        teleports) const
 {
     auto total = [&](uint16_t map, const position& start) -> std::optional<uint32_t> {
         auto plan = this->route(map, start, targets, level, closed, perilous, shunned);
@@ -674,19 +674,70 @@ std::optional<atlas::leap> atlas::shortcut(uint16_t                            f
         return plan->cost + rest;
     };
 
+    auto found = leap_options{total(from, at), {}};
+    auto least = std::optional<uint32_t>{};
+    for (auto& teleport : teleports)
+    {
+        least = std::min(least.value_or(teleport.cost), teleport.cost);
+    }
+    if (least.has_value() == false || (found.walk.has_value() && found.walk.value() <= least.value()))
+        return found;
+
+    auto scope = std::string{};
+    if (closed.empty())
+    {
+        auto sorted = std::vector<uint32_t>(targets.begin(), targets.end());
+        std::sort(sorted.begin(), sorted.end());
+        scope = std::to_string(level) + "|" +
+                (goal.has_value() ? std::to_string(goal->x) + "," + std::to_string(goal->y) : "") + "|";
+        for (auto target : sorted)
+        {
+            scope += std::to_string(target) + ",";
+        }
+        sorted.assign(perilous.begin(), perilous.end());
+        std::sort(sorted.begin(), sorted.end());
+        scope += "|";
+        for (auto mob : sorted)
+        {
+            scope += std::to_string(mob) + ",";
+        }
+        sorted.assign(shunned.begin(), shunned.end());
+        std::sort(sorted.begin(), sorted.end());
+        scope += "|";
+        for (auto map : sorted)
+        {
+            scope += std::to_string(map) + ",";
+        }
+    }
+    auto arrival = [&](uint16_t map, const position& start) -> std::optional<uint32_t> {
+        if (scope.empty())
+            return total(map, start);
+
+        auto key = scope + "|" + std::to_string(map) + "," + std::to_string(start.x) + "," + std::to_string(start.y);
+        {
+            auto lock  = std::lock_guard(this->_arrivals_mutex);
+            auto known = this->_arrivals.find(key);
+            if (known != this->_arrivals.end())
+                return known->second;
+        }
+        auto cost = total(map, start);
+        auto lock = std::lock_guard(this->_arrivals_mutex);
+        if (this->_arrivals.size() >= ARRIVAL_CACHE_LIMIT)
+            this->_arrivals.clear();
+        this->_arrivals[key] = cost;
+        return cost;
+    };
+
     auto maps  = fb::model::table::map;
     auto model = maps->find(from);
     auto root  = model != nullptr ? maps->find(model->root) : nullptr;
-    auto walk  = total(from, at);
-    auto best  = std::optional<leap>{};
-    auto offer = [&](size_t index, CARDINAL side, uint16_t dest, std::optional<uint32_t> after) {
-        if (after.has_value() == false)
-            return;
+    auto offer =
+        [&](size_t index, CARDINAL side, uint16_t dest, const position& landing, std::optional<uint32_t> after) {
+            if (after.has_value() == false)
+                return;
 
-        auto cost = teleports[index].cost + after.value();
-        if ((walk.has_value() == false || cost < walk.value()) && (best.has_value() == false || cost < best->cost))
-            best = leap{index, side, dest, cost};
-    };
+            found.options.push_back(leap{index, side, dest, teleports[index].cost + after.value(), landing});
+        };
 
     for (auto index = size_t{0}; index < teleports.size(); index++)
     {
@@ -705,7 +756,8 @@ std::optional<atlas::leap> atlas::shortcut(uint16_t                            f
                 auto right  = std::max<uint16_t>(params.right, params.x);
                 auto bottom = std::max<uint16_t>(params.bottom, params.y);
                 auto dest   = static_cast<uint16_t>(params.id);
-                offer(index, side, dest, total(dest, position((params.x + right) / 2, (params.y + bottom) / 2)));
+                auto middle = position((params.x + right) / 2, (params.y + bottom) / 2);
+                offer(index, side, dest, middle, arrival(dest, middle));
             }
         }
         else if (teleport.via == VIA::REVIVE)
@@ -716,14 +768,14 @@ std::optional<atlas::leap> atlas::shortcut(uint16_t                            f
             for (auto& [side, map] : root->revive)
             {
                 auto dest = static_cast<uint16_t>(map);
-                offer(index, side, dest, total(dest, atlas::landing(dest)));
+                offer(index, side, dest, atlas::landing(dest), arrival(dest, atlas::landing(dest)));
             }
         }
         else if (teleport.via == VIA::FIXED)
         {
             for (auto dest : teleport.to)
             {
-                offer(index, CARDINAL::EAST, dest, total(dest, atlas::landing(dest)));
+                offer(index, CARDINAL::EAST, dest, atlas::landing(dest), arrival(dest, atlas::landing(dest)));
             }
         }
         else
@@ -731,23 +783,26 @@ std::optional<atlas::leap> atlas::shortcut(uint16_t                            f
             if (teleport.to.empty())
                 continue;
 
-            auto worst = uint32_t{0};
-            auto all   = true;
+            auto total_cost = uint64_t{0};
+            auto reachable  = uint64_t{0};
             for (auto dest : teleport.to)
             {
-                auto after = total(dest, atlas::landing(dest));
-                if (after.has_value() == false)
+                auto after = arrival(dest, atlas::landing(dest));
+                if (after.has_value())
                 {
-                    all = false;
-                    break;
+                    total_cost += after.value();
+                    reachable++;
                 }
-                worst = std::max(worst, after.value());
             }
-            if (all)
-                offer(index, CARDINAL::EAST, teleport.to.front(), worst);
+            if (reachable == teleport.to.size())
+                offer(index,
+                      CARDINAL::EAST,
+                      teleport.to.front(),
+                      atlas::landing(teleport.to.front()),
+                      static_cast<uint32_t>(total_cost / reachable));
         }
     }
-    return best;
+    return found;
 }
 
 std::optional<std::vector<atlas::DIRECTION>>

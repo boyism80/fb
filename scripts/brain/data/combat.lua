@@ -2,7 +2,7 @@ local balance = require("brain.data.balance")
 
 return {
     swing         = 1000 / balance.swing_rate,
-    walk          = 500,
+    walk          = 250,
     stride        = 50,
     penalty       = { exp = 0.05, durability = 0.01 },
     candidates    = 1000,
@@ -17,9 +17,10 @@ return {
     bare          = { min = 1, max = 5 },
     hit           = { min = 10, max = 100, front = 12, floor = -5 },
     reach         = 1,
-    rezen         = 20,
+    rezen         = 1,
     rerank        = 5000,
     defense_limit = 127,
+    exp_limit     = 3.3,
     adjacent      = 4,
     natural       = { hp = 0.005 / 10, mp = 0.02 / 25 },
     sight         = { x = 8, y = 7 },

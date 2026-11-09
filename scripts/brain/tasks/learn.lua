@@ -1,6 +1,7 @@
 local buyers   = require("brain.data.buyers")
 local data     = require("brain.data.combat")
 local job      = require("brain.data.job")
+local teleport = require("brain.data.teleport")
 local learning = require("brain.data.learning")
 local outfits  = require("brain.data.outfits")
 local shops    = require("brain.data.shops")
@@ -70,16 +71,15 @@ local function plan(snap, query)
                 end
                 for _, name in ipairs(entry.names) do
                     if known[name] == nil then
-                        local reached = memo.peek(taughts, snap.self.name, score.signature(snap, ""), name)
-                        if reached == nil and ground.affordable() then
-                            reached = memo.get(taughts, snap.self.name, score.signature(snap, ""), name, function()
-                                local after = ground.choose(lessons.taught(snap, name, entry), query)
-                                return after ~= nil and after.rate or 0
-                            end)
-                        end
-                        local gain = math.max(0, (reached or 0) - rate)
-                        local net  = -price * worth.exchange
-                        if gain > 0 then
+                        -- Always measured: a per-decision budget used to skip this, so the same state planned
+                        -- a lesson on one tick and dropped it on the next.
+                        local reached = memo.get(taughts, snap.self.name, score.signature(snap, ""), name, function()
+                            local after = ground.choose(lessons.taught(snap, name, entry), query)
+                            return after ~= nil and after.rate or 0
+                        end)
+                        local gain    = math.max(0, reached - rate)
+                        local net     = teleport.essential[name] and math.huge or -price * worth.exchange
+                        if gain > 0 and teleport.essential[name] == nil then
                             net = net + gain * (#party.members(snap) > 0 and ground.horizon(snap, gain + rate) or
                                 ground.lifetime(snap, gain + rate))
                         end
@@ -138,32 +138,36 @@ local function plan(snap, query)
     return best
 end
 
-function M.wanted(snap, query)
+function M.has_lesson(snap, query)
+    return plan(snap, query) ~= nil
+end
+
+function M.pays(snap, query)
     local found = plan(snap, query)
-    if found == nil or (#party.members(snap) > 0 and rest.low(snap, query)) then
-        return false
-    end
     local worth = value.baseline(snap, query)
-    local trip  = value.cost(snap, query, M.propose(snap, query), worth)
+    local trip  = value.cost(snap, query, M.next_step(snap, query), worth)
     return found.value - trip * (1 + #party.members(snap)) > 0
 end
 
+M.low = rest.low
+
 function M.value(snap, query)
     local found = plan(snap, query)
-    local net   = found.value - value.cost(snap, query, M.propose(snap, query), value.baseline(snap, query))
+    local net   = found.value - value.cost(snap, query, M.next_step(snap, query), value.baseline(snap, query))
     return net / found.span * combat.cast(snap) / 1000
 end
 
 function M.pending(snap, query)
     local found = plan(snap, query)
-    if found == nil or found.gain <= 0 or M.wanted(snap, query) == false then
+    if found == nil or found.gain <= 0 or (#party.members(snap) > 0 and rest.low(snap, query)) or
+        M.pays(snap, query) == false then
         return nil
     end
     return {
         gain = found.gain,
         price = found.price,
         net = found.value,
-        trip = value.cost(snap, query, M.propose(snap, query), value.baseline(snap, query))
+        trip = value.cost(snap, query, M.next_step(snap, query), value.baseline(snap, query))
     }
 end
 
@@ -181,7 +185,7 @@ local function shopping(found)
     return first, source.capacity and source.capacity > 1 and found.bought[first] or 1, source.npcs
 end
 
-function M.propose(snap, query)
+function M.next_step(snap, query)
     local found              = plan(snap, query)
     local item, amount, npcs = shopping(found)
     if item ~= nil then

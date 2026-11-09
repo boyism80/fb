@@ -5,7 +5,7 @@ local value   = require("brain.policies.value")
 
 local M = {}
 
-local function best(snap, query)
+function M.best(snap, query)
     local current = gear.worn(snap, query)
     for _, slot in ipairs(snap.gear or {}) do
         if #slot.names > 0 and current[slot.type] ~= -math.huge then
@@ -30,13 +30,8 @@ local function best(snap, query)
     return found
 end
 
-function M.wanted(snap, query)
-    return snap.self.ghost == false and snap.self.class ~= "NONE" and best(snap, query) ~= nil and
-        M.value(snap, query) >= 0
-end
-
 function M.value(snap, query)
-    local found = best(snap, query)
+    local found = M.best(snap, query)
     local slots = {}
     for _, slot in ipairs(snap.gear or {}) do
         if slot.type ~= found.type then
@@ -57,7 +52,7 @@ function M.value(snap, query)
 end
 
 function M.propose(snap, query)
-    return { kind = ACTION.EQUIP, item = best(snap, query).name }
+    return { kind = ACTION.EQUIP, item = M.best(snap, query).name }
 end
 
 return M

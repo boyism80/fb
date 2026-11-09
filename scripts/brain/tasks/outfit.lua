@@ -65,7 +65,8 @@ local function linked(snap, query, names)
     for _, name in ipairs(names) do
         local open = true
         for _, spot in ipairs(query.npcs({ name })) do
-            local key = table.concat({ name, spot.map, table.concat(goal.maps, ",") }, "|")
+            -- The path uses this bot's level for warp limits, so the level is part of the key.
+            local key = table.concat({ name, spot.map, table.concat(goal.maps, ","), snap.self.level or 0 }, "|")
             if links[key] == nil then
                 links[key] = query.path({ maps = goal.maps }, nil, nil, spot) ~= nil
             end
@@ -111,18 +112,27 @@ local function plan(snap, query)
     local best = nil
     local room = (snap.bag.capacity or 0) - (snap.bag.used or #snap.bag.items)
     if snap.self.ghost == false and snap.self.class ~= "NONE" and room > 0 then
-        local worth = value.baseline(snap, query)
-        local now   = ground.choose(snap, query)
-        local rate  = now ~= nil and now.rate or 0
-        local base  = score.signature(snap)
-        for kind, pick in pairs(snap.record.death == nil and picks(snap, query) or {}) do
-            local gain = memo.peek(gains, snap.self.name, base, pick.name)
-            if gain == nil and ground.affordable() then
-                gain = memo.get(gains, snap.self.name, base, pick.name, function()
-                    local after = ground.choose(dressed(snap, query, kind, pick.name), query)
-                    return math.max(0, (after ~= nil and after.rate or 0) - rate)
-                end)
-            end
+        local worth   = value.baseline(snap, query)
+        local now     = ground.choose(snap, query)
+        local held    = now ~= nil and ground.hold({ snap }, query, now.name) or nil
+        local rate    = held ~= nil and held.rate or 0
+        -- The gain is measured against the current ground, so the ground name is part of the key.
+        local base    = score.signature(snap) .. "|" .. tostring(now ~= nil and now.name or nil)
+        local choices = snap.record.death == nil and picks(snap, query) or {}
+        local kinds   = {}
+        for kind in pairs(choices) do
+            table.insert(kinds, kind)
+        end
+        table.sort(kinds)
+        for _, kind in ipairs(kinds) do
+            local pick = choices[kind]
+            -- Always measured: skipping it when a per-decision budget ran out made the same state
+            -- buy gear on one tick and not on the next.
+            local gain = memo.get(gains, snap.self.name, base, pick.name, function()
+                local after = now ~= nil and ground.hold({ dressed(snap, query, kind, pick.name) }, query, now.name) or
+                nil
+                return math.max(0, (after ~= nil and after.rate or 0) - rate)
+            end)
             if (gain or 0) > 0 then
                 local span = ground.horizon(snap, gain + rate)
                 local net  = gain * span - pick.outfit.price * worth.exchange
@@ -138,15 +148,16 @@ end
 
 local function net(snap, query)
     local found  = plan(snap, query)
-    local action = M.propose(snap, query)
-    if action.kind == ACTION.MOVE and #party.members(snap) > 0 then
-        return -math.huge
-    end
-    return found.value - value.cost(snap, query, action, value.baseline(snap, query))
+    local action = M.next_step(snap, query)
+    return found.value - value.cost(snap, query, action, value.baseline(snap, query)) * (1 + #party.members(snap))
 end
 
-function M.wanted(snap, query)
-    return plan(snap, query) ~= nil and net(snap, query) > 0
+function M.has_plan(snap, query)
+    return plan(snap, query) ~= nil
+end
+
+function M.pays(snap, query)
+    return net(snap, query) > 0
 end
 
 function M.value(snap, query)
@@ -154,17 +165,16 @@ function M.value(snap, query)
 end
 
 function M.pending(snap, query)
-    if M.wanted(snap, query) == false then
+    if M.has_plan(snap, query) == false or M.pays(snap, query) == false then
         return nil
     end
     return {
         gain = plan(snap, query).gain,
-        trip = value.cost(snap, query, M.propose(snap, query),
-            value.baseline(snap, query))
+        trip = value.cost(snap, query, M.next_step(snap, query), value.baseline(snap, query))
     }
 end
 
-function M.propose(snap, query)
+function M.next_step(snap, query)
     local found      = plan(snap, query)
     local spot, move = near.approach(snap, query, found.npcs)
     if spot ~= nil then

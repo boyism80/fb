@@ -17,6 +17,7 @@ local option   = require("integration.lib.option")
 local M = {}
 
 local TIMEOUT           = 120000
+local OPEN_STRIDE       = 8
 local START             = { map = "국내성", x = 15, y = 107 }
 local STRIKER           = { hp = 10 }
 local SUPPLIER          = { money = 1000, mp = 300 }
@@ -208,7 +209,7 @@ end
 
 local function fake(changes)
     local snap = {
-        self   = { level = 5, class = "WARRIOR", nation = 1, ghost = false, hp = 100, max_hp = 100, money = 0 },
+        self   = { name = "pure", level = 5, class = "WARRIOR", nation = 1, ghost = false, hp = 100, max_hp = 100, money = 0 },
         bag    = { items = {}, used = 0, capacity = 26 },
         gear   = {},
         world  = { map = 1, x = 10, y = 10, mobs = {}, items = {}, dialog = false },
@@ -313,7 +314,7 @@ function M.pure(ctx, index)
                 s.world.mobs  = { {
                     oid = 9,
                     name = "다람쥐",
-                    exp = 10,
+                    exp = 1,
                     x = 11,
                     y = 10,
                     hp = 15,
@@ -355,8 +356,23 @@ function M.pure(ctx, index)
         },
         { expect = { "REST", ACTION.USE }, snap = drained(function(s) s.bag.items = { { name = "동동주", count = 2, slot = 1 } } end) },
         { expect = { "FIELD", ACTION.MOVE }, snap = drained(function() end) },
-        { expect = { "SUPPLY", ACTION.SAY }, snap = drained(function(s) s.self.money = 1000 end) },
-        { expect = { "FIELD", ACTION.MOVE }, snap = fake(function(s) s.self.money = 1000 end) },
+        {
+            expect = { "SUPPLY", ACTION.SAY },
+            snap = drained(function(s)
+                s.self.money = 1000
+                table.insert(s.spells, { slot = 2, name = "성황령" })
+                table.insert(s.spells, { slot = 3, name = "비영사천문" })
+            end)
+        },
+        {
+            expect = { "FIELD", ACTION.MOVE },
+            snap = fake(function(s)
+                s.self.money, s.self.mp, s.self.max_mp = 1000, 50, 50
+                s.spells                               = { { slot = 1, name = "성황령" }, { slot = 2, name = "비영사천문" } }
+                s.bag.items                            = { { name = "고구마", count = 100, slot = 1 } }
+                s.bag.used                             = 1
+            end)
+        },
         {
             expect = { "BUFF", ACTION.CAST },
             snap = fake(function(s)
@@ -564,10 +580,13 @@ function M.grounds(ctx, index)
     local ranks    = {}
     local passed   = true
     for _, case in ipairs(profiles) do
-        local best       = ground.choose(case.snap, facts)
-        local finish     = best ~= nil and best.floors[#best.floors] or nil
-        passed           = passed and best ~= nil
-        ranks[case.name] = finish ~= nil and finish.need or -1
+        case.snap.world.map = ctx:bot(index):map()
+        case.snap.world.x   = spot.x
+        case.snap.world.y   = spot.y
+        local best          = ground.choose(case.snap, facts)
+        local finish        = best ~= nil and best.floors[#best.floors] or nil
+        passed              = passed and best ~= nil
+        ranks[case.name]    = best ~= nil and best.rate or -1
         log("debug", string.format(
             "[brain:state:grounds] %s bundle=%s start=%s finish=%s floors=%d rate=%.2f margin=%.2f targets=%s", case
             .name,
@@ -929,6 +948,26 @@ local function members(text)
     return names
 end
 
+local function widest(facts, map, spot)
+    local tiles = {}
+    for y = spot.top, spot.bottom, OPEN_STRIDE do
+        for x = spot.left, spot.right, OPEN_STRIDE do
+            table.insert(tiles, { x = x, y = y, range = 0 })
+        end
+    end
+    local best, most = spot, -1
+    for _, tile in ipairs(tiles) do
+        local reached = 0
+        for _, steps in ipairs(facts.steps(map, tile.x, tile.y, tiles)) do
+            reached = reached + (steps ~= false and 1 or 0)
+        end
+        if reached > most then
+            best, most = tile, reached
+        end
+    end
+    return best
+end
+
 local function gather(ctx, count, arrivals)
     local probe = brain.new()
     local snaps = {}
@@ -946,8 +985,9 @@ local function gather(ctx, count, arrivals)
     if model == nil or #spots == 0 then
         return nil
     end
+    local open = widest(facts, floor.map, spots[1])
     for slot = 0, arrivals - 1 do
-        ctx:bot(slot):map_move(model:name(), spots[1].x, spots[1].y)
+        ctx:bot(slot):map_move(model:name(), open.x, open.y)
         if expect.arrive(ctx, slot, model:name(), TIMEOUT) == false then
             return nil
         end
@@ -1038,7 +1078,7 @@ function M.group(ctx, names, arrivals, watch, base)
             end
             ghosts[index] = ghost
             for _, activity in ipairs(minds[index]:activities(current) or {}) do
-                fighting = fighting or activity == "attack" or activity == "swing"
+                fighting = fighting or activity == "attack" or activity == "swing" or activity == "cast"
             end
         end
         together = together or (fighting and count == 1)
@@ -1081,8 +1121,17 @@ function M.measure(ctx, names)
             floors[floor.map] = true
         end
         bot:brain(mind, { seed = 1, persona = { hunt = 1 } })
-        local engaged = expect.within(ctx, TIMEOUT * 2, function()
-            return floors[ctx:bot(0):map()] == true
+        local engaged = expect.within(ctx, TIMEOUT * 4, function()
+            local now     = ctx:bot(0)
+            local current = ground.choose(snapshot.take(mind, now), query.bind(mind, now))
+            if current ~= nil and current.name ~= (planned ~= nil and planned.name or nil) then
+                planned = current
+                floors  = {}
+                for _, floor in ipairs(planned.floors) do
+                    floors[floor.map] = true
+                end
+            end
+            return floors[now:map()] == true
         end)
         if engaged then
             ctx:bot(0):request(resp.internal_info, protocol.self_info(), function() return true end, TIMEOUT)

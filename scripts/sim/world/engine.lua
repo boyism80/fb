@@ -60,7 +60,7 @@ function M.new(options)
         if data ~= nil then
             local rezen = { spawn = spawn, data = data, alive = 0, due = nil }
             table.insert(world.rezens, rezen)
-            world:populate(rezen, spawn.count)
+            world:populate(rezen, math.ceil(spawn.count * (options.sparse or 1)))
         end
     end
     return world
@@ -319,7 +319,8 @@ function World:award(character, exp)
     local table      = growth[character.class] or {}
     local current    = table[character.level]
     if self.options.exp_limit ~= false and current ~= nil and table[character.level + 1] ~= nil then
-        value = math.min(value, math.floor(current.exp / 100.0 * RULES.limit * multiplier + 1))
+        value = math.min(value,
+            math.floor((table[character.level + 1].exp - current.exp) / 100.0 * RULES.limit * multiplier + 1))
     end
     character.exp       = character.exp + value
     character.stats.exp = character.stats.exp + value

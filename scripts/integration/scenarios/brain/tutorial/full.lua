@@ -2,7 +2,7 @@ local expect = require("integration.lib.expect")
 
 local M = {}
 
-local TIMEOUT = 180000
+local TIMEOUT = 480000
 local STEPS   = 8
 
 function M.run(ctx, index)

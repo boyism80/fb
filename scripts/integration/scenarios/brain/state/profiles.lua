@@ -1,4 +1,6 @@
-return {
+local teleport = require("brain.data.teleport")
+
+local profiles = {
     { name = "mage6", class = "주술사", level = 6, hp = 288, mp = 192, str = 6, int = 6, dex = 6, spells = { "누리의기원", "화염주" }, gear = { WEAPON = "작은물병", ARMOR = "연두색비늘남자갑주", HELMET = "금장남자투구" } },
     { name = "poet18", class = "도사", level = 18, hp = 892, mp = 602, str = 10, int = 18, dex = 10, spells = { "누리의기원", "바다의기원", "화염주", "공력증강", "해독", "천공의기원" }, gear = { WEAPON = "작은물병", ARMOR = "연두색비늘남자갑주", HELMET = "금장남자투구" } },
     { name = "rogue50", class = "도적", level = 50, hp = 2926, mp = 1256, str = 23, int = 23, dex = 50, spells = { "누리의기원", "대지의기원", "누리의빛", "금수", "누리의힘", "대지의빛", "화염주", "동해의기원", "백열장", "선풍각", "무영보법", "경수", "바다의빛", "이중공격", "야수", "투명", "출두", "화영열주", "비영승보", "맹수", "망각", "귀환", "천공의기원", "필살검무" }, gear = { WEAPON = "투사의칼", ARMOR = "회색갑옷", HELMET = "금장남자투구" } },
@@ -13,3 +15,17 @@ return {
     { name = "warrior63swap", class = "전사", level = 63, hp = 4569, mp = 994, str = 63, int = 25, dex = 34, spells = { "누리의기원", "바다의기원", "화염주", "공력증강", "해독", "천공의기원", "백열장", "선풍각", "무장", "보호", "퇴마주", "차폐", "구름의기원", "출두", "천공의희원", "귀환", "소환", "활력", "시력회복", "태양의기원", "파혼술", "구름의희원", "심안투영", "혼마술", "공력주입" }, gear = { WEAPON = "투사의칼", ARMOR = "청동비늘남자갑주", HELMET = "금장남자투구" } },
     { name = "poet65swap", class = "도사", level = 65, hp = 3218, mp = 2223, str = 28, int = 65, dex = 28, spells = { "누리의기원", "대지의기원", "이중공격", "백열장", "선풍각", "신의축복", "후면공격", "측면공격", "삼중공격", "하늘의기원", "신검합일", "백호령", "유인", "사중공격", "건곤대나이" }, gear = { WEAPON = "투사의칼", ARMOR = "회색갑옷", HELMET = "금장남자투구" } },
 }
+
+for _, profile in ipairs(profiles) do
+    local known = {}
+    for _, name in ipairs(profile.spells) do
+        known[name] = true
+    end
+    for name in pairs(teleport.essential) do
+        if known[name] == nil then
+            table.insert(profile.spells, name)
+        end
+    end
+end
+
+return profiles

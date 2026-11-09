@@ -2,6 +2,7 @@
 #define FB_BOT_BOT_TEST_RUNNER_H
 
 #include <fb/bot/bot_controller_factory.h>
+#include <fb/bot/brain/brain.h>
 #include <fb/bot/container.h>
 #include <fb/bot/test_mode.h>
 #include <fb/config.h>
@@ -16,6 +17,7 @@
 #include <string>
 #include <string_view>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -80,6 +82,14 @@ int run_bot_test(std::string_view config_path, const std::vector<std::string>& o
     if (cluster)
     {
         container->link.enable();
+        container->link.on("occupied", [](const Json::Value& message) {
+            auto maps = std::unordered_map<uint16_t, double>{};
+            for (auto& map : message["maps"].getMemberNames())
+            {
+                maps.emplace(static_cast<uint16_t>(std::stoul(map)), message["maps"][map].asDouble());
+            }
+            fb::bot::brain::occupied_elsewhere(message["from"].asUInt(), std::move(maps));
+        });
         container->link.on("stop", [container, &io_context](const Json::Value&) {
             boost::asio::post(io_context, [container]() {
                 container->exit();
@@ -101,10 +111,15 @@ int run_bot_test(std::string_view config_path, const std::vector<std::string>& o
                     timer.expires_after(2s);
                     co_await timer.async_wait(boost::asio::use_awaitable);
 
-                    auto message       = Json::Value{};
-                    message["type"]    = "stats";
-                    message["entries"] = container->stats.take();
-                    message["bots"]    = static_cast<Json::UInt>(container->game->bot_count());
+                    auto message        = Json::Value{};
+                    message["type"]     = "stats";
+                    message["entries"]  = container->stats.take();
+                    message["bots"]     = static_cast<Json::UInt>(container->game->bot_count());
+                    message["occupied"] = Json::objectValue;
+                    for (auto& [map, rate] : fb::bot::brain::occupied())
+                    {
+                        message["occupied"][std::to_string(map)] = rate;
+                    }
                     container->link.send(message);
                 }
             },

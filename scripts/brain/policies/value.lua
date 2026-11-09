@@ -98,7 +98,7 @@ local function sunk(snap, mob)
     if mob ~= nil and (mob.hp or 0) > 0 then
         for _, choice in ipairs(combat.options(snap, mob).strike) do
             if (choice.mp or 0) > 0 and (choice.damage or 0) > 0 then
-                local each = choice.damage / choice.mp * combat.gain(mob) / mob.hp
+                local each = choice.damage / choice.mp * combat.gain(mob, snap) / mob.hp
                 sink = math.max(sink or each, each)
             end
         end
@@ -110,7 +110,10 @@ end
 local errands = {}
 
 local function errand(snap, query, name, npcs)
-    return memo.get(errands, snap.self.name, tostring(snap.world.map), name, function()
+    -- Errand time is an estimate, so the start tile is bucketed by screen like supply trips.
+    local spot = table.concat(
+    { snap.world.map, (snap.world.x or 0) // data.sight.x, (snap.world.y or 0) // data.sight.y }, "|")
+    return memo.get(errands, snap.self.name, spot, name, function()
         local maps = {}
         for _, spot in ipairs(query.npcs(npcs)) do
             table.insert(maps, spot.map)
@@ -181,7 +184,7 @@ function M.restock(snap, query, mob, restored)
     elseif mob ~= nil and (mob.hp or 0) > 0 then
         for _, choice in ipairs(combat.options(snap, mob).offense) do
             if (choice.mp or 0) > 0 and (choice.damage or 0) > 0 then
-                local each = choice.damage / choice.mp * combat.gain(mob) / mob.hp
+                local each = choice.damage / choice.mp * combat.gain(mob, snap) / mob.hp
                 if each > price and each > sink then
                     sink  = each
                     floor = choice.mp
@@ -415,8 +418,11 @@ local function plans(snap, query, dest, origin)
     local shunned  = danger.shunned(snap, query)
     local perilous = party.perilous(snap, query)
     local base     = table.concat({ snap.world.map, table.concat(shunned, ","), #perilous }, "|")
-    local key      = table.concat({ origin ~= nil and origin.map or "", tostring(dest.map),
-        table.concat(dest.maps or {}, ","), table.concat(dest.names or {}, ",") }, "|")
+    -- Routes start from the bot's tile; on large maps the best first hop changes with it.
+    -- A map-only key reused a route from the other side of the map and bounced the leader 3178<->3180.
+    local from     = origin or snap.world
+    local key      = table.concat({ origin ~= nil and origin.map or "", tostring(from.x), tostring(from.y),
+        tostring(dest.map), table.concat(dest.maps or {}, ","), table.concat(dest.names or {}, ",") }, "|")
     local where    = { map = dest.map, maps = dest.maps, names = dest.names }
     local found    = memo.get(routes, snap.self.name, base, key, function()
         local found = {
@@ -497,7 +503,11 @@ local function walk(snap, query, dest, worth, origin, best)
             local chance, fixed, period = M.exposure(snap, query, parts)
             local risk                  = chance * loss
             local cost                  = time * worth.value + risk
-            if best == nil or cost < best.cost then
+            local turned                = false
+            for _, part in ipairs(plan.risky and best ~= nil and parts or {}) do
+                turned = turned or danger.fled(snap, part.map)
+            end
+            if turned == false and (best == nil or cost < best.cost) then
                 best = {
                     cost = cost,
                     time = time,
@@ -531,6 +541,16 @@ function M.trip(snap, query, dest, worth)
     return walk(snap, query, dest, worth, nil, best)
 end
 
+function M.recoiling(snap, query, dest)
+    local fleeing = snap.record.memory.fleeing
+    if fleeing == nil or snap.now >= fleeing.ends or fleeing.map == snap.world.map or dest.maps == nil then
+        return false
+    end
+    local route = query.route(dest.maps)
+    local hop   = route ~= nil and route.path ~= nil and route.path[1] or nil
+    return hop ~= nil and hop.dest == fleeing.map
+end
+
 function M.objective(snap, query)
     local order = snap.record.memory.order
     if order ~= nil and snap.self.ghost == false and failure.remaining(snap, "ORDER") == 0 then
@@ -562,9 +582,12 @@ function M.detour(snap, query, dest, worth)
         y = dest.y or (spot ~= nil and spot.y) or route.y or snap.world.y
     }
     local inside  = 0
-    if spot ~= nil and route.x ~= nil and route.y ~= nil then
+    local landed  = route.path ~= nil and route.path[#route.path] or nil
+    local enter_x = route.x or (landed ~= nil and landed.ax) or nil
+    local enter_y = route.y or (landed ~= nil and landed.ay) or nil
+    if spot ~= nil and enter_x ~= nil and enter_y ~= nil then
         local range = math.min(data.sight.x, data.sight.y)
-        local steps = math.abs(spot.x - route.x) + math.abs(spot.y - route.y)
+        local steps = math.abs(spot.x - enter_x) + math.abs(spot.y - enter_y)
         inside      = math.max(0, steps - range) * (snap.pace.step or data.walk) / 1000
     end
     local onward = walk(snap, query, goal, worth, arrival)

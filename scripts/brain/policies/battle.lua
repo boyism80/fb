@@ -102,7 +102,7 @@ function M.burst(snap)
             table.insert(attackers, { mob = other, count = 1 })
         end
     end
-    known = #attackers > 0 and combat.spike(snap, attackers) or 0
+    known = #attackers > 0 and combat.imminent(snap, attackers) or 0
     bursts[snap] = known
     return known
 end
@@ -140,6 +140,21 @@ local function bears(snap, facts, mob, choice)
     return danger.fatal(after, facts) == nil
 end
 
+function M.closing(snap)
+    local window    = 2 * combat.cast(snap)
+    local attackers = {}
+    for _, other in ipairs(snap.world.mobs or {}) do
+        if other.x ~= nil and combat.hits(other) and (other.attack == "AGGRESSIVE" or
+                math.abs(other.x - snap.world.x) + math.abs(other.y - snap.world.y) == 1) then
+            local gap = math.abs(other.x - snap.world.x) + math.abs(other.y - snap.world.y) - 1
+            if gap * (other.speed or math.huge) <= window then
+                table.insert(attackers, { mob = other, count = 1 })
+            end
+        end
+    end
+    return #attackers > 0 and combat.imminent(snap, attackers) or 0
+end
+
 local function mends(snap, facts, mp, hp)
     local crew   = escort.present(snap, facts)
     local cohort = escort.gathering(snap, facts)
@@ -149,7 +164,7 @@ local function mends(snap, facts, mp, hp)
     local missing = snap.self.max_hp - snap.self.hp
     local heal    = recovery.heal(snap)
     if crew ~= nil and crew.heal > 0 then
-        return missing <= crew.heal * combat.cast(snap) / 1000
+        return missing <= escort.ready(crew, combat.cast(snap))
     end
     local stock = 0
     local dose  = 0
@@ -176,6 +191,46 @@ local function gated(snap, facts, mob)
     return false
 end
 
+-- The ambush lands behind the mob or beside it (the server tries those tiles in turn) and only asks
+-- whether the tile is free, not whether I can walk on from there. A rogue that landed in a sealed
+-- two-tile pocket reached no ground any more: the group plan vanished, the poet left and the rogue stood
+-- there 220s (profile 50+65 form, 682-685s). A tile I cannot walk back from is taken only when it still
+-- reaches every map I reach now, so an ambush out of such a pocket stays open.
+local function strands(snap, facts, mob)
+    if facts.steps == nil or facts.reach == nil then
+        return false
+    end
+    local dx, dy = mob.x - snap.world.x, mob.y - snap.world.y
+    local here   = nil
+    for _, tile in ipairs({ { mob.x + dx, mob.y + dy }, { mob.x + dy, mob.y + dx }, { mob.x - dy, mob.y - dx } }) do
+        local back = tile[1] >= 0 and tile[2] >= 0 and
+            facts.steps(snap.world.map, tile[1], tile[2], { { x = snap.world.x, y = snap.world.y, range = 0 } }) or nil
+        if back ~= nil and back[1] == false then
+            here        = here or facts.reach({}, {}, {
+                map = snap.world.map,
+                x = snap.world.x,
+                y = snap.world.y,
+                level = snap.self.level
+            })
+            local there = facts.reach({}, {}, { map = snap.world.map, x = tile[1], y = tile[2], level = snap.self.level })
+            if here == nil or there == nil then
+                return true
+            end
+            for map in pairs(here) do
+                if there[map] == nil then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function sighted(snap, mob)
+    return mob.x == nil or
+        (math.abs(mob.x - snap.world.x) <= data.sight.x and math.abs(mob.y - snap.world.y) <= data.sight.y)
+end
+
 local function candidates(snap, facts, mob, state, reachable)
     local target    = combat.exposed(mob, combat.debuffs(snap, copy(mob, { applied = state.applied })))
     local options   = combat.options(snap, target)
@@ -185,9 +240,11 @@ local function candidates(snap, facts, mob, state, reachable)
     local found     = {}
     local spendable = recovery.spendable(snap)
     local free      = recovery.free(snap)
+    local seen      = sighted(snap, mob)
     local add       = function(entry)
+        local aimed = entry.maneuver.kind == MANEUVER.CAST and entry.maneuver.self ~= true
         local limit = entry.kind == "HEAL" and spendable or free
-        if state.refused[entry.key] == nil and (entry.mp or 0) <= limit then
+        if state.refused[entry.key] == nil and (entry.mp or 0) <= limit and (seen or aimed == false) then
             table.insert(found, entry)
         end
     end
@@ -256,7 +313,7 @@ local function candidates(snap, facts, mob, state, reachable)
     local missing = snap.self.max_hp - snap.self.hp
     local mending = missing > 0 and recovery.mending(snap, missing) or nil
     local crew    = escort.present(snap, facts)
-    local helped  = (crew ~= nil and crew.heal or 0) * cast / 1000
+    local helped  = escort.ready(crew, cast)
     for _, choice in ipairs(options.heal) do
         if mending ~= nil and known[choice.name] == mending.slot and choice.hp > helped then
             add({
@@ -298,7 +355,7 @@ local function candidates(snap, facts, mob, state, reachable)
         end
     end
     local charging = combat.buffs(snap).charge
-    if charge ~= nil and charging ~= nil and (snap.self.mp or 0) >= charge.mp and (snap.self.mp or 0) < (snap.self.max_mp or 0) then
+    if charge ~= nil and charging ~= nil and (snap.self.mp or 0) >= charge.mp and free < recovery.prime(snap) then
         local change = recovery.charged(snap) - snap.self.hp
         local refill = (snap.self.max_mp or 0) - (snap.self.mp or 0) + charge.mp
         add({
@@ -307,7 +364,6 @@ local function candidates(snap, facts, mob, state, reachable)
             time = cast,
             mp = charge.mp - charging.chance * refill,
             hp = charging.chance * change,
-            dip = (1 - charging.chance) * math.max(0, -change),
             maneuver = { kind = MANEUVER.CAST, slot = charge.slot, self = true }
         })
     end
@@ -338,7 +394,7 @@ local function candidates(snap, facts, mob, state, reachable)
     for name, slot in pairs(known) do
         local spell = magic.spells[name]
         if cloak > 1 and spell ~= nil and spell.role == "AMBUSH" and (spell.mp or 0) <= (snap.self.mp or 0) and adjacent and
-            gated(snap, facts, mob) == false then
+            gated(snap, facts, mob) == false and strands(snap, facts, mob) == false then
             add({
                 key = name,
                 kind = "CAST",
@@ -403,6 +459,10 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
         local plenty = combat.buffs(snap).charge
         local ahead  = recovery.heal(snap)
         local fresh  = { hp = hp, mp = mp }
+        local mender = escort.present(snap, facts)
+        if entry.kind == "STRIKE" and mender ~= nil and mender.heal > 0 then
+            fresh.hp = math.min(snap.self.max_hp, hp + math.min(-entry.hp, mender.stock))
+        end
         if entry.kind == "HEAL" and plenty ~= nil and ahead ~= nil and mp >= plenty.mp and mp < ahead.mp + plenty.mp and
             hp > plenty.cost + 2 * M.burst(snap) then
             fresh  = {
@@ -430,10 +490,11 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
     end
     local p_die = 1 - (1 - now) * (1 - rest.p_die)
     local blows = M.burst(snap)
+    local near  = 0
     if blows > 0 and left > 0 then
-        local helper = escort.present(snap, facts)
-        local cover  = hp + (helper ~= nil and helper.heal or 0) * combat.cast(snap) / 1000
-        p_die        = 1 - (1 - p_die) * (1 - math.max(0, math.min(1, (2 * blows - cover) / blows)))
+        local cover = (entry.hp or 0) < 0 and hp or hp + escort.ready(escort.present(snap, facts), combat.cast(snap))
+        near        = math.max(0, math.min(1, (2 * blows - cover) / blows))
+        p_die       = 1 - (1 - p_die) * (1 - near)
     end
     local mend = recovery.heal(snap)
     if refill == 0 and entry.kind ~= "CHARGE" and combat.buffs(snap).charge ~= nil and mend ~= nil and hp > 0 and
@@ -445,7 +506,7 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
     local ready    = ground.need(snap, facts)
     local charging = combat.buffs(snap).charge
     if charging ~= nil then
-        ready = math.max(ready, charging.cost + 2 * M.burst(snap))
+        ready = math.max(ready, charging.cost + math.max(2 * M.burst(snap), M.closing(snap)))
     end
     local short = math.max(0, ready - math.max(ending, 0))
     local crew  = escort.present(snap, facts)
@@ -456,7 +517,7 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
     end
     if entry.melee ~= nil then
         time = time + delay(snap, mob, entry, regen, taken)
-    elseif (entry.hp or 0) < 0 and regen > 0 then
+    elseif (entry.hp or 0) < 0 and regen > 0 and (crew == nil or crew.heal <= 0) then
         time = time - entry.hp / regen
     end
     if (entry.wasted or 0) > 0 then
@@ -466,16 +527,24 @@ local function estimate(snap, facts, mob, entry, worth, loss, mana)
     for _, hit in ipairs(entry.extra or {}) do
         local remaining = (hit.mob.hp or 0) * (hit.mob.ratio or 1)
         if remaining > 0 then
-            bonus = bonus + combat.gain(hit.mob) * math.min(1, hit.damage / remaining)
+            bonus = bonus + combat.gain(hit.mob, snap) * math.min(1, hit.damage / remaining)
         end
     end
-    local risk = (1 - p_die) * (combat.gain(mob) + bonus) - p_die * loss
-    local plan = { time = time * 1000, p_die = p_die, ending = ending, rest = rest.time, extra = #(entry.extra or {}) }
+    local risk = (1 - p_die) * (combat.gain(mob, snap) + bonus) - (p_die + near) * loss
+    local plan = {
+        time = time * 1000,
+        p_die = p_die,
+        ending = ending,
+        rest = rest.time,
+        extra = #(entry.extra or {}),
+        drained = rest.drained or 0
+    }
     return
         risk - time * worth.value - (entry.price or 0) * worth.exchange -
         ((entry.spend or entry.mp or 0) + (rest.drained or 0)) * mana,
-        ending > 0 and hp - (entry.dip or 0) > (entry.kind == "CHARGE" and 2 or 1) * M.burst(snap) and
-        hp - (entry.dip or 0) > combat.spike(snap, { { mob = mob, count = 1 } }), ending,
+        ending > 0 and (entry.kind == "CHARGE" or
+            entry.kind ~= "CHARGE" and hp > M.burst(snap) and hp > combat.spike(snap, { { mob = mob, count = 1 } })),
+        ending,
         plan
 end
 
@@ -546,7 +615,7 @@ local function kindred(snap, mob, flag)
             return nil
         end
     end
-    return table.concat({ mob.id, mob.ratio or 1, distance, tostring(flag) }, "|")
+    return table.concat({ mob.id, mob.ratio or 1, distance, tostring(sighted(snap, mob)), tostring(flag) }, "|")
 end
 
 function M.choose(snap, facts, mob, reachable)
@@ -586,7 +655,6 @@ function evaluate(snap, facts, mob, reachable)
     local loss     = danger.loss(snap, facts, baseline)
     local mana     = value.spend(snap, facts, mob)
     local best     = nil
-    local values   = {}
     local ending   = -math.huge
     local last     = nil
     local state    = remembered(snap, mob)
@@ -600,13 +668,14 @@ function evaluate(snap, facts, mob, reachable)
             melee.value, _, _, melee.plan = estimate(snap, facts, mob, melee, baseline, loss, mana)
         end
     end
-    local share   = combat.gain(mob) / math.max(mob.hp or 1, 1)
+    local share   = combat.gain(mob, snap) / math.max(mob.hp or 1, 1)
     local blocked = snap.record.memory.blocked
     local hemmed  = melee ~= nil and type(blocked) == "table" and snap.now - blocked.at < melee.plan.time
     local plan    = party.plan(snap, facts)
     for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
         hemmed = hemmed and floor.map ~= snap.world.map
     end
+    local safest = 1
     for _, entry in ipairs(listed) do
         entry.applied = state.applied
         local left
@@ -615,21 +684,18 @@ function evaluate(snap, facts, mob, reachable)
             entry.kind == "USE" and value.restock(snap, facts, mob, -(entry.mp or 0)) or mana)
         if entry.kind == "CAST" and melee ~= nil and hemmed == false and (entry.mp or 0) > 0 then
             local direct = math.max(0, (entry.damage or 0) - (melee.damage or 0)) * share
-            local empty = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
-            entry.value = math.min(entry.value, melee.value + direct - entry.mp * empty * value.sip(snap, facts, mob))
+            local empty  = 1 - (snap.self.mp or 0) / math.max(snap.self.max_mp or 1, 1)
+            entry.value  = direct > 0 and melee.value + direct or
+                math.min(entry.value, melee.value - entry.mp * empty * value.sip(snap, facts, mob))
         elseif entry.kind == "USE" and melee ~= nil and (entry.hp or 0) <= 0 then
-            local gain = entry.survives and -(entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)) or 0
+            local gain  = entry.survives and -(entry.mp or 0) * value.restock(snap, facts, mob, -(entry.mp or 0)) or 0
             entry.value = math.min(entry.value, melee.value + gain)
         end
-        if (entry.kind ~= "CHARGE" or recovery.charged(snap) > combat.spike(snap, { { mob = mob, count = 1 } })) and
-            (last == nil or entry.value > last.value) then
+        if last == nil or entry.value > last.value then
             last = entry
         end
         ending = math.max(ending, left)
-        if data.trace then
-            table.insert(values, string.format("%s:%s=%.1f%s", entry.kind, entry.key, entry.value,
-                entry.survives and "" or "!"))
-        end
+        safest = math.min(safest, entry.plan.p_die)
         if entry.survives and (best == nil or entry.value > best.value or
                 (entry.value == best.value and ((entry.damage or 0) > (best.damage or 0) or
                     ((entry.damage or 0) == (best.damage or 0) and entry.key < best.key)))) then
@@ -639,16 +705,14 @@ function evaluate(snap, facts, mob, reachable)
     endings[snap] = endings[snap] or {}
     endings[snap][mob.oid or mob.name] = ending
     best = best or last
+    if best ~= nil then
+        best.safest = safest
+    end
     if best ~= nil and (data.trace or data.journal) then
         best.rivals = {}
         for _, entry in ipairs(listed) do
             table.insert(best.rivals, { key = entry.key, value = entry.value })
         end
-    end
-    if data.trace then
-        log("debug", string.format("[brain:battle] bot=%s hp=%d mp=%d mob=%s %s picks %s", snap.self.name or "",
-            snap.self.hp, snap.self.mp or 0, mob.name or "", table.concat(values, " "),
-            best ~= nil and best.key or "none"))
     end
     return best
 end
@@ -676,9 +740,30 @@ function M.need(snap, facts)
     return snap.self.hp - known + 1
 end
 
+local function guarding(snap, facts, mob, baseline)
+    local total = 0
+    if combat.hits(mob) == false or (mob.speed or 0) <= 0 then
+        return total
+    end
+    for _, profile in ipairs(snap.party or {}) do
+        local member = escort.member(profile)
+        if member.world.map == snap.world.map and member.world.x ~= nil and member.self.ghost ~= true and
+            math.abs(mob.x - member.world.x) + math.abs(mob.y - member.world.y) == 1 then
+            local ally    = facts.ally ~= nil and facts.ally(member.self.name) or nil
+            local current = ally ~= nil and ally.percent ~= nil and member.self.max_hp * ally.percent / 100 or
+                member.self.hp
+            local _, high = combat.spread(member, mob)
+            total         = total +
+                math.exp(-current * mob.speed / math.max(high * 1000, 1)) * danger.loss(member, facts, baseline)
+        end
+    end
+    return total
+end
+
 function M.target(snap, facts, accept)
     local step  = snap.pace.step or data.walk
-    local worth = value.baseline(snap, facts).value
+    local plain = value.baseline(snap, facts)
+    local worth = plain.value
     local found = nil
     local best  = nil
     local near  = {}
@@ -702,10 +787,11 @@ function M.target(snap, facts, accept)
     end)
     for _, entry in ipairs(near) do
         local travel = entry.reachable and entry.steps * step / 1000 * worth or 0
-        if best == nil or combat.gain(entry.mob) > best then
+        local guard  = guarding(snap, facts, entry.mob, plain)
+        if best == nil or combat.gain(entry.mob, snap) + guard > best then
             local choice = M.choose(snap, facts, entry.mob, entry.reachable)
-            local net    = choice ~= nil and choice.value - (choice.approach and travel or 0) or nil
-            if net ~= nil and (best == nil or net > best) then
+            local net    = choice ~= nil and choice.value + guard - (choice.approach and travel or 0) or nil
+            if net ~= nil and (entry.reachable or net > 0) and (best == nil or net > best) then
                 found = { mob = entry.mob, choice = choice }
                 best  = net
             end
@@ -810,10 +896,11 @@ end
 
 function M.blocked(snap, mob)
     local entry = (snap.record.memory.unreachable or {})[tostring(mob.oid)]
-    return entry ~= nil and entry.map == snap.world.map and entry.x == mob.x and entry.y == mob.y
+    return entry ~= nil and entry.map == snap.world.map and entry.x == mob.x and entry.y == mob.y and
+        (entry.at == nil or snap.now - entry.at < data.rerank)
 end
 
-function M.settle(memory, blocked, oid, map, action, event, now, visible, moved)
+function M.settle(memory, blocked, oid, map, action, event, now, visible, moved, spot)
     if action.moves and event.type == "DONE" and moved == false then
         event = { type = "REFUSED" }
     end
@@ -832,7 +919,8 @@ function M.settle(memory, blocked, oid, map, action, event, now, visible, moved)
             denied[name] = true
         end
         denied[action.key] = true
-        memory.denied = denied
+        memory.denied      = denied
+        memory.spot        = spot
     end
     local kept  = {}
     local count = 0
@@ -843,9 +931,13 @@ function M.settle(memory, blocked, oid, map, action, event, now, visible, moved)
             count     = count + 1
         end
     end
-    if (event.type == "UNREACHABLE" or event.type == "OCCUPIED") and visible[tostring(oid)] ~= nil then
-        local mob           = visible[tostring(oid)]
-        kept[tostring(oid)] = { map = map, x = mob.x, y = mob.y }
+    local seen   = visible[tostring(oid)]
+    local aimed  = event.type == "REFUSED" and action.maneuver.kind == MANEUVER.CAST and action.maneuver.self ~= true and
+        action.moves ~= true
+    local missed = aimed and seen ~= nil and math.abs(seen.x - spot.x) + math.abs(seen.y - spot.y) > 1
+    if (event.type == "UNREACHABLE" or event.type == "OCCUPIED" or missed) and seen ~= nil then
+        local mob           = seen
+        kept[tostring(oid)] = { map = map, x = mob.x, y = mob.y, at = now }
         count               = count + 1
     end
     return GOING[event.type] and memory or nil, count > 0 and kept or nil
@@ -862,10 +954,8 @@ function M.step(brain, bot, oid, action)
     end
     trace.engage(brain, bot, oid, action, event.type)
     local memory, blocked = M.settle(brain:recall(bot, "battle"), brain:recall(bot, "unreachable"), oid, seen.map,
-        action, event, brain:observe(bot).now, visible, before[1] ~= after[1] or before[2] ~= after[2])
-    if memory ~= nil and event.type == "REFUSED" then
-        memory.spot = { x = after[1], y = after[2] }
-    end
+        action, event, brain:observe(bot).now, visible, before[1] ~= after[1] or before[2] ~= after[2],
+        { x = after[1], y = after[2] })
     if data.journal and event.type == "REFUSED" then
         local mob = visible[tostring(oid)]
         log("debug",

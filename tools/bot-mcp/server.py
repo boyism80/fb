@@ -477,6 +477,26 @@ def sim_overview(run_id: str, team: str = '', seed: int | None = None) -> list:
 
 
 @server.tool()
+def sim_suite_failures(run_id: str) -> list:
+    """Failed suites, Lua errors and failed pure cases of a run, counted across agent logs."""
+    return sim.suite_failures(run_id)
+
+
+@server.tool()
+def sim_group_rules(run_id: str, team: str = '') -> dict:
+    """Rule check of a sim run: swings with a spell castable, frail bots that never resupply, bots without kills, deaths, map bounces, and share of time group members spent outside sight or on another map."""
+    return sim.group_rules(run_id, team)
+
+
+@server.tool()
+def sim_paths(run_id: str, team: str = '', baseline: str = '') -> dict:
+    """Seconds per decision tree path by team; with baseline, only paths that changed by 30 s or more."""
+    if baseline:
+        return sim.path_diff(run_id, baseline, team)
+    return sim.path_time(run_id, team)
+
+
+@server.tool()
 def sim_timeline(run_id: str, team: str, seed: int, bot: str = '', since: float = 0, until: float = 1e9, limit: int = 120, merged: bool = True) -> list | dict:
     """Actions of one team and seed between two sim seconds; merged joins runs of the same task and map, unmerged lists every action with hp and mp."""
     return sim.timeline(run_id, team, seed, bot, since, until, limit, merged)
@@ -546,6 +566,24 @@ def sim_online_rules(run_id: str) -> list:
 def sim_online(run_id: str, limit: int = 40) -> list:
     """Per bot map sequence, task counts, flee causes and earned exp of a run against a real server."""
     return sim.online(run_id, limit)
+
+
+@server.tool()
+def sim_audit(alarm: str = '') -> dict:
+    """Cache-divergence audit of a guarded sim run (latest alarm file by default): decisions that differ from a recomputation with cold brain modules, grouped by live/cold decision, with snapshot dumps to replay."""
+    return sim.audit(alarm)
+
+
+@server.tool()
+def sim_trace(alarm: str = '', bot: str = '', t: int | None = None) -> dict:
+    """Node-by-node trace (live | cold) of audited divergences; first_split is the first tree node whose result differs."""
+    return sim.trace_of(alarm, bot, t)
+
+
+@server.tool()
+def sim_replay(snapshot: str) -> dict:
+    """Recompute a dumped snapshot (.lua) offline with fresh brain modules in the unit harness; returns the decision and the tree node trace in a few seconds."""
+    return sim.replay(snapshot)
 
 
 @server.tool()

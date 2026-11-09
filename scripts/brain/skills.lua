@@ -203,7 +203,7 @@ function M.run(brain, bot, action)
         brain:bury(bot, "RECOVER")
     end
     if action.occupy ~= nil then
-        brain:occupy(bot, action.occupy.map, action.occupy.rate)
+        brain:occupy(bot, action.occupy.map, action.occupy.load)
     end
     local done, reason = skill(brain, bot, action)
     trace.act(brain, bot, action, done, reason)

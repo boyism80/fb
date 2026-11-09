@@ -324,6 +324,9 @@ void brain::bind(lua_State* L)
         lua_setfield(L, -2, brain::name(value));
     }
     lua_setglobal(L, "MANEUVER");
+
+    lua_pushcfunction(L, builtin::brain::builtin_tree);
+    lua_setglobal(L, "run_tree");
 }
 
 fb::lua::root& brain::scripts(game_bot& bot)
@@ -621,20 +624,50 @@ std::vector<std::pair<std::string, brain::listing>> brain::roster(const std::str
     return result;
 }
 
-double brain::demand(uint16_t map, const std::string& except)
+double brain::demand(uint16_t map, const std::unordered_set<std::string>& except)
 {
     auto lock  = std::lock_guard(_ledger_mutex);
-    auto found = _occupants.find(map);
     auto total = 0.0;
-    if (found == _occupants.end())
-        return total;
-
-    for (auto& [name, rate] : found->second)
+    auto found = _occupants.find(map);
+    if (found != _occupants.end())
     {
-        if (name != except)
-            total += rate;
+        for (auto& [name, rate] : found->second)
+        {
+            if (except.contains(name) == false)
+                total += rate;
+        }
+    }
+
+    for (auto& [source, maps] : _foreign_occupants)
+    {
+        auto foreign = maps.find(map);
+        if (foreign != maps.end())
+            total += foreign->second;
     }
     return total;
+}
+
+std::unordered_map<uint16_t, double> brain::occupied()
+{
+    auto lock   = std::lock_guard(_ledger_mutex);
+    auto result = std::unordered_map<uint16_t, double>{};
+    for (auto& [map, occupants] : _occupants)
+    {
+        for (auto& [name, rate] : occupants)
+        {
+            result[map] += rate;
+        }
+    }
+    return result;
+}
+
+void brain::occupied_elsewhere(uint32_t source, std::unordered_map<uint16_t, double> maps)
+{
+    auto lock = std::lock_guard(_ledger_mutex);
+    if (maps.empty())
+        _foreign_occupants.erase(source);
+    else
+        _foreign_occupants.insert_or_assign(source, std::move(maps));
 }
 
 std::unordered_map<std::string, uint32_t> brain::reservations(const std::string& except)
@@ -688,6 +721,13 @@ void brain::notice(game_bot& bot, std::string_view kind, uint32_t oid)
             return;
 
         auto& mind = found->second;
+        if (kind == "hurt")
+        {
+            auto entry = bot.sight.entries().find(oid);
+            if (entry == bot.sight.entries().end() || mind.concern.crew.contains(entry->second.name) == false)
+                return;
+        }
+
         if (mind.performing.empty() || mind.alarming)
         {
             auto event = std::pair{std::string(kind), oid};

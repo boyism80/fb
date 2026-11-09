@@ -22,6 +22,7 @@ local PREYS      = { "다람쥐", "토끼" }
 local PREY_GOAL  = 5
 local LEVEL_GOAL = 5
 local QUIZ_LEVEL = 3
+local QUIZ_STEP  = 6
 local SCROLLS    = {
     [1] = "낙랑의두루마리1",
     [2] = "낙랑의두루마리2",
@@ -249,8 +250,12 @@ function M.step(snap)
 end
 
 function M.wanted(snap)
+    local step = M.step(snap)
+    if step == QUIZ_STEP and snap.self.level < QUIZ_LEVEL then
+        return false
+    end
     return snap.self.ghost == false and snap.self.class == "NONE" and
-        (M.step(snap) > 0 or snap.self.level < job_data.level)
+        (step > 0 or snap.self.level < job_data.level)
 end
 
 function M.run(brain, bot, step)

@@ -8,6 +8,7 @@ local ground   = require("brain.policies.ground")
 local party    = require("brain.policies.party")
 local recovery = require("brain.policies.recovery")
 local score    = require("brain.policies.score")
+local survival = require("brain.policies.survival")
 local value    = require("brain.policies.value")
 
 local M = {}
@@ -48,10 +49,22 @@ local function teleports(snap)
     return false
 end
 
+local function detours(snap, query, plan)
+    local back = query.route(teleport.returns[snap.self.nation] or {})
+    if back == nil or plan == nil then
+        return back ~= nil
+    end
+    return query.path({ maps = { plan.floors[1].map } }, party.perilous(snap, query), { snap.world.map },
+        { map = back.dest, x = back.x, y = back.y, level = snap.self.level }) ~= nil
+end
+
 local function hemmed(snap, query)
     local blocked = snap.record.memory.blocked
     if type(blocked) ~= "table" or teleports(snap) == false then
         return nil
+    end
+    if blocked.walls and blocked.map == snap.world.map and snap.now - blocked.at < combat.cast(snap) + (snap.pace.swing or data.swing) then
+        return { name = "walls" }
     end
     local plan = party.plan(snap, query)
     for _, floor in ipairs(plan ~= nil and plan.floors or {}) do
@@ -61,7 +74,7 @@ local function hemmed(snap, query)
     end
     for _, mob in ipairs(snap.world.mobs or {}) do
         if mob.x ~= nil and combat.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 and
-            snap.now - blocked.at < combat.outcome(snap, query, mob).time then
+            snap.now - blocked.at < combat.outcome(snap, query, mob).time and detours(snap, query, plan) then
             return mob
         end
     end
@@ -168,61 +181,59 @@ local function passing(snap, query, mob)
     return snap.self.hp > battle.burst(snap) + combat.blow(snap, mob) / mob.speed * window
 end
 
-local function threat(snap, query)
-    local fleeing = snap.record.memory.fleeing
-    if fleeing ~= nil and snap.now < fleeing.ends and fleeing.map == snap.world.map then
-        return { name = fleeing.name }, 1, "FLEEING"
-    end
-    local fatal = danger.fatal(snap, query)
-    if fatal ~= nil and (recoverable(snap, query, fatal) or planned(snap, query, fatal) or passing(snap, query, fatal)) then
-        fatal = nil
-    end
-    if fatal ~= nil then
-        return fatal, danger.chance(snap, query, fatal, math.huge), "FATAL"
-    end
-    local burst = battle.burst(snap)
-    local lift = lifted(snap)
-    local hurt = incoming(snap)
-    if snap.self.struck ~= nil and burst > 0 and snap.self.hp <= burst and
-        (lift - hurt <= burst or lift - snap.self.hp <= hurt) then
-        for _, mob in ipairs(snap.world.mobs or {}) do
-            if mob.x ~= nil and combat.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
-                return mob, 1, "IMMINENT"
-            end
+function M.adjacent_hitter(snap)
+    for _, mob in ipairs(snap.world.mobs or {}) do
+        if mob.x ~= nil and combat.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
+            return mob
         end
     end
-    local boxed = hemmed(snap, query)
-    if boxed ~= nil then
-        return boxed, 1, "HEMMED"
-    end
-    local present = escort.present(snap, query)
-    local cohort  = escort.gathering(snap, query)
-    local coming  = cohort ~= nil and (present == nil or #cohort.members > #present.members)
-    local found   = coming == false and pressing(snap, query) or nil
-    if found ~= nil and passing(snap, query, found.mob) then
-        found = nil
-    end
-    local refill = combat.buffs(snap).charge
-    if found ~= nil and refill ~= nil and snap.self.hp > refill.cost + 2 * battle.burst(snap) and
-        recoverable(snap, query, found.mob) then
-        found = nil
-    end
-    if found ~= nil then
-        return found.mob, (found.choice.plan or {}).p_die or 0, "PRESSING"
-    end
-    local need = math.max(ground.need(snap, query), battle.burst(snap))
-    local crew = escort.present(snap, query)
-    local out  = incoming(snap) / combat.cast(snap) * 2 * data.sight.x * (snap.pace.step or data.walk)
-    if snap.self.struck ~= nil and snap.self.hp <= math.max(need, out) and recovery.stranded(snap) and
-        (crew == nil or crew.heal <= 0) then
-        for _, mob in ipairs(snap.world.mobs or {}) do
-            if mob.x ~= nil and combat.hits(mob) and math.abs(mob.x - snap.world.x) + math.abs(mob.y - snap.world.y) == 1 then
-                return mob, 1, "STRANDED"
-            end
-        end
-    end
-    return nil, 0
+    return nil
 end
+
+function M.fleeing_here(snap)
+    local fleeing = snap.record.memory.fleeing
+    return fleeing ~= nil and snap.now < fleeing.ends and fleeing.map == snap.world.map and fleeing or nil
+end
+
+-- A crewmate's flight concerns me when it left the ground I stand on after I entered it. The notice
+-- used to expire after a fixed window (ends), so a member busy with a long move or blocked when it
+-- arrived never saw it and stayed behind alone (trio rooted, 754s: the leader and the rogue were
+-- crossing a portal for 9s while the 4s notice ran out). Comparing the flight time with my own entry
+-- time does not depend on when I decide: a later entry means I came in after the flight and it is old.
+-- "The same ground" means one hunting bundle lists both floors: the first version compared per-floor
+-- rosters, so a member one floor away ignored the flight.
+function M.crew_notice(snap)
+    local entry = snap.record.memory.entry
+    if entry == nil then
+        return nil
+    end
+    for _, member in ipairs(party.members(snap)) do
+        local notice = member.fleeing
+        if notice ~= nil and notice.at ~= nil and notice.at > entry.at and
+            ground.same_ground(notice.map, snap.world.map) and member.self.ghost == false then
+            return notice
+        end
+    end
+    return nil
+end
+
+function M.can_lift(snap)
+    local burst = battle.burst(snap)
+    local lift  = lifted(snap)
+    local hurt  = incoming(snap)
+    return lift - hurt > burst and lift - snap.self.hp > hurt
+end
+
+function M.outrun_need(snap, query)
+    local need = math.max(ground.need(snap, query), battle.burst(snap))
+    local out  = incoming(snap) / combat.cast(snap) * 2 * data.sight.x * (snap.pace.step or data.walk)
+    return math.max(need, out)
+end
+
+M.recoverable = recoverable
+M.planned     = planned
+M.passing     = passing
+M.hemmed      = hemmed
 
 local function rally(snap, query, mob)
     local flow  = incoming(snap) / combat.cast(snap)
@@ -258,12 +269,11 @@ local function regroup(snap, query)
     return { maps = { plan.gate } }
 end
 
-function M.wanted(snap, query)
-    return snap.self.ghost == false and teleport.returns[snap.self.nation] ~= nil and threat(snap, query) ~= nil
+function M.able(snap)
+    return snap.self.ghost == false and teleport.returns[snap.self.nation] ~= nil
 end
 
-function M.propose(snap, query)
-    local mob, _, cause = threat(snap, query)
+function M.flee(snap, query, mob, cause)
     if data.journal then
         local crew = escort.present(snap, query)
         log("debug",
@@ -274,26 +284,31 @@ function M.propose(snap, query)
                 tostring(mob ~= nil and mob.damage),
                 battle.burst(snap), crew ~= nil and #crew.members or 0, #(snap.party or {})))
     end
-    local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and cause ~= "HEMMED" and
+    local meet = cause ~= nil and cause ~= "IMMINENT" and cause ~= "FLEEING" and cause ~= "HEMMED" and cause ~= "CREW" and
+        cause ~= "DOOMED" and
         rally(snap, query, mob) or nil
     local last = snap.record.memory.fleeing
-    local again = last ~= nil and last.map == snap.world.map and cause ~= "FLEEING" and
-        (snap.now or 0) - last.ends < data.rerank
+    local again = last ~= nil and last.map == snap.world.map and cause ~= "FLEEING" and cause ~= "CREW" and
+        (snap.now or 0) - last.ends < survival.respawn(mob)
     return {
         kind = ACTION.MOVE,
         cause = cause ~= nil and (cause .. ":" .. tostring(mob.name)) or nil,
         fleeing = meet == nil and cause ~= "FLEEING" and {
             map = snap.world.map,
             name = mob.name,
+            at = snap.now or 0,
             ends = (snap.now or 0) + 2 * data.sight.x * (snap.pace.step or data.walk),
         } or nil,
         proven = meet == nil and ((cause == "FATAL" and
-            danger.winnable(score.rested(snap), query, mob) == false) or cause == "HEMMED" or again),
-        hemmed = cause == "HEMMED",
-        dest = meet or (cause ~= "HEMMED" and regroup(snap, query)) or
+            danger.winnable(score.rested(snap, "REFILL"), query, mob, danger.company(snap, query)) == false) or cause == "HEMMED" or again),
+        hemmed = cause == "HEMMED" or again,
+        revive = survival.respawn(mob),
+        dest = meet or (cause ~= "HEMMED" and cause ~= "DOOMED" and cause ~= "CREW" and cause ~= "FLEEING" and
+                regroup(snap, query)) or
             {
                 maps = teleport.returns[snap.self.nation],
-                urgent = cause == "IMMINENT" or cause == "HEMMED" or
+                urgent = cause == "IMMINENT" or cause == "HEMMED" or cause == "DOOMED" or cause == "CREW" or
+                    cause == "FLEEING" or
                     escort.present(snap, query) == nil
             },
         forget = snap.record.death ~= nil
@@ -311,14 +326,22 @@ local function abandoned(snap, query, trip)
     return cost
 end
 
-function M.value(snap, query)
-    local _, chance, cause = threat(snap, query)
-    local worth            = value.baseline(snap, query)
-    local stay             = chance * danger.loss(snap, query, worth)
+function M.worth(snap, query, mob, chance, cause)
+    local blocked = snap.record.memory.blocked
+    if cause ~= "HEMMED" and type(blocked) == "table" and blocked.map == snap.world.map and
+        snap.now - blocked.at < combat.cast(snap) then
+        return -math.huge
+    end
+    if cause == "CREW" then
+        return math.huge
+    end
+    local worth = value.baseline(snap, query)
+    local stay  = chance * (danger.loss(snap, query, worth) +
+        abandoned(snap, query, { time = danger.revival(snap, query) }))
     if cause == "HEMMED" then
         stay = math.max(0, snap.now - (snap.record.memory.blocked.since or snap.now)) / 1000 * worth.value
     end
-    local trip = value.trip(snap, query, M.propose(snap, query).dest, worth)
+    local trip = value.trip(snap, query, M.flee(snap, query, mob, cause).dest, worth)
     if trip == nil then
         return -math.huge
     end

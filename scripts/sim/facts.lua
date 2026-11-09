@@ -35,8 +35,18 @@ function M.bind(mind, snap, world)
         spawns = function(map, names)
             return mind:spawns(nil, names, map or snap.world.map)
         end,
-        demand = function(map)
-            return (world.demand or {})[map] or 0
+        demand = function(map, crew)
+            local excluded = { [snap.self.name or ""] = true }
+            for _, name in ipairs(crew or {}) do
+                excluded[name] = true
+            end
+            local total = 0
+            for name, entry in pairs(world.occupants or {}) do
+                if entry.map == map and excluded[name] == nil then
+                    total = total + entry.load
+                end
+            end
+            return total
         end,
         roster = function()
             return world.roster or {}
@@ -47,8 +57,11 @@ function M.bind(mind, snap, world)
         ally = function(name)
             return world.ally ~= nil and world.ally(name) or nil
         end,
-        reach = function(perilous, shunned)
-            return mind:reach(nil, { perilous = perilous or {}, shunned = shunned or {} }, origin(snap))
+        reach = function(perilous, shunned, from)
+            return mind:reach(nil, { perilous = perilous or {}, shunned = shunned or {} }, from or origin(snap))
+        end,
+        leaps = function(destination, detour, from)
+            return mind:leaps(nil, destination, detour, from)
         end,
         route = function(maps, perilous, shunned)
             return mind:route(nil, { maps = maps }, { perilous = perilous or {}, shunned = shunned or {} },

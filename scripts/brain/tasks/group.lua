@@ -16,10 +16,13 @@ local function postponed(snap, query, offer, task)
     return pending.gain * ground.horizon(snap, offer.plan.rate) > offer.plan.rate * trip
 end
 
-function M.wanted(snap, query)
+function M.offered(snap, query)
+    return party.offer(snap, query) ~= nil
+end
+
+function M.free_now(snap, query)
     local offer = party.offer(snap, query)
-    return offer ~= nil and postponed(snap, query, offer, learn) == false and
-        postponed(snap, query, offer, outfit) == false
+    return postponed(snap, query, offer, learn) == false and postponed(snap, query, offer, outfit) == false
 end
 
 function M.value(snap, query)

@@ -31,6 +31,18 @@ namespace game_resp = fb::protocol::game::response;
 
 constexpr auto LOOT_TIMEOUT = 3s;
 
+constexpr auto TREE_ROOT    = 1;
+constexpr auto TREE_SNAP    = 2;
+constexpr auto TREE_FACTS   = 3;
+constexpr auto TREE_FRAMES  = 4;
+constexpr auto TREE_PATH    = 5;
+constexpr auto TREE_FRAME   = 6;
+constexpr auto TREE_NODE    = 7;
+constexpr auto TREE_WHEN    = lua_KContext{1};
+constexpr auto TREE_ACT     = lua_KContext{2};
+constexpr auto TREE_RUN     = lua_KContext{3};
+constexpr auto TREE_MEASURE = lua_KContext{4};
+
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"state",    builtin::brain::builtin_state},
@@ -45,6 +57,7 @@ IMPLEMENT_LUA_EXTENSION(fb::bot::brain, "fb.bot.brain")
     {"reach",    builtin::brain::builtin_reach},
     {"warp_at",  builtin::brain::builtin_warp_at},
     {"walk",     builtin::brain::builtin_walk},
+    {"leaps",    builtin::brain::builtin_leaps},
     {"remember", builtin::brain::builtin_remember},
     {"npcs",     builtin::brain::builtin_npcs},
     {"talk",     builtin::brain::builtin_talk},
@@ -179,6 +192,190 @@ int builtin::brain::builtin_stat(lua_State* L)
 
     bot->controller.container.stats.add(lua->tostring(3), lua_tonumber(L, 4), false);
     return 0;
+}
+
+int builtin::brain::builtin_tree(lua_State* L)
+{
+    lua_settop(L, TREE_FACTS);
+    lua_newtable(L);
+    lua_newtable(L);
+    builtin::brain::tree_push(L, TREE_ROOT);
+    return builtin::brain::tree_walk(L);
+}
+
+void builtin::brain::tree_push(lua_State* L, int node)
+{
+    node = lua_absindex(L, node);
+    lua_createtable(L, 0, 2);
+    lua_pushvalue(L, node);
+    lua_setfield(L, -2, "node");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "next");
+    lua_rawseti(L, TREE_FRAMES, static_cast<lua_Integer>(lua_rawlen(L, TREE_FRAMES)) + 1);
+    if (lua_getfield(L, node, "name") == LUA_TSTRING)
+        lua_rawseti(L, TREE_PATH, static_cast<lua_Integer>(lua_rawlen(L, TREE_PATH)) + 1);
+    else
+        lua_pop(L, 1);
+}
+
+void builtin::brain::tree_pop(lua_State* L)
+{
+    auto depth = static_cast<lua_Integer>(lua_rawlen(L, TREE_FRAMES));
+    lua_rawgeti(L, TREE_FRAMES, depth);
+    lua_getfield(L, -1, "node");
+    auto named = lua_getfield(L, -1, "name") == LUA_TSTRING;
+    lua_pop(L, 3);
+    lua_pushnil(L);
+    lua_rawseti(L, TREE_FRAMES, depth);
+    if (named)
+    {
+        lua_pushnil(L);
+        lua_rawseti(L, TREE_PATH, static_cast<lua_Integer>(lua_rawlen(L, TREE_PATH)));
+    }
+}
+
+int builtin::brain::tree_walk(lua_State* L)
+{
+    while (true)
+    {
+        lua_settop(L, TREE_PATH);
+        auto depth = static_cast<lua_Integer>(lua_rawlen(L, TREE_FRAMES));
+        if (depth == 0)
+        {
+            lua_pushnil(L);
+            lua_pushvalue(L, TREE_PATH);
+            return 2;
+        }
+
+        lua_rawgeti(L, TREE_FRAMES, depth);
+        lua_getfield(L, TREE_FRAME, "node");
+        lua_getfield(L, TREE_NODE, "kind");
+        auto kind = std::string_view(lua_tostring(L, -1));
+        lua_pop(L, 1);
+        lua_getfield(L, TREE_FRAME, "next");
+        auto next = lua_tointeger(L, -1);
+        lua_pop(L, 1);
+
+        if (kind == "select")
+        {
+            lua_getfield(L, TREE_NODE, "children");
+            if (lua_rawgeti(L, -1, next) == LUA_TNIL)
+            {
+                builtin::brain::tree_pop(L);
+            }
+            else
+            {
+                lua_pushinteger(L, next + 1);
+                lua_setfield(L, TREE_FRAME, "next");
+                builtin::brain::tree_push(L, -1);
+            }
+        }
+        else if (kind == "when" && next > 1)
+        {
+            builtin::brain::tree_pop(L);
+        }
+        else if (kind == "when")
+        {
+            lua_pushinteger(L, next + 1);
+            lua_setfield(L, TREE_FRAME, "next");
+            lua_getfield(L, TREE_NODE, "test");
+            lua_pushvalue(L, TREE_SNAP);
+            lua_pushvalue(L, TREE_FACTS);
+            lua_callk(L, 2, 1, TREE_WHEN, builtin::brain::tree_resume);
+            return builtin::brain::tree_resume(L, LUA_OK, TREE_WHEN);
+        }
+        else if (kind == "act")
+        {
+            lua_getfield(L, TREE_NODE, "run");
+            lua_pushvalue(L, TREE_SNAP);
+            lua_pushvalue(L, TREE_FACTS);
+            lua_callk(L, 2, 1, TREE_ACT, builtin::brain::tree_resume);
+            return builtin::brain::tree_resume(L, LUA_OK, TREE_ACT);
+        }
+        else if (kind == "pick")
+        {
+            lua_getfield(L, TREE_NODE, "children");
+            if (lua_rawgeti(L, -1, next) == LUA_TNIL)
+            {
+                if (lua_getfield(L, TREE_FRAME, "best") != LUA_TNIL)
+                {
+                    lua_pushvalue(L, TREE_PATH);
+                    return 2;
+                }
+                builtin::brain::tree_pop(L);
+            }
+            else
+            {
+                lua_pushinteger(L, next + 1);
+                lua_setfield(L, TREE_FRAME, "next");
+                lua_getfield(L, -1, "run");
+                lua_pushvalue(L, TREE_SNAP);
+                lua_pushvalue(L, TREE_FACTS);
+                lua_callk(L, 2, 1, TREE_RUN, builtin::brain::tree_resume);
+                return builtin::brain::tree_resume(L, LUA_OK, TREE_RUN);
+            }
+        }
+        else
+        {
+            return luaL_error(L, "unknown tree node kind: %s", kind.data());
+        }
+    }
+}
+
+int builtin::brain::tree_resume(lua_State* L, int status, lua_KContext phase)
+{
+    if (phase == TREE_WHEN)
+    {
+        if (lua_toboolean(L, -1))
+        {
+            lua_getfield(L, TREE_NODE, "child");
+            builtin::brain::tree_push(L, -1);
+        }
+        else
+        {
+            builtin::brain::tree_pop(L);
+        }
+    }
+    else if (phase == TREE_ACT)
+    {
+        if (lua_isnil(L, -1) == false)
+        {
+            lua_pushvalue(L, TREE_PATH);
+            return 2;
+        }
+        builtin::brain::tree_pop(L);
+    }
+    else if (phase == TREE_RUN)
+    {
+        if (lua_isnil(L, -1) == false)
+        {
+            auto result = lua_gettop(L);
+            lua_pushvalue(L, result);
+            lua_setfield(L, TREE_FRAME, "held");
+            lua_getfield(L, TREE_NODE, "measure");
+            lua_pushvalue(L, TREE_SNAP);
+            lua_pushvalue(L, TREE_FACTS);
+            lua_pushvalue(L, result);
+            lua_callk(L, 3, 1, TREE_MEASURE, builtin::brain::tree_resume);
+            return builtin::brain::tree_resume(L, LUA_OK, TREE_MEASURE);
+        }
+    }
+    else if (phase == TREE_MEASURE)
+    {
+        if (lua_isnumber(L, -1))
+        {
+            auto worth = lua_tonumber(L, -1);
+            lua_getfield(L, TREE_FRAME, "most");
+            if (lua_isnil(L, -1) || worth > lua_tonumber(L, -1))
+            {
+                lua_pushnumber(L, worth);
+                lua_setfield(L, TREE_FRAME, "most");
+                lua_getfield(L, TREE_FRAME, "held");
+                lua_setfield(L, TREE_FRAME, "best");
+            }
+        }
+    }
+    return builtin::brain::tree_walk(L);
 }
 
 int builtin::brain::builtin_clock(lua_State* L)
@@ -475,6 +672,14 @@ int builtin::brain::builtin_observe(lua_State* L)
                      bot->state() == fb::model::enum_value::STATE::HALF_CLOACK ||
                      bot->state() == fb::model::enum_value::STATE::ADV_CLOACK);
     lua->settable(-3);
+    lua->pushstring("riding");
+    lua->pushboolean(bot->state() == fb::model::enum_value::STATE::RIDING);
+    lua->settable(-3);
+    auto map = fb::model::table::map->find(seen.map);
+    lua->pushstring("no_spell");
+    lua->pushboolean(map != nullptr && (static_cast<uint32_t>(map->option) &
+                                        static_cast<uint32_t>(fb::model::enum_value::MAP_OPTION::DISABLE_SPELL)) != 0);
+    lua->settable(-3);
     lua->pushstring("map");
     lua->pushinteger(seen.map);
     lua->settable(-3);
@@ -616,6 +821,11 @@ fb::bot::brain::destination builtin::brain::read_destination(lua_State* L, int i
     }
     lua_pop(L, 1);
 
+    lua_getfield(L, index, "pace");
+    if (lua_isnumber(L, -1))
+        result.pace = std::chrono::milliseconds{lua_tointeger(L, -1)};
+    lua_pop(L, 1);
+
     lua_getfield(L, index, "maps");
     if (lua_istable(L, -1))
     {
@@ -650,6 +860,35 @@ fb::bot::brain::destination builtin::brain::read_destination(lua_State* L, int i
 
     lua_getfield(L, index, "range");
     result.range = static_cast<uint16_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "steps");
+    result.steps = static_cast<uint16_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "leash");
+    if (lua_istable(L, -1))
+    {
+        auto leash = fb::bot::brain::leash{};
+        lua_getfield(L, -1, "names");
+        if (lua_istable(L, -1))
+        {
+            for (auto i = lua_Integer{1}; lua_rawgeti(L, -1, i) == LUA_TSTRING; i++)
+            {
+                leash.names.insert(lua->tostring(-1));
+                lua_pop(L, 1);
+            }
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+        lua_getfield(L, -1, "x");
+        lua_getfield(L, -2, "y");
+        leash.x = static_cast<uint16_t>(lua_tointeger(L, -2));
+        leash.y = static_cast<uint16_t>(lua_tointeger(L, -1));
+        lua_pop(L, 2);
+        if (leash.names.empty() == false)
+            result.leash = std::move(leash);
+    }
     lua_pop(L, 1);
     return result;
 }
@@ -767,6 +1006,14 @@ fb::bot::brain::detour builtin::brain::read_detour(lua_State* L, int index)
         lua_pop(L, 1);
     }
     lua_pop(L, 1);
+
+    if (lua_getfield(L, index, "leap"); lua_isinteger(L, -1))
+        result.leap = static_cast<size_t>(lua_tointeger(L, -1) - 1);
+    lua_pop(L, 1);
+
+    if (lua_getfield(L, index, "side"); lua_isinteger(L, -1))
+        result.side = static_cast<atlas::CARDINAL>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
     return result;
 }
 
@@ -838,6 +1085,104 @@ int builtin::brain::builtin_reach(lua_State* L)
     };
     builder.resume = [push]() -> async::task<int> {
         co_return push();
+    };
+    return builder.run();
+}
+
+int builtin::brain::builtin_leaps(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto brain = lua->touserdata<fb::bot::brain>(1);
+    if (brain == nullptr)
+        return 0;
+
+    auto bot         = lua->touserdata<fb::bot::game_bot>(2);
+    auto destination = builtin::brain::read_destination(L, 3);
+    auto detour      = builtin::brain::read_detour(L, 4);
+    auto result      = std::make_shared<atlas::leap_options>();
+    lua_getfield(L, 5, "map");
+    lua_getfield(L, 5, "x");
+    lua_getfield(L, 5, "y");
+    lua_getfield(L, 5, "level");
+    auto map = static_cast<uint16_t>(lua_tointeger(L, -4));
+    auto here =
+        atlas::position(static_cast<uint16_t>(lua_tointeger(L, -3)), static_cast<uint16_t>(lua_tointeger(L, -2)));
+    auto level = static_cast<uint8_t>(lua_tointeger(L, -1));
+    lua_pop(L, 4);
+
+    auto teleports = std::vector<atlas::teleport>{};
+    for (auto& jump : detour.jumps)
+    {
+        teleports.push_back(jump.teleport);
+    }
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [brain, bot, map, here, level, destination, detour, teleports, result]() -> async::task<void> {
+        if (bot == nullptr)
+        {
+            *result = atlas::get().leaps(map,
+                                         here,
+                                         destination.maps,
+                                         destination.at,
+                                         level,
+                                         detour.closed,
+                                         detour.perilous,
+                                         detour.shunned,
+                                         teleports);
+            co_return;
+        }
+        *result =
+            co_await brain->offload<atlas::leap_options>(bot, [map, here, level, &destination, &detour, &teleports]() {
+                return atlas::get().leaps(map,
+                                          here,
+                                          destination.maps,
+                                          destination.at,
+                                          level,
+                                          detour.closed,
+                                          detour.perilous,
+                                          detour.shunned,
+                                          teleports);
+            });
+    };
+    builder.resume = [lua, result]() -> async::task<int> {
+        lua->new_table();
+        if (result->walk.has_value())
+        {
+            lua->pushstring("walk");
+            lua->pushinteger(result->walk.value());
+            lua->settable(-3);
+        }
+        lua->pushstring("options");
+        lua->new_table();
+        auto index = lua_Integer{1};
+        for (auto& option : result->options)
+        {
+            lua->new_table();
+            lua->pushstring("index");
+            lua->pushinteger(static_cast<lua_Integer>(option.index) + 1);
+            lua->settable(-3);
+            lua->pushstring("side");
+            lua->pushinteger(static_cast<lua_Integer>(option.side));
+            lua->settable(-3);
+            lua->pushstring("dest");
+            lua->pushinteger(option.dest);
+            lua->settable(-3);
+            lua->pushstring("cost");
+            lua->pushinteger(option.cost);
+            lua->settable(-3);
+            lua->pushstring("x");
+            lua->pushinteger(option.landing.x);
+            lua->settable(-3);
+            lua->pushstring("y");
+            lua->pushinteger(option.landing.y);
+            lua->settable(-3);
+            lua_rawseti(static_cast<lua_State*>(*lua), -2, index++);
+        }
+        lua->settable(-3);
+        co_return 1;
     };
     return builder.run();
 }
@@ -914,6 +1259,9 @@ int builtin::brain::builtin_route(lua_State* L)
             lua->settable(-3);
             lua->pushstring("ay");
             lua->pushinteger(hop.after.y);
+            lua->settable(-3);
+            lua->pushstring("world");
+            lua->pushboolean(hop.world != atlas::NO_WORLD);
             lua->settable(-3);
             lua_rawseti(static_cast<lua_State*>(*lua), -2, index++);
         }
@@ -1592,6 +1940,19 @@ int builtin::brain::builtin_concern(lua_State* L)
         }
         lua_pop(L, 1);
 
+        lua_getfield(L, 3, "crew");
+        if (lua_istable(L, -1))
+        {
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0)
+            {
+                if (lua_type(L, -2) == LUA_TSTRING && lua_toboolean(L, -1))
+                    value.crew.insert(lua_tostring(L, -2));
+                lua_pop(L, 1);
+            }
+        }
+        lua_pop(L, 1);
+
         lua_getfield(L, 3, "hp");
         value.hp = static_cast<uint32_t>(lua_tointeger(L, -1));
         lua_pop(L, 1);
@@ -1795,7 +2156,15 @@ int builtin::brain::builtin_demand(lua_State* L)
     if (bot == nullptr)
         return 0;
 
-    lua_pushnumber(L, fb::bot::brain::demand(static_cast<uint16_t>(lua_tointeger(L, 3)), bot->name()));
+    auto except = std::unordered_set<std::string>{bot->name()};
+    lua_pushnil(L);
+    while (lua_next(L, 4) != 0)
+    {
+        except.insert(lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
+
+    lua_pushnumber(L, fb::bot::brain::demand(static_cast<uint16_t>(lua_tointeger(L, 3)), except));
     return 1;
 }
 
@@ -2229,6 +2598,18 @@ int builtin::brain::builtin_spawns(lua_State* L)
         lua->settable(-3);
         lua->pushstring("y");
         lua->pushinteger((spawn.begin.y + spawn.end.y) / 2);
+        lua->settable(-3);
+        lua->pushstring("left");
+        lua->pushinteger(spawn.begin.x);
+        lua->settable(-3);
+        lua->pushstring("top");
+        lua->pushinteger(spawn.begin.y);
+        lua->settable(-3);
+        lua->pushstring("right");
+        lua->pushinteger(spawn.end.x);
+        lua->settable(-3);
+        lua->pushstring("bottom");
+        lua->pushinteger(spawn.end.y);
         lua->settable(-3);
         lua->pushstring("count");
         lua->pushinteger(spawn.count);

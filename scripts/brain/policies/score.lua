@@ -25,6 +25,13 @@ local function sustained(choice, field, regen, rate, recovered)
     return math.min(paced, choice[field] * regen / choice.mp)
 end
 
+local function affordable(choice, mp)
+    if choice == nil then
+        return 0
+    end
+    return choice.mp > 0 and choice.hp * (mp // choice.mp) or math.huge
+end
+
 local function strongest(choices, field, accept)
     local found = nil
     for _, choice in ipairs(choices) do
@@ -214,6 +221,7 @@ function M.capability(snap, query)
         hps      = {
             self   = sustained(heal, "hp", regen, rate),
             others = sustained(others, "hp", regen, rate),
+            stock  = affordable(others, snap.self.mp or 0),
         },
         supply   = supplies(snap),
         refill   = refill,

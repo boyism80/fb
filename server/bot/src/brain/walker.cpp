@@ -56,8 +56,8 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
     auto& atlas     = atlas::get();
     auto  visited   = std::unordered_set<uint16_t>{};
     auto  corrected = std::unordered_set<uint64_t>{};
-    auto  spent     = std::unordered_set<size_t>{};
     auto  checked   = std::optional<uint16_t>{};
+    auto  walked    = uint16_t{0};
     if (bot->fast_move().has_value() == false)
         std::ignore = co_await this->synced(bot);
     if (bot->fast_move().value_or(0) != 0)
@@ -129,32 +129,15 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
         if (final && distance <= range)
             co_return event{"ARRIVED", map, here};
 
-        if (checked != map && detour.jumps.empty() == false)
+        if (checked.has_value() && checked != map && detour.jumps.empty() == false)
+            co_return event{"HOPPED", map, here};
+        auto first = checked.has_value() == false;
+        checked    = map;
+        if (first && detour.leap.has_value())
         {
-            checked        = map;
-            auto teleports = std::vector<atlas::teleport>{};
-            for (auto index = size_t{0}; index < detour.jumps.size(); index++)
             {
-                teleports.push_back(spent.contains(index) ? atlas::teleport{} : detour.jumps[index].teleport);
-            }
-
-            auto leap = co_await this->offload<std::optional<atlas::leap>>(
-                bot,
-                [&atlas, map, here, &destination, level, &detour, teleports]() {
-                    return atlas.shortcut(map,
-                                          here,
-                                          destination.maps,
-                                          destination.at,
-                                          level,
-                                          detour.closed,
-                                          detour.perilous,
-                                          detour.shunned,
-                                          teleports);
-                });
-            if (leap.has_value())
-            {
-                auto& jump   = detour.jumps[leap->index];
-                auto  input  = jump.inputs.contains(leap->side) ? jump.inputs.at(leap->side) : std::string{};
+                auto& jump   = detour.jumps[detour.leap.value()];
+                auto  input  = jump.inputs.contains(detour.side) ? jump.inputs.at(detour.side) : std::string{};
                 auto  spell  = bot->get_spell(bot->get_spell_slot_by_name(jump.spell));
                 auto  slot   = jump.spell.empty() ? bot->get_item_slot_by_name(jump.item)
                                                   : bot->get_spell_slot_by_name(jump.spell);
@@ -215,8 +198,7 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
                     co_return event{"JUMPED", bot->map(), bot->position(), jump.spell.empty() ? jump.item : jump.spell};
                 }
 
-                spent.insert(leap->index);
-                continue;
+                co_return event{"LEAP_FAILED", map, here, jump.spell.empty() ? jump.item : jump.spell};
             }
         }
 
@@ -269,9 +251,35 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
             if (this->active(bot->id) == false)
                 co_return event{"INTERRUPTED", map, bot->position()};
 
-            auto from    = bot->position();
-            auto next    = route[index];
-            auto hop     = gate && index + 1 == route.size();
+            auto from = bot->position();
+            auto next = route[index];
+            auto hop  = gate && index + 1 == route.size();
+            if (destination.leash.has_value())
+            {
+                auto& leash   = destination.leash.value();
+                auto& entries = bot->sight.entries();
+                auto  pulled  = false;
+                for (auto& name : leash.names)
+                {
+                    auto found = std::find_if(entries.begin(), entries.end(), [&name](const auto& pair) {
+                        return pair.second.name == name;
+                    });
+                    if (found == entries.end())
+                    {
+                        pulled = true;
+                    }
+                    else
+                    {
+                        auto& at     = found->second.position;
+                        auto  beyond = std::abs(next.x - at.x) > leash.x || std::abs(next.y - at.y) > leash.y;
+                        auto  away   = std::abs(next.x - at.x) + std::abs(next.y - at.y) >
+                                    std::abs(from.x - at.x) + std::abs(from.y - at.y);
+                        pulled = pulled || (beyond && away);
+                    }
+                }
+                if (pulled)
+                    co_return event{"LEASHED", map, from};
+            }
             auto step    = std::pair<uint8_t, std::shared_ptr<fb::protocol::header>>{};
             auto failure = std::string{};
             auto started = clock::now();
@@ -318,6 +326,14 @@ async::task<brain::event> brain::walk(std::shared_ptr<game_bot> bot,
                               "step",
                               std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started));
                 this->progress(bot->id);
+                auto waited = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - started);
+                if (waited < destination.pace)
+                {
+                    co_await bot->sleep(destination.pace - waited);
+                }
+                walked++;
+                if (destination.steps != 0 && walked >= destination.steps)
+                    co_return event{"ARRIVED", map, next};
             }
             else if (step.first == POSITION)
             {

@@ -16,8 +16,8 @@ local function worth(snap, query)
     local base    = score.recovered(snap, query)
     local plan    = party.plan(base, query)
     local alone   = ground.choose(base, query, ground.mode(base))
-    local group   = plan ~= nil and plan.rate or 0
-    local solo    = alone ~= nil and alone.rate or 0
+    local group   = plan ~= nil and (plan.peak or plan.rate) or 0
+    local solo    = alone ~= nil and (alone.peak or alone.rate) or 0
     local horizon = ground.horizon(snap, math.max(group, solo))
     if horizon == math.huge then
         return 0
@@ -25,7 +25,7 @@ local function worth(snap, query)
     return solo * horizon - group * math.max(0, horizon - waited(snap))
 end
 
-local function stricken(snap)
+function M.stricken(snap)
     if snap.self.ghost then
         return true
     end
@@ -37,26 +37,8 @@ local function stricken(snap)
     return false
 end
 
-local function finished(snap, query)
-    local plan = party.plan(snap, query)
-    if plan == nil then
-        return true
-    end
-    local swept = snap.record.memory.swept
-    if swept == nil or swept.name ~= plan.name then
-        return false
-    end
-    for _, floor in ipairs(plan.floors) do
-        if swept.floors[tostring(floor.map)] == nil then
-            return false
-        end
-    end
-    local last = plan.floors[#plan.floors]
-    return last.map == snap.world.map and field.target(snap, query, last.targets) == nil
-end
-
-function M.wanted(snap, query)
-    return #(snap.group or {}) > 0 and (stricken(snap) or finished(snap, query)) and worth(snap, query) > 0
+function M.finished(snap, query)
+    return party.plan(snap, query) == nil
 end
 
 function M.value(snap, query)

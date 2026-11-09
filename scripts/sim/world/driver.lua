@@ -1,21 +1,30 @@
-local decide   = require("brain.decide")
-local battle   = require("brain.policies.battle")
-local combat   = require("brain.data.combat")
-local items    = require("brain.data.items")
-local danger   = require("brain.policies.danger")
-local escort   = require("brain.policies.escort")
-local ground   = require("brain.policies.ground")
-local party    = require("brain.policies.party")
-local recovery = require("brain.policies.recovery")
-local supply   = require("brain.tasks.supply")
-local fight    = require("brain.policies.combat")
-local value    = require("brain.policies.value")
-local facts    = require("sim.facts")
-local engine   = require("sim.world.engine")
-local json     = require("sim.world.json")
-local town     = require("sim.world.town")
-local spells   = require("sim.world.spells")
-local why      = require("sim.world.why")
+local decide        = require("brain.decide")
+local teleports     = require("brain.data.teleport")
+local shops         = require("brain.data.shops")
+local serialize     = require("sim.serialize")
+local watch         = require("sim.world.watch")
+local hunting       = require("brain.data.hunting")
+local party_errands = require("brain.policies.party").errands
+local learning      = require("brain.data.learning")
+local ground_policy = require("brain.policies.ground")
+local go            = require("brain.trees.go")
+local battle        = require("brain.policies.battle")
+local combat        = require("brain.data.combat")
+local items         = require("brain.data.items")
+local danger        = require("brain.policies.danger")
+local escort        = require("brain.policies.escort")
+local ground        = require("brain.policies.ground")
+local party         = require("brain.policies.party")
+local recovery      = require("brain.policies.recovery")
+local supply        = require("brain.tasks.supply")
+local fight         = require("brain.policies.combat")
+local value         = require("brain.policies.value")
+local facts         = require("sim.facts")
+local engine        = require("sim.world.engine")
+local json          = require("sim.world.json")
+local town          = require("sim.world.town")
+local spells        = require("sim.world.spells")
+local why           = require("sim.world.why")
 
 local M = {}
 
@@ -33,11 +42,67 @@ local function copy(value)
     return result
 end
 
+local function detached(value, seen)
+    if type(value) ~= "table" then
+        return value
+    end
+    seen = seen or {}
+    if seen[value] ~= nil then
+        return seen[value]
+    end
+    local result = {}
+    seen[value]  = result
+    for key, entry in pairs(value) do
+        result[key] = detached(entry, seen)
+    end
+    return setmetatable(result, getmetatable(value))
+end
+
+local function cached_module(name)
+    return name:sub(1, 6) == "brain." and name:sub(1, 11) ~= "brain.data."
+end
+
+local function cold_choose(snap, bound)
+    local saved = {}
+    for name, module in pairs(package.loaded) do
+        if cached_module(name) then
+            saved[name], package.loaded[name] = module, nil
+        end
+    end
+    local ok, result = pcall(function()
+        return require("brain.decide").choose(snap, bound, nil, nil)
+    end)
+    for name in pairs(package.loaded) do
+        if cached_module(name) then
+            package.loaded[name] = nil
+        end
+    end
+    for name, module in pairs(saved) do
+        package.loaded[name] = module
+    end
+    if ok == false then
+        error(result, 0)
+    end
+    return result
+end
+
+local function described(decision)
+    if decision == nil then
+        return "none"
+    end
+    local dest = decision.dest or {}
+    return table.concat(
+    { tostring(decision.task), tostring(decision.kind), tostring(decision.key), tostring(decision.slot),
+        tostring(decision.item), tostring(decision.oid), tostring(dest.map), tostring(dest.x), tostring(dest.y),
+        tostring(dest.range), table.concat(dest.maps or {}, ",") }, "|")
+end
+
 local Session = {}
 Session.__index = Session
 
 local Actor = {}
 Actor.__index = Actor
+M.Actor = Actor
 
 function Session:emit(actor, record)
     record.bot  = actor.base.self.name
@@ -61,6 +126,7 @@ function Session:world(map)
         grid = grid,
         seed = self.seed * 7919 + map,
         rezen_multiplier = self.options.rezen_multiplier,
+        sparse = self.options.sparse,
         exp_multiplier = self.options.exp_multiplier,
         exp_limit = self.options.exp_limit,
         drops = self.options.drops,
@@ -136,8 +202,91 @@ function Session:advance(to)
     self.clock = to
 end
 
+local function bundle_of(session)
+    local name = nil
+    for _, actor in ipairs(session.actors) do
+        name = name or actor.memory.commit
+    end
+    name = name or (session.planned ~= nil and session.planned.name or nil)
+    for _, entry in ipairs(hunting.bundles) do
+        if entry.name == name then
+            return entry
+        end
+    end
+    return nil
+end
+
+local function all_on(session, accept)
+    local bundle = bundle_of(session)
+    if bundle == nil then
+        return false
+    end
+    for _, actor in ipairs(session.actors) do
+        local found = false
+        for index, floor in ipairs(bundle.floors) do
+            found = found or (floor.map == actor.active.map.id and accept(index))
+        end
+        if found == false or actor.transit then
+            return false
+        end
+    end
+    return true
+end
+
+M.goals = {
+    entered = function(session)
+        return all_on(session, function(index)
+            return index == 1
+        end)
+    end,
+    advanced = function(session)
+        return all_on(session, function(index)
+            return index > 1
+        end)
+    end,
+    supplied = function(session)
+        for _, actor in ipairs(session.actors) do
+            local stocked = false
+            for _, item in ipairs(actor.bag.items) do
+                stocked = stocked or (item.name == "동동주" and item.count > 0)
+            end
+            if stocked == false then
+                return false
+            end
+        end
+        return all_on(session, function()
+            return true
+        end)
+    end,
+    reunited = function(session)
+        local map = nil
+        for _, actor in ipairs(session.actors) do
+            if actor.transit or (map ~= nil and actor.active.map.id ~= map) then
+                return false
+            end
+            map = actor.active.map.id
+        end
+        return true
+    end,
+    formed = function(session)
+        local group = session.actors[1] ~= nil and session:group(session.actors[1]) or nil
+        if group == nil or bundle_of(session) == nil then
+            return false
+        end
+        for _, actor in ipairs(session.actors) do
+            if group.members[actor] ~= true then
+                return false
+            end
+        end
+        return true
+    end,
+}
+
 function Session:run()
     while true do
+        if self.halted then
+            return
+        end
         local actor = nil
         for _, candidate in ipairs(self.actors) do
             if candidate.finished == false and (actor == nil or candidate.wake < actor.wake) then
@@ -154,14 +303,170 @@ function Session:run()
             ok, duration = coroutine.resume(actor.co, table.unpack({ duration.call() }))
         end
         if ok == false then
-            error(duration)
+            error(debug.traceback(actor.co, tostring(duration)), 0)
         end
         if coroutine.status(actor.co) == "dead" then
             actor.finished = true
         else
             actor.wake = self.clock + math.max(duration or 0, 1)
         end
+        local profile = self.profiles[actor]
+        if actor.me.dead and profile ~= nil and profile.self ~= nil and profile.self.ghost ~= true then
+            local ghost = {}
+            for key, value in pairs(profile.self) do
+                ghost[key] = value
+            end
+            ghost.ghost, ghost.hp = true, 0
+            profile.self = ghost
+        end
+        if actor.options.guard and actor.me.dead then
+            actor:violate("died")
+        end
+        if self.goal ~= nil and self.halted ~= true and self.goal(self) then
+            self.verdict = "PASS"
+            self.halted  = true
+        end
     end
+end
+
+function Actor:violate(rule)
+    self.violated = self.violated or {}
+    if self.violated[rule] then
+        return
+    end
+    self.violated[rule]  = true
+    self.session.verdict = "VIOLATION " .. rule
+    if self.options.alarm ~= nil and self.seen_snap ~= nil then
+        serialize.dump(
+        self.options.alarm ..
+        "." .. string.gsub(rule, "[^%w_]", "_") .. "." .. string.gsub(self.base.self.name or "", "[^%w_]", "_") .. ".lua",
+            self.seen_snap)
+        for _, other in ipairs(self.session.actors) do
+            if other ~= self and other.seen_snap ~= nil then
+                serialize.dump(self.options.alarm .. "." .. string.gsub(rule, "[^%w_]", "_") .. "." ..
+                    string.gsub(self.base.self.name or "", "[^%w_]", "_") .. ".crew." ..
+                    string.gsub(other.base.self.name or "", "[^%w_]", "_") .. ".lua", other.seen_snap)
+            end
+        end
+    end
+    self.session.halted = self.options.halt == true
+    if self.options.alarm ~= nil then
+        local near = {}
+        for _, mob in pairs(self.active.mobs) do
+            local distance = math.abs(mob.x - self.me.x) + math.abs(mob.y - self.me.y)
+            if distance <= combat.adjacent then
+                table.insert(near, mob.data.name .. ":" .. distance)
+            end
+        end
+        local rows = decide.offers[self.base.self.name or ""] or {}
+        local crew = {}
+        local trails = { [self.base.self.name] = self.trail }
+        for _, actor in ipairs(self.session.actors) do
+            if actor ~= self then
+                crew[actor.base.self.name] = actor.recent
+                trails[actor.base.self.name] = actor.trail
+            end
+        end
+        local file = io.open(self.options.alarm, "a")
+        file:write(json.encode({
+            rule = rule,
+            scene = self.options.scene or "solo",
+            seed = self.session.seed,
+            bot = self.base.self.name,
+            class = self.base.self.class,
+            level = self.base.self.level,
+            t = self.clock,
+            map = self.active.map.id,
+            x = self.me.x,
+            y = self.me.y,
+            hp = self.me.hp,
+            mp = self.me.mp,
+            near = near,
+            recent = self.recent,
+            crew = crew,
+            trails = trails,
+            task = rows[1] ~= nil and rows[1].task or nil,
+            path = rows[1] ~= nil and rows[1].path or nil,
+        }), "\n")
+        file:close()
+    end
+    self:emit({
+        kind = "violation",
+        rule = rule,
+        map = self.active.map.id,
+        x = self.me.x,
+        y = self.me.y,
+        hp = self.me.hp,
+        mp = self.me.mp,
+        offers = decide.offers[self.base.self.name or ""],
+    })
+end
+
+function Actor:watch(snap, bound, decision)
+    if self.options.guard ~= true then
+        return
+    end
+    self.seen_snap = snap
+    if self.options.alarm ~= nil and self.clock >= (self.session.reported_at or 60000) then
+        self.session.reported_at = self.clock + 60000
+        local total = 0
+        for _, actor in ipairs(self.session.actors) do
+            total = total + (actor.me.stats.exp or 0)
+        end
+        local file = io.open(self.options.alarm .. ".exp", "a")
+        file:write(
+        json.encode({ scene = self.options.scene or "solo", seed = self.session.seed, t = self.clock, exp = total }),
+            "\n")
+        file:close()
+    end
+    self.recent = self.recent or {}
+    local rows = decide.offers[self.base.self.name or ""] or {}
+    table.insert(self.recent, string.format("%.1f %s(%s,%s) hp=%s mp=%s %s %s %s", self.clock / 1000, self.active.map.id,
+        self.me.x, self.me.y, self.me.hp, self.me.mp, tostring(decision ~= nil and decision.task or nil),
+        tostring(decision ~= nil and (decision.key or decision.text or decision.kind) or nil),
+        string.sub(tostring(rows[1] ~= nil and rows[1].path or ""), -44)))
+    if #self.recent > 16 then
+        table.remove(self.recent, 1)
+    end
+    watch.check(self, snap, bound, decision, rows[1] ~= nil and rows[1].path or nil)
+    local parts = {}
+    for _, actor in ipairs(self.session.actors) do
+        table.insert(parts, table.concat({ actor.active.map.id, actor.me.x, actor.me.y, actor.me.hp, actor.me.mp,
+            actor.me.stats.kills or 0, actor.me.exp or 0 }, "|"))
+    end
+    local here = table.concat(parts, "/")
+    local seen = self.session.watched
+    if seen == nil or seen.key ~= here then
+        self.session.watched = { key = here, at = self.clock }
+    elseif self.clock - seen.at >= self.options.stall then
+        self:violate("stall")
+    end
+    local errand = decision ~= nil and (party_errands[decision.task] == true or decision.task == "ESCAPE")
+    local map    = self.active.map.id
+    local hop    = self.hop
+    local last   = self.spot_seen
+    if hop == nil or hop.map ~= map then
+        if hop ~= nil and hop.from == map and self.clock - hop.at < self.options.bounce and errand == false and
+            hop.errand == false and math.abs(self.me.x - hop.x) <= combat.sight.x and math.abs(self.me.y - hop.y) <= combat.sight.y then
+            self.bounces = self.bounces or {}
+            table.insert(self.bounces, self.clock)
+            while self.clock - self.bounces[1] > 60000 do
+                table.remove(self.bounces, 1)
+            end
+            if #self.bounces >= 3 then
+                self:violate("bounce")
+            end
+        end
+        self.hop = {
+            map = map,
+            from = hop ~= nil and hop.map or nil,
+            at = self.clock,
+            errand = errand,
+            x = last ~= nil and last.x or self.me.x,
+            y = last ~= nil and last.y or self.me.y
+        }
+    end
+    self.spot_seen = { x = self.me.x, y = self.me.y }
 end
 
 function Actor:emit(record)
@@ -195,6 +500,13 @@ local function hosted(map)
 end
 
 function Actor:enter(map, x, y)
+    self.trail = self.trail or {}
+    table.insert(self.trail,
+        string.format("%.1f -> %s(%s,%s) %s", self.clock / 1000, tostring(map), tostring(x), tostring(y),
+            tostring(self.recent ~= nil and self.recent[#self.recent] or "")))
+    if #self.trail > 12 then
+        table.remove(self.trail, 1)
+    end
     local world = self:main(function()
         return self.session:world(map)
     end)
@@ -369,6 +681,7 @@ function Actor:snapshot()
     self_.struck   = me.struck ~= nil and self.clock - me.struck or nil
     self_.casted   = self.casted ~= nil and self.clock - self.casted or nil
     self_.cloaked  = self:cloaked()
+    self_.riding   = false
     self_.phydef   = me.phydef
     self_.hit      = me.hit_value
     self_.dam      = me.dam_value
@@ -387,10 +700,10 @@ function Actor:snapshot()
     return {
         self = self_,
         buffs = self:buffs(),
-        spells = self.spells,
-        gear = base.gear,
-        bag = self.bag,
-        world = { map = self.active.map.id, x = me.x, y = me.y, mobs = self:visible(), items = self:piles(), dialog = false, aside = {} },
+        spells = copy(self.spells),
+        gear = copy(base.gear),
+        bag = copy(self.bag),
+        world = { map = self.active.map.id, no_spell = (self.active.map.option & self.active.enums.MAP_OPTION.DISABLE_SPELL) ~= 0, x = me.x, y = me.y, mobs = self:visible(), items = self:piles(), dialog = false, aside = {} },
         record = { failures = failures, memory = self.memory },
         pace = {},
         now = self.clock,
@@ -612,7 +925,7 @@ function Actor:engage(oid)
     end
     self:face(mob)
     world:swing(self.me)
-    self:advance(self.pace.swing)
+    self:advance(self.pace.latency)
     mob, ended = self:sighted(oid)
     if mob == nil then
         return ended
@@ -757,31 +1070,165 @@ function Actor:attack(action)
         visible[tostring(mob.oid)] = mob
     end
     self.memory.battle, self.memory.unreachable = battle.settle(self.memory.battle, self.memory.unreachable,
-        action.oid, self.active.map.id, action, { type = event }, self.clock, visible, x ~= self.me.x or y ~= self.me.y)
+        action.oid, self.active.map.id, action, { type = event }, self.clock, visible, x ~= self.me.x or y ~= self.me.y,
+        { x = self.me.x, y = self.me.y })
     return event == "KILLED" or event == "UNREACHABLE" or battle.going(event), event
 end
 
 function Actor:walk(dest)
     local world = self.active
     local range = dest.range or 0
-    local path  = world.map:route(self.me, function(x, y)
+    if self.rooted ~= nil and self.clock >= self.rooted.from and self.clock < self.rooted.to then
+        self.memory.blocked = { at = self.clock, since = self.rooted.from, map = world.map.id }
+        return false, "BLOCKED"
+    end
+    local path = world.map:route(self.me, function(x, y)
         return math.abs(x - dest.x) + math.abs(y - dest.y) <= range
     end)
     if path == nil then
+        path = world.map:route(self.me, function(x, y)
+            return math.abs(x - dest.x) + math.abs(y - dest.y) <= range
+        end, true)
+    end
+    if path == nil then
+        local prior = self.memory.blocked
+        local since = type(prior) == "table" and prior.walls and prior.map == world.map.id and prior.since or self.clock
+        self.memory.blocked = { at = self.clock, since = since, map = world.map.id, walls = true }
         return false, "NO_ROUTE"
     end
-    local hp = self.me.hp
-    for _, direction in ipairs(path) do
-        if world:move(self.me, direction) == false then
-            return false, "BLOCKED"
+    local hp     = self.me.hp
+    local index  = 1
+    local walked = 0
+    local crew   = self:crew_percents()
+    while path[index] ~= nil do
+        if dest.leash ~= nil then
+            local _, nx, ny = world.map:passable(self.me.x, self.me.y, path[index], self.me)
+            local pulled    = false
+            for _, name in ipairs(dest.leash.names) do
+                local mate = self.session:find(name)
+                if mate == nil or mate.active ~= self.active or mate.me.dead or world.map:sight(self.me, mate.me) == false then
+                    pulled = true
+                elseif nx ~= nil then
+                    local at     = mate.me
+                    local beyond = math.abs(nx - at.x) > dest.leash.x or math.abs(ny - at.y) > dest.leash.y
+                    local away   = math.abs(nx - at.x) + math.abs(ny - at.y) >
+                        math.abs(self.me.x - at.x) + math.abs(self.me.y - at.y)
+                    pulled       = pulled or (beyond and away)
+                end
+            end
+            if pulled then
+                local crew = {}
+                for _, name in ipairs(dest.leash.names) do
+                    local mate = self.session:find(name)
+                    if mate ~= nil and mate.active == self.active and world.map:sight(self.me, mate.me) then
+                        crew[name] = { x = mate.me.x, y = mate.me.y }
+                    end
+                end
+                self.memory.leashed = {
+                    map = world.map.id,
+                    x = self.me.x,
+                    y = self.me.y,
+                    crew = crew,
+                    dest = { map = dest.map, x = dest.x, y = dest.y, range = dest.range }
+                }
+                return true, "LEASHED"
+            end
         end
-        self:advance(self.pace.step)
-        self:publish()
-        if self.me.hp < hp or self.me.dead then
-            return true, "ATTACKED"
+        if world:move(self.me, path[index]) == false then
+            local around = world.map:route(self.me, function(x, y)
+                return math.abs(x - dest.x) + math.abs(y - dest.y) <= range
+            end)
+            local yielded, alerted = false, false
+            if around == nil or #around == 0 then
+                yielded, alerted, crew = self:yielded(path[index], #path - index + 1, crew)
+            end
+            if alerted then
+                return true, "ALERTED"
+            elseif (around == nil or #around == 0) and yielded then
+                around = { table.unpack(path, index) }
+            elseif around == nil or #around == 0 then
+                return self:clear(path[index])
+            end
+            path  = around
+            index = 1
+        else
+            index  = index + 1
+            walked = walked + 1
+            self:advance(self.pace.step)
+            self:publish()
+            if self.me.hp < hp or self.me.dead then
+                return true, "ATTACKED"
+            elseif (dest.steps or 0) > 0 and walked >= dest.steps then
+                return true, "ARRIVED"
+            end
+            local alerted = false
+            alerted, crew = self:alerted(crew)
+            if alerted then
+                return true, "ALERTED"
+            end
         end
     end
     return true, "ARRIVED"
+end
+
+function Actor:yielded(direction, remaining, crew)
+    local world  = self.active
+    local x, y   = world.map:step(self.me.x, self.me.y, direction)
+    local holder = nil
+    for _, object in ipairs(world.map:at(x, y)) do
+        if world.characters[object] == true then
+            holder = object
+        end
+    end
+    local deadline = math.min(self.clock + remaining * self.pace.step, self.ends)
+    while holder ~= nil and self.clock < deadline and self.me.dead == false do
+        self:advance(self.pace.step)
+        if holder.x ~= x or holder.y ~= y or world.characters[holder] ~= true then
+            return true, false, crew
+        end
+        local alerted = false
+        alerted, crew = self:alerted(crew)
+        if alerted then
+            return false, true, crew
+        end
+    end
+    return false, false, crew
+end
+
+function Actor:clear(direction)
+    local world = self.active
+    local x, y  = world.map:step(self.me.x, self.me.y, direction)
+    local prior = self.memory.blocked
+    local since = self.clock
+    if type(prior) == "table" and prior.map == world.map.id and prior.since ~= nil and
+        self.clock - prior.at < combat.rerank then
+        since = prior.since
+    end
+    self.memory.blocked = { at = self.clock, since = since, map = world.map.id }
+    for _, object in ipairs(world.map:at(x, y)) do
+        if world.mobs[object.oid] == object then
+            local snap = self:snapshot()
+            for _, mob in ipairs(snap.world.mobs) do
+                if mob.oid == object.oid then
+                    local choice = self:main(function()
+                        return battle.choose(snap, facts.bind(self.mind, snap), mob)
+                    end)
+                    if choice ~= nil then
+                        self:attack({
+                            oid = mob.oid,
+                            maneuver = choice.maneuver,
+                            key = choice.key,
+                            opener = choice.opener,
+                            debuff = choice.debuff,
+                            moves = choice.moves
+                        })
+                        return true, "ATTACKED"
+                    end
+                end
+            end
+        end
+    end
+    return false, "BLOCKED"
 end
 
 function Actor:publish()
@@ -802,40 +1249,64 @@ function Actor:travel(dest)
             return true, "ARRIVED"
         end
     end
-    local snap = self:snapshot()
-    local jump = value.leap(snap, { maps = maps })
-    if jump and type(jump.land) == "number" then
-        local landing = self:main(function()
-            return self.mind:route(nil, { maps = { jump.land } }, { perilous = {}, shunned = {} },
-                { map = here, x = self.me.x, y = self.me.y, level = self.base.self.level })
-        end)
-        if landing ~= nil and landing.cost * self.pace.step > fight.cast(snap) then
-            if jump.item ~= nil then
-                for _, item in ipairs(self.bag.items) do
-                    if item.name == jump.item.name and item.count > 0 then
-                        item.count = item.count - 1
-                        break
-                    end
-                end
-            else
-                self.me.mp = math.max(0, self.me.mp - (jump.spell.mp or 0))
+    local snap   = self:snapshot()
+    local detour = { closed = {}, perilous = {}, shunned = {}, spent = self.memory.spent_leaps or {} }
+    local jump   = self:main(function()
+        local bound = facts.bind(self.mind, snap)
+        local risky = dest.risky
+        if risky == nil then
+            local choice = value.trip(snap, bound, dest, value.baseline(snap, bound))
+            risky = choice ~= nil and choice.risky
+        end
+        detour.perilous = risky and {} or party.perilous(snap, bound)
+        detour.shunned  = risky and {} or danger.shunned(snap, bound)
+        return go.choose(snap, bound, { maps = maps }, detour)
+    end)
+    if jump == nil and self.options.guard and detour.leaving then
+        for _, entry in ipairs(detour.jumps or {}) do
+            if entry.via == "CARDINAL" then
+                self:violate("no_leap")
             end
-            self:close("LEFT")
-            self:leave("MOVED")
-            self.active:remove(self.me)
-            self.transit = true
-            self:advance(fight.cast(snap))
-            self.transit = false
-            if self:enter(landing.dest, landing.x, landing.y) == false then
-                self.departed = landing.dest
-                return false, "NO_GRID"
-            end
-            return true, "ARRIVED"
         end
     end
+    if jump ~= nil then
+        local chosen = detour.jumps[jump.index]
+        if chosen.item ~= nil then
+            for _, item in ipairs(self.bag.items) do
+                if item.name == chosen.item and item.count > 0 then
+                    item.count = item.count - 1
+                    break
+                end
+            end
+        else
+            for _, spell in ipairs(teleports.spells) do
+                if spell.name == chosen.spell then
+                    self.me.mp = math.max(0, self.me.mp - (spell.mp or 0))
+                end
+            end
+        end
+        self:close("LEFT")
+        self:leave("MOVED")
+        self.active:remove(self.me)
+        self.transit = true
+        self:advance(fight.cast(snap))
+        self.transit = false
+        if chosen.via == "RANDOM" and chosen.to ~= nil then
+            jump.dest = chosen.to[math.random(1, #chosen.to)]
+            jump.x    = nil
+            jump.y    = nil
+        end
+        if self:enter(jump.dest, jump.x, jump.y) == false then
+            self.departed = jump.dest
+            return false, "NO_GRID"
+        end
+        return true, "ARRIVED"
+    end
     local route = self:main(function()
-        return self.mind:route(nil, { maps = maps }, { perilous = {}, shunned = {} },
-            { map = here, x = self.me.x, y = self.me.y, level = self.base.self.level })
+        return self.mind:route(nil, { maps = maps }, {
+            perilous = detour.perilous,
+            shunned = detour.shunned
+        }, { map = here, x = self.me.x, y = self.me.y, level = self.base.self.level })
     end)
     if route == nil then
         return false, "NO_ROUTE"
@@ -844,12 +1315,15 @@ function Actor:travel(dest)
     local spent = 0
     if exit ~= nil and exit.x ~= nil then
         spent = (math.abs(exit.x - self.me.x) + math.abs(exit.y - self.me.y)) * self.pace.step
-        local _, reason = self:walk({ map = here, x = exit.x, y = exit.y, range = 0 })
+        local walked, reason = self:walk({ map = here, x = exit.x, y = exit.y, range = 0 })
         if self.me.dead then
             return false, "DIED"
         end
-        if reason == "ATTACKED" then
-            return true, "ATTACKED"
+        if reason == "ATTACKED" or reason == "ALERTED" then
+            return true, reason
+        end
+        if walked == false then
+            return false, reason
         end
     end
     self:close("LEFT")
@@ -928,6 +1402,9 @@ function Actor:part(action)
 end
 
 function Actor:perform(action)
+    if action.occupy ~= nil then
+        self.session.occupants[self.base.self.name] = { map = action.occupy.map, load = action.occupy.load }
+    end
     if action.occupy ~= nil and self.occupied[action.occupy.map] == nil then
         self.occupied[action.occupy.map] = {
             kills = action.occupy.rate,
@@ -1003,9 +1480,9 @@ function Actor:settle(task, done, reason, elapsed)
     self.failures[task] = record
 end
 
-function Actor:think()
-    local snap  = self:snapshot()
-    local bound = facts.bind(self.mind, snap, {
+function Actor:bound(snap)
+    return facts.bind(self.mind, snap, {
+        occupants = self.session.occupants,
         roster = self.session:roster(self),
         ally = function(name)
             local other = self.session:find(name)
@@ -1016,6 +1493,39 @@ function Actor:think()
             return { oid = other.me.oid, x = other.me.x, y = other.me.y, percent = other.me.hp * 100 // other.me.max_hp }
         end
     })
+end
+
+function Actor:crew_percents()
+    local group = self.session:group(self)
+    local seen  = {}
+    for mate in pairs(group ~= nil and group.members or {}) do
+        if mate ~= self and mate.active == self.active and mate.me.dead == false and
+            self.active.map:sight(self.me, mate.me) then
+            seen[mate] = mate.me.hp * 100 // mate.me.max_hp
+        end
+    end
+    return seen
+end
+
+function Actor:alerted(seen)
+    local now  = self:crew_percents()
+    local hurt = false
+    for mate, percent in pairs(now) do
+        hurt = hurt or (seen[mate] ~= nil and percent < seen[mate])
+    end
+    if hurt == false or self.performing == nil then
+        return false, now
+    end
+    local snap     = self:snapshot()
+    local decision = self:main(function()
+        return decide.choose(snap, self:bound(snap), self.performing, nil)
+    end)
+    return decision ~= nil, now
+end
+
+function Actor:think()
+    local snap  = self:snapshot()
+    local bound = self:bound(snap)
     local apart = #(snap.party or {}) > 0 and escort.complete(snap, bound) == false
     if apart and self.memory.apart == nil then
         self.memory.apart = snap.now
@@ -1028,12 +1538,76 @@ function Actor:think()
         perils[tostring(snap.world.map)] = { mob = threat.id, stats = threat, at = snap.now }
         self.memory.perils = perils
     end
-    local changed, commit, swept = decide.commit(snap, bound)
+    local spot = self.memory.spot
+    if spot == nil or spot.map ~= snap.world.map or spot.x ~= snap.world.x or spot.y ~= snap.world.y then
+        self.memory.spot = { map = snap.world.map, x = snap.world.x, y = snap.world.y, at = snap.now }
+    end
+    local changed, commit, swept, solo = decide.commit(snap, bound)
     if changed then
         self.memory.commit = commit
+        self.memory.solo   = solo
         self.memory.swept  = swept
     end
-    local decision, revisit     = decide.choose(snap, bound, nil, nil)
+    self.decisions          = (self.decisions or 0) + 1
+    local audited           = self.options.audit ~= nil and self.decisions % self.options.audit == 0 and detached(snap) or
+    nil
+    local pristine          = audited ~= nil and detached(snap) or nil
+    local decision, revisit = decide.choose(snap, bound, nil, nil)
+    if audited ~= nil then
+        local fresh = cold_choose(audited, bound)
+        if described(decision) ~= described(fresh) then
+            if self.options.alarm ~= nil then
+                local file = io.open(self.options.alarm .. ".audit.txt", "a")
+                file:write(string.format("%s %s t=%d map=%s %s,%s live=%s cold=%s\n",
+                    tostring(self.options.scene or "solo"),
+                    tostring(self.base.self.name), self.clock, tostring(snap.world.map), tostring(snap.world.x),
+                    tostring(snap.world.y), described(decision), described(fresh)))
+                file:close()
+            end
+            if self.options.alarm ~= nil and (M.traced or 0) < 12 then
+                M.traced = (M.traced or 0) + 1
+                local trace = require("sim.trace")
+                local warm = trace.nodes(require("brain.trees.main"), function(s, b)
+                    return decide.choose(s, b, nil, nil)
+                end, detached(pristine), bound)
+                local saved = {}
+                for name, module in pairs(package.loaded) do
+                    if cached_module(name) then
+                        saved[name], package.loaded[name] = module, nil
+                    end
+                end
+                local ok, cold = pcall(function()
+                    return trace.nodes(require("brain.trees.main"), function(s, b)
+                        return require("brain.decide").choose(s, b, nil, nil)
+                    end, detached(pristine), bound)
+                end)
+                for name in pairs(package.loaded) do
+                    if cached_module(name) then
+                        package.loaded[name] = nil
+                    end
+                end
+                for name, module in pairs(saved) do
+                    package.loaded[name] = module
+                end
+                local file = io.open(self.options.alarm .. ".trace.txt", "a")
+                file:write(string.format("== %s %s t=%d\n", tostring(self.options.scene or "solo"),
+                    tostring(self.base.self.name),
+                    self.clock))
+                for _, line in ipairs(trace.compare(warm, ok and cold or { tostring(cold) })) do
+                    file:write(line .. "\n")
+                end
+                file:close()
+            end
+            self.seen_snap = pristine
+            self:violate("cache_divergence")
+        end
+    end
+    self:watch(snap, bound, decision)
+    decide.lap({
+        remember = function(_, _, key, value)
+            self.memory[key] = value
+        end,
+    }, nil, snap, decision, bound)
     self.session.profiles[self] = party.profile(snap, bound, decision)
     if self.options.acts and decide.offers[snap.self.name or ""] ~= nil then
         self:emit({ kind = "offers", rows = decide.offers[snap.self.name or ""], map = self.active.map.id })
@@ -1056,13 +1630,28 @@ function Actor:think()
             self:emit({ kind = "survey", map = snap.world.map, detail = why.survey(snap, bound) })
         end
     end
-    local fled = decide.flee(snap, decision)
+    local moved, entry = decide.entered(snap, bound)
+    if moved then
+        snap.record.memory.entry = entry
+        self.memory.entry = entry
+        if entry ~= nil then
+            snap.record.memory.joined = entry.at
+            self.memory.joined = entry.at
+        end
+    end
+    local fled, released = decide.flee(snap, decision)
     if fled ~= nil then
         self.memory.fled = fled
+    end
+    if released then
+        self.memory.commit, self.memory.solo, self.memory.aim = nil, nil, nil
     end
     local swept = decide.sweep(snap, decision)
     if swept ~= nil then
         self.memory.swept = swept
+    end
+    if decision ~= nil and decision.looted ~= nil then
+        self.memory.looted = decision.looted
     end
     if decision ~= nil and decision.shop ~= nil then
         self.memory.shop = decision.shop
@@ -1123,7 +1712,9 @@ function Actor:run()
             end
         else
             local started      = self.clock
+            self.performing    = action.task
             local done, reason = self:perform(action)
+            self.performing    = nil
             if self.current ~= nil and self.me.dead then
                 self:close("DIED")
             end
@@ -1217,6 +1808,54 @@ function M.prepare(profile, options)
     return base
 end
 
+function M.stocked(capacity)
+    local bag = { items = {}, used = 0, capacity = capacity }
+    local add = function(name, count)
+        if bag.used < capacity then
+            bag.used = bag.used + 1
+            table.insert(bag.items, { slot = bag.used, name = name, count = count })
+        end
+    end
+    add("노란비서", 100)
+    for _ = 1, 10 do
+        add("웅담", shops["웅담"].capacity)
+    end
+    for _ = 1, 25 do
+        add("동동주", shops["동동주"].uses)
+    end
+    for _ = 1, 10 do
+        add("홍주", shops["홍주"].uses)
+    end
+    return bag
+end
+
+function M.versed(spells)
+    local known = {}
+    local slot  = 0
+    for _, learned in ipairs(spells) do
+        known[learned.name] = learned
+        slot = math.max(slot, learned.slot or 0)
+    end
+    local full = copy(spells)
+    for name in pairs(teleports.essential) do
+        if known[name] == nil then
+            slot = slot + 1
+            table.insert(full, { name = name, slot = slot })
+        end
+    end
+    return full
+end
+
+function M.untaught(base)
+    local names = {}
+    for _, entry in ipairs(learning[base.self.class] or {}) do
+        for _, name in ipairs(entry.names) do
+            names[name] = true
+        end
+    end
+    return names
+end
+
 function M.ready(base, bound)
     base.self.hp = base.self.max_hp
     base.self.mp = base.self.max_mp
@@ -1244,7 +1883,6 @@ function M.ready(base, bound)
 end
 
 function M.session(mind, options)
-    require("brain.policies.ground").forget()
     return setmetatable({
         mind = mind,
         options = options,
@@ -1255,6 +1893,7 @@ function M.session(mind, options)
         actors = {},
         owners = {},
         groups = {},
+        occupants = {},
         profiles = {},
     }, Session)
 end
@@ -1268,6 +1907,12 @@ function Session:join(profile, overrides, at)
     local bound = facts.bind(self.mind, base)
     if options.ready then
         M.ready(base, bound)
+    end
+    if options.prepared then
+        base.bag = M.stocked(base.bag.capacity)
+        base.spells = M.versed(base.spells or {})
+        base.self.hp = overrides ~= nil and overrides.hp or base.self.max_hp
+        base.self.mp = overrides ~= nil and overrides.mp or base.self.max_mp
     end
     local start = at or (options.start and { map = base.world.map, x = base.world.x, y = base.world.y }) or nil
     local map   = start ~= nil and start.map or nil
@@ -1318,6 +1963,10 @@ function Session:join(profile, overrides, at)
     end
     self.owners[actor.me] = actor
     table.insert(self.actors, actor)
+    if options.prepared then
+        actor.memory.serviced = 0
+        actor.memory.untaught = M.untaught(base)
+    end
     actor.co = coroutine.create(function()
         actor:run()
     end)
@@ -1369,13 +2018,72 @@ function M.team(mind, profiles, options, ground)
         local home = profiles[1].profile.world
         at = session:world(home.map) ~= nil and { map = home.map, x = home.x, y = home.y } or { map = ground.map }
     end
-    for _, entry in ipairs(profiles) do
-        local actor, cause = session:join(entry.profile, entry.overrides, at)
+    local planned = nil
+    local planned_here = nil
+    if profiles[1] ~= nil and (profiles[1].prepared or options.arrange ~= nil) then
+        local seen = {}
+        local here = nil
+        while true do
+            local team = {}
+            for _, entry in ipairs(profiles) do
+                local base  = M.prepare(entry.profile, options)
+                base.record = base.record or { memory = {}, failures = {} }
+                base.party  = base.party or {}
+                for key, value in pairs(entry.overrides or {}) do
+                    base.self[key] = value
+                end
+                if entry.prepared then
+                    base.bag     = M.stocked(base.bag.capacity)
+                    base.spells  = M.versed(base.spells or {})
+                    base.self.hp = (entry.overrides or {}).hp or base.self.max_hp
+                    base.self.mp = (entry.overrides or {}).mp or base.self.max_mp
+                end
+                if here ~= nil then
+                    base.world.map = here.map
+                    base.world.x   = here.x
+                    base.world.y   = here.y
+                end
+                table.insert(team, base)
+            end
+            local bound = facts.bind(mind, team[1])
+            local plan = ground ~= nil and ground.bundle ~= nil and ground_policy.hold(team, bound, ground.bundle) or
+                (#team == 1 and ground_policy.choose(team[1], bound, ground_policy.mode(team[1]))) or
+                ground_policy.party(team, bound, "SUPPLY")
+            if plan == nil or seen[plan.name] then
+                planned = planned or plan
+                break
+            end
+            seen[plan.name] = true
+            planned         = plan
+            local map       = plan.floors[1].map
+            local route     = mind:route(nil, { maps = { map } }, { perilous = {}, shunned = {} },
+                { map = team[1].world.map, x = team[1].world.x, y = team[1].world.y, level = team[1].self.level })
+            if route == nil or route.dest ~= map then
+                break
+            end
+            here         = { map = map, x = route.x, y = route.y }
+            planned_here = here
+            local last   = route.path ~= nil and route.path[#route.path] or nil
+            at           = last ~= nil and last.dest == map and { map = last.map, x = last.x, y = last.y } or here
+        end
+    end
+    local spots = options.arrange ~= nil and planned ~= nil and options.arrange(planned, planned_here, at) or {}
+    for index, entry in ipairs(profiles) do
+        local actor, cause = session:join(entry.profile, entry.overrides, spots[index] or at)
         if actor ~= nil and options.together and (at == nil or at.x == nil) then
             at = { map = actor.active.map.id, x = actor.me.x, y = actor.me.y }
         end
         if actor ~= nil and ground ~= nil and ground.bundle ~= nil then
             actor.memory.commit = ground.bundle
+        end
+        if actor ~= nil and entry.prepared then
+            actor.memory.serviced = 0
+            actor.memory.untaught = M.untaught(actor.base)
+            actor.memory.commit   = ground ~= nil and ground.bundle or (planned ~= nil and planned.name or nil)
+            actor.memory.solo     = #profiles == 1 and planned ~= nil and planned.name or nil
+        end
+        if actor ~= nil then
+            actor.rooted = entry.rooted
         end
         if actor == nil then
             return { skipped = cause }
@@ -1389,6 +2097,8 @@ function M.team(mind, profiles, options, ground)
         end
         table.insert(session.groups, group)
     end
+    session.planned = planned
+    session.goal    = options.goal ~= nil and M.goals[options.goal] or nil
     session:run()
     local results = {}
     for _, actor in ipairs(actors) do

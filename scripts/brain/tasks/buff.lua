@@ -32,7 +32,7 @@ local function valued(name, data)
         echoed(name)
 end
 
-local function hunting(snap, query)
+function M.hunting(snap, query)
     local order = snap.record.memory.order
     return (order ~= nil and order.task == "HUNT") or (snap.self.class ~= "NONE" and ground.choose(snap, query) ~= nil)
 end
@@ -52,10 +52,7 @@ local function worth(snap, query, name, data)
     return rate * (lost * (data.buff_time or 0) - cast) - value.spend(snap, query) * (data.mp or 0)
 end
 
-local function wanted(snap, query)
-    if snap.self.ghost or hunting(snap, query) == false then
-        return nil
-    end
+function M.best(snap, query)
     local active = {}
     for _, name in ipairs(snap.buffs or {}) do
         active[name] = true
@@ -98,16 +95,12 @@ local function wanted(snap, query)
     return best
 end
 
-function M.wanted(snap, query)
-    return wanted(snap, query) ~= nil
-end
-
 function M.value(snap, query)
-    return wanted(snap, query).value
+    return M.best(snap, query).value
 end
 
-function M.propose(snap, query)
-    local choice = wanted(snap, query)
+function M.cast(snap, query)
+    local choice = M.best(snap, query)
     return { kind = ACTION.CAST, slot = choice.slot, buff = choice.name }
 end
 

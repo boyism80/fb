@@ -10,32 +10,46 @@ local presents = setmetatable({}, { __mode = "k" })
 
 function M.member(profile)
     return {
-        self    = profile.self,
-        spells  = profile.spells or {},
-        gear    = profile.gear or {},
-        buffs   = profile.buffs or {},
-        bag     = profile.bag or { items = {}, used = 0, capacity = 0 },
-        pace    = profile.pace or {},
-        world   = { map = profile.world.map, x = profile.world.x, y = profile.world.y, mobs = {}, items = {} },
-        record  = { failures = {}, memory = { fled = profile.fled } },
-        now     = profile.now,
-        plan    = profile.plan,
-        battle  = profile.battle,
-        heading = profile.heading,
-        arrives = profile.arrives,
-        task    = profile.task,
+        self      = profile.self,
+        spells    = profile.spells or {},
+        gear      = profile.gear or {},
+        buffs     = profile.buffs or {},
+        bag       = profile.bag or { items = {}, used = 0, capacity = 0 },
+        pace      = profile.pace or {},
+        world     = { map = profile.world.map, x = profile.world.x, y = profile.world.y, mobs = {}, items = {} },
+        record    = { failures = {}, memory = { fled = profile.fled, dry = profile.dry } },
+        now       = profile.now,
+        plan      = profile.plan,
+        rally     = profile.rally,
+        battle    = profile.battle,
+        heading   = profile.heading,
+        pinned    = profile.pinned,
+        going     = profile.going,
+        errand    = profile.errand,
+        servicing = profile.servicing,
+        arrives   = profile.arrives,
+        task      = profile.task,
+        fleeing   = profile.fleeing,
+        joined    = profile.joined,
+        leashed   = profile.leashed,
+        looted    = profile.looted or 0,
     }
 end
 
 function M.crew(members, query)
     local keys  = {}
     local heals = {}
+    local names = {}
     local heal  = 0
+    local stock = 0
     local bonus = 0
     for index, member in ipairs(members) do
         table.insert(keys, score.signature(member, ""))
-        heals[index] = score.capability(member, query).hps.others
+        table.insert(names, member.self.name)
+        local hps    = score.capability(member, query).hps
+        heals[index] = hps.others
         heal         = heal + heals[index]
+        stock        = stock + hps.stock
         bonus        = math.max(bonus, combat.group.bonus[member.self.class] or 0)
     end
     local assist = {}
@@ -60,11 +74,13 @@ function M.crew(members, query)
     table.sort(wards)
     return {
         members = members,
+        names   = names,
         wards   = wards,
         assist  = assist,
         size    = #members + 1,
         heals   = heals,
         heal    = heal,
+        stock   = stock,
         support = heal,
         bonus   = #members > 0 and bonus or 0,
         key     = "|crew:" .. table.concat(keys, ";"),
@@ -84,6 +100,35 @@ local function near(snap, member)
         return false
     end
     return math.abs(world.x - snap.world.x) <= combat.sight.x and math.abs(world.y - snap.world.y) <= combat.sight.y
+end
+
+function M.tethered(snap, x, y)
+    for _, profile in ipairs(snap.party or {}) do
+        local world = profile.world
+        if world ~= nil and profile.self ~= nil and profile.self.ghost == false and world.map == snap.world.map and
+            world.x ~= nil and (math.abs(world.x - x) > combat.sight.x or math.abs(world.y - y) > combat.sight.y) then
+            return false
+        end
+    end
+    return true
+end
+
+function M.center(snap)
+    local x, y, count = 0, 0, 0
+    for _, profile in ipairs(snap.party or {}) do
+        local world = profile.world
+        if world ~= nil and profile.self ~= nil and profile.self.ghost == false and world.map == snap.world.map and
+            world.x ~= nil then
+            x     = x + world.x
+            y     = y + world.y
+            count = count + 1
+        end
+    end
+    return count > 0 and { x = (x / count + 0.5) // 1 | 0, y = (y / count + 0.5) // 1 | 0 } or nil
+end
+
+function M.ready(crew, window)
+    return crew ~= nil and math.min(crew.heal * window / 1000, crew.stock) or 0
 end
 
 function M.present(snap, query)
@@ -124,7 +169,9 @@ local function nearby(snap, query, member)
     if member.task == "ESCAPE" or member.self.ghost or world.map == nil or world.map == snap.world.map or world.x == nil then
         return false
     end
-    local key = table.concat({ world.map, world.x // combat.sight.x, world.y // combat.sight.y, snap.world.map }, "|")
+    -- The member's route is limited by its level, so the level is part of the key.
+    local key = table.concat({ world.map, world.x // combat.sight.x, world.y // combat.sight.y, snap.world.map,
+        member.self.level or 0 }, "|")
     if gaps[key] == nil then
         local route = query.path({ maps = { snap.world.map } }, {}, {},
             { map = world.map, x = world.x, y = world.y, level = member.self.level })

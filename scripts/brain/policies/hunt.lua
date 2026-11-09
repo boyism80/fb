@@ -119,10 +119,15 @@ function M.step(brain, bot, goal)
     local area = nil
     local near = nil
     for index, spawn in ipairs(brain:spawns(bot, goal.names)) do
-        local cost = math.abs(spawn.x - here[1]) + math.abs(spawn.y - here[2])
-        if state.visited[tostring(index)] == nil and (near == nil or cost < near) then
-            area = { index = index, x = spawn.x, y = spawn.y }
-            near = cost
+        local corners = { { spawn.x, spawn.y }, { spawn.left, spawn.top }, { spawn.right, spawn.top },
+            { spawn.left, spawn.bottom }, { spawn.right, spawn.bottom } }
+        for corner, point in ipairs(corners) do
+            local key  = index .. ":" .. corner
+            local cost = math.abs(point[1] - here[1]) + math.abs(point[2] - here[2])
+            if state.visited[key] == nil and (near == nil or cost < near) then
+                area = { index = key, x = point[1], y = point[2] }
+                near = cost
+            end
         end
     end
     if area == nil and next(state.visited) == nil then

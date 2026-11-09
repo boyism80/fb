@@ -104,8 +104,12 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     });
     this->bind(&game_bot_controller::on_ping);
     this->bind<game_resp::update_hp>([](game_bot& bot, game_resp::update_hp& response) -> async::task<void> {
+        auto found  = bot.sight.entries().find(response.oid);
+        auto before = found != bot.sight.entries().end() ? found->second.percent : uint8_t{100};
         bot.sight.hurt(response.oid, response.percent);
         bot.events.push({game_bot::events::TYPE::HIT, response.oid, {}, response.damage, response.percent});
+        if (response.percent < before)
+            bot.notice("hurt", response.oid);
         co_return;
     });
     this->bind<game_resp::user_list>([](game_bot& bot, game_resp::user_list& response) -> async::task<void> {

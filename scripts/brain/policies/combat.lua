@@ -1,3 +1,4 @@
+local growth  = require("brain.data.growth")
 local balance = require("brain.data.balance")
 local combat  = require("brain.data.combat")
 local hunting = require("brain.data.hunting")
@@ -138,6 +139,11 @@ local function compute_buffs(snap)
         if state == "PLANNED" then
             result.phydef = result.phydef + (boost.buff_phydef or 0)
         end
+    end
+    result.worn = 1
+    for name in pairs(active) do
+        local boost = (magic.spells[name] or {}).boost or {}
+        result.worn = result.worn + (boost.damage_derate or 0) / 1000
     end
     return result
 end
@@ -309,6 +315,38 @@ function M.spread(snap, mob)
     return found[1], found[2]
 end
 
+local function worn_spread(snap, mob)
+    if M.hits(mob) == false or mob.damage == nil then
+        return 0, 0
+    end
+    local worn = M.buffs(snap).worn
+    return M.mitigate(mob.least or mob.damage, snap.self.phydef or 0, 0) / worn,
+        M.mitigate(mob.damage, snap.self.phydef or 0, 0) / worn
+end
+
+local function typical(low, high)
+    return (low + high) / 2.0 * (1 + combat.critical.chance * (combat.critical.factor - 1))
+end
+
+function M.imminent(snap, attackers)
+    local behind = ((magic.back_attack or 1) - 1) / math.max(combat.adjacent - 1, 1)
+    local worst  = 0
+    local flow   = 0
+    local count  = 0
+    for _, attacker in ipairs(attackers) do
+        count = count + attacker.count
+    end
+    local back = count > 1 and (magic.back_attack or 1) or 1
+    for _, attacker in ipairs(attackers) do
+        local low, high = worn_spread(snap, attacker.mob)
+        worst = math.max(worst, high * combat.critical.factor * back)
+        if (attacker.mob.speed or 0) > 0 then
+            flow = flow + attacker.count * typical(low, high) / attacker.mob.speed * (1 + behind)
+        end
+    end
+    return worst + flow * M.cast(snap)
+end
+
 function M.spike(snap, attackers)
     local behind = ((magic.back_attack or 1) - 1) / math.max(combat.adjacent - 1, 1)
     local worst  = 0
@@ -380,9 +418,26 @@ function M.lethal(snap, mob, window, hp)
     return (1 - part) * M.reaches(whole, low, high, hp) + part * M.reaches(whole + 1, low, high, hp)
 end
 
-function M.gain(mob)
+function M.capped(snap, exp)
+    local levels = growth[snap.self.class]
+    local now    = levels ~= nil and levels[snap.self.level] or nil
+    if now == nil or levels[snap.self.level + 1] == nil then
+        return exp
+    end
+    return math.min(exp, ((levels[snap.self.level + 1].exp - now.exp) / 100.0 * combat.exp_limit + 1) // 1)
+end
+
+function M.can_cast(snap)
+    return snap.self.riding ~= true and snap.world.no_spell ~= true
+end
+
+function M.gain(mob, snap)
     local known = hunting.mobs[mob.id]
-    return mob.exp or (known ~= nil and known.exp) or 0
+    local exp   = mob.exp or (known ~= nil and known.exp) or 0
+    if snap == nil then
+        return exp
+    end
+    return M.capped(snap, exp / (1 + #(snap.party or {}))) * (1 + #(snap.party or {}))
 end
 
 function M.surrounding(extra)
@@ -624,14 +679,14 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
         local filler = math.max(melee, ambush)
         local cycle  = opener.damage + filler * (period - cast)
         if cycle / period > rival then
-            local count = math.ceil(left / cycle)
+            local count = left / cycle
             if opener.mp > 0 then
                 count = math.min(count, math.floor(mp / opener.mp))
             end
-            left  = left - count * cycle
-            mp    = mp - count * opener.mp
+            left  = math.max(0, left - count * cycle)
+            mp    = math.max(0, mp - math.ceil(count) * opener.mp)
             time  = time + count * period
-            casts = casts + count
+            casts = casts + math.ceil(count)
             fills = count * (period - cast) * filler / math.max(strike, 1e-9)
         end
     end
@@ -660,7 +715,10 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
     end
     local swings = 0
     if left > 0 then
-        local melee  = strike / combat.swing
+        local melee = strike / combat.swing
+        if buffs.opener > 1 then
+            melee = math.max(melee, strike * buffs.opener / (2 * cast + combat.swing))
+        end
         local poison = weak.dot * (mob.hp or 0) / ((magic.buff_tick or 1) * 1000)
         local during = math.min(weak.dot_time, left / math.max(melee + poison, 1e-9))
         local rest   = math.max(0, left - (melee + poison) * during)
@@ -693,7 +751,7 @@ local function compute_outcome(snap, query, mob, density, aid, extra)
         drained = (snap.self.mp or 0) - mp,
         margin  = (hp + healed - taken) / math.max(snap.self.max_hp, 1),
         p_die   = M.lethal(snap, mob, time - weak.disable, hp + healed),
-        gain    = M.gain(mob),
+        gain    = M.gain(mob, snap),
     }
 end
 

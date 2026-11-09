@@ -1,3 +1,4 @@
+local combat = require("brain.data.combat")
 local states = require("brain.data.states")
 
 local M = {}
@@ -82,19 +83,21 @@ function M.take(brain, bot)
             casted    = seen.casted,
             grouping  = seen.grouping,
             cloaked   = seen.cloaked,
+            riding    = seen.riding,
         },
         buffs   = seen.buffs,
         spells  = seen.spells,
         gear    = brain:worn(bot),
         bag     = { items = brain:inventory(bot), used = seen.bag, capacity = seen.capacity },
         world   = {
-            map    = seen.map,
-            x      = position[1],
-            y      = position[2],
-            mobs   = brain:mobs(bot),
-            items  = brain:items(bot),
-            dialog = seen.dialog,
-            aside  = brain:aside(bot),
+            map      = seen.map,
+            x        = position[1],
+            y        = position[2],
+            mobs     = brain:mobs(bot),
+            items    = brain:items(bot),
+            dialog   = seen.dialog,
+            no_spell = seen.no_spell,
+            aside    = brain:aside(bot),
         },
         record  = {
             current  = brain:state(bot),
@@ -103,7 +106,7 @@ function M.take(brain, bot)
             jumped   = seen.jumped,
             memory   = brain:recall(bot),
         },
-        pace    = seen.pace,
+        pace    = setmetatable({ step = combat.walk }, { __index = seen.pace }),
         now     = seen.now,
         persona = brain:persona(bot),
         group   = names,

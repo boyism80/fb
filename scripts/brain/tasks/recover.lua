@@ -14,7 +14,7 @@ local function holding(snap)
     return counts
 end
 
-local function piles(snap)
+function M.piles(snap)
     local result = {}
     for _, item in ipairs(snap.world.items) do
         if item.x == snap.world.x and item.y == snap.world.y then
@@ -24,7 +24,8 @@ local function piles(snap)
     return result
 end
 
-local function spare(snap, death)
+function M.spare(snap)
+    local death  = snap.record.death
     local counts = holding(snap)
     for _, item in ipairs(snap.bag.items) do
         if WEARABLE[item.type] and counts[item.name] > (death.items[item.name] or 0) then
@@ -47,29 +48,13 @@ local function missing(snap, death)
     return false
 end
 
-function M.wanted(snap)
-    return snap.self.ghost == false and snap.record.death ~= nil
-end
-
-local function plan(snap, query)
+function M.exhausted(snap)
     local death  = snap.record.death
-    local worn   = spare(snap, death)
-    local found  = piles(snap)
     local failed = snap.record.failures.RECOVER
-    if worn ~= nil then
-        return { kind = ACTION.EQUIP, item = worn }
-    elseif death.left <= 0 or missing(snap, death) == false or (failed ~= nil and BARRED[failed.reason]) then
-        return { kind = ACTION.FORGET }
-    elseif snap.world.map ~= death.map or snap.world.x ~= death.x or snap.world.y ~= death.y then
-        return { kind = ACTION.MOVE, dest = { map = death.map, x = death.x, y = death.y, range = 0 } }
-    elseif #found > 0 then
-        return { kind = ACTION.PICK, oids = found }
-    else
-        return { kind = ACTION.FORGET }
-    end
+    return death.left <= 0 or missing(snap, death) == false or (failed ~= nil and BARRED[failed.reason] == true)
 end
 
-local function profit(snap, query, action)
+function M.profit(snap, query, action)
     local death  = snap.record.death
     local worth  = value.baseline(snap, query)
     local counts = holding(snap)
@@ -81,22 +66,6 @@ local function profit(snap, query, action)
     local peril = value.peril(snap, query, { map = death.map, x = death.x, y = death.y })
     return (1 - peril) * lost * worth.exchange - value.cost(snap, query, action, worth) -
         peril * danger.loss(snap, query, worth)
-end
-
-function M.propose(snap, query)
-    local action = plan(snap, query)
-    if action.kind ~= ACTION.FORGET and profit(snap, query, action) <= 0 then
-        return { kind = ACTION.FORGET }
-    end
-    return action
-end
-
-function M.value(snap, query)
-    local action = plan(snap, query)
-    if action.kind == ACTION.FORGET then
-        return 0
-    end
-    return math.max(0, profit(snap, query, action))
 end
 
 return M

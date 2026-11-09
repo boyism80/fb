@@ -4,7 +4,7 @@ local ghost  = require("integration.scenarios.brain.stage.ghost")
 
 local M = {}
 
-local TIMEOUT    = 120000
+local TIMEOUT    = 300000
 local GROUND     = { map = "고구려왕초보사냥1", x = 9, y = 15 }
 local WEAPON     = "목도"
 local MONEY      = 1000

@@ -9,6 +9,7 @@ local RETURNS = {
 
 return {
     returns = RETURNS,
+    essential = { ["비영사천문"] = true, ["성황령"] = true },
     spells = {
         { name = "비영사천문", via = "CARDINAL", mp = 30, inputs = { EAST = "1", WEST = "2", SOUTH = "3", NORTH = "4" } },
         { name = "성황령", via = "REVIVE", ghost = true, inputs = { WEST = "좌", EAST = "우" } },

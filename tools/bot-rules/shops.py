@@ -11,6 +11,7 @@ BRAIN = ROOT / 'scripts' / 'brain' / 'data' / 'shops.lua'
 OUTFITS = ROOT / 'scripts' / 'brain' / 'data' / 'outfits.lua'
 WEARABLE = ('WEAPON', 'ARMOR', 'SHIELD', 'HELMET', 'RING', 'AUXILIARY')
 RECOVERY = ('hp', 'mp', 'hp_ratio', 'mp_ratio', 'hp_full', 'mp_full')
+TRAVEL = ('노란비서',)
 
 
 def main():
@@ -35,7 +36,8 @@ def main():
                 if item is not None and item['type'] in WEARABLE:
                     outfit(outfits, item, entry, npc)
                     continue
-                if item is None or not any(key in effects.get(item['name'], {}) for key in RECOVERY):
+                if item is None or (item['name'] not in TRAVEL and
+                                    not any(key in effects.get(item['name'], {}) for key in RECOVERY)):
                     continue
                 price = entry['price'] if entry['price'] is not None else item['price']
                 uses = (item.get('durability') or 1) if item['type'] == 'PACKAGE' else 1

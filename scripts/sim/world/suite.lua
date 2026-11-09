@@ -76,10 +76,10 @@ function M.run(options)
     for index, profile in ipairs(profiles) do
         local settings   = setmetatable({ seed = index + (options.seed_base or 0) * 100, output = output },
             { __index = options })
-        local ok, result = pcall(driver.run, mind, profile, settings)
+        local ok, result = xpcall(driver.run, debug.traceback, mind, profile, settings)
         if ok == false then
             log("warn", string.format("[sim:world] %s lv%d failed: %s", profile.self.class, profile.self.level,
-                tostring(result)))
+                (string.gsub(tostring(result), "\n", " | "))))
         elseif result.skipped ~= nil then
             log("debug", string.format("[sim:world] %s lv%d skipped %s map=%s", profile.self.class, profile.self.level,
                 result.skipped, tostring(result.map)))
@@ -242,6 +242,10 @@ local function summary(result)
         result.taken, table.concat(parts, " "))
 end
 
+function M.profile(data, name, money, mind)
+    return dressed(data.records, name, money, mind)
+end
+
 function M.teams(options)
     local data         = require(options.data)
     local mind         = brain.new()
@@ -276,7 +280,17 @@ function M.teams(options)
                 copied.spells = kept
                 snap = copied
             end
-            table.insert(profiles, { profile = snap, overrides = { grouping = true } })
+            if team.prepared then
+                local ready = {}
+                for key, entry in pairs(snap) do
+                    ready[key] = entry
+                end
+                ready.bag = driver.stocked(snap.bag.capacity)
+                ready.spells = driver.versed(snap.spells or {})
+                snap = ready
+            end
+            table.insert(profiles,
+                { profile = snap, overrides = { grouping = true }, prepared = team.prepared, rooted = want.rooted })
         end
         if options.only ~= nil and options.only[team.name] == nil then
             goto continue
@@ -285,11 +299,23 @@ function M.teams(options)
             log("warn", string.format("[sim:team] %s no profile for %s", team.name, missing))
         else
             local settings   = setmetatable(
-                { seed = index + (options.seed_base or 0) * 100, output = output, drops = team.drops },
+                { seed = index + (options.seed_base or 0) * 100, output = output, scene = team.name, drops = team.drops },
                 { __index = options })
             local ok, result = pcall(driver.team, mind, profiles, settings, team.ground)
             if ok == false then
                 log("warn", string.format("[sim:team] %s failed: %s", team.name, tostring(result)))
+                if options.alarm ~= nil then
+                    local file = io.open(options.alarm, "a")
+                    file:write(
+                    require("sim.world.json").encode({
+                        rule = "team_error",
+                        scene = team.name,
+                        seed = options.seed_base,
+                        t = 0,
+                        error = tostring(result)
+                    }), "\n")
+                    file:close()
+                end
             elseif result.skipped ~= nil then
                 log("warn", string.format("[sim:team] %s skipped %s", team.name, result.skipped))
             else
@@ -304,7 +330,9 @@ function M.teams(options)
         ::continue::
     end
     output:close()
-    log("debug", string.format("[sim:team] teams=%d finished=%d output=%s", #options.teams, passed, path))
+    local label = next(options.only or {})
+    log("debug", string.format("[sim:team] label=%s seed=%d teams=%d finished=%d output=%s", tostring(label),
+        options.seed_base or 0, #options.teams, passed, path))
     return passed > 0
 end
 

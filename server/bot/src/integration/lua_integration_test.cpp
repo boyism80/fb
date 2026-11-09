@@ -418,9 +418,6 @@ uint32_t lua_integration_test::peek_bot_count(const std::filesystem::path& scrip
     release_suite_refs(L, suite);
     lua_close(L);
 
-    if (count == 0)
-        return 1;
-
     return count;
 }
 

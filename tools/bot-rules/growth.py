@@ -22,8 +22,6 @@ def main():
     init = json.loads(LOGIN_CONFIG.read_text(encoding='utf-8'))['init']
     result = {}
     for name, rows in table.items():
-        if name == 'NONE':
-            continue
         current = {'hp': init['hp']['base'], 'mp': init['mp']['base'], 'str': STAT_BASE, 'int': STAT_BASE,
                    'dex': STAT_BASE, 'exp': 0}
         levels = {}

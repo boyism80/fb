@@ -59,7 +59,8 @@ local function hunt(snap, query, order)
 end
 
 local function journey(snap, query)
-    local action = M.propose(snap, query)
+    local order  = snap.record.memory.order
+    local action = order.task == "GO" and M.go(snap) or order.task == "HUNT" and M.hunt(snap, query) or M.forget()
     local worth  = value.baseline(snap, query)
     local trip   = action.kind == ACTION.MOVE and value.trip(snap, query, action.dest, worth) or nil
     return action, worth, trip
@@ -101,23 +102,13 @@ local function recovering(snap, query, order)
     return false
 end
 
-function M.wanted(snap, query)
-    if snap.self.ghost or snap.record.memory.order == nil then
-        return false
-    elseif recovering(snap, query, snap.record.memory.order) then
-        return false
-    end
-    local _, worth, trip = journey(snap, query)
-    return value.patience(trip, worth) <= 0
+function M.recovering(snap, query)
+    return recovering(snap, query, snap.record.memory.order)
 end
 
-function M.revisit(snap, query)
-    if snap.self.ghost or snap.record.memory.order == nil then
-        return nil
-    end
+function M.wait_time(snap, query)
     local _, worth, trip = journey(snap, query)
-    local wait           = value.patience(trip, worth)
-    return wait > 0 and wait * 1000 or nil
+    return value.patience(trip, worth)
 end
 
 function M.value(snap, query)
@@ -125,13 +116,15 @@ function M.value(snap, query)
     return (snap.record.memory.order.worth or 0) - (trip ~= nil and trip.risk or 0)
 end
 
-function M.propose(snap, query)
-    local order = snap.record.memory.order
-    if order.task == "GO" then
-        return { kind = ACTION.MOVE, dest = order.dest, clear = "order" }
-    elseif order.task == "HUNT" then
-        return hunt(snap, query, order)
-    end
+function M.go(snap)
+    return { kind = ACTION.MOVE, dest = snap.record.memory.order.dest, clear = "order" }
+end
+
+function M.hunt(snap, query)
+    return hunt(snap, query, snap.record.memory.order)
+end
+
+function M.forget()
     return { kind = ACTION.FORGET, key = "order" }
 end
 

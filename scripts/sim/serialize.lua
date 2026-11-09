@@ -30,6 +30,29 @@ local function encode(value, out)
     end
 end
 
+local function plain(value, seen)
+    local kind = type(value)
+    if kind == "number" or kind == "string" or kind == "boolean" then
+        return value
+    end
+    if kind ~= "table" or seen[value] then
+        return nil
+    end
+    seen[value] = true
+    local copied = {}
+    for key, entry in pairs(value) do
+        if type(key) == "number" or type(key) == "string" then
+            copied[key] = plain(entry, seen)
+        end
+    end
+    seen[value] = nil
+    return copied
+end
+
+function M.dump(path, value)
+    return M.write(path, plain(value, {}))
+end
+
 function M.write(path, value)
     local out = { "return " }
     encode(value, out)

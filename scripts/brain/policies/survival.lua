@@ -40,6 +40,7 @@ function M.crowd(snap, entries, time, fighters, density)
     local present = 0
     local total   = 0
     local burden  = 0
+    local pace    = 0
     for _, entry in ipairs(entries) do
         local mob = entry.mob
         total     = total + entry.count
@@ -48,13 +49,21 @@ function M.crowd(snap, entries, time, fighters, density)
             arrival      = arrival + (period > 0 and entry.count / period or 0)
             present      = present + entry.count
             burden       = burden + entry.count * pressure(snap, mob)
+            pace         = pace + entry.count * (mob.speed or 0)
         end
     end
     local result = { extra = 0, pressure = 0 }
     if present == 0 or time == nil or time <= 0 or time == math.huge then
         return result
     end
-    local tiles    = (2 * data.sight.x + 1) * (2 * data.sight.y + 1)
+    pace        = pace / present
+    local tiles = 0
+    for distance = 1, data.sight.x + data.sight.y do
+        if pace * distance < time then
+            tiles = tiles + 4 * distance * (1 - pace * distance / time)
+        end
+    end
+    tiles          = math.min(tiles, (2 * data.sight.x + 1) * (2 * data.sight.y + 1))
     local standing = (density or 0) * tiles * present / math.max(total, 1)
     local load     = (arrival * time + standing) / math.max(fighters or 1, 1)
     local capacity = math.min(present, data.adjacent)

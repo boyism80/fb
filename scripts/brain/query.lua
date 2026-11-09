@@ -20,11 +20,12 @@ function M.bind(brain, bot)
         spawns = function(map, names)
             return brain:spawns(bot, names, map)
         end,
-        demand = function(map)
-            local found = demands[map]
+        demand = function(map, crew)
+            local key   = map .. "|" .. table.concat(crew or {}, ",")
+            local found = demands[key]
             if found == nil then
-                found = brain:demand(bot, map)
-                demands[map] = found
+                found = brain:demand(bot, map, crew or {})
+                demands[key] = found
             end
             return found
         end,
@@ -40,9 +41,12 @@ function M.bind(brain, bot)
         warp = function(map, x, y)
             return brain:warp_at(map, x, y)
         end,
-        reach = function(perilous, shunned)
+        reach = function(perilous, shunned, from)
             return profile.wait(bot:name(), brain.reach, brain, bot,
-                { perilous = perilous or {}, shunned = shunned or {} })
+                { perilous = perilous or {}, shunned = shunned or {} }, from)
+        end,
+        leaps = function(destination, detour, origin)
+            return profile.wait(bot:name(), brain.leaps, brain, bot, destination, detour, origin)
         end,
         route = function(maps, perilous, shunned)
             return profile.wait(bot:name(), brain.route, brain, bot, { maps = maps },

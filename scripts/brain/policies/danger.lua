@@ -38,11 +38,22 @@ function M.chance(snap, query, mob, expose)
     return combat.lethal(snap, mob, window, snap.self.hp)
 end
 
-function M.revival(snap, query)
-    local key = table.concat({ snap.world.map, snap.self.nation or 0 }, "|")
+function M.revival(snap, query, map)
+    -- Without a map this is the trip back after dying where the bot stands: the route starts at its tile
+    -- (bucketed by screen like supply trips) and is limited by its level. With a map it is the trip back
+    -- after dying on that floor, as ground assessments need: their cache is keyed by the floor, so a
+    -- position-based cost leaked one spot's trip into every later assessment of the floor.
+    local key = map ~= nil and table.concat({ "floor", map, snap.self.nation or 0, snap.self.level or 0 }, "|") or
+        table.concat({ snap.world.map, snap.self.nation or 0, snap.self.level or 0,
+            (snap.world.x or 0) // data.sight.x, (snap.world.y or 0) // data.sight.y }, "|")
     if revivals[key] == nil then
-        local maps    = teleport.returns[snap.self.nation] or {}
-        local route   = #maps > 0 and query.route(maps) or nil
+        local maps  = teleport.returns[snap.self.nation] or {}
+        local route = nil
+        if #maps > 0 and map ~= nil then
+            route = query.path({ maps = maps }, {}, {}, { map = map, x = 0, y = 0, level = snap.self.level })
+        elseif #maps > 0 then
+            route = query.route(maps)
+        end
         revivals[key] = route ~= nil and route.cost or false
     end
     if revivals[key] == false then
@@ -181,25 +192,40 @@ function M.power(snap)
     return table.concat({ snap.self.level or 0, table.concat(gear, ","), table.concat(spells, ",") }, "|")
 end
 
+function M.fled(snap, map)
+    local entry = (snap.record.memory.fled or {})[tostring(map)]
+    return type(entry) == "table" and entry.power == M.power(snap.actual or snap) and
+        (entry.ends == nil or snap.now < entry.ends)
+end
+
+function M.company(snap, query)
+    local members = {}
+    for _, profile in ipairs(snap.party or {}) do
+        table.insert(members, score.rested(escort.member(profile), "REFILL"))
+    end
+    return #members > 0 and escort.crew(members, query) or false
+end
+
 function M.shunned(snap, query)
     if snap.self.ghost then
         return {}
     end
     if shunning[snap] == nil then
-        local known = hunting.mobs
-        local found = {}
+        local known  = hunting.mobs
+        local found  = {}
+        local rested = score.rested(snap, "REFILL")
+        local crew   = M.company(snap, query)
         for map, seen in pairs(snap.record.memory.perils or {}) do
             local mob    = type(seen) == "table" and (known[seen.mob] or seen.stats) or nil
             local id     = tonumber(map)
             local recent = mob ~= nil and snap.now - seen.at < respawn(seen)
-            if mob ~= nil and ((recent and M.hostile(snap, query, mob)) or
-                    (M.deadly(snap, query, mob) and query.native(id, mob.id))) then
+            if mob ~= nil and ((recent and mob.attack == "AGGRESSIVE" and M.winnable(rested, query, mob, crew) == false) or
+                    (M.deadly(rested, query, mob, crew) and query.native(id, mob.id))) then
                 table.insert(found, id)
             end
         end
-        local power = M.power(snap.actual or snap)
-        for map, entry in pairs(snap.record.memory.fled or {}) do
-            if type(entry) == "table" and entry.power == power then
+        for map in pairs(snap.record.memory.fled or {}) do
+            if tonumber(map) ~= nil and M.fled(snap, map) then
                 table.insert(found, tonumber(map))
             end
         end

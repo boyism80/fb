@@ -1134,6 +1134,7 @@ void master::handle(agent_entry& agent, const Json::Value& message)
             this->_run->totals[name].merge(message["entries"][name]);
             this->_run->window[name].merge(message["entries"][name]);
         }
+        this->relay_occupied(agent, message["occupied"]);
     }
     else if (type == "metrics")
     {
@@ -1184,6 +1185,8 @@ void master::handle(agent_entry& agent, const Json::Value& message)
         if (agent.busy == false || current == false)
             return;
 
+        this->relay_occupied(agent, Json::objectValue);
+
         auto& run  = this->_run.value();
         agent.busy = false;
         agent.bots = 0;
@@ -1223,6 +1226,7 @@ void master::drop(agent_entry& agent)
     agent.bots = 0;
     if (agent.busy && this->_run.has_value())
     {
+        this->relay_occupied(agent, Json::objectValue);
         auto& run = this->_run.value();
         for (auto& suite : run.suites)
         {
@@ -1242,6 +1246,19 @@ void master::drop(agent_entry& agent)
     this->rebalance();
     this->dispatch();
     this->broadcast();
+}
+
+void master::relay_occupied(const agent_entry& agent, const Json::Value& maps)
+{
+    auto relayed    = Json::Value{};
+    relayed["type"] = "occupied";
+    relayed["from"] = agent.id;
+    relayed["maps"] = maps.isObject() ? maps : Json::Value{Json::objectValue};
+    for (auto& [id, other] : this->_agents)
+    {
+        if (id != agent.id && other.busy && other.link != nullptr)
+            other.link->send(relayed);
+    }
 }
 
 void master::broadcast()

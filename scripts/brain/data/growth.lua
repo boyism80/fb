@@ -100,6 +100,13 @@ return {
         [98] = { hp = 3922, mp = 3826, str = 36, int = 98, dex = 52, exp = 2769978360 },
         [99] = { hp = 3961, mp = 3866, str = 37, int = 99, dex = 52, exp = 2969978360 },
     },
+    NONE = {
+        [1] = { hp = 50, mp = 35, str = 3, int = 3, dex = 3, exp = 0 },
+        [2] = { hp = 100, mp = 64, str = 4, int = 3, dex = 3, exp = 300 },
+        [3] = { hp = 149, mp = 94, str = 4, int = 4, dex = 4, exp = 600 },
+        [4] = { hp = 198, mp = 124, str = 5, int = 4, dex = 4, exp = 900 },
+        [5] = { hp = 248, mp = 153, str = 5, int = 5, dex = 5, exp = 1200 },
+    },
     POET = {
         [1] = { hp = 50, mp = 35, str = 3, int = 3, dex = 3, exp = 0 },
         [2] = { hp = 100, mp = 64, str = 4, int = 3, dex = 3, exp = 300 },

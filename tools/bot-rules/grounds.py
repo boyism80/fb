@@ -1,12 +1,14 @@
 import argparse
 import json
 import re
+import struct
 from pathlib import Path
 
 from lua import lua_value
 
 ROOT = Path(__file__).resolve().parents[2]
 JSON = ROOT / 'server' / 'game' / 'json'
+MAPS = ROOT / 'server' / 'game' / 'maps'
 OUTPUT = ROOT / 'scripts' / 'brain' / 'data' / 'hunting.lua'
 HITTING = {'AGGRESSIVE', 'RETALIATE', 'STATIONARY'}
 SERIES = re.compile(r'^(.*?)(\d+)(\D*)$')
@@ -31,22 +33,33 @@ def hunting(option):
     return flags & HUNTING_GROUND != 0 and flags & ENABLE_PK == 0
 
 
+def map_area(key):
+    path = MAPS / f'{int(key):06}.map'
+    if path.exists() is False:
+        return 0
+    with path.open('rb') as file:
+        header = file.read(4)
+    if len(header) < 4:
+        return 0
+    width, height = struct.unpack('>HH', header)
+    return width * height
+
+
 def floor(key, rows, mobs, maps):
     counts = {}
     supply = 0.0
-    area = 0
     for row in rows:
         mob = mobs.get(str(row['mob']))
         if mob is None or mob.get('invincible') or row.get('count', 0) <= 0:
             continue
         counts[row['mob']] = counts.get(row['mob'], 0) + row['count']
-        area += (abs(row['end']['x'] - row['begin']['x']) + 1) * (abs(row['end']['y'] - row['begin']['y']) + 1)
         rezen = milliseconds(row.get('rezen'))
         if rezen > 0:
             supply += row['count'] * 1000.0 / rezen
     if not counts:
         return None
 
+    area = map_area(key)
     hitting = [mobs[str(mob)] for mob in counts if mobs[str(mob)].get('attack_type') in HITTING]
     return {
         'map': int(key),

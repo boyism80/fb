@@ -57,8 +57,14 @@ struct brain
     static int builtin_engage(lua_State* L);
     static int builtin_cast(lua_State* L);
     static int builtin_aside(lua_State* L);
+    static int builtin_tree(lua_State* L);
+    static int builtin_leaps(lua_State* L);
 
 private:
+    static void                        tree_push(lua_State* L, int node);
+    static void                        tree_pop(lua_State* L);
+    static int                         tree_walk(lua_State* L);
+    static int                         tree_resume(lua_State* L, int status, lua_KContext phase);
     static fb::bot::brain::destination read_destination(lua_State* L, int index);
     static fb::bot::brain::detour      read_detour(lua_State* L, int index);
     static void                        push_mob(lua_State* L, const fb::model::mob& model);
