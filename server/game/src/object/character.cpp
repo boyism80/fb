@@ -264,67 +264,8 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         if (this->map() == nullptr)
             co_return false;
 
-        auto self    = this->shared_from_this_as<character>();
-        auto old_map = this->_map;
-        try
-        {
-            auto   world = this->world();
-            auto&& resp  = co_await this->server.http.post(
-                self->weak_from_this_as<character>(),
-                "internal",
-                "/in-game/transfer",
-                internal_reqs::Transfer{world, internal::Service::Game, map->model().host, this->name(), false});
-
-            // Another move may have run while waiting; that move stands and this transfer is dropped.
-            if (this->_map != old_map)
-                co_return false;
-
-            switch (static_cast<ERROR_CODE>(resp.error))
-            {
-            case ERROR_CODE::NONE:
-                break;
-
-            case ERROR_CODE::MAINTENANCE:
-                throw std::runtime_error(resp.maintenance_message.value_or(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS)));
-
-            case ERROR_CODE::SERVER_NOT_READY:
-                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-
-            case ERROR_CODE::BANNED:
-                throw std::runtime_error(
-                    character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
-
-            default:
-                throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
-            }
-
-            if (this->begin_transfer() == false)
-                co_return false;
-
-            if (options.before && co_await options.before() == false)
-            {
-                auto expected = LOGIN_STATE::TRANSFERRING;
-                std::ignore   = this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
-                co_return false;
-            }
-
-            this->dialog.cancel("transfer");
-            std::ignore = co_await this->map(nullptr);
-            if (co_await this->server.save(*this, true) == false)
-                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-
-            co_await this->listener.on_transfer(*this, *map, new_position, resp.ip, resp.port);
-        }
-        catch (std::exception& e)
-        {
-            this->cancel_transfer(e.what());
+        if (co_await this->transfer(*map, new_position, {}, options.before) != transfer_result::STARTED)
             co_return false;
-        }
-        catch (boost::system::error_code& /*e*/)
-        {
-            this->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-            co_return false;
-        }
     }
     else
     {
@@ -411,6 +352,118 @@ bool character::abort_login()
 {
     auto expected = LOGIN_STATE::LOADING;
     return this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::ABORTED);
+}
+
+async::task<transfer_result> character::transfer(fb::game::map&              map,
+                                                 const fb::model::point16_t& position,
+                                                 const transfer_option&      option,
+                                                 map_callback                before)
+{
+    this->assert_thread();
+
+    auto self    = this->shared_from_this_as<character>();
+    auto old_map = this->_map;
+    auto ip      = std::string();
+    auto port    = uint16_t{0};
+    try
+    {
+        auto   world = this->world();
+        auto&& resp  = co_await this->server.http.post(
+            self->weak_from_this_as<character>(),
+            "internal",
+            "/in-game/transfer",
+            internal_reqs::Transfer{world, internal::Service::Game, map.model().host, this->name(), false});
+
+        // Another move may have run while waiting; that move stands and this transfer is dropped.
+        if (this->_map != old_map)
+            co_return transfer_result::NOT_STARTED;
+
+        switch (static_cast<ERROR_CODE>(resp.error))
+        {
+        case ERROR_CODE::NONE:
+            break;
+
+        case ERROR_CODE::MAINTENANCE:
+            throw std::runtime_error(resp.maintenance_message.value_or(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS)));
+
+        case ERROR_CODE::SERVER_NOT_READY:
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+        case ERROR_CODE::BANNED:
+            throw std::runtime_error(character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
+
+        default:
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
+        }
+
+        ip   = resp.ip;
+        port = resp.port;
+    }
+    catch (std::exception& e)
+    {
+        this->cancel_transfer(e.what());
+        co_return transfer_result::FAILED;
+    }
+    catch (boost::system::error_code& /*e*/)
+    {
+        this->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+        co_return transfer_result::FAILED;
+    }
+
+    co_return co_await this->transfer(map, position, std::move(ip), port, option, std::move(before));
+}
+
+async::task<transfer_result> character::transfer(fb::game::map&              map,
+                                                 const fb::model::point16_t& position,
+                                                 std::string                 ip,
+                                                 uint16_t                    port,
+                                                 const transfer_option&      option,
+                                                 map_callback                before)
+{
+    this->assert_thread();
+
+    if (this->begin_transfer() == false)
+        co_return transfer_result::NOT_STARTED;
+
+    auto saved_return_point = false;
+    try
+    {
+        if (before && co_await before() == false)
+        {
+            auto expected = LOGIN_STATE::TRANSFERRING;
+            std::ignore   = this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
+            co_return transfer_result::NOT_STARTED;
+        }
+
+        if (option.match.has_value())
+        {
+            this->matchmaker.save_return_point();
+            saved_return_point = true;
+        }
+
+        this->dialog.cancel("transfer");
+        std::ignore = co_await this->map(nullptr);
+        if (co_await this->server.save(*this, true) == false)
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+        co_await this->listener.on_transfer(*this, map, position, ip, port, option);
+    }
+    catch (std::exception& e)
+    {
+        if (saved_return_point)
+            this->matchmaker.clear_return_point();
+        this->cancel_transfer(e.what());
+        co_return transfer_result::FAILED;
+    }
+    catch (boost::system::error_code& /*e*/)
+    {
+        if (saved_return_point)
+            this->matchmaker.clear_return_point();
+        this->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+        co_return transfer_result::FAILED;
+    }
+
+    co_return transfer_result::STARTED;
 }
 
 bool character::begin_transfer()

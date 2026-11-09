@@ -74,6 +74,13 @@ struct transfer_option
     std::optional<uint8_t>        host;
 };
 
+enum class transfer_result : uint8_t
+{
+    NOT_STARTED,
+    FAILED,
+    STARTED,
+};
+
 class character : public life
 {
     friend class mob;
@@ -323,6 +330,8 @@ public:
     ~character();
 
 private:
+    bool begin_transfer();
+    void cancel_transfer(std::string_view message);
     void
     hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
     uint64_t                        limited_exp(uint64_t exp) const;
@@ -396,8 +405,8 @@ public:
     bool                                                      loaded() const;
     bool                                                      complete_login();
     bool                                                      abort_login();
-    bool                                                      begin_transfer();
-    void                                                      cancel_transfer(std::string_view message);
+    [[nodiscard]] async::task<transfer_result>                transfer(fb::game::map& map, const fb::model::point16_t& position, const transfer_option& option = {}, map_callback before = {});
+    [[nodiscard]] async::task<transfer_result>                transfer(fb::game::map& map, const fb::model::point16_t& position, std::string ip, uint16_t port, const transfer_option& option = {}, map_callback before = {});
     bool                                                      hand_off();
     bool                                                      transferring() const;
     bool                                                      transferred() const;

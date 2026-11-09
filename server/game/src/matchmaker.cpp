@@ -892,9 +892,6 @@ void matchmaker::disconnect_after_failed_return()
 
 async::task<bool> matchmaker::transfer_home()
 {
-    using fb::model::enum_value::ERROR_CODE;
-    using fb::model::enum_value::MESSAGE_TYPE;
-
     this->owner.assert_thread();
     if (this->has_return_point() == false)
         co_return false;
@@ -905,76 +902,10 @@ async::task<bool> matchmaker::transfer_home()
 
     auto position = this->_return_position.value();
     if (fb::config<std::optional<uint32_t>>("world"))
-    {
         co_return co_await this->owner.map(dest, position);
-    }
-    else
-    {
-        auto self    = this->owner.shared_from_this_as<character>();
-        auto old_map = this->owner.map();
-        try
-        {
-            auto   world = this->owner.world();
-            auto&& resp  = co_await this->owner.server.http.post(
-                self->weak_from_this_as<character>(),
-                "internal",
-                "/in-game/transfer",
-                fb::protocol::internal::request::Transfer{world,
-                                                          fb::protocol::internal::Service::Game,
-                                                          dest->model().host,
-                                                          this->owner.name(),
-                                                          false});
 
-            // Another move may have run while waiting; that move stands and this transfer is dropped.
-            if (this->owner.map() != old_map)
-                co_return false;
-
-            switch (static_cast<ERROR_CODE>(resp.error))
-            {
-            case ERROR_CODE::NONE:
-                break;
-
-            case ERROR_CODE::MAINTENANCE:
-            {
-                this->owner.message(resp.maintenance_message.value_or(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS)),
-                                    MESSAGE_TYPE::STATE);
-                if (auto socket_ptr = this->owner.socket_ptr(); socket_ptr != nullptr)
-                    socket_ptr->close();
-                co_return false;
-            }
-
-            case ERROR_CODE::SERVER_NOT_READY:
-                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-
-            case ERROR_CODE::BANNED:
-                throw std::runtime_error(
-                    character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
-
-            default:
-                throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
-            }
-
-            if (this->owner.begin_transfer() == false)
-                co_return false;
-
-            std::ignore = co_await this->owner.map(nullptr);
-            if (co_await this->owner.server.save(this->owner, true) == false)
-                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-            co_await this->owner.listener.on_transfer(this->owner, *dest, position, resp.ip, resp.port);
-        }
-        catch (std::exception& e)
-        {
-            this->owner.cancel_transfer(e.what());
-            this->disconnect_after_failed_return();
-            co_return false;
-        }
-        catch (boost::system::error_code& /*e*/)
-        {
-            this->owner.cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-            this->disconnect_after_failed_return();
-            co_return false;
-        }
-
-        co_return true;
-    }
+    auto result = co_await this->owner.transfer(*dest, position);
+    if (result == transfer_result::FAILED)
+        this->disconnect_after_failed_return();
+    co_return result == transfer_result::STARTED;
 }

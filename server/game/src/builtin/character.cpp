@@ -4501,34 +4501,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *started = ch->begin_transfer();
-        if (*started == false)
-            co_return;
-
-        if (option.match.has_value())
-            ch->matchmaker.save_return_point();
-
-        try
-        {
-            std::ignore = co_await ch->map(nullptr);
-            if (co_await ch->server.save(*ch, true) == false)
-                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-            co_await ch->listener.on_transfer(*ch, *map, position, ip_str, port, option);
-        }
-        catch (std::exception& e)
-        {
-            *started = false;
-            if (option.match.has_value())
-                ch->matchmaker.clear_return_point();
-            ch->cancel_transfer(e.what());
-        }
-        catch (boost::system::error_code& /*e*/)
-        {
-            *started = false;
-            if (option.match.has_value())
-                ch->matchmaker.clear_return_point();
-            ch->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-        }
+        *started = co_await ch->transfer(*map, position, ip_str, port, option) == fb::game::transfer_result::STARTED;
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
