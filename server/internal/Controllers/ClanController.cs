@@ -205,18 +205,7 @@ namespace Internal.Controllers
                 };
                 _clans.Touch(world, clan);
                 await _dbContext.Clan.SaveChangesAsync();
-
-                sync.Clan = clan.Id;
-                _dbContext.CharacterRealtimeState.Set(world, sync);
-                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
-
-                _dbContext.ClanMember.Set(world, new ClanMember
-                {
-                    Clan = clan.Id,
-                    User = request.Master,
-                    Role = (uint)ClanRole.Master
-                });
-                await _dbContext.ClanMember.SaveChangesAsync();
+                await _clans.AddMember(world, clan, sync, ClanRole.Master);
 
                 var protocolClan = _mapper.Map<Protocol.Clan>(clan);
                 protocolClan.Revision = clan.Revision;
@@ -502,19 +491,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanFullMember);
                 }
 
-                inviteeSync.Clan = clan.Id;
-                _dbContext.CharacterRealtimeState.Set(world, inviteeSync);
-                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
-
-                _clans.Touch(world, clan);
-                _dbContext.ClanMember.Set(world, new ClanMember
-                {
-                    Clan = clan.Id,
-                    Role = (uint)ClanRole.Mate,
-                    User = invitee.Id,
-                });
-                await _dbContext.ClanMember.SaveChangesAsync();
-                await _dbContext.Clan.SaveChangesAsync();
+                await _clans.AddMember(world, clan, inviteeSync, ClanRole.Mate);
 
                 var response = new Response.UpdatedClan
                 {
@@ -603,14 +580,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
                 }
 
-                _clans.Touch(world, clan);
-                _dbContext.ClanMember.Delete(world, member);
-                await _dbContext.ClanMember.SaveChangesAsync();
-                await _dbContext.Clan.SaveChangesAsync();
-
-                sync.Clan = null;
-                _dbContext.CharacterRealtimeState.Set(world, sync);
-                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
+                await _clans.RemoveMember(world, clan, member, sync);
 
                 var response = new Response.UpdatedClan
                 {
@@ -696,14 +666,7 @@ namespace Internal.Controllers
 
                 kickerMember.Command(targetMember, (uint)Fb.Model.ConstValue.Clan.MinimumKickPrivilege);
 
-                _clans.Touch(world, clan);
-                _dbContext.ClanMember.Delete(world, targetMember);
-                await _dbContext.ClanMember.SaveChangesAsync();
-                await _dbContext.Clan.SaveChangesAsync();
-
-                targetSync.Clan = null;
-                _dbContext.CharacterRealtimeState.Set(world, targetSync);
-                await _dbContext.CharacterRealtimeState.SaveChangesAsync();
+                await _clans.RemoveMember(world, clan, targetMember, targetSync);
 
                 var response = new Response.UpdatedClan
                 {

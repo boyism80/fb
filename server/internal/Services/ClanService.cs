@@ -121,6 +121,35 @@ namespace Internal.Services
             }
         }
 
+        public async Task AddMember(uint world, Clan clan, CharacterRealtimeState sync, ClanRole role)
+        {
+            sync.Clan = clan.Id;
+            _dbContext.CharacterRealtimeState.Set(world, sync);
+            await _dbContext.CharacterRealtimeState.SaveChangesAsync();
+
+            Touch(world, clan);
+            _dbContext.ClanMember.Set(world, new ClanMember
+            {
+                Clan = clan.Id,
+                User = sync.Uid,
+                Role = (uint)role
+            });
+            await _dbContext.ClanMember.SaveChangesAsync();
+            await _dbContext.Clan.SaveChangesAsync();
+        }
+
+        public async Task RemoveMember(uint world, Clan clan, ClanMember member, CharacterRealtimeState sync)
+        {
+            Touch(world, clan);
+            _dbContext.ClanMember.Delete(world, member);
+            await _dbContext.ClanMember.SaveChangesAsync();
+            await _dbContext.Clan.SaveChangesAsync();
+
+            sync.Clan = null;
+            _dbContext.CharacterRealtimeState.Set(world, sync);
+            await _dbContext.CharacterRealtimeState.SaveChangesAsync();
+        }
+
         public async Task<List<uint>> GetCounterparts(uint world, uint id)
         {
             var ids = (await _dbContext.ClanEnemy.Get(world, id)).Select(x => x.EnemyClan).ToList();
