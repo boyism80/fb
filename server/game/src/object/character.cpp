@@ -1187,8 +1187,13 @@ bool character::revive()
         return false;
 
     this->state(STATE::NORMAL);
-    this->stat.hp(std::max<uint64_t>(this->stat.hp(), fb::model::const_value::death_penalty::revive_hp));
+    this->stat.hp(revived_hp(this->stat.hp()));
     return true;
+}
+
+uint64_t character::revived_hp(uint64_t hp)
+{
+    return std::max<uint64_t>(hp, fb::model::const_value::death_penalty::revive_hp);
 }
 
 void character::log_chat(std::string_view message, std::string_view chat_type)
@@ -2624,7 +2629,7 @@ fb::protocol::internal::Character character::to_protocol() const
     if (!fb::config<std::optional<uint32_t>>("world") && this->_state == STATE::GHOST)
     {
         dto.state = static_cast<uint8_t>(STATE::NORMAL);
-        dto.hp    = std::max<uint64_t>(dto.hp, fb::model::const_value::death_penalty::revive_hp);
+        dto.hp    = revived_hp(dto.hp);
     }
 
     auto playtime = this->_evaluation.playtime;

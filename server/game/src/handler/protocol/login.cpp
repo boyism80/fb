@@ -317,9 +317,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     }
     ch->items.deposited(resp.character.deposited_money);
     ch->stat.base_hp(resp.character.base_hp, false);
-    ch->stat.hp(revive ? std::max<uint64_t>(resp.character.hp, fb::model::const_value::death_penalty::revive_hp)
-                       : resp.character.hp,
-                false);
+    ch->stat.hp(revive ? character::revived_hp(resp.character.hp) : resp.character.hp, false);
     ch->stat.base_mp(resp.character.base_mp, false);
     ch->stat.mp(resp.character.mp, false);
     ch->stat.base_str(resp.character.strength, false);
