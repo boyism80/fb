@@ -903,10 +903,14 @@ async::task<bool> matchmaker::transfer_home()
 
     auto position = this->_return_position.value();
     if (fb::config<std::optional<uint32_t>>("world"))
+    {
         co_return co_await this->owner.map(dest, position);
-
-    auto result = co_await this->owner.transfer(*dest, position);
-    if (result == transfer_result::FAILED)
-        this->disconnect_after_failed_return();
-    co_return result == transfer_result::STARTED;
+    }
+    else
+    {
+        auto result = co_await this->owner.transfer(*dest, position);
+        if (result == transfer_result::FAILED)
+            this->disconnect_after_failed_return();
+        co_return result == transfer_result::STARTED;
+    }
 }

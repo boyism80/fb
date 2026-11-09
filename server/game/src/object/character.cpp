@@ -425,6 +425,7 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
     if (this->begin_transfer() == false)
         co_return transfer_result::NOT_STARTED;
 
+    auto result             = transfer_result::STARTED;
     auto saved_return_point = false;
     try
     {
@@ -432,38 +433,40 @@ async::task<transfer_result> character::transfer(fb::game::map&              map
         {
             auto expected = LOGIN_STATE::TRANSFERRING;
             std::ignore   = this->_login_state.compare_exchange_strong(expected, LOGIN_STATE::LOADED);
-            co_return transfer_result::NOT_STARTED;
+            result        = transfer_result::NOT_STARTED;
         }
-
-        if (option.match.has_value())
+        else
         {
-            this->matchmaker.save_return_point();
-            saved_return_point = true;
+            if (option.match.has_value())
+            {
+                this->matchmaker.save_return_point();
+                saved_return_point = true;
+            }
+
+            this->dialog.cancel("transfer");
+            std::ignore = co_await this->map(nullptr);
+            if (co_await this->server.save(*this, true) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+            co_await this->listener.on_transfer(*this, map, position, ip, port, option);
         }
-
-        this->dialog.cancel("transfer");
-        std::ignore = co_await this->map(nullptr);
-        if (co_await this->server.save(*this, true) == false)
-            throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-
-        co_await this->listener.on_transfer(*this, map, position, ip, port, option);
     }
     catch (std::exception& e)
     {
         if (saved_return_point)
             this->matchmaker.clear_return_point();
         this->cancel_transfer(e.what());
-        co_return transfer_result::FAILED;
+        result = transfer_result::FAILED;
     }
     catch (boost::system::error_code& /*e*/)
     {
         if (saved_return_point)
             this->matchmaker.clear_return_point();
         this->cancel_transfer(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-        co_return transfer_result::FAILED;
+        result = transfer_result::FAILED;
     }
 
-    co_return transfer_result::STARTED;
+    co_return result;
 }
 
 bool character::begin_transfer()
