@@ -317,6 +317,7 @@ namespace Http.Reepository
             dynamicParams.Add("title", title);
             dynamicParams.Add("contents", contents);
             dynamicParams.Add("max_count", Fb.Model.ConstValue.Mail.MaxCount);
+            dynamicParams.Add("sender_unread_limit", Fb.Model.ConstValue.Mail.SenderUnreadLimit);
 
             await using var reader = await conn.QueryMultipleAsync($"USP_MAIL_WRITE", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
             var head = await reader.ReadFirstAsync();
@@ -324,6 +325,11 @@ namespace Http.Reepository
             if (result == 2)
             {
                 throw new LogicException(ErrorCode.MailBoxFull);
+            }
+
+            if (result == 3)
+            {
+                throw new LogicException(ErrorCode.MailSenderUnreadLimit);
             }
 
             if (result != 1)
