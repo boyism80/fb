@@ -346,7 +346,6 @@ public:
 
 public:
     template <class... Args> bool load(std::string_view fmt, Args&&... args);
-    template <class... Args> bool execute(std::string_view fmt, Args&&... args);
     template <class... Args> bool dofile(std::string_view fmt, Args&&... args);
     template <class... Args> bool func(std::string_view fmt, Args&&... args);
     context&                      pushstring(std::string_view value);
@@ -562,8 +561,6 @@ private:
     void                            set_builtins(const luaL_Reg* funcs);
 
 public:
-    friend class context;
-
     unique_lua_map idle, busy;
 
 public:
@@ -577,6 +574,7 @@ public:
 
 public:
     bool        dump(std::string_view path);
+    bool        load_module(lua_State* L, std::string_view path);
     bool        validate(std::string_view path);
     void        invalidate(std::string_view path);
     void        invalidate_all();
@@ -718,116 +716,11 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
     this->_script_path.clear();
 
     auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
-
-#if defined DEBUG || defined _DEBUG
-    const auto outermost = (root->_loading == 0);
-    root->_loading++;
-    if (outermost)
-        root->unload_remembered_libs();
-
-    auto ok = false;
-    if (auto status = luaL_loadfile(*this, fname.c_str()); status != LUA_OK)
-    {
-        // A missing file is an optional hook, not an error.
-        if (status != LUA_ERRFILE)
-            fb::logger::warn("cannot load script {}: {}", fname, lua_tostring(*this, -1));
-        lua_pop(*this, 1);
-    }
-    else if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
-    {
-        const char* error = lua_tostring(*this, -1);
-        fb::logger::warn("cannot load script {}: {}", fname, error != nullptr ? error : "");
-        lua_pop(*this, 1);
-    }
-    else if (root->store_module(*this, fname) == false)
-    {
-        fb::logger::warn("cannot load script {}: module must return a table", fname);
-    }
-    else
-    {
-        this->_script_path = fname;
-        ok                 = true;
-        root->remember_lib_from_path(fname);
-    }
-
-    if (outermost)
-        root->capture_loaded_libs();
-    root->_loading--;
-    return ok;
-#else
-    if (auto cached = root->_bytecodes.find(fname); cached != root->_bytecodes.end())
-    {
-        if (cached->second.empty() || root->has_module(fname) == false)
-            return false;
-
-        this->_script_path = fname;
-        return true;
-    }
-
-    if (root->dump(fname) == false)
+    if (root->load_module(*this, fname) == false)
         return false;
 
     this->_script_path = fname;
     return true;
-#endif
-}
-
-template <class... Args>
-bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
-{
-    auto fname = std::vformat(fmt, std::make_format_args(args...));
-    if (fname.empty())
-        return false;
-
-    this->_script_path.clear();
-
-    auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
-
-#if defined DEBUG || defined _DEBUG
-    if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
-    {
-        this->pop(1);
-        return false;
-    }
-
-    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
-    {
-        this->pop(1);
-        return false;
-    }
-
-    if (root->store_module(*this, fname) == false)
-        return false;
-
-    this->_script_path = fname;
-    return true;
-#else
-    if (root->dump(fname) == false)
-        return false;
-
-    auto it = root->_bytecodes.find(fname);
-    if (it == root->_bytecodes.end() || it->second.empty())
-        return false;
-
-    const auto& bytes = it->second;
-    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), fname.c_str()) != LUA_OK)
-    {
-        this->pop(1);
-        return false;
-    }
-
-    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
-    {
-        this->pop(1);
-        return false;
-    }
-
-    if (root->store_module(*this, fname) == false)
-        return false;
-
-    this->_script_path = fname;
-    return true;
-#endif
 }
 
 template <class... Args>

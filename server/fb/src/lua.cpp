@@ -1070,6 +1070,52 @@ bool root::dump(std::string_view path)
     return true;
 }
 
+bool root::load_module(lua_State* L, std::string_view path)
+{
+    auto path_str = std::string(path);
+
+#if defined DEBUG || defined _DEBUG
+    const auto outermost = (this->_loading == 0);
+    this->_loading++;
+    if (outermost)
+        this->unload_remembered_libs();
+
+    auto ok = false;
+    if (auto status = luaL_loadfile(L, path_str.c_str()); status != LUA_OK)
+    {
+        // A missing file is an optional hook, not an error.
+        if (status != LUA_ERRFILE)
+            fb::logger::warn("cannot load script {}: {}", path_str, lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
+    else if (lua_pcall(L, 0, 1, 0) != LUA_OK)
+    {
+        const char* error = lua_tostring(L, -1);
+        fb::logger::warn("cannot load script {}: {}", path_str, error != nullptr ? error : "");
+        lua_pop(L, 1);
+    }
+    else if (this->store_module(L, path_str) == false)
+    {
+        fb::logger::warn("cannot load script {}: module must return a table", path_str);
+    }
+    else
+    {
+        ok = true;
+        this->remember_lib_from_path(path_str);
+    }
+
+    if (outermost)
+        this->capture_loaded_libs();
+    this->_loading--;
+    return ok;
+#else
+    if (auto cached = this->_bytecodes.find(path_str); cached != this->_bytecodes.end())
+        return cached->second.empty() == false && this->has_module(path_str);
+
+    return this->dump(path_str);
+#endif
+}
+
 bool root::validate(std::string_view path)
 {
     auto before = this->loaded_packages();
