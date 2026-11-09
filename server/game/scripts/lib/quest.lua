@@ -554,40 +554,62 @@ function M.manrihyang_seed_on_move(me)
     end
 end
 
-function M.mountain_treasure_map_on_move(me)
-    local quest = me:quest(M.QUEST_MOUNTAIN_GOD)
-    if quest == nil or quest:completed() then
-        return
-    end
-    local step = quest:step()
-    if step ~= 1 and not (step == 2 and quest:param() ~= 'got') then
-        return
-    end
+local TREASURE_SPOTS = {
+    { map = '도삭산801층', x = 32, y = 4 },
+    { map = '도삭산801층', x = 4, y = 5 },
+    { map = '도삭산804층', x = 30, y = 11 },
+    { map = '도삭산804층', x = 4, y = 17 },
+    { map = '도삭산805층', x = 27, y = 4 },
+    { map = '도삭산805층', x = 4, y = 7 },
+    { map = '도삭산810층', x = 3, y = 20 },
+    { map = '도삭산810층', x = 20, y = 4 },
+    { map = '도삭산812층', x = 6, y = 33 },
+    { map = '도삭산812층', x = 16, y = 3 },
+}
 
-    local map = me:map()
+local function parse_treasure_spot(param)
+    local map, x, y = string.match(param or '', '^([^,]+),(%d+),(%d+)$')
     if map == nil then
-        return
+        return nil
+    else
+        return { map = map, x = tonumber(x), y = tonumber(y) }
     end
+end
 
-    local SANSHIN_TREASURE_MAP_IDS = {
-        [1287] = true,
-        [1291] = true,
-        [1303] = true,
-        [1313] = true,
-        [1327] = true,
-        [1330] = true,
-        [1336] = true,
-        [1344] = true,
-        [1347] = true,
-        [1351] = true,
-        [1357] = true,
-        [1360] = true,
-        [1366] = true,
-        [1374] = true,
-        [1377] = true,
-    }
-    local map_id = map:model():id()
-    if not SANSHIN_TREASURE_MAP_IDS[map_id] then
+local function treasure_stage(quest)
+    if quest == nil or quest:completed() then
+        return nil
+    elseif quest:step() == 1 then
+        return 'map'
+    elseif quest:step() == 2 and quest:param() == 'got' then
+        return 'found'
+    elseif quest:step() == 2 then
+        return 'spot'
+    else
+        return nil
+    end
+end
+
+function M.mountain_treasure_spot(me)
+    local quest = me:quest(M.QUEST_MOUNTAIN_GOD)
+    local stage = treasure_stage(quest)
+    if stage == 'spot' then
+        local spot = parse_treasure_spot(quest:param())
+        if spot == nil then
+            spot = TREASURE_SPOTS[math.random(1, #TREASURE_SPOTS)]
+            quest:param(string.format('%s,%d,%d', spot.map, spot.x, spot.y))
+        end
+        return spot
+    elseif stage == 'found' then
+        return 'got'
+    else
+        return nil
+    end
+end
+
+function M.mountain_treasure_map_on_move(me)
+    local stage = treasure_stage(me:quest(M.QUEST_MOUNTAIN_GOD))
+    if stage ~= 'map' and stage ~= 'spot' then
         return
     end
 
@@ -615,36 +637,14 @@ end
 --- When at the treasure location (quest param "map,x,y"), give 산신의비단 and set param to "got". M.QUEST_MOUNTAIN_GOD step 2.
 function M.mountain_treasure_fabric_on_move(me)
     local quest = me:quest(M.QUEST_MOUNTAIN_GOD)
-    if quest == nil or quest:step() ~= 2 then
+    if treasure_stage(quest) ~= 'spot' then
         return
     end
 
-    local param = quest:param()
-    local parts = {}
-    for p in string.gmatch(param, '[^,]+') do
-        table.insert(parts, p)
-    end
-    if #parts ~= 3 then
-        return
-    end
-
-    local map_name = parts[1]
-    local target_x = tonumber(parts[2])
-    local target_y = tonumber(parts[3])
-    if target_x == nil or target_y == nil then
-        return
-    end
-
+    local spot = parse_treasure_spot(quest:param())
     local map = me:map()
-    if map == nil then
-        return
-    end
-    if map:model():name() ~= map_name then
-        return
-    end
-
     local x, y = me:position()
-    if x ~= target_x or y ~= target_y then
+    if spot == nil or map == nil or map:model():name() ~= spot.map or x ~= spot.x or y ~= spot.y then
         return
     end
 
