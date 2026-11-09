@@ -893,26 +893,7 @@ namespace Internal.Controllers
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan) ??
                     throw new LogicException(ErrorCode.ClanTargetNotFound);
 
-                await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(Math.Min(request.Clan, request.TargetClan)));
-                await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(Math.Max(request.Clan, request.TargetClan)));
-
-                if (await _dbContext.ClanAlliance.Get(world, request.Clan) != null)
-                {
-                    throw new LogicException(ErrorCode.ClanAlreadyAllied);
-                }
-
-                if (await _dbContext.ClanAlliance.Get(world, request.TargetClan) != null)
-                {
-                    throw new LogicException(ErrorCode.ClanAlreadyAllied);
-                }
-
-                if (await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) != null)
-                {
-                    throw new LogicException(ErrorCode.ClanCannotAllyEnemy);
-                }
-
-                _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.Clan, AlliedClan = request.TargetClan });
-                _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.TargetClan, AlliedClan = request.Clan });
+                await _clans.Ally(world, request.Clan, request.TargetClan);
                 _clans.Touch(world, clan, targetClan);
 
                 await _dbContext.SaveChangesAsync();
@@ -993,21 +974,8 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
                 }
 
-                await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(request.Clan));
-
-                var alliance = await _dbContext.ClanAlliance.Get(world, request.Clan) ??
-                    throw new LogicException(ErrorCode.ClanNotAllied);
-
-                if (alliance.AlliedClan != request.TargetClan)
-                {
-                    throw new LogicException(ErrorCode.ClanNotAllied);
-                }
-
-                var alliedClanId = alliance.AlliedClan;
-                await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliedClanId));
-
-                _dbContext.ClanAlliance.Delete(world, request.Clan);
-                _dbContext.ClanAlliance.Delete(world, alliedClanId);
+                await _clans.Unally(world, request.Clan, request.TargetClan);
+                var alliedClanId = request.TargetClan;
                 var alliedClan = await _dbContext.Clan.Get(world, alliedClanId);
                 if (alliedClan != null)
                 {
@@ -1104,19 +1072,7 @@ namespace Internal.Controllers
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan) ??
                     throw new LogicException(ErrorCode.ClanTargetNotFound);
 
-                var alliance = await _dbContext.ClanAlliance.Get(world, request.Clan);
-                if (alliance != null && alliance.AlliedClan == request.TargetClan)
-                {
-                    throw new LogicException(ErrorCode.ClanCannotEnemyAlly);
-                }
-
-                if (await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) != null)
-                {
-                    throw new LogicException(ErrorCode.ClanAlreadyEnemy);
-                }
-
-                _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.Clan, EnemyClan = request.TargetClan });
-                _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.TargetClan, EnemyClan = request.Clan });
+                await _clans.DeclareEnemy(world, request.Clan, request.TargetClan);
                 _clans.Touch(world, clan, targetClan);
 
                 await _dbContext.SaveChangesAsync();
@@ -1379,16 +1335,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
                 }
 
-                var enemy = await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) ??
-                    throw new LogicException(ErrorCode.ClanNotEnemy);
-
-                var reverseEnemy = await _dbContext.ClanEnemy.Get(world, request.TargetClan, request.Clan);
-
-                _dbContext.ClanEnemy.Delete(world, enemy);
-                if (reverseEnemy != null)
-                {
-                    _dbContext.ClanEnemy.Delete(world, reverseEnemy);
-                }
+                await _clans.EndEnemy(world, request.Clan, request.TargetClan);
 
                 var targetClan = await _dbContext.Clan.Get(world, request.TargetClan);
                 if (targetClan != null)

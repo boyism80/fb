@@ -13,9 +13,5 @@ namespace Http.Model
     public class ClanAlliance : ClanAllianceKey, IModel
     {
         public uint AlliedClan { get; set; }
-        public static string DistributedLockKey(uint clan)
-        {
-            return $"fb:lock:clan-alliance:{clan}";
-        }
     }
 }

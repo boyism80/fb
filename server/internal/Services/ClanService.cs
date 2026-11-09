@@ -150,6 +150,70 @@ namespace Internal.Services
             await _dbContext.CharacterRealtimeState.SaveChangesAsync();
         }
 
+        public async Task Ally(uint world, uint clan, uint target)
+        {
+            if (await _dbContext.ClanAlliance.Get(world, clan) != null || await _dbContext.ClanAlliance.Get(world, target) != null)
+            {
+                throw new LogicException(ErrorCode.ClanAlreadyAllied);
+            }
+
+            if (await Hostile(world, clan, target))
+            {
+                throw new LogicException(ErrorCode.ClanCannotAllyEnemy);
+            }
+
+            _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = clan, AlliedClan = target });
+            _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = target, AlliedClan = clan });
+        }
+
+        public async Task Unally(uint world, uint clan, uint target)
+        {
+            var alliance = await _dbContext.ClanAlliance.Get(world, clan);
+            if (alliance == null || alliance.AlliedClan != target)
+            {
+                throw new LogicException(ErrorCode.ClanNotAllied);
+            }
+
+            _dbContext.ClanAlliance.Delete(world, clan);
+            _dbContext.ClanAlliance.Delete(world, target);
+        }
+
+        public async Task DeclareEnemy(uint world, uint clan, uint target)
+        {
+            var alliance = await _dbContext.ClanAlliance.Get(world, clan);
+            if (alliance != null && alliance.AlliedClan == target)
+            {
+                throw new LogicException(ErrorCode.ClanCannotEnemyAlly);
+            }
+
+            if (await Hostile(world, clan, target))
+            {
+                throw new LogicException(ErrorCode.ClanAlreadyEnemy);
+            }
+
+            _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = clan, EnemyClan = target });
+            _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = target, EnemyClan = clan });
+        }
+
+        public async Task EndEnemy(uint world, uint clan, uint target)
+        {
+            var enemy = await _dbContext.ClanEnemy.Get(world, clan, target) ??
+                throw new LogicException(ErrorCode.ClanNotEnemy);
+            _dbContext.ClanEnemy.Delete(world, enemy);
+
+            var reverse = await _dbContext.ClanEnemy.Get(world, target, clan);
+            if (reverse != null)
+            {
+                _dbContext.ClanEnemy.Delete(world, reverse);
+            }
+        }
+
+        private async Task<bool> Hostile(uint world, uint clan, uint target)
+        {
+            return await _dbContext.ClanEnemy.Get(world, clan, target) != null ||
+                await _dbContext.ClanEnemy.Get(world, target, clan) != null;
+        }
+
         public async Task<List<uint>> GetCounterparts(uint world, uint id)
         {
             var ids = (await _dbContext.ClanEnemy.Get(world, id)).Select(x => x.EnemyClan).ToList();
@@ -167,7 +231,6 @@ namespace Internal.Services
             try
             {
                 var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
-                await using var _ = alliance != null ? await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliance.AlliedClan)) : null;
                 var unallied = default(Clan);
                 if (alliance != null)
                 {
@@ -176,8 +239,7 @@ namespace Internal.Services
                         throw new LogicException(ErrorCode.Unhandled);
                     }
 
-                    _dbContext.ClanAlliance.Delete(world, clan.Id);
-                    _dbContext.ClanAlliance.Delete(world, alliance.AlliedClan);
+                    await Unally(world, clan.Id, alliance.AlliedClan);
                     unallied = await _dbContext.Clan.Get(world, alliance.AlliedClan);
                     if (unallied != null)
                     {
@@ -194,12 +256,7 @@ namespace Internal.Services
                         throw new LogicException(ErrorCode.Unhandled);
                     }
 
-                    _dbContext.ClanEnemy.Delete(world, enemy);
-                    var reverse = await _dbContext.ClanEnemy.Get(world, enemy.EnemyClan, clan.Id);
-                    if (reverse != null)
-                    {
-                        _dbContext.ClanEnemy.Delete(world, reverse);
-                    }
+                    await EndEnemy(world, clan.Id, enemy.EnemyClan);
 
                     var other = await _dbContext.Clan.Get(world, enemy.EnemyClan);
                     if (other != null)
