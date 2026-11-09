@@ -3849,7 +3849,15 @@ int builtin::character::builtin_base_str(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto isnum = 0;
+        auto raw   = lua_tointegerx(*lua, 2, &isnum);
+        if (isnum == 0 || raw < 0 || raw > UINT8_MAX)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
+        auto value    = static_cast<uint8_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -3858,8 +3866,9 @@ int builtin::character::builtin_base_str(lua_State* L)
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -3894,7 +3903,15 @@ int builtin::character::builtin_base_dex(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto isnum = 0;
+        auto raw   = lua_tointegerx(*lua, 2, &isnum);
+        if (isnum == 0 || raw < 0 || raw > UINT8_MAX)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
+        auto value    = static_cast<uint8_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -3903,8 +3920,9 @@ int builtin::character::builtin_base_dex(lua_State* L)
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }
@@ -3939,7 +3957,15 @@ int builtin::character::builtin_base_int(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto isnum = 0;
+        auto raw   = lua_tointegerx(*lua, 2, &isnum);
+        if (isnum == 0 || raw < 0 || raw > UINT8_MAX)
+        {
+            lua->pushboolean(false);
+            return 1;
+        }
+
+        auto value    = static_cast<uint8_t>(raw);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -3948,8 +3974,9 @@ int builtin::character::builtin_base_int(lua_State* L)
             ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(true);
+            co_return 1;
         };
         return builder.run();
     }

@@ -967,12 +967,9 @@ M.functions = {
                 me:message("사용법: /힘바꾸기 <힘값>")
                 return true
             end
-            value = tonumber(value)
-            if not value or value < 0 then
-                me:message("힘값은 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:base_str(tonumber(value)) then
+                me:message("힘값은 0~255 사이의 숫자여야 합니다.")
             end
-            me:base_str(value)
             return true
         end,
     },
@@ -986,12 +983,9 @@ M.functions = {
                 me:message("사용법: /민첩바꾸기 <민첩값>")
                 return true
             end
-            value = tonumber(value)
-            if not value or value < 0 then
-                me:message("민첩값은 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:base_dex(tonumber(value)) then
+                me:message("민첩값은 0~255 사이의 숫자여야 합니다.")
             end
-            me:base_dex(value)
             return true
         end,
     },
@@ -1005,12 +999,9 @@ M.functions = {
                 me:message("사용법: /지력바꾸기 <지력값>")
                 return true
             end
-            value = tonumber(value)
-            if not value or value < 0 then
-                me:message("지력값은 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:base_int(tonumber(value)) then
+                me:message("지력값은 0~255 사이의 숫자여야 합니다.")
             end
-            me:base_int(value)
             return true
         end,
     },
@@ -1024,16 +1015,9 @@ M.functions = {
                 me:message("사용법: /스탯바꾸기 <힘> <민첩> <지력>")
                 return true
             end
-            str = tonumber(str)
-            dex = tonumber(dex)
-            int = tonumber(int)
-            if not str or not dex or not int or str < 0 or dex < 0 or int < 0 then
-                me:message("힘, 민첩, 지력은 0 이상의 숫자여야 합니다.")
-                return true
+            if not me:base_str(tonumber(str)) or not me:base_dex(tonumber(dex)) or not me:base_int(tonumber(int)) then
+                me:message("힘, 민첩, 지력은 0~255 사이의 숫자여야 합니다.")
             end
-            me:base_str(str)
-            me:base_dex(dex)
-            me:base_int(int)
             return true
         end,
     },
