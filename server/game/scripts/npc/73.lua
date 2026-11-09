@@ -29,12 +29,10 @@ return {
             me:dialog(npc, "방송할 말이 비었거나 너무 깁니다.", { prev = false, next = false })
             return
         end
-        message = filter_blocked_word(message)
 
         if not me:rmitem("방송쿠폰", 1, ITEM_DELETE_TYPE.GIVE) then
             return
         end
-        me:log_chat(message, 'broadcast_coupon')
-        broadcast(string.format("###[%s]>>%s", me:name(), message), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.GLOBAL)
+        me:shout(message, "###[{}]>>{}", MESSAGE_TYPE.WORLD, BROADCAST_TYPE.GLOBAL, { log = 'broadcast_coupon' })
     end
 }

@@ -106,14 +106,7 @@ void chat<V>::handle_normal_chat(character* ch, game_reqs::chat<V>& request, con
     auto message = fb::model::table::blocked_word->filter(request.message);
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     ch->chat(message, type, true);
-
-    auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-    log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
-    log_data["chat_type"]      = request.shout ? "shout" : "normal";
-    log_data["map"]            = map->model().id;
-    this->server.log.write("chat", log_data);
+    ch->log_chat(message, request.shout ? "shout" : "normal");
 }
 
 template class chat<fb::protocol::CLIENT_VERSION::v550>;

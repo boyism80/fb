@@ -123,7 +123,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"assert",                       builtin::character::builtin_assert},
 {"role",                         builtin::character::builtin_role},
 {"log_command",                  builtin::character::builtin_log_command},
-{"log_chat",                     builtin::character::builtin_log_chat},
+{"shout",                        builtin::character::builtin_shout},
 {"deposited_money",              builtin::character::builtin_deposited_money},
 {"deposit_money",                builtin::character::builtin_deposit_money},
 {"withdraw_money",               builtin::character::builtin_withdraw_money},
@@ -2267,7 +2267,7 @@ int builtin::character::builtin_log_command(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_log_chat(lua_State* L)
+int builtin::character::builtin_shout(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -2277,22 +2277,45 @@ int builtin::character::builtin_log_chat(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto message   = lua->tostring(2);
-    auto chat_type = lua->tostring(3);
-    auto weak      = ch->weak_from_this_as<fb::game::character>();
-    auto builder   = lua->new_co_builder();
-    builder.weak   = weak;
-    builder.yield  = [=]() -> async::task<void> {
-        auto& server               = static_cast<fb::game::server&>(lua->executor);
-        auto  log_data             = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-        log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
-        log_data["chat_type"]      = chat_type;
-        auto map                   = ch->map();
-        if (map != nullptr)
-            log_data["map"] = map->model().id;
-        server.log.write("chat", log_data);
+    auto message      = lua->tostring(2);
+    auto line         = lua->tostring(3);
+    auto type         = lua->toenum(4, MESSAGE_TYPE::STATE);
+    auto broad_type   = lua->toenum(5, BROADCAST_TYPE::GLOBAL);
+    auto respect_roar = false;
+    auto filter       = true;
+    auto chat_type    = std::string("shout");
+    if (lua->argc() >= 6 && lua->is_table(6))
+    {
+        lua->pushstring("respect_roar");
+        if (lua_rawget(L, 6) == LUA_TBOOLEAN)
+            respect_roar = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("filter");
+        if (lua_rawget(L, 6) == LUA_TBOOLEAN)
+            filter = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("log");
+        if (lua_rawget(L, 6) == LUA_TSTRING)
+            chat_type = lua_tostring(L, -1);
+        lua_pop(L, 1);
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        auto  text   = filter ? fb::model::table::blocked_word->filter(message) : message;
+        ch->log_chat(text, chat_type);
+
+        auto name      = ch->name();
+        auto broadcast = std::vformat(line, std::make_format_args(name, text));
+        if (broad_type == BROADCAST_TYPE::WORLD)
+            server.characters.broadcast(broadcast, type, respect_roar);
+        else
+            co_await server.characters.broadcast(broadcast, type, broad_type, respect_roar);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

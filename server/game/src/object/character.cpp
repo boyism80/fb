@@ -1135,6 +1135,21 @@ bool character::revive()
     return true;
 }
 
+void character::log_chat(std::string_view message, std::string_view chat_type)
+{
+    this->assert_thread();
+
+    auto log_data              = Json::Value();
+    log_data["character_id"]   = static_cast<Json::Int64>(this->id);
+    log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+    log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
+    log_data["chat_type"]      = std::string(chat_type);
+    auto map                   = this->map();
+    if (map != nullptr)
+        log_data["map"] = map->model().id;
+    this->server.log.write("chat", log_data);
+}
+
 CLASS character::cls() const
 {
     this->assert_thread();

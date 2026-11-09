@@ -437,6 +437,7 @@ public:
     STATE                                                     state_to(const fb::game::object& to, STATE state) const;
     void                                                      state(STATE value);
     bool                                                      revive();
+    void                                                      log_chat(std::string_view message, std::string_view chat_type);
     CLASS                                                     cls() const;
     void                                                      cls(CLASS value);
     uint8_t                                                   promotion() const;
