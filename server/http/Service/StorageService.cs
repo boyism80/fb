@@ -62,7 +62,7 @@ namespace Http.Service
                 throw new ArgumentException("User id must not be 0", nameof(user));
             }
 
-            var box = await _dbContext.SystemStorageBox.Write(world,
+            var (box, created) = await _dbContext.SystemStorageBox.Write(world,
                 title.Trim(),
                 message.Trim(),
                 attachmentsList,
@@ -77,6 +77,7 @@ namespace Http.Service
                 box_id = box.Id,
                 user_id = box.User,
                 external_ref = box.ExternalRef,
+                created,
                 reserve_date = reserveDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss")
             });

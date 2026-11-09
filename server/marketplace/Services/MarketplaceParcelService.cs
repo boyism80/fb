@@ -55,11 +55,12 @@ public class MarketplaceParcelService
         try
         {
             await _dbContext.MarketplaceParcel.MarkSentAsync(parcel.ExternalRef);
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to mark marketplace parcel {ExternalRef} sent", parcel.ExternalRef);
+            return false;
         }
-        return true;
     }
 }

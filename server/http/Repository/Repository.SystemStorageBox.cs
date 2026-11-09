@@ -266,7 +266,7 @@ namespace Http.Reepository
             await SaveChangesAsync();
         }
 
-        public async Task<SystemStorageBox> Write(uint world,
+        public async Task<(SystemStorageBox Box, bool Created)> Write(uint world,
             string title,
             string message,
             List<Fb.Model.Dsl> attachments,
@@ -280,7 +280,7 @@ namespace Http.Reepository
             if (existing != null)
             {
                 await EvictBoxes(world, existing.User);
-                return existing;
+                return (existing, false);
             }
 
             var attachmentsJson = JsonConvert.SerializeObject(attachments ?? new List<Fb.Model.Dsl>());
@@ -320,7 +320,7 @@ namespace Http.Reepository
             };
 
             await EvictBoxes(world, user);
-            return box;
+            return (box, true);
         }
 
         private async Task EvictBoxes(uint world, uint? user)
