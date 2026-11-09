@@ -212,6 +212,27 @@ function M.withdraw_money(me, npc, money)
     return true
 end
 
+local function repairable(item)
+    local model = item:model()
+    return model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) and
+    model:durability() > item:durability()
+end
+
+local function repairable_items(me)
+    local items = {}
+    for _, item in pairs(me:items()) do
+        if item:model():attr(ITEM_ATTRIBUTE.EQUIPMENT) and repairable(item) then
+            table.insert(items, item)
+        end
+    end
+    for _, item in pairs(me:equipments()) do
+        if repairable(item) then
+            table.insert(items, item)
+        end
+    end
+    return items
+end
+
 function M.repair(me, npc, name)
     local all = (name == nil)
     local items = {}
@@ -245,19 +266,7 @@ function M.repair(me, npc, name)
 
         table.insert(items, item)
     else
-        for slot, item in pairs(me:items()) do
-            local model = item:model()
-            if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) and model:durability() > item:durability() then
-                table.insert(items, item)
-            end
-        end
-
-        for parts, item in pairs(me:equipments()) do
-            local model = item:model()
-            if model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) and model:durability() > item:durability() then
-                table.insert(items, item)
-            end
-        end
+        items = repairable_items(me)
     end
 
     if #items == 0 then
@@ -265,21 +274,19 @@ function M.repair(me, npc, name)
         return true
     end
 
-    local price = 0
+    local entries = {}
     for _, item in pairs(items) do
-        local model = item:model()
-        price = price + (model:repair_price() * (model:durability() - item:durability()))
+        table.insert(entries, { item, item:model():repair_price() })
     end
 
-    price = math.floor(price)
-    if price > 0 and me:consume({ money = price }) ~= true then
+    local result, price = me:repair(entries)
+    if result == 'money' then
         npc:chat('돈이 모자랍니다.')
         return true
     end
-
-    for _, item in pairs(items) do
-        local model = item:model()
-        item:durability(model:durability())
+    if result ~= 'done' then
+        npc:chat('고칠 물건이 없습니다.')
+        return true
     end
 
     if price == 0 then
@@ -808,14 +815,9 @@ function M.repairable_slots(me)
     local count = 0
 
     for slot, item in pairs(items) do
-        local model = item:model()
-        if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) then
-            local current = item:durability()
-            local max = model:durability()
-            if current < max then
-                slots[slot] = item
-                count = count + 1
-            end
+        if item:model():attr(ITEM_ATTRIBUTE.EQUIPMENT) and repairable(item) then
+            slots[slot] = item
+            count = count + 1
         end
     end
 
@@ -848,84 +850,69 @@ function M.show_repair_menu(me, npc)
     if item == nil then
         return
     end
-    local model = item:model()
-    local price = math.floor(model:repair_price() * (model:durability() - item:durability()))
+    local entries = { { item, item:model():repair_price() } }
+    local price = me:repair_cost(entries)
+    if price == nil then
+        return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+    end
 
     if price == 0 then
-        item:durability(model:durability())
+        me:repair(entries, 0)
         return me:dialog(npc, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
-    else
-        if me:menu(npc, string.format('고치는데 %d전이 필요합니다. 정말 수리하시겠습니까?', price), { '네', '아니오' }) == 1 then
-            local current = M.repairable_slots(me)
-            local target = current and current[selected]
-            if target == nil then
-                return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
-            end
-
-            local target_model = target:model()
-            local cost = math.floor(target_model:repair_price() * (target_model:durability() - target:durability()))
-            if cost > price then
-                return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.', { prev = false, next = true })
-            elseif cost > 0 and me:consume({ money = cost }) ~= true then
-                return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
-            end
-            target:durability(target_model:durability())
-            return DIALOG_RESULT.NEXT
-        else
-            return DIALOG_RESULT.NEXT
-        end
     end
+
+    if me:menu(npc, string.format('고치는데 %d전이 필요합니다. 정말 수리하시겠습니까?', price), { '네', '아니오' }) ~= 1 then
+        return DIALOG_RESULT.NEXT
+    end
+
+    local result = me:repair(entries, price)
+    if result == 'changed' then
+        return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.', { prev = false, next = true })
+    elseif result == 'money' then
+        return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
+    elseif result ~= 'done' then
+        return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+    end
+    return DIALOG_RESULT.NEXT
 end
 
 
 
 function M.show_repair_all_menu(me, npc)
-    local items = M.repairable_slots(me)
-    if items == nil then
+    local items = repairable_items(me)
+    if #items == 0 then
         return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
     end
 
-    local price = 0
-    for slot, item in pairs(items) do
-        local model = item:model()
-        local current = item:durability()
-        local max = model:durability()
-        price = price + (model:repair_price() * (max - current))
+    local entries = {}
+    for _, item in ipairs(items) do
+        table.insert(entries, { item, item:model():repair_price() })
     end
-    price = math.floor(price)
+
+    local price = me:repair_cost(entries)
+    if price == nil then
+        return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+    end
 
     if price == 0 then
-        for slot, item in pairs(items) do
-            local model = item:model()
-            item:durability(model:durability())
-        end
+        me:repair(entries, 0)
         return me:dialog(npc, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
-    else
-        local selected = me:menu(npc, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), { '네', '아니오' })
-        if selected == 1 then
-            local current = M.repairable_slots(me) or {}
-            local cost = 0
-            for slot, item in pairs(current) do
-                local model = item:model()
-                cost = cost + (model:repair_price() * (model:durability() - item:durability()))
-            end
-            cost = math.floor(cost)
-
-            if cost > price then
-                return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.')
-            elseif cost > 0 and me:consume({ money = cost }) ~= true then
-                return me:dialog(npc, '돈이 모자랍니다.')
-            end
-
-            for slot, item in pairs(current) do
-                local model = item:model()
-                item:durability(model:durability())
-            end
-            return me:dialog(npc, '모두 고쳤습니다.')
-        else
-            return DIALOG_RESULT.NEXT
-        end
     end
+
+    local selected = me:menu(npc, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), { '네', '아니오' })
+    if selected ~= 1 then
+        return DIALOG_RESULT.NEXT
+    end
+
+    local result = me:repair(entries, price)
+    if result == 'changed' then
+        return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.')
+    elseif result == 'money' then
+        return me:dialog(npc, '돈이 모자랍니다.')
+    elseif result ~= 'done' then
+        return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+    end
+    return me:dialog(npc, '모두 고쳤습니다.')
 end
 
 

@@ -421,18 +421,13 @@ function M.repair_dragon_weapon(me, npc_obj)
         return
     end
 
-    local model = weapon:model()
-    local max_dur = model:durability()
-    local cur_dur = weapon:durability()
-    if cur_dur >= max_dur then
+    local entries = { { weapon, unit_price * 2 } }
+    local cost = me:repair_cost(entries)
+    if cost == nil then
         me:dialog(npc_obj, '이미 멀쩡한 무기일세.', { prev = false, next = false })
         return
     end
-
-    local price = math.floor(unit_price * (max_dur - cur_dur) * 2)
-    if price < 1 then
-        price = 1
-    end
+    local price = math.max(cost, 1)
 
     local selected = me:pursuit(npc_obj,
         string.format('지금부터 자네 손에 들고있는 용무기를 고쳐주겠네. 자네가 고칠 무기는 [%s]가 맞는가? 수리비 %d전.', name, price),
@@ -441,25 +436,19 @@ function M.repair_dragon_weapon(me, npc_obj)
         return
     end
 
-    local current = me:weapon()
-    if current == nil or current:model():name() ~= name then
-        me:dialog(npc_obj, '그 사이 무기가 바뀌었구먼. 다시 말해주게.', { prev = false, next = false })
-        return
-    end
-
-    local cost = math.floor(unit_price * (max_dur - current:durability()) * 2)
-    if cost < 1 then
-        cost = 1
-    end
-    if cost > price then
+    local result = me:repair(entries, price, 1)
+    if result == 'changed' then
         me:dialog(npc_obj, '그 사이 무기 상태가 달라졌구먼. 다시 말해주게.', { prev = false, next = false })
         return
     end
-    if me:consume({ money = cost }) ~= true then
+    if result == 'money' then
         me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = false })
         return
     end
-    current:durability(max_dur)
+    if result ~= 'done' then
+        me:dialog(npc_obj, '그 사이 무기가 바뀌었구먼. 다시 말해주게.', { prev = false, next = false })
+        return
+    end
     me:dialog(npc_obj, '용무기를 수리했습니다.', { prev = false, next = false })
 end
 

@@ -20,6 +20,7 @@
 #include <random.h>
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <array>
 #include <chrono>
@@ -124,6 +125,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"role",                         builtin::character::builtin_role},
 {"log_command",                  builtin::character::builtin_log_command},
 {"shout",                        builtin::character::builtin_shout},
+{"repair_cost",                  builtin::character::builtin_repair_cost},
+{"repair",                       builtin::character::builtin_repair},
 {"deposited_money",              builtin::character::builtin_deposited_money},
 {"deposit_money",                builtin::character::builtin_deposit_money},
 {"withdraw_money",               builtin::character::builtin_withdraw_money},
@@ -2320,6 +2323,143 @@ int builtin::character::builtin_shout(lua_State* L)
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
+    };
+    return builder.run();
+}
+
+builtin::character::repair_entries builtin::character::read_repair_entries(lua_State* L, int index)
+{
+    auto lua     = fb::lua::get(L);
+    auto entries = repair_entries();
+    if (lua == nullptr || lua_istable(L, index) == false)
+        return entries;
+
+    auto size = lua_rawlen(L, index);
+    for (size_t i = 1; i <= size; i++)
+    {
+        lua_rawgeti(L, index, static_cast<lua_Integer>(i));
+        if (lua_istable(L, -1))
+        {
+            lua_rawgeti(L, -1, 1);
+            lua_rawgeti(L, -2, 2);
+            auto item = lua->touserdata<fb::game::item>(-2);
+            if (item != nullptr && lua_isnumber(L, -1))
+                entries.emplace_back(item->weak_from_this_as<fb::game::item>(), lua_tonumber(L, -1));
+            lua_pop(L, 2);
+        }
+        lua_pop(L, 1);
+    }
+    return entries;
+}
+
+std::optional<uint64_t> builtin::character::repair_cost(fb::game::character&                               ch,
+                                                        const repair_entries&                              entries,
+                                                        std::vector<std::shared_ptr<fb::game::equipment>>& targets)
+{
+    auto equipments = ch.items.equipments();
+    auto cost       = 0.0;
+    for (auto& [weak, unit] : entries)
+    {
+        auto equipment = std::dynamic_pointer_cast<fb::game::equipment>(weak.lock());
+        if (equipment == nullptr)
+            continue;
+
+        auto worn = std::ranges::any_of(equipments, [&](const auto& pair) {
+            return pair.second == equipment;
+        });
+        if (worn == false && ch.items.index(equipment) == 0xFF)
+            continue;
+
+        auto current = equipment->durability().value_or(0);
+        auto maximum = equipment->model().durability;
+        if (current >= maximum)
+            continue;
+
+        cost += unit * static_cast<double>(maximum - current);
+        targets.push_back(equipment);
+    }
+
+    if (targets.empty())
+        return std::nullopt;
+    return static_cast<uint64_t>(std::floor(cost));
+}
+
+int builtin::character::builtin_repair_cost(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto entries  = read_repair_entries(L, 2);
+    auto cost     = std::make_shared<std::optional<uint64_t>>();
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto targets = std::vector<std::shared_ptr<fb::game::equipment>>();
+        *cost        = repair_cost(*ch, entries, targets);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (cost->has_value())
+            lua->pushinteger(static_cast<lua_Integer>(cost->value()));
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_repair(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto entries  = read_repair_entries(L, 2);
+    auto quoted   = lua->is_number(3) ? std::optional<uint64_t>(lua->touint64(3)) : std::nullopt;
+    auto minimum  = lua->touint64(4, 0);
+    auto result   = std::make_shared<std::pair<std::string, uint64_t>>("none", 0);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto targets = std::vector<std::shared_ptr<fb::game::equipment>>();
+        auto cost    = repair_cost(*ch, entries, targets);
+        if (cost.has_value() == false)
+            co_return;
+
+        auto price = std::max(cost.value(), minimum);
+        if (quoted.has_value() && price > quoted.value())
+        {
+            *result = {"changed", price};
+            co_return;
+        }
+
+        if (ch->money() < price)
+        {
+            *result = {"money", price};
+            co_return;
+        }
+
+        ch->money_reduce(price);
+        for (auto& equipment : targets)
+            equipment->durability(equipment->model().durability);
+        *result = {"done", price};
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushstring(result->first);
+        lua->pushinteger(static_cast<lua_Integer>(result->second));
+        co_return 2;
     };
     return builder.run();
 }

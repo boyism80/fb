@@ -44,6 +44,8 @@ struct character
     static int builtin_role(lua_State* L);
     static int builtin_log_command(lua_State* L);
     static int builtin_shout(lua_State* L);
+    static int builtin_repair_cost(lua_State* L);
+    static int builtin_repair(lua_State* L);
     static int builtin_deposited_money(lua_State* L);
     static int builtin_deposit_money(lua_State* L);
     static int builtin_withdraw_money(lua_State* L);
@@ -153,13 +155,19 @@ struct character
     static int builtin_holyday_screen(lua_State* L);
 
 private:
-    static int exchange(lua_State* L,
-                        int        cost_index,
-                        int        reward_index,
-                        int        delete_type_index,
-                        int        reserve_index,
-                        bool       boolean_result);
-    static int transfer_money(lua_State* L, bool deposit);
+    using repair_entries = std::vector<std::pair<std::weak_ptr<fb::game::item>, double>>;
+
+    static repair_entries          read_repair_entries(lua_State* L, int index);
+    static std::optional<uint64_t> repair_cost(fb::game::character&                               ch,
+                                               const repair_entries&                              entries,
+                                               std::vector<std::shared_ptr<fb::game::equipment>>& targets);
+    static int                     exchange(lua_State* L,
+                                            int        cost_index,
+                                            int        reward_index,
+                                            int        delete_type_index,
+                                            int        reserve_index,
+                                            bool       boolean_result);
+    static int                     transfer_money(lua_State* L, bool deposit);
 };
 
 } // namespace fb::game::builtin
