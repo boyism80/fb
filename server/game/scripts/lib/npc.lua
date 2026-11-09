@@ -221,7 +221,7 @@ end
 local function repairable(item)
     local model = item:model()
     return model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) and
-    model:durability() > item:durability()
+        model:durability() > item:durability()
 end
 
 local function repairable_items(me)
@@ -288,14 +288,9 @@ function M.repair(me, npc, name)
     local result, price = me:repair(entries)
     if result == 'money' then
         npc:chat('돈이 모자랍니다.')
-        return true
-    end
-    if result ~= 'done' then
+    elseif result ~= 'done' then
         npc:chat('고칠 물건이 없습니다.')
-        return true
-    end
-
-    if price == 0 then
+    elseif price == 0 then
         npc:chat('거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요.')
     else
         npc:chat(string.format('고치는데 %s전이 들었습니다.', price))
@@ -860,26 +855,23 @@ function M.show_repair_menu(me, npc)
     local price = me:repair_cost(entries)
     if price == nil then
         return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
-    end
-
-    if price == 0 then
+    elseif price == 0 then
         me:repair(entries, 0)
         return me:dialog(npc, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
-    end
-
-    if me:menu(npc, string.format('고치는데 %d전이 필요합니다. 정말 수리하시겠습니까?', price), { '네', '아니오' }) ~= 1 then
+    elseif me:menu(npc, string.format('고치는데 %d전이 필요합니다. 정말 수리하시겠습니까?', price), { '네', '아니오' }) ~= 1 then
         return DIALOG_RESULT.NEXT
+    else
+        local result = me:repair(entries, price)
+        if result == 'changed' then
+            return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.', { prev = false, next = true })
+        elseif result == 'money' then
+            return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
+        elseif result ~= 'done' then
+            return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+        else
+            return DIALOG_RESULT.NEXT
+        end
     end
-
-    local result = me:repair(entries, price)
-    if result == 'changed' then
-        return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.', { prev = false, next = true })
-    elseif result == 'money' then
-        return me:dialog(npc, '돈이 모자랍니다.', { prev = false, next = true })
-    elseif result ~= 'done' then
-        return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
-    end
-    return DIALOG_RESULT.NEXT
 end
 
 
@@ -898,27 +890,23 @@ function M.show_repair_all_menu(me, npc)
     local price = me:repair_cost(entries)
     if price == nil then
         return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
-    end
-
-    if price == 0 then
+    elseif price == 0 then
         me:repair(entries, 0)
         return me:dialog(npc, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
-    end
-
-    local selected = me:menu(npc, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), { '네', '아니오' })
-    if selected ~= 1 then
+    elseif me:menu(npc, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), { '네', '아니오' }) ~= 1 then
         return DIALOG_RESULT.NEXT
+    else
+        local result = me:repair(entries, price)
+        if result == 'changed' then
+            return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.')
+        elseif result == 'money' then
+            return me:dialog(npc, '돈이 모자랍니다.')
+        elseif result ~= 'done' then
+            return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+        else
+            return me:dialog(npc, '모두 고쳤습니다.')
+        end
     end
-
-    local result = me:repair(entries, price)
-    if result == 'changed' then
-        return me:dialog(npc, '그 사이 물건 상태가 달라졌습니다. 다시 말씀해 주세요.')
-    elseif result == 'money' then
-        return me:dialog(npc, '돈이 모자랍니다.')
-    elseif result ~= 'done' then
-        return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
-    end
-    return me:dialog(npc, '모두 고쳤습니다.')
 end
 
 

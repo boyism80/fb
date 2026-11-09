@@ -439,17 +439,13 @@ function M.repair_dragon_weapon(me, npc_obj)
     local result = me:repair(entries, price, 1)
     if result == 'changed' then
         me:dialog(npc_obj, '그 사이 무기 상태가 달라졌구먼. 다시 말해주게.', { prev = false, next = false })
-        return
-    end
-    if result == 'money' then
+    elseif result == 'money' then
         me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = false })
-        return
-    end
-    if result ~= 'done' then
+    elseif result ~= 'done' then
         me:dialog(npc_obj, '그 사이 무기가 바뀌었구먼. 다시 말해주게.', { prev = false, next = false })
-        return
+    else
+        me:dialog(npc_obj, '용무기를 수리했습니다.', { prev = false, next = false })
     end
-    me:dialog(npc_obj, '용무기를 수리했습니다.', { prev = false, next = false })
 end
 
 function M.on_armor_shop_click(me, npc_obj)

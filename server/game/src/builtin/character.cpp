@@ -2393,26 +2393,28 @@ int builtin::character::builtin_repair(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         auto targets = std::vector<std::shared_ptr<fb::game::equipment>>();
         auto cost    = repair_cost(*ch, entries, targets);
+        auto price   = std::max(cost.value_or(0), minimum);
         if (cost.has_value() == false)
-            co_return;
-
-        auto price = std::max(cost.value(), minimum);
-        if (quoted.has_value() && price > quoted.value())
+        {
+            *result = {"none", 0};
+        }
+        else if (quoted.has_value() && price > quoted.value())
         {
             *result = {"changed", price};
-            co_return;
         }
-
-        if (ch->money() < price)
+        else if (ch->money() < price)
         {
             *result = {"money", price};
-            co_return;
         }
-
-        ch->money_reduce(price);
-        for (auto& equipment : targets)
-            equipment->durability(equipment->model().durability);
-        *result = {"done", price};
+        else
+        {
+            ch->money_reduce(price);
+            for (auto& equipment : targets)
+            {
+                equipment->durability(equipment->model().durability);
+            }
+            *result = {"done", price};
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
