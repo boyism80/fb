@@ -2005,6 +2005,7 @@ test_suite({
                 return false
             end
 
+            lib.wait.pause_settle(a)
             b:chat("/HTTP보류 on " .. PURCHASE_PATH)
             local msg = select(1, purchase_item_flow(b, WEAPON_ITEM, 1))
             if msg == nil or msg:find(MSG_PURCHASE_PENDING, 1, true) == nil then
@@ -2012,18 +2013,11 @@ test_suite({
                 return false
             end
             ctx:sleep(MQ_WAIT_MS)
-            if
-                b:money() ~= WEAPON_LIST_PRICE + 1000
-                or script_step.run_script(
-                    b,
-                    "test/integration",
-                    "verify_money_held",
-                    "R1_HELD",
-                    1000,
-                    WEAPON_LIST_PRICE
-                )
-                ~= true
-            then
+            local held = b:money() == WEAPON_LIST_PRICE + 1000
+                and script_step.run_script(b, "test/integration", "verify_money_held", "R1_HELD", 1000, WEAPON_LIST_PRICE)
+                == true
+            lib.wait.resume_settle(a)
+            if held == false then
                 progress(b, string.format("FAILED: pending purchase money=%d not held", b:money()))
                 return false
             end
@@ -2236,8 +2230,12 @@ test_suite({
                 return false
             end
             ctx:sleep(MQ_WAIT_MS)
-            if b:money() ~= 1000 then
-                progress(b, string.format("FAILED: pending purchase money=%d expected=1000", b:money()))
+            if
+                b:money() ~= WEAPON_LIST_PRICE + 1000
+                or script_step.run_script(b, "test/integration", "verify_money_held", "R4_HELD", 1000, WEAPON_LIST_PRICE)
+                ~= true
+            then
+                progress(b, string.format("FAILED: pending purchase money=%d not held", b:money()))
                 return false
             end
 
@@ -2253,35 +2251,23 @@ test_suite({
             lib.formation.arrange_in_line(ctx)
 
             -- The settle timer is paused, so the refund comes from the login settle.
-            ctx:sleep(MQ_WAIT_MS * 2)
-            local titles, titles_err = storage_titles(ctx, b)
+            local released = wait_purchase_released(ctx, b, "R4_RELEASED")
             lib.wait.resume_settle(a)
-            if titles == nil or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
-                progress(b, "FAILED: no refund after relogin " .. tostring(titles_err))
+            if released == false then
+                progress(b, string.format("FAILED: no refund after relogin money=%d", b:money()))
                 return false
             end
 
-            lib.wait.settle_tick(ctx)
-            titles, titles_err = storage_titles(ctx, b)
+            local titles, titles_err = storage_titles(ctx, b)
             if titles == nil then
                 progress(b, "FAILED: " .. tostring(titles_err))
                 return false
             end
             if
                 count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
-                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 0
             then
                 progress(b, string.format("FAILED: refund storage=[%s]", table.concat(titles, "|")))
-                return false
-            end
-
-            if receive_storage(b, STORAGE_PURCHASE_RECOVERY_TITLE) == false then
-                progress(b, "FAILED: recovery storage receive")
-                return false
-            end
-            ctx:sleep(MQ_WAIT_MS)
-            if b:money() ~= WEAPON_LIST_PRICE + 1000 then
-                progress(b, string.format("FAILED: refund money=%d expected=%d", b:money(), WEAPON_LIST_PRICE + 1000))
                 return false
             end
 
