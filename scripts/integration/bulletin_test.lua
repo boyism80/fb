@@ -15,6 +15,7 @@ local COOLDOWN_TITLE      = "Cooldown Title"
 local COOLDOWN_CONTENTS   = "Cooldown contents."
 local ROLE_USER           = 0
 local ROLE_ADMIN          = 2
+local MAIL_UNREAD_LIMIT   = 30
 -- Must match mail.REQUIRED_LEVEL in const.xlsx.
 local MAIL_REQUIRED_LEVEL = 20
 
@@ -49,6 +50,17 @@ local function find_mail_by_sender(mails, sender_name)
         end
     end
     return nil
+end
+
+local function delete_mails_from(bot, sender_name)
+    for _ = 1, MAIL_UNREAD_LIMIT + 1 do
+        local mail = find_mail_by_sender(bot:bulletin_get_mails(), sender_name)
+        if mail == nil then
+            return true
+        end
+        bot:bulletin_delete_mail(mail.id)
+    end
+    return find_mail_by_sender(bot:bulletin_get_mails(), sender_name) == nil
 end
 
 test_suite {
@@ -283,6 +295,39 @@ test_suite {
             end
 
             progress(bot1, "SUCCESS: BLOCKED WORDS FILTERED IN ARTICLES AND MAIL")
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+
+            progress(bot1, "TESTING THE UNREAD MAIL LIMIT PER SENDER")
+            bot1:level(MAIL_REQUIRED_LEVEL)
+            if delete_mails_from(bot2, bot1:name()) == false then
+                progress(bot2, "FAILED TO CLEAR MAILS BEFORE THE UNREAD LIMIT TEST")
+                return false
+            end
+
+            for i = 1, MAIL_UNREAD_LIMIT do
+                if bot1:bulletin_send_mail(bot2:name(), MAIL_TITLE, MAIL_CONTENTS) == false then
+                    delete_mails_from(bot2, bot1:name())
+                    progress(bot1, "FAILED TO SEND MAIL " .. i .. " UNDER THE UNREAD LIMIT")
+                    return false
+                end
+            end
+            local over = bot1:bulletin_send_mail(bot2:name(), MAIL_TITLE, MAIL_CONTENTS)
+            local cleared = delete_mails_from(bot2, bot1:name())
+            if over then
+                progress(bot1, "FAILED: A MAIL OVER THE UNREAD LIMIT WAS SENT")
+                return false
+            end
+            if cleared == false then
+                progress(bot2, "FAILED TO CLEAR MAILS AFTER THE UNREAD LIMIT TEST")
+                return false
+            end
+
+            progress(bot1, "SUCCESS: A MAIL OVER THE UNREAD LIMIT WAS REFUSED")
             return true
         end,
 
