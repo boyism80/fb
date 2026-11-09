@@ -177,8 +177,6 @@ return {
         harden(p2, 10000)
         if parts_mode == MOB_PARTS_MODE.BODY then
             harden(body, 10000)
-        else
-            body:parts_mode(MOB_PARTS_MODE.PARTS) -- re-sync body HP from parts
         end
 
         report(me, true, step, string.format('body=%d p1=%d p2=%d', body:oid(), p1:oid(), p2:oid()))
@@ -215,6 +213,31 @@ return {
             end
         end
 
+        report(me, true, step)
+    end,
+
+    verify_body_hp_from_parts = function(me, step, body_oid)
+        local body = find_mob(me, body_oid)
+        if body == nil then
+            return report(me, false, step, 'mob not found')
+        end
+
+        local parts = body:parts()
+        if parts == nil or #parts == 0 then
+            return report(me, false, step, 'body has no parts')
+        end
+
+        body:heal(body:maxhp())
+
+        local hp = 0
+        local maxhp = 0
+        for _, part in ipairs(parts) do
+            hp = hp + part:hp()
+            maxhp = maxhp + part:maxhp()
+        end
+        if body:hp() ~= hp or body:maxhp() ~= maxhp then
+            return report(me, false, step, string.format('body=%d/%d parts=%d/%d', body:hp(), body:maxhp(), hp, maxhp))
+        end
         report(me, true, step)
     end,
 

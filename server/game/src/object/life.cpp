@@ -101,58 +101,16 @@ life::damage_settle life::damage_targets(const damage_list&    targets,
         if (target == nullptr)
             continue;
 
-        target->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-
-        if (target->is(OBJECT_TYPE::MOB))
-        {
-            auto m = std::static_pointer_cast<mob>(target);
-
-            // Assembly part: PARTS mode settles the part on its own death;
-            // BODY mode treats the part as a hitbox (damage already went to body).
-            auto body = m->body();
-            if (body != nullptr)
-            {
-                if (body->parts_mode() == MOB_PARTS_MODE::PARTS && m->stat.hp() == 0 && m->invincible() == false)
-                {
-                    m->invincible(true);
-                    settle.dead_mobs.push_back(m);
-                }
-
-                if (body->stat.hp() == 0 && body->invincible() == false)
-                {
-                    body->invincible(true);
-                    settle.dead_mobs.push_back(body);
-                }
-                continue;
-            }
-
-            // character::alive() means "not ghost", so death must be detected by HP.
-            if (m->stat.hp() != 0)
-                continue;
-
-            // Already settling on_mob_kill / on_mob_die — do not re-enter kill flow.
-            if (m->invincible())
-                continue;
-
-            m->invincible(true);
-            settle.dead_mobs.push_back(m);
-        }
-        else if (target->is(OBJECT_TYPE::CHARACTER))
-        {
-            auto ch = std::static_pointer_cast<character>(target);
-            if (ch->stat.hp() != 0)
-                continue;
-
-            // Defer kill/death_warp until after invoke_on_mob_damaged so later target
-            // checks still see a stable thread affinity for this attack frame.
-            if (ch->state() == STATE::GHOST || ch->settling_death())
-                continue;
-
-            settle.dead_characters.push_back(ch);
-        }
+        target->hit(value, attacker, opts, settle);
     }
 
     return settle;
+}
+
+void life::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle)
+{
+    this->assert_thread();
+    this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
 }
 
 async::task<void> life::settle_deaths(mob_vector dead)

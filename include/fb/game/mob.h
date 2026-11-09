@@ -24,7 +24,7 @@ class map;
 
 enum class MOB_PARTS_MODE : uint8_t
 {
-    PARTS = 0, // Part has its own HP; body HP tracks the sum of parts
+    PARTS = 0, // Part has its own HP; body HP is the sum of parts
     BODY  = 1, // Part is hitbox only; only body HP decreases
 };
 
@@ -78,8 +78,6 @@ public:
     using appearance_ptr = std::shared_ptr<fb::game::appearance>;
     using parts_vector_t = std::vector<std::shared_ptr<mob>>;
 
-    friend class mob_stat;
-
 public:
     LUA_PROTOTYPE
 
@@ -107,9 +105,8 @@ private:
     std::unique_ptr<ai>             _ai_strategy;
     std::weak_ptr<mob>              _body;
     std::vector<std::weak_ptr<mob>> _parts;
-    MOB_PARTS_MODE                  _parts_mode        = MOB_PARTS_MODE::PARTS;
-    bool                            _forwarding_damage = false;
-    bool                            _destroying        = false;
+    MOB_PARTS_MODE                  _parts_mode = MOB_PARTS_MODE::PARTS;
+    bool                            _destroying = false;
     const spawn_type                _spawn_type;
     std::shared_ptr<fb::game::map>  _summon_reservation;
 
@@ -135,10 +132,9 @@ private:
     static bool                     is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
     static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
     bool                            cover_blocks_move(const fb::game::map& map, const fb::model::point16_t& from, const fb::model::point16_t& to) const;
-    uint64_t                        damage_as_part(uint64_t value, std::shared_ptr<object> from, bool critical, float rate, bool physical, bool fixed, bool notify);
-    void                            sync_body_hp_from_parts();
+    void                            hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
+    void                            notify_damage(const std::shared_ptr<life>& attacker);
     void                            unlink_part(mob& part);
-    void                            on_part_hp_increased(uint64_t delta);
     [[nodiscard]] async::task<void> drop_model_items(const fb::model::mob& model, const fb::model::point16_t& position, std::vector<uint32_t>& oids);
     [[nodiscard]] async::task<void> drop_held_items(std::vector<uint32_t>& oids);
     // clang-format on
@@ -182,6 +178,7 @@ public:
     parts_vector_t                  parts() const;
     std::shared_ptr<mob>            body() const;
     bool                            has_parts() const;
+    bool                            hp_from_parts() const;
     void                            parts_mode(MOB_PARTS_MODE mode);
     MOB_PARTS_MODE                  parts_mode() const;
     uint64_t                        total_exp() const;

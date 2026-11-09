@@ -2403,6 +2403,23 @@ async::task<void> character::damage_to(const damage_list& targets)
     co_return;
 }
 
+void character::hit(uint64_t                     value,
+                    const std::shared_ptr<life>& attacker,
+                    const damage_opts&           opts,
+                    damage_settle&               settle)
+{
+    life::hit(value, attacker, opts, settle);
+    if (this->stat.hp() != 0)
+        return;
+
+    // Defer kill/death_warp until after invoke_on_mob_damaged so later target
+    // checks still see a stable thread affinity for this attack frame.
+    if (this->state() == STATE::GHOST || this->settling_death())
+        return;
+
+    settle.dead_characters.push_back(this->shared_from_this_as<character>());
+}
+
 async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();

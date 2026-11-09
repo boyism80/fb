@@ -323,6 +323,8 @@ public:
     ~character();
 
 private:
+    void
+    hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
     uint64_t                        limited_exp(uint64_t exp) const;
     fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
     void                            camera_pivot() const;

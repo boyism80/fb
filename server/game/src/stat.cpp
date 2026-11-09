@@ -977,73 +977,24 @@ float mob_stat::base_resist(RESIST type) const
     return i->second;
 }
 
-uint64_t mob_stat::damage(uint64_t                value,
-                          std::shared_ptr<object> from,
-                          bool                    critical,
-                          float                   rate,
-                          bool                    physical,
-                          bool                    fixed,
-                          bool                    notify)
-{
-    this->owner.assert_thread();
-
-    if (this->owner._forwarding_damage)
-    {
-        auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
-        if (this->owner.alive() && this->owner._ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
-        {
-            this->owner._ai_strategy->on_damage(this->owner,
-                                                std::static_pointer_cast<fb::game::life>(from),
-                                                this->owner.server.now());
-        }
-        return result;
-    }
-
-    // Assembly body ignores direct damage; only parts forward damage.
-    if (this->owner.has_parts())
-        return 0;
-
-    if (this->owner.body() != nullptr)
-        return this->owner.damage_as_part(value, from, critical, rate, physical, fixed, notify);
-
-    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
-    if (!this->owner.alive())
-        return result;
-
-    // Handle damage in AI strategy
-    if (this->owner._ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
-    {
-        this->owner._ai_strategy->on_damage(this->owner,
-                                            std::static_pointer_cast<fb::game::life>(from),
-                                            this->owner.server.now());
-    }
-
-    return result;
-}
-
 uint64_t mob_stat::hp() const
 {
-    return fb::game::stat::hp();
+    if (this->owner.hp_from_parts() == false)
+        return fb::game::stat::hp();
+
+    auto sum = uint64_t{0};
+    for (auto& part : this->owner.parts())
+        sum += part->stat.hp();
+    return sum;
 }
 
-void mob_stat::hp(uint64_t value, bool notify)
+uint64_t mob_stat::maxhp() const
 {
-    this->owner.assert_thread();
+    if (this->owner.hp_from_parts() == false)
+        return fb::game::stat::maxhp();
 
-    auto before = fb::game::stat::hp();
-    fb::game::stat::hp(value, notify);
-
-    if (this->owner._forwarding_damage)
-        return;
-
-    auto after = fb::game::stat::hp();
-    if (after > before)
-        this->owner.on_part_hp_increased(after - before);
-}
-
-uint64_t mob_stat::heal(uint64_t value, fb::game::object* from, bool notify)
-{
-    this->owner.assert_thread();
-    // hp() override syncs PARTS-mode body HP when a part is healed
-    return fb::game::stat::heal(value, from, notify);
+    auto sum = uint64_t{0};
+    for (auto& part : this->owner.parts())
+        sum += part->stat.maxhp();
+    return sum;
 }

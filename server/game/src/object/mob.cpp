@@ -933,12 +933,6 @@ bool mob::add_part(const std::shared_ptr<mob>& part)
 
     part->_body = this->weak_from_this_as<mob>();
     this->_parts.push_back(part);
-
-    // PARTS mode: body HP tracks the sum of linked parts.
-    // BODY mode: body keeps its own model HP; parts are hitboxes only.
-    if (this->_parts_mode == MOB_PARTS_MODE::PARTS)
-        this->sync_body_hp_from_parts();
-
     return true;
 }
 
@@ -968,12 +962,15 @@ bool mob::has_parts() const
     return this->_parts.empty() == false;
 }
 
+bool mob::hp_from_parts() const
+{
+    return this->_parts_mode == MOB_PARTS_MODE::PARTS && this->has_parts();
+}
+
 void mob::parts_mode(MOB_PARTS_MODE mode)
 {
     this->assert_thread();
     this->_parts_mode = mode;
-    if (mode == MOB_PARTS_MODE::PARTS && this->has_parts())
-        this->sync_body_hp_from_parts();
 }
 
 MOB_PARTS_MODE mob::parts_mode() const
@@ -988,36 +985,10 @@ uint64_t mob::total_exp() const
     return this->model().exp;
 }
 
-void mob::sync_body_hp_from_parts()
-{
-    this->assert_thread();
-
-    uint64_t sum_cur = 0;
-    uint64_t sum_max = 0;
-    for (auto& part : this->parts())
-    {
-        if (part == nullptr)
-            continue;
-        sum_cur += part->stat.hp();
-        sum_max += part->stat.maxhp();
-    }
-
-    auto base = static_cast<int64_t>(this->stat.base_hp());
-    auto desired_max =
-        static_cast<int64_t>(std::min<uint64_t>(sum_max, static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
-    auto buff = desired_max - base;
-    this->stat.buff_hp(buff);
-
-    auto max_hp              = this->stat.maxhp();
-    auto hp                  = std::min<uint64_t>(sum_cur, max_hp);
-    this->_forwarding_damage = true;
-    this->stat.hp(hp, false);
-    this->_forwarding_damage = false;
-}
-
 void mob::unlink_part(mob& part)
 {
     this->assert_thread();
+    auto remaining = this->stat.hp();
     for (auto it = this->_parts.begin(); it != this->_parts.end();)
     {
         auto locked = it->lock();
@@ -1027,63 +998,73 @@ void mob::unlink_part(mob& part)
             ++it;
     }
 
-    if (this->_parts_mode == MOB_PARTS_MODE::PARTS && this->has_parts())
-        this->sync_body_hp_from_parts();
+    if (this->_parts_mode == MOB_PARTS_MODE::PARTS && this->has_parts() == false)
+        this->stat.hp(remaining, false);
 }
 
-void mob::on_part_hp_increased(uint64_t delta)
-{
-    this->assert_thread();
-    if (delta == 0)
-        return;
-
-    auto body = this->_body.lock();
-    if (body == nullptr || body->parts_mode() != MOB_PARTS_MODE::PARTS)
-        return;
-
-    body->_forwarding_damage = true;
-    body->stat.heal(delta, nullptr, true);
-    body->_forwarding_damage = false;
-}
-
-uint64_t mob::damage_as_part(uint64_t                value,
-                             std::shared_ptr<object> from,
-                             bool                    critical,
-                             float                   rate,
-                             bool                    physical,
-                             bool                    fixed,
-                             bool                    notify)
+void mob::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle)
 {
     this->assert_thread();
 
-    auto body = this->_body.lock();
-    if (body == nullptr)
-        return 0;
-
-    switch (body->parts_mode())
+    // Assembly part: PARTS mode settles the part on its own death;
+    // BODY mode treats the part as a hitbox (damage already went to body).
+    auto body = this->body();
+    if (body != nullptr)
     {
-    case MOB_PARTS_MODE::PARTS:
-    {
-        this->_forwarding_damage = true;
-        auto dealt               = this->stat.damage(value, from, critical, rate, physical, fixed, notify);
-        this->_forwarding_damage = false;
-
-        if (dealt > 0)
+        if (body->parts_mode() == MOB_PARTS_MODE::PARTS)
         {
-            body->_forwarding_damage = true;
-            body->stat.damage(dealt, from, critical, rate, physical, true, notify);
-            body->_forwarding_damage = false;
+            auto dealt =
+                this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+            this->notify_damage(attacker);
+            if (dealt > 0)
+            {
+                body->update_hp(dealt, opts.critical, opts.notify);
+                body->notify_damage(attacker);
+            }
+
+            if (this->stat.hp() == 0 && this->invincible() == false)
+            {
+                this->invincible(true);
+                settle.dead_mobs.push_back(this->shared_from_this_as<mob>());
+            }
         }
-        return dealt;
+        else
+        {
+            body->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+            body->notify_damage(attacker);
+        }
+
+        if (body->stat.hp() == 0 && body->invincible() == false)
+        {
+            body->invincible(true);
+            settle.dead_mobs.push_back(body);
+        }
+        return;
     }
-    case MOB_PARTS_MODE::BODY:
-    {
-        body->_forwarding_damage = true;
-        auto dealt               = body->stat.damage(value, from, critical, rate, physical, fixed, notify);
-        body->_forwarding_damage = false;
-        return dealt;
-    }
-    default:
-        return 0;
-    }
+
+    // Assembly body ignores direct damage; only parts forward damage.
+    if (this->has_parts())
+        return;
+
+    this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+    this->notify_damage(attacker);
+
+    // character::alive() means "not ghost", so death must be detected by HP.
+    if (this->stat.hp() != 0)
+        return;
+
+    // Already settling on_mob_kill / on_mob_die — do not re-enter kill flow.
+    if (this->invincible())
+        return;
+
+    this->invincible(true);
+    settle.dead_mobs.push_back(this->shared_from_this_as<mob>());
+}
+
+void mob::notify_damage(const std::shared_ptr<life>& attacker)
+{
+    if (attacker == nullptr || this->_ai_strategy == nullptr || this->alive() == false)
+        return;
+
+    this->_ai_strategy->on_damage(*this, attacker, this->server.now());
 }

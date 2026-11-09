@@ -75,6 +75,7 @@ public:
 protected:
     // clang-format off
     damage_settle     damage_targets(const damage_list& targets, const damage_opts& opts, std::shared_ptr<life> attacker);
+    virtual void      hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle);
     async::task<void> settle_deaths(mob_vector dead);
     async::task<void> invoke_on_mob_damaged(const damage_list& targets);
     async::task<void> settle_character_deaths(const character_vector& dead, std::shared_ptr<life> killer);

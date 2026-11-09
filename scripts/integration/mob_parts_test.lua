@@ -67,6 +67,10 @@ test_suite {
                 progress(bot, "FAILED: PARTS hit routing")
                 return false
             end
+            if run(bot, "verify_body_hp_from_parts", "heal_A", body.oid) == false then
+                progress(bot, "FAILED: body HP left the parts sum")
+                return false
+            end
             if run(bot, "verify_body_direct_ignored", "direct_A", body.oid) == false then
                 progress(bot, "FAILED: body direct hit")
                 return false

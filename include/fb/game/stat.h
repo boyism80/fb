@@ -222,6 +222,8 @@ public:
     ~mob_stat() = default;
 
 public:
+    using fb::game::stat::hp;
+
     // clang-format off
     uint64_t base_hp() const override final;
     uint64_t base_mp() const override final;
@@ -235,9 +237,7 @@ public:
     uint64_t base_regenerative() const override final;
     float    base_resist(RESIST type) const override final;
     uint64_t hp() const override final;
-    uint64_t damage(uint64_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
-    void     hp(uint64_t value, bool notify = true) override final;
-    uint64_t heal(uint64_t value, fb::game::object* from = nullptr, bool notify = true) override final;
+    uint64_t maxhp() const override final;
     // clang-format on
 };
 
