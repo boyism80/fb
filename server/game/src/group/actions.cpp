@@ -263,8 +263,7 @@ async::task<bool> group::container::handle_action(character& actor, std::string_
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_JOINED));
 
         is_master        = (guard->value()->master() == actor_name);
-        auto members     = guard->value()->members();
-        target_is_member = std::find(members.begin(), members.end(), target_name_str) != members.end();
+        target_is_member = guard->value()->contains(target_name_str);
     }
 
     co_await this->_server.threads.switching(weak);

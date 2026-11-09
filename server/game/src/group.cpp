@@ -147,8 +147,7 @@ std::vector<group::character_ptr> group::reload(const group& fresh)
     for (auto i = this->_active_members.begin(); i != this->_active_members.end();)
     {
         auto ptr = i->second.lock();
-        if (ptr != nullptr &&
-            std::find(this->_members.begin(), this->_members.end(), ptr->name()) == this->_members.end())
+        if (ptr != nullptr && this->contains(ptr->name()) == false)
         {
             removed.push_back(ptr);
             i = this->_active_members.erase(i);

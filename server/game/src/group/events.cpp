@@ -108,13 +108,11 @@ async::task<void> group::container::on_create(std::string                     ta
             if (master_uid == 0)
                 co_return;
 
-            auto& group   = guard.value();
-            auto  current = group->members();
+            auto& group = guard.value();
             member_names.erase(std::remove_if(member_names.begin(),
                                               member_names.end(),
-                                              [&current](const std::string& name) {
-                                                  return std::find(current.begin(), current.end(), name) ==
-                                                         current.end();
+                                              [&group](const std::string& name) {
+                                                  return group->contains(name) == false;
                                               }),
                                member_names.end());
 
@@ -293,8 +291,7 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
 
         if (group->revision() > revision)
         {
-            auto current = group->members();
-            if (std::find(current.begin(), current.end(), name) != current.end())
+            if (group->contains(name))
                 co_return;
 
             stale = true;
