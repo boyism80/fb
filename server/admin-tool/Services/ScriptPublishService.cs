@@ -9,7 +9,7 @@ namespace AdminTool.Services
     public sealed class ScriptPublishService
     {
         private static readonly Regex SafeRelativePath = new(
-            @"^(?:(?:spell|npc|item|mob|map|lib|schedule)/[A-Za-z0-9_./-]+\.lua|(?:server|interaction|script|init)\.lua)$",
+            @"^[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*\.lua$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private readonly ScriptPublishOptions _options;
