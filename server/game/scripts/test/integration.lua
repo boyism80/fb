@@ -622,6 +622,33 @@ return {
         report(me, true, step)
     end,
 
+    verify_hidden_rule = function(me, step, viewer_name, target_name)
+        local viewer = name2ch(viewer_name)
+        local target = name2ch(target_name)
+        if viewer == nil or target == nil then
+            return report(me, false, step, 'missing')
+        end
+        local map = viewer:map()
+        if map == nil then
+            return report(me, false, step, 'no map')
+        end
+
+        local x, y = target:position()
+        local visible_front = viewer:front(OBJECT_TYPE.CHARACTER, 14)
+        local visible_movable = map:movable(viewer, x, y)
+        target:super_hide(true)
+        local hidden_front = viewer:front(OBJECT_TYPE.CHARACTER, 14)
+        local hidden_movable = map:movable(viewer, x, y)
+        target:super_hide(false)
+
+        local visible_name = visible_front ~= nil and visible_front:name() or 'nil'
+        local hidden_name = hidden_front ~= nil and hidden_front:name() or 'nil'
+        local ok = visible_name == target_name and visible_movable == false
+            and hidden_name ~= target_name and hidden_movable == true
+        report(me, ok, step, string.format('visible=%s,%s hidden=%s,%s', visible_name, tostring(visible_movable),
+            hidden_name, tostring(hidden_movable)))
+    end,
+
     verify_demoted = function(me, step, name)
         local you = name2ch(name)
         if you == nil then
