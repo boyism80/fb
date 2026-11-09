@@ -512,6 +512,7 @@ async::task<bool> matchmaker::on_proposed(uint64_t match_id, uint64_t ticket_id)
 {
     this->owner.assert_thread();
 
+    auto current = this->ticket_id();
     if (this->queued() == false)
     {
         auto world        = this->owner.world();
@@ -535,9 +536,7 @@ async::task<bool> matchmaker::on_proposed(uint64_t match_id, uint64_t ticket_id)
         }
         co_return false;
     }
-
-    auto current = this->ticket_id();
-    if (current.has_value() && current.value() != ticket_id)
+    else if (current.has_value() && current.value() != ticket_id)
     {
         fb::logger::warn("matchmaking_proposed ignored match {} for ticket {} of character {} holding ticket {}",
                          match_id,
@@ -546,9 +545,11 @@ async::task<bool> matchmaker::on_proposed(uint64_t match_id, uint64_t ticket_id)
                          current.value());
         co_return false;
     }
-
-    this->set_pending_match_id(match_id);
-    co_return true;
+    else
+    {
+        this->set_pending_match_id(match_id);
+        co_return true;
+    }
 }
 
 async::task<void> matchmaker::decline(uint64_t match_id)
