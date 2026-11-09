@@ -1,3 +1,4 @@
+using Fb.Model.EnumValue;
 using StackExchange.Redis;
 
 namespace Http.Model
@@ -16,5 +17,18 @@ namespace Http.Model
     public class ClanMember : ClanMemberKey, IModel
     {
         public uint Role { get; set; }
+
+        public void Command(ClanMember target, uint minimumPrivilege)
+        {
+            if (Role < minimumPrivilege)
+            {
+                throw new LogicException(ErrorCode.ClanNoPrivilege);
+            }
+
+            if (target.Role >= Role)
+            {
+                throw new LogicException(ErrorCode.ClanNoPrivilege);
+            }
+        }
     }
 }

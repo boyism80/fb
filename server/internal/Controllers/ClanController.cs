@@ -680,50 +680,13 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 // Prevent self-kicking
-                if (kicker.Name == target.Name)
+                if (kicker.Id == target.Id)
                 {
                     throw new LogicException(ErrorCode.CannotKickSelf);
                 }
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(kicker.Id, target.Id)));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(kicker.Id, target.Id)));
-
-                var kickerSync = await _dbContext.CharacterRealtimeState.Get(world, kicker.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                // Check if kicker is in a clan
-                if (kickerSync.Clan == null)
-                {
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-                }
-
-                // Check if target is in the same clan
-                if (targetSync.Clan != kickerSync.Clan)
-                {
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-                }
-
-                await using var _3 = await _distributedLock.Lock(world, Clan.DistributedLockKey(kickerSync.Clan.Value));
-
-                var clan = await _dbContext.Clan.Get(world, kickerSync.Clan.Value) ??
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                // Get kicker's clan member info
-                var kickerMember = await _dbContext.ClanMember.Get(world, clan.Id, kicker.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                // Get target's clan member info
-                var targetMember = await _dbContext.ClanMember.Get(world, clan.Id, target.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                // Check if kicker has minimum kickable role
-                if (kickerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumKickPrivilege)
-                {
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-                }
+                var (locks, clan, kickerMember, targetMember, targetSync) = await _clans.LockMembers(world, request.Clan, kicker.Id, target.Id);
+                await using var _1 = locks;
 
                 // Check if target is not the master (can't kick master)
                 if (targetMember.Role == (uint)ClanRole.Master)
@@ -731,11 +694,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanCannotKickMaster);
                 }
 
-                // Check if target has higher or equal role (can't kick superiors)
-                if (targetMember.Role >= kickerMember.Role)
-                {
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-                }
+                kickerMember.Command(targetMember, (uint)Fb.Model.ConstValue.Clan.MinimumKickPrivilege);
 
                 _clans.Touch(world, clan);
                 _dbContext.ClanMember.Delete(world, targetMember);
@@ -854,58 +813,10 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.CannotChangeClanRoleSelf);
                 }
 
-                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(changer.Id, target.Id)));
-                await using var _2 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(changer.Id, target.Id)));
+                var (locks, clan, changerMember, targetMember, _) = await _clans.LockMembers(world, request.Clan, changer.Id, target.Id);
+                await using var _1 = locks;
 
-                var changerSync = await _dbContext.CharacterRealtimeState.Get(world, changer.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                // Check if changer is in a clan
-                if (changerSync.Clan == null)
-                {
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-                }
-
-                // Check if target is in the same clan
-                if (targetSync.Clan != changerSync.Clan)
-                {
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-                }
-
-                await using var _3 = await _distributedLock.Lock(world, Clan.DistributedLockKey(changerSync.Clan.Value));
-
-                var clan = await _dbContext.Clan.Get(world, changerSync.Clan.Value) ??
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                // Get changer's clan member info
-                var changerMember = await _dbContext.ClanMember.Get(world, clan.Id, changer.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                // Get target's clan member info
-                var targetMember = await _dbContext.ClanMember.Get(world, clan.Id, target.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                // Check if changer has sufficient privileges
-                if (changerMember.Role < (uint)Fb.Model.ConstValue.Clan.MinimumChangeRolePrivilege)
-                {
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-                }
-
-                // Check if target has higher or equal role (can't change superiors)
-                if (targetMember.Role >= changerMember.Role)
-                {
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-                }
-
-                // Check if trying to change master role (only master can change master)
-                if (targetMember.Role == (uint)ClanRole.Master &&
-                    changerMember.Role != (uint)ClanRole.Master)
-                {
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-                }
+                changerMember.Command(targetMember, (uint)Fb.Model.ConstValue.Clan.MinimumChangeRolePrivilege);
 
                 // Validate new role
                 if (request.NewRole < (uint)ClanRole.Mate ||

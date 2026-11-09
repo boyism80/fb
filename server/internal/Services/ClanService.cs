@@ -75,6 +75,52 @@ namespace Internal.Services
             }
         }
 
+        public async Task<(ClanLocks Locks, Clan Clan, ClanMember Actor, ClanMember Target, CharacterRealtimeState TargetSync)> LockMembers(uint world, uint clanId, uint actorId, uint targetId)
+        {
+            var locks = new ClanLocks();
+            try
+            {
+                locks.Add(await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Min(actorId, targetId))));
+                locks.Add(await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(Math.Max(actorId, targetId))));
+
+                var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actorId) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+                var targetSync = await _dbContext.CharacterRealtimeState.Get(world, targetId) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                if (actorSync.Clan == null)
+                {
+                    throw new LogicException(ErrorCode.ClanNotJoined);
+                }
+
+                if (actorSync.Clan.Value != clanId)
+                {
+                    throw new LogicException(ErrorCode.ClanNotMatched);
+                }
+
+                if (targetSync.Clan != actorSync.Clan)
+                {
+                    throw new LogicException(ErrorCode.ClanNotJoined);
+                }
+
+                locks.Add(await _distributedLock.Lock(world, Clan.DistributedLockKey(clanId)));
+
+                var clan = await _dbContext.Clan.Get(world, clanId) ??
+                    throw new LogicException(ErrorCode.NotFoundClan);
+                var actor = await _dbContext.ClanMember.Get(world, clan.Id, actorId) ??
+                    throw new LogicException(ErrorCode.NotFoundClanMember);
+                var target = await _dbContext.ClanMember.Get(world, clan.Id, targetId) ??
+                    throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                return (locks, clan, actor, target, targetSync);
+            }
+            catch
+            {
+                await locks.DisposeAsync();
+                throw;
+            }
+        }
+
         public async Task<List<uint>> GetCounterparts(uint world, uint id)
         {
             var ids = (await _dbContext.ClanEnemy.Get(world, id)).Select(x => x.EnemyClan).ToList();
