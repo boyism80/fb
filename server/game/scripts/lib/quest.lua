@@ -888,7 +888,7 @@ function M.king_dialog(me, npc, opts)
     local quest = me:quest(opts.quest_id)
     local btn
 
-    if quest == nil then
+    if quest == nil or quest:step() == 0 then
         ::KING_START0::
         btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
@@ -925,59 +925,13 @@ function M.king_dialog(me, npc, opts)
             return
         end
 
-        quest = me:start_quest(opts.quest_id)
         if quest == nil then
-            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
-            return
+            quest = me:start_quest(opts.quest_id)
+            if quest == nil then
+                me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
+                return
+            end
         end
-        quest:step(1)
-        quest:param(mob_name)
-        quest:progress(0)
-        me:push_achievement(opts.achievement_id, opts.king_name .. '에게 ' .. name_with(mob_name, '을', '를') .. ' 잡는 임무를 받음',
-            6, 17)
-        me:dialog(npc,
-            '어명이오! ' .. name_with(mob_name, '을', '를') .. ' 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!',
-            { prev = false, next = true })
-        return
-    end
-
-    if quest:step() == 0 then
-        ::KING_START0B::
-        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = false, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        ::KING_START1B::
-        btn = me:dialog(npc, '폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!',
-            { prev = true, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto KING_START0B
-        end
-        local sel, lb = me:list(npc, '그래도 임무를 받으시려오?', { '네, 받겠습니다.', '무서워서 안되겠어요.' })
-        if lb == DIALOG_RESULT.QUIT then
-            return
-        end
-        if sel == nil or sel ~= 1 then
-            return
-        end
-
-        local level = me:level()
-        local pool = opts.pool_fn(level)
-        if pool == nil or #pool == 0 then
-            me:dialog(npc, '임무를 부여할 수 없소.', { prev = false, next = true })
-            return
-        end
-        local idx = math.random(1, #pool)
-        local mob_name = pool[idx]
-        local mob_model = name2mob(mob_name)
-        if mob_model == nil then
-            me:dialog(npc, '임무를 부여할 수 없소.', { prev = false, next = true })
-            return
-        end
-
         quest:step(1)
         quest:param(mob_name)
         quest:progress(0)
