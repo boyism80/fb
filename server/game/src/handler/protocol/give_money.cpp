@@ -28,12 +28,6 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
     if (me == nullptr || me->inited() == false)
         co_return true;
 
-    if (me->trade != nullptr)
-    {
-        me->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
-        co_return true;
-    }
-
     if (me->map() == nullptr)
         co_return true;
 
@@ -45,6 +39,7 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
     try
     {
         me->assert_state({STATE::RIDING, STATE::GHOST});
+        me->assert_items_editable();
 
         auto money = std::min<uint64_t>(request.money, me->money());
         if (money == 0)

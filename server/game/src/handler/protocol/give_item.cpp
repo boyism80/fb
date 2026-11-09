@@ -28,12 +28,6 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
     if (me == nullptr || me->inited() == false)
         co_return true;
 
-    if (me->trade != nullptr)
-    {
-        me->message(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
-        co_return true;
-    }
-
     if (me->map() == nullptr)
         co_return true;
 
@@ -41,22 +35,18 @@ async::task<bool> give_item<V>::handle(fb::socket<character>& session, game_reqs
     if (forward == nullptr)
         co_return true;
 
-    auto item = me->items[request.slot];
-    if (item == nullptr)
-    {
-        if (me->items.reserved(request.slot))
-            me->message(_TEXT(MESSAGE_MARKETPLACE_ITEM_LOCKED));
-        co_return true;
-    }
-
-    auto  count = request.all ? item->count() : 1;
-    auto& model = item->model();
-    auto  error = std::optional<std::string>{};
-
+    auto error = std::optional<std::string>{};
     try
     {
         me->assert_state({STATE::RIDING, STATE::GHOST});
+        me->assert_items_editable();
 
+        auto item = me->items.usable(request.slot);
+        if (item == nullptr)
+            co_return true;
+
+        auto  count = request.all ? item->count() : 1;
+        auto& model = item->model();
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_ITEM_CANNOT_GIVE));
 

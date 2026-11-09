@@ -108,6 +108,7 @@ public:
     void                                            deposited(uint64_t value);
     money_transfer                                  deposit(uint64_t value);
     money_transfer                                  withdraw(uint64_t value);
+    item_ptr                                        usable(uint8_t index) const;
     [[nodiscard]] async::task<item_ptr>             active(uint8_t index);
     [[nodiscard]] async::task<uint8_t>              inactive(EQUIPMENT_PARTS parts);
     equipment_ptr                                   equipment_off(EQUIPMENT_PARTS parts);

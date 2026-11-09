@@ -632,6 +632,14 @@ items::money_transfer items::withdraw(uint64_t value)
     return money_transfer::DONE;
 }
 
+items::item_ptr items::usable(uint8_t index) const
+{
+    auto item = this->at(index);
+    if (item == nullptr && this->reserved(index))
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_ITEM_LOCKED));
+    return item;
+}
+
 async::task<items::item_ptr> items::active(uint8_t index)
 {
     auto owner = this->_owner.lock();
@@ -641,8 +649,9 @@ async::task<items::item_ptr> items::active(uint8_t index)
     try
     {
         owner->assert_state({STATE::RIDING, STATE::GHOST});
+        owner->assert_items_editable();
 
-        auto item = this->at(index);
+        auto item = this->usable(index);
         if (item == nullptr)
             co_return nullptr;
 
@@ -670,6 +679,20 @@ async::task<items::item_ptr> items::active(uint8_t index)
 
 async::task<uint8_t> items::inactive(EQUIPMENT_PARTS parts)
 {
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        co_return 0xFF;
+
+    try
+    {
+        owner->assert_items_editable();
+    }
+    catch (std::exception& e)
+    {
+        owner->message(e.what());
+        co_return 0xFF;
+    }
+
     if (this->free() == false)
         co_return 0xFF;
 
@@ -1250,9 +1273,12 @@ async::task<items::item_ptr> items::drop(uint8_t index, uint16_t count, bool act
     try
     {
         if (action)
+        {
             owner->assert_state({STATE::RIDING, STATE::GHOST});
+            owner->assert_items_editable();
+        }
 
-        auto item = this->at(index);
+        auto item = this->usable(index);
         if (item == nullptr)
             co_return nullptr;
 
@@ -1337,8 +1363,9 @@ async::task<bool> items::throws(uint8_t index, bool all)
     try
     {
         owner->assert_state({STATE::RIDING, STATE::GHOST});
+        owner->assert_items_editable();
 
-        auto item = this->at(index);
+        auto item = this->usable(index);
         if (item == nullptr)
             co_return false;
 
@@ -1508,6 +1535,16 @@ bool items::swap(uint8_t src, uint8_t dst)
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         return false;
+
+    try
+    {
+        owner->assert_items_editable();
+    }
+    catch (std::exception& e)
+    {
+        owner->message(e.what());
+        return false;
+    }
 
     if (inventory<item>::swap(src, dst) == false)
         return false;
@@ -1815,6 +1852,7 @@ async::task<bool> items::combine(const std::vector<uint8_t>& indices)
     try
     {
         owner->assert_state({STATE::RIDING, STATE::GHOST});
+        owner->assert_items_editable();
     }
     catch (std::exception& e)
     {

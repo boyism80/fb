@@ -475,6 +475,7 @@ public:
     bool                                                      title(std::string_view value);
     void                                                      assert_state(STATE value) const;
     void                                                      assert_state(const std::vector<STATE>& values) const;
+    void                                                      assert_items_editable() const;
     [[nodiscard]] async::task<bool>                           move(const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
     [[nodiscard]] async::task<bool>                           move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
     [[nodiscard]] async::task<void>                           ride(uint16_t ridable_id = 1);

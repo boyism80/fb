@@ -1454,6 +1454,12 @@ void character::money_reduce(uint64_t value)
     this->money(this->_money - value);
 }
 
+void character::assert_items_editable() const
+{
+    if (this->trade != nullptr)
+        throw std::runtime_error(_TEXT(MESSAGE_TRADE_BLOCKED_WHILE_TRADING));
+}
+
 async::task<fb::game::cash*> character::money_drop(uint64_t value)
 {
     this->assert_thread();
@@ -1461,6 +1467,7 @@ async::task<fb::game::cash*> character::money_drop(uint64_t value)
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
+        this->assert_items_editable();
 
         if (value == 0)
             co_return nullptr;
