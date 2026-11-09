@@ -29,24 +29,24 @@ async::task<void> reload_scripts::handle(const internal_resp::ReloadScripts& mes
         if (message.script_paths.empty() == false)
         {
             auto backups = std::vector<std::pair<std::filesystem::path, std::optional<std::string>>>{};
-            if (message.url.empty() == false)
-            {
-                for (const auto& relative : message.script_paths)
-                {
-                    auto path = std::filesystem::path("scripts") /
-                                std::filesystem::path(fb::model::normalize_script_relative_path(relative));
-                    auto in = std::ifstream(path, std::ios::binary);
-                    if (in.is_open())
-                        backups.emplace_back(path, std::string(std::istreambuf_iterator<char>(in), {}));
-                    else
-                        backups.emplace_back(path, std::nullopt);
-                }
-
-                co_await fb::model::download_scripts(this->server.http, message.url, message.script_paths);
-            }
-
             try
             {
+                if (message.url.empty() == false)
+                {
+                    for (const auto& relative : message.script_paths)
+                    {
+                        auto path = std::filesystem::path("scripts") /
+                                    std::filesystem::path(fb::model::normalize_script_relative_path(relative));
+                        auto in = std::ifstream(path, std::ios::binary);
+                        if (in.is_open())
+                            backups.emplace_back(path, std::string(std::istreambuf_iterator<char>(in), {}));
+                        else
+                            backups.emplace_back(path, std::nullopt);
+                    }
+
+                    co_await fb::model::download_scripts(this->server.http, message.url, message.script_paths);
+                }
+
                 co_await this->server.lua.validate_scripts(message.script_paths);
             }
             catch (std::exception&)
