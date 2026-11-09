@@ -40,18 +40,19 @@ async::task<std::optional<bool>> character::clan::transfer_money(uint32_t clan_i
 {
     this->_owner.assert_thread();
 
-    auto hold = money_delta < 0 ? static_cast<uint64_t>(-money_delta) : uint64_t{0};
-    if (this->_owner.money() < hold)
-        co_return false;
-
+    auto hold             = money_delta < 0 ? static_cast<uint64_t>(-money_delta) : uint64_t{0};
     auto weak             = this->_owner.weak_from_this_as<character>();
     auto world            = this->_owner.world();
     auto detail           = Json::Value{Json::objectValue};
     detail["clan_delta"]  = static_cast<Json::Int64>(clan_delta);
     detail["money_delta"] = static_cast<Json::Int64>(money_delta);
 
-    this->_owner.money_reduce(hold);
     auto request_id = this->_owner.unsettled.add(UNSETTLED_TYPE::CLAN_MONEY, clan_id, detail);
+    if (this->_owner.items.hold(request_id, hold, {}) == false)
+    {
+        this->_owner.unsettled.erase(request_id);
+        co_return false;
+    }
 
     auto applied = co_await this->_owner.server.clans.add_money(world, clan_id, clan_delta, request_id);
     co_await this->_owner.server.threads.switching(weak);
@@ -101,12 +102,23 @@ void character::clan::complete_money(uint64_t request_id, bool applied)
         return;
 
     auto money_delta = request->detail["money_delta"].asInt64();
+    auto held        = this->_owner.items.escrow().contains(request_id);
     this->_owner.unsettled.erase(request_id);
 
-    if (applied && money_delta > 0)
-        this->_owner.money_add(static_cast<uint64_t>(money_delta));
-    else if (applied == false && money_delta < 0)
+    if (applied)
+    {
+        this->_owner.items.take(request_id);
+        if (money_delta > 0)
+            this->_owner.money_add(static_cast<uint64_t>(money_delta));
+    }
+    else if (held)
+    {
+        this->_owner.items.release(request_id);
+    }
+    else if (money_delta < 0)
+    {
         this->_owner.money_add(static_cast<uint64_t>(-money_delta));
+    }
 }
 
 async::task<bool> character::clan::map(std::shared_ptr<fb::game::map>      map,

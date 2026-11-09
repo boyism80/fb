@@ -323,12 +323,12 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
     if (this->_owner.money() < expected_price)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY));
 
-    auto detail     = Json::Value{Json::objectValue};
-    detail["count"] = static_cast<Json::UInt>(purchase_count);
-    detail["price"] = static_cast<Json::UInt64>(expected_price);
-
-    this->_owner.money_reduce(expected_price);
-    auto purchase_id = this->_owner.unsettled.add(UNSETTLED_TYPE::MARKET_PURCHASE, listing_id, detail);
+    auto purchase_id = this->_owner.unsettled.add(UNSETTLED_TYPE::MARKET_PURCHASE, listing_id);
+    if (this->_owner.items.hold(purchase_id, expected_price, {}) == false)
+    {
+        this->_owner.unsettled.erase(purchase_id);
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_MONEY));
+    }
 
     // Log before API call (after deduction)
     auto log_data_before              = Json::Value();
@@ -413,7 +413,7 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
     else if (error_code != fb::model::enum_value::ERROR_CODE::NONE)
     {
         this->_owner.unsettled.erase(purchase_id);
-        std::ignore = this->_owner.money_add(expected_price);
+        this->_owner.items.release(purchase_id);
 
         auto log_data            = Json::Value();
         log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -428,6 +428,7 @@ async::task<marketplace::listing> marketplace::purchase(uint64_t listing_id, uin
     else
     {
         this->_owner.unsettled.erase(purchase_id);
+        this->_owner.items.take(purchase_id);
 
         auto log_data_success             = Json::Value();
         log_data_success["character_id"]  = static_cast<Json::Int64>(this->_owner.id);
@@ -650,10 +651,10 @@ async::task<void> marketplace::settle_purchase(uint64_t purchase_id)
     if (request == nullptr)
         co_return;
 
-    auto weak       = this->_owner.weak_from_this_as<fb::game::character>();
-    auto world      = this->_owner.world();
-    auto listing_id = request->target;
-    auto price      = request->detail["price"].asUInt64();
+    auto weak         = this->_owner.weak_from_this_as<fb::game::character>();
+    auto world        = this->_owner.world();
+    auto listing_id   = request->target;
+    auto legacy_price = request->detail["price"].asUInt64();
 
     auto purchased = std::optional<bool>{};
     try
@@ -676,13 +677,21 @@ async::task<void> marketplace::settle_purchase(uint64_t purchase_id)
     if (weak.expired() || purchased.has_value() == false)
         co_return;
 
-    if (purchased.value() == false && price > 0)
+    if (purchased.value())
+    {
+        this->_owner.items.take(purchase_id);
+    }
+    else if (this->_owner.items.escrow().contains(purchase_id))
+    {
+        this->_owner.items.release(purchase_id);
+    }
+    else if (legacy_price > 0)
     {
         this->_owner.storage_box.add({
             storage_box::entry{
                                .title       = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
                                .message     = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),
-                               .attachments = {fb::model::dsl::money(price).to_dsl()},
+                               .attachments = {fb::model::dsl::money(legacy_price).to_dsl()},
                                }
         });
     }

@@ -1,6 +1,7 @@
-local lib      = require("integration.lib")
-local resp     = require("integration.response")
-local protocol = require("integration.protocol")
+local lib         = require("integration.lib")
+local resp        = require("integration.response")
+local protocol    = require("integration.protocol")
+local script_step = require("integration.lib.script_step")
 
 local AGENT_NPC  = "문파대리인"
 local SENSEI_NPC = "문파성선생"
@@ -227,9 +228,15 @@ local function withdraw(bot, amount)
     return packet.message, nil
 end
 
+local function verify_held(bot, step, usable, held)
+    return script_step.run_script(bot, "test/integration", "verify_money_held", step, usable, held) == true
+end
+
 local function wait_money(ctx, bot, expected)
     return lib.wait.settle(ctx, function()
         return bot:money() == expected
+            and script_step.run_script(bot, "test/integration", "verify_money_released", "MONEY_SETTLED", expected)
+            == true
     end, function(attempt)
         progress(bot, string.format("money not settled yet attempt=%d money=%d expected=%d",
             attempt, bot:money(), expected))
@@ -352,9 +359,14 @@ test_suite {
             -- This server's clan balance stays stale until the abort settles the request.
             local money = START_MONEY - AMOUNT * 2
             ctx:sleep(MQ_WAIT_MS)
+            if a:money() ~= money + AMOUNT or verify_held(a, "C2_HELD", money, AMOUNT) == false then
+                a:chat("/HTTP장애 " .. ABORT_PATH .. " off")
+                progress(a, string.format("FAILED: held deposit money=%d expected=%d", a:money(), money + AMOUNT))
+                return false
+            end
             a:chat("/HTTP장애 " .. ABORT_PATH .. " off")
-            if a:money() ~= money then
-                progress(a, string.format("FAILED: held deposit money=%d expected=%d", a:money(), money))
+            if wait_money(ctx, a, money) == false then
+                progress(a, "FAILED: applied deposit hold not taken")
                 return false
             end
 
@@ -385,7 +397,7 @@ test_suite {
             end
 
             lib.wait.settle_tick(ctx)
-            if a:money() ~= before - AMOUNT then
+            if a:money() ~= before or verify_held(a, "C3_HELD", before - AMOUNT, AMOUNT) == false then
                 a:chat("/HTTP장애 " .. ABORT_PATH .. " off")
                 progress(a, string.format("FAILED: hold released while abort failed money=%d", a:money()))
                 return false

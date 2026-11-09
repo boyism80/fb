@@ -81,9 +81,7 @@ local g_lock_err = nil
 local g_purchase_msg = nil
 local g_purchase_done = false
 local g_cancel_msg = nil
-local g_money_ok = false
 local g_pay_amount = 0
-local g_purchase_api_started = false
 
 local function listing_fee(count, price)
     return math.floor(count * price * LISTING_FEE_RATE)
@@ -690,10 +688,8 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
         if packet == nil then
             return nil, "after count input missing"
         end
-        g_purchase_api_started = true
     elseif packet.type == "pursuit" then
         progress(bot, string.format("purchase confirm YES money_cache=%d", bot:money()))
-        g_purchase_api_started = true
         packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
             return p.type == "normal" and p.message ~= nil
         end)
@@ -723,7 +719,6 @@ local function purchase_buy_row(bot, row, purchase_count)
     end
 
     progress(bot, string.format("purchase confirm YES money_cache=%d", bot:money()))
-    g_purchase_api_started = true
     packet = bot:request_dialog_ext(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES), function(p)
         return p.type == "normal" and p.message ~= nil
     end)
@@ -838,82 +833,20 @@ end
 
 -- bot:money() is a client cache; during HTTP delay the server pushes update_internal (0x08)
 -- before the purchase dialog returns. Observe that packet instead of reading cached money.
-local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
-    local buyer_name = bot:name()
-    local observed_deduct = false
-    local observed_money = nil
-    local last_update_money = nil
-    local last_update_level = nil
-
-    ctx:hook("update_internal", function(_, hooked_bot, packet)
-        if hooked_bot:name() ~= buyer_name then
-            return
-        end
-        last_update_money = packet.ch_money
-        last_update_level = packet.level
-        if g_purchase_api_started == false then
-            return
-        end
-        if g_purchase_done then
-            return
-        end
-        if packet.ch_money ~= nil and packet.ch_money < pay_amount then
-            observed_deduct = true
-            observed_money = packet.ch_money
-            progress(
+local function wait_purchase_released(ctx, bot, step)
+    return lib.wait.settle(ctx, function()
+        return bot:money() == WEAPON_LIST_PRICE + 1000
+            and script_step.run_script(
                 bot,
-                string.format(
-                    "P2: update_internal during delay money=%d level=%s cache=%d",
-                    packet.ch_money,
-                    tostring(packet.level),
-                    bot:money()
-                )
+                "test/integration",
+                "verify_money_released",
+                step,
+                WEAPON_LIST_PRICE + 1000
             )
-        end
+            == true
+    end, function(attempt)
+        progress(bot, string.format("purchase not released yet attempt=%d money=%d", attempt, bot:money()))
     end)
-
-    local waited = 0
-    while g_purchase_api_started == false and g_purchase_done == false do
-        ctx:sleep(100)
-        waited = waited + 100
-        if waited >= HTTP_DELAY_MS + DIALOG_TIMEOUT_MS + 5000 then
-            break
-        end
-    end
-    if g_purchase_api_started == false then
-        ctx:unhook("update_internal")
-        progress(bot, "FAILED: purchase confirm was never reached")
-        return false, nil
-    end
-
-    progress(bot, string.format("P2: purchase API started, observing delay pay=%d cache=%d", pay_amount, bot:money()))
-
-    waited = 0
-    while observed_deduct == false and g_purchase_done == false do
-        ctx:sleep(100)
-        waited = waited + 100
-        if waited >= HTTP_DELAY_MS + DIALOG_TIMEOUT_MS + 5000 then
-            break
-        end
-    end
-
-    ctx:unhook("update_internal")
-
-    progress(
-        bot,
-        string.format(
-            "P2: money probe done ok=%s observed=%s cache=%d purchase_done=%s last_update=%s/%s waited=%d",
-            tostring(observed_deduct),
-            tostring(observed_money),
-            bot:money(),
-            tostring(g_purchase_done),
-            tostring(last_update_level),
-            tostring(last_update_money),
-            waited
-        )
-    )
-
-    return observed_deduct, observed_money
 end
 
 -- Escrowed items stay visible in the client, so a lock is observed by the drop being refused.
@@ -1917,46 +1850,18 @@ test_suite({
             b:chat(string.format("/HTTP지연 %d", HTTP_DELAY_MS))
             g_purchase_msg = nil
             g_purchase_done = false
-            g_money_ok = false
-            g_purchase_api_started = false
             progress(a, "P2 PREP DONE")
             return true
         end,
 
-        {
-            parallel = {
-                [0] = {
-                    function(ctx)
-                        local bot = ctx:bot(1)
-                        progress(bot, "P2: CONFIRM PURCHASE")
-                        g_purchase_msg = select(1, purchase_item_flow(bot, WEAPON_ITEM, 1))
-                        g_purchase_done = true
-                        progress(bot, "P2: PURCHASE DONE msg=" .. tostring(g_purchase_msg))
-                        return g_purchase_msg ~= nil and g_purchase_msg:find(MSG_PURCHASE_OK, 1, true) ~= nil
-                    end,
-                },
-                [1] = {
-                    function(ctx)
-                        local bot = ctx:bot(1)
-                        progress(bot, "P2: CHECK MONEY DURING DELAY")
-                        local ok, observed_money = wait_money_deducted_during_delay(ctx, bot, g_pay_amount)
-                        g_money_ok = ok == true
-                        if g_money_ok == false then
-                            progress(
-                                bot,
-                                string.format(
-                                    "P2: no update_internal deduction observed (observed=%s cache=%d pay=%d)",
-                                    tostring(observed_money),
-                                    bot:money(),
-                                    g_pay_amount
-                                )
-                            )
-                        end
-                        return g_money_ok
-                    end,
-                },
-            },
-        },
+        function(ctx)
+            local bot = ctx:bot(1)
+            progress(bot, "P2: CONFIRM PURCHASE")
+            g_purchase_msg = select(1, purchase_item_flow(bot, WEAPON_ITEM, 1))
+            g_purchase_done = true
+            progress(bot, "P2: PURCHASE DONE msg=" .. tostring(g_purchase_msg))
+            return g_purchase_msg ~= nil and g_purchase_msg:find(MSG_PURCHASE_OK, 1, true) ~= nil
+        end,
 
         function(ctx)
             local a = ctx:bot(0)
@@ -1965,13 +1870,6 @@ test_suite({
 
             if g_purchase_msg == nil or g_purchase_msg:find(MSG_PURCHASE_OK, 1, true) == nil then
                 progress(b, "FAILED: purchase " .. tostring(g_purchase_msg))
-                return false
-            end
-            if g_money_ok == false then
-                progress(
-                    b,
-                    string.format("FAILED: money not deducted during delay cache=%d pay=%d", b:money(), g_pay_amount)
-                )
                 return false
             end
 
@@ -2114,15 +2012,24 @@ test_suite({
                 return false
             end
             ctx:sleep(MQ_WAIT_MS)
-            if b:money() ~= 1000 then
-                progress(b, string.format("FAILED: pending purchase money=%d expected=1000", b:money()))
+            if
+                b:money() ~= WEAPON_LIST_PRICE + 1000
+                or script_step.run_script(
+                    b,
+                    "test/integration",
+                    "verify_money_held",
+                    "R1_HELD",
+                    1000,
+                    WEAPON_LIST_PRICE
+                )
+                ~= true
+            then
+                progress(b, string.format("FAILED: pending purchase money=%d not held", b:money()))
                 return false
             end
 
-            local arrived, arrive_err =
-                wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE)
-            if arrived == false then
-                progress(b, "FAILED: " .. tostring(arrive_err))
+            if wait_purchase_released(ctx, b, "R1_RELEASED") == false then
+                progress(b, "FAILED: pending purchase never released")
                 return false
             end
 
@@ -2136,7 +2043,7 @@ test_suite({
             end
             if
                 count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
-                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 0
             then
                 progress(b, string.format("FAILED: late purchase granted storage=[%s]", table.concat(titles, "|")))
                 return false
@@ -2147,12 +2054,7 @@ test_suite({
                 return false
             end
 
-            if receive_storage(b, STORAGE_PURCHASE_RECOVERY_TITLE) == false then
-                progress(b, "FAILED: recovery storage receive")
-                return false
-            end
-            ctx:sleep(MQ_WAIT_MS)
-            if b:money() ~= WEAPON_LIST_PRICE + 1000 then
+            if wait_purchase_released(ctx, b, "R1_REFUNDED") == false then
                 progress(b, string.format("FAILED: refund money=%d expected=%d", b:money(), WEAPON_LIST_PRICE + 1000))
                 return false
             end
@@ -2189,9 +2091,8 @@ test_suite({
                 return false
             end
 
-            local arrived, arrive_err = wait_storage_title(ctx, b, STORAGE_PURCHASE_RECOVERY_TITLE)
-            if arrived == false then
-                progress(b, "FAILED: " .. tostring(arrive_err))
+            if wait_purchase_released(ctx, b, "R2_RELEASED") == false then
+                progress(b, "FAILED: pending purchase never released")
                 return false
             end
             b:chat("/HTTP보류 send")
@@ -2214,17 +2115,25 @@ test_suite({
                 progress(b, "FAILED: " .. tostring(titles_err))
                 return false
             end
-            if count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 1 then
-                progress(b, string.format("FAILED: recovery box count storage=[%s]", table.concat(titles, "|")))
+            if
+                count_storage_title(titles, STORAGE_PURCHASE_TITLE) ~= 0
+                or count_storage_title(titles, STORAGE_PURCHASE_RECOVERY_TITLE) ~= 0
+            then
+                progress(b, string.format("FAILED: late purchase granted storage=[%s]", table.concat(titles, "|")))
                 return false
             end
 
-            if receive_storage(b, STORAGE_PURCHASE_RECOVERY_TITLE) == false then
-                progress(b, "FAILED: recovery storage receive")
-                return false
-            end
-            ctx:sleep(MQ_WAIT_MS)
-            if b:money() ~= WEAPON_LIST_PRICE + 1000 then
+            if
+                b:money() ~= WEAPON_LIST_PRICE + 1000
+                or script_step.run_script(
+                    b,
+                    "test/integration",
+                    "verify_money_released",
+                    "R2_REFUNDED",
+                    WEAPON_LIST_PRICE + 1000
+                )
+                ~= true
+            then
                 progress(b, string.format("FAILED: refund money=%d expected=%d", b:money(), WEAPON_LIST_PRICE + 1000))
                 return false
             end

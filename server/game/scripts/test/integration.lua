@@ -1600,6 +1600,13 @@ return {
         report(me, ok, step, string.format('money=%d free=%d', money, free))
     end,
 
+    verify_money_held = function(me, step, usable, held)
+        local money = me:money()
+        local free = me:money_free_space()
+        local ok = money == tonumber(usable) and free == math.maxinteger - money - tonumber(held)
+        report(me, ok, step, string.format('money=%d free=%d', money, free))
+    end,
+
     -- Below level 5 the 낙랑의두루마리2 reward includes 50 exp.
     nakrang2_prepare = function(me, step, level)
         local quest = require('lib.quest')
