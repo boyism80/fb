@@ -129,6 +129,12 @@ public:
     using std::runtime_error::runtime_error;
 };
 
+class reported_error : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+};
+
 context* get(lua_State* ctx);
 
 class luable : public std::enable_shared_from_this<luable>

@@ -662,7 +662,8 @@ void fb::lua::context::resume(int argc, int* n)
         const char* raw = lua_tostring(*this, -1);
         auto        message =
             std::format("lua error message : {}", raw != nullptr ? std::string_view{raw} : std::string_view{});
-        auto path = std::string(this->script_path());
+        auto reported = this->_on_error != nullptr;
+        auto path     = std::string(this->script_path());
         if (path.empty())
             this->report_error(message);
         else
@@ -672,7 +673,10 @@ void fb::lua::context::resume(int argc, int* n)
 
         auto promise   = promise_type{this->_promise};
         this->_promise = nullptr;
-        promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
+        if (reported)
+            promise->set_exception(std::make_exception_ptr(fb::lua::reported_error(message)));
+        else
+            promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
         this->finish_resume();
     }
     else
@@ -763,6 +767,11 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
             if (lease.expired() == false)
                 lua_ptr->cancel(e.what());
         }
+        catch (const fb::lua::reported_error& e)
+        {
+            if (lease.expired() == false)
+                lua_ptr->reject(e.what());
+        }
         catch (const std::exception& e)
         {
             fb::logger::fatal("lua co_builder {} error: {}", phase, e.what());
@@ -770,9 +779,7 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
                 return;
 
             auto error_text = std::string(e.what());
-            // A lua_resume failure already reported from the script context. This path is the C++ failure around it.
-            if (error_text.find("lua error message") == std::string::npos)
-                lua_ptr->report_error(std::format("{}: {}", phase, error_text));
+            lua_ptr->report_error(std::format("{}: {}", phase, error_text));
             lua_ptr->reject(error_text);
         }
         catch (...)
