@@ -202,82 +202,71 @@ function M.withdraw_money(me, npc, money)
     return true
 end
 
-local function repairable(item)
-    local model = item:model()
-    return model:repair_price() ~= nil and not dragon_weapon.is_dragon_weapon(model:name()) and
-        model:durability() > item:durability()
+local function repair_unit_price(model)
+    if model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and not dragon_weapon.is_dragon_weapon(model:name()) then
+        return model:repair_price()
+    else
+        return nil
+    end
 end
 
-local function repairable_items(me)
-    local items = {}
-    for _, item in pairs(me:items()) do
-        if item:model():attr(ITEM_ATTRIBUTE.EQUIPMENT) and repairable(item) then
-            table.insert(items, item)
+local function repair_price(item)
+    local model = item:model()
+    local unit_price = repair_unit_price(model)
+    if unit_price ~= nil and model:durability() > item:durability() then
+        return unit_price
+    else
+        return nil
+    end
+end
+
+local function repair_entries(me, name)
+    local entries = {}
+    local owned = 0
+    for _, items in ipairs({ me:items(), me:equipments() }) do
+        for _, item in pairs(items) do
+            if name == nil or item:model():name() == name then
+                owned = owned + 1
+                local price = repair_price(item)
+                if price ~= nil then
+                    table.insert(entries, { item, price })
+                end
+            end
         end
     end
-    for _, item in pairs(me:equipments()) do
-        if repairable(item) then
-            table.insert(items, item)
-        end
-    end
-    return items
+    return entries, owned
 end
 
 function M.repair(me, npc, name)
-    local all = (name == nil)
-    local items = {}
-    if not all then
-        local model = name2item(name)
-        if model == nil then
+    local model = nil
+    if name ~= nil then
+        model = name2item(name)
+        if model == nil or not model:attr(ITEM_ATTRIBUTE.EQUIPMENT) then
             npc:chat('뭘 고쳐줘?')
             return true
         end
-
-        if not model:attr(ITEM_ATTRIBUTE.EQUIPMENT) then
-            npc:chat('뭘 고쳐줘?')
-            return true
-        end
-
-        local item = me:item(name)
-        if item == nil then
-            npc:chat('가지고 있지 않은데요')
-            return true
-        end
-
-        if model:repair_price() == nil or dragon_weapon.is_dragon_weapon(name) then
-            npc:chat(string.format('%s 고칠 수 없습니다.', name_with(name)))
-            return true
-        end
-
-        if model:durability() == item:durability() then
-            npc:chat('이미 고쳐져 있습니다.')
-            return true
-        end
-
-        table.insert(items, item)
-    else
-        items = repairable_items(me)
     end
 
-    if #items == 0 then
+    local entries, owned = repair_entries(me, name)
+    if model ~= nil and owned == 0 then
+        npc:chat('가지고 있지 않은데요')
+    elseif model ~= nil and repair_unit_price(model) == nil then
+        npc:chat(string.format('%s 고칠 수 없습니다.', name_with(name)))
+    elseif model ~= nil and #entries == 0 then
+        npc:chat('이미 고쳐져 있습니다.')
+    elseif #entries == 0 then
         npc:chat('고칠 물건이 없습니다.')
-        return true
-    end
-
-    local entries = {}
-    for _, item in pairs(items) do
-        table.insert(entries, { item, item:model():repair_price() })
-    end
-
-    local result, price = me:repair(entries)
-    if result == 'money' then
-        npc:chat('돈이 모자랍니다.')
-    elseif result ~= 'done' then
-        npc:chat('고칠 물건이 없습니다.')
-    elseif price == 0 then
-        npc:chat('거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요.')
     else
-        npc:chat(string.format('고치는데 %s전이 들었습니다.', price))
+        local result, price = me:repair(entries)
+        if result == 'money' then
+            npc:chat('돈이 모자랍니다.')
+        elseif result ~= 'done' then
+            npc:chat('고칠 물건이 없습니다.')
+        elseif price == 0 then
+            npc:chat('거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요.')
+        else
+            npc:chat(string.format('고치는데 %s전이 들었습니다.', price))
+        end
     end
     return true
 end
@@ -800,7 +789,7 @@ function M.repairable_slots(me)
     local count = 0
 
     for slot, item in pairs(items) do
-        if item:model():attr(ITEM_ATTRIBUTE.EQUIPMENT) and repairable(item) then
+        if repair_price(item) ~= nil then
             slots[slot] = item
             count = count + 1
         end
@@ -835,7 +824,12 @@ function M.show_repair_menu(me, npc)
     if item == nil then
         return
     end
-    local entries = { { item, item:model():repair_price() } }
+    local unit_price = repair_price(item)
+    if unit_price == nil then
+        return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
+    end
+
+    local entries = { { item, unit_price } }
     local price = me:repair_cost(entries)
     if price == nil then
         return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
@@ -861,14 +855,9 @@ end
 
 
 function M.show_repair_all_menu(me, npc)
-    local items = repairable_items(me)
-    if #items == 0 then
+    local entries = repair_entries(me, nil)
+    if #entries == 0 then
         return me:dialog(npc, '고칠 물건이 없는데요', { prev = false, next = true })
-    end
-
-    local entries = {}
-    for _, item in ipairs(items) do
-        table.insert(entries, { item, item:model():repair_price() })
     end
 
     local price = me:repair_cost(entries)

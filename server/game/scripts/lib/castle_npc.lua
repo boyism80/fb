@@ -7,6 +7,8 @@ local dragon_weapon = require('lib.dragon_weapon')
 
 local M = {}
 
+local DRAGON_WEAPON_REPAIR_MINIMUM = 1
+
 local DIVINE_BEAST_BY_CASTLE_MAP = {
     ['주작의눈'] = DIVINE_BEAST.VERMILION_BIRD,
     ['현무의눈'] = DIVINE_BEAST.BLACK_TORTOISE,
@@ -422,12 +424,11 @@ function M.repair_dragon_weapon(me, npc_obj)
     end
 
     local entries = { { weapon, unit_price * 2 } }
-    local cost = me:repair_cost(entries)
-    if cost == nil then
+    local price = me:repair_cost(entries, DRAGON_WEAPON_REPAIR_MINIMUM)
+    if price == nil then
         me:dialog(npc_obj, '이미 멀쩡한 무기일세.', { prev = false, next = false })
         return
     end
-    local price = math.max(cost, 1)
 
     local selected = me:pursuit(npc_obj,
         string.format('지금부터 자네 손에 들고있는 용무기를 고쳐주겠네. 자네가 고칠 무기는 [%s]가 맞는가? 수리비 %d전.', name, price),
@@ -436,7 +437,7 @@ function M.repair_dragon_weapon(me, npc_obj)
         return
     end
 
-    local result = me:repair(entries, price, 1)
+    local result = me:repair(entries, price, DRAGON_WEAPON_REPAIR_MINIMUM)
     if result == 'changed' then
         me:dialog(npc_obj, '그 사이 무기 상태가 달라졌구먼. 다시 말해주게.', { prev = false, next = false })
     elseif result == 'money' then

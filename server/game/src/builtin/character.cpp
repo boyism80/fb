@@ -2345,7 +2345,8 @@ builtin::character::repair_entries builtin::character::read_repair_entries(lua_S
 
 std::optional<uint64_t> builtin::character::repair_cost(fb::game::character&                               ch,
                                                         const repair_entries&                              entries,
-                                                        std::vector<std::shared_ptr<fb::game::equipment>>& targets)
+                                                        std::vector<std::shared_ptr<fb::game::equipment>>& targets,
+                                                        uint64_t                                           minimum)
 {
     auto equipments = ch.items.equipments();
     auto cost       = 0.0;
@@ -2372,7 +2373,7 @@ std::optional<uint64_t> builtin::character::repair_cost(fb::game::character&    
 
     if (targets.empty())
         return std::nullopt;
-    return static_cast<uint64_t>(std::floor(cost));
+    return std::max(static_cast<uint64_t>(std::floor(cost)), minimum);
 }
 
 int builtin::character::builtin_repair_cost(lua_State* L)
@@ -2386,13 +2387,14 @@ int builtin::character::builtin_repair_cost(lua_State* L)
         return 0;
 
     auto entries  = read_repair_entries(L, 2);
+    auto minimum  = lua->touint64(3, 0);
     auto cost     = std::make_shared<std::optional<uint64_t>>();
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto targets = std::vector<std::shared_ptr<fb::game::equipment>>();
-        *cost        = repair_cost(*ch, entries, targets);
+        *cost        = repair_cost(*ch, entries, targets, minimum);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -2424,8 +2426,8 @@ int builtin::character::builtin_repair(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto targets = std::vector<std::shared_ptr<fb::game::equipment>>();
-        auto cost    = repair_cost(*ch, entries, targets);
-        auto price   = std::max(cost.value_or(0), minimum);
+        auto cost    = repair_cost(*ch, entries, targets, minimum);
+        auto price   = cost.value_or(0);
         if (cost.has_value() == false)
         {
             *result = {"none", 0};
