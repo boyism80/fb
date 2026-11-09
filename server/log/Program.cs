@@ -1,3 +1,4 @@
+using Http.Extension;
 using Http.Migration;
 using Http.Service;
 using Log.Repository;
@@ -13,7 +14,7 @@ namespace Log
         static async Task Main(string[] args)
         {
             ProcessExitLog.Install("log");
-            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+            JsonTypeHandler.Register();
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {

@@ -12,14 +12,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         ProcessExitLog.Install("internal");
-        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-        SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(List<Model.ClanMoneyRequest>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(Http.Model.EvaluationState), new JsonTypeHandler());
+        JsonTypeHandler.Register();
 
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);

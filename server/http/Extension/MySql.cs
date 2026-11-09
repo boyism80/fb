@@ -108,6 +108,19 @@ namespace Http.Extension
 
     public class JsonTypeHandler : SqlMapper.ITypeHandler
     {
+        public static void Register()
+        {
+            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+            var handler = new JsonTypeHandler();
+            SqlMapper.AddTypeHandler(typeof(List<uint>), handler);
+            SqlMapper.AddTypeHandler(typeof(List<Model.ClanMoneyRequest>), handler);
+            SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), handler);
+            SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), handler);
+            SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), handler);
+            SqlMapper.AddTypeHandler(typeof(Model.Mimicry), handler);
+            SqlMapper.AddTypeHandler(typeof(Model.EvaluationState), handler);
+        }
+
         public void SetValue(IDbDataParameter parameter, object value)
         {
             parameter.Value = JsonConvert.SerializeObject(value);

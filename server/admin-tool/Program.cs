@@ -9,14 +9,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 ProcessExitLog.Install("admin-tool");
-Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
-SqlMapper.AddTypeHandler(typeof(List<Http.Model.ClanMoneyRequest>), new JsonTypeHandler());
-SqlMapper.AddTypeHandler(typeof(List<Http.Model.Buff>), new JsonTypeHandler());
-SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
-SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());
-SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
-SqlMapper.AddTypeHandler(typeof(Http.Model.EvaluationState), new JsonTypeHandler());
+JsonTypeHandler.Register();
 
 var builder = WebApplication.CreateBuilder(args);
 
