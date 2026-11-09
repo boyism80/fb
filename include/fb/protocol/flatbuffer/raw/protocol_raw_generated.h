@@ -6174,7 +6174,8 @@ struct WriteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_SECTION = 6,
     VT_USER = 8,
     VT_TITLE = 10,
-    VT_CONTENTS = 12
+    VT_CONTENTS = 12,
+    VT_ROLE = 14
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -6191,6 +6192,9 @@ struct WriteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *contents() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CONTENTS);
   }
+  uint8_t role() const {
+    return GetField<uint8_t>(VT_ROLE, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -6200,6 +6204,7 @@ struct WriteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_CONTENTS) &&
            verifier.VerifyString(contents()) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -6223,6 +6228,9 @@ struct WriteArticleBuilder {
   void add_contents(::flatbuffers::Offset<::flatbuffers::String> contents) {
     fbb_.AddOffset(WriteArticle::VT_CONTENTS, contents);
   }
+  void add_role(uint8_t role) {
+    fbb_.AddElement<uint8_t>(WriteArticle::VT_ROLE, role, 0);
+  }
   explicit WriteArticleBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -6240,13 +6248,15 @@ inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticle(
     uint32_t section = 0,
     uint32_t user = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> contents = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
+    uint8_t role = 0) {
   WriteArticleBuilder builder_(_fbb);
   builder_.add_contents(contents);
   builder_.add_title(title);
   builder_.add_user(user);
   builder_.add_section(section);
   builder_.add_world(world);
+  builder_.add_role(role);
   return builder_.Finish();
 }
 
@@ -6256,7 +6266,8 @@ inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticleDirect(
     uint32_t section = 0,
     uint32_t user = 0,
     const char *title = nullptr,
-    const char *contents = nullptr) {
+    const char *contents = nullptr,
+    uint8_t role = 0) {
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
   return fb::protocol::internal::request::raw::CreateWriteArticle(
@@ -6265,7 +6276,8 @@ inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticleDirect(
       section,
       user,
       title__,
-      contents__);
+      contents__,
+      role);
 }
 
 struct DeleteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -11210,14 +11222,14 @@ inline ::flatbuffers::Offset<GetArticleList> CreateGetArticleListDirect(
 struct WriteArticle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WriteArticleBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SUCCESS = 4
+    VT_ERROR = 4
   };
-  bool success() const {
-    return GetField<uint8_t>(VT_SUCCESS, 0) != 0;
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_SUCCESS, 1) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
 };
@@ -11226,8 +11238,8 @@ struct WriteArticleBuilder {
   typedef WriteArticle Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_success(bool success) {
-    fbb_.AddElement<uint8_t>(WriteArticle::VT_SUCCESS, static_cast<uint8_t>(success), 0);
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(WriteArticle::VT_ERROR, error, 0);
   }
   explicit WriteArticleBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -11242,9 +11254,9 @@ struct WriteArticleBuilder {
 
 inline ::flatbuffers::Offset<WriteArticle> CreateWriteArticle(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool success = false) {
+    uint32_t error = 0) {
   WriteArticleBuilder builder_(_fbb);
-  builder_.add_success(success);
+  builder_.add_error(error);
   return builder_.Finish();
 }
 

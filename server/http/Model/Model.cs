@@ -558,7 +558,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "ALREADY_MARRIED")]
         AlreadyMarried = 92, 
         [EnumMember(Value = "MAIL_SENDER_UNREAD_LIMIT")]
-        MailSenderUnreadLimit = 93
+        MailSenderUnreadLimit = 93, 
+        [EnumMember(Value = "BULLETIN_WRITE_COOLDOWN")]
+        BulletinWriteCooldown = 94
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1047,6 +1049,7 @@ namespace Fb.Model.ConstValue
         public const ushort RetainCount = 31743;
         public const byte TitleLength = 64;
         public const ushort ContentsLength = 256;
+        public static readonly TimeSpan WriteCooldown = TimeSpan.Parse("00:01:00");
     }
 
     public static class Clan
@@ -1193,6 +1196,7 @@ namespace Fb.Model.ConstValue
         public const string MessageMailTooLongTitle = "우편 제목이 너무 깁니다.";
         public const string MessageMailTooLongContents = "우편 내용이 너무 깁니다.";
         public const string MessageMailSenderUnreadLimit = "받는 사람이 아직 읽지 않은 우편이 너무 많습니다.";
+        public const string MessageBulletinWriteCooldown = "잠시 후에 다시 글을 쓸 수 있습니다.";
         public const string MessageLevelUp = "레벨이 올랐습니다";
         public const string MessageLoginElapsedDays = "일";
         public const string MessageLoginElapsedHours = "시간";

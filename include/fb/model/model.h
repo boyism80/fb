@@ -1384,7 +1384,8 @@ enum class ERROR_CODE
     MAIL_TOO_LONG_TITLE = 90, 
     MAIL_TOO_LONG_CONTENTS = 91, 
     ALREADY_MARRIED = 92, 
-    MAIL_SENDER_UNREAD_LIMIT = 93
+    MAIL_SENDER_UNREAD_LIMIT = 93, 
+    BULLETIN_WRITE_COOLDOWN = 94
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1485,7 +1486,8 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(std::string_view k)
         { "MAIL_TOO_LONG_TITLE", ERROR_CODE::MAIL_TOO_LONG_TITLE }, 
         { "MAIL_TOO_LONG_CONTENTS", ERROR_CODE::MAIL_TOO_LONG_CONTENTS }, 
         { "ALREADY_MARRIED", ERROR_CODE::ALREADY_MARRIED }, 
-        { "MAIL_SENDER_UNREAD_LIMIT", ERROR_CODE::MAIL_SENDER_UNREAD_LIMIT }
+        { "MAIL_SENDER_UNREAD_LIMIT", ERROR_CODE::MAIL_SENDER_UNREAD_LIMIT }, 
+        { "BULLETIN_WRITE_COOLDOWN", ERROR_CODE::BULLETIN_WRITE_COOLDOWN }
     };
 
     auto k_str = std::string(k);
@@ -1594,7 +1596,8 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::MAIL_TOO_LONG_TITLE, "MAIL_TOO_LONG_TITLE" }, 
         { ERROR_CODE::MAIL_TOO_LONG_CONTENTS, "MAIL_TOO_LONG_CONTENTS" }, 
         { ERROR_CODE::ALREADY_MARRIED, "ALREADY_MARRIED" }, 
-        { ERROR_CODE::MAIL_SENDER_UNREAD_LIMIT, "MAIL_SENDER_UNREAD_LIMIT" }
+        { ERROR_CODE::MAIL_SENDER_UNREAD_LIMIT, "MAIL_SENDER_UNREAD_LIMIT" }, 
+        { ERROR_CODE::BULLETIN_WRITE_COOLDOWN, "BULLETIN_WRITE_COOLDOWN" }
     };
 
     auto i = enums.find(k);
@@ -3049,6 +3052,7 @@ public:
     inline static constexpr const uint16_t RETAIN_COUNT = 31743;
     inline static constexpr const uint8_t TITLE_LENGTH = 64;
     inline static constexpr const uint16_t CONTENTS_LENGTH = 256;
+    inline static const timespan& WRITE_COOLDOWN = timespan("00.00:01:00");
 
 private:
     bulletin() = default;
@@ -3272,6 +3276,7 @@ public:
     inline static constexpr const char* MESSAGE_MAIL_TOO_LONG_TITLE = "우편 제목이 너무 깁니다.";
     inline static constexpr const char* MESSAGE_MAIL_TOO_LONG_CONTENTS = "우편 내용이 너무 깁니다.";
     inline static constexpr const char* MESSAGE_MAIL_SENDER_UNREAD_LIMIT = "받는 사람이 아직 읽지 않은 우편이 너무 많습니다.";
+    inline static constexpr const char* MESSAGE_BULLETIN_WRITE_COOLDOWN = "잠시 후에 다시 글을 쓸 수 있습니다.";
     inline static constexpr const char* MESSAGE_LEVEL_UP = "레벨이 올랐습니다";
     inline static constexpr const char* MESSAGE_LOGIN_ELAPSED_DAYS = "일";
     inline static constexpr const char* MESSAGE_LOGIN_ELAPSED_HOURS = "시간";
@@ -4114,6 +4119,8 @@ inline void enum_map<fb::model::enum_value::ERROR_CODE>(lua_State* lua)
     lua_setfield(lua, -2, "ALREADY_MARRIED");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::MAIL_SENDER_UNREAD_LIMIT));
     lua_setfield(lua, -2, "MAIL_SENDER_UNREAD_LIMIT");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ERROR_CODE::BULLETIN_WRITE_COOLDOWN));
+    lua_setfield(lua, -2, "BULLETIN_WRITE_COOLDOWN");
     lua_setglobal(lua, "ERROR_CODE");
 }
 
@@ -4726,6 +4733,8 @@ inline void const_map<fb::model::const_value::bulletin>(lua_State* lua)
     lua_setfield(lua, -2, "TITLE_LENGTH");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::bulletin::CONTENTS_LENGTH));
     lua_setfield(lua, -2, "CONTENTS_LENGTH");
+    lua_pushstring(lua, fb::model::const_value::bulletin::WRITE_COOLDOWN.to_string().c_str());
+    lua_setfield(lua, -2, "WRITE_COOLDOWN");
 }
 
 template <>
@@ -5004,6 +5013,8 @@ inline void const_map<fb::model::const_value::string>(lua_State* lua)
     lua_setfield(lua, -2, "MESSAGE_MAIL_TOO_LONG_CONTENTS");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_MAIL_SENDER_UNREAD_LIMIT).c_str());
     lua_setfield(lua, -2, "MESSAGE_MAIL_SENDER_UNREAD_LIMIT");
+    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_BULLETIN_WRITE_COOLDOWN).c_str());
+    lua_setfield(lua, -2, "MESSAGE_BULLETIN_WRITE_COOLDOWN");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_LEVEL_UP).c_str());
     lua_setfield(lua, -2, "MESSAGE_LEVEL_UP");
     lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::string::MESSAGE_LOGIN_ELAPSED_DAYS).c_str());

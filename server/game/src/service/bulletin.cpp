@@ -131,13 +131,23 @@ service::bulletin::write(character& ch, uint16_t section, std::string_view title
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_CONTENTS));
 
     auto   world = ch.world();
+    auto   role  = static_cast<uint8_t>(ch.role());
     auto&& resp  = co_await this->server.http.post(
         "internal",
         "/bulletin/write",
-        internal_reqs::WriteArticle{world, section, ch.id, std::string(title), std::string(contents)});
+        internal_reqs::WriteArticle{world, section, ch.id, std::string(title), std::string(contents), role});
 
-    if (resp.success == false)
+    switch (static_cast<ERROR_CODE>(resp.error))
+    {
+    case ERROR_CODE::NONE:
+        break;
+
+    case ERROR_CODE::BULLETIN_WRITE_COOLDOWN:
+        throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_COOLDOWN));
+
+    default:
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_FAILED));
+    }
 }
 
 async::task<void> service::bulletin::remove(character& ch, uint16_t section, uint16_t id)

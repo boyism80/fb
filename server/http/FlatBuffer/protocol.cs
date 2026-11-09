@@ -753,7 +753,8 @@ namespace Google.FlatBuffers
                 builder.Build(value.Section),
                 builder.Build(value.User),
                 builder.Build(value.Title),
-                builder.Build(value.Contents));
+                builder.Build(value.Contents),
+                builder.Build(value.Role));
         }
         public static Offset<fb.protocol.@internal.request.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.@internal.request.DeleteArticle value)
         {
@@ -1407,7 +1408,7 @@ namespace Google.FlatBuffers
                 return default;
 
             return fb.protocol.@internal.response.raw.WriteArticle.CreateWriteArticle(builder,
-                builder.Build(value.Success));
+                builder.Build(value.Error));
         }
         public static Offset<fb.protocol.@internal.response.raw.GetMail> Build(this FlatBufferBuilder builder, fb.protocol.@internal.response.GetMail value)
         {
@@ -4850,6 +4851,7 @@ namespace fb.protocol.@internal.request
         public uint User { get; set; } = 0;
         public string Title { get; set; } = string.Empty;
         public string Contents { get; set; } = string.Empty;
+        public byte Role { get; set; } = 0;
 
         public WriteArticle()
         { }
@@ -4861,6 +4863,7 @@ namespace fb.protocol.@internal.request
             User = raw.User;
             Title = raw.Title;
             Contents = raw.Contents;
+            Role = raw.Role;
         }
 
         public WriteArticle(byte[] bytes) : this(fb.protocol.@internal.request.raw.WriteArticle.GetRootAsWriteArticle(new ByteBuffer(bytes)))
@@ -7485,14 +7488,14 @@ namespace fb.protocol.@internal.response
     public class WriteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteArticle;
-        public bool Success { get; set; } = false;
+        public uint Error { get; set; } = 0;
 
         public WriteArticle()
         { }
 
         public WriteArticle(fb.protocol.@internal.response.raw.WriteArticle raw)
         {
-            Success = raw.Success;
+            Error = raw.Error;
         }
 
         public WriteArticle(byte[] bytes) : this(fb.protocol.@internal.response.raw.WriteArticle.GetRootAsWriteArticle(new ByteBuffer(bytes)))

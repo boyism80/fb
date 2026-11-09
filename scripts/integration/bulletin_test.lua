@@ -1,4 +1,5 @@
-local lib = require("integration.lib")
+local lib         = require("integration.lib")
+local script_step = require("integration.lib.script_step")
 
 local BOT1_TITLE          = "Bot1 Article Title"
 local BOT1_CONTENTS       = "Bot1's test article contents."
@@ -10,6 +11,10 @@ local BLOCKED_TITLE       = "꺼져 Title"
 local BLOCKED_CONTENTS    = "씨발 contents"
 local FILTERED_TITLE      = "가세요 Title"
 local FILTERED_CONTENTS   = "어머 contents"
+local COOLDOWN_TITLE      = "Cooldown Title"
+local COOLDOWN_CONTENTS   = "Cooldown contents."
+local ROLE_USER           = 0
+local ROLE_ADMIN          = 2
 -- Must match mail.REQUIRED_LEVEL in const.xlsx.
 local MAIL_REQUIRED_LEVEL = 20
 
@@ -33,6 +38,10 @@ local function find_article_by_name(articles, uname)
     return nil
 end
 
+local function set_role(admin, bot, role, step)
+    return script_step.run_script(admin, "test/integration", "set_role", step, bot:name(), tostring(role)) == true
+end
+
 local function find_mail_by_sender(mails, sender_name)
     for _, mail in ipairs(mails) do
         if mail.sender_name == sender_name then
@@ -49,6 +58,10 @@ test_suite {
     on_initialize = function(ctx)
         progress(ctx:bot(0), "BULLETIN TEST INITIALIZED")
         lib.formation.arrange_in_line(ctx)
+    end,
+
+    on_finished = function(ctx)
+        set_role(ctx:bot(1), ctx:bot(0), ROLE_ADMIN, "restore_writer")
     end,
 
     scenarios = {
@@ -270,6 +283,44 @@ test_suite {
             end
 
             progress(bot1, "SUCCESS: BLOCKED WORDS FILTERED IN ARTICLES AND MAIL")
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
+            local bot2 = ctx:bot(1)
+
+            progress(bot1, "TESTING BULLETIN WRITE COOLDOWN")
+            if set_role(bot2, bot1, ROLE_USER, "demote_writer") == false then
+                progress(bot1, "FAILED TO DEMOTE BOT1 TO USER")
+                return false
+            end
+            if bot1:bulletin_write(1, COOLDOWN_TITLE, COOLDOWN_CONTENTS) == false then
+                progress(bot1, "FAILED TO WRITE THE FIRST ARTICLE AS A USER")
+                return false
+            end
+            if bot1:bulletin_write(1, COOLDOWN_TITLE, COOLDOWN_CONTENTS) then
+                progress(bot1, "FAILED: USER WROTE TWICE WITHIN THE COOLDOWN")
+                return false
+            end
+            progress(bot1, "SECOND USER WRITE FAILED AS EXPECTED (COOLDOWN)")
+
+            if set_role(bot2, bot1, ROLE_ADMIN, "promote_writer") == false then
+                progress(bot1, "FAILED TO PROMOTE BOT1 TO ADMIN")
+                return false
+            end
+            if bot1:bulletin_write(1, COOLDOWN_TITLE, COOLDOWN_CONTENTS) == false then
+                progress(bot1, "FAILED: OPERATOR WRITE WAS BLOCKED BY THE COOLDOWN")
+                return false
+            end
+            progress(bot1, "SUCCESS: OPERATOR WROTE DURING THE COOLDOWN")
+
+            for _ = 1, 2 do
+                local article = find_article_by_name(bot1:bulletin_get_articles(1, 0x7FFF), bot1:name())
+                if article ~= nil then
+                    bot1:bulletin_delete_article(1, article.id)
+                end
+            end
             return true
         end,
     },

@@ -1,4 +1,5 @@
 using Dapper;
+using Fb.Model.EnumValue;
 using Http.Model;
 using Http.Util;
 using System.Collections.Concurrent;
@@ -15,12 +16,14 @@ namespace Http.Service
         private readonly ConcurrentDictionary<(uint World, uint Section), ConcurrentQueue<BulletinWriteRequest>> _writeQueues = new();
         private readonly ConcurrentDictionary<uint, SemaphoreSlim> _flushSignals = new();
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly RedisService _redisService;
         private readonly LogService _logService;
         private readonly ILogger<BulletinService> _logger;
 
-        public BulletinService(IServiceScopeFactory scopeFactory, LogService logService, ILogger<BulletinService> logger)
+        public BulletinService(IServiceScopeFactory scopeFactory, RedisService redisService, LogService logService, ILogger<BulletinService> logger)
         {
             _scopeFactory = scopeFactory;
+            _redisService = redisService;
             _logService = logService;
             _logger = logger;
         }
@@ -30,11 +33,21 @@ namespace Http.Service
             return TextColumn.FitsUtf8mb3(title, MaxTitleLength) && TextColumn.FitsUtf8mb3(contents, MaxContentsLength);
         }
 
-        public Task<bool> Write(uint world, uint section, uint user, string title, string contents)
+        public async Task<bool> Write(uint world, uint section, uint user, Role role, string title, string contents)
         {
             if (Storable(title, contents) == false)
             {
-                return Task.FromResult(false);
+                return false;
+            }
+
+            if (role == Role.User)
+            {
+                var key = $"fb:bulletin:write-cooldown:{world}:{user}";
+                var redis = _redisService.GetShardConnection(world, key);
+                if (redis != null && await redis.Connection.StringSetAsync(key, 1, expiry: Fb.Model.ConstValue.Bulletin.WriteCooldown, when: StackExchange.Redis.When.NotExists) == false)
+                {
+                    throw new LogicException(ErrorCode.BulletinWriteCooldown);
+                }
             }
 
             var request = new BulletinWriteRequest
@@ -56,7 +69,7 @@ namespace Http.Service
                 signal.Release();
             }
 
-            return request.CompletionSource.Task;
+            return await request.CompletionSource.Task;
         }
 
         public Task<bool> WaitFlushAsync(uint world, TimeSpan timeout, CancellationToken cancellationToken)

@@ -3205,20 +3205,21 @@ public:
     uint32_t user = 0;
     std::string title;
     std::string contents;
+    uint8_t role = 0;
 
 public:
     WriteArticle() = default;
 
     WriteArticle(const WriteArticle& x)
-        : world(x.world), section(x.section), user(x.user), title(x.title), contents(x.contents)
+        : world(x.world), section(x.section), user(x.user), title(x.title), contents(x.contents), role(x.role)
     { }
 
-    WriteArticle(uint32_t world, uint32_t section, uint32_t user, std::string_view title, std::string_view contents)
-        : world(world), section(section), user(user), title(std::string(title)), contents(std::string(contents))
+    WriteArticle(uint32_t world, uint32_t section, uint32_t user, std::string_view title, std::string_view contents, uint8_t role)
+        : world(world), section(section), user(user), title(std::string(title)), contents(std::string(contents)), role(role)
     { }
 
     WriteArticle(const fb::protocol::internal::request::raw::WriteArticle& raw)
-        : world(raw.world()), section(raw.section()), user(raw.user()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str()))
+        : world(raw.world()), section(raw.section()), user(raw.user()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), role(raw.role())
     { }
 
 public:
@@ -5751,21 +5752,21 @@ public:
     static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::WriteArticle;
 
 public:
-    bool success = false;
+    uint32_t error = 0;
 
 public:
     WriteArticle() = default;
 
     WriteArticle(const WriteArticle& x)
-        : success(x.success)
+        : error(x.error)
     { }
 
-    WriteArticle(bool success)
-        : success(success)
+    WriteArticle(uint32_t error)
+        : error(error)
     { }
 
     WriteArticle(const fb::protocol::internal::response::raw::WriteArticle& raw)
-        : success(raw.success())
+        : error(raw.error())
     { }
 
 public:
@@ -10156,7 +10157,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::WriteArticle> build<fb
             flatbuffers::build<uint32_t>(builder, value.section),
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<std::string>(builder, value.title),
-            flatbuffers::build<std::string>(builder, value.contents));
+            flatbuffers::build<std::string>(builder, value.contents),
+            flatbuffers::build<uint8_t>(builder, value.role));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteArticle> build<fb::protocol::internal::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DeleteArticle& value)
@@ -10691,7 +10693,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::WriteArticle> build<fb::protocol::internal::response::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::response::WriteArticle& value)
 {
     return fb::protocol::internal::response::raw::CreateWriteArticle(builder,
-            flatbuffers::build<bool>(builder, value.success));
+            flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::GetMail> build<fb::protocol::internal::response::GetMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetMail& value)

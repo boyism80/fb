@@ -130,6 +130,7 @@ table WriteArticle {
   user: uint;
   title: string;
   contents: string;
+  role: ubyte;
 }
 
 

@@ -77,7 +77,7 @@ table GetArticleList {
 
 
 table WriteArticle {
-  success: bool;
+  error: uint;
 }
 
 

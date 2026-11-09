@@ -7389,28 +7389,32 @@ public struct WriteArticle : IFlatbufferObject
   public ArraySegment<byte>? GetContentsBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
   public byte[] GetContentsArray() { return __p.__vector_as_array<byte>(12); }
+  public byte Role { get { int o = __p.__offset(14); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol.@internal.request.raw.WriteArticle> CreateWriteArticle(FlatBufferBuilder builder,
       uint world = 0,
       uint section = 0,
       uint user = 0,
       StringOffset titleOffset = default(StringOffset),
-      StringOffset contentsOffset = default(StringOffset)) {
-    builder.StartTable(5);
+      StringOffset contentsOffset = default(StringOffset),
+      byte role = 0) {
+    builder.StartTable(6);
     WriteArticle.AddContents(builder, contentsOffset);
     WriteArticle.AddTitle(builder, titleOffset);
     WriteArticle.AddUser(builder, user);
     WriteArticle.AddSection(builder, section);
     WriteArticle.AddWorld(builder, world);
+    WriteArticle.AddRole(builder, role);
     return WriteArticle.EndWriteArticle(builder);
   }
 
-  public static void StartWriteArticle(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartWriteArticle(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddSection(FlatBufferBuilder builder, uint section) { builder.AddUint(1, section, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(2, user, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(3, titleOffset.Value, 0); }
   public static void AddContents(FlatBufferBuilder builder, StringOffset contentsOffset) { builder.AddOffset(4, contentsOffset.Value, 0); }
+  public static void AddRole(FlatBufferBuilder builder, byte role) { builder.AddByte(5, role, 0); }
   public static Offset<fb.protocol.@internal.request.raw.WriteArticle> EndWriteArticle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.request.raw.WriteArticle>(o);
@@ -7428,6 +7432,7 @@ static public class WriteArticleVerify
       && verifier.VerifyField(tablePos, 8 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 10 /*Title*/, false)
       && verifier.VerifyString(tablePos, 12 /*Contents*/, false)
+      && verifier.VerifyField(tablePos, 14 /*Role*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
@@ -11847,17 +11852,17 @@ public struct WriteArticle : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public WriteArticle __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.@internal.response.raw.WriteArticle> CreateWriteArticle(FlatBufferBuilder builder,
-      bool success = false) {
+      uint error = 0) {
     builder.StartTable(1);
-    WriteArticle.AddSuccess(builder, success);
+    WriteArticle.AddError(builder, error);
     return WriteArticle.EndWriteArticle(builder);
   }
 
   public static void StartWriteArticle(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
   public static Offset<fb.protocol.@internal.response.raw.WriteArticle> EndWriteArticle(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.@internal.response.raw.WriteArticle>(o);
@@ -11870,7 +11875,7 @@ static public class WriteArticleVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -82,13 +82,21 @@ namespace Internal.Controllers
                     request.World,
                     request.Section,
                     request.User,
+                    (Role)request.Role,
                     request.Title,
                     request.Contents
                 );
 
                 return new Response.WriteArticle
                 {
-                    Success = success
+                    Error = (uint)(success ? ErrorCode.None : ErrorCode.Unhandled)
+                };
+            }
+            catch (LogicException e)
+            {
+                return new Response.WriteArticle
+                {
+                    Error = (uint)e.Error
                 };
             }
             catch (Exception ex)
@@ -96,7 +104,7 @@ namespace Internal.Controllers
                 _logger.LogError(ex, "Error enqueueing bulletin write");
                 return new Response.WriteArticle
                 {
-                    Success = false
+                    Error = (uint)ErrorCode.Unhandled
                 };
             }
         }
