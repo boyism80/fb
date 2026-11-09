@@ -649,6 +649,16 @@ return {
             hidden_name, tostring(hidden_movable)))
     end,
 
+    verify_base_stat_range = function(me, step)
+        local str, dex, int = me:base_str(), me:base_dex(), me:base_int()
+        local rejected = me:base_str(256) == false and me:base_dex(-1) == false and me:base_int(1000) == false
+        local kept = me:base_str() == str and me:base_dex() == dex and me:base_int() == int
+        local accepted = me:base_str(255) == true and me:base_str() == 255
+        me:base_str(str)
+        report(me, rejected and kept and accepted, step,
+            string.format('rejected=%s kept=%s accepted=%s', tostring(rejected), tostring(kept), tostring(accepted)))
+    end,
+
     verify_demoted = function(me, step, name)
         local you = name2ch(name)
         if you == nil then

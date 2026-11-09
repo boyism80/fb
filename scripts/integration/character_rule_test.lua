@@ -127,5 +127,13 @@ test_suite {
             end
             return true
         end,
+
+        function(ctx)
+            local bot = ctx:bot(0)
+            if run_step(bot, "verify_base_stat_range", "base_stat_range") == false then
+                return fail("a base stat outside 0..255 was accepted or changed the stat")
+            end
+            return true
+        end,
     },
 }
