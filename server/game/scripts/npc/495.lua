@@ -47,10 +47,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:state() == STATE.GHOST then
-                me:state(STATE.NORMAL)
-                me:hp(me:maxhp())
-            end
+            me:revive()
             local lobby = id2map(MAP_ID_LOBBY)
             if lobby then
                 local x = math.random(45, 55)

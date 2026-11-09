@@ -22,9 +22,8 @@ return {
             return
         end
 
-        if you:is(OBJECT_TYPE.CHARACTER) and you:state() == STATE.GHOST then
-            you:state(STATE.NORMAL)
-            you:hp(math.max(30, you:hp()))
+        if you:is(OBJECT_TYPE.CHARACTER) then
+            you:revive()
         end
     end,
 

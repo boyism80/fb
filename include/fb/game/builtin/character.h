@@ -35,6 +35,7 @@ struct character
     static int builtin_drop_escrow_items(lua_State* L);
     static int builtin_hold_lock(lua_State* L);
     static int builtin_state(lua_State* L);
+    static int builtin_revive(lua_State* L);
     static int builtin_mimic(lua_State* L);
     static int builtin_class(lua_State* L);
     static int builtin_promotion(lua_State* L);

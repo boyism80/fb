@@ -115,6 +115,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"drop_escrow_items",            builtin::character::builtin_drop_escrow_items},
 {"hold_lock",                    builtin::character::builtin_hold_lock},
 {"state",                        builtin::character::builtin_state},
+{"revive",                       builtin::character::builtin_revive},
 {"mimic",                        builtin::character::builtin_mimic},
 {"class",                        builtin::character::builtin_class},
 {"promotion",                    builtin::character::builtin_promotion},
@@ -2296,6 +2297,31 @@ int builtin::character::builtin_log_chat(lua_State* L)
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_revive(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto revived  = std::make_shared<bool>(false);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *revived = ch->revive();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*revived);
+        co_return 1;
     };
     return builder.run();
 }

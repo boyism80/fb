@@ -436,6 +436,7 @@ public:
     STATE                                                     state() const;
     STATE                                                     state_to(const fb::game::object& to, STATE state) const;
     void                                                      state(STATE value);
+    bool                                                      revive();
     CLASS                                                     cls() const;
     void                                                      cls(CLASS value);
     uint8_t                                                   promotion() const;

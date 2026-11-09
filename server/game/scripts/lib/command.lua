@@ -1054,9 +1054,7 @@ M.functions = {
             end
             me:base_hp(value)
             me:hp(me:maxhp())
-            if me:state() == STATE.GHOST then
-                me:state(STATE.NORMAL)
-            end
+            me:revive()
             return true
         end,
     },

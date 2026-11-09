@@ -212,17 +212,15 @@ local function buy_secretary(me, npc_obj)
 end
 
 local function revive_ghost(me, npc_obj)
-    if me:state() ~= STATE.GHOST and me:hp() > 0 then
+    if me:state() ~= STATE.GHOST then
         me:dialog(npc_obj, '자네는 잘 살아 있는데?', { prev = false, next = false })
         return
     end
 
     me:dialog(npc_obj, '쯧쯧... 그 사정이 딱하여 딱 한번 도와줄테니, 다시는 이런 일이 없도록 하거라!', { prev = false, next = true })
-    if me:state() ~= STATE.GHOST and me:hp() > 0 then
+    if me:revive() ~= true then
         return
     end
-    me:hp(1)
-    me:state(STATE.NORMAL)
     npc_obj:chat('영은 생을 얻을지어니..')
     me:dialog(npc_obj, '영은 생을 얻을지어니..', { prev = false, next = false })
 end

@@ -1123,6 +1123,18 @@ void character::state(STATE value)
     }
 }
 
+bool character::revive()
+{
+    this->assert_thread();
+
+    if (this->_state != STATE::GHOST)
+        return false;
+
+    this->state(STATE::NORMAL);
+    this->stat.hp(std::max<uint64_t>(this->stat.hp(), fb::model::const_value::death_penalty::revive_hp));
+    return true;
+}
+
 CLASS character::cls() const
 {
     this->assert_thread();
