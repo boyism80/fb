@@ -108,7 +108,6 @@ private:
     MOB_PARTS_MODE                  _parts_mode = MOB_PARTS_MODE::PARTS;
     bool                            _destroying = false;
     const spawn_type                _spawn_type;
-    std::shared_ptr<fb::game::map>  _summon_reservation;
 
 public:
     const std::weak_ptr<character> owner;
@@ -134,6 +133,8 @@ private:
     bool                            cover_blocks_move(const fb::game::map& map, const fb::model::point16_t& from, const fb::model::point16_t& to) const;
     void                            hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
     void                            notify_damage(const std::shared_ptr<life>& attacker);
+    void                            on_map_entered(fb::game::map& map) override;
+    void                            on_map_left(fb::game::map& map) override;
     void                            unlink_part(mob& part);
     [[nodiscard]] async::task<void> drop_model_items(const fb::model::mob& model, const fb::model::point16_t& position, std::vector<uint32_t>& oids);
     [[nodiscard]] async::task<void> drop_held_items(std::vector<uint32_t>& oids);
@@ -148,8 +149,6 @@ public:
 public:
     // clang-format off
     [[nodiscard]] async::task<void> action(fb::model::datetime now);
-    using object::map;
-    [[nodiscard]] async::task<bool> map(map_ptr map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override;
     async::task<void>               attack(DURATION duration = DURATION::ATTACK) override final;
     const fb::model::datetime&      action_time() const;
     void                            action_time(const fb::model::datetime& dt);

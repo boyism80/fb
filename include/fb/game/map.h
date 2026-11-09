@@ -139,8 +139,8 @@ public:
     virtual bool                        begin_destroy();
     uint32_t                            character_count() const;
     bool                                spawnable_summon() const;
-    bool                                try_reserve_summon();
-    void                                release_summon();
+    void                                on_summon_enter();
+    void                                on_summon_leave();
     async::task<bool>                   kick(character& ch) const;
     // clang-format on
 

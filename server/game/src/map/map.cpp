@@ -550,20 +550,19 @@ bool map::spawnable_summon() const
     return this->_summoned_count.load(std::memory_order_relaxed) < MAX_SUMMONED_MOBS;
 }
 
-bool map::try_reserve_summon()
+void map::on_summon_enter()
 {
-    auto count = this->_summoned_count.load(std::memory_order_relaxed);
-    while (count < MAX_SUMMONED_MOBS)
-    {
-        if (this->_summoned_count.compare_exchange_weak(count, count + 1, std::memory_order_relaxed))
-            return true;
-    }
-    return false;
+    this->_summoned_count.fetch_add(1, std::memory_order_relaxed);
 }
 
-void map::release_summon()
+void map::on_summon_leave()
 {
-    this->_summoned_count.fetch_sub(1, std::memory_order_relaxed);
+    auto previous = this->_summoned_count.load(std::memory_order_relaxed);
+    while (previous > 0)
+    {
+        if (this->_summoned_count.compare_exchange_weak(previous, previous - 1, std::memory_order_relaxed))
+            return;
+    }
 }
 
 async::task<bool> map::kick(character& ch) const

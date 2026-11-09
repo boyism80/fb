@@ -2804,6 +2804,9 @@ async::task<std::shared_ptr<fb::game::mob>> character::spawn_mob(const fb::model
     if (map == nullptr)
         co_return nullptr;
 
+    if (type == mob::spawn_type::SUMMONED && map->spawnable_summon() == false)
+        co_return nullptr;
+
     auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr, .type = type};
     auto& mob_model = static_cast<const fb::model::mob&>(model);
     auto  mob       = std::make_shared<fb::game::mob>(this->server, mob_model, params);

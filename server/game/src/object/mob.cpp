@@ -260,8 +260,6 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
 
 mob::~mob()
 {
-    if (this->_summon_reservation != nullptr)
-        this->_summon_reservation->release_summon();
     if (auto rezen = this->_rezen.lock(); rezen != nullptr)
         rezen->decrease();
 }
@@ -298,53 +296,6 @@ void mob::detach_owner()
         co_return;
     };
     builder.enqueue();
-}
-
-async::task<bool> mob::map(map_ptr next_map, std::optional<fb::model::point16_t> position, map_options options)
-{
-    if (this->_spawn_type != spawn_type::SUMMONED)
-        co_return co_await object::map(next_map, position, options);
-
-    auto previous = object::map();
-    if (previous == next_map)
-        co_return co_await object::map(next_map, position, options);
-
-    if (next_map != nullptr && !next_map->try_reserve_summon())
-        co_return false;
-
-    auto moved = false;
-    try
-    {
-        moved = co_await object::map(next_map, position, options);
-    }
-    catch (...)
-    {
-        if (next_map != nullptr)
-            next_map->release_summon();
-        throw;
-    }
-
-    auto actual = object::map();
-    if (this->_summon_reservation != nullptr && this->_summon_reservation != actual)
-    {
-        this->_summon_reservation->release_summon();
-        this->_summon_reservation.reset();
-    }
-
-    if (next_map != nullptr && actual != next_map)
-        next_map->release_summon();
-
-    if (actual != nullptr && this->_summon_reservation == nullptr)
-    {
-        if (actual != next_map && !actual->try_reserve_summon())
-        {
-            std::ignore = co_await object::map(nullptr);
-            co_return false;
-        }
-        this->_summon_reservation = actual;
-    }
-
-    co_return moved&& actual == next_map;
 }
 
 async::task<void> mob::action(fb::model::datetime now)
@@ -1059,6 +1010,18 @@ void mob::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damag
 
     this->invincible(true);
     settle.dead_mobs.push_back(this->shared_from_this_as<mob>());
+}
+
+void mob::on_map_entered(fb::game::map& map)
+{
+    if (this->_spawn_type == spawn_type::SUMMONED)
+        map.on_summon_enter();
+}
+
+void mob::on_map_left(fb::game::map& map)
+{
+    if (this->_spawn_type == spawn_type::SUMMONED)
+        map.on_summon_leave();
 }
 
 void mob::notify_damage(const std::shared_ptr<life>& attacker)
