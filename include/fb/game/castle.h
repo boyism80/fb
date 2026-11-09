@@ -5,6 +5,7 @@
 #include <fb/lua.h>
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/socket.h>
 
 #include <chrono>
@@ -50,6 +51,8 @@ public:
         uint32_t remaining = 0;
     };
 
+    using castle_dto = fb::protocol::internal::Castle;
+
 private:
     server&                             _server;
     fb::model::enum_value::DIVINE_BEAST _divine_beast;
@@ -79,7 +82,7 @@ public:
     bool                                siege_pending() const;
     const std::optional<uint64_t>&      siege_id() const;
     std::optional<uint32_t>             siege_remaining_seconds() const;
-    bool                                apply(uint64_t revision, const std::optional<uint32_t>& owner_clan_id, const std::optional<uint64_t>& siege_id, uint32_t remaining, uint32_t active_remaining, bool ended);
+    bool                                load(const castle_dto& row);
     siege_phase                         phase() const;
     void                                phase(siege_phase value);
     const std::optional<uint32_t>&      siege_winner() const;
@@ -94,7 +97,7 @@ protected:
 
 private:
     void on_owner_changed(fb::model::enum_value::DIVINE_BEAST divine_beast, const std::optional<uint32_t>& previous);
-    template <typename Row> async::task<void> reflect(const Row& row);
+    async::task<void> reflect(const castle_dto& row);
 
 public:
     explicit container(server& server);

@@ -82,25 +82,20 @@ std::optional<uint32_t> castle::siege_remaining_seconds() const
     return static_cast<uint32_t>(remaining.total_milliseconds() / 1000);
 }
 
-bool castle::apply(uint64_t                       revision,
-                   const std::optional<uint32_t>& owner_clan_id,
-                   const std::optional<uint64_t>& siege_id,
-                   uint32_t                       remaining,
-                   uint32_t                       active_remaining,
-                   bool                           ended)
+bool castle::load(const castle_dto& row)
 {
-    if (revision < this->_revision)
+    if (row.revision < this->_revision)
         return false;
 
     auto now        = this->_server.now();
-    auto same_round = this->_siege_id == siege_id;
+    auto same_round = this->_siege_id == row.siege_id;
 
-    this->_revision           = revision;
-    this->_owner_clan_id      = owner_clan_id;
-    this->_siege_id           = siege_id;
-    this->_siege_end_at       = now + fb::model::timespan(std::chrono::seconds(remaining));
-    this->_siege_active_until = now + fb::model::timespan(std::chrono::seconds(active_remaining));
-    if (ended)
+    this->_revision           = row.revision;
+    this->_owner_clan_id      = row.owner_clan_id;
+    this->_siege_id           = row.siege_id;
+    this->_siege_end_at       = now + fb::model::timespan(std::chrono::seconds(row.siege_remaining));
+    this->_siege_active_until = now + fb::model::timespan(std::chrono::seconds(row.siege_active_remaining));
+    if (row.siege_ended)
     {
         this->_phase        = siege_phase::ENDED;
         this->_siege_winner = std::nullopt;

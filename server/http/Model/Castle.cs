@@ -1,5 +1,6 @@
 using Fb.Model.EnumValue;
 using StackExchange.Redis;
+using Protocol = fb.protocol.@internal;
 using Response = fb.protocol.@internal.response;
 
 namespace Http.Model
@@ -56,20 +57,27 @@ namespace Http.Model
             return (uint)Math.Ceiling((SiegeEndAt.Value + SiegeGrace - now).TotalSeconds);
         }
 
-        public Response.UpdatedCastle ToUpdated(uint host, bool started = false)
+        public Protocol.Castle ToProtocol(DateTime now)
         {
-            var now = DateTime.UtcNow;
-            return new Response.UpdatedCastle
+            return new Protocol.Castle
             {
-                Host = host,
                 DivineBeast = DivineBeast,
                 OwnerClanId = OwnerClan,
                 SiegeId = SiegeId,
                 SiegeRemaining = SiegeRemaining(now),
                 SiegeActiveRemaining = SiegeActiveRemaining(now),
                 SiegeEnded = SiegeEnded,
+                Revision = Revision
+            };
+        }
+
+        public Response.UpdatedCastle ToUpdated(uint host, bool started = false)
+        {
+            return new Response.UpdatedCastle
+            {
+                Host = host,
+                Castle = ToProtocol(DateTime.UtcNow),
                 SiegeStarted = started,
-                Revision = Revision,
                 Error = (uint)ErrorCode.None
             };
         }

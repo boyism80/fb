@@ -386,14 +386,8 @@ table CastleList {
 
 table UpdatedCastle {
   host: uint;
-  divine_beast: ubyte;
-  owner_clan_id: uint?;
-  siege_id: ulong?;
-  siege_remaining: uint;
-  siege_active_remaining: uint;
-  siege_ended: bool = false;
+  castle: fb.protocol.internal.Castle;
   siege_started: bool = false;
-  revision: ulong;
   error: uint;
 }
 

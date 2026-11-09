@@ -46,12 +46,7 @@ async::task<castle::container::entity_ptr> castle::container::fetch(uint32_t id)
         auto castle =
             this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(entry.divine_beast),
                                                  entry.owner_clan_id);
-        castle->apply(entry.revision,
-                      entry.owner_clan_id,
-                      entry.siege_id,
-                      entry.siege_remaining,
-                      entry.siege_active_remaining,
-                      entry.siege_ended);
+        castle->load(entry);
         co_return castle;
     }
 
@@ -75,7 +70,7 @@ async::task<void> castle::container::load_all()
     }
 }
 
-template <typename Row> async::task<void> castle::container::reflect(const Row& row)
+async::task<void> castle::container::reflect(const castle_dto& row)
 {
     auto previous = std::optional<uint32_t>{};
     {
@@ -84,12 +79,7 @@ template <typename Row> async::task<void> castle::container::reflect(const Row& 
             co_return;
 
         previous = guard.value()->owner_clan_id();
-        if (guard.value()->apply(row.revision,
-                                 row.owner_clan_id,
-                                 row.siege_id,
-                                 row.siege_remaining,
-                                 row.siege_active_remaining,
-                                 row.siege_ended) == false)
+        if (guard.value()->load(row) == false)
             co_return;
     }
 
@@ -102,7 +92,7 @@ async::task<void> castle::container::on_updated(const internal_resp::UpdatedCast
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
         co_return;
 
-    co_await this->reflect(resp);
+    co_await this->reflect(resp.castle);
 }
 
 async::task<void> castle::container::refresh()
@@ -191,7 +181,7 @@ async::task<castle::siege_start_result> castle::container::start_siege(fb::model
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
 
-    co_await this->reflect(resp);
+    co_await this->reflect(resp.castle);
 
     auto result = castle::siege_start_result{};
     {
@@ -233,7 +223,7 @@ async::task<bool> castle::container::finish_siege(fb::model::enum_value::DIVINE_
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
 
-    co_await this->reflect(resp);
+    co_await this->reflect(resp.castle);
 
     auto guard = co_await this->enter_write(id);
     if (guard.value() == nullptr)
@@ -296,7 +286,7 @@ async::task<castle::siege_end_result> castle::container::end_siege(fb::model::en
     }
 
     if (resp.has_value())
-        co_await this->reflect(resp.value());
+        co_await this->reflect(resp.value().castle);
 
     auto guard = co_await this->enter_write(id);
     if (guard.value() == nullptr)

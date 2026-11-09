@@ -49,17 +49,8 @@ namespace Internal.Controllers
                 var castles = new List<Protocol.Castle>();
                 foreach (var divineBeast in AllDivineBeasts)
                 {
-                    var castle = await _dbContext.Castle.Get(world, divineBeast);
-                    castles.Add(new Protocol.Castle
-                    {
-                        DivineBeast = divineBeast,
-                        OwnerClanId = castle?.OwnerClan,
-                        SiegeId = castle?.SiegeId,
-                        SiegeRemaining = castle?.SiegeRemaining(now) ?? 0,
-                        SiegeActiveRemaining = castle?.SiegeActiveRemaining(now) ?? 0,
-                        SiegeEnded = castle?.SiegeEnded ?? false,
-                        Revision = castle?.Revision ?? 0
-                    });
+                    var castle = await Load(world, divineBeast);
+                    castles.Add(castle.ToProtocol(now));
                 }
 
                 return new Response.CastleList

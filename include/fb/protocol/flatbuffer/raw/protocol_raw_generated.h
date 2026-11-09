@@ -14751,42 +14751,18 @@ struct UpdatedCastle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UpdatedCastleBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_HOST = 4,
-    VT_DIVINE_BEAST = 6,
-    VT_OWNER_CLAN_ID = 8,
-    VT_SIEGE_ID = 10,
-    VT_SIEGE_REMAINING = 12,
-    VT_SIEGE_ACTIVE_REMAINING = 14,
-    VT_SIEGE_ENDED = 16,
-    VT_SIEGE_STARTED = 18,
-    VT_REVISION = 20,
-    VT_ERROR = 22
+    VT_CASTLE = 6,
+    VT_SIEGE_STARTED = 8,
+    VT_ERROR = 10
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
   }
-  uint8_t divine_beast() const {
-    return GetField<uint8_t>(VT_DIVINE_BEAST, 0);
-  }
-  const nullable::nullable_uint *owner_clan_id() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_OWNER_CLAN_ID);
-  }
-  const nullable::nullable_ulong *siege_id() const {
-    return GetPointer<const nullable::nullable_ulong *>(VT_SIEGE_ID);
-  }
-  uint32_t siege_remaining() const {
-    return GetField<uint32_t>(VT_SIEGE_REMAINING, 0);
-  }
-  uint32_t siege_active_remaining() const {
-    return GetField<uint32_t>(VT_SIEGE_ACTIVE_REMAINING, 0);
-  }
-  bool siege_ended() const {
-    return GetField<uint8_t>(VT_SIEGE_ENDED, 0) != 0;
+  const fb::protocol::internal::raw::Castle *castle() const {
+    return GetPointer<const fb::protocol::internal::raw::Castle *>(VT_CASTLE);
   }
   bool siege_started() const {
     return GetField<uint8_t>(VT_SIEGE_STARTED, 0) != 0;
-  }
-  uint64_t revision() const {
-    return GetField<uint64_t>(VT_REVISION, 0);
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -14794,16 +14770,9 @@ struct UpdatedCastle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
-           VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
-           VerifyOffset(verifier, VT_OWNER_CLAN_ID) &&
-           verifier.VerifyTable(owner_clan_id()) &&
-           VerifyOffset(verifier, VT_SIEGE_ID) &&
-           verifier.VerifyTable(siege_id()) &&
-           VerifyField<uint32_t>(verifier, VT_SIEGE_REMAINING, 4) &&
-           VerifyField<uint32_t>(verifier, VT_SIEGE_ACTIVE_REMAINING, 4) &&
-           VerifyField<uint8_t>(verifier, VT_SIEGE_ENDED, 1) &&
+           VerifyOffset(verifier, VT_CASTLE) &&
+           verifier.VerifyTable(castle()) &&
            VerifyField<uint8_t>(verifier, VT_SIEGE_STARTED, 1) &&
-           VerifyField<uint64_t>(verifier, VT_REVISION, 8) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -14816,29 +14785,11 @@ struct UpdatedCastleBuilder {
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(UpdatedCastle::VT_HOST, host, 0);
   }
-  void add_divine_beast(uint8_t divine_beast) {
-    fbb_.AddElement<uint8_t>(UpdatedCastle::VT_DIVINE_BEAST, divine_beast, 0);
-  }
-  void add_owner_clan_id(::flatbuffers::Offset<nullable::nullable_uint> owner_clan_id) {
-    fbb_.AddOffset(UpdatedCastle::VT_OWNER_CLAN_ID, owner_clan_id);
-  }
-  void add_siege_id(::flatbuffers::Offset<nullable::nullable_ulong> siege_id) {
-    fbb_.AddOffset(UpdatedCastle::VT_SIEGE_ID, siege_id);
-  }
-  void add_siege_remaining(uint32_t siege_remaining) {
-    fbb_.AddElement<uint32_t>(UpdatedCastle::VT_SIEGE_REMAINING, siege_remaining, 0);
-  }
-  void add_siege_active_remaining(uint32_t siege_active_remaining) {
-    fbb_.AddElement<uint32_t>(UpdatedCastle::VT_SIEGE_ACTIVE_REMAINING, siege_active_remaining, 0);
-  }
-  void add_siege_ended(bool siege_ended) {
-    fbb_.AddElement<uint8_t>(UpdatedCastle::VT_SIEGE_ENDED, static_cast<uint8_t>(siege_ended), 0);
+  void add_castle(::flatbuffers::Offset<fb::protocol::internal::raw::Castle> castle) {
+    fbb_.AddOffset(UpdatedCastle::VT_CASTLE, castle);
   }
   void add_siege_started(bool siege_started) {
     fbb_.AddElement<uint8_t>(UpdatedCastle::VT_SIEGE_STARTED, static_cast<uint8_t>(siege_started), 0);
-  }
-  void add_revision(uint64_t revision) {
-    fbb_.AddElement<uint64_t>(UpdatedCastle::VT_REVISION, revision, 0);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(UpdatedCastle::VT_ERROR, error, 0);
@@ -14857,26 +14808,14 @@ struct UpdatedCastleBuilder {
 inline ::flatbuffers::Offset<UpdatedCastle> CreateUpdatedCastle(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t host = 0,
-    uint8_t divine_beast = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> owner_clan_id = 0,
-    ::flatbuffers::Offset<nullable::nullable_ulong> siege_id = 0,
-    uint32_t siege_remaining = 0,
-    uint32_t siege_active_remaining = 0,
-    bool siege_ended = false,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Castle> castle = 0,
     bool siege_started = false,
-    uint64_t revision = 0,
     uint32_t error = 0) {
   UpdatedCastleBuilder builder_(_fbb);
-  builder_.add_revision(revision);
   builder_.add_error(error);
-  builder_.add_siege_active_remaining(siege_active_remaining);
-  builder_.add_siege_remaining(siege_remaining);
-  builder_.add_siege_id(siege_id);
-  builder_.add_owner_clan_id(owner_clan_id);
+  builder_.add_castle(castle);
   builder_.add_host(host);
   builder_.add_siege_started(siege_started);
-  builder_.add_siege_ended(siege_ended);
-  builder_.add_divine_beast(divine_beast);
   return builder_.Finish();
 }
 
