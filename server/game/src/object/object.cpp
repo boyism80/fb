@@ -119,6 +119,11 @@ bool object::super_hide() const
     return false;
 }
 
+bool object::hidden() const
+{
+    return false;
+}
+
 bool object::hidden(const object& target) const
 {
     return false;
@@ -774,7 +779,7 @@ fb::model::point16_t object::front_position(int step) const
     return this->side_position(this->_direction, step);
 }
 
-std::shared_ptr<fb::game::object> object::side(DIRECTION direction, OBJECT_TYPE type) const
+std::shared_ptr<fb::game::object> object::side(DIRECTION direction, OBJECT_TYPE type, int range) const
 {
     this->assert_thread();
 
@@ -782,19 +787,25 @@ std::shared_ptr<fb::game::object> object::side(DIRECTION direction, OBJECT_TYPE 
     if (map == nullptr)
         return nullptr;
 
-    auto front = side_position(direction);
-    if (map->in_ground(front) == false)
-        return nullptr;
+    auto result = std::shared_ptr<fb::game::object>(nullptr);
+    for (auto step = 1; step <= range && result == nullptr; step++)
+    {
+        auto front = this->side_position(direction, step);
+        if (map->in_ground(front) == false)
+            break;
 
-    auto nears = map->nears(this->_position, type);
-    auto found = std::find_if(nears.begin(), nears.end(), [this, &front](auto x) {
-        if (x->hidden(*this))
-            return false;
+        auto nears = map->nears(front, type);
+        auto found = std::find_if(nears.begin(), nears.end(), [this, &front](auto x) {
+            if (x->hidden(*this))
+                return false;
 
-        return x->position() == front;
-    });
+            return x->position() == front;
+        });
+        if (found != nears.end())
+            result = *found;
+    }
 
-    return found != nears.end() ? *found : nullptr;
+    return result;
 }
 
 std::vector<std::shared_ptr<fb::game::object>> object::sides(DIRECTION direction, OBJECT_TYPE type) const
@@ -845,11 +856,11 @@ std::vector<std::shared_ptr<fb::game::object>> object::sides(DIRECTION direction
     return std::move(result);
 }
 
-std::shared_ptr<fb::game::object> object::forward(OBJECT_TYPE type) const
+std::shared_ptr<fb::game::object> object::forward(OBJECT_TYPE type, int range) const
 {
     this->assert_thread();
 
-    return this->side(this->_direction, type);
+    return this->side(this->_direction, type, range);
 }
 
 std::vector<std::shared_ptr<fb::game::object>> object::forwards(OBJECT_TYPE type) const

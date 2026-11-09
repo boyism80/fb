@@ -443,33 +443,7 @@ local function on_attack(me, additional_attack)
     local x, y = me:position()
     local direction = me:direction()
     if is_bow then
-        local range = 14
-        local target = nil
-        local width = map:width()
-        local height = map:height()
-        for i = 1, range do
-            local obj_x = x
-            local obj_y = y
-            if direction == DIRECTION.LEFT then
-                obj_x = obj_x - i
-            elseif direction == DIRECTION.RIGHT then
-                obj_x = obj_x + i
-            elseif direction == DIRECTION.TOP then
-                obj_y = obj_y - i
-            else
-                obj_y = obj_y + i
-            end
-
-            if obj_x < 0 or obj_x > width or obj_y < 0 or obj_y > height then
-                break
-            end
-
-            target = map:at(obj_x, obj_y, enemy_type)
-            if target ~= nil then
-                break
-            end
-        end
-
+        local target = me:front(enemy_type, 14)
         if target ~= nil and not castle_lib.blocks_siege_friendly_fire(me, target) and not lib.is_miss(me, target, 'front') then
             lib.damage(me, target, nil, 701)
             count = count + 1

@@ -826,9 +826,14 @@ bool mob::push_item(std::shared_ptr<fb::game::item> item)
     return true;
 }
 
-bool mob::hidden(const fb::game::object& target) const
+bool mob::hidden() const
 {
     return this->_hidden;
+}
+
+bool mob::hidden(const fb::game::object& target) const
+{
+    return this->hidden();
 }
 
 void mob::hidden(bool enabled)

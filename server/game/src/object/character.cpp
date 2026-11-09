@@ -2888,16 +2888,17 @@ void character::super_hide(bool enabled)
     }
 }
 
+bool character::hidden() const
+{
+    return this->super_hide() && this->role() > ROLE::USER;
+}
+
 bool character::hidden(const fb::game::object& target) const
 {
-    if (this->super_hide() == false)
-        return false;
-
-    if (target.is(OBJECT_TYPE::CHARACTER) == false)
-        return this->role() > ROLE::USER;
-
-    auto& ch = static_cast<const fb::game::character&>(target);
-    return this->role() > ch.role();
+    if (target.is(OBJECT_TYPE::CHARACTER))
+        return this->super_hide() && this->role() > static_cast<const fb::game::character&>(target).role();
+    else
+        return this->hidden();
 }
 
 bool character::hidden(ROLE role) const

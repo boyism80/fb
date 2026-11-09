@@ -603,7 +603,7 @@ int builtin::map::builtin_at(lua_State* L)
         auto nears = map->nears(fb::model::point16_t{x, y}, type);
         for (const auto& obj : nears)
         {
-            if (obj->position() == position)
+            if (obj->position() == position && obj->hidden() == false)
             {
                 *result_holder = obj;
                 break;

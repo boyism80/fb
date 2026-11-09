@@ -1092,12 +1092,13 @@ int builtin::object::builtin_front(lua_State* L)
         return 0;
 
     auto filter   = lua->toenum(2, OBJECT_TYPE::OBJECT);
+    auto range    = lua->tointeger(3, 1);
     auto front    = std::make_shared<fb::game::object::object_ptr>();
     auto weak     = obj->weak_from_this_as<fb::game::object>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *front = obj->forward(filter);
+        *front = obj->forward(filter, range);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

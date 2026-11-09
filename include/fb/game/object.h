@@ -140,6 +140,7 @@ public:
     virtual void                                            update_external();
     virtual void                                            update_external(object& you);
     virtual bool                                            super_hide() const;
+    virtual bool                                            hidden() const;
     virtual bool                                            hidden(const object& target) const;
     virtual void                                            chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
     const fb::model::point16_t&                             position() const;
@@ -162,9 +163,9 @@ public:
     fb::model::area<uint16_t>                               sight_area() const;
     fb::model::point16_t                                    side_position(DIRECTION direction, int step = 1) const;
     fb::model::point16_t                                    front_position(int step = 1) const;
-    object_ptr                                              side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    object_ptr                                              side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT, int range = 1) const;
     std::vector<object_ptr>                                 sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    object_ptr                                              forward(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    object_ptr                                              forward(OBJECT_TYPE type = OBJECT_TYPE::OBJECT, int range = 1) const;
     std::vector<object_ptr>                                 forwards(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     double                                                  distance(const object& right) const;
     uint32_t                                                distance_sqrt(const object& right) const;

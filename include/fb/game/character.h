@@ -330,10 +330,10 @@ public:
     ~character();
 
 private:
-    bool begin_transfer();
-    void cancel_transfer(std::string_view message);
-    void
-    hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
+    // clang-format off
+    bool                            begin_transfer();
+    void                            cancel_transfer(std::string_view message);
+    void                            hit(uint64_t value, const std::shared_ptr<life>& attacker, const damage_opts& opts, damage_settle& settle) override;
     uint64_t                        limited_exp(uint64_t exp) const;
     fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
     void                            camera_pivot() const;
@@ -349,6 +349,7 @@ private:
     async::task<void>               settle_kills(mob_vector dead);
     void                            enqueue_death_warp();
     [[nodiscard]] async::task<void> ride(mob& horse, uint16_t ridable_id = 1);
+    // clang-format on
 
 protected:
     void on_direction_changed() override final;
@@ -394,6 +395,7 @@ public:
     async::task<void>                        damage_to(const damage_list& targets, const damage_opts& opts) override final;
     void                                     update_id() override final;
     bool                                     super_hide() const override final;
+    bool                                     hidden() const override final;
     bool                                     hidden(const fb::game::object& target) const override final;
     std::shared_ptr<fb::game::appearance>    appearance() const override;
     bool                                     portrait() const override;

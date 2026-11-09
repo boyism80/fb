@@ -163,6 +163,7 @@ public:
     const item_vector_t&            items() const;
     bool                            push_item(std::shared_ptr<fb::game::item> item);
     fb::game::rezen*                spawn_rezen() const;
+    bool                            hidden() const override final;
     bool                            hidden(const fb::game::object& target) const override final;
     void                            hidden(bool enabled);
     appearance_ptr                  appearance() const override;
