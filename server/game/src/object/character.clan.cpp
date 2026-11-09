@@ -34,6 +34,27 @@ void character::clan::reset()
     this->_owner.update_external();
 }
 
+async::task<void> character::clan::leave(std::string message)
+{
+    this->_owner.assert_thread();
+
+    this->reset();
+    this->_owner.message(message, MESSAGE_TYPE::NOTIFY);
+    co_await this->on_changed();
+}
+
+async::task<void> character::clan::on_changed()
+{
+    this->_owner.assert_thread();
+
+    auto lua = this->_owner.server.lua.open("scripts/interaction.lua", "on_clan_changed");
+    if (lua)
+    {
+        lua->pushobject(this->_owner);
+        std::ignore = co_await fb::lua::call(std::move(lua), this->_owner.weak_from_this_as<character>(), 1);
+    }
+}
+
 async::task<std::optional<bool>> character::clan::transfer_money(uint32_t clan_id,
                                                                  int64_t  clan_delta,
                                                                  int64_t  money_delta)

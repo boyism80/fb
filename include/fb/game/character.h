@@ -148,6 +148,8 @@ public:
         const std::optional<uint32_t>&                 id() const;
         void                                           id(std::optional<uint32_t> value);
         void                                           reset();
+        async::task<void>                              leave(std::string message);
+        async::task<void>                              on_changed();
         [[nodiscard]] async::task<std::optional<bool>> transfer_money(uint32_t clan_id, int64_t clan_delta, int64_t money_delta);
         async::task<void>                              settle_money(uint64_t request_id);
         void                                           complete_money(uint64_t request_id, bool applied);

@@ -96,7 +96,7 @@ protected:
     async::task<entity_ptr> fetch(uint32_t id) override;
 
 private:
-    void on_owner_changed(fb::model::enum_value::DIVINE_BEAST divine_beast, const std::optional<uint32_t>& previous);
+    void              on_owner_changed(const std::optional<uint32_t>& previous);
     async::task<void> reflect(const castle_dto& row);
 
 public:

@@ -324,16 +324,8 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
     {
         auto message = std::format(_TEXT(MESSAGE_CLAN_DISBANDED), clan_name);
         this->_server.characters.foreach_enqueue(
-            [this, message](auto& ch) -> async::task<void> {
-                ch->clan.reset();
-                ch->message(message, MESSAGE_TYPE::NOTIFY);
-
-                auto lua = this->_server.lua.open("scripts/interaction.lua", "on_clan_left");
-                if (lua)
-                {
-                    lua->pushobject(ch);
-                    std::ignore = co_await lua->call(1);
-                }
+            [message](auto& ch) -> async::task<void> {
+                co_await ch->clan.leave(message);
             },
             members);
     }
@@ -547,18 +539,7 @@ async::task<void> clan::container::on_leave(uint32_t                   clan_id,
 
         auto ptr = weak.lock();
         if (ptr != nullptr)
-        {
-            ptr->clan.reset();
-            ptr->update_external();
-            ptr->message(_TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
-
-            auto lua = this->_server.lua.open("scripts/interaction.lua", "on_clan_left");
-            if (lua)
-            {
-                lua->pushobject(ptr);
-                std::ignore = co_await lua->call(1);
-            }
-        }
+            co_await ptr->clan.leave(_TEXT(MESSAGE_CLAN_LEFT));
 
         if (before != nullptr)
             co_await before->switching();
@@ -632,18 +613,7 @@ async::task<void> clan::container::on_kick(uint32_t                   clan_id,
 
         auto ptr = weak.lock();
         if (ptr != nullptr)
-        {
-            ptr->clan.reset();
-            ptr->update_external();
-            ptr->message(_TEXT(MESSAGE_CLAN_KICKED), MESSAGE_TYPE::NOTIFY);
-
-            auto lua = this->_server.lua.open("scripts/interaction.lua", "on_clan_left");
-            if (lua)
-            {
-                lua->pushobject(ptr);
-                std::ignore = co_await lua->call(1);
-            }
-        }
+            co_await ptr->clan.leave(_TEXT(MESSAGE_CLAN_KICKED));
 
         if (before != nullptr)
             co_await before->switching();
@@ -780,15 +750,9 @@ async::task<void> clan::container::on_unally(uint32_t                clan_id,
         co_await this->reload(related_clan_id.value());
 
     this->_server.characters.foreach_enqueue(
-        [this](auto& member) -> async::task<void> {
+        [](auto& member) -> async::task<void> {
             member->update_external();
-
-            auto lua = this->_server.lua.open("scripts/interaction.lua", "on_clan_unallied");
-            if (lua)
-            {
-                lua->pushobject(member);
-                std::ignore = co_await lua->call(1);
-            }
+            co_await member->clan.on_changed();
         },
         members);
 }

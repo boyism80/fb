@@ -401,6 +401,11 @@ local function matchmaking_clear_timer(me)
     me:timer(0, TIMER_TYPE.OFF)
 end
 
+local function clan_changed(me)
+    castle_lib.strip_all(me)
+    castle_lib.evict(me)
+end
+
 local function on_attack(me, additional_attack)
     local map = me:map()
     if map == nil then
@@ -678,22 +683,10 @@ return {
 
     on_npc_chat = on_npc_chat,
 
-    on_clan_left = function(me)
-        castle_lib.evict(me)
-        castle_lib.strip_all(me)
-    end,
-
-    on_clan_unallied = function(me)
-        castle_lib.evict(me)
-    end,
-
-    on_castle_lost = function(me, divine_beast)
-        castle_lib.strip(me, divine_beast)
-    end,
+    on_clan_changed = clan_changed,
 
     on_login = function(me, first_login, transfer)
-        castle_lib.strip_all(me)
-        castle_lib.evict(me)
+        clan_changed(me)
         if transfer then
             return
         end

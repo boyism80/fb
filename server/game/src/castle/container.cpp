@@ -84,7 +84,7 @@ async::task<void> castle::container::reflect(const castle_dto& row)
     }
 
     if (previous != row.owner_clan_id)
-        this->on_owner_changed(static_cast<fb::model::enum_value::DIVINE_BEAST>(row.divine_beast), previous);
+        this->on_owner_changed(previous);
 }
 
 async::task<void> castle::container::on_updated(const internal_resp::UpdatedCastle& resp)
@@ -125,8 +125,7 @@ async::task<void> castle::container::refresh()
     }
 }
 
-void castle::container::on_owner_changed(fb::model::enum_value::DIVINE_BEAST divine_beast,
-                                         const std::optional<uint32_t>&      previous)
+void castle::container::on_owner_changed(const std::optional<uint32_t>& previous)
 {
     if (previous.has_value() == false)
         return;
@@ -141,14 +140,8 @@ void castle::container::on_owner_changed(fb::model::enum_value::DIVINE_BEAST div
     }
 
     this->_server.characters.foreach_enqueue(
-        [this, divine_beast](auto& ch) -> async::task<void> {
-            auto lua = this->_server.lua.open("scripts/interaction.lua", "on_castle_lost");
-            if (lua)
-            {
-                lua->pushobject(ch);
-                lua->pushinteger(static_cast<int>(divine_beast));
-                std::ignore = co_await lua->call(2);
-            }
+        [](auto& ch) -> async::task<void> {
+            co_await ch->clan.on_changed();
         },
         members);
 }
