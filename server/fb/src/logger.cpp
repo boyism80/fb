@@ -83,15 +83,6 @@ void fb::logger::flush(std::chrono::milliseconds timeout)
 
 void fb::logger::writer_run()
 {
-    try
-    {
-        std::filesystem::create_directories("logs");
-    }
-    catch (...)
-    {
-        return;
-    }
-
     auto  current = std::string{};
     FILE* fp      = nullptr;
 
@@ -111,34 +102,39 @@ void fb::logger::writer_run()
         auto path = daily_path(this->_service);
         if (path != current)
         {
-            if (fp != nullptr)
-            {
-                std::fclose(fp);
-                fp = nullptr;
-            }
+            auto error = std::error_code{};
+            std::filesystem::create_directories("logs", error);
 #ifdef _WIN32
-            fp = _fsopen(path.c_str(), "a", _SH_DENYNO);
+            auto next = _fsopen(path.c_str(), "a", _SH_DENYNO);
 #else
-            fp = std::fopen(path.c_str(), "a");
+            auto next = std::fopen(path.c_str(), "a");
 #endif
-            if (fp == nullptr)
-                return;
-            std::fseek(fp, 0, SEEK_END);
-            if (std::ftell(fp) == 0)
+            if (next != nullptr)
             {
-                static constexpr unsigned char bom[] = {0xEF, 0xBB, 0xBF};
-                std::fwrite(bom, 1, sizeof(bom), fp);
+                if (fp != nullptr)
+                    std::fclose(fp);
+
+                std::fseek(next, 0, SEEK_END);
+                if (std::ftell(next) == 0)
+                {
+                    static constexpr unsigned char bom[] = {0xEF, 0xBB, 0xBF};
+                    std::fwrite(bom, 1, sizeof(bom), next);
+                }
+                fp      = next;
+                current = std::move(path);
+                fb::crash::rotate();
             }
-            current = std::move(path);
-            fb::crash::rotate();
         }
 
-        for (const auto& line : batch)
+        if (fp != nullptr)
         {
-            std::fwrite(line.data(), 1, line.size(), fp);
-            std::fputc('\n', fp);
+            for (const auto& line : batch)
+            {
+                std::fwrite(line.data(), 1, line.size(), fp);
+                std::fputc('\n', fp);
+            }
+            std::fflush(fp);
         }
-        std::fflush(fp);
         {
             auto lock       = std::unique_lock(this->_queue_mutex);
             this->_written += batch.size();
