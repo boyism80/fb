@@ -90,6 +90,19 @@ function M.store_item_list(me, npc)
     return true
 end
 
+local function check_weapon_alias(name)
+    local cp949 = CP949(name)
+    if #cp949 < 4 then
+        return 'short'
+    elseif #cp949 > 32 then
+        return 'long'
+    elseif not assert_korean(cp949) or has_blocked_word(name) or name2item(name) ~= nil then
+        return 'invalid'
+    else
+        return nil
+    end
+end
+
 function M.rename_weapon(me, npc, from, to)
     local model = name2item(from)
     if model == nil then
@@ -113,29 +126,22 @@ function M.rename_weapon(me, npc, from, to)
         return true
     end
 
-    local cp949 = CP949(to)
-    if #cp949 < 4 then
+    local alias_error = check_weapon_alias(to)
+    if alias_error == 'short' then
         npc:chat('이름이 너무 짧습니다.')
-        return true
-    end
-
-    if #cp949 > 32 then
+    elseif alias_error == 'long' then
         npc:chat('이름이 너무 깁니다.')
-        return true
-    end
-
-    if assert_korean(cp949) == false or has_blocked_word(to) or name2item(to) ~= nil then
+    elseif alias_error ~= nil then
         npc:chat('그렇게 바꿀 수 없습니다.')
-        return true
-    end
-
-    local renamed = me:rename_weapon(weapon, to)
-    if renamed == nil then
-        npc:chat(string.format('%s 가지고 있지 않습니다.', name_with(model:name(), '을', '를')))
-    elseif renamed == false then
-        npc:chat('돈이 모자랍니다.')
     else
-        npc:chat(string.format('%s의 이름을 %s 변경했습니다.', from, name_with(to, '으로', '로')))
+        local renamed = me:rename_weapon(weapon, to)
+        if renamed == nil then
+            npc:chat(string.format('%s 가지고 있지 않습니다.', name_with(model:name(), '을', '를')))
+        elseif renamed == false then
+            npc:chat('돈이 모자랍니다.')
+        else
+            npc:chat(string.format('%s의 이름을 %s 변경했습니다.', from, name_with(to, '으로', '로')))
+        end
     end
     return true
 end
@@ -1129,19 +1135,15 @@ function M.show_rename_weapon_menu(me, npc)
         goto NPC_RENAME_WEAPON_DIALOG_001
     end
 
-    local cp949 = CP949(name)
-    if #cp949 < 4 then
-        me:dialog(npc, '이름이 너무 짧습니다.', { prev = false, next = true })
-        goto NPC_RENAME_WEAPON_DIALOG_002
-    end
-
-    if #cp949 > 32 then
-        me:dialog(npc, '이름이 너무 깁니다.', { prev = false, next = true })
-        goto NPC_RENAME_WEAPON_DIALOG_002
-    end
-
-    if not assert_korean(cp949) or has_blocked_word(name) or name2item(name) ~= nil then
-        me:dialog(npc, string.format('%s 사용할 수 없는 이름입니다.', name_with(name, '은', '는')), { prev = false, next = true })
+    local alias_error = check_weapon_alias(name)
+    if alias_error ~= nil then
+        if alias_error == 'short' then
+            me:dialog(npc, '이름이 너무 짧습니다.', { prev = false, next = true })
+        elseif alias_error == 'long' then
+            me:dialog(npc, '이름이 너무 깁니다.', { prev = false, next = true })
+        else
+            me:dialog(npc, string.format('%s 사용할 수 없는 이름입니다.', name_with(name, '은', '는')), { prev = false, next = true })
+        end
         goto NPC_RENAME_WEAPON_DIALOG_002
     end
 

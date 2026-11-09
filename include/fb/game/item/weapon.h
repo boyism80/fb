@@ -46,7 +46,6 @@ public:
     std::string                       trade_name() const override;
     const std::optional<std::string>& custom_name() const;
     void                              custom_name(std::string_view name);
-    void                              reset_custom_name();
     fb::protocol::internal::Item      to_protocol(EQUIPMENT_PARTS parts = EQUIPMENT_PARTS::UNKNOWN) const override;
     // clang-format on
 };
