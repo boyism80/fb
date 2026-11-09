@@ -979,7 +979,7 @@ float mob_stat::base_resist(RESIST type) const
 
 uint64_t mob_stat::hp() const
 {
-    if (this->owner.hp_from_parts() == false)
+    if (this->owner.sums_parts_hp() == false)
         return fb::game::stat::hp();
 
     auto sum = uint64_t{0};
@@ -990,7 +990,7 @@ uint64_t mob_stat::hp() const
 
 uint64_t mob_stat::maxhp() const
 {
-    if (this->owner.hp_from_parts() == false)
+    if (this->owner.sums_parts_hp() == false)
         return fb::game::stat::maxhp();
 
     auto sum = uint64_t{0};

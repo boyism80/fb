@@ -43,14 +43,9 @@ private:
     std::optional<fb::model::datetime> _respawn_time;
 
 public:
-    rezen(fb::game::server&                     server,
-          const table_ptr&                      table,
-          uint32_t                              parent,
-          uint32_t                              index,
-          const std::shared_ptr<fb::game::map>& map);
-    ~rezen() = default;
-
     // clang-format off
+    rezen(fb::game::server& server, const table_ptr& table, uint32_t parent, uint32_t index, const std::shared_ptr<fb::game::map>& map);
+    ~rezen() = default;
     const fb::model::mob_spawn&     model() const;
     const table_ptr&                table() const;
     void                            table(const table_ptr& value);
@@ -172,12 +167,11 @@ public:
     void                            hidden(bool enabled);
     appearance_ptr                  appearance() const override;
     bool                            portrait() const override;
-
     bool                            add_part(const std::shared_ptr<mob>& part);
     parts_vector_t                  parts() const;
     std::shared_ptr<mob>            body() const;
     bool                            has_parts() const;
-    bool                            hp_from_parts() const;
+    bool                            sums_parts_hp() const;
     void                            parts_mode(MOB_PARTS_MODE mode);
     MOB_PARTS_MODE                  parts_mode() const;
     uint64_t                        total_exp() const;

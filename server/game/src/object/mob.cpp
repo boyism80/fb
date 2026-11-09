@@ -913,7 +913,7 @@ bool mob::has_parts() const
     return this->_parts.empty() == false;
 }
 
-bool mob::hp_from_parts() const
+bool mob::sums_parts_hp() const
 {
     return this->_parts_mode == MOB_PARTS_MODE::PARTS && this->has_parts();
 }
@@ -990,26 +990,21 @@ void mob::hit(uint64_t value, const std::shared_ptr<life>& attacker, const damag
             body->invincible(true);
             settle.dead_mobs.push_back(body);
         }
-        return;
     }
-
     // Assembly body ignores direct damage; only parts forward damage.
-    if (this->has_parts())
-        return;
+    else if (this->has_parts() == false)
+    {
+        this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+        this->notify_damage(attacker);
 
-    this->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-    this->notify_damage(attacker);
-
-    // character::alive() means "not ghost", so death must be detected by HP.
-    if (this->stat.hp() != 0)
-        return;
-
-    // Already settling on_mob_kill / on_mob_die — do not re-enter kill flow.
-    if (this->invincible())
-        return;
-
-    this->invincible(true);
-    settle.dead_mobs.push_back(this->shared_from_this_as<mob>());
+        // character::alive() means "not ghost", so death must be detected by HP.
+        // Already settling on_mob_kill / on_mob_die — do not re-enter kill flow.
+        if (this->stat.hp() == 0 && this->invincible() == false)
+        {
+            this->invincible(true);
+            settle.dead_mobs.push_back(this->shared_from_this_as<mob>());
+        }
+    }
 }
 
 void mob::on_map_entered(fb::game::map& map)
