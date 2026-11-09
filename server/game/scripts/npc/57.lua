@@ -34,13 +34,10 @@ local function run_ice_wash(me, npc)
         goto NPC_57_0001
     end
     local r = math.random(1, 5)
-    local success = { ['item'] = { [CLEAN_ICE_NAME] = 1 } }
-    local reward = (r == 2 or r == 4) and success or nil
+    local reward = (r == 2 or r == 4) and { ['item'] = { [CLEAN_ICE_NAME] = 1 } } or nil
     local code = me:exchange(
         { ['item'] = { [ICE_NAME] = 1 } },
-        reward,
-        nil,
-        success
+        reward
     )
     if code == enum.exchange_result.LACK_COST then
         btn = me:dialog(npc, '얼음을 구해오시면 씻어드리지요.', { prev = true, next = false })

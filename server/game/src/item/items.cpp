@@ -1665,8 +1665,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
                                              uint64_t                                      cost_money,
                                              const std::unordered_map<uint32_t, uint16_t>& reward_items,
                                              uint64_t                                      reward_money,
-                                             ITEM_DELETE_TYPE                              delete_type,
-                                             const std::unordered_map<uint32_t, uint16_t>& reserve_items)
+                                             ITEM_DELETE_TYPE                              delete_type)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1778,7 +1777,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         return available_slots >= required_size;
     };
 
-    if (fits(reward_items) == false || fits(reserve_items) == false)
+    if (fits(reward_items) == false)
         co_return exchange_result::lack_capacity;
 
     owner->money_reduce(cost_money);

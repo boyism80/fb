@@ -82,12 +82,11 @@ local function handle_jingogyun_2(me, npc, q_jingo)
         return true
     end
     if sel == 1 then
-        local success = { ['item'] = { ["탄생의씨앗"] = 1 } }
         local reward = nil
         if math.random(1, 1000) < 12 then
-            reward = success
+            reward = { ['item'] = { ["탄생의씨앗"] = 1 } }
         end
-        local code = me:exchange({ ['item'] = { ["해바라기씨"] = 1 } }, reward, nil, success)
+        local code = me:exchange({ ['item'] = { ["해바라기씨"] = 1 } }, reward)
         if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "해바라기씨앗을 가져와~", { prev = false, next = false })
             return true

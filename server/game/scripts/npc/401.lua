@@ -18,12 +18,11 @@ return {
         end
 
         if sel == 1 then
-            local success = { ['item'] = { ["은천지인패"] = 1 } }
             local reward = nil
             if math.random(1, 100) <= 60 then
-                reward = success
+                reward = { ['item'] = { ["은천지인패"] = 1 } }
             end
-            local code = me:exchange({ ['item'] = required }, reward, nil, success)
+            local code = me:exchange({ ['item'] = required }, reward)
             if code == enum.exchange_result.LACK_COST then
                 if not me:has_items({ ["은천패"] = 1, ["은지패"] = 1, ["은인패"] = 1 }) then
                     me:dialog(npc, "여보게, 자네는 은천패, 은지패, 은인패를 모두 가져오지 않았잖나.", { prev = false, next = false })

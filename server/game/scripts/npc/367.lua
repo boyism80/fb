@@ -135,9 +135,7 @@ local function run_bead_exchange(me, npc)
     local reward = (reward_count > 0) and { ['item'] = { [reward_item] = reward_count } } or nil
     local code = me:exchange(
         { ['item'] = { [bead_item] = count } },
-        reward,
-        nil,
-        { ['item'] = { [reward_item] = count } }
+        reward
     )
     if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", { prev = false, next = false })

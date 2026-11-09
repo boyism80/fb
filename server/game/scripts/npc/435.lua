@@ -7,12 +7,11 @@ local SUCCESS_PERCENT = 30
 
 local function do_craft(me, npc)
     local cost = { ['item'] = { [MATERIAL_NAME] = MATERIAL_COUNT } }
-    local success = { ['item'] = { [REWARD_NAME] = 1 } }
     local reward = nil
     if math.random(1, 100) <= SUCCESS_PERCENT then
-        reward = success
+        reward = { ['item'] = { [REWARD_NAME] = 1 } }
     end
-    local code = me:exchange(cost, reward, nil, success)
+    local code = me:exchange(cost, reward)
     if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "눈꽃얼음이 없으신데요?", { prev = false, next = false })
         return false

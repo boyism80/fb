@@ -29,12 +29,11 @@ return {
         local opt = options[sel]
         local required = opt.required
 
-        local success = { ['item'] = { ["은천지인패"] = 1 } }
         local reward = nil
         if math.random(1, 100) <= 60 then
-            reward = success
+            reward = { ['item'] = { ["은천지인패"] = 1 } }
         end
-        local code = me:exchange({ ['item'] = required }, reward, nil, success)
+        local code = me:exchange({ ['item'] = required }, reward)
         if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, opt.need_msg, { prev = false, next = false })
             goto NPC_406_0000

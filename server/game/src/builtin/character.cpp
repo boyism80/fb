@@ -1343,12 +1343,12 @@ int builtin::character::builtin_rmitem(lua_State* L)
 
 int builtin::character::builtin_exchange(lua_State* L)
 {
-    return exchange(L, 2, 3, 4, 5, false);
+    return exchange(L, 2, 3, 4, false);
 }
 
 int builtin::character::builtin_consume(lua_State* L)
 {
-    return exchange(L, 2, 0, 3, 0, true);
+    return exchange(L, 2, 0, 3, true);
 }
 
 // Returns true when renamed, false when the money is short, and nil when the weapon is no longer in the inventory.
@@ -1537,7 +1537,6 @@ int builtin::character::exchange(lua_State* L,
                                  int        cost_index,
                                  int        reward_index,
                                  int        delete_type_index,
-                                 int        reserve_index,
                                  bool       boolean_result)
 {
     auto lua = fb::lua::get(L);
@@ -1571,7 +1570,6 @@ int builtin::character::exchange(lua_State* L,
     auto reward_spells  = std::vector<const fb::model::spell*>();
     auto invalid_cost   = false;
     auto invalid_reward = false;
-    auto reserve_items  = std::unordered_map<uint32_t, uint16_t>();
 
     auto read_items = [&](int index, const char* kind, std::unordered_map<uint32_t, uint16_t>& items, bool& invalid) {
         lua->pushstring("item");
@@ -1662,9 +1660,6 @@ int builtin::character::exchange(lua_State* L,
         lua->pop(1);
     }
 
-    if (reserve_index != 0 && lua->is_table(reserve_index))
-        read_items(reserve_index, "reserve", reserve_items, invalid_reward);
-
     auto delete_type =
         delete_type_index != 0 ? lua->toenum(delete_type_index, ITEM_DELETE_TYPE::GIVE) : ITEM_DELETE_TYPE::GIVE;
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -1691,8 +1686,7 @@ int builtin::character::exchange(lua_State* L,
                 spell_slots.push_back(ch->spells.add(*model));
             }
 
-            *result = co_await ch->items
-                          .exchange(cost_items, cost_money, reward_items, reward_money, delete_type, reserve_items);
+            *result = co_await ch->items.exchange(cost_items, cost_money, reward_items, reward_money, delete_type);
             if (*result == exchange_result::ok)
             {
                 if (cost_exp > 0)
@@ -6974,7 +6968,7 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
         return 0;
 
     if (lua->is_table(2))
-        return exchange(L, 0, 2, 0, 0, true);
+        return exchange(L, 0, 2, 0, true);
 
     if (lua->is_string(2) == false)
     {

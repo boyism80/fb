@@ -65,12 +65,11 @@ local function run_ice_sword(me, npc)
         end
 
         local cost = { ['item'] = { [ITEM_ICE] = ICE_SWORD_COST } }
-        local success = { ['item'] = { [ITEM_ICE_SWORD] = 1 } }
         local reward = nil
         if math.random(1, 10) <= ICE_SWORD_SUCCESS_CHANCE then
-            reward = success
+            reward = { ['item'] = { [ITEM_ICE_SWORD] = 1 } }
         end
-        local code = me:exchange(cost, reward, nil, success)
+        local code = me:exchange(cost, reward)
         if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '얼음칼을 만들기 위해선 얼음 100개가 필요하네.', { prev = false, next = false })
             return true

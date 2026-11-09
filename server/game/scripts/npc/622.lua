@@ -80,12 +80,11 @@ return {
                 return
             end
             local cost_7 = { [r.main] = 100, [other] = 100 }
-            local success = { ['item'] = { [r.product] = 1 } }
             local reward = nil
             if math.random(1, 100) < 30 then
-                reward = success
+                reward = { ['item'] = { [r.product] = 1 } }
             end
-            local code = me:exchange({ ['item'] = cost_7 }, reward, nil, success)
+            local code = me:exchange({ ['item'] = cost_7 }, reward)
             if code == enum.exchange_result.LACK_COST then
                 if not me:has_items(r.main, 100) then
                     me:dialog(npc, r.main .. "이 부족합니다.", { prev = false, next = false })
@@ -133,12 +132,11 @@ return {
             for _, name in ipairs(STONES) do
                 cost_chil[name] = 100
             end
-            local success = { ['item'] = { ["칠요구륜"] = 1 } }
             local reward = nil
             if math.random(1, 100) < 10 then
-                reward = success
+                reward = { ['item'] = { ["칠요구륜"] = 1 } }
             end
-            local code = me:exchange({ ['item'] = cost_chil }, reward, nil, success)
+            local code = me:exchange({ ['item'] = cost_chil }, reward)
             if code == enum.exchange_result.LACK_COST then
                 for _, name in ipairs(STONES) do
                     if not me:has_items(name, 100) then
@@ -186,12 +184,11 @@ return {
             for _, name in ipairs(STONES) do
                 cost_pal[name] = 100
             end
-            local success = { ['item'] = { ["팔세지도"] = 1 } }
             local reward = nil
             if math.random(1, 100) < 10 then
-                reward = success
+                reward = { ['item'] = { ["팔세지도"] = 1 } }
             end
-            local code = me:exchange({ ['item'] = cost_pal }, reward, nil, success)
+            local code = me:exchange({ ['item'] = cost_pal }, reward)
             if code == enum.exchange_result.LACK_COST then
                 if not me:has_items("팔요지석", 100) then
                     me:dialog(npc, "[팔요지석]이 부족합니다.", { prev = false, next = false })
@@ -279,12 +276,11 @@ return {
                 cost_nine[name] = 1
             end
             local product = (me:gender() == GENDER.MALE) and "팔요천의기" or "팔요천의향"
-            local success = { ['item'] = { [product] = 1 } }
             local reward = nil
             if math.random(1, 100) < 10 then
-                reward = success
+                reward = { ['item'] = { [product] = 1 } }
             end
-            local code = me:exchange({ ['item'] = cost_nine }, reward, nil, success)
+            local code = me:exchange({ ['item'] = cost_nine }, reward)
             if code == enum.exchange_result.LACK_COST then
                 for _, name in ipairs(need_nine) do
                     if not me:has_items(name, 1) then
