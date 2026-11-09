@@ -351,12 +351,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     if (resp.group.has_value())
     {
         auto guard = co_await this->server.groups.enter_write(resp.group.value());
-        if (auto& group = guard.value(); group != nullptr)
-        {
-            auto members = group->members();
-            if (std::find(members.begin(), members.end(), ch->name()) != members.end())
-                ch->group.id(group->id());
-        }
+        if (auto& group = guard.value(); group != nullptr && group->contains(ch->name()))
+            ch->group.id(group->id());
     }
 
     if (resp.clan.has_value())
@@ -400,21 +396,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         std::ignore        = co_await ch->buffs.push_back(model, buff.time);
     }
 
-    if (ch->group.id().has_value())
-    {
-        auto gid   = ch->group.id().value();
-        auto guard = co_await this->server.groups.enter_write(gid);
-        if (auto& group = guard.value(); group != nullptr)
-        {
-            group->enter(weak);
-            group->add_member(ch->name());
-            this->server.groups.update_portraits(*group);
-        }
-        else
-        {
-            ch->group.reset();
-        }
-    }
+    co_await this->server.groups.attach(*ch);
 
     if (ch->clan.id().has_value())
     {

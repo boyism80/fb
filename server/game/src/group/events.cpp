@@ -309,11 +309,14 @@ async::task<void> group::container::remove_member(uint64_t    group_id,
             reload = true;
         }
 
-        auto ch = this->_server.characters.find(name);
-        if (ch != nullptr)
+        auto active = group->characters();
+        auto found  = std::find_if(active.begin(), active.end(), [&name](const auto& member) {
+            return member->name() == name;
+        });
+        if (found != active.end())
         {
-            weak  = ch->weak_from_this_as<character>();
-            ch_id = ch->id;
+            weak  = *found;
+            ch_id = (*found)->id;
             group->detach(weak);
         }
         members = group->characters();
@@ -385,13 +388,8 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
     auto entered = false;
     try
     {
-        entered = this->write(group_id, [weak = ch.weak_from_this_as<character>(), name = ch.name()](auto& group) {
-            auto members = group != nullptr ? group->members() : std::vector<std::string>{};
-            if (std::find(members.begin(), members.end(), name) == members.end())
-                return false;
-
-            group->enter(weak);
-            return true;
+        entered = this->write(group_id, [weak = ch.weak_from_this_as<character>()](auto& group) {
+            return group != nullptr && group->enter(weak);
         });
     }
     catch (const std::runtime_error&)
@@ -409,6 +407,28 @@ async::task<bool> group::container::enter_member(character& ch, uint64_t group_i
         co_await ch.matchmaker.drop_ticket("그룹에 들어가 매치메이킹 대기가 취소되었습니다.");
     }
     co_return true;
+}
+
+async::task<void> group::container::attach(character& ch)
+{
+    ch.assert_thread();
+
+    auto group_id = ch.group.id();
+    if (group_id.has_value() == false)
+        co_return;
+
+    auto entered = false;
+    {
+        auto guard = co_await this->enter_write(group_id.value());
+        if (auto& group = guard.value(); group != nullptr && group->enter(ch.weak_from_this_as<character>()))
+        {
+            this->update_portraits(*group);
+            entered = true;
+        }
+    }
+
+    if (entered == false)
+        co_await this->reset_member(ch, _TEXT(MESSAGE_GROUP_NOT_JOINED));
 }
 
 async::task<void> group::container::drop_stale_membership(character& ch, uint64_t group_id)

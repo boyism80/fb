@@ -39,18 +39,16 @@ private:
     uint64_t                 _revision = 0;
 
 public:
-    group(server&                         server,
-          uint64_t                        id,
-          std::string_view                master,
-          const std::vector<std::string>& members,
-          uint64_t                        revision);
+    // clang-format off
+    group(server& server, uint64_t id, std::string_view master, const std::vector<std::string>& members, uint64_t revision);
     group(const group&) = delete;
     group(group&& g);
     ~group() = default;
+    // clang-format on
 
 public:
     // clang-format off
-    void                       enter(std::weak_ptr<character> ch);
+    bool                       enter(std::weak_ptr<character> ch);
     void                       detach(std::weak_ptr<character> ch);
     void                       add_member(std::string_view name);
     void                       remove_member(std::string_view name);
@@ -58,6 +56,7 @@ public:
     const std::string&         master() const;
     std::vector<character_ptr> characters() const;
     std::vector<std::string>   members() const;
+    bool                       contains(std::string_view name) const;
     uint64_t                   revision() const;
     void                       revision(uint64_t value);
     std::vector<character_ptr> reload(const group& fresh);
@@ -83,6 +82,7 @@ public:
     async::task<bool> handle_action(character& actor, std::string_view target_name);
     async::task<void> toggle_member(character& actor, std::string_view target_name);
     async::task<void> leave_member(character& leaver);
+    async::task<void> attach(character& ch);
     async::task<void> broadcast(uint32_t world, uint64_t group_id, std::string_view message, MESSAGE_TYPE type);
     async::task<void> on_error(uint32_t error, std::string_view actor);
     async::task<void> on_create(std::string target, uint64_t group_id, std::string master, std::map<uint32_t, std::string> members, uint64_t revision);

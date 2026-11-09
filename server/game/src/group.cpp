@@ -39,18 +39,17 @@ group::group(group&& g) :
     _revision(g._revision)
 { }
 
-void group::enter(std::weak_ptr<character> ch)
+bool group::enter(std::weak_ptr<character> ch)
 {
     auto ptr = ch.lock();
-    if (ptr == nullptr)
-        return;
+    if (ptr == nullptr || this->contains(ptr->name()) == false)
+        return false;
 
     // A live entry is the online character, so a duplicate session must not replace it.
     auto found = this->_active_members.find(ptr->id);
-    if (found != this->_active_members.end() && found->second.expired() == false)
-        return;
-
-    this->_active_members.insert_or_assign(ptr->id, ch);
+    if (found == this->_active_members.end() || found->second.expired())
+        this->_active_members.insert_or_assign(ptr->id, ch);
+    return true;
 }
 
 void group::detach(std::weak_ptr<character> ch)
@@ -121,6 +120,11 @@ std::vector<std::shared_ptr<character>> group::characters() const
 std::vector<std::string> group::members() const
 {
     return std::vector<std::string>(this->_members);
+}
+
+bool group::contains(std::string_view name) const
+{
+    return std::find(this->_members.begin(), this->_members.end(), name) != this->_members.end();
 }
 
 uint64_t group::revision() const
