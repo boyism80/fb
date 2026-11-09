@@ -197,12 +197,14 @@ public:
     private:
         fb::lua::context* _context = nullptr;
         uint8_t           _maxlen  = 0xFF;
+        uint16_t          _items   = 0;
 
     public:
         // clang-format off
-        void              open(fb::lua::context* context, uint8_t maxlen = 0xFF);
+        void              open(fb::lua::context* context, uint8_t maxlen = 0xFF, uint16_t items = 0);
         fb::lua::context* close();
         uint8_t           maxlen() const;
+        uint16_t          items() const;
         void              cancel(std::string_view reason);
         // clang-format on
     };

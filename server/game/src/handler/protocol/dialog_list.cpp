@@ -19,6 +19,7 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
         co_return true;
 
     auto maxlen = ch->dialog.maxlen();
+    auto items  = ch->dialog.items();
     auto lua    = ch->dialog.close();
     if (lua == nullptr)
         co_return true;
@@ -52,7 +53,7 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
 
     case fb::game::dialog::list_type::LIST:
     case fb::game::dialog::list_type::LIST_NO_MSG:
-        if (reply.button == DIALOG_RESULT::NEXT)
+        if (reply.button == DIALOG_RESULT::NEXT && reply.index >= 1 && reply.index <= items)
             lua->pushinteger(reply.index);
         else
             lua->pushnil();

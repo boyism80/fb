@@ -40,9 +40,6 @@ return {
         if key_opt == nil then
             return
         end
-        if key_opt < 0 or key_opt > 3 then
-            return
-        end
 
         local ex = EXCHANGES[key_opt]
         local code = me:exchange(

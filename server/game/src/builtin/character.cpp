@@ -5838,7 +5838,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, 0xFF, static_cast<uint16_t>(menus.size()));
         co_return;
     };
     if (immediate)
