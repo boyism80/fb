@@ -1194,8 +1194,8 @@ M.functions = {
             if value ~= nil then
                 value = tonumber(value)
             end
-            sky_maze.shuffle(value)
-            sky_maze.pk_shuffle(value ~= nil and value + 1 or nil)
+            sky_maze.shuffle(sky_maze.NORMAL, value)
+            sky_maze.shuffle(sky_maze.PK, value ~= nil and value + 1 or nil)
             local msg = "천상미궁 / PK천상미궁 워프 셔플 적용되었습니다."
             if value ~= nil then
                 msg = msg .. " (seed=" .. tostring(value) .. ")"
@@ -1207,9 +1207,9 @@ M.functions = {
 
     ['천상미궁루트'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '- 현재 셔플 기준 천상미궁시작~천상미궁비밀방 루트를 메시지로 출력',
+        ['usage'] = '- 서 있는 천상미궁 칸에서 천상미궁비밀방까지의 루트를 메시지로 출력',
         ['command'] = function(me, args)
-            sky_maze.print_route(me)
+            sky_maze.print_route(me, sky_maze.NORMAL)
             return true
         end,
     },

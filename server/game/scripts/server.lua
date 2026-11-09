@@ -51,11 +51,11 @@ return {
     end,
 
     on_warp_sky_maze = function(me)
-        return sky_maze.warp(me)
+        return sky_maze.warp(me, sky_maze.NORMAL)
     end,
 
     on_warp_pk_sky_maze = function(me)
-        return sky_maze.warp_pk(me)
+        return sky_maze.warp(me, sky_maze.PK)
     end,
 
     on_map_guillim_temple = function(me)

@@ -15,16 +15,14 @@ local PK_SKY_MAZE_NAMES = {
     "PK천상미궁24", "PK천상미궁25", "PK천상미궁비밀방",
 }
 
+M.NORMAL = { names = SKY_MAZE_NAMES, prefix = "sky_maze_", entrance = 2996, exit = 649 }
+M.PK = { names = PK_SKY_MAZE_NAMES, prefix = "pk_sky_maze_", entrance = 2479, exit = 2474 }
+
 local function map_name_to_id(name)
     local m = name2map(name)
     if m ~= nil then return m:model():id() end
     return nil
 end
-
-local SKY_MAZE_ENTRANCE_MAP_ID = 2996
-local SKY_MAZE_FINAL_EXIT_MAP_ID = 649
-local PK_SKY_MAZE_ENTRANCE_MAP_ID = 2479
-local PK_SKY_MAZE_FINAL_EXIT_MAP_ID = 2474
 
 local function shuffle_array(arr, from_idx, to_idx)
     for _ = 1, (to_idx - from_idx + 1) do
@@ -34,68 +32,46 @@ local function shuffle_array(arr, from_idx, to_idx)
     end
 end
 
-function M.shuffle(value)
+function M.shuffle(maze, value)
     math.randomseed(value or seed())
     local arr = {}
     for i = 0, 26 do
-        arr[i] = map_name_to_id(SKY_MAZE_NAMES[i + 1])
+        arr[i] = map_name_to_id(maze.names[i + 1])
     end
     shuffle_array(arr, 1, 25)
     for i = 0, 26 do
-        property("sky_maze_" .. tostring(i), arr[i])
+        property(maze.prefix .. tostring(i), arr[i])
     end
 end
 
-function M.pk_shuffle(value)
-    math.randomseed(value or seed())
+local function slot_ids(maze)
+    if property(maze.prefix .. "0") == nil then
+        M.shuffle(maze)
+    end
+
     local arr = {}
     for i = 0, 26 do
-        arr[i] = map_name_to_id(PK_SKY_MAZE_NAMES[i + 1])
+        arr[i] = property(maze.prefix .. tostring(i)) or map_name_to_id(maze.names[i + 1])
     end
-    shuffle_array(arr, 1, 25)
-    for i = 0, 26 do
-        property("pk_sky_maze_" .. tostring(i), arr[i])
-    end
+    return arr
 end
 
-function M.get_slot(i)
-    local map_id = property("sky_maze_" .. tostring(i))
-    if map_id == nil then
-        return SKY_MAZE_NAMES[i + 1]
+local function slot_position(slots, map_id)
+    for i = 1, 26 do
+        if slots[i] == map_id then
+            return i
+        end
     end
-    local m = id2map(map_id)
+    return nil
+end
+
+local function slot_name(maze, slots, i)
+    local m = id2map(slots[i])
     if m ~= nil then
         return m:model():name()
+    else
+        return maze.names[i + 1]
     end
-    return SKY_MAZE_NAMES[i + 1]
-end
-
-function M.get_pk_slot(i)
-    local map_id = property("pk_sky_maze_" .. tostring(i))
-    if map_id == nil then
-        return PK_SKY_MAZE_NAMES[i + 1]
-    end
-    local m = id2map(map_id)
-    if m ~= nil then
-        return m:model():name()
-    end
-    return PK_SKY_MAZE_NAMES[i + 1]
-end
-
-local function get_sky_maze_slot_id(i)
-    local map_id = property("sky_maze_" .. tostring(i))
-    if map_id == nil then
-        return map_name_to_id(SKY_MAZE_NAMES[i + 1])
-    end
-    return map_id
-end
-
-local function get_pk_sky_maze_slot_id(i)
-    local map_id = property("pk_sky_maze_" .. tostring(i))
-    if map_id == nil then
-        return map_name_to_id(PK_SKY_MAZE_NAMES[i + 1])
-    end
-    return map_id
 end
 
 local function sky_maze_next(my_pos, side)
@@ -126,7 +102,7 @@ local function sky_maze_next(my_pos, side)
     end
 end
 
-function M.warp(me)
+function M.warp(me, maze)
     if me == nil then
         return
     end
@@ -134,18 +110,7 @@ function M.warp(me)
     if map == nil then
         return
     end
-    local map_id = map:model():id()
-    local map_name = map:model():name()
     local x, y = me:position()
-
-    if property("sky_maze_0") == nil then
-        M.shuffle()
-    end
-
-    local arr = {}
-    for i = 0, 26 do
-        arr[i] = get_sky_maze_slot_id(i)
-    end
 
     local side
     if x == 24 and y == 1 then
@@ -160,117 +125,25 @@ function M.warp(me)
         return
     end
 
-    if map_id == arr[26] then
-        local exit = id2map(SKY_MAZE_FINAL_EXIT_MAP_ID)
-        if exit ~= nil then
-            me:map(exit, 1, 1)
-        end
-        return
-    end
-
-    local my_pos = nil
-    if map_id == SKY_MAZE_ENTRANCE_MAP_ID then
-        my_pos = math.random(1, 25)
-    else
-        for i = 1, 25 do
-            if map_id == arr[i] then
-                my_pos = i
-                break
-            end
-        end
-    end
-
-    if my_pos == nil then
-        return
-    end
-
-    -- From grid position 25, any of the 4 warp tiles leads to secret room (slot 26)
-    if my_pos == 25 then
-        local secret = id2map(arr[26])
-        if secret then
-            me:map(secret, 24, 24)
-        end
-        return
-    end
-
-    local next_pos = sky_maze_next(my_pos, side)
-    local dest = id2map(arr[next_pos])
-    if dest then
-        me:map(dest, 24, 24)
-    end
-end
-
-function M.warp_pk(me)
-    if me == nil then
-        return
-    end
-    local map = me:map()
-    if map == nil then
-        return
-    end
+    local slots = slot_ids(maze)
     local map_id = map:model():id()
-    local map_name = map:model():name()
-    local x, y = me:position()
-
-    if property("pk_sky_maze_0") == nil then
-        M.pk_shuffle()
+    local pos = slot_position(slots, map_id)
+    local dest = nil
+    local dest_x, dest_y = 24, 24
+    if map_id == maze.entrance then
+        dest = slots[math.random(1, 24)]
+    elseif pos == 26 then
+        dest = maze.exit
+        dest_x, dest_y = 1, 1
+    elseif pos == 25 then
+        dest = slots[26]
+    elseif pos ~= nil then
+        dest = slots[sky_maze_next(pos, side)]
     end
 
-    local arr = {}
-    for i = 0, 26 do
-        arr[i] = get_pk_sky_maze_slot_id(i)
-    end
-
-    local side
-    if x == 24 and y == 1 then
-        side = 0
-    elseif x == 47 and y == 24 then
-        side = 1
-    elseif x == 24 and y == 47 then
-        side = 2
-    elseif x == 1 and y == 24 then
-        side = 3
-    else
-        return
-    end
-
-    if map_id == arr[26] then
-        local exit = id2map(PK_SKY_MAZE_FINAL_EXIT_MAP_ID)
-        if exit ~= nil then
-            me:map(exit, 1, 1)
-        end
-        return
-    end
-
-    local my_pos = nil
-    if map_id == PK_SKY_MAZE_ENTRANCE_MAP_ID then
-        my_pos = math.random(1, 25)
-    else
-        for i = 1, 25 do
-            if map_id == arr[i] then
-                my_pos = i
-                break
-            end
-        end
-    end
-
-    if my_pos == nil then
-        return
-    end
-
-    -- From grid position 25, any of the 4 warp tiles leads to secret room (slot 26)
-    if my_pos == 25 then
-        local secret = id2map(arr[26])
-        if secret then
-            me:map(secret, 24, 24)
-        end
-        return
-    end
-
-    local next_pos = sky_maze_next(my_pos, side)
-    local dest = id2map(arr[next_pos])
-    if dest then
-        me:map(dest, 24, 24)
+    local dest_map = dest ~= nil and id2map(dest) or nil
+    if dest_map ~= nil then
+        me:map(dest_map, dest_x, dest_y)
     end
 end
 
@@ -282,8 +155,8 @@ local function sky_maze_neighbors(pos)
     return out
 end
 
-local function sky_maze_find_route_to_secret()
-    local start_pos, goal_pos = 1, 25
+local function find_secret_route(start_pos)
+    local goal_pos = 25
     local parent = {}
     parent[start_pos] = -1
     local queue = { start_pos }
@@ -303,9 +176,6 @@ local function sky_maze_find_route_to_secret()
             end
         end
     end
-    if parent[goal_pos] == nil then
-        return {}
-    end
     local path = {}
     local p = goal_pos
     while p ~= -1 do
@@ -319,37 +189,34 @@ local function sky_maze_find_route_to_secret()
     return rev
 end
 
-function M.print_route(me)
-    if property("sky_maze_0") == nil then
-        M.shuffle()
-    end
-
-    local path = sky_maze_find_route_to_secret()
-    if #path == 0 then
-        me:message("No route to secret room (unreachable).", MESSAGE_TYPE.BROWN)
+function M.print_route(me, maze)
+    local map = me:map()
+    if map == nil then
         return
     end
 
-    local route = { 0 }
-    for i = 1, #path do
-        route[#route + 1] = path[i]
-    end
-    route[#route + 1] = 26
+    local slots = slot_ids(maze)
+    local pos = slot_position(slots, map:model():id())
+    if pos == nil or pos == 26 then
+        me:message(maze.names[2] .. "~" .. maze.names[26] .. " 칸에서 사용하세요.", MESSAGE_TYPE.BROWN)
+    else
+        local route = find_secret_route(pos)
+        route[#route + 1] = 26
 
-    local dir_names = { "북", "동", "남", "서" }
-    for i = 1, #route - 1 do
-        local a = M.get_slot(route[i])
-        local b = M.get_slot(route[i + 1])
-        local dir_str = ""
-        if route[i] >= 1 and route[i] <= 25 and route[i + 1] >= 1 and route[i + 1] <= 25 then
-            for side = 0, 3 do
-                if sky_maze_next(route[i], side) == route[i + 1] then
-                    dir_str = " (" .. dir_names[side + 1] .. ")"
-                    break
+        local dir_names = { "북", "동", "남", "서" }
+        for i = 1, #route - 1 do
+            local dir_str = ""
+            if route[i + 1] <= 25 then
+                for side = 0, 3 do
+                    if sky_maze_next(route[i], side) == route[i + 1] then
+                        dir_str = " (" .. dir_names[side + 1] .. ")"
+                        break
+                    end
                 end
             end
+            me:message(slot_name(maze, slots, route[i]) .. dir_str .. " - " .. slot_name(maze, slots, route[i + 1]),
+                MESSAGE_TYPE.BROWN)
         end
-        me:message((a or "?") .. dir_str .. " - " .. (b or "?"), MESSAGE_TYPE.BROWN)
     end
 end
 

@@ -15,7 +15,7 @@ return {
 
     on_schedule_3 = function()
         local sky_maze = require('lib.sky_maze')
-        sky_maze.shuffle()
-        sky_maze.pk_shuffle()
+        sky_maze.shuffle(sky_maze.NORMAL)
+        sky_maze.shuffle(sky_maze.PK)
     end
 }
