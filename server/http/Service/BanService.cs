@@ -1,6 +1,7 @@
 using Fb.Model.EnumValue;
 using Http.Model;
 using Http.Util;
+using Response = fb.protocol.@internal.response;
 
 namespace Http.Service
 {
@@ -13,14 +14,16 @@ namespace Http.Service
         private readonly LogService _logService;
         private readonly DiscordNotifier _discord;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly RabbitMqService _rabbitMqService;
 
-        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService, DiscordNotifier discord, RedisDistributedLockService distributedLock)
+        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService, DiscordNotifier discord, RedisDistributedLockService distributedLock, RabbitMqService rabbitMqService)
         {
             _dbContext = dbContext;
             _logger = logger;
             _logService = logService;
             _discord = discord;
             _distributedLock = distributedLock;
+            _rabbitMqService = rabbitMqService;
         }
 
 
@@ -63,6 +66,14 @@ namespace Http.Service
                 await _dbContext.SaveChangesAsync();
             }
 
+            await _rabbitMqService.NotifySavedAsync(new Response.Ban
+            {
+                Name = name,
+                Reason = reason,
+                ExpireDate = expireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                Error = (uint)ErrorCode.None
+            }, "ban", world);
+
             _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been banned by {Actor} ({Source}). Reason: {Reason}, Expire: {ExpireDate}",
                 name, userId, world, actor, source, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
 
@@ -85,7 +96,6 @@ namespace Http.Service
                 Success = true,
                 Error = ErrorCode.None,
                 UserId = userId,
-                World = world,
                 ExpireDate = expireDate
             };
         }
@@ -118,6 +128,12 @@ namespace Http.Service
                 await _dbContext.SaveChangesAsync();
             }
 
+            await _rabbitMqService.NotifySavedAsync(new Response.Unban
+            {
+                Name = name,
+                Error = (uint)ErrorCode.None
+            }, "ban", world);
+
             _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been unbanned by {Actor} ({Source}).", name, userId, world, actor, source);
 
             await _logService.WriteAsync("unban", new
@@ -135,8 +151,7 @@ namespace Http.Service
             {
                 Success = true,
                 Error = ErrorCode.None,
-                UserId = userId,
-                World = world
+                UserId = userId
             };
         }
 

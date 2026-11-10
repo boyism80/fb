@@ -12,13 +12,11 @@ namespace Internal.Controllers
     public class BanController : ControllerBase
     {
         private readonly BanService _banService;
-        private readonly RabbitMqService _rabbitMqService;
         private readonly DbContext _dbContext;
         private readonly ILogger<BanController> _logger;
-        public BanController(BanService banService, RabbitMqService rabbitMqService, DbContext dbContext, ILogger<BanController> logger)
+        public BanController(BanService banService, DbContext dbContext, ILogger<BanController> logger)
         {
             _banService = banService;
-            _rabbitMqService = rabbitMqService;
             _dbContext = dbContext;
             _logger = logger;
         }
@@ -31,17 +29,13 @@ namespace Internal.Controllers
                 var result = await _banService.Ban(world, request.Name, request.Reason, request.Days, request.Actor ?? string.Empty, "game");
                 await _dbContext.SaveChangesAsync();
 
-                var response = new Response.Ban
+                return new Response.Ban
                 {
                     Name = request.Name,
                     Reason = request.Reason,
                     ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                     Error = (uint)result.Error
                 };
-
-                await _rabbitMqService.NotifySavedAsync(response, "ban", result.World);
-
-                return response;
             }
             catch (LogicException e)
             {
@@ -72,15 +66,11 @@ namespace Internal.Controllers
                 var result = await _banService.Unban(world, request.Name, request.Actor ?? string.Empty, "game");
                 await _dbContext.SaveChangesAsync();
 
-                var response = new Response.Unban
+                return new Response.Unban
                 {
                     Name = request.Name,
                     Error = (uint)result.Error
                 };
-
-                await _rabbitMqService.NotifySavedAsync(response, "ban", result.World);
-
-                return response;
             }
             catch (LogicException e)
             {

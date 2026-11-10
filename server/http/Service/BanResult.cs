@@ -10,8 +10,6 @@ namespace Http.Service
 
         public uint? UserId { get; set; }
 
-        public uint World { get; set; }
-
         public DateTime? ExpireDate { get; set; }
     }
 
@@ -22,8 +20,6 @@ namespace Http.Service
         public ErrorCode Error { get; set; }
 
         public uint? UserId { get; set; }
-
-        public uint World { get; set; }
     }
 
     public class BanCheckResult
