@@ -847,7 +847,7 @@ atlas::path(uint16_t map, const position& from, const position& to, uint16_t ran
             if (grid->passable(at, direction) == false)
                 continue;
 
-            if (distance(next) > range && blocked(next))
+            if (next != to && blocked(next))
                 continue;
 
             if (next != to && this->warp_at(map, next))
