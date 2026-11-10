@@ -802,7 +802,7 @@ int builtin::character::builtin_item(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, items, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::ITEM);
         co_return;
     };
     if (immediate)
@@ -5338,7 +5338,7 @@ int builtin::character::builtin_popup_input(lua_State* L)
 
         std::ignore = ch->send(fb::protocol::game::response::popup_input(param0, param1, param2, param3, text));
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::POPUP);
         co_return;
     };
     if (immediate)
@@ -5833,7 +5833,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
             ch->listener.on_dialog(*ch, message, button_prev, button_next, oid);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::TEXT);
         co_return;
     };
     if (immediate)
@@ -5961,7 +5961,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
 
         if (immediate == false)
-            ch->dialog.open(lua, 0xFF, static_cast<uint16_t>(menus.size()));
+            ch->dialog.open(lua, fb::game::dialog::reply::LIST, static_cast<uint16_t>(menus.size()));
         co_return;
     };
     if (immediate)
@@ -6098,7 +6098,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
 
         if (immediate == false)
         {
-            ch->dialog.open(lua, maxlen);
+            ch->dialog.open(lua,
+                            use_list_input ? fb::game::dialog::reply::INPUT : fb::game::dialog::reply::INPUT_EXT,
+                            maxlen);
         }
         co_return;
     };
@@ -6178,7 +6180,7 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, menus, oid, ext);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::MENU);
         co_return;
     };
     if (immediate)
@@ -6251,7 +6253,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
             ch->listener.on_dialog(*ch, *model, message, slots, oid);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::SLOT);
         co_return;
     };
     if (immediate)
@@ -6345,7 +6347,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
             ch->listener.on_dialog_pursuit(*ch, *model, message, options, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::ITEM);
         co_return;
     };
     if (immediate)
@@ -6497,7 +6499,7 @@ int fb::game::builtin::character::builtin_buy(lua_State* L)
             ch->listener.on_dialog_buy(*ch, *model, message, entries, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::BUY);
         co_return;
     };
     if (immediate)
@@ -6571,7 +6573,7 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
             ch->listener.on_dialog_spell(*ch, *model, message, oid, pursuit);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::SLOT);
         co_return;
     };
     if (immediate)
@@ -6636,7 +6638,7 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
             ch->listener.on_dialog_email(*ch, *model, message, "", "", false, false, oid);
 
         if (immediate == false)
-            ch->dialog.open(lua);
+            ch->dialog.open(lua, fb::game::dialog::reply::INPUT);
         co_return;
     };
     if (immediate)

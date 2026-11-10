@@ -123,7 +123,33 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto lua = ch->dialog.close();
+    auto expected = fb::game::dialog::reply::MENU;
+    switch (request.type)
+    {
+    case fb::game::dialog::type::INPUT:
+    case fb::game::dialog::type::INPUT_NO_EXT:
+        expected = fb::game::dialog::reply::INPUT_EXT;
+        break;
+
+    case fb::game::dialog::type::SLOT:
+    case fb::game::dialog::type::SPELL:
+        expected = fb::game::dialog::reply::SLOT;
+        break;
+
+    case fb::game::dialog::type::ITEM:
+    case fb::game::dialog::type::PURSUIT:
+        expected = fb::game::dialog::reply::ITEM;
+        break;
+
+    case fb::game::dialog::type::BUY:
+        expected = fb::game::dialog::reply::BUY;
+        break;
+
+    default:
+        break;
+    }
+
+    auto lua = ch->dialog.take(expected).context;
     if (lua == nullptr)
         co_return true;
 

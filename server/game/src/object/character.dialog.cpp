@@ -7,36 +7,34 @@
 
 using namespace fb::game;
 
-void character::dialog::open(fb::lua::context* context, uint8_t maxlen, uint16_t items)
+void character::dialog::open(fb::lua::context* context, fb::game::dialog::reply reply, uint16_t limit)
 {
     this->cancel("dialog replaced");
     this->_context = context;
-    this->_maxlen  = maxlen;
-    this->_items   = items;
+    this->_reply   = reply;
+    this->_limit   = limit;
 }
 
-fb::lua::context* character::dialog::close()
+character::dialog::pending character::dialog::take(fb::game::dialog::reply reply)
 {
-    auto context   = this->_context;
+    if (this->_context == nullptr)
+        return pending{};
+
+    if (this->_reply != reply)
+    {
+        this->cancel("dialog reply mismatch");
+        return pending{};
+    }
+
+    auto taken     = pending{this->_context, this->_limit};
     this->_context = nullptr;
-    this->_maxlen  = 0xFF;
-    this->_items   = 0;
-    return context;
-}
-
-uint8_t character::dialog::maxlen() const
-{
-    return this->_maxlen;
-}
-
-uint16_t character::dialog::items() const
-{
-    return this->_items;
+    return taken;
 }
 
 void character::dialog::cancel(std::string_view reason)
 {
-    auto context = this->close();
+    auto context   = this->_context;
+    this->_context = nullptr;
     if (context != nullptr)
         context->cancel(reason);
 }

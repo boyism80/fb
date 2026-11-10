@@ -203,18 +203,23 @@ public:
 
     class dialog
     {
+    public:
+        struct pending
+        {
+            fb::lua::context* context = nullptr;
+            uint16_t          limit   = 0;
+        };
+
     private:
-        fb::lua::context* _context = nullptr;
-        uint8_t           _maxlen  = 0xFF;
-        uint16_t          _items   = 0;
+        fb::lua::context*       _context = nullptr;
+        fb::game::dialog::reply _reply   = fb::game::dialog::reply::TEXT;
+        uint16_t                _limit   = 0xFF;
 
     public:
         // clang-format off
-        void              open(fb::lua::context* context, uint8_t maxlen = 0xFF, uint16_t items = 0);
-        fb::lua::context* close();
-        uint8_t           maxlen() const;
-        uint16_t          items() const;
-        void              cancel(std::string_view reason);
+        void    open(fb::lua::context* context, fb::game::dialog::reply reply, uint16_t limit = 0xFF);
+        pending take(fb::game::dialog::reply reply);
+        void    cancel(std::string_view reason);
         // clang-format on
     };
 

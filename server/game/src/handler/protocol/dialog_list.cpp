@@ -18,9 +18,27 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    auto maxlen = ch->dialog.maxlen();
-    auto items  = ch->dialog.items();
-    auto lua    = ch->dialog.close();
+    auto expected = fb::game::dialog::reply::TEXT;
+    switch (request.type)
+    {
+    case fb::game::dialog::list_type::LIST:
+    case fb::game::dialog::list_type::LIST_NO_MSG:
+        expected = fb::game::dialog::reply::LIST;
+        break;
+
+    case fb::game::dialog::list_type::INPUT:
+    case fb::game::dialog::list_type::INPUT_NO_MSG:
+    case fb::game::dialog::list_type::INPUT_PASSWORD:
+    case fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG:
+    case fb::game::dialog::list_type::EMAIL:
+        expected = fb::game::dialog::reply::INPUT;
+        break;
+
+    default:
+        break;
+    }
+
+    auto [lua, limit] = ch->dialog.take(expected);
     if (lua == nullptr)
         co_return true;
 
@@ -41,7 +59,7 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
     case fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG:
     case fb::game::dialog::list_type::EMAIL:
         // The client only displays maxlen, so a longer reply is refused as if the dialog were closed.
-        if (reply.action == 0x02 && reply.message.size() <= maxlen) // OK button
+        if (reply.action == 0x02 && reply.message.size() <= limit) // OK button
             lua->pushstring(reply.message);
         else if (reply.action == 0x02)
             lua->pushinteger(static_cast<int>(DIALOG_RESULT::QUIT));
@@ -53,7 +71,7 @@ async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_re
 
     case fb::game::dialog::list_type::LIST:
     case fb::game::dialog::list_type::LIST_NO_MSG:
-        if (reply.button == DIALOG_RESULT::NEXT && reply.index >= 1 && reply.index <= items)
+        if (reply.button == DIALOG_RESULT::NEXT && reply.index >= 1 && reply.index <= limit)
             lua->pushinteger(reply.index);
         else
             lua->pushnil();

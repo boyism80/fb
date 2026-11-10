@@ -32,6 +32,19 @@ enum class list_type : uint8_t
     LOOK                  = 10, // look picker (DLGMSGH.EPF)
 };
 
+enum class reply : uint8_t
+{
+    TEXT,
+    LIST,
+    INPUT,
+    INPUT_EXT,
+    MENU,
+    SLOT,
+    ITEM,
+    BUY,
+    POPUP,
+};
+
 } // namespace fb::game::dialog
 
 #endif
