@@ -42,18 +42,12 @@ namespace AdminTool.Services
                 return new AuthResult { Error = LoginFailedError };
             }
 
-            var attempt = await _passwordAttempts.Begin(world, userId.Value, ip);
-            if (attempt == PasswordAttempt.Locked)
+            var (check, updatedPw) = await _passwordAttempts.CheckPassword(world, userId.Value, ip, character.Pw, password);
+            if (check != PasswordCheck.Matched)
             {
                 return new AuthResult { Error = LoginFailedError };
             }
 
-            if (PasswordHash.Matches(character.Pw, password, out var updatedPw) == false)
-            {
-                return new AuthResult { Error = LoginFailedError };
-            }
-
-            await _passwordAttempts.Succeed(world, userId.Value, ip, attempt);
             if (updatedPw != null)
             {
                 await using var _ = await _distributedLock.Lock(world, Character.SaveLockKey(userId.Value));

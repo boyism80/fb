@@ -79,8 +79,8 @@ namespace Internal.Controllers
                 };
             }
 
-            var attempt = await _passwordAttempts.Begin(world, request.Uid, request.Ip);
-            if (attempt == PasswordAttempt.Locked)
+            var (check, updatedPw) = await _passwordAttempts.CheckPassword(world, request.Uid, request.Ip, ch.Pw, request.Pw);
+            if (check == PasswordCheck.Locked)
             {
                 return new Response.Authenticate
                 {
@@ -88,7 +88,7 @@ namespace Internal.Controllers
                 };
             }
 
-            if (PasswordHash.Matches(ch.Pw, request.Pw, out var updatedPw) == false)
+            if (check == PasswordCheck.NotMatched)
             {
                 return new Response.Authenticate
                 {
@@ -96,7 +96,6 @@ namespace Internal.Controllers
                 };
             }
 
-            await _passwordAttempts.Succeed(world, request.Uid, request.Ip, attempt);
             if (updatedPw != null)
             {
                 await using var _ = await _distributedLock.Lock(world, Character.SaveLockKey(request.Uid));
@@ -392,26 +391,25 @@ namespace Internal.Controllers
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                var attempt = await _passwordAttempts.Begin(world, request.Uid, request.Ip);
-                if (attempt == PasswordAttempt.Locked)
+                var (check, _) = await _passwordAttempts.CheckPassword(world, request.Uid, request.Ip, ch.Pw, request.Before);
+                if (check == PasswordCheck.Locked)
                 {
                     throw new LogicException(ErrorCode.AccountLocked);
                 }
 
-                if (PasswordHash.Matches(ch.Pw, request.Before, out _) == false)
+                if (check == PasswordCheck.NotMatched)
                 {
                     throw new LogicException(ErrorCode.PasswordNotMatched);
                 }
 
-                await _passwordAttempts.Succeed(world, request.Uid, request.Ip, attempt);
-                if (await _passwordAttempts.BirthdayLocked(world, request.Uid))
+                var birthday = await _passwordAttempts.CheckBirthday(world, request.Uid, ch.Birth, request.Birthday);
+                if (birthday == PasswordCheck.Locked)
                 {
                     throw new LogicException(ErrorCode.BirthdayLocked);
                 }
 
-                if (ch.Birth != request.Birthday)
+                if (birthday == PasswordCheck.NotMatched)
                 {
-                    await _passwordAttempts.BirthdayFailed(world, request.Uid);
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
                 }
 
@@ -421,7 +419,6 @@ namespace Internal.Controllers
 
                 try
                 {
-                    await _passwordAttempts.BirthdaySucceeded(world, request.Uid);
                     await _passwordAttempts.PasswordChanged(world, request.Uid, request.Ip);
                 }
                 catch (Exception e)

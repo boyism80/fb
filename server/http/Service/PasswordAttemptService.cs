@@ -2,15 +2,22 @@ using StackExchange.Redis;
 
 namespace Http.Service
 {
-    public enum PasswordAttempt
+    public enum PasswordCheck
     {
         Locked,
-        Allowed,
-        Counted,
+        NotMatched,
+        Matched,
     }
 
     public class PasswordAttemptService
     {
+        private enum PasswordAttempt
+        {
+            Locked,
+            Allowed,
+            Counted,
+        }
+
         private const int MaxFailuresPerIp = 5;
         private static readonly TimeSpan IpLockDuration = TimeSpan.FromMinutes(10);
         private const int MaxUntrustedFailuresPerAccount = 20;
@@ -85,7 +92,40 @@ return 1";
             $"fb:account:pw-changed:{world}:{uid}"
         ];
 
-        public async Task<PasswordAttempt> Begin(uint world, uint uid, string ip)
+        public async Task<(PasswordCheck Result, string UpgradedPw)> CheckPassword(uint world, uint uid, string ip, string storedPw, string password)
+        {
+            var attempt = await Begin(world, uid, ip);
+            if (attempt == PasswordAttempt.Locked)
+            {
+                return (PasswordCheck.Locked, null);
+            }
+
+            if (PasswordHash.Matches(storedPw, password, out var upgradedPw) == false)
+            {
+                return (PasswordCheck.NotMatched, null);
+            }
+
+            await Succeed(world, uid, ip, attempt);
+            return (PasswordCheck.Matched, upgradedPw);
+        }
+
+        public async Task<PasswordCheck> CheckBirthday(uint world, uint uid, uint? storedBirth, uint birth)
+        {
+            if (await BirthdayLocked(world, uid))
+            {
+                return PasswordCheck.Locked;
+            }
+
+            if (storedBirth != birth)
+            {
+                await BirthdayFailed(world, uid);
+                return PasswordCheck.NotMatched;
+            }
+
+            return PasswordCheck.Matched;
+        }
+
+        private async Task<PasswordAttempt> Begin(uint world, uint uid, string ip)
         {
             ip = string.IsNullOrEmpty(ip) ? UnknownIp : ip;
             var keys = Keys(world, uid, ip);
@@ -110,7 +150,7 @@ return 1";
             };
         }
 
-        public async Task Succeed(uint world, uint uid, string ip, PasswordAttempt attempt)
+        private async Task Succeed(uint world, uint uid, string ip, PasswordAttempt attempt)
         {
             var trusted = string.IsNullOrEmpty(ip) == false;
             ip = trusted ? ip : UnknownIp;
@@ -131,6 +171,8 @@ return 1";
 
         public async Task PasswordChanged(uint world, uint uid, string ip)
         {
+            await BirthdaySucceeded(world, uid);
+
             var trusted = string.IsNullOrEmpty(ip) == false;
             ip = trusted ? ip : UnknownIp;
             var keys = Keys(world, uid, ip);
@@ -147,7 +189,7 @@ return 1";
             ]);
         }
 
-        public async Task<bool> BirthdayLocked(uint world, uint uid)
+        private async Task<bool> BirthdayLocked(uint world, uint uid)
         {
             var key = BirthdayKey(world, uid);
             var redis = _redisService.GetShardConnection(world, key);
@@ -160,7 +202,7 @@ return 1";
             return failures.HasValue && (long)failures >= MaxBirthdayFailures;
         }
 
-        public async Task BirthdayFailed(uint world, uint uid)
+        private async Task BirthdayFailed(uint world, uint uid)
         {
             var key = BirthdayKey(world, uid);
             var redis = _redisService.GetShardConnection(world, key);
@@ -172,7 +214,7 @@ return 1";
             await redis.EvalAsync(BirthdayFailScript, [key], [(long)BirthdayWindow.TotalMilliseconds]);
         }
 
-        public async Task BirthdaySucceeded(uint world, uint uid)
+        private async Task BirthdaySucceeded(uint world, uint uid)
         {
             var key = BirthdayKey(world, uid);
             var redis = _redisService.GetShardConnection(world, key);
